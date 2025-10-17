@@ -5,9 +5,18 @@ const nextConfig = {
       allowedOrigins: ['localhost:3000', '*.vercel.app']
     }
   },
-  swcMinify: false,
+  swcMinify: true,
   compiler: {
     removeConsole: false,
+  },
+  webpack: (config, { dev, isServer }) => {
+    if (dev) {
+      config.watchOptions = {
+        poll: 1000,
+        aggregateTimeout: 300,
+      }
+    }
+    return config
   },
   images: {
     domains: ['localhost'],
