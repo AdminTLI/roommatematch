@@ -4,73 +4,73 @@
 
 :root {
   /* Brand Colors */
-  --brand-50: #f0f9ff;
-  --brand-100: #e0f2fe;
-  --brand-200: #bae6fd;
-  --brand-300: #7dd3fc;
-  --brand-400: #38bdf8;
-  --brand-500: #0ea5e9;
-  --brand-600: #0284c7;
-  --brand-700: #0369a1;
-  --brand-800: #075985;
-  --brand-900: #0c4a6e;
+  --brand-50: 240 249 255;
+  --brand-100: 224 242 254;
+  --brand-200: 186 230 253;
+  --brand-300: 125 211 252;
+  --brand-400: 56 189 248;
+  --brand-500: 14 165 233;
+  --brand-600: 2 132 199;
+  --brand-700: 3 105 161;
+  --brand-800: 7 89 133;
+  --brand-900: 12 74 110;
 
   /* Accent Colors */
-  --accent-50: #fdf4ff;
-  --accent-100: #fae8ff;
-  --accent-200: #f5d0fe;
-  --accent-300: #f0abfc;
-  --accent-400: #e879f9;
-  --accent-500: #d946ef;
-  --accent-600: #c026d3;
-  --accent-700: #a21caf;
-  --accent-800: #86198f;
-  --accent-900: #701a75;
+  --accent-50: 253 244 255;
+  --accent-100: 250 232 255;
+  --accent-200: 245 208 254;
+  --accent-300: 240 171 252;
+  --accent-400: 232 121 249;
+  --accent-500: 217 70 239;
+  --accent-600: 192 38 211;
+  --accent-700: 162 28 175;
+  --accent-800: 134 25 143;
+  --accent-900: 112 26 117;
 
   /* Mint Colors */
-  --mint-50: #f0fdf4;
-  --mint-100: #dcfce7;
-  --mint-200: #bbf7d0;
-  --mint-300: #86efac;
-  --mint-400: #4ade80;
-  --mint-500: #22c55e;
-  --mint-600: #16a34a;
-  --mint-700: #15803d;
-  --mint-800: #166534;
-  --mint-900: #14532d;
+  --mint-50: 240 253 244;
+  --mint-100: 220 252 231;
+  --mint-200: 187 247 208;
+  --mint-300: 134 239 172;
+  --mint-400: 74 222 128;
+  --mint-500: 34 197 94;
+  --mint-600: 22 163 74;
+  --mint-700: 21 128 61;
+  --mint-800: 22 101 52;
+  --mint-900: 20 83 45;
 
   /* Rose Colors */
-  --rose-50: #fff1f2;
-  --rose-100: #ffe4e6;
-  --rose-200: #fecdd3;
-  --rose-300: #fda4af;
-  --rose-400: #fb7185;
-  --rose-500: #f43f5e;
-  --rose-600: #e11d48;
-  --rose-700: #be123c;
-  --rose-800: #9f1239;
-  --rose-900: #881337;
+  --rose-50: 255 241 242;
+  --rose-100: 255 228 230;
+  --rose-200: 254 205 211;
+  --rose-300: 253 164 175;
+  --rose-400: 251 113 133;
+  --rose-500: 244 63 94;
+  --rose-600: 225 29 72;
+  --rose-700: 190 18 60;
+  --rose-800: 159 18 57;
+  --rose-900: 136 19 55;
 
   /* Ink Colors */
-  --ink-50: #f8fafc;
-  --ink-100: #f1f5f9;
-  --ink-200: #e2e8f0;
-  --ink-300: #cbd5e1;
-  --ink-400: #94a3b8;
-  --ink-500: #64748b;
-  --ink-600: #475569;
-  --ink-700: #334155;
-  --ink-800: #1e293b;
-  --ink-900: #0f172a;
+  --ink-50: 248 250 252;
+  --ink-100: 241 245 249;
+  --ink-200: 226 232 240;
+  --ink-300: 203 213 225;
+  --ink-400: 148 163 184;
+  --ink-500: 100 116 139;
+  --ink-600: 71 85 105;
+  --ink-700: 51 65 85;
+  --ink-800: 30 41 59;
+  --ink-900: 15 23 42;
 
   /* Surface Colors */
-  --surface-0: #ffffff;
-  --surface-1: #f8fafc;
-  --surface-2: #f1f5f9;
-  --surface-3: #e2e8f0;
+  --surface-0: 255 255 255;
+  --surface-1: 248 250 252;
+  --surface-2: 241 245 249;
+  --surface-3: 226 232 240;
 
   /* Line Colors */
-  --line: #e2e8f0;
+  --line: 226 232 240;
 
   /* Typography */
   --font-display: 'Outfit', system-ui, sans-serif;
@@ -104,18 +104,18 @@
   --elev-2: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
 
   /* Gradients */
-  --gradient-brand: linear-gradient(135deg, var(--brand-500) 0%, var(--brand-600) 100%);
-  --gradient-accent: linear-gradient(135deg, var(--accent-500) 0%, var(--accent-600) 100%);
-  --gradient-mint: linear-gradient(135deg, var(--mint-500) 0%, var(--mint-600) 100%);
-  --gradient-rose: linear-gradient(135deg, var(--rose-500) 0%, var(--rose-600) 100%);
+  --gradient-brand: linear-gradient(135deg, rgb(14 165 233) 0%, rgb(2 132 199) 100%);
+  --gradient-accent: linear-gradient(135deg, rgb(217 70 239) 0%, rgb(192 38 211) 100%);
+  --gradient-mint: linear-gradient(135deg, rgb(34 197 94) 0%, rgb(22 163 74) 100%);
+  --gradient-rose: linear-gradient(135deg, rgb(244 63 94) 0%, rgb(225 29 72) 100%);
 }
 
 .dark {
-  --surface-0: #0f172a;
-  --surface-1: #1e293b;
-  --surface-2: #334155;
-  --surface-3: #475569;
-  --line: #334155;
+  --surface-0: 15 23 42;
+  --surface-1: 30 41 59;
+  --surface-2: 51 65 85;
+  --surface-3: 71 85 105;
+  --line: 51 65 85;
 }
 
 /* Base Styles */
@@ -193,7 +193,7 @@ body {
 }
 
 .bg-hero-gradient {
-  background: radial-gradient(ellipse at top, var(--brand-50) 0%, var(--surface-0) 70%);
+  background: radial-gradient(ellipse at top, rgb(240 249 255) 0%, rgb(255 255 255) 70%);
 }
 
 .bg-noise {
@@ -218,10 +218,10 @@ body {
 
 /* Component Styles */
 .btn-primary {
-  background: var(--gradient-brand);
+  background: linear-gradient(135deg, rgb(14 165 233) 0%, rgb(2 132 199) 100%);
   color: white;
   border: none;
-  border-radius: var(--radius-lg);
+  border-radius: 1rem;
   padding: 0.75rem 1.5rem;
   font-weight: 500;
   transition: all 0.2s ease;
@@ -229,32 +229,32 @@ body {
 
 .btn-primary:hover {
   transform: translateY(-1px);
-  box-shadow: var(--elev-2);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.08), 0 4px 16px rgba(0, 0, 0, 0.06);
 }
 
 .card {
-  background: var(--surface-0);
-  border: 1px solid var(--line);
-  border-radius: var(--radius-xl);
-  box-shadow: var(--elev-1);
+  background: rgb(255 255 255);
+  border: 1px solid rgb(226 232 240);
+  border-radius: 1.25rem;
+  box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
   transition: all 0.2s ease;
 }
 
 .card:hover {
-  box-shadow: var(--elev-2);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.08), 0 4px 16px rgba(0, 0, 0, 0.06);
   transform: translateY(-2px);
 }
 
 /* Focus Styles */
 *:focus-visible {
-  outline: 2px solid var(--brand-600);
+  outline: 2px solid rgb(2 132 199);
   outline-offset: 2px;
 }
 
 /* Selection */
 ::selection {
-  background: var(--brand-100);
-  color: var(--brand-900);
+  background: rgb(224 242 254);
+  color: rgb(12 74 110);
 }
 
 /* Scrollbar */
@@ -263,14 +263,14 @@ body {
 }
 
 ::-webkit-scrollbar-track {
-  background: var(--surface-1);
+  background: rgb(248 250 252);
 }
 
 ::-webkit-scrollbar-thumb {
-  background: var(--ink-300);
-  border-radius: var(--radius-pill);
+  background: rgb(203 213 225);
+  border-radius: 9999px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: var(--ink-400);
+  background: rgb(148 163 184);
 }
