@@ -1,0 +1,114 @@
+[
+  {
+    "id": "unl-001",
+    "slug": "tud",
+    "official_name": "Technische Universiteit Delft",
+    "common_name": "TU Delft",
+    "abbrev": "TUD",
+    "domain": "tudelft.nl"
+  },
+  {
+    "id": "unl-002", 
+    "slug": "tue",
+    "official_name": "Technische Universiteit Eindhoven",
+    "common_name": "TU/e",
+    "abbrev": "TUE",
+    "domain": "tue.nl"
+  },
+  {
+    "id": "unl-003",
+    "slug": "eur",
+    "official_name": "Erasmus Universiteit Rotterdam",
+    "common_name": "Erasmus University",
+    "abbrev": "EUR",
+    "domain": "eur.nl"
+  },
+  {
+    "id": "unl-004",
+    "slug": "lei",
+    "official_name": "Universiteit Leiden",
+    "common_name": "Leiden University",
+    "abbrev": "LEI",
+    "domain": "leidenuniv.nl"
+  },
+  {
+    "id": "unl-005",
+    "slug": "um",
+    "official_name": "Universiteit Maastricht",
+    "common_name": "Maastricht University",
+    "abbrev": "UM",
+    "domain": "maastrichtuniversity.nl"
+  },
+  {
+    "id": "unl-006",
+    "slug": "ou",
+    "official_name": "Open Universiteit",
+    "common_name": "Open University",
+    "abbrev": "OU",
+    "domain": "ou.nl"
+  },
+  {
+    "id": "unl-007",
+    "slug": "ru",
+    "official_name": "Radboud Universiteit",
+    "common_name": "Radboud University",
+    "abbrev": "RU",
+    "domain": "ru.nl"
+  },
+  {
+    "id": "unl-008",
+    "slug": "tiu",
+    "official_name": "Universiteit van Tilburg",
+    "common_name": "Tilburg University",
+    "abbrev": "TiU",
+    "domain": "tilburguniversity.edu"
+  },
+  {
+    "id": "unl-009",
+    "slug": "uva",
+    "official_name": "Universiteit van Amsterdam",
+    "common_name": "University of Amsterdam",
+    "abbrev": "UvA",
+    "domain": "uva.nl"
+  },
+  {
+    "id": "unl-010",
+    "slug": "rug",
+    "official_name": "Rijksuniversiteit Groningen",
+    "common_name": "University of Groningen",
+    "abbrev": "RUG",
+    "domain": "rug.nl"
+  },
+  {
+    "id": "unl-011",
+    "slug": "ut",
+    "official_name": "Universiteit Twente",
+    "common_name": "University of Twente",
+    "abbrev": "UT",
+    "domain": "utwente.nl"
+  },
+  {
+    "id": "unl-012",
+    "slug": "uu",
+    "official_name": "Universiteit Utrecht",
+    "common_name": "Utrecht University",
+    "abbrev": "UU",
+    "domain": "uu.nl"
+  },
+  {
+    "id": "unl-013",
+    "slug": "vu",
+    "official_name": "Vrije Universiteit Amsterdam",
+    "common_name": "VU Amsterdam",
+    "abbrev": "VU",
+    "domain": "vu.nl"
+  },
+  {
+    "id": "unl-014",
+    "slug": "wur",
+    "official_name": "Wageningen University & Research",
+    "common_name": "Wageningen University",
+    "abbrev": "WUR",
+    "domain": "wur.nl"
+  }
+]
