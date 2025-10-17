@@ -9,6 +9,7 @@ import { AdminMetricsGrid, AdminMetricsSummary, AdminMetricFilter } from '@/app/
 import { AdminAnomalyList, AdminAnomalyStats } from '@/app/(components)/admin-anomaly-card'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { cn } from '@/lib/utils'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { 
   BarChart3, 
