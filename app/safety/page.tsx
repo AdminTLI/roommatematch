@@ -9,6 +9,7 @@ import { SafetyIncidentList, SafetyStats } from '@/app/(components)/safety-incid
 import { WellnessCheckList, WellnessStats } from '@/app/(components)/wellness-check-card'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Badge } from '@/components/ui/badge'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { 
   Plus, 

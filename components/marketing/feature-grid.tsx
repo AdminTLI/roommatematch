@@ -103,7 +103,7 @@ export function FeatureGrid() {
           </motion.h2>
           
           <motion.p variants={fadeInUp} className="text-h4 text-ink-700 max-w-3xl mx-auto">
-            From smart matching to secure messaging, we've built every feature with student needs in mind.
+            From smart matching to secure messaging, we&apos;ve built every feature with student needs in mind.
           </motion.p>
         </motion.div>
 
@@ -148,6 +148,10 @@ export function FeatureGrid() {
                     <div 
                       className="flex items-center text-brand-600 text-body-sm font-medium group-hover:gap-3 transition-all cursor-pointer"
                       onClick={handleLearnMore}
+                      onKeyDown={(e) => e.key === 'Enter' && handleLearnMore()}
+                      tabIndex={0}
+                      role="button"
+                      aria-label="Learn more about this feature"
                     >
                       Learn more
                       <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />

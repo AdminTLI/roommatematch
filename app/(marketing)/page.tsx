@@ -146,7 +146,7 @@ export default function MarketingPage() {
                     </div>
                     
                     <p className="text-body text-ink-700 leading-relaxed">
-                      "{testimonial.text}"
+                      &ldquo;{testimonial.text}&rdquo;
                     </p>
                     
                     <div className="flex items-center gap-2 pt-2 border-t border-line">
@@ -278,7 +278,7 @@ export default function MarketingPage() {
                 Ready to find your perfect roommate?
               </h2>
               <p className="text-h4 text-ink-700">
-                Join thousands of students who've found their ideal living situation through smart matching.
+                Join thousands of students who&apos;ve found their ideal living situation through smart matching.
               </p>
             </motion.div>
 

@@ -80,7 +80,7 @@ export default function DashboardPage() {
         >
           <motion.div variants={fadeInUp}>
             <h1 className="text-h1 text-ink-900">Welcome back, {user.name}!</h1>
-            <p className="text-h4 text-ink-700">Here's what's happening with your matches today.</p>
+                    <p className="text-h4 text-ink-700">Here&apos;s what&apos;s happening with your matches today.</p>
           </motion.div>
           
           <motion.div variants={fadeInUp} className="flex flex-wrap gap-3">
