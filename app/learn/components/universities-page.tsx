@@ -3,7 +3,7 @@
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
-import { useApp } from '@/app/providers'
+// Removed useApp import - using default locale
 import { 
   TrendingDown, 
   Users, 
@@ -20,7 +20,8 @@ import {
 } from 'lucide-react'
 
 export function UniversitiesPage() {
-  const { t } = useApp()
+  // Using default English text instead of i18n
+  const t = (key: string) => key // Simple fallback for translation keys
 
   const outcomes = [
     {

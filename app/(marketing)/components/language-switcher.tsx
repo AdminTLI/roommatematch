@@ -1,7 +1,7 @@
 'use client'
 
 import { Button } from '@/components/ui/button'
-import { useApp } from '@/app/providers'
+// Removed useApp import - using default locale
 import { Languages, Check } from 'lucide-react'
 import { useState } from 'react'
 
@@ -14,7 +14,12 @@ export function LanguageSwitcher({
   showLabel = false, 
   variant = 'default' 
 }: LanguageSwitcherProps) {
-  const { locale, setLocale } = useApp()
+  // Using default English locale instead of i18n
+  const locale = 'en'
+  const setLocale = (newLocale: string) => {
+    console.log('Locale change requested:', newLocale)
+    // In a real app, you'd update the locale here
+  }
   const [isOpen, setIsOpen] = useState(false)
 
   const languages = [

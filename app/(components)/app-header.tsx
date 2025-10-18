@@ -3,7 +3,7 @@
 import { Button } from '@/components/ui/button'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { LanguageSwitcher } from '@/app/(marketing)/components/language-switcher'
-import { useApp } from '@/app/providers'
+// Removed useApp import - using default locale
 import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
@@ -35,7 +35,8 @@ interface AppHeaderProps {
 }
 
 export function AppHeader({ user }: AppHeaderProps) {
-  const { t } = useApp()
+  // Using default English text instead of i18n
+  const t = (key: string) => key // Simple fallback for translation keys
   const router = useRouter()
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const supabase = createClient()

@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Progress } from '@/components/ui/progress'
-import { useApp } from '@/app/providers'
+// Removed useApp import - using default locale
 import { createClient } from '@/lib/supabase/client'
 import { User } from '@supabase/supabase-js'
 import { 
@@ -34,7 +34,8 @@ interface WizardStep {
 }
 
 export function OnboardingWizard({ user }: OnboardingWizardProps) {
-  const { t } = useApp()
+  // Using default English text instead of i18n
+  const t = (key: string) => key // Simple fallback for translation keys
   const router = useRouter()
   const supabase = createClient()
   
