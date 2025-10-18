@@ -3,8 +3,6 @@
 import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
-import { Badge } from '@/components/ui/badge'
-import { Avatar } from '@/components/ui/avatar'
 import { Container } from '@/components/ui/primitives/container'
 import { Check } from 'lucide-react'
 
@@ -36,14 +34,6 @@ export function Hero() {
       program: "Economics",
       avatar: "L",
       traits: ["Social life", "Budgeting", "Shared spaces"]
-    },
-    {
-      name: "Sofia",
-      match: 87,
-      university: "Rotterdam School of Management",
-      program: "Business Administration", 
-      avatar: "S",
-      traits: ["Communication", "House rules", "Guest policy"]
     }
   ]
 
@@ -53,10 +43,10 @@ export function Hero() {
         <div className="grid items-center gap-8 md:grid-cols-2">
           {/* Left column - Content */}
           <div className="space-y-6">
-            <h1 className="text-4xl md:text-5xl lg:text-6xl leading-tight tracking-tight text-slate-900">
+            <h1 className="text-4xl md:text-5xl lg:text-6xl leading-tight tracking-tight text-brand-text">
               Find roommates who actually fit your life
             </h1>
-            <p className="text-base md:text-lg leading-relaxed max-w-prose text-slate-600">
+            <p className="text-base md:text-lg leading-relaxed max-w-prose text-brand-muted">
               Roommate Match pairs you with compatible students based on lifestyle, study habits, and personality. 
               Join thousands of students who found their perfect roommate match.
             </p>
@@ -64,16 +54,13 @@ export function Hero() {
             {/* CTA Buttons */}
             <div className="flex flex-wrap items-center gap-3">
               <Button 
-                size="lg" 
-                className="h-12 px-6 focus-visible:ring-2 focus-visible:ring-primary"
+                variant="primary"
                 onClick={handleGetMatched}
               >
                 Get matched
               </Button>
               <Button 
-                size="lg" 
-                variant="outline" 
-                className="h-12 px-6 focus-visible:ring-2 focus-visible:ring-primary"
+                variant="outline"
                 onClick={handleSeeHowItWorks}
               >
                 See how it works
@@ -81,21 +68,21 @@ export function Hero() {
             </div>
 
             {/* Trust indicators */}
-            <ul className="flex flex-wrap gap-4 text-sm text-slate-600">
+            <ul className="flex flex-wrap gap-4 text-sm text-brand-muted">
               <li className="flex items-center gap-2">
-                <Check className="h-4 w-4 text-green-600" />
+                <Check className="h-4 w-4 text-green-500" />
                 Verified students only
               </li>
               <li className="flex items-center gap-2">
-                <Check className="h-4 w-4 text-green-600" />
+                <Check className="h-4 w-4 text-green-500" />
                 Free for students
               </li>
               <li className="flex items-center gap-2">
-                <Check className="h-4 w-4 text-green-600" />
+                <Check className="h-4 w-4 text-green-500" />
                 University partnerships
               </li>
               <li className="flex items-center gap-2">
-                <Check className="h-4 w-4 text-green-600" />
+                <Check className="h-4 w-4 text-green-500" />
                 Proven results
               </li>
             </ul>
@@ -106,30 +93,30 @@ export function Hero() {
             {mockMatches.map((match, index) => (
               <Card 
                 key={match.name}
-                className="group rounded-2xl border shadow-lg p-6 md:p-8 transition-transform duration-200 hover:-translate-y-0.5"
+                className="group rounded-2xl border border-brand-border shadow-elev-1 p-6 md:p-8 bg-white transition-transform duration-200 hover:-translate-y-0.5 hover:shadow-elev-2"
                 style={{
                   transform: `translateY(${index * 4}px) rotate(${index % 2 === 0 ? '1deg' : '-1deg'})`,
                 }}
               >
                 <div className="flex items-start justify-between mb-4">
-                  <Badge className="text-sm bg-green-100 text-green-800">
+                  <span className="inline-flex items-center rounded-full bg-emerald-50 text-emerald-700 px-3 py-1 text-sm font-semibold">
                     {match.match}%
-                  </Badge>
-                  <Avatar className="h-12 w-12">
-                    <span className="text-lg font-semibold text-slate-700">
+                  </span>
+                  <div className="h-12 w-12 bg-brand-primary/10 rounded-full flex items-center justify-center">
+                    <span className="text-lg font-semibold text-brand-primary">
                       {match.avatar}
                     </span>
-                  </Avatar>
+                  </div>
                 </div>
                 
                 <div className="space-y-2">
-                  <h3 className="text-2xl font-semibold text-slate-900">
+                  <h3 className="text-2xl font-semibold text-brand-text">
                     {match.name}
                   </h3>
-                  <p className="text-slate-600">
+                  <p className="text-brand-muted">
                     {match.program} • {match.university}
                   </p>
-                  <ul className="text-sm text-slate-600 list-disc pl-5 space-y-1">
+                  <ul className="text-sm text-brand-muted list-disc pl-5 space-y-1">
                     {match.traits.map((trait, traitIndex) => (
                       <li key={traitIndex}>{trait}</li>
                     ))}

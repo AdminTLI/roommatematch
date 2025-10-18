@@ -30,19 +30,19 @@ export function Navbar() {
       {/* Skip link */}
       <a 
         href="#main-content" 
-        className="sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 z-50 bg-primary-600 text-white px-4 py-2 rounded-md"
+        className="sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 z-50 bg-brand-primary text-white px-4 py-2 rounded-md"
       >
         Skip to main content
       </a>
 
-      <nav className="h-16 md:h-20 bg-white border-b border-slate-200 sticky top-0 z-40">
+      <nav className="h-16 md:h-20 bg-white border-b border-brand-border sticky top-0 z-40">
         <Container>
           <div className="flex items-center justify-between h-full">
             {/* Logo */}
             <div className="flex items-center">
               <button 
                 onClick={() => router.push('/')}
-                className="text-2xl font-bold text-slate-900 hover:text-primary-600 transition-colors"
+                className="text-2xl font-bold text-brand-text hover:text-brand-primary transition-colors"
               >
                 Roommate Match
               </button>
@@ -54,7 +54,7 @@ export function Navbar() {
                 <a
                   key={item.name}
                   href={item.href}
-                  className="text-slate-600 hover:text-slate-900 transition-colors font-medium"
+                  className="text-brand-muted hover:text-brand-text transition-colors font-medium"
                 >
                   {item.name}
                 </a>
@@ -66,13 +66,12 @@ export function Navbar() {
               <Button 
                 variant="outline" 
                 onClick={handleSignIn}
-                className="focus-visible:ring-2 focus-visible:ring-primary"
               >
                 Sign In
               </Button>
               <Button 
+                variant="primary"
                 onClick={handleGetStarted}
-                className="focus-visible:ring-2 focus-visible:ring-primary"
               >
                 Get Started
                 <ChevronRight className="ml-1 h-4 w-4" />
@@ -82,7 +81,7 @@ export function Navbar() {
             {/* Mobile menu button */}
             <button
               onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-              className="md:hidden p-2 rounded-md hover:bg-slate-100 transition-colors focus-visible:ring-2 focus-visible:ring-primary"
+              className="md:hidden p-2 rounded-md hover:bg-brand-surface transition-colors focus-visible:ring-2 focus-visible:ring-brand-primary"
               aria-expanded={isMobileMenuOpen}
               aria-controls="mobile-menu"
             >
@@ -99,7 +98,7 @@ export function Navbar() {
         {isMobileMenuOpen && (
           <div 
             id="mobile-menu"
-            className="md:hidden bg-white border-t border-slate-200"
+            className="md:hidden bg-white border-t border-brand-border"
           >
             <Container>
               <div className="py-4 space-y-4">
@@ -107,13 +106,13 @@ export function Navbar() {
                   <a
                     key={item.name}
                     href={item.href}
-                    className="block text-slate-600 hover:text-slate-900 transition-colors font-medium py-2"
+                    className="block text-brand-muted hover:text-brand-text transition-colors font-medium py-2"
                     onClick={() => setIsMobileMenuOpen(false)}
                   >
                     {item.name}
                   </a>
                 ))}
-                <div className="pt-4 border-t border-slate-200 space-y-3">
+                <div className="pt-4 border-t border-brand-border space-y-3">
                   <Button 
                     variant="outline" 
                     className="w-full justify-center"
@@ -125,6 +124,7 @@ export function Navbar() {
                     Sign In
                   </Button>
                   <Button 
+                    variant="primary"
                     className="w-full justify-center"
                     onClick={() => {
                       handleGetStarted()

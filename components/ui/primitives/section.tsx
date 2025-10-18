@@ -11,7 +11,7 @@ export function Section({ children, className, background = "white" }: SectionPr
     <section 
       className={cn(
         "py-14 md:py-20 lg:py-28",
-        background === "tinted" ? "bg-slate-50" : "bg-white",
+        background === "tinted" ? "bg-brand-surface" : "bg-white",
         className
       )}
     >

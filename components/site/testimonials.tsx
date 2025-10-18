@@ -1,7 +1,5 @@
 import { Card, CardContent } from '@/components/ui/card'
 import { Container } from '@/components/ui/primitives/container'
-import { Eyebrow } from '@/components/ui/primitives/eyebrow'
-import { Avatar } from '@/components/ui/avatar'
 import { Star } from 'lucide-react'
 
 const testimonials = [
@@ -39,11 +37,10 @@ export function Testimonials() {
     <section className="py-14 md:py-20 lg:py-28 bg-white">
       <Container>
         <div className="text-center mb-12">
-          <Eyebrow>What students are saying</Eyebrow>
-          <h2 className="text-3xl md:text-4xl font-bold text-slate-900 mt-3 md:mt-4">
-            Real stories from successful matches
+          <h2 className="text-3xl md:text-4xl font-bold text-brand-text mb-4">
+            What students are saying
           </h2>
-          <p className="text-base md:text-lg leading-relaxed max-w-prose mx-auto text-slate-600 mt-4">
+          <p className="text-base md:text-lg leading-relaxed max-w-prose mx-auto text-brand-muted">
             Join thousands of students who found their perfect roommate match
           </p>
         </div>
@@ -52,7 +49,7 @@ export function Testimonials() {
           {testimonials.map((testimonial, index) => (
             <Card 
               key={index}
-              className="group rounded-2xl border shadow-sm p-6 md:p-8 h-full flex flex-col transition-transform duration-200 hover:-translate-y-0.5"
+              className="group rounded-2xl border border-brand-border shadow-elev-1 p-6 md:p-8 bg-white h-full flex flex-col transition-transform duration-200 hover:-translate-y-0.5 hover:shadow-elev-2"
             >
               <CardContent className="p-0 flex flex-col h-full">
                 {/* Stars */}
@@ -64,27 +61,27 @@ export function Testimonials() {
 
                 {/* Quote */}
                 <blockquote className="flex-1">
-                  <p className="text-slate-700 leading-relaxed mb-4 line-clamp-3">
+                  <p className="text-brand-text leading-relaxed mb-4 line-clamp-3">
                     "{testimonial.text}"
                   </p>
                 </blockquote>
 
                 {/* Author */}
-                <div className="flex items-center gap-3 pt-4 border-t border-slate-100">
-                  <Avatar className="h-12 w-12">
-                    <span className="text-lg font-semibold text-slate-700">
+                <div className="flex items-center gap-3 pt-4 border-t border-brand-border">
+                  <div className="h-12 w-12 bg-brand-primary/10 rounded-full flex items-center justify-center">
+                    <span className="text-lg font-semibold text-brand-primary">
                       {testimonial.avatar}
                     </span>
-                  </Avatar>
+                  </div>
                   <div className="flex-1">
-                    <div className="font-semibold text-slate-900">
+                    <div className="font-semibold text-brand-text">
                       {testimonial.name}
                     </div>
-                    <div className="text-sm text-slate-600">
+                    <div className="text-sm text-brand-muted">
                       {testimonial.program} • {testimonial.university}
                     </div>
                   </div>
-                  <div className="text-sm font-medium text-primary-600">
+                  <div className="text-sm font-medium text-brand-accent">
                     {testimonial.highlight}
                   </div>
                 </div>

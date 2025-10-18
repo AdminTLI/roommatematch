@@ -17,18 +17,15 @@ const config: Config = {
     },
     extend: {
       colors: {
-        // Brand colors
+        // Brand colors - Clean student-friendly palette
         brand: {
-          50: "rgb(var(--brand-50) / <alpha-value>)",
-          100: "rgb(var(--brand-100) / <alpha-value>)",
-          200: "rgb(var(--brand-200) / <alpha-value>)",
-          300: "rgb(var(--brand-300) / <alpha-value>)",
-          400: "rgb(var(--brand-400) / <alpha-value>)",
-          500: "rgb(var(--brand-500) / <alpha-value>)",
-          600: "rgb(var(--brand-600) / <alpha-value>)",
-          700: "rgb(var(--brand-700) / <alpha-value>)",
-          800: "rgb(var(--brand-800) / <alpha-value>)",
-          900: "rgb(var(--brand-900) / <alpha-value>)",
+          primary: '#4F46E5',
+          primaryHover: '#4338CA',
+          accent: '#06B6D4',
+          surface: '#F8FAFC',
+          text: '#0F172A',
+          muted: '#475569',
+          border: '#E2E8F0',
         },
         // Accent colors
         accent: {
@@ -125,11 +122,8 @@ const config: Config = {
         128: "32rem",
       },
       boxShadow: {
-        "elev-0": "none",
-        "elev-1": "0 1px 2px rgba(0, 0, 0, 0.06), 0 2px 8px rgba(0, 0, 0, 0.04)",
-        "elev-2": "0 2px 4px rgba(0, 0, 0, 0.08), 0 4px 16px rgba(0, 0, 0, 0.06)",
-        "elev-3": "0 4px 8px rgba(0, 0, 0, 0.1), 0 8px 24px rgba(0, 0, 0, 0.08)",
-        "elev-4": "0 8px 16px rgba(0, 0, 0, 0.12), 0 16px 32px rgba(0, 0, 0, 0.1)",
+        "elev-1": "0 1px 2px rgba(15,23,42,.06), 0 1px 1px rgba(15,23,42,.04)",
+        "elev-2": "0 10px 20px rgba(15,23,42,.05), 0 4px 8px rgba(15,23,42,.04)",
       },
       animation: {
         "accordion-down": "accordion-down 0.2s ease-out",
