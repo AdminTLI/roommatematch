@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
@@ -16,7 +16,8 @@ import {
   Plus,
   MoreVertical,
   Phone,
-  Video
+  Video,
+  Star
 } from 'lucide-react'
 
 interface ChatRoom {
@@ -175,12 +176,10 @@ export function ChatList({ user }: ChatListProps) {
 
   if (isLoading) {
     return (
-      <div className="max-w-4xl mx-auto">
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
-            Messages
-          </h1>
-          <p className="text-gray-600 dark:text-gray-300">
+      <div className="max-w-4xl mx-auto space-y-8">
+        <div className="text-center space-y-4">
+          <h1 className="text-h1 text-gray-900">Messages</h1>
+          <p className="text-body-lg text-gray-600">
             Connect with your potential roommates
           </p>
         </div>
@@ -205,35 +204,31 @@ export function ChatList({ user }: ChatListProps) {
   }
 
   return (
-    <div className="max-w-4xl mx-auto">
+    <div className="max-w-4xl mx-auto space-y-8">
       {/* Header */}
-      <div className="mb-8">
-        <div className="flex items-center justify-between mb-4">
-          <div>
-            <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
-              Messages
-            </h1>
-            <p className="text-gray-600 dark:text-gray-300">
-              Connect with your potential roommates
-            </p>
-          </div>
-          <Button onClick={handleNewChat} className="flex items-center gap-2">
-            <Plus className="h-4 w-4" />
-            New Chat
-          </Button>
-        </div>
+      <div className="text-center space-y-4">
+        <h1 className="text-h1 text-gray-900">Messages</h1>
+        <p className="text-body-lg text-gray-600 max-w-2xl mx-auto">
+          Connect with your potential roommates and start meaningful conversations
+        </p>
+      </div>
 
-        {/* Search */}
-        <div className="relative">
-          <Search className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+      {/* Search and New Chat */}
+      <div className="flex flex-col md:flex-row gap-4">
+        <div className="relative flex-1">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
           <input
             type="text"
             placeholder="Search conversations..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
+            className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-600 focus:border-transparent text-body"
           />
         </div>
+        <Button onClick={handleNewChat} className="flex items-center gap-2">
+          <Plus className="h-4 w-4" />
+          New Chat
+        </Button>
       </div>
 
       {/* Chat List */}
@@ -242,10 +237,10 @@ export function ChatList({ user }: ChatListProps) {
           <Card>
             <CardContent className="p-12 text-center">
               <MessageCircle className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-              <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
+              <h3 className="text-h3 text-gray-900 mb-2">
                 No conversations found
               </h3>
-              <p className="text-gray-600 dark:text-gray-300 mb-4">
+              <p className="text-body text-gray-600 mb-6">
                 {searchQuery ? 'Try adjusting your search terms' : 'Start a conversation with your matches'}
               </p>
               {!searchQuery && (
@@ -259,8 +254,8 @@ export function ChatList({ user }: ChatListProps) {
           filteredChats.map((chat) => (
             <Card 
               key={chat.id} 
-              className={`cursor-pointer transition-all duration-200 hover:shadow-md ${
-                chat.isActive ? 'ring-2 ring-primary' : ''
+              className={`cursor-pointer transition-all duration-200 hover:shadow-lg ${
+                chat.isActive ? 'ring-2 ring-primary-600' : ''
               }`}
               onClick={() => handleChatClick(chat.id)}
             >
@@ -269,48 +264,48 @@ export function ChatList({ user }: ChatListProps) {
                   {/* Avatar */}
                   <div className="relative">
                     {chat.type === 'individual' ? (
-                      <Avatar className="w-12 h-12">
+                      <Avatar className="w-14 h-14">
                         <AvatarImage src={chat.participants[0]?.avatar} />
-                        <AvatarFallback>
+                        <AvatarFallback className="text-lg font-semibold">
                           {chat.participants[0]?.name?.charAt(0) || '?'}
                         </AvatarFallback>
                       </Avatar>
                     ) : (
-                      <div className="relative w-12 h-12">
-                        <Avatar className="w-8 h-8 absolute top-0 left-0">
+                      <div className="relative w-14 h-14">
+                        <Avatar className="w-10 h-10 absolute top-0 left-0">
                           <AvatarImage src={chat.participants[0]?.avatar} />
-                          <AvatarFallback>
+                          <AvatarFallback className="text-sm font-semibold">
                             {chat.participants[0]?.name?.charAt(0) || '?'}
                           </AvatarFallback>
                         </Avatar>
-                        <Avatar className="w-8 h-8 absolute bottom-0 right-0">
+                        <Avatar className="w-10 h-10 absolute bottom-0 right-0">
                           <AvatarImage src={chat.participants[1]?.avatar} />
-                          <AvatarFallback>
+                          <AvatarFallback className="text-sm font-semibold">
                             {chat.participants[1]?.name?.charAt(0) || '?'}
                           </AvatarFallback>
                         </Avatar>
                       </div>
                     )}
                     {chat.participants.some(p => p.isOnline) && (
-                      <div className="absolute -bottom-1 -right-1 w-4 h-4 bg-green-500 border-2 border-white rounded-full"></div>
+                      <div className="absolute -bottom-1 -right-1 w-4 h-4 bg-success-500 border-2 border-white rounded-full"></div>
                     )}
                   </div>
 
                   {/* Chat Info */}
                   <div className="flex-1 min-w-0">
-                    <div className="flex items-center justify-between mb-1">
-                      <h3 className="font-semibold text-gray-900 dark:text-white truncate">
+                    <div className="flex items-center justify-between mb-2">
+                      <h3 className="text-lg font-semibold text-gray-900 truncate">
                         {chat.name}
                       </h3>
                       <div className="flex items-center gap-2">
                         {chat.type === 'group' && (
-                          <Badge variant="secondary" className="text-xs">
+                          <Badge className="bg-secondary-100 text-secondary-700 border-secondary-200">
                             <Users className="w-3 h-3 mr-1" />
                             Group
                           </Badge>
                         )}
                         {chat.lastMessage && (
-                          <span className="text-xs text-gray-500 flex items-center gap-1">
+                          <span className="text-body-xs text-gray-500 flex items-center gap-1">
                             <Clock className="w-3 h-3" />
                             {chat.lastMessage.timestamp}
                           </span>
@@ -319,16 +314,16 @@ export function ChatList({ user }: ChatListProps) {
                     </div>
                     
                     {chat.lastMessage && (
-                      <div className="flex items-center gap-2">
-                        <p className={`text-sm truncate flex-1 ${
+                      <div className="flex items-center gap-3">
+                        <p className={`text-body-sm truncate flex-1 ${
                           !chat.lastMessage.isRead 
-                            ? 'font-medium text-gray-900 dark:text-white' 
-                            : 'text-gray-600 dark:text-gray-300'
+                            ? 'font-semibold text-gray-900' 
+                            : 'text-gray-600'
                         }`}>
                           <span className="font-medium">{chat.lastMessage.sender}:</span> {chat.lastMessage.content}
                         </p>
                         {chat.unreadCount > 0 && (
-                          <Badge className="bg-primary text-primary-foreground">
+                          <Badge className="bg-primary-600 text-white">
                             {chat.unreadCount}
                           </Badge>
                         )}
@@ -350,32 +345,38 @@ export function ChatList({ user }: ChatListProps) {
       </div>
 
       {/* Quick Actions */}
-      <div className="mt-8 grid grid-cols-1 md:grid-cols-3 gap-4">
-        <Card className="cursor-pointer hover:shadow-md transition-shadow">
-          <CardContent className="p-4 text-center">
-            <Users className="h-8 w-8 text-blue-500 mx-auto mb-2" />
-            <h3 className="font-semibold text-sm">Group Chats</h3>
-            <p className="text-xs text-gray-600 dark:text-gray-300">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <Card className="cursor-pointer hover:shadow-lg transition-shadow">
+          <CardContent className="p-6 text-center">
+            <div className="w-12 h-12 bg-primary-100 rounded-xl flex items-center justify-center mx-auto mb-4">
+              <Users className="h-6 w-6 text-primary-600" />
+            </div>
+            <h3 className="font-semibold text-gray-900 mb-2">Group Chats</h3>
+            <p className="text-body-sm text-gray-600">
               Find study groups and roommates
             </p>
           </CardContent>
         </Card>
         
-        <Card className="cursor-pointer hover:shadow-md transition-shadow">
-          <CardContent className="p-4 text-center">
-            <MessageCircle className="h-8 w-8 text-green-500 mx-auto mb-2" />
-            <h3 className="font-semibold text-sm">Direct Messages</h3>
-            <p className="text-xs text-gray-600 dark:text-gray-300">
+        <Card className="cursor-pointer hover:shadow-lg transition-shadow">
+          <CardContent className="p-6 text-center">
+            <div className="w-12 h-12 bg-success-100 rounded-xl flex items-center justify-center mx-auto mb-4">
+              <MessageCircle className="h-6 w-6 text-success-600" />
+            </div>
+            <h3 className="font-semibold text-gray-900 mb-2">Direct Messages</h3>
+            <p className="text-body-sm text-gray-600">
               One-on-one conversations
             </p>
           </CardContent>
         </Card>
         
-        <Card className="cursor-pointer hover:shadow-md transition-shadow">
-          <CardContent className="p-4 text-center">
-            <Phone className="h-8 w-8 text-purple-500 mx-auto mb-2" />
-            <h3 className="font-semibold text-sm">Video Calls</h3>
-            <p className="text-xs text-gray-600 dark:text-gray-300">
+        <Card className="cursor-pointer hover:shadow-lg transition-shadow">
+          <CardContent className="p-6 text-center">
+            <div className="w-12 h-12 bg-secondary-100 rounded-xl flex items-center justify-center mx-auto mb-4">
+              <Video className="h-6 w-6 text-secondary-600" />
+            </div>
+            <h3 className="font-semibold text-gray-900 mb-2">Video Calls</h3>
+            <p className="text-body-sm text-gray-600">
               Meet face-to-face safely
             </p>
           </CardContent>
