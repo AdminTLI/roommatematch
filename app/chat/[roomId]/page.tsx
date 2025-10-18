@@ -4,12 +4,13 @@ import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 
 interface ChatPageProps {
-  params: {
+  params: Promise<{
     roomId: string
-  }
+  }>
 }
 
 export default async function ChatPage({ params }: ChatPageProps) {
+  const { roomId } = await params
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
 
@@ -34,7 +35,7 @@ export default async function ChatPage({ params }: ChatPageProps) {
     const { data: chatMember } = await supabase
       .from('chat_members')
       .select('*')
-      .eq('chat_id', params.roomId)
+      .eq('chat_id', roomId)
       .eq('user_id', user.id)
       .single()
 
@@ -64,7 +65,7 @@ export default async function ChatPage({ params }: ChatPageProps) {
       {/* Main Content */}
       <main id="main-content" className="container mx-auto px-4 py-8">
         <ChatInterface 
-          roomId={params.roomId} 
+          roomId={roomId} 
           user={demoUser}
         />
       </main>
