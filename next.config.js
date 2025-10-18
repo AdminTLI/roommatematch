@@ -3,9 +3,9 @@ const nextConfig = {
   experimental: {
     serverActions: {
       allowedOrigins: ['localhost:3000', '*.vercel.app']
-    }
+    },
+    optimizeCss: false,
   },
-  swcMinify: true,
   compiler: {
     removeConsole: false,
   },
@@ -16,6 +16,14 @@ const nextConfig = {
         aggregateTimeout: 300,
       }
     }
+    
+    // Disable CSS minification to avoid build errors
+    if (!dev) {
+      config.optimization.minimizer = config.optimization.minimizer.filter(
+        (plugin) => plugin.constructor.name !== 'CssMinimizerPlugin'
+      )
+    }
+    
     return config
   },
   images: {
