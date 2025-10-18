@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
@@ -379,70 +379,54 @@ export function HousingFeed({ user }: HousingFeedProps) {
   }
 
   return (
-    <div className="max-w-7xl mx-auto">
+    <div className="max-w-7xl mx-auto space-y-8">
       {/* Header */}
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
+      <div className="text-center space-y-4">
+        <h1 className="text-h1 text-gray-900">
           Verified Housing Feed
         </h1>
-        <p className="text-gray-600 dark:text-gray-300">
+        <p className="text-body-lg text-gray-600 max-w-2xl mx-auto">
           University-vetted listings matched to your preferences and budget
         </p>
       </div>
 
       {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
-        <Card>
-          <CardContent className="pt-6">
-            <div className="flex items-center gap-3">
-              <Home className="h-8 w-8 text-blue-500" />
-              <div>
-                <div className="text-2xl font-bold">{stats.total_listings}</div>
-                <div className="text-sm text-gray-500">Available Listings</div>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+        <div className="stat-card">
+          <div className="w-12 h-12 bg-primary-100 rounded-xl flex items-center justify-center mx-auto mb-4">
+            <Home className="w-6 h-6 text-primary-600" />
+          </div>
+          <div className="stat-number">{stats.total_listings}</div>
+          <div className="stat-label">Available Listings</div>
+        </div>
         
-        <Card>
-          <CardContent className="pt-6">
-            <div className="flex items-center gap-3">
-              <Shield className="h-8 w-8 text-green-500" />
-              <div>
-                <div className="text-2xl font-bold">{stats.verified_listings}</div>
-                <div className="text-sm text-gray-500">University Verified</div>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+        <div className="stat-card">
+          <div className="w-12 h-12 bg-success-100 rounded-xl flex items-center justify-center mx-auto mb-4">
+            <Shield className="w-6 h-6 text-success-600" />
+          </div>
+          <div className="stat-number">{stats.verified_listings}</div>
+          <div className="stat-label">University Verified</div>
+        </div>
         
-        <Card>
-          <CardContent className="pt-6">
-            <div className="flex items-center gap-3">
-              <TrendingUp className="h-8 w-8 text-purple-500" />
-              <div>
-                <div className="text-2xl font-bold">{Math.round(stats.avg_compatibility * 100)}%</div>
-                <div className="text-sm text-gray-500">Avg. Compatibility</div>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+        <div className="stat-card">
+          <div className="w-12 h-12 bg-secondary-100 rounded-xl flex items-center justify-center mx-auto mb-4">
+            <TrendingUp className="w-6 h-6 text-secondary-600" />
+          </div>
+          <div className="stat-number">{Math.round(stats.avg_compatibility * 100)}%</div>
+          <div className="stat-label">Avg. Compatibility</div>
+        </div>
         
-        <Card>
-          <CardContent className="pt-6">
-            <div className="flex items-center gap-3">
-              <Star className="h-8 w-8 text-orange-500" />
-              <div>
-                <div className="text-2xl font-bold">{stats.saved_count}</div>
-                <div className="text-sm text-gray-500">Saved Listings</div>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+        <div className="stat-card">
+          <div className="w-12 h-12 bg-warning-100 rounded-xl flex items-center justify-center mx-auto mb-4">
+            <Star className="w-6 h-6 text-warning-600" />
+          </div>
+          <div className="stat-number">{stats.saved_count}</div>
+          <div className="stat-label">Saved Listings</div>
+        </div>
       </div>
 
       {/* Search and Filters */}
-      <div className="flex flex-col md:flex-row gap-4 mb-6">
+      <div className="flex flex-col md:flex-row gap-4">
         <div className="relative flex-1">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
           <Input
@@ -538,10 +522,10 @@ export function HousingFeed({ user }: HousingFeedProps) {
         <Card>
           <CardContent className="text-center py-12">
             <AlertCircle className="mx-auto h-12 w-12 text-gray-400 mb-4" />
-            <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">
+            <h3 className="text-xl font-semibold text-gray-900 mb-2">
               No listings found
             </h3>
-            <p className="text-gray-600 dark:text-gray-300 mb-4">
+            <p className="text-gray-600 mb-4">
               Try adjusting your search criteria or filters to find more options.
             </p>
             <Button onClick={() => {
