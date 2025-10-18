@@ -17,11 +17,18 @@ const nextConfig = {
       }
     }
     
-    // Disable CSS minification to avoid build errors
-    if (!dev) {
-      config.optimization.minimizer = config.optimization.minimizer.filter(
-        (plugin) => plugin.constructor.name !== 'CssMinimizerPlugin'
-      )
+    // Completely disable CSS optimization
+    config.optimization.minimizer = config.optimization.minimizer.filter(
+      (plugin) => plugin.constructor.name !== 'CssMinimizerPlugin'
+    )
+    
+    // Disable CSS extraction
+    config.optimization.splitChunks = {
+      ...config.optimization.splitChunks,
+      cacheGroups: {
+        ...config.optimization.splitChunks.cacheGroups,
+        styles: false,
+      },
     }
     
     return config

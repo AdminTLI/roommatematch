@@ -2,27 +2,17 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Basic CSS variables for colors */
 :root {
   --brand-600: 2 132 199;
   --brand-700: 3 105 161;
-  --accent-600: 192 38 211;
-  --mint-600: 22 163 74;
-  --rose-600: 225 29 72;
-  --ink-900: 15 23 42;
-  --ink-700: 51 65 85;
   --surface-0: 255 255 255;
-  --surface-1: 248 250 252;
-  --line: 226 232 240;
+  --ink-900: 15 23 42;
 }
 
 .dark {
   --surface-0: 15 23 42;
-  --surface-1: 30 41 59;
-  --line: 51 65 85;
 }
 
-/* Basic styles */
 body {
   margin: 0;
   background-color: rgb(var(--surface-0));
@@ -30,7 +20,6 @@ body {
   font-family: 'Inter', system-ui, sans-serif;
 }
 
-/* Focus styles for accessibility */
 *:focus-visible {
   outline: 2px solid rgb(2 132 199);
   outline-offset: 2px;
