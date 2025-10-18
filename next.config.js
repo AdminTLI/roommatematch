@@ -22,7 +22,7 @@ const nextConfig = {
       }
     }
 
-    // Disable CSS minification to avoid build errors while keeping Tailwind
+    // Disable CSS minification to avoid persistent CSS syntax errors
     if (!dev) {
       config.optimization.minimizer = config.optimization.minimizer.filter(
         (plugin) => plugin.constructor.name !== 'CssMinimizerPlugin'
@@ -65,5 +65,4 @@ const nextConfig = {
   }
 }
 
-module.exports = nextConfig// Force deployment with latest fixes
-// Fix TypeScript error and force deployment
+module.exports = nextConfig

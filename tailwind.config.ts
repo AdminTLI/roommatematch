@@ -17,117 +17,31 @@ const config: Config = {
     },
     extend: {
       colors: {
-        // Brand colors
         brand: {
-          50: "rgb(var(--brand-50) / <alpha-value>)",
-          100: "rgb(var(--brand-100) / <alpha-value>)",
-          200: "rgb(var(--brand-200) / <alpha-value>)",
-          300: "rgb(var(--brand-300) / <alpha-value>)",
-          400: "rgb(var(--brand-400) / <alpha-value>)",
-          500: "rgb(var(--brand-500) / <alpha-value>)",
           600: "rgb(var(--brand-600) / <alpha-value>)",
           700: "rgb(var(--brand-700) / <alpha-value>)",
-          800: "rgb(var(--brand-800) / <alpha-value>)",
-          900: "rgb(var(--brand-900) / <alpha-value>)",
-          950: "rgb(var(--brand-950) / <alpha-value>)",
         },
-        // Accent colors
         accent: {
-          50: "rgb(var(--accent-50) / <alpha-value>)",
-          100: "rgb(var(--accent-100) / <alpha-value>)",
-          200: "rgb(var(--accent-200) / <alpha-value>)",
-          300: "rgb(var(--accent-300) / <alpha-value>)",
-          400: "rgb(var(--accent-400) / <alpha-value>)",
-          500: "rgb(var(--accent-500) / <alpha-value>)",
           600: "rgb(var(--accent-600) / <alpha-value>)",
-          700: "rgb(var(--accent-700) / <alpha-value>)",
-          800: "rgb(var(--accent-800) / <alpha-value>)",
-          900: "rgb(var(--accent-900) / <alpha-value>)",
-          950: "rgb(var(--accent-950) / <alpha-value>)",
         },
-        // Mint (success) colors
         mint: {
-          50: "rgb(var(--mint-50) / <alpha-value>)",
-          100: "rgb(var(--mint-100) / <alpha-value>)",
-          200: "rgb(var(--mint-200) / <alpha-value>)",
-          300: "rgb(var(--mint-300) / <alpha-value>)",
-          400: "rgb(var(--mint-400) / <alpha-value>)",
-          500: "rgb(var(--mint-500) / <alpha-value>)",
           600: "rgb(var(--mint-600) / <alpha-value>)",
-          700: "rgb(var(--mint-700) / <alpha-value>)",
-          800: "rgb(var(--mint-800) / <alpha-value>)",
-          900: "rgb(var(--mint-900) / <alpha-value>)",
-          950: "rgb(var(--mint-950) / <alpha-value>)",
         },
-        // Rose (error) colors
         rose: {
-          50: "rgb(var(--rose-50) / <alpha-value>)",
-          100: "rgb(var(--rose-100) / <alpha-value>)",
-          200: "rgb(var(--rose-200) / <alpha-value>)",
-          300: "rgb(var(--rose-300) / <alpha-value>)",
-          400: "rgb(var(--rose-400) / <alpha-value>)",
-          500: "rgb(var(--rose-500) / <alpha-value>)",
           600: "rgb(var(--rose-600) / <alpha-value>)",
-          700: "rgb(var(--rose-700) / <alpha-value>)",
-          800: "rgb(var(--rose-800) / <alpha-value>)",
-          900: "rgb(var(--rose-900) / <alpha-value>)",
-          950: "rgb(var(--rose-950) / <alpha-value>)",
         },
-        // Ink (text) colors
         ink: {
-          50: "rgb(var(--ink-50) / <alpha-value>)",
-          100: "rgb(var(--ink-100) / <alpha-value>)",
-          200: "rgb(var(--ink-200) / <alpha-value>)",
-          300: "rgb(var(--ink-300) / <alpha-value>)",
-          400: "rgb(var(--ink-400) / <alpha-value>)",
-          500: "rgb(var(--ink-500) / <alpha-value>)",
-          600: "rgb(var(--ink-600) / <alpha-value>)",
-          700: "rgb(var(--ink-700) / <alpha-value>)",
-          800: "rgb(var(--ink-800) / <alpha-value>)",
           900: "rgb(var(--ink-900) / <alpha-value>)",
-          950: "rgb(var(--ink-950) / <alpha-value>)",
+          700: "rgb(var(--ink-700) / <alpha-value>)",
+          500: "rgb(var(--ink-500) / <alpha-value>)",
         },
-        // Surface colors
         surface: {
           0: "rgb(var(--surface-0) / <alpha-value>)",
           1: "rgb(var(--surface-1) / <alpha-value>)",
           2: "rgb(var(--surface-2) / <alpha-value>)",
-          3: "rgb(var(--surface-3) / <alpha-value>)",
         },
-        // Line colors
         line: {
           DEFAULT: "rgb(var(--line) / <alpha-value>)",
-          muted: "rgb(var(--line-muted) / <alpha-value>)",
-        },
-        // Semantic colors
-        border: "hsl(var(--border))",
-        input: "hsl(var(--input))",
-        ring: "hsl(var(--ring))",
-        background: "hsl(var(--background))",
-        foreground: "hsl(var(--foreground))",
-        primary: {
-          DEFAULT: "hsl(var(--primary))",
-          foreground: "hsl(var(--primary-foreground))",
-        },
-        secondary: {
-          DEFAULT: "hsl(var(--secondary))",
-          foreground: "hsl(var(--secondary-foreground))",
-        },
-        destructive: {
-          DEFAULT: "hsl(var(--destructive))",
-          foreground: "hsl(var(--destructive-foreground))",
-        },
-        muted: {
-          DEFAULT: "hsl(var(--muted))",
-          foreground: "hsl(var(--muted-foreground))",
-        },
-        popover: {
-          DEFAULT: "hsl(var(--popover))",
-          foreground: "hsl(var(--popover-foreground))",
-        },
-        card: {
-          DEFAULT: "hsl(var(--card))",
-          foreground: "hsl(var(--card-foreground))",
         },
       },
       borderRadius: {
