@@ -22,34 +22,7 @@ const nextConfig = {
       }
     }
     
-    // Completely disable CSS processing
-    config.module.rules = config.module.rules.map(rule => {
-      if (rule.test && rule.test.toString().includes('css')) {
-        return {
-          ...rule,
-          use: ['style-loader', 'css-loader']
-        }
-      }
-      return rule
-    })
-    
-    // Remove CSS minimizer completely
-    if (config.optimization && config.optimization.minimizer) {
-      config.optimization.minimizer = config.optimization.minimizer.filter(
-        plugin => {
-          const pluginName = plugin.constructor.name
-          return !['CssMinimizerPlugin', 'OptimizeCSSAssetsPlugin'].includes(pluginName)
-        }
-      )
-    }
-    
-    // Disable CSS extraction
-    if (config.optimization && config.optimization.splitChunks) {
-      config.optimization.splitChunks.cacheGroups = {
-        ...config.optimization.splitChunks.cacheGroups,
-        styles: false,
-      }
-    }
+    // Keep CSS processing enabled for Tailwind
     
     return config
   },
