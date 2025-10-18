@@ -2,11 +2,6 @@
 
 import { motion } from 'framer-motion'
 import { useRouter } from 'next/navigation'
-import { Hero } from '@/components/marketing/hero'
-import { FeatureGrid } from '@/components/marketing/feature-grid'
-import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Badge } from '@/components/ui/badge'
 import { 
   ArrowRight, 
   CheckCircle, 
@@ -86,34 +81,153 @@ export default function MarketingPage() {
 
   return (
     <div className="min-h-screen bg-surface-0">
-      <Hero />
-      
-      <FeatureGrid />
+      {/* Hero Section */}
+      <section className="hero">
+        <div className="hero-content">
+          <div className="container">
+            <motion.div
+              initial="initial"
+              whileInView="animate"
+              viewport={{ once: true }}
+              variants={staggerChildren}
+              className="text-center space-y-8 py-20"
+            >
+              <motion.div variants={fadeInUp} className="space-y-6">
+                <div className="inline-flex items-center gap-2 px-4 py-2 bg-primary-100 rounded-full text-primary-700 text-sm font-medium">
+                  <Shield className="w-4 h-4" />
+                  Trusted by 50+ universities
+                </div>
+                
+                <h1 className="text-display text-gray-900 max-w-4xl mx-auto">
+                  Find roommates who actually fit your life
+                </h1>
+                
+                <p className="text-body-lg text-gray-600 max-w-2xl mx-auto">
+                  Roommate Match pairs you with compatible students based on lifestyle and study rhythm—so moving in feels easy.
+                </p>
+              </motion.div>
 
-      {/* Social Proof Section */}
-      <section className="section-padding bg-surface-1">
-        <div className="container-custom">
+              <motion.div variants={fadeInUp} className="flex flex-col sm:flex-row gap-4 justify-center">
+                <button className="btn btn-primary btn-lg" onClick={handleGetStarted}>
+                  Get matched
+                  <ArrowRight className="w-5 h-5" />
+                </button>
+                <button className="btn btn-outline btn-lg" onClick={handleLearnMore}>
+                  See how it works
+                </button>
+              </motion.div>
+
+              <motion.div variants={fadeInUp} className="flex flex-wrap gap-8 justify-center text-body-sm text-gray-600">
+                <div className="flex items-center gap-2">
+                  <CheckCircle className="w-5 h-5 text-success-600" />
+                  <span>Verified students only</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <CheckCircle className="w-5 h-5 text-success-600" />
+                  <span>Free for students</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <CheckCircle className="w-5 h-5 text-success-600" />
+                  <span>University partnerships</span>
+                </div>
+              </motion.div>
+            </motion.div>
+          </div>
+        </div>
+      </section>
+
+      {/* Top Matches Section */}
+      <section className="section">
+        <div className="container">
           <motion.div
             initial="initial"
             whileInView="animate"
             viewport={{ once: true }}
             variants={staggerChildren}
-            className="text-center space-y-4 mb-16"
+            className="text-center space-y-8"
           >
-            <motion.div variants={fadeInUp}>
-              <Badge variant="accent" className="mb-4">
-                <Heart className="w-3 h-3 mr-1" />
-                Loved by students across the Netherlands
-              </Badge>
+            <motion.div variants={fadeInUp} className="space-y-4">
+              <div className="flex items-center justify-center gap-2">
+                <Users className="w-6 h-6 text-primary-600" />
+                <h2 className="text-h2 text-gray-900">Your Top Matches</h2>
+              </div>
+              <p className="text-body text-gray-600">3 compatible roommates found</p>
             </motion.div>
-            
-            <motion.h2 variants={fadeInUp} className="text-h1 text-ink-900">
-              Join thousands of successful matches
-            </motion.h2>
-            
-            <motion.p variants={fadeInUp} className="text-h4 text-ink-700 max-w-3xl mx-auto">
-              See what students are saying about their roommate matching experience.
-            </motion.p>
+
+            <motion.div
+              variants={staggerChildren}
+              className="grid md:grid-cols-3 gap-6 max-w-4xl mx-auto"
+            >
+              {[
+                { name: "Emma", program: "Computer Science", university: "TU Delft", score: "94%" },
+                { name: "Lucas", program: "Engineering", university: "Eindhoven", score: "89%" },
+                { name: "Sofia", program: "Business", university: "Rotterdam", score: "87%" }
+              ].map((match, index) => (
+                <motion.div key={match.name} variants={fadeInUp}>
+                  <div className="match-card">
+                    <div className="match-score">{match.score}</div>
+                    <div className="flex items-center gap-4 mb-4">
+                      <div className="w-12 h-12 bg-gradient-to-br from-primary-500 to-secondary-500 rounded-full flex items-center justify-center text-white font-bold text-lg">
+                        {match.name[0]}
+                      </div>
+                      <div>
+                        <h3 className="font-bold text-gray-900">{match.name}</h3>
+                        <p className="text-body-sm text-gray-600">{match.program} • {match.university}</p>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <Heart className="w-5 h-5 text-rose-500" />
+                      <span className="text-body-sm text-gray-700">Compatible match</span>
+                    </div>
+                  </div>
+                </motion.div>
+              ))}
+            </motion.div>
+
+            <motion.div variants={fadeInUp}>
+              <button className="btn btn-primary btn-xl w-full max-w-md mx-auto">
+                View all matches
+              </button>
+            </motion.div>
+
+            <motion.div variants={fadeInUp} className="flex items-center justify-center gap-4">
+              <div className="text-center">
+                <div className="text-3xl font-bold text-primary-600">94%</div>
+                <div className="text-body-sm text-gray-600">Compatibility</div>
+              </div>
+              <div className="flex items-center gap-2">
+                <CheckCircle className="w-5 h-5 text-success-600" />
+                <span className="text-body-sm text-gray-700">Verified</span>
+              </div>
+            </motion.div>
+          </motion.div>
+        </div>
+      </section>
+
+      {/* Features Section */}
+      <section className="section bg-gray-50">
+        <div className="container">
+          <motion.div
+            initial="initial"
+            whileInView="animate"
+            viewport={{ once: true }}
+            variants={staggerChildren}
+            className="text-center space-y-8 mb-16"
+          >
+            <motion.div variants={fadeInUp} className="space-y-4">
+              <div className="inline-flex items-center gap-2 px-4 py-2 bg-secondary-100 rounded-full text-secondary-700 text-sm font-medium">
+                <MessageCircle className="w-4 h-4" />
+                Built for students, by students
+              </div>
+              
+              <h2 className="text-h1 text-gray-900">
+                Everything you need to find your perfect roommate
+              </h2>
+              
+              <p className="text-body-lg text-gray-600 max-w-3xl mx-auto">
+                From smart matching to secure messaging, we've built every feature with student needs in mind.
+              </p>
+            </motion.div>
           </motion.div>
 
           <motion.div
@@ -121,42 +235,142 @@ export default function MarketingPage() {
             whileInView="animate"
             viewport={{ once: true }}
             variants={staggerChildren}
-            className="grid md:grid-cols-2 lg:grid-cols-3 gap-6"
+            className="feature-grid"
+          >
+            {[
+              {
+                icon: Users,
+                title: "Real compatibility, not guesswork",
+                description: "Our AI analyzes lifestyle, study habits, and personality to find your perfect match—not just random roommates.",
+                badge: "94% success rate",
+                badgeColor: "badge-primary"
+              },
+              {
+                icon: MessageCircle,
+                title: "Filters that matter",
+                description: "University, program, study year, budget, lifestyle preferences, and more. Find exactly what you're looking for.",
+                badge: "15+ filters",
+                badgeColor: "badge-secondary"
+              },
+              {
+                icon: Heart,
+                title: "Chat when it clicks",
+                description: "Built-in messaging with icebreakers and conversation starters. Break the ice naturally with your matches.",
+                badge: "Smart prompts",
+                badgeColor: "badge-success"
+              },
+              {
+                icon: Shield,
+                title: "Verified & safe",
+                description: "All students are verified through their university email and ID. Your safety and privacy are our top priority.",
+                badge: "100% verified",
+                badgeColor: "badge-gray"
+              },
+              {
+                icon: GraduationCap,
+                title: "University partnerships",
+                description: "Integrated with 50+ universities across the Netherlands. Seamless onboarding through your student portal.",
+                badge: "50+ universities",
+                badgeColor: "badge-primary"
+              },
+              {
+                icon: TrendingUp,
+                title: "Housing integration",
+                description: "Connect with verified housing listings, schedule tours, and manage your entire roommate journey in one place.",
+                badge: "All-in-one",
+                badgeColor: "badge-secondary"
+              }
+            ].map((feature, index) => {
+              const Icon = feature.icon
+              return (
+                <motion.div key={feature.title} variants={fadeInUp}>
+                  <div className="feature-card">
+                    <div className="flex items-start justify-between mb-4">
+                      <div className="w-12 h-12 bg-primary-100 rounded-xl flex items-center justify-center">
+                        <Icon className="w-6 h-6 text-primary-600" />
+                      </div>
+                      <div className={`badge ${feature.badgeColor}`}>
+                        {feature.badge}
+                      </div>
+                    </div>
+                    <h3 className="text-h4 text-gray-900 mb-3">{feature.title}</h3>
+                    <p className="text-body text-gray-600 mb-4">{feature.description}</p>
+                    <button className="text-primary-600 font-medium hover:text-primary-700 transition-colors">
+                      Learn more →
+                    </button>
+                  </div>
+                </motion.div>
+              )
+            })}
+          </motion.div>
+        </div>
+      </section>
+
+      {/* Testimonials Section */}
+      <section className="section">
+        <div className="container">
+          <motion.div
+            initial="initial"
+            whileInView="animate"
+            viewport={{ once: true }}
+            variants={staggerChildren}
+            className="text-center space-y-8 mb-16"
+          >
+            <motion.div variants={fadeInUp} className="space-y-4">
+              <div className="inline-flex items-center gap-2 px-4 py-2 bg-rose-100 rounded-full text-rose-700 text-sm font-medium">
+                <Heart className="w-4 h-4" />
+                Loved by students across the Netherlands
+              </div>
+              
+              <h2 className="text-h1 text-gray-900">
+                Join thousands of successful matches
+              </h2>
+              
+              <p className="text-body-lg text-gray-600 max-w-3xl mx-auto">
+                See what students are saying about their roommate matching experience.
+              </p>
+            </motion.div>
+          </motion.div>
+
+          <motion.div
+            initial="initial"
+            whileInView="animate"
+            viewport={{ once: true }}
+            variants={staggerChildren}
+            className="testimonial-grid"
           >
             {testimonials.map((testimonial, index) => (
               <motion.div key={testimonial.name} variants={fadeInUp}>
-                <Card variant="interactive" className="h-full">
-                  <CardContent className="p-6 space-y-4">
-                    <div className="flex items-start gap-4">
-                      <div className="w-12 h-12 bg-gradient-to-br from-brand-400 to-accent-400 rounded-full flex items-center justify-center text-white font-semibold">
-                        {testimonial.avatar}
-                      </div>
-                      <div className="flex-1">
-                        <div className="flex items-center gap-2 mb-1">
-                          <h3 className="font-semibold text-ink-900">{testimonial.name}</h3>
-                          <Badge variant="mint" size="sm">
-                            <Star className="w-3 h-3 mr-1" />
-                            {testimonial.rating}
-                          </Badge>
+                <div className="testimonial-card">
+                  <div className="flex items-start gap-4 mb-4">
+                    <div className="w-12 h-12 bg-gradient-to-br from-primary-500 to-secondary-500 rounded-full flex items-center justify-center text-white font-bold text-lg">
+                      {testimonial.avatar}
+                    </div>
+                    <div className="flex-1">
+                      <div className="flex items-center gap-2 mb-1">
+                        <h3 className="font-bold text-gray-900">{testimonial.name}</h3>
+                        <div className="badge badge-success">
+                          <Star className="w-3 h-3 mr-1" />
+                          {testimonial.rating}
                         </div>
-                        <p className="text-body-sm text-ink-500">
-                          {testimonial.program} • {testimonial.university}
-                        </p>
                       </div>
+                      <p className="text-body-sm text-gray-600">
+                        {testimonial.program} • {testimonial.university}
+                      </p>
                     </div>
-                    
-                    <p className="text-body text-ink-700 leading-relaxed">
-                      &ldquo;{testimonial.text}&rdquo;
-                    </p>
-                    
-                    <div className="flex items-center gap-2 pt-2 border-t border-line">
-                      <Heart className="w-4 h-4 text-rose-500" />
-                      <span className="text-body-sm font-medium text-ink-900">
-                        {testimonial.highlight}
-                      </span>
-                    </div>
-                  </CardContent>
-                </Card>
+                  </div>
+                  
+                  <p className="text-body text-gray-700 mb-4">
+                    &ldquo;{testimonial.text}&rdquo;
+                  </p>
+                  
+                  <div className="flex items-center gap-2 pt-4 border-t border-gray-200">
+                    <Heart className="w-5 h-5 text-rose-500" />
+                    <span className="text-body-sm font-medium text-gray-900">
+                      {testimonial.highlight}
+                    </span>
+                  </div>
+                </div>
               </motion.div>
             ))}
           </motion.div>
@@ -164,29 +378,29 @@ export default function MarketingPage() {
       </section>
 
       {/* University Partners Section */}
-      <section className="section-padding bg-surface-0">
-        <div className="container-custom">
+      <section className="section bg-gray-50">
+        <div className="container">
           <motion.div
             initial="initial"
             whileInView="animate"
             viewport={{ once: true }}
             variants={staggerChildren}
-            className="text-center space-y-4 mb-16"
+            className="text-center space-y-8 mb-16"
           >
-            <motion.div variants={fadeInUp}>
-              <Badge variant="brand" className="mb-4">
-                <GraduationCap className="w-3 h-3 mr-1" />
+            <motion.div variants={fadeInUp} className="space-y-4">
+              <div className="inline-flex items-center gap-2 px-4 py-2 bg-primary-100 rounded-full text-primary-700 text-sm font-medium">
+                <GraduationCap className="w-4 h-4" />
                 Trusted by universities
-              </Badge>
+              </div>
+              
+              <h2 className="text-h1 text-gray-900">
+                Partnered with leading Dutch universities
+              </h2>
+              
+              <p className="text-body-lg text-gray-600 max-w-3xl mx-auto">
+                Reduce housing conflicts. Boost student wellbeing. Integrate Roommate Match with your portal in weeks.
+              </p>
             </motion.div>
-            
-            <motion.h2 variants={fadeInUp} className="text-h1 text-ink-900">
-              Partnered with leading Dutch universities
-            </motion.h2>
-            
-            <motion.p variants={fadeInUp} className="text-h4 text-ink-700 max-w-3xl mx-auto">
-              Reduce housing conflicts. Boost student wellbeing. Integrate Roommate Match with your portal in weeks.
-            </motion.p>
           </motion.div>
 
           <motion.div
@@ -194,20 +408,18 @@ export default function MarketingPage() {
             whileInView="animate"
             viewport={{ once: true }}
             variants={staggerChildren}
-            className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4"
+            className="university-grid"
           >
             {universities.map((university, index) => (
               <motion.div key={university} variants={fadeInUp}>
-                <Card variant="interactive" className="text-center p-4">
-                  <CardContent className="p-0">
-                    <div className="w-12 h-12 bg-brand-100 rounded-xl flex items-center justify-center mx-auto mb-3">
-                      <GraduationCap className="w-6 h-6 text-brand-600" />
-                    </div>
-                    <h3 className="font-medium text-ink-900 text-body-sm">
-                      {university}
-                    </h3>
-                  </CardContent>
-                </Card>
+                <div className="university-card">
+                  <div className="w-12 h-12 bg-primary-100 rounded-xl flex items-center justify-center mx-auto mb-3">
+                    <GraduationCap className="w-6 h-6 text-primary-600" />
+                  </div>
+                  <h3 className="font-medium text-gray-900 text-center">
+                    {university}
+                  </h3>
+                </div>
               </motion.div>
             ))}
           </motion.div>
@@ -217,14 +429,14 @@ export default function MarketingPage() {
             whileInView="animate"
             viewport={{ once: true }}
             variants={staggerChildren}
-            className="text-center mt-12"
+            className="text-center mt-16"
           >
             <motion.div variants={fadeInUp} className="space-y-4">
-              <Button size="lg" variant="accent" className="group" onClick={handleBecomePartner}>
+              <button className="btn btn-secondary btn-lg" onClick={handleBecomePartner}>
                 Become a partner university
-                <ArrowRight className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" />
-              </Button>
-              <p className="text-body-sm text-ink-500">
+                <ArrowRight className="w-5 h-5" />
+              </button>
+              <p className="text-body-sm text-gray-600">
                 Free for universities • Quick integration • Dedicated support
               </p>
             </motion.div>
@@ -233,14 +445,14 @@ export default function MarketingPage() {
       </section>
 
       {/* Stats Section */}
-      <section className="section-padding bg-brand-50">
-        <div className="container-custom">
+      <section className="section">
+        <div className="container">
           <motion.div
             initial="initial"
             whileInView="animate"
             viewport={{ once: true }}
             variants={staggerChildren}
-            className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8"
+            className="stats-grid"
           >
             {[
               { number: "10,000+", label: "Students matched", icon: Users },
@@ -250,12 +462,14 @@ export default function MarketingPage() {
             ].map((stat, index) => {
               const Icon = stat.icon
               return (
-                <motion.div key={stat.label} variants={fadeInUp} className="text-center">
-                  <div className="w-16 h-16 bg-brand-100 rounded-2xl flex items-center justify-center mx-auto mb-4">
-                    <Icon className="w-8 h-8 text-brand-600" />
+                <motion.div key={stat.label} variants={fadeInUp}>
+                  <div className="stat-card">
+                    <div className="w-16 h-16 bg-primary-100 rounded-2xl flex items-center justify-center mx-auto mb-4">
+                      <Icon className="w-8 h-8 text-primary-600" />
+                    </div>
+                    <div className="stat-number">{stat.number}</div>
+                    <div className="stat-label">{stat.label}</div>
                   </div>
-                  <div className="text-4xl font-bold text-brand-900 mb-2">{stat.number}</div>
-                  <div className="text-body text-brand-700">{stat.label}</div>
                 </motion.div>
               )
             })}
@@ -264,45 +478,45 @@ export default function MarketingPage() {
       </section>
 
       {/* CTA Section */}
-      <section className="section-padding bg-hero-gradient">
-        <div className="container-custom">
+      <section className="banner">
+        <div className="container">
           <motion.div
             initial="initial"
             whileInView="animate"
             viewport={{ once: true }}
             variants={staggerChildren}
-            className="text-center space-y-8 max-w-4xl mx-auto"
+            className="text-center space-y-8 py-16"
           >
             <motion.div variants={fadeInUp} className="space-y-4">
-              <h2 className="text-h1 text-ink-900">
+              <h2 className="text-h1 text-white">
                 Ready to find your perfect roommate?
               </h2>
-              <p className="text-h4 text-ink-700">
-                Join thousands of students who&apos;ve found their ideal living situation through smart matching.
+              <p className="text-body-lg text-white opacity-90">
+                Join thousands of students who've found their ideal living situation through smart matching.
               </p>
             </motion.div>
 
             <motion.div variants={fadeInUp} className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Button size="lg" className="group" onClick={handleGetStarted}>
+              <button className="btn btn-primary btn-lg bg-white text-primary-600 hover:bg-gray-100" onClick={handleGetStarted}>
                 Get started for free
-                <ArrowRight className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" />
-              </Button>
-              <Button variant="outline" size="lg" onClick={handleLearnMore}>
+                <ArrowRight className="w-5 h-5" />
+              </button>
+              <button className="btn btn-outline btn-lg border-white text-white hover:bg-white hover:text-primary-600" onClick={handleLearnMore}>
                 Learn more
-              </Button>
+              </button>
             </motion.div>
 
-            <motion.div variants={fadeInUp} className="flex flex-wrap gap-6 justify-center text-body-sm text-ink-600">
+            <motion.div variants={fadeInUp} className="flex flex-wrap gap-8 justify-center text-body-sm text-white opacity-80">
               <div className="flex items-center gap-2">
-                <CheckCircle className="w-4 h-4 text-mint-600" />
+                <CheckCircle className="w-5 h-5" />
                 <span>Free for students</span>
               </div>
               <div className="flex items-center gap-2">
-                <CheckCircle className="w-4 h-4 text-mint-600" />
+                <CheckCircle className="w-5 h-5" />
                 <span>No credit card required</span>
               </div>
               <div className="flex items-center gap-2">
-                <CheckCircle className="w-4 h-4 text-mint-600" />
+                <CheckCircle className="w-5 h-5" />
                 <span>Verified students only</span>
               </div>
             </motion.div>
