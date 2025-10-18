@@ -58,10 +58,10 @@ export default function ReputationPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center">
+      <div className="min-h-screen bg-surface-0 flex items-center justify-center">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-          <p className="text-gray-600 dark:text-gray-400">Loading reputation profile...</p>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600 mx-auto mb-4"></div>
+          <p className="text-gray-600">Loading reputation profile...</p>
         </div>
       </div>
     )
@@ -69,17 +69,17 @@ export default function ReputationPage() {
 
   if (!user || !userReputation) {
     return (
-      <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center">
+      <div className="min-h-screen bg-surface-0 flex items-center justify-center">
         <div className="text-center">
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-4">
+          <h1 className="text-h1 text-gray-900 mb-4">
             Reputation Profile Not Found
           </h1>
-          <p className="text-gray-600 dark:text-gray-400 mb-6">
-            We couldn&apos;t load your reputation profile. Please try again later.
+          <p className="text-body-lg text-gray-600 mb-6">
+            We couldn't load your reputation profile. Please try again later.
           </p>
           <button
             onClick={() => router.push('/matches')}
-            className="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition-colors"
+            className="btn btn-primary"
           >
             Back to Matches
           </button>
@@ -89,13 +89,14 @@ export default function ReputationPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
-      <div className="max-w-4xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100 mb-2">
+    <div className="min-h-screen bg-surface-0">
+      <div className="max-w-4xl mx-auto py-8 px-4 sm:px-6 lg:px-8 space-y-8">
+        {/* Header */}
+        <div className="text-center space-y-4">
+          <h1 className="text-h1 text-gray-900">
             My Reputation
           </h1>
-          <p className="text-gray-600 dark:text-gray-400">
+          <p className="text-body-lg text-gray-600 max-w-2xl mx-auto">
             Your reputation profile shows how others have rated you as a roommate and community member.
           </p>
         </div>

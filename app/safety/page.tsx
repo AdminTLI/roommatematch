@@ -140,10 +140,10 @@ export default function SafetyPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center">
+      <div className="min-h-screen bg-surface-0 flex items-center justify-center">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-          <p className="text-gray-600 dark:text-gray-400">Loading safety information...</p>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600 mx-auto mb-4"></div>
+          <p className="text-gray-600">Loading safety information...</p>
         </div>
       </div>
     )
@@ -151,12 +151,12 @@ export default function SafetyPage() {
 
   if (!user) {
     return (
-      <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center">
+      <div className="min-h-screen bg-surface-0 flex items-center justify-center">
         <div className="text-center">
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-4">
+          <h1 className="text-h1 text-gray-900 mb-4">
             Access Denied
           </h1>
-          <p className="text-gray-600 dark:text-gray-400 mb-6">
+          <p className="text-body-lg text-gray-600 mb-6">
             Please sign in to access safety features.
           </p>
           <Button onClick={() => router.push('/auth/sign-in')}>
@@ -168,63 +168,58 @@ export default function SafetyPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
-      <div className="container mx-auto py-8 px-4">
-        <div className="mb-8">
-          <div className="flex items-center justify-between">
-            <div>
-              <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100 mb-2">
-                Safety & Wellness
-              </h1>
-              <p className="text-gray-600 dark:text-gray-400">
-                Report incidents, manage wellness, and access emergency resources.
-              </p>
-            </div>
-            
-            <div className="flex gap-2">
-              <Button variant="outline" onClick={handleCreateWellnessCheck}>
-                <Heart className="h-4 w-4 mr-2" />
-                Wellness Check
-              </Button>
-              <Button onClick={handleCreateIncident}>
-                <Plus className="h-4 w-4 mr-2" />
-                Report Incident
-              </Button>
-            </div>
+    <div className="min-h-screen bg-surface-0">
+      <div className="container mx-auto py-8 px-4 space-y-8">
+        {/* Header */}
+        <div className="text-center space-y-4">
+          <h1 className="text-h1 text-gray-900">
+            Safety & Wellness
+          </h1>
+          <p className="text-body-lg text-gray-600 max-w-2xl mx-auto">
+            Report incidents, manage wellness, and access emergency resources.
+          </p>
+          
+          <div className="flex gap-4 justify-center">
+            <Button variant="outline" onClick={handleCreateWellnessCheck}>
+              <Heart className="h-4 w-4 mr-2" />
+              Wellness Check
+            </Button>
+            <Button onClick={handleCreateIncident}>
+              <Plus className="h-4 w-4 mr-2" />
+              Report Incident
+            </Button>
           </div>
         </div>
 
         {/* Emergency Actions */}
-        <div className="mb-8">
-          <Card className="border-red-200 bg-red-50 dark:bg-red-900/20">
-            <CardContent className="p-4">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <div className="p-2 bg-red-100 rounded-lg">
-                    <AlertTriangle className="h-6 w-6 text-red-600" />
-                  </div>
-                  <div>
-                    <h3 className="font-semibold text-red-900 dark:text-red-100">
-                      Emergency Assistance
-                    </h3>
-                    <p className="text-sm text-red-700 dark:text-red-300">
-                      If you're in immediate danger, contact emergency services.
-                    </p>
-                  </div>
+        <Card className="border-error-200 bg-error-50">
+          <CardContent className="p-6">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-4">
+                <div className="w-12 h-12 bg-error-100 rounded-xl flex items-center justify-center">
+                  <AlertTriangle className="h-6 w-6 text-error-600" />
                 </div>
-                <Button 
-                  onClick={handleEmergencyCall}
-                  className="bg-red-600 hover:bg-red-700"
-                >
-                  <Phone className="h-4 w-4 mr-2" />
-                  Emergency Call
-                </Button>
+                <div>
+                  <h3 className="font-semibold text-error-900">
+                    Emergency Assistance
+                  </h3>
+                  <p className="text-body-sm text-error-700">
+                    If you're in immediate danger, contact emergency services.
+                  </p>
+                </div>
               </div>
-            </CardContent>
-          </Card>
-        </div>
+              <Button 
+                onClick={handleEmergencyCall}
+                className="bg-error-600 hover:bg-error-700"
+              >
+                <Phone className="h-4 w-4 mr-2" />
+                Emergency Call
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
 
-        <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-8">
           <TabsList className="grid w-full grid-cols-4">
             <TabsTrigger value="overview">Overview</TabsTrigger>
             <TabsTrigger value="incidents">Incidents</TabsTrigger>
@@ -232,85 +227,45 @@ export default function SafetyPage() {
             <TabsTrigger value="contacts">Emergency Contacts</TabsTrigger>
           </TabsList>
           
-          <TabsContent value="overview" className="space-y-6">
+          <TabsContent value="overview" className="space-y-8">
             {/* Safety Summary */}
             {safetySummary && (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                <Card>
-                  <CardContent className="p-4">
-                    <div className="flex items-center gap-3">
-                      <div className="p-2 bg-blue-100 rounded-lg">
-                        <Shield className="h-5 w-5 text-blue-600" />
-                      </div>
-                      <div>
-                        <div className="text-2xl font-bold text-gray-900 dark:text-gray-100">
-                          {safetySummary.total_incidents}
-                        </div>
-                        <div className="text-sm text-gray-600 dark:text-gray-400">
-                          Total Incidents
-                        </div>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                <div className="stat-card">
+                  <div className="w-12 h-12 bg-primary-100 rounded-xl flex items-center justify-center mx-auto mb-4">
+                    <Shield className="h-6 w-6 text-primary-600" />
+                  </div>
+                  <div className="stat-number">{safetySummary.total_incidents}</div>
+                  <div className="stat-label">Total Incidents</div>
+                </div>
                 
-                <Card>
-                  <CardContent className="p-4">
-                    <div className="flex items-center gap-3">
-                      <div className="p-2 bg-yellow-100 rounded-lg">
-                        <Clock className="h-5 w-5 text-yellow-600" />
-                      </div>
-                      <div>
-                        <div className="text-2xl font-bold text-gray-900 dark:text-gray-100">
-                          {safetySummary.open_incidents}
-                        </div>
-                        <div className="text-sm text-gray-600 dark:text-gray-400">
-                          Open Incidents
-                        </div>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
+                <div className="stat-card">
+                  <div className="w-12 h-12 bg-warning-100 rounded-xl flex items-center justify-center mx-auto mb-4">
+                    <Clock className="h-6 w-6 text-warning-600" />
+                  </div>
+                  <div className="stat-number">{safetySummary.open_incidents}</div>
+                  <div className="stat-label">Open Incidents</div>
+                </div>
                 
-                <Card>
-                  <CardContent className="p-4">
-                    <div className="flex items-center gap-3">
-                      <div className="p-2 bg-green-100 rounded-lg">
-                        <CheckCircle className="h-5 w-5 text-green-600" />
-                      </div>
-                      <div>
-                        <div className="text-2xl font-bold text-gray-900 dark:text-gray-100">
-                          {safetySummary.resolved_incidents}
-                        </div>
-                        <div className="text-sm text-gray-600 dark:text-gray-400">
-                          Resolved
-                        </div>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
+                <div className="stat-card">
+                  <div className="w-12 h-12 bg-success-100 rounded-xl flex items-center justify-center mx-auto mb-4">
+                    <CheckCircle className="h-6 w-6 text-success-600" />
+                  </div>
+                  <div className="stat-number">{safetySummary.resolved_incidents}</div>
+                  <div className="stat-label">Resolved</div>
+                </div>
                 
-                <Card>
-                  <CardContent className="p-4">
-                    <div className="flex items-center gap-3">
-                      <div className="p-2 bg-purple-100 rounded-lg">
-                        <Heart className="h-5 w-5 text-purple-600" />
-                      </div>
-                      <div>
-                        <div className="text-2xl font-bold text-gray-900 dark:text-gray-100">
-                          {safetySummary.average_wellness_score?.toFixed(1) || 'N/A'}
-                        </div>
-                        <div className="text-sm text-gray-600 dark:text-gray-400">
-                          Wellness Score
-                        </div>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
+                <div className="stat-card">
+                  <div className="w-12 h-12 bg-secondary-100 rounded-xl flex items-center justify-center mx-auto mb-4">
+                    <Heart className="h-6 w-6 text-secondary-600" />
+                  </div>
+                  <div className="stat-number">{safetySummary.average_wellness_score?.toFixed(1) || 'N/A'}</div>
+                  <div className="stat-label">Wellness Score</div>
+                </div>
               </div>
             )}
 
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
               {/* Recent Incidents */}
               <Card>
                 <CardHeader>
@@ -326,28 +281,28 @@ export default function SafetyPage() {
                 </CardHeader>
                 <CardContent>
                   {recentIncidents.length > 0 ? (
-                    <div className="space-y-3">
+                    <div className="space-y-4">
                       {recentIncidents.map((incident) => (
-                        <div key={incident.id} className="flex items-center gap-3 p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
-                          <div className="flex-shrink-0">
-                            <AlertTriangle className="h-4 w-4 text-orange-600" />
+                        <div key={incident.id} className="flex items-center gap-4 p-4 bg-gray-50 rounded-lg">
+                          <div className="w-10 h-10 bg-warning-100 rounded-lg flex items-center justify-center">
+                            <AlertTriangle className="h-5 w-5 text-warning-600" />
                           </div>
                           <div className="flex-1">
-                            <div className="font-medium text-gray-900 dark:text-gray-100">
+                            <div className="font-medium text-gray-900">
                               {incident.title}
                             </div>
-                            <div className="text-sm text-gray-600 dark:text-gray-400">
+                            <div className="text-body-sm text-gray-600">
                               {incident.severity_level} • {incident.status}
                             </div>
                           </div>
-                          <div className="text-xs text-gray-500">
+                          <div className="text-body-xs text-gray-500">
                             {new Date(incident.reported_at).toLocaleDateString()}
                           </div>
                         </div>
                       ))}
                     </div>
                   ) : (
-                    <p className="text-gray-600 dark:text-gray-400 text-center py-4">
+                    <p className="text-gray-600 text-center py-8">
                       No recent incidents
                     </p>
                   )}
@@ -369,17 +324,17 @@ export default function SafetyPage() {
                 </CardHeader>
                 <CardContent>
                   {pendingWellnessChecks.length > 0 ? (
-                    <div className="space-y-3">
+                    <div className="space-y-4">
                       {pendingWellnessChecks.map((check) => (
-                        <div key={check.id} className="flex items-center gap-3 p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
-                          <div className="flex-shrink-0">
-                            <Heart className="h-4 w-4 text-pink-600" />
+                        <div key={check.id} className="flex items-center gap-4 p-4 bg-gray-50 rounded-lg">
+                          <div className="w-10 h-10 bg-secondary-100 rounded-lg flex items-center justify-center">
+                            <Heart className="h-5 w-5 text-secondary-600" />
                           </div>
                           <div className="flex-1">
-                            <div className="font-medium text-gray-900 dark:text-gray-100">
+                            <div className="font-medium text-gray-900">
                               Wellness Check Pending
                             </div>
-                            <div className="text-sm text-gray-600 dark:text-gray-400">
+                            <div className="text-body-sm text-gray-600">
                               {check.check_type} • {check.trigger_reason}
                             </div>
                           </div>
@@ -390,9 +345,9 @@ export default function SafetyPage() {
                       ))}
                     </div>
                   ) : (
-                    <div className="text-center py-4">
-                      <Heart className="h-8 w-8 text-gray-400 mx-auto mb-2" />
-                      <p className="text-gray-600 dark:text-gray-400">
+                    <div className="text-center py-8">
+                      <Heart className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+                      <p className="text-gray-600">
                         All wellness checks up to date
                       </p>
                     </div>
@@ -415,28 +370,28 @@ export default function SafetyPage() {
                 </CardHeader>
                 <CardContent>
                   {emergencyContacts.length > 0 ? (
-                    <div className="space-y-3">
+                    <div className="space-y-4">
                       {emergencyContacts.slice(0, 3).map((contact) => (
-                        <div key={contact.id} className="flex items-center gap-3 p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
-                          <div className="flex-shrink-0">
-                            <Phone className="h-4 w-4 text-green-600" />
+                        <div key={contact.id} className="flex items-center gap-4 p-4 bg-gray-50 rounded-lg">
+                          <div className="w-10 h-10 bg-success-100 rounded-lg flex items-center justify-center">
+                            <Phone className="h-5 w-5 text-success-600" />
                           </div>
                           <div className="flex-1">
-                            <div className="font-medium text-gray-900 dark:text-gray-100">
+                            <div className="font-medium text-gray-900">
                               {contact.name}
                             </div>
-                            <div className="text-sm text-gray-600 dark:text-gray-400">
+                            <div className="text-body-sm text-gray-600">
                               {contact.contact_type} • {contact.relationship}
                             </div>
                           </div>
-                          <div className="text-xs text-gray-500">
+                          <div className="text-body-xs text-gray-500">
                             {contact.phone}
                           </div>
                         </div>
                       ))}
                     </div>
                   ) : (
-                    <p className="text-gray-600 dark:text-gray-400 text-center py-4">
+                    <p className="text-gray-600 text-center py-8">
                       No emergency contacts set up
                     </p>
                   )}
@@ -452,7 +407,7 @@ export default function SafetyPage() {
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <div className="space-y-3">
+                  <div className="space-y-4">
                     <Button 
                       variant="outline" 
                       className="w-full justify-start"
@@ -485,7 +440,7 @@ export default function SafetyPage() {
             </div>
           </TabsContent>
           
-          <TabsContent value="incidents" className="space-y-6">
+          <TabsContent value="incidents" className="space-y-8">
             <SafetyStats incidents={incidents} />
             
             <SafetyIncidentList
@@ -497,7 +452,7 @@ export default function SafetyPage() {
             />
           </TabsContent>
           
-          <TabsContent value="wellness" className="space-y-6">
+          <TabsContent value="wellness" className="space-y-8">
             <WellnessStats checks={wellnessChecks} />
             
             <WellnessCheckList
@@ -508,7 +463,7 @@ export default function SafetyPage() {
             />
           </TabsContent>
           
-          <TabsContent value="contacts" className="space-y-6">
+          <TabsContent value="contacts" className="space-y-8">
             <Card>
               <CardHeader>
                 <div className="flex items-center justify-between">
@@ -523,27 +478,27 @@ export default function SafetyPage() {
                 {emergencyContacts.length > 0 ? (
                   <div className="space-y-4">
                     {emergencyContacts.map((contact) => (
-                      <div key={contact.id} className="flex items-center gap-4 p-4 bg-gray-50 dark:bg-gray-800 rounded-lg">
-                        <div className="flex-shrink-0">
-                          <Phone className="h-5 w-5 text-green-600" />
+                      <div key={contact.id} className="flex items-center gap-4 p-4 bg-gray-50 rounded-lg">
+                        <div className="w-10 h-10 bg-success-100 rounded-lg flex items-center justify-center">
+                          <Phone className="h-5 w-5 text-success-600" />
                         </div>
                         <div className="flex-1">
-                          <div className="font-medium text-gray-900 dark:text-gray-100">
+                          <div className="font-medium text-gray-900">
                             {contact.name}
                           </div>
-                          <div className="text-sm text-gray-600 dark:text-gray-400">
+                          <div className="text-body-sm text-gray-600">
                             {contact.contact_type} • {contact.relationship}
                           </div>
-                          <div className="text-sm text-gray-600 dark:text-gray-400">
+                          <div className="text-body-sm text-gray-600">
                             {contact.phone} • {contact.email}
                           </div>
                         </div>
                         <div className="text-right">
-                          <div className="text-xs text-gray-500">
+                          <div className="text-body-xs text-gray-500">
                             Order: {contact.escalation_order}
                           </div>
                           {contact.auto_contact && (
-                            <Badge variant="outline" className="text-xs">
+                            <Badge variant="outline" className="text-body-xs">
                               Auto-contact
                             </Badge>
                           )}
@@ -552,12 +507,12 @@ export default function SafetyPage() {
                     ))}
                   </div>
                 ) : (
-                  <div className="text-center py-8">
+                  <div className="text-center py-12">
                     <Phone className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-                    <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100 mb-2">
+                    <h3 className="text-h3 text-gray-900 mb-4">
                       No Emergency Contacts
                     </h3>
-                    <p className="text-gray-600 dark:text-gray-400 mb-4">
+                    <p className="text-body text-gray-600 mb-6">
                       Add emergency contacts for quick access in case of emergencies.
                     </p>
                     <Button onClick={() => router.push('/safety/contacts/new')}>
