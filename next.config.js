@@ -22,13 +22,6 @@ const nextConfig = {
       }
     }
 
-    // Disable CSS minification to avoid persistent CSS syntax errors
-    if (!dev) {
-      config.optimization.minimizer = config.optimization.minimizer.filter(
-        (plugin) => plugin.constructor.name !== 'CssMinimizerPlugin'
-      )
-    }
-
     return config
   },
   images: {
