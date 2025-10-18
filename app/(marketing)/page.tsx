@@ -28,7 +28,7 @@ const testimonials = [
     rating: 5,
     text: "Roommate Match helped me find the perfect roommate. We have similar study schedules and share the same values about keeping our space clean and organized.",
     highlight: "Found my best friend!",
-    image: "/api/placeholder/80/80" // Placeholder for profile image
+    image: "/api/placeholder/80/80"
   },
   {
     name: "Lucas Janssen", 
@@ -89,7 +89,7 @@ export default function MarketingPage() {
 
   return (
     <div className="min-h-screen bg-surface-0">
-      {/* Hero Section - Purpose: Main value proposition with clear CTA */}
+      {/* Section 1: Hero Section - Fixed spacing issues */}
       <section className="hero relative overflow-hidden">
         <div className="container py-24">
           <motion.div
@@ -97,9 +97,9 @@ export default function MarketingPage() {
             whileInView="animate"
             viewport={{ once: true }}
             variants={staggerChildren}
-            className="text-center space-y-12 max-w-4xl mx-auto"
+            className="text-center space-y-16 max-w-4xl mx-auto"
           >
-            {/* Trust Badge - Purpose: Social proof and credibility */}
+            {/* Trust Badge - Increased spacing from text below */}
             <motion.div variants={fadeInUp}>
               <div className="inline-flex items-center gap-2 px-4 py-2 bg-white/80 backdrop-blur-sm rounded-full text-primary-700 text-sm font-medium shadow-sm border border-primary-200">
                 <Shield className="w-4 h-4" />
@@ -107,8 +107,8 @@ export default function MarketingPage() {
               </div>
             </motion.div>
             
-            {/* Main Headline - Purpose: Clear value proposition */}
-            <motion.div variants={fadeInUp} className="space-y-6">
+            {/* Main Headline - Proper spacing from badge above */}
+            <motion.div variants={fadeInUp} className="space-y-8">
               <h1 className="text-display text-gray-900 leading-tight">
                 Find roommates who actually{' '}
                 <span className="text-gradient">fit your life</span>
@@ -119,7 +119,7 @@ export default function MarketingPage() {
               </p>
             </motion.div>
 
-            {/* CTA Buttons - Purpose: Clear action paths with proper hierarchy */}
+            {/* CTA Buttons - Increased spacing from text above and below */}
             <motion.div variants={fadeInUp} className="flex flex-col sm:flex-row gap-4 justify-center items-center">
               <button className="btn btn-primary btn-lg group" onClick={handleGetStarted}>
                 Get matched
@@ -131,7 +131,7 @@ export default function MarketingPage() {
               </button>
             </motion.div>
 
-            {/* Trust Indicators - Purpose: Remove friction and build confidence */}
+            {/* Trust Indicators - Increased spacing from buttons above */}
             <motion.div variants={fadeInUp} className="flex flex-wrap gap-8 justify-center text-body-sm text-gray-600">
               <div className="flex items-center gap-2">
                 <CheckCircle className="w-5 h-5 text-success-600" />
@@ -149,13 +149,70 @@ export default function MarketingPage() {
           </motion.div>
         </div>
 
-        {/* Visual Element - Purpose: Add visual interest and break text monotony */}
+        {/* Visual Elements */}
         <div className="absolute top-20 right-10 w-32 h-32 bg-gradient-to-br from-primary-200/30 to-secondary-200/30 rounded-full blur-xl"></div>
         <div className="absolute bottom-20 left-10 w-24 h-24 bg-gradient-to-br from-secondary-200/30 to-primary-200/30 rounded-full blur-xl"></div>
       </section>
 
-      {/* Top Matches Preview - Purpose: Show product value with concrete examples */}
-      <section className="section bg-gray-50">
+      {/* Section 6: Stats Section - Moved up for better positioning */}
+      <section className="section bg-gradient-to-br from-primary-50 to-secondary-50">
+        <div className="container">
+          <motion.div
+            initial="initial"
+            whileInView="animate"
+            viewport={{ once: true }}
+            variants={staggerChildren}
+            className="text-center space-y-12 mb-16"
+          >
+            <motion.div variants={fadeInUp} className="space-y-4">
+              <div className="inline-flex items-center gap-2 px-4 py-2 bg-white/80 rounded-full text-primary-700 text-sm font-medium shadow-sm">
+                <TrendingUp className="w-4 h-4" />
+                Proven results
+              </div>
+              
+              <h2 className="text-h1 text-gray-900">
+                Trusted by thousands of students
+              </h2>
+              
+              <p className="text-body-lg text-gray-600 max-w-3xl mx-auto">
+                Our platform has successfully connected students across the Netherlands with their ideal roommates.
+              </p>
+            </motion.div>
+          </motion.div>
+
+          <motion.div
+            initial="initial"
+            whileInView="animate"
+            viewport={{ once: true }}
+            variants={staggerChildren}
+            className="stats-grid"
+          >
+            {[
+              { number: "10,000+", label: "Students matched", icon: Users, description: "Successfully connected", color: "from-blue-500 to-blue-600" },
+              { number: "94%", label: "Success rate", icon: TrendingUp, description: "Happy roommates", color: "from-green-500 to-green-600" },
+              { number: "50+", label: "Partner universities", icon: GraduationCap, description: "Across Netherlands", color: "from-purple-500 to-purple-600" },
+              { number: "4.8★", label: "Student rating", icon: Star, description: "Average review", color: "from-yellow-500 to-yellow-600" }
+            ].map((stat, index) => {
+              const Icon = stat.icon
+              return (
+                <motion.div key={stat.label} variants={fadeInUp}>
+                  <div className="stat-card text-center">
+                    <div className={`w-20 h-20 bg-gradient-to-br ${stat.color} rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg`}>
+                      <Icon className="w-10 h-10 text-white" />
+                    </div>
+                    <div className="stat-number">{stat.number}</div>
+                    <div className="stat-label">{stat.label}</div>
+                    <div className="text-body-xs text-gray-500 mt-1">{stat.description}</div>
+                  </div>
+                </motion.div>
+              )
+            })}
+          </motion.div>
+        </div>
+      </section>
+
+      {/* Section 2: Top Matches Preview - Fixed colors and spacing */}
+      <section className="section bg-white">
         <div className="container">
           <motion.div
             initial="initial"
@@ -164,9 +221,9 @@ export default function MarketingPage() {
             variants={staggerChildren}
             className="text-center space-y-12"
           >
-            {/* Section Header - Purpose: Context and expectation setting */}
+            {/* Section Header */}
             <motion.div variants={fadeInUp} className="space-y-4">
-              <div className="inline-flex items-center gap-2 px-4 py-2 bg-primary-100 rounded-full text-primary-700 text-sm font-medium">
+              <div className="inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-primary-100 to-secondary-100 rounded-full text-primary-700 text-sm font-medium">
                 <Users className="w-4 h-4" />
                 Your potential matches
               </div>
@@ -177,39 +234,39 @@ export default function MarketingPage() {
               </p>
             </motion.div>
 
-            {/* Match Cards - Purpose: Concrete examples with clear value indicators */}
+            {/* Match Cards - Added colors and removed confusing bar */}
             <motion.div
               variants={staggerChildren}
-              className="grid md:grid-cols-3 gap-6 max-w-5xl mx-auto"
+              className="grid md:grid-cols-3 gap-8 max-w-5xl mx-auto"
             >
               {[
-                { name: "Emma", program: "Computer Science", university: "TU Delft", score: "94%", compatibility: "Study schedule, cleanliness, quiet hours" },
-                { name: "Lucas", program: "Engineering", university: "Eindhoven", score: "89%", compatibility: "Budget, location, social preferences" },
-                { name: "Sofia", program: "Business", university: "Rotterdam", score: "87%", compatibility: "Hobbies, communication style, lifestyle" }
+                { name: "Emma", program: "Computer Science", university: "TU Delft", score: "94%", compatibility: "Study schedule, cleanliness, quiet hours", color: "from-blue-500 to-blue-600" },
+                { name: "Lucas", program: "Engineering", university: "Eindhoven", score: "89%", compatibility: "Budget, location, social preferences", color: "from-green-500 to-green-600" },
+                { name: "Sofia", program: "Business", university: "Rotterdam", score: "87%", compatibility: "Hobbies, communication style, lifestyle", color: "from-purple-500 to-purple-600" }
               ].map((match, index) => (
                 <motion.div key={match.name} variants={fadeInUp}>
                   <div className="card card-lg text-center group hover:scale-105 transition-transform">
-                    {/* Match Score - Purpose: Clear compatibility indicator */}
-                    <div className="absolute top-4 right-4 w-12 h-12 bg-gradient-to-br from-success-500 to-success-600 rounded-full flex items-center justify-center text-white font-bold text-sm shadow-lg">
+                    {/* Match Score with better colors */}
+                    <div className={`absolute top-4 right-4 w-14 h-14 bg-gradient-to-br ${match.color} rounded-full flex items-center justify-center text-white font-bold text-sm shadow-lg`}>
                       {match.score}
                     </div>
                     
-                    {/* Avatar - Purpose: Human connection and visual interest */}
-                    <div className="w-20 h-20 bg-gradient-to-br from-primary-500 to-secondary-500 rounded-full flex items-center justify-center text-white font-bold text-2xl mx-auto mb-4 shadow-lg">
+                    {/* Avatar with gradient colors */}
+                    <div className={`w-20 h-20 bg-gradient-to-br ${match.color} rounded-full flex items-center justify-center text-white font-bold text-2xl mx-auto mb-4 shadow-lg`}>
                       {match.name[0]}
                     </div>
                     
-                    {/* Match Info - Purpose: Relevant details for decision making */}
+                    {/* Match Info */}
                     <h3 className="text-h4 text-gray-900 mb-2">{match.name}</h3>
                     <p className="text-body-sm text-gray-600 mb-4">{match.program} • {match.university}</p>
                     
-                    {/* Compatibility Details - Purpose: Explain why they're a good match */}
-                    <div className="bg-gray-50 rounded-lg p-3 mb-4">
-                      <p className="text-body-xs text-gray-700 font-medium">Why you match:</p>
+                    {/* Compatibility Details with colors */}
+                    <div className="bg-gradient-to-r from-gray-50 to-gray-100 rounded-lg p-4 mb-6 border border-gray-200">
+                      <p className="text-body-xs text-gray-700 font-medium mb-1">Why you match:</p>
                       <p className="text-body-xs text-gray-600">{match.compatibility}</p>
                     </div>
                     
-                    {/* Action Button - Purpose: Clear next step */}
+                    {/* Action Button */}
                     <button className="btn btn-primary w-full">
                       View Profile
                       <ArrowRight className="w-4 h-4" />
@@ -219,8 +276,8 @@ export default function MarketingPage() {
               ))}
             </motion.div>
 
-            {/* View All CTA - Purpose: Drive traffic to main feature */}
-            <motion.div variants={fadeInUp}>
+            {/* View All CTA - Increased spacing from cards above */}
+            <motion.div variants={fadeInUp} className="pt-8">
               <button className="btn btn-outline btn-lg" onClick={handleGetStarted}>
                 View all matches
                 <ArrowRight className="w-5 h-5" />
@@ -230,8 +287,8 @@ export default function MarketingPage() {
         </div>
       </section>
 
-      {/* Features Section - Purpose: Explain product benefits with clear value */}
-      <section className="section">
+      {/* Section 3: Features Section - Individual boxes with modern styling */}
+      <section className="section bg-gray-50">
         <div className="container">
           <motion.div
             initial="initial"
@@ -240,7 +297,6 @@ export default function MarketingPage() {
             variants={staggerChildren}
             className="text-center space-y-12 mb-16"
           >
-            {/* Section Header - Purpose: Context and benefit overview */}
             <motion.div variants={fadeInUp} className="space-y-4">
               <div className="inline-flex items-center gap-2 px-4 py-2 bg-secondary-100 rounded-full text-secondary-700 text-sm font-medium">
                 <Award className="w-4 h-4" />
@@ -257,13 +313,13 @@ export default function MarketingPage() {
             </motion.div>
           </motion.div>
 
-          {/* Feature Grid - Purpose: Clear benefit communication with visual hierarchy */}
+          {/* Feature Grid - Individual boxes with modern styling */}
           <motion.div
             initial="initial"
             whileInView="animate"
             viewport={{ once: true }}
             variants={staggerChildren}
-            className="feature-grid"
+            className="grid md:grid-cols-2 lg:grid-cols-3 gap-8"
           >
             {[
               {
@@ -272,7 +328,7 @@ export default function MarketingPage() {
                 description: "Our AI analyzes lifestyle, study habits, and personality to find your perfect match—not just random roommates.",
                 badge: "94% success rate",
                 badgeColor: "badge-success",
-                image: "/api/placeholder/200/120" // Visual element for AI matching
+                buttonColor: "from-green-500 to-green-600"
               },
               {
                 icon: Filter,
@@ -280,7 +336,7 @@ export default function MarketingPage() {
                 description: "University, program, study year, budget, lifestyle preferences, and more. Find exactly what you're looking for.",
                 badge: "15+ filters",
                 badgeColor: "badge-primary",
-                image: "/api/placeholder/200/120"
+                buttonColor: "from-blue-500 to-blue-600"
               },
               {
                 icon: MessageCircle,
@@ -288,7 +344,7 @@ export default function MarketingPage() {
                 description: "Built-in messaging with icebreakers and conversation starters. Break the ice naturally with your matches.",
                 badge: "Smart prompts",
                 badgeColor: "badge-secondary",
-                image: "/api/placeholder/200/120"
+                buttonColor: "from-purple-500 to-purple-600"
               },
               {
                 icon: Shield,
@@ -296,7 +352,7 @@ export default function MarketingPage() {
                 description: "All students are verified through their university email and ID. Your safety and privacy are our top priority.",
                 badge: "100% verified",
                 badgeColor: "badge-error",
-                image: "/api/placeholder/200/120"
+                buttonColor: "from-red-500 to-red-600"
               },
               {
                 icon: GraduationCap,
@@ -304,7 +360,7 @@ export default function MarketingPage() {
                 description: "Integrated with 50+ universities across the Netherlands. Seamless onboarding through your student portal.",
                 badge: "50+ universities",
                 badgeColor: "badge-primary",
-                image: "/api/placeholder/200/120"
+                buttonColor: "from-blue-500 to-blue-600"
               },
               {
                 icon: Home,
@@ -312,20 +368,20 @@ export default function MarketingPage() {
                 description: "Connect with verified housing listings, schedule tours, and manage your entire roommate journey in one place.",
                 badge: "All-in-one",
                 badgeColor: "badge-secondary",
-                image: "/api/placeholder/200/120"
+                buttonColor: "from-purple-500 to-purple-600"
               }
             ].map((feature, index) => {
               const Icon = feature.icon
               return (
                 <motion.div key={feature.title} variants={fadeInUp}>
-                  <div className="feature-card group">
-                    {/* Visual Element - Purpose: Break text monotony and add visual interest */}
-                    <div className="w-full h-32 bg-gradient-to-br from-gray-100 to-gray-200 rounded-lg mb-4 flex items-center justify-center">
+                  <div className="bg-white rounded-2xl p-8 shadow-lg hover:shadow-xl transition-all duration-300 border border-gray-100 hover:border-gray-200">
+                    {/* Visual Element */}
+                    <div className="w-full h-32 bg-gradient-to-br from-gray-100 to-gray-200 rounded-lg mb-6 flex items-center justify-center">
                       <Icon className="w-12 h-12 text-gray-400" />
                     </div>
                     
-                    {/* Badge - Purpose: Quantify the benefit */}
-                    <div className="flex items-start justify-between mb-4">
+                    {/* Badge */}
+                    <div className="flex items-start justify-between mb-6">
                       <div className="w-12 h-12 bg-primary-100 rounded-xl flex items-center justify-center">
                         <Icon className="w-6 h-6 text-primary-600" />
                       </div>
@@ -334,14 +390,14 @@ export default function MarketingPage() {
                       </div>
                     </div>
                     
-                    {/* Content - Purpose: Clear benefit communication */}
-                    <h3 className="text-h4 text-gray-900 mb-3">{feature.title}</h3>
-                    <p className="text-body text-gray-600 mb-4 leading-relaxed">{feature.description}</p>
+                    {/* Content */}
+                    <h3 className="text-h4 text-gray-900 mb-4">{feature.title}</h3>
+                    <p className="text-body text-gray-600 mb-6 leading-relaxed">{feature.description}</p>
                     
-                    {/* Learn More - Purpose: Provide additional information path */}
-                    <button className="text-primary-600 font-medium hover:text-primary-700 transition-colors group-hover:gap-3 flex items-center gap-1">
+                    {/* Modern Learn More Button */}
+                    <button className={`w-full py-3 px-4 bg-gradient-to-r ${feature.buttonColor} text-white rounded-xl font-medium hover:shadow-lg transition-all duration-300 flex items-center justify-center gap-2`}>
                       Learn more
-                      <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
+                      <ArrowRight className="w-4 h-4" />
                     </button>
                   </div>
                 </motion.div>
@@ -351,8 +407,8 @@ export default function MarketingPage() {
         </div>
       </section>
 
-      {/* Testimonials Section - Purpose: Social proof with clear review context */}
-      <section className="section bg-gray-50">
+      {/* Section 4: Testimonials - Better colors and review layout */}
+      <section className="section bg-white">
         <div className="container">
           <motion.div
             initial="initial"
@@ -361,9 +417,8 @@ export default function MarketingPage() {
             variants={staggerChildren}
             className="text-center space-y-12 mb-16"
           >
-            {/* Section Header - Purpose: Context for testimonials */}
             <motion.div variants={fadeInUp} className="space-y-4">
-              <div className="inline-flex items-center gap-2 px-4 py-2 bg-rose-100 rounded-full text-rose-700 text-sm font-medium">
+              <div className="inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-rose-100 to-pink-100 rounded-full text-rose-700 text-sm font-medium">
                 <Heart className="w-4 h-4" />
                 Loved by students across the Netherlands
               </div>
@@ -378,7 +433,7 @@ export default function MarketingPage() {
             </motion.div>
           </motion.div>
 
-          {/* Testimonials Grid - Purpose: Social proof with clear review elements */}
+          {/* Testimonials Grid - Better layout and colors */}
           <motion.div
             initial="initial"
             whileInView="animate"
@@ -388,41 +443,42 @@ export default function MarketingPage() {
           >
             {testimonials.map((testimonial, index) => (
               <motion.div key={testimonial.name} variants={fadeInUp}>
-                <div className="testimonial-card">
-                  {/* Quote Icon - Purpose: Clear visual indicator of testimonial */}
-                  <div className="absolute top-4 left-4 w-8 h-8 bg-primary-100 rounded-full flex items-center justify-center">
+                <div className="bg-white rounded-2xl p-8 shadow-lg border border-gray-100">
+                  {/* Quote Icon */}
+                  <div className="w-8 h-8 bg-primary-100 rounded-full flex items-center justify-center mb-6">
                     <Quote className="w-4 h-4 text-primary-600" />
                   </div>
                   
-                  {/* Star Rating - Purpose: Quantify satisfaction */}
-                  <div className="flex items-center gap-1 mb-4 justify-center">
-                    {[...Array(5)].map((_, i) => (
-                      <Star key={i} className="w-4 h-4 fill-yellow-400 text-yellow-400" />
-                    ))}
+                  {/* Author Info First */}
+                  <div className="flex items-center gap-4 mb-6">
+                    <div className="w-16 h-16 bg-gradient-to-br from-primary-500 to-secondary-500 rounded-full flex items-center justify-center text-white font-bold text-xl">
+                      {testimonial.avatar}
+                    </div>
+                    <div className="text-left">
+                      <h4 className="font-bold text-gray-900 mb-1">{testimonial.name}</h4>
+                      <p className="text-body-sm text-gray-600 mb-2">
+                        {testimonial.program} • {testimonial.university}
+                      </p>
+                      {/* Star Rating */}
+                      <div className="flex items-center gap-1">
+                        {[...Array(5)].map((_, i) => (
+                          <Star key={i} className="w-4 h-4 fill-yellow-400 text-yellow-400" />
+                        ))}
+                      </div>
+                    </div>
                   </div>
                   
-                  {/* Testimonial Content - Purpose: Authentic social proof */}
-                  <p className="text-body text-gray-700 mb-6 leading-relaxed text-center">
+                  {/* Testimonial Content */}
+                  <p className="text-body text-gray-700 mb-6 leading-relaxed">
                     &ldquo;{testimonial.text}&rdquo;
                   </p>
                   
-                  {/* Author Info - Purpose: Credibility and relatability */}
-                  <div className="text-center">
-                    <div className="w-16 h-16 bg-gradient-to-br from-primary-500 to-secondary-500 rounded-full flex items-center justify-center text-white font-bold text-xl mx-auto mb-3">
-                      {testimonial.avatar}
-                    </div>
-                    <h4 className="font-bold text-gray-900 mb-1">{testimonial.name}</h4>
-                    <p className="text-body-sm text-gray-600 mb-3">
-                      {testimonial.program} • {testimonial.university}
-                    </p>
-                    
-                    {/* Highlight - Purpose: Emotional connection */}
-                    <div className="flex items-center justify-center gap-2 pt-3 border-t border-gray-200">
-                      <Heart className="w-4 h-4 text-rose-500" />
-                      <span className="text-body-sm font-medium text-gray-900">
-                        {testimonial.highlight}
-                      </span>
-                    </div>
+                  {/* Highlight */}
+                  <div className="flex items-center gap-2 pt-4 border-t border-gray-200">
+                    <Heart className="w-4 h-4 text-rose-500" />
+                    <span className="text-body-sm font-medium text-gray-900">
+                      {testimonial.highlight}
+                    </span>
                   </div>
                 </div>
               </motion.div>
@@ -431,8 +487,8 @@ export default function MarketingPage() {
         </div>
       </section>
 
-      {/* University Partners Section - Purpose: Credibility and institutional trust */}
-      <section className="section">
+      {/* Section 5: University Partners - Larger, bolder text */}
+      <section className="section bg-gradient-to-br from-primary-50 to-secondary-50">
         <div className="container">
           <motion.div
             initial="initial"
@@ -441,9 +497,8 @@ export default function MarketingPage() {
             variants={staggerChildren}
             className="text-center space-y-12 mb-16"
           >
-            {/* Section Header - Purpose: Context for university partnerships */}
             <motion.div variants={fadeInUp} className="space-y-4">
-              <div className="inline-flex items-center gap-2 px-4 py-2 bg-primary-100 rounded-full text-primary-700 text-sm font-medium">
+              <div className="inline-flex items-center gap-2 px-4 py-2 bg-white/80 rounded-full text-primary-700 text-sm font-medium shadow-sm">
                 <GraduationCap className="w-4 h-4" />
                 Trusted by universities
               </div>
@@ -458,21 +513,21 @@ export default function MarketingPage() {
             </motion.div>
           </motion.div>
 
-          {/* University Grid - Purpose: Visual credibility through logos */}
+          {/* University Grid - Larger, bolder text */}
           <motion.div
             initial="initial"
             whileInView="animate"
             viewport={{ once: true }}
             variants={staggerChildren}
-            className="university-grid"
+            className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6"
           >
             {universities.map((university, index) => (
               <motion.div key={university} variants={fadeInUp}>
-                <div className="university-card">
-                  <div className="w-12 h-12 bg-primary-100 rounded-xl flex items-center justify-center mx-auto mb-3">
-                    <GraduationCap className="w-6 h-6 text-primary-600" />
+                <div className="bg-white rounded-xl p-6 text-center shadow-md hover:shadow-lg transition-all duration-300 border border-gray-100">
+                  <div className="w-16 h-16 bg-gradient-to-br from-primary-500 to-secondary-500 rounded-xl flex items-center justify-center mx-auto mb-4 shadow-lg">
+                    <GraduationCap className="w-8 h-8 text-white" />
                   </div>
-                  <h3 className="font-medium text-gray-900 text-center text-body-sm">
+                  <h3 className="font-bold text-gray-900 text-base leading-tight">
                     {university}
                   </h3>
                 </div>
@@ -480,7 +535,7 @@ export default function MarketingPage() {
             ))}
           </motion.div>
 
-          {/* Partner CTA - Purpose: Clear path for university partnerships */}
+          {/* Partner CTA */}
           <motion.div
             initial="initial"
             whileInView="animate"
@@ -501,41 +556,7 @@ export default function MarketingPage() {
         </div>
       </section>
 
-      {/* Stats Section - Purpose: Quantify success and build trust */}
-      <section className="section bg-gray-50">
-        <div className="container">
-          <motion.div
-            initial="initial"
-            whileInView="animate"
-            viewport={{ once: true }}
-            variants={staggerChildren}
-            className="stats-grid"
-          >
-            {[
-              { number: "10,000+", label: "Students matched", icon: Users, description: "Successfully connected" },
-              { number: "94%", label: "Success rate", icon: TrendingUp, description: "Happy roommates" },
-              { number: "50+", label: "Partner universities", icon: GraduationCap, description: "Across Netherlands" },
-              { number: "4.8★", label: "Student rating", icon: Star, description: "Average review" }
-            ].map((stat, index) => {
-              const Icon = stat.icon
-              return (
-                <motion.div key={stat.label} variants={fadeInUp}>
-                  <div className="stat-card text-center">
-                    <div className="w-16 h-16 bg-primary-100 rounded-2xl flex items-center justify-center mx-auto mb-4">
-                      <Icon className="w-8 h-8 text-primary-600" />
-                    </div>
-                    <div className="stat-number">{stat.number}</div>
-                    <div className="stat-label">{stat.label}</div>
-                    <div className="text-body-xs text-gray-500 mt-1">{stat.description}</div>
-                  </div>
-                </motion.div>
-              )
-            })}
-          </motion.div>
-        </div>
-      </section>
-
-      {/* Final CTA Section - Purpose: Clear conversion path with high contrast */}
+      {/* Section 7: Final CTA Section - Better contrast and button styling */}
       <section className="banner relative overflow-hidden">
         <div className="container">
           <motion.div
@@ -549,24 +570,24 @@ export default function MarketingPage() {
               <h2 className="text-h1 text-white">
                 Ready to find your perfect roommate?
               </h2>
-              <p className="text-body-lg text-white/90 max-w-2xl mx-auto">
+              <p className="text-body-lg text-white leading-relaxed max-w-2xl mx-auto">
                 Join thousands of students who've found their ideal living situation through smart matching.
               </p>
             </motion.div>
 
-            {/* High Contrast Buttons - Purpose: Clear visibility and action hierarchy */}
-            <motion.div variants={fadeInUp} className="flex flex-col sm:flex-row gap-4 justify-center">
-              <button className="btn btn-primary btn-lg bg-white text-primary-600 hover:bg-gray-100 shadow-xl" onClick={handleGetStarted}>
+            {/* Better styled buttons with proper sizing */}
+            <motion.div variants={fadeInUp} className="flex flex-col sm:flex-row gap-4 justify-center max-w-md mx-auto">
+              <button className="btn btn-primary btn-lg bg-white text-primary-600 hover:bg-gray-100 shadow-xl font-semibold" onClick={handleGetStarted}>
                 Get started for free
                 <ArrowRight className="w-5 h-5" />
               </button>
-              <button className="btn btn-outline btn-lg border-2 border-white text-white hover:bg-white hover:text-primary-600 shadow-lg" onClick={handleLearnMore}>
+              <button className="btn btn-outline btn-lg border-2 border-white text-white hover:bg-white hover:text-primary-600 shadow-lg font-semibold" onClick={handleLearnMore}>
                 Learn more
               </button>
             </motion.div>
 
-            {/* Trust Indicators - Purpose: Remove final objections */}
-            <motion.div variants={fadeInUp} className="flex flex-wrap gap-8 justify-center text-body-sm text-white/80">
+            {/* Better contrast for trust indicators */}
+            <motion.div variants={fadeInUp} className="flex flex-wrap gap-8 justify-center text-body-sm text-white">
               <div className="flex items-center gap-2">
                 <CheckCircle className="w-5 h-5" />
                 <span>Free for students</span>
@@ -583,7 +604,7 @@ export default function MarketingPage() {
           </motion.div>
         </div>
 
-        {/* Background Elements - Purpose: Add visual interest without distraction */}
+        {/* Background Elements */}
         <div className="absolute top-10 left-10 w-40 h-40 bg-white/10 rounded-full blur-2xl"></div>
         <div className="absolute bottom-10 right-10 w-32 h-32 bg-white/10 rounded-full blur-2xl"></div>
       </section>
