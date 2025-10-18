@@ -94,6 +94,9 @@ const config: Config = {
           DEFAULT: "rgb(var(--line) / <alpha-value>)",
         },
       },
+      ringColor: {
+        primary: 'rgb(var(--brand-600) / <alpha-value>)',
+      },
       borderRadius: {
         sm: "0.5rem",
         md: "0.75rem",

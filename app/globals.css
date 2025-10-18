@@ -173,6 +173,12 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
+/* Focus ring styles */
+*:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 2px rgb(var(--brand-600)), 0 0 0 4px rgba(var(--brand-600) / 0.2);
+}
+
 /* Typography System */
 h1, h2, h3, h4, h5, h6 {
   font-family: var(--font-display);
