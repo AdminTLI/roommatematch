@@ -21,7 +21,8 @@ import {
   DollarSign,
   Car,
   Zap,
-  Sparkles
+  Sparkles,
+  ArrowLeft
 } from 'lucide-react'
 import { getDemoAgreements, getDemoParticipants, getDemoTemplates } from '@/lib/agreements/utils'
 import type { 
@@ -161,10 +162,10 @@ export default function AgreementsPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center">
+      <div className="min-h-screen bg-surface-0 flex items-center justify-center">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-          <p className="text-gray-600 dark:text-gray-400">Loading agreements...</p>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600 mx-auto mb-4"></div>
+          <p className="text-gray-600">Loading agreements...</p>
         </div>
       </div>
     )
@@ -172,12 +173,12 @@ export default function AgreementsPage() {
 
   if (!user) {
     return (
-      <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center">
+      <div className="min-h-screen bg-surface-0 flex items-center justify-center">
         <div className="text-center">
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-4">
+          <h1 className="text-h1 text-gray-900 mb-4">
             Access Denied
           </h1>
-          <p className="text-gray-600 dark:text-gray-400 mb-6">
+          <p className="text-body-lg text-gray-600 mb-6">
             Please sign in to view your agreements.
           </p>
           <Button onClick={() => router.push('/auth/sign-in')}>
@@ -190,19 +191,23 @@ export default function AgreementsPage() {
 
   if (showBuilder) {
     return (
-      <div className="min-h-screen bg-gray-50 dark:bg-gray-900 py-8">
+      <div className="min-h-screen bg-surface-0 py-8">
         <div className="container mx-auto px-4">
           <div className="mb-8">
             <Button
               variant="outline"
               onClick={() => setShowBuilder(false)}
-              className="mb-4"
+              className="mb-6 flex items-center gap-2"
             >
-              ← Back to Agreements
+              <ArrowLeft className="w-4 h-4" />
+              Back to Agreements
             </Button>
-            <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100">
+            <h1 className="text-h1 text-gray-900">
               Create New Agreement
             </h1>
+            <p className="text-body-lg text-gray-600 mt-4">
+              Build a comprehensive agreement with your roommates
+            </p>
           </div>
           
           <AgreementBuilder
@@ -216,34 +221,31 @@ export default function AgreementsPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
-      <div className="container mx-auto py-8 px-4">
-        <div className="mb-8">
-          <div className="flex items-center justify-between">
-            <div>
-              <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100 mb-2">
-                Household Agreements
-              </h1>
-              <p className="text-gray-600 dark:text-gray-400">
-                Create and manage agreements with your roommates.
-              </p>
-            </div>
-            
-            <Button onClick={() => handleCreateAgreement()}>
-              <Plus className="h-4 w-4 mr-2" />
-              New Agreement
-            </Button>
-          </div>
+    <div className="min-h-screen bg-surface-0">
+      <div className="container mx-auto py-8 px-4 space-y-8">
+        {/* Header */}
+        <div className="text-center space-y-4">
+          <h1 className="text-h1 text-gray-900">
+            Household Agreements
+          </h1>
+          <p className="text-body-lg text-gray-600 max-w-2xl mx-auto">
+            Create and manage agreements with your roommates to ensure smooth living arrangements.
+          </p>
+          
+          <Button onClick={() => handleCreateAgreement()} className="flex items-center gap-2">
+            <Plus className="h-4 w-4" />
+            New Agreement
+          </Button>
         </div>
 
-        <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-8">
           <TabsList className="grid w-full grid-cols-3">
             <TabsTrigger value="my-agreements">My Agreements</TabsTrigger>
             <TabsTrigger value="templates">Templates</TabsTrigger>
             <TabsTrigger value="create">Create New</TabsTrigger>
           </TabsList>
           
-          <TabsContent value="my-agreements" className="space-y-6">
+          <TabsContent value="my-agreements" className="space-y-8">
             <AgreementStats 
               agreements={agreements}
               participants={participants}
@@ -260,24 +262,31 @@ export default function AgreementsPage() {
             />
           </TabsContent>
           
-          <TabsContent value="templates" className="space-y-6">
+          <TabsContent value="templates" className="space-y-8">
+            <div className="text-center space-y-4 mb-8">
+              <h2 className="text-h2 text-gray-900">Agreement Templates</h2>
+              <p className="text-body text-gray-600 max-w-2xl mx-auto">
+                Choose from our pre-built templates to quickly create common household agreements.
+              </p>
+            </div>
+            
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {templateCategories.map((category) => {
                 const Icon = category.icon
                 return (
                   <Card 
                     key={category.key} 
-                    className="cursor-pointer hover:shadow-md transition-shadow"
+                    className="cursor-pointer hover:shadow-lg transition-shadow"
                     onClick={() => handleCreateAgreement(templates.find(t => t.category === category.key))}
                   >
                     <CardHeader>
-                      <div className="flex items-center gap-3">
-                        <div className={`p-2 rounded-lg ${category.color}`}>
-                          <Icon className="h-5 w-5" />
+                      <div className="flex items-center gap-4">
+                        <div className="w-12 h-12 bg-primary-100 rounded-xl flex items-center justify-center">
+                          <Icon className="h-6 w-6 text-primary-600" />
                         </div>
                         <div>
-                          <CardTitle className="text-lg">{category.name}</CardTitle>
-                          <p className="text-sm text-gray-600 dark:text-gray-400">
+                          <CardTitle className="text-lg text-gray-900">{category.name}</CardTitle>
+                          <p className="text-body-sm text-gray-600">
                             {category.description}
                           </p>
                         </div>
@@ -294,14 +303,16 @@ export default function AgreementsPage() {
             </div>
           </TabsContent>
           
-          <TabsContent value="create" className="space-y-6">
+          <TabsContent value="create" className="space-y-8">
             <div className="text-center py-12">
-              <FileText className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-              <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100 mb-2">
+              <div className="w-16 h-16 bg-primary-100 rounded-2xl flex items-center justify-center mx-auto mb-6">
+                <FileText className="h-8 w-8 text-primary-600" />
+              </div>
+              <h3 className="text-h3 text-gray-900 mb-4">
                 Create New Agreement
               </h3>
-              <p className="text-gray-600 dark:text-gray-400 mb-6">
-                Choose a template or start from scratch.
+              <p className="text-body-lg text-gray-600 mb-8 max-w-lg mx-auto">
+                Choose a template or start from scratch to create a custom agreement for your household.
               </p>
               <div className="flex gap-4 justify-center">
                 <Button onClick={() => handleCreateAgreement()}>
