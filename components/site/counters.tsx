@@ -1,5 +1,6 @@
 import { Card, CardContent } from '@/components/ui/card'
-import { Container } from '@/components/ui/primitives/container'
+import Container from '@/components/ui/primitives/container'
+import Section from '@/components/ui/primitives/section'
 import { Users, Heart, GraduationCap, Star } from 'lucide-react'
 
 const stats = [
@@ -31,7 +32,7 @@ const stats = [
 
 export function Counters() {
   return (
-    <section className="py-14 md:py-20 lg:py-28 bg-brand-surface">
+    <Section className="bg-brand-surface">
       <Container>
         <div className="text-center mb-12">
           <h2 className="text-3xl md:text-4xl font-bold text-brand-text mb-4">
@@ -74,6 +75,6 @@ export function Counters() {
           })}
         </div>
       </Container>
-    </section>
+    </Section>
   )
 }

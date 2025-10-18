@@ -17,113 +17,67 @@ const config: Config = {
     },
     extend: {
       colors: {
-        // Brand colors - Clean student-friendly palette
         brand: {
-          primary: '#4F46E5',
-          primaryHover: '#4338CA',
-          accent: '#06B6D4',
-          surface: '#F8FAFC',
-          text: '#0F172A',
-          muted: '#475569',
-          border: '#E2E8F0',
+          primary: '#4F46E5',        // Indigo 600
+          primaryHover: '#4338CA',   // Indigo 700
+          accent: '#06B6D4',         // Cyan 500
+          surface: '#F8FAFC',        // Section tint
+          text: '#0F172A',           // Slate 900
+          muted: '#475569',          // Slate 600
+          border: '#E2E8F0'          // Slate 200
         },
-        // Accent colors
+        // Keep existing shadcn colors for compatibility
+        border: "hsl(var(--border))",
+        input: "hsl(var(--input))",
+        ring: "hsl(var(--ring))",
+        background: "hsl(var(--background))",
+        foreground: "hsl(var(--foreground))",
+        primary: {
+          DEFAULT: "hsl(var(--primary))",
+          foreground: "hsl(var(--primary-foreground))",
+        },
+        secondary: {
+          DEFAULT: "hsl(var(--secondary))",
+          foreground: "hsl(var(--secondary-foreground))",
+        },
+        destructive: {
+          DEFAULT: "hsl(var(--destructive))",
+          foreground: "hsl(var(--destructive-foreground))",
+        },
+        muted: {
+          DEFAULT: "hsl(var(--muted))",
+          foreground: "hsl(var(--muted-foreground))",
+        },
         accent: {
-          50: "rgb(var(--accent-50) / <alpha-value>)",
-          100: "rgb(var(--accent-100) / <alpha-value>)",
-          200: "rgb(var(--accent-200) / <alpha-value>)",
-          300: "rgb(var(--accent-300) / <alpha-value>)",
-          400: "rgb(var(--accent-400) / <alpha-value>)",
-          500: "rgb(var(--accent-500) / <alpha-value>)",
-          600: "rgb(var(--accent-600) / <alpha-value>)",
-          700: "rgb(var(--accent-700) / <alpha-value>)",
-          800: "rgb(var(--accent-800) / <alpha-value>)",
-          900: "rgb(var(--accent-900) / <alpha-value>)",
+          DEFAULT: "hsl(var(--accent))",
+          foreground: "hsl(var(--accent-foreground))",
         },
-        // Mint (success) colors
-        mint: {
-          50: "rgb(var(--mint-50) / <alpha-value>)",
-          100: "rgb(var(--mint-100) / <alpha-value>)",
-          200: "rgb(var(--mint-200) / <alpha-value>)",
-          300: "rgb(var(--mint-300) / <alpha-value>)",
-          400: "rgb(var(--mint-400) / <alpha-value>)",
-          500: "rgb(var(--mint-500) / <alpha-value>)",
-          600: "rgb(var(--mint-600) / <alpha-value>)",
-          700: "rgb(var(--mint-700) / <alpha-value>)",
-          800: "rgb(var(--mint-800) / <alpha-value>)",
-          900: "rgb(var(--mint-900) / <alpha-value>)",
+        popover: {
+          DEFAULT: "hsl(var(--popover))",
+          foreground: "hsl(var(--popover-foreground))",
         },
-        // Rose (error) colors
-        rose: {
-          50: "rgb(var(--rose-50) / <alpha-value>)",
-          100: "rgb(var(--rose-100) / <alpha-value>)",
-          200: "rgb(var(--rose-200) / <alpha-value>)",
-          300: "rgb(var(--rose-300) / <alpha-value>)",
-          400: "rgb(var(--rose-400) / <alpha-value>)",
-          500: "rgb(var(--rose-500) / <alpha-value>)",
-          600: "rgb(var(--rose-600) / <alpha-value>)",
-          700: "rgb(var(--rose-700) / <alpha-value>)",
-          800: "rgb(var(--rose-800) / <alpha-value>)",
-          900: "rgb(var(--rose-900) / <alpha-value>)",
-        },
-        // Ink (text) colors
-        ink: {
-          50: "rgb(var(--ink-50) / <alpha-value>)",
-          100: "rgb(var(--ink-100) / <alpha-value>)",
-          200: "rgb(var(--ink-200) / <alpha-value>)",
-          300: "rgb(var(--ink-300) / <alpha-value>)",
-          400: "rgb(var(--ink-400) / <alpha-value>)",
-          500: "rgb(var(--ink-500) / <alpha-value>)",
-          600: "rgb(var(--ink-600) / <alpha-value>)",
-          700: "rgb(var(--ink-700) / <alpha-value>)",
-          800: "rgb(var(--ink-800) / <alpha-value>)",
-          900: "rgb(var(--ink-900) / <alpha-value>)",
-        },
-        // Surface colors
-        surface: {
-          0: "rgb(var(--surface-0) / <alpha-value>)",
-          1: "rgb(var(--surface-1) / <alpha-value>)",
-          2: "rgb(var(--surface-2) / <alpha-value>)",
-          3: "rgb(var(--surface-3) / <alpha-value>)",
-        },
-        // Line colors
-        line: {
-          DEFAULT: "rgb(var(--line) / <alpha-value>)",
+        card: {
+          DEFAULT: "hsl(var(--card))",
+          foreground: "hsl(var(--card-foreground))",
         },
       },
-      ringColor: {
-        primary: 'rgb(var(--brand-600) / <alpha-value>)',
+      boxShadow: {
+        'elev-1': '0 1px 2px rgba(15,23,42,.06),0 1px 1px rgba(15,23,42,.04)',
+        'elev-2': '0 10px 20px rgba(15,23,42,.05),0 4px 8px rgba(15,23,42,.04)'
       },
-      borderRadius: {
-        sm: "0.5rem",
-        md: "0.75rem",
-        lg: "1rem",
-        xl: "1.25rem",
-        "2xl": "1.5rem",
-        pill: "9999px",
+      borderRadius: { 
+        '2xl': '1rem' 
       },
       fontFamily: {
-        sans: ["Inter", "system-ui", "sans-serif"],
-        display: ["Outfit", "system-ui", "sans-serif"],
+        sans: ['Inter', 'ui-sans-serif', 'system-ui', 'sans-serif']
       },
-      fontSize: {
-        display: ["clamp(2.4rem, 2vw + 1rem, 3.25rem)", { lineHeight: "1.1", fontWeight: "700" }],
-        "h1": ["clamp(2rem, 1.2vw + 1rem, 2.5rem)", { lineHeight: "1.2", fontWeight: "600" }],
-        "h2": ["clamp(1.6rem, 1vw + 0.8rem, 2rem)", { lineHeight: "1.3", fontWeight: "600" }],
-        "h3": ["clamp(1.25rem, 0.8vw + 0.6rem, 1.5rem)", { lineHeight: "1.4", fontWeight: "600" }],
-        "h4": ["clamp(1.125rem, 0.6vw + 0.5rem, 1.25rem)", { lineHeight: "1.4", fontWeight: "500" }],
-        body: ["1rem", { lineHeight: "1.6" }],
-        "body-sm": ["0.9375rem", { lineHeight: "1.5" }],
-        "body-xs": ["0.875rem", { lineHeight: "1.4" }],
+      container: { 
+        center: true 
       },
       spacing: {
         18: "4.5rem",
         88: "22rem",
         128: "32rem",
-      },
-      boxShadow: {
-        "elev-1": "0 1px 2px rgba(15,23,42,.06), 0 1px 1px rgba(15,23,42,.04)",
-        "elev-2": "0 10px 20px rgba(15,23,42,.05), 0 4px 8px rgba(15,23,42,.04)",
       },
       animation: {
         "accordion-down": "accordion-down 0.2s ease-out",
@@ -158,12 +112,6 @@ const config: Config = {
           "0%, 100%": { transform: "translateY(0)" },
           "50%": { transform: "translateY(-5px)" },
         },
-      },
-      backgroundImage: {
-        "gradient-radial": "radial-gradient(var(--tw-gradient-stops))",
-        "gradient-conic": "conic-gradient(from 180deg at 50% 50%, var(--tw-gradient-stops))",
-        "noise": "url('data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.015'/%3E%3C/svg%3E')",
-        "hero-gradient": "radial-gradient(ellipse at top right, rgba(37, 99, 235, 0.03) 0%, transparent 50%), conic-gradient(from 180deg at 50% 50%, rgba(5, 150, 105, 0.03) 0%, transparent 50%)",
       },
     },
   },

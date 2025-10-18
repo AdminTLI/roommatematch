@@ -3,7 +3,8 @@
 import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
-import { Container } from '@/components/ui/primitives/container'
+import Container from '@/components/ui/primitives/container'
+import Section from '@/components/ui/primitives/section'
 
 const universities = [
   "TU Delft",
@@ -28,7 +29,7 @@ export function Universities() {
   }
 
   return (
-    <section className="py-14 md:py-20 lg:py-28 bg-brand-surface">
+    <Section className="bg-brand-surface">
       <Container>
         <div className="text-center mb-12">
           <h2 className="text-3xl md:text-4xl font-bold text-brand-text mb-4">
@@ -58,12 +59,13 @@ export function Universities() {
           </p>
           <Button 
             variant="outline"
+            size="lg"
             onClick={handleBecomePartner}
           >
             Become a partner
           </Button>
         </div>
       </Container>
-    </section>
+    </Section>
   )
 }

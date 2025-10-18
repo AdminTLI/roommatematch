@@ -1,5 +1,6 @@
 import { Card, CardContent } from '@/components/ui/card'
-import { Container } from '@/components/ui/primitives/container'
+import Container from '@/components/ui/primitives/container'
+import Section from '@/components/ui/primitives/section'
 import { Star } from 'lucide-react'
 
 const testimonials = [
@@ -34,7 +35,7 @@ const testimonials = [
 
 export function Testimonials() {
   return (
-    <section className="py-14 md:py-20 lg:py-28 bg-white">
+    <Section className="bg-white">
       <Container>
         <div className="text-center mb-12">
           <h2 className="text-3xl md:text-4xl font-bold text-brand-text mb-4">
@@ -49,7 +50,7 @@ export function Testimonials() {
           {testimonials.map((testimonial, index) => (
             <Card 
               key={index}
-              className="group rounded-2xl border border-brand-border shadow-elev-1 p-6 md:p-8 bg-white h-full flex flex-col transition-transform duration-200 hover:-translate-y-0.5 hover:shadow-elev-2"
+              className="rounded-2xl border border-brand-border shadow-elev-1 p-6 md:p-8 bg-white h-full flex flex-col transition-transform duration-200 hover:-translate-y-0.5 hover:shadow-elev-2"
             >
               <CardContent className="p-0 flex flex-col h-full">
                 {/* Stars */}
@@ -90,6 +91,6 @@ export function Testimonials() {
           ))}
         </div>
       </Container>
-    </section>
+    </Section>
   )
 }

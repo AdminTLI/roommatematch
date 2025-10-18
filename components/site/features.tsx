@@ -1,6 +1,7 @@
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { Container } from '@/components/ui/primitives/container'
+import Container from '@/components/ui/primitives/container'
+import Section from '@/components/ui/primitives/section'
 import { 
   Brain, 
   Filter, 
@@ -52,7 +53,7 @@ const features = [
 
 export function Features() {
   return (
-    <section className="py-14 md:py-20 lg:py-28 bg-brand-surface">
+    <Section className="bg-brand-surface">
       <Container>
         <div className="text-center mb-12">
           <h2 className="text-3xl md:text-4xl font-bold text-brand-text mb-4">
@@ -69,7 +70,7 @@ export function Features() {
             return (
               <Card 
                 key={index}
-                className="group rounded-2xl border border-brand-border shadow-elev-1 p-6 md:p-8 bg-white h-full flex flex-col transition-transform duration-200 hover:-translate-y-0.5 hover:shadow-elev-2"
+                className="rounded-2xl border border-brand-border shadow-elev-1 p-6 md:p-8 bg-white h-full flex flex-col transition-transform duration-200 hover:-translate-y-0.5 hover:shadow-elev-2"
               >
                 <CardContent className="p-0 flex flex-col h-full">
                   <div className="flex items-center mb-4">
@@ -102,6 +103,6 @@ export function Features() {
           })}
         </div>
       </Container>
-    </section>
+    </Section>
   )
 }

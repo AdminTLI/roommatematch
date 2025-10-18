@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
-import { Container } from '@/components/ui/primitives/container'
+import Container from '@/components/ui/primitives/container'
 import { Menu, X, ChevronRight } from 'lucide-react'
 
 export function Navbar() {
@@ -65,12 +65,14 @@ export function Navbar() {
             <div className="hidden md:flex items-center space-x-4">
               <Button 
                 variant="outline" 
+                size="lg"
                 onClick={handleSignIn}
               >
                 Sign In
               </Button>
               <Button 
                 variant="primary"
+                size="lg"
                 onClick={handleGetStarted}
               >
                 Get Started
@@ -115,6 +117,7 @@ export function Navbar() {
                 <div className="pt-4 border-t border-brand-border space-y-3">
                   <Button 
                     variant="outline" 
+                    size="lg"
                     className="w-full justify-center"
                     onClick={() => {
                       handleSignIn()
@@ -125,6 +128,7 @@ export function Navbar() {
                   </Button>
                   <Button 
                     variant="primary"
+                    size="lg"
                     className="w-full justify-center"
                     onClick={() => {
                       handleGetStarted()

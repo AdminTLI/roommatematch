@@ -176,7 +176,16 @@ body {
 /* Focus ring styles */
 *:focus-visible {
   outline: none;
-  box-shadow: 0 0 0 2px rgb(var(--brand-600)), 0 0 0 4px rgba(var(--brand-600) / 0.2);
+  box-shadow: 0 0 0 2px #4F46E5, 0 0 0 4px rgba(79, 70, 229, 0.2);
+}
+
+/* Base utilities */
+:root {
+  scroll-behavior: smooth;
+}
+
+button {
+  word-break: keep-all;
 }
 
 /* Typography System */

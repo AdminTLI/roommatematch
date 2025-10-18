@@ -3,7 +3,8 @@
 import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
-import { Container } from '@/components/ui/primitives/container'
+import Container from '@/components/ui/primitives/container'
+import Section from '@/components/ui/primitives/section'
 import { Check } from 'lucide-react'
 
 export function Hero() {
@@ -38,11 +39,11 @@ export function Hero() {
   ]
 
   return (
-    <section className="py-14 md:py-20 lg:py-28 bg-white">
+    <Section className="bg-white">
       <Container>
         <div className="grid items-center gap-8 md:grid-cols-2">
           {/* Left column - Content */}
-          <div className="space-y-6">
+          <div className="relative z-10 space-y-6">
             <h1 className="text-4xl md:text-5xl lg:text-6xl leading-tight tracking-tight text-brand-text">
               Find roommates who actually fit your life
             </h1>
@@ -55,12 +56,14 @@ export function Hero() {
             <div className="flex flex-wrap items-center gap-3">
               <Button 
                 variant="primary"
+                size="lg"
                 onClick={handleGetMatched}
               >
                 Get matched
               </Button>
               <Button 
                 variant="outline"
+                size="lg"
                 onClick={handleSeeHowItWorks}
               >
                 See how it works
@@ -89,11 +92,11 @@ export function Hero() {
           </div>
 
           {/* Right column - Visual */}
-          <div className="grid gap-4 md:gap-6">
+          <div className="relative z-10 grid gap-4 md:gap-6">
             {mockMatches.map((match, index) => (
               <Card 
                 key={match.name}
-                className="group rounded-2xl border border-brand-border shadow-elev-1 p-6 md:p-8 bg-white transition-transform duration-200 hover:-translate-y-0.5 hover:shadow-elev-2"
+                className="rounded-2xl border border-brand-border bg-white shadow-elev-1 p-6 md:p-8 transition-transform duration-200 hover:-translate-y-0.5 hover:shadow-elev-2"
                 style={{
                   transform: `translateY(${index * 4}px) rotate(${index % 2 === 0 ? '1deg' : '-1deg'})`,
                 }}
@@ -125,6 +128,7 @@ export function Hero() {
                 
                 <Button 
                   variant="outline" 
+                  size="lg"
                   className="mt-6 self-start"
                   onClick={() => router.push('/matches')}
                 >
@@ -135,6 +139,6 @@ export function Hero() {
           </div>
         </div>
       </Container>
-    </section>
+    </Section>
   )
 }

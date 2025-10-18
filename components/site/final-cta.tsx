@@ -2,7 +2,8 @@
 
 import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
-import { Container } from '@/components/ui/primitives/container'
+import Container from '@/components/ui/primitives/container'
+import Section from '@/components/ui/primitives/section'
 import { Check } from 'lucide-react'
 
 export function FinalCTA() {
@@ -17,7 +18,7 @@ export function FinalCTA() {
   }
 
   return (
-    <section className="py-14 md:py-20 lg:py-28 bg-white">
+    <Section className="bg-white">
       <Container>
         <div className="grid items-center gap-8 md:grid-cols-2">
           {/* Left column - Content */}
@@ -34,12 +35,14 @@ export function FinalCTA() {
             <div className="flex flex-wrap items-center gap-3">
               <Button 
                 variant="primary"
+                size="lg"
                 onClick={handleGetStarted}
               >
                 Get started for free
               </Button>
               <Button 
                 variant="outline"
+                size="lg"
                 onClick={handleLearnMore}
               >
                 Learn more
@@ -76,6 +79,6 @@ export function FinalCTA() {
           </div>
         </div>
       </Container>
-    </section>
+    </Section>
   )
 }

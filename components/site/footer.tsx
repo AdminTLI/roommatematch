@@ -1,129 +1,60 @@
-import { Container } from '@/components/ui/primitives/container'
+import Container from "@/components/ui/primitives/container"
+import { Twitter, Linkedin, Instagram } from "lucide-react"
 
-const footerLinks = {
-  product: [
-    { name: 'How it works', href: '/how-it-works' },
-    { name: 'Features', href: '/features' },
-    { name: 'Pricing', href: '/pricing' },
-    { name: 'Universities', href: '/universities' },
-  ],
-  company: [
-    { name: 'About us', href: '/about' },
-    { name: 'Blog', href: '/blog' },
-    { name: 'Careers', href: '/careers' },
-    { name: 'Contact', href: '/contact' },
-  ],
-  support: [
-    { name: 'Help center', href: '/help' },
-    { name: 'Safety', href: '/safety' },
-    { name: 'Privacy policy', href: '/privacy' },
-    { name: 'Terms of service', href: '/terms' },
-  ],
-  social: [
-    { name: 'Twitter', href: 'https://twitter.com/roommatematch' },
-    { name: 'LinkedIn', href: 'https://linkedin.com/company/roommatematch' },
-    { name: 'Instagram', href: 'https://instagram.com/roommatematch' },
-  ]
-}
-
-export function Footer() {
+export default function Footer() {
   return (
-    <footer className="bg-brand-text text-white">
-      <Container>
-        <div className="py-12 md:py-16">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-8">
-            {/* Brand */}
-            <div className="lg:col-span-2">
-              <div className="flex items-center mb-4">
-                <span className="text-2xl font-bold">Roommate Match</span>
-              </div>
-              <p className="text-slate-400 mb-6 max-w-md">
-                The smartest way to find compatible roommates. 
-                Join thousands of students who found their perfect match.
-              </p>
-              <div className="flex space-x-4">
-                {footerLinks.social.map((link) => (
-                  <a
-                    key={link.name}
-                    href={link.href}
-                    className="text-slate-400 hover:text-white transition-colors"
-                  >
-                    {link.name}
-                  </a>
-                ))}
-              </div>
+    <footer className="bg-[#0B1220] text-slate-300">
+      <Container className="py-16">
+        <div className="grid gap-10 md:grid-cols-4">
+          {/* Brand */}
+          <div className="space-y-4">
+            <h3 className="text-white text-xl font-semibold">Roommate Match</h3>
+            <p className="text-slate-400 max-w-prose">The smartest way to find compatible roommates. Join thousands who found their perfect match.</p>
+            <div className="flex items-center gap-3">
+              <a aria-label="Twitter" className="rounded-full p-2 bg-white/5 hover:bg-white/10 focus-visible:ring-2 focus-visible:ring-brand-primary"><Twitter size={18}/></a>
+              <a aria-label="LinkedIn" className="rounded-full p-2 bg-white/5 hover:bg-white/10 focus-visible:ring-2 focus-visible:ring-brand-primary"><Linkedin size={18}/></a>
+              <a aria-label="Instagram" className="rounded-full p-2 bg-white/5 hover:bg-white/10 focus-visible:ring-2 focus-visible:ring-brand-primary"><Instagram size={18}/></a>
             </div>
+          </div>
 
-            {/* Product */}
-            <div>
-              <h3 className="font-semibold mb-4">Product</h3>
-              <ul className="space-y-3">
-                {footerLinks.product.map((link) => (
-                  <li key={link.name}>
-                    <a
-                      href={link.href}
-                      className="text-slate-400 hover:text-white transition-colors"
-                    >
-                      {link.name}
-                    </a>
-                  </li>
-                ))}
-              </ul>
-            </div>
+          {/* Columns */}
+          <div>
+            <h4 className="text-white font-semibold mb-4">Product</h4>
+            <ul className="space-y-3 text-slate-400">
+              <li><a className="hover:text-white">How it works</a></li>
+              <li><a className="hover:text-white">Features</a></li>
+              <li><a className="hover:text-white">Pricing</a></li>
+              <li><a className="hover:text-white">Universities</a></li>
+            </ul>
+          </div>
 
-            {/* Company */}
-            <div>
-              <h3 className="font-semibold mb-4">Company</h3>
-              <ul className="space-y-3">
-                {footerLinks.company.map((link) => (
-                  <li key={link.name}>
-                    <a
-                      href={link.href}
-                      className="text-slate-400 hover:text-white transition-colors"
-                    >
-                      {link.name}
-                    </a>
-                  </li>
-                ))}
-              </ul>
-            </div>
+          <div>
+            <h4 className="text-white font-semibold mb-4">Company</h4>
+            <ul className="space-y-3 text-slate-400">
+              <li><a className="hover:text-white">About us</a></li>
+              <li><a className="hover:text-white">Blog</a></li>
+              <li><a className="hover:text-white">Careers</a></li>
+              <li><a className="hover:text-white">Contact</a></li>
+            </ul>
+          </div>
 
-            {/* Support */}
-            <div>
-              <h3 className="font-semibold mb-4">Support</h3>
-              <ul className="space-y-3">
-                {footerLinks.support.map((link) => (
-                  <li key={link.name}>
-                    <a
-                      href={link.href}
-                      className="text-slate-400 hover:text-white transition-colors"
-                    >
-                      {link.name}
-                    </a>
-                  </li>
-                ))}
-              </ul>
-            </div>
+          <div>
+            <h4 className="text-white font-semibold mb-4">Support</h4>
+            <ul className="space-y-3 text-slate-400">
+              <li><a className="hover:text-white">Help center</a></li>
+              <li><a className="hover:text-white">Safety</a></li>
+              <li><a className="hover:text-white">Privacy policy</a></li>
+              <li><a className="hover:text-white">Terms of service</a></li>
+            </ul>
           </div>
         </div>
 
-        {/* Bottom bar */}
-        <div className="border-t border-slate-800 py-6">
-          <div className="flex flex-col md:flex-row justify-between items-center">
-            <p className="text-slate-400 text-sm">
-              © 2024 Roommate Match. All rights reserved.
-            </p>
-            <div className="flex space-x-6 mt-4 md:mt-0">
-              <a href="/privacy" className="text-slate-400 hover:text-white text-sm transition-colors">
-                Privacy
-              </a>
-              <a href="/terms" className="text-slate-400 hover:text-white text-sm transition-colors">
-                Terms
-              </a>
-              <a href="/cookies" className="text-slate-400 hover:text-white text-sm transition-colors">
-                Cookies
-              </a>
-            </div>
+        <div className="mt-12 border-t border-white/10 pt-6 flex flex-col md:flex-row items-center justify-between gap-4">
+          <p className="text-slate-500 text-sm">© {new Date().getFullYear()} Roommate Match. All rights reserved.</p>
+          <div className="flex items-center gap-6 text-sm text-slate-400">
+            <a className="hover:text-white">Privacy</a>
+            <a className="hover:text-white">Terms</a>
+            <a className="hover:text-white">Cookies</a>
           </div>
         </div>
       </Container>

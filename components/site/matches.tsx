@@ -3,7 +3,8 @@
 import { useRouter } from 'next/navigation'
 import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { Container } from '@/components/ui/primitives/container'
+import Container from '@/components/ui/primitives/container'
+import Section from '@/components/ui/primitives/section'
 
 const mockMatches = [
   {
@@ -36,7 +37,7 @@ export function Matches() {
   const router = useRouter()
 
   return (
-    <section className="py-14 md:py-20 lg:py-28 bg-white">
+    <Section className="bg-white">
       <Container>
         <div className="text-center mb-12">
           <h2 className="text-3xl md:text-4xl font-bold text-brand-text mb-4">
@@ -51,7 +52,7 @@ export function Matches() {
           {mockMatches.map((match, index) => (
             <Card 
               key={match.name}
-              className="group rounded-2xl border border-brand-border shadow-elev-1 p-6 md:p-8 bg-white h-full flex flex-col justify-between transition-transform duration-200 hover:-translate-y-0.5 hover:shadow-elev-2"
+              className="rounded-2xl border border-brand-border shadow-elev-1 p-6 md:p-8 bg-white h-full flex flex-col justify-between transition-transform duration-200 hover:-translate-y-0.5 hover:shadow-elev-2"
             >
               <div className="flex items-start justify-between mb-4">
                 <span className="inline-flex items-center rounded-full bg-emerald-50 text-emerald-700 px-3 py-1 text-sm font-semibold">
@@ -80,6 +81,7 @@ export function Matches() {
               
               <Button 
                 variant="outline" 
+                size="lg"
                 className="mt-6 self-start"
                 onClick={() => router.push('/matches')}
               >
@@ -92,12 +94,13 @@ export function Matches() {
         <div className="text-center mt-12">
           <Button 
             variant="primary"
+            size="lg"
             onClick={() => router.push('/matches')}
           >
             View all matches
           </Button>
         </div>
       </Container>
-    </section>
+    </Section>
   )
 }
