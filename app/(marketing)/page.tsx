@@ -10,7 +10,7 @@ import Footer from '@/components/site/footer'
 
 export default function MarketingPage() {
   return (
-    <main id="main-content">
+    <main id="main-content" className="min-h-screen bg-white">
       <Navbar />
       <Hero />
       <Counters />
