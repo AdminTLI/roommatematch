@@ -1,6 +1,5 @@
 module.exports = {
   plugins: {
-    tailwindcss: {},
-    autoprefixer: {},
-  },
+    // Disable all PostCSS processing to avoid CSS minification issues
+  }
 }

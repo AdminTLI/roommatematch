@@ -1,7 +1,4 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
-
+/* Minimal CSS without Tailwind to avoid build issues */
 :root {
   --brand-600: 2 132 199;
   --brand-700: 3 105 161;
