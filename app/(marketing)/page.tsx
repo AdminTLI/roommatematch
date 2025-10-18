@@ -6,7 +6,7 @@ import { Features } from '@/components/site/features'
 import { Testimonials } from '@/components/site/testimonials'
 import { Universities } from '@/components/site/universities'
 import { FinalCTA } from '@/components/site/final-cta'
-import { Footer } from '@/components/site/footer'
+import Footer from '@/components/site/footer'
 
 export default function MarketingPage() {
   return (
