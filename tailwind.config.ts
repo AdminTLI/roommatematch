@@ -71,9 +71,6 @@ const config: Config = {
       fontFamily: {
         sans: ['Inter', 'ui-sans-serif', 'system-ui', 'sans-serif']
       },
-      container: { 
-        center: true 
-      },
       spacing: {
         18: "4.5rem",
         88: "22rem",
