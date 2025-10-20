@@ -1,5 +1,5 @@
 import { Navbar } from '@/components/site/navbar'
-import { Footer } from '@/components/site/footer'
+import Footer from '@/components/site/footer'
 import Container from '@/components/ui/primitives/container'
 import Section from '@/components/ui/primitives/section'
 import { Metadata } from 'next'

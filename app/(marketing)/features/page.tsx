@@ -1,5 +1,5 @@
 import { Navbar } from '@/components/site/navbar'
-import { Footer } from '@/components/site/footer'
+import Footer from '@/components/site/footer'
 import { FeaturesSection } from '@/components/site/features-section'
 import { FinalCTA } from '@/components/site/final-cta'
 import { Metadata } from 'next'

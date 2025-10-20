@@ -1,5 +1,5 @@
 import { Navbar } from '@/components/site/navbar'
-import { Footer } from '@/components/site/footer'
+import Footer from '@/components/site/footer'
 import { PricingSection } from '@/components/site/pricing-section'
 import { FAQ } from '@/components/site/faq'
 import { FinalCTA } from '@/components/site/final-cta'
