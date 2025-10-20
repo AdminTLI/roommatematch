@@ -265,3 +265,5 @@ This project is licensed under the MIT License - see the [LICENSE](./LICENSE) fi
 **Made with ❤️ for students in the Netherlands** 🇳🇱
 
 [![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https://github.com/YOUR_USERNAME/roommate-match)# Force deployment update
+
+<!-- Deployment trigger: Mon Oct 20 22:52:56 CEST 2025 -->
