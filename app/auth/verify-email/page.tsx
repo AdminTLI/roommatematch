@@ -1,19 +1,19 @@
-import { SignUpForm } from '@/components/auth/sign-up-form'
+import { VerifyEmailForm } from '@/components/auth/verify-email-form'
 import { Navbar } from '@/components/site/navbar'
 import { Metadata } from 'next'
 
 export const metadata: Metadata = {
-  title: 'Sign Up | Roommate Match',
-  description: 'Create your Roommate Match account to find compatible roommates.',
+  title: 'Verify Email | Roommate Match',
+  description: 'Verify your email address to complete your Roommate Match account setup.',
 }
 
-export default function SignUpPage() {
+export default function VerifyEmailPage() {
   return (
     <main className="min-h-screen bg-white">
       <Navbar />
       <div className="flex min-h-[calc(100vh-80px)] items-center justify-center px-4">
         <div className="w-full max-w-md">
-          <SignUpForm />
+          <VerifyEmailForm />
         </div>
       </div>
     </main>
