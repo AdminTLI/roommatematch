@@ -53,7 +53,7 @@ const features = [
 
 export function Features() {
   return (
-    <Section className="bg-brand-surface">
+    <Section className="bg-brand-surface" >
       <Container>
         <div className="text-center mb-12">
           <h2 className="text-3xl md:text-4xl font-bold text-brand-text mb-4">

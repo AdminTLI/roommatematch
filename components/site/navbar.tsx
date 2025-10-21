@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import Container from '@/components/ui/primitives/container'
@@ -11,10 +12,10 @@ export function Navbar() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
 
   const navigation = [
-    { name: 'How it works', href: '#how-it-works' },
-    { name: 'Features', href: '#features' },
-    { name: 'Universities', href: '#universities' },
-    { name: 'Pricing', href: '#pricing' },
+    { name: 'How it works', href: '/how-it-works' },
+    { name: 'Features', href: '/features' },
+    { name: 'Universities', href: '/universities' },
+    { name: 'Pricing', href: '/pricing' },
   ]
 
   const handleGetStarted = () => {
@@ -51,13 +52,13 @@ export function Navbar() {
             {/* Desktop Navigation */}
             <div className="hidden md:flex items-center space-x-8">
               {navigation.map((item) => (
-                <a
+                <Link
                   key={item.name}
                   href={item.href}
                   className="text-brand-muted hover:text-brand-text transition-colors font-medium"
                 >
                   {item.name}
-                </a>
+                </Link>
               ))}
             </div>
 
@@ -105,14 +106,14 @@ export function Navbar() {
             <Container>
               <div className="py-4 space-y-4">
                 {navigation.map((item) => (
-                  <a
+                  <Link
                     key={item.name}
                     href={item.href}
                     className="block text-brand-muted hover:text-brand-text transition-colors font-medium py-2"
                     onClick={() => setIsMobileMenuOpen(false)}
                   >
                     {item.name}
-                  </a>
+                  </Link>
                 ))}
                 <div className="pt-4 border-t border-brand-border space-y-3">
                   <Button 

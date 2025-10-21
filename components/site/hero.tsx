@@ -15,7 +15,7 @@ export function Hero() {
   }
 
   const handleSeeHowItWorks = () => {
-    router.push('#how-it-works')
+    router.push('/how-it-works')
   }
 
   // Mock match cards for the right side

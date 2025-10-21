@@ -26,6 +26,38 @@ const config: Config = {
           muted: '#475569',          // Slate 600
           border: '#E2E8F0'          // Slate 200
         },
+        // App shell tokens used across dashboard components
+        ink: {
+          50: '#F8FAFC',
+          100: '#F1F5F9',
+          200: '#E2E8F0',
+          300: '#CBD5E1',
+          400: '#94A3B8',
+          500: '#64748B',
+          600: '#475569',
+          700: '#334155',
+          800: '#1F2937',
+          900: '#0F172A',
+        },
+        surface: {
+          0: '#FFFFFF',
+          1: '#F8FAFC',
+          2: '#F1F5F9',
+          3: '#E2E8F0',
+        },
+        line: '#E5E7EB',
+        dashboard: '#F6F7FB',
+        // Scales used by badges and buttons
+        'brand-600': '#2563EB',
+        'brand-700': '#1D4ED8',
+        'accent-100': '#CFFAFE',
+        'accent-200': '#A5F3FC',
+        'accent-600': '#0891B2',
+        'accent-700': '#0E7490',
+        'mint-100': '#DCFCE7',
+        'mint-200': '#BBF7D0',
+        'mint-600': '#16A34A',
+        'mint-700': '#15803D',
         // Keep existing shadcn colors for compatibility
         border: "hsl(var(--border))",
         input: "hsl(var(--input))",

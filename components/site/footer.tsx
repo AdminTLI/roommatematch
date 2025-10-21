@@ -1,4 +1,5 @@
 import Container from "@/components/ui/primitives/container"
+import Link from "next/link"
 import { Twitter, Linkedin, Instagram } from "lucide-react"
 
 export default function Footer() {
@@ -21,10 +22,10 @@ export default function Footer() {
           <div>
             <h4 className="text-white font-semibold mb-4">Product</h4>
             <ul className="space-y-3 text-slate-400">
-              <li><a className="hover:text-white">How it works</a></li>
-              <li><a className="hover:text-white">Features</a></li>
-              <li><a className="hover:text-white">Pricing</a></li>
-              <li><a className="hover:text-white">Universities</a></li>
+              <li><Link href="/how-it-works" className="hover:text-white">How it works</Link></li>
+              <li><Link href="/features" className="hover:text-white">Features</Link></li>
+              <li><Link href="/pricing" className="hover:text-white">Pricing</Link></li>
+              <li><Link href="/universities" className="hover:text-white">Universities</Link></li>
             </ul>
           </div>
 
@@ -52,8 +53,8 @@ export default function Footer() {
         <div className="mt-12 border-t border-white/10 pt-6 flex flex-col md:flex-row items-center justify-between gap-4">
           <p className="text-slate-500 text-sm">© {new Date().getFullYear()} Roommate Match. All rights reserved.</p>
           <div className="flex items-center gap-6 text-sm text-slate-400">
-            <a className="hover:text-white">Privacy</a>
-            <a className="hover:text-white">Terms</a>
+            <Link href="/privacy" className="hover:text-white">Privacy</Link>
+            <Link href="/terms" className="hover:text-white">Terms</Link>
             <a className="hover:text-white">Cookies</a>
           </div>
         </div>
