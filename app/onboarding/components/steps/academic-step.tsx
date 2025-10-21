@@ -116,16 +116,36 @@ export function AcademicStep({ data, onChange, user }: AcademicStepProps) {
         <Label htmlFor="university">University *</Label>
         <InstitutionSelect
           value={data.institution_slug}
-          onChange={({ institutionId, institutionOther, universityDbId }) => {
+          onChange={async ({ institutionId, institutionOther, universityDbId }) => {
             const newData = { ...data }
             newData.institution_slug = institutionId
+            
             if (institutionId === 'other') {
               newData.institution_other = institutionOther
               newData.university_id = null
             } else {
               newData.institution_other = undefined
-              if (universityDbId) newData.university_id = universityDbId
+              
+              // If we don't have universityDbId, try to find it
+              if (!universityDbId && institutionId) {
+                try {
+                  const { data: uniData, error } = await supabase
+                    .from('universities')
+                    .select('id, slug')
+                    .eq('slug', institutionId)
+                    .maybeSingle()
+                  
+                  if (!error && uniData) {
+                    newData.university_id = uniData.id
+                  }
+                } catch (error) {
+                  console.error('Error finding university ID:', error)
+                }
+              } else if (universityDbId) {
+                newData.university_id = universityDbId
+              }
             }
+            
             onChange(newData)
           }}
         />

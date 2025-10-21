@@ -13,26 +13,6 @@ interface Props {
 export function InstitutionSelect({ value, onChange }: Props) {
   const groups = useMemo(() => toGroupedOptions(), [])
   const [other, setOther] = useState<string | undefined>(undefined)
-  const supabase = createClient()
-
-  // Map slug to DB id if possible
-  useEffect(() => {
-    const mapSlugToDb = async () => {
-      if (!value || value === 'other') return
-      const { data, error } = await supabase
-        .from('universities')
-        .select('id, slug')
-        .eq('slug', value)
-        .maybeSingle()
-      if (!error && data) {
-        onChange({ institutionId: value, universityDbId: data.id })
-      } else {
-        onChange({ institutionId: value })
-      }
-    }
-    mapSlugToDb()
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [value])
 
   return (
     <div className="space-y-2">
