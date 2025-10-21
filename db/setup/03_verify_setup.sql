@@ -357,7 +357,8 @@ WHERE au.email = 'demo@account.com';
 -- Check demo user questionnaire responses
 SELECT 'Demo User Responses Check' as check_type,
        COUNT(*) as response_count,
-       COUNT(DISTINCT section) as sections_completed
+       COUNT(DISTINCT qi.section) as sections_completed
 FROM responses r
 JOIN auth.users au ON r.user_id = au.id
+JOIN question_items qi ON r.question_key = qi.key
 WHERE au.email = 'demo@account.com';
