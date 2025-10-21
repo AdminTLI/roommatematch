@@ -1,11 +1,12 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { Label } from '@/components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group'
 import { InstitutionSelect } from '@/components/questionnaire/InstitutionSelect'
+import { ProgrammeSelect } from '@/components/questionnaire/ProgrammeSelect'
 import { Checkbox } from '@/components/ui/checkbox'
-import { createClient } from '@/lib/supabase/client'
 import { User } from '@supabase/supabase-js'
 
 interface AcademicStepProps {
@@ -14,85 +15,17 @@ interface AcademicStepProps {
   user: User
 }
 
-interface University {
-  id: string
-  slug: string
-  official_name: string
-  common_name: string
-  abbrev: string
-}
-
-interface Program {
-  id: string
-  name: string
-  name_en?: string
-  degree_level: string
-  faculty?: string
-}
 
 export function AcademicStep({ data, onChange, user }: AcademicStepProps) {
-  const [universities, setUniversities] = useState<University[]>([])
-  const [programs, setPrograms] = useState<Program[]>([])
-  const [loadingUniversities, setLoadingUniversities] = useState(true)
-  const [loadingPrograms, setLoadingPrograms] = useState(false)
-  const supabase = createClient()
-
   const currentYear = new Date().getFullYear()
   const startYears = Array.from({ length: 8 }, (_, i) => currentYear - i)
 
-  useEffect(() => {
-    loadUniversities()
-  }, [])
-
-  useEffect(() => {
-    if (data.university_id && data.degree_level) {
-      loadPrograms(data.university_id, data.degree_level)
-    } else {
-      setPrograms([])
-    }
-  }, [data.university_id, data.degree_level])
-
-  const loadUniversities = async () => {
-    try {
-      const { data: unis, error } = await supabase
-        .from('universities')
-        .select('id, slug, official_name, common_name, abbrev')
-        .order('common_name')
-
-      if (error) throw error
-      setUniversities(unis || [])
-    } catch (error) {
-      console.error('Failed to load universities:', error)
-    } finally {
-      setLoadingUniversities(false)
-    }
-  }
-
-  const loadPrograms = async (universityId: string, degreeLevel: string) => {
-    setLoadingPrograms(true)
-    try {
-      const { data: progs, error } = await supabase
-        .from('programs')
-        .select('id, name, name_en, degree_level, faculty')
-        .eq('university_id', universityId)
-        .eq('degree_level', degreeLevel)
-        .eq('active', true)
-        .order('name')
-
-      if (error) throw error
-      setPrograms(progs || [])
-    } catch (error) {
-      console.error('Failed to load programs:', error)
-    } finally {
-      setLoadingPrograms(false)
-    }
-  }
 
   const handleChange = (field: string, value: any) => {
     const newData = { ...data, [field]: value }
     
-    // Reset dependent fields when university or degree level changes
-    if (field === 'university_id' || field === 'degree_level') {
+    // Reset dependent fields when university, institution, or degree level changes
+    if (field === 'university_id' || field === 'institution_slug' || field === 'degree_level') {
       newData.program_id = null
       newData.undecided_program = false
     }
@@ -105,8 +38,6 @@ export function AcademicStep({ data, onChange, user }: AcademicStepProps) {
     return Math.max(1, currentYear - startYear + 1)
   }
 
-  const selectedUniversity = universities.find(u => u.id === data.university_id)
-  const selectedProgram = programs.find(p => p.id === data.program_id)
   const studyYear = data.study_start_year ? calculateStudyYear(data.study_start_year) : null
 
   return (
@@ -155,19 +86,27 @@ export function AcademicStep({ data, onChange, user }: AcademicStepProps) {
       {/* Degree Level */}
       <div className="space-y-2">
         <Label htmlFor="degree_level">Degree Level *</Label>
-        <Select 
+        <RadioGroup 
           value={data.degree_level || ''} 
           onValueChange={(value) => handleChange('degree_level', value)}
+          className="flex flex-col space-y-2"
         >
-          <SelectTrigger>
-            <SelectValue placeholder="Select your degree level" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="bachelor">Bachelor's (BSc/BA)</SelectItem>
-            <SelectItem value="master">Master's (MSc/MA)</SelectItem>
-            <SelectItem value="premaster">Pre-Master/Schakelprogramma</SelectItem>
-          </SelectContent>
-        </Select>
+          <div className="flex items-center space-x-2">
+            <RadioGroupItem value="bachelor" id="degree_bachelor" />
+            <Label htmlFor="degree_bachelor">Bachelor's (BSc/BA)</Label>
+          </div>
+          <div className="flex items-center space-x-2">
+            <RadioGroupItem value="premaster" id="degree_premaster" />
+            <Label htmlFor="degree_premaster">Pre-Master (Schakelprogramma)</Label>
+          </div>
+          <div className="flex items-center space-x-2">
+            <RadioGroupItem value="master" id="degree_master" />
+            <Label htmlFor="degree_master">Master's (MSc/MA)</Label>
+          </div>
+        </RadioGroup>
+        <p className="text-sm text-gray-500">
+          Pre-Master is a bridging programme that prepares you for a Master's degree.
+        </p>
       </div>
 
       {/* Undecided Program Toggle */}
@@ -188,38 +127,17 @@ export function AcademicStep({ data, onChange, user }: AcademicStepProps) {
       {!data.undecided_program && (
         <div className="space-y-2">
           <Label htmlFor="program">Programme *</Label>
-          <Select 
-            value={data.program_id || ''} 
-            onValueChange={(value) => handleChange('program_id', value)}
-            disabled={loadingPrograms || !data.university_id || !data.degree_level}
-          >
-            <SelectTrigger>
-              <SelectValue 
-                placeholder={
-                  loadingPrograms 
-                    ? "Loading programmes..." 
-                    : !data.university_id || !data.degree_level
-                    ? "Select university and degree level first"
-                    : "Select your programme"
-                } 
-              />
-            </SelectTrigger>
-            <SelectContent>
-              {programs.map((program) => (
-                <SelectItem key={program.id} value={program.id}>
-                  {program.name}
-                  {program.faculty && (
-                    <span className="text-gray-500 ml-2">({program.faculty})</span>
-                  )}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+          <ProgrammeSelect
+            institutionId={data.institution_slug}
+            level={data.degree_level as any}
+            value={data.program_id}
+            onChange={(programmeId) => handleChange('program_id', programmeId)}
+            disabled={!data.institution_slug || !data.degree_level}
+            placeholder="Select your programme"
+          />
           <p className="text-sm text-gray-500">
-            {programs.length > 0 
-              ? `Found ${programs.length} ${data.degree_level} programmes at ${selectedUniversity?.common_name}`
-              : data.university_id && data.degree_level 
-              ? `No programmes found for ${data.degree_level} at ${selectedUniversity?.common_name}`
+            {data.institution_slug && data.degree_level
+              ? `Select your ${data.degree_level} programme`
               : "Select your university and degree level to see available programmes"
             }
           </p>
@@ -272,20 +190,20 @@ export function AcademicStep({ data, onChange, user }: AcademicStepProps) {
       </div>
 
       {/* Academic Summary */}
-      {(selectedUniversity || data.university_id) && (selectedProgram || data.undecided_program) && (
+      {data.institution_slug && data.degree_level && (data.program_id || data.undecided_program) && data.study_start_year && (
         <div className="p-4 bg-green-50 dark:bg-green-900/20 rounded-lg border border-green-200 dark:border-green-800">
           <h4 className="font-medium text-green-800 dark:text-green-200 mb-2">
             Academic Profile Summary
           </h4>
           <div className="text-sm text-green-700 dark:text-green-300 space-y-1">
-            <div><strong>University:</strong> {selectedUniversity?.common_name}</div>
+            <div><strong>Institution:</strong> {data.institution_slug}</div>
             <div><strong>Degree Level:</strong> {
               data.degree_level === 'bachelor' ? "Bachelor's" :
               data.degree_level === 'master' ? "Master's" :
               data.degree_level === 'premaster' ? "Pre-Master" : ''
             }</div>
             <div><strong>Programme:</strong> {
-              data.undecided_program ? "Undecided" : selectedProgram?.name || "Not selected"
+              data.undecided_program ? "Undecided" : "Selected"
             }</div>
             {studyYear && <div><strong>Study Year:</strong> Year {studyYear}</div>}
           </div>
