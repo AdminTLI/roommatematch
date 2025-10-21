@@ -7,6 +7,9 @@ import { useState } from 'react'
 import { Menu, X } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet'
+import { useEffect } from 'react'
+import { createClient } from '@/lib/supabase/client'
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog'
 
 interface AppShellProps {
   children: React.ReactNode
@@ -20,6 +23,28 @@ interface AppShellProps {
 
 export function AppShell({ children, user }: AppShellProps) {
   const [sidebarOpen, setSidebarOpen] = useState(false)
+  const [showQuestionnaire, setShowQuestionnaire] = useState(false)
+
+  // On mount, check if the logged-in user has answered questionnaire
+  useEffect(() => {
+    const check = async () => {
+      if (!user?.id) return
+      const supabase = createClient()
+      // If there are any responses for this user, consider questionnaire completed
+      const { data, error } = await supabase
+        .from('responses')
+        .select('id')
+        .eq('user_id', user.id)
+        .limit(1)
+
+      if (error) {
+        console.error('Questionnaire check failed', error)
+        return
+      }
+      setShowQuestionnaire(!data || data.length === 0)
+    }
+    check()
+  }, [user?.id])
 
   return (
     <div className="min-h-screen bg-dashboard">
@@ -93,6 +118,32 @@ export function AppShell({ children, user }: AppShellProps) {
           </motion.div>
         </main>
       </div>
+
+      {/* Questionnaire modal - gated by auth + only if never filled */}
+      <Dialog open={showQuestionnaire} onOpenChange={setShowQuestionnaire}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Complete your compatibility profile</DialogTitle>
+            <DialogDescription>
+              Answer a few questions to enable accurate matching. You can update answers later.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="mt-6 flex gap-3">
+            <button
+              className="bg-brand-600 text-white px-4 py-2 rounded-md"
+              onClick={() => { window.location.href = '/onboarding' }}
+            >
+              Start now
+            </button>
+            <button
+              className="border px-4 py-2 rounded-md"
+              onClick={() => setShowQuestionnaire(false)}
+            >
+              Later
+            </button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }
