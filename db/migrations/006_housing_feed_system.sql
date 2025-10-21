@@ -155,7 +155,7 @@ CREATE TABLE housing_applications (
     
     -- Application content
     motivation_letter TEXT,
-    references TEXT[] DEFAULT '{}',
+    reference_documents TEXT[] DEFAULT '{}',
     employment_status VARCHAR(50),
     income_proof_url TEXT,
     
