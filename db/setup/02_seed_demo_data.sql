@@ -20,7 +20,8 @@ INSERT INTO universities (id, name, slug, branding, eligibility_domains, is_acti
    '{"student.uu.nl", "uu.nl"}', true),
   ('550e8400-e29b-41d4-a716-446655440005', 'Leiden University', 'leiden', 
    '{"primary_color": "#c41230", "logo_url": "/logos/leiden.png", "welcome_message": "Find your perfect match at Leiden!"}', 
-   '{"student.leiden.edu", "leiden.edu"}', true);
+   '{"student.leiden.edu", "leiden.edu"}', true)
+ON CONFLICT (id) DO NOTHING;
 
 -- ============================================
 -- 2. PROGRAMS
@@ -34,7 +35,8 @@ INSERT INTO programs (id, university_id, croho_code, name, name_en, degree_level
   ('660e8400-e29b-41d4-a716-446655440005', '550e8400-e29b-41d4-a716-446655440002', '56995', 'Industrial Design', 'Industrial Design', 'bachelor', '{"en", "nl"}', 'Faculty of Industrial Design Engineering', true),
   ('660e8400-e29b-41d4-a716-446655440006', '550e8400-e29b-41d4-a716-446655440003', '56801', 'Economics', 'Economics', 'master', '{"en", "nl"}', 'Erasmus School of Economics', true),
   ('660e8400-e29b-41d4-a716-446655440007', '550e8400-e29b-41d4-a716-446655440001', '56811', 'Business Administration', 'Business Administration', 'master', '{"en", "nl"}', 'Amsterdam Business School', true),
-  ('660e8400-e29b-41d4-a716-446655440008', '550e8400-e29b-41d4-a716-446655440004', '56901', 'Computer Science', 'Computer Science', 'bachelor', '{"nl", "en"}', 'Faculty of Science', true);
+  ('660e8400-e29b-41d4-a716-446655440008', '550e8400-e29b-41d4-a716-446655440004', '56902', 'Computer Science', 'Computer Science', 'bachelor', '{"nl", "en"}', 'Faculty of Science', true)
+ON CONFLICT (croho_code) DO NOTHING;
 
 -- ============================================
 -- 3. QUESTIONNAIRE ITEMS
@@ -90,7 +92,8 @@ INSERT INTO question_items (key, section, type, options, weight, is_hard) VALUES
   ('smoking', 'deal_breakers', 'boolean', null, 1.0, true),
   ('pets_allowed', 'deal_breakers', 'boolean', null, 1.0, true),
   ('parties_max', 'deal_breakers', 'slider', '{"min": 0, "max": 10, "step": 1}', 1.0, true),
-  ('guests_max', 'deal_breakers', 'slider', '{"min": 0, "max": 10, "step": 1}', 1.0, true);
+  ('guests_max', 'deal_breakers', 'slider', '{"min": 0, "max": 10, "step": 1}', 1.0, true)
+ON CONFLICT (key) DO NOTHING;
 
 -- ============================================
 -- 4. DEMO USER SETUP
@@ -296,7 +299,8 @@ INSERT INTO housing_listings (
   '{"https://example.com/photo3.jpg", "https://example.com/photo4.jpg"}',
   'active',
   'approved'
-);
+)
+ON CONFLICT (id) DO NOTHING;
 
 -- ============================================
 -- 9. SAMPLE MATCHES (for demonstration)
