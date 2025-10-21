@@ -67,7 +67,7 @@ SELECT 'Reputation Tables Check' as check_type,
 FROM pg_tables 
 WHERE schemaname = 'public' 
   AND tablename IN (
-    'endorsements', 'references', 'trust_badges', 'reputation_scores'
+    'endorsements', 'user_references', 'trust_badges', 'reputation_scores'
   )
 ORDER BY tablename;
 
@@ -160,7 +160,7 @@ WHERE schemaname = 'public'
     'chats', 'chat_members', 'messages', 'message_reads', 'reports', 'announcements',
     'eligibility_rules', 'forum_posts', 'forum_comments', 'app_events',
     'housing_listings', 'tour_bookings', 'user_housing_preferences', 'housing_applications',
-    'endorsements', 'references', 'trust_badges', 'reputation_scores',
+    'endorsements', 'user_references', 'trust_badges', 'reputation_scores',
     'move_in_plans', 'move_in_plan_participants', 'move_in_tasks', 'move_in_expenses',
     'user_intro_recordings'
   )
@@ -187,10 +187,10 @@ ORDER BY p.proname;
 -- ============================================
 
 SELECT 'Triggers Check' as check_type,
-       schemaname,
-       tablename,
-       triggername,
-       tgtype
+       n.nspname as schemaname,
+       c.relname as tablename,
+       t.tgname as triggername,
+       t.tgtype
 FROM pg_trigger t
 JOIN pg_class c ON t.tgrelid = c.oid
 JOIN pg_namespace n ON c.relnamespace = n.oid
