@@ -50,9 +50,11 @@ export function GroupedSearchSelect({ placeholder, groups, value, onChange, allo
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
         <Button variant="outline" className="w-full justify-between">
-          {value ?
-            groups.flatMap((g) => g.options).find((o) => o.value === value)?.label || value :
-            (placeholder || 'Select')}
+          {value === 'other' ? 
+            (other || 'Other (HBO/WO, not listed)') :
+            value ?
+              groups.flatMap((g) => g.options).find((o) => o.value === value)?.label || value :
+              (placeholder || 'Select')}
         </Button>
       </PopoverTrigger>
       <PopoverContent className="w-[420px] p-3">
@@ -84,7 +86,10 @@ export function GroupedSearchSelect({ placeholder, groups, value, onChange, allo
               <Input value={other} onChange={(e) => handleOtherInput(e.target.value)} placeholder="Type institution name" />
               {mboHint && <div className="text-xs text-rose-600 mt-1">{mboHint}</div>}
               <div className="mt-2 flex justify-end">
-                <Button size="sm" onClick={() => setOpen(false)} disabled={!other || !!mboHint}>Use this</Button>
+                <Button size="sm" onClick={() => {
+                  onChange('other')
+                  setOpen(false)
+                }} disabled={!other || !!mboHint}>Use this</Button>
               </div>
             </div>
           )}

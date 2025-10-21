@@ -45,7 +45,7 @@ export default function SectionClient() {
         <SectionIntro title="Personality & Values" purpose="Reliability, flexibility, and how you prefer the home to ‘feel’." />
         <div className="text-sm text-gray-600">{answered}/{total} answered</div>
       </div>
-      <div className="space-y-6">
+      <div className="space-y-8">
         {items.map((item) => (
           <QuestionRow
             key={item.id}
@@ -57,7 +57,7 @@ export default function SectionClient() {
             {item.kind === 'likert' && (
               <LikertScale
                 id={item.id}
-                label={item.label}
+                label=""
                 scaleType={item.scale as any}
                 value={answers[item.id]?.value?.value}
                 onChange={(v) => handleChange(item, { kind: 'likert', value: v })}
@@ -75,7 +75,7 @@ export default function SectionClient() {
             {item.kind === 'mcq' && item.options && (
               <RadioGroupMCQ
                 id={item.id}
-                label={item.label}
+                label=""
                 options={item.options}
                 value={answers[item.id]?.value?.value}
                 onChange={(v) => handleChange(item, { kind: 'mcq', value: v })}
@@ -84,7 +84,7 @@ export default function SectionClient() {
             {item.kind === 'toggle' && (
               <ToggleYesNo
                 id={item.id}
-                label={item.label}
+                label=""
                 checked={answers[item.id]?.value?.value}
                 onChange={(v) => handleChange(item, { kind: 'toggle', value: v })}
               />
@@ -92,7 +92,7 @@ export default function SectionClient() {
             {item.kind === 'timeRange' && (
               <TimeRange
                 id={item.id}
-                label={item.label}
+                label=""
                 start={answers[item.id]?.value?.start}
                 end={answers[item.id]?.value?.end}
                 onChange={(s, e) => handleChange(item, { kind: 'timeRange', start: s, end: e })}
@@ -101,7 +101,7 @@ export default function SectionClient() {
             {item.kind === 'number' && (
               <NumberInput
                 id={item.id}
-                label={item.label}
+                label=""
                 value={answers[item.id]?.value?.value}
                 min={item.min}
                 max={item.max}

@@ -23,7 +23,7 @@ const anchors: Record<ScaleType, [string, string, string, string, string]> = {
 export function LikertScale({ id, label, helperText, scaleType, value, onChange }: Props) {
   return (
     <fieldset>
-      <legend className="mb-2 font-medium">{label}</legend>
+      {label && <legend className="mb-2 font-medium">{label}</legend>}
       {helperText && (
         <p id={`${id}-help`} className="text-sm text-gray-600 mb-3">
           {helperText}
@@ -46,7 +46,10 @@ export function LikertScale({ id, label, helperText, scaleType, value, onChange 
               )}
             >
               <span className="block leading-none">{v}</span>
-              <Label className="block text-[11px] mt-1 text-gray-600">{a}</Label>
+              <span className={cn(
+                "block text-[11px] mt-1",
+                selected ? "text-white" : "text-gray-600"
+              )}>{a}</span>
             </button>
           )
         })}

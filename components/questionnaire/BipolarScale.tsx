@@ -35,7 +35,7 @@ export function BipolarScale({ id, leftLabel, rightLabel, value, onChange }: Pro
           </button>
         ))}
       </div>
-      <p className="text-xs text-gray-500 mt-2">1 = strongly prefer left, 3 = no preference, 5 = strongly prefer right</p>
+      <p className="text-xs text-gray-500 mt-2 text-center">1 = strongly prefer left, 3 = no preference, 5 = strongly prefer right</p>
     </fieldset>
   )
 }

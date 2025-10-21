@@ -39,14 +39,25 @@ export function InstitutionSelect({ value, onChange }: Props) {
       <GroupedSearchSelect
         placeholder="Select your HBO/WO institution"
         groups={groups}
-        value={value === 'other' ? undefined : value}
-        onChange={(v) => onChange({ institutionId: v })}
+        value={value}
+        onChange={(v) => {
+          if (v === 'other') {
+            onChange({ institutionId: 'other', institutionOther: other })
+          } else {
+            onChange({ institutionId: v })
+          }
+        }}
         allowOther
         otherLabel="Other (HBO/WO, not listed)"
-        onOtherChange={(t) => setOther(t)}
+        onOtherChange={(t) => {
+          setOther(t)
+          if (t) {
+            onChange({ institutionId: 'other', institutionOther: t })
+          }
+        }}
       />
       {other && (
-        <div className="text-xs text-gray-600">We’ll review this institution. For now, your selection will be stored as "Other".</div>
+        <div className="text-xs text-gray-600">We'll review this institution. For now, your selection will be stored as "Other".</div>
       )}
     </div>
   )
