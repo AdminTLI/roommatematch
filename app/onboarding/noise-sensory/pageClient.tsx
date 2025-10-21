@@ -36,8 +36,8 @@ export default function SectionClient() {
 
   return (
     <QuestionnaireLayout
-      stepIndex={3}
-      totalSteps={10}
+      stepIndex={4}
+      totalSteps={11}
       title="Noise & Sensory"
       subtitle="Sound, light, air, and thermal comfort in shared spaces."
       onPrev={() => (window.location.href = '/onboarding/sleep-circadian')}

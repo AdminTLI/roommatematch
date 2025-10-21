@@ -27,6 +27,7 @@ export interface OnboardingState {
 }
 
 const sectionKeys: SectionKey[] = [
+  'location-commute',
   'personality-values',
   'sleep-circadian',
   'noise-sensory',
@@ -78,8 +79,20 @@ export const useOnboardingStore = create<OnboardingState>((set, get) => ({
     return Object.values(answers).filter((a) => a && a.value != null).length
   },
   computeProgress: () => {
-    const totalRequired = 8 * 25
-    const answered = sectionKeys.reduce((sum, key) => sum + get().countAnsweredInSection(key), 0)
+    // Dynamic: use 25 required per of the 8 main sections + 1 for location step (min 1 now)
+    const perSectionRequired: Record<SectionKey, number> = {
+      'location-commute': 1,
+      'personality-values': 25,
+      'sleep-circadian': 25,
+      'noise-sensory': 25,
+      'home-operations': 25,
+      'social-hosting-language': 25,
+      'communication-conflict': 25,
+      'privacy-territoriality': 25,
+      'reliability-logistics': 25,
+    }
+    const totalRequired = Object.values(perSectionRequired).reduce((a, b) => a + b, 0)
+    const answered = sectionKeys.reduce((sum, key) => sum + Math.min(get().countAnsweredInSection(key), perSectionRequired[key]), 0)
     return Math.min(100, Math.round((answered / totalRequired) * 100))
   },
 }))

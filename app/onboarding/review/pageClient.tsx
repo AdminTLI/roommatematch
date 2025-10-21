@@ -66,8 +66,8 @@ export default function ReviewClient() {
 
   return (
     <QuestionnaireLayout
-      stepIndex={9}
-      totalSteps={10}
+      stepIndex={10}
+      totalSteps={11}
       title="Review your answers"
       subtitle="Read-only summary. Submit to finish."
       onPrev={() => (window.location.href = '/onboarding/reliability-logistics')}

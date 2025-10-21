@@ -36,8 +36,8 @@ export default function SectionClient() {
 
   return (
     <QuestionnaireLayout
-      stepIndex={5}
-      totalSteps={10}
+      stepIndex={6}
+      totalSteps={11}
       title="Social, Hosting & Language"
       subtitle="Guests, gatherings, and common-language norms."
       onPrev={() => (window.location.href = '/onboarding/home-operations')}

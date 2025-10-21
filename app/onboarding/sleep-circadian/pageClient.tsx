@@ -36,8 +36,8 @@ export default function SectionClient() {
 
   return (
     <QuestionnaireLayout
-      stepIndex={2}
-      totalSteps={10}
+      stepIndex={3}
+      totalSteps={11}
       title="Sleep & Circadian"
       subtitle="Daily rhythms and quiet-hour expectations."
       onPrev={() => (window.location.href = '/onboarding/personality-values')}

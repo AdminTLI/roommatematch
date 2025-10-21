@@ -33,11 +33,11 @@ export default function SectionClient() {
 
   return (
     <QuestionnaireLayout
-      stepIndex={1}
-      totalSteps={10}
+      stepIndex={2}
+      totalSteps={11}
       title="Personality & Values"
       subtitle="Reliability, flexibility, and how you prefer the home to ‘feel’."
-      onPrev={() => (window.location.href = '/onboarding/intro')}
+      onPrev={() => (window.location.href = '/onboarding/location-commute')}
       onNext={() => (window.location.href = '/onboarding/sleep-circadian')}
       nextDisabled={nextDisabled}
     >

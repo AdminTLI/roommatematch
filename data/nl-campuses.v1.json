@@ -1,0 +1,8 @@
+[
+  { "value": "uva-sciencepark", "label": "UvA — Science Park (Amsterdam)", "group": "WO" },
+  { "value": "uva-roeterseiland", "label": "UvA — Roeterseiland (Amsterdam)", "group": "WO" },
+  { "value": "vu-main", "label": "VU — De Boelelaan (Amsterdam)", "group": "WO" },
+  { "value": "hva-amstelcampus", "label": "HvA — Amstelcampus (Amsterdam)", "group": "HBO" }
+]
+
+

@@ -36,8 +36,8 @@ export default function SectionClient() {
 
   return (
     <QuestionnaireLayout
-      stepIndex={8}
-      totalSteps={10}
+      stepIndex={9}
+      totalSteps={11}
       title="Reliability & Logistics"
       subtitle="House rules, registration (BRP), pets, and commitments."
       onPrev={() => (window.location.href = '/onboarding/privacy-territoriality')}

@@ -36,8 +36,8 @@ export default function SectionClient() {
 
   return (
     <QuestionnaireLayout
-      stepIndex={4}
-      totalSteps={10}
+      stepIndex={5}
+      totalSteps={11}
       title="Home Operations"
       subtitle="Cleanliness standards, chores, kitchen & bathroom habits."
       onPrev={() => (window.location.href = '/onboarding/noise-sensory')}

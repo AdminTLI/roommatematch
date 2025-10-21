@@ -7,6 +7,7 @@ export type SectionKey =
   | 'communication-conflict'
   | 'privacy-territoriality'
   | 'reliability-logistics'
+  | 'location-commute'
 
 export type LikertScaleKind = 'agreement' | 'frequency' | 'comfort'
 
@@ -21,6 +22,7 @@ export type Item = {
   bipolarLabels?: { left: string; right: string }
   min?: number
   max?: number
+  optionsFrom?: 'nl-institutions' | 'nl-campuses'
 }
 
 

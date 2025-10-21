@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import { Label } from '@/components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+import { InstitutionSelect } from '@/components/questionnaire/InstitutionSelect'
 import { Checkbox } from '@/components/ui/checkbox'
 import { createClient } from '@/lib/supabase/client'
 import { User } from '@supabase/supabase-js'
@@ -113,24 +114,22 @@ export function AcademicStep({ data, onChange, user }: AcademicStepProps) {
       {/* University Selection */}
       <div className="space-y-2">
         <Label htmlFor="university">University *</Label>
-        <Select 
-          value={data.university_id || ''} 
-          onValueChange={(value) => handleChange('university_id', value)}
-        >
-          <SelectTrigger>
-            <SelectValue placeholder={loadingUniversities ? "Loading universities..." : "Select your university"} />
-          </SelectTrigger>
-          <SelectContent>
-            {universities.map((uni) => (
-              <SelectItem key={uni.id} value={uni.id}>
-                {uni.common_name} ({uni.abbrev})
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-        <p className="text-sm text-gray-500">
-          Select the research university where you are or will be studying.
-        </p>
+        <InstitutionSelect
+          value={data.institution_slug}
+          onChange={({ institutionId, institutionOther, universityDbId }) => {
+            const newData = { ...data }
+            newData.institution_slug = institutionId
+            if (institutionId === 'other') {
+              newData.institution_other = institutionOther
+              newData.university_id = null
+            } else {
+              newData.institution_other = undefined
+              if (universityDbId) newData.university_id = universityDbId
+            }
+            onChange(newData)
+          }}
+        />
+        <p className="text-sm text-gray-500">Choose your HBO or WO institution. Programs are loaded from our database.</p>
       </div>
 
       {/* Degree Level */}

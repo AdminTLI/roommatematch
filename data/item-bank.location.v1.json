@@ -1,0 +1,12 @@
+[
+  {
+    "id": "M9_Q0_University",
+    "section": "location-commute",
+    "kind": "mcq",
+    "label": "Your institution (HBO/WO, no MBO)",
+    "optionsFrom": "nl-institutions",
+    "helperText": "Choose your HBO or WO institution. We never use nationality—only operational factors like city/campus and commute."
+  }
+]
+
+

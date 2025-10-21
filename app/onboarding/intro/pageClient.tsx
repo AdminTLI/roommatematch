@@ -11,10 +11,10 @@ export default function IntroClient() {
   return (
     <QuestionnaireLayout
       stepIndex={0}
-      totalSteps={10}
+      totalSteps={11}
       title="Tell us about yourself"
       subtitle="Your university and programme details plus consent to begin"
-      onNext={() => (window.location.href = '/onboarding/personality-values')}
+      onNext={() => (window.location.href = '/onboarding/location-commute')}
     >
       <AutosaveToaster show={false} />
       <Card className="rounded-2xl shadow-sm">

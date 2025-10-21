@@ -36,8 +36,8 @@ export default function SectionClient() {
 
   return (
     <QuestionnaireLayout
-      stepIndex={6}
-      totalSteps={10}
+      stepIndex={7}
+      totalSteps={11}
       title="Communication & Conflict"
       subtitle="Feedback preferences and how we solve small issues fast."
       onPrev={() => (window.location.href = '/onboarding/social-hosting-language')}
