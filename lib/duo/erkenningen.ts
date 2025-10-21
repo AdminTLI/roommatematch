@@ -58,6 +58,16 @@ export function mapModes(vorm?: string): ('fulltime' | 'parttime' | 'dual')[] | 
 }
 
 /**
+ * Processing counters for transparency and debugging
+ */
+export const counters = {
+  keptBachelor: 0,
+  keptPremaster: 0,
+  keptMaster: 0,
+  skippedOther: 0
+};
+
+/**
  * Classify programme level using DUO data and heuristics
  * 
  * Pre-master classification rules:
@@ -72,32 +82,32 @@ export function toLevel(row: DuoRow): 'bachelor' | 'premaster' | 'master' | null
   const graad = row.GRAAD || '';
   const soort = (row.OPLEIDINGSEENHEID_SOORT || '').toLowerCase();
   
+  // Strict filtering: only allow recognized HBO/WO levels
+  const allowedLevels = ['HBO-BA', 'HBO-MA', 'WO-BA', 'WO-MA'];
+  const hasValidLevel = allowedLevels.some(allowed => niveau.startsWith(allowed));
+  
   // Explicit level classification by NIVEAU
   if (niveau.startsWith('HBO-BA') || niveau.startsWith('WO-BA')) {
+    counters.keptBachelor++;
     return 'bachelor';
   }
   if (niveau.startsWith('HBO-MA') || niveau.startsWith('WO-MA')) {
+    counters.keptMaster++;
     return 'master';
   }
   
-  // Pre-master heuristics
+  // Pre-master heuristics (only if we have a valid level context)
   const isPreMasterByName = /(pre-?master|schakel|bridge)/.test(name);
   const noDegree = !graad || graad.trim() === '';
   const isVariant = soort.includes('variant');
   
-  if (isPreMasterByName || (noDegree && isVariant)) {
+  if ((isPreMasterByName || (noDegree && isVariant)) && hasValidLevel) {
+    counters.keptPremaster++;
     return 'premaster';
   }
   
-  // Fallback: classify by name patterns
-  if (name.includes('master') || name.includes('msc') || name.includes('ma')) {
-    return 'master';
-  }
-  if (name.includes('bachelor') || name.includes('bsc') || name.includes('ba')) {
-    return 'bachelor';
-  }
-  
-  // Skip AD, post-initiële, and other non-standard programmes
+  // Skip everything else (AD, post-initiële, unrecognized programmes)
+  counters.skippedOther++;
   return null;
 }
 

@@ -23,20 +23,30 @@ import { parse } from 'csv-parse/sync';
 import { DuoRow, Programme, ProgrammesByLevel, DegreeLevel } from '@/types/programme';
 import { Institution } from '@/types/institution';
 import { loadInstitutions } from '@/lib/loadInstitutions';
-import { normalise, mapSector, getInstitutionBrinCode, validateInstitutionMappings } from '@/lib/duo/erkenningen';
+import { normalise, mapSector, getInstitutionBrinCode, validateInstitutionMappings, counters } from '@/lib/duo/erkenningen';
+import { resolveDuoErkenningenCsv } from '@/lib/duo/ckan';
 
 const DEFAULT_CSV_URL = process.env.DUO_ERKENNINGEN_CSV_URL || 
   'https://onderwijsdata.duo.nl/dataset/bb07cc6e-00fe-4100-9528-a0c5fd27d2fb/resource/0b2e9c4a-2c8e-4b2a-9f3a-1c2d3e4f5g6h/download/overzicht-erkenningen-ho.csv';
 
 /**
- * Fetch DUO CSV data
+ * Fetch DUO CSV data using CKAN resolver
  */
 async function fetchCsv(): Promise<string> {
-  console.log('📡 Fetching DUO CSV data...');
-  console.log(`   URL: ${DEFAULT_CSV_URL}`);
+  console.log('📡 Resolving DUO CSV URL...');
   
   try {
-    const response = await fetch(DEFAULT_CSV_URL);
+    // Use CKAN resolver to get current CSV URL
+    const url = await resolveDuoErkenningenCsv();
+    console.log(`   Resolved URL: ${url}`);
+    
+    console.log('📡 Fetching DUO CSV data...');
+    const response = await fetch(url, {
+      headers: {
+        'User-Agent': 'RoommateMatch/1.0 (programme-data-sync)'
+      }
+    });
+    
     if (!response.ok) {
       throw new Error(`HTTP ${response.status}: ${response.statusText}`);
     }
@@ -197,9 +207,12 @@ async function main(): Promise<void> {
     console.log('');
     console.log('📚 Processing institutions...');
     
+    // Get the resolved URL for metadata
+    const resolvedUrl = await resolveDuoErkenningenCsv();
+    
     const stats = {
       syncedAt: new Date().toISOString(),
-      sourceUrl: DEFAULT_CSV_URL,
+      sourceUrl: resolvedUrl,
       totalProgrammes: 0,
       byLevel: { bachelor: 0, premaster: 0, master: 0 } as Record<DegreeLevel, number>,
       institutions: allInstitutions.length,
@@ -249,6 +262,12 @@ async function main(): Promise<void> {
     console.log(`   Master: ${stats.byLevel.master.toLocaleString()}`);
     console.log(`   Institutions with programmes: ${stats.institutionsWithProgrammes}/${stats.institutions}`);
     console.log(`   Synced at: ${stats.syncedAt}`);
+    console.log('');
+    console.log('🔍 Classification Counters:');
+    console.log(`   Kept Bachelor: ${counters.keptBachelor.toLocaleString()}`);
+    console.log(`   Kept Pre-master: ${counters.keptPremaster.toLocaleString()}`);
+    console.log(`   Kept Master: ${counters.keptMaster.toLocaleString()}`);
+    console.log(`   Skipped Other: ${counters.skippedOther.toLocaleString()}`);
     
     console.log('');
     console.log('✅ Programme sync completed successfully!');
