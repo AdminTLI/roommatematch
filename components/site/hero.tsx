@@ -2,6 +2,7 @@
 
 import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
+import { cn } from '@/lib/utils'
 import { Card } from '@/components/ui/card'
 import Container from '@/components/ui/primitives/container'
 import Section from '@/components/ui/primitives/section'
@@ -39,7 +40,12 @@ export function Hero() {
   ]
 
   return (
-    <Section className="bg-white">
+    <Section className="relative overflow-hidden bg-white">
+      {/* Vibrant background accents */}
+      <div aria-hidden className="pointer-events-none absolute inset-0 -z-10">
+        <div className="absolute -top-32 -left-40 h-[420px] w-[420px] rounded-full bg-gradient-to-br from-brand-600/25 via-accent-600/25 to-mint-600/25 blur-3xl" />
+        <div className="absolute -bottom-40 -right-32 h-[520px] w-[520px] rounded-full bg-gradient-to-tr from-accent-200/30 via-brand-600/20 to-mint-200/30 blur-3xl" />
+      </div>
       <Container>
         <div className="grid items-center gap-8 md:grid-cols-2">
           {/* Left column - Content */}
@@ -54,17 +60,20 @@ export function Hero() {
             
             {/* CTA Buttons */}
             <div className="flex flex-wrap items-center gap-3">
-              <Button 
-                variant="primary"
+              <Button
                 size="lg"
                 onClick={handleGetMatched}
+                className={cn(
+                  'bg-gradient-to-r from-brand-600 via-accent-600 to-mint-600 text-white shadow-lg shadow-brand-600/20 hover:shadow-brand-600/30 transition-shadow'
+                )}
               >
                 Get matched
               </Button>
-              <Button 
+              <Button
                 variant="outline"
                 size="lg"
                 onClick={handleSeeHowItWorks}
+                className="border-brand-600/30 hover:border-brand-600"
               >
                 See how it works
               </Button>

@@ -19,12 +19,6 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <body className={`${inter.className} antialiased`}>
-        <a 
-          href="#main-content" 
-          className="skip-to-content"
-        >
-          Skip to main content
-        </a>
         {children}
         <Analytics />
         <SpeedInsights />

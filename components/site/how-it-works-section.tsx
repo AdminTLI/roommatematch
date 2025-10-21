@@ -161,16 +161,18 @@ export function HowItWorksSection() {
 
                 {/* Visual */}
                 <div className="flex-1 flex justify-center">
-                  <div className={`w-full max-w-md h-64 rounded-2xl flex items-center justify-center ${
-                    isEven ? 'bg-gradient-to-br from-blue-50 to-purple-50' : 'bg-gradient-to-br from-green-50 to-orange-50'
+                  <div className={`w-full max-w-lg h-80 rounded-3xl flex items-center justify-center shadow-[inset_0_1px_0_0_rgba(255,255,255,0.6),0_10px_30px_-10px_rgba(2,6,23,0.25)] border border-white/50 backdrop-blur-xl ${
+                    isEven ? 'bg-gradient-to-br from-blue-50/80 to-purple-50/80' : 'bg-gradient-to-br from-green-50/80 to-orange-50/80'
                   }`}>
                     <div className="text-center">
-                      <div className="text-4xl mb-4">
-                        {step.step === "01" && "👤"}
-                        {step.step === "02" && "📝"}
-                        {step.step === "03" && "🤝"}
-                        {step.step === "04" && "💬"}
-                        {step.step === "05" && "🏠"}
+                      <div className="mb-4">
+                        <span className="block text-[96px] md:text-[140px] leading-none">
+                          {step.step === "01" && "👤"}
+                          {step.step === "02" && "📝"}
+                          {step.step === "03" && "🤝"}
+                          {step.step === "04" && "💬"}
+                          {step.step === "05" && "🏠"}
+                        </span>
                       </div>
                       <p className="text-brand-muted font-medium">
                         {step.title}

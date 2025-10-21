@@ -7,6 +7,7 @@ import { Testimonials } from '@/components/site/testimonials'
 import { Universities } from '@/components/site/universities'
 import { FinalCTA } from '@/components/site/final-cta'
 import Footer from '@/components/site/footer'
+import QuestionnaireModal from '@/components/site/questionnaire-modal'
 
 export default function MarketingPage() {
   return (
@@ -20,6 +21,7 @@ export default function MarketingPage() {
       <Universities />
       <FinalCTA />
       <Footer />
+      <QuestionnaireModal />
     </main>
   )
 }

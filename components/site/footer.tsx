@@ -32,20 +32,20 @@ export default function Footer() {
           <div>
             <h4 className="text-white font-semibold mb-4">Company</h4>
             <ul className="space-y-3 text-slate-400">
-              <li><a className="hover:text-white">About us</a></li>
-              <li><a className="hover:text-white">Blog</a></li>
-              <li><a className="hover:text-white">Careers</a></li>
-              <li><a className="hover:text-white">Contact</a></li>
+              <li><Link href="/about" className="hover:text-white">About us</Link></li>
+              <li><Link href="/blog" className="hover:text-white">Blog</Link></li>
+              <li><Link href="/careers" className="hover:text-white">Careers</Link></li>
+              <li><Link href="/contact" className="hover:text-white">Contact</Link></li>
             </ul>
           </div>
 
           <div>
             <h4 className="text-white font-semibold mb-4">Support</h4>
             <ul className="space-y-3 text-slate-400">
-              <li><a className="hover:text-white">Help center</a></li>
-              <li><a className="hover:text-white">Safety</a></li>
-              <li><a className="hover:text-white">Privacy policy</a></li>
-              <li><a className="hover:text-white">Terms of service</a></li>
+              <li><Link href="/help-center" className="hover:text-white">Help center</Link></li>
+              <li><Link href="/safety" className="hover:text-white">Safety</Link></li>
+              <li><Link href="/privacy" className="hover:text-white">Privacy policy</Link></li>
+              <li><Link href="/terms" className="hover:text-white">Terms of service</Link></li>
             </ul>
           </div>
         </div>
