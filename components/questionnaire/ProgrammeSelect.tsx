@@ -80,34 +80,36 @@ export function ProgrammeSelect({
   }
 
   const renderProgrammeItem = (programme: Programme) => (
-    <div className="flex flex-col space-y-1">
-      <div className="flex items-center justify-between">
-        <span className="font-medium">{programme.name}</span>
+    <div className="space-y-2">
+      <div className="flex items-start justify-between gap-2">
+        <span className="font-medium text-gray-900 dark:text-gray-100 leading-tight">
+          {programme.name}
+        </span>
         {programme.isVariant && (
-          <Badge variant="secondary" className="text-xs">
+          <Badge variant="secondary" className="text-xs shrink-0">
             Variant
           </Badge>
         )}
       </div>
       
-      {programme.nameEn && (
-        <span className="text-sm text-gray-600 dark:text-gray-400">
+      {programme.nameEn && programme.nameEn !== programme.name && (
+        <span className="text-sm text-gray-600 dark:text-gray-400 block">
           {programme.nameEn}
         </span>
       )}
       
-      <div className="flex flex-wrap gap-1">
+      <div className="flex flex-wrap gap-1.5">
         {programme.modes?.map(mode => (
           <Badge 
             key={mode} 
             variant="outline" 
-            className="text-xs capitalize"
+            className="text-xs capitalize px-2 py-0.5"
           >
             {mode}
           </Badge>
         ))}
         {programme.discipline && (
-          <Badge variant="outline" className="text-xs">
+          <Badge variant="outline" className="text-xs px-2 py-0.5">
             {programme.discipline}
           </Badge>
         )}
@@ -139,50 +141,49 @@ export function ProgrammeSelect({
           role="combobox"
           aria-expanded={open}
           className={cn(
-            "w-full justify-between",
+            "w-full justify-between h-12 px-4",
             !isEnabled && "cursor-not-allowed opacity-50"
           )}
           disabled={!isEnabled}
         >
-          <span className="truncate">{getDisplayText()}</span>
+          <span className="truncate text-left">{getDisplayText()}</span>
           <ChevronDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
         </Button>
       </PopoverTrigger>
       
-      <PopoverContent className="w-full p-0" align="start">
-        <Command>
+      <PopoverContent className="w-[var(--radix-popover-trigger-width)] p-0" align="start">
+        <Command className="rounded-lg border shadow-md">
           <CommandInput 
             placeholder="Search programmes..." 
             disabled={!isEnabled || loading}
+            className="h-12 px-4 text-base"
           />
-          <CommandList>
+          <CommandList className="max-h-[300px]">
             {loading && (
-              <CommandEmpty>Loading programmes...</CommandEmpty>
+              <CommandEmpty className="py-6 text-center text-sm">
+                Loading programmes...
+              </CommandEmpty>
             )}
             
             {error && (
-              <CommandEmpty>
-                <div className="text-center py-4">
-                  <p className="text-sm text-red-600 dark:text-red-400">
-                    {error}
-                  </p>
-                  <p className="text-xs text-gray-500 mt-1">
-                    Please try again later or contact support.
-                  </p>
-                </div>
+              <CommandEmpty className="py-6 text-center">
+                <p className="text-sm text-red-600 dark:text-red-400">
+                  {error}
+                </p>
+                <p className="text-xs text-gray-500 mt-1">
+                  Please try again later or contact support.
+                </p>
               </CommandEmpty>
             )}
             
             {!loading && !error && programmes.length === 0 && (
-              <CommandEmpty>
-                <div className="text-center py-4">
-                  <p className="text-sm text-gray-600 dark:text-gray-400">
-                    No programmes found for this selection.
-                  </p>
-                  <p className="text-xs text-gray-500 mt-1">
-                    Try selecting a different degree level.
-                  </p>
-                </div>
+              <CommandEmpty className="py-6 text-center">
+                <p className="text-sm text-gray-600 dark:text-gray-400">
+                  No programmes found for this selection.
+                </p>
+                <p className="text-xs text-gray-500 mt-1">
+                  Try selecting a different degree level.
+                </p>
               </CommandEmpty>
             )}
             
@@ -191,18 +192,18 @@ export function ProgrammeSelect({
                 {programmes.map((programme) => (
                   <CommandItem
                     key={programme.id}
-                    value={`${programme.name} ${programme.nameEn || ''} ${programme.discipline || ''}`}
+                    value={`${programme.name} ${programme.nameEn || ''} ${programme.discipline || ''} ${programme.modes?.join(' ') || ''}`}
                     onSelect={() => handleSelect(programme.id)}
-                    className="p-3"
+                    className="px-4 py-3 cursor-pointer"
                   >
-                    <div className="flex items-center space-x-2 flex-1">
+                    <div className="flex items-center space-x-3 w-full">
                       <Check
                         className={cn(
-                          "mr-2 h-4 w-4",
+                          "h-4 w-4 shrink-0",
                           value === programme.id ? "opacity-100" : "opacity-0"
                         )}
                       />
-                      <div className="flex-1">
+                      <div className="flex-1 min-w-0">
                         {renderProgrammeItem(programme)}
                       </div>
                     </div>

@@ -8,6 +8,7 @@ import { InstitutionSelect } from '@/components/questionnaire/InstitutionSelect'
 import { ProgrammeSelect } from '@/components/questionnaire/ProgrammeSelect'
 import { Checkbox } from '@/components/ui/checkbox'
 import { User } from '@supabase/supabase-js'
+import { cn } from '@/lib/utils'
 
 interface AcademicStepProps {
   data: Record<string, any>
@@ -84,29 +85,69 @@ export function AcademicStep({ data, onChange, user }: AcademicStepProps) {
       </div>
 
       {/* Degree Level */}
-      <div className="space-y-2">
-        <Label htmlFor="degree_level">Degree Level *</Label>
-        <RadioGroup 
-          value={data.degree_level || ''} 
-          onValueChange={(value) => handleChange('degree_level', value)}
-          className="flex flex-col space-y-2"
-        >
-          <div className="flex items-center space-x-2">
-            <RadioGroupItem value="bachelor" id="degree_bachelor" />
-            <Label htmlFor="degree_bachelor">Bachelor's (BSc/BA)</Label>
+      <div className="space-y-3">
+        <Label htmlFor="degree_level" className="text-base font-medium">Degree Level *</Label>
+        <div className="grid grid-cols-1 gap-3">
+          <div 
+            className={cn(
+              "flex items-center space-x-3 p-4 rounded-lg border-2 cursor-pointer transition-colors",
+              data.degree_level === 'bachelor' 
+                ? "border-purple-600 bg-purple-50 dark:bg-purple-950" 
+                : "border-gray-200 hover:border-gray-300 dark:border-gray-700 dark:hover:border-gray-600"
+            )}
+            onClick={() => handleChange('degree_level', 'bachelor')}
+          >
+            <RadioGroupItem value="bachelor" id="degree_bachelor" className="shrink-0" />
+            <div className="flex-1">
+              <Label htmlFor="degree_bachelor" className="text-base font-medium cursor-pointer">
+                Bachelor's Degree (BSc/BA)
+              </Label>
+              <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
+                Undergraduate degree, typically 3-4 years
+              </p>
+            </div>
           </div>
-          <div className="flex items-center space-x-2">
-            <RadioGroupItem value="premaster" id="degree_premaster" />
-            <Label htmlFor="degree_premaster">Pre-Master (Schakelprogramma)</Label>
+          
+          <div 
+            className={cn(
+              "flex items-center space-x-3 p-4 rounded-lg border-2 cursor-pointer transition-colors",
+              data.degree_level === 'premaster' 
+                ? "border-purple-600 bg-purple-50 dark:bg-purple-950" 
+                : "border-gray-200 hover:border-gray-300 dark:border-gray-700 dark:hover:border-gray-600"
+            )}
+            onClick={() => handleChange('degree_level', 'premaster')}
+          >
+            <RadioGroupItem value="premaster" id="degree_premaster" className="shrink-0" />
+            <div className="flex-1">
+              <Label htmlFor="degree_premaster" className="text-base font-medium cursor-pointer">
+                Pre-Master (Schakelprogramma)
+              </Label>
+              <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
+                Bridging programme to prepare for Master's degree
+              </p>
+            </div>
           </div>
-          <div className="flex items-center space-x-2">
-            <RadioGroupItem value="master" id="degree_master" />
-            <Label htmlFor="degree_master">Master's (MSc/MA)</Label>
+          
+          <div 
+            className={cn(
+              "flex items-center space-x-3 p-4 rounded-lg border-2 cursor-pointer transition-colors",
+              data.degree_level === 'master' 
+                ? "border-purple-600 bg-purple-50 dark:bg-purple-950" 
+                : "border-gray-200 hover:border-gray-300 dark:border-gray-700 dark:hover:border-gray-600"
+            )}
+            onClick={() => handleChange('degree_level', 'master')}
+          >
+            <RadioGroupItem value="master" id="degree_master" className="shrink-0" />
+            <div className="flex-1">
+              <Label htmlFor="degree_master" className="text-base font-medium cursor-pointer">
+                Master's Degree (MSc/MA)
+              </Label>
+              <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
+                Graduate degree, typically 1-2 years
+              </p>
+            </div>
           </div>
-        </RadioGroup>
-        <p className="text-sm text-gray-500">
-          Pre-Master is a bridging programme that prepares you for a Master's degree.
-        </p>
+        </div>
       </div>
 
       {/* Undecided Program Toggle */}
