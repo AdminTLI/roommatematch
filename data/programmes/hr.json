@@ -1,0 +1,2158 @@
+{
+  "bachelor": [
+    {
+      "id": "1001O3536",
+      "name": "Accountancy",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "ECONOMIE",
+      "city": "ROTTERDAM",
+      "externalRefs": {
+        "rioCode": "1001O3536",
+        "isat": "34406",
+        "instCode": "22OJ"
+      }
+    },
+    {
+      "id": "1001O8776",
+      "name": "Applied Data Science & Artificial Intelligence",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "TECHNIEK",
+      "city": "ROTTERDAM",
+      "externalRefs": {
+        "rioCode": "1001O8776",
+        "isat": "39309",
+        "instCode": "22OJ"
+      }
+    },
+    {
+      "id": "1001O2662",
+      "name": "Automotive",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "dual"
+      ],
+      "isVariant": false,
+      "discipline": "TECHNIEK",
+      "city": "ROTTERDAM",
+      "externalRefs": {
+        "rioCode": "1001O2662",
+        "isat": "30018",
+        "instCode": "22OJ"
+      }
+    },
+    {
+      "id": "1001O2662",
+      "name": "Automotive",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "TECHNIEK",
+      "city": "ROTTERDAM",
+      "externalRefs": {
+        "rioCode": "1001O2662",
+        "isat": "30018",
+        "instCode": "22OJ"
+      }
+    },
+    {
+      "id": "1001O5095",
+      "name": "Autonome Beeldende Kunst",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "TAAL_EN_CULTUUR",
+      "subDiscipline": "OPLEIDINGEN_OP_HET_GEBIED_VAN_DE_KUNST",
+      "city": "ROTTERDAM",
+      "externalRefs": {
+        "rioCode": "1001O5095",
+        "isat": "39110",
+        "instCode": "22OJ"
+      }
+    },
+    {
+      "id": "1001O2784",
+      "name": "Bedrijfskunde",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "parttime"
+      ],
+      "isVariant": false,
+      "discipline": "ECONOMIE",
+      "city": "ROTTERDAM",
+      "externalRefs": {
+        "rioCode": "1001O2784",
+        "isat": "34035",
+        "instCode": "22OJ"
+      }
+    },
+    {
+      "id": "1001O2784",
+      "name": "Bedrijfskunde",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "ECONOMIE",
+      "city": "ROTTERDAM",
+      "externalRefs": {
+        "rioCode": "1001O2784",
+        "isat": "34035",
+        "instCode": "22OJ"
+      }
+    },
+    {
+      "id": "1001O3356",
+      "name": "Biologie en Medisch Laboratoriumonderzoek",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "TECHNIEK",
+      "city": "ROTTERDAM",
+      "externalRefs": {
+        "rioCode": "1001O3356",
+        "isat": "34397",
+        "instCode": "22OJ"
+      }
+    },
+    {
+      "id": "1001O3055",
+      "name": "Bouwkunde",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "parttime"
+      ],
+      "isVariant": false,
+      "discipline": "TECHNIEK",
+      "city": "ROTTERDAM",
+      "externalRefs": {
+        "rioCode": "1001O3055",
+        "isat": "34263",
+        "instCode": "22OJ"
+      }
+    },
+    {
+      "id": "1001O3055",
+      "name": "Bouwkunde",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "dual"
+      ],
+      "isVariant": false,
+      "discipline": "TECHNIEK",
+      "city": "ROTTERDAM",
+      "externalRefs": {
+        "rioCode": "1001O3055",
+        "isat": "34263",
+        "instCode": "22OJ"
+      }
+    },
+    {
+      "id": "1001O3055",
+      "name": "Bouwkunde",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "TECHNIEK",
+      "city": "ROTTERDAM",
+      "externalRefs": {
+        "rioCode": "1001O3055",
+        "isat": "34263",
+        "instCode": "22OJ"
+      }
+    },
+    {
+      "id": "1016O1606",
+      "name": "Built Environment",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "parttime"
+      ],
+      "isVariant": false,
+      "discipline": "TECHNIEK",
+      "city": "ROTTERDAM",
+      "externalRefs": {
+        "rioCode": "1016O1606",
+        "isat": "39280",
+        "instCode": "22OJ"
+      }
+    },
+    {
+      "id": "1016O1606",
+      "name": "Built Environment",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "dual"
+      ],
+      "isVariant": false,
+      "discipline": "TECHNIEK",
+      "city": "ROTTERDAM",
+      "externalRefs": {
+        "rioCode": "1016O1606",
+        "isat": "39280",
+        "instCode": "22OJ"
+      }
+    },
+    {
+      "id": "1001O5136",
+      "name": "Business IT & Management",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "parttime"
+      ],
+      "isVariant": false,
+      "discipline": "ECONOMIE",
+      "city": "ROTTERDAM",
+      "externalRefs": {
+        "rioCode": "1001O5136",
+        "isat": "39118",
+        "instCode": "22OJ"
+      }
+    },
+    {
+      "id": "1001O5136",
+      "name": "Business IT & Management",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "ECONOMIE",
+      "city": "ROTTERDAM",
+      "externalRefs": {
+        "rioCode": "1001O5136",
+        "isat": "39118",
+        "instCode": "22OJ"
+      }
+    },
+    {
+      "id": "1001O3336",
+      "name": "Chemie",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "TECHNIEK",
+      "city": "ROTTERDAM",
+      "externalRefs": {
+        "rioCode": "1001O3336",
+        "isat": "34396",
+        "instCode": "22OJ"
+      }
+    },
+    {
+      "id": "1001O3149",
+      "name": "Chemische Technologie",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "parttime"
+      ],
+      "isVariant": false,
+      "discipline": "TECHNIEK",
+      "city": "ROTTERDAM",
+      "externalRefs": {
+        "rioCode": "1001O3149",
+        "isat": "34275",
+        "instCode": "22OJ"
+      }
+    },
+    {
+      "id": "1001O3149",
+      "name": "Chemische Technologie",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "TECHNIEK",
+      "city": "ROTTERDAM",
+      "externalRefs": {
+        "rioCode": "1001O3149",
+        "isat": "34275",
+        "instCode": "22OJ"
+      }
+    },
+    {
+      "id": "1001O3174",
+      "name": "Civiele Techniek",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "parttime"
+      ],
+      "isVariant": false,
+      "discipline": "TECHNIEK",
+      "city": "ROTTERDAM",
+      "externalRefs": {
+        "rioCode": "1001O3174",
+        "isat": "34279",
+        "instCode": "22OJ"
+      }
+    },
+    {
+      "id": "1001O3174",
+      "name": "Civiele Techniek",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "dual"
+      ],
+      "isVariant": false,
+      "discipline": "TECHNIEK",
+      "city": "ROTTERDAM",
+      "externalRefs": {
+        "rioCode": "1001O3174",
+        "isat": "34279",
+        "instCode": "22OJ"
+      }
+    },
+    {
+      "id": "1001O3174",
+      "name": "Civiele Techniek",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "TECHNIEK",
+      "city": "ROTTERDAM",
+      "externalRefs": {
+        "rioCode": "1001O3174",
+        "isat": "34279",
+        "instCode": "22OJ"
+      }
+    },
+    {
+      "id": "1001O3430",
+      "name": "Commerciële Economie",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "parttime"
+      ],
+      "isVariant": false,
+      "discipline": "ECONOMIE",
+      "city": "ROTTERDAM",
+      "externalRefs": {
+        "rioCode": "1001O3430",
+        "isat": "34402",
+        "instCode": "22OJ"
+      }
+    },
+    {
+      "id": "1001O3430",
+      "name": "Commerciële Economie",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "ECONOMIE",
+      "city": "ROTTERDAM",
+      "externalRefs": {
+        "rioCode": "1001O3430",
+        "isat": "34402",
+        "instCode": "22OJ"
+      }
+    },
+    {
+      "id": "1001O3504",
+      "name": "Communicatie",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "parttime"
+      ],
+      "isVariant": false,
+      "discipline": "ECONOMIE",
+      "city": "ROTTERDAM",
+      "externalRefs": {
+        "rioCode": "1001O3504",
+        "isat": "34405",
+        "instCode": "22OJ"
+      }
+    },
+    {
+      "id": "1001O3504",
+      "name": "Communicatie",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "ECONOMIE",
+      "city": "ROTTERDAM",
+      "externalRefs": {
+        "rioCode": "1001O3504",
+        "isat": "34405",
+        "instCode": "22OJ"
+      }
+    },
+    {
+      "id": "1001O2900",
+      "name": "Communication and Multimedia Design",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "TECHNIEK",
+      "city": "ROTTERDAM",
+      "externalRefs": {
+        "rioCode": "1001O2900",
+        "isat": "34092",
+        "instCode": "22OJ"
+      }
+    },
+    {
+      "id": "1001O2715",
+      "name": "Creative Media and Game Technologies",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "TECHNIEK",
+      "city": "ROTTERDAM",
+      "externalRefs": {
+        "rioCode": "1001O2715",
+        "isat": "30036",
+        "instCode": "22OJ"
+      }
+    },
+    {
+      "id": "1001O5083",
+      "name": "Docent Beeldende Kunst en Vormgeving",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "parttime"
+      ],
+      "isVariant": false,
+      "discipline": "ONDERWIJS",
+      "subDiscipline": "LERARENOPLEIDINGEN_OP_HET_GEBIED_VAN_DE_KUNST",
+      "city": "ROTTERDAM",
+      "externalRefs": {
+        "rioCode": "1001O5083",
+        "isat": "39100",
+        "instCode": "22OJ"
+      }
+    },
+    {
+      "id": "1001O5083",
+      "name": "Docent Beeldende Kunst en Vormgeving",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "ONDERWIJS",
+      "subDiscipline": "LERARENOPLEIDINGEN_OP_HET_GEBIED_VAN_DE_KUNST",
+      "city": "ROTTERDAM",
+      "externalRefs": {
+        "rioCode": "1001O5083",
+        "isat": "39100",
+        "instCode": "22OJ"
+      }
+    },
+    {
+      "id": "1001O3084",
+      "name": "Elektrotechniek",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "TECHNIEK",
+      "city": "ROTTERDAM",
+      "externalRefs": {
+        "rioCode": "1001O3084",
+        "isat": "34267",
+        "instCode": "22OJ"
+      }
+    },
+    {
+      "id": "1001O3922",
+      "name": "Facility Management",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "ECONOMIE",
+      "city": "ROTTERDAM",
+      "externalRefs": {
+        "rioCode": "1001O3922",
+        "isat": "34500",
+        "instCode": "22OJ"
+      }
+    },
+    {
+      "id": "1001O5028",
+      "name": "Finance & Control",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "parttime"
+      ],
+      "isVariant": false,
+      "discipline": "ECONOMIE",
+      "city": "ROTTERDAM",
+      "externalRefs": {
+        "rioCode": "1001O5028",
+        "isat": "35520",
+        "instCode": "22OJ"
+      }
+    },
+    {
+      "id": "1001O5028",
+      "name": "Finance & Control",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "ECONOMIE",
+      "city": "ROTTERDAM",
+      "externalRefs": {
+        "rioCode": "1001O5028",
+        "isat": "35520",
+        "instCode": "22OJ"
+      }
+    },
+    {
+      "id": "1001O5017",
+      "name": "Finance, Tax and Advice",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "ECONOMIE",
+      "city": "ROTTERDAM",
+      "externalRefs": {
+        "rioCode": "1001O5017",
+        "isat": "35517",
+        "instCode": "22OJ"
+      }
+    },
+    {
+      "id": "1001O4132",
+      "name": "Human Resource Management",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "parttime"
+      ],
+      "isVariant": false,
+      "discipline": "ECONOMIE",
+      "city": "ROTTERDAM",
+      "externalRefs": {
+        "rioCode": "1001O4132",
+        "isat": "34609",
+        "instCode": "22OJ"
+      }
+    },
+    {
+      "id": "1001O4132",
+      "name": "Human Resource Management",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "ECONOMIE",
+      "city": "ROTTERDAM",
+      "externalRefs": {
+        "rioCode": "1001O4132",
+        "isat": "34609",
+        "instCode": "22OJ"
+      }
+    },
+    {
+      "id": "1001O3303",
+      "name": "Industrieel Product Ontwerpen",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "TECHNIEK",
+      "city": "ROTTERDAM",
+      "externalRefs": {
+        "rioCode": "1001O3303",
+        "isat": "34389",
+        "instCode": "22OJ"
+      }
+    },
+    {
+      "id": "1001O3886",
+      "name": "Informatica",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "parttime"
+      ],
+      "isVariant": false,
+      "discipline": "TECHNIEK",
+      "city": "ROTTERDAM",
+      "externalRefs": {
+        "rioCode": "1001O3886",
+        "isat": "34479",
+        "instCode": "22OJ"
+      }
+    },
+    {
+      "id": "1001O3886",
+      "name": "Informatica",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "TECHNIEK",
+      "city": "ROTTERDAM",
+      "externalRefs": {
+        "rioCode": "1001O3886",
+        "isat": "34479",
+        "instCode": "22OJ"
+      }
+    },
+    {
+      "id": "1001O2695",
+      "name": "International Business",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "ECONOMIE",
+      "city": "ROTTERDAM",
+      "externalRefs": {
+        "rioCode": "1001O2695",
+        "isat": "30029",
+        "instCode": "22OJ"
+      }
+    },
+    {
+      "id": "1001O5041",
+      "name": "Leisure & Events Management",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "ECONOMIE",
+      "city": "ROTTERDAM",
+      "externalRefs": {
+        "rioCode": "1001O5041",
+        "isat": "35521",
+        "instCode": "22OJ"
+      }
+    },
+    {
+      "id": "1001O3316",
+      "name": "Logistics Engineering",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "TECHNIEK",
+      "city": "ROTTERDAM",
+      "externalRefs": {
+        "rioCode": "1001O3316",
+        "isat": "34390",
+        "instCode": "22OJ"
+      }
+    },
+    {
+      "id": "1001O5046",
+      "name": "Logistics Management",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "parttime"
+      ],
+      "isVariant": false,
+      "discipline": "ECONOMIE",
+      "city": "ROTTERDAM",
+      "externalRefs": {
+        "rioCode": "1001O5046",
+        "isat": "35522",
+        "instCode": "22OJ"
+      }
+    },
+    {
+      "id": "1001O5046",
+      "name": "Logistics Management",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "ECONOMIE",
+      "city": "ROTTERDAM",
+      "externalRefs": {
+        "rioCode": "1001O5046",
+        "isat": "35522",
+        "instCode": "22OJ"
+      }
+    },
+    {
+      "id": "1001O3292",
+      "name": "Maritiem Officier",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "TECHNIEK",
+      "city": "ROTTERDAM",
+      "externalRefs": {
+        "rioCode": "1001O3292",
+        "isat": "34384",
+        "instCode": "22OJ"
+      }
+    },
+    {
+      "id": "1001O3160",
+      "name": "Maritieme Techniek",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "TECHNIEK",
+      "city": "ROTTERDAM",
+      "externalRefs": {
+        "rioCode": "1001O3160",
+        "isat": "34276",
+        "instCode": "22OJ"
+      }
+    },
+    {
+      "id": "1001O2681",
+      "name": "Medische Hulpverlening",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "GEZONDHEIDSZORG",
+      "city": "ROTTERDAM",
+      "externalRefs": {
+        "rioCode": "1001O2681",
+        "isat": "30023",
+        "instCode": "22OJ"
+      }
+    },
+    {
+      "id": "1001O2729",
+      "name": "Mens en Techniek",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "TECHNIEK",
+      "city": "ROTTERDAM",
+      "externalRefs": {
+        "rioCode": "1001O2729",
+        "isat": "30039",
+        "instCode": "22OJ"
+      }
+    },
+    {
+      "id": "1001O5056",
+      "name": "Ondernemerschap & Retail Management",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "ECONOMIE",
+      "city": "ROTTERDAM",
+      "externalRefs": {
+        "rioCode": "1001O5056",
+        "isat": "35523",
+        "instCode": "22OJ"
+      }
+    },
+    {
+      "id": "1001O4047",
+      "name": "Opleiding tot Fysiotherapeut",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "GEZONDHEIDSZORG",
+      "city": "ROTTERDAM",
+      "externalRefs": {
+        "rioCode": "1001O4047",
+        "isat": "34570",
+        "instCode": "22OJ"
+      }
+    },
+    {
+      "id": "1001O4389",
+      "name": "Opleiding tot leraar Basisonderwijs",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "parttime"
+      ],
+      "isVariant": false,
+      "discipline": "ONDERWIJS",
+      "city": "ROTTERDAM",
+      "externalRefs": {
+        "rioCode": "1001O4389",
+        "isat": "34808",
+        "instCode": "22OJ"
+      }
+    },
+    {
+      "id": "1001O4389",
+      "name": "Opleiding tot leraar Basisonderwijs",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "ONDERWIJS",
+      "city": "ROTTERDAM",
+      "externalRefs": {
+        "rioCode": "1001O4389",
+        "isat": "34808",
+        "instCode": "22OJ"
+      }
+    },
+    {
+      "id": "1001O4724",
+      "name": "Opleiding tot leraar voortgezet onderwijs van de tweede graad in Aardrijkskunde",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "parttime"
+      ],
+      "isVariant": false,
+      "discipline": "ONDERWIJS",
+      "city": "ROTTERDAM",
+      "externalRefs": {
+        "rioCode": "1001O4724",
+        "isat": "35201",
+        "instCode": "22OJ"
+      }
+    },
+    {
+      "id": "1001O4724",
+      "name": "Opleiding tot leraar voortgezet onderwijs van de tweede graad in Aardrijkskunde",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "ONDERWIJS",
+      "city": "ROTTERDAM",
+      "externalRefs": {
+        "rioCode": "1001O4724",
+        "isat": "35201",
+        "instCode": "22OJ"
+      }
+    },
+    {
+      "id": "1001O4742",
+      "name": "Opleiding tot leraar voortgezet onderwijs van de tweede graad in Algemene Economie",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "parttime"
+      ],
+      "isVariant": false,
+      "discipline": "ONDERWIJS",
+      "city": "ROTTERDAM",
+      "externalRefs": {
+        "rioCode": "1001O4742",
+        "isat": "35202",
+        "instCode": "22OJ"
+      }
+    },
+    {
+      "id": "1001O4742",
+      "name": "Opleiding tot leraar voortgezet onderwijs van de tweede graad in Algemene Economie",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "ONDERWIJS",
+      "city": "ROTTERDAM",
+      "externalRefs": {
+        "rioCode": "1001O4742",
+        "isat": "35202",
+        "instCode": "22OJ"
+      }
+    },
+    {
+      "id": "1001O4758",
+      "name": "Opleiding tot leraar voortgezet onderwijs van de tweede graad in Bedrijfseconomie",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "parttime"
+      ],
+      "isVariant": false,
+      "discipline": "ONDERWIJS",
+      "city": "ROTTERDAM",
+      "externalRefs": {
+        "rioCode": "1001O4758",
+        "isat": "35203",
+        "instCode": "22OJ"
+      }
+    },
+    {
+      "id": "1001O4758",
+      "name": "Opleiding tot leraar voortgezet onderwijs van de tweede graad in Bedrijfseconomie",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "ONDERWIJS",
+      "city": "ROTTERDAM",
+      "externalRefs": {
+        "rioCode": "1001O4758",
+        "isat": "35203",
+        "instCode": "22OJ"
+      }
+    },
+    {
+      "id": "1001O4853",
+      "name": "Opleiding tot leraar voortgezet onderwijs van de tweede graad in Biologie",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "parttime"
+      ],
+      "isVariant": false,
+      "discipline": "ONDERWIJS",
+      "city": "ROTTERDAM",
+      "externalRefs": {
+        "rioCode": "1001O4853",
+        "isat": "35301",
+        "instCode": "22OJ"
+      }
+    },
+    {
+      "id": "1001O4853",
+      "name": "Opleiding tot leraar voortgezet onderwijs van de tweede graad in Biologie",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "ONDERWIJS",
+      "city": "ROTTERDAM",
+      "externalRefs": {
+        "rioCode": "1001O4853",
+        "isat": "35301",
+        "instCode": "22OJ"
+      }
+    },
+    {
+      "id": "1001O4622",
+      "name": "Opleiding tot leraar voortgezet onderwijs van de tweede graad in Duits",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "parttime"
+      ],
+      "isVariant": false,
+      "discipline": "ONDERWIJS",
+      "city": "ROTTERDAM",
+      "externalRefs": {
+        "rioCode": "1001O4622",
+        "isat": "35193",
+        "instCode": "22OJ"
+      }
+    },
+    {
+      "id": "1001O4622",
+      "name": "Opleiding tot leraar voortgezet onderwijs van de tweede graad in Duits",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "ONDERWIJS",
+      "city": "ROTTERDAM",
+      "externalRefs": {
+        "rioCode": "1001O4622",
+        "isat": "35193",
+        "instCode": "22OJ"
+      }
+    },
+    {
+      "id": "1001O8830",
+      "name": "Opleiding tot leraar voortgezet onderwijs van de tweede graad in Economie",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "parttime"
+      ],
+      "isVariant": false,
+      "discipline": "ONDERWIJS",
+      "city": "ROTTERDAM",
+      "externalRefs": {
+        "rioCode": "1001O8830",
+        "isat": "35207",
+        "instCode": "22OJ"
+      }
+    },
+    {
+      "id": "1001O8830",
+      "name": "Opleiding tot leraar voortgezet onderwijs van de tweede graad in Economie",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "ONDERWIJS",
+      "city": "ROTTERDAM",
+      "externalRefs": {
+        "rioCode": "1001O8830",
+        "isat": "35207",
+        "instCode": "22OJ"
+      }
+    },
+    {
+      "id": "1001O4640",
+      "name": "Opleiding tot leraar voortgezet onderwijs van de tweede graad in Engels",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "parttime"
+      ],
+      "isVariant": false,
+      "discipline": "ONDERWIJS",
+      "city": "ROTTERDAM",
+      "externalRefs": {
+        "rioCode": "1001O4640",
+        "isat": "35195",
+        "instCode": "22OJ"
+      }
+    },
+    {
+      "id": "1001O4640",
+      "name": "Opleiding tot leraar voortgezet onderwijs van de tweede graad in Engels",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "ONDERWIJS",
+      "city": "ROTTERDAM",
+      "externalRefs": {
+        "rioCode": "1001O4640",
+        "isat": "35195",
+        "instCode": "22OJ"
+      }
+    },
+    {
+      "id": "1001O4657",
+      "name": "Opleiding tot leraar voortgezet onderwijs van de tweede graad in Frans",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "parttime"
+      ],
+      "isVariant": false,
+      "discipline": "ONDERWIJS",
+      "city": "ROTTERDAM",
+      "externalRefs": {
+        "rioCode": "1001O4657",
+        "isat": "35196",
+        "instCode": "22OJ"
+      }
+    },
+    {
+      "id": "1001O4657",
+      "name": "Opleiding tot leraar voortgezet onderwijs van de tweede graad in Frans",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "ONDERWIJS",
+      "city": "ROTTERDAM",
+      "externalRefs": {
+        "rioCode": "1001O4657",
+        "isat": "35196",
+        "instCode": "22OJ"
+      }
+    },
+    {
+      "id": "1001O4674",
+      "name": "Opleiding tot leraar voortgezet onderwijs van de tweede graad in Geschiedenis",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "ONDERWIJS",
+      "city": "ROTTERDAM",
+      "externalRefs": {
+        "rioCode": "1001O4674",
+        "isat": "35197",
+        "instCode": "22OJ"
+      }
+    },
+    {
+      "id": "1001O4921",
+      "name": "Opleiding tot leraar voortgezet onderwijs van de tweede graad in Gezondheidszorg en Welzijn",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "parttime"
+      ],
+      "isVariant": false,
+      "discipline": "ONDERWIJS",
+      "city": "ROTTERDAM",
+      "externalRefs": {
+        "rioCode": "1001O4921",
+        "isat": "35388",
+        "instCode": "22OJ"
+      }
+    },
+    {
+      "id": "1001O4790",
+      "name": "Opleiding tot leraar voortgezet onderwijs van de tweede graad in het Technisch Beroepsonderwijs",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "parttime"
+      ],
+      "isVariant": false,
+      "discipline": "ONDERWIJS",
+      "city": "ROTTERDAM",
+      "externalRefs": {
+        "rioCode": "1001O4790",
+        "isat": "35210",
+        "instCode": "22OJ"
+      }
+    },
+    {
+      "id": "1001O4790",
+      "name": "Opleiding tot leraar voortgezet onderwijs van de tweede graad in het Technisch Beroepsonderwijs",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "ONDERWIJS",
+      "city": "ROTTERDAM",
+      "externalRefs": {
+        "rioCode": "1001O4790",
+        "isat": "35210",
+        "instCode": "22OJ"
+      }
+    },
+    {
+      "id": "1001O4945",
+      "name": "Opleiding tot leraar voortgezet onderwijs van de tweede graad in Maatschappijleer",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "parttime"
+      ],
+      "isVariant": false,
+      "discipline": "ONDERWIJS",
+      "city": "ROTTERDAM",
+      "externalRefs": {
+        "rioCode": "1001O4945",
+        "isat": "35411",
+        "instCode": "22OJ"
+      }
+    },
+    {
+      "id": "1001O4945",
+      "name": "Opleiding tot leraar voortgezet onderwijs van de tweede graad in Maatschappijleer",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "ONDERWIJS",
+      "city": "ROTTERDAM",
+      "externalRefs": {
+        "rioCode": "1001O4945",
+        "isat": "35411",
+        "instCode": "22OJ"
+      }
+    },
+    {
+      "id": "1001O4839",
+      "name": "Opleiding tot leraar voortgezet onderwijs van de tweede graad in Natuurkunde",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "parttime"
+      ],
+      "isVariant": false,
+      "discipline": "ONDERWIJS",
+      "city": "ROTTERDAM",
+      "externalRefs": {
+        "rioCode": "1001O4839",
+        "isat": "35261",
+        "instCode": "22OJ"
+      }
+    },
+    {
+      "id": "1001O4839",
+      "name": "Opleiding tot leraar voortgezet onderwijs van de tweede graad in Natuurkunde",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "ONDERWIJS",
+      "city": "ROTTERDAM",
+      "externalRefs": {
+        "rioCode": "1001O4839",
+        "isat": "35261",
+        "instCode": "22OJ"
+      }
+    },
+    {
+      "id": "1001O4693",
+      "name": "Opleiding tot leraar voortgezet onderwijs van de tweede graad in Nederlands",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "parttime"
+      ],
+      "isVariant": false,
+      "discipline": "ONDERWIJS",
+      "city": "ROTTERDAM",
+      "externalRefs": {
+        "rioCode": "1001O4693",
+        "isat": "35198",
+        "instCode": "22OJ"
+      }
+    },
+    {
+      "id": "1001O4693",
+      "name": "Opleiding tot leraar voortgezet onderwijs van de tweede graad in Nederlands",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "ONDERWIJS",
+      "city": "ROTTERDAM",
+      "externalRefs": {
+        "rioCode": "1001O4693",
+        "isat": "35198",
+        "instCode": "22OJ"
+      }
+    },
+    {
+      "id": "1001O4800",
+      "name": "Opleiding tot leraar voortgezet onderwijs van de tweede graad in Wiskunde",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "parttime"
+      ],
+      "isVariant": false,
+      "discipline": "ONDERWIJS",
+      "city": "ROTTERDAM",
+      "externalRefs": {
+        "rioCode": "1001O4800",
+        "isat": "35221",
+        "instCode": "22OJ"
+      }
+    },
+    {
+      "id": "1001O4800",
+      "name": "Opleiding tot leraar voortgezet onderwijs van de tweede graad in Wiskunde",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "ONDERWIJS",
+      "city": "ROTTERDAM",
+      "externalRefs": {
+        "rioCode": "1001O4800",
+        "isat": "35221",
+        "instCode": "22OJ"
+      }
+    },
+    {
+      "id": "1001O4010",
+      "name": "Opleiding tot Verpleegkundige",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "parttime"
+      ],
+      "isVariant": false,
+      "discipline": "GEZONDHEIDSZORG",
+      "city": "ROTTERDAM",
+      "externalRefs": {
+        "rioCode": "1001O4010",
+        "isat": "34560",
+        "instCode": "22OJ"
+      }
+    },
+    {
+      "id": "1001O4010",
+      "name": "Opleiding tot Verpleegkundige",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "dual"
+      ],
+      "isVariant": false,
+      "discipline": "GEZONDHEIDSZORG",
+      "city": "ROTTERDAM",
+      "externalRefs": {
+        "rioCode": "1001O4010",
+        "isat": "34560",
+        "instCode": "22OJ"
+      }
+    },
+    {
+      "id": "1001O4010",
+      "name": "Opleiding tot Verpleegkundige",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "GEZONDHEIDSZORG",
+      "city": "ROTTERDAM",
+      "externalRefs": {
+        "rioCode": "1001O4010",
+        "isat": "34560",
+        "instCode": "22OJ"
+      }
+    },
+    {
+      "id": "1001O4062",
+      "name": "Opleiding voor Ergotherapie",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "GEZONDHEIDSZORG",
+      "city": "ROTTERDAM",
+      "externalRefs": {
+        "rioCode": "1001O4062",
+        "isat": "34574",
+        "instCode": "22OJ"
+      }
+    },
+    {
+      "id": "1001O4076",
+      "name": "Opleiding voor Logopedie",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "GEZONDHEIDSZORG",
+      "city": "ROTTERDAM",
+      "externalRefs": {
+        "rioCode": "1001O4076",
+        "isat": "34578",
+        "instCode": "22OJ"
+      }
+    },
+    {
+      "id": "1001O2723",
+      "name": "Ruimtelijke Ontwikkeling",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "TECHNIEK",
+      "city": "ROTTERDAM",
+      "externalRefs": {
+        "rioCode": "1001O2723",
+        "isat": "30038",
+        "instCode": "22OJ"
+      }
+    },
+    {
+      "id": "1001O2925",
+      "name": "Social Work",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "parttime"
+      ],
+      "isVariant": false,
+      "discipline": "GEDRAG_EN_MAATSCHAPPIJ",
+      "city": "ROTTERDAM",
+      "externalRefs": {
+        "rioCode": "1001O2925",
+        "isat": "34116",
+        "instCode": "22OJ"
+      }
+    },
+    {
+      "id": "1001O2925",
+      "name": "Social Work",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "GEDRAG_EN_MAATSCHAPPIJ",
+      "city": "ROTTERDAM",
+      "externalRefs": {
+        "rioCode": "1001O2925",
+        "isat": "34116",
+        "instCode": "22OJ"
+      }
+    },
+    {
+      "id": "1001O3667",
+      "name": "Technische Bedrijfskunde",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "parttime"
+      ],
+      "isVariant": false,
+      "discipline": "TECHNIEK",
+      "city": "ROTTERDAM",
+      "externalRefs": {
+        "rioCode": "1001O3667",
+        "isat": "34421",
+        "instCode": "22OJ"
+      }
+    },
+    {
+      "id": "1001O3667",
+      "name": "Technische Bedrijfskunde",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "TECHNIEK",
+      "city": "ROTTERDAM",
+      "externalRefs": {
+        "rioCode": "1001O3667",
+        "isat": "34421",
+        "instCode": "22OJ"
+      }
+    },
+    {
+      "id": "1001O3850",
+      "name": "Technische Informatica",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "TECHNIEK",
+      "city": "ROTTERDAM",
+      "externalRefs": {
+        "rioCode": "1001O3850",
+        "isat": "34475",
+        "instCode": "22OJ"
+      }
+    },
+    {
+      "id": "1001O5164",
+      "name": "Vastgoedkunde",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "ECONOMIE",
+      "city": "ROTTERDAM",
+      "externalRefs": {
+        "rioCode": "1001O5164",
+        "isat": "39203",
+        "instCode": "22OJ"
+      }
+    },
+    {
+      "id": "1001O2956",
+      "name": "Verloskunde",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "GEZONDHEIDSZORG",
+      "city": "ROTTERDAM",
+      "externalRefs": {
+        "rioCode": "1001O2956",
+        "isat": "34134",
+        "instCode": "22OJ"
+      }
+    },
+    {
+      "id": "1001O5106",
+      "name": "Vormgeving",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "TAAL_EN_CULTUUR",
+      "subDiscipline": "OPLEIDINGEN_OP_HET_GEBIED_VAN_DE_KUNST",
+      "city": "ROTTERDAM",
+      "externalRefs": {
+        "rioCode": "1001O5106",
+        "isat": "39111",
+        "instCode": "22OJ"
+      }
+    },
+    {
+      "id": "1001O2870",
+      "name": "Watermanagement",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "TECHNIEK",
+      "city": "ROTTERDAM",
+      "externalRefs": {
+        "rioCode": "1001O2870",
+        "isat": "34074",
+        "instCode": "22OJ"
+      }
+    },
+    {
+      "id": "1001O3202",
+      "name": "Werktuigbouwkunde",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "parttime"
+      ],
+      "isVariant": false,
+      "discipline": "TECHNIEK",
+      "city": "ROTTERDAM",
+      "externalRefs": {
+        "rioCode": "1001O3202",
+        "isat": "34280",
+        "instCode": "22OJ"
+      }
+    },
+    {
+      "id": "1001O3202",
+      "name": "Werktuigbouwkunde",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "dual"
+      ],
+      "isVariant": false,
+      "discipline": "TECHNIEK",
+      "city": "ROTTERDAM",
+      "externalRefs": {
+        "rioCode": "1001O3202",
+        "isat": "34280",
+        "instCode": "22OJ"
+      }
+    },
+    {
+      "id": "1001O3202",
+      "name": "Werktuigbouwkunde",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "TECHNIEK",
+      "city": "ROTTERDAM",
+      "externalRefs": {
+        "rioCode": "1001O3202",
+        "isat": "34280",
+        "instCode": "22OJ"
+      }
+    }
+  ],
+  "premaster": [
+    {
+      "id": "1001O7884",
+      "name": "Begeleidingskunde",
+      "level": "premaster",
+      "sector": "hbo",
+      "modes": [
+        "parttime"
+      ],
+      "isVariant": false,
+      "discipline": "GEDRAG_EN_MAATSCHAPPIJ",
+      "city": "ROTTERDAM",
+      "externalRefs": {
+        "rioCode": "1001O7884",
+        "isat": "70063",
+        "instCode": "22OJ"
+      }
+    },
+    {
+      "id": "1001O8845",
+      "name": "Fysiotherapie",
+      "level": "premaster",
+      "sector": "hbo",
+      "modes": [
+        "parttime"
+      ],
+      "isVariant": false,
+      "discipline": "GEZONDHEIDSZORG",
+      "city": "ROTTERDAM",
+      "externalRefs": {
+        "rioCode": "1001O8845",
+        "isat": "70175",
+        "instCode": "22OJ"
+      }
+    },
+    {
+      "id": "1001O7926",
+      "name": "Kinderfysiotherapie",
+      "level": "premaster",
+      "sector": "hbo",
+      "modes": [
+        "parttime"
+      ],
+      "isVariant": false,
+      "discipline": "GEZONDHEIDSZORG",
+      "city": "ROTTERDAM",
+      "externalRefs": {
+        "rioCode": "1001O7926",
+        "isat": "70093",
+        "instCode": "22OJ"
+      }
+    },
+    {
+      "id": "1001O7893",
+      "name": "Manuele Therapie",
+      "level": "premaster",
+      "sector": "hbo",
+      "modes": [
+        "parttime"
+      ],
+      "isVariant": false,
+      "discipline": "GEZONDHEIDSZORG",
+      "city": "ROTTERDAM",
+      "externalRefs": {
+        "rioCode": "1001O7893",
+        "isat": "70072",
+        "instCode": "22OJ"
+      }
+    },
+    {
+      "id": "1001O7987",
+      "name": "Sportfysiotherapie",
+      "level": "premaster",
+      "sector": "hbo",
+      "modes": [
+        "parttime"
+      ],
+      "isVariant": false,
+      "discipline": "GEZONDHEIDSZORG",
+      "city": "ROTTERDAM",
+      "externalRefs": {
+        "rioCode": "1001O7987",
+        "isat": "70136",
+        "instCode": "22OJ"
+      }
+    }
+  ],
+  "master": [
+    {
+      "id": "1001O5570",
+      "name": "Advanced Nursing Practice",
+      "level": "master",
+      "sector": "hbo",
+      "modes": [
+        "dual"
+      ],
+      "isVariant": false,
+      "discipline": "GEZONDHEIDSZORG",
+      "city": "ROTTERDAM",
+      "externalRefs": {
+        "rioCode": "1001O5570",
+        "isat": "49246",
+        "instCode": "22OJ"
+      }
+    },
+    {
+      "id": "1001O5361",
+      "name": "Architectuur",
+      "level": "master",
+      "sector": "hbo",
+      "modes": [
+        "parttime"
+      ],
+      "isVariant": false,
+      "discipline": "TAAL_EN_CULTUUR",
+      "city": "ROTTERDAM",
+      "externalRefs": {
+        "rioCode": "1001O5361",
+        "isat": "44336",
+        "instCode": "22OJ"
+      }
+    },
+    {
+      "id": "1001O5386",
+      "name": "Interior Architecture",
+      "level": "master",
+      "sector": "hbo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "TAAL_EN_CULTUUR",
+      "subDiscipline": "OPLEIDINGEN_OP_HET_GEBIED_VAN_DE_KUNST",
+      "city": "ROTTERDAM",
+      "externalRefs": {
+        "rioCode": "1001O5386",
+        "isat": "44760",
+        "instCode": "22OJ"
+      }
+    },
+    {
+      "id": "1001O8854",
+      "name": "Jonge Kind",
+      "level": "master",
+      "sector": "hbo",
+      "modes": [
+        "parttime"
+      ],
+      "isVariant": false,
+      "discipline": "ONDERWIJS",
+      "city": "ROTTERDAM",
+      "externalRefs": {
+        "rioCode": "1001O8854",
+        "isat": "45296",
+        "instCode": "22OJ"
+      }
+    },
+    {
+      "id": "1001O5517",
+      "name": "Kunsteducatie",
+      "level": "master",
+      "sector": "hbo",
+      "modes": [
+        "parttime"
+      ],
+      "isVariant": false,
+      "discipline": "ONDERWIJS",
+      "subDiscipline": "LERARENOPLEIDINGEN_OP_HET_GEBIED_VAN_DE_KUNST",
+      "city": "ROTTERDAM",
+      "externalRefs": {
+        "rioCode": "1001O5517",
+        "isat": "49117",
+        "instCode": "22OJ"
+      }
+    },
+    {
+      "id": "1001O5350",
+      "name": "Leren en Innoveren",
+      "level": "master",
+      "sector": "hbo",
+      "modes": [
+        "parttime"
+      ],
+      "isVariant": false,
+      "discipline": "ONDERWIJS",
+      "city": "ROTTERDAM",
+      "externalRefs": {
+        "rioCode": "1001O5350",
+        "isat": "44135",
+        "instCode": "22OJ"
+      }
+    },
+    {
+      "id": "1001O5485",
+      "name": "Master Design",
+      "level": "master",
+      "sector": "hbo",
+      "modes": [
+        "parttime"
+      ],
+      "isVariant": false,
+      "discipline": "TAAL_EN_CULTUUR",
+      "subDiscipline": "OPLEIDINGEN_OP_HET_GEBIED_VAN_DE_KUNST",
+      "city": "ROTTERDAM",
+      "externalRefs": {
+        "rioCode": "1001O5485",
+        "isat": "49098",
+        "instCode": "22OJ"
+      }
+    },
+    {
+      "id": "1001O8763",
+      "name": "Master in Consultancy and Entrepreneurship",
+      "level": "master",
+      "sector": "hbo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "ECONOMIE",
+      "city": "ROTTERDAM",
+      "externalRefs": {
+        "rioCode": "1001O8763",
+        "isat": "49159",
+        "instCode": "22OJ"
+      }
+    },
+    {
+      "id": "1001O5588",
+      "name": "Master in International Supply Chain Management",
+      "level": "master",
+      "sector": "hbo",
+      "modes": [
+        "parttime"
+      ],
+      "isVariant": false,
+      "discipline": "ECONOMIE",
+      "city": "ROTTERDAM",
+      "externalRefs": {
+        "rioCode": "1001O5588",
+        "isat": "49292",
+        "instCode": "22OJ"
+      }
+    },
+    {
+      "id": "1001O5588",
+      "name": "Master in International Supply Chain Management",
+      "level": "master",
+      "sector": "hbo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "ECONOMIE",
+      "city": "ROTTERDAM",
+      "externalRefs": {
+        "rioCode": "1001O5588",
+        "isat": "49292",
+        "instCode": "22OJ"
+      }
+    },
+    {
+      "id": "1001O5503",
+      "name": "Master of Arts in Fine Art and Design",
+      "level": "master",
+      "sector": "hbo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "TAAL_EN_CULTUUR",
+      "subDiscipline": "OPLEIDINGEN_OP_HET_GEBIED_VAN_DE_KUNST",
+      "city": "ROTTERDAM",
+      "externalRefs": {
+        "rioCode": "1001O5503",
+        "isat": "49114",
+        "instCode": "22OJ"
+      }
+    },
+    {
+      "id": "1001O5336",
+      "name": "Pedagogiek",
+      "level": "master",
+      "sector": "hbo",
+      "modes": [
+        "parttime"
+      ],
+      "isVariant": false,
+      "discipline": "GEDRAG_EN_MAATSCHAPPIJ",
+      "city": "ROTTERDAM",
+      "externalRefs": {
+        "rioCode": "1001O5336",
+        "isat": "44113",
+        "instCode": "22OJ"
+      }
+    },
+    {
+      "id": "1001O5507",
+      "name": "Physician Assistant",
+      "level": "master",
+      "sector": "hbo",
+      "modes": [
+        "dual"
+      ],
+      "isVariant": false,
+      "discipline": "GEZONDHEIDSZORG",
+      "city": "ROTTERDAM",
+      "externalRefs": {
+        "rioCode": "1001O5507",
+        "isat": "49115",
+        "instCode": "22OJ"
+      }
+    },
+    {
+      "id": "1001O5615",
+      "name": "River Delta Development (joint degree)",
+      "level": "master",
+      "sector": "hbo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "TECHNIEK",
+      "city": "ROTTERDAM",
+      "externalRefs": {
+        "rioCode": "1001O5615",
+        "isat": "49504",
+        "instCode": "22OJ"
+      }
+    },
+    {
+      "id": "1001O8858",
+      "name": "River Delta Development (joint degree)",
+      "level": "master",
+      "sector": "hbo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "TECHNIEK",
+      "city": "ROTTERDAM",
+      "externalRefs": {
+        "rioCode": "1001O8858",
+        "isat": "49506",
+        "instCode": "22OJ"
+      }
+    },
+    {
+      "id": "1001O5558",
+      "name": "Shipping and Transport",
+      "level": "master",
+      "sector": "hbo",
+      "modes": [
+        "parttime"
+      ],
+      "isVariant": false,
+      "discipline": "TECHNIEK",
+      "city": "ROTTERDAM",
+      "externalRefs": {
+        "rioCode": "1001O5558",
+        "isat": "49153",
+        "instCode": "22OJ"
+      }
+    },
+    {
+      "id": "1001O5558",
+      "name": "Shipping and Transport",
+      "level": "master",
+      "sector": "hbo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "TECHNIEK",
+      "city": "ROTTERDAM",
+      "externalRefs": {
+        "rioCode": "1001O5558",
+        "isat": "49153",
+        "instCode": "22OJ"
+      }
+    },
+    {
+      "id": "1016O2869",
+      "name": "Sportmarketing & Partnerships",
+      "level": "master",
+      "sector": "hbo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "ECONOMIE",
+      "city": "ROTTERDAM",
+      "externalRefs": {
+        "rioCode": "1016O2869",
+        "isat": "40043",
+        "instCode": "22OJ"
+      }
+    },
+    {
+      "id": "1001O5369",
+      "name": "Stedenbouw",
+      "level": "master",
+      "sector": "hbo",
+      "modes": [
+        "parttime"
+      ],
+      "isVariant": false,
+      "discipline": "TAAL_EN_CULTUUR",
+      "city": "ROTTERDAM",
+      "externalRefs": {
+        "rioCode": "1001O5369",
+        "isat": "44338",
+        "instCode": "22OJ"
+      }
+    },
+    {
+      "id": "1016O3003",
+      "name": "Sustainability Transitions",
+      "level": "master",
+      "sector": "hbo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "SECTOROVERSTIJGEND",
+      "city": "ROTTERDAM",
+      "externalRefs": {
+        "rioCode": "1016O3003",
+        "isat": "40049",
+        "instCode": "22OJ"
+      }
+    },
+    {
+      "id": "1001O8866",
+      "name": "Taalbewust Leren",
+      "level": "master",
+      "sector": "hbo",
+      "modes": [
+        "parttime"
+      ],
+      "isVariant": false,
+      "discipline": "ONDERWIJS",
+      "city": "ROTTERDAM",
+      "externalRefs": {
+        "rioCode": "1001O8866",
+        "isat": "49405",
+        "instCode": "22OJ"
+      }
+    },
+    {
+      "id": "1016O2833",
+      "name": "Transitie naar Gezondheid en Welzijn",
+      "level": "master",
+      "sector": "hbo",
+      "modes": [
+        "parttime"
+      ],
+      "isVariant": false,
+      "discipline": "GEZONDHEIDSZORG",
+      "city": "ROTTERDAM",
+      "externalRefs": {
+        "rioCode": "1016O2833",
+        "isat": "40047",
+        "instCode": "22OJ"
+      }
+    },
+    {
+      "id": "1001O8850",
+      "name": "Verloskunde (joint degree)",
+      "level": "master",
+      "sector": "hbo",
+      "modes": [
+        "parttime"
+      ],
+      "isVariant": false,
+      "discipline": "GEZONDHEIDSZORG",
+      "city": "ROTTERDAM",
+      "externalRefs": {
+        "rioCode": "1001O8850",
+        "isat": "49505",
+        "instCode": "22OJ"
+      }
+    }
+  ]
+}

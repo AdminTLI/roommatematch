@@ -1,0 +1,1781 @@
+{
+  "bachelor": [
+    {
+      "id": "1001O3528",
+      "name": "Accountancy",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "parttime"
+      ],
+      "isVariant": false,
+      "discipline": "ECONOMIE",
+      "city": "BREDA",
+      "externalRefs": {
+        "rioCode": "1001O3528",
+        "isat": "34406",
+        "instCode": "07GR"
+      }
+    },
+    {
+      "id": "1001O3528",
+      "name": "Accountancy",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "dual"
+      ],
+      "isVariant": false,
+      "discipline": "ECONOMIE",
+      "city": "BREDA",
+      "externalRefs": {
+        "rioCode": "1001O3528",
+        "isat": "34406",
+        "instCode": "07GR"
+      }
+    },
+    {
+      "id": "1001O3528",
+      "name": "Accountancy",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "ECONOMIE",
+      "city": "BREDA",
+      "externalRefs": {
+        "rioCode": "1001O3528",
+        "isat": "34406",
+        "instCode": "07GR"
+      }
+    },
+    {
+      "id": "1001O3528",
+      "name": "Accountancy",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "ECONOMIE",
+      "city": "'S-HERTOGENBOSCH",
+      "externalRefs": {
+        "rioCode": "1001O3528",
+        "isat": "34406",
+        "instCode": "07GR"
+      }
+    },
+    {
+      "id": "1001O5093",
+      "name": "Autonome Beeldende Kunst",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "TAAL_EN_CULTUUR",
+      "subDiscipline": "OPLEIDINGEN_OP_HET_GEBIED_VAN_DE_KUNST",
+      "city": "BREDA",
+      "externalRefs": {
+        "rioCode": "1001O5093",
+        "isat": "39110",
+        "instCode": "07GR"
+      }
+    },
+    {
+      "id": "1001O5093",
+      "name": "Autonome Beeldende Kunst",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "TAAL_EN_CULTUUR",
+      "subDiscipline": "OPLEIDINGEN_OP_HET_GEBIED_VAN_DE_KUNST",
+      "city": "'S-HERTOGENBOSCH",
+      "externalRefs": {
+        "rioCode": "1001O5093",
+        "isat": "39110",
+        "instCode": "07GR"
+      }
+    },
+    {
+      "id": "1001O2782",
+      "name": "Bedrijfskunde",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "parttime"
+      ],
+      "isVariant": false,
+      "discipline": "ECONOMIE",
+      "city": "BREDA",
+      "externalRefs": {
+        "rioCode": "1001O2782",
+        "isat": "34035",
+        "instCode": "07GR"
+      }
+    },
+    {
+      "id": "1001O2782",
+      "name": "Bedrijfskunde",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "ECONOMIE",
+      "city": "BREDA",
+      "externalRefs": {
+        "rioCode": "1001O2782",
+        "isat": "34035",
+        "instCode": "07GR"
+      }
+    },
+    {
+      "id": "1001O2782",
+      "name": "Bedrijfskunde",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "parttime"
+      ],
+      "isVariant": false,
+      "discipline": "ECONOMIE",
+      "city": "'S-HERTOGENBOSCH",
+      "externalRefs": {
+        "rioCode": "1001O2782",
+        "isat": "34035",
+        "instCode": "07GR"
+      }
+    },
+    {
+      "id": "1001O2782",
+      "name": "Bedrijfskunde",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "ECONOMIE",
+      "city": "'S-HERTOGENBOSCH",
+      "externalRefs": {
+        "rioCode": "1001O2782",
+        "isat": "34035",
+        "instCode": "07GR"
+      }
+    },
+    {
+      "id": "1001O3817",
+      "name": "Bestuurskunde/Overheidsmanagement",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "parttime"
+      ],
+      "isVariant": false,
+      "discipline": "ECONOMIE",
+      "city": "'S-HERTOGENBOSCH",
+      "externalRefs": {
+        "rioCode": "1001O3817",
+        "isat": "34464",
+        "instCode": "07GR"
+      }
+    },
+    {
+      "id": "1001O3817",
+      "name": "Bestuurskunde/Overheidsmanagement",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "ECONOMIE",
+      "city": "'S-HERTOGENBOSCH",
+      "externalRefs": {
+        "rioCode": "1001O3817",
+        "isat": "34464",
+        "instCode": "07GR"
+      }
+    },
+    {
+      "id": "1001O3348",
+      "name": "Biologie en Medisch Laboratoriumonderzoek",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "TECHNIEK",
+      "city": "BREDA",
+      "externalRefs": {
+        "rioCode": "1001O3348",
+        "isat": "34397",
+        "instCode": "07GR"
+      }
+    },
+    {
+      "id": "1001O3048",
+      "name": "Bouwkunde",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "dual"
+      ],
+      "isVariant": false,
+      "discipline": "TECHNIEK",
+      "city": "TILBURG",
+      "externalRefs": {
+        "rioCode": "1001O3048",
+        "isat": "34263",
+        "instCode": "07GR"
+      }
+    },
+    {
+      "id": "1001O3048",
+      "name": "Bouwkunde",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "TECHNIEK",
+      "city": "TILBURG",
+      "externalRefs": {
+        "rioCode": "1001O3048",
+        "isat": "34263",
+        "instCode": "07GR"
+      }
+    },
+    {
+      "id": "1001O3048",
+      "name": "Bouwkunde",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "TECHNIEK",
+      "city": "'S-HERTOGENBOSCH",
+      "externalRefs": {
+        "rioCode": "1001O3048",
+        "isat": "34263",
+        "instCode": "07GR"
+      }
+    },
+    {
+      "id": "1001O3037",
+      "name": "Bouwtechnische Bedrijfskunde",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "dual"
+      ],
+      "isVariant": false,
+      "discipline": "TECHNIEK",
+      "city": "TILBURG",
+      "externalRefs": {
+        "rioCode": "1001O3037",
+        "isat": "34261",
+        "instCode": "07GR"
+      }
+    },
+    {
+      "id": "1001O3037",
+      "name": "Bouwtechnische Bedrijfskunde",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "TECHNIEK",
+      "city": "TILBURG",
+      "externalRefs": {
+        "rioCode": "1001O3037",
+        "isat": "34261",
+        "instCode": "07GR"
+      }
+    },
+    {
+      "id": "1001O5008",
+      "name": "Business Innovation",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "ECONOMIE",
+      "city": "'S-HERTOGENBOSCH",
+      "externalRefs": {
+        "rioCode": "1001O5008",
+        "isat": "35515",
+        "instCode": "07GR"
+      }
+    },
+    {
+      "id": "1001O5133",
+      "name": "Business IT & Management",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "parttime"
+      ],
+      "isVariant": false,
+      "discipline": "ECONOMIE",
+      "city": "BREDA",
+      "externalRefs": {
+        "rioCode": "1001O5133",
+        "isat": "39118",
+        "instCode": "07GR"
+      }
+    },
+    {
+      "id": "1001O5133",
+      "name": "Business IT & Management",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "ECONOMIE",
+      "city": "BREDA",
+      "externalRefs": {
+        "rioCode": "1001O5133",
+        "isat": "39118",
+        "instCode": "07GR"
+      }
+    },
+    {
+      "id": "1001O8750",
+      "name": "Cabaret",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "TAAL_EN_CULTUUR",
+      "subDiscipline": "OPLEIDINGEN_OP_HET_GEBIED_VAN_DE_KUNST",
+      "city": "'S-HERTOGENBOSCH",
+      "externalRefs": {
+        "rioCode": "1001O8750",
+        "isat": "30030",
+        "instCode": "07GR"
+      }
+    },
+    {
+      "id": "1001O3328",
+      "name": "Chemie",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "TECHNIEK",
+      "city": "BREDA",
+      "externalRefs": {
+        "rioCode": "1001O3328",
+        "isat": "34396",
+        "instCode": "07GR"
+      }
+    },
+    {
+      "id": "1001O3328",
+      "name": "Chemie",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "TECHNIEK",
+      "city": "'S-HERTOGENBOSCH",
+      "externalRefs": {
+        "rioCode": "1001O3328",
+        "isat": "34396",
+        "instCode": "07GR"
+      }
+    },
+    {
+      "id": "1001O3144",
+      "name": "Chemische Technologie",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "TECHNIEK",
+      "city": "BREDA",
+      "externalRefs": {
+        "rioCode": "1001O3144",
+        "isat": "34275",
+        "instCode": "07GR"
+      }
+    },
+    {
+      "id": "1001O3167",
+      "name": "Civiele Techniek",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "dual"
+      ],
+      "isVariant": false,
+      "discipline": "TECHNIEK",
+      "city": "TILBURG",
+      "externalRefs": {
+        "rioCode": "1001O3167",
+        "isat": "34279",
+        "instCode": "07GR"
+      }
+    },
+    {
+      "id": "1001O3167",
+      "name": "Civiele Techniek",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "TECHNIEK",
+      "city": "TILBURG",
+      "externalRefs": {
+        "rioCode": "1001O3167",
+        "isat": "34279",
+        "instCode": "07GR"
+      }
+    },
+    {
+      "id": "1001O3167",
+      "name": "Civiele Techniek",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "TECHNIEK",
+      "city": "'S-HERTOGENBOSCH",
+      "externalRefs": {
+        "rioCode": "1001O3167",
+        "isat": "34279",
+        "instCode": "07GR"
+      }
+    },
+    {
+      "id": "1001O3415",
+      "name": "Commerciële Economie",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "parttime"
+      ],
+      "isVariant": false,
+      "discipline": "ECONOMIE",
+      "city": "BREDA",
+      "externalRefs": {
+        "rioCode": "1001O3415",
+        "isat": "34402",
+        "instCode": "07GR"
+      }
+    },
+    {
+      "id": "1001O3415",
+      "name": "Commerciële Economie",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "ECONOMIE",
+      "city": "BREDA",
+      "externalRefs": {
+        "rioCode": "1001O3415",
+        "isat": "34402",
+        "instCode": "07GR"
+      }
+    },
+    {
+      "id": "1001O3415",
+      "name": "Commerciële Economie",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "parttime"
+      ],
+      "isVariant": false,
+      "discipline": "ECONOMIE",
+      "city": "'S-HERTOGENBOSCH",
+      "externalRefs": {
+        "rioCode": "1001O3415",
+        "isat": "34402",
+        "instCode": "07GR"
+      }
+    },
+    {
+      "id": "1001O3415",
+      "name": "Commerciële Economie",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "ECONOMIE",
+      "city": "'S-HERTOGENBOSCH",
+      "externalRefs": {
+        "rioCode": "1001O3415",
+        "isat": "34402",
+        "instCode": "07GR"
+      }
+    },
+    {
+      "id": "1001O3494",
+      "name": "Communicatie",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "parttime"
+      ],
+      "isVariant": false,
+      "discipline": "ECONOMIE",
+      "city": "BREDA",
+      "externalRefs": {
+        "rioCode": "1001O3494",
+        "isat": "34405",
+        "instCode": "07GR"
+      }
+    },
+    {
+      "id": "1001O3494",
+      "name": "Communicatie",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "ECONOMIE",
+      "city": "BREDA",
+      "externalRefs": {
+        "rioCode": "1001O3494",
+        "isat": "34405",
+        "instCode": "07GR"
+      }
+    },
+    {
+      "id": "1001O2897",
+      "name": "Communication and Multimedia Design",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "TECHNIEK",
+      "city": "BREDA",
+      "externalRefs": {
+        "rioCode": "1001O2897",
+        "isat": "34092",
+        "instCode": "07GR"
+      }
+    },
+    {
+      "id": "1001O2897",
+      "name": "Communication and Multimedia Design",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "TECHNIEK",
+      "city": "'S-HERTOGENBOSCH",
+      "externalRefs": {
+        "rioCode": "1001O2897",
+        "isat": "34092",
+        "instCode": "07GR"
+      }
+    },
+    {
+      "id": "1001O3074",
+      "name": "Elektrotechniek",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "parttime"
+      ],
+      "isVariant": false,
+      "discipline": "TECHNIEK",
+      "city": "BREDA",
+      "externalRefs": {
+        "rioCode": "1001O3074",
+        "isat": "34267",
+        "instCode": "07GR"
+      }
+    },
+    {
+      "id": "1001O3074",
+      "name": "Elektrotechniek",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "dual"
+      ],
+      "isVariant": false,
+      "discipline": "TECHNIEK",
+      "city": "BREDA",
+      "externalRefs": {
+        "rioCode": "1001O3074",
+        "isat": "34267",
+        "instCode": "07GR"
+      }
+    },
+    {
+      "id": "1001O3074",
+      "name": "Elektrotechniek",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "TECHNIEK",
+      "city": "BREDA",
+      "externalRefs": {
+        "rioCode": "1001O3074",
+        "isat": "34267",
+        "instCode": "07GR"
+      }
+    },
+    {
+      "id": "1001O3074",
+      "name": "Elektrotechniek",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "TECHNIEK",
+      "city": "'S-HERTOGENBOSCH",
+      "externalRefs": {
+        "rioCode": "1001O3074",
+        "isat": "34267",
+        "instCode": "07GR"
+      }
+    },
+    {
+      "id": "1001O5026",
+      "name": "Finance & Control",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "parttime"
+      ],
+      "isVariant": false,
+      "discipline": "ECONOMIE",
+      "city": "BREDA",
+      "externalRefs": {
+        "rioCode": "1001O5026",
+        "isat": "35520",
+        "instCode": "07GR"
+      }
+    },
+    {
+      "id": "1001O5026",
+      "name": "Finance & Control",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "ECONOMIE",
+      "city": "BREDA",
+      "externalRefs": {
+        "rioCode": "1001O5026",
+        "isat": "35520",
+        "instCode": "07GR"
+      }
+    },
+    {
+      "id": "1001O5026",
+      "name": "Finance & Control",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "ECONOMIE",
+      "city": "'S-HERTOGENBOSCH",
+      "externalRefs": {
+        "rioCode": "1001O5026",
+        "isat": "35520",
+        "instCode": "07GR"
+      }
+    },
+    {
+      "id": "1001O5173",
+      "name": "HBO - Rechten",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "parttime"
+      ],
+      "isVariant": false,
+      "discipline": "RECHT",
+      "city": "'S-HERTOGENBOSCH",
+      "externalRefs": {
+        "rioCode": "1001O5173",
+        "isat": "39205",
+        "instCode": "07GR"
+      }
+    },
+    {
+      "id": "1001O5173",
+      "name": "HBO - Rechten",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "RECHT",
+      "city": "'S-HERTOGENBOSCH",
+      "externalRefs": {
+        "rioCode": "1001O5173",
+        "isat": "39205",
+        "instCode": "07GR"
+      }
+    },
+    {
+      "id": "1001O4119",
+      "name": "Human Resource Management",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "parttime"
+      ],
+      "isVariant": false,
+      "discipline": "ECONOMIE",
+      "city": "BREDA",
+      "externalRefs": {
+        "rioCode": "1001O4119",
+        "isat": "34609",
+        "instCode": "07GR"
+      }
+    },
+    {
+      "id": "1001O4119",
+      "name": "Human Resource Management",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "ECONOMIE",
+      "city": "BREDA",
+      "externalRefs": {
+        "rioCode": "1001O4119",
+        "isat": "34609",
+        "instCode": "07GR"
+      }
+    },
+    {
+      "id": "1001O4119",
+      "name": "Human Resource Management",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "parttime"
+      ],
+      "isVariant": false,
+      "discipline": "ECONOMIE",
+      "city": "'S-HERTOGENBOSCH",
+      "externalRefs": {
+        "rioCode": "1001O4119",
+        "isat": "34609",
+        "instCode": "07GR"
+      }
+    },
+    {
+      "id": "1001O4119",
+      "name": "Human Resource Management",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "ECONOMIE",
+      "city": "'S-HERTOGENBOSCH",
+      "externalRefs": {
+        "rioCode": "1001O4119",
+        "isat": "34609",
+        "instCode": "07GR"
+      }
+    },
+    {
+      "id": "1016O3962",
+      "name": "ICT",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "parttime"
+      ],
+      "isVariant": false,
+      "discipline": "TECHNIEK",
+      "city": "BREDA",
+      "externalRefs": {
+        "rioCode": "1016O3962",
+        "isat": "30046",
+        "instCode": "07GR"
+      }
+    },
+    {
+      "id": "1016O3962",
+      "name": "ICT",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "TECHNIEK",
+      "city": "BREDA",
+      "externalRefs": {
+        "rioCode": "1016O3962",
+        "isat": "30046",
+        "instCode": "07GR"
+      }
+    },
+    {
+      "id": "1016O3962",
+      "name": "ICT",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "TECHNIEK",
+      "city": "'S-HERTOGENBOSCH",
+      "externalRefs": {
+        "rioCode": "1016O3962",
+        "isat": "30046",
+        "instCode": "07GR"
+      }
+    },
+    {
+      "id": "1001O3874",
+      "name": "Informatica",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "parttime"
+      ],
+      "isVariant": false,
+      "discipline": "TECHNIEK",
+      "city": "BREDA",
+      "externalRefs": {
+        "rioCode": "1001O3874",
+        "isat": "34479",
+        "instCode": "07GR"
+      }
+    },
+    {
+      "id": "1001O3874",
+      "name": "Informatica",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "TECHNIEK",
+      "city": "BREDA",
+      "externalRefs": {
+        "rioCode": "1001O3874",
+        "isat": "34479",
+        "instCode": "07GR"
+      }
+    },
+    {
+      "id": "1001O3874",
+      "name": "Informatica",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "TECHNIEK",
+      "city": "'S-HERTOGENBOSCH",
+      "externalRefs": {
+        "rioCode": "1001O3874",
+        "isat": "34479",
+        "instCode": "07GR"
+      }
+    },
+    {
+      "id": "1001O5286",
+      "name": "Integrale Veiligheidskunde",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "ECONOMIE",
+      "city": "BREDA",
+      "externalRefs": {
+        "rioCode": "1001O5286",
+        "isat": "39268",
+        "instCode": "07GR"
+      }
+    },
+    {
+      "id": "1001O5286",
+      "name": "Integrale Veiligheidskunde",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "parttime"
+      ],
+      "isVariant": false,
+      "discipline": "ECONOMIE",
+      "city": "'S-HERTOGENBOSCH",
+      "externalRefs": {
+        "rioCode": "1001O5286",
+        "isat": "39268",
+        "instCode": "07GR"
+      }
+    },
+    {
+      "id": "1001O5286",
+      "name": "Integrale Veiligheidskunde",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "ECONOMIE",
+      "city": "'S-HERTOGENBOSCH",
+      "externalRefs": {
+        "rioCode": "1001O5286",
+        "isat": "39268",
+        "instCode": "07GR"
+      }
+    },
+    {
+      "id": "1001O2693",
+      "name": "International Business",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "ECONOMIE",
+      "city": "BREDA",
+      "externalRefs": {
+        "rioCode": "1001O2693",
+        "isat": "30029",
+        "instCode": "07GR"
+      }
+    },
+    {
+      "id": "1001O2693",
+      "name": "International Business",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "ECONOMIE",
+      "city": "'S-HERTOGENBOSCH",
+      "externalRefs": {
+        "rioCode": "1001O2693",
+        "isat": "30029",
+        "instCode": "07GR"
+      }
+    },
+    {
+      "id": "1001O3977",
+      "name": "Management in de Zorg",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "parttime"
+      ],
+      "isVariant": false,
+      "discipline": "GEZONDHEIDSZORG",
+      "city": "BREDA",
+      "externalRefs": {
+        "rioCode": "1001O3977",
+        "isat": "34538",
+        "instCode": "07GR"
+      }
+    },
+    {
+      "id": "1001O2686",
+      "name": "Mechatronica",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "parttime"
+      ],
+      "isVariant": false,
+      "discipline": "TECHNIEK",
+      "city": "BREDA",
+      "externalRefs": {
+        "rioCode": "1001O2686",
+        "isat": "30026",
+        "instCode": "07GR"
+      }
+    },
+    {
+      "id": "1001O2686",
+      "name": "Mechatronica",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "TECHNIEK",
+      "city": "BREDA",
+      "externalRefs": {
+        "rioCode": "1001O2686",
+        "isat": "30026",
+        "instCode": "07GR"
+      }
+    },
+    {
+      "id": "1001O2728",
+      "name": "Mens en Techniek",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "dual"
+      ],
+      "isVariant": false,
+      "discipline": "TECHNIEK",
+      "city": "BREDA",
+      "externalRefs": {
+        "rioCode": "1001O2728",
+        "isat": "30039",
+        "instCode": "07GR"
+      }
+    },
+    {
+      "id": "1001O2728",
+      "name": "Mens en Techniek",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "TECHNIEK",
+      "city": "BREDA",
+      "externalRefs": {
+        "rioCode": "1001O2728",
+        "isat": "30039",
+        "instCode": "07GR"
+      }
+    },
+    {
+      "id": "1001O3226",
+      "name": "Milieukunde",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "TECHNIEK",
+      "city": "BREDA",
+      "externalRefs": {
+        "rioCode": "1001O3226",
+        "isat": "34284",
+        "instCode": "07GR"
+      }
+    },
+    {
+      "id": "1001O5055",
+      "name": "Ondernemerschap & Retail Management",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "parttime"
+      ],
+      "isVariant": false,
+      "discipline": "ECONOMIE",
+      "city": "BREDA",
+      "externalRefs": {
+        "rioCode": "1001O5055",
+        "isat": "35523",
+        "instCode": "07GR"
+      }
+    },
+    {
+      "id": "1001O5055",
+      "name": "Ondernemerschap & Retail Management",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "ECONOMIE",
+      "city": "BREDA",
+      "externalRefs": {
+        "rioCode": "1001O5055",
+        "isat": "35523",
+        "instCode": "07GR"
+      }
+    },
+    {
+      "id": "1001O5055",
+      "name": "Ondernemerschap & Retail Management",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "parttime"
+      ],
+      "isVariant": false,
+      "discipline": "ECONOMIE",
+      "city": "'S-HERTOGENBOSCH",
+      "externalRefs": {
+        "rioCode": "1001O5055",
+        "isat": "35523",
+        "instCode": "07GR"
+      }
+    },
+    {
+      "id": "1001O5055",
+      "name": "Ondernemerschap & Retail Management",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "dual"
+      ],
+      "isVariant": false,
+      "discipline": "ECONOMIE",
+      "city": "'S-HERTOGENBOSCH",
+      "externalRefs": {
+        "rioCode": "1001O5055",
+        "isat": "35523",
+        "instCode": "07GR"
+      }
+    },
+    {
+      "id": "1001O5055",
+      "name": "Ondernemerschap & Retail Management",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "ECONOMIE",
+      "city": "'S-HERTOGENBOSCH",
+      "externalRefs": {
+        "rioCode": "1001O5055",
+        "isat": "35523",
+        "instCode": "07GR"
+      }
+    },
+    {
+      "id": "1001O4043",
+      "name": "Opleiding tot Fysiotherapeut",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "GEZONDHEIDSZORG",
+      "city": "BREDA",
+      "externalRefs": {
+        "rioCode": "1001O4043",
+        "isat": "34570",
+        "instCode": "07GR"
+      }
+    },
+    {
+      "id": "1001O4365",
+      "name": "Opleiding tot leraar Basisonderwijs",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "parttime"
+      ],
+      "isVariant": false,
+      "discipline": "ONDERWIJS",
+      "city": "BREDA",
+      "externalRefs": {
+        "rioCode": "1001O4365",
+        "isat": "34808",
+        "instCode": "07GR"
+      }
+    },
+    {
+      "id": "1001O4365",
+      "name": "Opleiding tot leraar Basisonderwijs",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "ONDERWIJS",
+      "city": "BREDA",
+      "externalRefs": {
+        "rioCode": "1001O4365",
+        "isat": "34808",
+        "instCode": "07GR"
+      }
+    },
+    {
+      "id": "1001O4002",
+      "name": "Opleiding tot Verpleegkundige",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "parttime"
+      ],
+      "isVariant": false,
+      "discipline": "GEZONDHEIDSZORG",
+      "city": "BREDA",
+      "externalRefs": {
+        "rioCode": "1001O4002",
+        "isat": "34560",
+        "instCode": "07GR"
+      }
+    },
+    {
+      "id": "1001O4002",
+      "name": "Opleiding tot Verpleegkundige",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "dual"
+      ],
+      "isVariant": false,
+      "discipline": "GEZONDHEIDSZORG",
+      "city": "BREDA",
+      "externalRefs": {
+        "rioCode": "1001O4002",
+        "isat": "34560",
+        "instCode": "07GR"
+      }
+    },
+    {
+      "id": "1001O4002",
+      "name": "Opleiding tot Verpleegkundige",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "GEZONDHEIDSZORG",
+      "city": "BREDA",
+      "externalRefs": {
+        "rioCode": "1001O4002",
+        "isat": "34560",
+        "instCode": "07GR"
+      }
+    },
+    {
+      "id": "1001O4002",
+      "name": "Opleiding tot Verpleegkundige",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "parttime"
+      ],
+      "isVariant": false,
+      "discipline": "GEZONDHEIDSZORG",
+      "city": "'S-HERTOGENBOSCH",
+      "externalRefs": {
+        "rioCode": "1001O4002",
+        "isat": "34560",
+        "instCode": "07GR"
+      }
+    },
+    {
+      "id": "1001O4002",
+      "name": "Opleiding tot Verpleegkundige",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "dual"
+      ],
+      "isVariant": false,
+      "discipline": "GEZONDHEIDSZORG",
+      "city": "'S-HERTOGENBOSCH",
+      "externalRefs": {
+        "rioCode": "1001O4002",
+        "isat": "34560",
+        "instCode": "07GR"
+      }
+    },
+    {
+      "id": "1001O4002",
+      "name": "Opleiding tot Verpleegkundige",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "GEZONDHEIDSZORG",
+      "city": "'S-HERTOGENBOSCH",
+      "externalRefs": {
+        "rioCode": "1001O4002",
+        "isat": "34560",
+        "instCode": "07GR"
+      }
+    },
+    {
+      "id": "1001O2721",
+      "name": "Ruimtelijke Ontwikkeling",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "TECHNIEK",
+      "city": "TILBURG",
+      "externalRefs": {
+        "rioCode": "1001O2721",
+        "isat": "30038",
+        "instCode": "07GR"
+      }
+    },
+    {
+      "id": "1001O2921",
+      "name": "Social Work",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "parttime"
+      ],
+      "isVariant": false,
+      "discipline": "GEDRAG_EN_MAATSCHAPPIJ",
+      "city": "BREDA",
+      "externalRefs": {
+        "rioCode": "1001O2921",
+        "isat": "34116",
+        "instCode": "07GR"
+      }
+    },
+    {
+      "id": "1001O2921",
+      "name": "Social Work",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "GEDRAG_EN_MAATSCHAPPIJ",
+      "city": "BREDA",
+      "externalRefs": {
+        "rioCode": "1001O2921",
+        "isat": "34116",
+        "instCode": "07GR"
+      }
+    },
+    {
+      "id": "1001O2921",
+      "name": "Social Work",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "parttime"
+      ],
+      "isVariant": false,
+      "discipline": "GEDRAG_EN_MAATSCHAPPIJ",
+      "city": "'S-HERTOGENBOSCH",
+      "externalRefs": {
+        "rioCode": "1001O2921",
+        "isat": "34116",
+        "instCode": "07GR"
+      }
+    },
+    {
+      "id": "1001O2921",
+      "name": "Social Work",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "GEDRAG_EN_MAATSCHAPPIJ",
+      "city": "'S-HERTOGENBOSCH",
+      "externalRefs": {
+        "rioCode": "1001O2921",
+        "isat": "34116",
+        "instCode": "07GR"
+      }
+    },
+    {
+      "id": "1001O3660",
+      "name": "Technische Bedrijfskunde",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "TECHNIEK",
+      "city": "BREDA",
+      "externalRefs": {
+        "rioCode": "1001O3660",
+        "isat": "34421",
+        "instCode": "07GR"
+      }
+    },
+    {
+      "id": "1001O3660",
+      "name": "Technische Bedrijfskunde",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "parttime"
+      ],
+      "isVariant": false,
+      "discipline": "TECHNIEK",
+      "city": "TILBURG",
+      "externalRefs": {
+        "rioCode": "1001O3660",
+        "isat": "34421",
+        "instCode": "07GR"
+      }
+    },
+    {
+      "id": "1001O3660",
+      "name": "Technische Bedrijfskunde",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "TECHNIEK",
+      "city": "TILBURG",
+      "externalRefs": {
+        "rioCode": "1001O3660",
+        "isat": "34421",
+        "instCode": "07GR"
+      }
+    },
+    {
+      "id": "1001O3660",
+      "name": "Technische Bedrijfskunde",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "TECHNIEK",
+      "city": "'S-HERTOGENBOSCH",
+      "externalRefs": {
+        "rioCode": "1001O3660",
+        "isat": "34421",
+        "instCode": "07GR"
+      }
+    },
+    {
+      "id": "1001O3843",
+      "name": "Technische Informatica",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "TECHNIEK",
+      "city": "BREDA",
+      "externalRefs": {
+        "rioCode": "1001O3843",
+        "isat": "34475",
+        "instCode": "07GR"
+      }
+    },
+    {
+      "id": "1001O3843",
+      "name": "Technische Informatica",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "TECHNIEK",
+      "city": "'S-HERTOGENBOSCH",
+      "externalRefs": {
+        "rioCode": "1001O3843",
+        "isat": "34475",
+        "instCode": "07GR"
+      }
+    },
+    {
+      "id": "1001O5103",
+      "name": "Vormgeving",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "TAAL_EN_CULTUUR",
+      "subDiscipline": "OPLEIDINGEN_OP_HET_GEBIED_VAN_DE_KUNST",
+      "city": "BREDA",
+      "externalRefs": {
+        "rioCode": "1001O5103",
+        "isat": "39111",
+        "instCode": "07GR"
+      }
+    },
+    {
+      "id": "1001O5103",
+      "name": "Vormgeving",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "TAAL_EN_CULTUUR",
+      "subDiscipline": "OPLEIDINGEN_OP_HET_GEBIED_VAN_DE_KUNST",
+      "city": "'S-HERTOGENBOSCH",
+      "externalRefs": {
+        "rioCode": "1001O5103",
+        "isat": "39111",
+        "instCode": "07GR"
+      }
+    },
+    {
+      "id": "1001O3191",
+      "name": "Werktuigbouwkunde",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "parttime"
+      ],
+      "isVariant": false,
+      "discipline": "TECHNIEK",
+      "city": "BREDA",
+      "externalRefs": {
+        "rioCode": "1001O3191",
+        "isat": "34280",
+        "instCode": "07GR"
+      }
+    },
+    {
+      "id": "1001O3191",
+      "name": "Werktuigbouwkunde",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "dual"
+      ],
+      "isVariant": false,
+      "discipline": "TECHNIEK",
+      "city": "BREDA",
+      "externalRefs": {
+        "rioCode": "1001O3191",
+        "isat": "34280",
+        "instCode": "07GR"
+      }
+    },
+    {
+      "id": "1001O3191",
+      "name": "Werktuigbouwkunde",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "TECHNIEK",
+      "city": "BREDA",
+      "externalRefs": {
+        "rioCode": "1001O3191",
+        "isat": "34280",
+        "instCode": "07GR"
+      }
+    },
+    {
+      "id": "1001O3191",
+      "name": "Werktuigbouwkunde",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "TECHNIEK",
+      "city": "'S-HERTOGENBOSCH",
+      "externalRefs": {
+        "rioCode": "1001O3191",
+        "isat": "34280",
+        "instCode": "07GR"
+      }
+    }
+  ],
+  "premaster": [],
+  "master": [
+    {
+      "id": "1001O5525",
+      "name": "Animatie",
+      "level": "master",
+      "sector": "hbo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "TAAL_EN_CULTUUR",
+      "city": "'S-HERTOGENBOSCH",
+      "externalRefs": {
+        "rioCode": "1001O5525",
+        "isat": "49123",
+        "instCode": "07GR"
+      }
+    },
+    {
+      "id": "1016O4303",
+      "name": "Duurzaamheidstransities (joint degree)",
+      "level": "master",
+      "sector": "hbo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "SECTOROVERSTIJGEND",
+      "city": "BREDA",
+      "externalRefs": {
+        "rioCode": "1016O4303",
+        "isat": "49512",
+        "instCode": "07GR"
+      }
+    },
+    {
+      "id": "1001O5502",
+      "name": "Master of Arts in Fine Art and Design",
+      "level": "master",
+      "sector": "hbo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "TAAL_EN_CULTUUR",
+      "subDiscipline": "OPLEIDINGEN_OP_HET_GEBIED_VAN_DE_KUNST",
+      "city": "'S-HERTOGENBOSCH",
+      "externalRefs": {
+        "rioCode": "1001O5502",
+        "isat": "49114",
+        "instCode": "07GR"
+      }
+    },
+    {
+      "id": "1001O8910",
+      "name": "Materiaal- en Energietransitie",
+      "level": "master",
+      "sector": "hbo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "TECHNIEK",
+      "city": "BREDA",
+      "externalRefs": {
+        "rioCode": "1001O8910",
+        "isat": "49408",
+        "instCode": "07GR"
+      }
+    },
+    {
+      "id": "1001O8950",
+      "name": "Responsible AI Innovation",
+      "level": "master",
+      "sector": "hbo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "TECHNIEK",
+      "city": "BREDA",
+      "externalRefs": {
+        "rioCode": "1001O8950",
+        "isat": "40066",
+        "instCode": "07GR"
+      }
+    },
+    {
+      "id": "1016O3655",
+      "name": "Zorg & Veiligheid",
+      "level": "master",
+      "sector": "hbo",
+      "modes": [
+        "parttime"
+      ],
+      "isVariant": false,
+      "discipline": "GEDRAG_EN_MAATSCHAPPIJ",
+      "city": "'S-HERTOGENBOSCH",
+      "externalRefs": {
+        "rioCode": "1016O3655",
+        "isat": "45534",
+        "instCode": "07GR"
+      }
+    },
+    {
+      "id": "1016O3655",
+      "name": "Zorg & Veiligheid",
+      "level": "master",
+      "sector": "hbo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "GEDRAG_EN_MAATSCHAPPIJ",
+      "city": "'S-HERTOGENBOSCH",
+      "externalRefs": {
+        "rioCode": "1016O3655",
+        "isat": "45534",
+        "instCode": "07GR"
+      }
+    }
+  ]
+}

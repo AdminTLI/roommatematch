@@ -1,0 +1,657 @@
+{
+  "bachelor": [
+    {
+      "id": "1001O5219",
+      "name": "Bio-informatica",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "TECHNIEK",
+      "city": "LEIDEN",
+      "externalRefs": {
+        "rioCode": "1001O5219",
+        "isat": "39215",
+        "instCode": "21RI"
+      }
+    },
+    {
+      "id": "1001O3352",
+      "name": "Biologie en Medisch Laboratoriumonderzoek",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "TECHNIEK",
+      "city": "LEIDEN",
+      "externalRefs": {
+        "rioCode": "1001O3352",
+        "isat": "34397",
+        "instCode": "21RI"
+      }
+    },
+    {
+      "id": "1001O3332",
+      "name": "Chemie",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "TECHNIEK",
+      "city": "LEIDEN",
+      "externalRefs": {
+        "rioCode": "1001O3332",
+        "isat": "34396",
+        "instCode": "21RI"
+      }
+    },
+    {
+      "id": "1001O3422",
+      "name": "Commerciële Economie",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "ECONOMIE",
+      "city": "LEIDEN",
+      "externalRefs": {
+        "rioCode": "1001O3422",
+        "isat": "34402",
+        "instCode": "21RI"
+      }
+    },
+    {
+      "id": "1001O3499",
+      "name": "Communicatie",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "ECONOMIE",
+      "city": "LEIDEN",
+      "externalRefs": {
+        "rioCode": "1001O3499",
+        "isat": "34405",
+        "instCode": "21RI"
+      }
+    },
+    {
+      "id": "1001O4526",
+      "name": "Docent Dans",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "parttime"
+      ],
+      "isVariant": false,
+      "discipline": "ONDERWIJS",
+      "subDiscipline": "LERARENOPLEIDINGEN_OP_HET_GEBIED_VAN_DE_KUNST",
+      "city": "LEIDEN",
+      "externalRefs": {
+        "rioCode": "1001O4526",
+        "isat": "34940",
+        "instCode": "21RI"
+      }
+    },
+    {
+      "id": "1001O4526",
+      "name": "Docent Dans",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "ONDERWIJS",
+      "subDiscipline": "LERARENOPLEIDINGEN_OP_HET_GEBIED_VAN_DE_KUNST",
+      "city": "LEIDEN",
+      "externalRefs": {
+        "rioCode": "1001O4526",
+        "isat": "34940",
+        "instCode": "21RI"
+      }
+    },
+    {
+      "id": "1001O5117",
+      "name": "Docent Muziek",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "ONDERWIJS",
+      "subDiscipline": "LERARENOPLEIDINGEN_OP_HET_GEBIED_VAN_DE_KUNST",
+      "city": "LEIDEN",
+      "externalRefs": {
+        "rioCode": "1001O5117",
+        "isat": "39112",
+        "instCode": "21RI"
+      }
+    },
+    {
+      "id": "1001O5176",
+      "name": "HBO - Rechten",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "RECHT",
+      "city": "LEIDEN",
+      "externalRefs": {
+        "rioCode": "1001O5176",
+        "isat": "39205",
+        "instCode": "21RI"
+      }
+    },
+    {
+      "id": "1001O4124",
+      "name": "Human Resource Management",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "parttime"
+      ],
+      "isVariant": false,
+      "discipline": "ECONOMIE",
+      "city": "LEIDEN",
+      "externalRefs": {
+        "rioCode": "1001O4124",
+        "isat": "34609",
+        "instCode": "21RI"
+      }
+    },
+    {
+      "id": "1001O4124",
+      "name": "Human Resource Management",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "ECONOMIE",
+      "city": "LEIDEN",
+      "externalRefs": {
+        "rioCode": "1001O4124",
+        "isat": "34609",
+        "instCode": "21RI"
+      }
+    },
+    {
+      "id": "1001O3880",
+      "name": "Informatica",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "parttime"
+      ],
+      "isVariant": false,
+      "discipline": "TECHNIEK",
+      "city": "LEIDEN",
+      "externalRefs": {
+        "rioCode": "1001O3880",
+        "isat": "34479",
+        "instCode": "21RI"
+      }
+    },
+    {
+      "id": "1001O3880",
+      "name": "Informatica",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "dual"
+      ],
+      "isVariant": false,
+      "discipline": "TECHNIEK",
+      "city": "LEIDEN",
+      "externalRefs": {
+        "rioCode": "1001O3880",
+        "isat": "34479",
+        "instCode": "21RI"
+      }
+    },
+    {
+      "id": "1001O3880",
+      "name": "Informatica",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "TECHNIEK",
+      "city": "LEIDEN",
+      "externalRefs": {
+        "rioCode": "1001O3880",
+        "isat": "34479",
+        "instCode": "21RI"
+      }
+    },
+    {
+      "id": "1001O3979",
+      "name": "Management in de Zorg",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "dual"
+      ],
+      "isVariant": false,
+      "discipline": "GEZONDHEIDSZORG",
+      "city": "LEIDEN",
+      "externalRefs": {
+        "rioCode": "1001O3979",
+        "isat": "34538",
+        "instCode": "21RI"
+      }
+    },
+    {
+      "id": "1001O4046",
+      "name": "Opleiding tot Fysiotherapeut",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "GEZONDHEIDSZORG",
+      "city": "LEIDEN",
+      "externalRefs": {
+        "rioCode": "1001O4046",
+        "isat": "34570",
+        "instCode": "21RI"
+      }
+    },
+    {
+      "id": "1001O4377",
+      "name": "Opleiding tot leraar Basisonderwijs",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "parttime"
+      ],
+      "isVariant": false,
+      "discipline": "ONDERWIJS",
+      "city": "LEIDEN",
+      "externalRefs": {
+        "rioCode": "1001O4377",
+        "isat": "34808",
+        "instCode": "21RI"
+      }
+    },
+    {
+      "id": "1001O4377",
+      "name": "Opleiding tot leraar Basisonderwijs",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "ONDERWIJS",
+      "city": "LEIDEN",
+      "externalRefs": {
+        "rioCode": "1001O4377",
+        "isat": "34808",
+        "instCode": "21RI"
+      }
+    },
+    {
+      "id": "1001O4918",
+      "name": "Opleiding tot leraar voortgezet onderwijs van de tweede graad in Gezondheidszorg en Welzijn",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "parttime"
+      ],
+      "isVariant": false,
+      "discipline": "ONDERWIJS",
+      "city": "LEIDEN",
+      "externalRefs": {
+        "rioCode": "1001O4918",
+        "isat": "35388",
+        "instCode": "21RI"
+      }
+    },
+    {
+      "id": "1001O4918",
+      "name": "Opleiding tot leraar voortgezet onderwijs van de tweede graad in Gezondheidszorg en Welzijn",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "ONDERWIJS",
+      "city": "LEIDEN",
+      "externalRefs": {
+        "rioCode": "1001O4918",
+        "isat": "35388",
+        "instCode": "21RI"
+      }
+    },
+    {
+      "id": "1001O4954",
+      "name": "Opleiding tot leraar voortgezet onderwijs van de tweede graad in omgangskunde",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "parttime"
+      ],
+      "isVariant": false,
+      "discipline": "ONDERWIJS",
+      "city": "LEIDEN",
+      "externalRefs": {
+        "rioCode": "1001O4954",
+        "isat": "35421",
+        "instCode": "21RI"
+      }
+    },
+    {
+      "id": "1001O4954",
+      "name": "Opleiding tot leraar voortgezet onderwijs van de tweede graad in omgangskunde",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "ONDERWIJS",
+      "city": "LEIDEN",
+      "externalRefs": {
+        "rioCode": "1001O4954",
+        "isat": "35421",
+        "instCode": "21RI"
+      }
+    },
+    {
+      "id": "1001O4006",
+      "name": "Opleiding tot Verpleegkundige",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "parttime"
+      ],
+      "isVariant": false,
+      "discipline": "GEZONDHEIDSZORG",
+      "city": "LEIDEN",
+      "externalRefs": {
+        "rioCode": "1001O4006",
+        "isat": "34560",
+        "instCode": "21RI"
+      }
+    },
+    {
+      "id": "1001O4006",
+      "name": "Opleiding tot Verpleegkundige",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "dual"
+      ],
+      "isVariant": false,
+      "discipline": "GEZONDHEIDSZORG",
+      "city": "LEIDEN",
+      "externalRefs": {
+        "rioCode": "1001O4006",
+        "isat": "34560",
+        "instCode": "21RI"
+      }
+    },
+    {
+      "id": "1001O4006",
+      "name": "Opleiding tot Verpleegkundige",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "GEZONDHEIDSZORG",
+      "city": "LEIDEN",
+      "externalRefs": {
+        "rioCode": "1001O4006",
+        "isat": "34560",
+        "instCode": "21RI"
+      }
+    },
+    {
+      "id": "1001O4115",
+      "name": "Sociaal Werk",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "GEDRAG_EN_MAATSCHAPPIJ",
+      "city": "LEIDEN",
+      "externalRefs": {
+        "rioCode": "1001O4115",
+        "isat": "34608",
+        "instCode": "21RI"
+      }
+    },
+    {
+      "id": "1001O4240",
+      "name": "Sociaal-Juridische Dienstverlening",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "RECHT",
+      "city": "LEIDEN",
+      "externalRefs": {
+        "rioCode": "1001O4240",
+        "isat": "34641",
+        "instCode": "21RI"
+      }
+    },
+    {
+      "id": "1001O3942",
+      "name": "Toegepaste Psychologie",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "dual"
+      ],
+      "isVariant": false,
+      "discipline": "GEDRAG_EN_MAATSCHAPPIJ",
+      "city": "LEIDEN",
+      "externalRefs": {
+        "rioCode": "1001O3942",
+        "isat": "34507",
+        "instCode": "21RI"
+      }
+    },
+    {
+      "id": "1001O3942",
+      "name": "Toegepaste Psychologie",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "GEDRAG_EN_MAATSCHAPPIJ",
+      "city": "LEIDEN",
+      "externalRefs": {
+        "rioCode": "1001O3942",
+        "isat": "34507",
+        "instCode": "21RI"
+      }
+    },
+    {
+      "id": "1001O4254",
+      "name": "Vaktherapie",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "GEZONDHEIDSZORG",
+      "city": "LEIDEN",
+      "externalRefs": {
+        "rioCode": "1001O4254",
+        "isat": "34644",
+        "instCode": "21RI"
+      }
+    }
+  ],
+  "premaster": [
+    {
+      "id": "1001O8807",
+      "name": "Digital Forensics",
+      "level": "premaster",
+      "sector": "hbo",
+      "modes": [
+        "parttime"
+      ],
+      "isVariant": false,
+      "discipline": "TECHNIEK",
+      "city": "'S-GRAVENHAGE",
+      "externalRefs": {
+        "rioCode": "1001O8807",
+        "isat": "70222",
+        "instCode": "21RI"
+      }
+    }
+  ],
+  "master": [
+    {
+      "id": "1001O5569",
+      "name": "Advanced Nursing Practice",
+      "level": "master",
+      "sector": "hbo",
+      "modes": [
+        "dual"
+      ],
+      "isVariant": false,
+      "discipline": "GEZONDHEIDSZORG",
+      "city": "LEIDEN",
+      "externalRefs": {
+        "rioCode": "1001O5569",
+        "isat": "49246",
+        "instCode": "21RI"
+      }
+    },
+    {
+      "id": "1001O8903",
+      "name": "Digital Forensics",
+      "level": "master",
+      "sector": "hbo",
+      "modes": [
+        "parttime"
+      ],
+      "isVariant": false,
+      "discipline": "TECHNIEK",
+      "city": "'S-GRAVENHAGE",
+      "externalRefs": {
+        "rioCode": "1001O8903",
+        "isat": "45298",
+        "instCode": "21RI"
+      }
+    },
+    {
+      "id": "1001O8903",
+      "name": "Digital Forensics",
+      "level": "master",
+      "sector": "hbo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "TECHNIEK",
+      "city": "'S-GRAVENHAGE",
+      "externalRefs": {
+        "rioCode": "1001O8903",
+        "isat": "45298",
+        "instCode": "21RI"
+      }
+    },
+    {
+      "id": "1016O1847",
+      "name": "Duurzaam Onderwijs",
+      "level": "master",
+      "sector": "hbo",
+      "modes": [
+        "parttime"
+      ],
+      "isVariant": false,
+      "discipline": "ONDERWIJS",
+      "city": "LEIDEN",
+      "externalRefs": {
+        "rioCode": "1016O1847",
+        "isat": "40042",
+        "instCode": "21RI"
+      }
+    },
+    {
+      "id": "1001O5479",
+      "name": "Integrale Gezondheidsbevordering",
+      "level": "master",
+      "sector": "hbo",
+      "modes": [
+        "parttime"
+      ],
+      "isVariant": false,
+      "discipline": "GEZONDHEIDSZORG",
+      "city": "LEIDEN",
+      "externalRefs": {
+        "rioCode": "1001O5479",
+        "isat": "45288",
+        "instCode": "21RI"
+      }
+    },
+    {
+      "id": "1001O5316",
+      "name": "Jeugd en Gezin",
+      "level": "master",
+      "sector": "hbo",
+      "modes": [
+        "parttime"
+      ],
+      "isVariant": false,
+      "discipline": "GEDRAG_EN_MAATSCHAPPIJ",
+      "city": "LEIDEN",
+      "externalRefs": {
+        "rioCode": "1001O5316",
+        "isat": "40019",
+        "instCode": "21RI"
+      }
+    },
+    {
+      "id": "1001O5316",
+      "name": "Jeugd en Gezin",
+      "level": "master",
+      "sector": "hbo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "GEDRAG_EN_MAATSCHAPPIJ",
+      "city": "LEIDEN",
+      "externalRefs": {
+        "rioCode": "1001O5316",
+        "isat": "40019",
+        "instCode": "21RI"
+      }
+    }
+  ]
+}

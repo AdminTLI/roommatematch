@@ -1,0 +1,241 @@
+{
+  "bachelor": [
+    {
+      "id": "1001O5096",
+      "name": "Autonome Beeldende Kunst",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "parttime"
+      ],
+      "isVariant": false,
+      "discipline": "TAAL_EN_CULTUUR",
+      "subDiscipline": "OPLEIDINGEN_OP_HET_GEBIED_VAN_DE_KUNST",
+      "city": "'S-GRAVENHAGE",
+      "externalRefs": {
+        "rioCode": "1001O5096",
+        "isat": "39110",
+        "instCode": "23KJ"
+      }
+    },
+    {
+      "id": "1001O5096",
+      "name": "Autonome Beeldende Kunst",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "TAAL_EN_CULTUUR",
+      "subDiscipline": "OPLEIDINGEN_OP_HET_GEBIED_VAN_DE_KUNST",
+      "city": "'S-GRAVENHAGE",
+      "externalRefs": {
+        "rioCode": "1001O5096",
+        "isat": "39110",
+        "instCode": "23KJ"
+      }
+    },
+    {
+      "id": "1001O4355",
+      "name": "Dans",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "TAAL_EN_CULTUUR",
+      "subDiscipline": "OPLEIDINGEN_OP_HET_GEBIED_VAN_DE_KUNST",
+      "city": "'S-GRAVENHAGE",
+      "externalRefs": {
+        "rioCode": "1001O4355",
+        "isat": "34798",
+        "instCode": "23KJ"
+      }
+    },
+    {
+      "id": "1001O5120",
+      "name": "Docent Muziek",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "ONDERWIJS",
+      "subDiscipline": "LERARENOPLEIDINGEN_OP_HET_GEBIED_VAN_DE_KUNST",
+      "city": "'S-GRAVENHAGE",
+      "externalRefs": {
+        "rioCode": "1001O5120",
+        "isat": "39112",
+        "instCode": "23KJ"
+      }
+    },
+    {
+      "id": "1001O4332",
+      "name": "Muziek",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "TAAL_EN_CULTUUR",
+      "subDiscipline": "OPLEIDINGEN_OP_HET_GEBIED_VAN_DE_KUNST",
+      "city": "'S-GRAVENHAGE",
+      "externalRefs": {
+        "rioCode": "1001O4332",
+        "isat": "34739",
+        "instCode": "23KJ"
+      }
+    },
+    {
+      "id": "1001O5107",
+      "name": "Vormgeving",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "parttime"
+      ],
+      "isVariant": false,
+      "discipline": "TAAL_EN_CULTUUR",
+      "subDiscipline": "OPLEIDINGEN_OP_HET_GEBIED_VAN_DE_KUNST",
+      "city": "'S-GRAVENHAGE",
+      "externalRefs": {
+        "rioCode": "1001O5107",
+        "isat": "39111",
+        "instCode": "23KJ"
+      }
+    },
+    {
+      "id": "1001O5107",
+      "name": "Vormgeving",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "TAAL_EN_CULTUUR",
+      "subDiscipline": "OPLEIDINGEN_OP_HET_GEBIED_VAN_DE_KUNST",
+      "city": "'S-GRAVENHAGE",
+      "externalRefs": {
+        "rioCode": "1001O5107",
+        "isat": "39111",
+        "instCode": "23KJ"
+      }
+    }
+  ],
+  "premaster": [],
+  "master": [
+    {
+      "id": "1001O5565",
+      "name": "Interieurarchitectuur",
+      "level": "master",
+      "sector": "hbo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "TAAL_EN_CULTUUR",
+      "subDiscipline": "OPLEIDINGEN_OP_HET_GEBIED_VAN_DE_KUNST",
+      "city": "'S-GRAVENHAGE",
+      "externalRefs": {
+        "rioCode": "1001O5565",
+        "isat": "49238",
+        "instCode": "23KJ"
+      }
+    },
+    {
+      "id": "1001O5504",
+      "name": "Master of Arts in Fine Art and Design",
+      "level": "master",
+      "sector": "hbo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "TAAL_EN_CULTUUR",
+      "subDiscipline": "OPLEIDINGEN_OP_HET_GEBIED_VAN_DE_KUNST",
+      "city": "'S-GRAVENHAGE",
+      "externalRefs": {
+        "rioCode": "1001O5504",
+        "isat": "49114",
+        "instCode": "23KJ"
+      }
+    },
+    {
+      "id": "1001O5377",
+      "name": "Muziek",
+      "level": "master",
+      "sector": "hbo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "TAAL_EN_CULTUUR",
+      "subDiscipline": "OPLEIDINGEN_OP_HET_GEBIED_VAN_DE_KUNST",
+      "city": "'S-GRAVENHAGE",
+      "externalRefs": {
+        "rioCode": "1001O5377",
+        "isat": "44739",
+        "instCode": "23KJ"
+      }
+    },
+    {
+      "id": "1001O5494",
+      "name": "Opera",
+      "level": "master",
+      "sector": "hbo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "TAAL_EN_CULTUUR",
+      "subDiscipline": "OPLEIDINGEN_OP_HET_GEBIED_VAN_DE_KUNST",
+      "city": "'S-GRAVENHAGE",
+      "externalRefs": {
+        "rioCode": "1001O5494",
+        "isat": "49105",
+        "instCode": "23KJ"
+      }
+    },
+    {
+      "id": "1001O5492",
+      "name": "Sonologie",
+      "level": "master",
+      "sector": "hbo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "TAAL_EN_CULTUUR",
+      "subDiscipline": "OPLEIDINGEN_OP_HET_GEBIED_VAN_DE_KUNST",
+      "city": "'S-GRAVENHAGE",
+      "externalRefs": {
+        "rioCode": "1001O5492",
+        "isat": "49104",
+        "instCode": "23KJ"
+      }
+    },
+    {
+      "id": "1001O5495",
+      "name": "Type and Media",
+      "level": "master",
+      "sector": "hbo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "TAAL_EN_CULTUUR",
+      "subDiscipline": "OPLEIDINGEN_OP_HET_GEBIED_VAN_DE_KUNST",
+      "city": "'S-GRAVENHAGE",
+      "externalRefs": {
+        "rioCode": "1001O5495",
+        "isat": "49106",
+        "instCode": "23KJ"
+      }
+    }
+  ]
+}

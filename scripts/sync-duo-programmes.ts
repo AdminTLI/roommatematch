@@ -170,8 +170,9 @@ async function writeSyncMetadata(stats: {
   institutionsWithProgrammes: number;
 }): Promise<void> {
   const outputDir = path.join(process.cwd(), 'data', 'programmes');
-  const metadataPath = path.join(outputDir, '.sync-metadata.json');
+  await fs.mkdir(outputDir, { recursive: true });
   
+  const metadataPath = path.join(outputDir, '.sync-metadata.json');
   await fs.writeFile(metadataPath, JSON.stringify(stats, null, 2), 'utf8');
 }
 

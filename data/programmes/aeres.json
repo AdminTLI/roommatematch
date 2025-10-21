@@ -1,0 +1,364 @@
+{
+  "bachelor": [
+    {
+      "id": "1001O2710",
+      "name": "Aarde, Data-analyse & Visualisatie",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "LANDBOUW_EN_NATUURLIJKE_OMGEVING",
+      "city": "ALMERE",
+      "externalRefs": {
+        "rioCode": "1001O2710",
+        "isat": "30033",
+        "instCode": "30TX"
+      }
+    },
+    {
+      "id": "1001O4439",
+      "name": "Bedrijfskunde en Agribusiness",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "parttime"
+      ],
+      "isVariant": false,
+      "discipline": "LANDBOUW_EN_NATUURLIJKE_OMGEVING",
+      "city": "DRONTEN",
+      "externalRefs": {
+        "rioCode": "1001O4439",
+        "isat": "34866",
+        "instCode": "30TX"
+      }
+    },
+    {
+      "id": "1001O4439",
+      "name": "Bedrijfskunde en Agribusiness",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "LANDBOUW_EN_NATUURLIJKE_OMGEVING",
+      "city": "DRONTEN",
+      "externalRefs": {
+        "rioCode": "1001O4439",
+        "isat": "34866",
+        "instCode": "30TX"
+      }
+    },
+    {
+      "id": "1001O4439",
+      "name": "Bedrijfskunde en Agribusiness",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "LANDBOUW_EN_NATUURLIJKE_OMGEVING",
+      "city": "ALMERE",
+      "externalRefs": {
+        "rioCode": "1001O4439",
+        "isat": "34866",
+        "instCode": "30TX"
+      }
+    },
+    {
+      "id": "1001O4457",
+      "name": "Dier- en Veehouderij",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "parttime"
+      ],
+      "isVariant": false,
+      "discipline": "LANDBOUW_EN_NATUURLIJKE_OMGEVING",
+      "city": "DRONTEN",
+      "externalRefs": {
+        "rioCode": "1001O4457",
+        "isat": "34869",
+        "instCode": "30TX"
+      }
+    },
+    {
+      "id": "1001O4457",
+      "name": "Dier- en Veehouderij",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "LANDBOUW_EN_NATUURLIJKE_OMGEVING",
+      "city": "DRONTEN",
+      "externalRefs": {
+        "rioCode": "1001O4457",
+        "isat": "34869",
+        "instCode": "30TX"
+      }
+    },
+    {
+      "id": "1001O5310",
+      "name": "Docent en kennismanager Dienstverlening en Producten",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "parttime"
+      ],
+      "isVariant": false,
+      "discipline": "ONDERWIJS",
+      "city": "WAGENINGEN",
+      "externalRefs": {
+        "rioCode": "1001O5310",
+        "isat": "39301",
+        "instCode": "30TX"
+      }
+    },
+    {
+      "id": "1001O5310",
+      "name": "Docent en kennismanager Dienstverlening en Producten",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "ONDERWIJS",
+      "city": "WAGENINGEN",
+      "externalRefs": {
+        "rioCode": "1001O5310",
+        "isat": "39301",
+        "instCode": "30TX"
+      }
+    },
+    {
+      "id": "1001O4461",
+      "name": "Docent en Kennismanager Groene Sector",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "parttime"
+      ],
+      "isVariant": false,
+      "discipline": "ONDERWIJS",
+      "city": "WAGENINGEN",
+      "externalRefs": {
+        "rioCode": "1001O4461",
+        "isat": "34899",
+        "instCode": "30TX"
+      }
+    },
+    {
+      "id": "1001O4461",
+      "name": "Docent en Kennismanager Groene Sector",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "ONDERWIJS",
+      "city": "WAGENINGEN",
+      "externalRefs": {
+        "rioCode": "1001O4461",
+        "isat": "34899",
+        "instCode": "30TX"
+      }
+    },
+    {
+      "id": "1001O4968",
+      "name": "Opleiding tot leraar voortgezet onderwijs van de tweede graad in Consumptieve Techniek I en II",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "parttime"
+      ],
+      "isVariant": false,
+      "discipline": "ONDERWIJS",
+      "city": "WAGENINGEN",
+      "externalRefs": {
+        "rioCode": "1001O4968",
+        "isat": "35423",
+        "instCode": "30TX"
+      }
+    },
+    {
+      "id": "1001O4968",
+      "name": "Opleiding tot leraar voortgezet onderwijs van de tweede graad in Consumptieve Techniek I en II",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "ONDERWIJS",
+      "city": "WAGENINGEN",
+      "externalRefs": {
+        "rioCode": "1001O4968",
+        "isat": "35423",
+        "instCode": "30TX"
+      }
+    },
+    {
+      "id": "1001O2646",
+      "name": "Toegepaste Biologie",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "LANDBOUW_EN_NATUURLIJKE_OMGEVING",
+      "city": "ALMERE",
+      "externalRefs": {
+        "rioCode": "1001O2646",
+        "isat": "30009",
+        "instCode": "30TX"
+      }
+    },
+    {
+      "id": "1001O4449",
+      "name": "Tuinbouw en Akkerbouw",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "parttime"
+      ],
+      "isVariant": false,
+      "discipline": "LANDBOUW_EN_NATUURLIJKE_OMGEVING",
+      "city": "DRONTEN",
+      "externalRefs": {
+        "rioCode": "1001O4449",
+        "isat": "34868",
+        "instCode": "30TX"
+      }
+    },
+    {
+      "id": "1001O4449",
+      "name": "Tuinbouw en Akkerbouw",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "LANDBOUW_EN_NATUURLIJKE_OMGEVING",
+      "city": "DRONTEN",
+      "externalRefs": {
+        "rioCode": "1001O4449",
+        "isat": "34868",
+        "instCode": "30TX"
+      }
+    }
+  ],
+  "premaster": [],
+  "master": [
+    {
+      "id": "1001O5542",
+      "name": "Agribusiness Development",
+      "level": "master",
+      "sector": "hbo",
+      "modes": [
+        "parttime"
+      ],
+      "isVariant": false,
+      "discipline": "LANDBOUW_EN_NATUURLIJKE_OMGEVING",
+      "city": "DRONTEN",
+      "externalRefs": {
+        "rioCode": "1001O5542",
+        "isat": "49137",
+        "instCode": "30TX"
+      }
+    },
+    {
+      "id": "1001O5542",
+      "name": "Agribusiness Development",
+      "level": "master",
+      "sector": "hbo",
+      "modes": [
+        "dual"
+      ],
+      "isVariant": false,
+      "discipline": "LANDBOUW_EN_NATUURLIJKE_OMGEVING",
+      "city": "DRONTEN",
+      "externalRefs": {
+        "rioCode": "1001O5542",
+        "isat": "49137",
+        "instCode": "30TX"
+      }
+    },
+    {
+      "id": "1001O5542",
+      "name": "Agribusiness Development",
+      "level": "master",
+      "sector": "hbo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "LANDBOUW_EN_NATUURLIJKE_OMGEVING",
+      "city": "DRONTEN",
+      "externalRefs": {
+        "rioCode": "1001O5542",
+        "isat": "49137",
+        "instCode": "30TX"
+      }
+    },
+    {
+      "id": "1001O5481",
+      "name": "Food Systems Innovation",
+      "level": "master",
+      "sector": "hbo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "SECTOROVERSTIJGEND",
+      "city": "ALMERE",
+      "externalRefs": {
+        "rioCode": "1001O5481",
+        "isat": "45290",
+        "instCode": "30TX"
+      }
+    },
+    {
+      "id": "1001O8826",
+      "name": "Gezond Gedrag en Leefomgeving",
+      "level": "master",
+      "sector": "hbo",
+      "modes": [
+        "parttime"
+      ],
+      "isVariant": false,
+      "discipline": "GEZONDHEIDSZORG",
+      "city": "ALMERE",
+      "externalRefs": {
+        "rioCode": "1001O8826",
+        "isat": "45295",
+        "instCode": "30TX"
+      }
+    },
+    {
+      "id": "1001O5354",
+      "name": "Leren en Innoveren",
+      "level": "master",
+      "sector": "hbo",
+      "modes": [
+        "parttime"
+      ],
+      "isVariant": false,
+      "discipline": "LANDBOUW_EN_NATUURLIJKE_OMGEVING",
+      "city": "WAGENINGEN",
+      "externalRefs": {
+        "rioCode": "1001O5354",
+        "isat": "44135",
+        "instCode": "30TX"
+      }
+    }
+  ]
+}

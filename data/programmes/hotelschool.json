@@ -1,0 +1,93 @@
+{
+  "bachelor": [
+    {
+      "id": "1001O3613",
+      "name": "Hotel Management",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "ECONOMIE",
+      "city": "'S-GRAVENHAGE",
+      "externalRefs": {
+        "rioCode": "1001O3613",
+        "isat": "34411",
+        "instCode": "02NR"
+      }
+    },
+    {
+      "id": "1001O3613",
+      "name": "Hotel Management",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "ECONOMIE",
+      "city": "AMSTERDAM",
+      "externalRefs": {
+        "rioCode": "1001O3613",
+        "isat": "34411",
+        "instCode": "02NR"
+      }
+    }
+  ],
+  "premaster": [
+    {
+      "id": "1001O8046",
+      "name": "Master of International Hospitality Management",
+      "level": "premaster",
+      "sector": "hbo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "ECONOMIE",
+      "city": "'S-GRAVENHAGE",
+      "externalRefs": {
+        "rioCode": "1001O8046",
+        "isat": "70177",
+        "instCode": "02NR"
+      }
+    },
+    {
+      "id": "1001O8046",
+      "name": "Master of International Hospitality Management",
+      "level": "premaster",
+      "sector": "hbo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "ECONOMIE",
+      "city": "AMSTERDAM",
+      "externalRefs": {
+        "rioCode": "1001O8046",
+        "isat": "70177",
+        "instCode": "02NR"
+      }
+    }
+  ],
+  "master": [
+    {
+      "id": "1001O5556",
+      "name": "Leading Hotel Transformation",
+      "level": "master",
+      "sector": "hbo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "ECONOMIE",
+      "city": "AMSTERDAM",
+      "externalRefs": {
+        "rioCode": "1001O5556",
+        "isat": "49151",
+        "instCode": "02NR"
+      }
+    }
+  ]
+}

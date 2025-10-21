@@ -1,0 +1,43 @@
+{
+  "bachelor": [
+    {
+      "id": "1001O5102",
+      "name": "Vormgeving",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "TAAL_EN_CULTUUR",
+      "subDiscipline": "OPLEIDINGEN_OP_HET_GEBIED_VAN_DE_KUNST",
+      "city": "EINDHOVEN",
+      "externalRefs": {
+        "rioCode": "1001O5102",
+        "isat": "39111",
+        "instCode": "02NT"
+      }
+    }
+  ],
+  "premaster": [],
+  "master": [
+    {
+      "id": "1001O5501",
+      "name": "Master of Arts in Fine Art and Design",
+      "level": "master",
+      "sector": "hbo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "TAAL_EN_CULTUUR",
+      "subDiscipline": "OPLEIDINGEN_OP_HET_GEBIED_VAN_DE_KUNST",
+      "city": "EINDHOVEN",
+      "externalRefs": {
+        "rioCode": "1001O5501",
+        "isat": "49114",
+        "instCode": "02NT"
+      }
+    }
+  ]
+}

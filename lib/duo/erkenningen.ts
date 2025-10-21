@@ -28,17 +28,16 @@ export function mapSector(instCode: string): 'hbo' | 'wo' | 'wo_special' {
   const institutions = loadInstitutions();
   const allInstitutions = [...institutions.wo, ...institutions.wo_special, ...institutions.hbo];
   
-  // Find institution by BRIN code
-  const institution = allInstitutions.find(inst => 
-    inst.codes?.brin === instCode
-  );
-  
-  if (!institution) {
-    console.warn(`Unknown institution code: ${instCode}`);
-    return 'hbo'; // Default to HBO for unknown codes
+  // Find institution by matching BRIN code in our mapping
+  for (const institution of allInstitutions) {
+    const brinCode = getInstitutionBrinCode(institution.id);
+    if (brinCode === instCode) {
+      return institution.kind;
+    }
   }
   
-  return institution.kind;
+  console.warn(`Unknown institution code: ${instCode}`);
+  return 'hbo'; // Default to HBO for unknown codes
 }
 
 /**
@@ -83,7 +82,7 @@ export function toLevel(row: DuoRow): 'bachelor' | 'premaster' | 'master' | null
   const soort = (row.OPLEIDINGSEENHEID_SOORT || '').toLowerCase();
   
   // Strict filtering: only allow recognized HBO/WO levels
-  const allowedLevels = ['HBO-BA', 'HBO-MA', 'WO-BA', 'WO-MA'];
+  const allowedLevels = ['HBO-BA', 'HBO-MA', 'HBO-PM', 'WO-BA', 'WO-MA', 'WO-PM'];
   const hasValidLevel = allowedLevels.some(allowed => niveau.startsWith(allowed));
   
   // Explicit level classification by NIVEAU
@@ -94,6 +93,10 @@ export function toLevel(row: DuoRow): 'bachelor' | 'premaster' | 'master' | null
   if (niveau.startsWith('HBO-MA') || niveau.startsWith('WO-MA')) {
     counters.keptMaster++;
     return 'master';
+  }
+  if (niveau.startsWith('HBO-PM') || niveau.startsWith('WO-PM')) {
+    counters.keptPremaster++;
+    return 'premaster';
   }
   
   // Pre-master heuristics (only if we have a valid level context)
@@ -167,21 +170,11 @@ export async function processDuoCsv(): Promise<Map<string, Programme[]>> {
  * Get institution BRIN code from our mapping
  */
 export function getInstitutionBrinCode(institutionId: string): string | undefined {
-  const mappings = codeMapData.mappings as any;
+  const mappings = codeMapData as any;
   
-  // Check WO institutions
+  // Check direct mapping
   if (mappings[institutionId]?.brin) {
     return mappings[institutionId].brin;
-  }
-  
-  // Check WO-special institutions
-  if (mappings.wo_special?.[institutionId]?.brin) {
-    return mappings.wo_special[institutionId].brin;
-  }
-  
-  // Check HBO institutions
-  if (mappings.hbo_major?.[institutionId]?.brin) {
-    return mappings.hbo_major[institutionId].brin;
   }
   
   return undefined;

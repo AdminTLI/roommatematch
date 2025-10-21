@@ -1,0 +1,79 @@
+{
+  "bachelor": [
+    {
+      "id": "1001O5090",
+      "name": "Beeldende Kunst en Vormgeving",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "parttime"
+      ],
+      "isVariant": false,
+      "discipline": "TAAL_EN_CULTUUR",
+      "subDiscipline": "OPLEIDINGEN_OP_HET_GEBIED_VAN_DE_KUNST",
+      "city": "AMSTERDAM",
+      "externalRefs": {
+        "rioCode": "1001O5090",
+        "isat": "39109",
+        "instCode": "02BY"
+      }
+    },
+    {
+      "id": "1001O5090",
+      "name": "Beeldende Kunst en Vormgeving",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "TAAL_EN_CULTUUR",
+      "subDiscipline": "OPLEIDINGEN_OP_HET_GEBIED_VAN_DE_KUNST",
+      "city": "AMSTERDAM",
+      "externalRefs": {
+        "rioCode": "1001O5090",
+        "isat": "39109",
+        "instCode": "02BY"
+      }
+    }
+  ],
+  "premaster": [],
+  "master": [
+    {
+      "id": "1001O5563",
+      "name": "Interieurarchitectuur",
+      "level": "master",
+      "sector": "hbo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "TAAL_EN_CULTUUR",
+      "subDiscipline": "OPLEIDINGEN_OP_HET_GEBIED_VAN_DE_KUNST",
+      "city": "AMSTERDAM",
+      "externalRefs": {
+        "rioCode": "1001O5563",
+        "isat": "49238",
+        "instCode": "02BY"
+      }
+    },
+    {
+      "id": "1001O5500",
+      "name": "Master of Arts in Fine Art and Design",
+      "level": "master",
+      "sector": "hbo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "TAAL_EN_CULTUUR",
+      "subDiscipline": "OPLEIDINGEN_OP_HET_GEBIED_VAN_DE_KUNST",
+      "city": "AMSTERDAM",
+      "externalRefs": {
+        "rioCode": "1001O5500",
+        "isat": "49114",
+        "instCode": "02BY"
+      }
+    }
+  ]
+}

@@ -1,0 +1,2782 @@
+{
+  "bachelor": [
+    {
+      "id": "1001O3556",
+      "name": "Accountancy",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "ECONOMIE",
+      "city": "LEEUWARDEN",
+      "externalRefs": {
+        "rioCode": "1001O3556",
+        "isat": "34406",
+        "instCode": "31FR"
+      }
+    },
+    {
+      "id": "1001O2805",
+      "name": "Bedrijfskunde",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "parttime"
+      ],
+      "isVariant": false,
+      "discipline": "ECONOMIE",
+      "city": "LEEUWARDEN",
+      "externalRefs": {
+        "rioCode": "1001O2805",
+        "isat": "34035",
+        "instCode": "31FR"
+      }
+    },
+    {
+      "id": "1001O2805",
+      "name": "Bedrijfskunde",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "ECONOMIE",
+      "city": "LEEUWARDEN",
+      "externalRefs": {
+        "rioCode": "1001O2805",
+        "isat": "34035",
+        "instCode": "31FR"
+      }
+    },
+    {
+      "id": "1001O3830",
+      "name": "Bestuurskunde/Overheidsmanagement",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "ECONOMIE",
+      "city": "LEEUWARDEN",
+      "externalRefs": {
+        "rioCode": "1001O3830",
+        "isat": "34464",
+        "instCode": "31FR"
+      }
+    },
+    {
+      "id": "1001O3365",
+      "name": "Biologie en Medisch Laboratoriumonderzoek",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "TECHNIEK",
+      "city": "LEEUWARDEN",
+      "externalRefs": {
+        "rioCode": "1001O3365",
+        "isat": "34397",
+        "instCode": "31FR"
+      }
+    },
+    {
+      "id": "1001O3365",
+      "name": "Biologie en Medisch Laboratoriumonderzoek",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "TECHNIEK",
+      "city": "EMMEN",
+      "externalRefs": {
+        "rioCode": "1001O3365",
+        "isat": "34397",
+        "instCode": "31FR"
+      }
+    },
+    {
+      "id": "1001O3270",
+      "name": "Biotechnologie",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "TECHNIEK",
+      "city": "LEEUWARDEN",
+      "externalRefs": {
+        "rioCode": "1001O3270",
+        "isat": "34331",
+        "instCode": "31FR"
+      }
+    },
+    {
+      "id": "1001O3070",
+      "name": "Bouwkunde",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "TECHNIEK",
+      "city": "LEEUWARDEN",
+      "externalRefs": {
+        "rioCode": "1001O3070",
+        "isat": "34263",
+        "instCode": "31FR"
+      }
+    },
+    {
+      "id": "1001O3345",
+      "name": "Chemie",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "TECHNIEK",
+      "city": "LEEUWARDEN",
+      "externalRefs": {
+        "rioCode": "1001O3345",
+        "isat": "34396",
+        "instCode": "31FR"
+      }
+    },
+    {
+      "id": "1001O3345",
+      "name": "Chemie",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "TECHNIEK",
+      "city": "EMMEN",
+      "externalRefs": {
+        "rioCode": "1001O3345",
+        "isat": "34396",
+        "instCode": "31FR"
+      }
+    },
+    {
+      "id": "1001O3157",
+      "name": "Chemische Technologie",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "TECHNIEK",
+      "city": "LEEUWARDEN",
+      "externalRefs": {
+        "rioCode": "1001O3157",
+        "isat": "34275",
+        "instCode": "31FR"
+      }
+    },
+    {
+      "id": "1001O3187",
+      "name": "Civiele Techniek",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "dual"
+      ],
+      "isVariant": false,
+      "discipline": "TECHNIEK",
+      "city": "LEEUWARDEN",
+      "externalRefs": {
+        "rioCode": "1001O3187",
+        "isat": "34279",
+        "instCode": "31FR"
+      }
+    },
+    {
+      "id": "1001O3187",
+      "name": "Civiele Techniek",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "TECHNIEK",
+      "city": "LEEUWARDEN",
+      "externalRefs": {
+        "rioCode": "1001O3187",
+        "isat": "34279",
+        "instCode": "31FR"
+      }
+    },
+    {
+      "id": "1001O3453",
+      "name": "Commerciële Economie",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "ECONOMIE",
+      "city": "LEEUWARDEN",
+      "externalRefs": {
+        "rioCode": "1001O3453",
+        "isat": "34402",
+        "instCode": "31FR"
+      }
+    },
+    {
+      "id": "1001O3453",
+      "name": "Commerciële Economie",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "dual"
+      ],
+      "isVariant": false,
+      "discipline": "ECONOMIE",
+      "city": "EMMEN",
+      "externalRefs": {
+        "rioCode": "1001O3453",
+        "isat": "34402",
+        "instCode": "31FR"
+      }
+    },
+    {
+      "id": "1001O3453",
+      "name": "Commerciële Economie",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "ECONOMIE",
+      "city": "EMMEN",
+      "externalRefs": {
+        "rioCode": "1001O3453",
+        "isat": "34402",
+        "instCode": "31FR"
+      }
+    },
+    {
+      "id": "1001O3522",
+      "name": "Communicatie",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "ECONOMIE",
+      "city": "LEEUWARDEN",
+      "externalRefs": {
+        "rioCode": "1001O3522",
+        "isat": "34405",
+        "instCode": "31FR"
+      }
+    },
+    {
+      "id": "1001O2909",
+      "name": "Communication and Multimedia Design",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "TECHNIEK",
+      "city": "LEEUWARDEN",
+      "externalRefs": {
+        "rioCode": "1001O2909",
+        "isat": "34092",
+        "instCode": "31FR"
+      }
+    },
+    {
+      "id": "1001O5015",
+      "name": "Creative Business",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "ECONOMIE",
+      "city": "LEEUWARDEN",
+      "externalRefs": {
+        "rioCode": "1001O5015",
+        "isat": "35516",
+        "instCode": "31FR"
+      }
+    },
+    {
+      "id": "1001O5089",
+      "name": "Docent Beeldende Kunst en Vormgeving",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "ONDERWIJS",
+      "subDiscipline": "LERARENOPLEIDINGEN_OP_HET_GEBIED_VAN_DE_KUNST",
+      "city": "LEEUWARDEN",
+      "externalRefs": {
+        "rioCode": "1001O5089",
+        "isat": "39100",
+        "instCode": "31FR"
+      }
+    },
+    {
+      "id": "1001O4351",
+      "name": "Docent Theater",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "ONDERWIJS",
+      "subDiscipline": "LERARENOPLEIDINGEN_OP_HET_GEBIED_VAN_DE_KUNST",
+      "city": "LEEUWARDEN",
+      "externalRefs": {
+        "rioCode": "1001O4351",
+        "isat": "34745",
+        "instCode": "31FR"
+      }
+    },
+    {
+      "id": "1001O3099",
+      "name": "Elektrotechniek",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "TECHNIEK",
+      "city": "LEEUWARDEN",
+      "externalRefs": {
+        "rioCode": "1001O3099",
+        "isat": "34267",
+        "instCode": "31FR"
+      }
+    },
+    {
+      "id": "1001O3655",
+      "name": "European Studies",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "ECONOMIE",
+      "city": "LEEUWARDEN",
+      "externalRefs": {
+        "rioCode": "1001O3655",
+        "isat": "34419",
+        "instCode": "31FR"
+      }
+    },
+    {
+      "id": "1001O5039",
+      "name": "Finance & Control",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "ECONOMIE",
+      "city": "LEEUWARDEN",
+      "externalRefs": {
+        "rioCode": "1001O5039",
+        "isat": "35520",
+        "instCode": "31FR"
+      }
+    },
+    {
+      "id": "1001O5039",
+      "name": "Finance & Control",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "ECONOMIE",
+      "city": "EMMEN",
+      "externalRefs": {
+        "rioCode": "1001O5039",
+        "isat": "35520",
+        "instCode": "31FR"
+      }
+    },
+    {
+      "id": "1001O5024",
+      "name": "Finance, Tax and Advice",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "dual"
+      ],
+      "isVariant": false,
+      "discipline": "ECONOMIE",
+      "city": "LEEUWARDEN",
+      "externalRefs": {
+        "rioCode": "1001O5024",
+        "isat": "35517",
+        "instCode": "31FR"
+      }
+    },
+    {
+      "id": "1001O5198",
+      "name": "HBO - Rechten",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "RECHT",
+      "city": "LEEUWARDEN",
+      "externalRefs": {
+        "rioCode": "1001O5198",
+        "isat": "39205",
+        "instCode": "31FR"
+      }
+    },
+    {
+      "id": "1001O2678",
+      "name": "HBO-ICT",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "parttime"
+      ],
+      "isVariant": false,
+      "discipline": "TECHNIEK",
+      "city": "LEEUWARDEN",
+      "externalRefs": {
+        "rioCode": "1001O2678",
+        "isat": "30020",
+        "instCode": "31FR"
+      }
+    },
+    {
+      "id": "1001O2678",
+      "name": "HBO-ICT",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "TECHNIEK",
+      "city": "LEEUWARDEN",
+      "externalRefs": {
+        "rioCode": "1001O2678",
+        "isat": "30020",
+        "instCode": "31FR"
+      }
+    },
+    {
+      "id": "1001O3621",
+      "name": "Hotel Management",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "parttime"
+      ],
+      "isVariant": false,
+      "discipline": "ECONOMIE",
+      "city": "LEEUWARDEN",
+      "externalRefs": {
+        "rioCode": "1001O3621",
+        "isat": "34411",
+        "instCode": "31FR"
+      }
+    },
+    {
+      "id": "1001O3621",
+      "name": "Hotel Management",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "dual"
+      ],
+      "isVariant": false,
+      "discipline": "ECONOMIE",
+      "city": "LEEUWARDEN",
+      "externalRefs": {
+        "rioCode": "1001O3621",
+        "isat": "34411",
+        "instCode": "31FR"
+      }
+    },
+    {
+      "id": "1001O3621",
+      "name": "Hotel Management",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "ECONOMIE",
+      "city": "LEEUWARDEN",
+      "externalRefs": {
+        "rioCode": "1001O3621",
+        "isat": "34411",
+        "instCode": "31FR"
+      }
+    },
+    {
+      "id": "1001O4151",
+      "name": "Human Resource Management",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "parttime"
+      ],
+      "isVariant": false,
+      "discipline": "ECONOMIE",
+      "city": "LEEUWARDEN",
+      "externalRefs": {
+        "rioCode": "1001O4151",
+        "isat": "34609",
+        "instCode": "31FR"
+      }
+    },
+    {
+      "id": "1001O4151",
+      "name": "Human Resource Management",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "ECONOMIE",
+      "city": "LEEUWARDEN",
+      "externalRefs": {
+        "rioCode": "1001O4151",
+        "isat": "34609",
+        "instCode": "31FR"
+      }
+    },
+    {
+      "id": "1001O3904",
+      "name": "Informatica",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "TECHNIEK",
+      "city": "EMMEN",
+      "externalRefs": {
+        "rioCode": "1001O3904",
+        "isat": "34479",
+        "instCode": "31FR"
+      }
+    },
+    {
+      "id": "1001O5291",
+      "name": "Integrale Veiligheidskunde",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "parttime"
+      ],
+      "isVariant": false,
+      "discipline": "ECONOMIE",
+      "city": "LEEUWARDEN",
+      "externalRefs": {
+        "rioCode": "1001O5291",
+        "isat": "39268",
+        "instCode": "31FR"
+      }
+    },
+    {
+      "id": "1001O5291",
+      "name": "Integrale Veiligheidskunde",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "ECONOMIE",
+      "city": "LEEUWARDEN",
+      "externalRefs": {
+        "rioCode": "1001O5291",
+        "isat": "39268",
+        "instCode": "31FR"
+      }
+    },
+    {
+      "id": "1001O5291",
+      "name": "Integrale Veiligheidskunde",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "parttime"
+      ],
+      "isVariant": false,
+      "discipline": "ECONOMIE",
+      "city": "ASSEN",
+      "externalRefs": {
+        "rioCode": "1001O5291",
+        "isat": "39268",
+        "instCode": "31FR"
+      }
+    },
+    {
+      "id": "1001O5291",
+      "name": "Integrale Veiligheidskunde",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "ECONOMIE",
+      "city": "ASSEN",
+      "externalRefs": {
+        "rioCode": "1001O5291",
+        "isat": "39268",
+        "instCode": "31FR"
+      }
+    },
+    {
+      "id": "1001O2705",
+      "name": "International Business",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "ECONOMIE",
+      "city": "LEEUWARDEN",
+      "externalRefs": {
+        "rioCode": "1001O2705",
+        "isat": "30029",
+        "instCode": "31FR"
+      }
+    },
+    {
+      "id": "1001O2705",
+      "name": "International Business",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "ECONOMIE",
+      "city": "EMMEN",
+      "externalRefs": {
+        "rioCode": "1001O2705",
+        "isat": "30029",
+        "instCode": "31FR"
+      }
+    },
+    {
+      "id": "1001O5007",
+      "name": "International Teacher Education for Primary Schools (ITEps)",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "ONDERWIJS",
+      "city": "MEPPEL",
+      "externalRefs": {
+        "rioCode": "1001O5007",
+        "isat": "35514",
+        "instCode": "31FR"
+      }
+    },
+    {
+      "id": "1001O5070",
+      "name": "International Teacher Education for Secondary Schools",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "ONDERWIJS",
+      "city": "GRONINGEN",
+      "externalRefs": {
+        "rioCode": "1001O5070",
+        "isat": "35525",
+        "instCode": "31FR"
+      }
+    },
+    {
+      "id": "1001O5070",
+      "name": "International Teacher Education for Secondary Schools",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "ONDERWIJS",
+      "city": "MEPPEL",
+      "externalRefs": {
+        "rioCode": "1001O5070",
+        "isat": "35525",
+        "instCode": "31FR"
+      }
+    },
+    {
+      "id": "1001O5043",
+      "name": "Leisure & Events Management",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "ECONOMIE",
+      "city": "LEEUWARDEN",
+      "externalRefs": {
+        "rioCode": "1001O5043",
+        "isat": "35521",
+        "instCode": "31FR"
+      }
+    },
+    {
+      "id": "1001O5053",
+      "name": "Logistics Management",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "ECONOMIE",
+      "city": "EMMEN",
+      "externalRefs": {
+        "rioCode": "1001O5053",
+        "isat": "35522",
+        "instCode": "31FR"
+      }
+    },
+    {
+      "id": "1001O3294",
+      "name": "Maritiem Officier",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "TECHNIEK",
+      "city": "WEST-TERSCHELLING",
+      "externalRefs": {
+        "rioCode": "1001O3294",
+        "isat": "34384",
+        "instCode": "31FR"
+      }
+    },
+    {
+      "id": "1001O3162",
+      "name": "Maritieme Techniek",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "TECHNIEK",
+      "city": "LEEUWARDEN",
+      "externalRefs": {
+        "rioCode": "1001O3162",
+        "isat": "34276",
+        "instCode": "31FR"
+      }
+    },
+    {
+      "id": "1001O2994",
+      "name": "Ocean Technology",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "TECHNIEK",
+      "city": "WEST-TERSCHELLING",
+      "externalRefs": {
+        "rioCode": "1001O2994",
+        "isat": "34190",
+        "instCode": "31FR"
+      }
+    },
+    {
+      "id": "1001O5064",
+      "name": "Ondernemerschap & Retail Management",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "parttime"
+      ],
+      "isVariant": false,
+      "discipline": "ECONOMIE",
+      "city": "LEEUWARDEN",
+      "externalRefs": {
+        "rioCode": "1001O5064",
+        "isat": "35523",
+        "instCode": "31FR"
+      }
+    },
+    {
+      "id": "1001O5064",
+      "name": "Ondernemerschap & Retail Management",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "dual"
+      ],
+      "isVariant": false,
+      "discipline": "ECONOMIE",
+      "city": "LEEUWARDEN",
+      "externalRefs": {
+        "rioCode": "1001O5064",
+        "isat": "35523",
+        "instCode": "31FR"
+      }
+    },
+    {
+      "id": "1001O5064",
+      "name": "Ondernemerschap & Retail Management",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "ECONOMIE",
+      "city": "LEEUWARDEN",
+      "externalRefs": {
+        "rioCode": "1001O5064",
+        "isat": "35523",
+        "instCode": "31FR"
+      }
+    },
+    {
+      "id": "1001O4404",
+      "name": "Opleiding tot leraar Basisonderwijs",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "parttime"
+      ],
+      "isVariant": false,
+      "discipline": "ONDERWIJS",
+      "city": "LEEUWARDEN",
+      "externalRefs": {
+        "rioCode": "1001O4404",
+        "isat": "34808",
+        "instCode": "31FR"
+      }
+    },
+    {
+      "id": "1001O4404",
+      "name": "Opleiding tot leraar Basisonderwijs",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "ONDERWIJS",
+      "city": "LEEUWARDEN",
+      "externalRefs": {
+        "rioCode": "1001O4404",
+        "isat": "34808",
+        "instCode": "31FR"
+      }
+    },
+    {
+      "id": "1001O4404",
+      "name": "Opleiding tot leraar Basisonderwijs",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "ONDERWIJS",
+      "city": "EMMEN",
+      "externalRefs": {
+        "rioCode": "1001O4404",
+        "isat": "34808",
+        "instCode": "31FR"
+      }
+    },
+    {
+      "id": "1001O4404",
+      "name": "Opleiding tot leraar Basisonderwijs",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "parttime"
+      ],
+      "isVariant": false,
+      "discipline": "ONDERWIJS",
+      "city": "GRONINGEN",
+      "externalRefs": {
+        "rioCode": "1001O4404",
+        "isat": "34808",
+        "instCode": "31FR"
+      }
+    },
+    {
+      "id": "1001O4404",
+      "name": "Opleiding tot leraar Basisonderwijs",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "ONDERWIJS",
+      "city": "GRONINGEN",
+      "externalRefs": {
+        "rioCode": "1001O4404",
+        "isat": "34808",
+        "instCode": "31FR"
+      }
+    },
+    {
+      "id": "1001O4404",
+      "name": "Opleiding tot leraar Basisonderwijs",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "ONDERWIJS",
+      "city": "MEPPEL",
+      "externalRefs": {
+        "rioCode": "1001O4404",
+        "isat": "34808",
+        "instCode": "31FR"
+      }
+    },
+    {
+      "id": "1001O4404",
+      "name": "Opleiding tot leraar Basisonderwijs",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "parttime"
+      ],
+      "isVariant": false,
+      "discipline": "ONDERWIJS",
+      "city": "ASSEN",
+      "externalRefs": {
+        "rioCode": "1001O4404",
+        "isat": "34808",
+        "instCode": "31FR"
+      }
+    },
+    {
+      "id": "1001O4734",
+      "name": "Opleiding tot leraar voortgezet onderwijs van de tweede graad in Aardrijkskunde",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "parttime"
+      ],
+      "isVariant": false,
+      "discipline": "ONDERWIJS",
+      "city": "LEEUWARDEN",
+      "externalRefs": {
+        "rioCode": "1001O4734",
+        "isat": "35201",
+        "instCode": "31FR"
+      }
+    },
+    {
+      "id": "1001O4734",
+      "name": "Opleiding tot leraar voortgezet onderwijs van de tweede graad in Aardrijkskunde",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "ONDERWIJS",
+      "city": "LEEUWARDEN",
+      "externalRefs": {
+        "rioCode": "1001O4734",
+        "isat": "35201",
+        "instCode": "31FR"
+      }
+    },
+    {
+      "id": "1001O4734",
+      "name": "Opleiding tot leraar voortgezet onderwijs van de tweede graad in Aardrijkskunde",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "parttime"
+      ],
+      "isVariant": false,
+      "discipline": "ONDERWIJS",
+      "city": "GRONINGEN",
+      "externalRefs": {
+        "rioCode": "1001O4734",
+        "isat": "35201",
+        "instCode": "31FR"
+      }
+    },
+    {
+      "id": "1001O4734",
+      "name": "Opleiding tot leraar voortgezet onderwijs van de tweede graad in Aardrijkskunde",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "ONDERWIJS",
+      "city": "GRONINGEN",
+      "externalRefs": {
+        "rioCode": "1001O4734",
+        "isat": "35201",
+        "instCode": "31FR"
+      }
+    },
+    {
+      "id": "1001O4862",
+      "name": "Opleiding tot leraar voortgezet onderwijs van de tweede graad in Biologie",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "parttime"
+      ],
+      "isVariant": false,
+      "discipline": "ONDERWIJS",
+      "city": "LEEUWARDEN",
+      "externalRefs": {
+        "rioCode": "1001O4862",
+        "isat": "35301",
+        "instCode": "31FR"
+      }
+    },
+    {
+      "id": "1001O4862",
+      "name": "Opleiding tot leraar voortgezet onderwijs van de tweede graad in Biologie",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "ONDERWIJS",
+      "city": "LEEUWARDEN",
+      "externalRefs": {
+        "rioCode": "1001O4862",
+        "isat": "35301",
+        "instCode": "31FR"
+      }
+    },
+    {
+      "id": "1001O4862",
+      "name": "Opleiding tot leraar voortgezet onderwijs van de tweede graad in Biologie",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "parttime"
+      ],
+      "isVariant": false,
+      "discipline": "ONDERWIJS",
+      "city": "GRONINGEN",
+      "externalRefs": {
+        "rioCode": "1001O4862",
+        "isat": "35301",
+        "instCode": "31FR"
+      }
+    },
+    {
+      "id": "1001O4862",
+      "name": "Opleiding tot leraar voortgezet onderwijs van de tweede graad in Biologie",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "ONDERWIJS",
+      "city": "GRONINGEN",
+      "externalRefs": {
+        "rioCode": "1001O4862",
+        "isat": "35301",
+        "instCode": "31FR"
+      }
+    },
+    {
+      "id": "1001O4632",
+      "name": "Opleiding tot leraar voortgezet onderwijs van de tweede graad in Duits",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "parttime"
+      ],
+      "isVariant": false,
+      "discipline": "ONDERWIJS",
+      "city": "LEEUWARDEN",
+      "externalRefs": {
+        "rioCode": "1001O4632",
+        "isat": "35193",
+        "instCode": "31FR"
+      }
+    },
+    {
+      "id": "1001O4632",
+      "name": "Opleiding tot leraar voortgezet onderwijs van de tweede graad in Duits",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "ONDERWIJS",
+      "city": "LEEUWARDEN",
+      "externalRefs": {
+        "rioCode": "1001O4632",
+        "isat": "35193",
+        "instCode": "31FR"
+      }
+    },
+    {
+      "id": "1001O4632",
+      "name": "Opleiding tot leraar voortgezet onderwijs van de tweede graad in Duits",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "parttime"
+      ],
+      "isVariant": false,
+      "discipline": "ONDERWIJS",
+      "city": "GRONINGEN",
+      "externalRefs": {
+        "rioCode": "1001O4632",
+        "isat": "35193",
+        "instCode": "31FR"
+      }
+    },
+    {
+      "id": "1001O4632",
+      "name": "Opleiding tot leraar voortgezet onderwijs van de tweede graad in Duits",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "ONDERWIJS",
+      "city": "GRONINGEN",
+      "externalRefs": {
+        "rioCode": "1001O4632",
+        "isat": "35193",
+        "instCode": "31FR"
+      }
+    },
+    {
+      "id": "1001O4787",
+      "name": "Opleiding tot leraar voortgezet onderwijs van de tweede graad in Economie",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "parttime"
+      ],
+      "isVariant": false,
+      "discipline": "ONDERWIJS",
+      "city": "LEEUWARDEN",
+      "externalRefs": {
+        "rioCode": "1001O4787",
+        "isat": "35207",
+        "instCode": "31FR"
+      }
+    },
+    {
+      "id": "1001O4787",
+      "name": "Opleiding tot leraar voortgezet onderwijs van de tweede graad in Economie",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "ONDERWIJS",
+      "city": "LEEUWARDEN",
+      "externalRefs": {
+        "rioCode": "1001O4787",
+        "isat": "35207",
+        "instCode": "31FR"
+      }
+    },
+    {
+      "id": "1001O4787",
+      "name": "Opleiding tot leraar voortgezet onderwijs van de tweede graad in Economie",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "parttime"
+      ],
+      "isVariant": false,
+      "discipline": "ONDERWIJS",
+      "city": "GRONINGEN",
+      "externalRefs": {
+        "rioCode": "1001O4787",
+        "isat": "35207",
+        "instCode": "31FR"
+      }
+    },
+    {
+      "id": "1001O4787",
+      "name": "Opleiding tot leraar voortgezet onderwijs van de tweede graad in Economie",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "ONDERWIJS",
+      "city": "GRONINGEN",
+      "externalRefs": {
+        "rioCode": "1001O4787",
+        "isat": "35207",
+        "instCode": "31FR"
+      }
+    },
+    {
+      "id": "1001O4651",
+      "name": "Opleiding tot leraar voortgezet onderwijs van de tweede graad in Engels",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "parttime"
+      ],
+      "isVariant": false,
+      "discipline": "ONDERWIJS",
+      "city": "LEEUWARDEN",
+      "externalRefs": {
+        "rioCode": "1001O4651",
+        "isat": "35195",
+        "instCode": "31FR"
+      }
+    },
+    {
+      "id": "1001O4651",
+      "name": "Opleiding tot leraar voortgezet onderwijs van de tweede graad in Engels",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "ONDERWIJS",
+      "city": "LEEUWARDEN",
+      "externalRefs": {
+        "rioCode": "1001O4651",
+        "isat": "35195",
+        "instCode": "31FR"
+      }
+    },
+    {
+      "id": "1001O4651",
+      "name": "Opleiding tot leraar voortgezet onderwijs van de tweede graad in Engels",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "parttime"
+      ],
+      "isVariant": false,
+      "discipline": "ONDERWIJS",
+      "city": "GRONINGEN",
+      "externalRefs": {
+        "rioCode": "1001O4651",
+        "isat": "35195",
+        "instCode": "31FR"
+      }
+    },
+    {
+      "id": "1001O4651",
+      "name": "Opleiding tot leraar voortgezet onderwijs van de tweede graad in Engels",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "ONDERWIJS",
+      "city": "GRONINGEN",
+      "externalRefs": {
+        "rioCode": "1001O4651",
+        "isat": "35195",
+        "instCode": "31FR"
+      }
+    },
+    {
+      "id": "1001O4666",
+      "name": "Opleiding tot leraar voortgezet onderwijs van de tweede graad in Frans",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "parttime"
+      ],
+      "isVariant": false,
+      "discipline": "ONDERWIJS",
+      "city": "LEEUWARDEN",
+      "externalRefs": {
+        "rioCode": "1001O4666",
+        "isat": "35196",
+        "instCode": "31FR"
+      }
+    },
+    {
+      "id": "1001O4666",
+      "name": "Opleiding tot leraar voortgezet onderwijs van de tweede graad in Frans",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "ONDERWIJS",
+      "city": "LEEUWARDEN",
+      "externalRefs": {
+        "rioCode": "1001O4666",
+        "isat": "35196",
+        "instCode": "31FR"
+      }
+    },
+    {
+      "id": "1001O4666",
+      "name": "Opleiding tot leraar voortgezet onderwijs van de tweede graad in Frans",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "parttime"
+      ],
+      "isVariant": false,
+      "discipline": "ONDERWIJS",
+      "city": "GRONINGEN",
+      "externalRefs": {
+        "rioCode": "1001O4666",
+        "isat": "35196",
+        "instCode": "31FR"
+      }
+    },
+    {
+      "id": "1001O4666",
+      "name": "Opleiding tot leraar voortgezet onderwijs van de tweede graad in Frans",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "ONDERWIJS",
+      "city": "GRONINGEN",
+      "externalRefs": {
+        "rioCode": "1001O4666",
+        "isat": "35196",
+        "instCode": "31FR"
+      }
+    },
+    {
+      "id": "1001O4560",
+      "name": "Opleiding tot leraar voortgezet onderwijs van de tweede graad in Fries",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "parttime"
+      ],
+      "isVariant": false,
+      "discipline": "ONDERWIJS",
+      "city": "LEEUWARDEN",
+      "externalRefs": {
+        "rioCode": "1001O4560",
+        "isat": "35144",
+        "instCode": "31FR"
+      }
+    },
+    {
+      "id": "1001O4560",
+      "name": "Opleiding tot leraar voortgezet onderwijs van de tweede graad in Fries",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "ONDERWIJS",
+      "city": "LEEUWARDEN",
+      "externalRefs": {
+        "rioCode": "1001O4560",
+        "isat": "35144",
+        "instCode": "31FR"
+      }
+    },
+    {
+      "id": "1001O4685",
+      "name": "Opleiding tot leraar voortgezet onderwijs van de tweede graad in Geschiedenis",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "parttime"
+      ],
+      "isVariant": false,
+      "discipline": "ONDERWIJS",
+      "city": "LEEUWARDEN",
+      "externalRefs": {
+        "rioCode": "1001O4685",
+        "isat": "35197",
+        "instCode": "31FR"
+      }
+    },
+    {
+      "id": "1001O4685",
+      "name": "Opleiding tot leraar voortgezet onderwijs van de tweede graad in Geschiedenis",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "ONDERWIJS",
+      "city": "LEEUWARDEN",
+      "externalRefs": {
+        "rioCode": "1001O4685",
+        "isat": "35197",
+        "instCode": "31FR"
+      }
+    },
+    {
+      "id": "1001O4685",
+      "name": "Opleiding tot leraar voortgezet onderwijs van de tweede graad in Geschiedenis",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "parttime"
+      ],
+      "isVariant": false,
+      "discipline": "ONDERWIJS",
+      "city": "GRONINGEN",
+      "externalRefs": {
+        "rioCode": "1001O4685",
+        "isat": "35197",
+        "instCode": "31FR"
+      }
+    },
+    {
+      "id": "1001O4685",
+      "name": "Opleiding tot leraar voortgezet onderwijs van de tweede graad in Geschiedenis",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "ONDERWIJS",
+      "city": "GRONINGEN",
+      "externalRefs": {
+        "rioCode": "1001O4685",
+        "isat": "35197",
+        "instCode": "31FR"
+      }
+    },
+    {
+      "id": "1001O4928",
+      "name": "Opleiding tot leraar voortgezet onderwijs van de tweede graad in Gezondheidszorg en Welzijn",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "parttime"
+      ],
+      "isVariant": false,
+      "discipline": "ONDERWIJS",
+      "city": "LEEUWARDEN",
+      "externalRefs": {
+        "rioCode": "1001O4928",
+        "isat": "35388",
+        "instCode": "31FR"
+      }
+    },
+    {
+      "id": "1001O4928",
+      "name": "Opleiding tot leraar voortgezet onderwijs van de tweede graad in Gezondheidszorg en Welzijn",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "ONDERWIJS",
+      "city": "LEEUWARDEN",
+      "externalRefs": {
+        "rioCode": "1001O4928",
+        "isat": "35388",
+        "instCode": "31FR"
+      }
+    },
+    {
+      "id": "1001O4928",
+      "name": "Opleiding tot leraar voortgezet onderwijs van de tweede graad in Gezondheidszorg en Welzijn",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "parttime"
+      ],
+      "isVariant": false,
+      "discipline": "ONDERWIJS",
+      "city": "GRONINGEN",
+      "externalRefs": {
+        "rioCode": "1001O4928",
+        "isat": "35388",
+        "instCode": "31FR"
+      }
+    },
+    {
+      "id": "1001O4928",
+      "name": "Opleiding tot leraar voortgezet onderwijs van de tweede graad in Gezondheidszorg en Welzijn",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "ONDERWIJS",
+      "city": "GRONINGEN",
+      "externalRefs": {
+        "rioCode": "1001O4928",
+        "isat": "35388",
+        "instCode": "31FR"
+      }
+    },
+    {
+      "id": "1001O4953",
+      "name": "Opleiding tot leraar voortgezet onderwijs van de tweede graad in Maatschappijleer",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "parttime"
+      ],
+      "isVariant": false,
+      "discipline": "ONDERWIJS",
+      "city": "LEEUWARDEN",
+      "externalRefs": {
+        "rioCode": "1001O4953",
+        "isat": "35411",
+        "instCode": "31FR"
+      }
+    },
+    {
+      "id": "1001O4953",
+      "name": "Opleiding tot leraar voortgezet onderwijs van de tweede graad in Maatschappijleer",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "ONDERWIJS",
+      "city": "LEEUWARDEN",
+      "externalRefs": {
+        "rioCode": "1001O4953",
+        "isat": "35411",
+        "instCode": "31FR"
+      }
+    },
+    {
+      "id": "1001O4953",
+      "name": "Opleiding tot leraar voortgezet onderwijs van de tweede graad in Maatschappijleer",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "parttime"
+      ],
+      "isVariant": false,
+      "discipline": "ONDERWIJS",
+      "city": "GRONINGEN",
+      "externalRefs": {
+        "rioCode": "1001O4953",
+        "isat": "35411",
+        "instCode": "31FR"
+      }
+    },
+    {
+      "id": "1001O4953",
+      "name": "Opleiding tot leraar voortgezet onderwijs van de tweede graad in Maatschappijleer",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "ONDERWIJS",
+      "city": "GRONINGEN",
+      "externalRefs": {
+        "rioCode": "1001O4953",
+        "isat": "35411",
+        "instCode": "31FR"
+      }
+    },
+    {
+      "id": "1001O4847",
+      "name": "Opleiding tot leraar voortgezet onderwijs van de tweede graad in Natuurkunde",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "parttime"
+      ],
+      "isVariant": false,
+      "discipline": "ONDERWIJS",
+      "city": "LEEUWARDEN",
+      "externalRefs": {
+        "rioCode": "1001O4847",
+        "isat": "35261",
+        "instCode": "31FR"
+      }
+    },
+    {
+      "id": "1001O4847",
+      "name": "Opleiding tot leraar voortgezet onderwijs van de tweede graad in Natuurkunde",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "ONDERWIJS",
+      "city": "LEEUWARDEN",
+      "externalRefs": {
+        "rioCode": "1001O4847",
+        "isat": "35261",
+        "instCode": "31FR"
+      }
+    },
+    {
+      "id": "1001O4703",
+      "name": "Opleiding tot leraar voortgezet onderwijs van de tweede graad in Nederlands",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "parttime"
+      ],
+      "isVariant": false,
+      "discipline": "ONDERWIJS",
+      "city": "LEEUWARDEN",
+      "externalRefs": {
+        "rioCode": "1001O4703",
+        "isat": "35198",
+        "instCode": "31FR"
+      }
+    },
+    {
+      "id": "1001O4703",
+      "name": "Opleiding tot leraar voortgezet onderwijs van de tweede graad in Nederlands",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "ONDERWIJS",
+      "city": "LEEUWARDEN",
+      "externalRefs": {
+        "rioCode": "1001O4703",
+        "isat": "35198",
+        "instCode": "31FR"
+      }
+    },
+    {
+      "id": "1001O4703",
+      "name": "Opleiding tot leraar voortgezet onderwijs van de tweede graad in Nederlands",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "parttime"
+      ],
+      "isVariant": false,
+      "discipline": "ONDERWIJS",
+      "city": "GRONINGEN",
+      "externalRefs": {
+        "rioCode": "1001O4703",
+        "isat": "35198",
+        "instCode": "31FR"
+      }
+    },
+    {
+      "id": "1001O4703",
+      "name": "Opleiding tot leraar voortgezet onderwijs van de tweede graad in Nederlands",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "ONDERWIJS",
+      "city": "GRONINGEN",
+      "externalRefs": {
+        "rioCode": "1001O4703",
+        "isat": "35198",
+        "instCode": "31FR"
+      }
+    },
+    {
+      "id": "1001O4959",
+      "name": "Opleiding tot leraar voortgezet onderwijs van de tweede graad in omgangskunde",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "parttime"
+      ],
+      "isVariant": false,
+      "discipline": "ONDERWIJS",
+      "city": "LEEUWARDEN",
+      "externalRefs": {
+        "rioCode": "1001O4959",
+        "isat": "35421",
+        "instCode": "31FR"
+      }
+    },
+    {
+      "id": "1001O4959",
+      "name": "Opleiding tot leraar voortgezet onderwijs van de tweede graad in omgangskunde",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "ONDERWIJS",
+      "city": "LEEUWARDEN",
+      "externalRefs": {
+        "rioCode": "1001O4959",
+        "isat": "35421",
+        "instCode": "31FR"
+      }
+    },
+    {
+      "id": "1001O4959",
+      "name": "Opleiding tot leraar voortgezet onderwijs van de tweede graad in omgangskunde",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "parttime"
+      ],
+      "isVariant": false,
+      "discipline": "ONDERWIJS",
+      "city": "GRONINGEN",
+      "externalRefs": {
+        "rioCode": "1001O4959",
+        "isat": "35421",
+        "instCode": "31FR"
+      }
+    },
+    {
+      "id": "1001O4959",
+      "name": "Opleiding tot leraar voortgezet onderwijs van de tweede graad in omgangskunde",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "ONDERWIJS",
+      "city": "GRONINGEN",
+      "externalRefs": {
+        "rioCode": "1001O4959",
+        "isat": "35421",
+        "instCode": "31FR"
+      }
+    },
+    {
+      "id": "1001O4717",
+      "name": "Opleiding tot leraar voortgezet onderwijs van de tweede graad in Scheikunde",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "parttime"
+      ],
+      "isVariant": false,
+      "discipline": "ONDERWIJS",
+      "city": "LEEUWARDEN",
+      "externalRefs": {
+        "rioCode": "1001O4717",
+        "isat": "35199",
+        "instCode": "31FR"
+      }
+    },
+    {
+      "id": "1001O4717",
+      "name": "Opleiding tot leraar voortgezet onderwijs van de tweede graad in Scheikunde",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "ONDERWIJS",
+      "city": "LEEUWARDEN",
+      "externalRefs": {
+        "rioCode": "1001O4717",
+        "isat": "35199",
+        "instCode": "31FR"
+      }
+    },
+    {
+      "id": "1001O4717",
+      "name": "Opleiding tot leraar voortgezet onderwijs van de tweede graad in Scheikunde",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "parttime"
+      ],
+      "isVariant": false,
+      "discipline": "ONDERWIJS",
+      "city": "GRONINGEN",
+      "externalRefs": {
+        "rioCode": "1001O4717",
+        "isat": "35199",
+        "instCode": "31FR"
+      }
+    },
+    {
+      "id": "1001O4717",
+      "name": "Opleiding tot leraar voortgezet onderwijs van de tweede graad in Scheikunde",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "ONDERWIJS",
+      "city": "GRONINGEN",
+      "externalRefs": {
+        "rioCode": "1001O4717",
+        "isat": "35199",
+        "instCode": "31FR"
+      }
+    },
+    {
+      "id": "1001O4811",
+      "name": "Opleiding tot leraar voortgezet onderwijs van de tweede graad in Wiskunde",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "parttime"
+      ],
+      "isVariant": false,
+      "discipline": "ONDERWIJS",
+      "city": "LEEUWARDEN",
+      "externalRefs": {
+        "rioCode": "1001O4811",
+        "isat": "35221",
+        "instCode": "31FR"
+      }
+    },
+    {
+      "id": "1001O4811",
+      "name": "Opleiding tot leraar voortgezet onderwijs van de tweede graad in Wiskunde",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "ONDERWIJS",
+      "city": "LEEUWARDEN",
+      "externalRefs": {
+        "rioCode": "1001O4811",
+        "isat": "35221",
+        "instCode": "31FR"
+      }
+    },
+    {
+      "id": "1001O4811",
+      "name": "Opleiding tot leraar voortgezet onderwijs van de tweede graad in Wiskunde",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "parttime"
+      ],
+      "isVariant": false,
+      "discipline": "ONDERWIJS",
+      "city": "GRONINGEN",
+      "externalRefs": {
+        "rioCode": "1001O4811",
+        "isat": "35221",
+        "instCode": "31FR"
+      }
+    },
+    {
+      "id": "1001O4811",
+      "name": "Opleiding tot leraar voortgezet onderwijs van de tweede graad in Wiskunde",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "ONDERWIJS",
+      "city": "GRONINGEN",
+      "externalRefs": {
+        "rioCode": "1001O4811",
+        "isat": "35221",
+        "instCode": "31FR"
+      }
+    },
+    {
+      "id": "1001O4026",
+      "name": "Opleiding tot Verpleegkundige",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "parttime"
+      ],
+      "isVariant": false,
+      "discipline": "GEZONDHEIDSZORG",
+      "city": "LEEUWARDEN",
+      "externalRefs": {
+        "rioCode": "1001O4026",
+        "isat": "34560",
+        "instCode": "31FR"
+      }
+    },
+    {
+      "id": "1001O4026",
+      "name": "Opleiding tot Verpleegkundige",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "GEZONDHEIDSZORG",
+      "city": "LEEUWARDEN",
+      "externalRefs": {
+        "rioCode": "1001O4026",
+        "isat": "34560",
+        "instCode": "31FR"
+      }
+    },
+    {
+      "id": "1001O4594",
+      "name": "Pedagogiek",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "parttime"
+      ],
+      "isVariant": false,
+      "discipline": "GEDRAG_EN_MAATSCHAPPIJ",
+      "city": "LEEUWARDEN",
+      "externalRefs": {
+        "rioCode": "1001O4594",
+        "isat": "35158",
+        "instCode": "31FR"
+      }
+    },
+    {
+      "id": "1001O4594",
+      "name": "Pedagogiek",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "dual"
+      ],
+      "isVariant": false,
+      "discipline": "GEDRAG_EN_MAATSCHAPPIJ",
+      "city": "LEEUWARDEN",
+      "externalRefs": {
+        "rioCode": "1001O4594",
+        "isat": "35158",
+        "instCode": "31FR"
+      }
+    },
+    {
+      "id": "1001O4594",
+      "name": "Pedagogiek",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "GEDRAG_EN_MAATSCHAPPIJ",
+      "city": "LEEUWARDEN",
+      "externalRefs": {
+        "rioCode": "1001O4594",
+        "isat": "35158",
+        "instCode": "31FR"
+      }
+    },
+    {
+      "id": "1001O2727",
+      "name": "Ruimtelijke Ontwikkeling",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "TECHNIEK",
+      "city": "LEEUWARDEN",
+      "externalRefs": {
+        "rioCode": "1001O2727",
+        "isat": "30038",
+        "instCode": "31FR"
+      }
+    },
+    {
+      "id": "1001O2939",
+      "name": "Social Work",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "parttime"
+      ],
+      "isVariant": false,
+      "discipline": "GEDRAG_EN_MAATSCHAPPIJ",
+      "city": "LEEUWARDEN",
+      "externalRefs": {
+        "rioCode": "1001O2939",
+        "isat": "34116",
+        "instCode": "31FR"
+      }
+    },
+    {
+      "id": "1001O2939",
+      "name": "Social Work",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "dual"
+      ],
+      "isVariant": false,
+      "discipline": "GEDRAG_EN_MAATSCHAPPIJ",
+      "city": "LEEUWARDEN",
+      "externalRefs": {
+        "rioCode": "1001O2939",
+        "isat": "34116",
+        "instCode": "31FR"
+      }
+    },
+    {
+      "id": "1001O2939",
+      "name": "Social Work",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "GEDRAG_EN_MAATSCHAPPIJ",
+      "city": "LEEUWARDEN",
+      "externalRefs": {
+        "rioCode": "1001O2939",
+        "isat": "34116",
+        "instCode": "31FR"
+      }
+    },
+    {
+      "id": "1001O3683",
+      "name": "Technische Bedrijfskunde",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "parttime"
+      ],
+      "isVariant": false,
+      "discipline": "TECHNIEK",
+      "city": "LEEUWARDEN",
+      "externalRefs": {
+        "rioCode": "1001O3683",
+        "isat": "34421",
+        "instCode": "31FR"
+      }
+    },
+    {
+      "id": "1001O3683",
+      "name": "Technische Bedrijfskunde",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "TECHNIEK",
+      "city": "LEEUWARDEN",
+      "externalRefs": {
+        "rioCode": "1001O3683",
+        "isat": "34421",
+        "instCode": "31FR"
+      }
+    },
+    {
+      "id": "1001O3864",
+      "name": "Technische Informatica",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "TECHNIEK",
+      "city": "EMMEN",
+      "externalRefs": {
+        "rioCode": "1001O3864",
+        "isat": "34475",
+        "instCode": "31FR"
+      }
+    },
+    {
+      "id": "1001O4607",
+      "name": "Toegepaste Wiskunde",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "TECHNIEK",
+      "city": "LEEUWARDEN",
+      "externalRefs": {
+        "rioCode": "1001O4607",
+        "isat": "35168",
+        "instCode": "31FR"
+      }
+    },
+    {
+      "id": "1001O5069",
+      "name": "Tourism Management",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "ECONOMIE",
+      "city": "LEEUWARDEN",
+      "externalRefs": {
+        "rioCode": "1001O5069",
+        "isat": "35524",
+        "instCode": "31FR"
+      }
+    },
+    {
+      "id": "1001O4260",
+      "name": "Vaktherapie",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "GEZONDHEIDSZORG",
+      "city": "LEEUWARDEN",
+      "externalRefs": {
+        "rioCode": "1001O4260",
+        "isat": "34644",
+        "instCode": "31FR"
+      }
+    },
+    {
+      "id": "1001O3215",
+      "name": "Werktuigbouwkunde",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "TECHNIEK",
+      "city": "LEEUWARDEN",
+      "externalRefs": {
+        "rioCode": "1001O3215",
+        "isat": "34280",
+        "instCode": "31FR"
+      }
+    },
+    {
+      "id": "1001O3215",
+      "name": "Werktuigbouwkunde",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "TECHNIEK",
+      "city": "EMMEN",
+      "externalRefs": {
+        "rioCode": "1001O3215",
+        "isat": "34280",
+        "instCode": "31FR"
+      }
+    }
+  ],
+  "premaster": [
+    {
+      "id": "1001O8047",
+      "name": "Polymer Engineering (joint degree)",
+      "level": "premaster",
+      "sector": "hbo",
+      "modes": [
+        "parttime"
+      ],
+      "isVariant": false,
+      "discipline": "TECHNIEK",
+      "city": "EMMEN",
+      "externalRefs": {
+        "rioCode": "1001O8047",
+        "isat": "70178",
+        "instCode": "31FR"
+      }
+    }
+  ],
+  "master": [
+    {
+      "id": "1001O5604",
+      "name": "Computer Vision & Data Science",
+      "level": "master",
+      "sector": "hbo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "TECHNIEK",
+      "city": "LEEUWARDEN",
+      "externalRefs": {
+        "rioCode": "1001O5604",
+        "isat": "49397",
+        "instCode": "31FR"
+      }
+    },
+    {
+      "id": "1001O5475",
+      "name": "Content & Media Strategy",
+      "level": "master",
+      "sector": "hbo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "ECONOMIE",
+      "city": "LEEUWARDEN",
+      "externalRefs": {
+        "rioCode": "1001O5475",
+        "isat": "45284",
+        "instCode": "31FR"
+      }
+    },
+    {
+      "id": "1001O5597",
+      "name": "Design Driven Innovation",
+      "level": "master",
+      "sector": "hbo",
+      "modes": [
+        "parttime"
+      ],
+      "isVariant": false,
+      "discipline": "SECTOROVERSTIJGEND",
+      "city": "LEEUWARDEN",
+      "externalRefs": {
+        "rioCode": "1001O5597",
+        "isat": "49302",
+        "instCode": "31FR"
+      }
+    },
+    {
+      "id": "1001O5597",
+      "name": "Design Driven Innovation",
+      "level": "master",
+      "sector": "hbo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "SECTOROVERSTIJGEND",
+      "city": "LEEUWARDEN",
+      "externalRefs": {
+        "rioCode": "1001O5597",
+        "isat": "49302",
+        "instCode": "31FR"
+      }
+    },
+    {
+      "id": "1001O5322",
+      "name": "Health Innovation",
+      "level": "master",
+      "sector": "hbo",
+      "modes": [
+        "parttime"
+      ],
+      "isVariant": false,
+      "discipline": "GEZONDHEIDSZORG",
+      "city": "LEEUWARDEN",
+      "externalRefs": {
+        "rioCode": "1001O5322",
+        "isat": "40120",
+        "instCode": "31FR"
+      }
+    },
+    {
+      "id": "1001O5322",
+      "name": "Health Innovation",
+      "level": "master",
+      "sector": "hbo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "GEZONDHEIDSZORG",
+      "city": "LEEUWARDEN",
+      "externalRefs": {
+        "rioCode": "1001O5322",
+        "isat": "40120",
+        "instCode": "31FR"
+      }
+    },
+    {
+      "id": "1001O5540",
+      "name": "International Leisure, Tourism & Events Management",
+      "level": "master",
+      "sector": "hbo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "ECONOMIE",
+      "city": "LEEUWARDEN",
+      "externalRefs": {
+        "rioCode": "1001O5540",
+        "isat": "49135",
+        "instCode": "31FR"
+      }
+    },
+    {
+      "id": "1001O5608",
+      "name": "Kunsteducatie (joint degree)",
+      "level": "master",
+      "sector": "hbo",
+      "modes": [
+        "parttime"
+      ],
+      "isVariant": false,
+      "discipline": "ONDERWIJS",
+      "subDiscipline": "LERARENOPLEIDINGEN_OP_HET_GEBIED_VAN_DE_KUNST",
+      "city": "GRONINGEN",
+      "externalRefs": {
+        "rioCode": "1001O5608",
+        "isat": "49501",
+        "instCode": "31FR"
+      }
+    },
+    {
+      "id": "1001O5357",
+      "name": "Learning & Innovation",
+      "level": "master",
+      "sector": "hbo",
+      "modes": [
+        "parttime"
+      ],
+      "isVariant": false,
+      "discipline": "ONDERWIJS",
+      "city": "LEEUWARDEN",
+      "externalRefs": {
+        "rioCode": "1001O5357",
+        "isat": "44136",
+        "instCode": "31FR"
+      }
+    },
+    {
+      "id": "1001O5467",
+      "name": "Leraar Algemene Economie",
+      "level": "master",
+      "sector": "hbo",
+      "modes": [
+        "parttime"
+      ],
+      "isVariant": false,
+      "discipline": "ONDERWIJS",
+      "city": "GRONINGEN",
+      "externalRefs": {
+        "rioCode": "1001O5467",
+        "isat": "45275",
+        "instCode": "31FR"
+      }
+    },
+    {
+      "id": "1001O5425",
+      "name": "Leraar Duits",
+      "level": "master",
+      "sector": "hbo",
+      "modes": [
+        "parttime"
+      ],
+      "isVariant": false,
+      "discipline": "ONDERWIJS",
+      "city": "GRONINGEN",
+      "externalRefs": {
+        "rioCode": "1001O5425",
+        "isat": "45265",
+        "instCode": "31FR"
+      }
+    },
+    {
+      "id": "1001O5409",
+      "name": "Leraar Engels",
+      "level": "master",
+      "sector": "hbo",
+      "modes": [
+        "parttime"
+      ],
+      "isVariant": false,
+      "discipline": "ONDERWIJS",
+      "city": "GRONINGEN",
+      "externalRefs": {
+        "rioCode": "1001O5409",
+        "isat": "45262",
+        "instCode": "31FR"
+      }
+    },
+    {
+      "id": "1001O5469",
+      "name": "Leraar Fries",
+      "level": "master",
+      "sector": "hbo",
+      "modes": [
+        "parttime"
+      ],
+      "isVariant": false,
+      "discipline": "ONDERWIJS",
+      "city": "GRONINGEN",
+      "externalRefs": {
+        "rioCode": "1001O5469",
+        "isat": "45276",
+        "instCode": "31FR"
+      }
+    },
+    {
+      "id": "1001O5452",
+      "name": "Leraar Natuurkunde",
+      "level": "master",
+      "sector": "hbo",
+      "modes": [
+        "parttime"
+      ],
+      "isVariant": false,
+      "discipline": "ONDERWIJS",
+      "city": "GRONINGEN",
+      "externalRefs": {
+        "rioCode": "1001O5452",
+        "isat": "45272",
+        "instCode": "31FR"
+      }
+    },
+    {
+      "id": "1001O5444",
+      "name": "Leraar Nederlands",
+      "level": "master",
+      "sector": "hbo",
+      "modes": [
+        "parttime"
+      ],
+      "isVariant": false,
+      "discipline": "ONDERWIJS",
+      "city": "GRONINGEN",
+      "externalRefs": {
+        "rioCode": "1001O5444",
+        "isat": "45269",
+        "instCode": "31FR"
+      }
+    },
+    {
+      "id": "1001O5417",
+      "name": "Leraar Wiskunde",
+      "level": "master",
+      "sector": "hbo",
+      "modes": [
+        "parttime"
+      ],
+      "isVariant": false,
+      "discipline": "ONDERWIJS",
+      "city": "GRONINGEN",
+      "externalRefs": {
+        "rioCode": "1001O5417",
+        "isat": "45263",
+        "instCode": "31FR"
+      }
+    },
+    {
+      "id": "1001O5524",
+      "name": "Maritime Innovations",
+      "level": "master",
+      "sector": "hbo",
+      "modes": [
+        "parttime"
+      ],
+      "isVariant": false,
+      "discipline": "TECHNIEK",
+      "city": "WEST-TERSCHELLING",
+      "externalRefs": {
+        "rioCode": "1001O5524",
+        "isat": "49122",
+        "instCode": "31FR"
+      }
+    },
+    {
+      "id": "1001O5591",
+      "name": "Master Educational Leadership",
+      "level": "master",
+      "sector": "hbo",
+      "modes": [
+        "parttime"
+      ],
+      "isVariant": false,
+      "discipline": "ONDERWIJS",
+      "city": "LEEUWARDEN",
+      "externalRefs": {
+        "rioCode": "1001O5591",
+        "isat": "49295",
+        "instCode": "31FR"
+      }
+    },
+    {
+      "id": "1001O5342",
+      "name": "Pedagogiek",
+      "level": "master",
+      "sector": "hbo",
+      "modes": [
+        "parttime"
+      ],
+      "isVariant": false,
+      "discipline": "GEDRAG_EN_MAATSCHAPPIJ",
+      "city": "GRONINGEN",
+      "externalRefs": {
+        "rioCode": "1001O5342",
+        "isat": "44113",
+        "instCode": "31FR"
+      }
+    },
+    {
+      "id": "1001O5342",
+      "name": "Pedagogiek",
+      "level": "master",
+      "sector": "hbo",
+      "modes": [
+        "parttime"
+      ],
+      "isVariant": false,
+      "discipline": "GEDRAG_EN_MAATSCHAPPIJ",
+      "city": "MEPPEL",
+      "externalRefs": {
+        "rioCode": "1001O5342",
+        "isat": "44113",
+        "instCode": "31FR"
+      }
+    },
+    {
+      "id": "1001O8914",
+      "name": "Polymer Engineering (joint degree)",
+      "level": "master",
+      "sector": "hbo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "TECHNIEK",
+      "city": "EMMEN",
+      "externalRefs": {
+        "rioCode": "1001O8914",
+        "isat": "49508",
+        "instCode": "31FR"
+      }
+    },
+    {
+      "id": "1001O5529",
+      "name": "Serious Gaming",
+      "level": "master",
+      "sector": "hbo",
+      "modes": [
+        "parttime"
+      ],
+      "isVariant": false,
+      "discipline": "TECHNIEK",
+      "city": "LEEUWARDEN",
+      "externalRefs": {
+        "rioCode": "1001O5529",
+        "isat": "49126",
+        "instCode": "31FR"
+      }
+    },
+    {
+      "id": "1001O5529",
+      "name": "Serious Gaming",
+      "level": "master",
+      "sector": "hbo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "TECHNIEK",
+      "city": "LEEUWARDEN",
+      "externalRefs": {
+        "rioCode": "1001O5529",
+        "isat": "49126",
+        "instCode": "31FR"
+      }
+    },
+    {
+      "id": "1001O5605",
+      "name": "Social Work (joint degree)",
+      "level": "master",
+      "sector": "hbo",
+      "modes": [
+        "parttime"
+      ],
+      "isVariant": false,
+      "discipline": "GEDRAG_EN_MAATSCHAPPIJ",
+      "city": "LEEUWARDEN",
+      "externalRefs": {
+        "rioCode": "1001O5605",
+        "isat": "49500",
+        "instCode": "31FR"
+      }
+    },
+    {
+      "id": "1001O5605",
+      "name": "Social Work (joint degree)",
+      "level": "master",
+      "sector": "hbo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "GEDRAG_EN_MAATSCHAPPIJ",
+      "city": "LEEUWARDEN",
+      "externalRefs": {
+        "rioCode": "1001O5605",
+        "isat": "49500",
+        "instCode": "31FR"
+      }
+    },
+    {
+      "id": "1001O5605",
+      "name": "Social Work (joint degree)",
+      "level": "master",
+      "sector": "hbo",
+      "modes": [
+        "parttime"
+      ],
+      "isVariant": false,
+      "discipline": "GEDRAG_EN_MAATSCHAPPIJ",
+      "city": "GRONINGEN",
+      "externalRefs": {
+        "rioCode": "1001O5605",
+        "isat": "49500",
+        "instCode": "31FR"
+      }
+    },
+    {
+      "id": "1001O5605",
+      "name": "Social Work (joint degree)",
+      "level": "master",
+      "sector": "hbo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "GEDRAG_EN_MAATSCHAPPIJ",
+      "city": "GRONINGEN",
+      "externalRefs": {
+        "rioCode": "1001O5605",
+        "isat": "49500",
+        "instCode": "31FR"
+      }
+    },
+    {
+      "id": "1001O8868",
+      "name": "Strategische Communicatie (joint degree)",
+      "level": "master",
+      "sector": "hbo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "ECONOMIE",
+      "city": "LEEUWARDEN",
+      "externalRefs": {
+        "rioCode": "1001O8868",
+        "isat": "49507",
+        "instCode": "31FR"
+      }
+    },
+    {
+      "id": "1001O8751",
+      "name": "Sustainable Innovation in Hospitality",
+      "level": "master",
+      "sector": "hbo",
+      "modes": [
+        "parttime"
+      ],
+      "isVariant": false,
+      "discipline": "ECONOMIE",
+      "city": "LEEUWARDEN",
+      "externalRefs": {
+        "rioCode": "1001O8751",
+        "isat": "49158",
+        "instCode": "31FR"
+      }
+    },
+    {
+      "id": "1001O8751",
+      "name": "Sustainable Innovation in Hospitality",
+      "level": "master",
+      "sector": "hbo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "ECONOMIE",
+      "city": "LEEUWARDEN",
+      "externalRefs": {
+        "rioCode": "1001O8751",
+        "isat": "49158",
+        "instCode": "31FR"
+      }
+    }
+  ]
+}

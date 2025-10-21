@@ -1,0 +1,688 @@
+{
+  "bachelor": [
+    {
+      "id": "1001O2783",
+      "name": "Bedrijfskunde",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "parttime"
+      ],
+      "isVariant": false,
+      "discipline": "ECONOMIE",
+      "city": "VLISSINGEN",
+      "externalRefs": {
+        "rioCode": "1001O2783",
+        "isat": "34035",
+        "instCode": "21MI"
+      }
+    },
+    {
+      "id": "1001O2783",
+      "name": "Bedrijfskunde",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "ECONOMIE",
+      "city": "VLISSINGEN",
+      "externalRefs": {
+        "rioCode": "1001O2783",
+        "isat": "34035",
+        "instCode": "21MI"
+      }
+    },
+    {
+      "id": "1001O3049",
+      "name": "Bouwkunde",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "TECHNIEK",
+      "city": "MIDDELBURG",
+      "externalRefs": {
+        "rioCode": "1001O3049",
+        "isat": "34263",
+        "instCode": "21MI"
+      }
+    },
+    {
+      "id": "1001O3331",
+      "name": "Chemie",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "TECHNIEK",
+      "city": "MIDDELBURG",
+      "externalRefs": {
+        "rioCode": "1001O3331",
+        "isat": "34396",
+        "instCode": "21MI"
+      }
+    },
+    {
+      "id": "1001O3168",
+      "name": "Civiele Techniek",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "parttime"
+      ],
+      "isVariant": false,
+      "discipline": "TECHNIEK",
+      "city": "VLISSINGEN",
+      "externalRefs": {
+        "rioCode": "1001O3168",
+        "isat": "34279",
+        "instCode": "21MI"
+      }
+    },
+    {
+      "id": "1001O3168",
+      "name": "Civiele Techniek",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "TECHNIEK",
+      "city": "MIDDELBURG",
+      "externalRefs": {
+        "rioCode": "1001O3168",
+        "isat": "34279",
+        "instCode": "21MI"
+      }
+    },
+    {
+      "id": "1001O3419",
+      "name": "Commerciële Economie",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "ECONOMIE",
+      "city": "VLISSINGEN",
+      "externalRefs": {
+        "rioCode": "1001O3419",
+        "isat": "34402",
+        "instCode": "21MI"
+      }
+    },
+    {
+      "id": "1001O3497",
+      "name": "Communicatie",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "ECONOMIE",
+      "city": "VLISSINGEN",
+      "externalRefs": {
+        "rioCode": "1001O3497",
+        "isat": "34405",
+        "instCode": "21MI"
+      }
+    },
+    {
+      "id": "1001O2745",
+      "name": "Engineering",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "TECHNIEK",
+      "city": "MIDDELBURG",
+      "externalRefs": {
+        "rioCode": "1001O2745",
+        "isat": "30107",
+        "instCode": "21MI"
+      }
+    },
+    {
+      "id": "1001O5027",
+      "name": "Finance & Control",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "ECONOMIE",
+      "city": "VLISSINGEN",
+      "externalRefs": {
+        "rioCode": "1001O5027",
+        "isat": "35520",
+        "instCode": "21MI"
+      }
+    },
+    {
+      "id": "1001O2660",
+      "name": "Global Project and Change Management",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "SECTOROVERSTIJGEND",
+      "subDiscipline": "ONDERWIJS_LANDBOUW_EN_NATUURLIJKE_OMGEVING_NATUUR_TECHNIEK_GEZONDHEID",
+      "city": "MIDDELBURG",
+      "externalRefs": {
+        "rioCode": "1001O2660",
+        "isat": "30017",
+        "instCode": "21MI"
+      }
+    },
+    {
+      "id": "1001O2667",
+      "name": "HBO-ICT",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "parttime"
+      ],
+      "isVariant": false,
+      "discipline": "TECHNIEK",
+      "city": "MIDDELBURG",
+      "externalRefs": {
+        "rioCode": "1001O2667",
+        "isat": "30020",
+        "instCode": "21MI"
+      }
+    },
+    {
+      "id": "1001O2667",
+      "name": "HBO-ICT",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "TECHNIEK",
+      "city": "MIDDELBURG",
+      "externalRefs": {
+        "rioCode": "1001O2667",
+        "isat": "30020",
+        "instCode": "21MI"
+      }
+    },
+    {
+      "id": "1001O4121",
+      "name": "Human Resource Management",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "parttime"
+      ],
+      "isVariant": false,
+      "discipline": "ECONOMIE",
+      "city": "VLISSINGEN",
+      "externalRefs": {
+        "rioCode": "1001O4121",
+        "isat": "34609",
+        "instCode": "21MI"
+      }
+    },
+    {
+      "id": "1001O4121",
+      "name": "Human Resource Management",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "ECONOMIE",
+      "city": "VLISSINGEN",
+      "externalRefs": {
+        "rioCode": "1001O4121",
+        "isat": "34609",
+        "instCode": "21MI"
+      }
+    },
+    {
+      "id": "1016O2680",
+      "name": "ICT",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "parttime"
+      ],
+      "isVariant": false,
+      "discipline": "TECHNIEK",
+      "city": "MIDDELBURG",
+      "externalRefs": {
+        "rioCode": "1016O2680",
+        "isat": "30046",
+        "instCode": "21MI"
+      }
+    },
+    {
+      "id": "1016O2680",
+      "name": "ICT",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "TECHNIEK",
+      "city": "MIDDELBURG",
+      "externalRefs": {
+        "rioCode": "1016O2680",
+        "isat": "30046",
+        "instCode": "21MI"
+      }
+    },
+    {
+      "id": "1001O2694",
+      "name": "International Business",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "ECONOMIE",
+      "city": "VLISSINGEN",
+      "externalRefs": {
+        "rioCode": "1001O2694",
+        "isat": "30029",
+        "instCode": "21MI"
+      }
+    },
+    {
+      "id": "1001O3311",
+      "name": "Logistics Engineering",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "TECHNIEK",
+      "city": "VLISSINGEN",
+      "externalRefs": {
+        "rioCode": "1001O3311",
+        "isat": "34390",
+        "instCode": "21MI"
+      }
+    },
+    {
+      "id": "1001O3289",
+      "name": "Maritiem Officier",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "TECHNIEK",
+      "city": "VLISSINGEN",
+      "externalRefs": {
+        "rioCode": "1001O3289",
+        "isat": "34384",
+        "instCode": "21MI"
+      }
+    },
+    {
+      "id": "1001O4375",
+      "name": "Opleiding tot leraar Basisonderwijs",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "parttime"
+      ],
+      "isVariant": false,
+      "discipline": "ONDERWIJS",
+      "city": "VLISSINGEN",
+      "externalRefs": {
+        "rioCode": "1001O4375",
+        "isat": "34808",
+        "instCode": "21MI"
+      }
+    },
+    {
+      "id": "1001O4375",
+      "name": "Opleiding tot leraar Basisonderwijs",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "dual"
+      ],
+      "isVariant": false,
+      "discipline": "ONDERWIJS",
+      "city": "VLISSINGEN",
+      "externalRefs": {
+        "rioCode": "1001O4375",
+        "isat": "34808",
+        "instCode": "21MI"
+      }
+    },
+    {
+      "id": "1001O4375",
+      "name": "Opleiding tot leraar Basisonderwijs",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "ONDERWIJS",
+      "city": "VLISSINGEN",
+      "externalRefs": {
+        "rioCode": "1001O4375",
+        "isat": "34808",
+        "instCode": "21MI"
+      }
+    },
+    {
+      "id": "1001O4004",
+      "name": "Opleiding tot Verpleegkundige",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "parttime"
+      ],
+      "isVariant": false,
+      "discipline": "GEZONDHEIDSZORG",
+      "city": "VLISSINGEN",
+      "externalRefs": {
+        "rioCode": "1001O4004",
+        "isat": "34560",
+        "instCode": "21MI"
+      }
+    },
+    {
+      "id": "1001O4004",
+      "name": "Opleiding tot Verpleegkundige",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "dual"
+      ],
+      "isVariant": false,
+      "discipline": "GEZONDHEIDSZORG",
+      "city": "VLISSINGEN",
+      "externalRefs": {
+        "rioCode": "1001O4004",
+        "isat": "34560",
+        "instCode": "21MI"
+      }
+    },
+    {
+      "id": "1001O4004",
+      "name": "Opleiding tot Verpleegkundige",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "GEZONDHEIDSZORG",
+      "city": "VLISSINGEN",
+      "externalRefs": {
+        "rioCode": "1001O4004",
+        "isat": "34560",
+        "instCode": "21MI"
+      }
+    },
+    {
+      "id": "1001O4575",
+      "name": "Pedagogiek",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "parttime"
+      ],
+      "isVariant": false,
+      "discipline": "GEDRAG_EN_MAATSCHAPPIJ",
+      "city": "VLISSINGEN",
+      "externalRefs": {
+        "rioCode": "1001O4575",
+        "isat": "35158",
+        "instCode": "21MI"
+      }
+    },
+    {
+      "id": "1001O4575",
+      "name": "Pedagogiek",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "dual"
+      ],
+      "isVariant": false,
+      "discipline": "GEDRAG_EN_MAATSCHAPPIJ",
+      "city": "VLISSINGEN",
+      "externalRefs": {
+        "rioCode": "1001O4575",
+        "isat": "35158",
+        "instCode": "21MI"
+      }
+    },
+    {
+      "id": "1001O4575",
+      "name": "Pedagogiek",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "GEDRAG_EN_MAATSCHAPPIJ",
+      "city": "VLISSINGEN",
+      "externalRefs": {
+        "rioCode": "1001O4575",
+        "isat": "35158",
+        "instCode": "21MI"
+      }
+    },
+    {
+      "id": "1001O2922",
+      "name": "Social Work",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "parttime"
+      ],
+      "isVariant": false,
+      "discipline": "GEDRAG_EN_MAATSCHAPPIJ",
+      "city": "VLISSINGEN",
+      "externalRefs": {
+        "rioCode": "1001O2922",
+        "isat": "34116",
+        "instCode": "21MI"
+      }
+    },
+    {
+      "id": "1001O2922",
+      "name": "Social Work",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "dual"
+      ],
+      "isVariant": false,
+      "discipline": "GEDRAG_EN_MAATSCHAPPIJ",
+      "city": "VLISSINGEN",
+      "externalRefs": {
+        "rioCode": "1001O2922",
+        "isat": "34116",
+        "instCode": "21MI"
+      }
+    },
+    {
+      "id": "1001O2922",
+      "name": "Social Work",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "GEDRAG_EN_MAATSCHAPPIJ",
+      "city": "VLISSINGEN",
+      "externalRefs": {
+        "rioCode": "1001O2922",
+        "isat": "34116",
+        "instCode": "21MI"
+      }
+    },
+    {
+      "id": "1001O2809",
+      "name": "Sportkunde",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "GEDRAG_EN_MAATSCHAPPIJ",
+      "city": "VLISSINGEN",
+      "externalRefs": {
+        "rioCode": "1001O2809",
+        "isat": "34040",
+        "instCode": "21MI"
+      }
+    },
+    {
+      "id": "1001O3662",
+      "name": "Technische Bedrijfskunde",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "parttime"
+      ],
+      "isVariant": false,
+      "discipline": "TECHNIEK",
+      "city": "VLISSINGEN",
+      "externalRefs": {
+        "rioCode": "1001O3662",
+        "isat": "34421",
+        "instCode": "21MI"
+      }
+    },
+    {
+      "id": "1001O3662",
+      "name": "Technische Bedrijfskunde",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "TECHNIEK",
+      "city": "VLISSINGEN",
+      "externalRefs": {
+        "rioCode": "1001O3662",
+        "isat": "34421",
+        "instCode": "21MI"
+      }
+    },
+    {
+      "id": "1001O3662",
+      "name": "Technische Bedrijfskunde",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "TECHNIEK",
+      "city": "MIDDELBURG",
+      "externalRefs": {
+        "rioCode": "1001O3662",
+        "isat": "34421",
+        "instCode": "21MI"
+      }
+    },
+    {
+      "id": "1001O5065",
+      "name": "Tourism Management",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "ECONOMIE",
+      "city": "VLISSINGEN",
+      "externalRefs": {
+        "rioCode": "1001O5065",
+        "isat": "35524",
+        "instCode": "21MI"
+      }
+    },
+    {
+      "id": "1001O2869",
+      "name": "Watermanagement",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "TECHNIEK",
+      "city": "MIDDELBURG",
+      "externalRefs": {
+        "rioCode": "1001O2869",
+        "isat": "34074",
+        "instCode": "21MI"
+      }
+    }
+  ],
+  "premaster": [],
+  "master": [
+    {
+      "id": "1001O5615",
+      "name": "River Delta Development (joint degree)",
+      "level": "master",
+      "sector": "hbo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "TECHNIEK",
+      "city": "MIDDELBURG",
+      "externalRefs": {
+        "rioCode": "1001O5615",
+        "isat": "49504",
+        "instCode": "21MI"
+      }
+    },
+    {
+      "id": "1001O8858",
+      "name": "River Delta Development (joint degree)",
+      "level": "master",
+      "sector": "hbo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "TECHNIEK",
+      "city": "MIDDELBURG",
+      "externalRefs": {
+        "rioCode": "1001O8858",
+        "isat": "49506",
+        "instCode": "21MI"
+      }
+    }
+  ]
+}

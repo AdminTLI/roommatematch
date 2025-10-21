@@ -1,0 +1,972 @@
+{
+  "bachelor": [
+    {
+      "id": "1001O3546",
+      "name": "Accountancy",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "dual"
+      ],
+      "isVariant": false,
+      "discipline": "ECONOMIE",
+      "city": "SITTARD",
+      "externalRefs": {
+        "rioCode": "1001O3546",
+        "isat": "34406",
+        "instCode": "25JX"
+      }
+    },
+    {
+      "id": "1001O3546",
+      "name": "Accountancy",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "ECONOMIE",
+      "city": "SITTARD",
+      "externalRefs": {
+        "rioCode": "1001O3546",
+        "isat": "34406",
+        "instCode": "25JX"
+      }
+    },
+    {
+      "id": "1001O8907",
+      "name": "Applied Data Science & Artificial Intelligence",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "TECHNIEK",
+      "city": "MAASTRICHT",
+      "externalRefs": {
+        "rioCode": "1001O8907",
+        "isat": "39309",
+        "instCode": "25JX"
+      }
+    },
+    {
+      "id": "1001O2642",
+      "name": "Applied Science",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "TECHNIEK",
+      "city": "HEERLEN",
+      "externalRefs": {
+        "rioCode": "1001O2642",
+        "isat": "30008",
+        "instCode": "25JX"
+      }
+    },
+    {
+      "id": "1001O5098",
+      "name": "Autonome Beeldende Kunst",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "TAAL_EN_CULTUUR",
+      "subDiscipline": "OPLEIDINGEN_OP_HET_GEBIED_VAN_DE_KUNST",
+      "city": "MAASTRICHT",
+      "externalRefs": {
+        "rioCode": "1001O5098",
+        "isat": "39110",
+        "instCode": "25JX"
+      }
+    },
+    {
+      "id": "1001O5303",
+      "name": "Built Environment",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "TECHNIEK",
+      "city": "HEERLEN",
+      "externalRefs": {
+        "rioCode": "1001O5303",
+        "isat": "39280",
+        "instCode": "25JX"
+      }
+    },
+    {
+      "id": "1001O2989",
+      "name": "Business Studies",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "parttime"
+      ],
+      "isVariant": false,
+      "discipline": "ECONOMIE",
+      "city": "SITTARD",
+      "externalRefs": {
+        "rioCode": "1001O2989",
+        "isat": "34145",
+        "instCode": "25JX"
+      }
+    },
+    {
+      "id": "1001O2989",
+      "name": "Business Studies",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "ECONOMIE",
+      "city": "SITTARD",
+      "externalRefs": {
+        "rioCode": "1001O2989",
+        "isat": "34145",
+        "instCode": "25JX"
+      }
+    },
+    {
+      "id": "1001O3442",
+      "name": "Commerciële Economie",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "ECONOMIE",
+      "city": "SITTARD",
+      "externalRefs": {
+        "rioCode": "1001O3442",
+        "isat": "34402",
+        "instCode": "25JX"
+      }
+    },
+    {
+      "id": "1001O2905",
+      "name": "Communication and Multimedia Design",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "TECHNIEK",
+      "city": "MAASTRICHT",
+      "externalRefs": {
+        "rioCode": "1001O2905",
+        "isat": "34092",
+        "instCode": "25JX"
+      }
+    },
+    {
+      "id": "1001O5085",
+      "name": "Docent Beeldende Kunst en Vormgeving",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "ONDERWIJS",
+      "subDiscipline": "LERARENOPLEIDINGEN_OP_HET_GEBIED_VAN_DE_KUNST",
+      "city": "MAASTRICHT",
+      "externalRefs": {
+        "rioCode": "1001O5085",
+        "isat": "39100",
+        "instCode": "25JX"
+      }
+    },
+    {
+      "id": "1001O5122",
+      "name": "Docent Muziek",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "ONDERWIJS",
+      "subDiscipline": "LERARENOPLEIDINGEN_OP_HET_GEBIED_VAN_DE_KUNST",
+      "city": "MAASTRICHT",
+      "externalRefs": {
+        "rioCode": "1001O5122",
+        "isat": "39112",
+        "instCode": "25JX"
+      }
+    },
+    {
+      "id": "1001O4348",
+      "name": "Docent Theater",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "parttime"
+      ],
+      "isVariant": false,
+      "discipline": "ONDERWIJS",
+      "subDiscipline": "LERARENOPLEIDINGEN_OP_HET_GEBIED_VAN_DE_KUNST",
+      "city": "MAASTRICHT",
+      "externalRefs": {
+        "rioCode": "1001O4348",
+        "isat": "34745",
+        "instCode": "25JX"
+      }
+    },
+    {
+      "id": "1001O4348",
+      "name": "Docent Theater",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "ONDERWIJS",
+      "subDiscipline": "LERARENOPLEIDINGEN_OP_HET_GEBIED_VAN_DE_KUNST",
+      "city": "MAASTRICHT",
+      "externalRefs": {
+        "rioCode": "1001O4348",
+        "isat": "34745",
+        "instCode": "25JX"
+      }
+    },
+    {
+      "id": "1001O2746",
+      "name": "Engineering",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "parttime"
+      ],
+      "isVariant": false,
+      "discipline": "TECHNIEK",
+      "city": "HEERLEN",
+      "externalRefs": {
+        "rioCode": "1001O2746",
+        "isat": "30107",
+        "instCode": "25JX"
+      }
+    },
+    {
+      "id": "1001O2746",
+      "name": "Engineering",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "TECHNIEK",
+      "city": "HEERLEN",
+      "externalRefs": {
+        "rioCode": "1001O2746",
+        "isat": "30107",
+        "instCode": "25JX"
+      }
+    },
+    {
+      "id": "1001O3653",
+      "name": "European Studies",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "ECONOMIE",
+      "city": "MAASTRICHT",
+      "externalRefs": {
+        "rioCode": "1001O3653",
+        "isat": "34419",
+        "instCode": "25JX"
+      }
+    },
+    {
+      "id": "1001O3932",
+      "name": "Facility Management",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "parttime"
+      ],
+      "isVariant": false,
+      "discipline": "ECONOMIE",
+      "city": "HEERLEN",
+      "externalRefs": {
+        "rioCode": "1001O3932",
+        "isat": "34500",
+        "instCode": "25JX"
+      }
+    },
+    {
+      "id": "1001O3932",
+      "name": "Facility Management",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "ECONOMIE",
+      "city": "HEERLEN",
+      "externalRefs": {
+        "rioCode": "1001O3932",
+        "isat": "34500",
+        "instCode": "25JX"
+      }
+    },
+    {
+      "id": "1001O5033",
+      "name": "Finance & Control",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "dual"
+      ],
+      "isVariant": false,
+      "discipline": "ECONOMIE",
+      "city": "SITTARD",
+      "externalRefs": {
+        "rioCode": "1001O5033",
+        "isat": "35520",
+        "instCode": "25JX"
+      }
+    },
+    {
+      "id": "1001O5033",
+      "name": "Finance & Control",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "ECONOMIE",
+      "city": "SITTARD",
+      "externalRefs": {
+        "rioCode": "1001O5033",
+        "isat": "35520",
+        "instCode": "25JX"
+      }
+    },
+    {
+      "id": "1001O5189",
+      "name": "HBO - Rechten",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "RECHT",
+      "city": "SITTARD",
+      "externalRefs": {
+        "rioCode": "1001O5189",
+        "isat": "39205",
+        "instCode": "25JX"
+      }
+    },
+    {
+      "id": "1001O2673",
+      "name": "HBO-ICT",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "TECHNIEK",
+      "city": "HEERLEN",
+      "externalRefs": {
+        "rioCode": "1001O2673",
+        "isat": "30020",
+        "instCode": "25JX"
+      }
+    },
+    {
+      "id": "1001O3619",
+      "name": "Hotel Management",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "ECONOMIE",
+      "city": "MAASTRICHT",
+      "externalRefs": {
+        "rioCode": "1001O3619",
+        "isat": "34411",
+        "instCode": "25JX"
+      }
+    },
+    {
+      "id": "1001O2735",
+      "name": "Interdisciplinary Arts",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "TAAL_EN_CULTUUR",
+      "subDiscipline": "OPLEIDINGEN_OP_HET_GEBIED_VAN_DE_KUNST",
+      "city": "MAASTRICHT",
+      "externalRefs": {
+        "rioCode": "1001O2735",
+        "isat": "30099",
+        "instCode": "25JX"
+      }
+    },
+    {
+      "id": "1001O2699",
+      "name": "International Business",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "ECONOMIE",
+      "city": "MAASTRICHT",
+      "externalRefs": {
+        "rioCode": "1001O2699",
+        "isat": "30029",
+        "instCode": "25JX"
+      }
+    },
+    {
+      "id": "1001O3815",
+      "name": "Internationale Communicatie en Talen",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "ECONOMIE",
+      "city": "MAASTRICHT",
+      "externalRefs": {
+        "rioCode": "1001O3815",
+        "isat": "34456",
+        "instCode": "25JX"
+      }
+    },
+    {
+      "id": "1001O2730",
+      "name": "Mens en Techniek",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "TECHNIEK",
+      "city": "HEERLEN",
+      "externalRefs": {
+        "rioCode": "1001O2730",
+        "isat": "30039",
+        "instCode": "25JX"
+      }
+    },
+    {
+      "id": "1001O4335",
+      "name": "Muziek",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "TAAL_EN_CULTUUR",
+      "subDiscipline": "OPLEIDINGEN_OP_HET_GEBIED_VAN_DE_KUNST",
+      "city": "MAASTRICHT",
+      "externalRefs": {
+        "rioCode": "1001O4335",
+        "isat": "34739",
+        "instCode": "25JX"
+      }
+    },
+    {
+      "id": "1001O4052",
+      "name": "Opleiding tot Fysiotherapeut",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "GEZONDHEIDSZORG",
+      "city": "HEERLEN",
+      "externalRefs": {
+        "rioCode": "1001O4052",
+        "isat": "34570",
+        "instCode": "25JX"
+      }
+    },
+    {
+      "id": "1001O4395",
+      "name": "Opleiding tot leraar Basisonderwijs",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "parttime"
+      ],
+      "isVariant": false,
+      "discipline": "ONDERWIJS",
+      "city": "SITTARD",
+      "externalRefs": {
+        "rioCode": "1001O4395",
+        "isat": "34808",
+        "instCode": "25JX"
+      }
+    },
+    {
+      "id": "1001O4395",
+      "name": "Opleiding tot leraar Basisonderwijs",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "ONDERWIJS",
+      "city": "SITTARD",
+      "externalRefs": {
+        "rioCode": "1001O4395",
+        "isat": "34808",
+        "instCode": "25JX"
+      }
+    },
+    {
+      "id": "1001O4016",
+      "name": "Opleiding tot Verpleegkundige",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "parttime"
+      ],
+      "isVariant": false,
+      "discipline": "GEZONDHEIDSZORG",
+      "city": "HEERLEN",
+      "externalRefs": {
+        "rioCode": "1001O4016",
+        "isat": "34560",
+        "instCode": "25JX"
+      }
+    },
+    {
+      "id": "1001O4016",
+      "name": "Opleiding tot Verpleegkundige",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "dual"
+      ],
+      "isVariant": false,
+      "discipline": "GEZONDHEIDSZORG",
+      "city": "HEERLEN",
+      "externalRefs": {
+        "rioCode": "1001O4016",
+        "isat": "34560",
+        "instCode": "25JX"
+      }
+    },
+    {
+      "id": "1001O4016",
+      "name": "Opleiding tot Verpleegkundige",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "GEZONDHEIDSZORG",
+      "city": "HEERLEN",
+      "externalRefs": {
+        "rioCode": "1001O4016",
+        "isat": "34560",
+        "instCode": "25JX"
+      }
+    },
+    {
+      "id": "1001O4064",
+      "name": "Opleiding voor Ergotherapie",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "GEZONDHEIDSZORG",
+      "city": "HEERLEN",
+      "externalRefs": {
+        "rioCode": "1001O4064",
+        "isat": "34574",
+        "instCode": "25JX"
+      }
+    },
+    {
+      "id": "1001O4079",
+      "name": "Opleiding voor Logopedie",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "GEZONDHEIDSZORG",
+      "city": "HEERLEN",
+      "externalRefs": {
+        "rioCode": "1001O4079",
+        "isat": "34578",
+        "instCode": "25JX"
+      }
+    },
+    {
+      "id": "1001O2931",
+      "name": "Social Work",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "parttime"
+      ],
+      "isVariant": false,
+      "discipline": "GEDRAG_EN_MAATSCHAPPIJ",
+      "city": "SITTARD",
+      "externalRefs": {
+        "rioCode": "1001O2931",
+        "isat": "34116",
+        "instCode": "25JX"
+      }
+    },
+    {
+      "id": "1001O2931",
+      "name": "Social Work",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "GEDRAG_EN_MAATSCHAPPIJ",
+      "city": "SITTARD",
+      "externalRefs": {
+        "rioCode": "1001O2931",
+        "isat": "34116",
+        "instCode": "25JX"
+      }
+    },
+    {
+      "id": "1001O3674",
+      "name": "Technische Bedrijfskunde",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "TECHNIEK",
+      "city": "HEERLEN",
+      "externalRefs": {
+        "rioCode": "1001O3674",
+        "isat": "34421",
+        "instCode": "25JX"
+      }
+    },
+    {
+      "id": "1001O4429",
+      "name": "Theater",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "TAAL_EN_CULTUUR",
+      "subDiscipline": "OPLEIDINGEN_OP_HET_GEBIED_VAN_DE_KUNST",
+      "city": "MAASTRICHT",
+      "externalRefs": {
+        "rioCode": "1001O4429",
+        "isat": "34860",
+        "instCode": "25JX"
+      }
+    },
+    {
+      "id": "1001O4257",
+      "name": "Vaktherapie",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "GEZONDHEIDSZORG",
+      "city": "HEERLEN",
+      "externalRefs": {
+        "rioCode": "1001O4257",
+        "isat": "34644",
+        "instCode": "25JX"
+      }
+    },
+    {
+      "id": "1001O2957",
+      "name": "Verloskunde",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "GEZONDHEIDSZORG",
+      "city": "MAASTRICHT",
+      "externalRefs": {
+        "rioCode": "1001O2957",
+        "isat": "34134",
+        "instCode": "25JX"
+      }
+    },
+    {
+      "id": "1001O2910",
+      "name": "Vertaalacademie",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "TAAL_EN_CULTUUR",
+      "city": "MAASTRICHT",
+      "externalRefs": {
+        "rioCode": "1001O2910",
+        "isat": "34098",
+        "instCode": "25JX"
+      }
+    },
+    {
+      "id": "1001O5109",
+      "name": "Vormgeving",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "TAAL_EN_CULTUUR",
+      "subDiscipline": "OPLEIDINGEN_OP_HET_GEBIED_VAN_DE_KUNST",
+      "city": "MAASTRICHT",
+      "externalRefs": {
+        "rioCode": "1001O5109",
+        "isat": "39111",
+        "instCode": "25JX"
+      }
+    }
+  ],
+  "premaster": [
+    {
+      "id": "1001O8009",
+      "name": "Facility and Real Estate Management",
+      "level": "premaster",
+      "sector": "hbo",
+      "modes": [
+        "parttime"
+      ],
+      "isVariant": false,
+      "discipline": "ECONOMIE",
+      "city": "MAASTRICHT",
+      "externalRefs": {
+        "rioCode": "1001O8009",
+        "isat": "70144",
+        "instCode": "25JX"
+      }
+    },
+    {
+      "id": "1001O8009",
+      "name": "Facility and Real Estate Management",
+      "level": "premaster",
+      "sector": "hbo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "ECONOMIE",
+      "city": "MAASTRICHT",
+      "externalRefs": {
+        "rioCode": "1001O8009",
+        "isat": "70144",
+        "instCode": "25JX"
+      }
+    },
+    {
+      "id": "1001O7928",
+      "name": "Master Scientific Illustration",
+      "level": "premaster",
+      "sector": "hbo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "TAAL_EN_CULTUUR",
+      "city": "MAASTRICHT",
+      "externalRefs": {
+        "rioCode": "1001O7928",
+        "isat": "70095",
+        "instCode": "25JX"
+      }
+    },
+    {
+      "id": "1001O7941",
+      "name": "Personal Leadership in Innovation and Change",
+      "level": "premaster",
+      "sector": "hbo",
+      "modes": [
+        "parttime"
+      ],
+      "isVariant": false,
+      "discipline": "ECONOMIE",
+      "city": "SITTARD",
+      "externalRefs": {
+        "rioCode": "1001O7941",
+        "isat": "70103",
+        "instCode": "25JX"
+      }
+    }
+  ],
+  "master": [
+    {
+      "id": "1001O5574",
+      "name": "Advanced Nursing Practice",
+      "level": "master",
+      "sector": "hbo",
+      "modes": [
+        "dual"
+      ],
+      "isVariant": false,
+      "discipline": "GEZONDHEIDSZORG",
+      "city": "HEERLEN",
+      "externalRefs": {
+        "rioCode": "1001O5574",
+        "isat": "49246",
+        "instCode": "25JX"
+      }
+    },
+    {
+      "id": "1001O5363",
+      "name": "Architectuur",
+      "level": "master",
+      "sector": "hbo",
+      "modes": [
+        "dual"
+      ],
+      "isVariant": false,
+      "discipline": "TAAL_EN_CULTUUR",
+      "city": "MAASTRICHT",
+      "externalRefs": {
+        "rioCode": "1001O5363",
+        "isat": "44336",
+        "instCode": "25JX"
+      }
+    },
+    {
+      "id": "1001O5550",
+      "name": "Gezondheidsinnovatie",
+      "level": "master",
+      "sector": "hbo",
+      "modes": [
+        "parttime"
+      ],
+      "isVariant": false,
+      "discipline": "GEZONDHEIDSZORG",
+      "city": "HEERLEN",
+      "externalRefs": {
+        "rioCode": "1001O5550",
+        "isat": "49145",
+        "instCode": "25JX"
+      }
+    },
+    {
+      "id": "1001O5566",
+      "name": "Interieurarchitectuur",
+      "level": "master",
+      "sector": "hbo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "TAAL_EN_CULTUUR",
+      "subDiscipline": "OPLEIDINGEN_OP_HET_GEBIED_VAN_DE_KUNST",
+      "city": "MAASTRICHT",
+      "externalRefs": {
+        "rioCode": "1001O5566",
+        "isat": "49238",
+        "instCode": "25JX"
+      }
+    },
+    {
+      "id": "1001O5378",
+      "name": "Muziek",
+      "level": "master",
+      "sector": "hbo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "TAAL_EN_CULTUUR",
+      "subDiscipline": "OPLEIDINGEN_OP_HET_GEBIED_VAN_DE_KUNST",
+      "city": "MAASTRICHT",
+      "externalRefs": {
+        "rioCode": "1001O5378",
+        "isat": "44739",
+        "instCode": "25JX"
+      }
+    },
+    {
+      "id": "1001O5320",
+      "name": "Theater",
+      "level": "master",
+      "sector": "hbo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "TAAL_EN_CULTUUR",
+      "subDiscipline": "OPLEIDINGEN_OP_HET_GEBIED_VAN_DE_KUNST",
+      "city": "MAASTRICHT",
+      "externalRefs": {
+        "rioCode": "1001O5320",
+        "isat": "40118",
+        "instCode": "25JX"
+      }
+    },
+    {
+      "id": "1001O8850",
+      "name": "Verloskunde (joint degree)",
+      "level": "master",
+      "sector": "hbo",
+      "modes": [
+        "parttime"
+      ],
+      "isVariant": false,
+      "discipline": "GEZONDHEIDSZORG",
+      "city": "MAASTRICHT",
+      "externalRefs": {
+        "rioCode": "1001O8850",
+        "isat": "49505",
+        "instCode": "25JX"
+      }
+    }
+  ]
+}

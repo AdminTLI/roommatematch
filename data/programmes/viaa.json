@@ -1,0 +1,23 @@
+{
+  "bachelor": [
+    {
+      "id": "1001O4981",
+      "name": "Opleiding tot leraar voortgezet onderwijs van de tweede graad in Godsdienst",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "parttime"
+      ],
+      "isVariant": false,
+      "discipline": "ONDERWIJS",
+      "city": "ZWOLLE",
+      "externalRefs": {
+        "rioCode": "1001O4981",
+        "isat": "35441",
+        "instCode": "27VY"
+      }
+    }
+  ],
+  "premaster": [],
+  "master": []
+}

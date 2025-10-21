@@ -1,0 +1,160 @@
+{
+  "bachelor": [
+    {
+      "id": "1016O1755",
+      "name": "Theologie",
+      "level": "bachelor",
+      "sector": "wo_special",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "TAAL_EN_CULTUUR",
+      "city": "UTRECHT",
+      "externalRefs": {
+        "rioCode": "1016O1755",
+        "isat": "56109",
+        "instCode": "00DV"
+      }
+    },
+    {
+      "id": "1001O5786",
+      "name": "Theologie (joint degree)",
+      "level": "bachelor",
+      "sector": "wo_special",
+      "modes": [
+        "parttime"
+      ],
+      "isVariant": false,
+      "discipline": "TAAL_EN_CULTUUR",
+      "city": "AMSTERDAM",
+      "externalRefs": {
+        "rioCode": "1001O5786",
+        "isat": "55004",
+        "instCode": "00DV"
+      }
+    },
+    {
+      "id": "1001O5786",
+      "name": "Theologie (joint degree)",
+      "level": "bachelor",
+      "sector": "wo_special",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "TAAL_EN_CULTUUR",
+      "city": "AMSTERDAM",
+      "externalRefs": {
+        "rioCode": "1001O5786",
+        "isat": "55004",
+        "instCode": "00DV"
+      }
+    }
+  ],
+  "premaster": [],
+  "master": [
+    {
+      "id": "1001O7267",
+      "name": "Theologie (Gemeentepredikant)",
+      "level": "master",
+      "sector": "wo_special",
+      "modes": [
+        "parttime"
+      ],
+      "isVariant": false,
+      "discipline": "TAAL_EN_CULTUUR",
+      "city": "UTRECHT",
+      "externalRefs": {
+        "rioCode": "1001O7267",
+        "isat": "66122",
+        "instCode": "00DV"
+      }
+    },
+    {
+      "id": "1001O7267",
+      "name": "Theologie (Gemeentepredikant)",
+      "level": "master",
+      "sector": "wo_special",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "TAAL_EN_CULTUUR",
+      "city": "UTRECHT",
+      "externalRefs": {
+        "rioCode": "1001O7267",
+        "isat": "66122",
+        "instCode": "00DV"
+      }
+    },
+    {
+      "id": "1001O6587",
+      "name": "Theologie (Predikantschap)",
+      "level": "master",
+      "sector": "wo_special",
+      "modes": [
+        "parttime"
+      ],
+      "isVariant": false,
+      "discipline": "TAAL_EN_CULTUUR",
+      "city": "GRONINGEN",
+      "externalRefs": {
+        "rioCode": "1001O6587",
+        "isat": "60261",
+        "instCode": "00DV"
+      }
+    },
+    {
+      "id": "1001O6587",
+      "name": "Theologie (Predikantschap)",
+      "level": "master",
+      "sector": "wo_special",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "TAAL_EN_CULTUUR",
+      "city": "GRONINGEN",
+      "externalRefs": {
+        "rioCode": "1001O6587",
+        "isat": "60261",
+        "instCode": "00DV"
+      }
+    },
+    {
+      "id": "1001O6573",
+      "name": "Theology",
+      "level": "master",
+      "sector": "wo_special",
+      "modes": [
+        "parttime"
+      ],
+      "isVariant": false,
+      "discipline": "TAAL_EN_CULTUUR",
+      "city": "UTRECHT",
+      "externalRefs": {
+        "rioCode": "1001O6573",
+        "isat": "60254",
+        "instCode": "00DV"
+      }
+    },
+    {
+      "id": "1001O6573",
+      "name": "Theology",
+      "level": "master",
+      "sector": "wo_special",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "TAAL_EN_CULTUUR",
+      "city": "UTRECHT",
+      "externalRefs": {
+        "rioCode": "1001O6573",
+        "isat": "60254",
+        "instCode": "00DV"
+      }
+    }
+  ]
+}

@@ -1,0 +1,3055 @@
+{
+  "bachelor": [
+    {
+      "id": "1001O6041",
+      "name": "African Studies",
+      "level": "bachelor",
+      "sector": "wo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "TAAL_EN_CULTUUR",
+      "city": "LEIDEN",
+      "externalRefs": {
+        "rioCode": "1001O6041",
+        "isat": "56821",
+        "instCode": "21PB"
+      }
+    },
+    {
+      "id": "1001O5978",
+      "name": "Archeologie",
+      "level": "bachelor",
+      "sector": "wo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "TAAL_EN_CULTUUR",
+      "city": "LEIDEN",
+      "externalRefs": {
+        "rioCode": "1001O5978",
+        "isat": "56703",
+        "instCode": "21PB"
+      }
+    },
+    {
+      "id": "1001O5965",
+      "name": "Bestuurskunde",
+      "level": "bachelor",
+      "sector": "wo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "GEDRAG_EN_MAATSCHAPPIJ",
+      "city": "'S-GRAVENHAGE",
+      "externalRefs": {
+        "rioCode": "1001O5965",
+        "isat": "56627",
+        "instCode": "21PB"
+      }
+    },
+    {
+      "id": "1001O5667",
+      "name": "Bio-Farmaceutische Wetenschappen",
+      "level": "bachelor",
+      "sector": "wo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "NATUUR",
+      "city": "LEIDEN",
+      "externalRefs": {
+        "rioCode": "1001O5667",
+        "isat": "50207",
+        "instCode": "21PB"
+      }
+    },
+    {
+      "id": "1001O6117",
+      "name": "Biologie",
+      "level": "bachelor",
+      "sector": "wo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "NATUUR",
+      "city": "LEIDEN",
+      "externalRefs": {
+        "rioCode": "1001O6117",
+        "isat": "56860",
+        "instCode": "21PB"
+      }
+    },
+    {
+      "id": "1001O6203",
+      "name": "Biomedische Wetenschappen",
+      "level": "bachelor",
+      "sector": "wo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "GEZONDHEIDSZORG",
+      "city": "LEIDEN",
+      "externalRefs": {
+        "rioCode": "1001O6203",
+        "isat": "56990",
+        "instCode": "21PB"
+      }
+    },
+    {
+      "id": "1001O6038",
+      "name": "Chinastudies",
+      "level": "bachelor",
+      "sector": "wo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "TAAL_EN_CULTUUR",
+      "city": "LEIDEN",
+      "externalRefs": {
+        "rioCode": "1001O6038",
+        "isat": "56818",
+        "instCode": "21PB"
+      }
+    },
+    {
+      "id": "1001O5899",
+      "name": "Criminologie",
+      "level": "bachelor",
+      "sector": "wo",
+      "modes": [
+        "parttime"
+      ],
+      "isVariant": false,
+      "discipline": "GEDRAG_EN_MAATSCHAPPIJ",
+      "city": "LEIDEN",
+      "externalRefs": {
+        "rioCode": "1001O5899",
+        "isat": "56469",
+        "instCode": "21PB"
+      }
+    },
+    {
+      "id": "1001O5899",
+      "name": "Criminologie",
+      "level": "bachelor",
+      "sector": "wo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "GEDRAG_EN_MAATSCHAPPIJ",
+      "city": "LEIDEN",
+      "externalRefs": {
+        "rioCode": "1001O5899",
+        "isat": "56469",
+        "instCode": "21PB"
+      }
+    },
+    {
+      "id": "1001O5651",
+      "name": "Culturele Antropologie en Ontwikkelingssociologie",
+      "level": "bachelor",
+      "sector": "wo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "GEDRAG_EN_MAATSCHAPPIJ",
+      "city": "LEIDEN",
+      "externalRefs": {
+        "rioCode": "1001O5651",
+        "isat": "50035",
+        "instCode": "21PB"
+      }
+    },
+    {
+      "id": "1001O8924",
+      "name": "Cybersecurity & Cybercrime",
+      "level": "bachelor",
+      "sector": "wo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "SECTOROVERSTIJGEND",
+      "city": "'S-GRAVENHAGE",
+      "externalRefs": {
+        "rioCode": "1001O8924",
+        "isat": "59348",
+        "instCode": "21PB"
+      }
+    },
+    {
+      "id": "1001O5674",
+      "name": "Data Science and Artificial Intelligence",
+      "level": "bachelor",
+      "sector": "wo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "NATUUR",
+      "city": "LEIDEN",
+      "externalRefs": {
+        "rioCode": "1001O5674",
+        "isat": "50300",
+        "instCode": "21PB"
+      }
+    },
+    {
+      "id": "1001O6004",
+      "name": "Duitse Taal en Cultuur",
+      "level": "bachelor",
+      "sector": "wo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "TAAL_EN_CULTUUR",
+      "city": "LEIDEN",
+      "externalRefs": {
+        "rioCode": "1001O6004",
+        "isat": "56805",
+        "instCode": "21PB"
+      }
+    },
+    {
+      "id": "1001O8921",
+      "name": "Economie & Samenleving",
+      "level": "bachelor",
+      "sector": "wo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "ECONOMIE",
+      "city": "'S-GRAVENHAGE",
+      "externalRefs": {
+        "rioCode": "1001O8921",
+        "isat": "50996",
+        "instCode": "21PB"
+      }
+    },
+    {
+      "id": "1001O6010",
+      "name": "Engelse Taal en Cultuur",
+      "level": "bachelor",
+      "sector": "wo",
+      "modes": [
+        "parttime"
+      ],
+      "isVariant": false,
+      "discipline": "TAAL_EN_CULTUUR",
+      "city": "LEIDEN",
+      "externalRefs": {
+        "rioCode": "1001O6010",
+        "isat": "56806",
+        "instCode": "21PB"
+      }
+    },
+    {
+      "id": "1001O6010",
+      "name": "Engelse Taal en Cultuur",
+      "level": "bachelor",
+      "sector": "wo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "TAAL_EN_CULTUUR",
+      "city": "LEIDEN",
+      "externalRefs": {
+        "rioCode": "1001O6010",
+        "isat": "56806",
+        "instCode": "21PB"
+      }
+    },
+    {
+      "id": "1001O5689",
+      "name": "Film- en Literatuurwetenschap",
+      "level": "bachelor",
+      "sector": "wo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "TAAL_EN_CULTUUR",
+      "city": "LEIDEN",
+      "externalRefs": {
+        "rioCode": "1001O5689",
+        "isat": "50414",
+        "instCode": "21PB"
+      }
+    },
+    {
+      "id": "1001O5837",
+      "name": "Filosofie",
+      "level": "bachelor",
+      "sector": "wo",
+      "modes": [
+        "parttime"
+      ],
+      "isVariant": false,
+      "discipline": "TAAL_EN_CULTUUR",
+      "city": "LEIDEN",
+      "externalRefs": {
+        "rioCode": "1001O5837",
+        "isat": "56081",
+        "instCode": "21PB"
+      }
+    },
+    {
+      "id": "1001O5837",
+      "name": "Filosofie",
+      "level": "bachelor",
+      "sector": "wo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "TAAL_EN_CULTUUR",
+      "city": "LEIDEN",
+      "externalRefs": {
+        "rioCode": "1001O5837",
+        "isat": "56081",
+        "instCode": "21PB"
+      }
+    },
+    {
+      "id": "1001O6061",
+      "name": "Fiscaal Recht",
+      "level": "bachelor",
+      "sector": "wo",
+      "modes": [
+        "parttime"
+      ],
+      "isVariant": false,
+      "discipline": "RECHT",
+      "city": "LEIDEN",
+      "externalRefs": {
+        "rioCode": "1001O6061",
+        "isat": "56827",
+        "instCode": "21PB"
+      }
+    },
+    {
+      "id": "1001O6061",
+      "name": "Fiscaal Recht",
+      "level": "bachelor",
+      "sector": "wo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "RECHT",
+      "city": "LEIDEN",
+      "externalRefs": {
+        "rioCode": "1001O6061",
+        "isat": "56827",
+        "instCode": "21PB"
+      }
+    },
+    {
+      "id": "1001O6018",
+      "name": "Franse Taal en Cultuur",
+      "level": "bachelor",
+      "sector": "wo",
+      "modes": [
+        "parttime"
+      ],
+      "isVariant": false,
+      "discipline": "TAAL_EN_CULTUUR",
+      "city": "LEIDEN",
+      "externalRefs": {
+        "rioCode": "1001O6018",
+        "isat": "56808",
+        "instCode": "21PB"
+      }
+    },
+    {
+      "id": "1001O6018",
+      "name": "Franse Taal en Cultuur",
+      "level": "bachelor",
+      "sector": "wo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "TAAL_EN_CULTUUR",
+      "city": "LEIDEN",
+      "externalRefs": {
+        "rioCode": "1001O6018",
+        "isat": "56808",
+        "instCode": "21PB"
+      }
+    },
+    {
+      "id": "1001O5903",
+      "name": "Geneeskunde",
+      "level": "bachelor",
+      "sector": "wo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "GEZONDHEIDSZORG",
+      "city": "LEIDEN",
+      "externalRefs": {
+        "rioCode": "1001O5903",
+        "isat": "56551",
+        "instCode": "21PB"
+      }
+    },
+    {
+      "id": "1001O5816",
+      "name": "Geschiedenis",
+      "level": "bachelor",
+      "sector": "wo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "TAAL_EN_CULTUUR",
+      "city": "LEIDEN",
+      "externalRefs": {
+        "rioCode": "1001O5816",
+        "isat": "56034",
+        "instCode": "21PB"
+      }
+    },
+    {
+      "id": "1001O5805",
+      "name": "Griekse en Latijnse Taal en Cultuur",
+      "level": "bachelor",
+      "sector": "wo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "TAAL_EN_CULTUUR",
+      "city": "LEIDEN",
+      "externalRefs": {
+        "rioCode": "1001O5805",
+        "isat": "56003",
+        "instCode": "21PB"
+      }
+    },
+    {
+      "id": "1001O6169",
+      "name": "Informatica",
+      "level": "bachelor",
+      "sector": "wo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "NATUUR",
+      "city": "LEIDEN",
+      "externalRefs": {
+        "rioCode": "1001O6169",
+        "isat": "56978",
+        "instCode": "21PB"
+      }
+    },
+    {
+      "id": "1001O6169",
+      "name": "Informatica",
+      "level": "bachelor",
+      "sector": "wo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "NATUUR",
+      "city": "'S-GRAVENHAGE",
+      "externalRefs": {
+        "rioCode": "1001O6169",
+        "isat": "56978",
+        "instCode": "21PB"
+      }
+    },
+    {
+      "id": "1001O6229",
+      "name": "International Studies",
+      "level": "bachelor",
+      "sector": "wo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "SECTOROVERSTIJGEND",
+      "city": "'S-GRAVENHAGE",
+      "externalRefs": {
+        "rioCode": "1001O6229",
+        "isat": "59316",
+        "instCode": "21PB"
+      }
+    },
+    {
+      "id": "1001O6023",
+      "name": "Italiaanse Taal en Cultuur",
+      "level": "bachelor",
+      "sector": "wo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "TAAL_EN_CULTUUR",
+      "city": "LEIDEN",
+      "externalRefs": {
+        "rioCode": "1001O6023",
+        "isat": "56809",
+        "instCode": "21PB"
+      }
+    },
+    {
+      "id": "1001O6039",
+      "name": "Japanstudies",
+      "level": "bachelor",
+      "sector": "wo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "TAAL_EN_CULTUUR",
+      "city": "LEIDEN",
+      "externalRefs": {
+        "rioCode": "1001O6039",
+        "isat": "56819",
+        "instCode": "21PB"
+      }
+    },
+    {
+      "id": "1001O5788",
+      "name": "Klinische Technologie (joint degree)",
+      "level": "bachelor",
+      "sector": "wo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "GEZONDHEIDSZORG",
+      "city": "LEIDEN",
+      "externalRefs": {
+        "rioCode": "1001O5788",
+        "isat": "55007",
+        "instCode": "21PB"
+      }
+    },
+    {
+      "id": "1001O6040",
+      "name": "Koreastudies",
+      "level": "bachelor",
+      "sector": "wo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "TAAL_EN_CULTUUR",
+      "city": "LEIDEN",
+      "externalRefs": {
+        "rioCode": "1001O6040",
+        "isat": "56820",
+        "instCode": "21PB"
+      }
+    },
+    {
+      "id": "1001O6048",
+      "name": "Kunstgeschiedenis",
+      "level": "bachelor",
+      "sector": "wo",
+      "modes": [
+        "parttime"
+      ],
+      "isVariant": false,
+      "discipline": "TAAL_EN_CULTUUR",
+      "city": "LEIDEN",
+      "externalRefs": {
+        "rioCode": "1001O6048",
+        "isat": "56824",
+        "instCode": "21PB"
+      }
+    },
+    {
+      "id": "1001O6048",
+      "name": "Kunstgeschiedenis",
+      "level": "bachelor",
+      "sector": "wo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "TAAL_EN_CULTUUR",
+      "city": "LEIDEN",
+      "externalRefs": {
+        "rioCode": "1001O6048",
+        "isat": "56824",
+        "instCode": "21PB"
+      }
+    },
+    {
+      "id": "1001O5831",
+      "name": "Latijns-Amerikastudies",
+      "level": "bachelor",
+      "sector": "wo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "TAAL_EN_CULTUUR",
+      "city": "LEIDEN",
+      "externalRefs": {
+        "rioCode": "1001O5831",
+        "isat": "56052",
+        "instCode": "21PB"
+      }
+    },
+    {
+      "id": "1001O5696",
+      "name": "Liberal Arts and Sciences: Global Challenges",
+      "level": "bachelor",
+      "sector": "wo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "SECTOROVERSTIJGEND",
+      "subDiscipline": "ONDERWIJS_LANDBOUW_EN_NATUURLIJKE_OMGEVING_NATUUR_TECHNIEK_GEZONDHEID",
+      "city": "'S-GRAVENHAGE",
+      "externalRefs": {
+        "rioCode": "1001O5696",
+        "isat": "50429",
+        "instCode": "21PB"
+      }
+    },
+    {
+      "id": "1001O5793",
+      "name": "Life Science and Technology (joint degree)",
+      "level": "bachelor",
+      "sector": "wo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "SECTOROVERSTIJGEND",
+      "subDiscipline": "ONDERWIJS_LANDBOUW_EN_NATUURLIJKE_OMGEVING_NATUUR_TECHNIEK_GEZONDHEID",
+      "city": "LEIDEN",
+      "externalRefs": {
+        "rioCode": "1001O5793",
+        "isat": "55010",
+        "instCode": "21PB"
+      }
+    },
+    {
+      "id": "1001O5846",
+      "name": "Midden-Oostenstudies",
+      "level": "bachelor",
+      "sector": "wo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "TAAL_EN_CULTUUR",
+      "city": "LEIDEN",
+      "externalRefs": {
+        "rioCode": "1001O5846",
+        "isat": "56098",
+        "instCode": "21PB"
+      }
+    },
+    {
+      "id": "1001O5791",
+      "name": "Molecular Science and Technology (joint degree)",
+      "level": "bachelor",
+      "sector": "wo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "SECTOROVERSTIJGEND",
+      "subDiscipline": "ONDERWIJS_LANDBOUW_EN_NATUURLIJKE_OMGEVING_NATUUR_TECHNIEK_GEZONDHEID",
+      "city": "LEIDEN",
+      "externalRefs": {
+        "rioCode": "1001O5791",
+        "isat": "55009",
+        "instCode": "21PB"
+      }
+    },
+    {
+      "id": "1001O5665",
+      "name": "Natuurkunde",
+      "level": "bachelor",
+      "sector": "wo",
+      "modes": [
+        "parttime"
+      ],
+      "isVariant": false,
+      "discipline": "NATUUR",
+      "city": "LEIDEN",
+      "externalRefs": {
+        "rioCode": "1001O5665",
+        "isat": "50206",
+        "instCode": "21PB"
+      }
+    },
+    {
+      "id": "1001O5665",
+      "name": "Natuurkunde",
+      "level": "bachelor",
+      "sector": "wo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "NATUUR",
+      "city": "LEIDEN",
+      "externalRefs": {
+        "rioCode": "1001O5665",
+        "isat": "50206",
+        "instCode": "21PB"
+      }
+    },
+    {
+      "id": "1001O5832",
+      "name": "Nederlandkunde/Dutch Studies",
+      "level": "bachelor",
+      "sector": "wo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "TAAL_EN_CULTUUR",
+      "city": "LEIDEN",
+      "externalRefs": {
+        "rioCode": "1001O5832",
+        "isat": "56055",
+        "instCode": "21PB"
+      }
+    },
+    {
+      "id": "1001O5998",
+      "name": "Nederlandse Taal en Cultuur",
+      "level": "bachelor",
+      "sector": "wo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "TAAL_EN_CULTUUR",
+      "city": "LEIDEN",
+      "externalRefs": {
+        "rioCode": "1001O5998",
+        "isat": "56804",
+        "instCode": "21PB"
+      }
+    },
+    {
+      "id": "1001O6067",
+      "name": "Notarieel Recht",
+      "level": "bachelor",
+      "sector": "wo",
+      "modes": [
+        "parttime"
+      ],
+      "isVariant": false,
+      "discipline": "RECHT",
+      "city": "LEIDEN",
+      "externalRefs": {
+        "rioCode": "1001O6067",
+        "isat": "56828",
+        "instCode": "21PB"
+      }
+    },
+    {
+      "id": "1001O6067",
+      "name": "Notarieel Recht",
+      "level": "bachelor",
+      "sector": "wo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "RECHT",
+      "city": "LEIDEN",
+      "externalRefs": {
+        "rioCode": "1001O6067",
+        "isat": "56828",
+        "instCode": "21PB"
+      }
+    },
+    {
+      "id": "1001O5865",
+      "name": "Oude Nabije Oosten-studies",
+      "level": "bachelor",
+      "sector": "wo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "TAAL_EN_CULTUUR",
+      "city": "LEIDEN",
+      "externalRefs": {
+        "rioCode": "1001O5865",
+        "isat": "56123",
+        "instCode": "21PB"
+      }
+    },
+    {
+      "id": "1001O5943",
+      "name": "Pedagogische Wetenschappen",
+      "level": "bachelor",
+      "sector": "wo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "GEDRAG_EN_MAATSCHAPPIJ",
+      "city": "LEIDEN",
+      "externalRefs": {
+        "rioCode": "1001O5943",
+        "isat": "56607",
+        "instCode": "21PB"
+      }
+    },
+    {
+      "id": "1001O5939",
+      "name": "Politicologie",
+      "level": "bachelor",
+      "sector": "wo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "GEDRAG_EN_MAATSCHAPPIJ",
+      "city": "LEIDEN",
+      "externalRefs": {
+        "rioCode": "1001O5939",
+        "isat": "56606",
+        "instCode": "21PB"
+      }
+    },
+    {
+      "id": "1001O5939",
+      "name": "Politicologie",
+      "level": "bachelor",
+      "sector": "wo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "GEDRAG_EN_MAATSCHAPPIJ",
+      "city": "'S-GRAVENHAGE",
+      "externalRefs": {
+        "rioCode": "1001O5939",
+        "isat": "56606",
+        "instCode": "21PB"
+      }
+    },
+    {
+      "id": "1001O5928",
+      "name": "Psychologie",
+      "level": "bachelor",
+      "sector": "wo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "GEDRAG_EN_MAATSCHAPPIJ",
+      "city": "LEIDEN",
+      "externalRefs": {
+        "rioCode": "1001O5928",
+        "isat": "56604",
+        "instCode": "21PB"
+      }
+    },
+    {
+      "id": "1001O5724",
+      "name": "Rechtsgeleerdheid",
+      "level": "bachelor",
+      "sector": "wo",
+      "modes": [
+        "parttime"
+      ],
+      "isVariant": false,
+      "discipline": "RECHT",
+      "city": "LEIDEN",
+      "externalRefs": {
+        "rioCode": "1001O5724",
+        "isat": "50700",
+        "instCode": "21PB"
+      }
+    },
+    {
+      "id": "1001O5724",
+      "name": "Rechtsgeleerdheid",
+      "level": "bachelor",
+      "sector": "wo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "RECHT",
+      "city": "LEIDEN",
+      "externalRefs": {
+        "rioCode": "1001O5724",
+        "isat": "50700",
+        "instCode": "21PB"
+      }
+    },
+    {
+      "id": "1001O5750",
+      "name": "Religiewetenschappen",
+      "level": "bachelor",
+      "sector": "wo",
+      "modes": [
+        "parttime"
+      ],
+      "isVariant": false,
+      "discipline": "TAAL_EN_CULTUUR",
+      "city": "LEIDEN",
+      "externalRefs": {
+        "rioCode": "1001O5750",
+        "isat": "50902",
+        "instCode": "21PB"
+      }
+    },
+    {
+      "id": "1001O5750",
+      "name": "Religiewetenschappen",
+      "level": "bachelor",
+      "sector": "wo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "TAAL_EN_CULTUUR",
+      "city": "LEIDEN",
+      "externalRefs": {
+        "rioCode": "1001O5750",
+        "isat": "50902",
+        "instCode": "21PB"
+      }
+    },
+    {
+      "id": "1001O5746",
+      "name": "Russische Studies",
+      "level": "bachelor",
+      "sector": "wo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "TAAL_EN_CULTUUR",
+      "city": "LEIDEN",
+      "externalRefs": {
+        "rioCode": "1001O5746",
+        "isat": "50855",
+        "instCode": "21PB"
+      }
+    },
+    {
+      "id": "1001O8926",
+      "name": "Science for Sustainable Societies",
+      "level": "bachelor",
+      "sector": "wo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "SECTOROVERSTIJGEND",
+      "city": "LEIDEN",
+      "externalRefs": {
+        "rioCode": "1001O8926",
+        "isat": "50474",
+        "instCode": "21PB"
+      }
+    },
+    {
+      "id": "1001O6231",
+      "name": "Security Studies",
+      "level": "bachelor",
+      "sector": "wo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "SECTOROVERSTIJGEND",
+      "city": "'S-GRAVENHAGE",
+      "externalRefs": {
+        "rioCode": "1001O6231",
+        "isat": "59320",
+        "instCode": "21PB"
+      }
+    },
+    {
+      "id": "1001O5663",
+      "name": "Sterrenkunde",
+      "level": "bachelor",
+      "sector": "wo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "NATUUR",
+      "city": "LEIDEN",
+      "externalRefs": {
+        "rioCode": "1001O5663",
+        "isat": "50205",
+        "instCode": "21PB"
+      }
+    },
+    {
+      "id": "1001O5992",
+      "name": "Taalwetenschap",
+      "level": "bachelor",
+      "sector": "wo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "TAAL_EN_CULTUUR",
+      "city": "LEIDEN",
+      "externalRefs": {
+        "rioCode": "1001O5992",
+        "isat": "56803",
+        "instCode": "21PB"
+      }
+    },
+    {
+      "id": "1001O6237",
+      "name": "Urban Studies",
+      "level": "bachelor",
+      "sector": "wo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "SECTOROVERSTIJGEND",
+      "city": "'S-GRAVENHAGE",
+      "externalRefs": {
+        "rioCode": "1001O6237",
+        "isat": "59328",
+        "instCode": "21PB"
+      }
+    },
+    {
+      "id": "1001O6176",
+      "name": "Wiskunde",
+      "level": "bachelor",
+      "sector": "wo",
+      "modes": [
+        "parttime"
+      ],
+      "isVariant": false,
+      "discipline": "NATUUR",
+      "city": "LEIDEN",
+      "externalRefs": {
+        "rioCode": "1001O6176",
+        "isat": "56980",
+        "instCode": "21PB"
+      }
+    },
+    {
+      "id": "1001O6176",
+      "name": "Wiskunde",
+      "level": "bachelor",
+      "sector": "wo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "NATUUR",
+      "city": "LEIDEN",
+      "externalRefs": {
+        "rioCode": "1001O6176",
+        "isat": "56980",
+        "instCode": "21PB"
+      }
+    },
+    {
+      "id": "1001O5848",
+      "name": "Zuid- en Zuidoost-Aziëstudies",
+      "level": "bachelor",
+      "sector": "wo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "TAAL_EN_CULTUUR",
+      "city": "LEIDEN",
+      "externalRefs": {
+        "rioCode": "1001O5848",
+        "isat": "56099",
+        "instCode": "21PB"
+      }
+    }
+  ],
+  "premaster": [
+    {
+      "id": "1001O8127",
+      "name": "Advanced Studies in Air and Space Law",
+      "level": "premaster",
+      "sector": "wo",
+      "modes": [
+        "parttime"
+      ],
+      "isVariant": false,
+      "discipline": "RECHT",
+      "city": "LEIDEN",
+      "externalRefs": {
+        "rioCode": "1001O8127",
+        "isat": "75024",
+        "instCode": "21PB"
+      }
+    },
+    {
+      "id": "1001O8127",
+      "name": "Advanced Studies in Air and Space Law",
+      "level": "premaster",
+      "sector": "wo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "RECHT",
+      "city": "LEIDEN",
+      "externalRefs": {
+        "rioCode": "1001O8127",
+        "isat": "75024",
+        "instCode": "21PB"
+      }
+    },
+    {
+      "id": "1001O8128",
+      "name": "Advanced Studies in European and International Business Law",
+      "level": "premaster",
+      "sector": "wo",
+      "modes": [
+        "parttime"
+      ],
+      "isVariant": false,
+      "discipline": "RECHT",
+      "city": "LEIDEN",
+      "externalRefs": {
+        "rioCode": "1001O8128",
+        "isat": "75025",
+        "instCode": "21PB"
+      }
+    },
+    {
+      "id": "1001O8128",
+      "name": "Advanced Studies in European and International Business Law",
+      "level": "premaster",
+      "sector": "wo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "RECHT",
+      "city": "LEIDEN",
+      "externalRefs": {
+        "rioCode": "1001O8128",
+        "isat": "75025",
+        "instCode": "21PB"
+      }
+    },
+    {
+      "id": "1001O8227",
+      "name": "Advanced Studies in European and International Human Rights Law",
+      "level": "premaster",
+      "sector": "wo",
+      "modes": [
+        "parttime"
+      ],
+      "isVariant": false,
+      "discipline": "RECHT",
+      "city": "LEIDEN",
+      "externalRefs": {
+        "rioCode": "1001O8227",
+        "isat": "75114",
+        "instCode": "21PB"
+      }
+    },
+    {
+      "id": "1001O8227",
+      "name": "Advanced Studies in European and International Human Rights Law",
+      "level": "premaster",
+      "sector": "wo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "RECHT",
+      "city": "LEIDEN",
+      "externalRefs": {
+        "rioCode": "1001O8227",
+        "isat": "75114",
+        "instCode": "21PB"
+      }
+    },
+    {
+      "id": "1001O8237",
+      "name": "Advanced Studies in International Children's Rights",
+      "level": "premaster",
+      "sector": "wo",
+      "modes": [
+        "parttime"
+      ],
+      "isVariant": false,
+      "discipline": "RECHT",
+      "city": "LEIDEN",
+      "externalRefs": {
+        "rioCode": "1001O8237",
+        "isat": "75121",
+        "instCode": "21PB"
+      }
+    },
+    {
+      "id": "1001O8237",
+      "name": "Advanced Studies in International Children's Rights",
+      "level": "premaster",
+      "sector": "wo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "RECHT",
+      "city": "LEIDEN",
+      "externalRefs": {
+        "rioCode": "1001O8237",
+        "isat": "75121",
+        "instCode": "21PB"
+      }
+    },
+    {
+      "id": "1001O8226",
+      "name": "Advanced Studies in International Civil and Commercial Law",
+      "level": "premaster",
+      "sector": "wo",
+      "modes": [
+        "parttime"
+      ],
+      "isVariant": false,
+      "discipline": "RECHT",
+      "city": "LEIDEN",
+      "externalRefs": {
+        "rioCode": "1001O8226",
+        "isat": "75113",
+        "instCode": "21PB"
+      }
+    },
+    {
+      "id": "1001O8226",
+      "name": "Advanced Studies in International Civil and Commercial Law",
+      "level": "premaster",
+      "sector": "wo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "RECHT",
+      "city": "LEIDEN",
+      "externalRefs": {
+        "rioCode": "1001O8226",
+        "isat": "75113",
+        "instCode": "21PB"
+      }
+    },
+    {
+      "id": "1001O8272",
+      "name": "Advanced Studies in International Dispute Settlement and Arbitration",
+      "level": "premaster",
+      "sector": "wo",
+      "modes": [
+        "parttime"
+      ],
+      "isVariant": false,
+      "discipline": "RECHT",
+      "city": "'S-GRAVENHAGE",
+      "externalRefs": {
+        "rioCode": "1001O8272",
+        "isat": "75141",
+        "instCode": "21PB"
+      }
+    },
+    {
+      "id": "1001O8272",
+      "name": "Advanced Studies in International Dispute Settlement and Arbitration",
+      "level": "premaster",
+      "sector": "wo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "RECHT",
+      "city": "'S-GRAVENHAGE",
+      "externalRefs": {
+        "rioCode": "1001O8272",
+        "isat": "75141",
+        "instCode": "21PB"
+      }
+    },
+    {
+      "id": "1001O8263",
+      "name": "Advanced Studies in International Financial Law",
+      "level": "premaster",
+      "sector": "wo",
+      "modes": [
+        "parttime"
+      ],
+      "isVariant": false,
+      "discipline": "RECHT",
+      "city": "LEIDEN",
+      "externalRefs": {
+        "rioCode": "1001O8263",
+        "isat": "75132",
+        "instCode": "21PB"
+      }
+    },
+    {
+      "id": "1001O8263",
+      "name": "Advanced Studies in International Financial Law",
+      "level": "premaster",
+      "sector": "wo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "RECHT",
+      "city": "LEIDEN",
+      "externalRefs": {
+        "rioCode": "1001O8263",
+        "isat": "75132",
+        "instCode": "21PB"
+      }
+    },
+    {
+      "id": "1001O8229",
+      "name": "Advanced Studies in Law and Digital Technologies",
+      "level": "premaster",
+      "sector": "wo",
+      "modes": [
+        "parttime"
+      ],
+      "isVariant": false,
+      "discipline": "RECHT",
+      "city": "LEIDEN",
+      "externalRefs": {
+        "rioCode": "1001O8229",
+        "isat": "75116",
+        "instCode": "21PB"
+      }
+    },
+    {
+      "id": "1001O8229",
+      "name": "Advanced Studies in Law and Digital Technologies",
+      "level": "premaster",
+      "sector": "wo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "RECHT",
+      "city": "LEIDEN",
+      "externalRefs": {
+        "rioCode": "1001O8229",
+        "isat": "75116",
+        "instCode": "21PB"
+      }
+    },
+    {
+      "id": "1001O8130",
+      "name": "Advanced Studies in Public International Law",
+      "level": "premaster",
+      "sector": "wo",
+      "modes": [
+        "parttime"
+      ],
+      "isVariant": false,
+      "discipline": "RECHT",
+      "city": "LEIDEN",
+      "externalRefs": {
+        "rioCode": "1001O8130",
+        "isat": "75027",
+        "instCode": "21PB"
+      }
+    },
+    {
+      "id": "1001O8130",
+      "name": "Advanced Studies in Public International Law",
+      "level": "premaster",
+      "sector": "wo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "RECHT",
+      "city": "LEIDEN",
+      "externalRefs": {
+        "rioCode": "1001O8130",
+        "isat": "75027",
+        "instCode": "21PB"
+      }
+    },
+    {
+      "id": "1001O8130",
+      "name": "Advanced Studies in Public International Law",
+      "level": "premaster",
+      "sector": "wo",
+      "modes": [
+        "parttime"
+      ],
+      "isVariant": false,
+      "discipline": "RECHT",
+      "city": "'S-GRAVENHAGE",
+      "externalRefs": {
+        "rioCode": "1001O8130",
+        "isat": "75027",
+        "instCode": "21PB"
+      }
+    },
+    {
+      "id": "1001O8130",
+      "name": "Advanced Studies in Public International Law",
+      "level": "premaster",
+      "sector": "wo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "RECHT",
+      "city": "'S-GRAVENHAGE",
+      "externalRefs": {
+        "rioCode": "1001O8130",
+        "isat": "75027",
+        "instCode": "21PB"
+      }
+    },
+    {
+      "id": "1001O8236",
+      "name": "Cyber Security",
+      "level": "premaster",
+      "sector": "wo",
+      "modes": [
+        "parttime"
+      ],
+      "isVariant": false,
+      "discipline": "SECTOROVERSTIJGEND",
+      "city": "'S-GRAVENHAGE",
+      "externalRefs": {
+        "rioCode": "1001O8236",
+        "isat": "75120",
+        "instCode": "21PB"
+      }
+    },
+    {
+      "id": "1001O8125",
+      "name": "International Relations and Diplomacy",
+      "level": "premaster",
+      "sector": "wo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "GEDRAG_EN_MAATSCHAPPIJ",
+      "city": "'S-GRAVENHAGE",
+      "externalRefs": {
+        "rioCode": "1001O8125",
+        "isat": "75022",
+        "instCode": "21PB"
+      }
+    },
+    {
+      "id": "1001O8794",
+      "name": "Transfusion Medicine and Cellular and Tissue Therapies (joint degree)",
+      "level": "premaster",
+      "sector": "wo",
+      "modes": [
+        "parttime"
+      ],
+      "isVariant": false,
+      "discipline": "GEZONDHEIDSZORG",
+      "city": "LEIDEN",
+      "externalRefs": {
+        "rioCode": "1001O8794",
+        "isat": "75156",
+        "instCode": "21PB"
+      }
+    }
+  ],
+  "master": [
+    {
+      "id": "1001O7094",
+      "name": "Afrika Studies",
+      "level": "master",
+      "sector": "wo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "TAAL_EN_CULTUUR",
+      "city": "LEIDEN",
+      "externalRefs": {
+        "rioCode": "1001O7094",
+        "isat": "60837",
+        "instCode": "21PB"
+      }
+    },
+    {
+      "id": "1001O7095",
+      "name": "Afrika Studies (research)",
+      "level": "master",
+      "sector": "wo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "TAAL_EN_CULTUUR",
+      "city": "LEIDEN",
+      "externalRefs": {
+        "rioCode": "1001O7095",
+        "isat": "60838",
+        "instCode": "21PB"
+      }
+    },
+    {
+      "id": "1001O6994",
+      "name": "Archeologie",
+      "level": "master",
+      "sector": "wo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "TAAL_EN_CULTUUR",
+      "city": "LEIDEN",
+      "externalRefs": {
+        "rioCode": "1001O6994",
+        "isat": "60805",
+        "instCode": "21PB"
+      }
+    },
+    {
+      "id": "1001O6419",
+      "name": "Archeologie (research)",
+      "level": "master",
+      "sector": "wo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "TAAL_EN_CULTUUR",
+      "city": "LEIDEN",
+      "externalRefs": {
+        "rioCode": "1001O6419",
+        "isat": "60133",
+        "instCode": "21PB"
+      }
+    },
+    {
+      "id": "1001O7153",
+      "name": "Arts, Literature and Media (research)",
+      "level": "master",
+      "sector": "wo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "TAAL_EN_CULTUUR",
+      "city": "LEIDEN",
+      "externalRefs": {
+        "rioCode": "1001O7153",
+        "isat": "60972",
+        "instCode": "21PB"
+      }
+    },
+    {
+      "id": "1001O6499",
+      "name": "Astronomy",
+      "level": "master",
+      "sector": "wo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "NATUUR",
+      "city": "LEIDEN",
+      "externalRefs": {
+        "rioCode": "1001O6499",
+        "isat": "60200",
+        "instCode": "21PB"
+      }
+    },
+    {
+      "id": "1001O7096",
+      "name": "Azië Studies",
+      "level": "master",
+      "sector": "wo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "TAAL_EN_CULTUUR",
+      "city": "LEIDEN",
+      "externalRefs": {
+        "rioCode": "1001O7096",
+        "isat": "60839",
+        "instCode": "21PB"
+      }
+    },
+    {
+      "id": "1001O7097",
+      "name": "Azië Studies",
+      "level": "master",
+      "sector": "wo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "TAAL_EN_CULTUUR",
+      "city": "LEIDEN",
+      "externalRefs": {
+        "rioCode": "1001O7097",
+        "isat": "60840",
+        "instCode": "21PB"
+      }
+    },
+    {
+      "id": "1001O7098",
+      "name": "Azië Studies (research)",
+      "level": "master",
+      "sector": "wo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "TAAL_EN_CULTUUR",
+      "city": "LEIDEN",
+      "externalRefs": {
+        "rioCode": "1001O7098",
+        "isat": "60841",
+        "instCode": "21PB"
+      }
+    },
+    {
+      "id": "1001O6514",
+      "name": "Bio-Pharmaceutical Sciences",
+      "level": "master",
+      "sector": "wo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "NATUUR",
+      "city": "LEIDEN",
+      "externalRefs": {
+        "rioCode": "1001O6514",
+        "isat": "60207",
+        "instCode": "21PB"
+      }
+    },
+    {
+      "id": "1001O7506",
+      "name": "Biology",
+      "level": "master",
+      "sector": "wo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "NATUUR",
+      "city": "LEIDEN",
+      "externalRefs": {
+        "rioCode": "1001O7506",
+        "isat": "66860",
+        "instCode": "21PB"
+      }
+    },
+    {
+      "id": "1001O7554",
+      "name": "Biomedical Sciences",
+      "level": "master",
+      "sector": "wo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "GEZONDHEIDSZORG",
+      "city": "LEIDEN",
+      "externalRefs": {
+        "rioCode": "1001O7554",
+        "isat": "66990",
+        "instCode": "21PB"
+      }
+    },
+    {
+      "id": "1001O7501",
+      "name": "Chemistry",
+      "level": "master",
+      "sector": "wo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "NATUUR",
+      "city": "LEIDEN",
+      "externalRefs": {
+        "rioCode": "1001O7501",
+        "isat": "66857",
+        "instCode": "21PB"
+      }
+    },
+    {
+      "id": "1001O6611",
+      "name": "Computer Science",
+      "level": "master",
+      "sector": "wo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "NATUUR",
+      "city": "LEIDEN",
+      "externalRefs": {
+        "rioCode": "1001O6611",
+        "isat": "60300",
+        "instCode": "21PB"
+      }
+    },
+    {
+      "id": "1001O6513",
+      "name": "Creative Intelligence & Technology",
+      "level": "master",
+      "sector": "wo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "NATUUR",
+      "city": "LEIDEN",
+      "externalRefs": {
+        "rioCode": "1001O6513",
+        "isat": "60206",
+        "instCode": "21PB"
+      }
+    },
+    {
+      "id": "1001O6753",
+      "name": "Criminaliteit en Rechtshandhaving",
+      "level": "master",
+      "sector": "wo",
+      "modes": [
+        "parttime"
+      ],
+      "isVariant": false,
+      "discipline": "GEDRAG_EN_MAATSCHAPPIJ",
+      "city": "LEIDEN",
+      "externalRefs": {
+        "rioCode": "1001O6753",
+        "isat": "60419",
+        "instCode": "21PB"
+      }
+    },
+    {
+      "id": "1001O6753",
+      "name": "Criminaliteit en Rechtshandhaving",
+      "level": "master",
+      "sector": "wo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "GEDRAG_EN_MAATSCHAPPIJ",
+      "city": "LEIDEN",
+      "externalRefs": {
+        "rioCode": "1001O6753",
+        "isat": "60419",
+        "instCode": "21PB"
+      }
+    },
+    {
+      "id": "1001O6753",
+      "name": "Criminaliteit en Rechtshandhaving",
+      "level": "master",
+      "sector": "wo",
+      "modes": [
+        "parttime"
+      ],
+      "isVariant": false,
+      "discipline": "GEDRAG_EN_MAATSCHAPPIJ",
+      "city": "'S-GRAVENHAGE",
+      "externalRefs": {
+        "rioCode": "1001O6753",
+        "isat": "60419",
+        "instCode": "21PB"
+      }
+    },
+    {
+      "id": "1001O6753",
+      "name": "Criminaliteit en Rechtshandhaving",
+      "level": "master",
+      "sector": "wo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "GEDRAG_EN_MAATSCHAPPIJ",
+      "city": "'S-GRAVENHAGE",
+      "externalRefs": {
+        "rioCode": "1001O6753",
+        "isat": "60419",
+        "instCode": "21PB"
+      }
+    },
+    {
+      "id": "1001O6751",
+      "name": "Crisis and Security Management",
+      "level": "master",
+      "sector": "wo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "GEDRAG_EN_MAATSCHAPPIJ",
+      "city": "'S-GRAVENHAGE",
+      "externalRefs": {
+        "rioCode": "1001O6751",
+        "isat": "60417",
+        "instCode": "21PB"
+      }
+    },
+    {
+      "id": "1001O6448",
+      "name": "Cultural Anthropology and Development Sociology",
+      "level": "master",
+      "sector": "wo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "GEDRAG_EN_MAATSCHAPPIJ",
+      "city": "LEIDEN",
+      "externalRefs": {
+        "rioCode": "1001O6448",
+        "isat": "60156",
+        "instCode": "21PB"
+      }
+    },
+    {
+      "id": "1001O8937",
+      "name": "Economie van de Publieke Sector",
+      "level": "master",
+      "sector": "wo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "ECONOMIE",
+      "city": "'S-GRAVENHAGE",
+      "externalRefs": {
+        "rioCode": "1001O8937",
+        "isat": "60995",
+        "instCode": "21PB"
+      }
+    },
+    {
+      "id": "1001O7748",
+      "name": "Educatie in de Mens- en Maatschappijwetenschappen",
+      "level": "master",
+      "sector": "wo",
+      "modes": [
+        "parttime"
+      ],
+      "isVariant": false,
+      "discipline": "ONDERWIJS",
+      "city": "LEIDEN",
+      "externalRefs": {
+        "rioCode": "1001O7748",
+        "isat": "68532",
+        "instCode": "21PB"
+      }
+    },
+    {
+      "id": "1001O7748",
+      "name": "Educatie in de Mens- en Maatschappijwetenschappen",
+      "level": "master",
+      "sector": "wo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "ONDERWIJS",
+      "city": "LEIDEN",
+      "externalRefs": {
+        "rioCode": "1001O7748",
+        "isat": "68532",
+        "instCode": "21PB"
+      }
+    },
+    {
+      "id": "1001O7774",
+      "name": "Educatie in de Taal- en cultuurwetenschappen",
+      "level": "master",
+      "sector": "wo",
+      "modes": [
+        "parttime"
+      ],
+      "isVariant": false,
+      "discipline": "ONDERWIJS",
+      "city": "LEIDEN",
+      "externalRefs": {
+        "rioCode": "1001O7774",
+        "isat": "68536",
+        "instCode": "21PB"
+      }
+    },
+    {
+      "id": "1001O7774",
+      "name": "Educatie in de Taal- en cultuurwetenschappen",
+      "level": "master",
+      "sector": "wo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "ONDERWIJS",
+      "city": "LEIDEN",
+      "externalRefs": {
+        "rioCode": "1001O7774",
+        "isat": "68536",
+        "instCode": "21PB"
+      }
+    },
+    {
+      "id": "1001O8738",
+      "name": "Educatieve Master Primair Onderwijs (joint degree)",
+      "level": "master",
+      "sector": "wo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "ONDERWIJS",
+      "city": "LEIDEN",
+      "externalRefs": {
+        "rioCode": "1001O8738",
+        "isat": "65026",
+        "instCode": "21PB"
+      }
+    },
+    {
+      "id": "1001O6729",
+      "name": "Education and Child Studies",
+      "level": "master",
+      "sector": "wo",
+      "modes": [
+        "parttime"
+      ],
+      "isVariant": false,
+      "discipline": "GEDRAG_EN_MAATSCHAPPIJ",
+      "city": "LEIDEN",
+      "externalRefs": {
+        "rioCode": "1001O6729",
+        "isat": "60396",
+        "instCode": "21PB"
+      }
+    },
+    {
+      "id": "1001O6729",
+      "name": "Education and Child Studies",
+      "level": "master",
+      "sector": "wo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "GEDRAG_EN_MAATSCHAPPIJ",
+      "city": "LEIDEN",
+      "externalRefs": {
+        "rioCode": "1001O6729",
+        "isat": "60396",
+        "instCode": "21PB"
+      }
+    },
+    {
+      "id": "1001O6451",
+      "name": "Education and Child Studies (research)",
+      "level": "master",
+      "sector": "wo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "GEDRAG_EN_MAATSCHAPPIJ",
+      "city": "LEIDEN",
+      "externalRefs": {
+        "rioCode": "1001O6451",
+        "isat": "60159",
+        "instCode": "21PB"
+      }
+    },
+    {
+      "id": "1001O7199",
+      "name": "European Politics and Society: Vaclav Havel Joint Master Programme (joint degree)",
+      "level": "master",
+      "sector": "wo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "SECTOROVERSTIJGEND",
+      "city": "LEIDEN",
+      "externalRefs": {
+        "rioCode": "1001O7199",
+        "isat": "65022",
+        "instCode": "21PB"
+      }
+    },
+    {
+      "id": "1001O7268",
+      "name": "Farmacie",
+      "level": "master",
+      "sector": "wo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "NATUUR",
+      "city": "LEIDEN",
+      "externalRefs": {
+        "rioCode": "1001O7268",
+        "isat": "66157",
+        "instCode": "21PB"
+      }
+    },
+    {
+      "id": "1001O7041",
+      "name": "Filosofie",
+      "level": "master",
+      "sector": "wo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "TAAL_EN_CULTUUR",
+      "city": "LEIDEN",
+      "externalRefs": {
+        "rioCode": "1001O7041",
+        "isat": "60822",
+        "instCode": "21PB"
+      }
+    },
+    {
+      "id": "1001O7049",
+      "name": "Filosofie",
+      "level": "master",
+      "sector": "wo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "TAAL_EN_CULTUUR",
+      "city": "LEIDEN",
+      "externalRefs": {
+        "rioCode": "1001O7049",
+        "isat": "60823",
+        "instCode": "21PB"
+      }
+    },
+    {
+      "id": "1001O7468",
+      "name": "Fiscaal Recht",
+      "level": "master",
+      "sector": "wo",
+      "modes": [
+        "parttime"
+      ],
+      "isVariant": false,
+      "discipline": "RECHT",
+      "city": "LEIDEN",
+      "externalRefs": {
+        "rioCode": "1001O7468",
+        "isat": "66827",
+        "instCode": "21PB"
+      }
+    },
+    {
+      "id": "1001O7468",
+      "name": "Fiscaal Recht",
+      "level": "master",
+      "sector": "wo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "RECHT",
+      "city": "LEIDEN",
+      "externalRefs": {
+        "rioCode": "1001O7468",
+        "isat": "66827",
+        "instCode": "21PB"
+      }
+    },
+    {
+      "id": "1001O6752",
+      "name": "Forensische Criminologie",
+      "level": "master",
+      "sector": "wo",
+      "modes": [
+        "parttime"
+      ],
+      "isVariant": false,
+      "discipline": "GEDRAG_EN_MAATSCHAPPIJ",
+      "city": "LEIDEN",
+      "externalRefs": {
+        "rioCode": "1001O6752",
+        "isat": "60418",
+        "instCode": "21PB"
+      }
+    },
+    {
+      "id": "1001O6752",
+      "name": "Forensische Criminologie",
+      "level": "master",
+      "sector": "wo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "GEDRAG_EN_MAATSCHAPPIJ",
+      "city": "LEIDEN",
+      "externalRefs": {
+        "rioCode": "1001O6752",
+        "isat": "60418",
+        "instCode": "21PB"
+      }
+    },
+    {
+      "id": "1001O7312",
+      "name": "Geneeskunde",
+      "level": "master",
+      "sector": "wo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "GEZONDHEIDSZORG",
+      "city": "LEIDEN",
+      "externalRefs": {
+        "rioCode": "1001O7312",
+        "isat": "66551",
+        "instCode": "21PB"
+      }
+    },
+    {
+      "id": "1001O7224",
+      "name": "Geschiedenis",
+      "level": "master",
+      "sector": "wo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "TAAL_EN_CULTUUR",
+      "city": "LEIDEN",
+      "externalRefs": {
+        "rioCode": "1001O7224",
+        "isat": "66034",
+        "instCode": "21PB"
+      }
+    },
+    {
+      "id": "1001O6427",
+      "name": "Geschiedenis (research)",
+      "level": "master",
+      "sector": "wo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "TAAL_EN_CULTUUR",
+      "city": "LEIDEN",
+      "externalRefs": {
+        "rioCode": "1001O6427",
+        "isat": "60139",
+        "instCode": "21PB"
+      }
+    },
+    {
+      "id": "1001O7146",
+      "name": "Governance of Sustainability",
+      "level": "master",
+      "sector": "wo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "NATUUR",
+      "city": "'S-GRAVENHAGE",
+      "externalRefs": {
+        "rioCode": "1001O7146",
+        "isat": "60965",
+        "instCode": "21PB"
+      }
+    },
+    {
+      "id": "1001O6820",
+      "name": "Health, Ageing and Society",
+      "level": "master",
+      "sector": "wo",
+      "modes": [
+        "parttime"
+      ],
+      "isVariant": false,
+      "discipline": "GEZONDHEIDSZORG",
+      "city": "LEIDEN",
+      "externalRefs": {
+        "rioCode": "1001O6820",
+        "isat": "60515",
+        "instCode": "21PB"
+      }
+    },
+    {
+      "id": "1001O6820",
+      "name": "Health, Ageing and Society",
+      "level": "master",
+      "sector": "wo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "GEZONDHEIDSZORG",
+      "city": "LEIDEN",
+      "externalRefs": {
+        "rioCode": "1001O6820",
+        "isat": "60515",
+        "instCode": "21PB"
+      }
+    },
+    {
+      "id": "1001O6512",
+      "name": "ICT in Business and the Public Sector",
+      "level": "master",
+      "sector": "wo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "NATUUR",
+      "city": "'S-GRAVENHAGE",
+      "externalRefs": {
+        "rioCode": "1001O6512",
+        "isat": "60205",
+        "instCode": "21PB"
+      }
+    },
+    {
+      "id": "1001O7167",
+      "name": "Industrial Ecology (joint degree)",
+      "level": "master",
+      "sector": "wo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "SECTOROVERSTIJGEND",
+      "subDiscipline": "ONDERWIJS_LANDBOUW_EN_NATUURLIJKE_OMGEVING_NATUUR_TECHNIEK_GEZONDHEID",
+      "city": "LEIDEN",
+      "externalRefs": {
+        "rioCode": "1001O7167",
+        "isat": "65003",
+        "instCode": "21PB"
+      }
+    },
+    {
+      "id": "1001O6959",
+      "name": "Internationale betrekkingen",
+      "level": "master",
+      "sector": "wo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "TAAL_EN_CULTUUR",
+      "city": "LEIDEN",
+      "externalRefs": {
+        "rioCode": "1001O6959",
+        "isat": "60734",
+        "instCode": "21PB"
+      }
+    },
+    {
+      "id": "1001O7310",
+      "name": "Jeugdrecht",
+      "level": "master",
+      "sector": "wo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "RECHT",
+      "city": "LEIDEN",
+      "externalRefs": {
+        "rioCode": "1001O7310",
+        "isat": "66474",
+        "instCode": "21PB"
+      }
+    },
+    {
+      "id": "1001O6352",
+      "name": "Kunst- & cultuurwetenschappen",
+      "level": "master",
+      "sector": "wo",
+      "modes": [
+        "parttime"
+      ],
+      "isVariant": false,
+      "discipline": "TAAL_EN_CULTUUR",
+      "city": "LEIDEN",
+      "externalRefs": {
+        "rioCode": "1001O6352",
+        "isat": "60087",
+        "instCode": "21PB"
+      }
+    },
+    {
+      "id": "1001O6352",
+      "name": "Kunst- & cultuurwetenschappen",
+      "level": "master",
+      "sector": "wo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "TAAL_EN_CULTUUR",
+      "city": "LEIDEN",
+      "externalRefs": {
+        "rioCode": "1001O6352",
+        "isat": "60087",
+        "instCode": "21PB"
+      }
+    },
+    {
+      "id": "1001O6471",
+      "name": "Latijns-Amerika Studies",
+      "level": "master",
+      "sector": "wo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "TAAL_EN_CULTUUR",
+      "city": "LEIDEN",
+      "externalRefs": {
+        "rioCode": "1001O6471",
+        "isat": "60174",
+        "instCode": "21PB"
+      }
+    },
+    {
+      "id": "1001O7103",
+      "name": "Latijns-Amerika Studies (research)",
+      "level": "master",
+      "sector": "wo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "TAAL_EN_CULTUUR",
+      "city": "LEIDEN",
+      "externalRefs": {
+        "rioCode": "1001O7103",
+        "isat": "60844",
+        "instCode": "21PB"
+      }
+    },
+    {
+      "id": "1001O6987",
+      "name": "Law & Society: Governance and Global Development",
+      "level": "master",
+      "sector": "wo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "SECTOROVERSTIJGEND",
+      "city": "'S-GRAVENHAGE",
+      "externalRefs": {
+        "rioCode": "1001O6987",
+        "isat": "60770",
+        "instCode": "21PB"
+      }
+    },
+    {
+      "id": "1001O7753",
+      "name": "Leraar Voorbereidend Hoger Onderwijs in de Bètawetenschappen",
+      "level": "master",
+      "sector": "wo",
+      "modes": [
+        "parttime"
+      ],
+      "isVariant": false,
+      "discipline": "ONDERWIJS",
+      "city": "LEIDEN",
+      "externalRefs": {
+        "rioCode": "1001O7753",
+        "isat": "68533",
+        "instCode": "21PB"
+      }
+    },
+    {
+      "id": "1001O7753",
+      "name": "Leraar Voorbereidend Hoger Onderwijs in de Bètawetenschappen",
+      "level": "master",
+      "sector": "wo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "ONDERWIJS",
+      "city": "LEIDEN",
+      "externalRefs": {
+        "rioCode": "1001O7753",
+        "isat": "68533",
+        "instCode": "21PB"
+      }
+    },
+    {
+      "id": "1001O7766",
+      "name": "Leraar Voorbereidend Hoger Onderwijs in de Mens- en Maatschappijwetenschappen",
+      "level": "master",
+      "sector": "wo",
+      "modes": [
+        "parttime"
+      ],
+      "isVariant": false,
+      "discipline": "ONDERWIJS",
+      "city": "LEIDEN",
+      "externalRefs": {
+        "rioCode": "1001O7766",
+        "isat": "68535",
+        "instCode": "21PB"
+      }
+    },
+    {
+      "id": "1001O7766",
+      "name": "Leraar Voorbereidend Hoger Onderwijs in de Mens- en Maatschappijwetenschappen",
+      "level": "master",
+      "sector": "wo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "ONDERWIJS",
+      "city": "LEIDEN",
+      "externalRefs": {
+        "rioCode": "1001O7766",
+        "isat": "68535",
+        "instCode": "21PB"
+      }
+    },
+    {
+      "id": "1001O7759",
+      "name": "Leraar Voorbereidend Hoger Onderwijs in de Taal- en cultuurwetenschappen",
+      "level": "master",
+      "sector": "wo",
+      "modes": [
+        "parttime"
+      ],
+      "isVariant": false,
+      "discipline": "ONDERWIJS",
+      "city": "LEIDEN",
+      "externalRefs": {
+        "rioCode": "1001O7759",
+        "isat": "68534",
+        "instCode": "21PB"
+      }
+    },
+    {
+      "id": "1001O7759",
+      "name": "Leraar Voorbereidend Hoger Onderwijs in de Taal- en cultuurwetenschappen",
+      "level": "master",
+      "sector": "wo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "ONDERWIJS",
+      "city": "LEIDEN",
+      "externalRefs": {
+        "rioCode": "1001O7759",
+        "isat": "68534",
+        "instCode": "21PB"
+      }
+    },
+    {
+      "id": "1001O7008",
+      "name": "Letterkunde",
+      "level": "master",
+      "sector": "wo",
+      "modes": [
+        "parttime"
+      ],
+      "isVariant": false,
+      "discipline": "TAAL_EN_CULTUUR",
+      "city": "LEIDEN",
+      "externalRefs": {
+        "rioCode": "1001O7008",
+        "isat": "60813",
+        "instCode": "21PB"
+      }
+    },
+    {
+      "id": "1001O7008",
+      "name": "Letterkunde",
+      "level": "master",
+      "sector": "wo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "TAAL_EN_CULTUUR",
+      "city": "LEIDEN",
+      "externalRefs": {
+        "rioCode": "1001O7008",
+        "isat": "60813",
+        "instCode": "21PB"
+      }
+    },
+    {
+      "id": "1001O7279",
+      "name": "Life Science and Technology",
+      "level": "master",
+      "sector": "wo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "NATUUR",
+      "city": "LEIDEN",
+      "externalRefs": {
+        "rioCode": "1001O7279",
+        "isat": "66286",
+        "instCode": "21PB"
+      }
+    },
+    {
+      "id": "1001O6750",
+      "name": "Management Publieke Sector",
+      "level": "master",
+      "sector": "wo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "GEDRAG_EN_MAATSCHAPPIJ",
+      "city": "'S-GRAVENHAGE",
+      "externalRefs": {
+        "rioCode": "1001O6750",
+        "isat": "60416",
+        "instCode": "21PB"
+      }
+    },
+    {
+      "id": "1001O7536",
+      "name": "Mathematics",
+      "level": "master",
+      "sector": "wo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "NATUUR",
+      "city": "LEIDEN",
+      "externalRefs": {
+        "rioCode": "1001O7536",
+        "isat": "66980",
+        "instCode": "21PB"
+      }
+    },
+    {
+      "id": "1001O7076",
+      "name": "Mediastudies",
+      "level": "master",
+      "sector": "wo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "TAAL_EN_CULTUUR",
+      "city": "LEIDEN",
+      "externalRefs": {
+        "rioCode": "1001O7076",
+        "isat": "60830",
+        "instCode": "21PB"
+      }
+    },
+    {
+      "id": "1001O7099",
+      "name": "Midden-Oosten Studies",
+      "level": "master",
+      "sector": "wo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "TAAL_EN_CULTUUR",
+      "city": "LEIDEN",
+      "externalRefs": {
+        "rioCode": "1001O7099",
+        "isat": "60842",
+        "instCode": "21PB"
+      }
+    },
+    {
+      "id": "1001O7102",
+      "name": "Midden-Oosten Studies (research)",
+      "level": "master",
+      "sector": "wo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "TAAL_EN_CULTUUR",
+      "city": "LEIDEN",
+      "externalRefs": {
+        "rioCode": "1001O7102",
+        "isat": "60843",
+        "instCode": "21PB"
+      }
+    },
+    {
+      "id": "1001O7110",
+      "name": "Neerlandistiek",
+      "level": "master",
+      "sector": "wo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "TAAL_EN_CULTUUR",
+      "city": "LEIDEN",
+      "externalRefs": {
+        "rioCode": "1001O7110",
+        "isat": "60849",
+        "instCode": "21PB"
+      }
+    },
+    {
+      "id": "1001O7104",
+      "name": "Noord-Amerika Studies",
+      "level": "master",
+      "sector": "wo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "TAAL_EN_CULTUUR",
+      "city": "LEIDEN",
+      "externalRefs": {
+        "rioCode": "1001O7104",
+        "isat": "60845",
+        "instCode": "21PB"
+      }
+    },
+    {
+      "id": "1001O7477",
+      "name": "Notarieel Recht",
+      "level": "master",
+      "sector": "wo",
+      "modes": [
+        "parttime"
+      ],
+      "isVariant": false,
+      "discipline": "RECHT",
+      "city": "LEIDEN",
+      "externalRefs": {
+        "rioCode": "1001O7477",
+        "isat": "66828",
+        "instCode": "21PB"
+      }
+    },
+    {
+      "id": "1001O7477",
+      "name": "Notarieel Recht",
+      "level": "master",
+      "sector": "wo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "RECHT",
+      "city": "LEIDEN",
+      "externalRefs": {
+        "rioCode": "1001O7477",
+        "isat": "66828",
+        "instCode": "21PB"
+      }
+    },
+    {
+      "id": "1001O7035",
+      "name": "Oudheidstudies",
+      "level": "master",
+      "sector": "wo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "TAAL_EN_CULTUUR",
+      "city": "LEIDEN",
+      "externalRefs": {
+        "rioCode": "1001O7035",
+        "isat": "60821",
+        "instCode": "21PB"
+      }
+    },
+    {
+      "id": "1001O6287",
+      "name": "Oudheidstudies (research)",
+      "level": "master",
+      "sector": "wo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "TAAL_EN_CULTUUR",
+      "city": "LEIDEN",
+      "externalRefs": {
+        "rioCode": "1001O6287",
+        "isat": "60039",
+        "instCode": "21PB"
+      }
+    },
+    {
+      "id": "1001O6502",
+      "name": "Physics",
+      "level": "master",
+      "sector": "wo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "NATUUR",
+      "city": "LEIDEN",
+      "externalRefs": {
+        "rioCode": "1001O6502",
+        "isat": "60202",
+        "instCode": "21PB"
+      }
+    },
+    {
+      "id": "1001O6507",
+      "name": "Political Science",
+      "level": "master",
+      "sector": "wo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "GEDRAG_EN_MAATSCHAPPIJ",
+      "city": "LEIDEN",
+      "externalRefs": {
+        "rioCode": "1001O6507",
+        "isat": "60203",
+        "instCode": "21PB"
+      }
+    },
+    {
+      "id": "1001O6507",
+      "name": "Political Science",
+      "level": "master",
+      "sector": "wo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "GEDRAG_EN_MAATSCHAPPIJ",
+      "city": "'S-GRAVENHAGE",
+      "externalRefs": {
+        "rioCode": "1001O6507",
+        "isat": "60203",
+        "instCode": "21PB"
+      }
+    },
+    {
+      "id": "1001O7121",
+      "name": "Population Health Management",
+      "level": "master",
+      "sector": "wo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "GEZONDHEIDSZORG",
+      "city": "'S-GRAVENHAGE",
+      "externalRefs": {
+        "rioCode": "1001O7121",
+        "isat": "60858",
+        "instCode": "21PB"
+      }
+    },
+    {
+      "id": "1001O7346",
+      "name": "Psychology",
+      "level": "master",
+      "sector": "wo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "GEDRAG_EN_MAATSCHAPPIJ",
+      "city": "LEIDEN",
+      "externalRefs": {
+        "rioCode": "1001O7346",
+        "isat": "66604",
+        "instCode": "21PB"
+      }
+    },
+    {
+      "id": "1001O6714",
+      "name": "Psychology (research)",
+      "level": "master",
+      "sector": "wo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "GEDRAG_EN_MAATSCHAPPIJ",
+      "city": "LEIDEN",
+      "externalRefs": {
+        "rioCode": "1001O6714",
+        "isat": "60383",
+        "instCode": "21PB"
+      }
+    },
+    {
+      "id": "1001O6264",
+      "name": "Public Administration",
+      "level": "master",
+      "sector": "wo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "GEDRAG_EN_MAATSCHAPPIJ",
+      "city": "'S-GRAVENHAGE",
+      "externalRefs": {
+        "rioCode": "1001O6264",
+        "isat": "60020",
+        "instCode": "21PB"
+      }
+    },
+    {
+      "id": "1001O8841",
+      "name": "Quantum Information Science & Technology (joint degree)",
+      "level": "master",
+      "sector": "wo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "TECHNIEK",
+      "city": "LEIDEN",
+      "externalRefs": {
+        "rioCode": "1001O8841",
+        "isat": "65029",
+        "instCode": "21PB"
+      }
+    },
+    {
+      "id": "1001O6345",
+      "name": "Rechtsgeleerdheid",
+      "level": "master",
+      "sector": "wo",
+      "modes": [
+        "parttime"
+      ],
+      "isVariant": false,
+      "discipline": "RECHT",
+      "city": "LEIDEN",
+      "externalRefs": {
+        "rioCode": "1001O6345",
+        "isat": "60084",
+        "instCode": "21PB"
+      }
+    },
+    {
+      "id": "1001O6345",
+      "name": "Rechtsgeleerdheid",
+      "level": "master",
+      "sector": "wo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "RECHT",
+      "city": "LEIDEN",
+      "externalRefs": {
+        "rioCode": "1001O6345",
+        "isat": "60084",
+        "instCode": "21PB"
+      }
+    },
+    {
+      "id": "1001O6345",
+      "name": "Rechtsgeleerdheid",
+      "level": "master",
+      "sector": "wo",
+      "modes": [
+        "parttime"
+      ],
+      "isVariant": false,
+      "discipline": "RECHT",
+      "city": "'S-GRAVENHAGE",
+      "externalRefs": {
+        "rioCode": "1001O6345",
+        "isat": "60084",
+        "instCode": "21PB"
+      }
+    },
+    {
+      "id": "1001O7155",
+      "name": "Religious Studies",
+      "level": "master",
+      "sector": "wo",
+      "modes": [
+        "parttime"
+      ],
+      "isVariant": false,
+      "discipline": "TAAL_EN_CULTUUR",
+      "city": "LEIDEN",
+      "externalRefs": {
+        "rioCode": "1001O7155",
+        "isat": "60974",
+        "instCode": "21PB"
+      }
+    },
+    {
+      "id": "1001O7155",
+      "name": "Religious Studies",
+      "level": "master",
+      "sector": "wo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "TAAL_EN_CULTUUR",
+      "city": "LEIDEN",
+      "externalRefs": {
+        "rioCode": "1001O7155",
+        "isat": "60974",
+        "instCode": "21PB"
+      }
+    },
+    {
+      "id": "1001O7109",
+      "name": "Russische en Euraziatische Studies",
+      "level": "master",
+      "sector": "wo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "TAAL_EN_CULTUUR",
+      "city": "LEIDEN",
+      "externalRefs": {
+        "rioCode": "1001O7109",
+        "isat": "60848",
+        "instCode": "21PB"
+      }
+    },
+    {
+      "id": "1001O7137",
+      "name": "Statistics and Data Science",
+      "level": "master",
+      "sector": "wo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "NATUUR",
+      "city": "LEIDEN",
+      "externalRefs": {
+        "rioCode": "1001O7137",
+        "isat": "60957",
+        "instCode": "21PB"
+      }
+    },
+    {
+      "id": "1001O7020",
+      "name": "Taalwetenschappen",
+      "level": "master",
+      "sector": "wo",
+      "modes": [
+        "parttime"
+      ],
+      "isVariant": false,
+      "discipline": "TAAL_EN_CULTUUR",
+      "city": "LEIDEN",
+      "externalRefs": {
+        "rioCode": "1001O7020",
+        "isat": "60815",
+        "instCode": "21PB"
+      }
+    },
+    {
+      "id": "1001O7020",
+      "name": "Taalwetenschappen",
+      "level": "master",
+      "sector": "wo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "TAAL_EN_CULTUUR",
+      "city": "LEIDEN",
+      "externalRefs": {
+        "rioCode": "1001O7020",
+        "isat": "60815",
+        "instCode": "21PB"
+      }
+    },
+    {
+      "id": "1001O7027",
+      "name": "Taalwetenschappen (research)",
+      "level": "master",
+      "sector": "wo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "TAAL_EN_CULTUUR",
+      "city": "LEIDEN",
+      "externalRefs": {
+        "rioCode": "1001O7027",
+        "isat": "60817",
+        "instCode": "21PB"
+      }
+    },
+    {
+      "id": "1001O7192",
+      "name": "Technical Medicine (joint degree)",
+      "level": "master",
+      "sector": "wo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "GEZONDHEIDSZORG",
+      "city": "LEIDEN",
+      "externalRefs": {
+        "rioCode": "1001O7192",
+        "isat": "65019",
+        "instCode": "21PB"
+      }
+    }
+  ]
+}

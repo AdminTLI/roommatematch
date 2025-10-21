@@ -1,0 +1,40 @@
+{
+  "bachelor": [
+    {
+      "id": "1001O4369",
+      "name": "Opleiding tot leraar Basisonderwijs",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "parttime"
+      ],
+      "isVariant": false,
+      "discipline": "ONDERWIJS",
+      "city": "DOETINCHEM",
+      "externalRefs": {
+        "rioCode": "1001O4369",
+        "isat": "34808",
+        "instCode": "09OT"
+      }
+    },
+    {
+      "id": "1001O4369",
+      "name": "Opleiding tot leraar Basisonderwijs",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "ONDERWIJS",
+      "city": "DOETINCHEM",
+      "externalRefs": {
+        "rioCode": "1001O4369",
+        "isat": "34808",
+        "instCode": "09OT"
+      }
+    }
+  ],
+  "premaster": [],
+  "master": []
+}

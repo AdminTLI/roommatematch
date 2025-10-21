@@ -1,0 +1,12 @@
+{
+  "syncedAt": "2025-10-21T22:12:21.787Z",
+  "sourceUrl": "https://onderwijsdata.duo.nl/dataset/bb07cc6e-00fe-4100-9528-a0c5fd27d2fb/resource/28a4d89b-c223-4dbc-8deb-9d02a533f215/download/ho_erkenningen_rio.csv",
+  "totalProgrammes": 983,
+  "byLevel": {
+    "bachelor": 682,
+    "premaster": 49,
+    "master": 252
+  },
+  "institutions": 54,
+  "institutionsWithProgrammes": 21
+}

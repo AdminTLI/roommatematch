@@ -163,12 +163,13 @@ async function main(): Promise<void> {
       return a.match ? -1 : 1;
     });
     
-    console.error('📊 Match Summary:');
+    // Output summary to stderr
     const exact = candidates.filter(c => c.match?.confidence === 'exact').length;
     const high = candidates.filter(c => c.match?.confidence === 'high').length;
     const medium = candidates.filter(c => c.match?.confidence === 'medium').length;
     const noMatch = candidates.filter(c => !c.match).length;
     
+    console.error('📊 Match Summary:');
     console.error(`   Exact matches: ${exact}`);
     console.error(`   High confidence: ${high}`);
     console.error(`   Medium confidence: ${medium}`);
@@ -176,7 +177,7 @@ async function main(): Promise<void> {
     console.error('');
     console.error('📝 Outputting candidates for review...');
     
-    // Output JSON for review
+    // Output only JSON to stdout
     console.log(JSON.stringify(candidates, null, 2));
     
   } catch (error) {

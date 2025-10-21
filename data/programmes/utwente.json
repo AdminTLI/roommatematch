@@ -1,0 +1,1114 @@
+{
+  "bachelor": [
+    {
+      "id": "1001O5619",
+      "name": "Advanced Technology",
+      "level": "bachelor",
+      "sector": "wo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "TECHNIEK",
+      "city": "ENSCHEDE",
+      "externalRefs": {
+        "rioCode": "1001O5619",
+        "isat": "50002",
+        "instCode": "21PH"
+      }
+    },
+    {
+      "id": "1001O6243",
+      "name": "Applied Mathematics",
+      "level": "bachelor",
+      "sector": "wo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "TECHNIEK",
+      "city": "ENSCHEDE",
+      "externalRefs": {
+        "rioCode": "1001O6243",
+        "isat": "59336",
+        "instCode": "21PH"
+      }
+    },
+    {
+      "id": "1016O4308",
+      "name": "Bestuurskunde",
+      "level": "bachelor",
+      "sector": "wo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "GEDRAG_EN_MAATSCHAPPIJ",
+      "city": "ENSCHEDE",
+      "externalRefs": {
+        "rioCode": "1016O4308",
+        "isat": "56627",
+        "instCode": "21PH"
+      }
+    },
+    {
+      "id": "1001O5873",
+      "name": "Biomedische Technologie",
+      "level": "bachelor",
+      "sector": "wo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "TECHNIEK",
+      "city": "ENSCHEDE",
+      "externalRefs": {
+        "rioCode": "1001O5873",
+        "isat": "56226",
+        "instCode": "21PH"
+      }
+    },
+    {
+      "id": "1001O5833",
+      "name": "Business Information Technology",
+      "level": "bachelor",
+      "sector": "wo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "TECHNIEK",
+      "city": "ENSCHEDE",
+      "externalRefs": {
+        "rioCode": "1001O5833",
+        "isat": "56066",
+        "instCode": "21PH"
+      }
+    },
+    {
+      "id": "1001O5678",
+      "name": "Civil Engineering",
+      "level": "bachelor",
+      "sector": "wo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "TECHNIEK",
+      "city": "ENSCHEDE",
+      "externalRefs": {
+        "rioCode": "1001O5678",
+        "isat": "50352",
+        "instCode": "21PH"
+      }
+    },
+    {
+      "id": "1001O5958",
+      "name": "Communicatiewetenschap",
+      "level": "bachelor",
+      "sector": "wo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "GEDRAG_EN_MAATSCHAPPIJ",
+      "city": "ENSCHEDE",
+      "externalRefs": {
+        "rioCode": "1001O5958",
+        "isat": "56615",
+        "instCode": "21PH"
+      }
+    },
+    {
+      "id": "1001O5701",
+      "name": "Creative Technology",
+      "level": "bachelor",
+      "sector": "wo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "TECHNIEK",
+      "city": "ENSCHEDE",
+      "externalRefs": {
+        "rioCode": "1001O5701",
+        "isat": "50447",
+        "instCode": "21PH"
+      }
+    },
+    {
+      "id": "1001O5701",
+      "name": "Creative Technology",
+      "level": "bachelor",
+      "sector": "wo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "TECHNIEK",
+      "city": "AMSTERDAM",
+      "externalRefs": {
+        "rioCode": "1001O5701",
+        "isat": "50447",
+        "instCode": "21PH"
+      }
+    },
+    {
+      "id": "1001O6142",
+      "name": "Electrical Engineering",
+      "level": "bachelor",
+      "sector": "wo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "TECHNIEK",
+      "city": "ENSCHEDE",
+      "externalRefs": {
+        "rioCode": "1001O6142",
+        "isat": "56953",
+        "instCode": "21PH"
+      }
+    },
+    {
+      "id": "1001O5912",
+      "name": "Gezondheidswetenschappen",
+      "level": "bachelor",
+      "sector": "wo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "GEZONDHEIDSZORG",
+      "city": "ENSCHEDE",
+      "externalRefs": {
+        "rioCode": "1001O5912",
+        "isat": "56553",
+        "instCode": "21PH"
+      }
+    },
+    {
+      "id": "1001O5775",
+      "name": "Industrial Design Engineering",
+      "level": "bachelor",
+      "sector": "wo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "TECHNIEK",
+      "city": "ENSCHEDE",
+      "externalRefs": {
+        "rioCode": "1001O5775",
+        "isat": "50975",
+        "instCode": "21PH"
+      }
+    },
+    {
+      "id": "1001O5771",
+      "name": "International Business Administration",
+      "level": "bachelor",
+      "sector": "wo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "ECONOMIE",
+      "city": "ENSCHEDE",
+      "externalRefs": {
+        "rioCode": "1001O5771",
+        "isat": "50952",
+        "instCode": "21PH"
+      }
+    },
+    {
+      "id": "1001O5650",
+      "name": "Klinische Technologie",
+      "level": "bachelor",
+      "sector": "wo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "GEZONDHEIDSZORG",
+      "city": "ENSCHEDE",
+      "externalRefs": {
+        "rioCode": "1001O5650",
+        "isat": "50033",
+        "instCode": "21PH"
+      }
+    },
+    {
+      "id": "1001O5974",
+      "name": "Management, Society and Technology",
+      "level": "bachelor",
+      "sector": "wo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "GEDRAG_EN_MAATSCHAPPIJ",
+      "city": "ENSCHEDE",
+      "externalRefs": {
+        "rioCode": "1001O5974",
+        "isat": "56654",
+        "instCode": "21PH"
+      }
+    },
+    {
+      "id": "1001O5698",
+      "name": "Mechanical Engineering",
+      "level": "bachelor",
+      "sector": "wo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "TECHNIEK",
+      "city": "ENSCHEDE",
+      "externalRefs": {
+        "rioCode": "1001O5698",
+        "isat": "50439",
+        "instCode": "21PH"
+      }
+    },
+    {
+      "id": "1001O5698",
+      "name": "Mechanical Engineering",
+      "level": "bachelor",
+      "sector": "wo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "TECHNIEK",
+      "city": "AMSTERDAM",
+      "externalRefs": {
+        "rioCode": "1001O5698",
+        "isat": "50439",
+        "instCode": "21PH"
+      }
+    },
+    {
+      "id": "1001O5932",
+      "name": "Psychologie",
+      "level": "bachelor",
+      "sector": "wo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "GEDRAG_EN_MAATSCHAPPIJ",
+      "city": "ENSCHEDE",
+      "externalRefs": {
+        "rioCode": "1001O5932",
+        "isat": "56604",
+        "instCode": "21PH"
+      }
+    },
+    {
+      "id": "1001O6151",
+      "name": "Scheikundige Technologie",
+      "level": "bachelor",
+      "sector": "wo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "TECHNIEK",
+      "city": "ENSCHEDE",
+      "externalRefs": {
+        "rioCode": "1001O6151",
+        "isat": "56960",
+        "instCode": "21PH"
+      }
+    },
+    {
+      "id": "1001O6242",
+      "name": "Technical Computer Science",
+      "level": "bachelor",
+      "sector": "wo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "TECHNIEK",
+      "city": "ENSCHEDE",
+      "externalRefs": {
+        "rioCode": "1001O6242",
+        "isat": "59335",
+        "instCode": "21PH"
+      }
+    },
+    {
+      "id": "1001O6212",
+      "name": "Technische Bedrijfskunde",
+      "level": "bachelor",
+      "sector": "wo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "TECHNIEK",
+      "city": "ENSCHEDE",
+      "externalRefs": {
+        "rioCode": "1001O6212",
+        "isat": "56994",
+        "instCode": "21PH"
+      }
+    },
+    {
+      "id": "1001O6155",
+      "name": "Technische Natuurkunde",
+      "level": "bachelor",
+      "sector": "wo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "TECHNIEK",
+      "city": "ENSCHEDE",
+      "externalRefs": {
+        "rioCode": "1001O6155",
+        "isat": "56962",
+        "instCode": "21PH"
+      }
+    },
+    {
+      "id": "1001O5695",
+      "name": "Technology and Liberal Arts & Sciences",
+      "level": "bachelor",
+      "sector": "wo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "SECTOROVERSTIJGEND",
+      "subDiscipline": "ONDERWIJS_LANDBOUW_EN_NATUURLIJKE_OMGEVING_NATUUR_TECHNIEK_GEZONDHEID",
+      "city": "ENSCHEDE",
+      "externalRefs": {
+        "rioCode": "1001O5695",
+        "isat": "50427",
+        "instCode": "21PH"
+      }
+    }
+  ],
+  "premaster": [
+    {
+      "id": "1001O8809",
+      "name": "Cartography (joint degree)",
+      "level": "premaster",
+      "sector": "wo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "TECHNIEK",
+      "city": "ENSCHEDE",
+      "externalRefs": {
+        "rioCode": "1001O8809",
+        "isat": "75157",
+        "instCode": "21PH"
+      }
+    },
+    {
+      "id": "1001O8108",
+      "name": "Geo-information Science and Earth Observation",
+      "level": "premaster",
+      "sector": "wo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "TECHNIEK",
+      "city": "ENSCHEDE",
+      "externalRefs": {
+        "rioCode": "1001O8108",
+        "isat": "75014",
+        "instCode": "21PH"
+      }
+    },
+    {
+      "id": "1001O8961",
+      "name": "Publiek Management",
+      "level": "premaster",
+      "sector": "wo",
+      "modes": [
+        "parttime"
+      ],
+      "isVariant": false,
+      "discipline": "GEDRAG_EN_MAATSCHAPPIJ",
+      "city": "ENSCHEDE",
+      "externalRefs": {
+        "rioCode": "1001O8961",
+        "isat": "75165",
+        "instCode": "21PH"
+      }
+    },
+    {
+      "id": "1001O8189",
+      "name": "Risicomanagement",
+      "level": "premaster",
+      "sector": "wo",
+      "modes": [
+        "parttime"
+      ],
+      "isVariant": false,
+      "discipline": "GEDRAG_EN_MAATSCHAPPIJ",
+      "city": "ENSCHEDE",
+      "externalRefs": {
+        "rioCode": "1001O8189",
+        "isat": "75083",
+        "instCode": "21PH"
+      }
+    }
+  ],
+  "master": [
+    {
+      "id": "1001O6673",
+      "name": "Applied Mathematics",
+      "level": "master",
+      "sector": "wo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "TECHNIEK",
+      "city": "ENSCHEDE",
+      "externalRefs": {
+        "rioCode": "1001O6673",
+        "isat": "60348",
+        "instCode": "21PH"
+      }
+    },
+    {
+      "id": "1001O6765",
+      "name": "Applied Physics",
+      "level": "master",
+      "sector": "wo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "TECHNIEK",
+      "city": "ENSCHEDE",
+      "externalRefs": {
+        "rioCode": "1001O6765",
+        "isat": "60436",
+        "instCode": "21PH"
+      }
+    },
+    {
+      "id": "1001O7276",
+      "name": "Biomedical Engineering",
+      "level": "master",
+      "sector": "wo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "TECHNIEK",
+      "city": "ENSCHEDE",
+      "externalRefs": {
+        "rioCode": "1001O7276",
+        "isat": "66226",
+        "instCode": "21PH"
+      }
+    },
+    {
+      "id": "1001O6876",
+      "name": "Business Administration",
+      "level": "master",
+      "sector": "wo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "ECONOMIE",
+      "city": "ENSCHEDE",
+      "externalRefs": {
+        "rioCode": "1001O6876",
+        "isat": "60644",
+        "instCode": "21PH"
+      }
+    },
+    {
+      "id": "1001O6271",
+      "name": "Business Information Technology",
+      "level": "master",
+      "sector": "wo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "TECHNIEK",
+      "city": "ENSCHEDE",
+      "externalRefs": {
+        "rioCode": "1001O6271",
+        "isat": "60025",
+        "instCode": "21PH"
+      }
+    },
+    {
+      "id": "1001O7158",
+      "name": "Chemical Science & Engineering",
+      "level": "master",
+      "sector": "wo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "TECHNIEK",
+      "city": "ENSCHEDE",
+      "externalRefs": {
+        "rioCode": "1001O7158",
+        "isat": "60977",
+        "instCode": "21PH"
+      }
+    },
+    {
+      "id": "1001O6272",
+      "name": "Civil Engineering and Management",
+      "level": "master",
+      "sector": "wo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "TECHNIEK",
+      "city": "ENSCHEDE",
+      "externalRefs": {
+        "rioCode": "1001O6272",
+        "isat": "60026",
+        "instCode": "21PH"
+      }
+    },
+    {
+      "id": "1001O6935",
+      "name": "Communication Science",
+      "level": "master",
+      "sector": "wo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "GEDRAG_EN_MAATSCHAPPIJ",
+      "city": "ENSCHEDE",
+      "externalRefs": {
+        "rioCode": "1001O6935",
+        "isat": "60713",
+        "instCode": "21PH"
+      }
+    },
+    {
+      "id": "1001O6613",
+      "name": "Computer Science",
+      "level": "master",
+      "sector": "wo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "TECHNIEK",
+      "city": "ENSCHEDE",
+      "externalRefs": {
+        "rioCode": "1001O6613",
+        "isat": "60300",
+        "instCode": "21PH"
+      }
+    },
+    {
+      "id": "1001O6659",
+      "name": "Construction Management and Engineering",
+      "level": "master",
+      "sector": "wo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "TECHNIEK",
+      "city": "ENSCHEDE",
+      "externalRefs": {
+        "rioCode": "1001O6659",
+        "isat": "60337",
+        "instCode": "21PH"
+      }
+    },
+    {
+      "id": "1001O8853",
+      "name": "Educatie in de Bètawetenschappen",
+      "level": "master",
+      "sector": "wo",
+      "modes": [
+        "parttime"
+      ],
+      "isVariant": false,
+      "discipline": "ONDERWIJS",
+      "city": "ENSCHEDE",
+      "externalRefs": {
+        "rioCode": "1001O8853",
+        "isat": "69345",
+        "instCode": "21PH"
+      }
+    },
+    {
+      "id": "1001O8853",
+      "name": "Educatie in de Bètawetenschappen",
+      "level": "master",
+      "sector": "wo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "ONDERWIJS",
+      "city": "ENSCHEDE",
+      "externalRefs": {
+        "rioCode": "1001O8853",
+        "isat": "69345",
+        "instCode": "21PH"
+      }
+    },
+    {
+      "id": "1001O6269",
+      "name": "Educational Science and Technology",
+      "level": "master",
+      "sector": "wo",
+      "modes": [
+        "parttime"
+      ],
+      "isVariant": false,
+      "discipline": "GEDRAG_EN_MAATSCHAPPIJ",
+      "city": "ENSCHEDE",
+      "externalRefs": {
+        "rioCode": "1001O6269",
+        "isat": "60023",
+        "instCode": "21PH"
+      }
+    },
+    {
+      "id": "1001O6269",
+      "name": "Educational Science and Technology",
+      "level": "master",
+      "sector": "wo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "GEDRAG_EN_MAATSCHAPPIJ",
+      "city": "ENSCHEDE",
+      "externalRefs": {
+        "rioCode": "1001O6269",
+        "isat": "60023",
+        "instCode": "21PH"
+      }
+    },
+    {
+      "id": "1001O6680",
+      "name": "Electrical Engineering",
+      "level": "master",
+      "sector": "wo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "TECHNIEK",
+      "city": "ENSCHEDE",
+      "externalRefs": {
+        "rioCode": "1001O6680",
+        "isat": "60353",
+        "instCode": "21PH"
+      }
+    },
+    {
+      "id": "1001O6651",
+      "name": "Embedded Systems",
+      "level": "master",
+      "sector": "wo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "TECHNIEK",
+      "city": "ENSCHEDE",
+      "externalRefs": {
+        "rioCode": "1001O6651",
+        "isat": "60331",
+        "instCode": "21PH"
+      }
+    },
+    {
+      "id": "1001O7801",
+      "name": "Environmental and Energy Management",
+      "level": "master",
+      "sector": "wo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "GEDRAG_EN_MAATSCHAPPIJ",
+      "city": "LEEUWARDEN",
+      "externalRefs": {
+        "rioCode": "1001O7801",
+        "isat": "69319",
+        "instCode": "21PH"
+      }
+    },
+    {
+      "id": "1001O7791",
+      "name": "European Studies",
+      "level": "master",
+      "sector": "wo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "GEDRAG_EN_MAATSCHAPPIJ",
+      "city": "ENSCHEDE",
+      "externalRefs": {
+        "rioCode": "1001O7791",
+        "isat": "69303",
+        "instCode": "21PH"
+      }
+    },
+    {
+      "id": "1001O8871",
+      "name": "Geographical Information Management and Applications (joint degree)",
+      "level": "master",
+      "sector": "wo",
+      "modes": [
+        "parttime"
+      ],
+      "isVariant": false,
+      "discipline": "NATUUR",
+      "city": "ENSCHEDE",
+      "externalRefs": {
+        "rioCode": "1001O8871",
+        "isat": "65030",
+        "instCode": "21PH"
+      }
+    },
+    {
+      "id": "1001O8871",
+      "name": "Geographical Information Management and Applications (joint degree)",
+      "level": "master",
+      "sector": "wo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "NATUUR",
+      "city": "ENSCHEDE",
+      "externalRefs": {
+        "rioCode": "1001O8871",
+        "isat": "65030",
+        "instCode": "21PH"
+      }
+    },
+    {
+      "id": "1001O7498",
+      "name": "Health Sciences",
+      "level": "master",
+      "sector": "wo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "GEZONDHEIDSZORG",
+      "city": "ENSCHEDE",
+      "externalRefs": {
+        "rioCode": "1001O7498",
+        "isat": "66851",
+        "instCode": "21PH"
+      }
+    },
+    {
+      "id": "1001O8932",
+      "name": "Humanitarian Engineering",
+      "level": "master",
+      "sector": "wo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "TECHNIEK",
+      "city": "ENSCHEDE",
+      "externalRefs": {
+        "rioCode": "1001O8932",
+        "isat": "60475",
+        "instCode": "21PH"
+      }
+    },
+    {
+      "id": "1001O7522",
+      "name": "Industrial Design Engineering",
+      "level": "master",
+      "sector": "wo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "TECHNIEK",
+      "city": "ENSCHEDE",
+      "externalRefs": {
+        "rioCode": "1001O7522",
+        "isat": "66955",
+        "instCode": "21PH"
+      }
+    },
+    {
+      "id": "1001O6276",
+      "name": "Industrial Engineering and Management",
+      "level": "master",
+      "sector": "wo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "TECHNIEK",
+      "city": "ENSCHEDE",
+      "externalRefs": {
+        "rioCode": "1001O6276",
+        "isat": "60029",
+        "instCode": "21PH"
+      }
+    },
+    {
+      "id": "1001O6277",
+      "name": "Interaction Technology",
+      "level": "master",
+      "sector": "wo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "TECHNIEK",
+      "city": "ENSCHEDE",
+      "externalRefs": {
+        "rioCode": "1001O6277",
+        "isat": "60030",
+        "instCode": "21PH"
+      }
+    },
+    {
+      "id": "1001O6774",
+      "name": "Mechanical Engineering",
+      "level": "master",
+      "sector": "wo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "TECHNIEK",
+      "city": "ENSCHEDE",
+      "externalRefs": {
+        "rioCode": "1001O6774",
+        "isat": "60439",
+        "instCode": "21PH"
+      }
+    },
+    {
+      "id": "1001O6274",
+      "name": "Nanotechnology",
+      "level": "master",
+      "sector": "wo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "TECHNIEK",
+      "city": "ENSCHEDE",
+      "externalRefs": {
+        "rioCode": "1001O6274",
+        "isat": "60028",
+        "instCode": "21PH"
+      }
+    },
+    {
+      "id": "1001O6270",
+      "name": "Philosophy of Science, Technology and Society",
+      "level": "master",
+      "sector": "wo",
+      "modes": [
+        "parttime"
+      ],
+      "isVariant": false,
+      "discipline": "TAAL_EN_CULTUUR",
+      "city": "ENSCHEDE",
+      "externalRefs": {
+        "rioCode": "1001O6270",
+        "isat": "60024",
+        "instCode": "21PH"
+      }
+    },
+    {
+      "id": "1001O6270",
+      "name": "Philosophy of Science, Technology and Society",
+      "level": "master",
+      "sector": "wo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "TAAL_EN_CULTUUR",
+      "city": "ENSCHEDE",
+      "externalRefs": {
+        "rioCode": "1001O6270",
+        "isat": "60024",
+        "instCode": "21PH"
+      }
+    },
+    {
+      "id": "1001O7349",
+      "name": "Psychology",
+      "level": "master",
+      "sector": "wo",
+      "modes": [
+        "parttime"
+      ],
+      "isVariant": false,
+      "discipline": "GEDRAG_EN_MAATSCHAPPIJ",
+      "city": "ENSCHEDE",
+      "externalRefs": {
+        "rioCode": "1001O7349",
+        "isat": "66604",
+        "instCode": "21PH"
+      }
+    },
+    {
+      "id": "1001O7349",
+      "name": "Psychology",
+      "level": "master",
+      "sector": "wo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "GEDRAG_EN_MAATSCHAPPIJ",
+      "city": "ENSCHEDE",
+      "externalRefs": {
+        "rioCode": "1001O7349",
+        "isat": "66604",
+        "instCode": "21PH"
+      }
+    },
+    {
+      "id": "1001O6266",
+      "name": "Public Administration",
+      "level": "master",
+      "sector": "wo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "GEDRAG_EN_MAATSCHAPPIJ",
+      "city": "ENSCHEDE",
+      "externalRefs": {
+        "rioCode": "1001O6266",
+        "isat": "60020",
+        "instCode": "21PH"
+      }
+    },
+    {
+      "id": "1001O8780",
+      "name": "Robotics",
+      "level": "master",
+      "sector": "wo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "TECHNIEK",
+      "city": "ENSCHEDE",
+      "externalRefs": {
+        "rioCode": "1001O8780",
+        "isat": "60973",
+        "instCode": "21PH"
+      }
+    },
+    {
+      "id": "1001O7143",
+      "name": "Spatial Engineering",
+      "level": "master",
+      "sector": "wo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "TECHNIEK",
+      "city": "ENSCHEDE",
+      "externalRefs": {
+        "rioCode": "1001O7143",
+        "isat": "60962",
+        "instCode": "21PH"
+      }
+    },
+    {
+      "id": "1001O6778",
+      "name": "Sustainable Energy Technology",
+      "level": "master",
+      "sector": "wo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "TECHNIEK",
+      "city": "ENSCHEDE",
+      "externalRefs": {
+        "rioCode": "1001O6778",
+        "isat": "60443",
+        "instCode": "21PH"
+      }
+    },
+    {
+      "id": "1001O6688",
+      "name": "Systems and Control",
+      "level": "master",
+      "sector": "wo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "TECHNIEK",
+      "city": "ENSCHEDE",
+      "externalRefs": {
+        "rioCode": "1001O6688",
+        "isat": "60359",
+        "instCode": "21PH"
+      }
+    },
+    {
+      "id": "1001O6280",
+      "name": "Technical Medicine",
+      "level": "master",
+      "sector": "wo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "GEZONDHEIDSZORG",
+      "city": "ENSCHEDE",
+      "externalRefs": {
+        "rioCode": "1001O6280",
+        "isat": "60033",
+        "instCode": "21PH"
+      }
+    },
+    {
+      "id": "1001O7169",
+      "name": "Water Technology (joint degree)",
+      "level": "master",
+      "sector": "wo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "TECHNIEK",
+      "city": "LEEUWARDEN",
+      "externalRefs": {
+        "rioCode": "1001O7169",
+        "isat": "65005",
+        "instCode": "21PH"
+      }
+    }
+  ]
+}

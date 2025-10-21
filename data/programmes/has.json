@@ -1,0 +1,227 @@
+{
+  "bachelor": [
+    {
+      "id": "1001O2709",
+      "name": "Aarde, Data-analyse & Visualisatie",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "LANDBOUW_EN_NATUURLIJKE_OMGEVING",
+      "city": "'S-HERTOGENBOSCH",
+      "externalRefs": {
+        "rioCode": "1001O2709",
+        "isat": "30033",
+        "instCode": "21CW"
+      }
+    },
+    {
+      "id": "1001O4433",
+      "name": "Bedrijfskunde en Agribusiness",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "LANDBOUW_EN_NATUURLIJKE_OMGEVING",
+      "city": "'S-HERTOGENBOSCH",
+      "externalRefs": {
+        "rioCode": "1001O4433",
+        "isat": "34866",
+        "instCode": "21CW"
+      }
+    },
+    {
+      "id": "1001O4433",
+      "name": "Bedrijfskunde en Agribusiness",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "LANDBOUW_EN_NATUURLIJKE_OMGEVING",
+      "city": "VENLO",
+      "externalRefs": {
+        "rioCode": "1001O4433",
+        "isat": "34866",
+        "instCode": "21CW"
+      }
+    },
+    {
+      "id": "1001O4451",
+      "name": "Dier- en Veehouderij",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "LANDBOUW_EN_NATUURLIJKE_OMGEVING",
+      "city": "'S-HERTOGENBOSCH",
+      "externalRefs": {
+        "rioCode": "1001O4451",
+        "isat": "34869",
+        "instCode": "21CW"
+      }
+    },
+    {
+      "id": "1001O2943",
+      "name": "Food Innovation",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "LANDBOUW_EN_NATUURLIJKE_OMGEVING",
+      "city": "'S-HERTOGENBOSCH",
+      "externalRefs": {
+        "rioCode": "1001O2943",
+        "isat": "34122",
+        "instCode": "21CW"
+      }
+    },
+    {
+      "id": "1001O2943",
+      "name": "Food Innovation",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "LANDBOUW_EN_NATUURLIJKE_OMGEVING",
+      "city": "VENLO",
+      "externalRefs": {
+        "rioCode": "1001O2943",
+        "isat": "34122",
+        "instCode": "21CW"
+      }
+    },
+    {
+      "id": "1001O5305",
+      "name": "International Food & Agribusiness",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "LANDBOUW_EN_NATUURLIJKE_OMGEVING",
+      "city": "'S-HERTOGENBOSCH",
+      "externalRefs": {
+        "rioCode": "1001O5305",
+        "isat": "39281",
+        "instCode": "21CW"
+      }
+    },
+    {
+      "id": "1001O4418",
+      "name": "Management van de Leefomgeving",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "LANDBOUW_EN_NATUURLIJKE_OMGEVING",
+      "city": "'S-HERTOGENBOSCH",
+      "externalRefs": {
+        "rioCode": "1001O4418",
+        "isat": "34859",
+        "instCode": "21CW"
+      }
+    },
+    {
+      "id": "1001O3227",
+      "name": "Milieukunde",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "LANDBOUW_EN_NATUURLIJKE_OMGEVING",
+      "city": "'S-HERTOGENBOSCH",
+      "externalRefs": {
+        "rioCode": "1001O3227",
+        "isat": "34284",
+        "instCode": "21CW"
+      }
+    },
+    {
+      "id": "1001O2645",
+      "name": "Toegepaste Biologie",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "LANDBOUW_EN_NATUURLIJKE_OMGEVING",
+      "city": "'S-HERTOGENBOSCH",
+      "externalRefs": {
+        "rioCode": "1001O2645",
+        "isat": "30009",
+        "instCode": "21CW"
+      }
+    },
+    {
+      "id": "1001O2645",
+      "name": "Toegepaste Biologie",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "LANDBOUW_EN_NATUURLIJKE_OMGEVING",
+      "city": "VENLO",
+      "externalRefs": {
+        "rioCode": "1001O2645",
+        "isat": "30009",
+        "instCode": "21CW"
+      }
+    },
+    {
+      "id": "1001O4443",
+      "name": "Tuinbouw en Akkerbouw",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "LANDBOUW_EN_NATUURLIJKE_OMGEVING",
+      "city": "'S-HERTOGENBOSCH",
+      "externalRefs": {
+        "rioCode": "1001O4443",
+        "isat": "34868",
+        "instCode": "21CW"
+      }
+    },
+    {
+      "id": "1001O4411",
+      "name": "Voedingsmiddelentechnologie",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "LANDBOUW_EN_NATUURLIJKE_OMGEVING",
+      "city": "'S-HERTOGENBOSCH",
+      "externalRefs": {
+        "rioCode": "1001O4411",
+        "isat": "34856",
+        "instCode": "21CW"
+      }
+    }
+  ],
+  "premaster": [],
+  "master": []
+}

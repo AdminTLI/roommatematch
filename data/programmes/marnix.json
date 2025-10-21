@@ -1,0 +1,178 @@
+{
+  "bachelor": [
+    {
+      "id": "1001O4370",
+      "name": "Opleiding tot leraar Basisonderwijs",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "parttime"
+      ],
+      "isVariant": false,
+      "discipline": "ONDERWIJS",
+      "city": "UTRECHT",
+      "externalRefs": {
+        "rioCode": "1001O4370",
+        "isat": "34808",
+        "instCode": "10IZ"
+      }
+    },
+    {
+      "id": "1001O4370",
+      "name": "Opleiding tot leraar Basisonderwijs",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "dual"
+      ],
+      "isVariant": false,
+      "discipline": "ONDERWIJS",
+      "city": "UTRECHT",
+      "externalRefs": {
+        "rioCode": "1001O4370",
+        "isat": "34808",
+        "instCode": "10IZ"
+      }
+    },
+    {
+      "id": "1001O4370",
+      "name": "Opleiding tot leraar Basisonderwijs",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "ONDERWIJS",
+      "city": "UTRECHT",
+      "externalRefs": {
+        "rioCode": "1001O4370",
+        "isat": "34808",
+        "instCode": "10IZ"
+      }
+    }
+  ],
+  "premaster": [
+    {
+      "id": "1001O7992",
+      "name": "Educational Leadership",
+      "level": "premaster",
+      "sector": "hbo",
+      "modes": [
+        "parttime"
+      ],
+      "isVariant": false,
+      "discipline": "ONDERWIJS",
+      "city": "UTRECHT",
+      "externalRefs": {
+        "rioCode": "1001O7992",
+        "isat": "70139",
+        "instCode": "10IZ"
+      }
+    },
+    {
+      "id": "1001O8093",
+      "name": "Onderwijs & Technologie",
+      "level": "premaster",
+      "sector": "hbo",
+      "modes": [
+        "parttime"
+      ],
+      "isVariant": false,
+      "discipline": "ONDERWIJS",
+      "city": "UTRECHT",
+      "externalRefs": {
+        "rioCode": "1001O8093",
+        "isat": "70217",
+        "instCode": "10IZ"
+      }
+    },
+    {
+      "id": "1001O8093",
+      "name": "Onderwijs & Technologie",
+      "level": "premaster",
+      "sector": "hbo",
+      "modes": [
+        "parttime"
+      ],
+      "isVariant": false,
+      "discipline": "ONDERWIJS",
+      "city": "HELMOND",
+      "externalRefs": {
+        "rioCode": "1001O8093",
+        "isat": "70217",
+        "instCode": "10IZ"
+      }
+    },
+    {
+      "id": "1001O8093",
+      "name": "Onderwijs & Technologie",
+      "level": "premaster",
+      "sector": "hbo",
+      "modes": [
+        "parttime"
+      ],
+      "isVariant": false,
+      "discipline": "ONDERWIJS",
+      "city": "ALKMAAR",
+      "externalRefs": {
+        "rioCode": "1001O8093",
+        "isat": "70217",
+        "instCode": "10IZ"
+      }
+    },
+    {
+      "id": "1001O8093",
+      "name": "Onderwijs & Technologie",
+      "level": "premaster",
+      "sector": "hbo",
+      "modes": [
+        "parttime"
+      ],
+      "isVariant": false,
+      "discipline": "ONDERWIJS",
+      "city": "AMSTERDAM",
+      "externalRefs": {
+        "rioCode": "1001O8093",
+        "isat": "70217",
+        "instCode": "10IZ"
+      }
+    }
+  ],
+  "master": [
+    {
+      "id": "1001O5347",
+      "name": "Leren en Innoveren",
+      "level": "master",
+      "sector": "hbo",
+      "modes": [
+        "parttime"
+      ],
+      "isVariant": false,
+      "discipline": "ONDERWIJS",
+      "city": "UTRECHT",
+      "externalRefs": {
+        "rioCode": "1001O5347",
+        "isat": "44135",
+        "instCode": "10IZ"
+      }
+    },
+    {
+      "id": "1001O5584",
+      "name": "Passend Meesterschap",
+      "level": "master",
+      "sector": "hbo",
+      "modes": [
+        "parttime"
+      ],
+      "isVariant": false,
+      "discipline": "ONDERWIJS",
+      "city": "UTRECHT",
+      "externalRefs": {
+        "rioCode": "1001O5584",
+        "isat": "49288",
+        "instCode": "10IZ"
+      }
+    }
+  ]
+}

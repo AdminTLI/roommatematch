@@ -20,6 +20,8 @@
     "import:programs": "tsx scripts/import_programs.ts",
     "import:programs:watch": "tsx --watch scripts/import_programs.ts",
     "sync:programmes": "tsx scripts/sync-duo-programmes.ts",
+    "infer:brin": "tsx scripts/infer-brin-map.ts",
+    "qa:premasters": "tsx scripts/qa-premasters.ts",
     "demo:user": "tsx scripts/create-demo-user.ts"
   },
   "dependencies": {

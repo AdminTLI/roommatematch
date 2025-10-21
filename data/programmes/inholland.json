@@ -1,0 +1,1947 @@
+{
+  "bachelor": [
+    {
+      "id": "1001O3549",
+      "name": "Accountancy",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "ECONOMIE",
+      "city": "ROTTERDAM",
+      "externalRefs": {
+        "rioCode": "1001O3549",
+        "isat": "34406",
+        "instCode": "27PZ"
+      }
+    },
+    {
+      "id": "1001O3549",
+      "name": "Accountancy",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "ECONOMIE",
+      "city": "ALKMAAR",
+      "externalRefs": {
+        "rioCode": "1001O3549",
+        "isat": "34406",
+        "instCode": "27PZ"
+      }
+    },
+    {
+      "id": "1001O3549",
+      "name": "Accountancy",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "ECONOMIE",
+      "city": "AMSTERDAM",
+      "externalRefs": {
+        "rioCode": "1001O3549",
+        "isat": "34406",
+        "instCode": "27PZ"
+      }
+    },
+    {
+      "id": "1001O3362",
+      "name": "Biologie en Medisch Laboratoriumonderzoek",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "TECHNIEK",
+      "city": "AMSTERDAM",
+      "externalRefs": {
+        "rioCode": "1001O3362",
+        "isat": "34397",
+        "instCode": "27PZ"
+      }
+    },
+    {
+      "id": "1001O3268",
+      "name": "Biotechnologie",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "LANDBOUW_EN_NATUURLIJKE_OMGEVING",
+      "city": "AMSTERDAM",
+      "externalRefs": {
+        "rioCode": "1001O3268",
+        "isat": "34331",
+        "instCode": "27PZ"
+      }
+    },
+    {
+      "id": "1001O3064",
+      "name": "Bouwkunde",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "TECHNIEK",
+      "city": "ALKMAAR",
+      "externalRefs": {
+        "rioCode": "1001O3064",
+        "isat": "34263",
+        "instCode": "27PZ"
+      }
+    },
+    {
+      "id": "1001O3064",
+      "name": "Bouwkunde",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "TECHNIEK",
+      "city": "HAARLEM",
+      "externalRefs": {
+        "rioCode": "1001O3064",
+        "isat": "34263",
+        "instCode": "27PZ"
+      }
+    },
+    {
+      "id": "1001O5009",
+      "name": "Business Innovation",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "ECONOMIE",
+      "city": "AMSTERDAM",
+      "externalRefs": {
+        "rioCode": "1001O5009",
+        "isat": "35515",
+        "instCode": "27PZ"
+      }
+    },
+    {
+      "id": "1001O5141",
+      "name": "Business IT & Management",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "ECONOMIE",
+      "city": "ALKMAAR",
+      "externalRefs": {
+        "rioCode": "1001O5141",
+        "isat": "39118",
+        "instCode": "27PZ"
+      }
+    },
+    {
+      "id": "1001O5141",
+      "name": "Business IT & Management",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "parttime"
+      ],
+      "isVariant": false,
+      "discipline": "ECONOMIE",
+      "city": "AMSTERDAM",
+      "externalRefs": {
+        "rioCode": "1001O5141",
+        "isat": "39118",
+        "instCode": "27PZ"
+      }
+    },
+    {
+      "id": "1001O5141",
+      "name": "Business IT & Management",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "ECONOMIE",
+      "city": "AMSTERDAM",
+      "externalRefs": {
+        "rioCode": "1001O5141",
+        "isat": "39118",
+        "instCode": "27PZ"
+      }
+    },
+    {
+      "id": "1001O2990",
+      "name": "Business Studies",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "ECONOMIE",
+      "city": "ROTTERDAM",
+      "externalRefs": {
+        "rioCode": "1001O2990",
+        "isat": "34145",
+        "instCode": "27PZ"
+      }
+    },
+    {
+      "id": "1001O2990",
+      "name": "Business Studies",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "ECONOMIE",
+      "city": "ALKMAAR",
+      "externalRefs": {
+        "rioCode": "1001O2990",
+        "isat": "34145",
+        "instCode": "27PZ"
+      }
+    },
+    {
+      "id": "1001O2990",
+      "name": "Business Studies",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "ECONOMIE",
+      "city": "HAARLEM",
+      "externalRefs": {
+        "rioCode": "1001O2990",
+        "isat": "34145",
+        "instCode": "27PZ"
+      }
+    },
+    {
+      "id": "1001O2990",
+      "name": "Business Studies",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "ECONOMIE",
+      "city": "AMSTERDAM",
+      "externalRefs": {
+        "rioCode": "1001O2990",
+        "isat": "34145",
+        "instCode": "27PZ"
+      }
+    },
+    {
+      "id": "1001O2990",
+      "name": "Business Studies",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "ECONOMIE",
+      "city": "'S-GRAVENHAGE",
+      "externalRefs": {
+        "rioCode": "1001O2990",
+        "isat": "34145",
+        "instCode": "27PZ"
+      }
+    },
+    {
+      "id": "1001O3342",
+      "name": "Chemie",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "TECHNIEK",
+      "city": "AMSTERDAM",
+      "externalRefs": {
+        "rioCode": "1001O3342",
+        "isat": "34396",
+        "instCode": "27PZ"
+      }
+    },
+    {
+      "id": "1001O3181",
+      "name": "Civiele Techniek",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "TECHNIEK",
+      "city": "ALKMAAR",
+      "externalRefs": {
+        "rioCode": "1001O3181",
+        "isat": "34279",
+        "instCode": "27PZ"
+      }
+    },
+    {
+      "id": "1001O3515",
+      "name": "Communicatie",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "ECONOMIE",
+      "city": "ROTTERDAM",
+      "externalRefs": {
+        "rioCode": "1001O3515",
+        "isat": "34405",
+        "instCode": "27PZ"
+      }
+    },
+    {
+      "id": "1001O3515",
+      "name": "Communicatie",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "ECONOMIE",
+      "city": "AMSTERDAM",
+      "externalRefs": {
+        "rioCode": "1001O3515",
+        "isat": "34405",
+        "instCode": "27PZ"
+      }
+    },
+    {
+      "id": "1001O3515",
+      "name": "Communicatie",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "ECONOMIE",
+      "city": "'S-GRAVENHAGE",
+      "externalRefs": {
+        "rioCode": "1001O3515",
+        "isat": "34405",
+        "instCode": "27PZ"
+      }
+    },
+    {
+      "id": "1001O5013",
+      "name": "Creative Business",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "ECONOMIE",
+      "city": "ROTTERDAM",
+      "externalRefs": {
+        "rioCode": "1001O5013",
+        "isat": "35516",
+        "instCode": "27PZ"
+      }
+    },
+    {
+      "id": "1001O5013",
+      "name": "Creative Business",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "ECONOMIE",
+      "city": "HAARLEM",
+      "externalRefs": {
+        "rioCode": "1001O5013",
+        "isat": "35516",
+        "instCode": "27PZ"
+      }
+    },
+    {
+      "id": "1001O5013",
+      "name": "Creative Business",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "ECONOMIE",
+      "city": "'S-GRAVENHAGE",
+      "externalRefs": {
+        "rioCode": "1001O5013",
+        "isat": "35516",
+        "instCode": "27PZ"
+      }
+    },
+    {
+      "id": "1001O4455",
+      "name": "Dier- en Veehouderij",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "LANDBOUW_EN_NATUURLIJKE_OMGEVING",
+      "city": "DELFT",
+      "externalRefs": {
+        "rioCode": "1001O4455",
+        "isat": "34869",
+        "instCode": "27PZ"
+      }
+    },
+    {
+      "id": "1001O3092",
+      "name": "Elektrotechniek",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "parttime"
+      ],
+      "isVariant": false,
+      "discipline": "TECHNIEK",
+      "city": "ALKMAAR",
+      "externalRefs": {
+        "rioCode": "1001O3092",
+        "isat": "34267",
+        "instCode": "27PZ"
+      }
+    },
+    {
+      "id": "1001O3092",
+      "name": "Elektrotechniek",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "TECHNIEK",
+      "city": "ALKMAAR",
+      "externalRefs": {
+        "rioCode": "1001O3092",
+        "isat": "34267",
+        "instCode": "27PZ"
+      }
+    },
+    {
+      "id": "1001O3934",
+      "name": "Facility Management",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "ECONOMIE",
+      "city": "AMSTERDAM",
+      "externalRefs": {
+        "rioCode": "1001O3934",
+        "isat": "34500",
+        "instCode": "27PZ"
+      }
+    },
+    {
+      "id": "1001O5035",
+      "name": "Finance & Control",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "ECONOMIE",
+      "city": "ROTTERDAM",
+      "externalRefs": {
+        "rioCode": "1001O5035",
+        "isat": "35520",
+        "instCode": "27PZ"
+      }
+    },
+    {
+      "id": "1001O5035",
+      "name": "Finance & Control",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "ECONOMIE",
+      "city": "ALKMAAR",
+      "externalRefs": {
+        "rioCode": "1001O5035",
+        "isat": "35520",
+        "instCode": "27PZ"
+      }
+    },
+    {
+      "id": "1001O5035",
+      "name": "Finance & Control",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "ECONOMIE",
+      "city": "HAARLEM",
+      "externalRefs": {
+        "rioCode": "1001O5035",
+        "isat": "35520",
+        "instCode": "27PZ"
+      }
+    },
+    {
+      "id": "1001O5035",
+      "name": "Finance & Control",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "ECONOMIE",
+      "city": "AMSTERDAM",
+      "externalRefs": {
+        "rioCode": "1001O5035",
+        "isat": "35520",
+        "instCode": "27PZ"
+      }
+    },
+    {
+      "id": "1001O2680",
+      "name": "Food Commerce & Technology",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "LANDBOUW_EN_NATUURLIJKE_OMGEVING",
+      "city": "AMSTERDAM",
+      "externalRefs": {
+        "rioCode": "1001O2680",
+        "isat": "30022",
+        "instCode": "27PZ"
+      }
+    },
+    {
+      "id": "1001O2680",
+      "name": "Food Commerce & Technology",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "LANDBOUW_EN_NATUURLIJKE_OMGEVING",
+      "city": "DELFT",
+      "externalRefs": {
+        "rioCode": "1001O2680",
+        "isat": "30022",
+        "instCode": "27PZ"
+      }
+    },
+    {
+      "id": "1001O5191",
+      "name": "HBO - Rechten",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "parttime"
+      ],
+      "isVariant": false,
+      "discipline": "RECHT",
+      "city": "ROTTERDAM",
+      "externalRefs": {
+        "rioCode": "1001O5191",
+        "isat": "39205",
+        "instCode": "27PZ"
+      }
+    },
+    {
+      "id": "1001O5191",
+      "name": "HBO - Rechten",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "RECHT",
+      "city": "ROTTERDAM",
+      "externalRefs": {
+        "rioCode": "1001O5191",
+        "isat": "39205",
+        "instCode": "27PZ"
+      }
+    },
+    {
+      "id": "1001O3897",
+      "name": "Informatica",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "TECHNIEK",
+      "city": "HAARLEM",
+      "externalRefs": {
+        "rioCode": "1001O3897",
+        "isat": "34479",
+        "instCode": "27PZ"
+      }
+    },
+    {
+      "id": "1001O5289",
+      "name": "Integrale Veiligheidskunde",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "parttime"
+      ],
+      "isVariant": false,
+      "discipline": "ECONOMIE",
+      "city": "ROTTERDAM",
+      "externalRefs": {
+        "rioCode": "1001O5289",
+        "isat": "39268",
+        "instCode": "27PZ"
+      }
+    },
+    {
+      "id": "1001O5289",
+      "name": "Integrale Veiligheidskunde",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "ECONOMIE",
+      "city": "ROTTERDAM",
+      "externalRefs": {
+        "rioCode": "1001O5289",
+        "isat": "39268",
+        "instCode": "27PZ"
+      }
+    },
+    {
+      "id": "1001O2691",
+      "name": "Landscape and Environment Management",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "LANDBOUW_EN_NATUURLIJKE_OMGEVING",
+      "city": "DELFT",
+      "externalRefs": {
+        "rioCode": "1001O2691",
+        "isat": "30028",
+        "instCode": "27PZ"
+      }
+    },
+    {
+      "id": "1001O5042",
+      "name": "Leisure & Events Management",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "ECONOMIE",
+      "city": "AMSTERDAM",
+      "externalRefs": {
+        "rioCode": "1001O5042",
+        "isat": "35521",
+        "instCode": "27PZ"
+      }
+    },
+    {
+      "id": "1001O3164",
+      "name": "Luchtvaarttechnologie",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "TECHNIEK",
+      "city": "DELFT",
+      "externalRefs": {
+        "rioCode": "1001O3164",
+        "isat": "34278",
+        "instCode": "27PZ"
+      }
+    },
+    {
+      "id": "1001O4031",
+      "name": "Medisch Beeldvormende en Radiotherapeutische Technieken",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "dual"
+      ],
+      "isVariant": false,
+      "discipline": "GEZONDHEIDSZORG",
+      "city": "HAARLEM",
+      "externalRefs": {
+        "rioCode": "1001O4031",
+        "isat": "34561",
+        "instCode": "27PZ"
+      }
+    },
+    {
+      "id": "1001O4031",
+      "name": "Medisch Beeldvormende en Radiotherapeutische Technieken",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "GEZONDHEIDSZORG",
+      "city": "HAARLEM",
+      "externalRefs": {
+        "rioCode": "1001O4031",
+        "isat": "34561",
+        "instCode": "27PZ"
+      }
+    },
+    {
+      "id": "1001O4072",
+      "name": "Mondzorgkunde",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "GEZONDHEIDSZORG",
+      "city": "AMSTERDAM",
+      "externalRefs": {
+        "rioCode": "1001O4072",
+        "isat": "34576",
+        "instCode": "27PZ"
+      }
+    },
+    {
+      "id": "1001O4337",
+      "name": "Muziek",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "TAAL_EN_CULTUUR",
+      "subDiscipline": "OPLEIDINGEN_OP_HET_GEBIED_VAN_DE_KUNST",
+      "city": "HAARLEM",
+      "externalRefs": {
+        "rioCode": "1001O4337",
+        "isat": "34739",
+        "instCode": "27PZ"
+      }
+    },
+    {
+      "id": "1001O4397",
+      "name": "Opleiding tot leraar Basisonderwijs",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "parttime"
+      ],
+      "isVariant": false,
+      "discipline": "ONDERWIJS",
+      "city": "ROTTERDAM",
+      "externalRefs": {
+        "rioCode": "1001O4397",
+        "isat": "34808",
+        "instCode": "27PZ"
+      }
+    },
+    {
+      "id": "1001O4397",
+      "name": "Opleiding tot leraar Basisonderwijs",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "dual"
+      ],
+      "isVariant": false,
+      "discipline": "ONDERWIJS",
+      "city": "ROTTERDAM",
+      "externalRefs": {
+        "rioCode": "1001O4397",
+        "isat": "34808",
+        "instCode": "27PZ"
+      }
+    },
+    {
+      "id": "1001O4397",
+      "name": "Opleiding tot leraar Basisonderwijs",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "ONDERWIJS",
+      "city": "ROTTERDAM",
+      "externalRefs": {
+        "rioCode": "1001O4397",
+        "isat": "34808",
+        "instCode": "27PZ"
+      }
+    },
+    {
+      "id": "1001O4397",
+      "name": "Opleiding tot leraar Basisonderwijs",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "parttime"
+      ],
+      "isVariant": false,
+      "discipline": "ONDERWIJS",
+      "city": "ALKMAAR",
+      "externalRefs": {
+        "rioCode": "1001O4397",
+        "isat": "34808",
+        "instCode": "27PZ"
+      }
+    },
+    {
+      "id": "1001O4397",
+      "name": "Opleiding tot leraar Basisonderwijs",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "dual"
+      ],
+      "isVariant": false,
+      "discipline": "ONDERWIJS",
+      "city": "ALKMAAR",
+      "externalRefs": {
+        "rioCode": "1001O4397",
+        "isat": "34808",
+        "instCode": "27PZ"
+      }
+    },
+    {
+      "id": "1001O4397",
+      "name": "Opleiding tot leraar Basisonderwijs",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "ONDERWIJS",
+      "city": "ALKMAAR",
+      "externalRefs": {
+        "rioCode": "1001O4397",
+        "isat": "34808",
+        "instCode": "27PZ"
+      }
+    },
+    {
+      "id": "1001O4397",
+      "name": "Opleiding tot leraar Basisonderwijs",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "parttime"
+      ],
+      "isVariant": false,
+      "discipline": "ONDERWIJS",
+      "city": "HAARLEM",
+      "externalRefs": {
+        "rioCode": "1001O4397",
+        "isat": "34808",
+        "instCode": "27PZ"
+      }
+    },
+    {
+      "id": "1001O4397",
+      "name": "Opleiding tot leraar Basisonderwijs",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "dual"
+      ],
+      "isVariant": false,
+      "discipline": "ONDERWIJS",
+      "city": "HAARLEM",
+      "externalRefs": {
+        "rioCode": "1001O4397",
+        "isat": "34808",
+        "instCode": "27PZ"
+      }
+    },
+    {
+      "id": "1001O4397",
+      "name": "Opleiding tot leraar Basisonderwijs",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "ONDERWIJS",
+      "city": "HAARLEM",
+      "externalRefs": {
+        "rioCode": "1001O4397",
+        "isat": "34808",
+        "instCode": "27PZ"
+      }
+    },
+    {
+      "id": "1001O4397",
+      "name": "Opleiding tot leraar Basisonderwijs",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "parttime"
+      ],
+      "isVariant": false,
+      "discipline": "ONDERWIJS",
+      "city": "DORDRECHT",
+      "externalRefs": {
+        "rioCode": "1001O4397",
+        "isat": "34808",
+        "instCode": "27PZ"
+      }
+    },
+    {
+      "id": "1001O4397",
+      "name": "Opleiding tot leraar Basisonderwijs",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "dual"
+      ],
+      "isVariant": false,
+      "discipline": "ONDERWIJS",
+      "city": "DORDRECHT",
+      "externalRefs": {
+        "rioCode": "1001O4397",
+        "isat": "34808",
+        "instCode": "27PZ"
+      }
+    },
+    {
+      "id": "1001O4397",
+      "name": "Opleiding tot leraar Basisonderwijs",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "ONDERWIJS",
+      "city": "DORDRECHT",
+      "externalRefs": {
+        "rioCode": "1001O4397",
+        "isat": "34808",
+        "instCode": "27PZ"
+      }
+    },
+    {
+      "id": "1001O4397",
+      "name": "Opleiding tot leraar Basisonderwijs",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "parttime"
+      ],
+      "isVariant": false,
+      "discipline": "ONDERWIJS",
+      "city": "'S-GRAVENHAGE",
+      "externalRefs": {
+        "rioCode": "1001O4397",
+        "isat": "34808",
+        "instCode": "27PZ"
+      }
+    },
+    {
+      "id": "1001O4397",
+      "name": "Opleiding tot leraar Basisonderwijs",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "dual"
+      ],
+      "isVariant": false,
+      "discipline": "ONDERWIJS",
+      "city": "'S-GRAVENHAGE",
+      "externalRefs": {
+        "rioCode": "1001O4397",
+        "isat": "34808",
+        "instCode": "27PZ"
+      }
+    },
+    {
+      "id": "1001O4397",
+      "name": "Opleiding tot leraar Basisonderwijs",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "ONDERWIJS",
+      "city": "'S-GRAVENHAGE",
+      "externalRefs": {
+        "rioCode": "1001O4397",
+        "isat": "34808",
+        "instCode": "27PZ"
+      }
+    },
+    {
+      "id": "1001O4018",
+      "name": "Opleiding tot Verpleegkundige",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "parttime"
+      ],
+      "isVariant": false,
+      "discipline": "GEZONDHEIDSZORG",
+      "city": "ALKMAAR",
+      "externalRefs": {
+        "rioCode": "1001O4018",
+        "isat": "34560",
+        "instCode": "27PZ"
+      }
+    },
+    {
+      "id": "1001O4018",
+      "name": "Opleiding tot Verpleegkundige",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "dual"
+      ],
+      "isVariant": false,
+      "discipline": "GEZONDHEIDSZORG",
+      "city": "ALKMAAR",
+      "externalRefs": {
+        "rioCode": "1001O4018",
+        "isat": "34560",
+        "instCode": "27PZ"
+      }
+    },
+    {
+      "id": "1001O4018",
+      "name": "Opleiding tot Verpleegkundige",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "GEZONDHEIDSZORG",
+      "city": "ALKMAAR",
+      "externalRefs": {
+        "rioCode": "1001O4018",
+        "isat": "34560",
+        "instCode": "27PZ"
+      }
+    },
+    {
+      "id": "1001O4018",
+      "name": "Opleiding tot Verpleegkundige",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "parttime"
+      ],
+      "isVariant": false,
+      "discipline": "GEZONDHEIDSZORG",
+      "city": "AMSTERDAM",
+      "externalRefs": {
+        "rioCode": "1001O4018",
+        "isat": "34560",
+        "instCode": "27PZ"
+      }
+    },
+    {
+      "id": "1001O4018",
+      "name": "Opleiding tot Verpleegkundige",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "dual"
+      ],
+      "isVariant": false,
+      "discipline": "GEZONDHEIDSZORG",
+      "city": "AMSTERDAM",
+      "externalRefs": {
+        "rioCode": "1001O4018",
+        "isat": "34560",
+        "instCode": "27PZ"
+      }
+    },
+    {
+      "id": "1001O4018",
+      "name": "Opleiding tot Verpleegkundige",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "GEZONDHEIDSZORG",
+      "city": "AMSTERDAM",
+      "externalRefs": {
+        "rioCode": "1001O4018",
+        "isat": "34560",
+        "instCode": "27PZ"
+      }
+    },
+    {
+      "id": "1001O4587",
+      "name": "Pedagogiek",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "parttime"
+      ],
+      "isVariant": false,
+      "discipline": "GEDRAG_EN_MAATSCHAPPIJ",
+      "city": "AMSTERDAM",
+      "externalRefs": {
+        "rioCode": "1001O4587",
+        "isat": "35158",
+        "instCode": "27PZ"
+      }
+    },
+    {
+      "id": "1001O4587",
+      "name": "Pedagogiek",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "GEDRAG_EN_MAATSCHAPPIJ",
+      "city": "AMSTERDAM",
+      "externalRefs": {
+        "rioCode": "1001O4587",
+        "isat": "35158",
+        "instCode": "27PZ"
+      }
+    },
+    {
+      "id": "1001O2725",
+      "name": "Ruimtelijke Ontwikkeling",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "TECHNIEK",
+      "city": "HAARLEM",
+      "externalRefs": {
+        "rioCode": "1001O2725",
+        "isat": "30038",
+        "instCode": "27PZ"
+      }
+    },
+    {
+      "id": "1001O4249",
+      "name": "Sociaal-Juridische Dienstverlening",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "parttime"
+      ],
+      "isVariant": false,
+      "discipline": "RECHT",
+      "city": "ROTTERDAM",
+      "externalRefs": {
+        "rioCode": "1001O4249",
+        "isat": "34641",
+        "instCode": "27PZ"
+      }
+    },
+    {
+      "id": "1001O4249",
+      "name": "Sociaal-Juridische Dienstverlening",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "RECHT",
+      "city": "ROTTERDAM",
+      "externalRefs": {
+        "rioCode": "1001O4249",
+        "isat": "34641",
+        "instCode": "27PZ"
+      }
+    },
+    {
+      "id": "1001O4249",
+      "name": "Sociaal-Juridische Dienstverlening",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "RECHT",
+      "city": "'S-GRAVENHAGE",
+      "externalRefs": {
+        "rioCode": "1001O4249",
+        "isat": "34641",
+        "instCode": "27PZ"
+      }
+    },
+    {
+      "id": "1001O2933",
+      "name": "Social Work",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "parttime"
+      ],
+      "isVariant": false,
+      "discipline": "GEDRAG_EN_MAATSCHAPPIJ",
+      "city": "ROTTERDAM",
+      "externalRefs": {
+        "rioCode": "1001O2933",
+        "isat": "34116",
+        "instCode": "27PZ"
+      }
+    },
+    {
+      "id": "1001O2933",
+      "name": "Social Work",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "GEDRAG_EN_MAATSCHAPPIJ",
+      "city": "ROTTERDAM",
+      "externalRefs": {
+        "rioCode": "1001O2933",
+        "isat": "34116",
+        "instCode": "27PZ"
+      }
+    },
+    {
+      "id": "1001O2933",
+      "name": "Social Work",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "parttime"
+      ],
+      "isVariant": false,
+      "discipline": "GEDRAG_EN_MAATSCHAPPIJ",
+      "city": "ALKMAAR",
+      "externalRefs": {
+        "rioCode": "1001O2933",
+        "isat": "34116",
+        "instCode": "27PZ"
+      }
+    },
+    {
+      "id": "1001O2933",
+      "name": "Social Work",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "GEDRAG_EN_MAATSCHAPPIJ",
+      "city": "ALKMAAR",
+      "externalRefs": {
+        "rioCode": "1001O2933",
+        "isat": "34116",
+        "instCode": "27PZ"
+      }
+    },
+    {
+      "id": "1001O2933",
+      "name": "Social Work",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "parttime"
+      ],
+      "isVariant": false,
+      "discipline": "GEDRAG_EN_MAATSCHAPPIJ",
+      "city": "HAARLEM",
+      "externalRefs": {
+        "rioCode": "1001O2933",
+        "isat": "34116",
+        "instCode": "27PZ"
+      }
+    },
+    {
+      "id": "1001O2933",
+      "name": "Social Work",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "GEDRAG_EN_MAATSCHAPPIJ",
+      "city": "HAARLEM",
+      "externalRefs": {
+        "rioCode": "1001O2933",
+        "isat": "34116",
+        "instCode": "27PZ"
+      }
+    },
+    {
+      "id": "1001O2933",
+      "name": "Social Work",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "parttime"
+      ],
+      "isVariant": false,
+      "discipline": "GEDRAG_EN_MAATSCHAPPIJ",
+      "city": "AMSTERDAM",
+      "externalRefs": {
+        "rioCode": "1001O2933",
+        "isat": "34116",
+        "instCode": "27PZ"
+      }
+    },
+    {
+      "id": "1001O2933",
+      "name": "Social Work",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "GEDRAG_EN_MAATSCHAPPIJ",
+      "city": "AMSTERDAM",
+      "externalRefs": {
+        "rioCode": "1001O2933",
+        "isat": "34116",
+        "instCode": "27PZ"
+      }
+    },
+    {
+      "id": "1001O2933",
+      "name": "Social Work",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "parttime"
+      ],
+      "isVariant": false,
+      "discipline": "GEDRAG_EN_MAATSCHAPPIJ",
+      "city": "'S-GRAVENHAGE",
+      "externalRefs": {
+        "rioCode": "1001O2933",
+        "isat": "34116",
+        "instCode": "27PZ"
+      }
+    },
+    {
+      "id": "1001O2933",
+      "name": "Social Work",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "GEDRAG_EN_MAATSCHAPPIJ",
+      "city": "'S-GRAVENHAGE",
+      "externalRefs": {
+        "rioCode": "1001O2933",
+        "isat": "34116",
+        "instCode": "27PZ"
+      }
+    },
+    {
+      "id": "1001O2814",
+      "name": "Sportkunde",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "parttime"
+      ],
+      "isVariant": false,
+      "discipline": "GEDRAG_EN_MAATSCHAPPIJ",
+      "city": "HAARLEM",
+      "externalRefs": {
+        "rioCode": "1001O2814",
+        "isat": "34040",
+        "instCode": "27PZ"
+      }
+    },
+    {
+      "id": "1001O2814",
+      "name": "Sportkunde",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "GEDRAG_EN_MAATSCHAPPIJ",
+      "city": "HAARLEM",
+      "externalRefs": {
+        "rioCode": "1001O2814",
+        "isat": "34040",
+        "instCode": "27PZ"
+      }
+    },
+    {
+      "id": "1001O3676",
+      "name": "Technische Bedrijfskunde",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "parttime"
+      ],
+      "isVariant": false,
+      "discipline": "TECHNIEK",
+      "city": "ALKMAAR",
+      "externalRefs": {
+        "rioCode": "1001O3676",
+        "isat": "34421",
+        "instCode": "27PZ"
+      }
+    },
+    {
+      "id": "1001O3676",
+      "name": "Technische Bedrijfskunde",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "TECHNIEK",
+      "city": "ALKMAAR",
+      "externalRefs": {
+        "rioCode": "1001O3676",
+        "isat": "34421",
+        "instCode": "27PZ"
+      }
+    },
+    {
+      "id": "1001O3859",
+      "name": "Technische Informatica",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "TECHNIEK",
+      "city": "ALKMAAR",
+      "externalRefs": {
+        "rioCode": "1001O3859",
+        "isat": "34475",
+        "instCode": "27PZ"
+      }
+    },
+    {
+      "id": "1001O4602",
+      "name": "Toegepaste Wiskunde",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "TECHNIEK",
+      "city": "AMSTERDAM",
+      "externalRefs": {
+        "rioCode": "1001O4602",
+        "isat": "35168",
+        "instCode": "27PZ"
+      }
+    },
+    {
+      "id": "1001O5068",
+      "name": "Tourism Management",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "ECONOMIE",
+      "city": "ROTTERDAM",
+      "externalRefs": {
+        "rioCode": "1001O5068",
+        "isat": "35524",
+        "instCode": "27PZ"
+      }
+    },
+    {
+      "id": "1001O5068",
+      "name": "Tourism Management",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "ECONOMIE",
+      "city": "HAARLEM",
+      "externalRefs": {
+        "rioCode": "1001O5068",
+        "isat": "35524",
+        "instCode": "27PZ"
+      }
+    },
+    {
+      "id": "1001O5068",
+      "name": "Tourism Management",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "ECONOMIE",
+      "city": "AMSTERDAM",
+      "externalRefs": {
+        "rioCode": "1001O5068",
+        "isat": "35524",
+        "instCode": "27PZ"
+      }
+    },
+    {
+      "id": "1001O2684",
+      "name": "Tuinbouw & Agribusiness",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "parttime"
+      ],
+      "isVariant": false,
+      "discipline": "LANDBOUW_EN_NATUURLIJKE_OMGEVING",
+      "city": "DELFT",
+      "externalRefs": {
+        "rioCode": "1001O2684",
+        "isat": "30024",
+        "instCode": "27PZ"
+      }
+    },
+    {
+      "id": "1001O2684",
+      "name": "Tuinbouw & Agribusiness",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "LANDBOUW_EN_NATUURLIJKE_OMGEVING",
+      "city": "DELFT",
+      "externalRefs": {
+        "rioCode": "1001O2684",
+        "isat": "30024",
+        "instCode": "27PZ"
+      }
+    },
+    {
+      "id": "1001O2958",
+      "name": "Verloskunde",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "GEZONDHEIDSZORG",
+      "city": "AMSTERDAM",
+      "externalRefs": {
+        "rioCode": "1001O2958",
+        "isat": "34134",
+        "instCode": "27PZ"
+      }
+    },
+    {
+      "id": "1001O2958",
+      "name": "Verloskunde",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "GEZONDHEIDSZORG",
+      "city": "GRONINGEN",
+      "externalRefs": {
+        "rioCode": "1001O2958",
+        "isat": "34134",
+        "instCode": "27PZ"
+      }
+    },
+    {
+      "id": "1001O3209",
+      "name": "Werktuigbouwkunde",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "parttime"
+      ],
+      "isVariant": false,
+      "discipline": "TECHNIEK",
+      "city": "ALKMAAR",
+      "externalRefs": {
+        "rioCode": "1001O3209",
+        "isat": "34280",
+        "instCode": "27PZ"
+      }
+    },
+    {
+      "id": "1001O3209",
+      "name": "Werktuigbouwkunde",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "TECHNIEK",
+      "city": "ALKMAAR",
+      "externalRefs": {
+        "rioCode": "1001O3209",
+        "isat": "34280",
+        "instCode": "27PZ"
+      }
+    },
+    {
+      "id": "1001O3209",
+      "name": "Werktuigbouwkunde",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "parttime"
+      ],
+      "isVariant": false,
+      "discipline": "TECHNIEK",
+      "city": "VELSEN-NOORD",
+      "externalRefs": {
+        "rioCode": "1001O3209",
+        "isat": "34280",
+        "instCode": "27PZ"
+      }
+    },
+    {
+      "id": "1001O3209",
+      "name": "Werktuigbouwkunde",
+      "level": "bachelor",
+      "sector": "hbo",
+      "modes": [
+        "fulltime"
+      ],
+      "isVariant": false,
+      "discipline": "TECHNIEK",
+      "city": "VELSEN-NOORD",
+      "externalRefs": {
+        "rioCode": "1001O3209",
+        "isat": "34280",
+        "instCode": "27PZ"
+      }
+    }
+  ],
+  "premaster": [
+    {
+      "id": "1001O7997",
+      "name": "Educational Leadership",
+      "level": "premaster",
+      "sector": "hbo",
+      "modes": [
+        "parttime"
+      ],
+      "isVariant": false,
+      "discipline": "ONDERWIJS",
+      "city": "HAARLEM",
+      "externalRefs": {
+        "rioCode": "1001O7997",
+        "isat": "70139",
+        "instCode": "27PZ"
+      }
+    },
+    {
+      "id": "1001O7997",
+      "name": "Educational Leadership",
+      "level": "premaster",
+      "sector": "hbo",
+      "modes": [
+        "parttime"
+      ],
+      "isVariant": false,
+      "discipline": "ONDERWIJS",
+      "city": "AMSTERDAM",
+      "externalRefs": {
+        "rioCode": "1001O7997",
+        "isat": "70139",
+        "instCode": "27PZ"
+      }
+    },
+    {
+      "id": "1001O8027",
+      "name": "Medical Imaging / Radiation Oncology",
+      "level": "premaster",
+      "sector": "hbo",
+      "modes": [
+        "parttime"
+      ],
+      "isVariant": false,
+      "discipline": "GEZONDHEIDSZORG",
+      "city": "HAARLEM",
+      "externalRefs": {
+        "rioCode": "1001O8027",
+        "isat": "70160",
+        "instCode": "27PZ"
+      }
+    },
+    {
+      "id": "1001O8965",
+      "name": "Medical Imaging / Radiation Oncology",
+      "level": "premaster",
+      "sector": "hbo",
+      "modes": [
+        "parttime"
+      ],
+      "isVariant": false,
+      "discipline": "GEZONDHEIDSZORG",
+      "city": "HAARLEM",
+      "externalRefs": {
+        "rioCode": "1001O8965",
+        "isat": "70236",
+        "instCode": "27PZ"
+      }
+    }
+  ],
+  "master": [
+    {
+      "id": "1001O5576",
+      "name": "Advanced Nursing Practice",
+      "level": "master",
+      "sector": "hbo",
+      "modes": [
+        "dual"
+      ],
+      "isVariant": false,
+      "discipline": "GEZONDHEIDSZORG",
+      "city": "AMSTERDAM",
+      "externalRefs": {
+        "rioCode": "1001O5576",
+        "isat": "49246",
+        "instCode": "27PZ"
+      }
+    },
+    {
+      "id": "1001O5594",
+      "name": "Digitale Transformatie in Zorg en Welzijn",
+      "level": "master",
+      "sector": "hbo",
+      "modes": [
+        "parttime"
+      ],
+      "isVariant": false,
+      "discipline": "GEZONDHEIDSZORG",
+      "city": "AMSTERDAM",
+      "externalRefs": {
+        "rioCode": "1001O5594",
+        "isat": "49298",
+        "instCode": "27PZ"
+      }
+    },
+    {
+      "id": "1001O5352",
+      "name": "Leren en Innoveren",
+      "level": "master",
+      "sector": "hbo",
+      "modes": [
+        "parttime"
+      ],
+      "isVariant": false,
+      "discipline": "ONDERWIJS",
+      "city": "AMSTERDAM",
+      "externalRefs": {
+        "rioCode": "1001O5352",
+        "isat": "44135",
+        "instCode": "27PZ"
+      }
+    },
+    {
+      "id": "1001O5352",
+      "name": "Leren en Innoveren",
+      "level": "master",
+      "sector": "hbo",
+      "modes": [
+        "parttime"
+      ],
+      "isVariant": false,
+      "discipline": "ONDERWIJS",
+      "city": "'S-GRAVENHAGE",
+      "externalRefs": {
+        "rioCode": "1001O5352",
+        "isat": "44135",
+        "instCode": "27PZ"
+      }
+    },
+    {
+      "id": "1016O4201",
+      "name": "Medical Imaging/Radiation Oncology",
+      "level": "master",
+      "sector": "hbo",
+      "modes": [
+        "parttime"
+      ],
+      "isVariant": false,
+      "discipline": "GEZONDHEIDSZORG",
+      "city": "HAARLEM",
+      "externalRefs": {
+        "rioCode": "1016O4201",
+        "isat": "49410",
+        "instCode": "27PZ"
+      }
+    },
+    {
+      "id": "1001O5339",
+      "name": "Pedagogiek",
+      "level": "master",
+      "sector": "hbo",
+      "modes": [
+        "parttime"
+      ],
+      "isVariant": false,
+      "discipline": "GEDRAG_EN_MAATSCHAPPIJ",
+      "city": "AMSTERDAM",
+      "externalRefs": {
+        "rioCode": "1001O5339",
+        "isat": "44113",
+        "instCode": "27PZ"
+      }
+    },
+    {
+      "id": "1001O5511",
+      "name": "Physician Assistant",
+      "level": "master",
+      "sector": "hbo",
+      "modes": [
+        "dual"
+      ],
+      "isVariant": false,
+      "discipline": "GEZONDHEIDSZORG",
+      "city": "AMSTERDAM",
+      "externalRefs": {
+        "rioCode": "1001O5511",
+        "isat": "49115",
+        "instCode": "27PZ"
+      }
+    },
+    {
+      "id": "1001O8908",
+      "name": "Sociaal Juridisch Expert",
+      "level": "master",
+      "sector": "hbo",
+      "modes": [
+        "parttime"
+      ],
+      "isVariant": false,
+      "discipline": "GEDRAG_EN_MAATSCHAPPIJ",
+      "city": "ROTTERDAM",
+      "externalRefs": {
+        "rioCode": "1001O8908",
+        "isat": "49168",
+        "instCode": "27PZ"
+      }
+    },
+    {
+      "id": "1001O8850",
+      "name": "Verloskunde (joint degree)",
+      "level": "master",
+      "sector": "hbo",
+      "modes": [
+        "parttime"
+      ],
+      "isVariant": false,
+      "discipline": "GEZONDHEIDSZORG",
+      "city": "AMSTERDAM",
+      "externalRefs": {
+        "rioCode": "1001O8850",
+        "isat": "49505",
+        "instCode": "27PZ"
+      }
+    },
+    {
+      "id": "1001O8850",
+      "name": "Verloskunde (joint degree)",
+      "level": "master",
+      "sector": "hbo",
+      "modes": [
+        "parttime"
+      ],
+      "isVariant": false,
+      "discipline": "GEZONDHEIDSZORG",
+      "city": "GRONINGEN",
+      "externalRefs": {
+        "rioCode": "1001O8850",
+        "isat": "49505",
+        "instCode": "27PZ"
+      }
+    }
+  ]
+}
