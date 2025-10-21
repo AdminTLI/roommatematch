@@ -416,7 +416,7 @@ CREATE TABLE endorsements (
 );
 
 -- Detailed references (longer testimonials)
-CREATE TABLE references (
+CREATE TABLE user_references (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     referrer_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
     referee_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
@@ -837,11 +837,11 @@ CREATE INDEX idx_endorsements_type ON endorsements(endorsement_type);
 CREATE INDEX idx_endorsements_category ON endorsements(category);
 CREATE INDEX idx_endorsements_rating ON endorsements(rating);
 CREATE INDEX idx_endorsements_created_at ON endorsements(created_at);
-CREATE INDEX idx_references_referee ON references(referee_id);
-CREATE INDEX idx_references_referrer ON references(referrer_id);
-CREATE INDEX idx_references_type ON references(reference_type);
-CREATE INDEX idx_references_status ON references(status);
-CREATE INDEX idx_references_overall_rating ON references(overall_rating);
+CREATE INDEX idx_user_references_referee ON user_references(referee_id);
+CREATE INDEX idx_user_references_referrer ON user_references(referrer_id);
+CREATE INDEX idx_user_references_type ON user_references(reference_type);
+CREATE INDEX idx_user_references_status ON user_references(status);
+CREATE INDEX idx_user_references_overall_rating ON user_references(overall_rating);
 CREATE INDEX idx_trust_badges_user ON trust_badges(user_id);
 CREATE INDEX idx_trust_badges_type ON trust_badges(badge_type);
 CREATE INDEX idx_trust_badges_level ON trust_badges(badge_level);
@@ -923,7 +923,7 @@ CREATE TRIGGER update_housing_applications_updated_at BEFORE UPDATE ON housing_a
 
 -- Reputation table triggers
 CREATE TRIGGER update_endorsements_updated_at BEFORE UPDATE ON endorsements FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
-CREATE TRIGGER update_references_updated_at BEFORE UPDATE ON references FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+CREATE TRIGGER update_user_references_updated_at BEFORE UPDATE ON user_references FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 CREATE TRIGGER update_reputation_scores_updated_at BEFORE UPDATE ON reputation_scores FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 
 -- Move-in planner triggers
@@ -990,7 +990,7 @@ ALTER TABLE tour_bookings ENABLE ROW LEVEL SECURITY;
 ALTER TABLE user_housing_preferences ENABLE ROW LEVEL SECURITY;
 ALTER TABLE housing_applications ENABLE ROW LEVEL SECURITY;
 ALTER TABLE endorsements ENABLE ROW LEVEL SECURITY;
-ALTER TABLE references ENABLE ROW LEVEL SECURITY;
+ALTER TABLE user_references ENABLE ROW LEVEL SECURITY;
 ALTER TABLE trust_badges ENABLE ROW LEVEL SECURITY;
 ALTER TABLE reputation_scores ENABLE ROW LEVEL SECURITY;
 ALTER TABLE move_in_plans ENABLE ROW LEVEL SECURITY;
@@ -1148,11 +1148,11 @@ CREATE POLICY "endorsements_create" ON endorsements
 CREATE POLICY "endorsements_read_about_me" ON endorsements
   FOR SELECT USING (endorsee_id = auth.uid());
 
--- References: Users can create references, see those about them
-CREATE POLICY "references_create" ON references
+-- User references: Users can create references, see those about them
+CREATE POLICY "user_references_create" ON user_references
   FOR INSERT WITH CHECK (referrer_id = auth.uid());
 
-CREATE POLICY "references_read_about_me" ON references
+CREATE POLICY "user_references_read_about_me" ON user_references
   FOR SELECT USING (referee_id = auth.uid());
 
 -- Trust badges: Users can see their own badges
@@ -1189,7 +1189,7 @@ GRANT SELECT ON user_study_year_v TO authenticated;
 GRANT ALL ON user_housing_preferences TO authenticated;
 GRANT ALL ON tour_bookings TO authenticated;
 GRANT ALL ON endorsements TO authenticated;
-GRANT ALL ON references TO authenticated;
+GRANT ALL ON user_references TO authenticated;
 GRANT ALL ON trust_badges TO authenticated;
 GRANT ALL ON reputation_scores TO authenticated;
 GRANT ALL ON move_in_plans TO authenticated;

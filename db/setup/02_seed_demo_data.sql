@@ -331,7 +331,7 @@ INSERT INTO housing_listings (
 --   ('750e8400-e29b-41d4-a716-446655440002', '[DEMO_USER_ID]', 'roommate', 'communication', 4, 'Great at communicating about shared responsibilities', 'Spring 2024', false, true, NULL, NOW(), NOW(), NOW());
 
 -- Sample references (replace [DEMO_USER_ID] with actual ID)
--- INSERT INTO references (
+-- INSERT INTO user_references (
 --   referrer_id, referee_id, reference_type, relationship_duration, relationship_context,
 --   overall_rating, cleanliness_rating, communication_rating, responsibility_rating,
 --   respect_rating, reliability_rating, financial_trust_rating,
