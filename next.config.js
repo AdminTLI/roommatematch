@@ -1,4 +1,5 @@
 /** @type {import('next').NextConfig} */
+// Force Vercel rebuild - Last updated: 2025-10-21
 const nextConfig = {
   experimental: {
     serverActions: {
