@@ -97,7 +97,7 @@ SELECT id FROM auth.users WHERE email = 'demo@account.com';
 ### 7. Test the Setup
 
 #### Test Demo User Login
-1. Go to your app's sign-in page
+1. Go to your app's signifies page
 2. Use credentials: `demo@account.com` / `Testing123`
 3. Should successfully log in
 
