@@ -53,47 +53,47 @@ export default function DashboardPage() {
   }
 
   return (
-    <div className="dashboard-layout">
+    <div className="min-h-screen bg-gray-50 flex">
       {/* Sidebar */}
-      <div className="dashboard-sidebar">
+      <div className="w-64 bg-white border-r border-gray-200 p-6">
         <div className="space-y-6">
           <div className="flex items-center gap-3 mb-8">
-            <div className="w-10 h-10 bg-primary-600 rounded-xl flex items-center justify-center">
+            <div className="w-10 h-10 bg-blue-600 rounded-xl flex items-center justify-center">
               <Users className="w-6 h-6 text-white" />
             </div>
             <div>
               <h2 className="font-bold text-gray-900">Roommate Match</h2>
-              <p className="text-body-xs text-gray-500">Dashboard</p>
+              <p className="text-sm text-gray-500">Dashboard</p>
             </div>
           </div>
 
           <nav className="space-y-2">
-            <a href="#" className="nav-item active">
+            <a href="#" className="flex items-center gap-3 px-3 py-2 text-sm font-medium text-blue-600 bg-blue-50 rounded-lg">
               <TrendingUp className="w-5 h-5" />
               <span>Dashboard</span>
             </a>
-            <a href="#" className="nav-item" onClick={handleBrowseMatches}>
+            <button onClick={handleBrowseMatches} className="flex items-center gap-3 px-3 py-2 text-sm font-medium text-gray-700 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors">
               <Users className="w-5 h-5" />
               <span>Matches</span>
-            </a>
-            <a href="#" className="nav-item" onClick={handleStartChat}>
+            </button>
+            <button onClick={handleStartChat} className="flex items-center gap-3 px-3 py-2 text-sm font-medium text-gray-700 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors">
               <MessageCircle className="w-5 h-5" />
               <span>Chat</span>
-            </a>
-            <a href="#" className="nav-item" onClick={handleScheduleTour}>
+            </button>
+            <button onClick={handleScheduleTour} className="flex items-center gap-3 px-3 py-2 text-sm font-medium text-gray-700 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors">
               <Calendar className="w-5 h-5" />
               <span>Housing</span>
-            </a>
-            <a href="#" className="nav-item">
+            </button>
+            <button className="flex items-center gap-3 px-3 py-2 text-sm font-medium text-gray-700 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors">
               <Settings className="w-5 h-5" />
               <span>Settings</span>
-            </a>
+            </button>
           </nav>
         </div>
       </div>
 
       {/* Main Content */}
-      <div className="dashboard-main">
+      <div className="flex-1 p-8">
         <div className="space-y-8">
           {/* Header */}
           <motion.div
@@ -104,29 +104,29 @@ export default function DashboardPage() {
           >
             <motion.div variants={fadeInUp} className="flex items-center justify-between">
               <div>
-                <h1 className="text-h1 text-gray-900">Welcome back, Demo User!</h1>
-                <p className="text-body text-gray-600">Here's what's happening with your matches today.</p>
+                <h1 className="text-3xl font-bold text-gray-900">Welcome back, Demo User!</h1>
+                <p className="text-lg text-gray-600 mt-1">Here's what's happening with your matches today.</p>
               </div>
               <div className="flex items-center gap-3">
-                <button className="btn btn-ghost btn-sm">
+                <button className="p-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors">
                   <Bell className="w-5 h-5" />
                 </button>
-                <div className="w-10 h-10 bg-gradient-to-br from-primary-500 to-secondary-500 rounded-full flex items-center justify-center text-white font-bold">
+                <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-500 rounded-full flex items-center justify-center text-white font-bold">
                   D
                 </div>
               </div>
             </motion.div>
             
             <motion.div variants={fadeInUp} className="flex flex-wrap gap-3">
-              <div className="badge badge-success flex items-center gap-2">
+              <div className="inline-flex items-center gap-2 px-3 py-1 bg-green-100 text-green-800 text-sm font-medium rounded-full">
                 <Star className="w-3 h-3" />
                 3 new matches found
               </div>
-              <div className="badge badge-secondary flex items-center gap-2">
+              <div className="inline-flex items-center gap-2 px-3 py-1 bg-blue-100 text-blue-800 text-sm font-medium rounded-full">
                 <MessageCircle className="w-3 h-3" />
                 5 unread messages
               </div>
-              <div className="badge badge-primary flex items-center gap-2">
+              <div className="inline-flex items-center gap-2 px-3 py-1 bg-purple-100 text-purple-800 text-sm font-medium rounded-full">
                 <TrendingUp className="w-3 h-3" />
                 Profile 78% complete
               </div>
@@ -138,33 +138,33 @@ export default function DashboardPage() {
             initial="initial"
             animate="animate"
             variants={staggerChildren}
-            className="dashboard-stats"
+            className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6"
           >
             <motion.div variants={fadeInUp}>
-              <div className="stat-card">
-                <div className="stat-number">94%</div>
-                <div className="stat-label">Compatibility Score</div>
+              <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-200">
+                <div className="text-3xl font-bold text-gray-900">94%</div>
+                <div className="text-sm text-gray-600 mt-1">Compatibility Score</div>
               </div>
             </motion.div>
             
             <motion.div variants={fadeInUp}>
-              <div className="stat-card">
-                <div className="stat-number">12</div>
-                <div className="stat-label">Total Matches</div>
+              <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-200">
+                <div className="text-3xl font-bold text-gray-900">12</div>
+                <div className="text-sm text-gray-600 mt-1">Total Matches</div>
               </div>
             </motion.div>
             
             <motion.div variants={fadeInUp}>
-              <div className="stat-card">
-                <div className="stat-number">5</div>
-                <div className="stat-label">Active Chats</div>
+              <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-200">
+                <div className="text-3xl font-bold text-gray-900">5</div>
+                <div className="text-sm text-gray-600 mt-1">Active Chats</div>
               </div>
             </motion.div>
             
             <motion.div variants={fadeInUp}>
-              <div className="stat-card">
-                <div className="stat-number">3</div>
-                <div className="stat-label">Tours Scheduled</div>
+              <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-200">
+                <div className="text-3xl font-bold text-gray-900">3</div>
+                <div className="text-sm text-gray-600 mt-1">Tours Scheduled</div>
               </div>
             </motion.div>
           </motion.div>
@@ -178,10 +178,10 @@ export default function DashboardPage() {
           >
             {/* Top Matches */}
             <motion.div variants={fadeInUp}>
-              <div className="dashboard-card">
+              <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-200">
                 <div className="flex items-center justify-between mb-6">
-                  <h3 className="text-h3 text-gray-900">Your Top Matches</h3>
-                  <button className="btn btn-ghost btn-sm" onClick={handleBrowseMatches}>
+                  <h3 className="text-xl font-bold text-gray-900">Your Top Matches</h3>
+                  <button className="flex items-center gap-1 text-sm text-blue-600 hover:text-blue-700 font-medium" onClick={handleBrowseMatches}>
                     View all
                     <ArrowRight className="w-4 h-4" />
                   </button>
@@ -193,19 +193,19 @@ export default function DashboardPage() {
                     { name: "Lucas", score: 89, program: "Engineering", university: "Eindhoven" },
                     { name: "Sofia", score: 87, program: "Business", university: "Rotterdam" }
                   ].map((match, index) => (
-                    <div key={match.name} className="match-card">
-                      <div className="match-score">{match.score}%</div>
-                      <div className="flex items-center gap-4">
-                        <div className="w-12 h-12 bg-gradient-to-br from-primary-500 to-secondary-500 rounded-full flex items-center justify-center text-white font-bold text-lg">
+                    <div key={match.name} className="flex items-center gap-4 p-4 bg-gray-50 rounded-lg">
+                      <div className="text-2xl font-bold text-blue-600">{match.score}%</div>
+                      <div className="flex items-center gap-4 flex-1">
+                        <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-purple-500 rounded-full flex items-center justify-center text-white font-bold text-lg">
                           {match.name[0]}
                         </div>
                         <div className="flex-1">
                           <h4 className="font-bold text-gray-900">{match.name}</h4>
-                          <p className="text-body-sm text-gray-600">{match.program} • {match.university}</p>
+                          <p className="text-sm text-gray-600">{match.program} • {match.university}</p>
                         </div>
                         <div className="flex items-center gap-2">
                           <Heart className="w-5 h-5 text-rose-500" />
-                          <button className="btn btn-primary btn-sm">
+                          <button className="px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors">
                             Chat
                           </button>
                         </div>
@@ -218,10 +218,10 @@ export default function DashboardPage() {
 
             {/* Recent Activity */}
             <motion.div variants={fadeInUp}>
-              <div className="dashboard-card">
+              <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-200">
                 <div className="flex items-center justify-between mb-6">
-                  <h3 className="text-h3 text-gray-900">Recent Activity</h3>
-                  <button className="btn btn-ghost btn-sm" onClick={handleViewAllActivity}>
+                  <h3 className="text-xl font-bold text-gray-900">Recent Activity</h3>
+                  <button className="flex items-center gap-1 text-sm text-blue-600 hover:text-blue-700 font-medium" onClick={handleViewAllActivity}>
                     View all
                     <ArrowRight className="w-4 h-4" />
                   </button>
@@ -254,15 +254,19 @@ export default function DashboardPage() {
                       type: "housing"
                     }
                   ].map((activity, index) => (
-                    <div key={index} className="flex items-center gap-4 p-4 bg-gray-50 rounded-xl">
-                      <div className="w-10 h-10 bg-gradient-to-br from-primary-500 to-secondary-500 rounded-full flex items-center justify-center text-white text-sm font-semibold">
+                    <div key={index} className="flex items-center gap-4 p-4 bg-gray-50 rounded-lg">
+                      <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-500 rounded-full flex items-center justify-center text-white text-sm font-semibold">
                         {activity.user[0]}
                       </div>
                       <div className="flex-1">
                         <p className="font-medium text-gray-900">{activity.action}</p>
-                        <p className="text-body-sm text-gray-600">{activity.user} • {activity.time}</p>
+                        <p className="text-sm text-gray-600">{activity.user} • {activity.time}</p>
                       </div>
-                      <div className={`badge ${activity.type === 'match' ? 'badge-success' : activity.type === 'message' ? 'badge-secondary' : 'badge-primary'}`}>
+                      <div className={`px-2 py-1 text-xs font-medium rounded-full ${
+                        activity.type === 'match' ? 'bg-green-100 text-green-800' : 
+                        activity.type === 'message' ? 'bg-blue-100 text-blue-800' : 
+                        'bg-purple-100 text-purple-800'
+                      }`}>
                         {activity.type}
                       </div>
                     </div>
@@ -279,27 +283,27 @@ export default function DashboardPage() {
             variants={staggerChildren}
           >
             <motion.div variants={fadeInUp}>
-              <div className="dashboard-card">
-                <h3 className="text-h3 text-gray-900 mb-6">Quick Actions</h3>
+              <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-200">
+                <h3 className="text-xl font-bold text-gray-900 mb-6">Quick Actions</h3>
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                  <button className="btn btn-primary h-20 flex-col gap-2" onClick={handleBrowseMatches}>
+                  <button className="flex flex-col items-center justify-center gap-2 h-20 px-4 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors" onClick={handleBrowseMatches}>
                     <Users className="w-6 h-6" />
-                    <span>Browse Matches</span>
+                    <span className="text-sm font-medium">Browse Matches</span>
                   </button>
                   
-                  <button className="btn btn-outline h-20 flex-col gap-2" onClick={handleStartChat}>
+                  <button className="flex flex-col items-center justify-center gap-2 h-20 px-4 bg-white text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors" onClick={handleStartChat}>
                     <MessageCircle className="w-6 h-6" />
-                    <span>Start Chat</span>
+                    <span className="text-sm font-medium">Start Chat</span>
                   </button>
                   
-                  <button className="btn btn-outline h-20 flex-col gap-2" onClick={handleScheduleTour}>
+                  <button className="flex flex-col items-center justify-center gap-2 h-20 px-4 bg-white text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors" onClick={handleScheduleTour}>
                     <Calendar className="w-6 h-6" />
-                    <span>Schedule Tour</span>
+                    <span className="text-sm font-medium">Schedule Tour</span>
                   </button>
                   
-                  <button className="btn btn-outline h-20 flex-col gap-2" onClick={handleUpdateProfile}>
+                  <button className="flex flex-col items-center justify-center gap-2 h-20 px-4 bg-white text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors" onClick={handleUpdateProfile}>
                     <Plus className="w-6 h-6" />
-                    <span>Update Profile</span>
+                    <span className="text-sm font-medium">Update Profile</span>
                   </button>
                 </div>
               </div>
