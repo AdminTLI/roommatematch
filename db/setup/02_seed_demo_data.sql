@@ -29,7 +29,7 @@ INSERT INTO universities (id, name, slug, branding, eligibility_domains, is_acti
 INSERT INTO programs (id, university_id, croho_code, name, name_en, degree_level, language_codes, faculty, active) VALUES
   ('660e8400-e29b-41d4-a716-446655440001', '550e8400-e29b-41d4-a716-446655440001', '56901', 'Computer Science', 'Computer Science', 'master', '{"en", "nl"}', 'Faculty of Science', true),
   ('660e8400-e29b-41d4-a716-446655440002', '550e8400-e29b-41d4-a716-446655440001', '56501', 'Psychology', 'Psychology', 'bachelor', '{"nl", "en"}', 'Faculty of Social and Behavioural Sciences', true),
-  ('660e8400-e29b-41d4-a716-446655440003', '550e8400-e29b-41d4-a716-446655440001', '56601', 'Biology', 'Biology', 'phd', '{"en", "nl"}', 'Faculty of Science', true),
+  ('660e8400-e29b-41d4-a716-446655440003', '550e8400-e29b-41d4-a716-446655440001', '56601', 'Biology', 'Biology', 'master', '{"en", "nl"}', 'Faculty of Science', true),
   ('660e8400-e29b-41d4-a716-446655440004', '550e8400-e29b-41d4-a716-446655440002', '56982', 'Aerospace Engineering', 'Aerospace Engineering', 'master', '{"en"}', 'Faculty of Aerospace Engineering', true),
   ('660e8400-e29b-41d4-a716-446655440005', '550e8400-e29b-41d4-a716-446655440002', '56995', 'Industrial Design', 'Industrial Design', 'bachelor', '{"en", "nl"}', 'Faculty of Industrial Design Engineering', true),
   ('660e8400-e29b-41d4-a716-446655440006', '550e8400-e29b-41d4-a716-446655440003', '56801', 'Economics', 'Economics', 'master', '{"en", "nl"}', 'Erasmus School of Economics', true),
