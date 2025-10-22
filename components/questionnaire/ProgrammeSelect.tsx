@@ -61,6 +61,7 @@ export function ProgrammeSelect({
         }
         
         const data = await response.json()
+        console.log('Fetched programmes:', data.programmes?.length || 0)
         setProgrammes(data.programmes || [])
       } catch (err) {
         console.error('Error fetching programmes:', err)
@@ -153,14 +154,19 @@ export function ProgrammeSelect({
         </Button>
       </PopoverTrigger>
       
-      <PopoverContent className="w-[var(--radix-popover-trigger-width)] p-0" align="start">
-        <Command className="rounded-lg border shadow-md">
+      <PopoverContent 
+        className="w-full min-w-[400px] max-w-[600px] p-0" 
+        align="start"
+        side="bottom"
+        sideOffset={4}
+      >
+        <Command className="rounded-lg border shadow-md" shouldFilter={true}>
           <CommandInput 
             placeholder="Search programmes..." 
             disabled={!isEnabled || loading}
-            className="h-12 px-4 text-base"
+            className="h-12 px-4 text-base border-b"
           />
-          <CommandList className="max-h-[300px]">
+          <CommandList className="max-h-[400px] overflow-y-auto">
             {loading && (
               <CommandEmpty className="py-6 text-center text-sm">
                 Loading programmes...
