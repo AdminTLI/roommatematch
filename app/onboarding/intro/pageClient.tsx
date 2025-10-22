@@ -7,6 +7,7 @@ import { AutosaveToaster } from '@/components/questionnaire/AutosaveToaster'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { useRouter } from 'next/navigation'
+import { ErrorBoundary } from '@/components/ErrorBoundary'
 
 export default function IntroClient() {
   const [academicData, setAcademicData] = useState<Record<string, any>>({})
@@ -33,21 +34,23 @@ export default function IntroClient() {
   }
 
   return (
-    <QuestionnaireLayout
-      stepIndex={0}
-      totalSteps={11}
-      title="Tell us about yourself"
-      subtitle="Your university and programme details plus consent to begin"
-      onNext={handleNext}
-      nextDisabled={!isValid}
-    >
-      <AutosaveToaster show={false} />
-      <AcademicStep 
-        data={academicData} 
-        onChange={handleAcademicChange} 
-        user={{} as any} 
-      />
-    </QuestionnaireLayout>
+    <ErrorBoundary>
+      <QuestionnaireLayout
+        stepIndex={0}
+        totalSteps={11}
+        title="Tell us about yourself"
+        subtitle="Your university and programme details plus consent to begin"
+        onNext={handleNext}
+        nextDisabled={!isValid}
+      >
+        <AutosaveToaster show={false} />
+        <AcademicStep 
+          data={academicData} 
+          onChange={handleAcademicChange} 
+          user={{} as any} 
+        />
+      </QuestionnaireLayout>
+    </ErrorBoundary>
   )
 }
 

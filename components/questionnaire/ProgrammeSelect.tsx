@@ -71,7 +71,9 @@ export function ProgrammeSelect({
       }
     }
 
-    fetchProgrammes()
+    // Add a small delay to prevent rapid API calls
+    const timeoutId = setTimeout(fetchProgrammes, 100)
+    return () => clearTimeout(timeoutId)
   }, [institutionId, level, isEnabled])
 
   const handleSelect = (programmeId: string) => {
