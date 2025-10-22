@@ -89,7 +89,11 @@ export function AcademicStep({ data, onChange, user }: AcademicStepProps) {
       {/* Degree Level */}
       <div className="space-y-3">
         <Label htmlFor="degree_level" className="text-base font-medium">Degree Level *</Label>
-        <div className="grid grid-cols-1 gap-3">
+        <RadioGroup 
+          value={data.degree_level || ''} 
+          onValueChange={(value) => handleChange('degree_level', value)}
+          className="space-y-3"
+        >
           <div 
             className={cn(
               "flex items-center space-x-3 p-4 rounded-lg border-2 cursor-pointer transition-colors",
@@ -149,7 +153,7 @@ export function AcademicStep({ data, onChange, user }: AcademicStepProps) {
               </p>
             </div>
           </div>
-        </div>
+        </RadioGroup>
       </div>
 
       {/* Undecided Program Toggle */}
