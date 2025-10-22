@@ -42,19 +42,11 @@ export default function IntroClient() {
       nextDisabled={!isValid}
     >
       <AutosaveToaster show={false} />
-      <Card className="rounded-2xl shadow-sm">
-        <CardHeader>
-          <CardTitle>About your studies</CardTitle>
-          <CardDescription>We use this to match you within your university community.</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <AcademicStep 
-            data={academicData} 
-            onChange={handleAcademicChange} 
-            user={{} as any} 
-          />
-        </CardContent>
-      </Card>
+      <AcademicStep 
+        data={academicData} 
+        onChange={handleAcademicChange} 
+        user={{} as any} 
+      />
     </QuestionnaireLayout>
   )
 }

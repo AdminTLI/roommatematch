@@ -10,7 +10,7 @@ import Footer from '@/components/site/footer'
 
 export default function MarketingPage() {
   return (
-    <main id="main-content" className="min-h-screen bg-white">
+    <main id="main-content" className="min-h-screen bg-gradient-to-b from-blue-50/30 via-white to-blue-50/20">
       <Navbar />
       <Hero />
       <Counters />

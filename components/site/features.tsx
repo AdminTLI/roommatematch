@@ -112,7 +112,7 @@ export function Features() {
   }
 
   return (
-    <Section className="bg-brand-surface relative overflow-hidden">
+    <Section className="relative overflow-hidden">
       {/* Background gradient blobs */}
       <div className="absolute inset-0 overflow-hidden">
         <motion.div
@@ -171,7 +171,7 @@ export function Features() {
         </motion.div>
 
         <motion.div 
-          className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 auto-rows-[200px]"
+          className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 auto-rows-[280px]"
           variants={containerVariants}
           initial="hidden"
           whileInView="visible"
@@ -226,17 +226,17 @@ export function Features() {
                         </motion.div>
                       </motion.div>
                       
-                      <div className="flex-1">
+                      <div className="flex-1 flex flex-col">
                         <h3 className="text-xl md:text-2xl font-bold text-brand-text mb-4 group-hover:text-gray-900 transition-colors duration-300">
                           {feature.title}
                         </h3>
-                        <p className="text-brand-muted leading-relaxed group-hover:text-gray-700 transition-colors duration-300">
+                        <p className="text-brand-muted leading-relaxed group-hover:text-gray-700 transition-colors duration-300 flex-1">
                           {feature.description}
                         </p>
                       </div>
                       
                       <motion.div 
-                        className="mt-8 pt-4"
+                        className="mt-6 pt-4 border-t border-gray-100"
                         whileHover={{ x: 4 }}
                         transition={{ duration: 0.2 }}
                       >

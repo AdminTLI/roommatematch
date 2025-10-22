@@ -37,7 +37,7 @@ export function Matches() {
   const router = useRouter()
 
   return (
-    <Section className="bg-white">
+    <Section>
       <Container>
         <div className="text-center mb-12">
           <h2 className="text-3xl md:text-4xl font-bold text-brand-text mb-4">

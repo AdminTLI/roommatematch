@@ -18,7 +18,7 @@ export function FinalCTA() {
   }
 
   return (
-    <Section className="bg-white">
+    <Section>
       <Container>
         <div className="grid items-center gap-8 md:grid-cols-2">
           {/* Left column - Content */}

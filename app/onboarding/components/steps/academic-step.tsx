@@ -9,6 +9,7 @@ import { ProgrammeSelect } from '@/components/questionnaire/ProgrammeSelect'
 import { Checkbox } from '@/components/ui/checkbox'
 import { User } from '@supabase/supabase-js'
 import { cn } from '@/lib/utils'
+import { createClient } from '@/lib/supabase/client'
 
 interface AcademicStepProps {
   data: Record<string, any>
@@ -20,6 +21,7 @@ interface AcademicStepProps {
 export function AcademicStep({ data, onChange, user }: AcademicStepProps) {
   const currentYear = new Date().getFullYear()
   const startYears = Array.from({ length: 8 }, (_, i) => currentYear - i)
+  const supabase = createClient()
 
 
   const handleChange = (field: string, value: any) => {

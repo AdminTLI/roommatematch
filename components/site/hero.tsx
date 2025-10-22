@@ -40,7 +40,7 @@ export function Hero() {
   ]
 
   return (
-    <Section className="relative overflow-hidden bg-white">
+    <Section className="relative overflow-hidden">
       {/* Vibrant background accents */}
       <div aria-hidden className="pointer-events-none absolute inset-0 -z-10">
         <div className="absolute -top-32 -left-40 h-[420px] w-[420px] rounded-full bg-gradient-to-br from-brand-600/25 via-accent-600/25 to-mint-600/25 blur-3xl" />

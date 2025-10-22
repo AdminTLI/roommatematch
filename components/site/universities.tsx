@@ -29,7 +29,7 @@ export function Universities() {
   }
 
   return (
-    <Section className="bg-brand-surface">
+    <Section>
       <Container>
         <div className="text-center mb-12">
           <h2 className="text-3xl md:text-4xl font-bold text-brand-text mb-4">
