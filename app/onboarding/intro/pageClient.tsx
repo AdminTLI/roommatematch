@@ -21,9 +21,9 @@ export default function IntroClient() {
     const hasUniversity = data.institution_slug || data.institution_other
     const hasDegreeLevel = data.degree_level
     const hasProgram = data.program_id || data.undecided_program
-    const hasStartYear = data.study_start_year
+    const hasGraduationYear = data.expected_graduation_year
     
-    setIsValid(hasUniversity && hasDegreeLevel && hasProgram && hasStartYear)
+    setIsValid(hasUniversity && hasDegreeLevel && hasProgram && hasGraduationYear)
   }
 
   const handleNext = () => {

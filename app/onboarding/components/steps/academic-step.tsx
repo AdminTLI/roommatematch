@@ -10,6 +10,7 @@ import { Checkbox } from '@/components/ui/checkbox'
 import { User } from '@supabase/supabase-js'
 import { cn } from '@/lib/utils'
 import { createClient } from '@/lib/supabase/client'
+import { getInstitutionType } from '@/lib/getInstitutionType'
 
 interface AcademicStepProps {
   data: Record<string, any>
@@ -20,9 +21,35 @@ interface AcademicStepProps {
 
 export function AcademicStep({ data, onChange, user }: AcademicStepProps) {
   const currentYear = new Date().getFullYear()
-  const startYears = Array.from({ length: 8 }, (_, i) => currentYear - i)
+  const graduationYears = Array.from({ length: 11 }, (_, i) => currentYear + i)
   const supabase = createClient()
 
+  // Calculate current year status based on expected graduation year
+  const calculateCurrentYearStatus = (graduationYear: number, institutionSlug: string, degreeLevel: string) => {
+    if (!graduationYear || !institutionSlug || !degreeLevel) return null
+    
+    // For pre-master and master students
+    if (degreeLevel === 'premaster') return 'Pre-Master Student'
+    if (degreeLevel === 'master') return "Master's Student"
+    
+    // Determine institution type and programme duration
+    const institutionType = getInstitutionType(institutionSlug)
+    const programDuration = institutionType === 'wo' ? 3 : 4
+    
+    const yearsUntilGraduation = graduationYear - currentYear
+    const currentYearNumber = programDuration - yearsUntilGraduation
+    
+    if (currentYearNumber < 1) return 'Not yet started'
+    if (currentYearNumber > programDuration) return 'Graduated'
+    
+    return `Year ${currentYearNumber}`
+  }
+
+  const currentYearStatus = calculateCurrentYearStatus(
+    data.expected_graduation_year, 
+    data.institution_slug, 
+    data.degree_level
+  )
 
   const handleChange = (field: string, value: any) => {
     const newData = { ...data, [field]: value }
@@ -36,12 +63,6 @@ export function AcademicStep({ data, onChange, user }: AcademicStepProps) {
     onChange(newData)
   }
 
-  const calculateStudyYear = (startYear: number) => {
-    const currentYear = new Date().getFullYear()
-    return Math.max(1, currentYear - startYear + 1)
-  }
-
-  const studyYear = data.study_start_year ? calculateStudyYear(data.study_start_year) : null
 
   return (
     <div className="space-y-8">
@@ -191,53 +212,56 @@ export function AcademicStep({ data, onChange, user }: AcademicStepProps) {
         </div>
       )}
 
-      {/* Study Start Year */}
+      {/* Expected Graduation Year */}
       <div className="space-y-2">
-        <Label htmlFor="study_start_year">Study Start Year *</Label>
+        <Label htmlFor="expected_graduation_year">Expected Graduation Year *</Label>
         <Select 
-          value={data.study_start_year?.toString() || ''} 
-          onValueChange={(value) => handleChange('study_start_year', parseInt(value))}
+          value={data.expected_graduation_year?.toString() || ''} 
+          onValueChange={(value) => handleChange('expected_graduation_year', parseInt(value))}
         >
           <SelectTrigger>
-            <SelectValue placeholder="Select when you started/will start studying" />
+            <SelectValue placeholder="When do you expect to graduate?" />
           </SelectTrigger>
           <SelectContent>
-            {startYears.map((year) => (
+            {graduationYears.map((year) => (
               <SelectItem key={year} value={year.toString()}>
                 {year}
-                {year === currentYear && " (Current year)"}
-                {year === currentYear - 1 && " (Last year)"}
+                {year === currentYear && " (This year)"}
+                {year === currentYear + 1 && " (Next year)"}
               </SelectItem>
             ))}
           </SelectContent>
         </Select>
         
-        {/* Live Study Year Calculation */}
-        {studyYear && (
+        {/* Live Current Year Display */}
+        {currentYearStatus && (
           <div className="p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-800">
             <div className="flex items-center gap-2">
               <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
               <span className="text-sm font-medium text-blue-800 dark:text-blue-200">
-                You'll be: Year {studyYear}
+                Current Status: {currentYearStatus}
               </span>
             </div>
             <p className="text-xs text-blue-600 dark:text-blue-300 mt-1">
-              {studyYear === 1 && "Starting your studies this year"}
-              {studyYear === 2 && "In your second year"}
-              {studyYear === 3 && "In your third year"}
-              {studyYear === 4 && "In your fourth year"}
-              {studyYear > 4 && `Advanced student (year ${studyYear})`}
+              {currentYearStatus === 'Year 1' && "Starting your bachelor programme"}
+              {currentYearStatus === 'Year 2' && "Second year student"}
+              {currentYearStatus === 'Year 3' && "Third year student"}
+              {currentYearStatus === 'Year 4' && "Final year student"}
+              {currentYearStatus === "Pre-Master Student" && "Preparing for master's degree"}
+              {currentYearStatus === "Master's Student" && "Graduate student"}
+              {currentYearStatus === 'Not yet started' && "Programme hasn't started yet"}
+              {currentYearStatus === 'Graduated' && "Already graduated"}
             </p>
           </div>
         )}
         
         <p className="text-sm text-gray-500">
-          When did you start or will you start your studies? This helps match you with students at similar academic stages.
+          When do you expect to finish your studies? This helps match you with students at similar academic stages.
         </p>
       </div>
 
       {/* Academic Summary */}
-      {data.institution_slug && data.degree_level && (data.program_id || data.undecided_program) && data.study_start_year && (
+      {data.institution_slug && data.degree_level && (data.program_id || data.undecided_program) && data.expected_graduation_year && (
         <div className="p-4 bg-green-50 dark:bg-green-900/20 rounded-lg border border-green-200 dark:border-green-800">
           <h4 className="font-medium text-green-800 dark:text-green-200 mb-2">
             Academic Profile Summary
@@ -252,7 +276,8 @@ export function AcademicStep({ data, onChange, user }: AcademicStepProps) {
             <div><strong>Programme:</strong> {
               data.undecided_program ? "Undecided" : "Selected"
             }</div>
-            {studyYear && <div><strong>Study Year:</strong> Year {studyYear}</div>}
+            <div><strong>Expected Graduation:</strong> {data.expected_graduation_year}</div>
+            {currentYearStatus && <div><strong>Current Status:</strong> {currentYearStatus}</div>}
           </div>
         </div>
       )}
