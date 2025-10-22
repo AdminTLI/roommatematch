@@ -105,7 +105,7 @@ export function Hero() {
             {mockMatches.map((match, index) => (
               <Card 
                 key={match.name}
-                className="rounded-2xl border border-brand-border bg-white shadow-elev-1 p-6 md:p-8 transition-transform duration-200 hover:-translate-y-0.5 hover:shadow-elev-2"
+                className="rounded-2xl border border-brand-border/50 bg-white/80 backdrop-blur-sm shadow-elev-1 p-6 md:p-8 transition-transform duration-200 hover:-translate-y-0.5 hover:shadow-elev-2"
                 style={{
                   transform: `translateY(${index * 4}px) rotate(${index % 2 === 0 ? '1deg' : '-1deg'})`,
                 }}

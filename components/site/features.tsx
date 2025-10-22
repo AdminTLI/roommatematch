@@ -171,7 +171,7 @@ export function Features() {
         </motion.div>
 
         <motion.div 
-          className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 auto-rows-[280px]"
+          className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6"
           variants={containerVariants}
           initial="hidden"
           whileInView="visible"
@@ -190,7 +190,7 @@ export function Features() {
                   whileHover={{ scale: 1.02 }}
                   transition={{ duration: 0.2 }}
                 >
-                  <Card className="h-full rounded-3xl border-0 bg-gradient-to-br from-white/80 to-white/40 backdrop-blur-xl shadow-xl hover:shadow-2xl transition-all duration-500 overflow-hidden relative">
+                  <Card className="h-full rounded-3xl border-0 bg-white/90 backdrop-blur-xl shadow-xl hover:shadow-2xl transition-all duration-500 overflow-hidden relative">
                     {/* Gradient overlay */}
                     <div className={`absolute inset-0 bg-gradient-to-br ${feature.gradient} opacity-0 group-hover:opacity-100 transition-opacity duration-500`} />
                     
@@ -199,7 +199,7 @@ export function Features() {
                       <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(0,0,0,0.1),transparent_50%)]" />
                     </div>
 
-                    <CardContent className="p-6 md:p-8 h-full flex flex-col relative z-10">
+                    <CardContent className="p-6 md:p-8 h-full flex flex-col relative z-10 min-h-[320px]">
                       <motion.div 
                         className="flex items-center mb-6"
                         whileHover={{ scale: 1.1 }}

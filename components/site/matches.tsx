@@ -52,7 +52,7 @@ export function Matches() {
           {mockMatches.map((match, index) => (
             <Card 
               key={match.name}
-              className="rounded-2xl border border-brand-border shadow-elev-1 p-6 md:p-8 bg-white h-full flex flex-col justify-between transition-transform duration-200 hover:-translate-y-0.5 hover:shadow-elev-2"
+              className="rounded-2xl border border-brand-border/50 shadow-elev-1 p-6 md:p-8 bg-white/80 backdrop-blur-sm h-full flex flex-col justify-between transition-transform duration-200 hover:-translate-y-0.5 hover:shadow-elev-2"
             >
               <div className="flex items-start justify-between mb-4">
                 <span className="inline-flex items-center rounded-full bg-emerald-50 text-emerald-700 px-3 py-1 text-sm font-semibold">

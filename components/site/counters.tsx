@@ -49,7 +49,7 @@ export function Counters() {
             return (
               <Card 
                 key={index}
-                className="rounded-2xl border border-brand-border shadow-elev-1 p-6 md:p-8 bg-white min-h-[140px] flex flex-col justify-center text-center transition-transform duration-200 hover:-translate-y-0.5 hover:shadow-elev-2"
+                className="rounded-2xl border border-brand-border/50 shadow-elev-1 p-6 md:p-8 bg-white/80 backdrop-blur-sm min-h-[140px] flex flex-col justify-center text-center transition-transform duration-200 hover:-translate-y-0.5 hover:shadow-elev-2"
               >
                 <CardContent className="p-0">
                   <div className="flex justify-center mb-4">
