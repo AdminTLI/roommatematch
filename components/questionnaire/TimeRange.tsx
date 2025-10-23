@@ -19,8 +19,7 @@ const times = Array.from({ length: 24 * 2 }, (_, i) => {
 
 export function TimeRange({ id, label, start, end, onChange }: Props) {
   return (
-    <fieldset>
-      <legend className="mb-2 font-medium">{label}</legend>
+    <div>
       <div className="grid grid-cols-2 gap-3">
         <div>
           <Label htmlFor={`${id}-start`}>Start</Label>
@@ -54,7 +53,7 @@ export function TimeRange({ id, label, start, end, onChange }: Props) {
         </div>
       </div>
       <p className="text-xs text-gray-500 mt-2">End should be after start.</p>
-    </fieldset>
+    </div>
   )
 }
 

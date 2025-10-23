@@ -13,8 +13,7 @@ interface Props {
 
 export function BipolarScale({ id, leftLabel, rightLabel, value, onChange }: Props) {
   return (
-    <fieldset>
-      <legend className="sr-only">{leftLabel} to {rightLabel}</legend>
+    <div>
       <div className="flex items-center justify-between text-sm text-gray-600 mb-2">
         <Label>{leftLabel}</Label>
         <Label>{rightLabel}</Label>
@@ -36,7 +35,7 @@ export function BipolarScale({ id, leftLabel, rightLabel, value, onChange }: Pro
         ))}
       </div>
       <p className="text-xs text-gray-500 mt-2 text-center">1 = strongly prefer left, 3 = no preference, 5 = strongly prefer right</p>
-    </fieldset>
+    </div>
   )
 }
 

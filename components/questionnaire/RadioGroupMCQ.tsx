@@ -1,7 +1,7 @@
 'use client'
 
 import { Label } from '@/components/ui/label'
-import { RadioGroup, RadioGroupItem } from '@radix-ui/react-radio-group'
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group'
 
 interface Option { value: string; label: string }
 
@@ -16,8 +16,7 @@ interface Props {
 
 export function RadioGroupMCQ({ id, label, helperText, options, value, onChange }: Props) {
   return (
-    <fieldset>
-      <legend className="mb-2 font-medium">{label}</legend>
+    <div>
       {helperText && <p className="text-sm text-gray-600 mb-3">{helperText}</p>}
       <RadioGroup value={value} onValueChange={onChange} aria-labelledby={`${id}-legend`}>
         <div className="grid gap-2">
@@ -29,7 +28,7 @@ export function RadioGroupMCQ({ id, label, helperText, options, value, onChange 
           ))}
         </div>
       </RadioGroup>
-    </fieldset>
+    </div>
   )
 }
 

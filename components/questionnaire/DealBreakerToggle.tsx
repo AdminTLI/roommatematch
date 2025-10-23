@@ -1,6 +1,6 @@
 'use client'
 
-import { Switch } from '@radix-ui/react-switch'
+import { Switch } from '@/components/ui/switch'
 import { Badge } from '@/components/ui/badge'
 
 interface Props {

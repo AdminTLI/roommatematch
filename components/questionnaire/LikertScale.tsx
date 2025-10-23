@@ -22,8 +22,7 @@ const anchors: Record<ScaleType, [string, string, string, string, string]> = {
 
 export function LikertScale({ id, label, helperText, scaleType, value, onChange }: Props) {
   return (
-    <fieldset>
-      {label && <legend className="mb-2 font-medium">{label}</legend>}
+    <div>
       {helperText && (
         <p id={`${id}-help`} className="text-sm text-gray-600 mb-3">
           {helperText}
@@ -54,7 +53,7 @@ export function LikertScale({ id, label, helperText, scaleType, value, onChange 
           )
         })}
       </div>
-    </fieldset>
+    </div>
   )
 }
 

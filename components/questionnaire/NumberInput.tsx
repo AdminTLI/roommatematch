@@ -15,8 +15,7 @@ interface Props {
 
 export function NumberInput({ id, label, value, min, max, step = 1, onChange }: Props) {
   return (
-    <fieldset>
-      <legend className="mb-2 font-medium">{label}</legend>
+    <div>
       <div>
         <Label htmlFor={id} className="sr-only">{label}</Label>
         <Input
@@ -29,7 +28,7 @@ export function NumberInput({ id, label, value, min, max, step = 1, onChange }: 
           onChange={(e) => onChange(e.target.value === '' ? undefined : Number(e.target.value))}
         />
       </div>
-    </fieldset>
+    </div>
   )
 }
 
