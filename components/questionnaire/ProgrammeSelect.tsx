@@ -61,7 +61,8 @@ export function ProgrammeSelect({
         }
         
         const data = await response.json()
-        console.log('Fetched programmes:', data.programmes?.length || 0)
+        console.log('📚 Fetched programmes for', institutionId, level, ':', data.programmes?.length || 0, 'programmes')
+        console.log('📊 Programme data:', data)
         setProgrammes(data.programmes || [])
       } catch (err) {
         console.error('Error fetching programmes:', err)
@@ -187,10 +188,22 @@ export function ProgrammeSelect({
             {!loading && !error && programmes.length === 0 && (
               <CommandEmpty className="py-6 text-center">
                 <p className="text-sm text-gray-600 dark:text-gray-400">
-                  No programmes found for this selection.
+                  No programmes found for this institution and degree level.
                 </p>
                 <p className="text-xs text-gray-500 mt-1">
-                  Try selecting a different degree level.
+                  This institution may not have programmes in the DUO database, or they may not be available for the selected degree level.
+                </p>
+                <div className="mt-3 p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-800">
+                  <p className="text-xs text-blue-600 dark:text-blue-400 font-medium mb-2">
+                    💡 Institutions with available programmes:
+                  </p>
+                  <div className="text-xs text-blue-600 dark:text-blue-400 space-y-1">
+                    <p><strong>WO Universities:</strong> Leiden University, University of Twente</p>
+                    <p><strong>HBO Institutions:</strong> Avans Hogeschool, Hogeschool Rotterdam, NHL Stenden, Zuyd Hogeschool</p>
+                  </div>
+                </div>
+                <p className="text-xs text-gray-500 mt-2">
+                  Try selecting one of these institutions to see available programmes, or use the "Undecided Program" option below.
                 </p>
               </CommandEmpty>
             )}
