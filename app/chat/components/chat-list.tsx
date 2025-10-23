@@ -52,85 +52,6 @@ export function ChatList({ user }: ChatListProps) {
   const router = useRouter()
   const supabase = createClient()
 
-  // Demo chat data
-  const demoChats: ChatRoom[] = [
-    {
-      id: 'chat-1',
-      name: 'Emma van der Berg',
-      type: 'individual',
-      lastMessage: {
-        content: 'Hey! I saw your profile and we have so much in common. Would you like to chat about potentially living together?',
-        sender: 'Emma van der Berg',
-        timestamp: '2 hours ago',
-        isRead: false
-      },
-      participants: [
-        {
-          id: 'user-1',
-          name: 'Emma van der Berg',
-          avatar: '/avatars/emma.jpg',
-          isOnline: true
-        }
-      ],
-      unreadCount: 2,
-      isActive: false
-    },
-    {
-      id: 'chat-2',
-      name: 'Study Group - UvA CS',
-      type: 'group',
-      lastMessage: {
-        content: 'Lucas: Anyone interested in finding a shared apartment near the Science Park?',
-        sender: 'Lucas',
-        timestamp: '1 day ago',
-        isRead: true
-      },
-      participants: [
-        {
-          id: 'user-2',
-          name: 'Lucas',
-          avatar: '/avatars/lucas.jpg',
-          isOnline: false
-        },
-        {
-          id: 'user-3',
-          name: 'Sophie',
-          avatar: '/avatars/sophie.jpg',
-          isOnline: true
-        },
-        {
-          id: 'user-4',
-          name: 'Alex',
-          avatar: '/avatars/alex.jpg',
-          isOnline: false
-        }
-      ],
-      unreadCount: 0,
-      isActive: false
-    },
-    {
-      id: 'chat-3',
-      name: 'Marcus Johnson',
-      type: 'individual',
-      lastMessage: {
-        content: 'Thanks for the great conversation! I think we could be great roommates.',
-        sender: 'Marcus Johnson',
-        timestamp: '3 days ago',
-        isRead: true
-      },
-      participants: [
-        {
-          id: 'user-5',
-          name: 'Marcus Johnson',
-          avatar: '/avatars/marcus.jpg',
-          isOnline: false
-        }
-      ],
-      unreadCount: 0,
-      isActive: false
-    }
-  ]
-
   useEffect(() => {
     loadChats()
   }, [])
@@ -139,24 +60,52 @@ export function ChatList({ user }: ChatListProps) {
     setIsLoading(true)
     
     try {
-      // For demo mode, use mock data directly
-      if (user.id === 'demo-user-id') {
-        setTimeout(() => {
-          setChats(demoChats)
-          setIsLoading(false)
-        }, 1000)
-        return
-      }
+      // Fetch real chats from database
+      const { data: chatRooms, error } = await supabase
+        .from('chat_rooms')
+        .select(`
+          *,
+          chat_participants!inner(
+            user_id,
+            profiles(first_name, avatar_url)
+          ),
+          chat_messages(
+            content,
+            created_at,
+            sender_id
+          )
+        `)
+        .contains('chat_participants.user_id', [user.id])
+        .order('updated_at', { ascending: false })
 
-      // In a real app, this would fetch from Supabase
-      // For demo, we'll use mock data
-      setTimeout(() => {
-        setChats(demoChats)
-        setIsLoading(false)
-      }, 1000)
+      if (error) throw error
+
+      // Transform database results to ChatRoom format
+      const transformedChats: ChatRoom[] = (chatRooms || []).map((room: any) => ({
+        id: room.id,
+        name: room.name || 'Chat',
+        type: room.type || 'individual',
+        lastMessage: room.chat_messages?.[0] ? {
+          content: room.chat_messages[0].content,
+          sender: room.chat_messages[0].sender_id,
+          timestamp: new Date(room.chat_messages[0].created_at).toLocaleString(),
+          isRead: true
+        } : undefined,
+        participants: room.chat_participants?.map((p: any) => ({
+          id: p.user_id,
+          name: p.profiles?.first_name || 'User',
+          avatar: p.profiles?.avatar_url,
+          isOnline: false
+        })) || [],
+        unreadCount: 0,
+        isActive: false
+      }))
+
+      setChats(transformedChats)
+      setIsLoading(false)
     } catch (error) {
       console.error('Failed to load chats:', error)
-      setChats(demoChats) // Fallback to demo data
+      setChats([])
       setIsLoading(false)
     }
   }

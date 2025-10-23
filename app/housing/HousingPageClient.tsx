@@ -68,7 +68,7 @@ export function HousingPageClient({
         }
         
         const data = await response.json()
-        setListings(data.items || [])
+        setListings(data.items || []) // Ensure always array
       } catch (err) {
         console.error('Failed to fetch listings:', err)
         setError(err instanceof Error ? err.message : 'Failed to load listings')

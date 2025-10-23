@@ -7,55 +7,40 @@ export default async function ChatPage() {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
 
-  // Demo bypass - create a mock user for demo purposes
-  const demoUser = user || {
-    id: 'demo-user-id',
-    email: 'demo@account.com',
-    user_metadata: {
-      full_name: 'Demo Student'
-    }
-  }
-
   if (!user) {
-    // For demo purposes, we'll still show the chat page
-    // In a real app, this would redirect to sign-in
-    console.log('Demo mode: showing chat page without authentication')
+    redirect('/auth/sign-in')
   }
 
-  // Skip profile checks for demo mode
-  if (user) {
-    // Check if user has completed onboarding by looking for submission
-    const { data: submission } = await supabase
-      .from('onboarding_submissions')
-      .select('id')
-      .eq('user_id', user.id)
-      .maybeSingle()
+  // Check if user has completed onboarding
+  const { data: submission } = await supabase
+    .from('onboarding_submissions')
+    .select('id')
+    .eq('user_id', user.id)
+    .maybeSingle()
 
-    if (!submission) {
-      // No onboarding submission - they need to complete onboarding
-      redirect('/onboarding')
-    }
+  if (!submission) {
+    redirect('/onboarding')
+  }
 
-    // Check verification status from profiles table if it exists
-    const { data: profile } = await supabase
-      .from('profiles')
-      .select('verification_status')
-      .eq('user_id', user.id)
-      .maybeSingle()
+  // Check verification status
+  const { data: profile } = await supabase
+    .from('profiles')
+    .select('verification_status')
+    .eq('user_id', user.id)
+    .maybeSingle()
 
-    if (profile && profile.verification_status !== 'verified') {
-      redirect('/verify')
-    }
+  if (profile && profile.verification_status !== 'verified') {
+    redirect('/verify')
   }
 
   return (
     <AppShell user={{
-      id: demoUser.id,
-      email: demoUser.email || '',
-      name: demoUser.user_metadata?.full_name || 'Demo User',
-      avatar: demoUser.user_metadata?.avatar_url
+      id: user.id,
+      email: user.email || '',
+      name: user.user_metadata?.full_name || 'User',
+      avatar: user.user_metadata?.avatar_url
     }}>
-      <ChatList user={demoUser} />
+      <ChatList user={user} />
     </AppShell>
   )
 }

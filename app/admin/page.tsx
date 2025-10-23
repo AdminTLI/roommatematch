@@ -7,27 +7,27 @@ export default async function AdminPage() {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
 
-  // Demo bypass - create a mock user for demo purposes
-  const demoUser = user || {
-    id: 'demo-user-id',
-    email: 'demo@account.com',
-    user_metadata: {
-      full_name: 'Demo Student'
-    }
+  if (!user) {
+    redirect('/auth/sign-in')
   }
 
-  if (!user) {
-    // For demo purposes, we'll still show the admin page
-    // In a real app, this would redirect to sign-in
-    console.log('Demo mode: showing admin page without authentication')
+  // Check if user is an admin
+  const { data: adminRecord } = await supabase
+    .from('admins')
+    .select('role')
+    .eq('user_id', user.id)
+    .maybeSingle()
+
+  if (!adminRecord) {
+    redirect('/dashboard')
   }
 
   return (
     <AppShell user={{
-      id: demoUser.id,
-      email: demoUser.email || '',
-      name: demoUser.user_metadata?.full_name || 'Demo User',
-      avatar: demoUser.user_metadata?.avatar_url
+      id: user.id,
+      email: user.email || '',
+      name: user.user_metadata?.full_name || 'User',
+      avatar: user.user_metadata?.avatar_url
     }}>
       <AdminContent />
     </AppShell>

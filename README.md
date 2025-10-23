@@ -4,10 +4,18 @@
 
 A modern, AI-powered roommate matching platform designed specifically for students in the Netherlands. Built with Next.js, TypeScript, and Supabase.
 
-![Roommate Match](https://img.shields.io/badge/Next.js-14-black?style=for-the-badge&logo=next.js)
+![Roommate Match](https://img.shields.io/badge/Next.js-15-black?style=for-the-badge&logo=next.js)
 ![TypeScript](https://img.shields.io/badge/TypeScript-5-blue?style=for-the-badge&logo=typescript)
-![Supabase](https://img.shields.io/badge/Supabase-2.38-green?style=for-the-badge&logo=supabase)
+![Supabase](https://img.shields.io/badge/Supabase-2.75-green?style=for-the-badge&logo=supabase)
 ![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-3.3-38B2AC?style=for-the-badge&logo=tailwind-css)
+
+## 🎯 Demo Account
+
+For testing and demonstration purposes, use:
+- **Email**: `demo@account.com`
+- **Password**: `Testing123`
+
+This is the only whitelisted demo account in the system. All other users must sign up through the application.
 
 ## ✨ Features
 

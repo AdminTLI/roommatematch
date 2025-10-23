@@ -95,7 +95,7 @@ export function DashboardContent({ hasCompletedQuestionnaire = false }: Dashboar
       >
         <motion.div variants={fadeInUp} className="flex items-center justify-between">
           <div>
-            <h1 className="text-3xl font-bold text-gray-900">Welcome back, Demo User!</h1>
+            <h1 className="text-3xl font-bold text-gray-900">Welcome back!</h1>
             <p className="text-lg text-gray-600 mt-1">Here's what's happening with your matches today.</p>
           </div>
         </motion.div>

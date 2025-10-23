@@ -17,6 +17,10 @@
     "db:reset": "supabase db reset",
     "db:seed": "psql $DATABASE_URL -f db/seed.sql",
     "db:studio": "supabase studio",
+    "seed:prod": "tsx db/seeds/seed.prod.ts",
+    "seed:dev": "tsx db/seeds/seed.dev.ts",
+    "cleanup:demo": "tsx scripts/cleanup-demo-data.ts",
+    "scan:demo": "tsx scripts/scan-demo-data.ts",
     "import:programs": "tsx scripts/import_programs.ts",
     "import:programs:watch": "tsx --watch scripts/import_programs.ts",
     "sync:programmes": "tsx scripts/sync-duo-programmes.ts",
@@ -101,6 +105,7 @@
     "postcss": "^8",
     "prettier": "^3.1.0",
     "tailwindcss": "^3.3.0",
-    "typescript": "^5"
+    "typescript": "^5",
+    "vercel": "^48.5.0"
   }
 }

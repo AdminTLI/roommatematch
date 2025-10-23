@@ -89,26 +89,8 @@ export function AdminDashboard({ admin }: AdminDashboardProps) {
     ]
   }
 
-  const mockReports: Report[] = [
-    {
-      id: '1',
-      reporter_name: 'Emma van der Berg',
-      reported_user_name: 'John Doe',
-      reason: 'Inappropriate behavior',
-      description: 'User was sending inappropriate messages in the chat.',
-      status: 'pending',
-      created_at: new Date(Date.now() - 3600000).toISOString()
-    },
-    {
-      id: '2',
-      reporter_name: 'Liam O\'Connor',
-      reported_user_name: 'Sarah Smith',
-      reason: 'Spam messages',
-      description: 'User keeps sending the same message repeatedly.',
-      status: 'pending',
-      created_at: new Date(Date.now() - 7200000).toISOString()
-    }
-  ]
+  // Reports will be loaded from database
+  const mockReports: Report[] = []
 
   useEffect(() => {
     loadDashboardData()

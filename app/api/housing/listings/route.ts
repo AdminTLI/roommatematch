@@ -71,20 +71,25 @@ export async function GET(request: NextRequest) {
     
     const supabase = await createClient()
     
-    // Get user for compatibility scoring
+    // Get user for compatibility scoring (optional)
     const { data: { user } } = await supabase.auth.getUser()
-    if (!user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    
+    // Get user's campus for distance calculations (only if authenticated)
+    let campusId: string | undefined
+    let userProfile: any = null
+    
+    if (user) {
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('campus_id')
+        .eq('user_id', user.id)
+        .single()
+      
+      userProfile = profile
+      campusId = query.campusId || profile?.campus_id
+    } else {
+      campusId = query.campusId
     }
-    
-    // Get user's campus for distance calculations
-    const { data: userProfile } = await supabase
-      .from('profiles')
-      .select('campus_id')
-      .eq('user_id', user.id)
-      .single()
-    
-    const campusId = query.campusId || userProfile?.campus_id
     
     // Get campus coordinates if available
     let campusCoords: { lat: number; lng: number } | undefined
@@ -176,7 +181,13 @@ export async function GET(request: NextRequest) {
     
     if (error) {
       console.error('Database error:', error)
-      return NextResponse.json({ error: 'Failed to fetch listings' }, { status: 500 })
+      // Return empty results instead of error for better UX
+      return NextResponse.json({
+        items: [],
+        total: 0,
+        page: query.page || 1,
+        pageSize: query.pageSize || 20
+      })
     }
     
     // Transform data to our Listing type

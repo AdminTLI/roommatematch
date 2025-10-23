@@ -7,27 +7,16 @@ export default async function ReputationPage() {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
 
-  // Demo bypass - create a mock user for demo purposes
-  const demoUser = user || {
-    id: 'demo-user-id',
-    email: 'demo@account.com',
-    user_metadata: {
-      full_name: 'Demo Student'
-    }
-  }
-
   if (!user) {
-    // For demo purposes, we'll still show the reputation page
-    // In a real app, this would redirect to sign-in
-    console.log('Demo mode: showing reputation page without authentication')
+    redirect('/auth/sign-in')
   }
 
   return (
     <AppShell user={{
-      id: demoUser.id,
-      email: demoUser.email || '',
-      name: demoUser.user_metadata?.full_name || 'Demo User',
-      avatar: demoUser.user_metadata?.avatar_url
+      id: user.id,
+      email: user.email || '',
+      name: user.user_metadata?.full_name || 'User',
+      avatar: user.user_metadata?.avatar_url
     }}>
       <ReputationContent />
     </AppShell>
