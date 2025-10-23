@@ -24,19 +24,26 @@ export default async function MatchesPage() {
 
   // Skip profile checks for demo mode
   if (user && user.id !== 'demo-user-id') {
-    // Check if user has a profile
-    const { data: profile } = await supabase
-      .from('profiles')
-      .select('id, verification_status')
+    // Check if user has completed onboarding by looking for submission
+    const { data: submission } = await supabase
+      .from('onboarding_submissions')
+      .select('id')
       .eq('user_id', user.id)
-      .single()
+      .maybeSingle()
 
-    if (!profile) {
-      // No profile at all - they need to complete basic info
+    if (!submission) {
+      // No onboarding submission - they need to complete onboarding
       redirect('/onboarding')
     }
 
-    if (profile.verification_status !== 'verified') {
+    // Check verification status from profiles table if it exists
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('verification_status')
+      .eq('user_id', user.id)
+      .maybeSingle()
+
+    if (profile && profile.verification_status !== 'verified') {
       redirect('/verify')
     }
   }
