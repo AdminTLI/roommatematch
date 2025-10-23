@@ -7,13 +7,23 @@ import type { Item } from '@/types/questionnaire'
 import { useMemo } from 'react'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
+import jsPDF from 'jspdf'
+import autoTable from 'jspdf-autotable'
+
+const scaleAnchors = {
+  agreement: ['Strongly disagree', 'Disagree', 'Neutral', 'Agree', 'Strongly agree'],
+  frequency: ['Never', 'Rarely', 'Sometimes', 'Often', 'Always'],
+  comfort: ['Very uncomfortable', 'Uncomfortable', 'Neutral', 'Comfortable', 'Very comfortable'],
+}
 
 function humanize(item: Item, value: any): string {
   if (!value) return ''
   switch (item.kind) {
     case 'likert':
+      const likertScale = item.scale as 'agreement' | 'frequency' | 'comfort'
+      return scaleAnchors[likertScale][value.value - 1] || String(value.value)
     case 'bipolar':
-      return String(value.value)
+      return `${value.value}/5 (${item.bipolarLabels?.left} ↔ ${item.bipolarLabels?.right})`
     case 'mcq':
       return item.options?.find((o) => o.value === value.value)?.label || value.value
     case 'toggle':
@@ -38,25 +48,57 @@ export default function ReviewClient() {
   }, [allItems])
 
   const downloadPreview = () => {
-    const lines: string[] = ['Roommate Agreement Preview', '']
+    const doc = new jsPDF()
+    
+    // Header with branding
+    doc.setFillColor(99, 102, 241) // Indigo
+    doc.rect(0, 0, 210, 40, 'F')
+    doc.setTextColor(255, 255, 255)
+    doc.setFontSize(24)
+    doc.text('Roommate Agreement', 105, 20, { align: 'center' })
+    doc.setFontSize(12)
+    doc.text('Preview', 105, 30, { align: 'center' })
+    
+    let yPos = 50
+    
     for (const [section, items] of Object.entries(grouped)) {
-      lines.push(`# ${section}`)
-      for (const it of items) {
-        const ans = sections[section as keyof typeof sections]?.[it.id]
-        if (!ans) continue
-        const text = humanize(it, ans.value)
-        const db = ans.dealBreaker ? ' [DB]' : ''
-        lines.push(`- ${it.label}: ${text}${db}`)
+      // Section header
+      doc.setTextColor(0, 0, 0)
+      doc.setFontSize(16)
+      doc.setFont(undefined, 'bold')
+      doc.text(section.replace(/-/g, ' ').toUpperCase(), 14, yPos)
+      yPos += 10
+      
+      // Table data
+      const tableData = items
+        .map((it) => {
+          const ans = sections[section as keyof typeof sections]?.[it.id]
+          if (!ans) return null
+          const text = humanize(it, ans.value)
+          const db = ans.dealBreaker ? ' [DEAL BREAKER]' : ''
+          return [it.label, text + db]
+        })
+        .filter(Boolean)
+      
+      if (tableData.length > 0) {
+        autoTable(doc, {
+          startY: yPos,
+          head: [['Question', 'Answer']],
+          body: tableData,
+          headStyles: { fillColor: [99, 102, 241] },
+          alternateRowStyles: { fillColor: [245, 247, 250] },
+          margin: { left: 14, right: 14 },
+        })
+        yPos = (doc as any).lastAutoTable.finalY + 15
       }
-      lines.push('')
+      
+      if (yPos > 250) {
+        doc.addPage()
+        yPos = 20
+      }
     }
-    const blob = new Blob([lines.join('\n')], { type: 'text/plain' })
-    const url = URL.createObjectURL(blob)
-    const a = document.createElement('a')
-    a.href = url
-    a.download = 'roommate-agreement-preview.txt'
-    a.click()
-    URL.revokeObjectURL(url)
+    
+    doc.save('roommate-agreement-preview.pdf')
   }
 
   const submit = async () => {

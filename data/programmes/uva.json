@@ -1,0 +1,92 @@
+{
+  "bachelor": [
+    {
+      "id": "UVA001",
+      "name": "Computer Science",
+      "nameEn": "Computer Science",
+      "level": "bachelor",
+      "sector": "wo",
+      "modes": ["fulltime"],
+      "externalRefs": {
+        "rioCode": "UVA001",
+        "instCode": "04A7"
+      }
+    },
+    {
+      "id": "UVA002",
+      "name": "International Business",
+      "nameEn": "International Business",
+      "level": "bachelor",
+      "sector": "wo",
+      "modes": ["fulltime", "parttime"],
+      "externalRefs": {
+        "rioCode": "UVA002",
+        "instCode": "04A7"
+      }
+    },
+    {
+      "id": "UVA003",
+      "name": "International Business",
+      "nameEn": null,
+      "level": "bachelor",
+      "sector": "wo",
+      "modes": ["fulltime"],
+      "externalRefs": {
+        "rioCode": "UVA003",
+        "instCode": "04A7"
+      }
+    },
+    {
+      "id": "UVA004",
+      "name": "Psychology",
+      "nameEn": "Psychology",
+      "level": "bachelor",
+      "sector": "wo",
+      "modes": ["fulltime", "parttime"],
+      "externalRefs": {
+        "rioCode": "UVA004",
+        "instCode": "04A7"
+      }
+    }
+  ],
+  "premaster": [
+    {
+      "id": "UVA005",
+      "name": "Pre-master Business Administration",
+      "nameEn": "Pre-master Business Administration",
+      "level": "premaster",
+      "sector": "wo",
+      "modes": ["fulltime"],
+      "externalRefs": {
+        "rioCode": "UVA005",
+        "instCode": "04A7"
+      }
+    }
+  ],
+  "master": [
+    {
+      "id": "UVA006",
+      "name": "Computer Science",
+      "nameEn": "Computer Science",
+      "level": "master",
+      "sector": "wo",
+      "modes": ["fulltime"],
+      "externalRefs": {
+        "rioCode": "UVA006",
+        "instCode": "04A7"
+      }
+    },
+    {
+      "id": "UVA007",
+      "name": "Business Administration",
+      "nameEn": "Business Administration",
+      "level": "master",
+      "sector": "wo",
+      "modes": ["fulltime", "parttime"],
+      "externalRefs": {
+        "rioCode": "UVA007",
+        "instCode": "04A7"
+      }
+    }
+  ]
+}

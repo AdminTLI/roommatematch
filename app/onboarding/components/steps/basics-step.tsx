@@ -4,6 +4,8 @@ import { useState, useEffect } from 'react'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+import { ProgrammeSelect } from '@/components/ui/programme-select'
+import { getStudyYearOptions } from '@/lib/academic/graduation-year'
 import { createClient } from '@/lib/supabase/client'
 import { User } from '@supabase/supabase-js'
 
@@ -99,12 +101,15 @@ export function BasicsStep({ data, onChange, user }: BasicsStepProps) {
 
       <div className="space-y-2">
         <Label htmlFor="program">Program of Study *</Label>
-        <Input
-          id="program"
-          placeholder="e.g., Computer Science, Business Administration"
-          value={data.program || ''}
-          onChange={(e) => handleChange('program', e.target.value)}
-          required
+        <ProgrammeSelect
+          institutionId={data.university_id}
+          degreeLevel={data.degree_level}
+          value={data.program_id || ''}
+          onValueChange={(value) => handleChange('program_id', value)}
+          onProgrammeSelect={(prog) => {
+            handleChange('program', prog.name)
+            handleChange('sector', prog.sector)
+          }}
         />
         <p className="text-sm text-gray-500">
           What are you studying? This helps us find roommates with similar academic interests.
@@ -121,11 +126,11 @@ export function BasicsStep({ data, onChange, user }: BasicsStepProps) {
             <SelectValue placeholder="Select your year" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="1">1st Year</SelectItem>
-            <SelectItem value="2">2nd Year</SelectItem>
-            <SelectItem value="3">3rd Year</SelectItem>
-            <SelectItem value="4">4th Year</SelectItem>
-            <SelectItem value="5+">5th Year or Higher</SelectItem>
+            {getStudyYearOptions(data.sector).map((option) => (
+              <SelectItem key={option.value} value={option.value}>
+                {option.label}
+              </SelectItem>
+            ))}
           </SelectContent>
         </Select>
         <p className="text-sm text-gray-500">

@@ -1,6 +1,7 @@
 'use client'
 
 import { create } from 'zustand'
+import { persist, createJSONStorage } from 'zustand/middleware'
 import type { SectionKey } from '@/types/questionnaire'
 
 export type AnswerValue =
