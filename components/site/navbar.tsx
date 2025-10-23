@@ -36,7 +36,7 @@ export function Navbar() {
         Skip to main content
       </a>
 
-      <nav className="h-16 md:h-20 bg-white border-b border-brand-border sticky top-0 z-40">
+      <nav className="h-16 md:h-20 bg-white border-b border-brand-border sticky top-4 md:top-6 z-40 mt-4 md:mt-6 rounded-lg md:rounded-xl">
         <Container>
           <div className="flex items-center justify-between h-full">
             {/* Logo */}

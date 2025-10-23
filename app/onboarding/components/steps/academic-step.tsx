@@ -66,6 +66,21 @@ export function AcademicStep({ data, onChange, user }: AcademicStepProps) {
 
   return (
     <div className="space-y-8">
+      {/* Programme Data Notice */}
+      <div className="p-4 bg-amber-50 dark:bg-amber-900/20 rounded-lg border border-amber-200 dark:border-amber-800">
+        <div className="flex items-start gap-3">
+          <div className="w-5 h-5 text-amber-600 dark:text-amber-400 mt-0.5">ℹ️</div>
+          <div className="text-sm">
+            <p className="text-amber-800 dark:text-amber-200 font-medium mb-1">
+              Programme Data Availability
+            </p>
+            <p className="text-amber-700 dark:text-amber-300">
+              Programme data is only available for some institutions in our database. If you don't see programmes for your university, you can select "Undecided Program" below and still complete your profile.
+            </p>
+          </div>
+        </div>
+      </div>
+
       {/* University Selection */}
       <div className="space-y-2">
         <Label htmlFor="university">University *</Label>

@@ -198,13 +198,15 @@ export function ProgrammeSelect({
                     💡 Institutions with available programmes:
                   </p>
                   <div className="text-xs text-blue-600 dark:text-blue-400 space-y-1">
-                    <p><strong>WO Universities:</strong> Leiden University, University of Twente</p>
-                    <p><strong>HBO Institutions:</strong> Avans Hogeschool, Hogeschool Rotterdam, NHL Stenden, Zuyd Hogeschool</p>
+                    <p><strong>WO Universities:</strong> Leiden University, University of Twente, Protestantse Theologische Universiteit, Theologische Universiteit Apeldoorn, Theologische Universiteit Utrecht</p>
+                    <p><strong>HBO Institutions:</strong> Aeres Hogeschool, Avans Hogeschool, Design Academy Eindhoven, Gerrit Rietveld Academie, HAS green academy, Hogeschool der Kunsten Den Haag, Hogeschool Inholland, Hogeschool Leiden, Hogeschool Rotterdam, Hogeschool Viaa, Hotelschool The Hague, HZ University of Applied Sciences, Iselinge Hogeschool, Marnix Academie, NHL Stenden Hogeschool, Zuyd Hogeschool</p>
                   </div>
                 </div>
-                <p className="text-xs text-gray-500 mt-2">
-                  Try selecting one of these institutions to see available programmes, or use the "Undecided Program" option below.
-                </p>
+                <div className="mt-3 p-2 bg-green-50 dark:bg-green-900/20 rounded border border-green-200 dark:border-green-800">
+                  <p className="text-xs text-green-700 dark:text-green-300 font-medium">
+                    ✅ No problem! You can still continue by using the "Undecided Program" option below.
+                  </p>
+                </div>
               </CommandEmpty>
             )}
             
