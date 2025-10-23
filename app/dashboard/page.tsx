@@ -22,18 +22,16 @@ export default async function DashboardPage() {
     console.log('Demo mode: showing dashboard page without authentication')
   }
 
-  // Check if user has completed the questionnaire
+  // Check questionnaire completion status to pass to dashboard content
+  let hasCompletedQuestionnaire = false
   if (user) {
     const { data: submission } = await supabase
       .from('onboarding_submissions')
       .select('id')
       .eq('user_id', user.id)
       .single()
-
-    if (!submission) {
-      // User hasn't completed questionnaire, redirect to onboarding
-      redirect('/onboarding')
-    }
+    
+    hasCompletedQuestionnaire = !!submission
   }
 
   return (
@@ -43,7 +41,7 @@ export default async function DashboardPage() {
       name: demoUser.user_metadata?.full_name || 'Demo User',
       avatar: demoUser.user_metadata?.avatar_url
     }}>
-      <DashboardContent />
+      <DashboardContent hasCompletedQuestionnaire={hasCompletedQuestionnaire} />
     </AppShell>
   )
 }

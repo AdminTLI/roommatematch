@@ -80,17 +80,9 @@ export function useAutosave(section: SectionKey) {
     }
   }, [answersArray, flush, hasLoaded])
 
-  // Draft guard on unload
-  useEffect(() => {
-    const handler = (e: BeforeUnloadEvent) => {
-      if (pendingRef.current) {
-        e.preventDefault()
-        e.returnValue = ''
-      }
-    }
-    window.addEventListener('beforeunload', handler)
-    return () => window.removeEventListener('beforeunload', handler)
-  }, [])
+  // Removed beforeunload handler to prevent browser popup
+  // Zustand persist middleware already saves to localStorage immediately
+  // API autosave happens automatically with 800ms debounce
 
   // Reset toast flag
   useEffect(() => {

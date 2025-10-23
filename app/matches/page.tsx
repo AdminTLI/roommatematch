@@ -24,19 +24,7 @@ export default async function MatchesPage() {
 
   // Skip profile checks for demo mode
   if (user) {
-    // Check if user has completed the questionnaire
-    const { data: submission } = await supabase
-      .from('onboarding_submissions')
-      .select('id')
-      .eq('user_id', user.id)
-      .single()
-
-    if (!submission) {
-      // User hasn't completed questionnaire, redirect to onboarding
-      redirect('/onboarding')
-    }
-
-    // Check if user has completed onboarding
+    // Check if user has a profile
     const { data: profile } = await supabase
       .from('profiles')
       .select('id, verification_status')
@@ -44,6 +32,7 @@ export default async function MatchesPage() {
       .single()
 
     if (!profile) {
+      // No profile at all - they need to complete basic info
       redirect('/onboarding')
     }
 

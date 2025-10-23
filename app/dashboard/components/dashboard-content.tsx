@@ -11,8 +11,10 @@ import {
   Plus,
   Star,
   Heart,
-  Bell
+  Bell,
+  AlertCircle
 } from 'lucide-react'
+import { Button } from '@/components/ui/button'
 
 const fadeInUp = {
   initial: { opacity: 0, y: 20 },
@@ -28,7 +30,11 @@ const staggerChildren = {
   }
 }
 
-export function DashboardContent() {
+interface DashboardContentProps {
+  hasCompletedQuestionnaire?: boolean
+}
+
+export function DashboardContent({ hasCompletedQuestionnaire = false }: DashboardContentProps) {
   const router = useRouter()
 
   const handleBrowseMatches = () => {
@@ -53,6 +59,33 @@ export function DashboardContent() {
 
   return (
     <div className="space-y-8">
+      {/* Show prompt if questionnaire not completed */}
+      {!hasCompletedQuestionnaire && (
+        <motion.div
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5 }}
+          className="bg-yellow-50 border border-yellow-200 rounded-lg p-4"
+        >
+          <div className="flex items-start gap-3">
+            <AlertCircle className="h-5 w-5 text-yellow-600 mt-0.5" />
+            <div className="flex-1">
+              <h3 className="font-semibold text-yellow-900">Complete Your Compatibility Test</h3>
+              <p className="text-sm text-yellow-800 mt-1">
+                To find the best roommate matches, please complete our compatibility questionnaire.
+              </p>
+              <Button 
+                asChild
+                className="mt-3"
+                variant="default"
+              >
+                <a href="/onboarding">Start Questionnaire</a>
+              </Button>
+            </div>
+          </div>
+        </motion.div>
+      )}
+
       {/* Header */}
       <motion.div
         initial="initial"
