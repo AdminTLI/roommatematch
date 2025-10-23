@@ -1,0 +1,469 @@
+@font-face {
+  font-family: 'Inter';
+  src: url('/fonts/Inter-Variable.woff2') format('woff2');
+  font-weight: 100 900;
+  font-style: normal;
+  font-display: swap;
+  unicode-range: U+000-5FF, U+1E00-1EFF, U+2000-206F, U+20A0-20CF;
+}
+
+:root {
+  --ink: #111;
+  --muted: #6B7280;
+  --line: #D1D5DB;
+  --accent: #0F766E;
+  --warn: #B45309;
+  --danger: #B91C1C;
+  --success: #059669;
+  --background: #FFFFFF;
+}
+
+@page {
+  size: A4;
+  margin: 18mm 16mm 20mm 16mm;
+}
+
+* {
+  -webkit-print-color-adjust: exact;
+  print-color-adjust: exact;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: 'Inter', sans-serif;
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--ink);
+  margin: 0;
+  padding: 0;
+  background: var(--background);
+}
+
+.report-container {
+  max-width: 210mm;
+  margin: 0 auto;
+}
+
+.page {
+  page-break-after: always;
+  min-height: 297mm;
+  padding: 20px;
+}
+
+.page:last-child {
+  page-break-after: avoid;
+}
+
+/* Typography */
+h1 {
+  font-size: 24px;
+  font-weight: 700;
+  margin: 0 0 20px 0;
+  color: var(--ink);
+  border-bottom: 3px solid var(--accent);
+  padding-bottom: 8px;
+}
+
+h2 {
+  font-size: 18px;
+  font-weight: 600;
+  margin: 24px 0 12px 0;
+  color: var(--ink);
+}
+
+h3 {
+  font-size: 15px;
+  font-weight: 600;
+  margin: 16px 0 8px 0;
+  color: var(--ink);
+}
+
+p {
+  margin: 0 0 12px 0;
+  line-height: 1.6;
+}
+
+/* Cover Page */
+.cover-page {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  background: linear-gradient(135deg, var(--accent) 0%, #14B8A6 100%);
+  color: white;
+}
+
+.cover-content {
+  max-width: 400px;
+}
+
+.logo-section {
+  margin-bottom: 60px;
+}
+
+.brand-title {
+  font-size: 36px;
+  font-weight: 800;
+  margin: 0 0 8px 0;
+  color: white;
+  border: none;
+}
+
+.brand-subtitle {
+  font-size: 18px;
+  opacity: 0.9;
+  margin: 0;
+}
+
+.student-info {
+  margin-bottom: 60px;
+}
+
+.student-name {
+  font-size: 28px;
+  font-weight: 600;
+  margin: 0 0 8px 0;
+  color: white;
+}
+
+.student-email {
+  font-size: 16px;
+  opacity: 0.9;
+  margin: 0 0 8px 0;
+}
+
+.report-date {
+  font-size: 14px;
+  opacity: 0.8;
+  margin: 0;
+}
+
+.privacy-note {
+  font-size: 12px;
+  opacity: 0.8;
+  max-width: 300px;
+  margin: 0 auto;
+}
+
+/* Table of Contents */
+.toc-page h1 {
+  text-align: center;
+  margin-bottom: 40px;
+}
+
+.toc-nav {
+  max-width: 400px;
+  margin: 0 auto;
+}
+
+.toc-nav ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.toc-nav li {
+  margin: 12px 0;
+  padding: 8px 0;
+  border-bottom: 1px solid var(--line);
+}
+
+.toc-nav a {
+  color: var(--ink);
+  text-decoration: none;
+  font-weight: 500;
+  display: block;
+  padding: 4px 0;
+}
+
+.toc-nav a:hover {
+  color: var(--accent);
+  text-decoration: underline;
+}
+
+/* Summary Page */
+.summary-section {
+  margin-bottom: 32px;
+}
+
+.signals-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 12px;
+  margin-top: 16px;
+}
+
+.signal-chip {
+  background: #F3F4F6;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 12px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.signal-label {
+  font-weight: 500;
+  color: var(--ink);
+}
+
+.signal-value {
+  font-weight: 600;
+  color: var(--accent);
+  background: white;
+  padding: 4px 8px;
+  border-radius: 4px;
+  border: 1px solid var(--accent);
+}
+
+.dealbreakers-callout {
+  background: #FEF2F2;
+  border: 2px solid var(--danger);
+  border-radius: 12px;
+  padding: 20px;
+  margin-top: 16px;
+}
+
+.heatmap-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 12px;
+  margin-top: 16px;
+}
+
+.heatmap-item {
+  padding: 16px;
+  border-radius: 8px;
+  text-align: center;
+  border: 2px solid;
+}
+
+.heatmap-item.green {
+  background: #F0FDF4;
+  border-color: var(--success);
+  color: #065F46;
+}
+
+.heatmap-item.amber {
+  background: #FFFBEB;
+  border-color: var(--warn);
+  color: #92400E;
+}
+
+.heatmap-item.red {
+  background: #FEF2F2;
+  border-color: var(--danger);
+  color: #991B1B;
+}
+
+.heatmap-title {
+  display: block;
+  font-weight: 600;
+  margin-bottom: 4px;
+}
+
+.heatmap-status {
+  display: block;
+  font-size: 12px;
+  text-transform: uppercase;
+  font-weight: 700;
+}
+
+/* Section Pages */
+.why-matters {
+  font-style: italic;
+  color: var(--muted);
+  margin-bottom: 20px;
+  padding: 12px;
+  background: #F9FAFB;
+  border-left: 4px solid var(--accent);
+  border-radius: 0 4px 4px 0;
+}
+
+.takeaways {
+  background: #F0FDF4;
+  border: 1px solid #BBF7D0;
+  border-radius: 8px;
+  padding: 16px;
+  margin: 20px 0;
+}
+
+.takeaways h3 {
+  color: #065F46;
+  margin-top: 0;
+}
+
+.takeaways ul {
+  margin: 8px 0 0 0;
+  padding-left: 20px;
+}
+
+.takeaways li {
+  margin: 4px 0;
+  color: #065F46;
+}
+
+.neutral-note {
+  background: #FEF3C7;
+  border: 1px solid #FCD34D;
+  border-radius: 6px;
+  padding: 12px;
+  margin: 16px 0;
+  color: #92400E;
+  font-style: italic;
+  text-align: center;
+}
+
+/* Tables */
+.qa-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 20px;
+  background: white;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.qa-table th {
+  background: var(--accent);
+  color: white;
+  font-weight: 600;
+  padding: 12px 16px;
+  text-align: left;
+}
+
+.qa-table td {
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--line);
+  vertical-align: top;
+}
+
+.qa-table tr:last-child td {
+  border-bottom: none;
+}
+
+.qa-table tr:nth-child(even) {
+  background: #F9FAFB;
+}
+
+/* Scale Bar */
+.scale-bar {
+  width: 100%;
+  max-width: 300px;
+}
+
+.scale-labels {
+  display: flex;
+  justify-content: space-between;
+  font-size: 11px;
+  color: var(--muted);
+  margin-bottom: 4px;
+}
+
+.scale-segments {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 2px;
+  margin-bottom: 4px;
+}
+
+.segment {
+  height: 8px;
+  background: var(--line);
+  border-radius: 2px;
+  transition: background-color 0.2s;
+}
+
+.segment.filled {
+  background: var(--accent);
+}
+
+.scale-value {
+  text-align: right;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--accent);
+}
+
+/* Deal Breaker Ribbon */
+.dealbreaker-ribbon {
+  background: var(--danger);
+  color: white;
+  padding: 8px 12px;
+  border-radius: 4px;
+  font-weight: 500;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 8px;
+  font-size: 12px;
+}
+
+.dealbreaker-ribbon .icon {
+  font-weight: 700;
+  font-size: 14px;
+}
+
+/* Deal Breakers Recap */
+.dealbreakers-list {
+  margin-top: 24px;
+}
+
+.dealbreaker-item {
+  margin-bottom: 24px;
+  padding: 16px;
+  border: 2px solid var(--danger);
+  border-radius: 8px;
+  background: #FEF2F2;
+}
+
+.dealbreaker-description {
+  margin: 12px 0 0 0;
+  font-size: 12px;
+  color: #991B1B;
+  font-style: italic;
+}
+
+/* Print optimizations */
+@media print {
+  .page {
+    margin: 0;
+    padding: 15mm;
+    min-height: auto;
+  }
+  
+  .qa-table {
+    page-break-inside: avoid;
+  }
+  
+  .takeaways {
+    page-break-inside: avoid;
+  }
+  
+  .dealbreakers-callout {
+    page-break-inside: avoid;
+  }
+}
+
+/* Accessibility */
+@media (prefers-reduced-motion: reduce) {
+  * {
+    transition: none !important;
+    animation: none !important;
+  }
+}
+
+/* High contrast mode */
+@media (prefers-contrast: high) {
+  :root {
+    --ink: #000000;
+    --line: #000000;
+    --accent: #000000;
+  }
+  
+  .segment.filled {
+    background: #000000;
+  }
+}
