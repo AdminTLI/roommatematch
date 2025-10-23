@@ -770,6 +770,38 @@ CREATE TABLE app_events (
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
+-- Onboarding sections storage for multi-step questionnaire
+CREATE TABLE onboarding_sections (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
+  section TEXT NOT NULL CHECK (
+    section IN (
+      'location-commute',
+      'personality-values',
+      'sleep-circadian',
+      'noise-sensory',
+      'home-operations',
+      'social-hosting-language',
+      'communication-conflict',
+      'privacy-territoriality',
+      'reliability-logistics'
+    )
+  ),
+  answers JSONB NOT NULL,
+  version TEXT NOT NULL DEFAULT 'rmq-v1',
+  updated_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW(),
+  UNIQUE (user_id, section)
+);
+
+-- Onboarding submissions for final questionnaire snapshots
+CREATE TABLE onboarding_submissions (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
+  snapshot JSONB NOT NULL,
+  submitted_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW(),
+  UNIQUE(user_id)
+);
+
 -- ============================================
 -- 12. INDEXES
 -- ============================================
@@ -806,6 +838,12 @@ CREATE INDEX idx_forum_comments_author_id ON forum_comments(author_id);
 CREATE INDEX idx_app_events_user_id ON app_events(user_id);
 CREATE INDEX idx_app_events_name ON app_events(name);
 CREATE INDEX idx_app_events_created_at ON app_events(created_at);
+
+-- Onboarding table indexes
+CREATE INDEX idx_onboarding_sections_user_id ON onboarding_sections(user_id);
+CREATE INDEX idx_onboarding_sections_section ON onboarding_sections(section);
+CREATE INDEX idx_onboarding_submissions_user_id ON onboarding_submissions(user_id);
+CREATE INDEX idx_onboarding_submissions_submitted_at ON onboarding_submissions(submitted_at);
 
 -- Academic indexes
 CREATE INDEX idx_programs_university_degree ON programs(university_id, degree_level);
@@ -934,6 +972,9 @@ CREATE TRIGGER update_move_in_expenses_updated_at BEFORE UPDATE ON move_in_expen
 -- Video intro triggers
 CREATE TRIGGER update_user_intro_recordings_updated_at BEFORE UPDATE ON user_intro_recordings FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 
+-- Onboarding triggers
+CREATE TRIGGER update_onboarding_sections_updated_at BEFORE UPDATE ON onboarding_sections FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+
 -- ============================================
 -- 14. VIEWS
 -- ============================================
@@ -998,6 +1039,8 @@ ALTER TABLE move_in_plan_participants ENABLE ROW LEVEL SECURITY;
 ALTER TABLE move_in_tasks ENABLE ROW LEVEL SECURITY;
 ALTER TABLE move_in_expenses ENABLE ROW LEVEL SECURITY;
 ALTER TABLE user_intro_recordings ENABLE ROW LEVEL SECURITY;
+ALTER TABLE onboarding_sections ENABLE ROW LEVEL SECURITY;
+ALTER TABLE onboarding_submissions ENABLE ROW LEVEL SECURITY;
 
 -- Universities: Read by anyone, write by admins only
 CREATE POLICY "Universities are readable by everyone" ON universities
@@ -1176,6 +1219,14 @@ CREATE POLICY "move_in_plans_participant" ON move_in_plans
 
 -- Video recordings: Users can manage their own recordings
 CREATE POLICY "user_intro_recordings_own" ON user_intro_recordings
+  FOR ALL USING (user_id = auth.uid());
+
+-- Onboarding sections: Users can manage their own sections
+CREATE POLICY "onboarding_sections_own" ON onboarding_sections
+  FOR ALL USING (user_id = auth.uid());
+
+-- Onboarding submissions: Users can manage their own submissions
+CREATE POLICY "onboarding_submissions_own" ON onboarding_submissions
   FOR ALL USING (user_id = auth.uid());
 
 -- App events: Users can insert their own events
