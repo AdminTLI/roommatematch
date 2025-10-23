@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
-import { getRepo } from '../../utilRepo'
+import { getMatchRepo } from '@/lib/matching/repo.factory'
 import matchModeConfig from '@/config/match-mode.json'
 
 export async function GET(request: NextRequest) {
@@ -12,7 +12,7 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    const repo = await getRepo()
+    const repo = await getMatchRepo()
     const includeExpired = request.nextUrl.searchParams.get('includeExpired') === 'true'
     
     const suggestions = await repo.listSuggestionsForUser(user.id, includeExpired)

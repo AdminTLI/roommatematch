@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
-import { getRepo } from '../../utilRepo'
+import { getMatchRepo } from '@/lib/matching/repo.factory'
 import type { MatchRecord } from '@/lib/matching/repo'
 
 export async function POST(request: NextRequest) {
@@ -21,7 +21,7 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    const repo = await getRepo()
+    const repo = await getMatchRepo()
     const suggestion = await repo.getSuggestionById(suggestionId)
     
     if (!suggestion) {

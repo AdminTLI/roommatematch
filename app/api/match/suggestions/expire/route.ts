@@ -1,9 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { getRepo } from '../../utilRepo'
+import { getMatchRepo } from '@/lib/matching/repo.factory'
 
 export async function POST(request: NextRequest) {
   try {
-    const repo = await getRepo()
+    const repo = await getMatchRepo()
     
     // Get all suggestions that are pending or accepted and past expiry
     const now = new Date().toISOString()
