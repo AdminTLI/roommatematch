@@ -803,6 +803,30 @@ CREATE TABLE onboarding_submissions (
   UNIQUE(user_id)
 );
 
+-- Match runs for tracking matching algorithm executions
+CREATE TABLE match_runs (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  run_id TEXT UNIQUE NOT NULL,
+  mode TEXT NOT NULL CHECK (mode IN ('pairs', 'groups')),
+  cohort_filter JSONB NOT NULL,
+  match_count INTEGER NOT NULL,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+-- Match records for storing individual matches
+CREATE TABLE match_records (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  run_id TEXT NOT NULL REFERENCES match_runs(run_id) ON DELETE CASCADE,
+  kind TEXT NOT NULL CHECK (kind IN ('pair', 'group')),
+  user_ids UUID[] NOT NULL,
+  fit_score DECIMAL(4,3) NOT NULL,
+  fit_index INTEGER NOT NULL,
+  section_scores JSONB,
+  reasons TEXT[],
+  locked BOOLEAN DEFAULT false,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
 -- ============================================
 -- 12. INDEXES
 -- ============================================
@@ -845,6 +869,16 @@ CREATE INDEX idx_onboarding_sections_user_id ON onboarding_sections(user_id);
 CREATE INDEX idx_onboarding_sections_section ON onboarding_sections(section);
 CREATE INDEX idx_onboarding_submissions_user_id ON onboarding_submissions(user_id);
 CREATE INDEX idx_onboarding_submissions_submitted_at ON onboarding_submissions(submitted_at);
+
+-- Matching table indexes
+CREATE INDEX idx_match_runs_run_id ON match_runs(run_id);
+CREATE INDEX idx_match_runs_mode ON match_runs(mode);
+CREATE INDEX idx_match_runs_created_at ON match_runs(created_at);
+CREATE INDEX idx_match_records_run_id ON match_records(run_id);
+CREATE INDEX idx_match_records_kind ON match_records(kind);
+CREATE INDEX idx_match_records_locked ON match_records(locked);
+CREATE INDEX idx_match_records_fit_score ON match_records(fit_score);
+CREATE INDEX idx_match_records_user_ids ON match_records USING GIN (user_ids);
 
 -- Academic indexes
 CREATE INDEX idx_programs_university_degree ON programs(university_id, degree_level);
