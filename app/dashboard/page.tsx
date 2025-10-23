@@ -24,7 +24,12 @@ export default async function DashboardPage() {
 
   // Check questionnaire completion status to pass to dashboard content
   let hasCompletedQuestionnaire = false
-  if (user) {
+
+  if (!user || user.id === 'demo-user-id') {
+    // Demo user: check localStorage (will be checked client-side in AppShell)
+    hasCompletedQuestionnaire = false // Let AppShell handle it
+  } else {
+    // Real user: check database
     const { data: submission } = await supabase
       .from('onboarding_submissions')
       .select('id')

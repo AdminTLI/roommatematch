@@ -28,9 +28,15 @@ export function AppShell({ children, user }: AppShellProps) {
   // On mount, check if the logged-in user has completed the questionnaire
   useEffect(() => {
     const check = async () => {
-      if (!user?.id) return
+      // Check demo completion first
+      if (!user?.id || user.id === 'demo-user-id') {
+        const demoCompleted = localStorage.getItem('demo-questionnaire-completed') === 'true'
+        setShowQuestionnaire(!demoCompleted)
+        return
+      }
+      
+      // Real user: check database
       const supabase = createClient()
-      // Check if user has submitted the new questionnaire
       const { data, error } = await supabase
         .from('onboarding_submissions')
         .select('id')

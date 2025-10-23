@@ -23,7 +23,7 @@ export default async function MatchesPage() {
   }
 
   // Skip profile checks for demo mode
-  if (user) {
+  if (user && user.id !== 'demo-user-id') {
     // Check if user has a profile
     const { data: profile } = await supabase
       .from('profiles')

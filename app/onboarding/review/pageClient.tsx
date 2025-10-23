@@ -331,8 +331,26 @@ export default function ReviewClient() {
   }
 
   const submit = async () => {
-    await fetch('/api/onboarding/submit', { method: 'POST' })
-    window.location.href = '/onboarding/complete'
+    try {
+      const response = await fetch('/api/onboarding/submit', { method: 'POST' })
+      const result = await response.json()
+      
+      if (!response.ok) {
+        console.error('Submit failed:', result.error)
+        alert('Failed to submit questionnaire. Please try again.')
+        return
+      }
+      
+      // For demo users, mark completion in localStorage
+      if (result.isDemo) {
+        localStorage.setItem('demo-questionnaire-completed', 'true')
+      }
+      
+      window.location.href = '/onboarding/complete'
+    } catch (error) {
+      console.error('Submit error:', error)
+      alert('Failed to submit questionnaire. Please try again.')
+    }
   }
 
   return (
