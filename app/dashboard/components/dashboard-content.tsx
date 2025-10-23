@@ -34,10 +34,10 @@ const staggerChildren = {
 
 interface DashboardContentProps {
   hasCompletedQuestionnaire?: boolean
-  data: DashboardData
+  dashboardData: DashboardData
 }
 
-export function DashboardContent({ hasCompletedQuestionnaire = false, data }: DashboardContentProps) {
+export function DashboardContent({ hasCompletedQuestionnaire = false, dashboardData }: DashboardContentProps) {
   const router = useRouter()
 
   const handleBrowseMatches = () => {
@@ -110,25 +110,25 @@ export function DashboardContent({ hasCompletedQuestionnaire = false, data }: Da
         
         {/* Summary Badges - Real Data */}
         <motion.div variants={fadeInUp} className="flex flex-wrap gap-3">
-          {data.summary.newMatchesCount > 0 && (
+          {dashboardData.summary.newMatchesCount > 0 && (
             <div className="inline-flex items-center gap-2 px-3 py-1 bg-green-100 text-green-800 text-sm font-medium rounded-full">
               <Star className="w-3 h-3" />
-              {data.summary.newMatchesCount} new {data.summary.newMatchesCount === 1 ? 'match' : 'matches'} found
+              {dashboardData.summary.newMatchesCount} new {dashboardData.summary.newMatchesCount === 1 ? 'match' : 'matches'} found
             </div>
           )}
-          {data.summary.unreadMessagesCount > 0 && (
+          {dashboardData.summary.unreadMessagesCount > 0 && (
             <div className="inline-flex items-center gap-2 px-3 py-1 bg-blue-100 text-blue-800 text-sm font-medium rounded-full">
               <MessageCircle className="w-3 h-3" />
-              {data.summary.unreadMessagesCount} unread {data.summary.unreadMessagesCount === 1 ? 'message' : 'messages'}
+              {dashboardData.summary.unreadMessagesCount} unread {dashboardData.summary.unreadMessagesCount === 1 ? 'message' : 'messages'}
             </div>
           )}
-          {data.summary.profileCompletion < 100 && (
+          {dashboardData.summary.profileCompletion < 100 && (
             <div className="inline-flex items-center gap-2 px-3 py-1 bg-purple-100 text-purple-800 text-sm font-medium rounded-full">
               <TrendingUp className="w-3 h-3" />
-              Profile {data.summary.profileCompletion}% complete
+              Profile {dashboardData.summary.profileCompletion}% complete
             </div>
           )}
-          {data.summary.newMatchesCount === 0 && data.summary.unreadMessagesCount === 0 && data.summary.profileCompletion === 100 && (
+          {dashboardData.summary.newMatchesCount === 0 && dashboardData.summary.unreadMessagesCount === 0 && dashboardData.summary.profileCompletion === 100 && (
             <div className="inline-flex items-center gap-2 px-3 py-1 bg-green-100 text-green-800 text-sm font-medium rounded-full">
               <Star className="w-3 h-3" />
               All caught up!
@@ -147,7 +147,7 @@ export function DashboardContent({ hasCompletedQuestionnaire = false, data }: Da
         <motion.div variants={fadeInUp}>
           <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-200">
             <div className="text-3xl font-bold text-gray-900">
-              {data.kpis.avgCompatibility > 0 ? `${data.kpis.avgCompatibility}%` : '-'}
+              {dashboardData.kpis.avgCompatibility > 0 ? `${dashboardData.kpis.avgCompatibility}%` : '-'}
             </div>
             <div className="text-sm text-gray-600 mt-1">Avg Compatibility</div>
           </div>
@@ -155,21 +155,21 @@ export function DashboardContent({ hasCompletedQuestionnaire = false, data }: Da
         
         <motion.div variants={fadeInUp}>
           <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-200">
-            <div className="text-3xl font-bold text-gray-900">{data.kpis.totalMatches}</div>
+            <div className="text-3xl font-bold text-gray-900">{dashboardData.kpis.totalMatches}</div>
             <div className="text-sm text-gray-600 mt-1">Total Matches</div>
           </div>
         </motion.div>
         
         <motion.div variants={fadeInUp}>
           <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-200">
-            <div className="text-3xl font-bold text-gray-900">{data.kpis.activeChats}</div>
+            <div className="text-3xl font-bold text-gray-900">{dashboardData.kpis.activeChats}</div>
             <div className="text-sm text-gray-600 mt-1">Active Chats</div>
           </div>
         </motion.div>
         
         <motion.div variants={fadeInUp}>
           <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-200">
-            <div className="text-3xl font-bold text-gray-900">{data.kpis.toursScheduled}</div>
+            <div className="text-3xl font-bold text-gray-900">{dashboardData.kpis.toursScheduled}</div>
             <div className="text-sm text-gray-600 mt-1">Tours Scheduled</div>
           </div>
         </motion.div>
@@ -196,9 +196,9 @@ export function DashboardContent({ hasCompletedQuestionnaire = false, data }: Da
               </button>
             </div>
             
-            {data.topMatches.length > 0 ? (
+            {dashboardData.topMatches.length > 0 ? (
               <div className="space-y-4">
-                {data.topMatches.map((match) => (
+                {dashboardData.topMatches.map((match) => (
                   <div key={match.id} className="flex items-center gap-4 p-4 bg-gray-50 rounded-lg">
                     <div className="text-2xl font-bold text-blue-600">{match.score}%</div>
                     <div className="flex items-center gap-4 flex-1">
@@ -250,9 +250,9 @@ export function DashboardContent({ hasCompletedQuestionnaire = false, data }: Da
               </button>
             </div>
             
-            {data.recentActivity.length > 0 ? (
+            {dashboardData.recentActivity.length > 0 ? (
               <div className="space-y-4">
-                {data.recentActivity.map((activity) => (
+                {dashboardData.recentActivity.map((activity) => (
                   <div key={activity.id} className="flex items-center gap-4 p-4 bg-gray-50 rounded-lg">
                     <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-500 rounded-full flex items-center justify-center text-white text-sm font-semibold">
                       {activity.user[0].toUpperCase()}
