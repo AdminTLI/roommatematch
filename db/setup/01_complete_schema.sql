@@ -776,6 +776,7 @@ CREATE TABLE onboarding_sections (
   user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
   section TEXT NOT NULL CHECK (
     section IN (
+      'intro',
       'location-commute',
       'personality-values',
       'sleep-circadian',
