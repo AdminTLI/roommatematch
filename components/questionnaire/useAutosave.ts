@@ -27,12 +27,17 @@ export function useAutosave(section: SectionKey) {
         if (!res.ok) throw new Error('Failed to load')
         const data = await res.json()
         const answers: Answer[] = Array.isArray(data.answers) ? data.answers : []
+        
+        // Merge API answers with local store (API takes precedence if newer)
         for (const a of answers) {
-          setAnswer(section, a)
+          const existing = sectionAnswers[a.itemId]
+          if (!existing || !data.lastSavedAt || data.lastSavedAt > (existing as any).savedAt) {
+            setAnswer(section, a)
+          }
         }
         if (data.lastSavedAt) setLastSavedAt(data.lastSavedAt)
       } catch {
-        // Offline or first time; ignore
+        // Offline or first time; use localStorage data from persist middleware
       } finally {
         if (!cancelled) setHasLoaded(true)
       }
