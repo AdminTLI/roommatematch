@@ -210,13 +210,25 @@ export function OnboardingWizard({ user }: OnboardingWizardProps) {
 
       // Save questionnaire responses
       const responses = []
-      for (const [stepId, stepData] of Object.entries(formData)) {
-        if (stepId.startsWith('question_')) {
-          const questionId = stepId.replace('question_', '')
+      
+      // Define questionnaire keys (exclude profile/academic keys)
+      const questionnaireKeys = [
+        'budget_min', 'budget_max', 'commute_max', 'lease_length', 'room_type',
+        'move_in_window', 'sleep_start', 'sleep_end', 'study_intensity',
+        'cleanliness_room', 'cleanliness_kitchen', 'noise_tolerance',
+        'guests_frequency', 'parties_frequency', 'chores_preference',
+        'alcohol_at_home', 'pets_tolerance', 'social_level', 'food_sharing',
+        'utensils_sharing', 'extraversion', 'agreeableness', 'conscientiousness',
+        'neuroticism', 'openness', 'conflict_style', 'communication_preference',
+        'languages_daily', 'smoking', 'pets_allowed', 'parties_max', 'guests_max'
+      ]
+      
+      for (const key of questionnaireKeys) {
+        if (formData[key] !== undefined && formData[key] !== null) {
           responses.push({
             user_id: user.id,
-            question_id: questionId,
-            response_value: stepData
+            question_key: key,
+            value: JSON.stringify(formData[key])
           })
         }
       }
@@ -224,7 +236,7 @@ export function OnboardingWizard({ user }: OnboardingWizardProps) {
       if (responses.length > 0) {
         const { error: responsesError } = await supabase
           .from('responses')
-          .insert(responses)
+          .upsert(responses, { onConflict: 'user_id,question_key' })
 
         if (responsesError) throw responsesError
       }
