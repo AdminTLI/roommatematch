@@ -22,6 +22,20 @@ export default async function DashboardPage() {
     console.log('Demo mode: showing dashboard page without authentication')
   }
 
+  // Check if user has completed the questionnaire
+  if (user) {
+    const { data: submission } = await supabase
+      .from('onboarding_submissions')
+      .select('id')
+      .eq('user_id', user.id)
+      .single()
+
+    if (!submission) {
+      // User hasn't completed questionnaire, redirect to onboarding
+      redirect('/onboarding')
+    }
+  }
+
   return (
     <AppShell user={{
       id: demoUser.id,

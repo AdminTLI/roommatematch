@@ -15,7 +15,7 @@ export default function CompletePage() {
       setCountdown((prev) => {
         if (prev <= 1) {
           clearInterval(countdownInterval)
-          router.push('/matches')
+          router.push('/dashboard')
           return 0
         }
         return prev - 1
@@ -26,7 +26,7 @@ export default function CompletePage() {
   }, [router])
   
   const handleManualRedirect = () => {
-    router.push('/matches')
+    router.push('/dashboard')
   }
   
   return (
@@ -50,7 +50,7 @@ export default function CompletePage() {
         {/* Countdown Message */}
         <div className="space-y-4">
           <p className="text-sm text-gray-500">
-            Redirecting to your matches in {countdown} second{countdown !== 1 ? 's' : ''}...
+            Redirecting to your dashboard in {countdown} second{countdown !== 1 ? 's' : ''}...
           </p>
           
           {/* Manual Redirect Button */}
@@ -59,7 +59,7 @@ export default function CompletePage() {
             size="lg"
             className="gap-2"
           >
-            Go to Matches Now
+            Go to Dashboard Now
             <ArrowRight className="h-4 w-4" />
           </Button>
         </div>
