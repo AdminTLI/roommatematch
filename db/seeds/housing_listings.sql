@@ -532,7 +532,7 @@ INSERT INTO housing_listings (
   '2628CD',
   52.0116,
   4.3571,
-  'dormitory',
+  'apartment',
   'shared',
   8,
   1,
