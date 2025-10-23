@@ -53,7 +53,7 @@
 
   { "id":"M3_Q1","section":"noise-sensory","kind":"likert","scale":"agreement","label":"I’m more sensitive to sudden than steady noises." },
   { "id":"M3_Q2","section":"noise-sensory","kind":"likert","scale":"agreement","label":"Ongoing background noise (TV, music) distracts me." },
-  { "id":"M3_Q3","section":"noise-sensory","kind":"frequency","scale":"frequency","label":"I usually use headphones for media in shared spaces." },
+  { "id":"M3_Q3","section":"noise-sensory","kind":"likert","scale":"frequency","label":"I usually use headphones for media in shared spaces." },
   { "id":"M3_Q4","section":"noise-sensory","kind":"bipolar","bipolarLabels":{"left":"Low listening volume","right":"High listening volume"},"label":"Personal listening volume: low \u2194 high." },
   { "id":"M3_Q5","section":"noise-sensory","kind":"likert","scale":"comfort","label":"I’m comfortable when living-room conversations are faintly audible in my room." },
   { "id":"M3_Q6","section":"noise-sensory","kind":"likert","scale":"agreement","label":"Doors should be closed gently at all times." },
