@@ -201,50 +201,120 @@ export default function ReviewClient() {
       doc.setFont('helvetica', 'italic')
       doc.text(sectionInfo.description, 20, 45)
       
-      // Questions table with proper styling
-      const tableData = answeredItems.map((it) => {
-        const ans = sections[section]?.[it.id]
-        const text = humanize(it, ans.value)
-        return [
-          it.label,
-          text,
-          ans.dealBreaker ? '⚠ Deal Breaker' : ''
-        ]
-      })
+      // Separate regular items from deal breakers
+      const regularItems = answeredItems.filter(it => !sections[section]?.[it.id]?.dealBreaker)
+      const dealBreakerItems = answeredItems.filter(it => sections[section]?.[it.id]?.dealBreaker)
       
-      autoTable(doc, {
-        startY: 55,
-        head: [['Question', 'Your Answer', 'Priority']],
-        body: tableData,
-        headStyles: {
-          fillColor: [99, 102, 241],
-          textColor: [255, 255, 255],
-          fontSize: 11,
-          fontStyle: 'bold',
-          halign: 'left'
-        },
-        bodyStyles: {
-          fontSize: 10,
-          textColor: [31, 41, 55],
-        },
-        columnStyles: {
-          0: { cellWidth: 80, fontStyle: 'bold' },
-          1: { cellWidth: 65 },
-          2: { cellWidth: 30, textColor: [220, 38, 38], fontStyle: 'bold', halign: 'center' }
-        },
-        alternateRowStyles: {
-          fillColor: [249, 250, 251]
-        },
-        margin: { left: 20, right: 20 },
-        didDrawCell: (data) => {
-          // Add red border for deal breaker rows
-          if (data.section === 'body' && data.column.index === 2 && data.cell.text[0]) {
-            doc.setDrawColor(220, 38, 38)
-            doc.setLineWidth(0.5)
-            doc.rect(data.cell.x, data.cell.y, data.cell.width, data.cell.height)
-          }
-        }
-      })
+      // Set default font for consistency
+      doc.setFont('helvetica', 'normal')
+      
+      // Regular questions table
+      if (regularItems.length > 0) {
+        const tableData = regularItems.map((it) => {
+          const ans = sections[section]?.[it.id]
+          return [it.label, humanize(it, ans.value)]
+        })
+        
+        autoTable(doc, {
+          startY: 55,
+          head: [['Question', 'Your Answer']],
+          body: tableData,
+          headStyles: {
+            fillColor: [99, 102, 241],
+            textColor: [255, 255, 255],
+            fontSize: 11,
+            fontStyle: 'bold',
+            halign: 'left',
+            cellPadding: 5
+          },
+          bodyStyles: {
+            fontSize: 10,
+            fontStyle: 'normal',
+            font: 'helvetica',
+            textColor: [31, 41, 55],
+            cellPadding: 5,
+            lineColor: [229, 231, 235],
+            lineWidth: 0.1
+          },
+          columnStyles: {
+            0: { 
+              cellWidth: 90, 
+              fontStyle: 'normal', 
+              fontSize: 10,
+              font: 'helvetica'
+            },
+            1: { 
+              cellWidth: 85, 
+              fontSize: 10,
+              font: 'helvetica',
+              fontStyle: 'normal'
+            }
+          },
+          alternateRowStyles: {
+            fillColor: [249, 250, 251]
+          },
+          margin: { left: 20, right: 20 }
+        })
+      }
+      
+      // Deal breakers section (if any)
+      if (dealBreakerItems.length > 0) {
+        const yPos = (doc as any).lastAutoTable?.finalY + 15 || 100
+        
+        // Deal Breakers Header
+        doc.setFillColor(220, 38, 38)
+        doc.rect(20, yPos, pageWidth - 40, 8, 'F')
+        doc.setTextColor(255, 255, 255)
+        doc.setFontSize(11)
+        doc.setFont('helvetica', 'bold')
+        doc.text('⚠ DEAL BREAKERS', 25, yPos + 5.5)
+        
+        const dbTableData = dealBreakerItems.map((it) => {
+          const ans = sections[section]?.[it.id]
+          return [it.label, humanize(it, ans.value)]
+        })
+        
+        autoTable(doc, {
+          startY: yPos + 10,
+          head: [['Question', 'Your Answer']],
+          body: dbTableData,
+          headStyles: {
+            fillColor: [220, 38, 38],
+            textColor: [255, 255, 255],
+            fontSize: 11,
+            fontStyle: 'bold',
+            halign: 'left',
+            cellPadding: 5
+          },
+          bodyStyles: {
+            fontSize: 10,
+            fontStyle: 'normal',
+            font: 'helvetica',
+            textColor: [31, 41, 55],
+            cellPadding: 5,
+            lineColor: [229, 231, 235],
+            lineWidth: 0.1
+          },
+          columnStyles: {
+            0: { 
+              cellWidth: 90, 
+              fontStyle: 'normal', 
+              fontSize: 10,
+              font: 'helvetica'
+            },
+            1: { 
+              cellWidth: 85, 
+              fontSize: 10,
+              font: 'helvetica',
+              fontStyle: 'normal'
+            }
+          },
+          alternateRowStyles: {
+            fillColor: [254, 242, 242]
+          },
+          margin: { left: 20, right: 20 }
+        })
+      }
       
       // Footer with page number
       doc.setFontSize(9)
