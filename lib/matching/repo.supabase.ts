@@ -3,6 +3,7 @@
 
 import { createClient } from '@/lib/supabase/server'
 import type { MatchRepo, CohortFilter, MatchRecord, Candidate, MatchRun } from './repo'
+import type { MatchSuggestion } from './types'
 
 export class SupabaseMatchRepo implements MatchRepo {
   private supabase = createClient()
@@ -63,6 +64,10 @@ export class SupabaseMatchRepo implements MatchRepo {
     
     if (filter.onlyActive) {
       query = query.eq('profiles.verification_status', 'verified')
+    }
+
+    if (filter.excludeUserIds?.length) {
+      query = query.not('id', 'in', `(${filter.excludeUserIds.join(',')})`)
     }
 
     if (filter.limit) {
@@ -279,5 +284,159 @@ export class SupabaseMatchRepo implements MatchRepo {
     }
 
     return (data || []).length > 0
+  }
+
+  // Suggestions (student flow)
+  async createSuggestions(sugs: MatchSuggestion[]): Promise<void> {
+    const records = sugs.map(sug => ({
+      id: sug.id,
+      run_id: sug.runId,
+      kind: sug.kind,
+      member_ids: sug.memberIds,
+      fit_score: sug.fitIndex / 100,
+      fit_index: sug.fitIndex,
+      section_scores: sug.sectionScores,
+      reasons: sug.reasons,
+      expires_at: sug.expiresAt,
+      status: sug.status,
+      accepted_by: sug.acceptedBy,
+      created_at: sug.createdAt
+    }))
+
+    const { error } = await this.supabase
+      .from('match_suggestions')
+      .insert(records)
+
+    if (error) {
+      throw new Error(`Failed to create suggestions: ${error.message}`)
+    }
+  }
+
+  async listSuggestionsForUser(userId: string, includeExpired = false): Promise<MatchSuggestion[]> {
+    let query = this.supabase
+      .from('match_suggestions')
+      .select('*')
+      .contains('member_ids', [userId])
+      .order('fit_index', { ascending: false })
+
+    if (!includeExpired) {
+      query = query
+        .neq('status', 'expired')
+        .gt('expires_at', new Date().toISOString())
+    }
+
+    const { data, error } = await query
+
+    if (error) {
+      throw new Error(`Failed to list suggestions for user: ${error.message}`)
+    }
+
+    return (data || []).map((record: any) => ({
+      id: record.id,
+      runId: record.run_id,
+      kind: record.kind,
+      memberIds: record.member_ids,
+      fitIndex: record.fit_index,
+      sectionScores: record.section_scores,
+      reasons: record.reasons,
+      expiresAt: record.expires_at,
+      status: record.status,
+      acceptedBy: record.accepted_by,
+      createdAt: record.created_at
+    }))
+  }
+
+  async listSuggestionsByRun(runId: string): Promise<MatchSuggestion[]> {
+    const { data, error } = await this.supabase
+      .from('match_suggestions')
+      .select('*')
+      .eq('run_id', runId)
+      .order('fit_index', { ascending: false })
+
+    if (error) {
+      throw new Error(`Failed to list suggestions by run: ${error.message}`)
+    }
+
+    return (data || []).map((record: any) => ({
+      id: record.id,
+      runId: record.run_id,
+      kind: record.kind,
+      memberIds: record.member_ids,
+      fitIndex: record.fit_index,
+      sectionScores: record.section_scores,
+      reasons: record.reasons,
+      expiresAt: record.expires_at,
+      status: record.status,
+      acceptedBy: record.accepted_by,
+      createdAt: record.created_at
+    }))
+  }
+
+  async getSuggestionById(id: string): Promise<MatchSuggestion | null> {
+    const { data, error } = await this.supabase
+      .from('match_suggestions')
+      .select('*')
+      .eq('id', id)
+      .single()
+
+    if (error) {
+      if (error.code === 'PGRST116') return null // Not found
+      throw new Error(`Failed to get suggestion: ${error.message}`)
+    }
+
+    return {
+      id: data.id,
+      runId: data.run_id,
+      kind: data.kind,
+      memberIds: data.member_ids,
+      fitIndex: data.fit_index,
+      sectionScores: data.section_scores,
+      reasons: data.reasons,
+      expiresAt: data.expires_at,
+      status: data.status,
+      acceptedBy: data.accepted_by,
+      createdAt: data.created_at
+    }
+  }
+
+  async updateSuggestion(s: MatchSuggestion): Promise<void> {
+    const { error } = await this.supabase
+      .from('match_suggestions')
+      .update({
+        status: s.status,
+        accepted_by: s.acceptedBy
+      })
+      .eq('id', s.id)
+
+    if (error) {
+      throw new Error(`Failed to update suggestion: ${error.message}`)
+    }
+  }
+
+  // Blocklist
+  async getBlocklist(userId: string): Promise<string[]> {
+    const { data, error } = await this.supabase
+      .from('match_blocklist')
+      .select('blocked_user_id')
+      .eq('user_id', userId)
+
+    if (error) {
+      throw new Error(`Failed to get blocklist: ${error.message}`)
+    }
+
+    return (data || []).map((record: any) => record.blocked_user_id)
+  }
+
+  async addToBlocklist(userId: string, otherId: string): Promise<void> {
+    const { error } = await this.supabase
+      .from('match_blocklist')
+      .upsert({
+        user_id: userId,
+        blocked_user_id: otherId
+      })
+
+    if (error) {
+      throw new Error(`Failed to add to blocklist: ${error.message}`)
+    }
   }
 }

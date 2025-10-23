@@ -1,0 +1,7 @@
+{
+  "mode": "double_consent",
+  "expiryHours": 72,
+  "topN": 10,
+  "minFitIndex": 65,
+  "maxSuggestionsPerUser": 20
+}

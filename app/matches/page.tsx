@@ -1,4 +1,4 @@
-import { MatchesInterface } from './components/matches-interface'
+import { StudentMatchesInterface } from './components/student-matches-interface'
 import { AppShell } from '@/components/app/shell'
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
@@ -55,7 +55,7 @@ export default async function MatchesPage() {
       name: demoUser.user_metadata?.full_name || 'Demo User',
       avatar: demoUser.user_metadata?.avatar_url
     }}>
-      <MatchesInterface user={demoUser} />
+      <StudentMatchesInterface user={demoUser} />
     </AppShell>
   )
 }

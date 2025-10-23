@@ -1,6 +1,8 @@
 // Repository interfaces for matching system
 // Defines the data layer abstraction for cohort selection, match persistence, and user management
 
+import { MatchSuggestion } from './types';
+
 export type CohortFilter = {
   campusCity?: string;
   institutionId?: string;
@@ -10,6 +12,7 @@ export type CohortFilter = {
   graduationYearTo?: number;
   onlyActive?: boolean;     // exclude users who opted out / completed housing
   excludeAlreadyMatched?: boolean; // exclude users locked into a match
+  excludeUserIds?: string[]; // exclude specific users (for blocklist)
   limit?: number;
 };
 
@@ -77,4 +80,15 @@ export interface MatchRepo {
   // User management
   markUsersMatched(userIds: string[], runId: string): Promise<void>;
   isUserMatched(userId: string): Promise<boolean>;
+  
+  // Suggestions (student flow)
+  createSuggestions(sugs: MatchSuggestion[]): Promise<void>;
+  listSuggestionsForUser(userId: string, includeExpired?: boolean): Promise<MatchSuggestion[]>;
+  listSuggestionsByRun(runId: string): Promise<MatchSuggestion[]>;
+  getSuggestionById(id: string): Promise<MatchSuggestion | null>;
+  updateSuggestion(s: MatchSuggestion): Promise<void>;
+  
+  // Blocklist
+  getBlocklist(userId: string): Promise<string[]>;
+  addToBlocklist(userId: string, otherId: string): Promise<void>;
 }
