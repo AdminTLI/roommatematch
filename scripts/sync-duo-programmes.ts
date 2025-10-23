@@ -24,23 +24,23 @@ import { DuoRow, Programme, ProgrammesByLevel, DegreeLevel } from '@/types/progr
 import { Institution } from '@/types/institution';
 import { loadInstitutions } from '@/lib/loadInstitutions';
 import { normalise, mapSector, getInstitutionBrinCode, validateInstitutionMappings, counters } from '@/lib/duo/erkenningen';
-import { resolveDuoErkenningenCsv } from '@/lib/duo/ckan';
+import { resolveDuoCsv, resolveDuoErkenningenCsv } from '@/lib/duo/ckan';
+import { parseHoOpleidingsoverzicht } from '@/lib/duo/ho-opleidingsoverzicht';
 
 const DEFAULT_CSV_URL = process.env.DUO_ERKENNINGEN_CSV_URL || 
   'https://onderwijsdata.duo.nl/dataset/bb07cc6e-00fe-4100-9528-a0c5fd27d2fb/resource/0b2e9c4a-2c8e-4b2a-9f3a-1c2d3e4f5g6h/download/overzicht-erkenningen-ho.csv';
 
 /**
- * Fetch DUO CSV data using CKAN resolver
+ * Fetch HO Opleidingsoverzicht CSV data (primary source)
  */
-async function fetchCsv(): Promise<string> {
-  console.log('📡 Resolving DUO CSV URL...');
+async function fetchHoCsv(): Promise<string> {
+  console.log('📡 Resolving HO Opleidingsoverzicht CSV URL...');
   
   try {
-    // Use CKAN resolver to get current CSV URL
-    const url = await resolveDuoErkenningenCsv();
+    const url = await resolveDuoCsv('ho-opleidingsoverzicht', /opleidingsoverzicht/i);
     console.log(`   Resolved URL: ${url}`);
     
-    console.log('📡 Fetching DUO CSV data...');
+    console.log('📡 Fetching HO Opleidingsoverzicht CSV data...');
     const response = await fetch(url, {
       headers: {
         'User-Agent': 'RoommateMatch/1.0 (programme-data-sync)'
@@ -55,7 +55,37 @@ async function fetchCsv(): Promise<string> {
     console.log(`✅ Fetched ${csvText.length.toLocaleString()} characters`);
     return csvText;
   } catch (error) {
-    throw new Error(`Failed to fetch DUO CSV: ${error}`);
+    throw new Error(`Failed to fetch HO Opleidingsoverzicht CSV: ${error}`);
+  }
+}
+
+/**
+ * Fetch Erkenningen CSV data (fallback source)
+ */
+async function fetchErkCsv(): Promise<string | null> {
+  console.log('📡 Resolving Erkenningen CSV URL (fallback)...');
+  
+  try {
+    const url = await resolveDuoErkenningenCsv();
+    console.log(`   Resolved URL: ${url}`);
+    
+    console.log('📡 Fetching Erkenningen CSV data...');
+    const response = await fetch(url, {
+      headers: {
+        'User-Agent': 'RoommateMatch/1.0 (programme-data-sync)'
+      }
+    });
+    
+    if (!response.ok) {
+      throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+    }
+    
+    const csvText = await response.text();
+    console.log(`✅ Fetched ${csvText.length.toLocaleString()} characters`);
+    return csvText;
+  } catch (error) {
+    console.warn(`⚠️  Failed to fetch Erkenningen CSV (fallback): ${error}`);
+    return null;
   }
 }
 
@@ -195,10 +225,9 @@ async function main(): Promise<void> {
     console.log(`✅ Validated ${validation.total - validation.missing.length}/${validation.total} institutions`);
     console.log('');
     
-    // Fetch and parse CSV data
-    const csvText = await fetchCsv();
-    const rows = parseCsv(csvText);
-    const byInstitution = groupByInstitution(rows);
+    // Fetch both datasets
+    const hoCsv = await fetchHoCsv();
+    const erkCsv = await fetchErkCsv();
     
     // Load our institutions
     const institutions = loadInstitutions();
@@ -208,12 +237,9 @@ async function main(): Promise<void> {
     console.log('');
     console.log('📚 Processing institutions...');
     
-    // Get the resolved URL for metadata
-    const resolvedUrl = await resolveDuoErkenningenCsv();
-    
     const stats = {
       syncedAt: new Date().toISOString(),
-      sourceUrl: resolvedUrl,
+      sourceUrl: 'HO Opleidingsoverzicht (primary) + Erkenningen (fallback)',
       totalProgrammes: 0,
       byLevel: { bachelor: 0, premaster: 0, master: 0 } as Record<DegreeLevel, number>,
       institutions: allInstitutions.length,
@@ -227,29 +253,50 @@ async function main(): Promise<void> {
         continue;
       }
       
-      const institutionRows = byInstitution.get(brinCode);
-      if (!institutionRows || institutionRows.length === 0) {
-        console.log(`📭 ${institution.label} → No programmes found`);
-        continue;
+      // Try HO Opleidingsoverzicht first (primary source)
+      let programmes: ProgrammesByLevel = { bachelor: [], premaster: [], master: [] };
+      let source = 'none';
+      
+      try {
+        const sector = mapSector(brinCode);
+        programmes = parseHoOpleidingsoverzicht(hoCsv, brinCode, sector);
+        source = 'HO Opleidingsoverzicht';
+      } catch (error) {
+        console.warn(`⚠️  HO Opleidingsoverzicht failed for ${institution.label}: ${error}`);
       }
       
-      const programmes = processInstitutionProgrammes(
-        institution.id,
-        institution.label,
-        institutionRows
-      );
+      // If HO yields no programmes, try Erkenningen as fallback
+      const totalFromHo = programmes.bachelor.length + programmes.premaster.length + programmes.master.length;
+      if (totalFromHo === 0 && erkCsv) {
+        try {
+          const erkRows = parseCsv(erkCsv);
+          const byInstitution = groupByInstitution(erkRows);
+          const institutionRows = byInstitution.get(brinCode);
+          
+          if (institutionRows && institutionRows.length > 0) {
+            programmes = processInstitutionProgrammes(
+              institution.id,
+              institution.label,
+              institutionRows
+            );
+            source = 'Erkenningen (fallback)';
+          }
+        } catch (error) {
+          console.warn(`⚠️  Erkenningen fallback failed for ${institution.label}: ${error}`);
+        }
+      }
       
       await writeProgrammeFile(institution.id, programmes);
       
       const total = programmes.bachelor.length + programmes.premaster.length + programmes.master.length;
-      console.log(`📚 ${institution.label} → B:${programmes.bachelor.length} PM:${programmes.premaster.length} M:${programmes.master.length} (${total} total)`);
+      console.log(`📚 ${institution.label} → B:${programmes.bachelor.length} PM:${programmes.premaster.length} M:${programmes.master.length} (${total} total) [${source}]`);
       
       // Update statistics
       stats.totalProgrammes += total;
       stats.byLevel.bachelor += programmes.bachelor.length;
       stats.byLevel.premaster += programmes.premaster.length;
       stats.byLevel.master += programmes.master.length;
-      stats.institutionsWithProgrammes++;
+      if (total > 0) stats.institutionsWithProgrammes++;
     }
     
     // Write sync metadata

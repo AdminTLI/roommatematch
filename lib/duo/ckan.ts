@@ -26,6 +26,35 @@ export interface CkanPackage {
 }
 
 /**
+ * Generic CKAN resolver for any DUO dataset
+ * 
+ * @param pkgId - DUO package ID (e.g., 'overzicht-erkenningen-ho', 'ho-opleidingsoverzicht')
+ * @param preferNameRegex - Optional regex to prefer specific resource names
+ * @returns Promise<string> The current CSV download URL
+ * @throws Error if package lookup fails or no CSV resource found
+ */
+export async function resolveDuoCsv(pkgId: string, preferNameRegex?: RegExp): Promise<string> {
+  const res = await fetch(`https://onderwijsdata.duo.nl/api/3/action/package_show?id=${encodeURIComponent(pkgId)}`, {
+    headers: {
+      'Accept': 'application/json',
+      'User-Agent': 'RoommateMatch/1.0 (programme-data-sync)'
+    }
+  });
+  
+  const json = await res.json();
+  if (!json?.success) throw new Error(`DUO package_show failed for ${pkgId}`);
+  
+  const resources: any[] = json.result?.resources ?? [];
+  const pick = (arr: any[]) =>
+    arr.find(r => r.format?.toLowerCase() === 'csv' && (preferNameRegex?.test(r.name || '') || preferNameRegex?.test(r.url || '')))
+    || arr.find(r => r.format?.toLowerCase() === 'csv');
+    
+  const csv = pick(resources);
+  if (!csv?.url) throw new Error(`No CSV resource for ${pkgId}`);
+  return csv.url as string;
+}
+
+/**
  * Resolve the current CSV resource for the dataset 'overzicht-erkenningen-ho' via CKAN.
  * 
  * The DUO "Overzicht Erkenningen ho" dataset contains all recognized HBO/WO programmes
@@ -35,52 +64,7 @@ export interface CkanPackage {
  * @throws Error if package lookup fails or no CSV resource found
  */
 export async function resolveDuoErkenningenCsv(): Promise<string> {
-  try {
-    // 1) Ask CKAN for the package
-    const response = await fetch('https://onderwijsdata.duo.nl/api/3/action/package_show?id=overzicht-erkenningen-ho', {
-      headers: {
-        'Accept': 'application/json',
-        'User-Agent': 'RoommateMatch/1.0 (programme-data-sync)'
-      }
-    });
-
-    if (!response.ok) {
-      throw new Error(`CKAN API request failed: ${response.status} ${response.statusText}`);
-    }
-
-    const pkg: CkanPackage = await response.json();
-    
-    if (!pkg?.success) {
-      throw new Error('DUO package_show failed - invalid response structure');
-    }
-
-    // 2) Find the CSV resource (prefer name/format hints)
-    const resources: CkanResource[] = pkg.result?.resources ?? [];
-    
-    if (resources.length === 0) {
-      throw new Error('No resources found in DUO dataset');
-    }
-
-    // Look for CSV resource with specific naming patterns
-    const csv = resources.find(r =>
-      (r.format?.toLowerCase() === 'csv') &&
-      (/erkenningen|ho_erkenningen|overzicht.*ho/i.test(r.name || '') || 
-       /overzicht-erkenningen-ho/i.test(r.url || ''))
-    ) || resources.find(r => r.format?.toLowerCase() === 'csv');
-
-    if (!csv?.url) {
-      throw new Error('No CSV resource found for Overzicht Erkenningen ho');
-    }
-
-    // DUO gives a direct download URL like .../resource/<id>/download/overzicht-erkenningen-ho.csv
-    return csv.url as string;
-    
-  } catch (error) {
-    if (error instanceof Error) {
-      throw new Error(`Failed to resolve DUO CSV URL: ${error.message}`);
-    }
-    throw new Error('Unknown error resolving DUO CSV URL');
-  }
+  return resolveDuoCsv('overzicht-erkenningen-ho', /erkenningen|ho_erkenningen|overzicht.*ho/i);
 }
 
 /**
