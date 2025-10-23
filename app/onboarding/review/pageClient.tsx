@@ -337,7 +337,8 @@ export default function ReviewClient() {
       
       if (!response.ok) {
         console.error('Submit failed:', result.error)
-        alert('Failed to submit questionnaire. Please try again.')
+        // Show the actual error message from API
+        alert(`Failed to submit questionnaire: ${result.error || 'Unknown error'}. Please try again.`)
         return
       }
       
@@ -349,7 +350,7 @@ export default function ReviewClient() {
       window.location.href = '/onboarding/complete'
     } catch (error) {
       console.error('Submit error:', error)
-      alert('Failed to submit questionnaire. Please try again.')
+      alert(`Failed to submit questionnaire: ${error.message}. Please try again.`)
     }
   }
 

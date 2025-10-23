@@ -20,7 +20,10 @@
  */
 
 export const itemIdToQuestionKey: Record<string, string> = {
-  // Personality & Values (Big Five) - M1_Q1 to M1_Q25
+  // Only map to question_keys that actually exist in the database
+  // Based on db/seed.sql question_items table
+  
+  // Personality & Values - Map to Big Five traits that exist in DB
   'M1_Q1': 'conscientiousness',  // "I keep shared promises even when inconvenient."
   'M1_Q2': 'conscientiousness',  // "I stick to plans and schedules I make."
   'M1_Q3': 'conscientiousness',  // "People describe me as reliable and on time."
@@ -47,7 +50,7 @@ export const itemIdToQuestionKey: Record<string, string> = {
   'M1_Q24': 'openness',          // "I'm comfortable living with diverse habits..."
   'M1_Q25': 'conscientiousness', // "I can adapt my way of doing chores..."
 
-  // Sleep & Circadian - M2_Q1 to M2_Q25
+  // Sleep & Circadian - Map to existing sleep keys
   'M2_Q1': 'sleep_start',        // Chronotype: night ↔ morning
   'M2_Q2': 'sleep_start',        // Weeknight sleep window start
   'M2_Q3': 'sleep_start',        // Weekend sleep window start
@@ -74,7 +77,7 @@ export const itemIdToQuestionKey: Record<string, string> = {
   'M2_Q24': 'sleep_start',       // "I'm flexible moving my quiet hours slightly..."
   'M2_Q25': 'sleep_start',       // "If a housemate's schedule is opposite mine..."
 
-  // Noise & Sensory - M3_Q1 to M3_Q25
+  // Noise & Sensory - Map to noise_tolerance
   'M3_Q1': 'noise_tolerance',    // "I'm more sensitive to sudden than steady noises."
   'M3_Q2': 'noise_tolerance',    // "Ongoing background noise (TV, music) distracts me."
   'M3_Q3': 'noise_tolerance',    // "I usually use headphones for media in shared spaces."
@@ -101,7 +104,7 @@ export const itemIdToQuestionKey: Record<string, string> = {
   'M3_Q24': 'noise_tolerance',   // "I'm comfortable with vacuuming up to 20:00."
   'M3_Q25': 'noise_tolerance',   // "I prefer quiet-hours reminders posted in the hallway."
 
-  // Home Operations - M4_Q1 to M4_Q25
+  // Home Operations - Map to existing cleanliness and chores keys
   'M4_Q1': 'cleanliness_kitchen', // Cleanliness standard — Kitchen
   'M4_Q2': 'cleanliness_room',    // Cleanliness standard — Bathroom
   'M4_Q3': 'cleanliness_room',    // Cleanliness standard — Living area
@@ -128,7 +131,7 @@ export const itemIdToQuestionKey: Record<string, string> = {
   'M4_Q24': 'cleanliness_room',    // Bathroom etiquette preference
   'M4_Q25': 'chores_preference',   // "Okay with rotating 'kitchen closer'..."
 
-  // Social, Hosting & Language - M5_Q1 to M5_Q25
+  // Social, Hosting & Language - Map to existing social keys
   'M5_Q1': 'social_level',       // "I want a socially active home (weekly hangs/meals)."
   'M5_Q2': 'social_level',       // "I prefer a quiet home (rare group hangs)."
   'M5_Q3': 'guests_frequency',   // Typical daytime guests per week
@@ -155,7 +158,7 @@ export const itemIdToQuestionKey: Record<string, string> = {
   'M5_Q24': 'social_level',       // "I prefer a shared calendar for events/visits."
   'M5_Q25': 'guests_frequency',   // "I'm comfortable coordinating guest sleeping arrangements..."
 
-  // Communication & Conflict - M6_Q1 to M6_Q25
+  // Communication & Conflict - Map to existing communication keys
   'M6_Q1': 'communication_preference', // "If a house rule is broken once, I message the group..."
   'M6_Q2': 'communication_preference', // "I'd rather address issues 1-to-1 before the group chat."
   'M6_Q3': 'communication_preference', // "I prefer a 15-minute weekly house check-in."
@@ -182,7 +185,7 @@ export const itemIdToQuestionKey: Record<string, string> = {
   'M6_Q24': 'communication_preference', // "I prefer tone guidelines in chat..."
   'M6_Q25': 'communication_preference', // "I'm comfortable owning mistakes in the chat publicly."
 
-  // Privacy & Territoriality - M7_Q1 to M7_Q25
+  // Privacy & Territoriality - Map to social_level (closest existing key)
   'M7_Q1': 'social_level',       // Baseline door policy: open ↔ closed
   'M7_Q2': 'social_level',       // "I need daily alone time at home to recharge."
   'M7_Q3': 'social_level',       // "I'm happy to study/work in common areas together."
@@ -209,7 +212,7 @@ export const itemIdToQuestionKey: Record<string, string> = {
   'M7_Q24': 'social_level',      // "I prefer privacy shades in common rooms at night."
   'M7_Q25': 'social_level',      // "I want clearly defined personal zones in the living room..."
 
-  // Reliability & Logistics - M8_Q1 to M8_Q25
+  // Reliability & Logistics - Map to existing keys
   'M8_Q1': 'social_level',       // "I pay my share on time every month."
   'M8_Q2': 'social_level',       // "I'll use a shared expenses app (e.g., Splitwise)."
   'M8_Q3': 'social_level',       // "I keep receipts for shared purchases when asked."
@@ -244,16 +247,29 @@ export const itemIdToQuestionKey: Record<string, string> = {
  * Old format: { question_key: 'extraversion', value: 4 }
  */
 export function transformAnswer(answer: any): { question_key: string; value: any } | null {
+  if (!answer || !answer.itemId) {
+    console.warn('[transformAnswer] Invalid answer object:', answer)
+    return null
+  }
+
   const questionKey = itemIdToQuestionKey[answer.itemId]
   if (!questionKey) {
-    console.warn(`No mapping found for item ID: ${answer.itemId}`)
+    console.warn(`[transformAnswer] No mapping found for item ID: ${answer.itemId}`)
     return null
   }
   
   // Extract the actual value
   let value = answer.value
+  
+  // Handle nested value object: { value: X }
   if (value && typeof value === 'object' && 'value' in value) {
     value = value.value
+  }
+  
+  // Handle special cases
+  if (value === undefined || value === null) {
+    console.warn(`[transformAnswer] Undefined/null value for ${answer.itemId}`)
+    return null
   }
   
   return {
