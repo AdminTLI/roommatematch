@@ -2,8 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
 import { fetchReportData } from '@/lib/pdf/fetch-report-data';
 import { normalizeSections } from '@/lib/pdf/normalize';
-import { renderToString } from 'react-dom/server';
-import { ReportShell } from '@/components/pdf/report-shell';
+import { generateReportHtml } from '@/lib/pdf/generate-html';
 import { renderPdf } from '@/lib/pdf/render-pdf';
 
 export async function GET(req: NextRequest) {
@@ -19,8 +18,8 @@ export async function GET(req: NextRequest) {
     const rawData = await fetchReportData(user.id);
     const normalizedData = normalizeSections(rawData);
 
-    // Render React component to HTML
-    const html = renderToString(<ReportShell data={normalizedData} />);
+    // Generate HTML using template strings (no JSX)
+    const html = generateReportHtml(normalizedData);
 
     // Generate PDF
     const pdfBuffer = await renderPdf(html);

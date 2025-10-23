@@ -9,8 +9,7 @@
 
 import { fetchReportData } from '@/lib/pdf/fetch-report-data';
 import { normalizeSections } from '@/lib/pdf/normalize';
-import { renderToString } from 'react-dom/server';
-import { ReportShell } from '@/components/pdf/report-shell';
+import { generateReportHtml } from '@/lib/pdf/generate-html';
 import { renderPdf } from '@/lib/pdf/render-pdf';
 import fs from 'fs';
 import path from 'path';
@@ -28,8 +27,8 @@ async function main() {
     console.log('🔧 Normalizing data...');
     const normalizedData = normalizeSections(rawData);
     
-    console.log('🎨 Rendering HTML...');
-    const html = renderToString(<ReportShell data={normalizedData} />);
+    console.log('🎨 Generating HTML...');
+    const html = generateReportHtml(normalizedData);
     
     console.log('📄 Generating PDF...');
     const pdf = await renderPdf(html);
