@@ -88,7 +88,8 @@
     "tsx": "^4.6.0",
     "xlsx": "^0.18.5",
     "zod": "^3.22.4",
-    "zustand": "^5.0.8"
+    "zustand": "^5.0.8",
+    "autoprefixer": "^10.0.1"
   },
   "devDependencies": {
     "@axe-core/playwright": "^4.8.3",
@@ -97,7 +98,6 @@
     "@types/node": "^20",
     "@types/react": "^18",
     "@types/react-dom": "^18",
-    "autoprefixer": "^10.0.1",
     "eslint": "^8",
     "eslint-config-next": "14.0.4",
     "eslint-config-prettier": "^9.0.0",
