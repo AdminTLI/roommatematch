@@ -25,14 +25,14 @@ export function AppShell({ children, user }: AppShellProps) {
   const [sidebarOpen, setSidebarOpen] = useState(false)
   const [showQuestionnaire, setShowQuestionnaire] = useState(false)
 
-  // On mount, check if the logged-in user has answered questionnaire
+  // On mount, check if the logged-in user has completed the questionnaire
   useEffect(() => {
     const check = async () => {
       if (!user?.id) return
       const supabase = createClient()
-      // If there are any responses for this user, consider questionnaire completed
+      // Check if user has submitted the new questionnaire
       const { data, error } = await supabase
-        .from('responses')
+        .from('onboarding_submissions')
         .select('id')
         .eq('user_id', user.id)
         .limit(1)
