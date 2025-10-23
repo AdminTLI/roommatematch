@@ -37,8 +37,8 @@ export function Navbar() {
       </a>
 
       <nav className="h-16 md:h-20 bg-white border-b border-brand-border sticky top-0 z-40">
-        <Container>
-          <div className="flex items-center justify-between h-full">
+        <Container className="h-full">
+          <div className="flex items-center justify-between h-full py-0">
             {/* Logo */}
             <div className="flex items-center">
               <button 
