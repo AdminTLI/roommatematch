@@ -83,6 +83,32 @@ export function SignUpForm() {
       } else {
         // Store email for OTP verification
         sessionStorage.setItem('verification-email', email)
+        
+        // Explicitly request OTP email to ensure it's sent
+        try {
+          await supabase.auth.signInWithOtp({
+            email,
+            options: {
+              shouldCreateUser: false, // Don't create user again
+            }
+          })
+        } catch (otpError) {
+          console.log('OTP request error (may be expected):', otpError)
+          // Continue anyway - the signup may have already triggered the email
+        }
+        
+        // Alternative approach if above doesn't work:
+        // Replace the entire signUp flow with:
+        // const { error } = await supabase.auth.signInWithOtp({
+        //   email,
+        //   options: {
+        //     data: {
+        //       first_name: firstName,
+        //       last_name: lastName,
+        //     },
+        //   }
+        // })
+        
         router.push('/auth/verify-email')
       }
     } catch (err) {

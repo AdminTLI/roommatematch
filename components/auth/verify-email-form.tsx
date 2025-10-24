@@ -52,7 +52,16 @@ export function VerifyEmailForm() {
       })
 
       if (error) {
-        setError(error.message)
+        // Provide more user-friendly error messages
+        if (error.message.includes('Invalid token') || error.message.includes('Token has expired')) {
+          setError('Invalid or expired verification code. Please request a new code.')
+        } else if (error.message.includes('Email not confirmed')) {
+          setError('Please check your email and enter the verification code.')
+        } else if (error.message.includes('Too many requests')) {
+          setError('Too many attempts. Please wait a few minutes before trying again.')
+        } else {
+          setError(error.message)
+        }
       } else if (data.user) {
         setIsVerified(true)
         // Clear stored email
