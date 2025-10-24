@@ -81,6 +81,8 @@ export function SignUpForm() {
       if (error) {
         setError(error.message)
       } else {
+        // Store email for OTP verification
+        sessionStorage.setItem('verification-email', email)
         router.push('/auth/verify-email')
       }
     } catch (err) {
