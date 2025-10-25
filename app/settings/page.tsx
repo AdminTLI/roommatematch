@@ -47,33 +47,43 @@ export default async function SettingsPage() {
     console.log('[Settings] Intro section:', intro)
     
     if (intro?.answers) {
-      let university_id: string | undefined
+      let institution_slug: string | undefined
       let degree_level: string | undefined
       let program_id: string | undefined
       let study_start_year: number | undefined
       for (const a of intro.answers) {
         console.log('[Settings] Checking answer:', a)
         // Note: intro saves as institution_slug, not university_id
-        if (a.itemId === 'institution_slug') university_id = a.value
+        if (a.itemId === 'institution_slug') institution_slug = a.value
         if (a.itemId === 'degree_level') degree_level = a.value
         if (a.itemId === 'program_id') program_id = a.value
         if (a.itemId === 'expected_graduation_year') study_start_year = parseInt(a.value)
       }
       
-      console.log('[Settings] Extracted:', { university_id, degree_level, program_id, study_start_year })
+      console.log('[Settings] Extracted:', { institution_slug, degree_level, program_id, study_start_year })
       
-      if (university_id || degree_level) {
-        academic = {
-          user_id: user.id,
-          university_id: university_id || null,
-          degree_level: degree_level || null,
-          program_id: program_id || null,
-          undecided_program: null,
-          study_start_year: study_start_year || null,
-          created_at: null,
-          updated_at: null,
-        } as any
-        console.log('[Settings] Derived academic data:', academic)
+      if (institution_slug) {
+        // Look up university UUID from slug
+        const { data: university } = await supabase
+          .from('universities')
+          .select('id')
+          .eq('slug', institution_slug)
+          .maybeSingle()
+        
+        if (university) {
+          console.log('[Settings] Found university UUID:', university.id, 'for slug:', institution_slug)
+          academic = {
+            user_id: user.id,
+            university_id: university.id,
+            degree_level: degree_level || null,
+            program_id: program_id || null,
+            undecided_program: null,
+            study_start_year: study_start_year || null,
+            created_at: null,
+            updated_at: null,
+          } as any
+          console.log('[Settings] Derived academic data:', academic)
+        }
       }
     }
   } else {

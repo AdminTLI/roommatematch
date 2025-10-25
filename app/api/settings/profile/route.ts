@@ -104,21 +104,44 @@ export async function POST(request: Request) {
       if (introSection?.answers) {
         // Extract academic data from intro answers
         // Note: intro saves as institution_slug, not university_id
-        let university_id, degree_level, program_id, study_start_year
+        let institution_slug, degree_level, program_id, study_start_year
         for (const answer of introSection.answers) {
           console.log('[Profile] Checking answer:', answer)
-          if (answer.itemId === 'institution_slug') university_id = answer.value
+          if (answer.itemId === 'institution_slug') institution_slug = answer.value
           if (answer.itemId === 'degree_level') degree_level = answer.value
           if (answer.itemId === 'program_id') program_id = answer.value
           if (answer.itemId === 'expected_graduation_year') study_start_year = parseInt(answer.value)
         }
         
-        console.log('[Profile] Extracted from intro:', { university_id, degree_level, program_id, study_start_year })
+        console.log('[Profile] Extracted from intro:', { institution_slug, degree_level, program_id, study_start_year })
         
-        if (university_id && degree_level) {
-          console.log('[Profile] Found academic data in intro section, backfilling user_academic...')
+        if (institution_slug && degree_level) {
+          // Look up university UUID from slug
+          const { data: university, error: uniError } = await supabase
+            .from('universities')
+            .select('id')
+            .eq('slug', institution_slug)
+            .maybeSingle()
+          
+          if (uniError) {
+            console.error('[Profile] Failed to lookup university:', uniError)
+            return NextResponse.json({ 
+              error: 'Failed to lookup university' 
+            }, { status: 500 })
+          }
+          
+          if (!university) {
+            console.error('[Profile] University not found for slug:', institution_slug)
+            return NextResponse.json({ 
+              error: 'University not found. Please contact support.' 
+            }, { status: 400 })
+          }
+          
+          const university_id = university.id
+          console.log('[Profile] Found university UUID:', university_id, 'for slug:', institution_slug)
           
           // Backfill user_academic so future loads work
+          console.log('[Profile] Backfilling user_academic...')
           const { data: backfilledData, error: backfillErr } = await supabase
             .from('user_academic')
             .upsert({
