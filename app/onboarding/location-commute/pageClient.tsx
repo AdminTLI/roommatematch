@@ -26,6 +26,19 @@ export default function SectionClient() {
 
   const nextDisabled = items.some((it) => !(answers[it.id]?.value))
 
+  const saveSection = async () => {
+    try {
+      const answersArray = Object.values(answers)
+      await fetch('/api/onboarding/save', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ section: sectionKey, answers: answersArray })
+      })
+    } catch (e) {
+      console.error('Failed to save section', e)
+    }
+  }
+
   return (
     <QuestionnaireLayout
       stepIndex={1}
@@ -33,7 +46,7 @@ export default function SectionClient() {
       title="Location & Commute"
       subtitle="Institution and campus help scope location & travel."
       onPrev={() => (window.location.href = '/onboarding/intro')}
-      onNext={() => (window.location.href = '/onboarding/personality-values')}
+      onNext={async () => { await saveSection(); window.location.href = '/onboarding/personality-values' }}
       nextDisabled={nextDisabled}
     >
       <div className="flex items-center justify-between">

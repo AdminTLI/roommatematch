@@ -111,6 +111,20 @@ export async function POST(request: Request) {
           console.log('[Profile] Found academic data in intro section, using it')
           // Use this data for the profile upsert
           academicData = { university_id, degree_level }
+          // Backfill user_academic so future loads work
+          const currentYear = new Date().getFullYear()
+          const { error: backfillErr } = await supabase
+            .from('user_academic')
+            .upsert({
+              user_id: user.id,
+              university_id,
+              degree_level,
+              study_start_year: currentYear, // safe default; exact start not known here
+              updated_at: new Date().toISOString()
+            }, { onConflict: 'user_id' })
+          if (backfillErr) {
+            console.warn('[Profile] Failed to backfill user_academic:', backfillErr)
+          }
         } else {
           return NextResponse.json({ 
             error: 'User academic data not found. Please complete your questionnaire first.' 

@@ -32,6 +32,19 @@ export default function SectionClient() {
   }
 
   const nextDisabled = items.some((it) => !(answers[it.id]?.value))
+
+  const saveSection = async () => {
+    try {
+      const answersArray = Object.values(answers)
+      await fetch('/api/onboarding/save', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ section: sectionKey, answers: answersArray })
+      })
+    } catch (e) {
+      console.error('Failed to save section', e)
+    }
+  }
   const { showToast } = useAutosave(sectionKey)
 
   return (
@@ -41,7 +54,7 @@ export default function SectionClient() {
       title="Reliability & Logistics"
       subtitle="House rules, registration (BRP), pets, and commitments."
       onPrev={() => (window.location.href = '/onboarding/privacy-territoriality')}
-      onNext={() => (window.location.href = '/onboarding/review')}
+      onNext={async () => { await saveSection(); window.location.href = '/onboarding/review' }}
       nextDisabled={nextDisabled}
     >
       <AutosaveToaster show={showToast} />

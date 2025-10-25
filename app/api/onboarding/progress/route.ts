@@ -40,10 +40,28 @@ export async function GET() {
       }, { status: 500 })
     }
 
-    const completedSections = sections?.map(s => s.section) || []
-    const totalSections = 9 // Based on the onboarding wizard steps
+    const requiredSections = [
+      'location-commute',
+      'personality-values',
+      'sleep-circadian',
+      'noise-sensory',
+      'home-operations',
+      'social-hosting-language',
+      'communication-conflict',
+      'privacy-territoriality',
+      'reliability-logistics',
+    ]
+
+    const dbSections = sections?.map(s => s.section) || []
+    let completedSections = requiredSections.filter(s => dbSections.includes(s))
+    const totalSections = requiredSections.length
     const isFullySubmitted = !!submission
     const hasPartialProgress = completedSections.length > 0 && !isFullySubmitted
+
+    // If submitted, consider all required sections completed
+    if (isFullySubmitted) {
+      completedSections = requiredSections
+    }
 
     // Determine next section to complete
     const allSections = [

@@ -32,6 +32,19 @@ export default function SectionClient() {
   }
 
   const nextDisabled = items.some((it) => !(answers[it.id]?.value))
+
+  const saveSection = async () => {
+    try {
+      const answersArray = Object.values(answers)
+      await fetch('/api/onboarding/save', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ section: sectionKey, answers: answersArray })
+      })
+    } catch (e) {
+      console.error('Failed to save section', e)
+    }
+  }
   const { showToast } = useAutosave(sectionKey)
 
   return (
@@ -41,7 +54,7 @@ export default function SectionClient() {
       title="Privacy & Territoriality"
       subtitle="Borrowing, door etiquette, photos, and personal zones."
       onPrev={() => (window.location.href = '/onboarding/communication-conflict')}
-      onNext={() => (window.location.href = '/onboarding/reliability-logistics')}
+      onNext={async () => { await saveSection(); window.location.href = '/onboarding/reliability-logistics' }}
       nextDisabled={nextDisabled}
     >
       <AutosaveToaster show={showToast} />
