@@ -29,6 +29,30 @@ export default async function DashboardPage() {
   const hasPartialProgress = sections && sections.length > 0 && !hasCompletedQuestionnaire
   const progressCount = sections?.length || 0
 
+  // Calculate profile completion
+  const { data: profile } = await supabase
+    .from('profiles')
+    .select('*')
+    .eq('user_id', user.id)
+    .maybeSingle()
+
+  let profileCompletion = 0
+  if (profile) {
+    const requiredFields = ['first_name', 'last_name', 'phone', 'bio']
+    const filledFields = requiredFields.filter(field => {
+      const value = profile[field]
+      return value !== null && value !== undefined && value !== ''
+    })
+    profileCompletion = Math.round((filledFields.length / requiredFields.length) * 100)
+  }
+
+  // Questionnaire progress data
+  const questionnaireProgress = {
+    completedSections: sections?.length || 0,
+    totalSections: 9,
+    isSubmitted: !!submission
+  }
+
   // Fetch dashboard data with error handling
   let dashboardData: DashboardData
   try {
@@ -64,6 +88,8 @@ export default async function DashboardPage() {
         hasCompletedQuestionnaire={hasCompletedQuestionnaire}
         hasPartialProgress={hasPartialProgress}
         progressCount={progressCount}
+        profileCompletion={profileCompletion}
+        questionnaireProgress={questionnaireProgress}
         dashboardData={dashboardData}
       />
     </AppShell>

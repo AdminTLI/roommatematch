@@ -15,16 +15,12 @@ export default function IntroClient() {
   const [isValid, setIsValid] = useState(false)
   const [isLoading, setIsLoading] = useState(true)
   const [isSaving, setIsSaving] = useState(false)
-  const [isEditMode, setIsEditMode] = useState(false)
   const router = useRouter()
   const supabase = createClient()
 
-  // Check for edit mode from URL params
-  useEffect(() => {
-    const urlParams = new URLSearchParams(window.location.search)
-    const mode = urlParams.get('mode')
-    setIsEditMode(mode === 'edit')
-  }, [])
+  // Check edit mode synchronously from URL params
+  const searchParams = new URLSearchParams(window.location.search)
+  const isEditMode = searchParams.get('mode') === 'edit'
 
   // Load saved data and check progress on mount
   useEffect(() => {
@@ -32,6 +28,16 @@ export default function IntroClient() {
       try {
         const { data: { user } } = await supabase.auth.getUser()
         if (!user) return
+
+        // In edit mode, clear submission status to allow re-submission
+        if (isEditMode) {
+          try {
+            await fetch('/api/settings/questionnaire/reset', { method: 'POST' })
+            console.log('Cleared submission status for edit mode')
+          } catch (error) {
+            console.error('Failed to clear submission status:', error)
+          }
+        }
 
         // Check overall progress first (skip in edit mode)
         if (!isEditMode) {
@@ -98,7 +104,7 @@ export default function IntroClient() {
     }
 
     loadSavedData()
-  }, [supabase, router, isEditMode])
+  }, [supabase, router])
 
   const handleAcademicChange = (data: Record<string, any>) => {
     setAcademicData(data)

@@ -12,7 +12,8 @@ import {
   Star,
   Heart,
   Bell,
-  AlertCircle
+  AlertCircle,
+  FileText
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { EmptyState } from '@/components/ui/empty-state'
@@ -36,10 +37,16 @@ interface DashboardContentProps {
   hasCompletedQuestionnaire?: boolean
   hasPartialProgress?: boolean
   progressCount?: number
+  profileCompletion?: number
+  questionnaireProgress?: {
+    completedSections: number
+    totalSections: number
+    isSubmitted: boolean
+  }
   dashboardData: DashboardData
 }
 
-export function DashboardContent({ hasCompletedQuestionnaire = false, hasPartialProgress = false, progressCount = 0, dashboardData }: DashboardContentProps) {
+export function DashboardContent({ hasCompletedQuestionnaire = false, hasPartialProgress = false, progressCount = 0, profileCompletion = 0, questionnaireProgress, dashboardData }: DashboardContentProps) {
   const router = useRouter()
 
   const handleBrowseMatches = () => {
@@ -141,13 +148,21 @@ export function DashboardContent({ hasCompletedQuestionnaire = false, hasPartial
               {dashboardData.summary.unreadMessagesCount} unread {dashboardData.summary.unreadMessagesCount === 1 ? 'message' : 'messages'}
             </div>
           )}
-          {dashboardData.summary.profileCompletion < 100 && (
+          {/* Profile Completion Badge */}
+          {profileCompletion < 100 && (
             <div className="inline-flex items-center gap-2 px-3 py-1 bg-purple-100 text-purple-800 text-sm font-medium rounded-full">
               <TrendingUp className="w-3 h-3" />
-              Profile {dashboardData.summary.profileCompletion}% complete
+              Profile {profileCompletion}% complete
             </div>
           )}
-          {dashboardData.summary.newMatchesCount === 0 && dashboardData.summary.unreadMessagesCount === 0 && dashboardData.summary.profileCompletion === 100 && (
+          {/* Questionnaire Progress Badge */}
+          {questionnaireProgress && !questionnaireProgress.isSubmitted && (
+            <div className="inline-flex items-center gap-2 px-3 py-1 bg-blue-100 text-blue-800 text-sm font-medium rounded-full">
+              <FileText className="w-3 h-3" />
+              Questionnaire {questionnaireProgress.completedSections}/{questionnaireProgress.totalSections} sections
+            </div>
+          )}
+          {dashboardData.summary.newMatchesCount === 0 && dashboardData.summary.unreadMessagesCount === 0 && profileCompletion === 100 && (!questionnaireProgress || questionnaireProgress.isSubmitted) && (
             <div className="inline-flex items-center gap-2 px-3 py-1 bg-green-100 text-green-800 text-sm font-medium rounded-full">
               <Star className="w-3 h-3" />
               All caught up!
