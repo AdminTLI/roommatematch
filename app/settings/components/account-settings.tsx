@@ -16,6 +16,7 @@ import {
   Check,
   AlertCircle
 } from 'lucide-react'
+import { EmailVerification } from './email-verification'
 
 interface AccountSettingsProps {
   user: any
@@ -78,6 +79,12 @@ export function AccountSettings({ user }: AccountSettingsProps) {
           </AlertDescription>
         </Alert>
       )}
+
+      {/* Email Verification Section - Always visible */}
+      <div>
+        <h3 className="text-lg font-semibold mb-4">Email Verification</h3>
+        <EmailVerification user={user} />
+      </div>
 
       {/* Security Settings */}
       <Card>

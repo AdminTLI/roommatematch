@@ -19,14 +19,21 @@ interface AppShellProps {
     name: string
     avatar?: string
   }
+  showQuestionnairePrompt?: boolean  // NEW: Control questionnaire modal
 }
 
-export function AppShell({ children, user }: AppShellProps) {
+export function AppShell({ children, user, showQuestionnairePrompt = false }: AppShellProps) {
   const [sidebarOpen, setSidebarOpen] = useState(false)
   const [showQuestionnaire, setShowQuestionnaire] = useState(false)
 
   // On mount, check if the logged-in user has completed the questionnaire
   useEffect(() => {
+    // Only check if we should show the prompt on this page
+    if (!showQuestionnairePrompt) {
+      setShowQuestionnaire(false)
+      return
+    }
+
     const check = async () => {
       // Check demo completion first
       if (!user?.id || user.id === 'demo-user-id') {
@@ -50,7 +57,7 @@ export function AppShell({ children, user }: AppShellProps) {
       setShowQuestionnaire(!data || data.length === 0)
     }
     check()
-  }, [user?.id])
+  }, [user?.id, showQuestionnairePrompt])
 
   return (
     <div className="min-h-screen bg-dashboard">

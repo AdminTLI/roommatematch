@@ -78,12 +78,15 @@ export default async function DashboardPage() {
   }
 
   return (
-    <AppShell user={{
-      id: user.id,
-      email: user.email || '',
-      name: user.user_metadata?.full_name || 'User',
-      avatar: user.user_metadata?.avatar_url
-    }}>
+    <AppShell 
+      user={{
+        id: user.id,
+        email: user.email || '',
+        name: user.user_metadata?.full_name || 'User',
+        avatar: user.user_metadata?.avatar_url
+      }}
+      showQuestionnairePrompt={true}
+    >
       <DashboardContent 
         hasCompletedQuestionnaire={hasCompletedQuestionnaire}
         hasPartialProgress={hasPartialProgress}

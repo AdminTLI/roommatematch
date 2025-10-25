@@ -35,12 +35,6 @@ export function SettingsContent({ user, profile, academic, progressData }: Setti
         </p>
       </div>
 
-      {/* Email verification warning */}
-      {!user.email_confirmed_at && (
-        <div className="mb-6">
-          <EmailVerification user={user} />
-        </div>
-      )}
 
       <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
         <TabsList className="grid w-full grid-cols-4">

@@ -43,46 +43,47 @@ export function EmailVerification({ user }: EmailVerificationProps) {
   }
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle className="flex items-center gap-2">
+    <div className="border rounded-lg p-4">
+      <div className="flex items-center justify-between mb-4">
+        <div className="flex items-center gap-2">
           <Mail className="w-5 h-5" />
-          Email Verification
-        </CardTitle>
-      </CardHeader>
-      <CardContent>
+          <span className="font-medium">Email: {user.email}</span>
+        </div>
         {isVerified ? (
           <div className="flex items-center gap-2 text-green-600">
             <CheckCircle className="w-5 h-5" />
-            <span>Your email is verified</span>
+            <span className="font-medium">Verified</span>
           </div>
         ) : (
-          <div className="space-y-4">
-            <div className="flex items-center gap-2 text-amber-600">
-              <AlertCircle className="w-5 h-5" />
-              <span>Your email is not verified</span>
-            </div>
-            
-            <p className="text-sm text-gray-600">
-              Please verify your email address ({user.email}) to submit the questionnaire and access all features.
-            </p>
-
-            <Button 
-              onClick={handleResendVerification}
-              disabled={isResending}
-              variant="default"
-            >
-              {isResending ? 'Sending...' : 'Resend Verification Email'}
-            </Button>
-
-            {message && (
-              <p className={`text-sm ${message.includes('sent') ? 'text-green-600' : 'text-red-600'}`}>
-                {message}
-              </p>
-            )}
+          <div className="flex items-center gap-2 text-amber-600">
+            <AlertCircle className="w-5 h-5" />
+            <span className="font-medium">Not Verified</span>
           </div>
         )}
-      </CardContent>
-    </Card>
+      </div>
+      
+      {!isVerified && (
+        <div className="space-y-3">
+          <p className="text-sm text-gray-600">
+            Please verify your email address to submit the questionnaire and access all features.
+          </p>
+
+          <Button 
+            onClick={handleResendVerification}
+            disabled={isResending}
+            variant="default"
+            size="sm"
+          >
+            {isResending ? 'Sending...' : 'Resend Verification Email'}
+          </Button>
+
+          {message && (
+            <p className={`text-sm ${message.includes('sent') ? 'text-green-600' : 'text-red-600'}`}>
+              {message}
+            </p>
+          )}
+        </div>
+      )}
+    </div>
   )
 }

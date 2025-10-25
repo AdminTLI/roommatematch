@@ -34,12 +34,15 @@ export default async function ChatPage() {
   }
 
   return (
-    <AppShell user={{
-      id: user.id,
-      email: user.email || '',
-      name: user.user_metadata?.full_name || 'User',
-      avatar: user.user_metadata?.avatar_url
-    }}>
+    <AppShell 
+      user={{
+        id: user.id,
+        email: user.email || '',
+        name: user.user_metadata?.full_name || 'User',
+        avatar: user.user_metadata?.avatar_url
+      }}
+      showQuestionnairePrompt={true}
+    >
       <ChatList user={user} />
     </AppShell>
   )
