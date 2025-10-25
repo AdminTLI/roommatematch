@@ -12,7 +12,15 @@ export async function POST(request: Request) {
   }
 
   try {
+    console.log('[Profile] Request received:', {
+      userId: user.id,
+      email: user.email,
+      hasServiceKey: !!process.env.SUPABASE_SERVICE_ROLE_KEY
+    })
+    
     const body = await request.json()
+    console.log('[Profile] Request body:', body)
+    
     const { firstName, lastName, phone, bio } = body
 
     // Validate required fields
@@ -67,6 +75,8 @@ export async function POST(request: Request) {
     }
 
     // Update or create profile
+    console.log('[Profile] Attempting profile upsert for user:', user.id)
+    
     const { error: profileError } = await supabase
       .from('profiles')
       .upsert({
@@ -81,9 +91,14 @@ export async function POST(request: Request) {
       })
 
     if (profileError) {
-      console.error('[Profile] Update error:', profileError)
+      console.error('[Profile] Update error:', {
+        code: profileError.code,
+        message: profileError.message,
+        details: profileError.details,
+        hint: profileError.hint
+      })
       return NextResponse.json({ 
-        error: 'Failed to update profile' 
+        error: `Failed to update profile: ${profileError.message}` 
       }, { status: 500 })
     }
 

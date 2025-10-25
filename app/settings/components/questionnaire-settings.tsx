@@ -196,8 +196,9 @@ export function QuestionnaireSettings({ progressData }: QuestionnaireSettingsPro
           <div className="flex flex-col sm:flex-row gap-3">
             <Button 
               onClick={handleEditAnswers}
-              variant="outline"
+              variant="default"
               className="flex items-center gap-2"
+              size="lg"
             >
               <Edit className="w-4 h-4" />
               Edit My Answers

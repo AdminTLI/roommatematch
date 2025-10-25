@@ -47,9 +47,35 @@ export default async function SettingsPage() {
     .eq('user_id', user.id)
     .maybeSingle()
 
+  // Define the actual required sections (9 total, excluding 'intro')
+  const requiredSections = [
+    'location-commute',
+    'personality-values',
+    'sleep-circadian',
+    'noise-sensory',
+    'home-operations',
+    'social-hosting-language',
+    'communication-conflict',
+    'privacy-territoriality',
+    'reliability-logistics'
+  ]
+
+  // Count only the required sections that are completed
+  const completedRequiredSections = sections?.filter(s => 
+    requiredSections.includes(s.section)
+  ) || []
+
+  console.log('[Settings] Progress calculation:', {
+    totalSections: sections?.length,
+    requiredSections: requiredSections.length,
+    completedRequired: completedRequiredSections.length,
+    isSubmitted: !!submission,
+    allSections: sections?.map(s => s.section)
+  })
+
   const progressData = {
-    completedSections: sections?.map(s => s.section) || [],
-    totalSections: 9,
+    completedSections: completedRequiredSections.map(s => s.section),
+    totalSections: requiredSections.length, // Should be 9
     isFullySubmitted: !!submission,
     lastUpdated: sections?.[0]?.updated_at || null,
     submittedAt: submission?.submitted_at || null
