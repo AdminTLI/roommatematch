@@ -49,22 +49,27 @@ export default async function SettingsPage() {
     if (intro?.answers) {
       let university_id: string | undefined
       let degree_level: string | undefined
+      let program_id: string | undefined
+      let study_start_year: number | undefined
       for (const a of intro.answers) {
         console.log('[Settings] Checking answer:', a)
-        if (a.itemId === 'university_id') university_id = a.value
+        // Note: intro saves as institution_slug, not university_id
+        if (a.itemId === 'institution_slug') university_id = a.value
         if (a.itemId === 'degree_level') degree_level = a.value
+        if (a.itemId === 'program_id') program_id = a.value
+        if (a.itemId === 'expected_graduation_year') study_start_year = parseInt(a.value)
       }
       
-      console.log('[Settings] Extracted:', { university_id, degree_level })
+      console.log('[Settings] Extracted:', { university_id, degree_level, program_id, study_start_year })
       
       if (university_id || degree_level) {
         academic = {
           user_id: user.id,
           university_id: university_id || null,
           degree_level: degree_level || null,
-          program_id: null,
+          program_id: program_id || null,
           undecided_program: null,
-          study_start_year: null,
+          study_start_year: study_start_year || null,
           created_at: null,
           updated_at: null,
         } as any

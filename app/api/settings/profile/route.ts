@@ -102,28 +102,31 @@ export async function POST(request: Request) {
       console.log('[Profile] Intro section data:', introSection)
       
       if (introSection?.answers) {
-        // Extract university_id and degree_level from intro answers
-        let university_id, degree_level
+        // Extract academic data from intro answers
+        // Note: intro saves as institution_slug, not university_id
+        let university_id, degree_level, program_id, study_start_year
         for (const answer of introSection.answers) {
           console.log('[Profile] Checking answer:', answer)
-          if (answer.itemId === 'university_id') university_id = answer.value
+          if (answer.itemId === 'institution_slug') university_id = answer.value
           if (answer.itemId === 'degree_level') degree_level = answer.value
+          if (answer.itemId === 'program_id') program_id = answer.value
+          if (answer.itemId === 'expected_graduation_year') study_start_year = parseInt(answer.value)
         }
         
-        console.log('[Profile] Extracted from intro:', { university_id, degree_level })
+        console.log('[Profile] Extracted from intro:', { university_id, degree_level, program_id, study_start_year })
         
         if (university_id && degree_level) {
           console.log('[Profile] Found academic data in intro section, backfilling user_academic...')
           
           // Backfill user_academic so future loads work
-          const currentYear = new Date().getFullYear()
           const { data: backfilledData, error: backfillErr } = await supabase
             .from('user_academic')
             .upsert({
               user_id: user.id,
               university_id,
               degree_level,
-              study_start_year: currentYear, // safe default; exact start not known here
+              program_id: program_id || null,
+              study_start_year: study_start_year || new Date().getFullYear(),
               updated_at: new Date().toISOString()
             }, { onConflict: 'user_id' })
             .select('university_id, degree_level')
@@ -138,7 +141,7 @@ export async function POST(request: Request) {
             academicData = backfilledData
           }
         } else {
-          console.error('[Profile] Missing university_id or degree_level in intro section')
+          console.error('[Profile] Missing institution_slug or degree_level in intro section')
           return NextResponse.json({ 
             error: 'User academic data not found. Please complete your questionnaire first.' 
           }, { status: 400 })
