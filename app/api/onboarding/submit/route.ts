@@ -70,9 +70,26 @@ export async function POST() {
       console.log('[Submit] Sample responses:', responsesToInsert.slice(0, 3))
 
       if (responsesToInsert.length > 0) {
+        // Deduplicate by question_key, keeping the last occurrence (most recent answer)
+        const deduplicatedResponses = Array.from(
+          responsesToInsert
+            .reduce((map, response) => {
+              map.set(response.question_key, response)
+              return map
+            }, new Map<string, any>())
+            .values()
+        )
+
+        console.log(`[Submit] Deduplicated responses: ${responsesToInsert.length} → ${deduplicatedResponses.length}`)
+        
+        if (responsesToInsert.length !== deduplicatedResponses.length) {
+          const duplicates = responsesToInsert.length - deduplicatedResponses.length
+          console.log(`[Submit] Removed ${duplicates} duplicate question_keys`)
+        }
+
         const { error: responsesError } = await supabase
           .from('responses')
-          .upsert(responsesToInsert, { 
+          .upsert(deduplicatedResponses, { 
             onConflict: 'user_id,question_key',
             ignoreDuplicates: false  // This ensures updates happen
           })
