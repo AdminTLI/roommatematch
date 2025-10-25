@@ -19,33 +19,19 @@ export async function POST() {
   const userId = user.id
   
   try {
-    // 0. Ensure user exists in users table
-    console.log('[Submit] Checking if user exists in users table:', userId)
-    const { data: existingUser, error: userCheckError } = await supabase
+    // User record should exist automatically via trigger
+    // If it doesn't, something is wrong with the trigger
+    const { data: existingUser } = await supabase
       .from('users')
       .select('id')
       .eq('id', userId)
       .single()
 
     if (!existingUser) {
-      console.log('[Submit] User not found in users table, creating...')
-      const { error: userCreateError } = await supabase
-        .from('users')
-        .insert({
-          id: userId,
-          email: user.email,
-          is_active: true
-        })
-      
-      if (userCreateError) {
-        console.error('[Submit] Failed to create user:', userCreateError)
-        return NextResponse.json({ 
-          error: 'User account setup failed. Please try again.' 
-        }, { status: 500 })
-      }
-      console.log('[Submit] User created successfully')
-    } else {
-      console.log('[Submit] User exists in users table')
+      console.error('[Submit] User not found in users table - trigger may have failed')
+      return NextResponse.json({ 
+        error: 'User account not properly initialized. Please contact support.' 
+      }, { status: 500 })
     }
 
     // 1. Fetch all sections from onboarding_sections

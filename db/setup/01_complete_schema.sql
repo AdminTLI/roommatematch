@@ -1097,6 +1097,9 @@ CREATE POLICY "Users can read their own data" ON users
 CREATE POLICY "Users can update their own data" ON users
   FOR UPDATE USING (id = auth.uid());
 
+CREATE POLICY "Users can insert their own data" ON users
+  FOR INSERT WITH CHECK (id = auth.uid());
+
 CREATE POLICY "Admins can read users in their university" ON users
   FOR SELECT USING (
     EXISTS (
@@ -1658,6 +1661,31 @@ GRANT EXECUTE ON FUNCTION find_potential_matches(uuid, integer, numeric) TO auth
 GRANT EXECUTE ON FUNCTION create_matches_for_user(uuid, integer) TO authenticated;
 GRANT EXECUTE ON FUNCTION update_user_vector(uuid) TO authenticated;
 GRANT EXECUTE ON FUNCTION get_user_match_stats(uuid) TO authenticated;
+
+-- Function to automatically create user record on auth signup
+CREATE OR REPLACE FUNCTION public.handle_new_user()
+RETURNS TRIGGER AS $$
+BEGIN
+  INSERT INTO public.users (id, email, is_active, created_at, updated_at)
+  VALUES (
+    NEW.id,
+    NEW.email,
+    true,
+    NOW(),
+    NOW()
+  )
+  ON CONFLICT (id) DO NOTHING;
+  
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
+-- Trigger to call the function when a new user signs up
+DROP TRIGGER IF EXISTS on_auth_user_created ON auth.users;
+CREATE TRIGGER on_auth_user_created
+  AFTER INSERT ON auth.users
+  FOR EACH ROW
+  EXECUTE FUNCTION public.handle_new_user();
 
 -- ============================================
 -- MATCH SUGGESTIONS TABLES
