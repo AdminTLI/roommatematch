@@ -21,7 +21,7 @@ export async function POST(request: Request) {
     const body = await request.json()
     console.log('[Profile] Request body:', body)
     
-    const { firstName } = body
+    const { firstName, lastName, phone, bio } = body
 
     // Validate required fields
     if (!firstName) {
@@ -82,6 +82,9 @@ export async function POST(request: Request) {
       .upsert({
         user_id: user.id,
         first_name: firstName,
+        last_name: lastName || null,
+        phone: phone || null,
+        bio: bio || null,
         updated_at: new Date().toISOString()
       }, {
         onConflict: 'user_id'

@@ -63,6 +63,9 @@ CREATE TABLE profiles (
   user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
   university_id UUID NOT NULL REFERENCES universities(id) ON DELETE CASCADE,
   first_name VARCHAR(100) NOT NULL,
+  last_name VARCHAR(100),
+  phone VARCHAR(20),
+  bio TEXT,
   degree_level degree_level NOT NULL,
   program VARCHAR(255),
   campus VARCHAR(100),
@@ -1139,14 +1142,23 @@ CREATE POLICY "Users can update their own profile" ON profiles
 CREATE POLICY "Users can insert their own profile" ON profiles
   FOR INSERT WITH CHECK (user_id = auth.uid());
 
+-- Create a security definer function to check university membership
+-- This breaks the recursion by executing with elevated privileges
+CREATE OR REPLACE FUNCTION user_in_same_university(target_university_id UUID)
+RETURNS BOOLEAN AS $$
+BEGIN
+  RETURN EXISTS (
+    SELECT 1 FROM user_academic
+    WHERE user_id = auth.uid()
+    AND university_id = target_university_id
+  );
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER STABLE;
+
 CREATE POLICY "Minimal public profiles visible to university members" ON profiles
   FOR SELECT USING (
     minimal_public = true AND
-    EXISTS (
-      SELECT 1 FROM profiles p2
-      WHERE p2.user_id = auth.uid()
-      AND p2.university_id = profiles.university_id
-    )
+    user_in_same_university(university_id)
   );
 
 -- Question items: Read by everyone

@@ -6,7 +6,8 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Alert, AlertDescription } from '@/components/ui/alert'
-import { Loader2, Check, User, Mail, GraduationCap } from 'lucide-react'
+import { Loader2, Check, User, Mail, GraduationCap, Phone } from 'lucide-react'
+import { Textarea } from '@/components/ui/textarea'
 
 interface ProfileSettingsProps {
   user: any
@@ -21,7 +22,10 @@ export function ProfileSettings({ user, profile, academic }: ProfileSettingsProp
   
   const [formData, setFormData] = useState({
     firstName: profile?.first_name || user.user_metadata?.full_name?.split(' ')[0] || '',
+    lastName: profile?.last_name || user.user_metadata?.full_name?.split(' ').slice(1).join(' ') || '',
     email: user.email || '',
+    phone: profile?.phone || '',
+    bio: profile?.bio || '',
     university: academic?.university_id || '',
     degreeLevel: academic?.degree_level || '',
     program: academic?.program_id || '',
@@ -44,7 +48,10 @@ export function ProfileSettings({ user, profile, academic }: ProfileSettingsProp
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          firstName: formData.firstName
+          firstName: formData.firstName,
+          lastName: formData.lastName,
+          phone: formData.phone,
+          bio: formData.bio
         })
       })
 
@@ -101,6 +108,39 @@ export function ProfileSettings({ user, profile, academic }: ProfileSettingsProp
                 placeholder="Enter your first name"
               />
             </div>
+            <div className="space-y-2">
+              <Label htmlFor="lastName">Last Name</Label>
+              <Input
+                id="lastName"
+                value={formData.lastName}
+                onChange={(e) => handleInputChange('lastName', e.target.value)}
+                placeholder="Enter your last name"
+              />
+            </div>
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="phone">Phone Number</Label>
+            <div className="flex items-center gap-2">
+              <Phone className="w-4 h-4 text-gray-400" />
+              <Input
+                id="phone"
+                value={formData.phone}
+                onChange={(e) => handleInputChange('phone', e.target.value)}
+                placeholder="Enter your phone number"
+              />
+            </div>
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="bio">Bio</Label>
+            <Textarea
+              id="bio"
+              value={formData.bio}
+              onChange={(e) => handleInputChange('bio', e.target.value)}
+              placeholder="Tell us about yourself..."
+              rows={4}
+            />
           </div>
 
           <div className="space-y-2">
