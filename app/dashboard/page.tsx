@@ -91,6 +91,7 @@ export default async function DashboardPage() {
         profileCompletion={profileCompletion}
         questionnaireProgress={questionnaireProgress}
         dashboardData={dashboardData}
+        user={user}
       />
     </AppShell>
   )

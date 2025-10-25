@@ -19,8 +19,15 @@ export async function POST() {
   const userId = user.id
   
   try {
-    // User record should exist automatically via trigger
-    // If it doesn't, something is wrong with the trigger
+    // Check if user is verified (optional for development)
+    if (!user.email_confirmed_at) {
+      console.log('[Submit] User email not verified:', user.email)
+      return NextResponse.json({ 
+        error: 'Please verify your email before submitting the questionnaire. Check your email for a verification link or go to Settings to resend verification email.' 
+      }, { status: 403 })
+    }
+
+    // Check if user exists in users table, create if missing
     const { data: existingUser } = await supabase
       .from('users')
       .select('id')
@@ -28,10 +35,22 @@ export async function POST() {
       .single()
 
     if (!existingUser) {
-      console.error('[Submit] User not found in users table - trigger may have failed')
-      return NextResponse.json({ 
-        error: 'User account not properly initialized. Please contact support.' 
-      }, { status: 500 })
+      console.log('[Submit] User not found in users table, creating manually...')
+      const { error: userCreateError } = await supabase
+        .from('users')
+        .insert({
+          id: userId,
+          email: user.email,
+          is_active: true
+        })
+      
+      if (userCreateError) {
+        console.error('[Submit] Failed to create user:', userCreateError)
+        return NextResponse.json({ 
+          error: 'User account setup failed. Please try again.' 
+        }, { status: 500 })
+      }
+      console.log('[Submit] User created successfully')
     }
 
     // 1. Fetch all sections from onboarding_sections

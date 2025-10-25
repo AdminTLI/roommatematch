@@ -44,9 +44,14 @@ interface DashboardContentProps {
     isSubmitted: boolean
   }
   dashboardData: DashboardData
+  user?: {
+    id: string
+    email: string
+    email_confirmed_at?: string
+  }
 }
 
-export function DashboardContent({ hasCompletedQuestionnaire = false, hasPartialProgress = false, progressCount = 0, profileCompletion = 0, questionnaireProgress, dashboardData }: DashboardContentProps) {
+export function DashboardContent({ hasCompletedQuestionnaire = false, hasPartialProgress = false, progressCount = 0, profileCompletion = 0, questionnaireProgress, dashboardData, user }: DashboardContentProps) {
   const router = useRouter()
 
   const handleBrowseMatches = () => {
@@ -76,6 +81,37 @@ export function DashboardContent({ hasCompletedQuestionnaire = false, hasPartial
 
   return (
     <div className="space-y-8">
+      {/* Email verification warning */}
+      {user && !user.email_confirmed_at && (
+        <motion.div
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5 }}
+          className="border rounded-lg p-4 bg-red-50 border-red-200"
+        >
+          <div className="flex items-start gap-3">
+            <AlertCircle className="h-5 w-5 mt-0.5 text-red-600" />
+            <div className="flex-1">
+              <h3 className="font-semibold text-red-900">
+                Email Verification Required
+              </h3>
+              <p className="text-sm mt-1 text-red-800">
+                Please verify your email address to submit the questionnaire and access all features.
+              </p>
+              <Button 
+                asChild
+                className="mt-3"
+                variant="default"
+              >
+                <a href="/settings">
+                  Go to Settings to Verify Email
+                </a>
+              </Button>
+            </div>
+          </div>
+        </motion.div>
+      )}
+
       {/* Show prompt if questionnaire not completed */}
       {!hasCompletedQuestionnaire && (
         <motion.div
