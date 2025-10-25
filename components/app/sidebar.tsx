@@ -68,7 +68,7 @@ export function Sidebar({ user, onClose }: SidebarProps) {
       </motion.div>
 
       {/* Navigation */}
-      <nav className="p-4 space-y-2 overflow-y-auto">
+      <nav className="flex-1 p-4 space-y-2 overflow-y-auto">
         {navigation.map((item, index) => {
           const isActive = pathname === item.href || pathname.startsWith(item.href + '/')
           const Icon = item.icon

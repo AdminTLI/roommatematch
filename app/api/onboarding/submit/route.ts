@@ -105,7 +105,98 @@ export async function POST() {
 
       console.log('[Submit] Saved to onboarding_submissions successfully')
 
-      // 3. Transform answers and insert into responses table
+      // 3. Extract and save academic data from intro section
+      const introSection = sections?.find(s => s.section === 'intro')
+      if (introSection?.answers) {
+        console.log('[Submit] Processing intro section for academic data')
+        
+        // Extract academic fields from intro section
+        const academicData: any = {}
+        for (const answer of introSection.answers) {
+          if (answer.itemId === 'university') {
+            academicData.university_id = answer.value
+          } else if (answer.itemId === 'degreeLevel') {
+            academicData.degree_level = answer.value
+          } else if (answer.itemId === 'program') {
+            academicData.program_id = answer.value
+          } else if (answer.itemId === 'graduationYear') {
+            academicData.study_start_year = parseInt(answer.value)
+          }
+        }
+        
+        // Validate required fields
+        if (academicData.university_id && academicData.degree_level && academicData.study_start_year) {
+          console.log('[Submit] Creating/updating user_academic record:', academicData)
+          
+          const { error: academicError } = await supabase
+            .from('user_academic')
+            .upsert({
+              user_id: userId,
+              university_id: academicData.university_id,
+              degree_level: academicData.degree_level,
+              program_id: academicData.program_id || null,
+              undecided_program: !academicData.program_id,
+              study_start_year: academicData.study_start_year,
+              updated_at: new Date().toISOString()
+            }, {
+              onConflict: 'user_id'
+            })
+          
+          if (academicError) {
+            console.error('[Submit] Failed to save academic data:', academicError)
+            // Don't fail the entire submission, just log the error
+          } else {
+            console.log('[Submit] Academic data saved successfully')
+          }
+        } else {
+          console.warn('[Submit] Incomplete academic data, skipping user_academic creation:', academicData)
+        }
+      }
+
+      // 4. Create/update profile record with academic data
+      if (introSection?.answers) {
+        const academicData: any = {}
+        for (const answer of introSection.answers) {
+          if (answer.itemId === 'university') {
+            academicData.university_id = answer.value
+          } else if (answer.itemId === 'degreeLevel') {
+            academicData.degree_level = answer.value
+          }
+        }
+        
+        if (academicData.university_id && academicData.degree_level) {
+          console.log('[Submit] Creating/updating profile record')
+          
+          // Get first name from intro section or user metadata
+          let firstName = user.user_metadata?.full_name?.split(' ')[0] || 'User'
+          for (const answer of introSection.answers) {
+            if (answer.itemId === 'firstName') {
+              firstName = answer.value
+            }
+          }
+          
+          const { error: profileError } = await supabase
+            .from('profiles')
+            .upsert({
+              user_id: userId,
+              university_id: academicData.university_id,
+              degree_level: academicData.degree_level,
+              first_name: firstName,
+              updated_at: new Date().toISOString()
+            }, {
+              onConflict: 'user_id'
+            })
+          
+          if (profileError) {
+            console.error('[Submit] Failed to create profile:', profileError)
+            // Don't fail the entire submission
+          } else {
+            console.log('[Submit] Profile created successfully')
+          }
+        }
+      }
+
+      // 5. Transform answers and insert into responses table
       const responsesToInsert = []
       
       for (const section of sections ?? []) {

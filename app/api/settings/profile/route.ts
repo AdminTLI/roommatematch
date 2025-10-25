@@ -89,9 +89,38 @@ export async function POST(request: Request) {
     }
 
     if (!academicData) {
-      return NextResponse.json({ 
-        error: 'User academic data not found. Please complete your questionnaire first.' 
-      }, { status: 400 })
+      // FALLBACK: Try to extract from onboarding_sections
+      console.log('[Profile] No user_academic record, checking onboarding_sections...')
+      
+      const { data: introSection } = await supabase
+        .from('onboarding_sections')
+        .select('answers')
+        .eq('user_id', user.id)
+        .eq('section', 'intro')
+        .maybeSingle()
+      
+      if (introSection?.answers) {
+        // Extract university_id and degree_level from intro answers
+        let university_id, degree_level
+        for (const answer of introSection.answers) {
+          if (answer.itemId === 'university') university_id = answer.value
+          if (answer.itemId === 'degreeLevel') degree_level = answer.value
+        }
+        
+        if (university_id && degree_level) {
+          console.log('[Profile] Found academic data in intro section, using it')
+          // Use this data for the profile upsert
+          academicData = { university_id, degree_level }
+        } else {
+          return NextResponse.json({ 
+            error: 'User academic data not found. Please complete your questionnaire first.' 
+          }, { status: 400 })
+        }
+      } else {
+        return NextResponse.json({ 
+          error: 'User academic data not found. Please complete your questionnaire first.' 
+        }, { status: 400 })
+      }
     }
 
     // Update or create profile

@@ -63,18 +63,18 @@ export function AppShell({ children, user, showQuestionnairePrompt = false }: Ap
     <div className="min-h-screen bg-dashboard">
       {/* Desktop Layout */}
       <div className="hidden lg:flex min-h-screen">
-        {/* Sidebar */}
+        {/* Fixed Sidebar */}
         <motion.div
           initial={{ x: -300 }}
           animate={{ x: 0 }}
           transition={{ duration: 0.3, ease: [0.2, 0.8, 0.2, 1] }}
-          className="w-64 flex-shrink-0"
+          className="fixed inset-y-0 left-0 w-64 z-30"
         >
           <Sidebar user={user} />
         </motion.div>
 
-        {/* Main Content */}
-        <div className="flex-1 flex flex-col">
+        {/* Main Content with left padding */}
+        <div className="flex-1 flex flex-col ml-64">
           <Topbar user={user} />
           <main className="flex-1 p-6 lg:p-8">
             <motion.div
