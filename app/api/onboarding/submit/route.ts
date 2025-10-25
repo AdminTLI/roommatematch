@@ -6,15 +6,49 @@ export async function POST() {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   
-  console.log('[Submit] User:', user?.id || 'demo-user-id', 'isDemo:', !user)
+  console.log('[Submit] User:', user?.id, 'isDemo:', !user)
   
-  // Handle demo users
-  const userId = user?.id || 'demo-user-id'
-  const isDemo = !user
+  // Require authentication
+  if (!user?.id) {
+    console.log('[Submit] No authenticated user')
+    return NextResponse.json({ 
+      error: 'Authentication required. Please log in and try again.' 
+    }, { status: 401 })
+  }
   
-  if (!isDemo) {
-    try {
-      // 1. Fetch all sections from onboarding_sections
+  const userId = user.id
+  
+  try {
+    // 0. Ensure user exists in users table
+    console.log('[Submit] Checking if user exists in users table:', userId)
+    const { data: existingUser, error: userCheckError } = await supabase
+      .from('users')
+      .select('id')
+      .eq('id', userId)
+      .single()
+
+    if (!existingUser) {
+      console.log('[Submit] User not found in users table, creating...')
+      const { error: userCreateError } = await supabase
+        .from('users')
+        .insert({
+          id: userId,
+          email: user.email,
+          is_active: true
+        })
+      
+      if (userCreateError) {
+        console.error('[Submit] Failed to create user:', userCreateError)
+        return NextResponse.json({ 
+          error: 'User account setup failed. Please try again.' 
+        }, { status: 500 })
+      }
+      console.log('[Submit] User created successfully')
+    } else {
+      console.log('[Submit] User exists in users table')
+    }
+
+    // 1. Fetch all sections from onboarding_sections
       console.log('[Submit] Fetching sections for user:', userId)
       const { data: sections, error: sectionsError } = await supabase
         .from('onboarding_sections')
@@ -110,16 +144,16 @@ export async function POST() {
       } else {
         console.warn('[Submit] No responses to insert!')
       }
-    } catch (error) {
-      console.error('[Submit] Unexpected error:', error)
-      return NextResponse.json({ 
-        error: `Unexpected error: ${error.message}` 
-      }, { status: 500 })
-    }
-  }
 
-  console.log('[Submit] Submission complete, isDemo:', isDemo)
-  return NextResponse.json({ ok: true, isDemo })
+    console.log('[Submit] Submission complete')
+    return NextResponse.json({ ok: true })
+    
+  } catch (error) {
+    console.error('[Submit] Unexpected error:', error)
+    return NextResponse.json({ 
+      error: `Unexpected error: ${error instanceof Error ? error.message : 'Unknown error'}` 
+    }, { status: 500 })
+  }
 }
 
 
