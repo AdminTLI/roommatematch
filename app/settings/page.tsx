@@ -36,19 +36,27 @@ export default async function SettingsPage() {
 
   // If missing, try to derive from intro answers for display purposes
   if (!academic) {
+    console.log('[Settings] No user_academic found, checking intro section...')
     const { data: intro } = await supabase
       .from('onboarding_sections')
       .select('answers')
       .eq('user_id', user.id)
       .eq('section', 'intro')
       .maybeSingle()
+    
+    console.log('[Settings] Intro section:', intro)
+    
     if (intro?.answers) {
       let university_id: string | undefined
       let degree_level: string | undefined
       for (const a of intro.answers) {
+        console.log('[Settings] Checking answer:', a)
         if (a.itemId === 'university_id') university_id = a.value
         if (a.itemId === 'degree_level') degree_level = a.value
       }
+      
+      console.log('[Settings] Extracted:', { university_id, degree_level })
+      
       if (university_id || degree_level) {
         academic = {
           user_id: user.id,
@@ -60,8 +68,11 @@ export default async function SettingsPage() {
           created_at: null,
           updated_at: null,
         } as any
+        console.log('[Settings] Derived academic data:', academic)
       }
     }
+  } else {
+    console.log('[Settings] Found user_academic:', academic)
   }
 
   // Check questionnaire progress

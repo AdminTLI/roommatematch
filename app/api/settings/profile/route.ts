@@ -75,7 +75,7 @@ export async function POST(request: Request) {
     }
 
     // Get user's academic data to find university_id
-    const { data: academicData, error: academicError } = await supabase
+    let { data: academicData, error: academicError } = await supabase
       .from('user_academic')
       .select('university_id, degree_level')
       .eq('user_id', user.id)
@@ -99,21 +99,25 @@ export async function POST(request: Request) {
         .eq('section', 'intro')
         .maybeSingle()
       
+      console.log('[Profile] Intro section data:', introSection)
+      
       if (introSection?.answers) {
         // Extract university_id and degree_level from intro answers
         let university_id, degree_level
         for (const answer of introSection.answers) {
+          console.log('[Profile] Checking answer:', answer)
           if (answer.itemId === 'university_id') university_id = answer.value
           if (answer.itemId === 'degree_level') degree_level = answer.value
         }
         
+        console.log('[Profile] Extracted from intro:', { university_id, degree_level })
+        
         if (university_id && degree_level) {
-          console.log('[Profile] Found academic data in intro section, using it')
-          // Use this data for the profile upsert
-          academicData = { university_id, degree_level }
+          console.log('[Profile] Found academic data in intro section, backfilling user_academic...')
+          
           // Backfill user_academic so future loads work
           const currentYear = new Date().getFullYear()
-          const { error: backfillErr } = await supabase
+          const { data: backfilledData, error: backfillErr } = await supabase
             .from('user_academic')
             .upsert({
               user_id: user.id,
@@ -122,15 +126,25 @@ export async function POST(request: Request) {
               study_start_year: currentYear, // safe default; exact start not known here
               updated_at: new Date().toISOString()
             }, { onConflict: 'user_id' })
+            .select('university_id, degree_level')
+            .single()
+          
           if (backfillErr) {
-            console.warn('[Profile] Failed to backfill user_academic:', backfillErr)
+            console.error('[Profile] Failed to backfill user_academic:', backfillErr)
+            // Continue with derived data even if backfill fails
+            academicData = { university_id, degree_level }
+          } else {
+            console.log('[Profile] Backfilled user_academic successfully')
+            academicData = backfilledData
           }
         } else {
+          console.error('[Profile] Missing university_id or degree_level in intro section')
           return NextResponse.json({ 
             error: 'User academic data not found. Please complete your questionnaire first.' 
           }, { status: 400 })
         }
       } else {
+        console.error('[Profile] No intro section found')
         return NextResponse.json({ 
           error: 'User academic data not found. Please complete your questionnaire first.' 
         }, { status: 400 })
