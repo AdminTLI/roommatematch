@@ -113,16 +113,25 @@ export async function POST() {
         // Extract academic fields from intro section
         const academicData: any = {}
         for (const answer of introSection.answers) {
-          if (answer.itemId === 'university') {
+          // Use correct field names that match academic-step.tsx
+          if (answer.itemId === 'university_id') {
             academicData.university_id = answer.value
-          } else if (answer.itemId === 'degreeLevel') {
+          } else if (answer.itemId === 'degree_level') {
             academicData.degree_level = answer.value
-          } else if (answer.itemId === 'program') {
+          } else if (answer.itemId === 'program_id') {
             academicData.program_id = answer.value
-          } else if (answer.itemId === 'graduationYear') {
+          } else if (answer.itemId === 'expected_graduation_year') {
             academicData.study_start_year = parseInt(answer.value)
           }
         }
+        
+        // Add validation logging
+        console.log('[Submit] Extracted academic data:', {
+          university_id: academicData.university_id,
+          degree_level: academicData.degree_level,
+          program_id: academicData.program_id,
+          study_start_year: academicData.study_start_year
+        })
         
         // Validate required fields
         if (academicData.university_id && academicData.degree_level && academicData.study_start_year) {
@@ -155,32 +164,28 @@ export async function POST() {
 
       // 4. Create/update profile record with academic data
       if (introSection?.answers) {
-        const academicData: any = {}
+        // Re-extract academic data with correct field names
+        let university_id, degree_level
         for (const answer of introSection.answers) {
-          if (answer.itemId === 'university') {
-            academicData.university_id = answer.value
-          } else if (answer.itemId === 'degreeLevel') {
-            academicData.degree_level = answer.value
+          if (answer.itemId === 'university_id') {
+            university_id = answer.value
+          } else if (answer.itemId === 'degree_level') {
+            degree_level = answer.value
           }
         }
         
-        if (academicData.university_id && academicData.degree_level) {
+        if (university_id && degree_level) {
           console.log('[Submit] Creating/updating profile record')
           
-          // Get first name from intro section or user metadata
-          let firstName = user.user_metadata?.full_name?.split(' ')[0] || 'User'
-          for (const answer of introSection.answers) {
-            if (answer.itemId === 'firstName') {
-              firstName = answer.value
-            }
-          }
+          // Get first name from user metadata (intro section doesn't have firstName field)
+          const firstName = user.user_metadata?.full_name?.split(' ')[0] || user.email?.split('@')[0] || 'User'
           
           const { error: profileError } = await supabase
             .from('profiles')
             .upsert({
               user_id: userId,
-              university_id: academicData.university_id,
-              degree_level: academicData.degree_level,
+              university_id: university_id,
+              degree_level: degree_level,
               first_name: firstName,
               updated_at: new Date().toISOString()
             }, {

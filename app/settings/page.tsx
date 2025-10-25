@@ -65,6 +65,10 @@ export default async function SettingsPage() {
     requiredSections.includes(s.section)
   ) || []
 
+  console.log('[Settings] All sections from database:', sections?.map(s => s.section))
+  console.log('[Settings] Required sections:', requiredSections)
+  console.log('[Settings] Completed required sections:', completedRequiredSections.map(s => s.section))
+  
   console.log('[Settings] Progress calculation:', {
     totalSections: sections?.length,
     requiredSections: requiredSections.length,

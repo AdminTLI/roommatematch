@@ -103,8 +103,8 @@ export async function POST(request: Request) {
         // Extract university_id and degree_level from intro answers
         let university_id, degree_level
         for (const answer of introSection.answers) {
-          if (answer.itemId === 'university') university_id = answer.value
-          if (answer.itemId === 'degreeLevel') degree_level = answer.value
+          if (answer.itemId === 'university_id') university_id = answer.value
+          if (answer.itemId === 'degree_level') degree_level = answer.value
         }
         
         if (university_id && degree_level) {
