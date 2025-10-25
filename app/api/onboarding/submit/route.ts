@@ -35,22 +35,34 @@ export async function POST() {
       .single()
 
     if (!existingUser) {
-      console.log('[Submit] User not found in users table, creating manually...')
-      const { error: userCreateError } = await supabase
+      console.log('[Submit] User not found in users table, creating with service role...')
+      
+      // Use service role client to bypass RLS
+      const { createServiceClient } = await import('@/lib/supabase/service')
+      const serviceSupabase = createServiceClient()
+      
+      const { error: userCreateError } = await serviceSupabase
         .from('users')
         .insert({
           id: userId,
           email: user.email,
-          is_active: true
+          is_active: true,
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString()
         })
       
       if (userCreateError) {
-        console.error('[Submit] Failed to create user:', userCreateError)
+        console.error('[Submit] Failed to create user:', {
+          code: userCreateError.code,
+          message: userCreateError.message,
+          details: userCreateError.details,
+          hint: userCreateError.hint
+        })
         return NextResponse.json({ 
-          error: 'User account setup failed. Please try again.' 
+          error: `User account setup failed: ${userCreateError.message}. Please contact support.` 
         }, { status: 500 })
       }
-      console.log('[Submit] User created successfully')
+      console.log('[Submit] User created successfully with service role')
     }
 
     // 1. Fetch all sections from onboarding_sections

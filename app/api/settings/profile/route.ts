@@ -22,6 +22,39 @@ export async function POST(request: Request) {
       }, { status: 400 })
     }
 
+    // Ensure user exists in users table
+    const { data: existingUser } = await supabase
+      .from('users')
+      .select('id')
+      .eq('id', user.id)
+      .single()
+
+    if (!existingUser) {
+      console.log('[Profile] User not found in users table, creating...')
+      
+      // Use service role client to bypass RLS
+      const { createServiceClient } = await import('@/lib/supabase/service')
+      const serviceSupabase = createServiceClient()
+      
+      const { error: userCreateError } = await serviceSupabase
+        .from('users')
+        .insert({
+          id: user.id,
+          email: user.email,
+          is_active: true,
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString()
+        })
+      
+      if (userCreateError) {
+        console.error('[Profile] Failed to create user:', userCreateError)
+        return NextResponse.json({ 
+          error: `User initialization failed: ${userCreateError.message}` 
+        }, { status: 500 })
+      }
+      console.log('[Profile] User created successfully')
+    }
+
     // Update or create profile
     const { error: profileError } = await supabase
       .from('profiles')
