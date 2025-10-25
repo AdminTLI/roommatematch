@@ -21,12 +21,12 @@ export async function POST(request: Request) {
     const body = await request.json()
     console.log('[Profile] Request body:', body)
     
-    const { firstName, lastName, phone, bio } = body
+    const { firstName } = body
 
     // Validate required fields
-    if (!firstName || !lastName) {
+    if (!firstName) {
       return NextResponse.json({ 
-        error: 'First name and last name are required' 
+        error: 'First name is required' 
       }, { status: 400 })
     }
 
@@ -82,9 +82,6 @@ export async function POST(request: Request) {
       .upsert({
         user_id: user.id,
         first_name: firstName,
-        last_name: lastName,
-        phone: phone || null,
-        bio: bio || null,
         updated_at: new Date().toISOString()
       }, {
         onConflict: 'user_id'
