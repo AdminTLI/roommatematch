@@ -17,13 +17,20 @@ export function EmailVerification({ user }: EmailVerificationProps) {
   const [isResending, setIsResending] = useState(false)
   const [message, setMessage] = useState('')
 
-  // More explicit check - only verified if we have a valid timestamp
-  const isVerified = user.email_confirmed_at !== null && 
-                     user.email_confirmed_at !== undefined && 
-                     user.email_confirmed_at !== ''
+  // Debug: Log the entire user object to see what we're getting
+  console.log('[EmailVerification] Full user object:', JSON.stringify(user, null, 2))
+  console.log('[EmailVerification] email_confirmed_at value:', user.email_confirmed_at)
+  console.log('[EmailVerification] email_confirmed_at type:', typeof user.email_confirmed_at)
 
-  // Add debug logging (remove after testing)
-  console.log('[EmailVerification] email_confirmed_at:', user.email_confirmed_at, 'isVerified:', isVerified)
+  // More explicit check - only verified if we have a valid ISO timestamp
+  const isVerified = Boolean(
+    user.email_confirmed_at && 
+    typeof user.email_confirmed_at === 'string' &&
+    user.email_confirmed_at.length > 0 &&
+    !isNaN(Date.parse(user.email_confirmed_at))
+  )
+
+  console.log('[EmailVerification] isVerified:', isVerified)
 
   const handleResendVerification = async () => {
     setIsResending(true)

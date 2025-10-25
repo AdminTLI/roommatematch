@@ -27,19 +27,20 @@ export async function POST() {
       }, { status: 403 })
     }
 
-    // Check if user exists in users table, create if missing
-    const { data: existingUser } = await supabase
+    // Check if user exists in users table using SERVICE ROLE (bypass RLS)
+    const { createServiceClient } = await import('@/lib/supabase/service')
+    const serviceSupabase = createServiceClient()
+
+    const { data: existingUser, error: checkError } = await serviceSupabase
       .from('users')
       .select('id')
       .eq('id', userId)
-      .single()
+      .maybeSingle()  // Use maybeSingle() instead of single() to avoid errors
 
-    if (!existingUser) {
-      console.log('[Submit] User not found in users table, creating with service role...')
-      
-      // Use service role client to bypass RLS
-      const { createServiceClient } = await import('@/lib/supabase/service')
-      const serviceSupabase = createServiceClient()
+    console.log('[Submit] User existence check:', { exists: !!existingUser, checkError })
+
+    if (!existingUser && !checkError) {
+      console.log('[Submit] User not found in users table, creating...')
       
       const { error: userCreateError } = await serviceSupabase
         .from('users')
@@ -52,17 +53,23 @@ export async function POST() {
         })
       
       if (userCreateError) {
-        console.error('[Submit] Failed to create user:', {
-          code: userCreateError.code,
-          message: userCreateError.message,
-          details: userCreateError.details,
-          hint: userCreateError.hint
-        })
-        return NextResponse.json({ 
-          error: `User account setup failed: ${userCreateError.message}. Please contact support.` 
-        }, { status: 500 })
+        // Check if it's a duplicate key error (user was created by trigger in the meantime)
+        if (userCreateError.code === '23505') {
+          console.log('[Submit] User already exists (created by trigger), continuing...')
+        } else {
+          console.error('[Submit] Failed to create user:', {
+            code: userCreateError.code,
+            message: userCreateError.message,
+            details: userCreateError.details,
+            hint: userCreateError.hint
+          })
+          return NextResponse.json({ 
+            error: `User account setup failed: ${userCreateError.message}. Please contact support.` 
+          }, { status: 500 })
+        }
+      } else {
+        console.log('[Submit] User created successfully')
       }
-      console.log('[Submit] User created successfully with service role')
     }
 
     // 1. Fetch all sections from onboarding_sections

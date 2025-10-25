@@ -5,7 +5,16 @@ import { SettingsContent } from './components/settings-content'
 
 export default async function SettingsPage() {
   const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
+  
+  // Force refresh the user session to get latest data
+  const { data: { user }, error: userError } = await supabase.auth.getUser()
+  
+  console.log('[Settings] User data:', {
+    id: user?.id,
+    email: user?.email,
+    email_confirmed_at: user?.email_confirmed_at,
+    userError
+  })
 
   if (!user) {
     redirect('/auth/sign-in')

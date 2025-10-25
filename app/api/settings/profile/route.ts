@@ -22,19 +22,20 @@ export async function POST(request: Request) {
       }, { status: 400 })
     }
 
-    // Ensure user exists in users table
-    const { data: existingUser } = await supabase
+    // Check if user exists in users table using SERVICE ROLE (bypass RLS)
+    const { createServiceClient } = await import('@/lib/supabase/service')
+    const serviceSupabase = createServiceClient()
+
+    const { data: existingUser, error: checkError } = await serviceSupabase
       .from('users')
       .select('id')
       .eq('id', user.id)
-      .single()
+      .maybeSingle()  // Use maybeSingle() instead of single()
 
-    if (!existingUser) {
+    console.log('[Profile] User existence check:', { exists: !!existingUser, checkError })
+
+    if (!existingUser && !checkError) {
       console.log('[Profile] User not found in users table, creating...')
-      
-      // Use service role client to bypass RLS
-      const { createServiceClient } = await import('@/lib/supabase/service')
-      const serviceSupabase = createServiceClient()
       
       const { error: userCreateError } = await serviceSupabase
         .from('users')
@@ -47,12 +48,22 @@ export async function POST(request: Request) {
         })
       
       if (userCreateError) {
-        console.error('[Profile] Failed to create user:', userCreateError)
-        return NextResponse.json({ 
-          error: `User initialization failed: ${userCreateError.message}` 
-        }, { status: 500 })
+        // Check if it's a duplicate key error (user was created by trigger in the meantime)
+        if (userCreateError.code === '23505') {
+          console.log('[Profile] User already exists (created by trigger), continuing...')
+        } else {
+          console.error('[Profile] Failed to create user:', {
+            code: userCreateError.code,
+            message: userCreateError.message,
+            details: userCreateError.details
+          })
+          return NextResponse.json({ 
+            error: `User initialization failed: ${userCreateError.message}` 
+          }, { status: 500 })
+        }
+      } else {
+        console.log('[Profile] User created successfully')
       }
-      console.log('[Profile] User created successfully')
     }
 
     // Update or create profile
