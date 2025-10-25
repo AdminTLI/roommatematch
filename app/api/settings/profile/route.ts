@@ -74,17 +74,39 @@ export async function POST(request: Request) {
       }
     }
 
+    // Get user's academic data to find university_id
+    const { data: academicData, error: academicError } = await supabase
+      .from('user_academic')
+      .select('university_id, degree_level')
+      .eq('user_id', user.id)
+      .maybeSingle()
+
+    if (academicError) {
+      console.error('[Profile] Failed to fetch academic data:', academicError)
+      return NextResponse.json({ 
+        error: 'Failed to fetch user academic data' 
+      }, { status: 500 })
+    }
+
+    if (!academicData) {
+      return NextResponse.json({ 
+        error: 'User academic data not found. Please complete your questionnaire first.' 
+      }, { status: 400 })
+    }
+
     // Update or create profile
-    console.log('[Profile] Attempting profile upsert for user:', user.id)
+    console.log('[Profile] Attempting profile upsert for user:', user.id, 'university:', academicData.university_id)
     
     const { error: profileError } = await supabase
       .from('profiles')
       .upsert({
         user_id: user.id,
+        university_id: academicData.university_id,
         first_name: firstName,
         last_name: lastName || null,
         phone: phone || null,
         bio: bio || null,
+        degree_level: academicData.degree_level,
         updated_at: new Date().toISOString()
       }, {
         onConflict: 'user_id'
