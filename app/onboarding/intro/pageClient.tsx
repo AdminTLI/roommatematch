@@ -15,16 +15,61 @@ export default function IntroClient() {
   const [isValid, setIsValid] = useState(false)
   const [isLoading, setIsLoading] = useState(true)
   const [isSaving, setIsSaving] = useState(false)
+  const [isEditMode, setIsEditMode] = useState(false)
   const router = useRouter()
   const supabase = createClient()
 
-  // Load saved data on mount
+  // Check for edit mode from URL params
+  useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search)
+    const mode = urlParams.get('mode')
+    setIsEditMode(mode === 'edit')
+  }, [])
+
+  // Load saved data and check progress on mount
   useEffect(() => {
     const loadSavedData = async () => {
       try {
         const { data: { user } } = await supabase.auth.getUser()
         if (!user) return
 
+        // Check overall progress first (skip in edit mode)
+        if (!isEditMode) {
+          const progressResponse = await fetch('/api/onboarding/progress')
+          if (progressResponse.ok) {
+            const progress = await progressResponse.json()
+            
+            // If questionnaire is fully submitted, redirect to dashboard
+            if (progress.isFullySubmitted) {
+              router.push('/dashboard')
+              return
+            }
+            
+            // If there's partial progress and we're not on the next section, redirect
+            if (progress.hasPartialProgress && progress.nextSection && progress.nextSection !== 'intro') {
+              // Map section names to routes
+              const sectionRoutes: Record<string, string> = {
+                'location-commute': '/onboarding/location-commute',
+                'personality-values': '/onboarding/personality-values',
+                'sleep-circadian': '/onboarding/sleep-circadian',
+                'noise-sensory': '/onboarding/noise-sensory',
+                'home-operations': '/onboarding/home-operations',
+                'social-hosting-language': '/onboarding/social-hosting-language',
+                'communication-conflict': '/onboarding/communication-conflict',
+                'privacy-territoriality': '/onboarding/privacy-territoriality',
+                'reliability-logistics': '/onboarding/reliability-logistics'
+              }
+              
+              const nextRoute = sectionRoutes[progress.nextSection]
+              if (nextRoute) {
+                router.push(nextRoute)
+                return
+              }
+            }
+          }
+        }
+
+        // Load intro section data
         const response = await fetch(`/api/onboarding/load?section=intro`)
         if (response.ok) {
           const { answers } = await response.json()
@@ -53,7 +98,7 @@ export default function IntroClient() {
     }
 
     loadSavedData()
-  }, [supabase])
+  }, [supabase, router, isEditMode])
 
   const handleAcademicChange = (data: Record<string, any>) => {
     setAcademicData(data)
@@ -93,8 +138,14 @@ export default function IntroClient() {
           throw new Error('Failed to save data')
         }
 
-        // Navigate to next page after successful save
-        router.push('/onboarding/location-commute')
+        // Navigate based on mode
+        if (isEditMode) {
+          // In edit mode, go back to settings
+          router.push('/settings')
+        } else {
+          // Normal flow, go to next section
+          router.push('/onboarding/location-commute')
+        }
       } catch (error) {
         console.error('Failed to save academic data:', error)
         // Still navigate even if save fails to not block user progress
@@ -111,8 +162,8 @@ export default function IntroClient() {
         <QuestionnaireLayout
           stepIndex={0}
           totalSteps={11}
-          title="Tell us about yourself"
-          subtitle="Your university and programme details plus consent to begin"
+          title={isEditMode ? "Edit Your Academic Information" : "Tell us about yourself"}
+          subtitle={isEditMode ? "Update your university and programme details" : "Your university and programme details plus consent to begin"}
           onNext={handleNext}
           nextDisabled={true}
         >
@@ -132,11 +183,11 @@ export default function IntroClient() {
       <QuestionnaireLayout
         stepIndex={0}
         totalSteps={11}
-        title="Tell us about yourself"
-        subtitle="Your university and programme details plus consent to begin"
+        title={isEditMode ? "Edit Your Academic Information" : "Tell us about yourself"}
+        subtitle={isEditMode ? "Update your university and programme details" : "Your university and programme details plus consent to begin"}
         onNext={handleNext}
         nextDisabled={!isValid || isSaving}
-        nextText={isSaving ? "Saving..." : "Next"}
+        nextText={isSaving ? "Saving..." : (isEditMode ? "Save Changes" : "Next")}
       >
         <AutosaveToaster show={false} />
         <AcademicStep 

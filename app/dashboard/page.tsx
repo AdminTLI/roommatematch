@@ -19,7 +19,15 @@ export default async function DashboardPage() {
     .eq('user_id', user.id)
     .maybeSingle()
   
+  // Check for partial progress
+  const { data: sections } = await supabase
+    .from('onboarding_sections')
+    .select('section')
+    .eq('user_id', user.id)
+  
   const hasCompletedQuestionnaire = !!submission
+  const hasPartialProgress = sections && sections.length > 0 && !hasCompletedQuestionnaire
+  const progressCount = sections?.length || 0
 
   // Fetch dashboard data with error handling
   let dashboardData: DashboardData
@@ -54,6 +62,8 @@ export default async function DashboardPage() {
     }}>
       <DashboardContent 
         hasCompletedQuestionnaire={hasCompletedQuestionnaire}
+        hasPartialProgress={hasPartialProgress}
+        progressCount={progressCount}
         dashboardData={dashboardData}
       />
     </AppShell>
