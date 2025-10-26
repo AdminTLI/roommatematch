@@ -202,18 +202,6 @@ export function ChatInterface({ roomId, user }: ChatInterfaceProps) {
     }
   }
 
-  useEffect(() => {
-    loadChatData()
-    setupRealtimeSubscription()
-    markAsRead()
-    
-    return () => {
-      if (typingTimeoutRef.current) {
-        clearTimeout(typingTimeoutRef.current)
-      }
-    }
-  }, [roomId, loadChatData, setupRealtimeSubscription, markAsRead])
-
   const markAsRead = useCallback(async () => {
     try {
       await fetch('/api/chat/read', {
@@ -363,6 +351,18 @@ export function ChatInterface({ roomId, user }: ChatInterfaceProps) {
       supabase.removeChannel(typingChannel)
     }
   }, [roomId, user.id])
+
+  useEffect(() => {
+    loadChatData()
+    setupRealtimeSubscription()
+    markAsRead()
+    
+    return () => {
+      if (typingTimeoutRef.current) {
+        clearTimeout(typingTimeoutRef.current)
+      }
+    }
+  }, [roomId, loadChatData, setupRealtimeSubscription, markAsRead])
 
   const sendMessage = async () => {
     if (!newMessage.trim() || isSending) return

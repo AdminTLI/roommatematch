@@ -57,10 +57,6 @@ export function ChatList({ user }: ChatListProps) {
   const router = useRouter()
   const supabase = createClient()
 
-  useEffect(() => {
-    loadChats()
-  }, [loadChats])
-
   const loadChats = useCallback(async () => {
     setIsLoading(true)
     
@@ -146,6 +142,10 @@ export function ChatList({ user }: ChatListProps) {
       setIsLoading(false)
     }
   }, [user.id])
+
+  useEffect(() => {
+    loadChats()
+  }, [loadChats])
 
   const filteredChats = chats.filter(chat =>
     chat.name.toLowerCase().includes(searchQuery.toLowerCase())
