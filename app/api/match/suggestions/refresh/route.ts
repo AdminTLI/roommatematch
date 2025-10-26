@@ -14,14 +14,14 @@ export async function POST(request: NextRequest) {
 
     const repo = await getMatchRepo()
     
-    // Get user's current profile to build cohort filter
-    const candidates = await repo.loadCandidates({ 
-      excludeAlreadyMatched: true, 
-      onlyActive: true, 
-      limit: 1 
+    // First, explicitly fetch the current user's profile to build cohort filter
+    const currentUserCandidates = await repo.loadCandidates({ 
+      excludeUserIds: [], // Don't exclude anyone yet
+      onlyActive: false, // Get all users first
+      limit: 1000 // Large limit to find our user
     })
     
-    const currentUser = candidates.find(c => c.id === user.id)
+    const currentUser = currentUserCandidates.find(c => c.id === user.id)
     if (!currentUser) {
       return NextResponse.json({ error: 'User profile not found' }, { status: 404 })
     }

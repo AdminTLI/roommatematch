@@ -134,46 +134,65 @@ async function fetchDashboardData(userId: string): Promise<DashboardData> {
   }
 
   try {
-    // Fetch matches count
-    const { count } = await supabase
+    // Fetch matches count - user can be either a_user or b_user
+    const { count: matchesAsA } = await supabase
       .from('matches')
       .select('*', { count: 'exact', head: true })
-      .eq('user_a_id', userId)
+      .eq('a_user', userId)
     
-    totalMatchesCount = count || 0
+    const { count: matchesAsB } = await supabase
+      .from('matches')
+      .select('*', { count: 'exact', head: true })
+      .eq('b_user', userId)
+    
+    totalMatchesCount = (matchesAsA || 0) + (matchesAsB || 0)
 
     // Get new matches from last 7 days
     const sevenDaysAgo = new Date()
     sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7)
-    const { count: newMatches } = await supabase
+    const { count: newMatchesAsA } = await supabase
       .from('matches')
       .select('*', { count: 'exact', head: true })
-      .eq('user_a_id', userId)
+      .eq('a_user', userId)
       .gte('created_at', sevenDaysAgo.toISOString())
     
-    newMatchesCount = newMatches || 0
+    const { count: newMatchesAsB } = await supabase
+      .from('matches')
+      .select('*', { count: 'exact', head: true })
+      .eq('b_user', userId)
+      .gte('created_at', sevenDaysAgo.toISOString())
+    
+    newMatchesCount = (newMatchesAsA || 0) + (newMatchesAsB || 0)
   } catch (error) {
     console.error('Error fetching matches:', error)
   }
 
   try {
-    // Fetch unread messages count
-    const { count } = await supabase
-      .from('chat_messages')
-      .select('*', { count: 'exact', head: true })
-      .neq('sender_id', userId)
-      .eq('is_read', false)
+    // Fetch unread messages count using message_reads table
+    const { data: unreadMessages } = await supabase
+      .from('messages')
+      .select(`
+        id,
+        message_reads!left(
+          read_at
+        )
+      `)
+      .neq('user_id', userId)
     
-    unreadMessagesCount = count || 0
+    // Count messages where user hasn't read them
+    unreadMessagesCount = unreadMessages?.filter(msg => 
+      !msg.message_reads || msg.message_reads.length === 0
+    ).length || 0
   } catch (error) {
     console.error('Error fetching messages:', error)
   }
 
   try {
-    // Fetch active chats count
+    // Fetch active chats count using chats and chat_members tables
     const { count } = await supabase
-      .from('chat_rooms')
+      .from('chat_members')
       .select('*', { count: 'exact', head: true })
+      .eq('user_id', userId)
     
     activeChatsCount = count || 0
   } catch (error) {
@@ -181,33 +200,70 @@ async function fetchDashboardData(userId: string): Promise<DashboardData> {
   }
 
   try {
-    // Fetch tours scheduled count
-    const { count } = await supabase
-      .from('housing_tours')
-      .select('*', { count: 'exact', head: true })
-      .eq('user_id', userId)
-    
-    toursScheduledCount = count || 0
+    // Housing tours table doesn't exist yet - return 0
+    toursScheduledCount = 0
   } catch (error) {
     console.error('Error fetching tours:', error)
   }
 
   try {
-    // Fetch top matches (simplified)
-    const { data: matches } = await supabase
+    // Fetch top matches with proper column names
+    const { data: matchesAsA } = await supabase
       .from('matches')
-      .select('id, compatibility_score, created_at, user_b_id')
-      .eq('user_a_id', userId)
-      .order('compatibility_score', { ascending: false })
-      .limit(3)
+      .select(`
+        id, 
+        score, 
+        created_at, 
+        b_user,
+        profiles!matches_b_user_fkey(
+          first_name,
+          program,
+          university_id,
+          universities!profiles_university_id_fkey(name)
+        )
+      `)
+      .eq('a_user', userId)
+      .order('score', { ascending: false })
+      .limit(2)
 
-    if (matches) {
-      topMatches = matches.map(match => ({
+    const { data: matchesAsB } = await supabase
+      .from('matches')
+      .select(`
+        id, 
+        score, 
+        created_at, 
+        a_user,
+        profiles!matches_a_user_fkey(
+          first_name,
+          program,
+          university_id,
+          universities!profiles_university_id_fkey(name)
+        )
+      `)
+      .eq('b_user', userId)
+      .order('score', { ascending: false })
+      .limit(2)
+
+    const allMatches = [
+      ...(matchesAsA || []).map(match => ({
+        ...match,
+        otherUserId: match.b_user,
+        otherProfile: match.profiles
+      })),
+      ...(matchesAsB || []).map(match => ({
+        ...match,
+        otherUserId: match.a_user,
+        otherProfile: match.profiles
+      }))
+    ].sort((a, b) => b.score - a.score).slice(0, 3)
+
+    if (allMatches.length > 0) {
+      topMatches = allMatches.map(match => ({
         id: match.id,
-        name: 'User', // Simplified for now
-        score: match.compatibility_score || 0,
-        program: 'Program',
-        university: 'University',
+        name: match.otherProfile?.first_name || 'User',
+        score: Math.round((match.score || 0) * 100),
+        program: match.otherProfile?.program || 'Program',
+        university: match.otherProfile?.universities?.name || 'University',
         avatar: undefined
       }))
     }
@@ -216,11 +272,17 @@ async function fetchDashboardData(userId: string): Promise<DashboardData> {
   }
 
   try {
-    // Fetch recent activity (simplified)
+    // Fetch recent activity using messages table
     const { data: messages } = await supabase
-      .from('chat_messages')
-      .select('id, created_at, content')
-      .neq('sender_id', userId)
+      .from('messages')
+      .select(`
+        id, 
+        created_at, 
+        content,
+        user_id,
+        profiles!messages_user_id_fkey(first_name)
+      `)
+      .neq('user_id', userId)
       .order('created_at', { ascending: false })
       .limit(2)
 
@@ -229,7 +291,7 @@ async function fetchDashboardData(userId: string): Promise<DashboardData> {
         id: `message-${msg.id}`,
         type: 'message',
         action: 'Message received',
-        user: 'User',
+        user: msg.profiles?.first_name || 'User',
         timestamp: msg.created_at
       }))
     }

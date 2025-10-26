@@ -233,101 +233,25 @@ export function OnboardingWizard({ user }: OnboardingWizardProps) {
         throw new Error(`Failed to create academic record: ${academicError.message}`)
       }
 
-      // Map all form data to question keys with proper field mapping
-      const fieldMapping = {
-        // Basics step
-        'first_name': 'first_name',
-        'university_id': 'university_id', 
-        'degree_level': 'degree_level',
-        'program_id': 'program_id',
-        'campus_city': 'campus',
-        'study_start_year': 'study_start_year',
-        'undecided_program': 'undecided_program',
-        
-        // Logistics step
-        'budget_min': 'budget_min',
-        'budget_max': 'budget_max',
-        'move_in_date': 'move_in_window',
-        'location_preference': 'commute_max',
-        'housing_type': 'room_type',
-        'lease_duration': 'lease_length',
-        
-        // Lifestyle step
-        'bedtime': 'sleep_start',
-        'wake_time': 'sleep_end',
-        'study_location': 'study_intensity',
-        'study_schedule': 'study_intensity',
-        'cleanliness_level': 'cleanliness_room',
-        'cleaning_frequency': 'cleanliness_kitchen',
-        'smoking_preference': 'smoking',
-        'pet_preference': 'pets_allowed',
-        'alcohol_preference': 'alcohol_at_home',
-        
-        // Social step
-        'social_level': 'social_level',
-        'guest_frequency': 'guests_frequency',
-        'activities': 'parties_frequency',
-        'noise_preference': 'noise_tolerance',
-        'study_music': 'noise_tolerance',
-        'shared_space_usage': 'food_sharing',
-        'shared_expenses': 'utensils_sharing',
-        
-        // Personality step (Big Five)
-        'extraversion': 'extraversion',
-        'agreeableness': 'agreeableness',
-        'conscientiousness': 'conscientiousness',
-        'neuroticism': 'neuroticism',
-        'openness': 'openness',
-        
-        // Communication step
-        'conflict_style': 'conflict_style',
-        'communication_preference': 'communication_preference',
-        
-        // Languages step
-        'languages_daily': 'languages_daily',
-        
-        // Deal breakers step
-        'smoking': 'smoking',
-        'pets_allowed': 'pets_allowed',
-        'parties_max': 'parties_max',
-        'guests_max': 'guests_max',
-        'chores_preference': 'chores_preference',
-        'alcohol_at_home': 'alcohol_at_home'
-      }
-
-      // Build responses array with proper JSONB values
-      const responses = []
-      
-      for (const [formField, questionKey] of Object.entries(fieldMapping)) {
-        const value = formData[formField]
-        if (value !== undefined && value !== null && value !== '') {
-          // Store as proper JSONB (not stringified)
-          responses.push({
-            user_id: user.id,
-            question_key: questionKey,
-            value: value // Direct assignment for JSONB
-          })
-        }
-      }
-
-      // Additional mappings for complex fields
-      const additionalMappings = [
-        // Map sleep times to numeric values
-        { from: 'sleep_start', to: 'sleep_start', transform: (v) => {
+      // Map form data to valid question_keys only (no profile/academic fields)
+      const questionnaireMappings = [
+        // Sleep schedule transformations
+        { from: 'bedtime', to: 'sleep_start', transform: (v) => {
           const timeMap = {
             'before_10pm': 21, '10pm_11pm': 22, '11pm_12am': 23, 
             '12am_1am': 24, 'after_1am': 25, 'varies': 23
           }
           return timeMap[v] || 23
         }},
-        { from: 'sleep_end', to: 'sleep_end', transform: (v) => {
+        { from: 'wake_time', to: 'sleep_end', transform: (v) => {
           const timeMap = {
             'before_6am': 6, '6am_7am': 7, '7am_8am': 8,
             '8am_9am': 9, '9am_10am': 10, 'after_10am': 11, 'varies': 8
           }
           return timeMap[v] || 8
         }},
-        // Map study intensity from location preference
+        
+        // Study preferences
         { from: 'study_location', to: 'study_intensity', transform: (v) => {
           const intensityMap = {
             'home_quiet': 8, 'home_background': 6, 'library': 9,
@@ -335,7 +259,8 @@ export function OnboardingWizard({ user }: OnboardingWizardProps) {
           }
           return intensityMap[v] || 6
         }},
-        // Map cleanliness from level and frequency
+        
+        // Cleanliness preferences
         { from: 'cleanliness_level', to: 'cleanliness_room', transform: (v) => v },
         { from: 'cleaning_frequency', to: 'cleanliness_kitchen', transform: (v) => {
           const freqMap = {
@@ -344,9 +269,9 @@ export function OnboardingWizard({ user }: OnboardingWizardProps) {
           }
           return freqMap[v] || 6
         }},
-        // Map social level
+        
+        // Social preferences
         { from: 'social_level', to: 'social_level', transform: (v) => v },
-        // Map guest frequency
         { from: 'guest_frequency', to: 'guests_frequency', transform: (v) => {
           const freqMap = {
             'never': 1, 'rarely': 3, 'occasionally': 6,
@@ -354,41 +279,64 @@ export function OnboardingWizard({ user }: OnboardingWizardProps) {
           }
           return freqMap[v] || 5
         }},
-        // Map noise preference
+        { from: 'activities', to: 'parties_frequency', transform: (v) => {
+          // Map activities array to party frequency score
+          if (!Array.isArray(v)) return 5
+          const partyActivities = ['Parties/Social events', 'Gaming', 'Music']
+          const partyCount = v.filter(activity => partyActivities.includes(activity)).length
+          return Math.min(10, Math.max(1, partyCount * 3))
+        }},
+        
+        // Noise and environment
         { from: 'noise_preference', to: 'noise_tolerance', transform: (v) => v },
-        // Map shared space usage
+        
+        // Shared space usage
         { from: 'shared_space_usage', to: 'food_sharing', transform: (v) => {
           const sharingMap = {
             'minimal': 2, 'moderate': 5, 'frequent': 8, 'flexible': 6
           }
           return sharingMap[v] || 5
         }},
-        // Map shared expenses
         { from: 'shared_expenses', to: 'utensils_sharing', transform: (v) => {
           const sharingMap = {
             'split_everything': 9, 'split_essentials': 6, 'separate': 2, 'flexible': 5
           }
           return sharingMap[v] || 5
         }},
-        // Map smoking preference
+        
+        // Deal breakers
         { from: 'smoking_preference', to: 'smoking', transform: (v) => {
           return v === 'non_smoker' ? false : true
         }},
-        // Map pet preference
         { from: 'pet_preference', to: 'pets_allowed', transform: (v) => {
           return v === 'no_pets' ? false : true
         }},
-        // Map alcohol preference
         { from: 'alcohol_preference', to: 'alcohol_at_home', transform: (v) => {
           const alcoholMap = {
             'non_drinker': 1, 'occasional_drinker': 4, 'regular_drinker': 8, 'flexible': 5
           }
           return alcoholMap[v] || 5
-        }}
+        }},
+        
+        // Personality traits (Big Five) - direct pass-through
+        { from: 'extraversion', to: 'extraversion', transform: (v) => v },
+        { from: 'agreeableness', to: 'agreeableness', transform: (v) => v },
+        { from: 'conscientiousness', to: 'conscientiousness', transform: (v) => v },
+        { from: 'neuroticism', to: 'neuroticism', transform: (v) => v },
+        { from: 'openness', to: 'openness', transform: (v) => v },
+        
+        // Communication preferences
+        { from: 'conflict_style', to: 'conflict_style', transform: (v) => v },
+        { from: 'communication_preference', to: 'communication_preference', transform: (v) => v },
+        
+        // Chores preference (from deal breakers step)
+        { from: 'chores_preference', to: 'chores_preference', transform: (v) => v }
       ]
 
-      // Apply additional transformations
-      for (const mapping of additionalMappings) {
+      // Build responses array with only valid question_keys
+      const responses = []
+      
+      for (const mapping of questionnaireMappings) {
         const value = formData[mapping.from]
         if (value !== undefined && value !== null && value !== '') {
           const transformedValue = mapping.transform(value)
