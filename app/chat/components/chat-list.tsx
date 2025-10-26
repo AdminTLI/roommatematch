@@ -38,6 +38,11 @@ interface ChatRoom {
   }>
   unreadCount: number
   isActive: boolean
+  // New fields for match integration
+  matchId?: string
+  compatibilityScore?: number
+  firstMessageAt?: string
+  isRecentlyMatched: boolean
 }
 
 interface ChatListProps {
@@ -60,46 +65,67 @@ export function ChatList({ user }: ChatListProps) {
     setIsLoading(true)
     
     try {
-      // Fetch real chats from database
+      // Fetch chats with match information
       const { data: chatRooms, error } = await supabase
-        .from('chat_rooms')
+        .from('chats')
         .select(`
           *,
-          chat_participants!inner(
+          match_id,
+          first_message_at,
+          matches!left(
+            id,
+            score,
+            a_user,
+            b_user
+          ),
+          chat_members!inner(
             user_id,
             profiles(first_name, avatar_url)
           ),
-          chat_messages(
+          messages(
             content,
             created_at,
             sender_id
           )
         `)
-        .contains('chat_participants.user_id', [user.id])
-        .order('updated_at', { ascending: false })
+        .contains('chat_members.user_id', [user.id])
+        .order('created_at', { ascending: false })
 
       if (error) throw error
 
       // Transform database results to ChatRoom format
-      const transformedChats: ChatRoom[] = (chatRooms || []).map((room: any) => ({
-        id: room.id,
-        name: room.name || 'Chat',
-        type: room.type || 'individual',
-        lastMessage: room.chat_messages?.[0] ? {
-          content: room.chat_messages[0].content,
-          sender: room.chat_messages[0].sender_id,
-          timestamp: new Date(room.chat_messages[0].created_at).toLocaleString(),
-          isRead: true
-        } : undefined,
-        participants: room.chat_participants?.map((p: any) => ({
-          id: p.user_id,
-          name: p.profiles?.first_name || 'User',
-          avatar: p.profiles?.avatar_url,
-          isOnline: false
-        })) || [],
-        unreadCount: 0,
-        isActive: false
-      }))
+      const transformedChats: ChatRoom[] = (chatRooms || []).map((room: any) => {
+        const isRecentlyMatched = !room.first_message_at
+        const compatibilityScore = room.matches?.score ? Math.round(room.matches.score * 100) : undefined
+        
+        // Get the other participant for individual chats
+        const otherParticipant = room.chat_members?.find((p: any) => p.user_id !== user.id)
+        const participantName = otherParticipant?.profiles?.first_name || 'User'
+        
+        return {
+          id: room.id,
+          name: room.is_group ? `Group Chat` : participantName,
+          type: room.is_group ? 'group' : 'individual',
+          lastMessage: room.messages?.[0] ? {
+            content: room.messages[0].content,
+            sender: room.messages[0].sender_id,
+            timestamp: new Date(room.messages[0].created_at).toLocaleString(),
+            isRead: true
+          } : undefined,
+          participants: room.chat_members?.map((p: any) => ({
+            id: p.user_id,
+            name: p.profiles?.first_name || 'User',
+            avatar: p.profiles?.avatar_url,
+            isOnline: false
+          })) || [],
+          unreadCount: 0,
+          isActive: false,
+          matchId: room.match_id,
+          compatibilityScore,
+          firstMessageAt: room.first_message_at,
+          isRecentlyMatched
+        }
+      })
 
       setChats(transformedChats)
       setIsLoading(false)
@@ -113,6 +139,10 @@ export function ChatList({ user }: ChatListProps) {
   const filteredChats = chats.filter(chat =>
     chat.name.toLowerCase().includes(searchQuery.toLowerCase())
   )
+
+  // Separate chats into recently matched and active conversations
+  const recentlyMatchedChats = filteredChats.filter(chat => chat.isRecentlyMatched)
+  const activeConversations = filteredChats.filter(chat => !chat.isRecentlyMatched)
 
   const handleChatClick = (chatId: string) => {
     router.push(`/chat/${chatId}`)
@@ -180,19 +210,122 @@ export function ChatList({ user }: ChatListProps) {
         </Button>
       </div>
 
-      {/* Chat List */}
+      {/* Recently Matched Section */}
+      {recentlyMatchedChats.length > 0 && (
+        <div className="space-y-4">
+          <div className="flex items-center gap-2">
+            <h2 className="text-xl font-semibold text-gray-900">Recently Matched</h2>
+            <Badge variant="secondary" className="bg-blue-100 text-blue-700">
+              {recentlyMatchedChats.length}
+            </Badge>
+          </div>
+          <p className="text-sm text-gray-600">
+            Start conversations with your new matches
+          </p>
+          
+          <div className="space-y-3">
+            {recentlyMatchedChats.map((chat) => (
+              <Card 
+                key={chat.id} 
+                className="cursor-pointer transition-all duration-200 hover:shadow-lg border-blue-200 bg-blue-50"
+                onClick={() => handleChatClick(chat.id)}
+              >
+                <CardContent className="p-6">
+                  <div className="flex items-center gap-4">
+                    {/* Avatar */}
+                    <div className="relative">
+                      {chat.type === 'individual' ? (
+                        <Avatar className="w-14 h-14">
+                          <AvatarImage src={chat.participants[0]?.avatar} />
+                          <AvatarFallback className="text-lg font-semibold">
+                            {chat.participants[0]?.name?.charAt(0) || '?'}
+                          </AvatarFallback>
+                        </Avatar>
+                      ) : (
+                        <div className="relative w-14 h-14">
+                          <Avatar className="w-10 h-10 absolute top-0 left-0">
+                            <AvatarImage src={chat.participants[0]?.avatar} />
+                            <AvatarFallback className="text-sm font-semibold">
+                              {chat.participants[0]?.name?.charAt(0) || '?'}
+                            </AvatarFallback>
+                          </Avatar>
+                          <Avatar className="w-10 h-10 absolute bottom-0 right-0">
+                            <AvatarImage src={chat.participants[1]?.avatar} />
+                            <AvatarFallback className="text-sm font-semibold">
+                              {chat.participants[1]?.name?.charAt(0) || '?'}
+                            </AvatarFallback>
+                          </Avatar>
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Chat Info */}
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center justify-between mb-2">
+                        <h3 className="text-lg font-semibold text-gray-900 truncate">
+                          {chat.name}
+                        </h3>
+                        <div className="flex items-center gap-2">
+                          {chat.compatibilityScore && (
+                            <Badge className="bg-green-100 text-green-700 border-green-200">
+                              {chat.compatibilityScore}% match
+                            </Badge>
+                          )}
+                          {chat.type === 'group' && (
+                            <Badge className="bg-secondary-100 text-secondary-700 border-secondary-200">
+                              <Users className="w-3 h-3 mr-1" />
+                              Group
+                            </Badge>
+                          )}
+                        </div>
+                      </div>
+                      
+                      <div className="flex items-center gap-3">
+                        <p className="text-body-sm text-blue-700 font-medium">
+                          Start a conversation with your new match!
+                        </p>
+                      </div>
+                    </div>
+
+                    {/* Actions */}
+                    <div className="flex items-center gap-2">
+                      <Button variant="ghost" size="sm">
+                        <MoreVertical className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Active Conversations Section */}
       <div className="space-y-4">
-        {filteredChats.length === 0 ? (
+        <div className="flex items-center gap-2">
+          <h2 className="text-xl font-semibold text-gray-900">Active Conversations</h2>
+          <Badge variant="secondary">
+            {activeConversations.length}
+          </Badge>
+        </div>
+        
+        {activeConversations.length === 0 ? (
           <Card>
             <CardContent className="p-12 text-center">
               <MessageCircle className="h-12 w-12 text-gray-400 mx-auto mb-4" />
               <h3 className="text-h3 text-gray-900 mb-2">
-                No conversations found
+                {searchQuery ? 'No conversations found' : 'No active conversations'}
               </h3>
               <p className="text-body text-gray-600 mb-6">
-                {searchQuery ? 'Try adjusting your search terms' : 'Start a conversation with your matches'}
+                {searchQuery 
+                  ? 'Try adjusting your search terms' 
+                  : recentlyMatchedChats.length > 0 
+                    ? 'Start conversations with your recent matches above'
+                    : 'Start a conversation with your matches'
+                }
               </p>
-              {!searchQuery && (
+              {!searchQuery && recentlyMatchedChats.length === 0 && (
                 <Button onClick={handleNewChat}>
                   Start New Chat
                 </Button>
@@ -200,96 +333,98 @@ export function ChatList({ user }: ChatListProps) {
             </CardContent>
           </Card>
         ) : (
-          filteredChats.map((chat) => (
-            <Card 
-              key={chat.id} 
-              className={`cursor-pointer transition-all duration-200 hover:shadow-lg ${
-                chat.isActive ? 'ring-2 ring-primary-600' : ''
-              }`}
-              onClick={() => handleChatClick(chat.id)}
-            >
-              <CardContent className="p-6">
-                <div className="flex items-center gap-4">
-                  {/* Avatar */}
-                  <div className="relative">
-                    {chat.type === 'individual' ? (
-                      <Avatar className="w-14 h-14">
-                        <AvatarImage src={chat.participants[0]?.avatar} />
-                        <AvatarFallback className="text-lg font-semibold">
-                          {chat.participants[0]?.name?.charAt(0) || '?'}
-                        </AvatarFallback>
-                      </Avatar>
-                    ) : (
-                      <div className="relative w-14 h-14">
-                        <Avatar className="w-10 h-10 absolute top-0 left-0">
+          <div className="space-y-3">
+            {activeConversations.map((chat) => (
+              <Card 
+                key={chat.id} 
+                className={`cursor-pointer transition-all duration-200 hover:shadow-lg ${
+                  chat.isActive ? 'ring-2 ring-primary-600' : ''
+                }`}
+                onClick={() => handleChatClick(chat.id)}
+              >
+                <CardContent className="p-6">
+                  <div className="flex items-center gap-4">
+                    {/* Avatar */}
+                    <div className="relative">
+                      {chat.type === 'individual' ? (
+                        <Avatar className="w-14 h-14">
                           <AvatarImage src={chat.participants[0]?.avatar} />
-                          <AvatarFallback className="text-sm font-semibold">
+                          <AvatarFallback className="text-lg font-semibold">
                             {chat.participants[0]?.name?.charAt(0) || '?'}
                           </AvatarFallback>
                         </Avatar>
-                        <Avatar className="w-10 h-10 absolute bottom-0 right-0">
-                          <AvatarImage src={chat.participants[1]?.avatar} />
-                          <AvatarFallback className="text-sm font-semibold">
-                            {chat.participants[1]?.name?.charAt(0) || '?'}
-                          </AvatarFallback>
-                        </Avatar>
-                      </div>
-                    )}
-                    {chat.participants.some(p => p.isOnline) && (
-                      <div className="absolute -bottom-1 -right-1 w-4 h-4 bg-success-500 border-2 border-white rounded-full"></div>
-                    )}
-                  </div>
-
-                  {/* Chat Info */}
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center justify-between mb-2">
-                      <h3 className="text-lg font-semibold text-gray-900 truncate">
-                        {chat.name}
-                      </h3>
-                      <div className="flex items-center gap-2">
-                        {chat.type === 'group' && (
-                          <Badge className="bg-secondary-100 text-secondary-700 border-secondary-200">
-                            <Users className="w-3 h-3 mr-1" />
-                            Group
-                          </Badge>
-                        )}
-                        {chat.lastMessage && (
-                          <span className="text-body-xs text-gray-500 flex items-center gap-1">
-                            <Clock className="w-3 h-3" />
-                            {chat.lastMessage.timestamp}
-                          </span>
-                        )}
-                      </div>
+                      ) : (
+                        <div className="relative w-14 h-14">
+                          <Avatar className="w-10 h-10 absolute top-0 left-0">
+                            <AvatarImage src={chat.participants[0]?.avatar} />
+                            <AvatarFallback className="text-sm font-semibold">
+                              {chat.participants[0]?.name?.charAt(0) || '?'}
+                            </AvatarFallback>
+                          </Avatar>
+                          <Avatar className="w-10 h-10 absolute bottom-0 right-0">
+                            <AvatarImage src={chat.participants[1]?.avatar} />
+                            <AvatarFallback className="text-sm font-semibold">
+                              {chat.participants[1]?.name?.charAt(0) || '?'}
+                            </AvatarFallback>
+                          </Avatar>
+                        </div>
+                      )}
+                      {chat.participants.some(p => p.isOnline) && (
+                        <div className="absolute -bottom-1 -right-1 w-4 h-4 bg-success-500 border-2 border-white rounded-full"></div>
+                      )}
                     </div>
-                    
-                    {chat.lastMessage && (
-                      <div className="flex items-center gap-3">
-                        <p className={`text-body-sm truncate flex-1 ${
-                          !chat.lastMessage.isRead 
-                            ? 'font-semibold text-gray-900' 
-                            : 'text-gray-600'
-                        }`}>
-                          <span className="font-medium">{chat.lastMessage.sender}:</span> {chat.lastMessage.content}
-                        </p>
-                        {chat.unreadCount > 0 && (
-                          <Badge className="bg-primary-600 text-white">
-                            {chat.unreadCount}
-                          </Badge>
-                        )}
-                      </div>
-                    )}
-                  </div>
 
-                  {/* Actions */}
-                  <div className="flex items-center gap-2">
-                    <Button variant="ghost" size="sm">
-                      <MoreVertical className="h-4 w-4" />
-                    </Button>
+                    {/* Chat Info */}
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center justify-between mb-2">
+                        <h3 className="text-lg font-semibold text-gray-900 truncate">
+                          {chat.name}
+                        </h3>
+                        <div className="flex items-center gap-2">
+                          {chat.type === 'group' && (
+                            <Badge className="bg-secondary-100 text-secondary-700 border-secondary-200">
+                              <Users className="w-3 h-3 mr-1" />
+                              Group
+                            </Badge>
+                          )}
+                          {chat.lastMessage && (
+                            <span className="text-body-xs text-gray-500 flex items-center gap-1">
+                              <Clock className="w-3 h-3" />
+                              {chat.lastMessage.timestamp}
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                      
+                      {chat.lastMessage && (
+                        <div className="flex items-center gap-3">
+                          <p className={`text-body-sm truncate flex-1 ${
+                            !chat.lastMessage.isRead 
+                              ? 'font-semibold text-gray-900' 
+                              : 'text-gray-600'
+                          }`}>
+                            <span className="font-medium">{chat.lastMessage.sender}:</span> {chat.lastMessage.content}
+                          </p>
+                          {chat.unreadCount > 0 && (
+                            <Badge className="bg-primary-600 text-white">
+                              {chat.unreadCount}
+                            </Badge>
+                          )}
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Actions */}
+                    <div className="flex items-center gap-2">
+                      <Button variant="ghost" size="sm">
+                        <MoreVertical className="h-4 w-4" />
+                      </Button>
+                    </div>
                   </div>
-                </div>
-              </CardContent>
-            </Card>
-          ))
+                </CardContent>
+              </Card>
+            ))}
+          </div>
         )}
       </div>
 

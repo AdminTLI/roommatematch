@@ -23,6 +23,7 @@ import {
   BarChart3,
   Video
 } from 'lucide-react'
+import { NotificationBell } from './notifications/notification-bell'
 import { useState } from 'react'
 
 interface AppHeaderProps {
@@ -88,12 +89,7 @@ export function AppHeader({ user }: AppHeaderProps) {
             <LanguageSwitcher variant="minimal" />
             
             {/* Notifications */}
-            <Button variant="ghost" size="sm" className="relative">
-              <Bell className="h-5 w-5" />
-              <span className="absolute -top-1 -right-1 h-3 w-3 bg-red-500 rounded-full text-xs text-white flex items-center justify-center">
-                3
-              </span>
-            </Button>
+            <NotificationBell userId={user.id} />
 
             {/* User Menu */}
             <div className="flex items-center gap-3">

@@ -19,6 +19,7 @@ ALTER TABLE eligibility_rules ENABLE ROW LEVEL SECURITY;
 ALTER TABLE forum_posts ENABLE ROW LEVEL SECURITY;
 ALTER TABLE forum_comments ENABLE ROW LEVEL SECURITY;
 ALTER TABLE app_events ENABLE ROW LEVEL SECURITY;
+ALTER TABLE notifications ENABLE ROW LEVEL SECURITY;
 
 -- Universities: Read by anyone, write by admins only
 CREATE POLICY "Universities are readable by everyone" ON universities
@@ -428,3 +429,13 @@ CREATE POLICY "Admins can read all events" ON app_events
       WHERE admins.user_id = auth.uid()
     )
   );
+
+-- Notifications: Users can only see their own notifications
+CREATE POLICY "Users can view own notifications" ON notifications
+  FOR SELECT USING (user_id = auth.uid());
+
+CREATE POLICY "Users can update own notifications" ON notifications
+  FOR UPDATE USING (user_id = auth.uid());
+
+CREATE POLICY "System can insert notifications" ON notifications
+  FOR INSERT WITH CHECK (true);

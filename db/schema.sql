@@ -9,6 +9,19 @@ CREATE TYPE match_status AS ENUM ('pending', 'accepted', 'rejected');
 CREATE TYPE report_status AS ENUM ('open', 'actioned', 'dismissed');
 CREATE TYPE admin_role AS ENUM ('super_admin', 'university_admin', 'moderator');
 CREATE TYPE post_status AS ENUM ('draft', 'published', 'hidden', 'deleted');
+CREATE TYPE notification_type AS ENUM (
+  'match_created',
+  'match_accepted', 
+  'match_confirmed',
+  'chat_message',
+  'profile_updated',
+  'questionnaire_completed',
+  'verification_status',
+  'housing_update',
+  'agreement_update',
+  'safety_alert',
+  'system_announcement'
+);
 
 -- Universities table
 CREATE TABLE universities (
@@ -125,7 +138,9 @@ CREATE TABLE chats (
   id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
   is_group BOOLEAN NOT NULL DEFAULT false,
   group_id UUID REFERENCES group_suggestions(id) ON DELETE CASCADE,
+  match_id UUID REFERENCES matches(id) ON DELETE SET NULL,
   created_by UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  first_message_at TIMESTAMP WITH TIME ZONE,
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
   updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
@@ -227,6 +242,19 @@ CREATE TABLE app_events (
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
+-- Notifications
+CREATE TABLE notifications (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  type notification_type NOT NULL,
+  title VARCHAR(255) NOT NULL,
+  message TEXT NOT NULL,
+  metadata JSONB DEFAULT '{}',
+  is_read BOOLEAN DEFAULT false,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+  updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
 -- Indexes for performance
 CREATE INDEX idx_profiles_university_id ON profiles(university_id);
 CREATE INDEX idx_profiles_verification_status ON profiles(verification_status);
@@ -241,6 +269,12 @@ CREATE INDEX idx_group_suggestions_status ON group_suggestions(status);
 CREATE INDEX idx_chats_group_id ON chats(group_id);
 CREATE INDEX idx_chat_members_chat_id ON chat_members(chat_id);
 CREATE INDEX idx_chat_members_user_id ON chat_members(user_id);
+CREATE INDEX idx_chats_match_id ON chats(match_id);
+CREATE INDEX idx_chats_first_message_at ON chats(first_message_at);
+CREATE INDEX idx_notifications_user_id ON notifications(user_id);
+CREATE INDEX idx_notifications_is_read ON notifications(is_read);
+CREATE INDEX idx_notifications_created_at ON notifications(created_at DESC);
+CREATE INDEX idx_notifications_type ON notifications(type);
 CREATE INDEX idx_messages_chat_id_created_at ON messages(chat_id, created_at);
 CREATE INDEX idx_messages_user_id ON messages(user_id);
 CREATE INDEX idx_message_reads_message_id ON message_reads(message_id);

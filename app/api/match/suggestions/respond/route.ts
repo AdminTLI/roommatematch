@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { getMatchRepo } from '@/lib/matching/repo.factory'
 import type { MatchRecord } from '@/lib/matching/repo'
+import { createMatchNotification, createGroupMatchNotification } from '@/lib/notifications/create'
 
 export async function POST(request: NextRequest) {
   try {
@@ -95,10 +96,52 @@ export async function POST(request: NextRequest) {
       await repo.lockMatch(suggestion.memberIds, suggestion.runId)
       await repo.markUsersMatched(suggestion.memberIds, suggestion.runId)
       
+      // Create notifications for confirmed match
+      try {
+        if (suggestion.kind === 'pair') {
+          await createMatchNotification(
+            suggestion.memberIds[0],
+            suggestion.memberIds[1],
+            'match_confirmed',
+            suggestion.id, // Use suggestion ID as match reference
+            undefined // Chat will be created by database trigger
+          )
+        } else {
+          await createGroupMatchNotification(
+            suggestion.memberIds,
+            suggestion.id,
+            undefined // Chat will be created by database trigger
+          )
+        }
+      } catch (notificationError) {
+        console.error('Failed to create match notifications:', notificationError)
+        // Don't fail the entire request if notifications fail
+      }
+      
       return NextResponse.json({ ok: true, suggestion, match })
     } else {
       suggestion.status = 'accepted'
       await repo.updateSuggestion(suggestion)
+      
+      // Create notification for match acceptance
+      try {
+        if (suggestion.kind === 'pair') {
+          const otherUserId = suggestion.memberIds.find(id => id !== user.id)
+          if (otherUserId) {
+            await createMatchNotification(
+              user.id,
+              otherUserId,
+              'match_accepted',
+              suggestion.id,
+              undefined
+            )
+          }
+        }
+      } catch (notificationError) {
+        console.error('Failed to create acceptance notification:', notificationError)
+        // Don't fail the entire request if notifications fail
+      }
+      
       return NextResponse.json({ ok: true, suggestion })
     }
     
