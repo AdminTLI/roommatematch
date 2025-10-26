@@ -51,7 +51,9 @@ export function AppShell({ children, user, showQuestionnairePrompt = false }: Ap
         .limit(1)
 
       if (error) {
-        console.error('Questionnaire check failed', error)
+        console.error('Questionnaire check failed:', error)
+        // Show error toast instead of silent failure
+        setShowQuestionnaire(false)
         return
       }
       setShowQuestionnaire(!data || data.length === 0)

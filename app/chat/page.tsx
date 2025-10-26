@@ -22,16 +22,7 @@ export default async function ChatPage() {
     redirect('/onboarding')
   }
 
-  // Check verification status
-  const { data: profile } = await supabase
-    .from('profiles')
-    .select('verification_status')
-    .eq('user_id', user.id)
-    .maybeSingle()
-
-  if (profile && profile.verification_status !== 'verified') {
-    redirect('/verify')
-  }
+  // Verification check removed - verification is now optional
 
   return (
     <AppShell 

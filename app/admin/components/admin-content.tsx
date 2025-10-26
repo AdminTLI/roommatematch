@@ -1,5 +1,6 @@
 'use client'
 
+import { useState, useEffect } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -11,16 +12,57 @@ import {
   BarChart3,
   Settings,
   Database,
-  Activity
+  Activity,
+  RefreshCw
 } from 'lucide-react'
 
 export function AdminContent() {
+  const [isLoading, setIsLoading] = useState(true)
+  const [metrics, setMetrics] = useState({
+    totalUsers: 0,
+    activeMatches: 0,
+    pendingReports: 0,
+    systemHealth: 'good'
+  })
+
+  useEffect(() => {
+    loadMetrics()
+  }, [])
+
+  const loadMetrics = async () => {
+    setIsLoading(true)
+    try {
+      // Simulate API call
+      await new Promise(resolve => setTimeout(resolve, 1000))
+      setMetrics({
+        totalUsers: 1247,
+        activeMatches: 892,
+        pendingReports: 3,
+        systemHealth: 'good'
+      })
+    } catch (error) {
+      console.error('Failed to load metrics:', error)
+    } finally {
+      setIsLoading(false)
+    }
+  }
   return (
     <div className="space-y-8">
-      {/* Header */}
-      <div>
-        <h1 className="text-3xl font-bold text-gray-900">Admin Dashboard</h1>
-        <p className="text-lg text-gray-600 mt-1">Monitor and manage the platform</p>
+      {/* Header with refresh button */}
+      <div className="flex justify-between items-center">
+        <div>
+          <h1 className="text-3xl font-bold text-gray-900">Admin Dashboard</h1>
+          <p className="text-lg text-gray-600 mt-1">Monitor and manage the platform</p>
+        </div>
+        <Button 
+          onClick={loadMetrics} 
+          disabled={isLoading}
+          variant="outline"
+          className="flex items-center gap-2"
+        >
+          <RefreshCw className={`w-4 h-4 ${isLoading ? 'animate-spin' : ''}`} />
+          Refresh
+        </Button>
       </div>
 
       {/* Key Metrics */}
@@ -33,7 +75,11 @@ export function AdminContent() {
               </div>
               <div>
                 <p className="text-sm text-gray-600">Total Users</p>
-                <p className="text-2xl font-bold text-gray-900">1,247</p>
+                {isLoading ? (
+                  <div className="h-8 w-16 bg-gray-200 rounded animate-pulse"></div>
+                ) : (
+                  <p className="text-2xl font-bold text-gray-900">{metrics.totalUsers.toLocaleString()}</p>
+                )}
               </div>
             </div>
           </CardContent>
@@ -47,7 +93,11 @@ export function AdminContent() {
               </div>
               <div>
                 <p className="text-sm text-gray-600">Active Matches</p>
-                <p className="text-2xl font-bold text-gray-900">892</p>
+                {isLoading ? (
+                  <div className="h-8 w-16 bg-gray-200 rounded animate-pulse"></div>
+                ) : (
+                  <p className="text-2xl font-bold text-gray-900">{metrics.activeMatches.toLocaleString()}</p>
+                )}
               </div>
             </div>
           </CardContent>
@@ -61,7 +111,11 @@ export function AdminContent() {
               </div>
               <div>
                 <p className="text-sm text-gray-600">Verified Users</p>
-                <p className="text-2xl font-bold text-gray-900">1,156</p>
+                {isLoading ? (
+                  <div className="h-8 w-16 bg-gray-200 rounded animate-pulse"></div>
+                ) : (
+                  <p className="text-2xl font-bold text-gray-900">1,156</p>
+                )}
               </div>
             </div>
           </CardContent>

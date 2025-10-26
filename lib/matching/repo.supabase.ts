@@ -28,9 +28,9 @@ export class SupabaseMatchRepo implements MatchRepo {
           program_id,
           study_start_year
         ),
-        onboarding_sections(
-          section,
-          answers
+        responses(
+          question_key,
+          value
         ),
         user_vectors(
           vector
@@ -84,16 +84,12 @@ export class SupabaseMatchRepo implements MatchRepo {
     return (data || []).map((user: any) => {
       const profile = user.profiles?.[0]
       const academic = user.user_academic?.[0]
-      const sections = user.onboarding_sections || []
+      const responses = user.responses || []
       const vector = user.user_vectors?.[0]?.vector
 
-      // Combine all answers from different sections
-      const answers = sections.reduce((acc: Record<string, any>, section: any) => {
-        if (section.answers && Array.isArray(section.answers)) {
-          section.answers.forEach((answer: any) => {
-            acc[answer.itemId] = answer.value
-          })
-        }
+      // Convert responses array to answers object
+      const answers = responses.reduce((acc: Record<string, any>, response: any) => {
+        acc[response.question_key] = response.value
         return acc
       }, {})
 

@@ -8,6 +8,7 @@ import { Progress } from '@/components/ui/progress'
 // Removed useApp import - using default locale
 import { createClient } from '@/lib/supabase/client'
 import { User } from '@supabase/supabase-js'
+import { showSuccessToast, showErrorToast } from '@/lib/toast'
 import { 
   BasicsStep, 
   AcademicStep,
@@ -178,26 +179,42 @@ export function OnboardingWizard({ user }: OnboardingWizardProps) {
     setIsLoading(true)
     
     try {
+      // Check if user already has an onboarding submission
+      const { data: existingSubmission } = await supabase
+        .from('onboarding_submissions')
+        .select('id')
+        .eq('user_id', user.id)
+        .maybeSingle()
+
+      if (existingSubmission) {
+        console.warn('User already has onboarding submission, skipping')
+        router.push('/matches')
+        return
+      }
+
       // Get first name from formData
       const firstName = formData.first_name || formData.name || 'User'
 
-      // Create user profile
+      // Start transaction by creating all records
       const { data: profile, error: profileError } = await supabase
         .from('profiles')
         .insert({
           user_id: user.id,
-          university_id: formData.university_id, // From academic step
+          university_id: formData.university_id,
           first_name: firstName,
           degree_level: formData.degree_level,
           program: formData.program_id,
           campus: formData.campus_city,
           languages: formData.languages_daily || [],
-          verification_status: 'unverified' // Changed from 'pending'
+          verification_status: 'unverified'
         })
         .select()
         .single()
 
-      if (profileError) throw profileError
+      if (profileError) {
+        console.error('Profile creation failed:', profileError)
+        throw new Error(`Failed to create profile: ${profileError.message}`)
+      }
 
       // Create user academic record
       const { error: academicError } = await supabase
@@ -211,39 +228,188 @@ export function OnboardingWizard({ user }: OnboardingWizardProps) {
           study_start_year: formData.study_start_year
         })
 
-      if (academicError) throw academicError
+      if (academicError) {
+        console.error('Academic record creation failed:', academicError)
+        throw new Error(`Failed to create academic record: ${academicError.message}`)
+      }
 
-      // Save questionnaire responses
+      // Map all form data to question keys with proper field mapping
+      const fieldMapping = {
+        // Basics step
+        'first_name': 'first_name',
+        'university_id': 'university_id', 
+        'degree_level': 'degree_level',
+        'program_id': 'program_id',
+        'campus_city': 'campus',
+        'study_start_year': 'study_start_year',
+        'undecided_program': 'undecided_program',
+        
+        // Logistics step
+        'budget_min': 'budget_min',
+        'budget_max': 'budget_max',
+        'move_in_date': 'move_in_window',
+        'location_preference': 'commute_max',
+        'housing_type': 'room_type',
+        'lease_duration': 'lease_length',
+        
+        // Lifestyle step
+        'bedtime': 'sleep_start',
+        'wake_time': 'sleep_end',
+        'study_location': 'study_intensity',
+        'study_schedule': 'study_intensity',
+        'cleanliness_level': 'cleanliness_room',
+        'cleaning_frequency': 'cleanliness_kitchen',
+        'smoking_preference': 'smoking',
+        'pet_preference': 'pets_allowed',
+        'alcohol_preference': 'alcohol_at_home',
+        
+        // Social step
+        'social_level': 'social_level',
+        'guest_frequency': 'guests_frequency',
+        'activities': 'parties_frequency',
+        'noise_preference': 'noise_tolerance',
+        'study_music': 'noise_tolerance',
+        'shared_space_usage': 'food_sharing',
+        'shared_expenses': 'utensils_sharing',
+        
+        // Personality step (Big Five)
+        'extraversion': 'extraversion',
+        'agreeableness': 'agreeableness',
+        'conscientiousness': 'conscientiousness',
+        'neuroticism': 'neuroticism',
+        'openness': 'openness',
+        
+        // Communication step
+        'conflict_style': 'conflict_style',
+        'communication_preference': 'communication_preference',
+        
+        // Languages step
+        'languages_daily': 'languages_daily',
+        
+        // Deal breakers step
+        'smoking': 'smoking',
+        'pets_allowed': 'pets_allowed',
+        'parties_max': 'parties_max',
+        'guests_max': 'guests_max',
+        'chores_preference': 'chores_preference',
+        'alcohol_at_home': 'alcohol_at_home'
+      }
+
+      // Build responses array with proper JSONB values
       const responses = []
       
-      // Define questionnaire keys (exclude profile/academic keys)
-      const questionnaireKeys = [
-        'budget_min', 'budget_max', 'commute_max', 'lease_length', 'room_type',
-        'move_in_window', 'sleep_start', 'sleep_end', 'study_intensity',
-        'cleanliness_room', 'cleanliness_kitchen', 'noise_tolerance',
-        'guests_frequency', 'parties_frequency', 'chores_preference',
-        'alcohol_at_home', 'pets_tolerance', 'social_level', 'food_sharing',
-        'utensils_sharing', 'extraversion', 'agreeableness', 'conscientiousness',
-        'neuroticism', 'openness', 'conflict_style', 'communication_preference',
-        'languages_daily', 'smoking', 'pets_allowed', 'parties_max', 'guests_max'
-      ]
-      
-      for (const key of questionnaireKeys) {
-        if (formData[key] !== undefined && formData[key] !== null) {
+      for (const [formField, questionKey] of Object.entries(fieldMapping)) {
+        const value = formData[formField]
+        if (value !== undefined && value !== null && value !== '') {
+          // Store as proper JSONB (not stringified)
           responses.push({
             user_id: user.id,
-            question_key: key,
-            value: JSON.stringify(formData[key])
+            question_key: questionKey,
+            value: value // Direct assignment for JSONB
           })
         }
       }
 
+      // Additional mappings for complex fields
+      const additionalMappings = [
+        // Map sleep times to numeric values
+        { from: 'sleep_start', to: 'sleep_start', transform: (v) => {
+          const timeMap = {
+            'before_10pm': 21, '10pm_11pm': 22, '11pm_12am': 23, 
+            '12am_1am': 24, 'after_1am': 25, 'varies': 23
+          }
+          return timeMap[v] || 23
+        }},
+        { from: 'sleep_end', to: 'sleep_end', transform: (v) => {
+          const timeMap = {
+            'before_6am': 6, '6am_7am': 7, '7am_8am': 8,
+            '8am_9am': 9, '9am_10am': 10, 'after_10am': 11, 'varies': 8
+          }
+          return timeMap[v] || 8
+        }},
+        // Map study intensity from location preference
+        { from: 'study_location', to: 'study_intensity', transform: (v) => {
+          const intensityMap = {
+            'home_quiet': 8, 'home_background': 6, 'library': 9,
+            'cafe': 4, 'campus': 7, 'flexible': 6
+          }
+          return intensityMap[v] || 6
+        }},
+        // Map cleanliness from level and frequency
+        { from: 'cleanliness_level', to: 'cleanliness_room', transform: (v) => v },
+        { from: 'cleaning_frequency', to: 'cleanliness_kitchen', transform: (v) => {
+          const freqMap = {
+            'daily': 9, 'every_other_day': 8, 'weekly': 6,
+            'biweekly': 4, 'monthly': 2, 'when_needed': 3
+          }
+          return freqMap[v] || 6
+        }},
+        // Map social level
+        { from: 'social_level', to: 'social_level', transform: (v) => v },
+        // Map guest frequency
+        { from: 'guest_frequency', to: 'guests_frequency', transform: (v) => {
+          const freqMap = {
+            'never': 1, 'rarely': 3, 'occasionally': 6,
+            'frequently': 8, 'daily': 10
+          }
+          return freqMap[v] || 5
+        }},
+        // Map noise preference
+        { from: 'noise_preference', to: 'noise_tolerance', transform: (v) => v },
+        // Map shared space usage
+        { from: 'shared_space_usage', to: 'food_sharing', transform: (v) => {
+          const sharingMap = {
+            'minimal': 2, 'moderate': 5, 'frequent': 8, 'flexible': 6
+          }
+          return sharingMap[v] || 5
+        }},
+        // Map shared expenses
+        { from: 'shared_expenses', to: 'utensils_sharing', transform: (v) => {
+          const sharingMap = {
+            'split_everything': 9, 'split_essentials': 6, 'separate': 2, 'flexible': 5
+          }
+          return sharingMap[v] || 5
+        }},
+        // Map smoking preference
+        { from: 'smoking_preference', to: 'smoking', transform: (v) => {
+          return v === 'non_smoker' ? false : true
+        }},
+        // Map pet preference
+        { from: 'pet_preference', to: 'pets_allowed', transform: (v) => {
+          return v === 'no_pets' ? false : true
+        }},
+        // Map alcohol preference
+        { from: 'alcohol_preference', to: 'alcohol_at_home', transform: (v) => {
+          const alcoholMap = {
+            'non_drinker': 1, 'occasional_drinker': 4, 'regular_drinker': 8, 'flexible': 5
+          }
+          return alcoholMap[v] || 5
+        }}
+      ]
+
+      // Apply additional transformations
+      for (const mapping of additionalMappings) {
+        const value = formData[mapping.from]
+        if (value !== undefined && value !== null && value !== '') {
+          const transformedValue = mapping.transform(value)
+          responses.push({
+            user_id: user.id,
+            question_key: mapping.to,
+            value: transformedValue
+          })
+        }
+      }
+
+      // Save questionnaire responses
       if (responses.length > 0) {
         const { error: responsesError } = await supabase
           .from('responses')
           .upsert(responses, { onConflict: 'user_id,question_key' })
 
-        if (responsesError) throw responsesError
+        if (responsesError) {
+          console.error('Responses save failed:', responsesError)
+          throw new Error(`Failed to save responses: ${responsesError.message}`)
+        }
       }
 
       // Create onboarding submission record
@@ -254,26 +420,43 @@ export function OnboardingWizard({ user }: OnboardingWizardProps) {
           completed_at: new Date().toISOString()
         })
 
-      if (submissionError) throw submissionError
+      if (submissionError) {
+        console.error('Submission record creation failed:', submissionError)
+        throw new Error(`Failed to create submission record: ${submissionError.message}`)
+      }
 
       // Create user vector from responses
       const { error: vectorError } = await supabase
         .rpc('compute_user_vector_and_store', { p_user_id: user.id })
 
       if (vectorError) {
-        console.error('Failed to create user vector:', vectorError)
+        console.error('Vector generation failed:', vectorError)
         // Don't block onboarding, but log the error
+        // In production, you might want to retry or queue this
       }
 
       // Clear saved progress
       localStorage.removeItem('onboarding_progress')
       
-      // Redirect to verification
-      router.push('/verify')
+            // Show success message
+            showSuccessToast(
+              'Onboarding completed!',
+              'Your profile has been created and you can now find matches.'
+            )
+            
+            // Redirect to matches (skip verification for now)
+            router.push('/matches')
       
     } catch (error) {
       console.error('Failed to submit onboarding:', error)
-      // Handle error (show toast, etc.)
+      
+      // Show user-friendly error message
+      const errorMessage = error instanceof Error ? error.message : 'An unexpected error occurred'
+      showErrorToast(
+        'Onboarding failed',
+        `Failed to complete onboarding: ${errorMessage}`
+      )
+      
     } finally {
       setIsLoading(false)
     }

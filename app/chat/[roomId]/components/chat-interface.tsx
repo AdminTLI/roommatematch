@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -10,6 +10,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { createClient } from '@/lib/supabase/client'
 import { User } from '@supabase/supabase-js'
+import { showErrorToast, showSuccessToast } from '@/lib/toast'
 import { 
   Send, 
   ArrowLeft, 
@@ -204,11 +205,28 @@ export function ChatInterface({ roomId, user }: ChatInterfaceProps) {
   useEffect(() => {
     loadChatData()
     setupRealtimeSubscription()
+    markAsRead()
     
     return () => {
       if (typingTimeoutRef.current) {
         clearTimeout(typingTimeoutRef.current)
       }
+    }
+  }, [roomId, loadChatData, setupRealtimeSubscription, markAsRead])
+
+  const markAsRead = useCallback(async () => {
+    try {
+      await fetch('/api/chat/read', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          chat_id: roomId
+        })
+      })
+    } catch (error) {
+      console.error('Failed to mark as read:', error)
     }
   }, [roomId])
 
@@ -216,7 +234,7 @@ export function ChatInterface({ roomId, user }: ChatInterfaceProps) {
     scrollToBottom()
   }, [messages])
 
-  const loadChatData = async () => {
+  const loadChatData = useCallback(async () => {
     setIsLoading(true)
     setError('') // Clear any previous errors
     
@@ -233,16 +251,16 @@ export function ChatInterface({ roomId, user }: ChatInterfaceProps) {
 
       // Load chat room details and participants
       const { data: roomData, error: roomError } = await supabase
-        .from('chat_rooms')
+        .from('chats')
         .select(`
           id,
-          name,
-          type,
+          is_group,
           created_at,
-          participants:chat_room_participants(
+          chat_members(
             user_id,
             profiles!inner(
-              full_name,
+              first_name,
+              last_name,
               user_id
             )
           )
@@ -254,18 +272,18 @@ export function ChatInterface({ roomId, user }: ChatInterfaceProps) {
 
       // Load messages
       const { data: messagesData, error: messagesError } = await supabase
-        .from('chat_messages')
+        .from('messages')
         .select(`
           id,
           content,
-          sender_id,
+          user_id,
           created_at,
-          read_by,
           profiles!inner(
-            full_name
+            first_name,
+            last_name
           )
         `)
-        .eq('room_id', roomId)
+        .eq('chat_id', roomId)
         .order('created_at', { ascending: true })
 
       if (messagesError) throw messagesError
@@ -274,17 +292,17 @@ export function ChatInterface({ roomId, user }: ChatInterfaceProps) {
       const transformedMessages: Message[] = (messagesData || []).map(msg => ({
         id: msg.id,
         content: msg.content,
-        sender_id: msg.sender_id,
-        sender_name: msg.profiles.full_name,
+        sender_id: msg.user_id,
+        sender_name: msg.profiles.first_name + (msg.profiles.last_name ? ` ${msg.profiles.last_name}` : ''),
         created_at: msg.created_at,
-        read_by: msg.read_by || [],
-        is_own: msg.sender_id === user.id
+        read_by: [], // Would need to implement read tracking
+        is_own: msg.user_id === user.id
       }))
 
       // Transform participants data
-      const transformedMembers: ChatMember[] = (roomData.participants || []).map(participant => ({
-        id: participant.user_id,
-        name: participant.profiles.full_name,
+      const transformedMembers: ChatMember[] = (roomData.chat_members || []).map(member => ({
+        id: member.user_id,
+        name: member.profiles.first_name + (member.profiles.last_name ? ` ${member.profiles.last_name}` : ''),
         is_online: true // This would need real-time presence tracking
       }))
 
@@ -300,28 +318,31 @@ export function ChatInterface({ roomId, user }: ChatInterfaceProps) {
     } finally {
       setIsLoading(false)
     }
-  }
+  }, [user.id, roomId])
 
-  const setupRealtimeSubscription = () => {
+  const setupRealtimeSubscription = useCallback(() => {
     // Subscribe to new messages
     const messagesChannel = supabase
       .channel(`chat:${roomId}`)
       .on('postgres_changes', {
         event: 'INSERT',
         schema: 'public',
-        table: 'chat_messages',
-        filter: `room_id=eq.${roomId}`
+        table: 'messages',
+        filter: `chat_id=eq.${roomId}`
       }, (payload) => {
         const newMessage = payload.new as any
-        setMessages(prev => [...prev, {
-          id: newMessage.id,
-          content: newMessage.content,
-          sender_id: newMessage.sender_id,
-          sender_name: 'Unknown', // Would need to fetch from profiles
-          created_at: newMessage.created_at,
-          read_by: newMessage.read_by || [],
-          is_own: newMessage.sender_id === user.id
-        }])
+        // Only add if it's not from the current user (to avoid duplicates)
+        if (newMessage.user_id !== user.id) {
+          setMessages(prev => [...prev, {
+            id: newMessage.id,
+            content: newMessage.content,
+            sender_id: newMessage.user_id,
+            sender_name: 'Unknown', // Would need to fetch from profiles
+            created_at: newMessage.created_at,
+            read_by: [],
+            is_own: false
+          }])
+        }
       })
       .subscribe()
 
@@ -341,7 +362,7 @@ export function ChatInterface({ roomId, user }: ChatInterfaceProps) {
       supabase.removeChannel(messagesChannel)
       supabase.removeChannel(typingChannel)
     }
-  }
+  }, [roomId, user.id])
 
   const sendMessage = async () => {
     if (!newMessage.trim() || isSending) return
@@ -356,24 +377,47 @@ export function ChatInterface({ roomId, user }: ChatInterfaceProps) {
     setError('')
 
     try {
-      const { error } = await supabase
-        .from('chat_messages')
-        .insert({
-          room_id: roomId,
-          sender_id: user.id,
+      // Use the API endpoint for sending messages
+      const response = await fetch('/api/chat/send', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          chat_id: roomId,
           content: newMessage.trim()
         })
+      })
 
-      if (error) throw error
+      if (!response.ok) {
+        const errorData = await response.json()
+        throw new Error(errorData.error || 'Failed to send message')
+      }
 
-      setNewMessage('')
+      const { message } = await response.json()
       
-    } catch (error) {
-      console.error('Failed to send message:', error)
-      setError('Failed to send message. Please try again.')
-    } finally {
-      setIsSending(false)
-    }
+      // Add the message to local state immediately for better UX
+      setMessages(prev => [...prev, {
+        id: message.id,
+        content: message.content,
+        sender_id: message.user_id,
+        sender_name: message.profiles.first_name + (message.profiles.last_name ? ` ${message.profiles.last_name}` : ''),
+        created_at: message.created_at,
+        read_by: [user.id], // Initially only read by sender
+        is_own: true
+      }])
+
+            setNewMessage('')
+            showSuccessToast('Message sent', 'Your message has been delivered.')
+            
+          } catch (error) {
+            console.error('Failed to send message:', error)
+            const errorMessage = error instanceof Error ? error.message : 'Failed to send message. Please try again.'
+            setError(errorMessage)
+            showErrorToast('Failed to send message', errorMessage)
+          } finally {
+            setIsSending(false)
+          }
   }
 
   const containsLinks = (text: string): boolean => {

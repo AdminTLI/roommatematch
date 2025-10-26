@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -59,9 +59,9 @@ export function ChatList({ user }: ChatListProps) {
 
   useEffect(() => {
     loadChats()
-  }, [])
+  }, [loadChats])
 
-  const loadChats = async () => {
+  const loadChats = useCallback(async () => {
     setIsLoading(true)
     
     try {
@@ -80,18 +80,24 @@ export function ChatList({ user }: ChatListProps) {
           ),
           chat_members!inner(
             user_id,
+            last_read_at,
             profiles(first_name, avatar_url)
           ),
           messages(
             content,
             created_at,
-            sender_id
+            user_id
           )
         `)
         .contains('chat_members.user_id', [user.id])
         .order('created_at', { ascending: false })
 
       if (error) throw error
+
+      // Fetch unread counts
+      const unreadResponse = await fetch('/api/chat/unread')
+      const unreadData = unreadResponse.ok ? await unreadResponse.json() : { chat_counts: [] }
+      const unreadMap = new Map(unreadData.chat_counts.map((c: any) => [c.chat_id, c.unread_count]))
 
       // Transform database results to ChatRoom format
       const transformedChats: ChatRoom[] = (chatRooms || []).map((room: any) => {
@@ -102,15 +108,20 @@ export function ChatList({ user }: ChatListProps) {
         const otherParticipant = room.chat_members?.find((p: any) => p.user_id !== user.id)
         const participantName = otherParticipant?.profiles?.first_name || 'User'
         
+        // Get last message
+        const lastMessage = room.messages?.[0]
+        const userMembership = room.chat_members?.find((p: any) => p.user_id === user.id)
+        const lastReadAt = userMembership?.last_read_at || new Date(0).toISOString()
+        
         return {
           id: room.id,
           name: room.is_group ? `Group Chat` : participantName,
           type: room.is_group ? 'group' : 'individual',
-          lastMessage: room.messages?.[0] ? {
-            content: room.messages[0].content,
-            sender: room.messages[0].sender_id,
-            timestamp: new Date(room.messages[0].created_at).toLocaleString(),
-            isRead: true
+          lastMessage: lastMessage ? {
+            content: lastMessage.content,
+            sender: lastMessage.user_id === user.id ? 'You' : participantName,
+            timestamp: new Date(lastMessage.created_at).toLocaleString(),
+            isRead: new Date(lastMessage.created_at) <= new Date(lastReadAt)
           } : undefined,
           participants: room.chat_members?.map((p: any) => ({
             id: p.user_id,
@@ -118,7 +129,7 @@ export function ChatList({ user }: ChatListProps) {
             avatar: p.profiles?.avatar_url,
             isOnline: false
           })) || [],
-          unreadCount: 0,
+          unreadCount: unreadMap.get(room.id) || 0,
           isActive: false,
           matchId: room.match_id,
           compatibilityScore,
@@ -134,7 +145,7 @@ export function ChatList({ user }: ChatListProps) {
       setChats([])
       setIsLoading(false)
     }
-  }
+  }, [user.id])
 
   const filteredChats = chats.filter(chat =>
     chat.name.toLowerCase().includes(searchQuery.toLowerCase())
