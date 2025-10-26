@@ -178,16 +178,21 @@ export function OnboardingWizard({ user }: OnboardingWizardProps) {
     setIsLoading(true)
     
     try {
+      // Get first name from formData
+      const firstName = formData.first_name || formData.name || 'User'
+
       // Create user profile
       const { data: profile, error: profileError } = await supabase
         .from('profiles')
         .insert({
           user_id: user.id,
-          budget_min: formData.budget_min,
-          budget_max: formData.budget_max,
-          move_in_date: formData.move_in_date,
-          location_preference: formData.location_preference,
-          verification_status: 'pending'
+          university_id: formData.university_id, // From academic step
+          first_name: firstName,
+          degree_level: formData.degree_level,
+          program: formData.program_id,
+          campus: formData.campus_city,
+          languages: formData.languages_daily || [],
+          verification_status: 'unverified' // Changed from 'pending'
         })
         .select()
         .single()
@@ -239,6 +244,25 @@ export function OnboardingWizard({ user }: OnboardingWizardProps) {
           .upsert(responses, { onConflict: 'user_id,question_key' })
 
         if (responsesError) throw responsesError
+      }
+
+      // Create onboarding submission record
+      const { error: submissionError } = await supabase
+        .from('onboarding_submissions')
+        .insert({
+          user_id: user.id,
+          completed_at: new Date().toISOString()
+        })
+
+      if (submissionError) throw submissionError
+
+      // Create user vector from responses
+      const { error: vectorError } = await supabase
+        .rpc('compute_user_vector_and_store', { p_user_id: user.id })
+
+      if (vectorError) {
+        console.error('Failed to create user vector:', vectorError)
+        // Don't block onboarding, but log the error
       }
 
       // Clear saved progress

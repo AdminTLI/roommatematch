@@ -328,13 +328,20 @@ export async function runMatchingAsSuggestions({
                 (explanation.academic_bonus.faculty_affinity ? 0.05 : 0) : 0
             }
             
+            // Determine status based on fit index (dual-tier system)
+            const autoMatchThreshold = matchModeConfig.autoMatchThreshold || 80
+            const status = fitIndex >= autoMatchThreshold ? 'accepted' : 'pending'
+            const acceptedBy = fitIndex >= autoMatchThreshold ? [studentA.id, studentB.id] : []
+            
             pairFits.push({
               key: `${studentA.id}::${studentB.id}`,
               aId: studentA.id,
               bId: studentB.id,
               fit: score,
               fitIndex,
-              ps: { sectionScores, explanation }
+              ps: { sectionScores, explanation },
+              status,
+              acceptedBy
             })
           }
         }
@@ -396,8 +403,8 @@ export async function runMatchingAsSuggestions({
           sectionScores: cand.ps.sectionScores,
           reasons,
           expiresAt,
-          status: 'pending',
-          acceptedBy: [],
+          status: cand.status || 'pending',
+          acceptedBy: cand.acceptedBy || [],
           createdAt: new Date(now).toISOString()
         })
         

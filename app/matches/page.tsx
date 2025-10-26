@@ -29,9 +29,13 @@ export default async function MatchesPage() {
     .eq('user_id', user.id)
     .maybeSingle()
 
+  // Comment out verification check for now
+  // Will re-enable when verification system is ready
+  /*
   if (profile && profile.verification_status !== 'verified') {
     redirect('/verify')
   }
+  */
 
   return (
     <AppShell 
