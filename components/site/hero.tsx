@@ -50,7 +50,7 @@ export function Hero() {
         <div className="grid items-center gap-8 md:grid-cols-2">
           {/* Left column - Content */}
           <div className="relative z-10 space-y-6">
-            <h1 className="text-4xl md:text-5xl lg:text-6xl leading-tight tracking-tight text-brand-text">
+            <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl leading-tight tracking-tight text-brand-text">
               Find roommates who actually fit your life
             </h1>
             <p className="text-base md:text-lg leading-relaxed max-w-prose text-brand-muted">
@@ -59,12 +59,12 @@ export function Hero() {
             </p>
             
             {/* CTA Buttons */}
-            <div className="flex flex-wrap items-center gap-3">
+            <div className="flex flex-col sm:flex-row flex-wrap items-center gap-3">
               <Button
                 size="lg"
                 onClick={handleGetMatched}
                 className={cn(
-                  'bg-gradient-to-r from-brand-600 via-accent-600 to-mint-600 text-white shadow-lg shadow-brand-600/20 hover:shadow-brand-600/30 transition-shadow'
+                  'w-full sm:w-auto bg-gradient-to-r from-brand-600 via-accent-600 to-mint-600 text-white shadow-lg shadow-brand-600/20 hover:shadow-brand-600/30 transition-shadow'
                 )}
               >
                 Get matched
@@ -73,7 +73,7 @@ export function Hero() {
                 variant="outline"
                 size="lg"
                 onClick={handleSeeHowItWorks}
-                className="border-brand-600/30 hover:border-brand-600"
+                className="w-full sm:w-auto border-brand-600/30 hover:border-brand-600"
               >
                 See how it works
               </Button>
@@ -105,7 +105,7 @@ export function Hero() {
             {mockMatches.map((match, index) => (
               <Card 
                 key={match.name}
-                className="rounded-2xl border border-brand-border/50 bg-white/80 backdrop-blur-sm shadow-elev-1 p-6 md:p-8 transition-transform duration-200 hover:-translate-y-0.5 hover:shadow-elev-2"
+                className="rounded-2xl border border-brand-border/50 bg-white/80 backdrop-blur-sm shadow-elev-1 p-4 sm:p-6 md:p-8 transition-transform duration-200 hover:-translate-y-0.5 hover:shadow-elev-2"
                 style={{
                   transform: `translateY(${index * 4}px) rotate(${index % 2 === 0 ? '1deg' : '-1deg'})`,
                 }}

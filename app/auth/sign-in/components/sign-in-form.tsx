@@ -103,6 +103,7 @@ export function SignInForm() {
                 <Input
                   id="email"
                   type="email"
+                  inputMode="email"
                   placeholder="Enter your email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
@@ -121,6 +122,7 @@ export function SignInForm() {
                 <Input
                   id="password"
                   type={showPassword ? 'text' : 'password'}
+                  inputMode="text"
                   placeholder="Enter your password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}

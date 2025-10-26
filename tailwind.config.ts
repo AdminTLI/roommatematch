@@ -103,10 +103,30 @@ const config: Config = {
       fontFamily: {
         sans: ['Inter', 'ui-sans-serif', 'system-ui', 'sans-serif']
       },
+      fontSize: {
+        // Mobile-first responsive typography
+        'xs': ['0.75rem', { lineHeight: '1rem' }],
+        'sm': ['0.875rem', { lineHeight: '1.25rem' }],
+        'base': ['1rem', { lineHeight: '1.5rem' }],
+        'lg': ['1.125rem', { lineHeight: '1.75rem' }],
+        'xl': ['1.25rem', { lineHeight: '1.75rem' }],
+        '2xl': ['1.5rem', { lineHeight: '2rem' }],
+        '3xl': ['1.875rem', { lineHeight: '2.25rem' }],
+        '4xl': ['2.25rem', { lineHeight: '2.5rem' }],
+        // Responsive headings
+        'h1-mobile': ['2rem', { lineHeight: '2.5rem', fontWeight: '700' }],
+        'h1-desktop': ['3.75rem', { lineHeight: '1', fontWeight: '700' }],
+        'h2-mobile': ['1.5rem', { lineHeight: '2rem', fontWeight: '600' }],
+        'h2-desktop': ['2.25rem', { lineHeight: '2.5rem', fontWeight: '600' }],
+      },
       spacing: {
         18: "4.5rem",
         88: "22rem",
         128: "32rem",
+        'safe-top': 'env(safe-area-inset-top)',
+        'safe-bottom': 'env(safe-area-inset-bottom)',
+        'safe-left': 'env(safe-area-inset-left)',
+        'safe-right': 'env(safe-area-inset-right)',
       },
       animation: {
         "accordion-down": "accordion-down 0.2s ease-out",

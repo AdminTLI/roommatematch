@@ -92,7 +92,7 @@ export function AppShell({ children, user, showQuestionnairePrompt = false }: Ap
       {/* Mobile Layout */}
       <div className="lg:hidden">
         {/* Mobile Topbar */}
-        <div className="sticky top-0 z-50 bg-surface-0/95 backdrop-blur-sm border-b border-line">
+        <div className="sticky top-0 z-50 bg-surface-0/95 backdrop-blur-sm border-b border-line pt-safe-top">
           <div className="flex items-center justify-between p-4">
             <div className="flex items-center gap-3">
               <Sheet open={sidebarOpen} onOpenChange={setSidebarOpen}>
@@ -121,7 +121,7 @@ export function AppShell({ children, user, showQuestionnairePrompt = false }: Ap
         </div>
 
         {/* Mobile Content */}
-        <main className="p-4">
+        <main className="p-3 sm:p-4 lg:p-6 pb-safe-bottom">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}

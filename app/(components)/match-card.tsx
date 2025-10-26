@@ -87,9 +87,9 @@ export function MatchCard({
   }
 
   return (
-    <Card className="border-2 border-gray-100 hover:border-primary/20 transition-all duration-300 hover:shadow-lg">
+    <Card className="border-2 border-gray-100 hover:border-primary/20 transition-all duration-300 hover:shadow-lg p-3 md:p-6">
       <CardHeader className="pb-4">
-        <div className="flex items-start justify-between">
+        <div className="flex flex-col sm:flex-row items-start justify-between gap-4">
           <div className="flex items-center gap-4">
             {isGroup ? (
               <div className="flex -space-x-2">
@@ -210,7 +210,7 @@ export function MatchCard({
         </div>
 
         {/* Top Alignment & Watch Out */}
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div className="bg-green-50 dark:bg-green-900/20 rounded-lg p-3">
             <div className="flex items-center gap-2 mb-2">
               <CheckCircle className="h-4 w-4 text-green-600" />
@@ -261,7 +261,7 @@ export function MatchCard({
         )}
 
         {/* Action Buttons */}
-        <div className="flex gap-3 pt-4">
+        <div className="flex flex-col sm:flex-row gap-3 pt-4">
           <Button 
             variant="outline" 
             size="sm" 
@@ -281,7 +281,7 @@ export function MatchCard({
           </Button>
         </div>
 
-        <div className="flex gap-3">
+        <div className="flex flex-col sm:flex-row gap-3">
           <Button 
             variant="destructive" 
             size="sm" 

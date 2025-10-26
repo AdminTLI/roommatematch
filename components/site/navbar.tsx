@@ -49,8 +49,21 @@ export function Navbar() {
               </button>
             </div>
 
+            {/* Tablet Navigation */}
+            <div className="hidden md:flex lg:hidden items-center space-x-6">
+              {navigation.slice(0, 2).map((item) => (
+                <Link
+                  key={item.name}
+                  href={item.href}
+                  className="text-brand-muted hover:text-brand-text transition-colors font-medium text-sm"
+                >
+                  {item.name}
+                </Link>
+              ))}
+            </div>
+
             {/* Desktop Navigation */}
-            <div className="hidden md:flex items-center space-x-8">
+            <div className="hidden lg:flex items-center space-x-8">
               {navigation.map((item) => (
                 <Link
                   key={item.name}
@@ -62,8 +75,27 @@ export function Navbar() {
               ))}
             </div>
 
+            {/* Tablet CTA */}
+            <div className="hidden md:flex lg:hidden items-center space-x-3">
+              <Button 
+                variant="outline" 
+                size="sm"
+                onClick={handleSignIn}
+              >
+                Sign In
+              </Button>
+              <Button 
+                variant="primary"
+                size="sm"
+                onClick={handleGetStarted}
+              >
+                Get Started
+                <ChevronRight className="ml-1 h-3 w-3" />
+              </Button>
+            </div>
+
             {/* Desktop CTA */}
-            <div className="hidden md:flex items-center space-x-4">
+            <div className="hidden lg:flex items-center space-x-4">
               <Button 
                 variant="outline" 
                 size="lg"
@@ -84,7 +116,7 @@ export function Navbar() {
             {/* Mobile menu button */}
             <button
               onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-              className="md:hidden p-2 rounded-md hover:bg-brand-surface transition-colors focus-visible:ring-2 focus-visible:ring-brand-primary"
+              className="lg:hidden p-2 rounded-md hover:bg-brand-surface transition-colors focus-visible:ring-2 focus-visible:ring-brand-primary"
               aria-expanded={isMobileMenuOpen}
               aria-controls="mobile-menu"
             >
@@ -101,7 +133,7 @@ export function Navbar() {
         {isMobileMenuOpen && (
           <div 
             id="mobile-menu"
-            className="md:hidden bg-white border-t border-brand-border"
+            className="lg:hidden bg-white border-t border-brand-border"
           >
             <Container>
               <div className="py-4 space-y-4">

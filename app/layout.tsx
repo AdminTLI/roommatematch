@@ -11,6 +11,14 @@ export const metadata: Metadata = {
   description: 'Connect with fellow students and find your ideal roommate match. Safe, verified, and designed for Dutch universities.',
 }
 
+export const viewport = {
+  width: 'device-width',
+  initialScale: 1,
+  maximumScale: 5,
+  userScalable: true,
+  themeColor: '#4F46E5',
+}
+
 export default function RootLayout({
   children,
 }: {
