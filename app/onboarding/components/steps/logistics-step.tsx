@@ -3,6 +3,7 @@
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+import { Checkbox } from '@/components/ui/checkbox'
 import { User } from '@supabase/supabase-js'
 
 interface LogisticsStepProps {
@@ -19,8 +20,21 @@ export function LogisticsStep({ data, onChange, user }: LogisticsStepProps) {
     })
   }
 
+  const handleArrayChange = (field: string, value: string, checked: boolean) => {
+    const currentArray = data[field] || []
+    const newArray = checked 
+      ? [...currentArray, value]
+      : currentArray.filter((item: string) => item !== value)
+    
+    onChange({
+      ...data,
+      [field]: newArray
+    })
+  }
+
   return (
     <div className="space-y-6">
+      {/* Budget */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div className="space-y-2">
           <Label htmlFor="budget_min">Minimum Budget (€/month) *</Label>
@@ -49,78 +63,79 @@ export function LogisticsStep({ data, onChange, user }: LogisticsStepProps) {
         </div>
       </div>
 
+      {/* Commute */}
       <div className="space-y-2">
-        <Label htmlFor="move_in_date">Preferred Move-in Date *</Label>
-        <Input
-          id="move_in_date"
-          type="date"
-          value={data.move_in_date || ''}
-          onChange={(e) => handleChange('move_in_date', e.target.value)}
-          required
-        />
-        <p className="text-sm text-gray-500">
-          When would you like to move in? This helps match you with people looking for similar timing.
-        </p>
-      </div>
-
-      <div className="space-y-2">
-        <Label htmlFor="location_preference">Location Preference *</Label>
+        <Label htmlFor="commute_max">Maximum Commute Time (minutes) *</Label>
         <Select 
-          value={data.location_preference || ''} 
-          onValueChange={(value) => handleChange('location_preference', value)}
+          value={data.commute_max || ''} 
+          onValueChange={(value) => handleChange('commute_max', value)}
         >
           <SelectTrigger>
-            <SelectValue placeholder="Select preferred location" />
+            <SelectValue placeholder="Select maximum commute time" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="city_center">City Center</SelectItem>
-            <SelectItem value="near_campus">Near Campus</SelectItem>
-            <SelectItem value="suburbs">Suburbs</SelectItem>
-            <SelectItem value="student_area">Student Area</SelectItem>
-            <SelectItem value="flexible">Flexible</SelectItem>
+            <SelectItem value="15">15 minutes</SelectItem>
+            <SelectItem value="30">30 minutes</SelectItem>
+            <SelectItem value="45">45 minutes</SelectItem>
+            <SelectItem value="60">60 minutes</SelectItem>
+            <SelectItem value="90">90 minutes</SelectItem>
           </SelectContent>
         </Select>
         <p className="text-sm text-gray-500">
-          Where would you prefer to live? This helps find roommates with similar location preferences.
+          How long are you willing to commute to campus?
         </p>
       </div>
 
+      {/* Lease Length */}
       <div className="space-y-2">
-        <Label htmlFor="housing_type">Preferred Housing Type</Label>
+        <Label htmlFor="lease_length">Preferred Lease Length *</Label>
         <Select 
-          value={data.housing_type || ''} 
-          onValueChange={(value) => handleChange('housing_type', value)}
+          value={data.lease_length || ''} 
+          onValueChange={(value) => handleChange('lease_length', value)}
         >
           <SelectTrigger>
-            <SelectValue placeholder="Select housing type" />
+            <SelectValue placeholder="Select lease length" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="apartment">Apartment</SelectItem>
-            <SelectItem value="house">House</SelectItem>
-            <SelectItem value="studio">Studio</SelectItem>
-            <SelectItem value="shared_room">Shared Room</SelectItem>
-            <SelectItem value="private_room">Private Room</SelectItem>
+            <SelectItem value="3_months">3 months</SelectItem>
+            <SelectItem value="6_months">6 months</SelectItem>
+            <SelectItem value="12_months">12 months</SelectItem>
             <SelectItem value="flexible">Flexible</SelectItem>
           </SelectContent>
         </Select>
+        <p className="text-sm text-gray-500">
+          How long do you want to commit to a lease?
+        </p>
       </div>
 
-      <div className="space-y-2">
-        <Label htmlFor="lease_duration">Preferred Lease Duration</Label>
-        <Select 
-          value={data.lease_duration || ''} 
-          onValueChange={(value) => handleChange('lease_duration', value)}
-        >
-          <SelectTrigger>
-            <SelectValue placeholder="Select lease duration" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="6_months">6 Months</SelectItem>
-            <SelectItem value="12_months">12 Months</SelectItem>
-            <SelectItem value="academic_year">Academic Year</SelectItem>
-            <SelectItem value="flexible">Flexible</SelectItem>
-          </SelectContent>
-        </Select>
+      {/* Room Type */}
+      <div className="space-y-3">
+        <Label>Preferred Room Type *</Label>
+        <p className="text-sm text-gray-500">Select all that apply</p>
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+          {[
+            { value: 'single', label: 'Single Room' },
+            { value: 'shared', label: 'Shared Room' },
+            { value: 'studio', label: 'Studio' },
+            { value: 'flexible', label: 'Flexible' }
+          ].map((option) => (
+            <div key={option.value} className="flex items-center space-x-2">
+              <Checkbox
+                id={`room_type_${option.value}`}
+                checked={(data.room_type || []).includes(option.value)}
+                onCheckedChange={(checked) => 
+                  handleArrayChange('room_type', option.value, checked as boolean)
+                }
+              />
+              <Label 
+                htmlFor={`room_type_${option.value}`}
+                className="text-sm font-normal"
+              >
+                {option.label}
+              </Label>
+            </div>
+          ))}
+        </div>
       </div>
 
       {/* Budget Helper */}

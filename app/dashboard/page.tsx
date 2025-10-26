@@ -12,22 +12,15 @@ export default async function DashboardPage() {
     redirect('/auth/sign-in')
   }
 
-  // Check questionnaire completion status
-  const { data: submission } = await supabase
-    .from('onboarding_submissions')
-    .select('id')
-    .eq('user_id', user.id)
-    .maybeSingle()
-  
-  // Check for partial progress
-  const { data: sections } = await supabase
-    .from('onboarding_sections')
-    .select('section')
+  // Check questionnaire completion status by counting responses
+  const { count: responseCount } = await supabase
+    .from('responses')
+    .select('*', { count: 'exact', head: true })
     .eq('user_id', user.id)
   
-  const hasCompletedQuestionnaire = !!submission
-  const hasPartialProgress = sections && sections.length > 0 && !hasCompletedQuestionnaire
-  const progressCount = sections?.length || 0
+  const hasCompletedQuestionnaire = (responseCount || 0) >= 30 // threshold for complete responses
+  const hasPartialProgress = (responseCount || 0) > 0 && !hasCompletedQuestionnaire
+  const progressCount = responseCount || 0
 
   // Calculate profile completion
   const { data: profile } = await supabase
@@ -168,21 +161,26 @@ async function fetchDashboardData(userId: string): Promise<DashboardData> {
   }
 
   try {
-    // Fetch unread messages count using message_reads table
-    const { data: unreadMessages } = await supabase
-      .from('messages')
-      .select(`
-        id,
-        message_reads!left(
-          read_at
-        )
-      `)
-      .neq('user_id', userId)
-    
-    // Count messages where user hasn't read them
-    unreadMessagesCount = unreadMessages?.filter(msg => 
-      !msg.message_reads || msg.message_reads.length === 0
-    ).length || 0
+    // Get chats where user is a member
+    const { data: userChats } = await supabase
+      .from('chat_members')
+      .select('chat_id')
+      .eq('user_id', userId)
+
+    const chatIds = userChats?.map(c => c.chat_id) || []
+
+    if (chatIds.length > 0) {
+      // Count unread messages in user's chats
+      const { data: unreadMessages } = await supabase
+        .from('messages')
+        .select('id, message_reads!left(user_id)')
+        .in('chat_id', chatIds)
+        .neq('user_id', userId)
+
+      unreadMessagesCount = unreadMessages?.filter(msg => 
+        !msg.message_reads?.some(r => r.user_id === userId)
+      ).length || 0
+    }
   } catch (error) {
     console.error('Error fetching messages:', error)
   }

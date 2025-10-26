@@ -2,8 +2,7 @@
 
 import { Label } from '@/components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { Checkbox } from '@/components/ui/checkbox'
-import { Textarea } from '@/components/ui/textarea'
+import { Slider } from '@/components/ui/slider'
 import { User } from '@supabase/supabase-js'
 
 interface DealBreakersStepProps {
@@ -13,141 +12,102 @@ interface DealBreakersStepProps {
 }
 
 export function DealBreakersStep({ data, onChange, user }: DealBreakersStepProps) {
-  const handleArrayChange = (field: string, value: string, checked: boolean) => {
-    const currentArray = data[field] || []
-    const newArray = checked 
-      ? [...currentArray, value]
-      : currentArray.filter((item: string) => item !== value)
-    
+  const handleChange = (field: string, value: any) => {
     onChange({
       ...data,
-      [field]: newArray
+      [field]: value
     })
   }
 
   return (
     <div className="space-y-8">
-      {/* Absolute Deal Breakers */}
+      {/* Hard Constraints */}
       <div className="space-y-4">
-        <h3 className="text-lg font-semibold">Absolute Deal Breakers</h3>
+        <h3 className="text-lg font-semibold">Hard Constraints</h3>
         <p className="text-sm text-gray-600 dark:text-gray-300">
-          These are things that would make you not want to live with someone.
+          These are absolute requirements that cannot be compromised.
+        </p>
+        
+        <div className="space-y-2">
+          <Label>Do you smoke? *</Label>
+          <Select 
+            value={data.smoking ? 'true' : data.smoking === false ? 'false' : ''} 
+            onValueChange={(value) => handleChange('smoking', value === 'true')}
+          >
+            <SelectTrigger>
+              <SelectValue placeholder="Select smoking preference" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="false">Non-smoker (prefer no smoking)</SelectItem>
+              <SelectItem value="true">Smoker</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+
+        <div className="space-y-2">
+          <Label>Are you okay with pets in the house? *</Label>
+          <Select 
+            value={data.pets_allowed ? 'true' : data.pets_allowed === false ? 'false' : ''} 
+            onValueChange={(value) => handleChange('pets_allowed', value === 'true')}
+          >
+            <SelectTrigger>
+              <SelectValue placeholder="Select pet preference" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="false">No pets (allergic/prefer none)</SelectItem>
+              <SelectItem value="true">Pets are okay</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+      </div>
+
+      {/* Frequency Limits */}
+      <div className="space-y-4">
+        <h3 className="text-lg font-semibold">Frequency Limits</h3>
+        <p className="text-sm text-gray-600 dark:text-gray-300">
+          Set maximum acceptable frequencies for social activities.
         </p>
         
         <div className="space-y-3">
-          <Label>Select your absolute deal breakers: *</Label>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-            {[
-              'Smoking indoors', 'Having pets', 'Loud parties frequently',
-              'Very messy living', 'Incompatible sleep schedule',
-              'Very different noise tolerance', 'Unwilling to clean',
-              'Different smoking preferences', 'Very different social needs',
-              'Incompatible study habits', 'Different cleanliness standards',
-              'Unwilling to communicate', 'Very different values'
-            ].map((dealbreaker) => (
-              <div key={dealbreaker} className="flex items-center space-x-2">
-                <Checkbox
-                  id={`dealbreaker_${dealbreaker}`}
-                  checked={(data.deal_breakers || []).includes(dealbreaker)}
-                  onCheckedChange={(checked) => 
-                    handleArrayChange('deal_breakers', dealbreaker, checked as boolean)
-                  }
-                />
-                <Label 
-                  htmlFor={`dealbreaker_${dealbreaker}`}
-                  className="text-sm font-normal"
-                >
-                  {dealbreaker}
-                </Label>
-              </div>
-            ))}
+          <Label>Maximum acceptable party frequency per month (0-10) *</Label>
+          <div className="space-y-2">
+            <div className="flex items-center justify-between">
+              <span className="text-sm">No parties (0)</span>
+              <span className="text-sm">Very frequent (10)</span>
+            </div>
+            <Slider
+              value={[data.parties_max || 5]}
+              onValueChange={(value) => handleChange('parties_max', value[0])}
+              max={10}
+              min={0}
+              step={1}
+              className="w-full"
+            />
+            <div className="text-center text-sm text-gray-500">
+              {data.parties_max ? `${data.parties_max}/10` : '5/10'}
+            </div>
           </div>
         </div>
-      </div>
 
-      {/* Important Preferences */}
-      <div className="space-y-4">
-        <h3 className="text-lg font-semibold">Important Preferences</h3>
-        <p className="text-sm text-gray-600 dark:text-gray-300">
-          These are things that would strongly influence your decision but aren't absolute deal breakers.
-        </p>
-        
-        <div className="space-y-2">
-          <Label>How important is it that your roommate shares your study schedule? *</Label>
-          <Select 
-            value={data.study_schedule_importance || ''} 
-            onValueChange={(value) => onChange({...data, study_schedule_importance: value})}
-          >
-            <SelectTrigger>
-              <SelectValue placeholder="Select importance level" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="very_important">Very important</SelectItem>
-              <SelectItem value="somewhat_important">Somewhat important</SelectItem>
-              <SelectItem value="not_important">Not important</SelectItem>
-              <SelectItem value="flexible">Flexible</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
-
-        <div className="space-y-2">
-          <Label>How important is it that your roommate has similar social preferences? *</Label>
-          <Select 
-            value={data.social_importance || ''} 
-            onValueChange={(value) => onChange({...data, social_importance: value})}
-          >
-            <SelectTrigger>
-              <SelectValue placeholder="Select importance level" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="very_important">Very important</SelectItem>
-              <SelectItem value="somewhat_important">Somewhat important</SelectItem>
-              <SelectItem value="not_important">Not important</SelectItem>
-              <SelectItem value="flexible">Flexible</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
-      </div>
-
-      {/* Additional Requirements */}
-      <div className="space-y-4">
-        <h3 className="text-lg font-semibold">Additional Requirements</h3>
-        
-        <div className="space-y-2">
-          <Label htmlFor="additional_requirements">Any other important requirements or preferences?</Label>
-          <Textarea
-            id="additional_requirements"
-            placeholder="e.g., Must be vegetarian, prefer morning people, need quiet study environment..."
-            value={data.additional_requirements || ''}
-            onChange={(e) => onChange({...data, additional_requirements: e.target.value})}
-            rows={4}
-          />
-          <p className="text-sm text-gray-500">
-            Optional: Any other things that are important to you in a living situation.
-          </p>
-        </div>
-      </div>
-
-      {/* Flexibility */}
-      <div className="space-y-4">
-        <h3 className="text-lg font-semibold">Flexibility</h3>
-        
-        <div className="space-y-2">
-          <Label>How flexible are you overall? *</Label>
-          <Select 
-            value={data.overall_flexibility || ''} 
-            onValueChange={(value) => onChange({...data, overall_flexibility: value})}
-          >
-            <SelectTrigger>
-              <SelectValue placeholder="Select flexibility level" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="very_flexible">Very flexible - I can adapt to most situations</SelectItem>
-              <SelectItem value="somewhat_flexible">Somewhat flexible - I can adapt within reason</SelectItem>
-              <SelectItem value="not_very_flexible">Not very flexible - I have strong preferences</SelectItem>
-              <SelectItem value="inflexible">Inflexible - I need things to be a certain way</SelectItem>
-            </SelectContent>
-          </Select>
+        <div className="space-y-3">
+          <Label>Maximum acceptable guest frequency per week (0-10) *</Label>
+          <div className="space-y-2">
+            <div className="flex items-center justify-between">
+              <span className="text-sm">No guests (0)</span>
+              <span className="text-sm">Very frequent (10)</span>
+            </div>
+            <Slider
+              value={[data.guests_max || 5]}
+              onValueChange={(value) => handleChange('guests_max', value[0])}
+              max={10}
+              min={0}
+              step={1}
+              className="w-full"
+            />
+            <div className="text-center text-sm text-gray-500">
+              {data.guests_max ? `${data.guests_max}/10` : '5/10'}
+            </div>
+          </div>
         </div>
       </div>
 

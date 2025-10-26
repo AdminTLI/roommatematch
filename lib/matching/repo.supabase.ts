@@ -4,6 +4,7 @@
 import { createClient } from '@/lib/supabase/server'
 import type { MatchRepo, CohortFilter, MatchRecord, Candidate, MatchRun } from './repo'
 import type { MatchSuggestion } from './types'
+import { isEligibleForMatching } from './completeness'
 
 export class SupabaseMatchRepo implements MatchRepo {
   private supabase = createClient()
@@ -81,33 +82,47 @@ export class SupabaseMatchRepo implements MatchRepo {
     }
 
     // Transform the data into Candidate format
-    return (data || []).map((user: any) => {
-      const profile = user.profiles?.[0]
-      const academic = user.user_academic?.[0]
-      const responses = user.responses || []
-      const vector = user.user_vectors?.[0]?.vector
+    return (data || [])
+      .map((user: any) => {
+        const profile = user.profiles?.[0]
+        const academic = user.user_academic?.[0]
+        const responses = user.responses || []
+        const vector = user.user_vectors?.[0]?.vector
 
-      // Convert responses array to answers object
-      const answers = responses.reduce((acc: Record<string, any>, response: any) => {
-        acc[response.question_key] = response.value
-        return acc
-      }, {})
+        // Convert responses array to answers object
+        const answers = responses.reduce((acc: Record<string, any>, response: any) => {
+          acc[response.question_key] = response.value
+          return acc
+        }, {})
 
-      return {
-        id: user.id,
-        email: user.email,
-        firstName: profile?.first_name || '',
-        universityId: academic?.university_id,
-        degreeLevel: academic?.degree_level,
-        programmeId: academic?.program_id,
-        campusCity: profile?.campus,
-        graduationYear: academic?.study_start_year,
-        answers,
-        vector,
-        isMatched: false, // TODO: Check if user is already matched
-        createdAt: new Date().toISOString()
-      }
-    })
+        return {
+          id: user.id,
+          email: user.email,
+          firstName: profile?.first_name || '',
+          universityId: academic?.university_id,
+          degreeLevel: academic?.degree_level,
+          programmeId: academic?.program_id,
+          campusCity: profile?.campus,
+          graduationYear: academic?.study_start_year,
+          answers,
+          vector,
+          isMatched: false, // TODO: Check if user is already matched
+          createdAt: new Date().toISOString()
+        }
+      })
+      .filter(candidate => {
+        // Filter out users without complete responses
+        if (!isEligibleForMatching(candidate.answers)) {
+          return false
+        }
+        
+        // Filter out users without vectors
+        if (!candidate.vector) {
+          return false
+        }
+        
+        return true
+      })
   }
 
   async saveMatchRun(run: Omit<MatchRun, 'id' | 'createdAt'>): Promise<void> {

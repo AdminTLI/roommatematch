@@ -139,6 +139,27 @@ export function BasicsStep({ data, onChange, user }: BasicsStepProps) {
       </div>
 
       <div className="space-y-2">
+        <Label htmlFor="move_in_window">When do you want to move in? *</Label>
+        <Select 
+          value={data.move_in_window || ''} 
+          onValueChange={(value) => handleChange('move_in_window', value)}
+        >
+          <SelectTrigger>
+            <SelectValue placeholder="Select move-in timing" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="immediate">Immediately</SelectItem>
+            <SelectItem value="within_month">Within a month</SelectItem>
+            <SelectItem value="within_3_months">Within 3 months</SelectItem>
+            <SelectItem value="flexible">Flexible</SelectItem>
+          </SelectContent>
+        </Select>
+        <p className="text-sm text-gray-500">
+          This helps match you with people looking for similar timing.
+        </p>
+      </div>
+
+      <div className="space-y-2">
         <Label htmlFor="email_verification">Email Verification</Label>
         <div className="p-4 bg-green-50 dark:bg-green-900/20 rounded-lg border border-green-200 dark:border-green-800">
           <div className="flex items-center gap-2 text-green-800 dark:text-green-200">

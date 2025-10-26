@@ -1,7 +1,6 @@
 'use client'
 
 import { Label } from '@/components/ui/label'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Slider } from '@/components/ui/slider'
 import { User } from '@supabase/supabase-js'
 
@@ -21,137 +20,168 @@ export function PersonalityStep({ data, onChange, user }: PersonalityStepProps) 
 
   return (
     <div className="space-y-8">
-      {/* Communication Style */}
-      <div className="space-y-4">
-        <h3 className="text-lg font-semibold">Communication Style</h3>
+      {/* Big Five Personality Traits */}
+      <div className="space-y-6">
+        <h3 className="text-lg font-semibold">Personality Traits (Big Five)</h3>
+        <p className="text-sm text-gray-600 dark:text-gray-300">
+          Rate yourself on these personality dimensions. Be honest - this helps us find compatible roommates!
+        </p>
         
+        {/* Extraversion */}
         <div className="space-y-3">
-          <Label>How do you prefer to communicate issues? *</Label>
-          <Select 
-            value={data.conflict_resolution || ''} 
-            onValueChange={(value) => handleChange('conflict_resolution', value)}
-          >
-            <SelectTrigger>
-              <SelectValue placeholder="Select communication style" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="direct">Direct and upfront</SelectItem>
-              <SelectItem value="diplomatic">Diplomatic and gentle</SelectItem>
-              <SelectItem value="written">Written messages</SelectItem>
-              <SelectItem value="group_discussion">Group discussion</SelectItem>
-              <SelectItem value="flexible">Flexible approach</SelectItem>
-            </SelectContent>
-          </Select>
+          <Label>How outgoing and energetic are you? (Extraversion) *</Label>
+          <div className="space-y-2">
+            <div className="flex items-center justify-between">
+              <span className="text-sm">Very introverted</span>
+              <span className="text-sm">Very extroverted</span>
+            </div>
+            <Slider
+              value={[data.extraversion || 5]}
+              onValueChange={(value) => handleChange('extraversion', value[0])}
+              max={10}
+              min={1}
+              step={1}
+              className="w-full"
+            />
+            <div className="text-center text-sm text-gray-500">
+              {data.extraversion ? `${data.extraversion}/10` : '5/10'}
+            </div>
+          </div>
         </div>
 
+        {/* Agreeableness */}
         <div className="space-y-3">
-          <Label>How organized are you? *</Label>
+          <Label>How cooperative and compassionate are you? (Agreeableness) *</Label>
+          <div className="space-y-2">
+            <div className="flex items-center justify-between">
+              <span className="text-sm">Very competitive</span>
+              <span className="text-sm">Very cooperative</span>
+            </div>
+            <Slider
+              value={[data.agreeableness || 5]}
+              onValueChange={(value) => handleChange('agreeableness', value[0])}
+              max={10}
+              min={1}
+              step={1}
+              className="w-full"
+            />
+            <div className="text-center text-sm text-gray-500">
+              {data.agreeableness ? `${data.agreeableness}/10` : '5/10'}
+            </div>
+          </div>
+        </div>
+
+        {/* Conscientiousness */}
+        <div className="space-y-3">
+          <Label>How organized and dependable are you? (Conscientiousness) *</Label>
           <div className="space-y-2">
             <div className="flex items-center justify-between">
               <span className="text-sm">Very disorganized</span>
               <span className="text-sm">Very organized</span>
             </div>
             <Slider
-              value={[data.organization_level || 5]}
-              onValueChange={(value) => handleChange('organization_level', value[0])}
+              value={[data.conscientiousness || 5]}
+              onValueChange={(value) => handleChange('conscientiousness', value[0])}
               max={10}
               min={1}
               step={1}
               className="w-full"
             />
             <div className="text-center text-sm text-gray-500">
-              {data.organization_level ? `${data.organization_level}/10` : '5/10'}
+              {data.conscientiousness ? `${data.conscientiousness}/10` : '5/10'}
+            </div>
+          </div>
+        </div>
+
+        {/* Neuroticism */}
+        <div className="space-y-3">
+          <Label>How emotionally stable are you? (Neuroticism) *</Label>
+          <div className="space-y-2">
+            <div className="flex items-center justify-between">
+              <span className="text-sm">Very stable (0)</span>
+              <span className="text-sm">Very anxious (10)</span>
+            </div>
+            <Slider
+              value={[data.neuroticism || 5]}
+              onValueChange={(value) => handleChange('neuroticism', value[0])}
+              max={10}
+              min={1}
+              step={1}
+              className="w-full"
+            />
+            <div className="text-center text-sm text-gray-500">
+              {data.neuroticism ? `${data.neuroticism}/10` : '5/10'}
+            </div>
+          </div>
+        </div>
+
+        {/* Openness */}
+        <div className="space-y-3">
+          <Label>How open to new experiences are you? (Openness) *</Label>
+          <div className="space-y-2">
+            <div className="flex items-center justify-between">
+              <span className="text-sm">Very traditional</span>
+              <span className="text-sm">Very open</span>
+            </div>
+            <Slider
+              value={[data.openness || 5]}
+              onValueChange={(value) => handleChange('openness', value[0])}
+              max={10}
+              min={1}
+              step={1}
+              className="w-full"
+            />
+            <div className="text-center text-sm text-gray-500">
+              {data.openness ? `${data.openness}/10` : '5/10'}
             </div>
           </div>
         </div>
       </div>
 
-      {/* Personality Traits */}
+      {/* Communication Style */}
       <div className="space-y-4">
-        <h3 className="text-lg font-semibold">Personality Traits</h3>
+        <h3 className="text-lg font-semibold">Communication & Conflict Resolution</h3>
         
         <div className="space-y-3">
-          <Label>How spontaneous are you? *</Label>
+          <Label>How do you handle conflicts? *</Label>
           <div className="space-y-2">
             <div className="flex items-center justify-between">
-              <span className="text-sm">Very planned</span>
-              <span className="text-sm">Very spontaneous</span>
+              <span className="text-sm">Avoid conflicts</span>
+              <span className="text-sm">Confront directly</span>
             </div>
             <Slider
-              value={[data.spontaneity_level || 5]}
-              onValueChange={(value) => handleChange('spontaneity_level', value[0])}
+              value={[data.conflict_style || 5]}
+              onValueChange={(value) => handleChange('conflict_style', value[0])}
               max={10}
               min={1}
               step={1}
               className="w-full"
             />
             <div className="text-center text-sm text-gray-500">
-              {data.spontaneity_level ? `${data.spontaneity_level}/10` : '5/10'}
+              {data.conflict_style ? `${data.conflict_style}/10` : '5/10'}
             </div>
           </div>
         </div>
 
         <div className="space-y-3">
-          <Label>How much do you value personal space? *</Label>
+          <Label>How do you prefer to communicate? *</Label>
           <div className="space-y-2">
             <div className="flex items-center justify-between">
-              <span className="text-sm">Love company</span>
-              <span className="text-sm">Need lots of space</span>
+              <span className="text-sm">Written messages</span>
+              <span className="text-sm">Face-to-face</span>
             </div>
             <Slider
-              value={[data.personal_space_need || 5]}
-              onValueChange={(value) => handleChange('personal_space_need', value[0])}
+              value={[data.communication_preference || 5]}
+              onValueChange={(value) => handleChange('communication_preference', value[0])}
               max={10}
               min={1}
               step={1}
               className="w-full"
             />
             <div className="text-center text-sm text-gray-500">
-              {data.personal_space_need ? `${data.personal_space_need}/10` : '5/10'}
+              {data.communication_preference ? `${data.communication_preference}/10` : '5/10'}
             </div>
           </div>
-        </div>
-      </div>
-
-      {/* Values */}
-      <div className="space-y-4">
-        <h3 className="text-lg font-semibold">Values & Priorities</h3>
-        
-        <div className="space-y-2">
-          <Label>What's most important to you in a living situation? *</Label>
-          <Select 
-            value={data.living_priority || ''} 
-            onValueChange={(value) => handleChange('living_priority', value)}
-          >
-            <SelectTrigger>
-              <SelectValue placeholder="Select top priority" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="peace_quiet">Peace and quiet</SelectItem>
-              <SelectItem value="social_connection">Social connection</SelectItem>
-              <SelectItem value="academic_focus">Academic focus</SelectItem>
-              <SelectItem value="independence">Independence</SelectItem>
-              <SelectItem value="shared_responsibilities">Shared responsibilities</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
-
-        <div className="space-y-2">
-          <Label>How important is having similar values? *</Label>
-          <Select 
-            value={data.values_importance || ''} 
-            onValueChange={(value) => handleChange('values_importance', value)}
-          >
-            <SelectTrigger>
-              <SelectValue placeholder="Select importance level" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="very_important">Very important</SelectItem>
-              <SelectItem value="somewhat_important">Somewhat important</SelectItem>
-              <SelectItem value="not_important">Not very important</SelectItem>
-              <SelectItem value="flexible">Flexible</SelectItem>
-            </SelectContent>
-          </Select>
         </div>
       </div>
     </div>

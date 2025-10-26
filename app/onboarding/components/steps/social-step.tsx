@@ -59,23 +59,25 @@ export function SocialStep({ data, onChange, user }: SocialStepProps) {
           </div>
         </div>
 
-        <div className="space-y-2">
+        <div className="space-y-3">
           <Label>How often do you have guests over? *</Label>
-          <Select 
-            value={data.guest_frequency || ''} 
-            onValueChange={(value) => handleChange('guest_frequency', value)}
-          >
-            <SelectTrigger>
-              <SelectValue placeholder="Select guest frequency" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="never">Never</SelectItem>
-              <SelectItem value="rarely">Rarely (once a month)</SelectItem>
-              <SelectItem value="occasionally">Occasionally (1-2 times a week)</SelectItem>
-              <SelectItem value="frequently">Frequently (3+ times a week)</SelectItem>
-              <SelectItem value="daily">Daily</SelectItem>
-            </SelectContent>
-          </Select>
+          <div className="space-y-2">
+            <div className="flex items-center justify-between">
+              <span className="text-sm">Never</span>
+              <span className="text-sm">Daily</span>
+            </div>
+            <Slider
+              value={[data.guests_frequency || 5]}
+              onValueChange={(value) => handleChange('guests_frequency', value[0])}
+              max={10}
+              min={1}
+              step={1}
+              className="w-full"
+            />
+            <div className="text-center text-sm text-gray-500">
+              {data.guests_frequency ? `${data.guests_frequency}/10` : '5/10'}
+            </div>
+          </div>
         </div>
       </div>
 
@@ -158,42 +160,48 @@ export function SocialStep({ data, onChange, user }: SocialStepProps) {
 
       {/* Shared Spaces */}
       <div className="space-y-4">
-        <h3 className="text-lg font-semibold">Shared Spaces</h3>
+        <h3 className="text-lg font-semibold">Shared Spaces & Resources</h3>
         
         <div className="space-y-3">
-          <Label>How do you prefer to use shared spaces? *</Label>
-          <Select 
-            value={data.shared_space_usage || ''} 
-            onValueChange={(value) => handleChange('shared_space_usage', value)}
-          >
-            <SelectTrigger>
-              <SelectValue placeholder="Select shared space preference" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="minimal">Minimal use (mostly in my room)</SelectItem>
-              <SelectItem value="moderate">Moderate use (kitchen, living room)</SelectItem>
-              <SelectItem value="frequent">Frequent use (love shared spaces)</SelectItem>
-              <SelectItem value="flexible">Flexible</SelectItem>
-            </SelectContent>
-          </Select>
+          <Label>How willing are you to share food? *</Label>
+          <div className="space-y-2">
+            <div className="flex items-center justify-between">
+              <span className="text-sm">Keep separate</span>
+              <span className="text-sm">Share everything</span>
+            </div>
+            <Slider
+              value={[data.food_sharing || 5]}
+              onValueChange={(value) => handleChange('food_sharing', value[0])}
+              max={10}
+              min={1}
+              step={1}
+              className="w-full"
+            />
+            <div className="text-center text-sm text-gray-500">
+              {data.food_sharing ? `${data.food_sharing}/10` : '5/10'}
+            </div>
+          </div>
         </div>
 
-        <div className="space-y-2">
-          <Label>How do you handle shared expenses? *</Label>
-          <Select 
-            value={data.shared_expenses || ''} 
-            onValueChange={(value) => handleChange('shared_expenses', value)}
-          >
-            <SelectTrigger>
-              <SelectValue placeholder="Select expense sharing preference" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="split_everything">Split everything equally</SelectItem>
-              <SelectItem value="split_essentials">Split essentials only</SelectItem>
-              <SelectItem value="separate">Keep most things separate</SelectItem>
-              <SelectItem value="flexible">Flexible</SelectItem>
-            </SelectContent>
-          </Select>
+        <div className="space-y-3">
+          <Label>How willing are you to share kitchen utensils and supplies? *</Label>
+          <div className="space-y-2">
+            <div className="flex items-center justify-between">
+              <span className="text-sm">Keep separate</span>
+              <span className="text-sm">Share everything</span>
+            </div>
+            <Slider
+              value={[data.utensils_sharing || 5]}
+              onValueChange={(value) => handleChange('utensils_sharing', value[0])}
+              max={10}
+              min={1}
+              step={1}
+              className="w-full"
+            />
+            <div className="text-center text-sm text-gray-500">
+              {data.utensils_sharing ? `${data.utensils_sharing}/10` : '5/10'}
+            </div>
+          </div>
         </div>
       </div>
     </div>

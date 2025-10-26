@@ -21,6 +21,7 @@ import {
   DealBreakersStep 
 } from './steps'
 import { ArrowLeft, ArrowRight, CheckCircle, Save } from 'lucide-react'
+import { validateFormData, hasCompleteResponses, transformFormData } from '@/lib/onboarding/validation'
 
 interface OnboardingWizardProps {
   user: User
@@ -179,18 +180,22 @@ export function OnboardingWizard({ user }: OnboardingWizardProps) {
     setIsLoading(true)
     
     try {
-      // Check if user already has an onboarding submission
-      const { data: existingSubmission } = await supabase
-        .from('onboarding_submissions')
-        .select('id')
-        .eq('user_id', user.id)
-        .maybeSingle()
-
-      if (existingSubmission) {
-        console.warn('User already has onboarding submission, skipping')
-        router.push('/matches')
-        return
+      // Validate form data before submission
+      const validation = validateFormData(formData)
+      if (!validation.valid) {
+        const errorMessages = Object.entries(validation.errors)
+          .map(([field, error]) => `${field}: ${error}`)
+          .join(', ')
+        throw new Error(`Validation failed: ${errorMessages}`)
       }
+
+      // Check if user has complete responses
+      if (!hasCompleteResponses(formData)) {
+        throw new Error('Please complete all required fields before submitting')
+      }
+
+      // Transform form data to match database expectations
+      const transformedData = transformFormData(formData)
 
       // Get first name from formData
       const firstName = formData.first_name || formData.name || 'User'
@@ -233,120 +238,18 @@ export function OnboardingWizard({ user }: OnboardingWizardProps) {
         throw new Error(`Failed to create academic record: ${academicError.message}`)
       }
 
-      // Map form data to valid question_keys only (no profile/academic fields)
-      const questionnaireMappings = [
-        // Sleep schedule transformations
-        { from: 'bedtime', to: 'sleep_start', transform: (v) => {
-          const timeMap = {
-            'before_10pm': 21, '10pm_11pm': 22, '11pm_12am': 23, 
-            '12am_1am': 24, 'after_1am': 25, 'varies': 23
-          }
-          return timeMap[v] || 23
-        }},
-        { from: 'wake_time', to: 'sleep_end', transform: (v) => {
-          const timeMap = {
-            'before_6am': 6, '6am_7am': 7, '7am_8am': 8,
-            '8am_9am': 9, '9am_10am': 10, 'after_10am': 11, 'varies': 8
-          }
-          return timeMap[v] || 8
-        }},
-        
-        // Study preferences
-        { from: 'study_location', to: 'study_intensity', transform: (v) => {
-          const intensityMap = {
-            'home_quiet': 8, 'home_background': 6, 'library': 9,
-            'cafe': 4, 'campus': 7, 'flexible': 6
-          }
-          return intensityMap[v] || 6
-        }},
-        
-        // Cleanliness preferences
-        { from: 'cleanliness_level', to: 'cleanliness_room', transform: (v) => v },
-        { from: 'cleaning_frequency', to: 'cleanliness_kitchen', transform: (v) => {
-          const freqMap = {
-            'daily': 9, 'every_other_day': 8, 'weekly': 6,
-            'biweekly': 4, 'monthly': 2, 'when_needed': 3
-          }
-          return freqMap[v] || 6
-        }},
-        
-        // Social preferences
-        { from: 'social_level', to: 'social_level', transform: (v) => v },
-        { from: 'guest_frequency', to: 'guests_frequency', transform: (v) => {
-          const freqMap = {
-            'never': 1, 'rarely': 3, 'occasionally': 6,
-            'frequently': 8, 'daily': 10
-          }
-          return freqMap[v] || 5
-        }},
-        { from: 'activities', to: 'parties_frequency', transform: (v) => {
-          // Map activities array to party frequency score
-          if (!Array.isArray(v)) return 5
-          const partyActivities = ['Parties/Social events', 'Gaming', 'Music']
-          const partyCount = v.filter(activity => partyActivities.includes(activity)).length
-          return Math.min(10, Math.max(1, partyCount * 3))
-        }},
-        
-        // Noise and environment
-        { from: 'noise_preference', to: 'noise_tolerance', transform: (v) => v },
-        
-        // Shared space usage
-        { from: 'shared_space_usage', to: 'food_sharing', transform: (v) => {
-          const sharingMap = {
-            'minimal': 2, 'moderate': 5, 'frequent': 8, 'flexible': 6
-          }
-          return sharingMap[v] || 5
-        }},
-        { from: 'shared_expenses', to: 'utensils_sharing', transform: (v) => {
-          const sharingMap = {
-            'split_everything': 9, 'split_essentials': 6, 'separate': 2, 'flexible': 5
-          }
-          return sharingMap[v] || 5
-        }},
-        
-        // Deal breakers
-        { from: 'smoking_preference', to: 'smoking', transform: (v) => {
-          return v === 'non_smoker' ? false : true
-        }},
-        { from: 'pet_preference', to: 'pets_allowed', transform: (v) => {
-          return v === 'no_pets' ? false : true
-        }},
-        { from: 'alcohol_preference', to: 'alcohol_at_home', transform: (v) => {
-          const alcoholMap = {
-            'non_drinker': 1, 'occasional_drinker': 4, 'regular_drinker': 8, 'flexible': 5
-          }
-          return alcoholMap[v] || 5
-        }},
-        
-        // Personality traits (Big Five) - direct pass-through
-        { from: 'extraversion', to: 'extraversion', transform: (v) => v },
-        { from: 'agreeableness', to: 'agreeableness', transform: (v) => v },
-        { from: 'conscientiousness', to: 'conscientiousness', transform: (v) => v },
-        { from: 'neuroticism', to: 'neuroticism', transform: (v) => v },
-        { from: 'openness', to: 'openness', transform: (v) => v },
-        
-        // Communication preferences
-        { from: 'conflict_style', to: 'conflict_style', transform: (v) => v },
-        { from: 'communication_preference', to: 'communication_preference', transform: (v) => v },
-        
-        // Chores preference (from deal breakers step)
-        { from: 'chores_preference', to: 'chores_preference', transform: (v) => v }
-      ]
-
-      // Build responses array with only valid question_keys
-      const responses = []
-      
-      for (const mapping of questionnaireMappings) {
-        const value = formData[mapping.from]
-        if (value !== undefined && value !== null && value !== '') {
-          const transformedValue = mapping.transform(value)
-          responses.push({
-            user_id: user.id,
-            question_key: mapping.to,
-            value: transformedValue
-          })
-        }
-      }
+      // Build responses array with validated data
+      const responses = Object.entries(transformedData)
+        .filter(([key, value]) => {
+          // Skip profile/academic fields
+          const profileFields = ['university_id', 'first_name', 'name', 'program_id', 'undecided_program', 'study_start_year', 'campus_city']
+          return !profileFields.includes(key) && value !== undefined && value !== null && value !== ''
+        })
+        .map(([key, value]) => ({
+          user_id: user.id,
+          question_key: key,
+          value: value
+        }))
 
       // Save questionnaire responses
       if (responses.length > 0) {
@@ -358,19 +261,6 @@ export function OnboardingWizard({ user }: OnboardingWizardProps) {
           console.error('Responses save failed:', responsesError)
           throw new Error(`Failed to save responses: ${responsesError.message}`)
         }
-      }
-
-      // Create onboarding submission record
-      const { error: submissionError } = await supabase
-        .from('onboarding_submissions')
-        .insert({
-          user_id: user.id,
-          completed_at: new Date().toISOString()
-        })
-
-      if (submissionError) {
-        console.error('Submission record creation failed:', submissionError)
-        throw new Error(`Failed to create submission record: ${submissionError.message}`)
       }
 
       // Create user vector from responses
@@ -386,14 +276,14 @@ export function OnboardingWizard({ user }: OnboardingWizardProps) {
       // Clear saved progress
       localStorage.removeItem('onboarding_progress')
       
-            // Show success message
-            showSuccessToast(
-              'Onboarding completed!',
-              'Your profile has been created and you can now find matches.'
-            )
-            
-            // Redirect to matches (skip verification for now)
-            router.push('/matches')
+      // Show success message
+      showSuccessToast(
+        'Onboarding completed!',
+        'Your profile has been created and you can now find matches.'
+      )
+      
+      // Redirect to matches (skip verification for now)
+      router.push('/matches')
       
     } catch (error) {
       console.error('Failed to submit onboarding:', error)
