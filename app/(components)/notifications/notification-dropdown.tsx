@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
-import { ScrollArea } from '@/components/ui/scroll-area'
+// ScrollArea not available, using div with overflow styling
 import { NotificationItem } from './notification-item'
 import { Notification, NotificationCounts } from '@/lib/notifications/types'
 import { createClient } from '@/lib/supabase/client'
@@ -213,7 +213,7 @@ export function NotificationDropdown({
         </CardHeader>
 
         <CardContent className="p-0">
-          <ScrollArea className="h-96">
+          <div className="h-96 overflow-y-auto">
             {isLoading ? (
               <div className="p-4 text-center text-gray-500">
                 Loading notifications...
@@ -238,7 +238,7 @@ export function NotificationDropdown({
                 ))}
               </div>
             )}
-          </ScrollArea>
+          </div>
         </CardContent>
       </Card>
     </div>

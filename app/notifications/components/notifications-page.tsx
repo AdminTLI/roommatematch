@@ -8,7 +8,7 @@ import { Badge } from '@/components/ui/badge'
 import { Input } from '@/components/ui/input'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { ScrollArea } from '@/components/ui/scroll-area'
+// ScrollArea not available, using div with overflow styling
 import { NotificationItem } from '@/app/(components)/notifications/notification-item'
 import { Notification, NotificationType, NotificationCounts } from '@/lib/notifications/types'
 import { createClient } from '@/lib/supabase/client'
