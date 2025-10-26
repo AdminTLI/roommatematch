@@ -4,12 +4,6 @@
   "installCommand": "npm install",
   "cleanUrls": true,
   "trailingSlash": false,
-  "crons": [
-    {
-      "path": "/api/cron/match",
-      "schedule": "0 */6 * * *"
-    }
-  ],
   "headers": [
     {
       "source": "/(.*)",
