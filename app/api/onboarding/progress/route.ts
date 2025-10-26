@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
+import { checkQuestionnaireCompletion } from '@/lib/onboarding/validation'
 
 export async function GET() {
   const supabase = await createClient()
@@ -12,58 +13,14 @@ export async function GET() {
   }
 
   try {
-    // Get completed sections
-    const { data: sections, error: sectionsError } = await supabase
-      .from('onboarding_sections')
-      .select('section, updated_at')
-      .eq('user_id', user.id)
-      .order('updated_at', { ascending: true })
-
-    if (sectionsError) {
-      console.error('[Progress] Error fetching sections:', sectionsError)
-      return NextResponse.json({ 
-        error: 'Failed to fetch progress' 
-      }, { status: 500 })
-    }
-
-    // Check if questionnaire is fully submitted
-    const { data: submission, error: submissionError } = await supabase
-      .from('onboarding_submissions')
-      .select('id, submitted_at')
-      .eq('user_id', user.id)
-      .maybeSingle()
-
-    if (submissionError) {
-      console.error('[Progress] Error fetching submission:', submissionError)
-      return NextResponse.json({ 
-        error: 'Failed to fetch submission status' 
-      }, { status: 500 })
-    }
-
-    const requiredSections = [
-      'location-commute',
-      'personality-values',
-      'sleep-circadian',
-      'noise-sensory',
-      'home-operations',
-      'social-hosting-language',
-      'communication-conflict',
-      'privacy-territoriality',
-      'reliability-logistics',
-    ]
-
-    const dbSections = sections?.map(s => s.section) || []
-    let completedSections = requiredSections.filter(s => dbSections.includes(s))
-    const totalSections = requiredSections.length
-    const isFullySubmitted = !!submission
-    const hasPartialProgress = completedSections.length > 0 && !isFullySubmitted
-
-    // If submitted, consider all required sections completed
-    if (isFullySubmitted) {
-      completedSections = requiredSections
-    }
-
-    // Determine next section to complete
+    // Use the completion helper for consistent logic
+    const completionStatus = await checkQuestionnaireCompletion(user.id)
+    
+    // Map response count to section progress (approximate)
+    const totalSections = 9
+    const completedSections = Math.min(Math.floor(completionStatus.responseCount / 4), totalSections)
+    
+    // Determine next section based on completion status
     const allSections = [
       'intro',
       'location-commute', 
@@ -77,17 +34,19 @@ export async function GET() {
       'reliability-logistics'
     ]
 
-    const nextSection = allSections.find(section => !completedSections.includes(section)) || null
+    const nextSection = completionStatus.isComplete ? null : 
+      allSections[Math.min(completedSections, allSections.length - 1)]
 
     return NextResponse.json({
-      completedSections,
+      completedSections: allSections.slice(0, completedSections),
       totalSections,
-      progressCount: completedSections.length,
-      isFullySubmitted,
-      hasPartialProgress,
+      progressCount: completionStatus.responseCount,
+      isFullySubmitted: completionStatus.isComplete,
+      hasPartialProgress: completionStatus.responseCount > 0 && !completionStatus.isComplete,
       nextSection,
-      lastUpdated: sections?.[sections.length - 1]?.updated_at || null,
-      submittedAt: submission?.submitted_at || null
+      lastUpdated: null, // Not tracked in new system
+      submittedAt: completionStatus.hasSubmission ? new Date().toISOString() : null,
+      missingKeys: completionStatus.missingKeys
     })
 
   } catch (error) {

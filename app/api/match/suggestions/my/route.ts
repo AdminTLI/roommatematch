@@ -12,6 +12,14 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
+    // Check email verification
+    if (!user.email_confirmed_at) {
+      return NextResponse.json({ 
+        error: 'Email verification required',
+        requiresVerification: true 
+      }, { status: 403 })
+    }
+
     const repo = await getMatchRepo()
     const includeExpired = request.nextUrl.searchParams.get('includeExpired') === 'true'
     

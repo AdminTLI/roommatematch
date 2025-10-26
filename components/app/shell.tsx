@@ -16,6 +16,7 @@ interface AppShellProps {
   user: {
     id: string
     email: string
+    email_confirmed_at?: string
     name: string
     avatar?: string
   }

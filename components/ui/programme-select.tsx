@@ -35,6 +35,8 @@ export function ProgrammeSelect({
 }: ProgrammeSelectProps) {
   const [programmes, setProgrammes] = useState<Programme[]>([])
   const [loading, setLoading] = useState(false)
+  const [showManualEntry, setShowManualEntry] = useState(false)
+  const [manualProgramme, setManualProgramme] = useState('')
 
   useEffect(() => {
     if (!institutionId || !degreeLevel) {
@@ -46,7 +48,16 @@ export function ProgrammeSelect({
       setLoading(true)
       try {
         const res = await fetch(`/data/programmes/${institutionId}.json`)
-        if (!res.ok) throw new Error('Failed to load programmes')
+        if (!res.ok) {
+          if (res.status === 404) {
+            console.warn(`Missing programme data for institution: ${institutionId}`)
+            // Show manual entry option
+            setProgrammes([])
+            setShowManualEntry(true)
+            return
+          }
+          throw new Error('Failed to load programmes')
+        }
         
         const data = await res.json()
         const levelProgrammes = data[degreeLevel] || []
@@ -54,9 +65,11 @@ export function ProgrammeSelect({
         // Deduplicate and add language labels
         const deduped = deduplicateProgrammes(levelProgrammes)
         setProgrammes(deduped)
+        setShowManualEntry(deduped.length === 0)
       } catch (error) {
         console.error('Failed to load programmes:', error)
         setProgrammes([])
+        setShowManualEntry(true)
       } finally {
         setLoading(false)
       }
@@ -66,11 +79,41 @@ export function ProgrammeSelect({
   }, [institutionId, degreeLevel])
 
   const handleChange = (progId: string) => {
-    onValueChange(progId)
-    const selected = programmes.find(p => p.id === progId)
-    if (selected && onProgrammeSelect) {
-      onProgrammeSelect(selected)
+    if (progId === 'manual') {
+      setShowManualEntry(true)
+      onValueChange('')
+    } else if (progId === 'other') {
+      setShowManualEntry(true)
+      onValueChange('other')
+    } else {
+      onValueChange(progId)
+      const selected = programmes.find(p => p.id === progId)
+      if (selected && onProgrammeSelect) {
+        onProgrammeSelect(selected)
+      }
     }
+  }
+
+  const handleManualChange = (value: string) => {
+    setManualProgramme(value)
+    onValueChange(value)
+  }
+
+  if (showManualEntry) {
+    return (
+      <div className="space-y-2">
+        <input
+          type="text"
+          value={manualProgramme}
+          onChange={(e) => handleManualChange(e.target.value)}
+          placeholder="Enter your programme name"
+          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+        />
+        <p className="text-sm text-gray-600">
+          Programme not listed? Enter it manually above.
+        </p>
+      </div>
+    )
   }
 
   return (
@@ -101,8 +144,13 @@ export function ProgrammeSelect({
           </SelectItem>
         ))}
         {programmes.length === 0 && !loading && (
-          <SelectItem value="none" disabled>
-            No programmes found
+          <SelectItem value="other">
+            Programme not listed
+          </SelectItem>
+        )}
+        {programmes.length > 0 && (
+          <SelectItem value="other">
+            Programme not listed
           </SelectItem>
         )}
       </SelectContent>

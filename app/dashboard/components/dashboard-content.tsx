@@ -48,6 +48,8 @@ interface DashboardContentProps {
     id: string
     email: string
     email_confirmed_at?: string
+    name?: string
+    avatar?: string
   }
 }
 
@@ -132,13 +134,13 @@ export function DashboardContent({ hasCompletedQuestionnaire = false, hasPartial
               <h3 className={`font-semibold ${
                 hasPartialProgress ? 'text-blue-900' : 'text-yellow-900'
               }`}>
-                {hasPartialProgress ? 'Resume Your Compatibility Test' : 'Complete Your Compatibility Test'}
+                {hasPartialProgress ? 'Update Your Compatibility Profile' : 'Complete Your Compatibility Test'}
               </h3>
               <p className={`text-sm mt-1 ${
                 hasPartialProgress ? 'text-blue-800' : 'text-yellow-800'
               }`}>
                 {hasPartialProgress 
-                  ? `You've completed ${progressCount}/9 sections. Finish your questionnaire to start finding matches!`
+                  ? `Your profile is missing some information. Update your questionnaire to ensure accurate matching.`
                   : 'To find the best roommate matches, please complete our compatibility questionnaire.'
                 }
               </p>
@@ -147,8 +149,8 @@ export function DashboardContent({ hasCompletedQuestionnaire = false, hasPartial
                 className="mt-3"
                 variant="default"
               >
-                <a href="/onboarding">
-                  {hasPartialProgress ? 'Resume Questionnaire' : 'Start Questionnaire'}
+                <a href={hasPartialProgress ? "/onboarding?mode=edit" : "/onboarding"}>
+                  {hasPartialProgress ? 'Update Profile' : 'Start Questionnaire'}
                 </a>
               </Button>
             </div>

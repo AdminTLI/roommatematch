@@ -7,11 +7,77 @@ import type { MatchSuggestion } from './types'
 import { isEligibleForMatching } from './completeness'
 
 export class SupabaseMatchRepo implements MatchRepo {
-  private supabase = createClient()
+  private async getSupabase() {
+    return await createClient()
+  }
+
+  async getCandidateByUserId(userId: string): Promise<Candidate | null> {
+    const supabase = await createClient()
+    
+    const { data, error } = await supabase
+      .from('users')
+      .select(`
+        id,
+        email,
+        profiles!inner(
+          first_name,
+          university_id,
+          degree_level,
+          campus,
+          verification_status
+        ),
+        user_academic!inner(
+          university_id,
+          degree_level,
+          program_id,
+          study_start_year
+        ),
+        responses(
+          question_key,
+          value
+        ),
+        user_vectors(
+          vector
+        )
+      `)
+      .eq('id', userId)
+      .single()
+
+    if (error || !data) {
+      console.error('Error fetching candidate by user ID:', error)
+      return null
+    }
+
+    // Check if user is eligible for matching
+    const answers = data.responses?.reduce((acc: Record<string, any>, r: any) => {
+      acc[r.question_key] = r.value
+      return acc
+    }, {}) || {}
+
+    const eligible = await isEligibleForMatching(answers)
+    if (!eligible) {
+      return null
+    }
+
+    // Transform to Candidate format
+    return {
+      id: data.id,
+      email: data.email,
+      firstName: data.profiles?.first_name || 'User',
+      universityId: data.profiles?.university_id,
+      degreeLevel: data.profiles?.degree_level,
+      programmeId: data.user_academic?.program_id,
+      campusCity: data.profiles?.campus,
+      answers,
+      vector: data.user_vectors?.[0]?.vector,
+      createdAt: new Date().toISOString()
+    }
+  }
 
   async loadCandidates(filter: CohortFilter): Promise<Candidate[]> {
+    const supabase = await this.getSupabase()
     // Build query for users with their onboarding data
-    let query = this.supabase
+    let query = supabase
       .from('users')
       .select(`
         id,
@@ -70,6 +136,9 @@ export class SupabaseMatchRepo implements MatchRepo {
     if (filter.excludeUserIds?.length) {
       query = query.not('id', 'in', `(${filter.excludeUserIds.join(',')})`)
     }
+
+    // Exclude unverified users from matching pool
+    query = query.not('email_confirmed_at', 'is', null)
 
     if (filter.limit) {
       query = query.limit(filter.limit)

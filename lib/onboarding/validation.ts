@@ -177,6 +177,48 @@ export function transformFormData(data: Record<string, any>): Record<string, any
   return transformed
 }
 
+export async function checkQuestionnaireCompletion(userId: string): Promise<{
+  isComplete: boolean;
+  missingKeys: string[];
+  responseCount: number;
+  hasSubmission: boolean;
+}> {
+  const { createClient } = await import('@/lib/supabase/server');
+  const supabase = await createClient();
+
+  // Check if submission exists
+  const { data: submission } = await supabase
+    .from('onboarding_submissions')
+    .select('id')
+    .eq('user_id', userId)
+    .maybeSingle();
+
+  const hasSubmission = !!submission;
+
+  // Get all responses for this user
+  const { data: responses } = await supabase
+    .from('responses')
+    .select('question_key')
+    .eq('user_id', userId);
+
+  const responseCount = responses?.length || 0;
+  const responseKeys = new Set(responses?.map(r => r.question_key) || []);
+
+  // Check which required keys are missing
+  const requiredKeys = Object.keys(questionSchemas);
+  const missingKeys = requiredKeys.filter(key => !responseKeys.has(key));
+
+  // Completion requires both submission AND all required responses
+  const isComplete = hasSubmission && missingKeys.length === 0;
+
+  return {
+    isComplete,
+    missingKeys,
+    responseCount,
+    hasSubmission
+  };
+}
+
 // Type for validated form data
 export type ValidatedFormData = {
   [K in keyof typeof questionSchemas]: z.infer<typeof questionSchemas[K]>

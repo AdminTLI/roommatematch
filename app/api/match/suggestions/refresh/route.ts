@@ -12,18 +12,20 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
+    // Check email verification
+    if (!user.email_confirmed_at) {
+      return NextResponse.json({ 
+        error: 'Email verification required',
+        requiresVerification: true 
+      }, { status: 403 })
+    }
+
     const repo = await getMatchRepo()
     
-    // First, explicitly fetch the current user's profile to build cohort filter
-    const currentUserCandidates = await repo.loadCandidates({ 
-      excludeUserIds: [], // Don't exclude anyone yet
-      onlyActive: false, // Get all users first
-      limit: 1000 // Large limit to find our user
-    })
-    
-    const currentUser = currentUserCandidates.find(c => c.id === user.id)
+    // Efficiently fetch the current user's profile
+    const currentUser = await repo.getCandidateByUserId(user.id)
     if (!currentUser) {
-      return NextResponse.json({ error: 'User profile not found' }, { status: 404 })
+      return NextResponse.json({ error: 'User profile not found or not eligible for matching' }, { status: 404 })
     }
     
     // Build cohort filter based on user's profile

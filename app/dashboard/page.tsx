@@ -3,6 +3,7 @@ import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import { DashboardContent } from './components/dashboard-content'
 import type { DashboardData } from '@/types/dashboard'
+import { checkQuestionnaireCompletion } from '@/lib/onboarding/validation'
 
 export default async function DashboardPage() {
   const supabase = await createClient()
@@ -12,15 +13,11 @@ export default async function DashboardPage() {
     redirect('/auth/sign-in')
   }
 
-  // Check questionnaire completion status by counting responses
-  const { count: responseCount } = await supabase
-    .from('responses')
-    .select('*', { count: 'exact', head: true })
-    .eq('user_id', user.id)
-  
-  const hasCompletedQuestionnaire = (responseCount || 0) >= 30 // threshold for complete responses
-  const hasPartialProgress = (responseCount || 0) > 0 && !hasCompletedQuestionnaire
-  const progressCount = responseCount || 0
+  // Check questionnaire completion status using the helper
+  const completionStatus = await checkQuestionnaireCompletion(user.id)
+  const hasCompletedQuestionnaire = completionStatus.isComplete
+  const hasPartialProgress = completionStatus.responseCount > 0 && !hasCompletedQuestionnaire
+  const progressCount = completionStatus.responseCount
 
   // Calculate profile completion
   const { data: profile } = await supabase
@@ -90,6 +87,7 @@ export default async function DashboardPage() {
         user={{
           id: user.id,
           email: user.email || '',
+          email_confirmed_at: user.email_confirmed_at,
           name: user.user_metadata?.full_name || 'User',
           avatar: user.user_metadata?.avatar_url
         }}
@@ -175,19 +173,20 @@ async function fetchDashboardData(userId: string): Promise<DashboardData> {
     const chatIds = userChats?.map(c => c.chat_id) || []
 
     if (chatIds.length > 0) {
-      // Count unread messages in user's chats
-      const { data: unreadMessages } = await supabase
+      // Efficiently count unread messages using a subquery
+      const { count: unreadCount } = await supabase
         .from('messages')
-        .select(`
-          id,
-          message_reads!left(user_id)
-        `)
+        .select('id', { count: 'exact', head: true })
         .in('chat_id', chatIds)
         .neq('user_id', userId)
+        .not('id', 'in', 
+          supabase
+            .from('message_reads')
+            .select('message_id')
+            .eq('user_id', userId)
+        )
 
-      unreadMessagesCount = unreadMessages?.filter(msg => 
-        !msg.message_reads || (Array.isArray(msg.message_reads) && msg.message_reads.length === 0)
-      ).length || 0
+      unreadMessagesCount = unreadCount || 0
     }
   } catch (error) {
     console.error('Error fetching messages:', error)

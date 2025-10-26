@@ -66,6 +66,7 @@ export interface MatchRun {
 export interface MatchRepo {
   // Cohort selection
   loadCandidates(filter: CohortFilter): Promise<Candidate[]>;
+  getCandidateByUserId(userId: string): Promise<Candidate | null>;
   
   // Match runs
   saveMatchRun(run: Omit<MatchRun, 'id' | 'createdAt'>): Promise<void>;

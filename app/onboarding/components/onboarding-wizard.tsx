@@ -263,6 +263,19 @@ export function OnboardingWizard({ user }: OnboardingWizardProps) {
         }
       }
 
+      // Create onboarding submission record
+      const { error: submissionError } = await supabase
+        .from('onboarding_submissions')
+        .upsert({
+          user_id: user.id,
+          submitted_at: new Date().toISOString()
+        }, { onConflict: 'user_id' })
+
+      if (submissionError) {
+        console.error('Submission record creation failed:', submissionError)
+        throw new Error(`Failed to create submission record: ${submissionError.message}`)
+      }
+
       // Create user vector from responses
       const { error: vectorError } = await supabase
         .rpc('compute_user_vector_and_store', { p_user_id: user.id })
