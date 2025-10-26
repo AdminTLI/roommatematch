@@ -41,9 +41,9 @@ export default async function DashboardPage() {
 
   // Questionnaire progress data
   const questionnaireProgress = {
-    completedSections: sections?.length || 0,
+    completedSections: Math.min(Math.floor(progressCount / 4), 9), // Approximate sections based on response count
     totalSections: 9,
-    isSubmitted: !!submission
+    isSubmitted: hasCompletedQuestionnaire
   }
 
   // Fetch dashboard data with error handling
@@ -87,7 +87,12 @@ export default async function DashboardPage() {
         profileCompletion={profileCompletion}
         questionnaireProgress={questionnaireProgress}
         dashboardData={dashboardData}
-        user={user}
+        user={{
+          id: user.id,
+          email: user.email || '',
+          name: user.user_metadata?.full_name || 'User',
+          avatar: user.user_metadata?.avatar_url
+        }}
       />
     </AppShell>
   )
@@ -115,7 +120,7 @@ async function fetchDashboardData(userId: string): Promise<DashboardData> {
       .maybeSingle()
 
     if (profile) {
-      const requiredFields = ['first_name', 'program', 'university_id', 'campus', 'degree_level', 'languages']
+      const requiredFields = ['first_name', 'program', 'university_id', 'campus', 'degree_level']
       const filledFields = requiredFields.filter(field => {
         const value = profile[field as keyof typeof profile]
         return value !== null && value !== undefined && value !== ''
@@ -173,12 +178,15 @@ async function fetchDashboardData(userId: string): Promise<DashboardData> {
       // Count unread messages in user's chats
       const { data: unreadMessages } = await supabase
         .from('messages')
-        .select('id, message_reads!left(user_id)')
+        .select(`
+          id,
+          message_reads!left(user_id)
+        `)
         .in('chat_id', chatIds)
         .neq('user_id', userId)
 
       unreadMessagesCount = unreadMessages?.filter(msg => 
-        !msg.message_reads?.some(r => r.user_id === userId)
+        !msg.message_reads || (Array.isArray(msg.message_reads) && msg.message_reads.length === 0)
       ).length || 0
     }
   } catch (error) {
@@ -258,10 +266,10 @@ async function fetchDashboardData(userId: string): Promise<DashboardData> {
     if (allMatches.length > 0) {
       topMatches = allMatches.map(match => ({
         id: match.id,
-        name: match.otherProfile?.first_name || 'User',
+        name: (match.otherProfile as any)?.first_name || 'User',
         score: Math.round((match.score || 0) * 100),
-        program: match.otherProfile?.program || 'Program',
-        university: match.otherProfile?.universities?.name || 'University',
+        program: (match.otherProfile as any)?.program || 'Program',
+        university: (match.otherProfile as any)?.universities?.name || 'University',
         avatar: undefined
       }))
     }
@@ -289,7 +297,7 @@ async function fetchDashboardData(userId: string): Promise<DashboardData> {
         id: `message-${msg.id}`,
         type: 'message',
         action: 'Message received',
-        user: msg.profiles?.first_name || 'User',
+        user: (msg.profiles as any)?.first_name || 'User',
         timestamp: msg.created_at
       }))
     }
