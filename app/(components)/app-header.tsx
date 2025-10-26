@@ -168,12 +168,9 @@ export function AppHeader({ user }: AppHeaderProps) {
 
               {/* Notifications */}
               <div className="flex items-center gap-3 py-2">
-                <Bell className="h-5 w-5 text-gray-600" />
+                <NotificationBell userId={user.id} />
                 <span className="font-medium text-gray-600 dark:text-gray-300">
                   Notifications
-                </span>
-                <span className="ml-auto h-3 w-3 bg-red-500 rounded-full text-xs text-white flex items-center justify-center">
-                  3
                 </span>
               </div>
 

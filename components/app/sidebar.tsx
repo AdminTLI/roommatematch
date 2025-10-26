@@ -20,6 +20,8 @@ import {
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { cn } from '@/lib/utils'
+import { useState, useEffect } from 'react'
+import { createClient } from '@/lib/supabase/client'
 
 interface SidebarProps {
   user: {
@@ -46,6 +48,73 @@ const navigation = [
 
 export function Sidebar({ user, onClose }: SidebarProps) {
   const pathname = usePathname()
+  const [unreadChatCount, setUnreadChatCount] = useState(0)
+
+  useEffect(() => {
+    const supabase = createClient()
+
+    // Fetch initial unread message count
+    const fetchUnreadCount = async () => {
+      try {
+        // Get all chat rooms where user is a member
+        const { data: chatMembers, error: membersError } = await supabase
+          .from('chat_members')
+          .select('chat_id')
+          .eq('user_id', user.id)
+
+        if (membersError || !chatMembers) {
+          console.error('Error fetching chat members:', membersError)
+          return
+        }
+
+        if (chatMembers.length === 0) {
+          setUnreadChatCount(0)
+          return
+        }
+
+        const chatIds = chatMembers.map(cm => cm.chat_id)
+
+        // Count unread messages (messages not from current user, marked as unread or no read status)
+        const { data: messages, error: messagesError } = await supabase
+          .from('chat_messages')
+          .select('id', { count: 'exact', head: true })
+          .in('chat_id', chatIds)
+          .neq('user_id', user.id)
+          .eq('is_read', false)
+
+        if (messagesError) {
+          console.error('Error fetching unread messages:', messagesError)
+          return
+        }
+
+        setUnreadChatCount(messages?.length || 0)
+      } catch (error) {
+        console.error('Error in fetchUnreadCount:', error)
+      }
+    }
+
+    fetchUnreadCount()
+
+    // Subscribe to real-time message updates
+    const channel = supabase
+      .channel('sidebar-chat-updates')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'chat_messages',
+        },
+        () => {
+          fetchUnreadCount()
+        }
+      )
+      .subscribe()
+
+    return () => {
+      supabase.removeChannel(channel)
+    }
+  }, [user.id])
 
   return (
     <div className="flex flex-col h-full bg-surface-0 border-r border-line">
@@ -90,14 +159,9 @@ export function Sidebar({ user, onClose }: SidebarProps) {
                 >
                   <Icon className="w-5 h-5" />
                   <span className="font-medium">{item.name}</span>
-                  {item.name === 'Chat' && (
+                  {item.name === 'Chat' && unreadChatCount > 0 && (
                     <Badge variant="destructive" size="sm" className="ml-auto">
-                      3
-                    </Badge>
-                  )}
-                  {item.name === 'Matches' && (
-                    <Badge variant="mint" size="sm" className="ml-auto">
-                      New
+                      {unreadChatCount > 99 ? '99+' : unreadChatCount}
                     </Badge>
                   )}
                 </Button>
