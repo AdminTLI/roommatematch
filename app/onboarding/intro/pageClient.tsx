@@ -51,6 +51,12 @@ export default function IntroClient() {
               return
             }
             
+            // If user has submission but incomplete responses, show update mode
+            if (progress.submittedAt && !progress.isFullySubmitted && progress.missingKeys?.length > 0) {
+              console.log('User has incomplete submission, allowing re-onboarding')
+              // Continue to show onboarding in "update" mode
+            }
+            
             // If there's partial progress and we're not on the next section, redirect
             if (progress.hasPartialProgress && progress.nextSection && progress.nextSection !== 'intro') {
               // Map section names to routes

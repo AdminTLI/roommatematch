@@ -224,14 +224,14 @@ export function OnboardingWizard({ user }: OnboardingWizardProps) {
       // Create user academic record
       const { error: academicError } = await supabase
         .from('user_academic')
-        .insert({
+        .upsert({
           user_id: user.id,
           university_id: formData.university_id,
           degree_level: formData.degree_level,
           program_id: formData.undecided_program ? null : formData.program_id,
           undecided_program: formData.undecided_program || false,
           study_start_year: formData.study_start_year
-        })
+        }, { onConflict: 'user_id' })
 
       if (academicError) {
         console.error('Academic record creation failed:', academicError)

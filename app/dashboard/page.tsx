@@ -72,6 +72,7 @@ export default async function DashboardPage() {
       user={{
         id: user.id,
         email: user.email || '',
+        email_confirmed_at: user.email_confirmed_at,
         name: user.user_metadata?.full_name || 'User',
         avatar: user.user_metadata?.avatar_url
       }}

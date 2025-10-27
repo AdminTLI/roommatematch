@@ -79,8 +79,10 @@
     word-break: keep-all;
   }
 
-  /* Improve touch targets */
-  button, a, [role="button"] {
+  /* Improve touch targets - exclude Radix form controls */
+  button:not([role="radio"]):not([role="checkbox"]), 
+  a:not([role="radio"]):not([role="checkbox"]), 
+  [role="button"]:not([role="radio"]):not([role="checkbox"]) {
     min-height: 44px;
     min-width: 44px;
   }
