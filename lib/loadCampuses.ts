@@ -1,5 +1,4 @@
-import fs from 'fs'
-import path from 'path'
+import campusData from '@/data/nl-campuses.v1.json'
 
 export interface Campus {
   value: string
@@ -13,14 +12,7 @@ export interface CampusData {
 
 // Load campus data from JSON file
 export function loadCampuses(): CampusData {
-  try {
-    const filePath = path.join(process.cwd(), 'data', 'nl-campuses.v1.json')
-    const fileContent = fs.readFileSync(filePath, 'utf-8')
-    return JSON.parse(fileContent)
-  } catch (error) {
-    console.error('Failed to load campus data:', error)
-    return {}
-  }
+  return campusData as CampusData
 }
 
 // Get campuses for a specific university
