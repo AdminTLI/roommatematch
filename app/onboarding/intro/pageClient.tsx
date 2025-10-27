@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, Suspense } from 'react'
 import { useSearchParams } from 'next/navigation'
 import { QuestionnaireLayout } from '@/components/questionnaire/QuestionnaireLayout'
 import { AcademicStep } from '../components/steps/academic-step'
@@ -10,8 +10,9 @@ import { Button } from '@/components/ui/button'
 import { useRouter } from 'next/navigation'
 import { ErrorBoundary } from '@/components/ErrorBoundary'
 import { createClient } from '@/lib/supabase/client'
+import { SuspenseWrapper } from '@/components/questionnaire/SuspenseWrapper'
 
-export default function IntroClient() {
+function IntroClientContent() {
   const [academicData, setAcademicData] = useState<Record<string, any>>({})
   const [isValid, setIsValid] = useState(false)
   const [isLoading, setIsLoading] = useState(true)
@@ -204,4 +205,10 @@ export default function IntroClient() {
   )
 }
 
-
+export default function IntroClient() {
+  return (
+    <SuspenseWrapper>
+      <IntroClientContent />
+    </SuspenseWrapper>
+  )
+}

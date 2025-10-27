@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useState, Suspense } from 'react'
 import { useSearchParams } from 'next/navigation'
 import itemsJson from '@/data/item-bank.v1.json'
 import type { Item } from '@/types/questionnaire'
@@ -14,8 +14,9 @@ import { ToggleYesNo } from '@/components/questionnaire/ToggleYesNo'
 import { TimeRange } from '@/components/questionnaire/TimeRange'
 import { NumberInput } from '@/components/questionnaire/NumberInput'
 import { useOnboardingStore } from '@/store/onboarding'
+import { SuspenseWrapper } from '@/components/questionnaire/SuspenseWrapper'
 
-export default function SectionClient() {
+function SectionClientContent() {
   const sectionKey = 'personality-values' as const
   const items = useMemo(() => (itemsJson as Item[]).filter((i) => i.section === sectionKey), [])
   const setAnswer = useOnboardingStore((s) => s.setAnswer)
@@ -130,6 +131,14 @@ export default function SectionClient() {
         ))}
       </div>
     </QuestionnaireLayout>
+  )
+}
+
+export default function SectionClient() {
+  return (
+    <SuspenseWrapper>
+      <SectionClientContent />
+    </SuspenseWrapper>
   )
 }
 

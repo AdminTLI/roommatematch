@@ -11,6 +11,7 @@ import { Badge } from '@/components/ui/badge'
 import { FileDown, AlertCircle } from 'lucide-react'
 import jsPDF from 'jspdf'
 import autoTable from 'jspdf-autotable'
+import { SuspenseWrapper } from '@/components/questionnaire/SuspenseWrapper'
 
 const scaleAnchors = {
   agreement: ['Strongly disagree', 'Disagree', 'Neutral', 'Agree', 'Strongly agree'],
@@ -37,7 +38,7 @@ function humanize(item: Item, value: any): string {
   }
 }
 
-export default function ReviewClient() {
+function ReviewClientContent() {
   const sections = useOnboardingStore((s) => s.sections)
   const allItems = itemsJson as Item[]
   const searchParams = useSearchParams()
@@ -438,4 +439,10 @@ export default function ReviewClient() {
   )
 }
 
-
+export default function ReviewClient() {
+  return (
+    <SuspenseWrapper>
+      <ReviewClientContent />
+    </SuspenseWrapper>
+  )
+}

@@ -1,6 +1,6 @@
 'use client'
 
-import { useMemo } from 'react'
+import { useMemo, Suspense } from 'react'
 import { useSearchParams } from 'next/navigation'
 import locItems from '@/data/item-bank.location.v1.json'
 import type { Item } from '@/types/questionnaire'
@@ -11,8 +11,9 @@ import { useOnboardingStore } from '@/store/onboarding'
 import { GroupedSearchSelect } from '@/components/questionnaire/GroupedSearchSelect'
 import { toGroupedOptions } from '@/lib/loadInstitutions'
 import { loadCampuses } from '@/lib/loadCampuses'
+import { SuspenseWrapper } from '@/components/questionnaire/SuspenseWrapper'
 
-export default function SectionClient() {
+function SectionClientContent() {
   const sectionKey = 'location-commute' as const
   const items = useMemo(() => (locItems as Item[]), [])
   const setAnswer = useOnboardingStore((s) => s.setAnswer)
@@ -90,6 +91,14 @@ export default function SectionClient() {
         ))}
       </div>
     </QuestionnaireLayout>
+  )
+}
+
+export default function SectionClient() {
+  return (
+    <SuspenseWrapper>
+      <SectionClientContent />
+    </SuspenseWrapper>
   )
 }
 

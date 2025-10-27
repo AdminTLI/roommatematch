@@ -1,6 +1,6 @@
 'use client'
 
-import { useMemo } from 'react'
+import { useMemo, Suspense } from 'react'
 import { useSearchParams } from 'next/navigation'
 import itemsJson from '@/data/item-bank.v1.json'
 import type { Item } from '@/types/questionnaire'
@@ -14,10 +14,11 @@ import { ToggleYesNo } from '@/components/questionnaire/ToggleYesNo'
 import { TimeRange } from '@/components/questionnaire/TimeRange'
 import { NumberInput } from '@/components/questionnaire/NumberInput'
 import { useOnboardingStore } from '@/store/onboarding'
+import { SuspenseWrapper } from '@/components/questionnaire/SuspenseWrapper'
 import { AutosaveToaster } from '@/components/questionnaire/AutosaveToaster'
 import { useAutosave } from '@/components/questionnaire/useAutosave'
 
-export default function SectionClient() {
+function SectionClientContent() {
   const sectionKey = 'social-hosting-language' as const
   const items = useMemo(() => (itemsJson as Item[]).filter((i) => i.section === sectionKey), [])
   const setAnswer = useOnboardingStore((s) => s.setAnswer)
@@ -138,3 +139,11 @@ export default function SectionClient() {
 }
 
 
+
+export default function SectionClient() {
+  return (
+    <SuspenseWrapper>
+      <SectionClientContent />
+    </SuspenseWrapper>
+  )
+}
