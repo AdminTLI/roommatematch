@@ -118,6 +118,24 @@ export async function POST() {
             }
           }
         }
+        
+        // Look up program UUID from CROHO code if program_id exists
+        if (submissionData.program_id) {
+          console.log('[Submit] Looking up program for CROHO code:', submissionData.program_id)
+          
+          const { data: program, error: programError } = await supabase
+            .from('programs')
+            .select('id')
+            .eq('croho_code', submissionData.program_id)
+            .single()
+          
+          if (programError) {
+            console.error('[Submit] Program lookup failed:', programError)
+          } else if (program) {
+            submissionData.program_id = program.id
+            console.log('[Submit] Found program UUID:', program.id)
+          }
+        }
       }
       
       // Extract languages from all sections
