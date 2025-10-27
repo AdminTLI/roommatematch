@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
+import { syncProfileNameToAuth } from '@/lib/auth/user-profile'
 
 export async function POST(request: Request) {
   const supabase = await createClient()
@@ -206,6 +207,9 @@ export async function POST(request: Request) {
         error: `Failed to update profile: ${profileError.message}` 
       }, { status: 500 })
     }
+
+    // Sync profile name to auth metadata
+    await syncProfileNameToAuth(user.id, firstName, lastName)
 
     return NextResponse.json({ 
       success: true,

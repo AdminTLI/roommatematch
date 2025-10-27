@@ -8,6 +8,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Loader2, Check, User, Mail, GraduationCap, Phone } from 'lucide-react'
 import { Textarea } from '@/components/ui/textarea'
+import { trackProfileUpdate } from '@/lib/notifications/activity-tracker'
 
 interface ProfileSettingsProps {
   user: any
@@ -58,6 +59,17 @@ export function ProfileSettings({ user, profile, academic }: ProfileSettingsProp
       if (!response.ok) {
         const errorData = await response.json()
         throw new Error(errorData.error || 'Failed to update profile')
+      }
+
+      // Track profile update activity
+      const changes: string[] = []
+      if (formData.firstName !== (profile?.first_name || '')) changes.push('first name')
+      if (formData.lastName !== (profile?.last_name || '')) changes.push('last name')
+      if (formData.phone !== (profile?.phone || '')) changes.push('phone')
+      if (formData.bio !== (profile?.bio || '')) changes.push('bio')
+      
+      if (changes.length > 0) {
+        await trackProfileUpdate(user.id, changes)
       }
 
       setIsSuccess(true)

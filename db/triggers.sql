@@ -275,7 +275,6 @@ BEGIN
     LEFT JOIN responses r_noise ON r_noise.user_id = u.id AND r_noise.question_key = 'noise_tolerance'
     WHERE u.id != target_user_id
     AND p.university_id = target_profile.university_id
-    AND p.verification_status = 'verified'
     AND u.is_active = true
     AND NOT EXISTS (
       SELECT 1 FROM matches m 

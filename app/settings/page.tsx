@@ -2,6 +2,7 @@ import { AppShell } from '@/components/app/shell'
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import { SettingsContent } from './components/settings-content'
+import { getUserProfile } from '@/lib/auth/user-profile'
 
 export default async function SettingsPage() {
   const supabase = await createClient()
@@ -153,13 +154,14 @@ export default async function SettingsPage() {
     submittedAt: submission?.submitted_at || null
   }
 
+  // Get user profile with proper name
+  const userProfile = await getUserProfile(user.id)
+  if (!userProfile) {
+    redirect('/auth/sign-in')
+  }
+
   return (
-    <AppShell user={{
-      id: user.id,
-      email: user.email || '',
-      name: user.user_metadata?.full_name || 'User',
-      avatar: user.user_metadata?.avatar_url
-    }}>
+    <AppShell user={userProfile}>
       <SettingsContent 
         user={user}
         profile={profile}

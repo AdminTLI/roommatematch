@@ -5,6 +5,7 @@ import { DashboardContent } from './components/dashboard-content'
 import type { DashboardData } from '@/types/dashboard'
 import { checkQuestionnaireCompletion, questionSchemas } from '@/lib/onboarding/validation'
 import { calculateSectionProgress } from '@/lib/onboarding/sections'
+import { getUserProfile } from '@/lib/auth/user-profile'
 
 export default async function DashboardPage() {
   const supabase = await createClient()
@@ -79,15 +80,15 @@ export default async function DashboardPage() {
     }
   }
 
+  // Get user profile with proper name
+  const userProfile = await getUserProfile(user.id)
+  if (!userProfile) {
+    redirect('/auth/sign-in')
+  }
+
   return (
     <AppShell 
-      user={{
-        id: user.id,
-        email: user.email || '',
-        email_confirmed_at: user.email_confirmed_at,
-        name: user.user_metadata?.full_name || 'User',
-        avatar: user.user_metadata?.avatar_url
-      }}
+      user={userProfile}
       showQuestionnairePrompt={true}
     >
       <DashboardContent 
@@ -97,13 +98,7 @@ export default async function DashboardPage() {
         profileCompletion={profileCompletion}
         questionnaireProgress={questionnaireProgress}
         dashboardData={dashboardData}
-        user={{
-          id: user.id,
-          email: user.email || '',
-          email_confirmed_at: user.email_confirmed_at,
-          name: user.user_metadata?.full_name || 'User',
-          avatar: user.user_metadata?.avatar_url
-        }}
+        user={userProfile}
       />
     </AppShell>
   )
