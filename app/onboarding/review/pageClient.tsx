@@ -343,8 +343,10 @@ function ReviewClientContent() {
       
       if (!response.ok) {
         console.error('Submit failed:', result.error)
-        // Show the actual error message from API
-        alert(`Failed to submit questionnaire: ${result.error || 'Unknown error'}. Please try again.`)
+        // Show user-friendly error message with title
+        const title = result.title || 'Submission Failed'
+        const message = result.error || 'Unknown error occurred'
+        alert(`${title}\n\n${message}`)
         return
       }
       
@@ -363,8 +365,7 @@ function ReviewClientContent() {
       }
     } catch (error) {
       console.error('Submit error:', error)
-      const errorMessage = error instanceof Error ? error.message : 'Unknown error'
-      alert(`Failed to submit questionnaire: ${errorMessage}. Please try again.`)
+      alert('Network error: Unable to submit questionnaire. Please check your internet connection and try again.')
     }
   }
 

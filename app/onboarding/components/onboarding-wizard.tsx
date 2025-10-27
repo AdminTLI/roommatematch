@@ -21,7 +21,7 @@ import {
   DealBreakersStep 
 } from './steps'
 import { ArrowLeft, ArrowRight, CheckCircle, Save } from 'lucide-react'
-import { submitCompleteOnboarding } from '@/lib/onboarding/submission'
+import { submitCompleteOnboarding, mapSubmissionError } from '@/lib/onboarding/submission'
 
 interface OnboardingWizardProps {
   user: User
@@ -219,22 +219,9 @@ export function OnboardingWizard({ user }: OnboardingWizardProps) {
       })
 
       if (!result.success) {
-        // Provide more specific error messaging
-        const errorMessage = result.error || 'Submission failed'
-        let userFriendlyMessage = errorMessage
-        
-        // Parse common error patterns and provide actionable guidance
-        if (errorMessage.includes('profile')) {
-          userFriendlyMessage = `Profile setup failed: ${errorMessage}. Please check your personal information and try again.`
-        } else if (errorMessage.includes('academic')) {
-          userFriendlyMessage = `Academic information failed to save: ${errorMessage}. Please verify your university and program details.`
-        } else if (errorMessage.includes('responses')) {
-          userFriendlyMessage = `Questionnaire responses failed to save: ${errorMessage}. Please try submitting again.`
-        } else if (errorMessage.includes('database') || errorMessage.includes('constraint')) {
-          userFriendlyMessage = `Database error occurred: ${errorMessage}. Please try again in a few moments.`
-        }
-        
-        throw new Error(userFriendlyMessage)
+        // Use mapped error messaging
+        const mappedError = mapSubmissionError(result.error || 'Submission failed')
+        throw new Error(`${mappedError.title}: ${mappedError.message}`)
       }
 
       // Create user vector from responses

@@ -1,5 +1,6 @@
 import { SupabaseClient } from '@supabase/supabase-js'
 import { User } from '@supabase/supabase-js'
+import { itemIdToQuestionKey } from '@/lib/question-key-mapping'
 
 export interface OnboardingSubmissionData {
   user_id: string
@@ -67,6 +68,66 @@ export function extractSubmissionDataFromIntro(
   }
 }
 
+export function extractLanguagesFromSections(
+  sections: Array<{ section: string; answers: any[] }>
+): string[] {
+  const languageValues = new Set<string>()
+  
+  for (const section of sections) {
+    for (const answer of section.answers ?? []) {
+      // Check if this answer maps to languages_daily
+      const questionKey = itemIdToQuestionKey[answer.itemId]
+      if (questionKey === 'languages_daily') {
+        // Extract the actual value
+        let value = answer.value
+        
+        // Handle nested value object: { value: X }
+        if (value && typeof value === 'object' && 'value' in value) {
+          value = value.value
+        }
+        
+        // Handle different value types
+        if (Array.isArray(value)) {
+          // If it's already an array, add all values
+          value.forEach(v => {
+            if (v && typeof v === 'string') {
+              languageValues.add(v.toLowerCase())
+            }
+          })
+        } else if (typeof value === 'string' && value.trim()) {
+          // If it's a string, add it
+          languageValues.add(value.toLowerCase())
+        }
+      }
+    }
+  }
+  
+  // Convert back to array and map to language codes
+  const languageCodeMap: Record<string, string> = {
+    'english': 'en',
+    'dutch': 'nl',
+    'german': 'de',
+    'french': 'fr',
+    'spanish': 'es',
+    'italian': 'it',
+    'portuguese': 'pt',
+    'russian': 'ru',
+    'chinese': 'zh',
+    'japanese': 'ja',
+    'korean': 'ko',
+    'arabic': 'ar',
+    'hindi': 'hi',
+    'turkish': 'tr',
+    'polish': 'pl',
+    'either': 'en', // Default "either" to English
+    'other': 'other'
+  }
+  
+  return Array.from(languageValues)
+    .map(lang => languageCodeMap[lang] || lang)
+    .filter(Boolean)
+}
+
 export async function upsertProfileAndAcademic(
   supabase: SupabaseClient,
   data: OnboardingSubmissionData
@@ -131,6 +192,58 @@ export interface CompleteOnboardingData {
     question_key: string
     value: any
   }>
+}
+
+export function mapSubmissionError(technicalError: string): { title: string; message: string } {
+  const error = technicalError.toLowerCase()
+  
+  if (error.includes('failed to upsert profile')) {
+    return {
+      title: 'Profile Save Failed',
+      message: 'Unable to save your profile information. Please check your internet connection and try again. If the problem persists, contact support at help@roommatematch.nl'
+    }
+  }
+  
+  if (error.includes('failed to upsert user_academic')) {
+    return {
+      title: 'Academic Information Save Failed',
+      message: 'Unable to save your academic information. Please verify your university and program details are correct, then try again. Contact support at help@roommatematch.nl if the issue continues.'
+    }
+  }
+  
+  if (error.includes('failed to save responses')) {
+    return {
+      title: 'Questionnaire Save Failed',
+      message: 'Unable to save your questionnaire responses. Please try again. If the problem persists, contact support at help@roommatematch.nl'
+    }
+  }
+  
+  if (error.includes('failed to create submission record')) {
+    return {
+      title: 'Submission Record Failed',
+      message: 'Unable to create your submission record. Please try again. Contact support at help@roommatematch.nl if this continues.'
+    }
+  }
+  
+  if (error.includes('authentication required')) {
+    return {
+      title: 'Authentication Required',
+      message: 'Please log in to your account and try again. If you continue having issues, contact support at help@roommatematch.nl'
+    }
+  }
+  
+  if (error.includes('email not verified')) {
+    return {
+      title: 'Email Verification Required',
+      message: 'Please verify your email address before submitting. Check your email for a verification link or go to Settings to resend it. Contact support at help@roommatematch.nl if you need assistance.'
+    }
+  }
+  
+  // Generic fallback
+  return {
+    title: 'Submission Failed',
+    message: `Something went wrong while saving your information. Please try again. If the problem persists, contact support at help@roommatematch.nl with this error: "${technicalError}"`
+  }
 }
 
 export async function submitCompleteOnboarding(

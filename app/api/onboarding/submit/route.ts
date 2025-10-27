@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
-import { submitCompleteOnboarding, extractSubmissionDataFromIntro } from '@/lib/onboarding/submission'
+import { submitCompleteOnboarding, extractSubmissionDataFromIntro, extractLanguagesFromSections, mapSubmissionError } from '@/lib/onboarding/submission'
 import { transformAnswer } from '@/lib/question-key-mapping'
 
 export async function POST() {
@@ -99,6 +99,10 @@ export async function POST() {
         console.log('[Submit] Extracted submission data:', submissionData)
       }
       
+      // Extract languages from all sections
+      const extractedLanguages = extractLanguagesFromSections(sections ?? [])
+      console.log('[Submit] Extracted languages:', extractedLanguages)
+      
       // Transform all answers from all sections
       for (const section of sections ?? []) {
         console.log(`[Submit] Processing section: ${section.section}, answers: ${section.answers?.length || 0}`)
@@ -117,26 +121,7 @@ export async function POST() {
 
       console.log(`[Submit] Prepared ${responsesToInsert.length} responses to insert`)
 
-      // 4. Save snapshot to onboarding_submissions (after successful transformation)
-      console.log('[Submit] Saving to onboarding_submissions')
-      const submissionPayload = {
-        user_id: userId,
-        snapshot: sections ?? [],
-        submitted_at: new Date().toISOString(),
-      }
-
-      const { error: submissionError } = await supabase
-        .from('onboarding_submissions')
-        .upsert(submissionPayload, { onConflict: 'user_id' })
-        
-      if (submissionError) {
-        console.error('[Submit] Submission error:', submissionError)
-        return NextResponse.json({ error: submissionError.message }, { status: 500 })
-      }
-
-      console.log('[Submit] Saved to onboarding_submissions successfully')
-
-      // 5. Use consolidated submission helper
+      // 4. Use consolidated submission helper
       if (submissionData && responsesToInsert.length > 0) {
         const result = await submitCompleteOnboarding(supabase, {
           user_id: userId,
@@ -146,7 +131,7 @@ export async function POST() {
           program_id: submissionData.program_id,
           program: submissionData.program,
           campus: submissionData.campus,
-          languages_daily: submissionData.languages_daily,
+          languages_daily: extractedLanguages,
           study_start_year: submissionData.study_start_year,
           undecided_program: submissionData.undecided_program,
           responses: responsesToInsert
@@ -154,12 +139,37 @@ export async function POST() {
 
         if (!result.success) {
           console.error('[Submit] Consolidated submission failed:', result.error)
+          const mappedError = mapSubmissionError(result.error || 'Unknown error')
           return NextResponse.json({ 
-            error: `Submission failed: ${result.error}` 
+            error: mappedError.message,
+            title: mappedError.title
           }, { status: 500 })
         }
 
         console.log('[Submit] Consolidated submission successful')
+
+        // 5. Save snapshot to onboarding_submissions (only after successful submission)
+        console.log('[Submit] Saving to onboarding_submissions')
+        const submissionPayload = {
+          user_id: userId,
+          snapshot: sections ?? [],
+          submitted_at: new Date().toISOString(),
+        }
+
+        const { error: submissionError } = await supabase
+          .from('onboarding_submissions')
+          .upsert(submissionPayload, { onConflict: 'user_id' })
+          
+        if (submissionError) {
+          console.error('[Submit] Submission error:', submissionError)
+          const mappedError = mapSubmissionError(submissionError.message)
+          return NextResponse.json({ 
+            error: mappedError.message,
+            title: mappedError.title
+          }, { status: 500 })
+        }
+
+        console.log('[Submit] Saved to onboarding_submissions successfully')
       } else {
         console.warn('[Submit] No submission data or responses to process')
       }
@@ -169,8 +179,11 @@ export async function POST() {
     
   } catch (error) {
     console.error('[Submit] Unexpected error:', error)
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error'
+    const mappedError = mapSubmissionError(errorMessage)
     return NextResponse.json({ 
-      error: `Unexpected error: ${error instanceof Error ? error.message : 'Unknown error'}` 
+      error: mappedError.message,
+      title: mappedError.title
     }, { status: 500 })
   }
 }
