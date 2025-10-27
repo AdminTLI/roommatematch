@@ -97,6 +97,27 @@ export async function POST() {
       if (introSection?.answers) {
         submissionData = extractSubmissionDataFromIntro(introSection.answers, user)
         console.log('[Submit] Extracted submission data:', submissionData)
+        
+        // Look up university_id from institution_slug if university_id is empty
+        if (!submissionData.university_id) {
+          const institutionSlugAnswer = introSection.answers.find((a: any) => a.itemId === 'institution_slug')
+          if (institutionSlugAnswer?.value) {
+            console.log('[Submit] Looking up university for slug:', institutionSlugAnswer.value)
+            
+            const { data: university, error: universityError } = await supabase
+              .from('universities')
+              .select('id')
+              .eq('slug', institutionSlugAnswer.value)
+              .single()
+            
+            if (universityError) {
+              console.error('[Submit] University lookup failed:', universityError)
+            } else if (university) {
+              submissionData.university_id = university.id
+              console.log('[Submit] Found university_id:', university.id)
+            }
+          }
+        }
       }
       
       // Extract languages from all sections
@@ -123,6 +144,15 @@ export async function POST() {
 
       // 4. Use consolidated submission helper
       if (submissionData && responsesToInsert.length > 0) {
+        // Ensure we have a valid university_id
+        if (!submissionData.university_id) {
+          console.error('[Submit] No university_id found, cannot proceed with submission')
+          return NextResponse.json({ 
+            error: 'University information is required. Please complete the academic information section.',
+            title: 'Missing University Information'
+          }, { status: 400 })
+        }
+        
         const result = await submitCompleteOnboarding(supabase, {
           user_id: userId,
           university_id: submissionData.university_id,
