@@ -17,7 +17,6 @@ import { cn } from '@/lib/utils'
 import { NotificationBell } from '@/app/(components)/notifications/notification-bell'
 import { ThemeToggle } from '@/components/ui/theme-toggle'
 import { UserDropdown } from './user-dropdown'
-import { MobileNavigation } from './mobile-navigation'
 
 interface TopbarProps {
   user: {
@@ -28,22 +27,8 @@ interface TopbarProps {
   }
 }
 
-const navigation = [
-  { name: 'Dashboard', href: '/dashboard' },
-  { name: 'Matches', href: '/matches' },
-  { name: 'Housing', href: '/housing' },
-  { name: 'Chat', href: '/chat' },
-  { name: 'Agreements', href: '/agreements' },
-  { name: 'Move-in', href: '/move-in' },
-  { name: 'Safety', href: '/safety' },
-  { name: 'Reputation', href: '/reputation' },
-  { name: 'Video Intros', href: '/video-intros' },
-  { name: 'Admin', href: '/admin' },
-]
 
 export function Topbar({ user }: TopbarProps) {
-  const pathname = usePathname()
-
   return (
     <motion.header
       initial={{ opacity: 0, y: -20 }}
@@ -52,14 +37,8 @@ export function Topbar({ user }: TopbarProps) {
       className="sticky top-0 z-40 bg-surface-0/95 backdrop-blur-sm border-b border-line"
     >
       <div className="flex items-center justify-between px-4 lg:px-6 py-4">
-        {/* Left side - Logo and Mobile Menu */}
+        {/* Left side - Logo */}
         <div className="flex items-center gap-4">
-          {/* Mobile Navigation */}
-          <div className="lg:hidden">
-            <MobileNavigation />
-          </div>
-
-          {/* Logo */}
           <Link href="/dashboard" className="flex items-center gap-3">
             <div className="w-8 h-8 bg-gradient-to-br from-brand-500 to-accent-500 rounded-xl flex items-center justify-center">
               <Users className="w-4 h-4 text-white" />
@@ -70,27 +49,6 @@ export function Topbar({ user }: TopbarProps) {
             </div>
           </Link>
         </div>
-
-        {/* Center - Desktop Navigation */}
-        <nav className="hidden lg:flex items-center space-x-1">
-          {navigation.map((item) => {
-            const isActive = pathname === item.href || pathname.startsWith(item.href + '/')
-            return (
-              <Link
-                key={item.name}
-                href={item.href}
-                className={cn(
-                  "px-3 py-2 rounded-lg text-sm font-medium transition-colors",
-                  isActive 
-                    ? "bg-brand-600 text-white" 
-                    : "text-gray-600 hover:text-gray-900 hover:bg-gray-100 dark:text-gray-300 dark:hover:text-white dark:hover:bg-gray-800"
-                )}
-              >
-                {item.name}
-              </Link>
-            )
-          })}
-        </nav>
 
         {/* Right side - Search, Actions, User */}
         <div className="flex items-center gap-3">

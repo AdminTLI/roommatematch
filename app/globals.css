@@ -37,25 +37,61 @@
   }
 
   .dark {
-    --background: 222.2 84% 4.9%;
+    /* Backgrounds */
+    --background: 222 47% 11%;  /* #121826 - very dark blue-gray */
     --foreground: 210 40% 98%;
-    --card: 222.2 84% 4.9%;
+    --card: 222 47% 11%;
     --card-foreground: 210 40% 98%;
-    --popover: 222.2 84% 4.9%;
+    --popover: 222 47% 11%;
     --popover-foreground: 210 40% 98%;
-    --primary: 217.2 91.2% 59.8%;
-    --primary-foreground: 222.2 84% 4.9%;
-    --secondary: 217.2 32.6% 17.5%;
+    
+    /* Brand colors (desaturated for dark mode) */
+    --primary: 217 91% 60%;     /* #818CF8 - lighter indigo */
+    --primary-foreground: 222 47% 11%;
+    --secondary: 215 20% 20%;   /* #2D3548 - dark surface */
     --secondary-foreground: 210 40% 98%;
-    --muted: 217.2 32.6% 17.5%;
-    --muted-foreground: 215 20.2% 65.1%;
-    --accent: 217.2 32.6% 17.5%;
+    --muted: 215 20% 20%;
+    --muted-foreground: 215 20% 65%;
+    --accent: 215 20% 20%;
     --accent-foreground: 210 40% 98%;
-    --destructive: 0 62.8% 30.6%;
+    
+    /* Destructive colors */
+    --destructive: 0 63% 31%;
     --destructive-foreground: 210 40% 98%;
-    --border: 217.2 32.6% 17.5%;
-    --input: 217.2 32.6% 17.5%;
-    --ring: 224.3 76.3% 94.1%;
+    
+    /* Borders & inputs */
+    --border: 215 20% 20%;
+    --input: 215 20% 20%;
+    --ring: 217 91% 60%;
+    
+    /* Custom brand colors for dark mode */
+    --brand-primary: #818CF8;     /* Lighter indigo */
+    --brand-primaryHover: #A5B4FC; /* Even lighter indigo */
+    --brand-accent: #67E8F9;      /* Lighter cyan */
+    --brand-surface: #1E2433;     /* Dark surface */
+    --brand-text: #F8FAFC;        /* Light text */
+    --brand-muted: #94A3B8;       /* Muted text */
+    --brand-border: #2D3548;      /* Dark border */
+    
+    /* App-specific dark colors */
+    --surface-0: #121826;
+    --surface-1: #1E2433;
+    --surface-2: #252B3D;
+    --surface-3: #2D3548;
+    --dashboard: #0F1419;
+    --line: #2D3548;
+    
+    /* Ink colors (inverted for dark mode) */
+    --ink-50: #0F1419;
+    --ink-100: #1E2433;
+    --ink-200: #252B3D;
+    --ink-300: #2D3548;
+    --ink-400: #475569;
+    --ink-500: #64748B;
+    --ink-600: #94A3B8;
+    --ink-700: #CBD5E1;
+    --ink-800: #E2E8F0;
+    --ink-900: #F8FAFC;
   }
 }
 

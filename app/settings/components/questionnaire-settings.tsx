@@ -37,7 +37,7 @@ export function QuestionnaireSettings({ progressData }: QuestionnaireSettingsPro
   const progressPercentage = Math.round((completedSections.length / totalSections) * 100)
 
   const handleEditAnswers = () => {
-    router.push('/onboarding?mode=edit')
+    router.push('/onboarding/intro?mode=edit')
   }
 
   const handleRetakeQuestionnaire = async () => {
@@ -196,7 +196,7 @@ export function QuestionnaireSettings({ progressData }: QuestionnaireSettingsPro
           <div className="flex flex-col sm:flex-row gap-3">
             <Button 
               onClick={handleEditAnswers}
-              variant="default"
+              variant="primary"
               className="flex items-center gap-2"
               size="lg"
             >
