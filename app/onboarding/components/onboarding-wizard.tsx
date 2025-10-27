@@ -21,7 +21,7 @@ import {
   DealBreakersStep 
 } from './steps'
 import { ArrowLeft, ArrowRight, CheckCircle, Save } from 'lucide-react'
-import { validateFormData, hasCompleteResponses, transformFormData } from '@/lib/onboarding/validation'
+import { upsertProfileAndAcademic } from '@/lib/onboarding/submission'
 
 interface OnboardingWizardProps {
   user: User
@@ -201,48 +201,24 @@ export function OnboardingWizard({ user }: OnboardingWizardProps) {
       const firstName = formData.first_name || formData.name || 'User'
 
       // Start transaction by creating all records
-      const { data: profile, error: profileError } = await supabase
-        .from('profiles')
-        .insert({
-          user_id: user.id,
-          university_id: formData.university_id,
-          first_name: firstName,
-          degree_level: formData.degree_level,
-          program: formData.program_id,
-          campus: formData.campus_city,
-          languages: formData.languages_daily || [],
-          verification_status: 'unverified'
-        })
-        .select()
-        .single()
-
-      if (profileError) {
-        console.error('Profile creation failed:', profileError)
-        throw new Error(`Failed to create profile: ${profileError.message}`)
-      }
-
-      // Create user academic record
-      const { error: academicError } = await supabase
-        .from('user_academic')
-        .upsert({
-          user_id: user.id,
-          university_id: formData.university_id,
-          degree_level: formData.degree_level,
-          program_id: formData.undecided_program ? null : formData.program_id,
-          undecided_program: formData.undecided_program || false,
-          study_start_year: formData.study_start_year
-        }, { onConflict: 'user_id' })
-
-      if (academicError) {
-        console.error('Academic record creation failed:', academicError)
-        throw new Error(`Failed to create academic record: ${academicError.message}`)
-      }
+      const profile = await upsertProfileAndAcademic(supabase, {
+        user_id: user.id,
+        university_id: formData.university_id,
+        first_name: firstName,
+        degree_level: formData.degree_level,
+        program_id: formData.program_id,
+        program: formData.program,
+        campus: formData.campus,
+        languages_daily: formData.languages_daily,
+        study_start_year: formData.study_start_year,
+        undecided_program: formData.undecided_program
+      })
 
       // Build responses array with validated data
       const responses = Object.entries(transformedData)
         .filter(([key, value]) => {
           // Skip profile/academic fields
-          const profileFields = ['university_id', 'first_name', 'name', 'program_id', 'undecided_program', 'study_start_year', 'campus_city']
+          const profileFields = ['university_id', 'first_name', 'name', 'program_id', 'undecided_program', 'study_start_year', 'campus']
           return !profileFields.includes(key) && value !== undefined && value !== null && value !== ''
         })
         .map(([key, value]) => ({

@@ -136,6 +136,26 @@ NODE_ENV=development
 - [ ] Configure uptime monitoring
 - [ ] Set up Supabase monitoring
 
+### Academic Data Backfill
+
+Run the backfill script to populate `user_academic` for legacy users:
+
+```bash
+# Set environment variables
+export NEXT_PUBLIC_SUPABASE_URL="your-production-url"
+export SUPABASE_SERVICE_ROLE_KEY="your-service-role-key"
+
+# Run backfill
+npx tsx scripts/backfill-user-academic-from-intro.ts
+```
+
+This will:
+- Find users with intro section data but no `user_academic` records
+- Create academic records based on their intro answers
+- Generate a CSV report: `backfill-user-academic-from-intro-report.csv`
+
+After successful execution, review the CSV report and archive/delete the existing `backfill-user-academic-report.csv` artifact.
+
 ## 🆘 **Troubleshooting**
 
 ### Common Issues:

@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
+import { upsertProfileAndAcademic, extractSubmissionDataFromIntro } from '@/lib/onboarding/submission'
 import { transformAnswer } from '@/lib/question-key-mapping'
 
 export async function POST() {
@@ -106,7 +107,7 @@ export async function POST() {
       console.log('[Submit] Saved to onboarding_submissions successfully')
 
       // 3. Extract and save academic data from intro section
-      const introSection = sections?.find(s => s.section === 'intro')
+      const introSection = sections?.find((s: any) => s.section === 'intro')
       if (introSection?.answers) {
         console.log('[Submit] Processing intro section for academic data')
         
@@ -229,41 +230,8 @@ export async function POST() {
 
       // 4. Create/update profile record with academic data
       if (introSection?.answers) {
-        // Re-extract academic data with correct field names
-        let university_id, degree_level
-        for (const answer of introSection.answers) {
-          if (answer.itemId === 'university_id') {
-            university_id = answer.value
-          } else if (answer.itemId === 'degree_level') {
-            degree_level = answer.value
-          }
-        }
-        
-        if (university_id && degree_level) {
-          console.log('[Submit] Creating/updating profile record')
-          
-          // Get first name from user metadata (intro section doesn't have firstName field)
-          const firstName = user.user_metadata?.full_name?.split(' ')[0] || user.email?.split('@')[0] || 'User'
-          
-          const { error: profileError } = await supabase
-            .from('profiles')
-            .upsert({
-              user_id: userId,
-              university_id: university_id,
-              degree_level: degree_level,
-              first_name: firstName,
-              updated_at: new Date().toISOString()
-            }, {
-              onConflict: 'user_id'
-            })
-          
-          if (profileError) {
-            console.error('[Submit] Failed to create profile:', profileError)
-            // Don't fail the entire submission
-          } else {
-            console.log('[Submit] Profile created successfully')
-          }
-        }
+        const submissionData = extractSubmissionDataFromIntro(introSection.answers, user)
+        await upsertProfileAndAcademic(supabase, submissionData)
       }
 
       // 5. Transform answers and insert into responses table
@@ -277,7 +245,7 @@ export async function POST() {
             responsesToInsert.push({
               user_id: userId,
               question_key: transformed.question_key,
-              value: JSON.stringify(transformed.value)
+              value: transformed.value
             })
           } else {
             console.warn(`[Submit] Failed to transform answer for itemId: ${answer.itemId}`)

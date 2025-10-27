@@ -39,6 +39,15 @@ describe('Onboarding Validation', () => {
       })
     })
 
+    it('should validate campus correctly', () => {
+      expect(validateField('campus', 'uva-sciencepark')).toEqual({ valid: true })
+      expect(validateField('campus', 'vu-main')).toEqual({ valid: true })
+      expect(validateField('campus', '')).toEqual({ 
+        valid: false, 
+        error: 'Campus is required' 
+      })
+    })
+
     it('should validate boolean fields correctly', () => {
       expect(validateField('smoking', true)).toEqual({ valid: true })
       expect(validateField('smoking', false)).toEqual({ valid: true })
@@ -73,7 +82,7 @@ describe('Onboarding Validation', () => {
       const completeData = {
         degree_level: 'master',
         program: 'Computer Science',
-        campus: 'Science Park',
+        campus: 'uva-sciencepark',
         move_in_window: 'immediate',
         budget_min: 500,
         budget_max: 800,
@@ -148,7 +157,7 @@ describe('Onboarding Validation', () => {
       const completeData = {
         degree_level: 'master',
         program: 'Computer Science',
-        campus: 'Science Park',
+        campus: 'uva-sciencepark',
         move_in_window: 'immediate',
         budget_min: 500,
         budget_max: 800,
@@ -200,7 +209,7 @@ describe('Onboarding Validation', () => {
       const dataWithEmptyArray = {
         degree_level: 'master',
         program: 'Computer Science',
-        campus: 'Science Park',
+        campus: 'uva-sciencepark',
         move_in_window: 'immediate',
         budget_min: 500,
         budget_max: 800,
@@ -242,7 +251,7 @@ describe('Onboarding Validation', () => {
       const dataWithNulls = {
         degree_level: 'master',
         program: 'Computer Science',
-        campus: 'Science Park',
+        campus: 'uva-sciencepark',
         move_in_window: 'immediate',
         budget_min: 500,
         budget_max: 800,

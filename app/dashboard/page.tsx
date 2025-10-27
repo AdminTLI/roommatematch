@@ -3,7 +3,8 @@ import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import { DashboardContent } from './components/dashboard-content'
 import type { DashboardData } from '@/types/dashboard'
-import { checkQuestionnaireCompletion } from '@/lib/onboarding/validation'
+import { checkQuestionnaireCompletion, questionSchemas } from '@/lib/onboarding/validation'
+import { calculateSectionProgress } from '@/lib/onboarding/sections'
 
 export default async function DashboardPage() {
   const supabase = await createClient()
@@ -44,10 +45,14 @@ export default async function DashboardPage() {
   }
 
   // Questionnaire progress data
+  const sectionProgress = calculateSectionProgress(completionStatus.missingKeys)
+  const totalRequired = Object.keys(questionSchemas).length
+  const completedCount = totalRequired - completionStatus.missingKeys.length
   const questionnaireProgress = {
-    completedSections: Math.min(Math.floor(progressCount / 4), 9), // Approximate sections based on response count
-    totalSections: 9,
-    isSubmitted: hasCompletedQuestionnaire
+    completedSections: sectionProgress.completedSections,
+    totalSections: sectionProgress.totalSections,
+    isSubmitted: hasCompletedQuestionnaire,
+    completionPercentage: Math.round((completedCount / totalRequired) * 100)
   }
 
   // Fetch dashboard data with error handling
@@ -181,20 +186,22 @@ async function fetchDashboardData(userId: string): Promise<DashboardData> {
     const chatIds = userChats?.map(c => c.chat_id) || []
 
     if (chatIds.length > 0) {
-      // Efficiently count unread messages using a subquery
-      const { count: unreadCount } = await supabase
+      // Fetch all messages in user's chats
+      const { data: allMessages } = await supabase
         .from('messages')
-        .select('id', { count: 'exact', head: true })
+        .select('id')
         .in('chat_id', chatIds)
         .neq('user_id', userId)
-        .not('id', 'in', 
-          supabase
-            .from('message_reads')
-            .select('message_id')
-            .eq('user_id', userId)
-        )
 
-      unreadMessagesCount = unreadCount || 0
+      // Fetch user's read messages
+      const { data: readMessages } = await supabase
+        .from('message_reads')
+        .select('message_id')
+        .eq('user_id', userId)
+
+      const readMessageIds = new Set(readMessages?.map(r => r.message_id) || [])
+      const unreadCount = allMessages?.filter(m => !readMessageIds.has(m.id)).length || 0
+      unreadMessagesCount = unreadCount
     }
   } catch (error) {
     console.error('Error fetching messages:', error)
