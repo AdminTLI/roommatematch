@@ -17,6 +17,8 @@ import { cn } from '@/lib/utils'
 import { NotificationBell } from '@/app/(components)/notifications/notification-bell'
 import { ThemeToggle } from '@/components/ui/theme-toggle'
 import { UserDropdown } from './user-dropdown'
+import { Sidebar } from './sidebar'
+import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet'
 
 interface TopbarProps {
   user: {
@@ -37,8 +39,24 @@ export function Topbar({ user }: TopbarProps) {
       className="sticky top-0 z-40 bg-surface-0/95 backdrop-blur-sm border-b border-line"
     >
       <div className="flex items-center justify-between px-4 lg:px-6 py-4">
-        {/* Left side - Logo */}
+        {/* Left side - Mobile Menu & Logo */}
         <div className="flex items-center gap-4">
+          {/* Mobile Menu Button */}
+          <div className="lg:hidden">
+            <Sheet>
+              <SheetTrigger asChild>
+                <Button variant="ghost" size="sm" className="h-9 w-9">
+                  <Menu className="h-5 w-5" />
+                  <span className="sr-only">Open navigation menu</span>
+                </Button>
+              </SheetTrigger>
+              <SheetContent side="left" className="w-64 p-0">
+                <Sidebar user={user} />
+              </SheetContent>
+            </Sheet>
+          </div>
+
+          {/* Logo */}
           <Link href="/dashboard" className="flex items-center gap-3">
             <div className="w-8 h-8 bg-gradient-to-br from-brand-500 to-accent-500 rounded-xl flex items-center justify-center">
               <Users className="w-4 h-4 text-white" />

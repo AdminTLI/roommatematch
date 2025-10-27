@@ -39,7 +39,7 @@ export default function IntroClient() {
           }
         }
 
-        // Check overall progress first (skip in edit mode)
+        // Check overall progress first (SKIP ALL REDIRECT LOGIC in edit mode)
         if (!isEditMode) {
           const progressResponse = await fetch('/api/onboarding/progress')
           if (progressResponse.ok) {
