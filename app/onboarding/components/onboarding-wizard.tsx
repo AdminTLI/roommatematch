@@ -21,7 +21,7 @@ import {
   DealBreakersStep 
 } from './steps'
 import { ArrowLeft, ArrowRight, CheckCircle, Save } from 'lucide-react'
-import { upsertProfileAndAcademic } from '@/lib/onboarding/submission'
+import { submitCompleteOnboarding } from '@/lib/onboarding/submission'
 
 interface OnboardingWizardProps {
   user: User
@@ -200,8 +200,20 @@ export function OnboardingWizard({ user }: OnboardingWizardProps) {
       // Get first name from formData
       const firstName = formData.first_name || formData.name || 'User'
 
-      // Start transaction by creating all records
-      const profile = await upsertProfileAndAcademic(supabase, {
+      // Build responses array with validated data
+      const responses = Object.entries(transformedData)
+        .filter(([key, value]) => {
+          // Skip profile/academic fields
+          const profileFields = ['university_id', 'first_name', 'name', 'program_id', 'undecided_program', 'study_start_year', 'campus']
+          return !profileFields.includes(key) && value !== undefined && value !== null && value !== ''
+        })
+        .map(([key, value]) => ({
+          question_key: key,
+          value: value
+        }))
+
+      // Use consolidated submission helper
+      const result = await submitCompleteOnboarding(supabase, {
         user_id: user.id,
         university_id: formData.university_id,
         first_name: firstName,
@@ -211,45 +223,12 @@ export function OnboardingWizard({ user }: OnboardingWizardProps) {
         campus: formData.campus,
         languages_daily: formData.languages_daily,
         study_start_year: formData.study_start_year,
-        undecided_program: formData.undecided_program
+        undecided_program: formData.undecided_program,
+        responses: responses
       })
 
-      // Build responses array with validated data
-      const responses = Object.entries(transformedData)
-        .filter(([key, value]) => {
-          // Skip profile/academic fields
-          const profileFields = ['university_id', 'first_name', 'name', 'program_id', 'undecided_program', 'study_start_year', 'campus']
-          return !profileFields.includes(key) && value !== undefined && value !== null && value !== ''
-        })
-        .map(([key, value]) => ({
-          user_id: user.id,
-          question_key: key,
-          value: value
-        }))
-
-      // Save questionnaire responses
-      if (responses.length > 0) {
-        const { error: responsesError } = await supabase
-          .from('responses')
-          .upsert(responses, { onConflict: 'user_id,question_key' })
-
-        if (responsesError) {
-          console.error('Responses save failed:', responsesError)
-          throw new Error(`Failed to save responses: ${responsesError.message}`)
-        }
-      }
-
-      // Create onboarding submission record
-      const { error: submissionError } = await supabase
-        .from('onboarding_submissions')
-        .upsert({
-          user_id: user.id,
-          submitted_at: new Date().toISOString()
-        }, { onConflict: 'user_id' })
-
-      if (submissionError) {
-        console.error('Submission record creation failed:', submissionError)
-        throw new Error(`Failed to create submission record: ${submissionError.message}`)
+      if (!result.success) {
+        throw new Error(result.error || 'Submission failed')
       }
 
       // Create user vector from responses

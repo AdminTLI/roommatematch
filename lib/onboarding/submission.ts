@@ -115,3 +115,78 @@ export async function upsertProfileAndAcademic(
 
   return profile
 }
+
+export interface CompleteOnboardingData {
+  user_id: string
+  university_id: string
+  first_name: string
+  degree_level: string
+  program_id?: string
+  program?: string
+  campus?: string
+  languages_daily?: string[]
+  study_start_year?: number
+  undecided_program?: boolean
+  responses: Array<{
+    question_key: string
+    value: any
+  }>
+}
+
+export async function submitCompleteOnboarding(
+  supabase: SupabaseClient,
+  data: CompleteOnboardingData
+): Promise<{ success: boolean; error?: string }> {
+  try {
+    // 1. Upsert profile and academic data
+    await upsertProfileAndAcademic(supabase, {
+      user_id: data.user_id,
+      university_id: data.university_id,
+      first_name: data.first_name,
+      degree_level: data.degree_level,
+      program_id: data.program_id,
+      program: data.program,
+      campus: data.campus,
+      languages_daily: data.languages_daily,
+      study_start_year: data.study_start_year,
+      undecided_program: data.undecided_program
+    })
+
+    // 2. Upsert questionnaire responses
+    if (data.responses.length > 0) {
+      const responsesToInsert = data.responses.map(response => ({
+        user_id: data.user_id,
+        question_key: response.question_key,
+        value: response.value
+      }))
+
+      const { error: responsesError } = await supabase
+        .from('responses')
+        .upsert(responsesToInsert, { onConflict: 'user_id,question_key' })
+
+      if (responsesError) {
+        throw new Error(`Failed to save responses: ${responsesError.message}`)
+      }
+    }
+
+    // 3. Create onboarding submission record
+    const { error: submissionError } = await supabase
+      .from('onboarding_submissions')
+      .upsert({
+        user_id: data.user_id,
+        submitted_at: new Date().toISOString()
+      }, { onConflict: 'user_id' })
+
+    if (submissionError) {
+      throw new Error(`Failed to create submission record: ${submissionError.message}`)
+    }
+
+    return { success: true }
+  } catch (error) {
+    console.error('Complete onboarding submission failed:', error)
+    return { 
+      success: false, 
+      error: error instanceof Error ? error.message : 'Unknown error' 
+    }
+  }
+}

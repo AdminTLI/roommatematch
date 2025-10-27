@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
-import { upsertProfileAndAcademic, extractSubmissionDataFromIntro } from '@/lib/onboarding/submission'
+import { submitCompleteOnboarding, extractSubmissionDataFromIntro } from '@/lib/onboarding/submission'
 import { transformAnswer } from '@/lib/question-key-mapping'
 
 export async function POST() {
@@ -106,144 +106,25 @@ export async function POST() {
 
       console.log('[Submit] Saved to onboarding_submissions successfully')
 
-      // 3. Extract and save academic data from intro section
+      // 3. Find intro section for later processing
       const introSection = sections?.find((s: any) => s.section === 'intro')
-      if (introSection?.answers) {
-        console.log('[Submit] Processing intro section for academic data')
-        
-        // Extract academic fields from intro section
-        const academicData: any = {}
-        for (const answer of introSection.answers) {
-          // Use correct field names that match academic-step.tsx
-          if (answer.itemId === 'university_id') {
-            academicData.university_id = answer.value
-          } else if (answer.itemId === 'institution_slug') {
-            // Convert institution_slug to university_id if needed
-            if (answer.value && answer.value !== 'other') {
-              try {
-                const { data: uniData, error } = await supabase
-                  .from('universities')
-                  .select('id')
-                  .eq('slug', answer.value)
-                  .maybeSingle()
-                
-                if (!error && uniData) {
-                  academicData.university_id = uniData.id
-                } else {
-                  // Fallback: Create university record on-the-fly
-                  console.log(`[Submit] University slug '${answer.value}' not found, creating on-the-fly...`)
-                  
-                  // Load institution data from JSON file
-                  const fs = await import('fs')
-                  const path = await import('path')
-                  const institutionsPath = path.join(process.cwd(), 'data', 'nl-institutions.v1.json')
-                  const institutionsData = JSON.parse(fs.readFileSync(institutionsPath, 'utf8'))
-                  
-                  // Find institution in all categories
-                  const allInstitutions = [
-                    ...institutionsData.wo,
-                    ...institutionsData.wo_special,
-                    ...institutionsData.hbo
-                  ]
-                  
-                  const institution = allInstitutions.find(inst => inst.id === answer.value)
-                  
-                  if (institution) {
-                    const { data: newUni, error: createError } = await supabase
-                      .from('universities')
-                      .insert({
-                        id: crypto.randomUUID(),
-                        name: institution.label,
-                        slug: institution.id,
-                        branding: {
-                          logo_url: `/logos/${institution.id}.png`,
-                          primary_color: "#4F46E5",
-                          welcome_message: `Find your perfect roommate at ${institution.label}!`
-                        },
-                        eligibility_domains: [],
-                        is_active: true
-                      })
-                      .select('id')
-                      .single()
-                    
-                    if (!createError && newUni) {
-                      academicData.university_id = newUni.id
-                      console.log(`[Submit] Created university record for '${answer.value}'`)
-                    } else {
-                      console.error(`[Submit] Failed to create university for '${answer.value}':`, createError)
-                    }
-                  } else {
-                    console.error(`[Submit] Institution '${answer.value}' not found in JSON data`)
-                  }
-                }
-              } catch (error) {
-                console.error('Error finding/creating university ID for slug:', answer.value, error)
-              }
-            }
-          } else if (answer.itemId === 'degree_level') {
-            academicData.degree_level = answer.value
-          } else if (answer.itemId === 'program_id') {
-            academicData.program_id = answer.value
-          } else if (answer.itemId === 'expected_graduation_year') {
-            academicData.study_start_year = parseInt(answer.value)
-          } else if (answer.itemId === 'undecided_program') {
-            academicData.undecided_program = answer.value
-          }
-        }
-        
-        // Add validation logging
-        console.log('[Submit] Extracted academic data:', {
-          university_id: academicData.university_id,
-          degree_level: academicData.degree_level,
-          program_id: academicData.program_id,
-          study_start_year: academicData.study_start_year
-        })
-        
-        // Validate required fields
-        if (academicData.university_id && academicData.degree_level && academicData.study_start_year) {
-          console.log('[Submit] Creating/updating user_academic record:', academicData)
-          
-          const { error: academicError } = await supabase
-            .from('user_academic')
-            .upsert({
-              user_id: userId,
-              university_id: academicData.university_id,
-              degree_level: academicData.degree_level,
-              program_id: academicData.program_id || null,
-              undecided_program: !academicData.program_id,
-              study_start_year: academicData.study_start_year,
-              updated_at: new Date().toISOString()
-            }, {
-              onConflict: 'user_id'
-            })
-          
-          if (academicError) {
-            console.error('[Submit] Failed to save academic data:', academicError)
-            // Don't fail the entire submission, just log the error
-          } else {
-            console.log('[Submit] Academic data saved successfully')
-          }
-        } else {
-          console.warn('[Submit] Incomplete academic data, skipping user_academic creation:', academicData)
-        }
-      }
 
-      // 4. Create/update profile record with academic data
-      if (introSection?.answers) {
-        const submissionData = extractSubmissionDataFromIntro(introSection.answers, user)
-        await upsertProfileAndAcademic(supabase, submissionData)
-      }
-
-      // 5. Transform answers and insert into responses table
+      // 4. Extract submission data and transform responses
+      let submissionData = null
       const responsesToInsert = []
       
+      if (introSection?.answers) {
+        submissionData = extractSubmissionDataFromIntro(introSection.answers, user)
+        console.log('[Submit] Extracted submission data:', submissionData)
+      }
+      
+      // Transform all answers from all sections
       for (const section of sections ?? []) {
         console.log(`[Submit] Processing section: ${section.section}, answers: ${section.answers?.length || 0}`)
         for (const answer of section.answers ?? []) {
           const transformed = transformAnswer(answer)
           if (transformed) {
             responsesToInsert.push({
-              user_id: userId,
               question_key: transformed.question_key,
               value: transformed.value
             })
@@ -254,48 +135,33 @@ export async function POST() {
       }
 
       console.log(`[Submit] Prepared ${responsesToInsert.length} responses to insert`)
-      console.log('[Submit] Sample responses:', responsesToInsert.slice(0, 3))
 
-      if (responsesToInsert.length > 0) {
-        // Deduplicate by question_key, keeping the last occurrence (most recent answer)
-        const deduplicatedResponses = Array.from(
-          responsesToInsert
-            .reduce((map, response) => {
-              map.set(response.question_key, response)
-              return map
-            }, new Map<string, any>())
-            .values()
-        )
+      // 5. Use consolidated submission helper
+      if (submissionData && responsesToInsert.length > 0) {
+        const result = await submitCompleteOnboarding(supabase, {
+          user_id: userId,
+          university_id: submissionData.university_id,
+          first_name: submissionData.first_name,
+          degree_level: submissionData.degree_level,
+          program_id: submissionData.program_id,
+          program: submissionData.program,
+          campus: submissionData.campus,
+          languages_daily: submissionData.languages_daily,
+          study_start_year: submissionData.study_start_year,
+          undecided_program: submissionData.undecided_program,
+          responses: responsesToInsert
+        })
 
-        console.log(`[Submit] Deduplicated responses: ${responsesToInsert.length} → ${deduplicatedResponses.length}`)
-        
-        if (responsesToInsert.length !== deduplicatedResponses.length) {
-          const duplicates = responsesToInsert.length - deduplicatedResponses.length
-          console.log(`[Submit] Removed ${duplicates} duplicate question_keys`)
-        }
-
-        const { error: responsesError } = await supabase
-          .from('responses')
-          .upsert(deduplicatedResponses, { 
-            onConflict: 'user_id,question_key',
-            ignoreDuplicates: false  // This ensures updates happen
-          })
-          
-        if (responsesError) {
-          console.error('[Submit] Responses upsert error:', {
-            message: responsesError.message,
-            details: responsesError.details,
-            hint: responsesError.hint,
-            code: responsesError.code
-          })
+        if (!result.success) {
+          console.error('[Submit] Consolidated submission failed:', result.error)
           return NextResponse.json({ 
-            error: `Database error: ${responsesError.message}. ${responsesError.hint || ''}` 
+            error: `Submission failed: ${result.error}` 
           }, { status: 500 })
         }
 
-        console.log('[Submit] Successfully inserted/updated responses')
+        console.log('[Submit] Consolidated submission successful')
       } else {
-        console.warn('[Submit] No responses to insert!')
+        console.warn('[Submit] No submission data or responses to process')
       }
 
     console.log('[Submit] Submission complete')

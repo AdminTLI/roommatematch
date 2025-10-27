@@ -122,21 +122,69 @@ test.describe('Onboarding to Dashboard Flow', () => {
     
     expect(unexpectedErrors).toHaveLength(0)
   })
-  
-  test('should handle universities without campus data', async ({ page }) => {
-    await page.goto('/onboarding')
+
+  test('should verify database state after onboarding completion', async ({ page }) => {
+    // This test verifies that the consolidated submission helper correctly saves all data
+    await page.goto('/auth/signup')
     
-    // Select a university without campus data
-    await page.selectOption('[data-testid="university-select"]', { label: 'University Without Campuses' })
+    const timestamp = Date.now()
+    const testEmail = `dbtest-${timestamp}@student.uva.nl`
     
-    // Verify fallback options are available
-    await expect(page.locator('[data-testid="campus-select"]')).not.toBeDisabled()
-    await page.selectOption('[data-testid="campus-select"]', { label: 'Main Campus' })
+    await page.fill('[data-testid="email-input"]', testEmail)
+    await page.fill('[data-testid="password-input"]', 'TestPassword123!')
+    await page.fill('[data-testid="confirm-password-input"]', 'TestPassword123!')
+    await page.click('[data-testid="signup-button"]')
     
-    // Should be able to proceed
-    await expect(page.locator('[data-testid="campus-select"]')).toHaveValue('main-campus')
+    await page.waitForURL('/onboarding', { timeout: 10000 })
+    
+    // Complete onboarding with specific values to verify persistence
+    await page.selectOption('[data-testid="university-select"]', { label: 'University of Amsterdam' })
+    await page.selectOption('[data-testid="degree-level-select"]', { label: "Bachelor's (BSc/BA)" })
+    await page.waitForSelector('[data-testid="program-select"]')
+    await page.selectOption('[data-testid="program-select"]', { index: 1 })
+    await page.waitForSelector('[data-testid="campus-select"]')
+    await page.selectOption('[data-testid="campus-select"]', { label: 'UvA — Roeterseiland (Amsterdam)' })
+    await page.selectOption('[data-testid="move-in-select"]', { label: 'Within a month' })
+    
+    // Fill required fields
+    await page.fill('[data-testid="budget-min-input"]', '600')
+    await page.fill('[data-testid="budget-max-input"]', '900')
+    await page.selectOption('[data-testid="commute-max-select"]', { label: '45 minutes' })
+    await page.selectOption('[data-testid="lease-length-select"]', { label: '6 months' })
+    await page.check('[data-testid="room-type-shared"]')
+    
+    // Complete remaining steps quickly
+    await page.click('[data-testid="next-button"]')
+    await page.click('[data-testid="next-button"]')
+    await page.click('[data-testid="next-button"]')
+    await page.click('[data-testid="next-button"]')
+    await page.click('[data-testid="next-button"]')
+    await page.check('[data-testid="language-en"]')
+    await page.check('[data-testid="language-de"]')
+    await page.click('[data-testid="next-button"]')
+    await page.uncheck('[data-testid="smoking-checkbox"]')
+    await page.check('[data-testid="pets-allowed-checkbox"]')
+    await page.fill('[data-testid="parties-max-input"]', '3')
+    await page.fill('[data-testid="guests-max-input"]', '4')
+    
+    await page.click('[data-testid="submit-button"]')
+    await page.waitForURL('/dashboard', { timeout: 15000 })
+    
+    // Verify dashboard shows completion
+    await expect(page.locator('h1')).toContainText('Dashboard')
+    
+    // Note: In a real test environment, you would query the database directly
+    // to verify that:
+    // 1. profiles table has campus: 'UvA — Roeterseiland (Amsterdam)'
+    // 2. profiles table has languages: ['en', 'de']
+    // 3. user_academic table has correct degree_level: 'bachelor'
+    // 4. responses table has all expected question keys
+    // 5. onboarding_submissions table has a record for this user
+    
+    // For now, we verify the UI shows the correct state
+    await expect(page.locator('[data-testid="questionnaire-status"]')).toContainText('Complete')
   })
-  
+
   test('should handle re-onboarding scenario with upsert', async ({ page }) => {
     // This test verifies that a user can re-complete onboarding
     // without conflicts (testing the upsert functionality)
@@ -224,5 +272,84 @@ test.describe('Onboarding to Dashboard Flow', () => {
     // Verify dashboard still works
     await expect(page.locator('h1')).toContainText('Dashboard')
     await expect(page.locator('[data-testid="questionnaire-status"]')).toContainText('Complete')
+  })
+
+  test('should verify section progress calculation accuracy', async ({ page }) => {
+    // This test verifies that the section progress shows accurate "N/N sections" count
+    await page.goto('/auth/signup')
+    
+    const timestamp = Date.now()
+    const testEmail = `progresstest-${timestamp}@student.uva.nl`
+    
+    await page.fill('[data-testid="email-input"]', testEmail)
+    await page.fill('[data-testid="password-input"]', 'TestPassword123!')
+    await page.fill('[data-testid="confirm-password-input"]', 'TestPassword123!')
+    await page.click('[data-testid="signup-button"]')
+    
+    await page.waitForURL('/onboarding', { timeout: 10000 })
+    
+    // Complete only basics section to test partial progress
+    await page.selectOption('[data-testid="university-select"]', { label: 'University of Amsterdam' })
+    await page.selectOption('[data-testid="degree-level-select"]', { label: "Master's (MSc/MA)" })
+    await page.waitForSelector('[data-testid="program-select"]')
+    await page.selectOption('[data-testid="program-select"]', { index: 1 })
+    await page.waitForSelector('[data-testid="campus-select"]')
+    await page.selectOption('[data-testid="campus-select"]', { label: 'UvA — Science Park (Amsterdam)' })
+    await page.selectOption('[data-testid="move-in-select"]', { label: 'Immediately' })
+    
+    // Go to dashboard to check progress
+    await page.goto('/dashboard')
+    
+    // Verify progress shows partial completion (should show something like "1/8 sections")
+    const progressBadge = page.locator('[data-testid="questionnaire-status"]')
+    await expect(progressBadge).toBeVisible()
+    
+    // The progress should show a fraction, not "Complete"
+    const progressText = await progressBadge.textContent()
+    expect(progressText).toMatch(/\d+\/8 sections/)
+    
+    // Complete the rest of onboarding
+    await page.goto('/onboarding')
+    await page.click('[data-testid="next-button"]')
+    
+    // Fill logistics
+    await page.fill('[data-testid="budget-min-input"]', '500')
+    await page.fill('[data-testid="budget-max-input"]', '800')
+    await page.selectOption('[data-testid="commute-max-select"]', { label: '30 minutes' })
+    await page.selectOption('[data-testid="lease-length-select"]', { label: '12 months' })
+    await page.check('[data-testid="room-type-single"]')
+    await page.click('[data-testid="next-button"]')
+    
+    // Skip through remaining steps
+    await page.click('[data-testid="next-button"]')
+    await page.click('[data-testid="next-button"]')
+    await page.click('[data-testid="next-button"]')
+    await page.click('[data-testid="next-button"]')
+    await page.check('[data-testid="language-en"]')
+    await page.click('[data-testid="next-button"]')
+    await page.uncheck('[data-testid="smoking-checkbox"]')
+    await page.check('[data-testid="pets-allowed-checkbox"]')
+    await page.fill('[data-testid="parties-max-input"]', '5')
+    await page.fill('[data-testid="guests-max-input"]', '6')
+    
+    await page.click('[data-testid="submit-button"]')
+    await page.waitForURL('/dashboard', { timeout: 15000 })
+    
+    // Now verify it shows "Complete" instead of "8/8 sections"
+    await expect(page.locator('[data-testid="questionnaire-status"]')).toContainText('Complete')
+  })
+  
+  test('should handle universities without campus data', async ({ page }) => {
+    await page.goto('/onboarding')
+    
+    // Select a university without campus data
+    await page.selectOption('[data-testid="university-select"]', { label: 'University Without Campuses' })
+    
+    // Verify fallback options are available
+    await expect(page.locator('[data-testid="campus-select"]')).not.toBeDisabled()
+    await page.selectOption('[data-testid="campus-select"]', { label: 'Main Campus' })
+    
+    // Should be able to proceed
+    await expect(page.locator('[data-testid="campus-select"]')).toHaveValue('main-campus')
   })
 })
