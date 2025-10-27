@@ -1,11 +1,8 @@
-import { redirect } from 'next/navigation'
-import { createClient } from '@/lib/supabase/server'
+import { checkOnboardingRedirect } from '@/lib/onboarding/server-redirect'
 import IntroClient from './pageClient'
 
 export default async function IntroPage() {
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) redirect('/auth/sign-in')
+  await checkOnboardingRedirect()
   return <IntroClient />
 }
 

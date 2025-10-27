@@ -186,7 +186,7 @@ export async function checkQuestionnaireCompletion(userId: string): Promise<{
   const { createClient } = await import('@/lib/supabase/server');
   const supabase = await createClient();
 
-  // Check if submission exists
+  // Check if submission exists - this is the primary source of truth
   const { data: submission } = await supabase
     .from('onboarding_submissions')
     .select('id')
@@ -195,7 +195,7 @@ export async function checkQuestionnaireCompletion(userId: string): Promise<{
 
   const hasSubmission = !!submission;
 
-  // Get all responses for this user
+  // Get all responses for this user (for progress tracking)
   const { data: responses } = await supabase
     .from('responses')
     .select('question_key')
@@ -204,12 +204,14 @@ export async function checkQuestionnaireCompletion(userId: string): Promise<{
   const responseCount = responses?.length || 0;
   const responseKeys = new Set(responses?.map(r => r.question_key) || []);
 
-  // Check which required keys are missing
+  // Check which required keys are missing (for debugging/analytics)
   const requiredKeys = Object.keys(questionSchemas);
   const missingKeys = requiredKeys.filter(key => !responseKeys.has(key));
 
-  // Completion requires both submission AND all required responses
-  const isComplete = hasSubmission && missingKeys.length === 0;
+  // Completion is primarily based on submission existence
+  // If user has submission, they are considered complete regardless of response count
+  // This handles legacy users who may have fewer responses due to schema changes
+  const isComplete = hasSubmission;
 
   return {
     isComplete,

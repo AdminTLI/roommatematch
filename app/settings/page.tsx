@@ -27,10 +27,22 @@ export default async function SettingsPage() {
     .eq('user_id', user.id)
     .maybeSingle()
 
-  // Fetch academic data
+  // Fetch academic data with joins for readable names
   let { data: academic } = await supabase
     .from('user_academic')
-    .select('*')
+    .select(`
+      *,
+      universities!user_academic_university_id_fkey(
+        id,
+        name,
+        slug
+      ),
+      programmes!user_academic_program_id_fkey(
+        id,
+        name,
+        code
+      )
+    `)
     .eq('user_id', user.id)
     .maybeSingle()
 

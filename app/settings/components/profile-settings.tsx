@@ -176,19 +176,49 @@ export function ProfileSettings({ user, profile, academic }: ProfileSettingsProp
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label>University</Label>
-              <Input value={academic?.university_id || 'Not specified'} disabled className="bg-gray-50" />
+              <Input 
+                value={
+                  academic?.universities?.name || 
+                  academic?.university_id || 
+                  'Not specified'
+                } 
+                disabled 
+                className="bg-gray-50" 
+              />
             </div>
             <div className="space-y-2">
               <Label>Degree Level</Label>
-              <Input value={academic?.degree_level || 'Not specified'} disabled className="bg-gray-50" />
+              <Input 
+                value={
+                  academic?.degree_level 
+                    ? academic.degree_level.charAt(0).toUpperCase() + academic.degree_level.slice(1)
+                    : 'Not specified'
+                } 
+                disabled 
+                className="bg-gray-50" 
+              />
             </div>
             <div className="space-y-2">
               <Label>Program</Label>
-              <Input value={academic?.program_id || 'Not specified'} disabled className="bg-gray-50" />
+              <Input 
+                value={
+                  academic?.undecided_program 
+                    ? 'Undecided'
+                    : academic?.programmes?.name || 
+                      academic?.program_id || 
+                      'Not specified'
+                } 
+                disabled 
+                className="bg-gray-50" 
+              />
             </div>
             <div className="space-y-2">
-              <Label>Start Year</Label>
-              <Input value={academic?.study_start_year || 'Not specified'} disabled className="bg-gray-50" />
+              <Label>Expected Graduation Year</Label>
+              <Input 
+                value={academic?.study_start_year || 'Not specified'} 
+                disabled 
+                className="bg-gray-50" 
+              />
             </div>
           </div>
           <p className="text-sm text-gray-500 mt-4">

@@ -116,12 +116,31 @@ export async function POST() {
           // Use correct field names that match academic-step.tsx
           if (answer.itemId === 'university_id') {
             academicData.university_id = answer.value
+          } else if (answer.itemId === 'institution_slug') {
+            // Convert institution_slug to university_id if needed
+            if (answer.value && answer.value !== 'other') {
+              try {
+                const { data: uniData, error } = await supabase
+                  .from('universities')
+                  .select('id')
+                  .eq('slug', answer.value)
+                  .maybeSingle()
+                
+                if (!error && uniData) {
+                  academicData.university_id = uniData.id
+                }
+              } catch (error) {
+                console.error('Error finding university ID for slug:', answer.value, error)
+              }
+            }
           } else if (answer.itemId === 'degree_level') {
             academicData.degree_level = answer.value
           } else if (answer.itemId === 'program_id') {
             academicData.program_id = answer.value
           } else if (answer.itemId === 'expected_graduation_year') {
             academicData.study_start_year = parseInt(answer.value)
+          } else if (answer.itemId === 'undecided_program') {
+            academicData.undecided_program = answer.value
           }
         }
         

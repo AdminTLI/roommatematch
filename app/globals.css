@@ -80,11 +80,17 @@
   }
 
   /* Improve touch targets - exclude Radix form controls */
-  button:not([role="radio"]):not([role="checkbox"]), 
-  a:not([role="radio"]):not([role="checkbox"]), 
-  [role="button"]:not([role="radio"]):not([role="checkbox"]) {
+  button:not([role="radio"]):not([role="checkbox"]):not([role="switch"]), 
+  a:not([role="radio"]):not([role="checkbox"]):not([role="switch"]), 
+  [role="button"]:not([role="radio"]):not([role="checkbox"]):not([role="switch"]) {
     min-height: 44px;
     min-width: 44px;
+  }
+  
+  /* Ensure form controls maintain their intended size */
+  [role="radio"], [role="checkbox"], [role="switch"] {
+    min-height: unset !important;
+    min-width: unset !important;
   }
   
   /* Better tap highlighting */

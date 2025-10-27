@@ -7,11 +7,18 @@ import { checkQuestionnaireCompletion } from '@/lib/onboarding/validation'
 
 export default async function DashboardPage() {
   const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-
-  if (!user) {
-    redirect('/auth/sign-in')
-  }
+  
+  // Force refresh the user session to get latest auth state
+  const { data: { user }, error: userError } = await supabase.auth.getUser()
+  
+  console.log('[Dashboard] User auth data:', {
+    id: user?.id,
+    email: user?.email,
+    email_confirmed_at: user?.email_confirmed_at,
+    email_confirmed_at_type: typeof user?.email_confirmed_at,
+    user_metadata: user?.user_metadata,
+    userError
+  })
 
   // Check questionnaire completion status using the helper
   const completionStatus = await checkQuestionnaireCompletion(user.id)
