@@ -131,6 +131,9 @@ export async function POST() {
           
           if (programError) {
             console.error('[Submit] Program lookup failed:', programError)
+            // If program not found, set to null to avoid UUID constraint violation
+            console.log('[Submit] Setting program_id to null since program not found in database')
+            submissionData.program_id = null
           } else if (program) {
             submissionData.program_id = program.id
             console.log('[Submit] Found program UUID:', program.id)
