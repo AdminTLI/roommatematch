@@ -204,7 +204,7 @@ export function ProfileSettings({ user, profile, academic }: ProfileSettingsProp
                 value={
                   academic?.undecided_program 
                     ? 'Undecided'
-                    : academic?.programmes?.name || 
+                    : academic?.programs?.name || 
                       academic?.program_id || 
                       'Not specified'
                 } 

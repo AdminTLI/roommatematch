@@ -128,9 +128,55 @@ export async function POST() {
                 
                 if (!error && uniData) {
                   academicData.university_id = uniData.id
+                } else {
+                  // Fallback: Create university record on-the-fly
+                  console.log(`[Submit] University slug '${answer.value}' not found, creating on-the-fly...`)
+                  
+                  // Load institution data from JSON file
+                  const fs = await import('fs')
+                  const path = await import('path')
+                  const institutionsPath = path.join(process.cwd(), 'data', 'nl-institutions.v1.json')
+                  const institutionsData = JSON.parse(fs.readFileSync(institutionsPath, 'utf8'))
+                  
+                  // Find institution in all categories
+                  const allInstitutions = [
+                    ...institutionsData.wo,
+                    ...institutionsData.wo_special,
+                    ...institutionsData.hbo
+                  ]
+                  
+                  const institution = allInstitutions.find(inst => inst.id === answer.value)
+                  
+                  if (institution) {
+                    const { data: newUni, error: createError } = await supabase
+                      .from('universities')
+                      .insert({
+                        id: crypto.randomUUID(),
+                        name: institution.label,
+                        slug: institution.id,
+                        branding: {
+                          logo_url: `/logos/${institution.id}.png`,
+                          primary_color: "#4F46E5",
+                          welcome_message: `Find your perfect roommate at ${institution.label}!`
+                        },
+                        eligibility_domains: [],
+                        is_active: true
+                      })
+                      .select('id')
+                      .single()
+                    
+                    if (!createError && newUni) {
+                      academicData.university_id = newUni.id
+                      console.log(`[Submit] Created university record for '${answer.value}'`)
+                    } else {
+                      console.error(`[Submit] Failed to create university for '${answer.value}':`, createError)
+                    }
+                  } else {
+                    console.error(`[Submit] Institution '${answer.value}' not found in JSON data`)
+                  }
                 }
               } catch (error) {
-                console.error('Error finding university ID for slug:', answer.value, error)
+                console.error('Error finding/creating university ID for slug:', answer.value, error)
               }
             }
           } else if (answer.itemId === 'degree_level') {

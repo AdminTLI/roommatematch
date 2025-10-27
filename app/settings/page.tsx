@@ -37,10 +37,10 @@ export default async function SettingsPage() {
         name,
         slug
       ),
-      programmes!user_academic_program_id_fkey(
+      programs!user_academic_program_id_fkey(
         id,
         name,
-        code
+        croho_code
       )
     `)
     .eq('user_id', user.id)
