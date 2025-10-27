@@ -1,6 +1,7 @@
 'use client'
 
 import { useMemo } from 'react'
+import { useSearchParams } from 'next/navigation'
 import locItems from '@/data/item-bank.location.v1.json'
 import type { Item } from '@/types/questionnaire'
 import { QuestionnaireLayout } from '@/components/questionnaire/QuestionnaireLayout'
@@ -17,6 +18,10 @@ export default function SectionClient() {
   const setAnswer = useOnboardingStore((s) => s.setAnswer)
   const countAnswered = useOnboardingStore((s) => s.countAnsweredInSection)
   const answers = useOnboardingStore((s) => s.sections[sectionKey])
+  const searchParams = useSearchParams()
+
+  // Check edit mode using React hook for proper reactivity
+  const isEditMode = searchParams.get('mode') === 'edit'
 
   const total = items.length
   const answered = countAnswered(sectionKey)
@@ -45,8 +50,11 @@ export default function SectionClient() {
       totalSteps={11}
       title="Location & Commute"
       subtitle="Institution and campus help scope location & travel."
-      onPrev={() => (window.location.href = '/onboarding/intro')}
-      onNext={async () => { await saveSection(); window.location.href = '/onboarding/personality-values' }}
+      onPrev={() => (window.location.href = isEditMode ? '/onboarding/intro?mode=edit' : '/onboarding/intro')}
+      onNext={async () => { 
+        await saveSection(); 
+        window.location.href = isEditMode ? '/onboarding/personality-values?mode=edit' : '/onboarding/personality-values'
+      }}
       nextDisabled={nextDisabled}
     >
       <div className="flex items-center justify-between">

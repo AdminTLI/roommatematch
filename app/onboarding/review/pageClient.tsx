@@ -5,6 +5,7 @@ import { useOnboardingStore } from '@/store/onboarding'
 import itemsJson from '@/data/item-bank.v1.json'
 import type { Item } from '@/types/questionnaire'
 import { useMemo } from 'react'
+import { useSearchParams } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { FileDown, AlertCircle } from 'lucide-react'
@@ -39,6 +40,10 @@ function humanize(item: Item, value: any): string {
 export default function ReviewClient() {
   const sections = useOnboardingStore((s) => s.sections)
   const allItems = itemsJson as Item[]
+  const searchParams = useSearchParams()
+  
+  // Check edit mode using React hook for proper reactivity
+  const isEditMode = searchParams.get('mode') === 'edit'
   const grouped = useMemo(() => {
     const bySection: Record<string, Item[]> = {}
     for (const it of allItems) {
@@ -347,10 +352,18 @@ export default function ReviewClient() {
         localStorage.setItem('demo-questionnaire-completed', 'true')
       }
       
-      window.location.href = '/onboarding/complete'
+      // Navigate based on mode
+      if (isEditMode) {
+        // In edit mode, return to settings after successful submission
+        window.location.href = '/settings'
+      } else {
+        // Normal flow, go to completion page
+        window.location.href = '/onboarding/complete'
+      }
     } catch (error) {
       console.error('Submit error:', error)
-      alert(`Failed to submit questionnaire: ${error.message}. Please try again.`)
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error'
+      alert(`Failed to submit questionnaire: ${errorMessage}. Please try again.`)
     }
   }
 
@@ -358,9 +371,9 @@ export default function ReviewClient() {
     <QuestionnaireLayout
       stepIndex={10}
       totalSteps={11}
-      title="Review your answers"
-      subtitle="Read-only summary. Submit to finish."
-      onPrev={() => (window.location.href = '/onboarding/reliability-logistics')}
+      title={isEditMode ? "Review your updated answers" : "Review your answers"}
+      subtitle={isEditMode ? "Review your changes before saving. Submit to update your profile." : "Read-only summary. Submit to finish."}
+      onPrev={() => (window.location.href = isEditMode ? '/onboarding/reliability-logistics?mode=edit' : '/onboarding/reliability-logistics')}
       onNext={submit}
     >
       <div className="space-y-8">

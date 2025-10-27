@@ -1,6 +1,7 @@
 'use client'
 
 import { useMemo } from 'react'
+import { useSearchParams } from 'next/navigation'
 import itemsJson from '@/data/item-bank.v1.json'
 import type { Item } from '@/types/questionnaire'
 import { QuestionnaireLayout } from '@/components/questionnaire/QuestionnaireLayout'
@@ -23,6 +24,10 @@ export default function SectionClient() {
   const setDealBreaker = useOnboardingStore((s) => s.setDealBreaker)
   const countAnswered = useOnboardingStore((s) => s.countAnsweredInSection)
   const answers = useOnboardingStore((s) => s.sections[sectionKey])
+  const searchParams = useSearchParams()
+
+  // Check edit mode using React hook for proper reactivity
+  const isEditMode = searchParams.get('mode') === 'edit'
 
   const total = items.length
   const answered = countAnswered(sectionKey)
@@ -53,8 +58,8 @@ export default function SectionClient() {
       totalSteps={11}
       title="Home Operations"
       subtitle="Cleanliness standards, chores, kitchen & bathroom habits."
-      onPrev={() => (window.location.href = '/onboarding/noise-sensory')}
-      onNext={async () => { await saveSection(); window.location.href = '/onboarding/social-hosting-language' }}
+      onPrev={() => (window.location.href = isEditMode ? '/onboarding/noise-sensory?mode=edit' : '/onboarding/noise-sensory')}
+      onNext={async () => { await saveSection(); window.location.href = isEditMode ? '/onboarding/social-hosting-language?mode=edit' : '/onboarding/social-hosting-language' }}
       nextDisabled={nextDisabled}
     >
       <AutosaveToaster show={showToast} />

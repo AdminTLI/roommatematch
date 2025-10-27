@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { useSearchParams } from 'next/navigation'
 import { QuestionnaireLayout } from '@/components/questionnaire/QuestionnaireLayout'
 import { AcademicStep } from '../components/steps/academic-step'
 import { AutosaveToaster } from '@/components/questionnaire/AutosaveToaster'
@@ -17,12 +18,12 @@ export default function IntroClient() {
   const [isSaving, setIsSaving] = useState(false)
   const router = useRouter()
   const supabase = createClient()
+  const searchParams = useSearchParams()
 
-  // Check edit mode synchronously from URL params
-  const searchParams = new URLSearchParams(window.location.search)
+  // Check edit mode using React hook for proper reactivity
   const isEditMode = searchParams.get('mode') === 'edit'
 
-  console.log('[IntroClient] Edit mode:', isEditMode, 'URL:', window.location.search)
+  console.log('[IntroClient] Edit mode:', isEditMode, 'URL:', searchParams.toString())
 
   // Load saved data and check progress on mount
   useEffect(() => {
@@ -30,16 +31,6 @@ export default function IntroClient() {
       try {
         const { data: { user } } = await supabase.auth.getUser()
         if (!user) return
-
-        // In edit mode, clear submission status to allow re-submission
-        if (isEditMode) {
-          try {
-            await fetch('/api/settings/questionnaire/reset', { method: 'POST' })
-            console.log('Cleared submission status for edit mode')
-          } catch (error) {
-            console.error('Failed to clear submission status:', error)
-          }
-        }
 
         // Check overall progress first (SKIP ALL REDIRECT LOGIC in edit mode)
         if (!isEditMode) {
@@ -112,7 +103,7 @@ export default function IntroClient() {
     }
 
     loadSavedData()
-  }, [supabase, router])
+  }, [supabase, router, isEditMode])
 
   const handleAcademicChange = (data: Record<string, any>) => {
     setAcademicData(data)
@@ -154,8 +145,8 @@ export default function IntroClient() {
 
         // Navigate based on mode
         if (isEditMode) {
-          // In edit mode, go back to settings
-          router.push('/settings')
+          // In edit mode, continue to next section with edit mode preserved
+          router.push('/onboarding/location-commute?mode=edit')
         } else {
           // Normal flow, go to next section
           router.push('/onboarding/location-commute')
@@ -201,7 +192,6 @@ export default function IntroClient() {
         subtitle={isEditMode ? "Update your university and programme details" : "Your university and programme details plus consent to begin"}
         onNext={handleNext}
         nextDisabled={!isValid || isSaving}
-        nextText={isSaving ? "Saving..." : (isEditMode ? "Save Changes" : "Next")}
       >
         <AutosaveToaster show={false} />
         <AcademicStep 

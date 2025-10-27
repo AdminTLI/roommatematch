@@ -1,6 +1,7 @@
 'use client'
 
 import { useMemo } from 'react'
+import { useSearchParams } from 'next/navigation'
 import itemsJson from '@/data/item-bank.v1.json'
 import type { Item } from '@/types/questionnaire'
 import { QuestionnaireLayout } from '@/components/questionnaire/QuestionnaireLayout'
@@ -23,6 +24,10 @@ export default function SectionClient() {
   const setDealBreaker = useOnboardingStore((s) => s.setDealBreaker)
   const countAnswered = useOnboardingStore((s) => s.countAnsweredInSection)
   const answers = useOnboardingStore((s) => s.sections[sectionKey])
+  const searchParams = useSearchParams()
+
+  // Check edit mode using React hook for proper reactivity
+  const isEditMode = searchParams.get('mode') === 'edit'
 
   const total = items.length
   const answered = countAnswered(sectionKey)
@@ -53,8 +58,8 @@ export default function SectionClient() {
       totalSteps={11}
       title="Noise & Sensory"
       subtitle="Sound, light, air, and thermal comfort in shared spaces."
-      onPrev={() => (window.location.href = '/onboarding/sleep-circadian')}
-      onNext={async () => { await saveSection(); window.location.href = '/onboarding/home-operations' }}
+      onPrev={() => (window.location.href = isEditMode ? '/onboarding/sleep-circadian?mode=edit' : '/onboarding/sleep-circadian')}
+      onNext={async () => { await saveSection(); window.location.href = isEditMode ? '/onboarding/home-operations?mode=edit' : '/onboarding/home-operations' }}
       nextDisabled={nextDisabled}
     >
       <AutosaveToaster show={showToast} />
