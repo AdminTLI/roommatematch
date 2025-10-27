@@ -143,7 +143,8 @@ export async function upsertProfileAndAcademic(
       program: data.program_id,
       campus: data.campus,
       languages: data.languages_daily || [],
-      verification_status: 'unverified'
+      verification_status: 'unverified',
+      updated_at: new Date().toISOString()
     }, {
       onConflict: 'user_id'
     })
@@ -151,6 +152,22 @@ export async function upsertProfileAndAcademic(
     .single()
 
   if (profileError) {
+    console.error('[Submit] Profile upsert failed:', {
+      code: profileError.code,
+      message: profileError.message,
+      details: profileError.details,
+      hint: profileError.hint,
+      data: {
+        user_id: data.user_id,
+        university_id: data.university_id,
+        first_name: data.first_name,
+        degree_level: data.degree_level,
+        program: data.program_id,
+        campus: data.campus,
+        languages: data.languages_daily || [],
+        verification_status: 'unverified'
+      }
+    })
     throw new Error(`Failed to upsert profile: ${profileError.message}`)
   }
 
@@ -171,6 +188,20 @@ export async function upsertProfileAndAcademic(
     })
 
   if (academicError) {
+    console.error('[Submit] Academic upsert failed:', {
+      code: academicError.code,
+      message: academicError.message,
+      details: academicError.details,
+      hint: academicError.hint,
+      data: {
+        user_id: data.user_id,
+        university_id: data.university_id,
+        degree_level: data.degree_level,
+        program_id: data.program_id,
+        study_start_year: data.study_start_year,
+        undecided_program: data.undecided_program
+      }
+    })
     throw new Error(`Failed to upsert user_academic: ${academicError.message}`)
   }
 
