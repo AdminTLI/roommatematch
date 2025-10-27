@@ -61,19 +61,17 @@ export function AppShell({ children, user, showQuestionnairePrompt = false }: Ap
 
   return (
     <ThemeProvider>
-      <div className="min-h-screen bg-dashboard">
-        {/* Desktop Layout */}
-        <div className="hidden lg:flex">
-          {/* Sidebar */}
-          <Sidebar user={user} />
+      <div className="min-h-screen bg-dashboard dark:bg-[#0F1419]">
+        <div className="flex h-screen">
+          {/* Sidebar - hidden on mobile */}
+          <aside className="hidden lg:block lg:w-64 lg:flex-shrink-0">
+            <Sidebar user={user} />
+          </aside>
           
-          {/* Main Content Area */}
-          <div className="flex-1 flex flex-col">
-            {/* Topbar */}
+          {/* Main content area */}
+          <div className="flex-1 flex flex-col overflow-hidden">
             <Topbar user={user} />
-            
-            {/* Main Content */}
-            <main className="flex-1 p-6 lg:p-8">
+            <main className="flex-1 overflow-y-auto p-6 lg:p-8">
               <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -84,24 +82,6 @@ export function AppShell({ children, user, showQuestionnairePrompt = false }: Ap
               </motion.div>
             </main>
           </div>
-        </div>
-
-        {/* Mobile Layout */}
-        <div className="lg:hidden">
-          {/* Topbar */}
-          <Topbar user={user} />
-          
-          {/* Main Content */}
-          <main className="flex-1 p-4">
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.4, ease: [0.2, 0.8, 0.2, 1] }}
-              className="max-w-7xl mx-auto"
-            >
-              {children}
-            </motion.div>
-          </main>
         </div>
 
         {/* Questionnaire modal - gated by auth + only if never filled */}

@@ -22,6 +22,8 @@ export default function IntroClient() {
   const searchParams = new URLSearchParams(window.location.search)
   const isEditMode = searchParams.get('mode') === 'edit'
 
+  console.log('[IntroClient] Edit mode:', isEditMode, 'URL:', window.location.search)
+
   // Load saved data and check progress on mount
   useEffect(() => {
     const loadSavedData = async () => {

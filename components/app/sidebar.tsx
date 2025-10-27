@@ -114,7 +114,7 @@ export function Sidebar({ user, onClose }: SidebarProps) {
   }, [user.id])
 
   return (
-    <div className="flex flex-col h-full bg-surface-0 dark:bg-surface-1 border-r border-line dark:border-ink-700">
+    <div className="flex flex-col h-full w-full bg-white dark:bg-[#1E2433] border-r border-gray-200 dark:border-[#2D3548]">
       {/* Navigation - starts at top */}
       <nav className="flex-1 p-4 space-y-2 overflow-y-auto mt-4">
         {navigation.map((item, index) => {
@@ -134,8 +134,8 @@ export function Sidebar({ user, onClose }: SidebarProps) {
                   className={cn(
                     "w-full justify-start gap-3 h-11 px-3 transition-colors",
                     isActive 
-                      ? "bg-brand-600/10 text-brand-600 dark:bg-brand-600/20 dark:text-brand-accent border-l-4 border-brand-600 rounded-l-none" 
-                      : "text-ink-600 dark:text-ink-400 hover:bg-surface-2 dark:hover:bg-ink-800"
+                      ? "bg-blue-50 text-blue-600 dark:bg-blue-900/20 dark:text-[#67E8F9] border-l-4 border-blue-600 rounded-l-none" 
+                      : "text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-[#2D3548]"
                   )}
                 >
                   <Icon className="w-5 h-5" />
