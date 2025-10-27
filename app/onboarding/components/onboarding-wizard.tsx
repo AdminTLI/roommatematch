@@ -180,28 +180,19 @@ export function OnboardingWizard({ user }: OnboardingWizardProps) {
     setIsLoading(true)
     
     try {
-      // Validate form data before submission
-      const validation = validateFormData(formData)
-      if (!validation.valid) {
-        const errorMessages = Object.entries(validation.errors)
-          .map(([field, error]) => `${field}: ${error}`)
-          .join(', ')
-        throw new Error(`Validation failed: ${errorMessages}`)
+      // Basic validation - check for required fields
+      const requiredFields = ['university_id', 'degree_level', 'program_id', 'campus']
+      const missingFields = requiredFields.filter(field => !formData[field])
+      
+      if (missingFields.length > 0) {
+        throw new Error(`Please complete all required fields: ${missingFields.join(', ')}`)
       }
-
-      // Check if user has complete responses
-      if (!hasCompleteResponses(formData)) {
-        throw new Error('Please complete all required fields before submitting')
-      }
-
-      // Transform form data to match database expectations
-      const transformedData = transformFormData(formData)
 
       // Get first name from formData
       const firstName = formData.first_name || formData.name || 'User'
 
       // Build responses array with validated data
-      const responses = Object.entries(transformedData)
+      const responses = Object.entries(formData)
         .filter(([key, value]) => {
           // Skip profile/academic fields
           const profileFields = ['university_id', 'first_name', 'name', 'program_id', 'undecided_program', 'study_start_year', 'campus']
@@ -228,7 +219,22 @@ export function OnboardingWizard({ user }: OnboardingWizardProps) {
       })
 
       if (!result.success) {
-        throw new Error(result.error || 'Submission failed')
+        // Provide more specific error messaging
+        const errorMessage = result.error || 'Submission failed'
+        let userFriendlyMessage = errorMessage
+        
+        // Parse common error patterns and provide actionable guidance
+        if (errorMessage.includes('profile')) {
+          userFriendlyMessage = `Profile setup failed: ${errorMessage}. Please check your personal information and try again.`
+        } else if (errorMessage.includes('academic')) {
+          userFriendlyMessage = `Academic information failed to save: ${errorMessage}. Please verify your university and program details.`
+        } else if (errorMessage.includes('responses')) {
+          userFriendlyMessage = `Questionnaire responses failed to save: ${errorMessage}. Please try submitting again.`
+        } else if (errorMessage.includes('database') || errorMessage.includes('constraint')) {
+          userFriendlyMessage = `Database error occurred: ${errorMessage}. Please try again in a few moments.`
+        }
+        
+        throw new Error(userFriendlyMessage)
       }
 
       // Create user vector from responses

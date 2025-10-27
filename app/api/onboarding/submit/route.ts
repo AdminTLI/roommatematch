@@ -87,29 +87,10 @@ export async function POST() {
 
       console.log('[Submit] Fetched sections:', sections?.length || 0)
 
-      // 2. Save snapshot to onboarding_submissions
-      console.log('[Submit] Saving to onboarding_submissions')
-      const submissionPayload = {
-        user_id: userId,
-        snapshot: sections ?? [],
-        submitted_at: new Date().toISOString(),
-      }
-
-      const { error: submissionError } = await supabase
-        .from('onboarding_submissions')
-        .upsert(submissionPayload, { onConflict: 'user_id' })
-        
-      if (submissionError) {
-        console.error('[Submit] Submission error:', submissionError)
-        return NextResponse.json({ error: submissionError.message }, { status: 500 })
-      }
-
-      console.log('[Submit] Saved to onboarding_submissions successfully')
-
-      // 3. Find intro section for later processing
+      // 2. Find intro section for later processing
       const introSection = sections?.find((s: any) => s.section === 'intro')
 
-      // 4. Extract submission data and transform responses
+      // 3. Extract submission data and transform responses
       let submissionData = null
       const responsesToInsert = []
       
@@ -135,6 +116,25 @@ export async function POST() {
       }
 
       console.log(`[Submit] Prepared ${responsesToInsert.length} responses to insert`)
+
+      // 4. Save snapshot to onboarding_submissions (after successful transformation)
+      console.log('[Submit] Saving to onboarding_submissions')
+      const submissionPayload = {
+        user_id: userId,
+        snapshot: sections ?? [],
+        submitted_at: new Date().toISOString(),
+      }
+
+      const { error: submissionError } = await supabase
+        .from('onboarding_submissions')
+        .upsert(submissionPayload, { onConflict: 'user_id' })
+        
+      if (submissionError) {
+        console.error('[Submit] Submission error:', submissionError)
+        return NextResponse.json({ error: submissionError.message }, { status: 500 })
+      }
+
+      console.log('[Submit] Saved to onboarding_submissions successfully')
 
       // 5. Use consolidated submission helper
       if (submissionData && responsesToInsert.length > 0) {

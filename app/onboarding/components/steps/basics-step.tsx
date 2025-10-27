@@ -178,7 +178,7 @@ export function BasicsStep({ data, onChange, user }: BasicsStepProps) {
         </Select>
         <p className="text-sm text-gray-500">
           {campuses.length === 2 && campuses[0].value === 'main-campus' 
-            ? 'Campus information not available for this university. Select "Main Campus" or specify "Other".'
+            ? 'Select "Main Campus" if your specific campus isn\'t listed, or choose "Other Campus" to specify a different location.'
             : 'Which campus will you primarily study at?'}
         </p>
       </div>
