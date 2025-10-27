@@ -18,13 +18,18 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
 
   // Load theme from localStorage on mount
   useEffect(() => {
-    const savedTheme = localStorage.getItem('theme') as Theme
-    if (savedTheme && (savedTheme === 'light' || savedTheme === 'dark')) {
-      setTheme(savedTheme)
-    } else {
-      // Check system preference
-      const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches
-      setTheme(prefersDark ? 'dark' : 'light')
+    try {
+      const savedTheme = localStorage.getItem('theme') as Theme
+      if (savedTheme && (savedTheme === 'light' || savedTheme === 'dark')) {
+        setTheme(savedTheme)
+      } else {
+        // Check system preference
+        const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches
+        setTheme(prefersDark ? 'dark' : 'light')
+      }
+    } catch (error) {
+      console.warn('Failed to load theme from localStorage:', error)
+      setTheme('light')
     }
     setMounted(true)
   }, [])
@@ -41,16 +46,15 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
     }
 
     // Save to localStorage
-    localStorage.setItem('theme', theme)
+    try {
+      localStorage.setItem('theme', theme)
+    } catch (error) {
+      console.warn('Failed to save theme to localStorage:', error)
+    }
   }, [theme, mounted])
 
   const toggleTheme = () => {
     setTheme(prev => prev === 'light' ? 'dark' : 'light')
-  }
-
-  // Prevent hydration mismatch by not rendering until mounted
-  if (!mounted) {
-    return <>{children}</>
   }
 
   return (
