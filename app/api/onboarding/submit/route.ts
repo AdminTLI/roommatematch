@@ -133,7 +133,7 @@ export async function POST() {
             console.error('[Submit] Program lookup failed:', programError)
             // If program not found, set to null to avoid UUID constraint violation
             console.log('[Submit] Setting program_id to null since program not found in database')
-            submissionData.program_id = null
+            submissionData.program_id = undefined
           } else if (program) {
             submissionData.program_id = program.id
             console.log('[Submit] Found program UUID:', program.id)
@@ -163,8 +163,21 @@ export async function POST() {
 
       console.log(`[Submit] Prepared ${responsesToInsert.length} responses to insert`)
 
+      // Deduplicate responses by question_key (keep last value for each key)
+      const responseMap = new Map<string, any>()
+      for (const response of responsesToInsert) {
+        responseMap.set(response.question_key, response.value)
+      }
+
+      const deduplicatedResponses = Array.from(responseMap.entries()).map(([question_key, value]) => ({
+        question_key,
+        value
+      }))
+
+      console.log(`[Submit] Deduplicated ${responsesToInsert.length} responses to ${deduplicatedResponses.length} unique keys`)
+
       // 4. Use consolidated submission helper
-      if (submissionData && responsesToInsert.length > 0) {
+      if (submissionData && deduplicatedResponses.length > 0) {
         // Ensure we have a valid university_id
         if (!submissionData.university_id) {
           console.error('[Submit] No university_id found, cannot proceed with submission')
@@ -185,7 +198,7 @@ export async function POST() {
           languages_daily: extractedLanguages,
           study_start_year: submissionData.study_start_year,
           undecided_program: submissionData.undecided_program,
-          responses: responsesToInsert
+          responses: deduplicatedResponses
         })
 
         if (!result.success) {
