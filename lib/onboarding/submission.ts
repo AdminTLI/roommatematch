@@ -332,17 +332,7 @@ export async function submitCompleteOnboarding(
       }
     }
 
-    // 3. Create onboarding submission record
-    const { error: submissionError } = await supabase
-      .from('onboarding_submissions')
-      .upsert({
-        user_id: data.user_id,
-        submitted_at: new Date().toISOString()
-      }, { onConflict: 'user_id' })
-
-    if (submissionError) {
-      throw new Error(`Failed to create submission record: ${submissionError.message}`)
-    }
+    // 3. Onboarding submission record is handled by the calling code with snapshot data
 
     return { success: true }
   } catch (error) {
