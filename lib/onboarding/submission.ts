@@ -1,6 +1,7 @@
 import { SupabaseClient } from '@supabase/supabase-js'
 import { User } from '@supabase/supabase-js'
 import { itemIdToQuestionKey } from '@/lib/question-key-mapping'
+import { getInstitutionType } from '@/lib/getInstitutionType'
 
 export interface OnboardingSubmissionData {
   user_id: string
@@ -63,6 +64,11 @@ export function extractSubmissionDataFromIntro(
     
     if (degree_level === 'master' || degree_level === 'premaster') {
       calculatedStartYear = expected_graduation_year - 1
+    } else if (degree_level === 'bachelor' && university_id) {
+      // Use institution sector to determine bachelor duration
+      const institutionType = getInstitutionType(university_id)
+      const bachelorDuration = institutionType === 'hbo' ? 4 : 3
+      calculatedStartYear = expected_graduation_year - bachelorDuration
     }
     
     // Clamp to DB constraints: >= 2015 AND <= EXTRACT(YEAR FROM now()) + 1
@@ -143,7 +149,7 @@ export function extractLanguagesFromSections(
   }
   
   return Array.from(languageValues)
-    .map(lang => languageCodeMap[lang] || lang)
+    .map(lang => languageCodeMap[lang] || 'other')
     .filter(Boolean)
 }
 
