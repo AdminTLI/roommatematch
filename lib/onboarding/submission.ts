@@ -58,6 +58,17 @@ export function extractSubmissionDataFromIntro(
     }
   }
 
+  // Enforce mutual exclusivity constraint: program_id and undecided_program cannot both be set
+  // Database constraint: (program_id IS NOT NULL AND undecided_program = false) OR (program_id IS NULL AND undecided_program = true)
+  if (program_id && program_id.trim() !== '') {
+    // User has selected a program, so they're not undecided
+    undecided_program = false
+  } else {
+    // User has no program selected, so they must be undecided
+    program_id = ''
+    undecided_program = true
+  }
+
   // If study_start_year is not provided, calculate it from expected_graduation_year
   if (!study_start_year && expected_graduation_year && degree_level) {
     let calculatedStartYear = expected_graduation_year - 3 // Default for bachelor
