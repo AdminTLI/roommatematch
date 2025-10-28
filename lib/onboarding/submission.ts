@@ -26,6 +26,7 @@ export function extractSubmissionDataFromIntro(
   let campus = ''
   let study_start_year: number | undefined
   let undecided_program = false
+  let expected_graduation_year: number | undefined
 
   for (const answer of answers) {
     switch (answer.itemId) {
@@ -47,10 +48,28 @@ export function extractSubmissionDataFromIntro(
       case 'study_start_year':
         study_start_year = parseInt(answer.value)
         break
+      case 'expected_graduation_year':
+        expected_graduation_year = parseInt(answer.value)
+        break
       case 'undecided_program':
         undecided_program = answer.value
         break
     }
+  }
+
+  // If study_start_year is not provided, calculate it from expected_graduation_year
+  if (!study_start_year && expected_graduation_year && degree_level) {
+    let calculatedStartYear = expected_graduation_year - 3 // Default for bachelor
+    
+    if (degree_level === 'master' || degree_level === 'premaster') {
+      calculatedStartYear = expected_graduation_year - 1
+    }
+    
+    // Clamp to DB constraints: >= 2015 AND <= EXTRACT(YEAR FROM now()) + 1
+    const currentYear = new Date().getFullYear()
+    const minYear = 2015
+    const maxYear = currentYear + 1
+    study_start_year = Math.max(minYear, Math.min(maxYear, calculatedStartYear))
   }
 
   const firstName = user.user_metadata?.full_name?.split(' ')[0] || user.email?.split('@')[0] || 'User'
