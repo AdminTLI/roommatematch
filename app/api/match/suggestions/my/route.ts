@@ -20,21 +20,31 @@ export async function GET(request: NextRequest) {
       }, { status: 403 })
     }
 
-    const repo = await getMatchRepo()
-    const includeExpired = request.nextUrl.searchParams.get('includeExpired') === 'true'
-    
-    const suggestions = await repo.listSuggestionsForUser(user.id, includeExpired)
-    
-    // Filter by minFitIndex
-    const minFitIndex = matchModeConfig.minFitIndex || 0
-    const filteredSuggestions = suggestions.filter(s => s.fitIndex >= minFitIndex)
-    
-    return NextResponse.json({ suggestions: filteredSuggestions })
+    try {
+      const repo = await getMatchRepo()
+      const includeExpired = request.nextUrl.searchParams.get('includeExpired') === 'true'
+      
+      const suggestions = await repo.listSuggestionsForUser(user.id, includeExpired)
+      
+      // Filter by minFitIndex
+      const minFitIndex = matchModeConfig.minFitIndex || 0
+      const filteredSuggestions = (suggestions || []).filter(s => s.fitIndex >= minFitIndex)
+      
+      return NextResponse.json({ suggestions: filteredSuggestions })
+    } catch (repoError: any) {
+      // If table doesn't exist or query fails, return empty array instead of 500
+      console.error('[Match Suggestions API] Repository error:', {
+        error: repoError,
+        message: repoError?.message,
+        code: repoError?.code
+      })
+      
+      // Return empty suggestions instead of error to prevent UI crashes
+      return NextResponse.json({ suggestions: [] })
+    }
   } catch (error) {
-    console.error('Error fetching user suggestions:', error)
-    return NextResponse.json(
-      { error: 'Failed to fetch suggestions' },
-      { status: 500 }
-    )
+    console.error('[Match Suggestions API] Unexpected error:', error)
+    // Return empty array instead of 500 error to prevent UI crashes
+    return NextResponse.json({ suggestions: [] })
   }
 }

@@ -70,7 +70,7 @@ export default async function ListingDetailPage({ params }: ListingDetailPagePro
     isNew: false, // Would be calculated based on created_at
     isPopular: false, // Would be calculated based on views/compatibility
     verification: {
-      universityVerified: listingData.verified_by_university,
+      universityVerified: listingData?.verified_by_university ?? false,
       hostIdVerified: false, // TODO: implement host verification
       agencyKvKVerified: false, // TODO: implement agency verification
       lastAuditISO: listingData.verification_date

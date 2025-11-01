@@ -61,8 +61,25 @@ export function ChatList({ user }: ChatListProps) {
     setIsLoading(true)
     
     try {
-      // Fetch chats with match information
-      const { data: chatRooms, error } = await supabase
+      // First, get chat memberships for this user
+      const { data: memberships, error: membershipsError } = await supabase
+        .from('chat_members')
+        .select('chat_id, user_id, last_read_at')
+        .eq('user_id', user.id)
+
+      if (membershipsError) throw membershipsError
+
+      if (!memberships || memberships.length === 0) {
+        setChats([])
+        setIsLoading(false)
+        return
+      }
+
+      const chatIds = memberships.map(m => m.chat_id)
+      const membershipMap = new Map(memberships.map(m => [m.chat_id, m]))
+
+      // Fetch chats with match information (excluding profiles join)
+      const { data: chatRooms, error: chatsError } = await supabase
         .from('chats')
         .select(`
           *,
@@ -76,8 +93,7 @@ export function ChatList({ user }: ChatListProps) {
           ),
           chat_members!inner(
             user_id,
-            last_read_at,
-            profiles(first_name, avatar_url)
+            last_read_at
           ),
           messages(
             content,
@@ -85,10 +101,32 @@ export function ChatList({ user }: ChatListProps) {
             user_id
           )
         `)
-        .contains('chat_members.user_id', [user.id])
+        .in('id', chatIds)
         .order('created_at', { ascending: false })
 
-      if (error) throw error
+      if (chatsError) throw chatsError
+
+      // Get all unique user IDs from chat members
+      const userIds = new Set<string>()
+      chatRooms?.forEach((room: any) => {
+        room.chat_members?.forEach((member: any) => {
+          userIds.add(member.user_id)
+        })
+      })
+
+      // Fetch profiles for all users separately
+      const { data: profilesData, error: profilesError } = await supabase
+        .from('profiles')
+        .select('user_id, first_name, avatar_url')
+        .in('user_id', Array.from(userIds))
+
+      if (profilesError) {
+        console.warn('Failed to fetch profiles:', profilesError)
+      }
+
+      const profilesMap = new Map(
+        (profilesData || []).map((p: any) => [p.user_id, p])
+      )
 
       // Fetch unread counts
       const unreadResponse = await fetch('/api/chat/unread')
@@ -102,7 +140,8 @@ export function ChatList({ user }: ChatListProps) {
         
         // Get the other participant for individual chats
         const otherParticipant = room.chat_members?.find((p: any) => p.user_id !== user.id)
-        const participantName = otherParticipant?.profiles?.first_name || 'User'
+        const otherProfile = otherParticipant ? profilesMap.get(otherParticipant.user_id) : null
+        const participantName = otherProfile?.first_name || 'User'
         
         // Get last message
         const lastMessage = room.messages?.[0]
@@ -119,12 +158,15 @@ export function ChatList({ user }: ChatListProps) {
             timestamp: new Date(lastMessage.created_at).toLocaleString(),
             isRead: new Date(lastMessage.created_at) <= new Date(lastReadAt)
           } : undefined,
-          participants: room.chat_members?.map((p: any) => ({
-            id: p.user_id,
-            name: p.profiles?.first_name || 'User',
-            avatar: p.profiles?.avatar_url,
-            isOnline: false
-          })) || [],
+          participants: room.chat_members?.map((p: any) => {
+            const profile = profilesMap.get(p.user_id)
+            return {
+              id: p.user_id,
+              name: profile?.first_name || 'User',
+              avatar: profile?.avatar_url,
+              isOnline: false
+            }
+          }) || [],
           unreadCount: unreadMap.get(room.id) || 0,
           isActive: false,
           matchId: room.match_id,

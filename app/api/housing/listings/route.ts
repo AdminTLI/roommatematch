@@ -228,10 +228,10 @@ export async function GET(request: NextRequest) {
       isNew: isNewListing(item.created_at),
       isPopular: isPopularListing(item),
       verification: {
-        universityVerified: item.verified_by_university,
+        universityVerified: item.verified_by_university ?? false,
         hostIdVerified: false, // TODO: implement host verification
         agencyKvKVerified: false, // TODO: implement agency verification
-        lastAuditISO: item.verification_date
+        lastAuditISO: item.verification_date ?? null
       },
       agencyOrHost: {
         name: item.landlord_name,
