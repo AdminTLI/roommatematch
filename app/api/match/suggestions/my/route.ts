@@ -36,7 +36,10 @@ export async function GET(request: NextRequest) {
       console.error('[Match Suggestions API] Repository error:', {
         error: repoError,
         message: repoError?.message,
-        code: repoError?.code
+        code: repoError?.code,
+        stack: repoError?.stack,
+        userId: user?.id,
+        timestamp: new Date().toISOString()
       })
       
       // Return empty suggestions instead of error to prevent UI crashes

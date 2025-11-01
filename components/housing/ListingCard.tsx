@@ -265,7 +265,12 @@ export function ListingCard({
           
           <div className="flex items-center gap-2">
             <Calendar className="h-4 w-4 text-blue-600" />
-            <span>{new Date(listing.moveInISO || listing.createdAt).toLocaleDateString()}</span>
+            <span>{(() => {
+              const dateStr = listing.moveInISO || listing.createdAt
+              if (!dateStr) return '—'
+              const date = new Date(dateStr)
+              return isNaN(date.getTime()) ? '—' : date.toLocaleDateString()
+            })()}</span>
           </div>
           
           <div className="flex items-center gap-2">
@@ -367,7 +372,12 @@ export function ListingCard({
           </div>
           
           <div className="text-xs text-gray-500">
-            Listed {new Date(listing.createdAt).toLocaleDateString()}
+            Listed {listing.createdAt 
+              ? (() => {
+                  const date = new Date(listing.createdAt)
+                  return isNaN(date.getTime()) ? 'Unknown date' : date.toLocaleDateString()
+                })()
+              : 'Unknown date'}
           </div>
         </div>
       </CardContent>
