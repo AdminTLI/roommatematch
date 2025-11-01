@@ -213,10 +213,15 @@ export async function POST() {
         console.log('[Submit] Consolidated submission successful')
 
         // 5. Save snapshot to onboarding_submissions (only after successful submission)
+        // Store both raw sections (for audit trail) and transformed responses (for analysis)
+        // Normalized data avoids needing to recompute transformAnswer for historical analysis
         console.log('[Submit] Saving to onboarding_submissions')
         const submissionPayload = {
           user_id: userId,
-          snapshot: sections ?? [],
+          snapshot: {
+            raw_sections: sections ?? [], // Raw sections with untransformed answers for audit
+            transformed_responses: deduplicatedResponses, // Normalized question_key/value pairs for easy analysis
+          },
           submitted_at: new Date().toISOString(),
         }
 

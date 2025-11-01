@@ -8,7 +8,7 @@ export interface OnboardingSubmissionData {
   university_id: string
   first_name: string
   degree_level: string
-  program_id?: string
+  program_id?: string | null | undefined
   program?: string
   campus?: string
   languages_daily?: string[]
@@ -21,6 +21,7 @@ export function extractSubmissionDataFromIntro(
   user: User
 ): OnboardingSubmissionData {
   let university_id = ''
+  let institution_slug = ''
   let degree_level = ''
   let program_id = ''
   let program = ''
@@ -33,6 +34,9 @@ export function extractSubmissionDataFromIntro(
     switch (answer.itemId) {
       case 'university_id':
         university_id = answer.value
+        break
+      case 'institution_slug':
+        institution_slug = answer.value
         break
       case 'degree_level':
         degree_level = answer.value
@@ -60,12 +64,13 @@ export function extractSubmissionDataFromIntro(
 
   // Enforce mutual exclusivity constraint: program_id and undecided_program cannot both be set
   // Database constraint: (program_id IS NOT NULL AND undecided_program = false) OR (program_id IS NULL AND undecided_program = true)
-  if (program_id && program_id.trim() !== '') {
+  if (program_id && typeof program_id === 'string' && program_id.trim() !== '') {
     // User has selected a program, so they're not undecided
     undecided_program = false
   } else {
     // User has no program selected, so they must be undecided
-    program_id = ''
+    // Set to undefined (not empty string) so Supabase writes NULL to database
+    program_id = undefined
     undecided_program = true
   }
 
@@ -75,9 +80,10 @@ export function extractSubmissionDataFromIntro(
     
     if (degree_level === 'master' || degree_level === 'premaster') {
       calculatedStartYear = expected_graduation_year - 1
-    } else if (degree_level === 'bachelor' && university_id) {
+    } else if (degree_level === 'bachelor' && institution_slug) {
       // Use institution sector to determine bachelor duration
-      const institutionType = getInstitutionType(university_id)
+      // Note: getInstitutionType expects institution slug (e.g., "uva", "vu"), not UUID
+      const institutionType = getInstitutionType(institution_slug)
       const bachelorDuration = institutionType === 'hbo' ? 4 : 3
       calculatedStartYear = expected_graduation_year - bachelorDuration
     }
@@ -176,7 +182,9 @@ export async function upsertProfileAndAcademic(
       university_id: data.university_id,
       first_name: data.first_name,
       degree_level: data.degree_level,
-      program: data.program_id,
+      program: (data.program_id && typeof data.program_id === 'string' && data.program_id.trim() !== '') 
+        ? data.program_id 
+        : null,
       campus: data.campus,
       languages: data.languages_daily || [],
       verification_status: 'unverified',
@@ -208,13 +216,18 @@ export async function upsertProfileAndAcademic(
   }
 
   // 2. Upsert user_academic
+  // Convert empty string or undefined to null for program_id to satisfy FK constraint
+  const programIdForDb = (data.program_id && typeof data.program_id === 'string' && data.program_id.trim() !== '') 
+    ? data.program_id 
+    : null
+  
   const { error: academicError } = await supabase
     .from('user_academic')
     .upsert({
       user_id: data.user_id,
       university_id: data.university_id,
       degree_level: data.degree_level,
-      program_id: data.program_id,
+      program_id: programIdForDb,
       study_start_year: data.study_start_year,
       undecided_program: data.undecided_program,
       created_at: new Date().toISOString(),
