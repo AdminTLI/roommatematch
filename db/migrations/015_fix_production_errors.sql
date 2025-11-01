@@ -8,17 +8,25 @@ BEGIN;
 -- 1. FIX CHAT_MEMBERS RLS INFINITE RECURSION
 -- ========================================
 
--- Drop all existing problematic chat_members policies
-DROP POLICY IF EXISTS "Users can see chat members for their chats" ON chat_members;
-DROP POLICY IF EXISTS "Chat members can manage membership" ON chat_members;
-DROP POLICY IF EXISTS "chat_members_participants_read" ON chat_members;
-DROP POLICY IF EXISTS "chat_members_participants_own" ON chat_members;
+-- Drop ALL existing chat_members policies to prevent conflicts
+-- Using DO block to handle cases where policies don't exist
+DO $$
+DECLARE
+    r RECORD;
+BEGIN
+    FOR r IN (SELECT policyname FROM pg_policies WHERE tablename = 'chat_members')
+    LOOP
+        EXECUTE format('DROP POLICY IF EXISTS %I ON chat_members', r.policyname);
+    END LOOP;
+END $$;
 
 -- Create security definer function to check chat membership without recursion
--- This breaks the recursion by executing with elevated privileges
+-- SECURITY DEFINER bypasses RLS, preventing infinite recursion
 CREATE OR REPLACE FUNCTION user_is_chat_member(target_chat_id UUID)
 RETURNS BOOLEAN AS $$
 BEGIN
+  -- This function bypasses RLS using SECURITY DEFINER
+  -- It queries chat_members directly without triggering policies
   RETURN EXISTS (
     SELECT 1 FROM chat_members
     WHERE chat_id = target_chat_id
@@ -29,6 +37,9 @@ $$ LANGUAGE plpgsql SECURITY DEFINER STABLE;
 
 -- Grant execute permission to authenticated users
 GRANT EXECUTE ON FUNCTION user_is_chat_member TO authenticated;
+
+-- Revoke any public execute access for security
+REVOKE EXECUTE ON FUNCTION user_is_chat_member FROM PUBLIC;
 
 -- Create clean, non-recursive policies for chat_members
 CREATE POLICY "chat_members_view_own" ON chat_members
@@ -132,13 +143,28 @@ GRANT EXECUTE ON FUNCTION create_notification TO authenticated;
 -- ========================================
 
 -- Ensure chats policies are clean and don't conflict
-DROP POLICY IF EXISTS "Users can see their chats" ON chats;
+DO $$
+DECLARE
+    r RECORD;
+BEGIN
+    FOR r IN (SELECT policyname FROM pg_policies WHERE tablename = 'chats')
+    LOOP
+        EXECUTE format('DROP POLICY IF EXISTS %I ON chats', r.policyname);
+    END LOOP;
+END $$;
+
+-- Create simple, non-recursive chat policies
+CREATE POLICY "chats_creator_can_view" ON chats
+  FOR SELECT USING (created_by = auth.uid());
 
 CREATE POLICY "chats_members_can_view" ON chats
-  FOR SELECT USING (
-    created_by = auth.uid() OR
-    user_is_chat_member(id)
-  );
+  FOR SELECT USING (user_is_chat_member(id));
+
+CREATE POLICY "chats_creator_can_update" ON chats
+  FOR UPDATE USING (created_by = auth.uid());
+
+CREATE POLICY "chats_users_can_create" ON chats
+  FOR INSERT WITH CHECK (created_by = auth.uid());
 
 -- Grant necessary permissions
 GRANT SELECT ON notifications TO authenticated;
