@@ -180,7 +180,7 @@ export function ListingCard({
                   Popular
                 </Badge>
               )}
-              {listing.verification.universityVerified && (
+              {listing?.verification?.universityVerified && (
                 <Badge className="bg-blue-600 text-white text-xs flex items-center gap-1">
                   <Shield className="h-3 w-3" />
                   Verified

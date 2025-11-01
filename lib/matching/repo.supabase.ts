@@ -195,7 +195,8 @@ export class SupabaseMatchRepo implements MatchRepo {
   }
 
   async saveMatchRun(run: Omit<MatchRun, 'id' | 'createdAt'>): Promise<void> {
-    const { error } = await this.supabase
+    const supabase = await this.getSupabase()
+    const { error } = await supabase
       .from('match_runs')
       .insert({
         run_id: run.runId,
@@ -210,7 +211,8 @@ export class SupabaseMatchRepo implements MatchRepo {
   }
 
   async getMatchRun(runId: string): Promise<MatchRun | null> {
-    const { data, error } = await this.supabase
+    const supabase = await this.getSupabase()
+    const { data, error } = await supabase
       .from('match_runs')
       .select('*')
       .eq('run_id', runId)
@@ -232,7 +234,8 @@ export class SupabaseMatchRepo implements MatchRepo {
   }
 
   async listMatchRuns(limit = 50): Promise<MatchRun[]> {
-    const { data, error } = await this.supabase
+    const supabase = await this.getSupabase()
+    const { data, error } = await supabase
       .from('match_runs')
       .select('*')
       .order('created_at', { ascending: false })
@@ -264,7 +267,8 @@ export class SupabaseMatchRepo implements MatchRepo {
       locked: match.locked
     }))
 
-    const { error } = await this.supabase
+    const supabase = await this.getSupabase()
+    const { error } = await supabase
       .from('match_records')
       .insert(records)
 
@@ -274,7 +278,8 @@ export class SupabaseMatchRepo implements MatchRepo {
   }
 
   async listMatches(runId?: string, locked?: boolean): Promise<MatchRecord[]> {
-    let query = this.supabase
+    const supabase = await this.getSupabase()
+    let query = supabase
       .from('match_records')
       .select('*')
       .order('fit_score', { ascending: false })
@@ -322,7 +327,8 @@ export class SupabaseMatchRepo implements MatchRepo {
   }
 
   async lockMatch(ids: string[], runId: string): Promise<void> {
-    const { error } = await this.supabase
+    const supabase = await this.getSupabase()
+    const { error } = await supabase
       .from('match_records')
       .update({ locked: true })
       .in('user_ids', ids)
@@ -336,7 +342,8 @@ export class SupabaseMatchRepo implements MatchRepo {
   async markUsersMatched(userIds: string[], runId: string): Promise<void> {
     // Mark users as matched in the profiles table or a separate matched_users table
     // For now, we'll use a simple approach by updating a field in profiles
-    const { error } = await this.supabase
+    const supabase = await this.getSupabase()
+    const { error } = await supabase
       .from('profiles')
       .update({ 
         // Add a field to track if user is matched
@@ -352,7 +359,8 @@ export class SupabaseMatchRepo implements MatchRepo {
 
   async isUserMatched(userId: string): Promise<boolean> {
     // Check if user is already in a locked match
-    const { data, error } = await this.supabase
+    const supabase = await this.getSupabase()
+    const { data, error } = await supabase
       .from('match_records')
       .select('id')
       .contains('user_ids', [userId])
@@ -383,7 +391,8 @@ export class SupabaseMatchRepo implements MatchRepo {
       created_at: sug.createdAt
     }))
 
-    const { error } = await this.supabase
+    const supabase = await this.getSupabase()
+    const { error } = await supabase
       .from('match_suggestions')
       .insert(records)
 
@@ -393,7 +402,8 @@ export class SupabaseMatchRepo implements MatchRepo {
   }
 
   async listSuggestionsForUser(userId: string, includeExpired = false): Promise<MatchSuggestion[]> {
-    let query = this.supabase
+    const supabase = await this.getSupabase()
+    let query = supabase
       .from('match_suggestions')
       .select('*')
       .contains('member_ids', [userId])
@@ -427,7 +437,8 @@ export class SupabaseMatchRepo implements MatchRepo {
   }
 
   async listSuggestionsByRun(runId: string): Promise<MatchSuggestion[]> {
-    const { data, error } = await this.supabase
+    const supabase = await this.getSupabase()
+    const { data, error } = await supabase
       .from('match_suggestions')
       .select('*')
       .eq('run_id', runId)
@@ -453,7 +464,8 @@ export class SupabaseMatchRepo implements MatchRepo {
   }
 
   async getSuggestionById(id: string): Promise<MatchSuggestion | null> {
-    const { data, error } = await this.supabase
+    const supabase = await this.getSupabase()
+    const { data, error } = await supabase
       .from('match_suggestions')
       .select('*')
       .eq('id', id)
@@ -480,7 +492,8 @@ export class SupabaseMatchRepo implements MatchRepo {
   }
 
   async updateSuggestion(s: MatchSuggestion): Promise<void> {
-    const { error } = await this.supabase
+    const supabase = await this.getSupabase()
+    const { error } = await supabase
       .from('match_suggestions')
       .update({
         status: s.status,
@@ -495,7 +508,8 @@ export class SupabaseMatchRepo implements MatchRepo {
 
   // Blocklist
   async getBlocklist(userId: string): Promise<string[]> {
-    const { data, error } = await this.supabase
+    const supabase = await this.getSupabase()
+    const { data, error } = await supabase
       .from('match_blocklist')
       .select('blocked_user_id')
       .eq('user_id', userId)
@@ -508,7 +522,8 @@ export class SupabaseMatchRepo implements MatchRepo {
   }
 
   async addToBlocklist(userId: string, otherId: string): Promise<void> {
-    const { error } = await this.supabase
+    const supabase = await this.getSupabase()
+    const { error } = await supabase
       .from('match_blocklist')
       .upsert({
         user_id: userId,

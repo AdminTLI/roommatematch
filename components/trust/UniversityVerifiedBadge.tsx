@@ -15,8 +15,8 @@ import { VerificationInfoModal } from './VerificationInfoModal'
 import { useState } from 'react'
 
 interface UniversityVerifiedBadgeProps {
-  verification: {
-    universityVerified: boolean
+  verification?: {
+    universityVerified?: boolean
     lastAuditISO?: string
   }
   size?: 'sm' | 'md' | 'lg'
@@ -30,7 +30,7 @@ export function UniversityVerifiedBadge({
 }: UniversityVerifiedBadgeProps) {
   const [showInfoModal, setShowInfoModal] = useState(false)
 
-  if (!verification.universityVerified) {
+  if (!verification?.universityVerified) {
     return null
   }
 
