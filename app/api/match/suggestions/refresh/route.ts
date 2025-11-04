@@ -37,20 +37,34 @@ export async function POST(request: NextRequest) {
     }
     
     // Build cohort filter based on user's profile
-    // Note: programmeId is NOT included as a filter - program matching is a preference/boost
-    // in the scoring system, not a hard requirement. Users with different programs or undecided
-    // programs should still be eligible for matching (they just won't get the program bonus).
-    // Only include campusCity if it's not null/empty (filter only applies if truthy)
+    // Note: 
+    // - institutionId is NOT included - students from different universities can match
+    //   (same university is a bonus in scoring, not a requirement)
+    // - programmeId is NOT included - program matching is a preference/boost in scoring
+    // - campusCity is included to match students in the same city (works across universities)
+    // - degreeLevel is kept as a requirement for similar academic stage matching
     const cohort: any = {
-      institutionId: currentUser.universityId,
       degreeLevel: currentUser.degreeLevel,
-      excludeUserIds: [user.id] // Exclude current user from suggestions
+      excludeUserIds: [user.id], // Exclude current user from suggestions
+      onlyActive: false, // Allow unverified users (they can still be eligible if they have complete profiles)
+      excludeAlreadyMatched: true // Exclude users who are already locked into matches
     }
     
-    // Only add campusCity filter if it has a value
+    // Only add campusCity filter if it has a value (city-based matching works across universities)
     if (currentUser.campusCity) {
       cohort.campusCity = currentUser.campusCity
     }
+    
+    console.log('[DEBUG] Refresh route - cohort filter:', {
+      cohort,
+      currentUser: {
+        universityId: currentUser.universityId,
+        degreeLevel: currentUser.degreeLevel,
+        campusCity: currentUser.campusCity,
+        programmeId: currentUser.programmeId
+      },
+      timestamp: new Date().toISOString()
+    })
     
     // Generate new suggestions
     const result = await runMatchingAsSuggestions({

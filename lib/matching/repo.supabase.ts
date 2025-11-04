@@ -155,6 +155,19 @@ export class SupabaseMatchRepo implements MatchRepo {
 
   async loadCandidates(filter: CohortFilter): Promise<Candidate[]> {
     const supabase = await this.getSupabase()
+    
+    // Debug logging for filter analysis
+    console.log('[DEBUG] loadCandidates - Filter input:', {
+      campusCity: filter.campusCity,
+      institutionId: filter.institutionId,
+      degreeLevel: filter.degreeLevel,
+      programmeId: filter.programmeId,
+      onlyActive: filter.onlyActive,
+      excludeAlreadyMatched: filter.excludeAlreadyMatched,
+      excludeUserIds: filter.excludeUserIds,
+      limit: filter.limit
+    })
+    
     // Build query for users with their onboarding data
     let query = supabase
       .from('users')
@@ -187,18 +200,22 @@ export class SupabaseMatchRepo implements MatchRepo {
     // Apply filters
     if (filter.campusCity) {
       query = query.eq('profiles.campus', filter.campusCity)
+      console.log('[DEBUG] loadCandidates - Applied campusCity filter:', filter.campusCity)
     }
     
     if (filter.institutionId) {
       query = query.eq('user_academic.university_id', filter.institutionId)
+      console.log('[DEBUG] loadCandidates - Applied institutionId filter:', filter.institutionId)
     }
     
     if (filter.degreeLevel) {
       query = query.eq('user_academic.degree_level', filter.degreeLevel)
+      console.log('[DEBUG] loadCandidates - Applied degreeLevel filter:', filter.degreeLevel)
     }
     
     if (filter.programmeId) {
       query = query.eq('user_academic.program_id', filter.programmeId)
+      console.log('[DEBUG] loadCandidates - Applied programmeId filter:', filter.programmeId)
     }
     
     if (filter.graduationYearFrom) {
@@ -211,10 +228,14 @@ export class SupabaseMatchRepo implements MatchRepo {
     
     if (filter.onlyActive) {
       query = query.eq('profiles.verification_status', 'verified')
+      console.log('[DEBUG] loadCandidates - Applied onlyActive filter (verified only)')
+    } else {
+      console.log('[DEBUG] loadCandidates - onlyActive is false, including unverified users')
     }
 
     if (filter.excludeUserIds?.length) {
       query = query.not('id', 'in', `(${filter.excludeUserIds.join(',')})`)
+      console.log('[DEBUG] loadCandidates - Excluding user IDs:', filter.excludeUserIds)
     }
 
     // Note: Email verification is checked via profiles.verification_status
@@ -227,11 +248,22 @@ export class SupabaseMatchRepo implements MatchRepo {
     const { data, error } = await query
 
     if (error) {
+      console.error('[DEBUG] loadCandidates - Query error:', {
+        error: error.message,
+        code: error.code,
+        details: error.details,
+        hint: error.hint
+      })
       throw new Error(`Failed to load candidates: ${error.message}`)
     }
+    
+    console.log('[DEBUG] loadCandidates - Raw query results:', {
+      count: data?.length || 0,
+      userIds: data?.map((u: any) => u.id) || []
+    })
 
     // Transform the data into Candidate format
-    return (data || [])
+    const transformedCandidates = (data || [])
       .map((user: any) => {
         const profile = user.profiles?.[0]
         const academic = user.user_academic?.[0]
@@ -297,19 +329,47 @@ export class SupabaseMatchRepo implements MatchRepo {
           createdAt: new Date().toISOString()
         }
       })
-      .filter(candidate => {
+    
+    console.log('[DEBUG] loadCandidates - After transformation:', {
+      transformedCount: transformedCandidates.length,
+      userIds: transformedCandidates.map(c => c.id)
+    })
+    
+    // Filter by eligibility and vector requirement
+    const eligibleCandidates = transformedCandidates.filter(candidate => {
         // Filter out users without complete responses
-        if (!isEligibleForMatching(candidate.answers)) {
+        const eligible = isEligibleForMatching(candidate.answers)
+        if (!eligible) {
+          const { getMissingFields } = require('./completeness')
+          const missing = getMissingFields(candidate.answers)
+          console.log('[DEBUG] loadCandidates - Candidate not eligible:', {
+            userId: candidate.id,
+            email: candidate.email,
+            missingFields: missing,
+            hasVector: !!candidate.vector
+          })
           return false
         }
         
         // Filter out users without vectors
         if (!candidate.vector) {
+          console.log('[DEBUG] loadCandidates - Candidate missing vector:', {
+            userId: candidate.id,
+            email: candidate.email
+          })
           return false
         }
         
         return true
       })
+    
+    console.log('[DEBUG] loadCandidates - Final eligible candidates:', {
+      eligibleCount: eligibleCandidates.length,
+      filteredOut: transformedCandidates.length - eligibleCandidates.length,
+      eligibleUserIds: eligibleCandidates.map(c => c.id)
+    })
+    
+    return eligibleCandidates
   }
 
   async saveMatchRun(run: Omit<MatchRun, 'id' | 'createdAt'>): Promise<void> {
