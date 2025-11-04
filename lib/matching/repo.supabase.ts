@@ -28,7 +28,8 @@ export class SupabaseMatchRepo implements MatchRepo {
   async getCandidateByUserId(userId: string): Promise<Candidate | null> {
     const supabase = await this.getSupabase()
     
-    const { data, error } = await supabase
+    // Query users with profiles (these have proper FK relationships)
+    const { data: userData, error: userError } = await supabase
       .from('users')
       .select(`
         id,
@@ -39,12 +40,6 @@ export class SupabaseMatchRepo implements MatchRepo {
           degree_level,
           campus,
           verification_status
-        ),
-        user_academic!inner(
-          university_id,
-          degree_level,
-          program_id,
-          study_start_year
         ),
         responses(
           question_key,
@@ -57,13 +52,25 @@ export class SupabaseMatchRepo implements MatchRepo {
       .eq('id', userId)
       .single()
 
-    if (error || !data) {
-      console.error('Error fetching candidate by user ID:', error)
+    if (userError || !userData) {
+      console.error('Error fetching candidate by user ID:', userError)
       return null
     }
 
+    // Query user_academic separately (can't join through auth.users in PostgREST)
+    const { data: academicData, error: academicError } = await supabase
+      .from('user_academic')
+      .select('university_id, degree_level, program_id, study_start_year')
+      .eq('user_id', userId)
+      .maybeSingle()
+
+    if (academicError) {
+      console.error('Error fetching user academic data:', academicError)
+      // Don't fail if academic data doesn't exist, but log it
+    }
+
     // Check if user is eligible for matching
-    const answers = data.responses?.reduce((acc: Record<string, any>, r: any) => {
+    const answers = userData.responses?.reduce((acc: Record<string, any>, r: any) => {
       acc[r.question_key] = r.value
       return acc
     }, {}) || {}
@@ -73,24 +80,27 @@ export class SupabaseMatchRepo implements MatchRepo {
       return null
     }
 
+    const profile = Array.isArray(userData.profiles) ? userData.profiles[0] : userData.profiles
+
     // Transform to Candidate format
     return {
-      id: data.id,
-      email: data.email,
-      firstName: data.profiles?.first_name || 'User',
-      universityId: data.profiles?.university_id,
-      degreeLevel: data.profiles?.degree_level,
-      programmeId: data.user_academic?.program_id,
-      campusCity: data.profiles?.campus,
+      id: userData.id,
+      email: userData.email,
+      firstName: profile?.first_name || 'User',
+      universityId: academicData?.university_id || profile?.university_id,
+      degreeLevel: academicData?.degree_level || profile?.degree_level,
+      programmeId: academicData?.program_id,
+      campusCity: profile?.campus,
       answers,
-      vector: data.user_vectors?.[0]?.vector,
+      vector: userData.user_vectors?.[0]?.vector,
       createdAt: new Date().toISOString()
     }
   }
 
   async loadCandidates(filter: CohortFilter): Promise<Candidate[]> {
     const supabase = await this.getSupabase()
-    // Build query for users with their onboarding data
+    
+    // Step 1: Query users with profiles (these have proper FK relationships)
     let query = supabase
       .from('users')
       .select(`
@@ -103,12 +113,6 @@ export class SupabaseMatchRepo implements MatchRepo {
           campus,
           verification_status
         ),
-        user_academic!inner(
-          university_id,
-          degree_level,
-          program_id,
-          study_start_year
-        ),
         responses(
           question_key,
           value
@@ -118,29 +122,9 @@ export class SupabaseMatchRepo implements MatchRepo {
         )
       `)
 
-    // Apply filters
+    // Apply profile-based filters
     if (filter.campusCity) {
       query = query.eq('profiles.campus', filter.campusCity)
-    }
-    
-    if (filter.institutionId) {
-      query = query.eq('user_academic.university_id', filter.institutionId)
-    }
-    
-    if (filter.degreeLevel) {
-      query = query.eq('user_academic.degree_level', filter.degreeLevel)
-    }
-    
-    if (filter.programmeId) {
-      query = query.eq('user_academic.program_id', filter.programmeId)
-    }
-    
-    if (filter.graduationYearFrom) {
-      query = query.gte('user_academic.study_start_year', filter.graduationYearFrom)
-    }
-    
-    if (filter.graduationYearTo) {
-      query = query.lte('user_academic.study_start_year', filter.graduationYearTo)
     }
     
     if (filter.onlyActive) {
@@ -154,23 +138,78 @@ export class SupabaseMatchRepo implements MatchRepo {
     // Exclude unverified users from matching pool
     query = query.not('email_confirmed_at', 'is', null)
 
+    // Apply limit early to reduce data fetched
     if (filter.limit) {
-      query = query.limit(filter.limit)
+      query = query.limit(filter.limit * 2) // Fetch extra to account for academic filtering
     }
 
-    const { data, error } = await query
+    const { data: usersData, error: usersError } = await query
 
-    if (error) {
-      throw new Error(`Failed to load candidates: ${error.message}`)
+    if (usersError) {
+      throw new Error(`Failed to load candidates: ${usersError.message}`)
     }
 
-    // Transform the data into Candidate format
-    return (data || [])
-      .map((user: any) => {
-        const profile = user.profiles?.[0]
-        const academic = user.user_academic?.[0]
+    if (!usersData || usersData.length === 0) {
+      return []
+    }
+
+    // Step 2: Get all user IDs and fetch academic data
+    const userIds = usersData.map(u => u.id)
+    
+    // Build academic query
+    let academicQuery = supabase
+      .from('user_academic')
+      .select('user_id, university_id, degree_level, program_id, study_start_year')
+      .in('user_id', userIds)
+
+    // Apply academic filters if present
+    if (filter.institutionId) {
+      academicQuery = academicQuery.eq('university_id', filter.institutionId)
+    }
+    
+    if (filter.degreeLevel) {
+      academicQuery = academicQuery.eq('degree_level', filter.degreeLevel)
+    }
+    
+    if (filter.programmeId) {
+      academicQuery = academicQuery.eq('program_id', filter.programmeId)
+    }
+    
+    if (filter.graduationYearFrom) {
+      academicQuery = academicQuery.gte('study_start_year', filter.graduationYearFrom)
+    }
+    
+    if (filter.graduationYearTo) {
+      academicQuery = academicQuery.lte('study_start_year', filter.graduationYearTo)
+    }
+
+    const { data: academicData, error: academicError } = await academicQuery
+
+    if (academicError) {
+      console.error('Error fetching academic data:', academicError)
+      // Continue without academic filtering if query fails
+    }
+
+    // Step 3: Create a map of user_id -> academic data
+    const academicMap = new Map(
+      (academicData || []).map((ac: any) => [ac.user_id, ac])
+    )
+
+    // Step 4: Transform and filter candidates
+    const candidates: Candidate[] = usersData
+      .map((user: any): Candidate | null => {
+        const profile = Array.isArray(user.profiles) ? user.profiles[0] : user.profiles
+        const academic = academicMap.get(user.id)
         const responses = user.responses || []
         const vector = user.user_vectors?.[0]?.vector
+
+        // Apply academic filters by excluding users without matching academic data
+        if (filter.institutionId || filter.degreeLevel || filter.programmeId || 
+            filter.graduationYearFrom || filter.graduationYearTo) {
+          if (!academic) {
+            return null // Filter out users without academic data when filters are applied
+          }
+        }
 
         // Convert responses array to answers object
         const answers = responses.reduce((acc: Record<string, any>, response: any) => {
@@ -182,8 +221,8 @@ export class SupabaseMatchRepo implements MatchRepo {
           id: user.id,
           email: user.email,
           firstName: profile?.first_name || '',
-          universityId: academic?.university_id,
-          degreeLevel: academic?.degree_level,
+          universityId: academic?.university_id || profile?.university_id,
+          degreeLevel: academic?.degree_level || profile?.degree_level,
           programmeId: academic?.program_id,
           campusCity: profile?.campus,
           graduationYear: academic?.study_start_year,
@@ -193,7 +232,9 @@ export class SupabaseMatchRepo implements MatchRepo {
           createdAt: new Date().toISOString()
         }
       })
-      .filter(candidate => {
+      .filter((candidate): candidate is Candidate => {
+        if (!candidate) return false
+        
         // Filter out users without complete responses
         if (!isEligibleForMatching(candidate.answers)) {
           return false
@@ -206,6 +247,13 @@ export class SupabaseMatchRepo implements MatchRepo {
         
         return true
       })
+
+    // Apply limit if specified
+    if (filter.limit) {
+      return candidates.slice(0, filter.limit)
+    }
+
+    return candidates
   }
 
   async saveMatchRun(run: Omit<MatchRun, 'id' | 'createdAt'>): Promise<void> {
