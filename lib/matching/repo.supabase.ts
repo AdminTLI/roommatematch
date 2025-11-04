@@ -276,22 +276,63 @@ export class SupabaseMatchRepo implements MatchRepo {
           return acc
         }, {})
 
+        // Log pre-normalization state to diagnose issues
+        console.log('[DEBUG] loadCandidates - Pre-normalization:', {
+          userId: user.id,
+          email: user.email,
+          hasAcademic: !!academic,
+          hasProfile: !!profile,
+          academicData: academic ? {
+            degree_level: academic.degree_level,
+            program_id: academic.program_id,
+            undecided_program: academic.undecided_program
+          } : null,
+          profileData: profile ? {
+            degree_level: profile.degree_level,
+            campus: profile.campus
+          } : null,
+          answersBeforeNorm: {
+            degree_level: answers.degree_level,
+            program: answers.program,
+            campus: answers.campus
+          }
+        })
+
         // Normalize answers: enrich with data from profiles/user_academic where applicable
         // Some required fields may be stored in profile tables rather than responses
         if (!answers.degree_level) {
           answers.degree_level = academic?.degree_level || profile?.degree_level
+          if (answers.degree_level) {
+            console.log('[DEBUG] Normalized degree_level to:', answers.degree_level)
+          }
         }
         if (!answers.campus || answers.campus === '') {
           answers.campus = profile?.campus || null // Use null instead of empty string
+          if (answers.campus) {
+            console.log('[DEBUG] Normalized campus to:', answers.campus)
+          }
         }
         if (!answers.program) {
           // Handle undecided program case - use "undecided" as value
           if (academic?.undecided_program) {
             answers.program = 'undecided'
+            console.log('[DEBUG] Set program to undecided')
           } else if (academic?.program_id) {
             answers.program = academic.program_id
+            console.log('[DEBUG] Normalized program to:', academic.program_id)
           }
         }
+
+        // Log post-normalization state
+        console.log('[DEBUG] loadCandidates - Post-normalization:', {
+          userId: user.id,
+          answersAfterNorm: {
+            degree_level: answers.degree_level,
+            program: answers.program,
+            campus: answers.campus,
+            study_intensity: answers.study_intensity
+          }
+        })
 
         // Apply defaults for fields used in matching engine (matching engine has defaults for these)
         // This prevents users from being excluded if they have core compatibility data
