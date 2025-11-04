@@ -77,11 +77,32 @@ export class SupabaseMatchRepo implements MatchRepo {
     if (!answers.degree_level) {
       answers.degree_level = academic?.degree_level || profile?.degree_level
     }
-    if (!answers.campus) {
-      answers.campus = profile?.campus
+    if (!answers.campus || answers.campus === '') {
+      answers.campus = profile?.campus || null // Use null instead of empty string
     }
     if (!answers.program && academic?.program_id) {
       answers.program = academic.program_id
+    }
+
+    // Apply defaults for fields used in matching engine (matching engine has defaults for these)
+    // This prevents users from being excluded if they have core compatibility data
+    if (!answers.study_intensity) {
+      answers.study_intensity = 5 // Default from toEngineProfile
+    }
+    if (!answers.pets_tolerance) {
+      answers.pets_tolerance = 5 // Reasonable default
+    }
+    if (!answers.food_sharing) {
+      answers.food_sharing = 'sometimes' // Reasonable default
+    }
+    if (!answers.utensils_sharing) {
+      answers.utensils_sharing = 'sometimes' // Reasonable default
+    }
+    if (!answers.parties_max) {
+      answers.parties_max = 2 // Reasonable default (2 per month)
+    }
+    if (!answers.guests_max) {
+      answers.guests_max = 4 // Reasonable default (4 per month)
     }
 
     console.log('[DEBUG] getCandidateByUserId - User responses:', {
@@ -218,11 +239,32 @@ export class SupabaseMatchRepo implements MatchRepo {
         if (!answers.degree_level) {
           answers.degree_level = academic?.degree_level || profile?.degree_level
         }
-        if (!answers.campus) {
-          answers.campus = profile?.campus
+        if (!answers.campus || answers.campus === '') {
+          answers.campus = profile?.campus || null // Use null instead of empty string
         }
         if (!answers.program && academic?.program_id) {
           answers.program = academic.program_id
+        }
+
+        // Apply defaults for fields used in matching engine (matching engine has defaults for these)
+        // This prevents users from being excluded if they have core compatibility data
+        if (!answers.study_intensity) {
+          answers.study_intensity = 5 // Default from toEngineProfile
+        }
+        if (!answers.pets_tolerance) {
+          answers.pets_tolerance = 5 // Reasonable default
+        }
+        if (!answers.food_sharing) {
+          answers.food_sharing = 'sometimes' // Reasonable default
+        }
+        if (!answers.utensils_sharing) {
+          answers.utensils_sharing = 'sometimes' // Reasonable default
+        }
+        if (!answers.parties_max) {
+          answers.parties_max = 2 // Reasonable default (2 per month)
+        }
+        if (!answers.guests_max) {
+          answers.guests_max = 4 // Reasonable default (4 per month)
         }
 
         return {
