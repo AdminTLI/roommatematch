@@ -207,8 +207,8 @@ export class SupabaseMatchRepo implements MatchRepo {
       query = query.not('id', 'in', `(${filter.excludeUserIds.join(',')})`)
     }
 
-    // Exclude unverified users from matching pool
-    query = query.not('email_confirmed_at', 'is', null)
+    // Note: Email verification is checked via profiles.verification_status
+    // email_confirmed_at is in auth.users table and not accessible here
 
     if (filter.limit) {
       query = query.limit(filter.limit)
