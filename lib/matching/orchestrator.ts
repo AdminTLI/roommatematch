@@ -274,6 +274,7 @@ export async function runMatchingAsSuggestions({
     })
     
     if (rawCandidates.length === 0) {
+      console.log(`[Suggestions] No candidates found in cohort with filter:`, cohort)
       return { 
         runId, 
         created: 0, 

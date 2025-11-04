@@ -37,12 +37,17 @@ export async function POST(request: NextRequest) {
     }
     
     // Build cohort filter based on user's profile
-    const cohort = {
-      campusCity: currentUser.campusCity,
+    // Only include campusCity if it's not null/empty (filter only applies if truthy)
+    const cohort: any = {
       institutionId: currentUser.universityId,
       degreeLevel: currentUser.degreeLevel,
       programmeId: currentUser.programmeId,
       excludeUserIds: [user.id] // Exclude current user from suggestions
+    }
+    
+    // Only add campusCity filter if it has a value
+    if (currentUser.campusCity) {
+      cohort.campusCity = currentUser.campusCity
     }
     
     // Generate new suggestions
