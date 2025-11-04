@@ -62,17 +62,38 @@ export class SupabaseMatchRepo implements MatchRepo {
       return null
     }
 
-    // Check if user is eligible for matching
+    // Build answers object from responses
     const answers = data.responses?.reduce((acc: Record<string, any>, r: any) => {
       acc[r.question_key] = r.value
       return acc
     }, {}) || {}
 
+    // Normalize answers: enrich with data from profiles/user_academic where applicable
+    // Some required fields may be stored in profile tables rather than responses
+    const profile = Array.isArray(data.profiles) ? data.profiles[0] : data.profiles
+    const academic = Array.isArray(data.user_academic) ? data.user_academic[0] : data.user_academic
+
+    // Map profile/academic fields to question keys if missing in responses
+    if (!answers.degree_level) {
+      answers.degree_level = academic?.degree_level || profile?.degree_level
+    }
+    if (!answers.campus) {
+      answers.campus = profile?.campus
+    }
+    if (!answers.program && academic?.program_id) {
+      answers.program = academic.program_id
+    }
+
     console.log('[DEBUG] getCandidateByUserId - User responses:', {
       userId,
       answersCount: Object.keys(answers).length,
       answerKeys: Object.keys(answers).sort(),
-      sampleAnswers: Object.fromEntries(Object.entries(answers).slice(0, 5))
+      sampleAnswers: Object.fromEntries(Object.entries(answers).slice(0, 5)),
+      normalizedFromProfile: {
+        degree_level: answers.degree_level,
+        campus: answers.campus,
+        program: answers.program
+      }
     })
 
     const eligible = await isEligibleForMatching(answers)
@@ -191,6 +212,18 @@ export class SupabaseMatchRepo implements MatchRepo {
           acc[response.question_key] = response.value
           return acc
         }, {})
+
+        // Normalize answers: enrich with data from profiles/user_academic where applicable
+        // Some required fields may be stored in profile tables rather than responses
+        if (!answers.degree_level) {
+          answers.degree_level = academic?.degree_level || profile?.degree_level
+        }
+        if (!answers.campus) {
+          answers.campus = profile?.campus
+        }
+        if (!answers.program && academic?.program_id) {
+          answers.program = academic.program_id
+        }
 
         return {
           id: user.id,
