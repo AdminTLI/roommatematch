@@ -37,11 +37,13 @@ export async function POST(request: NextRequest) {
     }
     
     // Build cohort filter based on user's profile
+    // Note: programmeId is NOT included as a filter - program matching is a preference/boost
+    // in the scoring system, not a hard requirement. Users with different programs or undecided
+    // programs should still be eligible for matching (they just won't get the program bonus).
     // Only include campusCity if it's not null/empty (filter only applies if truthy)
     const cohort: any = {
       institutionId: currentUser.universityId,
       degreeLevel: currentUser.degreeLevel,
-      programmeId: currentUser.programmeId,
       excludeUserIds: [user.id] // Exclude current user from suggestions
     }
     
