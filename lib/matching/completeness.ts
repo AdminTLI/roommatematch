@@ -1,5 +1,3 @@
-import { hasCompleteResponses } from '@/lib/onboarding/validation'
-
 // Required question keys for complete onboarding
 const REQUIRED_QUESTION_KEYS = [
   // Basics
@@ -102,3 +100,6 @@ export function getCompletionPercentage(answers: Record<string, any>): number {
 export function isEligibleForMatching(answers: Record<string, any>): boolean {
   return hasCompleteResponses(answers)
 }
+
+// Export REQUIRED_QUESTION_KEYS for debugging and external use
+export { REQUIRED_QUESTION_KEYS }

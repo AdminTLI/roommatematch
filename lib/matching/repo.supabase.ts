@@ -68,8 +68,22 @@ export class SupabaseMatchRepo implements MatchRepo {
       return acc
     }, {}) || {}
 
+    console.log('[DEBUG] getCandidateByUserId - User responses:', {
+      userId,
+      answersCount: Object.keys(answers).length,
+      answerKeys: Object.keys(answers).sort(),
+      sampleAnswers: Object.fromEntries(Object.entries(answers).slice(0, 5))
+    })
+
     const eligible = await isEligibleForMatching(answers)
     if (!eligible) {
+      const { getMissingFields } = await import('./completeness')
+      const missing = getMissingFields(answers)
+      console.log('[DEBUG] User not eligible - missing fields:', {
+        userId,
+        missingCount: missing.length,
+        missingFields: missing
+      })
       return null
     }
 

@@ -25,7 +25,15 @@ export async function POST(request: NextRequest) {
     // Efficiently fetch the current user's profile
     const currentUser = await repo.getCandidateByUserId(user.id)
     if (!currentUser) {
-      return NextResponse.json({ error: 'User profile not found or not eligible for matching' }, { status: 404 })
+      console.error('[DEBUG] Refresh route - user not eligible:', {
+        userId: user.id,
+        email: user.email,
+        timestamp: new Date().toISOString()
+      })
+      return NextResponse.json({ 
+        error: 'User profile not found or not eligible for matching',
+        details: 'Check server logs for missing required fields'
+      }, { status: 404 })
     }
     
     // Build cohort filter based on user's profile
