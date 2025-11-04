@@ -44,6 +44,7 @@ export class SupabaseMatchRepo implements MatchRepo {
           university_id,
           degree_level,
           program_id,
+          undecided_program,
           study_start_year
         ),
         responses(
@@ -80,8 +81,13 @@ export class SupabaseMatchRepo implements MatchRepo {
     if (!answers.campus || answers.campus === '') {
       answers.campus = profile?.campus || null // Use null instead of empty string
     }
-    if (!answers.program && academic?.program_id) {
-      answers.program = academic.program_id
+    if (!answers.program) {
+      // Handle undecided program case - use "undecided" as value
+      if (academic?.undecided_program) {
+        answers.program = 'undecided'
+      } else if (academic?.program_id) {
+        answers.program = academic.program_id
+      }
     }
 
     // Apply defaults for fields used in matching engine (matching engine has defaults for these)
@@ -130,14 +136,17 @@ export class SupabaseMatchRepo implements MatchRepo {
     }
 
     // Transform to Candidate format
+    const academicData = Array.isArray(data.user_academic) ? data.user_academic[0] : data.user_academic
+    const profileData = Array.isArray(data.profiles) ? data.profiles[0] : data.profiles
+    
     return {
       id: data.id,
       email: data.email,
-      firstName: data.profiles?.first_name || 'User',
-      universityId: data.profiles?.university_id,
-      degreeLevel: data.profiles?.degree_level,
-      programmeId: data.user_academic?.program_id,
-      campusCity: data.profiles?.campus,
+      firstName: profileData?.first_name || 'User',
+      universityId: profileData?.university_id,
+      degreeLevel: profileData?.degree_level,
+      programmeId: academicData?.program_id,
+      campusCity: profileData?.campus,
       answers,
       vector: data.user_vectors?.[0]?.vector,
       createdAt: new Date().toISOString()
@@ -163,6 +172,7 @@ export class SupabaseMatchRepo implements MatchRepo {
           university_id,
           degree_level,
           program_id,
+          undecided_program,
           study_start_year
         ),
         responses(
@@ -242,8 +252,13 @@ export class SupabaseMatchRepo implements MatchRepo {
         if (!answers.campus || answers.campus === '') {
           answers.campus = profile?.campus || null // Use null instead of empty string
         }
-        if (!answers.program && academic?.program_id) {
-          answers.program = academic.program_id
+        if (!answers.program) {
+          // Handle undecided program case - use "undecided" as value
+          if (academic?.undecided_program) {
+            answers.program = 'undecided'
+          } else if (academic?.program_id) {
+            answers.program = academic.program_id
+          }
         }
 
         // Apply defaults for fields used in matching engine (matching engine has defaults for these)
