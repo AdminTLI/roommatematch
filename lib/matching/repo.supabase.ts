@@ -1,18 +1,32 @@
 // Supabase implementation of MatchRepo
 // Handles all database operations for the matching system
 
-import { createClient } from '@/lib/supabase/server'
+// SECURITY NOTE: This repository uses the admin/service-role client to bypass RLS.
+// This is safe because:
+// 1. All methods are only called from server-side API routes that authenticate users
+// 2. Results are filtered before returning to clients (e.g., listSuggestionsForUser filters by userId)
+// 3. Blocklists are checked server-side and never exposed to clients
+// 4. Matching requires cross-user access to find eligible candidates and create suggestions
+// The admin client is necessary because matching operations need to:
+// - Query all eligible users across the platform (not just current user)
+// - Write match suggestions/records to central tables
+// - Check blocklists for both users in a pair
+// - Update match status across multiple user records
+
+import { createAdminClient } from '@/lib/supabase/server'
 import type { MatchRepo, CohortFilter, MatchRecord, Candidate, MatchRun } from './repo'
 import type { MatchSuggestion } from './types'
 import { isEligibleForMatching } from './completeness'
 
 export class SupabaseMatchRepo implements MatchRepo {
   private async getSupabase() {
-    return await createClient()
+    // Use admin client to bypass RLS for matching operations
+    // This allows cross-user queries and writes needed for the matching system
+    return await createAdminClient()
   }
 
   async getCandidateByUserId(userId: string): Promise<Candidate | null> {
-    const supabase = await createClient()
+    const supabase = await this.getSupabase()
     
     const { data, error } = await supabase
       .from('users')
@@ -402,6 +416,9 @@ export class SupabaseMatchRepo implements MatchRepo {
   }
 
   async listSuggestionsForUser(userId: string, includeExpired = false): Promise<MatchSuggestion[]> {
+    // SECURITY: This method uses admin client but filters results by userId parameter
+    // which is passed from authenticated API routes. Users can only see suggestions
+    // that include their own userId in memberIds array.
     const supabase = await this.getSupabase()
     let query = supabase
       .from('match_suggestions')
@@ -508,6 +525,10 @@ export class SupabaseMatchRepo implements MatchRepo {
 
   // Blocklist
   async getBlocklist(userId: string): Promise<string[]> {
+    // SECURITY: This method uses admin client to read any user's blocklist.
+    // This is necessary for matching to check if users have blocked each other.
+    // Blocklists are never exposed to clients - only checked server-side during
+    // suggestion generation. The userId parameter comes from server-side matching logic.
     const supabase = await this.getSupabase()
     const { data, error } = await supabase
       .from('match_blocklist')
@@ -522,6 +543,9 @@ export class SupabaseMatchRepo implements MatchRepo {
   }
 
   async addToBlocklist(userId: string, otherId: string): Promise<void> {
+    // SECURITY: This method uses admin client but should only be called from
+    // authenticated API routes where userId matches the authenticated user.
+    // The API route must verify userId === auth.uid() before calling this.
     const supabase = await this.getSupabase()
     const { error } = await supabase
       .from('match_blocklist')
