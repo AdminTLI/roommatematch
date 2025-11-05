@@ -59,15 +59,22 @@ export async function runMatching({
     console.log(`[Matching] Found ${rawCandidates.length} candidates`)
     
     // Transform to student profiles
-    const students = rawCandidates.map(candidate => toStudent({
-      id: candidate.id,
-      answers: candidate.answers,
-      campusCity: candidate.campusCity,
-      universityId: candidate.universityId,
-      degreeLevel: candidate.degreeLevel,
-      programmeId: candidate.programmeId,
-      graduationYear: candidate.graduationYear
-    }))
+    // Include vector in answers so it's accessible via student.raw.vector
+    const students = rawCandidates.map(candidate => {
+      const answersWithVector = {
+        ...candidate.answers,
+        vector: candidate.vector // Include vector in answers for toEngineProfile access
+      }
+      return toStudent({
+        id: candidate.id,
+        answers: answersWithVector,
+        campusCity: candidate.campusCity,
+        universityId: candidate.universityId,
+        degreeLevel: candidate.degreeLevel,
+        programmeId: candidate.programmeId,
+        graduationYear: candidate.graduationYear
+      })
+    })
     
     // 2) Apply deal-breaker filtering
     console.log(`[Matching] Applying deal-breaker filtering`)
@@ -228,23 +235,33 @@ export async function runMatching({
 
 function toEngineProfile(student: any) {
   // Convert StudentProfile to the format expected by MatchingEngine
+  // Ensure sleep times are numbers (they might be strings from database)
+  const sleepStart = typeof student.raw.sleep_start === 'string' ? parseFloat(student.raw.sleep_start) : Number(student.raw.sleep_start) || 22
+  const sleepEnd = typeof student.raw.sleep_end === 'string' ? parseFloat(student.raw.sleep_end) : Number(student.raw.sleep_end) || 8
+  
+  // Use actual vector from candidate if available, otherwise use empty array
+  // Don't use array of zeros as it breaks cosine similarity calculation
+  const vector = student.raw.vector && Array.isArray(student.raw.vector) && student.raw.vector.length > 0
+    ? student.raw.vector
+    : new Array(50).fill(0) // Only use zeros if truly no vector exists
+  
   return {
     userId: student.id,
-    vector: student.raw.vector || new Array(50).fill(0),
-    sleepStart: student.raw.sleep_start || 22,
-    sleepEnd: student.raw.sleep_end || 8,
-    cleanlinessRoom: student.raw.cleanliness_room || 5,
-    cleanlinessKitchen: student.raw.cleanliness_kitchen || 5,
-    noiseTolerance: student.raw.noise_tolerance || 5,
-    guestsFrequency: student.raw.guests_frequency || 5,
-    partiesFrequency: student.raw.parties_frequency || 5,
-    studyIntensity: student.raw.study_intensity || 5,
-    socialLevel: student.raw.social_level || 5,
-    extraversion: student.raw.extraversion || 5,
-    agreeableness: student.raw.agreeableness || 5,
-    conscientiousness: student.raw.conscientiousness || 5,
-    neuroticism: student.raw.neuroticism || 5,
-    openness: student.raw.openness || 5,
+    vector,
+    sleepStart,
+    sleepEnd,
+    cleanlinessRoom: Number(student.raw.cleanliness_room) || 5,
+    cleanlinessKitchen: Number(student.raw.cleanliness_kitchen) || 5,
+    noiseTolerance: Number(student.raw.noise_tolerance) || 5,
+    guestsFrequency: Number(student.raw.guests_frequency) || 5,
+    partiesFrequency: Number(student.raw.parties_frequency) || 5,
+    studyIntensity: Number(student.raw.study_intensity) || 5,
+    socialLevel: Number(student.raw.social_level) || 5,
+    extraversion: Number(student.raw.extraversion) || 5,
+    agreeableness: Number(student.raw.agreeableness) || 5,
+    conscientiousness: Number(student.raw.conscientiousness) || 5,
+    neuroticism: Number(student.raw.neuroticism) || 5,
+    openness: Number(student.raw.openness) || 5,
     universityId: student.meta.universityId,
     degreeLevel: student.meta.degreeLevel,
     programId: student.meta.programmeId,
@@ -291,15 +308,22 @@ export async function runMatchingAsSuggestions({
     console.log(`[Suggestions] Found ${rawCandidates.length} candidates`)
     
     // Transform to student profiles
-    const students = rawCandidates.map(candidate => toStudent({
-      id: candidate.id,
-      answers: candidate.answers,
-      campusCity: candidate.campusCity,
-      universityId: candidate.universityId,
-      degreeLevel: candidate.degreeLevel,
-      programmeId: candidate.programmeId,
-      graduationYear: candidate.graduationYear
-    }))
+    // Include vector in answers so it's accessible via student.raw.vector
+    const students = rawCandidates.map(candidate => {
+      const answersWithVector = {
+        ...candidate.answers,
+        vector: candidate.vector // Include vector in answers for toEngineProfile access
+      }
+      return toStudent({
+        id: candidate.id,
+        answers: answersWithVector,
+        campusCity: candidate.campusCity,
+        universityId: candidate.universityId,
+        degreeLevel: candidate.degreeLevel,
+        programmeId: candidate.programmeId,
+        graduationYear: candidate.graduationYear
+      })
+    })
 
     // 2) Precompute pair fits passing deal-breakers
     const pairFits: { key: string; aId: string; bId: string; fit: number; fitIndex: number; ps: any }[] = []

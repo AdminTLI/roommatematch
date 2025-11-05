@@ -434,7 +434,7 @@ export class SupabaseMatchRepo implements MatchRepo {
       userIds: transformedCandidates.map(c => c.id)
     })
     
-    // Filter by eligibility and vector requirement
+    // First pass: filter by eligibility
     const eligibleCandidates = transformedCandidates.filter(candidate => {
         // Filter out users without complete responses
         const eligible = isEligibleForMatching(candidate.answers)
@@ -449,26 +449,74 @@ export class SupabaseMatchRepo implements MatchRepo {
           })
           return false
         }
+        return true
+      })
+    
+    // Auto-generate missing vectors for eligible candidates
+    const candidatesMissingVectors = eligibleCandidates.filter(c => !c.vector)
+    if (candidatesMissingVectors.length > 0) {
+      console.log(`[DEBUG] loadCandidates - Auto-generating ${candidatesMissingVectors.length} missing vectors...`)
+      const supabase = await this.getSupabase()
+      
+      // Generate vectors in parallel
+      const vectorPromises = candidatesMissingVectors.map(async (candidate) => {
+        try {
+          const { error } = await supabase.rpc('compute_user_vector_and_store', { 
+            p_user_id: candidate.id 
+          })
+          if (error) {
+            console.error(`[DEBUG] Failed to generate vector for ${candidate.id}:`, error)
+            return null
+          }
+          return candidate.id
+        } catch (err) {
+          console.error(`[DEBUG] Error generating vector for ${candidate.id}:`, err)
+          return null
+        }
+      })
+      
+      const generatedUserIds = (await Promise.all(vectorPromises)).filter(id => id !== null)
+      console.log(`[DEBUG] Generated ${generatedUserIds.length} vectors successfully`)
+      
+      // Refetch vectors for users we just generated
+      if (generatedUserIds.length > 0) {
+        const { data: newVectors, error: vectorError } = await supabase
+          .from('user_vectors')
+          .select('user_id, vector')
+          .in('user_id', generatedUserIds)
         
-        // Filter out users without vectors
+        if (!vectorError && newVectors) {
+          const vectorMap = new Map(newVectors.map(v => [v.user_id, v.vector]))
+          
+          // Update candidates with newly generated vectors
+          eligibleCandidates.forEach(candidate => {
+            if (vectorMap.has(candidate.id)) {
+              candidate.vector = vectorMap.get(candidate.id)
+            }
+          })
+        }
+      }
+    }
+    
+    // Final filter: only return candidates with vectors
+    const finalCandidates = eligibleCandidates.filter(candidate => {
         if (!candidate.vector) {
-          console.log('[DEBUG] loadCandidates - Candidate missing vector:', {
+          console.log('[DEBUG] loadCandidates - Candidate still missing vector after generation:', {
             userId: candidate.id,
             email: candidate.email
           })
           return false
         }
-        
         return true
       })
     
     console.log('[DEBUG] loadCandidates - Final eligible candidates:', {
-      eligibleCount: eligibleCandidates.length,
-      filteredOut: transformedCandidates.length - eligibleCandidates.length,
-      eligibleUserIds: eligibleCandidates.map(c => c.id)
+      eligibleCount: finalCandidates.length,
+      filteredOut: transformedCandidates.length - finalCandidates.length,
+      eligibleUserIds: finalCandidates.map(c => c.id)
     })
     
-    return eligibleCandidates
+    return finalCandidates
   }
 
   async saveMatchRun(run: Omit<MatchRun, 'id' | 'createdAt'>): Promise<void> {

@@ -137,14 +137,31 @@ export class MatchingEngine {
    * Compute schedule overlap score based on sleep patterns
    */
   computeScheduleOverlap(profileA: UserProfile, profileB: UserProfile): number {
-    const sleepA = this.normalizeSleepTime(profileA.sleepStart, profileA.sleepEnd)
-    const sleepB = this.normalizeSleepTime(profileB.sleepStart, profileB.sleepEnd)
+    // Ensure sleep times are numbers
+    const sleepStartA = typeof profileA.sleepStart === 'string' ? parseFloat(profileA.sleepStart) : Number(profileA.sleepStart) || 22
+    const sleepEndA = typeof profileA.sleepEnd === 'string' ? parseFloat(profileA.sleepEnd) : Number(profileA.sleepEnd) || 8
+    const sleepStartB = typeof profileB.sleepStart === 'string' ? parseFloat(profileB.sleepStart) : Number(profileB.sleepStart) || 22
+    const sleepEndB = typeof profileB.sleepEnd === 'string' ? parseFloat(profileB.sleepEnd) : Number(profileB.sleepEnd) || 8
+    
+    const sleepA = this.normalizeSleepTime(sleepStartA, sleepEndA)
+    const sleepB = this.normalizeSleepTime(sleepStartB, sleepEndB)
     
     // Calculate overlap in hours
     const overlap = Math.max(0, Math.min(sleepA.end, sleepB.end) - Math.max(sleepA.start, sleepB.start))
     const totalSleep = Math.max(sleepA.end - sleepA.start, sleepB.end - sleepB.start)
     
-    return overlap / totalSleep
+    // Handle division by zero - if totalSleep is 0, return 0 (no overlap possible)
+    if (totalSleep === 0 || isNaN(totalSleep) || !isFinite(totalSleep)) {
+      return 0
+    }
+    
+    const result = overlap / totalSleep
+    // Ensure result is valid number
+    if (isNaN(result) || !isFinite(result)) {
+      return 0
+    }
+    
+    return result
   }
 
   /**
