@@ -349,6 +349,22 @@ export async function runMatchingAsSuggestions({
           const profileA = toEngineProfile(studentA)
           const profileB = toEngineProfile(studentB)
           
+          // Debug vector information
+          console.log(`[DEBUG] Vector check: ${studentA.id} <-> ${studentB.id}`, {
+            vectorA: {
+              length: profileA.vector?.length,
+              isArray: Array.isArray(profileA.vector),
+              hasValues: profileA.vector?.some(v => v !== 0),
+              sample: profileA.vector?.slice(0, 5)
+            },
+            vectorB: {
+              length: profileB.vector?.length,
+              isArray: Array.isArray(profileB.vector),
+              hasValues: profileB.vector?.some(v => v !== 0),
+              sample: profileB.vector?.slice(0, 5)
+            }
+          })
+          
           const { score, explanation } = engine.computeCompatibilityScore(profileA, profileB)
           const fitIndex = Math.round(score * 100)
           

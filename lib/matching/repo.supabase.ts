@@ -701,6 +701,11 @@ export class SupabaseMatchRepo implements MatchRepo {
 
   // Suggestions (student flow)
   async createSuggestions(sugs: MatchSuggestion[]): Promise<void> {
+    if (sugs.length === 0) {
+      console.log('[DEBUG] createSuggestions - No suggestions to create')
+      return
+    }
+
     const records = sugs.map(sug => ({
       id: sug.id,
       run_id: sug.runId,
@@ -716,14 +721,30 @@ export class SupabaseMatchRepo implements MatchRepo {
       created_at: sug.createdAt
     }))
 
+    console.log(`[DEBUG] createSuggestions - Inserting ${records.length} suggestions:`, {
+      ids: records.map(r => r.id),
+      memberIds: records.map(r => r.member_ids),
+      fitIndices: records.map(r => r.fit_index)
+    })
+
     const supabase = await this.getSupabase()
-    const { error } = await supabase
+    const { data, error } = await supabase
       .from('match_suggestions')
       .insert(records)
+      .select()
 
     if (error) {
+      console.error('[DEBUG] createSuggestions - Error details:', {
+        error: error.message,
+        code: error.code,
+        details: error.details,
+        hint: error.hint,
+        records: records.map(r => ({ id: r.id, member_ids: r.member_ids }))
+      })
       throw new Error(`Failed to create suggestions: ${error.message}`)
     }
+
+    console.log(`[DEBUG] createSuggestions - Successfully created ${data?.length || 0} suggestions`)
   }
 
   async listSuggestionsForUser(userId: string, includeExpired = false): Promise<MatchSuggestion[]> {
