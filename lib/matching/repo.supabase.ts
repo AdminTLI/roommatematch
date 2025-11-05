@@ -169,19 +169,21 @@ export class SupabaseMatchRepo implements MatchRepo {
     })
     
     // Build query for users with their onboarding data
+    // Note: Using LEFT joins instead of INNER to handle cases where users might not have profiles/academic yet
+    // We'll filter out invalid users later in the transformation step
     let query = supabase
       .from('users')
       .select(`
         id,
         email,
-        profiles!inner(
+        profiles(
           first_name,
           university_id,
           degree_level,
           campus,
           verification_status
         ),
-        user_academic!inner(
+        user_academic(
           university_id,
           degree_level,
           program_id,
@@ -262,11 +264,49 @@ export class SupabaseMatchRepo implements MatchRepo {
       userIds: data?.map((u: any) => u.id) || []
     })
 
+    // If joins didn't return academic/profile data, fetch them separately
+    // This can happen if Supabase relationship resolution isn't working correctly
+    const usersMissingAcademic = (data || []).filter((u: any) => !u.user_academic?.[0]).map((u: any) => u.id)
+    const usersMissingProfile = (data || []).filter((u: any) => !u.profiles?.[0]).map((u: any) => u.id)
+
+    // Fetch missing academic data in parallel
+    let academicDataMap = new Map<string, any>()
+    if (usersMissingAcademic.length > 0) {
+      console.log('[DEBUG] loadCandidates - Fetching missing academic data for', usersMissingAcademic.length, 'users')
+      const adminClient = await this.getSupabase()
+      const { data: academicData, error: academicError } = await adminClient
+        .from('user_academic')
+        .select('user_id, university_id, degree_level, program_id, undecided_program, study_start_year')
+        .in('user_id', usersMissingAcademic)
+      
+      if (!academicError && academicData) {
+        academicData.forEach((a: any) => academicDataMap.set(a.user_id, a))
+        console.log('[DEBUG] loadCandidates - Fetched', academicData.length, 'academic records')
+      }
+    }
+
+    // Fetch missing profile data in parallel
+    let profileDataMap = new Map<string, any>()
+    if (usersMissingProfile.length > 0) {
+      console.log('[DEBUG] loadCandidates - Fetching missing profile data for', usersMissingProfile.length, 'users')
+      const adminClient = await this.getSupabase()
+      const { data: profileData, error: profileError } = await adminClient
+        .from('profiles')
+        .select('user_id, first_name, university_id, degree_level, campus, verification_status')
+        .in('user_id', usersMissingProfile)
+      
+      if (!profileError && profileData) {
+        profileData.forEach((p: any) => profileDataMap.set(p.user_id, p))
+        console.log('[DEBUG] loadCandidates - Fetched', profileData.length, 'profile records')
+      }
+    }
+
     // Transform the data into Candidate format
     const transformedCandidates = (data || [])
       .map((user: any) => {
-        const profile = user.profiles?.[0]
-        const academic = user.user_academic?.[0]
+        // Try to get profile/academic from join result first, then fallback to separate fetch
+        let profile = user.profiles?.[0] || profileDataMap.get(user.id)
+        let academic = user.user_academic?.[0] || academicDataMap.get(user.id)
         const responses = user.responses || []
         const vector = user.user_vectors?.[0]?.vector
 

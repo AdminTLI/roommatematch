@@ -9,3 +9,4 @@ ON chat_members(last_read_at);
 -- Add comment for documentation
 COMMENT ON COLUMN chat_members.last_read_at IS 'Timestamp when user last read messages in this chat';
 
+

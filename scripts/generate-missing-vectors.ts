@@ -6,10 +6,8 @@
  */
 
 import { createClient } from '@supabase/supabase-js'
-import * as dotenv from 'dotenv'
 
-dotenv.config({ path: '.env.local' })
-
+// Load environment variables (should be set in .env.local or shell)
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
 const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY!
 
