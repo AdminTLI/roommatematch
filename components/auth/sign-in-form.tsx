@@ -39,7 +39,21 @@ export function SignInForm() {
       if (error) {
         setError(error.message)
       } else {
-        router.push('/dashboard')
+        // Check verification status
+        const { data: { user } } = await supabase.auth.getUser()
+        if (user && !user.email_confirmed_at) {
+          // Store email for OTP screen and auto-resend
+          sessionStorage.setItem('verification-email', email)
+          try {
+            await supabase.auth.signInWithOtp({
+              email,
+              options: { shouldCreateUser: false }
+            })
+          } catch {}
+          router.push('/auth/verify-email?auto=1')
+        } else {
+          router.push('/dashboard')
+        }
       }
     } catch (err) {
       setError('An unexpected error occurred. Please try again.')

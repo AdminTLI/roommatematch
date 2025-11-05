@@ -45,9 +45,9 @@ export async function POST(request: NextRequest) {
     // - degreeLevel is kept as a requirement for similar academic stage matching
     const cohort: any = {
       degreeLevel: currentUser.degreeLevel,
-      excludeUserIds: [user.id], // Exclude current user from suggestions
-      onlyActive: false, // Allow unverified users (they can still be eligible if they have complete profiles)
-      excludeAlreadyMatched: true // Exclude users who are already locked into matches
+      excludeUserIds: [user.id],
+      onlyActive: true, // Require verified/active profiles for suggestions
+      excludeAlreadyMatched: true
     }
     
     // Only add campusCity filter if it has a value (city-based matching works across universities)

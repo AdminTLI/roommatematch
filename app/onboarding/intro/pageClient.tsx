@@ -75,25 +75,28 @@ function IntroClientContent() {
           }
         }
 
-        // Load intro section data
-        const response = await fetch(`/api/onboarding/load?section=intro`)
-        if (response.ok) {
-          const { answers } = await response.json()
-          if (answers && answers.length > 0) {
-            // Convert answers array back to object format
-            const savedData = answers.reduce((acc: any, answer: any) => {
-              acc[answer.itemId] = answer.value
-              return acc
-            }, {})
-            setAcademicData(savedData)
-            
-            // Re-validate with loaded data
-            const hasUniversity = savedData.institution_slug || savedData.institution_other
-            const hasDegreeLevel = savedData.degree_level
-            const hasProgram = savedData.program_id || savedData.undecided_program
-            const hasGraduationYear = savedData.expected_graduation_year
-            
-            setIsValid(hasUniversity && hasDegreeLevel && hasProgram && hasGraduationYear)
+        // Only load intro section data if user has existing submission or in edit mode
+        // This prevents new users from seeing pre-filled data from other accounts
+        if (isEditMode) {
+          const response = await fetch(`/api/onboarding/load?section=intro`)
+          if (response.ok) {
+            const { answers } = await response.json()
+            if (answers && answers.length > 0) {
+              // Convert answers array back to object format
+              const savedData = answers.reduce((acc: any, answer: any) => {
+                acc[answer.itemId] = answer.value
+                return acc
+              }, {})
+              setAcademicData(savedData)
+              
+              // Re-validate with loaded data
+              const hasUniversity = savedData.institution_slug || savedData.institution_other
+              const hasDegreeLevel = savedData.degree_level
+              const hasProgram = savedData.program_id || savedData.undecided_program
+              const hasGraduationYear = savedData.expected_graduation_year
+              
+              setIsValid(hasUniversity && hasDegreeLevel && hasProgram && hasGraduationYear)
+            }
           }
         }
       } catch (error) {

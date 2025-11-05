@@ -136,29 +136,50 @@ export function OnboardingWizard({ user }: OnboardingWizardProps) {
   const saveProgress = async () => {
     // This would save to a temporary storage or database
     // For now, we'll just store in localStorage
-    localStorage.setItem('onboarding_progress', JSON.stringify({
+    localStorage.setItem(`onboarding_progress_${user.id}`, JSON.stringify({
       currentStep,
       formData,
       timestamp: new Date().toISOString()
     }))
   }
 
-  const loadProgress = () => {
-    const saved = localStorage.getItem('onboarding_progress')
-    if (saved) {
-      try {
-        const { currentStep: savedStep, formData: savedData } = JSON.parse(saved)
-        setCurrentStep(savedStep || 0)
-        setFormData(savedData || {})
-      } catch (error) {
-        console.error('Failed to load progress:', error)
+  const loadProgress = async () => {
+    // Check if user has existing submission before loading any data
+    // This prevents new users from seeing pre-filled data
+    try {
+      const progressResponse = await fetch('/api/onboarding/progress')
+      if (progressResponse.ok) {
+        const progress = await progressResponse.json()
+        
+        // Only load from localStorage if user has started onboarding before
+        // New users should start with empty form
+        if (progress.hasPartialProgress || progress.isFullySubmitted) {
+          const key = `onboarding_progress_${user.id}`
+          const saved = localStorage.getItem(key)
+          if (saved) {
+            try {
+              const { currentStep: savedStep, formData: savedData } = JSON.parse(saved)
+              setCurrentStep(savedStep || 0)
+              setFormData(savedData || {})
+            } catch (error) {
+              console.error('Failed to load progress:', error)
+            }
+          }
+        }
       }
+    } catch (error) {
+      console.error('Failed to check onboarding progress:', error)
+      // On error, don't load anything - start fresh
     }
+
+    // Clean up progress saved under a different user (old key without user id)
+    const legacy = localStorage.getItem('onboarding_progress')
+    if (legacy) localStorage.removeItem('onboarding_progress')
   }
 
   useEffect(() => {
-    loadProgress()
-  }, [])
+    loadProgress().catch(console.error)
+  }, [user.id])
 
   const updateFormData = (stepData: Record<string, any>) => {
     setFormData(prev => ({ ...prev, ...stepData }))
@@ -224,18 +245,39 @@ export function OnboardingWizard({ user }: OnboardingWizardProps) {
         throw new Error(`${mappedError.title}: ${mappedError.message}`)
       }
 
-      // Create user vector from responses
-      const { error: vectorError } = await supabase
-        .rpc('compute_user_vector_and_store', { p_user_id: user.id })
+      // Create user vector from responses with retry logic
+      let vectorError = null
+      let retries = 3
+      while (retries > 0) {
+        const { error } = await supabase.rpc('compute_user_vector_and_store', { 
+          p_user_id: user.id 
+        })
+        
+        if (!error) {
+          vectorError = null
+          break
+        }
+        
+        vectorError = error
+        retries--
+        
+        if (retries > 0) {
+          console.warn(`Vector generation failed, retrying... (${retries} attempts left)`, error)
+          // Wait 1 second before retry
+          await new Promise(resolve => setTimeout(resolve, 1000))
+        }
+      }
 
       if (vectorError) {
-        console.error('Vector generation failed:', vectorError)
-        // Don't block onboarding, but log the error
-        // In production, you might want to retry or queue this
+        console.error('Vector generation failed after retries:', vectorError)
+        // Don't block onboarding completion, but log the error
+        // User can still proceed, vector will need to be generated manually
+      } else {
+        console.log('Vector generated successfully')
       }
 
       // Clear saved progress
-      localStorage.removeItem('onboarding_progress')
+      localStorage.removeItem(`onboarding_progress_${user.id}`)
       
       // Show success message
       showSuccessToast(

@@ -35,6 +35,16 @@ export function VerifyEmailForm() {
     }
   }, [router])
 
+  // Auto-resend when arriving with ?auto=1 and we have an email
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search)
+    const shouldAuto = params.get('auto') === '1'
+    if (shouldAuto && email) {
+      // Fire and forget resend
+      supabase.auth.signInWithOtp({ email, options: { shouldCreateUser: false } }).catch(() => {})
+    }
+  }, [email, supabase])
+
   const handleOTPComplete = async (otpCode: string) => {
     if (!email) {
       setError('Email not found. Please try signing up again.')
@@ -94,19 +104,29 @@ export function VerifyEmailForm() {
     setError('')
 
     try {
-      const { error } = await supabase.auth.resend({
-        type: 'signup',
-        email
+      // Use signInWithOtp to resend the OTP code for signup verification
+      // shouldCreateUser: false ensures we don't create a duplicate user
+      const { error } = await supabase.auth.signInWithOtp({
+        email,
+        options: {
+          shouldCreateUser: false, // User already exists, just needs verification
+        }
       })
 
       if (error) {
-        setError(error.message)
+        // Provide more user-friendly error messages
+        if (error.message.includes('rate limit') || error.message.includes('Too many requests')) {
+          setError('Too many requests. Please wait a few minutes before requesting another code.')
+        } else {
+          setError(error.message || 'Failed to resend verification code. Please try again.')
+        }
       } else {
         setResendSuccess(true)
         setTimeout(() => setResendSuccess(false), 5000)
       }
     } catch (err) {
       setError('An unexpected error occurred. Please try again.')
+      console.error('Resend OTP error:', err)
     } finally {
       setIsResending(false)
     }

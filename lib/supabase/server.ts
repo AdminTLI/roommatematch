@@ -47,3 +47,15 @@ export function createAdminClient() {
     }
   )
 }
+
+export async function requireVerifiedUser() {
+  const supabase = createClient()
+  const { data: { user }, error } = await supabase.auth.getUser()
+  if (error || !user) {
+    return { ok: false as const, status: 401 as const, user: null }
+  }
+  if (!user.email_confirmed_at) {
+    return { ok: false as const, status: 403 as const, user: null }
+  }
+  return { ok: true as const, status: 200 as const, user }
+}

@@ -22,8 +22,7 @@ export function SignUpForm() {
   const [acceptTerms, setAcceptTerms] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState('')
-  const [isMagicLinkLoading, setIsMagicLinkLoading] = useState(false)
-  const [magicLinkSent, setMagicLinkSent] = useState(false)
+  // Magic-link flow removed: OTP-only signup verification
   const router = useRouter()
   const supabase = createBrowserClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -81,34 +80,8 @@ export function SignUpForm() {
       if (error) {
         setError(error.message)
       } else {
-        // Store email for OTP verification
+        // Store email for OTP verification and navigate to OTP screen
         sessionStorage.setItem('verification-email', email)
-        
-        // Explicitly request OTP email to ensure it's sent
-        try {
-          await supabase.auth.signInWithOtp({
-            email,
-            options: {
-              shouldCreateUser: false, // Don't create user again
-            }
-          })
-        } catch (otpError) {
-          console.log('OTP request error (may be expected):', otpError)
-          // Continue anyway - the signup may have already triggered the email
-        }
-        
-        // Alternative approach if above doesn't work:
-        // Replace the entire signUp flow with:
-        // const { error } = await supabase.auth.signInWithOtp({
-        //   email,
-        //   options: {
-        //     data: {
-        //       first_name: firstName,
-        //       last_name: lastName,
-        //     },
-        //   }
-        // })
-        
         router.push('/auth/verify-email')
       }
     } catch (err) {
@@ -118,65 +91,7 @@ export function SignUpForm() {
     }
   }
 
-  const handleMagicLink = async () => {
-    if (!email) {
-      setError('Please enter your email address first.')
-      return
-    }
-
-    setIsMagicLinkLoading(true)
-    setError('')
-
-    try {
-      const { error } = await supabase.auth.signInWithOtp({
-        email,
-        options: {
-          emailRedirectTo: `${window.location.origin}/auth/callback`,
-        },
-      })
-
-      if (error) {
-        setError(error.message)
-      } else {
-        setMagicLinkSent(true)
-      }
-    } catch (err) {
-      setError('An unexpected error occurred. Please try again.')
-    } finally {
-      setIsMagicLinkLoading(false)
-    }
-  }
-
-  if (magicLinkSent) {
-    return (
-      <Card className="w-full">
-        <CardHeader className="text-center">
-          <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-green-100">
-            <Mail className="h-6 w-6 text-green-600" />
-          </div>
-          <CardTitle className="text-2xl">Check your email</CardTitle>
-          <CardDescription>
-            We've sent a magic link to <strong>{email}</strong>
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <p className="text-sm text-muted-foreground text-center">
-            Click the link in the email to complete your sign up. The link will expire in 1 hour.
-          </p>
-          <Button
-            variant="outline"
-            className="w-full"
-            onClick={() => {
-              setMagicLinkSent(false)
-              setEmail('')
-            }}
-          >
-            Use a different email
-          </Button>
-        </CardContent>
-      </Card>
-    )
-  }
+  // Magic-link flow UI removed
 
   return (
     <Card className="w-full">
@@ -302,27 +217,7 @@ export function SignUpForm() {
           </Button>
         </form>
 
-        <div className="relative">
-          <div className="absolute inset-0 flex items-center">
-            <Separator className="w-full" />
-          </div>
-          <div className="relative flex justify-center text-xs uppercase">
-            <span className="bg-background px-2 text-muted-foreground">
-              Or continue with
-            </span>
-          </div>
-        </div>
-
-        <Button
-          type="button"
-          variant="outline"
-          className="w-full"
-          onClick={handleMagicLink}
-          disabled={isMagicLinkLoading}
-        >
-          {isMagicLinkLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-          Send magic link
-        </Button>
+        {/* Removed alternative magic-link option for OTP-only flow */}
 
         <p className="text-center text-sm text-muted-foreground">
           Already have an account?{' '}

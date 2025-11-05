@@ -42,8 +42,9 @@ export async function runMatching({
     console.log(`[Matching] Loading candidates with filter:`, cohort)
     const rawCandidates = await repo.loadCandidates({ 
       excludeAlreadyMatched: true, 
-      onlyActive: true, 
-      ...cohort 
+      ...cohort,
+      // onlyActive defaults to cohort value, but ensure it's set if not provided
+      onlyActive: cohort.onlyActive ?? true
     })
     
     if (rawCandidates.length === 0) {
@@ -269,8 +270,9 @@ export async function runMatchingAsSuggestions({
     console.log(`[Suggestions] Loading candidates with filter:`, cohort)
     const rawCandidates = await repo.loadCandidates({ 
       excludeAlreadyMatched: true, 
-      onlyActive: true, 
-      ...cohort 
+      ...cohort,
+      // onlyActive defaults to cohort value, but ensure it's set if not provided
+      onlyActive: cohort.onlyActive ?? true
     })
     
     if (rawCandidates.length === 0) {
