@@ -301,14 +301,32 @@ export class SupabaseMatchRepo implements MatchRepo {
       }
     }
 
+    // Fetch missing vector data in parallel
+    // Check which users don't have vectors from the join
+    const usersMissingVector = (data || []).filter((u: any) => !u.user_vectors?.[0]?.vector).map((u: any) => u.id)
+    let vectorDataMap = new Map<string, any>()
+    if (usersMissingVector.length > 0) {
+      console.log('[DEBUG] loadCandidates - Fetching missing vector data for', usersMissingVector.length, 'users')
+      const adminClient = await this.getSupabase()
+      const { data: vectorData, error: vectorError } = await adminClient
+        .from('user_vectors')
+        .select('user_id, vector')
+        .in('user_id', usersMissingVector)
+      
+      if (!vectorError && vectorData) {
+        vectorData.forEach((v: any) => vectorDataMap.set(v.user_id, v.vector))
+        console.log('[DEBUG] loadCandidates - Fetched', vectorData.length, 'vector records')
+      }
+    }
+
     // Transform the data into Candidate format
     const transformedCandidates = (data || [])
       .map((user: any) => {
-        // Try to get profile/academic from join result first, then fallback to separate fetch
+        // Try to get profile/academic/vector from join result first, then fallback to separate fetch
         let profile = user.profiles?.[0] || profileDataMap.get(user.id)
         let academic = user.user_academic?.[0] || academicDataMap.get(user.id)
         const responses = user.responses || []
-        const vector = user.user_vectors?.[0]?.vector
+        const vector = user.user_vectors?.[0]?.vector || vectorDataMap.get(user.id)
 
         // Convert responses array to answers object
         const answers = responses.reduce((acc: Record<string, any>, response: any) => {
