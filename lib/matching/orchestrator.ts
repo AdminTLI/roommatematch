@@ -1,6 +1,7 @@
 // Main orchestrator for the matching system
 // Coordinates the complete matching flow: load → filter → score → optimize → persist
 
+import { randomUUID } from 'crypto'
 import type { MatchRepo, CohortFilter, MatchRecord } from './repo'
 import type { MatchSuggestion } from './types'
 import { toStudent } from './answer-map'
@@ -448,8 +449,11 @@ export async function runMatchingAsSuggestions({
         const studentB = students.find(s => s.id === cand.otherId)!
         const reasons = getReadableReasons(studentA, studentB)
         
+        // Generate proper UUID for suggestion ID
+        const suggestionId = randomUUID()
+        
         suggestions.push({
-          id: `sug_${cand.key}_${runId}`,
+          id: suggestionId,
           runId,
           kind: 'pair',
           memberIds: [uid, cand.otherId],
