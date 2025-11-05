@@ -350,11 +350,15 @@ export async function runMatchingAsSuggestions({
     }
     
     if (pairFits.length === 0) {
+      const message = students.length === 1 
+        ? `Only ${students.length} eligible candidate found. Need at least 2 candidates to create pair matches.`
+        : 'No valid suggestions found above minimum fit threshold'
+      console.log(`[Suggestions] ${message}. Students: ${students.length}, Pair fits: ${pairFits.length}`)
       return { 
         runId, 
         created: 0, 
         suggestions: [], 
-        message: 'No valid suggestions found above minimum fit threshold' 
+        message
       }
     }
     
