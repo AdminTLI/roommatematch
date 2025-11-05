@@ -2,7 +2,7 @@
   "mode": "double_consent",
   "expiryHours": 168,
   "topN": 10,
-  "minFitIndex": 50,
+  "minFitIndex": 30,
   "autoMatchThreshold": 80,
   "maxSuggestionsPerUser": 20
 }

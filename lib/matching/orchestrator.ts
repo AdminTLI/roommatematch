@@ -94,9 +94,12 @@ export async function runMatching({
             b: j,
             score
           })
-        } else {
-          console.log(`[Matching] Deal-breaker conflict between ${studentA.id} and ${studentB.id}:`, dealBreakerResult.conflicts)
-        }
+          } else {
+            console.log(`[Matching] Deal-breaker conflict between ${studentA.id} and ${studentB.id}:`, {
+              conflicts: dealBreakerResult.conflicts,
+              reasons: dealBreakerResult.reasons
+            })
+          }
       }
     }
     
@@ -309,6 +312,12 @@ export async function runMatchingAsSuggestions({
         // Check deal-breakers
         const dealBreakerResult = checkDealBreakers(studentA, studentB)
         
+        console.log(`[DEBUG] Pair check: ${studentA.id} <-> ${studentB.id}`, {
+          canMatch: dealBreakerResult.canMatch,
+          conflicts: dealBreakerResult.conflicts,
+          reasons: dealBreakerResult.reasons
+        })
+        
         if (dealBreakerResult.canMatch) {
           // Calculate compatibility score
           const engine = new MatchingEngine(DEFAULT_WEIGHTS)
@@ -317,6 +326,20 @@ export async function runMatchingAsSuggestions({
           
           const { score, explanation } = engine.computeCompatibilityScore(profileA, profileB)
           const fitIndex = Math.round(score * 100)
+          
+          console.log(`[DEBUG] Fit calculation: ${studentA.id} <-> ${studentB.id}`, {
+            rawScore: score,
+            fitIndex,
+            minFitIndex,
+            passesThreshold: fitIndex >= minFitIndex,
+            explanation: {
+              similarity_score: explanation.similarity_score,
+              schedule_overlap: explanation.schedule_overlap,
+              cleanliness_align: explanation.cleanliness_align,
+              guests_noise_align: explanation.guests_noise_align,
+              academic_bonus: explanation.academic_bonus
+            }
+          })
           
           if (fitIndex >= minFitIndex) {
             // Extract section scores

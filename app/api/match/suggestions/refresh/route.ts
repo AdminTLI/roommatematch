@@ -23,7 +23,7 @@ export async function POST(request: NextRequest) {
     const repo = await getMatchRepo()
     
     // Efficiently fetch the current user's profile
-    const currentUser = await repo.getCandidateByUserId(user.id)
+    let currentUser = await repo.getCandidateByUserId(user.id)
     if (!currentUser) {
       console.error('[DEBUG] Refresh route - user not eligible:', {
         userId: user.id,
@@ -34,6 +34,22 @@ export async function POST(request: NextRequest) {
         error: 'User profile not found or not eligible for matching',
         details: 'Check server logs for missing required fields'
       }, { status: 404 })
+    }
+    
+    // Auto-generate vector if missing
+    if (!currentUser.vector) {
+      console.log(`[DEBUG] Current user missing vector, generating...`)
+      const { error: vectorError } = await supabase.rpc('compute_user_vector_and_store', { 
+        p_user_id: user.id 
+      })
+      
+      if (vectorError) {
+        console.error('[DEBUG] Vector generation failed:', vectorError)
+      } else {
+        console.log(`[DEBUG] Vector generated successfully, refetching user...`)
+        // Refetch user to get updated vector
+        currentUser = await repo.getCandidateByUserId(user.id)
+      }
     }
     
     // Build cohort filter based on user's profile
