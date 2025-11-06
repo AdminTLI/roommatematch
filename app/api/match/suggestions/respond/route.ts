@@ -72,19 +72,31 @@ export async function POST(request: NextRequest) {
     // Fetch all suggestions for this pair (across runs) and merge acceptance
     // IMPORTANT: Include expired suggestions so we can merge acceptances even if one user refreshed
     const pairSugs = await repo.getSuggestionsForPair(user.id, otherId, true)
+    console.log(`[DEBUG] Accept action - Found ${pairSugs.length} suggestions for pair ${user.id} <-> ${otherId}`, {
+      suggestionIds: pairSugs.map(s => s.id),
+      statuses: pairSugs.map(s => s.status),
+      acceptedBy: pairSugs.map(s => s.acceptedBy)
+    })
+    
     let unionAccepted = new Set<string>()
     for (const s of pairSugs) {
       (s.acceptedBy || []).forEach(a => unionAccepted.add(a))
     }
     unionAccepted.add(user.id)
 
+    console.log(`[DEBUG] Accept action - Union acceptedBy:`, Array.from(unionAccepted))
+    console.log(`[DEBUG] Accept action - Required members:`, suggestion.memberIds)
+    
     const allAccepted = suggestion.memberIds.every(id => unionAccepted.has(id))
+    console.log(`[DEBUG] Accept action - All accepted: ${allAccepted}`)
     
     if (allAccepted) {
       // Mark all pair suggestions as confirmed with merged acceptedBy
+      console.log(`[DEBUG] Confirming match - Updating ${pairSugs.length} suggestions to confirmed`)
       for (const s of pairSugs) {
         const merged = new Set<string>(s.acceptedBy || [])
         unionAccepted.forEach(a => merged.add(a))
+        console.log(`[DEBUG] Updating suggestion ${s.id} from status ${s.status} to confirmed with acceptedBy:`, Array.from(merged))
         await repo.updateSuggestionAcceptedByAndStatus(s.id, Array.from(merged), 'confirmed')
       }
       suggestion.acceptedBy = Array.from(unionAccepted)
