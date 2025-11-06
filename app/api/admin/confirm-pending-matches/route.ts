@@ -168,9 +168,15 @@ export async function POST(request: NextRequest) {
           createdAt: now
         }
 
-        await repo.saveMatches([match])
-        await repo.lockMatch([userA, userB], firstSug.run_id as string)
-        await repo.markUsersMatched([userA, userB], firstSug.run_id as string)
+        // Save match record (optional - if table doesn't exist, log and continue)
+        try {
+          await repo.saveMatches([match])
+          await repo.lockMatch([userA, userB], firstSug.run_id as string)
+          await repo.markUsersMatched([userA, userB], firstSug.run_id as string)
+        } catch (matchRecordError) {
+          console.warn(`[Admin] Failed to save match record for pair ${pairKey}:`, matchRecordError)
+          // Continue anyway - suggestions are already confirmed
+        }
 
         // Create chat if it doesn't exist
         let chatId: string | undefined
