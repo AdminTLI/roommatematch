@@ -110,7 +110,7 @@ export async function POST(request: NextRequest) {
         console.log(`[Admin] Creating chat for confirmed pair ${pairKey}`)
         const { data: createdChat, error: chatErr } = await admin
           .from('chats')
-          .insert({ is_group: false, created_by: userA, match_id: null })
+          .insert({ is_group: false, created_by: userA })
           .select('id')
           .single()
 

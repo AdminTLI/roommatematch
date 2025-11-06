@@ -44,7 +44,7 @@ export async function POST(request: NextRequest) {
     // Create new chat
     const { data: createdChat, error: chatErr } = await admin
       .from('chats')
-      .insert({ is_group: false, created_by: user.id, match_id: null })
+      .insert({ is_group: false, created_by: user.id })
       .select('id')
       .single()
 
