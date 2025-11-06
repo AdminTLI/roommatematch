@@ -872,25 +872,74 @@ export class SupabaseMatchRepo implements MatchRepo {
 
   async expireOldSuggestionsForUser(userId: string): Promise<number> {
     const supabase = await this.getSupabase()
-    // First, count how many suggestions will be expired
-    const { count: countBefore } = await supabase
+    // Only expire suggestions that are already past their expiry time
+    const nowIso = new Date().toISOString()
+    const { data, error } = await supabase
       .from('match_suggestions')
-      .select('*', { count: 'exact', head: true })
+      .select('id, expires_at, status')
       .contains('member_ids', [userId])
       .in('status', ['pending', 'accepted'])
-    
-    // Expire all pending/accepted suggestions for this user that aren't already expired
-    const { error } = await supabase
-      .from('match_suggestions')
-      .update({ status: 'expired' })
-      .contains('member_ids', [userId])
-      .in('status', ['pending', 'accepted'])
+      .lte('expires_at', nowIso)
 
     if (error) {
-      throw new Error(`Failed to expire old suggestions: ${error.message}`)
+      throw new Error(`Failed to query old suggestions: ${error.message}`)
     }
 
-    return countBefore || 0
+    if (!data || data.length === 0) return 0
+
+    const ids = data.map((r: any) => r.id)
+    const { error: updErr } = await supremely
+      .from('match_suggestions')
+      .update({ status: 'expired' })
+      .in('id', ids)
+
+    if (updErr) {
+      throw new Error(`Failed to expire old suggestions: ${updErr.message}`)
+    }
+
+    return ids.length
+  }
+
+  async getSuggestionsForPair(userAId: string, userBId: string, includeExpired = false): Promise<MatchSuggestion[]> {
+    const supabase = await this.getSupabase()
+    let query = supabase
+      .from('match_suggestions')
+      .select('*')
+      .contains('member_ids', [userAId])
+      .contains('member_ids', [userBId])
+      .eq('kind', 'pair')
+      .order('created_at', { ascending: false })
+
+    if (!includeExpired) {
+      query = query.neq('status', 'expired')
+    }
+
+    const { data, error } = await query
+    if (error) throw new Error(`Failed to get suggestions for pair: ${error.message}`)
+
+    return (data || []).map((record: any) => ({
+      id: record.id,
+      runId: record.run_id,
+      kind: record.kind,
+      memberIds: record.member_ids,
+      fitIndex: record.fit_index,
+      sectionScores: record.section_scores,
+      reasons: record.reasons,
+      expiresAt: record.expires_at,
+      status: record.status,
+      acceptedBy: record.accepted_by || [],
+      createdAt: record.created_at
+    }))
+  }
+
+  async updateSuggestionAcceptedByAndStatus(id: string, acceptedBy: string[], status: 'pending' | 'accepted' | 'declined' | 'expired' | 'confirmed'): Promise<void> {
+    const supabase = await this.getSupabase()
+    const { error } = await supabase
+      .from('match_suggestions')
+      .update({ accepted_by: acceptedBy, status })
+      .eq('id', id)
+
+    if (error) throw new Error(`Failed to update suggestion (acceptedBy/status): ${error.message}`)
   }
 
   // Blocklist

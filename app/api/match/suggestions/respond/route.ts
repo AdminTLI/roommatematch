@@ -54,15 +54,28 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ ok: true, suggestion })
     }
     
-    // Accept action
-    if (!suggestion.acceptedBy.includes(user.id)) {
-      suggestion.acceptedBy.push(user.id)
+    // Accept action with pair-wide merge
+    const otherIds = suggestion.memberIds.filter(id => id !== user.id)
+    const otherId = otherIds[0]
+
+    // Fetch all suggestions for this pair (across runs) and merge acceptance
+    const pairSugs = await repo.getSuggestionsForPair(user.id, otherId, false)
+    let unionAccepted = new Set<string>()
+    for (const s of pairSugs) {
+      (s.acceptedBy || []).forEach(a => unionAccepted.add(a))
     }
-    
-    // Check if all members have accepted
-    const allAccepted = suggestion.memberIds.every(id => suggestion.acceptedBy.includes(id))
+    unionAccepted.add(user.id)
+
+    const allAccepted = suggestion.memberIds.every(id => unionAccepted.has(id))
     
     if (allAccepted) {
+      // Mark all pair suggestions as confirmed with merged acceptedBy
+      for (const s of pairSugs) {
+        const merged = new Set<string>(s.acceptedBy || [])
+        unionAccepted.forEach(a => merged.add(a))
+        await repo.updateSuggestionAcceptedByAndStatus(s.id, Array.from(merged), 'confirmed')
+      }
+      suggestion.acceptedBy = Array.from(unionAccepted)
       suggestion.status = 'confirmed'
       await repo.updateSuggestion(suggestion)
       
@@ -167,17 +180,23 @@ export async function POST(request: NextRequest) {
       
       return NextResponse.json({ ok: true, suggestion, match })
     } else {
+      // Mark all pair suggestions as accepted for this user (merge acceptedBy)
+      for (const s of pairSugs) {
+        const merged = new Set<string>(s.acceptedBy || [])
+        merged.add(user.id)
+        await repo.updateSuggestionAcceptedByAndStatus(s.id, Array.from(merged), 'accepted')
+      }
+      suggestion.acceptedBy = Array.from(unionAccepted)
       suggestion.status = 'accepted'
       await repo.updateSuggestion(suggestion)
-      
+
       // Create notification for match acceptance
       try {
         if (suggestion.kind === 'pair') {
-          const otherUserId = suggestion.memberIds.find(id => id !== user.id)
-          if (otherUserId) {
+          if (otherId) {
             await createMatchNotification(
               user.id,
-              otherUserId,
+              otherId,
               'match_accepted',
               suggestion.id,
               undefined
