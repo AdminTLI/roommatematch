@@ -109,7 +109,7 @@ export function ChatList({ user }: ChatListProps) {
       // Fetch profiles for all users separately
       const { data: profilesData, error: profilesError } = await supabase
         .from('profiles')
-        .select('user_id, first_name, avatar_url')
+        .select('user_id, first_name, last_name, avatar_url')
         .in('user_id', Array.from(userIds))
 
       if (profilesError) {
@@ -136,7 +136,9 @@ export function ChatList({ user }: ChatListProps) {
         // Get the other participant for individual chats
         const otherParticipant = room.chat_members?.find((p: any) => p.user_id !== user.id)
         const otherProfile = otherParticipant ? profilesMap.get(otherParticipant.user_id) : null
-        const participantName = otherProfile?.first_name || 'User'
+        const participantName = otherProfile 
+          ? ((otherProfile.first_name || '') + (otherProfile.last_name ? ` ${otherProfile.last_name}` : '')).trim() || 'User'
+          : 'User'
         
         // Get last message
         const lastMessage = room.messages?.[0]
@@ -155,9 +157,12 @@ export function ChatList({ user }: ChatListProps) {
           } : undefined,
           participants: room.chat_members?.map((p: any) => {
             const profile = profilesMap.get(p.user_id)
+            const fullName = profile 
+              ? ((profile.first_name || '') + (profile.last_name ? ` ${profile.last_name}` : '')).trim() || 'User'
+              : 'User'
             return {
               id: p.user_id,
-              name: profile?.first_name || 'User',
+              name: fullName,
               avatar: profile?.avatar_url,
               isOnline: false
             }

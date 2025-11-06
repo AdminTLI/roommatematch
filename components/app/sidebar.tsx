@@ -71,20 +71,39 @@ export function Sidebar({ user, onClose }: SidebarProps) {
 
         const chatIds = chatMembers.map(cm => cm.chat_id)
 
-        // Count unread messages (messages not from current user, marked as unread or no read status)
-        const { data: messages, error: messagesError } = await supabase
-          .from('chat_messages')
-          .select('id', { count: 'exact', head: true })
+        // Get last_read_at for each chat
+        const { data: memberships, error: membershipsError } = await supabase
+          .from('chat_members')
+          .select('chat_id, last_read_at')
+          .eq('user_id', user.id)
           .in('chat_id', chatIds)
-          .neq('user_id', user.id)
-          .eq('is_read', false)
 
-        if (messagesError) {
-          console.error('Error fetching unread messages:', messagesError)
+        if (membershipsError) {
+          console.error('Error fetching chat memberships:', membershipsError)
           return
         }
 
-        setUnreadChatCount(messages?.length || 0)
+        // Count unread messages using last_read_at (same logic as unread API)
+        let totalUnread = 0
+        for (const membership of memberships || []) {
+          const lastReadAt = membership.last_read_at || new Date(0).toISOString()
+          
+          const { count, error: countError } = await supabase
+            .from('messages')
+            .select('*', { count: 'exact', head: true })
+            .eq('chat_id', membership.chat_id)
+            .neq('user_id', user.id)
+            .gt('created_at', lastReadAt)
+
+          if (countError) {
+            console.error('Error counting unread messages:', countError)
+            continue
+          }
+
+          totalUnread += count || 0
+        }
+
+        setUnreadChatCount(totalUnread)
       } catch (error) {
         console.error('Error in fetchUnreadCount:', error)
       }
@@ -100,7 +119,7 @@ export function Sidebar({ user, onClose }: SidebarProps) {
         {
           event: '*',
           schema: 'public',
-          table: 'chat_messages',
+          table: 'messages',
         },
         () => {
           fetchUnreadCount()

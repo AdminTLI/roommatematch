@@ -238,21 +238,13 @@ export function ChatInterface({ roomId, user }: ChatInterfaceProps) {
         return
       }
 
-      // Load chat room details and participants
+      // Load chat room details
       const { data: roomData, error: roomError } = await supabase
         .from('chats')
         .select(`
           id,
           is_group,
-          created_at,
-          chat_members(
-            user_id,
-            profiles!inner(
-              first_name,
-              last_name,
-              user_id
-            )
-          )
+          created_at
         `)
         .eq('id', roomId)
         .single()
@@ -266,18 +258,25 @@ export function ChatInterface({ roomId, user }: ChatInterfaceProps) {
         throw new Error('Chat room not found')
       }
 
-      // Load messages
+      // Load chat members (without profile join)
+      const { data: membersData, error: membersError } = await supabase
+        .from('chat_members')
+        .select('user_id')
+        .eq('chat_id', roomId)
+
+      if (membersError) {
+        console.error('Failed to load chat members:', membersError)
+        throw new Error(`Failed to load chat members: ${membersError.message}`)
+      }
+
+      // Load messages (without profile join)
       const { data: messagesData, error: messagesError } = await supabase
         .from('messages')
         .select(`
           id,
           content,
           user_id,
-          created_at,
-          profiles!inner(
-            first_name,
-            last_name
-          )
+          created_at
         `)
         .eq('chat_id', roomId)
         .order('created_at', { ascending: true })
@@ -287,11 +286,32 @@ export function ChatInterface({ roomId, user }: ChatInterfaceProps) {
         throw new Error(`Failed to load messages: ${messagesError.message}`)
       }
 
+      // Collect all user IDs from members and messages
+      const userIds = new Set<string>()
+      membersData?.forEach(m => userIds.add(m.user_id))
+      messagesData?.forEach(m => userIds.add(m.user_id))
+
+      // Fetch profiles separately
+      let profilesMap = new Map<string, any>()
+      if (userIds.size > 0) {
+        const { data: profilesData, error: profilesError } = await supabase
+          .from('profiles')
+          .select('user_id, first_name, last_name, avatar_url')
+          .in('user_id', Array.from(userIds))
+
+        if (profilesError) {
+          console.warn('Failed to fetch profiles:', profilesError)
+          // Don't throw - continue with empty profiles map
+        } else if (profilesData) {
+          profilesMap = new Map(profilesData.map(p => [p.user_id, p]))
+        }
+      }
+
       // Transform messages data - handle missing profiles gracefully
       const transformedMessages: Message[] = (messagesData || []).map(msg => {
-        const profile = msg.profiles
+        const profile = profilesMap.get(msg.user_id)
         const senderName = profile 
-          ? (profile.first_name || '') + (profile.last_name ? ` ${profile.last_name}` : '')
+          ? (profile.first_name || '') + (profile.last_name ? ` ${profile.last_name}` : '').trim() || 'User'
           : 'Unknown User'
         
         return {
@@ -306,15 +326,16 @@ export function ChatInterface({ roomId, user }: ChatInterfaceProps) {
       })
 
       // Transform participants data - handle missing profiles gracefully
-      const transformedMembers: ChatMember[] = (roomData.chat_members || []).map(member => {
-        const profile = member.profiles
+      const transformedMembers: ChatMember[] = (membersData || []).map(member => {
+        const profile = profilesMap.get(member.user_id)
         const memberName = profile
-          ? (profile.first_name || '') + (profile.last_name ? ` ${profile.last_name}` : '')
+          ? (profile.first_name || '') + (profile.last_name ? ` ${profile.last_name}` : '').trim() || 'User'
           : 'Unknown User'
         
         return {
           id: member.user_id,
           name: memberName,
+          avatar: profile?.avatar_url,
           is_online: true // This would need real-time presence tracking
         }
       })
@@ -343,15 +364,31 @@ export function ChatInterface({ roomId, user }: ChatInterfaceProps) {
         schema: 'public',
         table: 'messages',
         filter: `chat_id=eq.${roomId}`
-      }, (payload) => {
+      }, async (payload) => {
         const newMessage = payload.new as any
         // Only add if it's not from the current user (to avoid duplicates)
         if (newMessage.user_id !== user.id) {
+          // Fetch profile for the sender
+          let senderName = 'Unknown User'
+          try {
+            const { data: profile } = await supabase
+              .from('profiles')
+              .select('first_name, last_name')
+              .eq('user_id', newMessage.user_id)
+              .single()
+            
+            if (profile) {
+              senderName = (profile.first_name || '') + (profile.last_name ? ` ${profile.last_name}` : '').trim() || 'User'
+            }
+          } catch (err) {
+            console.warn('Failed to fetch profile for new message:', err)
+          }
+          
           setMessages(prev => [...prev, {
             id: newMessage.id,
             content: newMessage.content,
             sender_id: newMessage.user_id,
-            sender_name: 'Unknown', // Would need to fetch from profiles
+            sender_name: senderName,
             created_at: newMessage.created_at,
             read_by: [],
             is_own: false
