@@ -120,49 +120,84 @@ export async function POST(request: NextRequest) {
       await repo.lockMatch(suggestion.memberIds, suggestion.runId)
       await repo.markUsersMatched(suggestion.memberIds, suggestion.runId)
       
-      // Create chat on confirmation (idempotent)
+      // Create chat on confirmation (idempotent) - CRITICAL: Always create chat for confirmed matches
+      let chatId: string | undefined
       try {
         const admin = await createAdminClient()
         const [userA, userB] = suggestion.memberIds
-        // Check if chat already exists for these two users
-        const { data: existingChats } = await admin
-          .from('chat_members')
-          .select('chat_id')
-          .eq('user_id', userA)
-        let chatId: string | undefined
-        if (existingChats && existingChats.length > 0) {
-          const chatIds = existingChats.map((r: any) => r.chat_id)
-          const { data: common } = await admin
+        
+        // Prevent self-matching in chat creation
+        if (userA === userB) {
+          console.error(`[ERROR] Cannot create chat: self-match detected for user ${userA}`)
+        } else {
+          // Check if chat already exists for these two users
+          const { data: existingChats } = await admin
             .from('chat_members')
             .select('chat_id')
-            .in('chat_id', chatIds)
-            .eq('user_id', userB)
-          if (common && common.length > 0) {
-            chatId = common[0].chat_id
+            .eq('user_id', userA)
+          
+          if (existingChats && existingChats.length > 0) {
+            const chatIds = existingChats.map((r: any) => r.chat_id)
+            const { data: common } = await admin
+              .from('chat_members')
+              .select('chat_id')
+              .in('chat_id', chatIds)
+              .eq('user_id', userB)
+            if (common && common.length > 0) {
+              chatId = common[0].chat_id
+              console.log(`[DEBUG] Chat already exists for pair ${userA} <-> ${userB}: ${chatId}`)
+            }
           }
-        }
-        if (!chatId) {
-          // Create chat
-          const { data: createdChat, error: chatErr } = await admin
-            .from('chats')
-            .insert({ is_group: false, created_by: user.id, match_id: null })
-            .select('id')
-            .single()
-          if (chatErr) throw chatErr
-          chatId = createdChat.id
-          // Add members
-          await admin.from('chat_members').insert([
-            { chat_id: chatId, user_id: userA },
-            { chat_id: chatId, user_id: userB }
-          ])
-          // System message
-          await admin.from('messages').insert({
-            chat_id: chatId,
-            user_id: user.id,
-            content: "You’re matched! Start your conversation 👋"
-          })
-          // Touch chat updated_at
-          await admin.from('chats').update({ updated_at: new Date().toISOString() }).eq('id', chatId)
+          
+          if (!chatId) {
+            // Create chat
+            const { data: createdChat, error: chatErr } = await admin
+              .from('chats')
+              .insert({ is_group: false, created_by: userA, match_id: null })
+              .select('id')
+              .single()
+            
+            if (chatErr) {
+              console.error(`[ERROR] Failed to create chat: ${chatErr.message}`)
+              throw chatErr
+            }
+            
+            chatId = createdChat.id
+            console.log(`[DEBUG] Created chat ${chatId} for pair ${userA} <-> ${userB}`)
+            
+            // Add members
+            const { error: membersErr } = await admin
+              .from('chat_members')
+              .insert([
+                { chat_id: chatId, user_id: userA },
+                { chat_id: chatId, user_id: userB }
+              ])
+            
+            if (membersErr) {
+              console.error(`[ERROR] Failed to add chat members: ${membersErr.message}`)
+              throw membersErr
+            }
+            
+            // System message (use first user as sender)
+            const { error: msgErr } = await admin
+              .from('messages')
+              .insert({
+                chat_id: chatId,
+                user_id: userA,
+                content: "You're matched! Start your conversation 👋"
+              })
+            
+            if (msgErr) {
+              console.warn(`[WARN] Failed to create system message for chat ${chatId}: ${msgErr.message}`)
+              // Don't fail the whole operation if message creation fails
+            }
+            
+            // Touch chat updated_at
+            await admin
+              .from('chats')
+              .update({ updated_at: new Date().toISOString() })
+              .eq('id', chatId)
+          }
         }
         
         // Create notifications for confirmed match
