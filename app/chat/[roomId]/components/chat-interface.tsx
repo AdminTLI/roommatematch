@@ -45,6 +45,7 @@ interface Message {
   created_at: string
   read_by: string[]
   is_own: boolean
+  is_system_message?: boolean
 }
 
 export function ChatInterface({ roomId, user }: ChatInterfaceProps) {
@@ -351,6 +352,9 @@ export function ChatInterface({ roomId, user }: ChatInterfaceProps) {
         // Get read receipts for this message
         const readBy = readReceiptsMap.get(msg.id) || []
         
+        // Check if this is a system greeting message
+        const isSystemGreeting = msg.content === "You're matched! Start your conversation 👋"
+        
         return {
           id: msg.id,
           content: msg.content,
@@ -358,24 +362,28 @@ export function ChatInterface({ roomId, user }: ChatInterfaceProps) {
           sender_name: senderName,
           created_at: msg.created_at,
           read_by: readBy,
-          is_own: msg.user_id === user.id
+          is_own: msg.user_id === user.id,
+          is_system_message: isSystemGreeting
         }
       })
 
       // Transform participants data - handle missing profiles gracefully
-      const transformedMembers: ChatMember[] = (membersData || []).map(member => {
-        const profile = profilesMap.get(member.user_id)
-        const memberName = profile
-          ? [profile.first_name?.trim(), profile.last_name?.trim()].filter(Boolean).join(' ') || 'User'
-          : 'Unknown User'
-        
-        return {
-          id: member.user_id,
-          name: memberName,
-          avatar: undefined, // Avatars not implemented - Avatar component will show initials via AvatarFallback
-          is_online: true // This would need real-time presence tracking
-        }
-      })
+      // Filter out current user so only other participants are shown
+      const transformedMembers: ChatMember[] = (membersData || [])
+        .filter(member => member.user_id !== user.id) // Exclude current user
+        .map(member => {
+          const profile = profilesMap.get(member.user_id)
+          const memberName = profile
+            ? [profile.first_name?.trim(), profile.last_name?.trim()].filter(Boolean).join(' ') || 'User'
+            : 'Unknown User'
+          
+          return {
+            id: member.user_id,
+            name: memberName,
+            avatar: undefined, // Avatars not implemented - Avatar component will show initials via AvatarFallback
+            is_online: true // This would need real-time presence tracking
+          }
+        })
 
       setMessages(transformedMessages)
       setMembers(transformedMembers)
@@ -395,15 +403,21 @@ export function ChatInterface({ roomId, user }: ChatInterfaceProps) {
   const setupRealtimeSubscription = useCallback(() => {
     // Subscribe to new messages
     const messagesChannel = supabase
-      .channel(`chat:${roomId}`)
+      .channel(`chat:${roomId}`, {
+        config: {
+          broadcast: { self: false }
+        }
+      })
       .on('postgres_changes', {
         event: 'INSERT',
         schema: 'public',
         table: 'messages',
         filter: `chat_id=eq.${roomId}`
       }, async (payload) => {
+        console.log('[Realtime] New message received:', payload)
         const newMessage = payload.new as any
-        // Only add if it's not from the current user (to avoid duplicates)
+        
+        // Only add if it's not from the current user (to avoid duplicates from optimistic updates)
         if (newMessage.user_id !== user.id) {
           // Fetch profile for the sender using API route
           let senderName = 'Unknown User'
@@ -436,18 +450,46 @@ export function ChatInterface({ roomId, user }: ChatInterfaceProps) {
             console.warn('Failed to fetch profile for new message:', err)
           }
           
-          setMessages(prev => [...prev, {
-            id: newMessage.id,
-            content: newMessage.content,
-            sender_id: newMessage.user_id,
-            sender_name: senderName,
-            created_at: newMessage.created_at,
-            read_by: [],
-            is_own: false
-          }])
+          // Check if this is a system greeting message
+          const isSystemGreeting = newMessage.content === "You're matched! Start your conversation 👋"
+          
+          setMessages(prev => {
+            // Double-check for duplicates
+            const exists = prev.some(msg => msg.id === newMessage.id)
+            if (exists) {
+              return prev
+            }
+            
+            return [...prev, {
+              id: newMessage.id,
+              content: newMessage.content,
+              sender_id: newMessage.user_id,
+              sender_name: senderName,
+              created_at: newMessage.created_at,
+              read_by: [],
+              is_own: false,
+              is_system_message: isSystemGreeting
+            }]
+          })
+          
+          // Scroll to bottom when new message arrives
+          setTimeout(() => {
+            messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
+          }, 100)
         }
       })
-      .subscribe()
+      .subscribe((status) => {
+        console.log('[Realtime] Subscription status:', status)
+        if (status === 'SUBSCRIBED') {
+          console.log('[Realtime] Successfully subscribed to messages channel')
+        } else if (status === 'CHANNEL_ERROR') {
+          console.error('[Realtime] Channel subscription error')
+        } else if (status === 'TIMED_OUT') {
+          console.error('[Realtime] Channel subscription timed out')
+        } else if (status === 'CLOSED') {
+          console.log('[Realtime] Channel closed')
+        }
+      })
 
     // Subscribe to typing indicators - reuse channel
     const typingChannel = supabase
@@ -522,23 +564,34 @@ export function ChatInterface({ roomId, user }: ChatInterfaceProps) {
     typingChannelRef.current = typingChannel
 
     return () => {
+      console.log('[Realtime] Cleaning up subscriptions')
+      messagesChannel.unsubscribe()
       supabase.removeChannel(messagesChannel)
       if (typingChannelRef.current) {
+        typingChannelRef.current.unsubscribe()
         supabase.removeChannel(typingChannelRef.current)
         typingChannelRef.current = null
       }
     }
-  }, [roomId, user.id])
+  }, [roomId, user.id, supabase])
 
   useEffect(() => {
+    // Load chat data first
     loadChatData()
-    setupRealtimeSubscription()
+    
+    // Set up realtime subscription after a short delay to ensure data is loaded
+    const subscriptionTimer = setTimeout(() => {
+      setupRealtimeSubscription()
+    }, 500)
+    
+    // Mark as read
     markAsRead()
     
     return () => {
       if (typingTimeoutRef.current) {
         clearTimeout(typingTimeoutRef.current)
       }
+      clearTimeout(subscriptionTimer)
     }
   }, [roomId, loadChatData, setupRealtimeSubscription, markAsRead])
 
@@ -755,42 +808,58 @@ export function ChatInterface({ roomId, user }: ChatInterfaceProps) {
                 <p className="text-gray-500">No messages yet. Start the conversation!</p>
               </div>
             ) : (
-              messages.map((message) => (
-                <div 
-                  key={message.id} 
-                  className={`flex gap-3 ${message.is_own ? 'justify-end' : 'justify-start'}`}
-                >
-                  {!message.is_own && (
-                    <Avatar className="w-8 h-8 flex-shrink-0">
-                      <AvatarImage src={message.sender_avatar} />
-                      <AvatarFallback className="text-xs">
-                        {message.sender_name.charAt(0)}
-                      </AvatarFallback>
-                    </Avatar>
-                  )}
-                  
-                  <div className={`max-w-xs lg:max-w-md ${message.is_own ? 'order-first' : ''}`}>
-                    {!message.is_own && (
-                      <div className="text-xs text-gray-500 mb-1">
-                        {message.sender_name}
+              messages.map((message) => {
+                // Render system messages centered and styled differently
+                if (message.is_system_message) {
+                  return (
+                    <div key={message.id} className="flex justify-center my-4">
+                      <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg px-4 py-2">
+                        <p className="text-sm text-blue-700 dark:text-blue-300 text-center">
+                          {message.content}
+                        </p>
                       </div>
-                    )}
-                    <div className={`rounded-lg px-3 py-2 ${
-                      message.is_own 
-                        ? 'bg-primary text-primary-foreground' 
-                        : 'bg-gray-100 dark:bg-gray-800'
-                    }`}>
-                      <p className="text-sm">{message.content}</p>
                     </div>
-                    <div className="flex items-center gap-1 mt-1">
-                      <span className="text-xs text-gray-400">
-                        {formatTime(message.created_at)}
-                      </span>
-                      {message.is_own && getReadStatus(message)}
+                  )
+                }
+                
+                // Regular message rendering
+                return (
+                  <div 
+                    key={message.id} 
+                    className={`flex gap-3 ${message.is_own ? 'justify-end' : 'justify-start'}`}
+                  >
+                    {!message.is_own && (
+                      <Avatar className="w-8 h-8 flex-shrink-0">
+                        <AvatarImage src={message.sender_avatar} />
+                        <AvatarFallback className="text-xs">
+                          {message.sender_name.charAt(0)}
+                        </AvatarFallback>
+                      </Avatar>
+                    )}
+                    
+                    <div className={`max-w-xs lg:max-w-md ${message.is_own ? 'order-first' : ''}`}>
+                      {!message.is_own && (
+                        <div className="text-xs text-gray-500 mb-1">
+                          {message.sender_name}
+                        </div>
+                      )}
+                      <div className={`rounded-lg px-3 py-2 ${
+                        message.is_own 
+                          ? 'bg-primary text-primary-foreground' 
+                          : 'bg-gray-100 dark:bg-gray-800'
+                      }`}>
+                        <p className="text-sm">{message.content}</p>
+                      </div>
+                      <div className="flex items-center gap-1 mt-1">
+                        <span className="text-xs text-gray-400">
+                          {formatTime(message.created_at)}
+                        </span>
+                        {message.is_own && getReadStatus(message)}
+                      </div>
                     </div>
                   </div>
-                </div>
-              ))
+                )
+              })
             )}
             
             {/* Typing Indicator */}
