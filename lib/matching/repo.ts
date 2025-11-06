@@ -88,6 +88,7 @@ export interface MatchRepo {
   listSuggestionsByRun(runId: string): Promise<MatchSuggestion[]>;
   getSuggestionById(id: string): Promise<MatchSuggestion | null>;
   updateSuggestion(s: MatchSuggestion): Promise<void>;
+  expireOldSuggestionsForUser(userId: string): Promise<number>;
   
   // Blocklist
   getBlocklist(userId: string): Promise<string[]>;

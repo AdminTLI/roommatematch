@@ -756,7 +756,7 @@ export class SupabaseMatchRepo implements MatchRepo {
       .from('match_suggestions')
       .select('*')
       .contains('member_ids', [userId])
-      .order('fit_index', { ascending: false })
+      .order('created_at', { ascending: false }) // Order by created_at DESC to get latest first
 
     if (!includeExpired) {
       query = query
@@ -770,7 +770,7 @@ export class SupabaseMatchRepo implements MatchRepo {
       throw new Error(`Failed to list suggestions for user: ${error.message}`)
     }
 
-    return (data || []).map((record: any) => ({
+    const suggestions = (data || []).map((record: any) => ({
       id: record.id,
       runId: record.run_id,
       kind: record.kind,
@@ -783,6 +783,21 @@ export class SupabaseMatchRepo implements MatchRepo {
       acceptedBy: record.accepted_by,
       createdAt: record.created_at
     }))
+
+    // Dedupe by otherId: keep only the latest suggestion per counterpart
+    const seenOtherIds = new Map<string, MatchSuggestion>()
+    for (const sug of suggestions) {
+      const otherId = sug.memberIds.find(id => id !== userId)
+      if (!otherId) continue
+      
+      const existing = seenOtherIds.get(otherId)
+      if (!existing || new Date(sug.createdAt) > new Date(existing.createdAt)) {
+        seenOtherIds.set(otherId, sug)
+      }
+    }
+
+    // Return deduped suggestions, sorted by fitIndex descending
+    return Array.from(seenOtherIds.values()).sort((a, b) => b.fitIndex - a.fitIndex)
   }
 
   async listSuggestionsByRun(runId: string): Promise<MatchSuggestion[]> {
@@ -853,6 +868,29 @@ export class SupabaseMatchRepo implements MatchRepo {
     if (error) {
       throw new Error(`Failed to update suggestion: ${error.message}`)
     }
+  }
+
+  async expireOldSuggestionsForUser(userId: string): Promise<number> {
+    const supabase = await this.getSupabase()
+    // First, count how many suggestions will be expired
+    const { count: countBefore } = await supabase
+      .from('match_suggestions')
+      .select('*', { count: 'exact', head: true })
+      .contains('member_ids', [userId])
+      .in('status', ['pending', 'accepted'])
+    
+    // Expire all pending/accepted suggestions for this user that aren't already expired
+    const { error } = await supabase
+      .from('match_suggestions')
+      .update({ status: 'expired' })
+      .contains('member_ids', [userId])
+      .in('status', ['pending', 'accepted'])
+
+    if (error) {
+      throw new Error(`Failed to expire old suggestions: ${error.message}`)
+    }
+
+    return countBefore || 0
   }
 
   // Blocklist

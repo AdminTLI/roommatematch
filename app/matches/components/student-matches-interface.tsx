@@ -29,7 +29,21 @@ export function StudentMatchesInterface({ user }: StudentMatchesInterfaceProps) 
       const response = await fetch(url)
       if (response.ok) {
         const data = await response.json()
-        setSuggestions(data.suggestions || [])
+        const rawSuggestions = data.suggestions || []
+        
+        // Client-side dedupe guard: keep only latest suggestion per otherId
+        const deduped = new Map<string, MatchSuggestion>()
+        for (const sug of rawSuggestions) {
+          const otherId = sug.memberIds.find((id: string) => id !== user.id)
+          if (!otherId) continue
+          
+          const existing = deduped.get(otherId)
+          if (!existing || new Date(sug.createdAt) > new Date(existing.createdAt)) {
+            deduped.set(otherId, sug)
+          }
+        }
+        
+        setSuggestions(Array.from(deduped.values()))
       } else {
         console.error('Failed to fetch suggestions')
       }

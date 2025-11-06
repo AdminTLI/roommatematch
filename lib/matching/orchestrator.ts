@@ -363,20 +363,34 @@ export async function runMatchingAsSuggestions({
           const profileB = toEngineProfile(studentB)
           
           // Debug vector information
+          const magnitudeA = profileA.vector ? Math.sqrt(profileA.vector.reduce((sum, v) => sum + v * v, 0)) : 0
+          const magnitudeB = profileB.vector ? Math.sqrt(profileB.vector.reduce((sum, v) => sum + v * v, 0)) : 0
           console.log(`[DEBUG] Vector check: ${studentA.id} <-> ${studentB.id}`, {
             vectorA: {
               length: profileA.vector?.length,
               isArray: Array.isArray(profileA.vector),
               hasValues: profileA.vector?.some(v => v !== 0),
+              magnitude: magnitudeA,
+              isZero: magnitudeA === 0,
               sample: profileA.vector?.slice(0, 5)
             },
             vectorB: {
               length: profileB.vector?.length,
               isArray: Array.isArray(profileB.vector),
               hasValues: profileB.vector?.some(v => v !== 0),
+              magnitude: magnitudeB,
+              isZero: magnitudeB === 0,
               sample: profileB.vector?.slice(0, 5)
             }
           })
+          
+          // Warn if vectors are zero
+          if (magnitudeA === 0 || magnitudeB === 0) {
+            console.warn(`[WARN] Zero vector detected for pair ${studentA.id} <-> ${studentB.id}`, {
+              vectorA_zero: magnitudeA === 0,
+              vectorB_zero: magnitudeB === 0
+            })
+          }
           
           const { score, explanation } = engine.computeCompatibilityScore(profileA, profileB)
           const fitIndex = Math.round(score * 100)
@@ -469,7 +483,7 @@ export async function runMatchingAsSuggestions({
       byUser[uid] = byUser[uid].slice(0, topN)
     }
     
-    // 4) Create suggestions (unique by pair key)
+    // 4) Create suggestions (unique by pair key, using sorted memberIds for dedupe)
     const now = Date.now()
     const expiresAt = new Date(now + expiryHours * 3600 * 1000).toISOString()
     const seen = new Set<string>()
@@ -477,7 +491,9 @@ export async function runMatchingAsSuggestions({
     
     for (const uid of Object.keys(byUser)) {
       for (const cand of byUser[uid]) {
-        if (seen.has(cand.key)) continue
+        // Use sorted memberIds as unique key to prevent duplicates
+        const pairKey = [uid, cand.otherId].sort().join('::')
+        if (seen.has(pairKey)) continue
         
         // Check blocklist
         const blockedA = await repo.getBlocklist(uid)
@@ -505,7 +521,7 @@ export async function runMatchingAsSuggestions({
           createdAt: new Date(now).toISOString()
         })
         
-        seen.add(cand.key)
+        seen.add(pairKey)
         
         if (suggestions.length > (maxSuggestionsPerUser * students.length)) break
       }

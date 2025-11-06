@@ -48,8 +48,19 @@ export async function POST(request: NextRequest) {
       } else {
         console.log(`[DEBUG] Vector generated successfully, refetching user...`)
         // Refetch user to get updated vector
-        currentUser = await repo.getCandidateByUserId(user.id)
+        const refetched = await repo.getCandidateByUserId(user.id)
+        if (refetched) {
+          currentUser = refetched
+        }
       }
+    }
+    
+    // Ensure currentUser is still valid after vector generation
+    if (!currentUser) {
+      return NextResponse.json({ 
+        error: 'User profile not found or not eligible for matching',
+        details: 'Check server logs for missing required fields'
+      }, { status: 404 })
     }
     
     // Build cohort filter based on user's profile
@@ -81,6 +92,12 @@ export async function POST(request: NextRequest) {
       },
       timestamp: new Date().toISOString()
     })
+    
+    // Expire old pending/accepted suggestions for this user before creating new ones
+    const expiredCount = await repo.expireOldSuggestionsForUser(user.id)
+    if (expiredCount > 0) {
+      console.log(`[DEBUG] Expired ${expiredCount} old suggestions for user ${user.id}`)
+    }
     
     // Generate new suggestions
     const result = await runMatchingAsSuggestions({
