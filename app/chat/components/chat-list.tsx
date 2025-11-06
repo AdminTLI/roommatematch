@@ -176,7 +176,7 @@ export function ChatList({ user }: ChatListProps) {
             return {
               id: p.user_id,
               name: fullName,
-              avatar: profile?.avatar_url,
+              avatar: undefined, // avatar_url column doesn't exist in profiles table
               isOnline: false
             }
           }) || [],

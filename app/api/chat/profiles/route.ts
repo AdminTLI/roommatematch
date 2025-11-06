@@ -34,7 +34,7 @@ export async function POST(request: NextRequest) {
     const admin = await createAdminClient()
     const { data: profiles, error: profilesError } = await admin
       .from('profiles')
-      .select('user_id, first_name, last_name, avatar_url')
+      .select('user_id, first_name, last_name')
       .in('user_id', userIds)
 
     if (profilesError) {

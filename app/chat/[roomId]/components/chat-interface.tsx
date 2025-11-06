@@ -58,6 +58,7 @@ export function ChatInterface({ roomId, user }: ChatInterfaceProps) {
   const [isSending, setIsSending] = useState(false)
   const [error, setError] = useState('')
   const [typingUsers, setTypingUsers] = useState<string[]>([])
+  const [profilesMap, setProfilesMap] = useState<Map<string, any>>(new Map())
   
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const typingTimeoutRef = useRef<NodeJS.Timeout>()
@@ -310,6 +311,8 @@ export function ChatInterface({ roomId, user }: ChatInterfaceProps) {
             const { profiles: profilesData } = await profilesResponse.json()
             if (profilesData) {
               profilesMap = new Map(profilesData.map((p: any) => [p.user_id, p]))
+              // Store profiles in state for use in typing indicators
+              setProfilesMap(profilesMap)
             }
           } else {
             console.warn('Failed to fetch profiles via API:', await profilesResponse.text())
@@ -400,6 +403,12 @@ export function ChatInterface({ roomId, user }: ChatInterfaceProps) {
               const profile = profiles?.[0]
               if (profile) {
                 senderName = (profile.first_name || '') + (profile.last_name ? ` ${profile.last_name}` : '').trim() || 'User'
+                // Update profilesMap in state for use in typing indicators
+                setProfilesMap(prev => {
+                  const updated = new Map(prev)
+                  updated.set(profile.user_id, profile)
+                  return updated
+                })
               }
             }
           } catch (err) {
@@ -426,21 +435,27 @@ export function ChatInterface({ roomId, user }: ChatInterfaceProps) {
         const state = typingChannel.presenceState()
         // Filter to only show typing indicators for other users, not yourself
         const typingUsers = Object.keys(state).filter(userId => {
+          // Defensive check: never include current user
           if (userId === user.id) return false
           const presence = state[userId]
           return presence && presence[0] && presence[0].typing === true
         })
-        setTypingUsers(typingUsers)
+        // Additional defensive filter before setting state
+        setTypingUsers(typingUsers.filter(id => id !== user.id))
       })
       .on('presence', { event: 'join' }, ({ key, newPresences }) => {
-        // Handle when someone joins
+        // Handle when someone joins - defensive check to never add current user
         if (key !== user.id && newPresences[0]?.typing) {
-          setTypingUsers(prev => [...prev.filter(id => id !== key), key])
+          setTypingUsers(prev => {
+            const updated = [...prev.filter(id => id !== key && id !== user.id), key]
+            // Final defensive filter
+            return updated.filter(id => id !== user.id)
+          })
         }
       })
       .on('presence', { event: 'leave' }, ({ key }) => {
         // Handle when someone leaves
-        setTypingUsers(prev => prev.filter(id => id !== key))
+        setTypingUsers(prev => prev.filter(id => id !== key && id !== user.id))
       })
       .subscribe(async (status) => {
         if (status === 'SUBSCRIBED') {
@@ -722,23 +737,46 @@ export function ChatInterface({ roomId, user }: ChatInterfaceProps) {
             )}
             
             {/* Typing Indicator */}
-            {typingUsers.length > 0 && (
-              <div className="flex gap-3">
-                <div className="w-8 h-8 flex-shrink-0"></div>
-                <div className="bg-gray-100 dark:bg-gray-800 rounded-lg px-3 py-2">
-                  <div className="flex items-center gap-1">
-                    <div className="flex gap-1">
-                      <div className="w-1 h-1 bg-gray-400 rounded-full animate-bounce"></div>
-                      <div className="w-1 h-1 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0.1s' }}></div>
-                      <div className="w-1 h-1 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
+            {(() => {
+              // Filter out current user and get names
+              const otherTypingUsers = typingUsers.filter(userId => userId !== user.id)
+              if (otherTypingUsers.length === 0) return null
+
+              const typingNames = otherTypingUsers.map(userId => {
+                const profile = profilesMap.get(userId)
+                if (profile) {
+                  return (profile.first_name || '').trim() || 'User'
+                }
+                return 'Someone'
+              })
+
+              let typingText = ''
+              if (typingNames.length === 1) {
+                typingText = `${typingNames[0]} is typing...`
+              } else if (typingNames.length === 2) {
+                typingText = `${typingNames[0]} and ${typingNames[1]} are typing...`
+              } else {
+                typingText = 'Multiple people are typing...'
+              }
+
+              return (
+                <div className="flex gap-3">
+                  <div className="w-8 h-8 flex-shrink-0"></div>
+                  <div className="bg-gray-100 dark:bg-gray-800 rounded-lg px-3 py-2">
+                    <div className="flex items-center gap-1">
+                      <div className="flex gap-1">
+                        <div className="w-1 h-1 bg-gray-400 rounded-full animate-bounce"></div>
+                        <div className="w-1 h-1 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0.1s' }}></div>
+                        <div className="w-1 h-1 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
+                      </div>
+                      <span className="text-xs text-gray-500 ml-2">
+                        {typingText}
+                      </span>
                     </div>
-                    <span className="text-xs text-gray-500 ml-2">
-                      {typingUsers.length === 1 ? 'Someone is typing...' : 'Multiple people typing...'}
-                    </span>
                   </div>
                 </div>
-              </div>
-            )}
+              )
+            })()}
             
             <div ref={messagesEndRef} />
           </div>
