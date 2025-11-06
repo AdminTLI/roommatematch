@@ -180,51 +180,89 @@ export async function POST(request: NextRequest) {
 
         // Create chat if it doesn't exist
         let chatId: string | undefined
-        const { data: existingChatsA } = await admin
-          .from('chat_members')
-          .select('chat_id')
-          .eq('user_id', userA)
-
-        if (existingChatsA && existingChatsA.length > 0) {
-          const chatIds = existingChatsA.map((r: any) => r.chat_id)
-          const { data: common } = await admin
+        try {
+          console.log(`[Admin] Checking for existing chat for pair ${userA} <-> ${userB}`)
+          const { data: existingChatsA, error: existingChatsError } = await admin
             .from('chat_members')
             .select('chat_id')
-            .in('chat_id', chatIds)
-            .eq('user_id', userB)
-          if (common && common.length > 0) {
-            chatId = common[0].chat_id
-          }
-        }
+            .eq('user_id', userA)
 
-        if (!chatId) {
-          const { data: createdChat, error: chatErr } = await admin
-            .from('chats')
-            .insert({ is_group: false, created_by: userA, match_id: null })
-            .select('id')
-            .single()
-
-          if (chatErr) {
-            throw new Error(`Failed to create chat: ${chatErr.message}`)
+          if (existingChatsError) {
+            console.warn(`[Admin] Error checking existing chats for userA:`, existingChatsError)
           }
 
-          chatId = createdChat.id
+          if (existingChatsA && existingChatsA.length > 0) {
+            const chatIds = existingChatsA.map((r: any) => r.chat_id)
+            console.log(`[Admin] Found ${chatIds.length} existing chats for userA, checking if userB is in any`)
+            const { data: common, error: commonError } = await admin
+              .from('chat_members')
+              .select('chat_id')
+              .in('chat_id', chatIds)
+              .eq('user_id', userB)
+            
+            if (commonError) {
+              console.warn(`[Admin] Error checking common chats:`, commonError)
+            }
+            
+            if (common && common.length > 0) {
+              chatId = common[0].chat_id
+              console.log(`[Admin] Found existing chat ${chatId} for pair ${userA} <-> ${userB}`)
+            }
+          }
 
-          await admin.from('chat_members').insert([
-            { chat_id: chatId, user_id: userA },
-            { chat_id: chatId, user_id: userB }
-          ])
+          if (!chatId) {
+            console.log(`[Admin] Creating new chat for pair ${userA} <-> ${userB}`)
+            const { data: createdChat, error: chatErr } = await admin
+              .from('chats')
+              .insert({ is_group: false, created_by: userA, match_id: null })
+              .select('id')
+              .single()
 
-          await admin.from('messages').insert({
-            chat_id: chatId,
-            user_id: userA,
-            content: "You're matched! Start your conversation 👋"
-          })
+            if (chatErr) {
+              throw new Error(`Failed to create chat: ${chatErr.message}`)
+            }
 
-          await admin
-            .from('chats')
-            .update({ updated_at: new Date().toISOString() })
-            .eq('id', chatId)
+            chatId = createdChat.id
+            console.log(`[Admin] Created chat ${chatId}`)
+
+            const { error: membersErr } = await admin.from('chat_members').insert([
+              { chat_id: chatId, user_id: userA },
+              { chat_id: chatId, user_id: userB }
+            ])
+
+            if (membersErr) {
+              throw new Error(`Failed to add chat members: ${membersErr.message}`)
+            }
+            console.log(`[Admin] Added members to chat ${chatId}`)
+
+            const { error: msgErr } = await admin.from('messages').insert({
+              chat_id: chatId,
+              user_id: userA,
+              content: "You're matched! Start your conversation 👋"
+            })
+
+            if (msgErr) {
+              console.warn(`[Admin] Failed to create system message for chat ${chatId}:`, msgErr)
+              // Don't fail if message creation fails
+            } else {
+              console.log(`[Admin] Created system message in chat ${chatId}`)
+            }
+
+            const { error: updateErr } = await admin
+              .from('chats')
+              .update({ updated_at: new Date().toISOString() })
+              .eq('id', chatId)
+
+            if (updateErr) {
+              console.warn(`[Admin] Failed to update chat ${chatId} updated_at:`, updateErr)
+            }
+            
+            console.log(`[Admin] Successfully created chat ${chatId} for pair ${userA} <-> ${userB}`)
+          }
+        } catch (chatError) {
+          console.error(`[Admin] Failed to create chat for pair ${pairKey}:`, chatError)
+          // Don't fail the whole operation if chat creation fails
+          // The match is still confirmed
         }
 
         // Create notifications
