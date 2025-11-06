@@ -6,21 +6,45 @@ import { createMatchNotification } from '@/lib/notifications/create'
 export async function POST(request: NextRequest) {
   try {
     const supabase = await createClient()
-    const { data: { user } } = await supabase.auth.getUser()
+    const { data: { user }, error: authError } = await supabase.auth.getUser()
 
-    if (!user) {
+    if (authError || !user) {
+      console.log('[Admin] Auth error:', authError?.message)
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
+    console.log('[Admin] Checking admin status for user:', user.id, user.email)
+
     // Check if user is admin
-    const { data: adminRecord } = await supabase
+    const { data: adminRecord, error: adminError } = await supabase
       .from('admins')
-      .select('role')
+      .select('role, user_id, university_id')
       .eq('user_id', user.id)
       .maybeSingle()
 
+    console.log('[Admin] Admin query result:', {
+      adminRecord,
+      adminError: adminError?.message,
+      userId: user.id
+    })
+
     if (!adminRecord) {
-      return NextResponse.json({ error: 'Admin access required' }, { status: 403 })
+      // Also check if there are any admins at all
+      const { data: sampleAdmins } = await supabase
+        .from('admins')
+        .select('user_id, role')
+        .limit(5)
+      
+      console.log('[Admin] Sample admins in table:', sampleAdmins)
+      
+      return NextResponse.json({ 
+        error: 'Admin access required',
+        debug: {
+          userId: user.id,
+          userEmail: user.email,
+          sampleAdmins: sampleAdmins || []
+        }
+      }, { status: 403 })
     }
 
     console.log('[Admin] Starting manual confirmation of pending matches')
