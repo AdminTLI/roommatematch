@@ -28,7 +28,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Not a member of this chat' }, { status: 403 })
     }
 
-    // Insert message
+    // Insert message (without profile join)
     const { data: message, error: messageError } = await supabase
       .from('messages')
       .insert({
@@ -40,11 +40,7 @@ export async function POST(request: NextRequest) {
         id,
         content,
         created_at,
-        user_id,
-        profiles!inner(
-          first_name,
-          last_name
-        )
+        user_id
       `)
       .single()
 
