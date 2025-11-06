@@ -61,6 +61,7 @@ export function ChatInterface({ roomId, user }: ChatInterfaceProps) {
   
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const typingTimeoutRef = useRef<NodeJS.Timeout>()
+  const typingChannelRef = useRef<any>(null)
 
   // Mock data for demonstration
   const mockMessages: Message[] = [
@@ -256,7 +257,14 @@ export function ChatInterface({ roomId, user }: ChatInterfaceProps) {
         .eq('id', roomId)
         .single()
 
-      if (roomError) throw roomError
+      if (roomError) {
+        console.error('Failed to load chat room:', roomError)
+        throw new Error(`Failed to load chat room: ${roomError.message}`)
+      }
+
+      if (!roomData) {
+        throw new Error('Chat room not found')
+      }
 
       // Load messages
       const { data: messagesData, error: messagesError } = await supabase
@@ -274,35 +282,53 @@ export function ChatInterface({ roomId, user }: ChatInterfaceProps) {
         .eq('chat_id', roomId)
         .order('created_at', { ascending: true })
 
-      if (messagesError) throw messagesError
+      if (messagesError) {
+        console.error('Failed to load messages:', messagesError)
+        throw new Error(`Failed to load messages: ${messagesError.message}`)
+      }
 
-      // Transform messages data
-      const transformedMessages: Message[] = (messagesData || []).map(msg => ({
-        id: msg.id,
-        content: msg.content,
-        sender_id: msg.user_id,
-        sender_name: msg.profiles.first_name + (msg.profiles.last_name ? ` ${msg.profiles.last_name}` : ''),
-        created_at: msg.created_at,
-        read_by: [], // Would need to implement read tracking
-        is_own: msg.user_id === user.id
-      }))
+      // Transform messages data - handle missing profiles gracefully
+      const transformedMessages: Message[] = (messagesData || []).map(msg => {
+        const profile = msg.profiles
+        const senderName = profile 
+          ? (profile.first_name || '') + (profile.last_name ? ` ${profile.last_name}` : '')
+          : 'Unknown User'
+        
+        return {
+          id: msg.id,
+          content: msg.content,
+          sender_id: msg.user_id,
+          sender_name: senderName,
+          created_at: msg.created_at,
+          read_by: [], // Would need to implement read tracking
+          is_own: msg.user_id === user.id
+        }
+      })
 
-      // Transform participants data
-      const transformedMembers: ChatMember[] = (roomData.chat_members || []).map(member => ({
-        id: member.user_id,
-        name: member.profiles.first_name + (member.profiles.last_name ? ` ${member.profiles.last_name}` : ''),
-        is_online: true // This would need real-time presence tracking
-      }))
+      // Transform participants data - handle missing profiles gracefully
+      const transformedMembers: ChatMember[] = (roomData.chat_members || []).map(member => {
+        const profile = member.profiles
+        const memberName = profile
+          ? (profile.first_name || '') + (profile.last_name ? ` ${profile.last_name}` : '')
+          : 'Unknown User'
+        
+        return {
+          id: member.user_id,
+          name: memberName,
+          is_online: true // This would need real-time presence tracking
+        }
+      })
 
       setMessages(transformedMessages)
       setMembers(transformedMembers)
       
     } catch (error) {
       console.error('Failed to load chat data:', error)
-      setError('Failed to load chat messages')
-      // Fallback to mock data on error
-      setMessages(mockMessages)
-      setMembers(mockMembers)
+      const errorMessage = error instanceof Error ? error.message : 'Failed to load chat messages'
+      setError(`Failed to load chat: ${errorMessage}`)
+      // Don't fall back to mock data - show error instead
+      setMessages([])
+      setMembers([])
     } finally {
       setIsLoading(false)
     }
@@ -334,21 +360,48 @@ export function ChatInterface({ roomId, user }: ChatInterfaceProps) {
       })
       .subscribe()
 
-    // Subscribe to typing indicators
+    // Subscribe to typing indicators - reuse channel
     const typingChannel = supabase
       .channel(`typing:${roomId}`)
       .on('presence', { event: 'sync' }, () => {
         const state = typingChannel.presenceState()
-        const typingUsers = Object.keys(state).filter(userId => 
-          userId !== user.id && state[userId]?.[0]?.typing
-        )
+        // Filter to only show typing indicators for other users, not yourself
+        const typingUsers = Object.keys(state).filter(userId => {
+          if (userId === user.id) return false
+          const presence = state[userId]
+          return presence && presence[0] && presence[0].typing === true
+        })
         setTypingUsers(typingUsers)
       })
-      .subscribe()
+      .on('presence', { event: 'join' }, ({ key, newPresences }) => {
+        // Handle when someone joins
+        if (key !== user.id && newPresences[0]?.typing) {
+          setTypingUsers(prev => [...prev.filter(id => id !== key), key])
+        }
+      })
+      .on('presence', { event: 'leave' }, ({ key }) => {
+        // Handle when someone leaves
+        setTypingUsers(prev => prev.filter(id => id !== key))
+      })
+      .subscribe(async (status) => {
+        if (status === 'SUBSCRIBED') {
+          // Track our own presence when subscribed
+          await typingChannel.track({
+            typing: false,
+            user_id: user.id
+          })
+        }
+      })
+    
+    // Store channel reference for reuse
+    typingChannelRef.current = typingChannel
 
     return () => {
       supabase.removeChannel(messagesChannel)
-      supabase.removeChannel(typingChannel)
+      if (typingChannelRef.current) {
+        supabase.removeChannel(typingChannelRef.current)
+        typingChannelRef.current = null
+      }
     }
   }, [roomId, user.id])
 
@@ -426,9 +479,15 @@ export function ChatInterface({ roomId, user }: ChatInterfaceProps) {
   }
 
   const handleTyping = () => {
-    // Send typing indicator
-    const channel = supabase.channel(`typing:${roomId}`)
+    // Reuse existing typing channel instead of creating new one
+    const channel = typingChannelRef.current
     
+    if (!channel) {
+      console.warn('Typing channel not initialized')
+      return
+    }
+
+    // Send typing indicator
     channel.track({
       typing: true,
       user_id: user.id

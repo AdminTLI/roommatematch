@@ -156,15 +156,15 @@ export function OnboardingWizard({ user }: OnboardingWizardProps) {
         if (progress.hasPartialProgress || progress.isFullySubmitted) {
           const key = `onboarding_progress_${user.id}`
           const saved = localStorage.getItem(key)
-          if (saved) {
-            try {
-              const { currentStep: savedStep, formData: savedData } = JSON.parse(saved)
-              setCurrentStep(savedStep || 0)
-              setFormData(savedData || {})
-            } catch (error) {
-              console.error('Failed to load progress:', error)
-            }
-          }
+    if (saved) {
+      try {
+        const { currentStep: savedStep, formData: savedData } = JSON.parse(saved)
+        setCurrentStep(savedStep || 0)
+        setFormData(savedData || {})
+      } catch (error) {
+        console.error('Failed to load progress:', error)
+      }
+    }
         }
       }
     } catch (error) {

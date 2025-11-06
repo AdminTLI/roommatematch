@@ -83,14 +83,6 @@ export function ChatList({ user }: ChatListProps) {
         .from('chats')
         .select(`
           *,
-          match_id,
-          first_message_at,
-          matches!left(
-            id,
-            score,
-            a_user,
-            b_user
-          ),
           chat_members!inner(
             user_id,
             last_read_at
@@ -135,8 +127,11 @@ export function ChatList({ user }: ChatListProps) {
 
       // Transform database results to ChatRoom format
       const transformedChats: ChatRoom[] = (chatRooms || []).map((room: any) => {
-        const isRecentlyMatched = !room.first_message_at
-        const compatibilityScore = room.matches?.score ? Math.round(room.matches.score * 100) : undefined
+        // Check if there are any messages to determine if recently matched
+        const hasMessages = room.messages && room.messages.length > 0
+        const isRecentlyMatched = !hasMessages
+        // Compatibility score not available without matches table - set to undefined
+        const compatibilityScore = undefined
         
         // Get the other participant for individual chats
         const otherParticipant = room.chat_members?.find((p: any) => p.user_id !== user.id)
@@ -169,9 +164,9 @@ export function ChatList({ user }: ChatListProps) {
           }) || [],
           unreadCount: unreadMap.get(room.id) || 0,
           isActive: false,
-          matchId: room.match_id,
+          matchId: undefined,
           compatibilityScore,
-          firstMessageAt: room.first_message_at,
+          firstMessageAt: undefined,
           isRecentlyMatched
         }
       })

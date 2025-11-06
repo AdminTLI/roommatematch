@@ -52,7 +52,7 @@ export function SignInForm() {
           } catch {}
           router.push('/auth/verify-email?auto=1')
         } else {
-          router.push('/dashboard')
+        router.push('/dashboard')
         }
       }
     } catch (err) {
