@@ -351,7 +351,7 @@ export function ChatInterface({ roomId, user }: ChatInterfaceProps) {
         return {
           id: member.user_id,
           name: memberName,
-          avatar: profile?.avatar_url,
+          avatar: undefined, // avatar_url column doesn't exist in profiles table
           is_online: true // This would need real-time presence tracking
         }
       })
