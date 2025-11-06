@@ -15,8 +15,9 @@ export async function POST(request: NextRequest) {
 
     console.log('[Admin] Checking admin status for user:', user.id, user.email)
 
-    // Check if user is admin
-    const { data: adminRecord, error: adminError } = await supabase
+    // Use admin client to check admin status (bypasses RLS)
+    const adminClient = await createAdminClient()
+    const { data: adminRecord, error: adminError } = await adminClient
       .from('admins')
       .select('role, user_id, university_id')
       .eq('user_id', user.id)
@@ -29,8 +30,8 @@ export async function POST(request: NextRequest) {
     })
 
     if (!adminRecord) {
-      // Also check if there are any admins at all
-      const { data: sampleAdmins } = await supabase
+      // Use admin client to check all admins (bypasses RLS)
+      const { data: sampleAdmins } = await adminClient
         .from('admins')
         .select('user_id, role')
         .limit(5)
