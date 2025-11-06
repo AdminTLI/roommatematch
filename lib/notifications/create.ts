@@ -114,10 +114,13 @@ export async function createMatchNotification(
     metadata
   );
 
-  // Update the second user's message
+  // Update the second user's message and ensure metadata includes chat_id
   await supabase
     .from('notifications')
-    .update({ message: messageB })
+    .update({ 
+      message: messageB,
+      metadata: metadata // Ensure chat_id is included
+    })
     .eq('user_id', userBId)
     .eq('type', type)
     .eq('metadata->match_id', matchId);

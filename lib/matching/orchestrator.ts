@@ -491,6 +491,12 @@ export async function runMatchingAsSuggestions({
     
     for (const uid of Object.keys(byUser)) {
       for (const cand of byUser[uid]) {
+        // Prevent self-matching
+        if (uid === cand.otherId) {
+          console.warn(`[WARN] Skipping self-match for user ${uid}`)
+          continue
+        }
+
         // Use sorted memberIds as unique key to prevent duplicates
         const pairKey = [uid, cand.otherId].sort().join('::')
         if (seen.has(pairKey)) continue

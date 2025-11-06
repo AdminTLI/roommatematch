@@ -58,6 +58,17 @@ export async function POST(request: NextRequest) {
     const otherIds = suggestion.memberIds.filter(id => id !== user.id)
     const otherId = otherIds[0]
 
+    // Prevent self-matching
+    if (!otherId || otherId === user.id) {
+      return NextResponse.json({ error: 'Invalid suggestion: cannot match with yourself' }, { status: 400 })
+    }
+
+    // Ensure memberIds doesn't contain duplicates
+    const uniqueMemberIds = Array.from(new Set(suggestion.memberIds))
+    if (uniqueMemberIds.length !== suggestion.memberIds.length) {
+      return NextResponse.json({ error: 'Invalid suggestion: duplicate members' }, { status: 400 })
+    }
+
     // Fetch all suggestions for this pair (across runs) and merge acceptance
     const pairSugs = await repo.getSuggestionsForPair(user.id, otherId, false)
     let unionAccepted = new Set<string>()

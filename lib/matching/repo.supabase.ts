@@ -759,9 +759,10 @@ export class SupabaseMatchRepo implements MatchRepo {
       .order('created_at', { ascending: false }) // Order by created_at DESC to get latest first
 
     if (!includeExpired) {
-      query = query
-        .neq('status', 'expired')
-        .gt('expires_at', new Date().toISOString())
+      // Include confirmed matches even if expired, but exclude expired pending/accepted
+      // We'll filter in JavaScript to handle the OR logic properly
+      // For now, just exclude expired status
+      query = query.neq('status', 'expired')
     }
 
     const { data, error } = await query
@@ -784,9 +785,16 @@ export class SupabaseMatchRepo implements MatchRepo {
       createdAt: record.created_at
     }))
 
+    // Filter: include confirmed matches even if expired, but exclude expired pending/accepted
+    const now = new Date().toISOString()
+    const filtered = suggestions.filter(s => 
+      s.status === 'confirmed' || 
+      (s.status !== 'expired' && new Date(s.expiresAt) > new Date(now))
+    )
+
     // Dedupe by otherId: keep only the latest suggestion per counterpart
     const seenOtherIds = new Map<string, MatchSuggestion>()
-    for (const sug of suggestions) {
+    for (const sug of filtered) {
       const otherId = sug.memberIds.find(id => id !== userId)
       if (!otherId) continue
       
@@ -901,6 +909,11 @@ export class SupabaseMatchRepo implements MatchRepo {
   }
 
   async getSuggestionsForPair(userAId: string, userBId: string, includeExpired = false): Promise<MatchSuggestion[]> {
+    // Prevent self-matching queries
+    if (userAId === userBId) {
+      return []
+    }
+
     const supabase = await this.getSupabase()
     let query = supabase
       .from('match_suggestions')
