@@ -28,31 +28,30 @@ export async function POST(request: NextRequest) {
     const admin = await createAdminClient()
     const repo = await getMatchRepo()
     
-    // Get all accepted pair suggestions
-    const { data: acceptedSuggestions, error: sugError } = await admin
+    // Query ALL pair suggestions (not just accepted/pending) to find all pairs
+    // This ensures we catch matches even if suggestions have different statuses
+    const { data: allPairSuggestions, error: sugError } = await admin
       .from('match_suggestions')
       .select('id, member_ids, accepted_by, status, kind, fit_index, section_scores, reasons, run_id, expires_at, created_at')
       .eq('kind', 'pair')
-      .in('status', ['accepted', 'pending'])
-      .not('accepted_by', 'is', null)
 
     if (sugError) {
-      throw new Error(`Failed to fetch accepted suggestions: ${sugError.message}`)
+      throw new Error(`Failed to fetch pair suggestions: ${sugError.message}`)
     }
 
-    if (!acceptedSuggestions || acceptedSuggestions.length === 0) {
+    if (!allPairSuggestions || allPairSuggestions.length === 0) {
       return NextResponse.json({ 
         success: true, 
-        message: 'No accepted suggestions found',
+        message: 'No pair suggestions found',
         processed: 0
       })
     }
 
-    console.log(`[Admin] Found ${acceptedSuggestions.length} accepted/pending suggestions`)
+    console.log(`[Admin] Found ${allPairSuggestions.length} total pair suggestions`)
 
-    // Group by pair (sorted memberIds as key)
+    // Group by pair (sorted memberIds as key) - this groups ALL suggestions for each pair
     const pairMap = new Map<string, any[]>()
-    for (const sug of acceptedSuggestions) {
+    for (const sug of allPairSuggestions) {
       const memberIds = sug.member_ids as string[]
       if (!memberIds || memberIds.length !== 2) continue
       
@@ -65,6 +64,8 @@ export async function POST(request: NextRequest) {
       pairMap.get(pairKey)!.push(sug)
     }
 
+    console.log(`[Admin] Grouped into ${pairMap.size} unique pairs`)
+
     let processed = 0
     let skipped = 0
     const errors: string[] = []
@@ -74,17 +75,35 @@ export async function POST(request: NextRequest) {
       try {
         const [userA, userB] = pairKey.split('::')
         
-        // Union all acceptedBy values across all suggestions for this pair
+        // Union all acceptedBy values across ALL suggestions for this pair
+        // This catches acceptances even if they're on different suggestion IDs
         const unionAccepted = new Set<string>()
         for (const sug of suggestions) {
           const acceptedBy = sug.accepted_by as string[] || []
           acceptedBy.forEach(id => unionAccepted.add(id))
         }
 
-        // Check if both users have accepted
+        console.log(`[Admin] Pair ${pairKey}:`, {
+          suggestionCount: suggestions.length,
+          suggestionIds: suggestions.map(s => s.id),
+          suggestionStatuses: suggestions.map(s => s.status),
+          acceptedByArrays: suggestions.map(s => s.accepted_by || []),
+          unionAccepted: Array.from(unionAccepted)
+        })
+
+        // Check if both users have accepted (regardless of suggestion status)
         const bothAccepted = unionAccepted.has(userA) && unionAccepted.has(userB)
         
         if (!bothAccepted) {
+          skipped++
+          console.log(`[Admin] Skipping pair ${pairKey} - not both accepted (union: ${Array.from(unionAccepted).join(', ')})`)
+          continue
+        }
+
+        // Skip if already confirmed
+        const alreadyConfirmed = suggestions.some(s => s.status === 'confirmed')
+        if (alreadyConfirmed) {
+          console.log(`[Admin] Skipping pair ${pairKey} - already confirmed`)
           skipped++
           continue
         }
@@ -94,11 +113,13 @@ export async function POST(request: NextRequest) {
           unionAccepted: Array.from(unionAccepted)
         })
 
-        // Update all suggestions for this pair to confirmed
+        // Update ALL suggestions for this pair to confirmed (including expired ones)
+        // This ensures consistency across all suggestion records for the pair
         for (const sug of suggestions) {
           const merged = new Set<string>(sug.accepted_by as string[] || [])
           unionAccepted.forEach(a => merged.add(a))
           
+          console.log(`[Admin] Updating suggestion ${sug.id} from status ${sug.status} to confirmed`)
           await repo.updateSuggestionAcceptedByAndStatus(
             sug.id,
             Array.from(merged),

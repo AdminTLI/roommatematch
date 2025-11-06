@@ -240,14 +240,130 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ ok: true, suggestion, match })
     } else {
       // Mark all pair suggestions as accepted for this user (merge acceptedBy)
+      console.log(`[DEBUG] Not all accepted yet - updating ${pairSugs.length} suggestions to accepted`)
       for (const s of pairSugs) {
         const merged = new Set<string>(s.acceptedBy || [])
         merged.add(user.id)
+        console.log(`[DEBUG] Updating suggestion ${s.id} - adding ${user.id} to acceptedBy`)
         await repo.updateSuggestionAcceptedByAndStatus(s.id, Array.from(merged), 'accepted')
       }
       suggestion.acceptedBy = Array.from(unionAccepted)
       suggestion.status = 'accepted'
       await repo.updateSuggestion(suggestion)
+
+      // Re-check if match should be confirmed after updates
+      // This catches cases where the update itself made both users accept
+      console.log(`[DEBUG] Re-checking pair after updates to see if match should be confirmed`)
+      const updatedPairSugs = await repo.getSuggestionsForPair(user.id, otherId, true)
+      let recheckUnionAccepted = new Set<string>()
+      for (const s of updatedPairSugs) {
+        (s.acceptedBy || []).forEach(a => recheckUnionAccepted.add(a))
+      }
+      
+      const recheckAllAccepted = suggestion.memberIds.every(id => recheckUnionAccepted.has(id))
+      console.log(`[DEBUG] Re-check result - all accepted: ${recheckAllAccepted}`, {
+        unionAccepted: Array.from(recheckUnionAccepted),
+        requiredMembers: suggestion.memberIds
+      })
+      
+      if (recheckAllAccepted) {
+        // Both users have now accepted - confirm the match
+        console.log(`[DEBUG] Re-check confirmed match - both users have accepted after update`)
+        
+        // Update all pair suggestions to confirmed
+        for (const s of updatedPairSugs) {
+          const merged = new Set<string>(s.acceptedBy || [])
+          recheckUnionAccepted.forEach(a => merged.add(a))
+          await repo.updateSuggestionAcceptedByAndStatus(s.id, Array.from(merged), 'confirmed')
+        }
+        
+        // Create match record
+        const now = new Date().toISOString()
+        const match: MatchRecord = {
+          kind: 'pair',
+          aId: suggestion.memberIds[0],
+          bId: suggestion.memberIds[1],
+          fit: suggestion.fitIndex / 100,
+          fitIndex: suggestion.fitIndex,
+          sectionScores: suggestion.sectionScores || {},
+          reasons: suggestion.reasons || [],
+          runId: suggestion.runId,
+          locked: true,
+          createdAt: now
+        }
+        
+        await repo.saveMatches([match])
+        await repo.lockMatch(suggestion.memberIds, suggestion.runId)
+        await repo.markUsersMatched(suggestion.memberIds, suggestion.runId)
+        
+        // Create chat
+        let chatId: string | undefined
+        try {
+          const admin = await createAdminClient()
+          const [userA, userB] = suggestion.memberIds
+          
+          if (userA !== userB) {
+            const { data: existingChats } = await admin
+              .from('chat_members')
+              .select('chat_id')
+              .eq('user_id', userA)
+            
+            if (existingChats && existingChats.length > 0) {
+              const chatIds = existingChats.map((r: any) => r.chat_id)
+              const { data: common } = await admin
+                .from('chat_members')
+                .select('chat_id')
+                .in('chat_id', chatIds)
+                .eq('user_id', userB)
+              if (common && common.length > 0) {
+                chatId = common[0].chat_id
+              }
+            }
+            
+            if (!chatId) {
+              const { data: createdChat, error: chatErr } = await admin
+                .from('chats')
+                .insert({ is_group: false, created_by: userA, match_id: null })
+                .select('id')
+                .single()
+              
+              if (!chatErr && createdChat) {
+                chatId = createdChat.id
+                await admin.from('chat_members').insert([
+                  { chat_id: chatId, user_id: userA },
+                  { chat_id: chatId, user_id: userB }
+                ])
+                await admin.from('messages').insert({
+                  chat_id: chatId,
+                  user_id: userA,
+                  content: "You're matched! Start your conversation 👋"
+                })
+                await admin
+                  .from('chats')
+                  .update({ updated_at: new Date().toISOString() })
+                  .eq('id', chatId)
+              }
+            }
+            
+            // Create notifications
+            try {
+              await createMatchNotification(
+                userA,
+                userB,
+                'match_confirmed',
+                suggestion.id,
+                chatId
+              )
+            } catch (notifError) {
+              console.error('Failed to create confirmation notifications:', notifError)
+            }
+          }
+        } catch (chatError) {
+          console.error('Failed to create chat on re-check confirmation:', chatError)
+        }
+        
+        return NextResponse.json({ ok: true, suggestion: { ...suggestion, status: 'confirmed' }, match })
+      }
 
       // Create notification for match acceptance
       try {

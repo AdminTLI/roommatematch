@@ -942,12 +942,26 @@ export class SupabaseMatchRepo implements MatchRepo {
     
     console.log(`[DEBUG] getSuggestionsForPair - Found ${filtered.length} suggestions for pair ${userAId} <-> ${userBId} out of ${data?.length || 0} total pair suggestions`, {
       includeExpired,
+      userAId,
+      userBId,
+      totalPairSuggestions: data?.length || 0,
+      filteredCount: filtered.length,
       filteredSuggestions: filtered.map(s => ({
         id: s.id,
         status: s.status,
         acceptedBy: s.accepted_by || [],
         memberIds: s.member_ids,
-        createdAt: s.created_at
+        createdAt: s.created_at,
+        runId: s.run_id
+      })),
+      // Show sample of non-matching suggestions for debugging
+      nonMatchingSample: (data || []).slice(0, 3).filter((record: any) => {
+        const memberIds = record.member_ids as string[]
+        return !(memberIds && Array.isArray(memberIds) && memberIds.includes(userAId) && memberIds.includes(userBId))
+      }).map((s: any) => ({
+        id: s.id,
+        memberIds: s.member_ids,
+        status: s.status
       }))
     })
 
