@@ -940,7 +940,16 @@ export class SupabaseMatchRepo implements MatchRepo {
              memberIds.includes(userBId)
     })
     
-    console.log(`[DEBUG] getSuggestionsForPair - Found ${filtered.length} suggestions for pair ${userAId} <-> ${userBId} out of ${data?.length || 0} total pair suggestions`)
+    console.log(`[DEBUG] getSuggestionsForPair - Found ${filtered.length} suggestions for pair ${userAId} <-> ${userBId} out of ${data?.length || 0} total pair suggestions`, {
+      includeExpired,
+      filteredSuggestions: filtered.map(s => ({
+        id: s.id,
+        status: s.status,
+        acceptedBy: s.accepted_by || [],
+        memberIds: s.member_ids,
+        createdAt: s.created_at
+      }))
+    })
 
     return filtered.map((record: any) => ({
       id: record.id,
