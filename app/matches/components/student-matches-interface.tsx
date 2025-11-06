@@ -225,6 +225,7 @@ export function StudentMatchesInterface({ user }: StudentMatchesInterfaceProps) 
               suggestion={suggestion}
               onRespond={handleRespond}
               isLoading={isResponding}
+              currentUserId={user.id}
             />
           ))}
         </div>

@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import { useRouter } from 'next/navigation'
 import { SectionScores } from './section-scores'
 import type { MatchSuggestion } from '@/lib/matching/types'
 
@@ -8,10 +9,13 @@ interface SuggestionCardProps {
   suggestion: MatchSuggestion
   onRespond: (id: string, action: 'accept' | 'decline') => Promise<void>
   isLoading?: boolean
+  currentUserId: string
 }
 
-export function SuggestionCard({ suggestion, onRespond, isLoading = false }: SuggestionCardProps) {
+export function SuggestionCard({ suggestion, onRespond, isLoading = false, currentUserId }: SuggestionCardProps) {
   const [isResponding, setIsResponding] = useState(false)
+  const [isOpeningChat, setIsOpeningChat] = useState(false)
+  const router = useRouter()
   
   const now = Date.now()
   const expiresAt = new Date(suggestion.expiresAt).getTime()
@@ -23,6 +27,42 @@ export function SuggestionCard({ suggestion, onRespond, isLoading = false }: Sug
       await onRespond(suggestion.id, action)
     } finally {
       setIsResponding(false)
+    }
+  }
+
+  const handleChatNow = async () => {
+    setIsOpeningChat(true)
+    try {
+      // Find the other user ID
+      const otherUserId = suggestion.memberIds.find(id => id !== currentUserId)
+      if (!otherUserId) {
+        console.error('Could not find other user ID')
+        return
+      }
+
+      // Get or create chat
+      const response = await fetch('/api/chat/get-or-create', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ otherUserId }),
+      })
+
+      if (!response.ok) {
+        const error = await response.json()
+        console.error('Failed to get or create chat:', error)
+        alert('Failed to open chat. Please try again.')
+        return
+      }
+
+      const { chatId } = await response.json()
+      router.push(`/chat/${chatId}`)
+    } catch (error) {
+      console.error('Error opening chat:', error)
+      alert('Failed to open chat. Please try again.')
+    } finally {
+      setIsOpeningChat(false)
     }
   }
   
@@ -131,6 +171,17 @@ export function SuggestionCard({ suggestion, onRespond, isLoading = false }: Sug
             {isResponding ? 'Accepting...' : 'Accept'}
           </button>
         </div>
+      )}
+      
+      {/* Chat Now button for confirmed matches */}
+      {suggestion.status === 'confirmed' && (
+        <button
+          onClick={handleChatNow}
+          disabled={isOpeningChat}
+          className="w-full px-4 py-2 rounded-lg bg-green-600 text-white hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors font-medium"
+        >
+          {isOpeningChat ? 'Opening chat...' : '💬 Chat Now'}
+        </button>
       )}
       
       {/* Run Info (debug only) */}
