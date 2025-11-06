@@ -4,7 +4,7 @@
 import { randomUUID } from 'crypto'
 import type { MatchRepo, CohortFilter, MatchRecord } from './repo'
 import type { MatchSuggestion } from './types'
-import { toStudent } from './answer-map'
+import { toStudent, mapAnswersToVector } from './answer-map'
 import { checkDealBreakers, getReadableReasons } from './dealbreakers'
 import { solvePairs, solveGroups } from './optimize'
 import { MatchingEngine, DEFAULT_WEIGHTS } from './scoring'
@@ -240,11 +240,19 @@ function toEngineProfile(student: any) {
   const sleepStart = typeof student.raw.sleep_start === 'string' ? parseFloat(student.raw.sleep_start) : Number(student.raw.sleep_start) || 22
   const sleepEnd = typeof student.raw.sleep_end === 'string' ? parseFloat(student.raw.sleep_end) : Number(student.raw.sleep_end) || 8
   
-  // Use actual vector from candidate if available, otherwise use empty array
-  // Don't use array of zeros as it breaks cosine similarity calculation
-  const vector = student.raw.vector && Array.isArray(student.raw.vector) && student.raw.vector.length > 0
-    ? student.raw.vector
-    : new Array(50).fill(0) // Only use zeros if truly no vector exists
+  // Use actual vector from candidate if available
+  let vector: number[] = Array.isArray(student.raw.vector) ? student.raw.vector : []
+  
+  // If vector is missing OR appears to be all zeros, fall back to computing from answers
+  const isZeroVector = (v: number[]) => v.length === 0 || v.every((x) => x === 0)
+  if (isZeroVector(vector)) {
+    try {
+      vector = mapAnswersToVector(student.raw)
+    } catch (e) {
+      // As a last resort, provide a zero-vector of expected dimension
+      vector = new Array(50).fill(0)
+    }
+  }
   
   return {
     userId: student.id,
