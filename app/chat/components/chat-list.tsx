@@ -95,6 +95,17 @@ export function ChatList({ user }: ChatListProps) {
         `)
         .in('id', chatIds)
         .order('created_at', { ascending: false })
+      
+      // Order messages by created_at descending for each chat room
+      if (chatRooms) {
+        chatRooms.forEach((room: any) => {
+          if (room.messages && room.messages.length > 0) {
+            room.messages.sort((a: any, b: any) => 
+              new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+            )
+          }
+        })
+      }
 
       if (chatsError) throw chatsError
 
@@ -140,9 +151,13 @@ export function ChatList({ user }: ChatListProps) {
 
       // Transform database results to ChatRoom format
       const transformedChats: ChatRoom[] = (chatRooms || []).map((room: any) => {
-        // Check if there are any messages to determine if recently matched
-        const hasMessages = room.messages && room.messages.length > 0
-        const isRecentlyMatched = !hasMessages
+        // Check if recently matched: use first_message_at field if available, otherwise check if only system greeting exists
+        // A chat is "recently matched" if first_message_at is null (no real user messages yet)
+        // or if the only message is the system greeting "You're matched! Start your conversation 👋"
+        const hasUserMessages = room.messages && room.messages.some((msg: any) => 
+          msg.content !== "You're matched! Start your conversation 👋"
+        )
+        const isRecentlyMatched = !hasUserMessages && (!room.first_message_at || room.messages?.length === 1)
         // Compatibility score not available without matches table - set to undefined
         const compatibilityScore = undefined
         
@@ -176,7 +191,7 @@ export function ChatList({ user }: ChatListProps) {
             return {
               id: p.user_id,
               name: fullName,
-              avatar: undefined, // avatar_url column doesn't exist in profiles table
+              avatar: undefined, // Avatars not implemented - Avatar component will show initials via AvatarFallback
               isOnline: false
             }
           }) || [],

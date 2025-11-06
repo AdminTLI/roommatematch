@@ -28,6 +28,46 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Not a member of this chat' }, { status: 403 })
     }
 
+    // Get all unread messages in this chat (messages created before last_read_at or if last_read_at is null)
+    const { data: membershipWithRead } = await supabase
+      .from('chat_members')
+      .select('last_read_at')
+      .eq('chat_id', chat_id)
+      .eq('user_id', user.id)
+      .single()
+
+    const lastReadAt = membershipWithRead?.last_read_at || new Date(0).toISOString()
+
+    // Get all messages that should be marked as read
+    const { data: unreadMessages, error: messagesError } = await supabase
+      .from('messages')
+      .select('id')
+      .eq('chat_id', chat_id)
+      .lte('created_at', new Date().toISOString())
+      .gt('created_at', lastReadAt)
+
+    if (messagesError) {
+      console.error('Failed to fetch unread messages:', messagesError)
+      return NextResponse.json({ error: 'Failed to fetch unread messages' }, { status: 500 })
+    }
+
+    // Insert read receipts for all unread messages
+    if (unreadMessages && unreadMessages.length > 0) {
+      const readReceipts = unreadMessages.map(msg => ({
+        message_id: msg.id,
+        user_id: user.id
+      }))
+
+      const { error: readsError } = await supabase
+        .from('message_reads')
+        .upsert(readReceipts, { onConflict: 'message_id,user_id' })
+
+      if (readsError) {
+        console.error('Failed to insert read receipts:', readsError)
+        return NextResponse.json({ error: 'Failed to insert read receipts' }, { status: 500 })
+      }
+    }
+
     // Update last_read_at for this user in this chat
     const { error: updateError } = await supabase
       .from('chat_members')

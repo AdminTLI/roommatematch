@@ -287,6 +287,24 @@ export function ChatInterface({ roomId, user }: ChatInterfaceProps) {
         throw new Error(`Failed to load messages: ${messagesError.message}`)
       }
 
+      // Load read receipts for all messages
+      const messageIds = (messagesData || []).map(m => m.id)
+      let readReceiptsMap = new Map<string, string[]>()
+      if (messageIds.length > 0) {
+        const { data: readsData, error: readsError } = await supabase
+          .from('message_reads')
+          .select('message_id, user_id')
+          .in('message_id', messageIds)
+
+        if (!readsError && readsData) {
+          // Group read receipts by message_id
+          readsData.forEach((read: any) => {
+            const existing = readReceiptsMap.get(read.message_id) || []
+            readReceiptsMap.set(read.message_id, [...existing, read.user_id])
+          })
+        }
+      }
+
       // Collect all user IDs from members and messages
       const userIds = new Set<string>()
       membersData?.forEach(m => userIds.add(m.user_id))
@@ -330,13 +348,16 @@ export function ChatInterface({ roomId, user }: ChatInterfaceProps) {
           ? [profile.first_name?.trim(), profile.last_name?.trim()].filter(Boolean).join(' ') || 'User'
           : 'Unknown User'
         
+        // Get read receipts for this message
+        const readBy = readReceiptsMap.get(msg.id) || []
+        
         return {
           id: msg.id,
           content: msg.content,
           sender_id: msg.user_id,
           sender_name: senderName,
           created_at: msg.created_at,
-          read_by: [], // Would need to implement read tracking
+          read_by: readBy,
           is_own: msg.user_id === user.id
         }
       })
@@ -351,7 +372,7 @@ export function ChatInterface({ roomId, user }: ChatInterfaceProps) {
         return {
           id: member.user_id,
           name: memberName,
-          avatar: undefined, // avatar_url column doesn't exist in profiles table
+          avatar: undefined, // Avatars not implemented - Avatar component will show initials via AvatarFallback
           is_online: true // This would need real-time presence tracking
         }
       })
@@ -553,12 +574,18 @@ export function ChatInterface({ roomId, user }: ChatInterfaceProps) {
 
       const { message } = await response.json()
       
+      // Get sender name from profilesMap (current user's profile should already be loaded)
+      const profile = profilesMap.get(user.id)
+      const senderName = profile 
+        ? [profile.first_name?.trim(), profile.last_name?.trim()].filter(Boolean).join(' ') || 'User'
+        : 'You'
+      
       // Add the message to local state immediately for better UX
       setMessages(prev => [...prev, {
         id: message.id,
         content: message.content,
         sender_id: message.user_id,
-        sender_name: message.profiles.first_name + (message.profiles.last_name ? ` ${message.profiles.last_name}` : ''),
+        sender_name: senderName,
         created_at: message.created_at,
         read_by: [user.id], // Initially only read by sender
         is_own: true
