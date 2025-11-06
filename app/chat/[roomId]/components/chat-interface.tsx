@@ -291,19 +291,32 @@ export function ChatInterface({ roomId, user }: ChatInterfaceProps) {
       membersData?.forEach(m => userIds.add(m.user_id))
       messagesData?.forEach(m => userIds.add(m.user_id))
 
-      // Fetch profiles separately
+      // Fetch profiles separately using API route (bypasses RLS)
       let profilesMap = new Map<string, any>()
       if (userIds.size > 0) {
-        const { data: profilesData, error: profilesError } = await supabase
-          .from('profiles')
-          .select('user_id, first_name, last_name, avatar_url')
-          .in('user_id', Array.from(userIds))
+        try {
+          const profilesResponse = await fetch('/api/chat/profiles', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              userIds: Array.from(userIds),
+              chatId: roomId
+            }),
+          })
 
-        if (profilesError) {
-          console.warn('Failed to fetch profiles:', profilesError)
+          if (profilesResponse.ok) {
+            const { profiles: profilesData } = await profilesResponse.json()
+            if (profilesData) {
+              profilesMap = new Map(profilesData.map((p: any) => [p.user_id, p]))
+            }
+          } else {
+            console.warn('Failed to fetch profiles via API:', await profilesResponse.text())
+          }
+        } catch (err) {
+          console.warn('Failed to fetch profiles:', err)
           // Don't throw - continue with empty profiles map
-        } else if (profilesData) {
-          profilesMap = new Map(profilesData.map(p => [p.user_id, p]))
         }
       }
 
@@ -368,17 +381,26 @@ export function ChatInterface({ roomId, user }: ChatInterfaceProps) {
         const newMessage = payload.new as any
         // Only add if it's not from the current user (to avoid duplicates)
         if (newMessage.user_id !== user.id) {
-          // Fetch profile for the sender
+          // Fetch profile for the sender using API route
           let senderName = 'Unknown User'
           try {
-            const { data: profile } = await supabase
-              .from('profiles')
-              .select('first_name, last_name')
-              .eq('user_id', newMessage.user_id)
-              .single()
-            
-            if (profile) {
-              senderName = (profile.first_name || '') + (profile.last_name ? ` ${profile.last_name}` : '').trim() || 'User'
+            const profilesResponse = await fetch('/api/chat/profiles', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+              },
+              body: JSON.stringify({
+                userIds: [newMessage.user_id],
+                chatId: roomId
+              }),
+            })
+
+            if (profilesResponse.ok) {
+              const { profiles } = await profilesResponse.json()
+              const profile = profiles?.[0]
+              if (profile) {
+                senderName = (profile.first_name || '') + (profile.last_name ? ` ${profile.last_name}` : '').trim() || 'User'
+              }
             }
           } catch (err) {
             console.warn('Failed to fetch profile for new message:', err)

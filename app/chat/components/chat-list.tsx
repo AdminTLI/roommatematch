@@ -106,19 +106,32 @@ export function ChatList({ user }: ChatListProps) {
         })
       })
 
-      // Fetch profiles for all users separately
-      const { data: profilesData, error: profilesError } = await supabase
-        .from('profiles')
-        .select('user_id, first_name, last_name, avatar_url')
-        .in('user_id', Array.from(userIds))
+      // Fetch profiles for all users separately using API route (bypasses RLS)
+      let profilesMap = new Map<string, any>()
+      if (userIds.size > 0) {
+        try {
+          const profilesResponse = await fetch('/api/chat/profiles', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              userIds: Array.from(userIds)
+            }),
+          })
 
-      if (profilesError) {
-        console.warn('Failed to fetch profiles:', profilesError)
+          if (profilesResponse.ok) {
+            const { profiles: profilesData } = await profilesResponse.json()
+            if (profilesData) {
+              profilesMap = new Map(profilesData.map((p: any) => [p.user_id, p]))
+            }
+          } else {
+            console.warn('Failed to fetch profiles via API:', await profilesResponse.text())
+          }
+        } catch (err) {
+          console.warn('Failed to fetch profiles:', err)
+        }
       }
-
-      const profilesMap = new Map(
-        (profilesData || []).map((p: any) => [p.user_id, p])
-      )
 
       // Fetch unread counts
       const unreadResponse = await fetch('/api/chat/unread')
