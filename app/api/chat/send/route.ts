@@ -1,4 +1,4 @@
-import { createClient } from '@/lib/supabase/server'
+import { createClient, createAdminClient } from '@/lib/supabase/server'
 import { NextRequest, NextResponse } from 'next/server'
 
 export async function POST(request: NextRequest) {
@@ -16,7 +16,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Missing required fields' }, { status: 400 })
     }
 
-    // Verify user is a member of the chat
+    // Verify user is a member of the chat (using regular client for RLS check)
     const { data: membership } = await supabase
       .from('chat_members')
       .select('id')
@@ -28,8 +28,9 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Not a member of this chat' }, { status: 403 })
     }
 
-    // Insert message (without profile join)
-    const { data: message, error: messageError } = await supabase
+    // Insert message using admin client (bypasses RLS, but we've verified membership above)
+    const admin = await createAdminClient()
+    const { data: message, error: messageError } = await admin
       .from('messages')
       .insert({
         chat_id,
@@ -49,8 +50,8 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Failed to send message' }, { status: 500 })
     }
 
-    // Update chat's updated_at timestamp
-    await supabase
+    // Update chat's updated_at timestamp (using admin client)
+    await admin
       .from('chats')
       .update({ updated_at: new Date().toISOString() })
       .eq('id', chat_id)

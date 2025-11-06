@@ -327,7 +327,7 @@ export function ChatInterface({ roomId, user }: ChatInterfaceProps) {
       const transformedMessages: Message[] = (messagesData || []).map(msg => {
         const profile = profilesMap.get(msg.user_id)
         const senderName = profile 
-          ? (profile.first_name || '') + (profile.last_name ? ` ${profile.last_name}` : '').trim() || 'User'
+          ? [profile.first_name?.trim(), profile.last_name?.trim()].filter(Boolean).join(' ') || 'User'
           : 'Unknown User'
         
         return {
@@ -345,7 +345,7 @@ export function ChatInterface({ roomId, user }: ChatInterfaceProps) {
       const transformedMembers: ChatMember[] = (membersData || []).map(member => {
         const profile = profilesMap.get(member.user_id)
         const memberName = profile
-          ? (profile.first_name || '') + (profile.last_name ? ` ${profile.last_name}` : '').trim() || 'User'
+          ? [profile.first_name?.trim(), profile.last_name?.trim()].filter(Boolean).join(' ') || 'User'
           : 'Unknown User'
         
         return {
@@ -402,7 +402,7 @@ export function ChatInterface({ roomId, user }: ChatInterfaceProps) {
               const { profiles } = await profilesResponse.json()
               const profile = profiles?.[0]
               if (profile) {
-                senderName = (profile.first_name || '') + (profile.last_name ? ` ${profile.last_name}` : '').trim() || 'User'
+                senderName = [profile.first_name?.trim(), profile.last_name?.trim()].filter(Boolean).join(' ') || 'User'
                 // Update profilesMap in state for use in typing indicators
                 setProfilesMap(prev => {
                   const updated = new Map(prev)
@@ -433,29 +433,59 @@ export function ChatInterface({ roomId, user }: ChatInterfaceProps) {
       .channel(`typing:${roomId}`)
       .on('presence', { event: 'sync' }, () => {
         const state = typingChannel.presenceState()
+        // Debug: log presence state to understand key format
+        if (process.env.NODE_ENV === 'development') {
+          console.log('[Typing] Presence state keys:', Object.keys(state))
+          console.log('[Typing] Current user.id:', user.id)
+          console.log('[Typing] Presence state:', JSON.stringify(state, null, 2))
+        }
         // Filter to only show typing indicators for other users, not yourself
-        const typingUsers = Object.keys(state).filter(userId => {
+        const typingUsers = Object.keys(state).filter(key => {
           // Defensive check: never include current user
-          if (userId === user.id) return false
-          const presence = state[userId]
+          // Check both the key itself and the user_id in presence data
+          const presence = state[key]
+          const presenceUserId = presence?.[0]?.user_id || key
+          if (presenceUserId === user.id || key === user.id) return false
           return presence && presence[0] && presence[0].typing === true
         })
-        // Additional defensive filter before setting state
-        setTypingUsers(typingUsers.filter(id => id !== user.id))
+        // Additional defensive filter before setting state - filter by both key and user_id
+        const filtered = typingUsers.filter(id => {
+          const presence = state[id]
+          const presenceUserId = presence?.[0]?.user_id || id
+          return id !== user.id && presenceUserId !== user.id
+        })
+        if (process.env.NODE_ENV === 'development') {
+          console.log('[Typing] Filtered typing users:', filtered)
+        }
+        setTypingUsers(filtered)
       })
       .on('presence', { event: 'join' }, ({ key, newPresences }) => {
         // Handle when someone joins - defensive check to never add current user
-        if (key !== user.id && newPresences[0]?.typing) {
+        const presenceUserId = newPresences[0]?.user_id || key
+        if (key !== user.id && presenceUserId !== user.id && newPresences[0]?.typing) {
           setTypingUsers(prev => {
-            const updated = [...prev.filter(id => id !== key && id !== user.id), key]
-            // Final defensive filter
-            return updated.filter(id => id !== user.id)
+            const updated = [...prev.filter(id => {
+              // Filter out both by key and by checking presence state
+              const presence = typingChannel.presenceState()[id]
+              const idUserId = presence?.[0]?.user_id || id
+              return id !== key && id !== user.id && idUserId !== user.id
+            }), key]
+            // Final defensive filter - check both key and user_id
+            return updated.filter(id => {
+              const presence = typingChannel.presenceState()[id]
+              const idUserId = presence?.[0]?.user_id || id
+              return id !== user.id && idUserId !== user.id
+            })
           })
         }
       })
       .on('presence', { event: 'leave' }, ({ key }) => {
-        // Handle when someone leaves
-        setTypingUsers(prev => prev.filter(id => id !== key && id !== user.id))
+        // Handle when someone leaves - filter by both key and user_id
+        setTypingUsers(prev => prev.filter(id => {
+          const presence = typingChannel.presenceState()[id]
+          const idUserId = presence?.[0]?.user_id || id
+          return id !== key && id !== user.id && idUserId !== user.id
+        }))
       })
       .subscribe(async (status) => {
         if (status === 'SUBSCRIBED') {
@@ -745,7 +775,7 @@ export function ChatInterface({ roomId, user }: ChatInterfaceProps) {
               const typingNames = otherTypingUsers.map(userId => {
                 const profile = profilesMap.get(userId)
                 if (profile) {
-                  return (profile.first_name || '').trim() || 'User'
+                  return profile.first_name?.trim() || 'User'
                 }
                 return 'Someone'
               })

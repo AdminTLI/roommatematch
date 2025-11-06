@@ -150,7 +150,7 @@ export function ChatList({ user }: ChatListProps) {
         const otherParticipant = room.chat_members?.find((p: any) => p.user_id !== user.id)
         const otherProfile = otherParticipant ? profilesMap.get(otherParticipant.user_id) : null
         const participantName = otherProfile 
-          ? ((otherProfile.first_name || '') + (otherProfile.last_name ? ` ${otherProfile.last_name}` : '')).trim() || 'User'
+          ? [otherProfile.first_name?.trim(), otherProfile.last_name?.trim()].filter(Boolean).join(' ') || 'User'
           : 'User'
         
         // Get last message
@@ -171,7 +171,7 @@ export function ChatList({ user }: ChatListProps) {
           participants: room.chat_members?.map((p: any) => {
             const profile = profilesMap.get(p.user_id)
             const fullName = profile 
-              ? ((profile.first_name || '') + (profile.last_name ? ` ${profile.last_name}` : '')).trim() || 'User'
+              ? [profile.first_name?.trim(), profile.last_name?.trim()].filter(Boolean).join(' ') || 'User'
               : 'User'
             return {
               id: p.user_id,
