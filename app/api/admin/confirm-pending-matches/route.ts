@@ -125,10 +125,65 @@ export async function POST(request: NextRequest) {
           continue
         }
 
-        // Skip if already confirmed
+        // Check if already confirmed
         const alreadyConfirmed = suggestions.some(s => s.status === 'confirmed')
         if (alreadyConfirmed) {
-          console.log(`[Admin] Skipping pair ${pairKey} - already confirmed`)
+          console.log(`[Admin] Pair ${pairKey} already confirmed - checking if chat exists`)
+          
+          // Even if already confirmed, ensure chat exists
+          let chatId: string | undefined
+          try {
+            const { data: existingChatsA } = await admin
+              .from('chat_members')
+              .select('chat_id')
+              .eq('user_id', userA)
+
+            if (existingChatsA && existingChatsA.length > 0) {
+              const chatIds = existingChatsA.map((r: any) => r.chat_id)
+              const { data: common } = await admin
+                .from('chat_members')
+                .select('chat_id')
+                .in('chat_id', chatIds)
+                .eq('user_id', userB)
+              if (common && common.length > 0) {
+                chatId = common[0].chat_id
+                console.log(`[Admin] Chat ${chatId} already exists for confirmed pair ${pairKey}`)
+              }
+            }
+
+            if (!chatId) {
+              console.log(`[Admin] Creating missing chat for already-confirmed pair ${pairKey}`)
+              const { data: createdChat, error: chatErr } = await admin
+                .from('chats')
+                .insert({ is_group: false, created_by: userA, match_id: null })
+                .select('id')
+                .single()
+
+              if (!chatErr && createdChat) {
+                chatId = createdChat.id
+                await admin.from('chat_members').insert([
+                  { chat_id: chatId, user_id: userA },
+                  { chat_id: chatId, user_id: userB }
+                ])
+                await admin.from('messages').insert({
+                  chat_id: chatId,
+                  user_id: userA,
+                  content: "You're matched! Start your conversation 👋"
+                })
+                await admin
+                  .from('chats')
+                  .update({ updated_at: new Date().toISOString() })
+                  .eq('id', chatId)
+                console.log(`[Admin] Created missing chat ${chatId} for confirmed pair ${pairKey}`)
+                processed++ // Count as processed since we created the chat
+              } else if (chatErr) {
+                console.error(`[Admin] Failed to create chat for confirmed pair ${pairKey}:`, chatErr)
+              }
+            }
+          } catch (chatError) {
+            console.error(`[Admin] Error checking/creating chat for confirmed pair ${pairKey}:`, chatError)
+          }
+          
           skipped++
           continue
         }
