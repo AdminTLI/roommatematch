@@ -938,7 +938,7 @@ export class SupabaseMatchRepo implements MatchRepo {
       return memberIds && memberIds.includes(userAId) && memberIds.includes(userBId)
     })
 
-    return (data || []).map((record: any) => ({
+    return filtered.map((record: any) => ({
       id: record.id,
       runId: record.run_id,
       kind: record.kind,
