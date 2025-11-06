@@ -10,6 +10,7 @@ import { solvePairs, solveGroups } from './optimize'
 import { MatchingEngine, DEFAULT_WEIGHTS } from './scoring'
 import itemBank from '@/data/item-bank.v1.json'
 import matchModeConfig from '@/config/match-mode.json'
+import { safeLogger } from '@/lib/utils/logger'
 
 export interface MatchingResult {
   runId: string
@@ -40,7 +41,7 @@ export async function runMatching({
 }): Promise<MatchingResult> {
   try {
     // 1) Load raw candidates and map to engine shape
-    console.log(`[Matching] Loading candidates with filter:`, cohort)
+    safeLogger.debug(`[Matching] Loading candidates with filter`)
     const rawCandidates = await repo.loadCandidates({ 
       excludeAlreadyMatched: true, 
       ...cohort,
@@ -57,7 +58,7 @@ export async function runMatching({
       }
     }
     
-    console.log(`[Matching] Found ${rawCandidates.length} candidates`)
+    safeLogger.debug(`[Matching] Found ${rawCandidates.length} candidates`)
     
     // Transform to student profiles
     // Include vector in answers so it's accessible via student.raw.vector
@@ -78,7 +79,7 @@ export async function runMatching({
     })
     
     // 2) Apply deal-breaker filtering
-    console.log(`[Matching] Applying deal-breaker filtering`)
+    safeLogger.debug(`[Matching] Applying deal-breaker filtering`)
     const validPairs: { a: number; b: number; score: number }[] = []
     
     for (let i = 0; i < students.length; i++) {
@@ -103,15 +104,14 @@ export async function runMatching({
             score
           })
           } else {
-            console.log(`[Matching] Deal-breaker conflict between ${studentA.id} and ${studentB.id}:`, {
-              conflicts: dealBreakerResult.conflicts,
-              reasons: dealBreakerResult.reasons
+            safeLogger.debug(`[Matching] Deal-breaker conflict detected`, {
+              conflicts: dealBreakerResult.conflicts
             })
           }
       }
     }
     
-    console.log(`[Matching] Found ${validPairs.length} valid pairs after deal-breaker filtering`)
+    safeLogger.debug(`[Matching] Found ${validPairs.length} valid pairs after deal-breaker filtering`)
     
     if (validPairs.length === 0) {
       return { 
@@ -123,7 +123,7 @@ export async function runMatching({
     }
     
     // 3) Solve optimization problem
-    console.log(`[Matching] Running ${mode} optimization`)
+    safeLogger.debug(`[Matching] Running ${mode} optimization`)
     const metas = Object.fromEntries(itemBank.map((item: any) => [item.id, item]))
     let optimizationResult
     
@@ -149,7 +149,7 @@ export async function runMatching({
     const records: MatchRecord[] = []
     
     if (optimizationResult.pairs) {
-      console.log(`[Matching] Processing ${optimizationResult.pairs.length} pairs`)
+      safeLogger.debug(`[Matching] Processing ${optimizationResult.pairs.length} pairs`)
       
       for (const pair of optimizationResult.pairs) {
         const studentA = students.find(s => s.id === pair.aId)!
@@ -191,7 +191,7 @@ export async function runMatching({
         })
       }
     } else if (optimizationResult.groups) {
-      console.log(`[Matching] Processing ${optimizationResult.groups.length} groups`)
+      safeLogger.debug(`[Matching] Processing ${optimizationResult.groups.length} groups`)
       
       for (const group of optimizationResult.groups) {
         records.push({
@@ -207,7 +207,7 @@ export async function runMatching({
     }
     
     // 5) Persist results
-    console.log(`[Matching] Persisting ${records.length} matches`)
+    safeLogger.debug(`[Matching] Persisting ${records.length} matches`)
     
     // Save match run
     await repo.saveMatchRun({
@@ -220,7 +220,7 @@ export async function runMatching({
     // Save match records
     await repo.saveMatches(records)
     
-    console.log(`[Matching] Successfully created ${records.length} matches`)
+    safeLogger.info(`[Matching] Successfully created ${records.length} matches`)
     
     return { 
       runId, 
@@ -229,7 +229,7 @@ export async function runMatching({
     }
     
   } catch (error) {
-    console.error('[Matching] Error during matching:', error)
+    safeLogger.error('[Matching] Error during matching', error)
     throw new Error(`Matching failed: ${error instanceof Error ? error.message : 'Unknown error'}`)
   }
 }
@@ -251,7 +251,7 @@ function toEngineProfile(student: any) {
   const isZeroVector = (v: number[]) => v.length === 0 || v.every((x) => x === 0)
   if (isZeroVector(vector)) {
     try {
-      console.warn('[Matching] Fallback vector computation from answers for user', student.id)
+      safeLogger.warn('[Matching] Fallback vector computation from answers')
       vector = mapAnswersToVector(student.raw)
     } catch (e) {
       // As a last resort, provide a zero-vector of expected dimension
@@ -301,7 +301,7 @@ export async function runMatchingAsSuggestions({
     const { topN, minFitIndex, expiryHours, maxSuggestionsPerUser } = matchModeConfig
 
     // 1) Load candidates
-    console.log(`[Suggestions] Loading candidates with filter:`, cohort)
+    safeLogger.debug(`[Suggestions] Loading candidates with filter`)
     const rawCandidates = await repo.loadCandidates({ 
       excludeAlreadyMatched: true, 
       ...cohort,
@@ -310,7 +310,7 @@ export async function runMatchingAsSuggestions({
     })
     
     if (rawCandidates.length === 0) {
-      console.log(`[Suggestions] No candidates found in cohort with filter:`, cohort)
+      safeLogger.debug(`[Suggestions] No candidates found in cohort`)
       return { 
         runId, 
         created: 0, 
@@ -319,7 +319,7 @@ export async function runMatchingAsSuggestions({
       }
     }
     
-    console.log(`[Suggestions] Found ${rawCandidates.length} candidates`)
+    safeLogger.debug(`[Suggestions] Found ${rawCandidates.length} candidates`)
     
     // Transform to student profiles
     // Include vector in answers so it's accessible via student.raw.vector
@@ -350,10 +350,9 @@ export async function runMatchingAsSuggestions({
         // Check deal-breakers
         const dealBreakerResult = checkDealBreakers(studentA, studentB)
         
-        console.log(`[DEBUG] Pair check: ${studentA.id} <-> ${studentB.id}`, {
+        safeLogger.debug(`[DEBUG] Pair check`, {
           canMatch: dealBreakerResult.canMatch,
-          conflicts: dealBreakerResult.conflicts,
-          reasons: dealBreakerResult.reasons
+          conflicts: dealBreakerResult.conflicts
         })
         
         if (dealBreakerResult.canMatch) {
@@ -365,28 +364,26 @@ export async function runMatchingAsSuggestions({
           // Debug vector information
           const magnitudeA = profileA.vector ? Math.sqrt(profileA.vector.reduce((sum, v) => sum + v * v, 0)) : 0
           const magnitudeB = profileB.vector ? Math.sqrt(profileB.vector.reduce((sum, v) => sum + v * v, 0)) : 0
-          console.log(`[DEBUG] Vector check: ${studentA.id} <-> ${studentB.id}`, {
+          safeLogger.debug(`[DEBUG] Vector check`, {
             vectorA: {
               length: profileA.vector?.length,
               isArray: Array.isArray(profileA.vector),
               hasValues: profileA.vector?.some(v => v !== 0),
               magnitude: magnitudeA,
-              isZero: magnitudeA === 0,
-              sample: profileA.vector?.slice(0, 5)
+              isZero: magnitudeA === 0
             },
             vectorB: {
               length: profileB.vector?.length,
               isArray: Array.isArray(profileB.vector),
               hasValues: profileB.vector?.some(v => v !== 0),
               magnitude: magnitudeB,
-              isZero: magnitudeB === 0,
-              sample: profileB.vector?.slice(0, 5)
+              isZero: magnitudeB === 0
             }
           })
           
           // Warn if vectors are zero
           if (magnitudeA === 0 || magnitudeB === 0) {
-            console.warn(`[WARN] Zero vector detected for pair ${studentA.id} <-> ${studentB.id}`, {
+            safeLogger.warn(`[WARN] Zero vector detected for pair`, {
               vectorA_zero: magnitudeA === 0,
               vectorB_zero: magnitudeB === 0
             })
@@ -395,18 +392,11 @@ export async function runMatchingAsSuggestions({
           const { score, explanation } = engine.computeCompatibilityScore(profileA, profileB)
           const fitIndex = Math.round(score * 100)
           
-          console.log(`[DEBUG] Fit calculation: ${studentA.id} <-> ${studentB.id}`, {
+          safeLogger.debug(`[DEBUG] Fit calculation`, {
             rawScore: score,
             fitIndex,
             minFitIndex,
-            passesThreshold: fitIndex >= minFitIndex,
-            explanation: {
-              similarity_score: explanation.similarity_score,
-              schedule_overlap: explanation.schedule_overlap,
-              cleanliness_align: explanation.cleanliness_align,
-              guests_noise_align: explanation.guests_noise_align,
-              academic_bonus: explanation.academic_bonus
-            }
+            passesThreshold: fitIndex >= minFitIndex
           })
           // Observability: count missing dimensions
           const missingDims = [
@@ -419,7 +409,7 @@ export async function runMatchingAsSuggestions({
             profileA.sleepEnd === undefined || profileB.sleepEnd === undefined,
           ].filter(Boolean).length
           if (missingDims > 0) {
-            console.log(`[DEBUG] Missing dimensions for pair ${studentA.id} <-> ${studentB.id}:`, { missingDims })
+            safeLogger.debug(`[DEBUG] Missing dimensions for pair`, { missingDims })
           }
           
           if (fitIndex >= minFitIndex) {
@@ -456,7 +446,7 @@ export async function runMatchingAsSuggestions({
       const message = students.length === 1 
         ? `Only ${students.length} eligible candidate found. Need at least 2 candidates to create pair matches.`
         : 'No valid suggestions found above minimum fit threshold'
-      console.log(`[Suggestions] ${message}. Students: ${students.length}, Pair fits: ${pairFits.length}`)
+      safeLogger.debug(`[Suggestions] ${message}. Students: ${students.length}, Pair fits: ${pairFits.length}`)
       return { 
         runId, 
         created: 0, 
@@ -465,7 +455,7 @@ export async function runMatchingAsSuggestions({
       }
     }
     
-    console.log(`[Suggestions] Found ${pairFits.length} valid pairs above threshold`)
+    safeLogger.debug(`[Suggestions] Found ${pairFits.length} valid pairs above threshold`)
     
     // 3) Pick topN per user (symmetric pairs)
     const byUser: Record<string, { key: string; otherId: string; fit: number; fitIndex: number; ps: any; status: 'pending' | 'accepted'; acceptedBy: string[] }[]> = {}
@@ -493,7 +483,7 @@ export async function runMatchingAsSuggestions({
       for (const cand of byUser[uid]) {
         // Prevent self-matching
         if (uid === cand.otherId) {
-          console.warn(`[WARN] Skipping self-match for user ${uid}`)
+          safeLogger.warn(`[WARN] Skipping self-match`)
           continue
         }
 
@@ -534,7 +524,7 @@ export async function runMatchingAsSuggestions({
     }
     
     // 5) Persist suggestions
-    console.log(`[Suggestions] Creating ${suggestions.length} suggestions`)
+    safeLogger.debug(`[Suggestions] Creating ${suggestions.length} suggestions`)
     await repo.createSuggestions(suggestions)
     
     return { 
@@ -544,7 +534,7 @@ export async function runMatchingAsSuggestions({
     }
     
   } catch (error) {
-    console.error('[Suggestions] Error during suggestion generation:', error)
+    safeLogger.error('[Suggestions] Error during suggestion generation', error)
     throw new Error(`Suggestion generation failed: ${error instanceof Error ? error.message : 'Unknown error'}`)
   }
 }

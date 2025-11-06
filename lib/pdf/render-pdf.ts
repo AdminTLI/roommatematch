@@ -1,16 +1,16 @@
 import puppeteer from 'puppeteer';
 
 export async function renderPdf(html: string): Promise<Buffer> {
+  // Use sandboxed Puppeteer for production security
+  // Note: If running in Docker/containers, you may need to configure the container
+  // to allow sandboxed processes (e.g., use --cap-add=SYS_ADMIN or run as non-root)
   const browser = await puppeteer.launch({
     headless: true,
     args: [
       '--font-render-hinting=none',
-      '--no-sandbox',
-      '--disable-setuid-sandbox',
       '--disable-dev-shm-usage',
       '--disable-accelerated-2d-canvas',
       '--no-first-run',
-      '--no-zygote',
       '--disable-gpu'
     ]
   });

@@ -369,7 +369,12 @@ export function ChatInterface({ roomId, user }: ChatInterfaceProps) {
 
       // Transform participants data - handle missing profiles gracefully
       // Filter out current user so only other participants are shown
-      const transformedMembers: ChatMember[] = (membersData || [])
+      // Also deduplicate by user_id in case of duplicate entries
+      const uniqueMembers = Array.from(
+        new Map((membersData || []).map(m => [m.user_id, m])).values()
+      )
+      
+      const transformedMembers: ChatMember[] = uniqueMembers
         .filter(member => member.user_id !== user.id) // Exclude current user
         .map(member => {
           const profile = profilesMap.get(member.user_id)
@@ -414,11 +419,27 @@ export function ChatInterface({ roomId, user }: ChatInterfaceProps) {
         table: 'messages',
         filter: `chat_id=eq.${roomId}`
       }, async (payload) => {
-        console.log('[Realtime] New message received:', payload)
-        const newMessage = payload.new as any
-        
-        // Only add if it's not from the current user (to avoid duplicates from optimistic updates)
-        if (newMessage.user_id !== user.id) {
+        try {
+          console.log('[Realtime] New message received:', {
+            messageId: payload.new?.id,
+            userId: payload.new?.user_id,
+            content: payload.new?.content?.substring(0, 50),
+            currentUserId: user.id
+          })
+          
+          const newMessage = payload.new as any
+          
+          if (!newMessage || !newMessage.id) {
+            console.error('[Realtime] Invalid message payload:', payload)
+            return
+          }
+          
+          // Only add if it's not from the current user (to avoid duplicates from optimistic updates)
+          if (newMessage.user_id === user.id) {
+            console.log('[Realtime] Skipping own message:', newMessage.id)
+            return
+          }
+          
           // Fetch profile for the sender using API route
           let senderName = 'Unknown User'
           try {
@@ -445,9 +466,12 @@ export function ChatInterface({ roomId, user }: ChatInterfaceProps) {
                   return updated
                 })
               }
+            } else {
+              console.warn('[Realtime] Failed to fetch profile, status:', profilesResponse.status)
             }
           } catch (err) {
-            console.warn('Failed to fetch profile for new message:', err)
+            console.error('[Realtime] Error fetching profile for new message:', err)
+            // Continue with 'Unknown User' - don't block message display
           }
           
           // Check if this is a system greeting message
@@ -457,8 +481,15 @@ export function ChatInterface({ roomId, user }: ChatInterfaceProps) {
             // Double-check for duplicates
             const exists = prev.some(msg => msg.id === newMessage.id)
             if (exists) {
+              console.log('[Realtime] Message already exists, skipping:', newMessage.id)
               return prev
             }
+            
+            console.log('[Realtime] Adding new message to state:', {
+              id: newMessage.id,
+              sender: senderName,
+              isSystem: isSystemGreeting
+            })
             
             return [...prev, {
               id: newMessage.id,
@@ -476,6 +507,9 @@ export function ChatInterface({ roomId, user }: ChatInterfaceProps) {
           setTimeout(() => {
             messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
           }, 100)
+        } catch (error) {
+          console.error('[Realtime] Error processing new message:', error)
+          console.error('[Realtime] Payload:', payload)
         }
       })
       .subscribe((status) => {

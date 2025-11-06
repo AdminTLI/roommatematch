@@ -6,8 +6,15 @@ import { runMatching, runMatchingAsSuggestions } from '@/lib/matching/orchestrat
 import { getMatchRepo } from '@/lib/matching/repo.factory'
 import type { CohortFilter } from '@/lib/matching/repo'
 import matchModeConfig from '@/config/match-mode.json'
+import { requireAdminResponse } from '@/lib/auth/admin'
 
 export async function POST(request: NextRequest) {
+  // Require admin authentication
+  const authError = await requireAdminResponse(request, true)
+  if (authError) {
+    return authError
+  }
+
   try {
     const body = await request.json()
     const { 

@@ -1,5 +1,6 @@
 import { createClient, createAdminClient } from '@/lib/supabase/server'
 import { NextRequest, NextResponse } from 'next/server'
+import { safeLogger } from '@/lib/utils/logger'
 
 export async function POST(request: NextRequest) {
   try {
@@ -41,13 +42,41 @@ export async function POST(request: NextRequest) {
         id,
         content,
         created_at,
-        user_id
+        user_id,
+        profiles!inner(
+          user_id,
+          first_name,
+          last_name
+        )
       `)
       .single()
 
     if (messageError) {
-      console.error('Failed to create message:', messageError)
-      return NextResponse.json({ error: 'Failed to send message' }, { status: 500 })
+      // If profile join fails, try to fetch the message without profile join
+      // This can happen if profile doesn't exist yet
+      // First, insert the message without the join to get its ID
+      const { data: insertedMessage, error: insertError } = await admin
+        .from('messages')
+        .insert({
+          chat_id,
+          user_id: user.id,
+          content: content.trim()
+        })
+        .select('id, content, created_at, user_id')
+        .single()
+      
+      if (insertError || !insertedMessage) {
+        safeLogger.error('Failed to create message after profile join failure', insertError)
+        return NextResponse.json({ error: 'Failed to send message' }, { status: 500 })
+      }
+      
+      // Update chat's updated_at timestamp
+      await admin
+        .from('chats')
+        .update({ updated_at: new Date().toISOString() })
+        .eq('id', chat_id)
+      
+      return NextResponse.json({ message: insertedMessage }, { status: 201 })
     }
 
     // Update chat's updated_at timestamp (using admin client)
@@ -59,7 +88,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ message }, { status: 201 })
 
   } catch (error) {
-    console.error('Chat send error:', error)
+    safeLogger.error('Chat send error', error)
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
 }

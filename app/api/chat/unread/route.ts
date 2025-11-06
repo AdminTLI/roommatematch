@@ -1,5 +1,6 @@
 import { createClient } from '@/lib/supabase/server'
 import { NextRequest, NextResponse } from 'next/server'
+import { safeLogger } from '@/lib/utils/logger'
 
 export async function GET(request: NextRequest) {
   try {
@@ -24,32 +25,54 @@ export async function GET(request: NextRequest) {
       .eq('user_id', user.id)
 
     if (membershipsError) {
-      console.error('Failed to fetch chat memberships:', membershipsError)
+      safeLogger.error('Failed to fetch chat memberships', membershipsError)
       return NextResponse.json({ error: 'Failed to fetch chat memberships' }, { status: 500 })
     }
 
-    // Calculate unread counts for each chat
-    const unreadCounts = await Promise.all(
-      memberships.map(async (membership) => {
-        const lastReadAt = membership.last_read_at || new Date(0).toISOString()
-        
-        const { count, error: countError } = await supabase
-          .from('messages')
-          .select('*', { count: 'exact', head: true })
-          .eq('chat_id', membership.chat_id)
-          .gt('created_at', lastReadAt)
+    if (!memberships || memberships.length === 0) {
+      return NextResponse.json({
+        total_unread: 0,
+        chat_counts: []
+      }, { status: 200 })
+    }
 
-        if (countError) {
-          console.error('Failed to count unread messages:', countError)
-          return { chat_id: membership.chat_id, unread_count: 0 }
-        }
+    // Optimize: Use a single aggregated query instead of O(n) queries
+    // Get all chat IDs and their last_read_at times
+    const chatIds = memberships.map(m => m.chat_id)
+    const lastReadMap = new Map(memberships.map(m => [m.chat_id, m.last_read_at || new Date(0).toISOString()]))
 
-        return {
-          chat_id: membership.chat_id,
-          unread_count: count || 0
-        }
-      })
-    )
+    // Fetch all unread messages for all chats in one query
+    const { data: unreadMessages, error: messagesError } = await supabase
+      .from('messages')
+      .select('chat_id, created_at')
+      .in('chat_id', chatIds)
+
+    if (messagesError) {
+      safeLogger.error('Failed to fetch unread messages', messagesError)
+      return NextResponse.json({ error: 'Failed to fetch unread messages' }, { status: 500 })
+    }
+
+    // Aggregate unread counts per chat
+    const unreadCountsMap = new Map<string, number>()
+    
+    // Initialize all chats with 0 unread
+    chatIds.forEach(chatId => {
+      unreadCountsMap.set(chatId, 0)
+    })
+
+    // Count unread messages (messages created after last_read_at)
+    unreadMessages?.forEach(msg => {
+      const lastReadAt = lastReadMap.get(msg.chat_id) || new Date(0).toISOString()
+      if (new Date(msg.created_at) > new Date(lastReadAt)) {
+        unreadCountsMap.set(msg.chat_id, (unreadCountsMap.get(msg.chat_id) || 0) + 1)
+      }
+    })
+
+    // Convert to array format
+    const unreadCounts = Array.from(unreadCountsMap.entries()).map(([chat_id, unread_count]) => ({
+      chat_id,
+      unread_count
+    }))
 
     // Calculate total unread count
     const totalUnread = unreadCounts.reduce((sum, chat) => sum + chat.unread_count, 0)
@@ -60,7 +83,7 @@ export async function GET(request: NextRequest) {
     }, { status: 200 })
 
   } catch (error) {
-    console.error('Unread count error:', error)
+    safeLogger.error('Unread count error', error)
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
 }

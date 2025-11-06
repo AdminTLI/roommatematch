@@ -79,6 +79,8 @@ export function ChatList({ user }: ChatListProps) {
       const membershipMap = new Map(memberships.map(m => [m.chat_id, m]))
 
       // Fetch chats with match information (excluding profiles join)
+      // Note: Supabase doesn't support ordering nested relations directly,
+      // so we fetch messages separately and order them
       const { data: chatRooms, error: chatsError } = await supabase
         .from('chats')
         .select(`
@@ -86,32 +88,35 @@ export function ChatList({ user }: ChatListProps) {
           chat_members!inner(
             user_id,
             last_read_at
-          ),
-          messages(
-            content,
-            created_at,
-            user_id
           )
         `)
         .in('id', chatIds)
         .order('created_at', { ascending: false })
       
-      // Order messages by created_at descending for each chat room
-      if (chatRooms) {
-        chatRooms.forEach((room: any) => {
-          if (room.messages && room.messages.length > 0) {
-            room.messages.sort((a: any, b: any) => 
-              new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
-            )
+      if (chatsError) throw chatsError
+
+      // Fetch latest message for each chat separately to ensure proper ordering
+      const chatRoomsWithMessages = await Promise.all(
+        (chatRooms || []).map(async (room: any) => {
+          const { data: latestMessages } = await supabase
+            .from('messages')
+            .select('content, created_at, user_id')
+            .eq('chat_id', room.id)
+            .order('created_at', { ascending: false })
+            .limit(1)
+          
+          return {
+            ...room,
+            messages: latestMessages || []
           }
         })
-      }
-
-      if (chatsError) throw chatsError
+      )
+      
+      const finalChatRooms = chatRoomsWithMessages
 
       // Get all unique user IDs from chat members
       const userIds = new Set<string>()
-      chatRooms?.forEach((room: any) => {
+      finalChatRooms?.forEach((room: any) => {
         room.chat_members?.forEach((member: any) => {
           userIds.add(member.user_id)
         })
@@ -150,63 +155,74 @@ export function ChatList({ user }: ChatListProps) {
       const unreadMap = new Map(unreadData.chat_counts.map((c: any) => [c.chat_id, c.unread_count]))
 
       // Transform database results to ChatRoom format
-      const transformedChats: ChatRoom[] = (chatRooms || []).map((room: any) => {
-        // Check if recently matched: use first_message_at field if available, otherwise check if only system greeting exists
-        // A chat is "recently matched" if first_message_at is null (no real user messages yet)
-        // or if the only message is the system greeting "You're matched! Start your conversation 👋"
-        const hasUserMessages = room.messages && room.messages.some((msg: any) => 
-          msg.content !== "You're matched! Start your conversation 👋"
-        )
-        const isRecentlyMatched = !hasUserMessages && (!room.first_message_at || room.messages?.length === 1)
-        // Compatibility score not available without matches table - set to undefined
-        const compatibilityScore = undefined
-        
-        // Get the other participant for individual chats
-        const otherParticipant = room.chat_members?.find((p: any) => p.user_id !== user.id)
-        const otherProfile = otherParticipant ? profilesMap.get(otherParticipant.user_id) : null
-        const participantName = otherProfile 
-          ? [otherProfile.first_name?.trim(), otherProfile.last_name?.trim()].filter(Boolean).join(' ') || 'User'
-          : 'User'
-        
-        // Get last message
-        const lastMessage = room.messages?.[0]
-        const userMembership = room.chat_members?.find((p: any) => p.user_id === user.id)
-        const lastReadAt = userMembership?.last_read_at || new Date(0).toISOString()
-        
-        return {
-          id: room.id,
-          name: room.is_group ? `Group Chat` : participantName,
-          type: room.is_group ? 'group' : 'individual',
-          lastMessage: lastMessage ? {
-            content: lastMessage.content,
-            sender: lastMessage.user_id === user.id ? 'You' : participantName,
-            timestamp: new Date(lastMessage.created_at).toLocaleString(),
-            isRead: new Date(lastMessage.created_at) <= new Date(lastReadAt)
-          } : undefined,
-          participants: room.chat_members?.map((p: any) => {
-            const profile = profilesMap.get(p.user_id)
-            const fullName = profile 
-              ? [profile.first_name?.trim(), profile.last_name?.trim()].filter(Boolean).join(' ') || 'User'
-              : 'User'
-            return {
-              id: p.user_id,
-              name: fullName,
-              avatar: undefined, // Avatars not implemented - Avatar component will show initials via AvatarFallback
-              isOnline: false
-            }
-          }) || [],
-          unreadCount: unreadMap.get(room.id) || 0,
-          isActive: false,
-          matchId: undefined,
-          compatibilityScore,
-          firstMessageAt: undefined,
-          isRecentlyMatched
-        }
-      })
+      // Note: We need to check all messages for each room to determine if it's recently matched
+      const transformedChats: ChatRoom[] = await Promise.all(
+        (finalChatRooms || []).map(async (room: any) => {
+          // Check if recently matched: A chat is "recently matched" if all messages are system greetings
+          // Fetch all messages to check if any are user messages
+          const { data: allMessages } = await supabase
+            .from('messages')
+            .select('id, content, created_at')
+            .eq('chat_id', room.id)
+          
+          const hasUserMessages = allMessages?.some((msg: any) => 
+            msg.content !== "You're matched! Start your conversation 👋"
+          ) || false
+          
+          // A chat is recently matched if it has no user messages (only system greetings or empty)
+          const isRecentlyMatched = !hasUserMessages
+          
+          // Compatibility score not available without matches table - set to undefined
+          const compatibilityScore = undefined
+          
+          // Get the other participant for individual chats
+          const otherParticipant = room.chat_members?.find((p: any) => p.user_id !== user.id)
+          const otherProfile = otherParticipant ? profilesMap.get(otherParticipant.user_id) : null
+          const participantName = otherProfile 
+            ? [otherProfile.first_name?.trim(), otherProfile.last_name?.trim()].filter(Boolean).join(' ') || 'User'
+            : 'User'
+          
+          // Get last message
+          const lastMessage = room.messages?.[0]
+          const userMembership = room.chat_members?.find((p: any) => p.user_id === user.id)
+          const lastReadAt = userMembership?.last_read_at || new Date(0).toISOString()
+          
+          return {
+            id: room.id,
+            name: room.is_group ? `Group Chat` : participantName,
+            type: room.is_group ? 'group' : 'individual',
+            lastMessage: lastMessage ? {
+              content: lastMessage.content,
+              sender: lastMessage.user_id === user.id ? 'You' : participantName,
+              timestamp: new Date(lastMessage.created_at).toLocaleString(),
+              isRead: new Date(lastMessage.created_at) <= new Date(lastReadAt)
+            } : undefined,
+            participants: room.chat_members?.map((p: any) => {
+              const profile = profilesMap.get(p.user_id)
+              const fullName = profile 
+                ? [profile.first_name?.trim(), profile.last_name?.trim()].filter(Boolean).join(' ') || 'User'
+                : 'User'
+              return {
+                id: p.user_id,
+                name: fullName,
+                avatar: undefined, // Avatars not implemented - Avatar component will show initials via AvatarFallback
+                isOnline: false
+              }
+            }) || [],
+            unreadCount: unreadMap.get(room.id) || 0,
+            isActive: false,
+            matchId: undefined,
+            compatibilityScore,
+            firstMessageAt: undefined,
+            isRecentlyMatched
+          }
+        })
+      )
 
       setChats(transformedChats)
       setIsLoading(false)
     } catch (error) {
+      // Use console.error here as this is client-side code
       console.error('Failed to load chats:', error)
       setChats([])
       setIsLoading(false)

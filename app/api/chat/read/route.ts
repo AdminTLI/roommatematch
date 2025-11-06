@@ -29,12 +29,17 @@ export async function POST(request: NextRequest) {
     }
 
     // Get all unread messages in this chat (messages created before last_read_at or if last_read_at is null)
-    const { data: membershipWithRead } = await supabase
+    const { data: membershipWithRead, error: membershipReadError } = await supabase
       .from('chat_members')
       .select('last_read_at')
       .eq('chat_id', chat_id)
       .eq('user_id', user.id)
-      .single()
+      .maybeSingle()
+
+    if (membershipReadError) {
+      console.error('Failed to fetch membership read status:', membershipReadError)
+      return NextResponse.json({ error: 'Failed to fetch membership read status' }, { status: 500 })
+    }
 
     const lastReadAt = membershipWithRead?.last_read_at || new Date(0).toISOString()
 

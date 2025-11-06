@@ -1,7 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getMatchRepo } from '@/lib/matching/repo.factory'
+import { requireAdminResponse } from '@/lib/auth/admin'
 
 export async function POST(request: NextRequest) {
+  // Require admin authentication
+  const authError = await requireAdminResponse(request, true)
+  if (authError) {
+    return authError
+  }
+
   try {
     const repo = await getMatchRepo()
     

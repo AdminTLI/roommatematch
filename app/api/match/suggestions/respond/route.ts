@@ -3,6 +3,7 @@ import { createClient, createAdminClient } from '@/lib/supabase/server'
 import { getMatchRepo } from '@/lib/matching/repo.factory'
 import type { MatchRecord } from '@/lib/matching/repo'
 import { createMatchNotification, createGroupMatchNotification } from '@/lib/notifications/create'
+import { safeLogger } from '@/lib/utils/logger'
 
 export async function POST(request: NextRequest) {
   try {
@@ -72,10 +73,8 @@ export async function POST(request: NextRequest) {
     // Fetch all suggestions for this pair (across runs) and merge acceptance
     // IMPORTANT: Include expired suggestions so we can merge acceptances even if one user refreshed
     const pairSugs = await repo.getSuggestionsForPair(user.id, otherId, true)
-    console.log(`[DEBUG] Accept action - Found ${pairSugs.length} suggestions for pair ${user.id} <-> ${otherId}`, {
-      suggestionIds: pairSugs.map(s => s.id),
-      statuses: pairSugs.map(s => s.status),
-      acceptedBy: pairSugs.map(s => s.acceptedBy)
+    safeLogger.debug(`[DEBUG] Accept action - Found ${pairSugs.length} suggestions for pair`, {
+      statuses: pairSugs.map(s => s.status)
     })
     
     let unionAccepted = new Set<string>()
@@ -84,19 +83,18 @@ export async function POST(request: NextRequest) {
     }
     unionAccepted.add(user.id)
 
-    console.log(`[DEBUG] Accept action - Union acceptedBy:`, Array.from(unionAccepted))
-    console.log(`[DEBUG] Accept action - Required members:`, suggestion.memberIds)
+    safeLogger.debug(`[DEBUG] Accept action - Union acceptedBy count: ${unionAccepted.size}`)
     
     const allAccepted = suggestion.memberIds.every(id => unionAccepted.has(id))
-    console.log(`[DEBUG] Accept action - All accepted: ${allAccepted}`)
+    safeLogger.debug(`[DEBUG] Accept action - All accepted: ${allAccepted}`)
     
     if (allAccepted) {
       // Mark all pair suggestions as confirmed with merged acceptedBy
-      console.log(`[DEBUG] Confirming match - Updating ${pairSugs.length} suggestions to confirmed`)
+      safeLogger.debug(`[DEBUG] Confirming match - Updating ${pairSugs.length} suggestions to confirmed`)
       for (const s of pairSugs) {
         const merged = new Set<string>(s.acceptedBy || [])
         unionAccepted.forEach(a => merged.add(a))
-        console.log(`[DEBUG] Updating suggestion ${s.id} from status ${s.status} to confirmed with acceptedBy:`, Array.from(merged))
+        safeLogger.debug(`[DEBUG] Updating suggestion from status ${s.status} to confirmed`)
         await repo.updateSuggestionAcceptedByAndStatus(s.id, Array.from(merged), 'confirmed')
       }
       suggestion.acceptedBy = Array.from(unionAccepted)
@@ -141,7 +139,7 @@ export async function POST(request: NextRequest) {
         
         // Prevent self-matching in chat creation
         if (userA === userB) {
-          console.error(`[ERROR] Cannot create chat: self-match detected for user ${userA}`)
+          safeLogger.error(`[ERROR] Cannot create chat: self-match detected`)
         } else {
           // Check if chat already exists for these two users
           const { data: existingChats } = await admin
@@ -158,7 +156,7 @@ export async function POST(request: NextRequest) {
               .eq('user_id', userB)
             if (common && common.length > 0) {
               chatId = common[0].chat_id
-              console.log(`[DEBUG] Chat already exists for pair ${userA} <-> ${userB}: ${chatId}`)
+              safeLogger.debug(`[DEBUG] Chat already exists for pair`)
             }
           }
           
@@ -171,12 +169,12 @@ export async function POST(request: NextRequest) {
               .single()
             
             if (chatErr) {
-              console.error(`[ERROR] Failed to create chat: ${chatErr.message}`)
+              safeLogger.error(`[ERROR] Failed to create chat`, chatErr)
               throw chatErr
             }
             
             chatId = createdChat.id
-            console.log(`[DEBUG] Created chat ${chatId} for pair ${userA} <-> ${userB}`)
+            safeLogger.debug(`[DEBUG] Created chat for pair`)
             
             // Add members
             const { error: membersErr } = await admin
@@ -187,7 +185,7 @@ export async function POST(request: NextRequest) {
               ])
             
             if (membersErr) {
-              console.error(`[ERROR] Failed to add chat members: ${membersErr.message}`)
+              safeLogger.error(`[ERROR] Failed to add chat members`, membersErr)
               throw membersErr
             }
             
@@ -201,7 +199,7 @@ export async function POST(request: NextRequest) {
               })
             
             if (msgErr) {
-              console.warn(`[WARN] Failed to create system message for chat ${chatId}: ${msgErr.message}`)
+              safeLogger.warn(`[WARN] Failed to create system message for chat`)
               // Don't fail the whole operation if message creation fails
             }
             
@@ -231,20 +229,20 @@ export async function POST(request: NextRequest) {
             )
           }
         } catch (notificationError) {
-          console.error('Failed to create match notifications:', notificationError)
+          safeLogger.error('Failed to create match notifications', notificationError)
         }
       } catch (chatError) {
-        console.error('Failed to create chat on confirmation:', chatError)
+        safeLogger.error('Failed to create chat on confirmation', chatError)
       }
       
       return NextResponse.json({ ok: true, suggestion, match })
     } else {
       // Mark all pair suggestions as accepted for this user (merge acceptedBy)
-      console.log(`[DEBUG] Not all accepted yet - updating ${pairSugs.length} suggestions to accepted`)
+      safeLogger.debug(`[DEBUG] Not all accepted yet - updating ${pairSugs.length} suggestions to accepted`)
       for (const s of pairSugs) {
         const merged = new Set<string>(s.acceptedBy || [])
         merged.add(user.id)
-        console.log(`[DEBUG] Updating suggestion ${s.id} - adding ${user.id} to acceptedBy`)
+        safeLogger.debug(`[DEBUG] Updating suggestion - adding user to acceptedBy`)
         await repo.updateSuggestionAcceptedByAndStatus(s.id, Array.from(merged), 'accepted')
       }
       suggestion.acceptedBy = Array.from(unionAccepted)
@@ -253,7 +251,7 @@ export async function POST(request: NextRequest) {
 
       // Re-check if match should be confirmed after updates
       // This catches cases where the update itself made both users accept
-      console.log(`[DEBUG] Re-checking pair after updates to see if match should be confirmed`)
+      safeLogger.debug(`[DEBUG] Re-checking pair after updates to see if match should be confirmed`)
       const updatedPairSugs = await repo.getSuggestionsForPair(user.id, otherId, true)
       let recheckUnionAccepted = new Set<string>()
       for (const s of updatedPairSugs) {
@@ -261,14 +259,11 @@ export async function POST(request: NextRequest) {
       }
       
       const recheckAllAccepted = suggestion.memberIds.every(id => recheckUnionAccepted.has(id))
-      console.log(`[DEBUG] Re-check result - all accepted: ${recheckAllAccepted}`, {
-        unionAccepted: Array.from(recheckUnionAccepted),
-        requiredMembers: suggestion.memberIds
-      })
+      safeLogger.debug(`[DEBUG] Re-check result - all accepted: ${recheckAllAccepted}`)
       
       if (recheckAllAccepted) {
         // Both users have now accepted - confirm the match
-        console.log(`[DEBUG] Re-check confirmed match - both users have accepted after update`)
+        safeLogger.debug(`[DEBUG] Re-check confirmed match - both users have accepted after update`)
         
         // Update all pair suggestions to confirmed
         for (const s of updatedPairSugs) {
@@ -355,11 +350,11 @@ export async function POST(request: NextRequest) {
                 chatId
               )
             } catch (notifError) {
-              console.error('Failed to create confirmation notifications:', notifError)
+              safeLogger.error('Failed to create confirmation notifications', notifError)
             }
           }
         } catch (chatError) {
-          console.error('Failed to create chat on re-check confirmation:', chatError)
+          safeLogger.error('Failed to create chat on re-check confirmation', chatError)
         }
         
         return NextResponse.json({ ok: true, suggestion: { ...suggestion, status: 'confirmed' }, match })
@@ -379,7 +374,7 @@ export async function POST(request: NextRequest) {
           }
         }
       } catch (notificationError) {
-        console.error('Failed to create acceptance notification:', notificationError)
+        safeLogger.error('Failed to create acceptance notification', notificationError)
         // Don't fail the entire request if notifications fail
       }
       
@@ -387,7 +382,7 @@ export async function POST(request: NextRequest) {
     }
     
   } catch (error) {
-    console.error('Error responding to suggestion:', error)
+    safeLogger.error('Error responding to suggestion', error)
     return NextResponse.json(
       { error: 'Failed to respond to suggestion' },
       { status: 500 }
