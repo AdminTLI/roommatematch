@@ -22,10 +22,11 @@ export function StudentMatchesInterface({ user }: StudentMatchesInterfaceProps) 
   const [isResponding, setIsResponding] = useState(false)
 
   // Fetch suggestions
-  const fetchSuggestions = async () => {
+  const fetchSuggestions = async (includeExpired = false) => {
     try {
       setIsLoading(true)
-      const response = await fetch('/api/match/suggestions/my')
+      const url = includeExpired ? '/api/match/suggestions/my?includeExpired=true' : '/api/match/suggestions/my'
+      const response = await fetch(url)
       if (response.ok) {
         const data = await response.json()
         setSuggestions(data.suggestions || [])
@@ -91,6 +92,13 @@ export function StudentMatchesInterface({ user }: StudentMatchesInterfaceProps) 
   useEffect(() => {
     fetchSuggestions()
   }, [])
+
+  // Refetch with includeExpired when switching to history tab
+  useEffect(() => {
+    if (activeTab === 'history') {
+      fetchSuggestions(true)
+    }
+  }, [activeTab])
 
   // Filter suggestions by tab
   const getFilteredSuggestions = () => {

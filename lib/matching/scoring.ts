@@ -137,11 +137,18 @@ export class MatchingEngine {
    * Compute schedule overlap score based on sleep patterns
    */
   computeScheduleOverlap(profileA: UserProfile, profileB: UserProfile): number {
+    // If missing, return neutral overlap
+    if (
+      profileA.sleepStart === undefined || profileA.sleepEnd === undefined ||
+      profileB.sleepStart === undefined || profileB.sleepEnd === undefined
+    ) {
+      return 0.5
+    }
     // Ensure sleep times are numbers
-    const sleepStartA = typeof profileA.sleepStart === 'string' ? parseFloat(profileA.sleepStart) : Number(profileA.sleepStart) || 22
-    const sleepEndA = typeof profileA.sleepEnd === 'string' ? parseFloat(profileA.sleepEnd) : Number(profileA.sleepEnd) || 8
-    const sleepStartB = typeof profileB.sleepStart === 'string' ? parseFloat(profileB.sleepStart) : Number(profileB.sleepStart) || 22
-    const sleepEndB = typeof profileB.sleepEnd === 'string' ? parseFloat(profileB.sleepEnd) : Number(profileB.sleepEnd) || 8
+    const sleepStartA = typeof profileA.sleepStart === 'string' ? parseFloat(profileA.sleepStart) : Number(profileA.sleepStart)
+    const sleepEndA = typeof profileA.sleepEnd === 'string' ? parseFloat(profileA.sleepEnd) : Number(profileA.sleepEnd)
+    const sleepStartB = typeof profileB.sleepStart === 'string' ? parseFloat(profileB.sleepStart) : Number(profileB.sleepStart)
+    const sleepEndB = typeof profileB.sleepEnd === 'string' ? parseFloat(profileB.sleepEnd) : Number(profileB.sleepEnd)
     
     const sleepA = this.normalizeSleepTime(sleepStartA, sleepEndA)
     const sleepB = this.normalizeSleepTime(sleepStartB, sleepEndB)
@@ -168,9 +175,16 @@ export class MatchingEngine {
    * Compute cleanliness alignment score
    */
   computeCleanlinessAlignment(profileA: UserProfile, profileB: UserProfile): number {
-    const roomDiff = Math.abs(profileA.cleanlinessRoom - profileB.cleanlinessRoom)
-    const kitchenDiff = Math.abs(profileA.cleanlinessKitchen - profileB.cleanlinessKitchen)
-    
+    if (
+      profileA.cleanlinessRoom === undefined ||
+      profileB.cleanlinessRoom === undefined ||
+      profileA.cleanlinessKitchen === undefined ||
+      profileB.cleanlinessKitchen === undefined
+    ) {
+      return 0.5
+    }
+    const roomDiff = Math.abs((profileA.cleanlinessRoom as number) - (profileB.cleanlinessRoom as number))
+    const kitchenDiff = Math.abs((profileA.cleanlinessKitchen as number) - (profileB.cleanlinessKitchen as number))
     const avgDiff = (roomDiff + kitchenDiff) / 2
     return Math.max(0, 1 - (avgDiff / 10)) // Normalize to 0-1 range
   }
@@ -179,10 +193,19 @@ export class MatchingEngine {
    * Compute social alignment score (guests/noise tolerance)
    */
   computeSocialAlignment(profileA: UserProfile, profileB: UserProfile): number {
-    const guestsDiff = Math.abs(profileA.guestsFrequency - profileB.guestsFrequency)
-    const noiseDiff = Math.abs(profileA.noiseTolerance - profileB.noiseTolerance)
-    const partiesDiff = Math.abs(profileA.partiesFrequency - profileB.partiesFrequency)
-    
+    if (
+      profileA.guestsFrequency === undefined ||
+      profileB.guestsFrequency === undefined ||
+      profileA.noiseTolerance === undefined ||
+      profileB.noiseTolerance === undefined ||
+      profileA.partiesFrequency === undefined ||
+      profileB.partiesFrequency === undefined
+    ) {
+      return 0.5
+    }
+    const guestsDiff = Math.abs((profileA.guestsFrequency as number) - (profileB.guestsFrequency as number))
+    const noiseDiff = Math.abs((profileA.noiseTolerance as number) - (profileB.noiseTolerance as number))
+    const partiesDiff = Math.abs((profileA.partiesFrequency as number) - (profileB.partiesFrequency as number))
     const avgDiff = (guestsDiff + noiseDiff + partiesDiff) / 3
     return Math.max(0, 1 - (avgDiff / 10)) // Normalize to 0-1 range
   }
@@ -243,6 +266,26 @@ export class MatchingEngine {
     }
 
     return { bonus, academicBonus }
+  }
+
+  /**
+   * Compute a normalized academic score (0..1) for section bar display
+   */
+  computeAcademicScore(profileA: UserProfile, profileB: UserProfile): number {
+    const sameUniversity = !!(profileA.universityId && profileB.universityId && profileA.universityId === profileB.universityId)
+    const sameProgram = !!(profileA.programId && profileB.programId && profileA.programId === profileB.programId)
+    const sameFaculty = !!(profileA.faculty && profileB.faculty && profileA.faculty === profileB.faculty)
+    const yearA = profileA.studyYear
+    const yearB = profileB.studyYear
+    const yearGap = (typeof yearA === 'number' && typeof yearB === 'number') ? Math.abs(yearA - yearB) : undefined
+
+    let base = 0
+    if (sameUniversity) base += 0.5
+    if (sameProgram) base += 0.3
+    if (sameFaculty) base += 0.2
+    const mult = yearGap !== undefined ? Math.max(0, 1 - 0.1 * Math.max(0, yearGap - 1)) : 1
+    const score = base * mult
+    return Math.max(0, Math.min(1, score))
   }
 
   /**

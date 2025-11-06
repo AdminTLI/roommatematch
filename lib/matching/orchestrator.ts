@@ -237,8 +237,12 @@ export async function runMatching({
 function toEngineProfile(student: any) {
   // Convert StudentProfile to the format expected by MatchingEngine
   // Ensure sleep times are numbers (they might be strings from database)
-  const sleepStart = typeof student.raw.sleep_start === 'string' ? parseFloat(student.raw.sleep_start) : Number(student.raw.sleep_start) || 22
-  const sleepEnd = typeof student.raw.sleep_end === 'string' ? parseFloat(student.raw.sleep_end) : Number(student.raw.sleep_end) || 8
+  const sleepStart = student.raw.sleep_start !== undefined
+    ? (typeof student.raw.sleep_start === 'string' ? parseFloat(student.raw.sleep_start) : Number(student.raw.sleep_start))
+    : undefined
+  const sleepEnd = student.raw.sleep_end !== undefined
+    ? (typeof student.raw.sleep_end === 'string' ? parseFloat(student.raw.sleep_end) : Number(student.raw.sleep_end))
+    : undefined
   
   // Use actual vector from candidate if available
   let vector: number[] = Array.isArray(student.raw.vector) ? student.raw.vector : []
@@ -247,6 +251,7 @@ function toEngineProfile(student: any) {
   const isZeroVector = (v: number[]) => v.length === 0 || v.every((x) => x === 0)
   if (isZeroVector(vector)) {
     try {
+      console.warn('[Matching] Fallback vector computation from answers for user', student.id)
       vector = mapAnswersToVector(student.raw)
     } catch (e) {
       // As a last resort, provide a zero-vector of expected dimension
@@ -259,18 +264,18 @@ function toEngineProfile(student: any) {
     vector,
     sleepStart,
     sleepEnd,
-    cleanlinessRoom: Number(student.raw.cleanliness_room) || 5,
-    cleanlinessKitchen: Number(student.raw.cleanliness_kitchen) || 5,
-    noiseTolerance: Number(student.raw.noise_tolerance) || 5,
-    guestsFrequency: Number(student.raw.guests_frequency) || 5,
-    partiesFrequency: Number(student.raw.parties_frequency) || 5,
-    studyIntensity: Number(student.raw.study_intensity) || 5,
-    socialLevel: Number(student.raw.social_level) || 5,
-    extraversion: Number(student.raw.extraversion) || 5,
-    agreeableness: Number(student.raw.agreeableness) || 5,
-    conscientiousness: Number(student.raw.conscientiousness) || 5,
-    neuroticism: Number(student.raw.neuroticism) || 5,
-    openness: Number(student.raw.openness) || 5,
+    cleanlinessRoom: student.raw.cleanliness_room !== undefined ? Number(student.raw.cleanliness_room) : undefined,
+    cleanlinessKitchen: student.raw.cleanliness_kitchen !== undefined ? Number(student.raw.cleanliness_kitchen) : undefined,
+    noiseTolerance: student.raw.noise_tolerance !== undefined ? Number(student.raw.noise_tolerance) : undefined,
+    guestsFrequency: student.raw.guests_frequency !== undefined ? Number(student.raw.guests_frequency) : undefined,
+    partiesFrequency: student.raw.parties_frequency !== undefined ? Number(student.raw.parties_frequency) : undefined,
+    studyIntensity: student.raw.study_intensity !== undefined ? Number(student.raw.study_intensity) : undefined,
+    socialLevel: student.raw.social_level !== undefined ? Number(student.raw.social_level) : undefined,
+    extraversion: student.raw.extraversion !== undefined ? Number(student.raw.extraversion) : undefined,
+    agreeableness: student.raw.agreeableness !== undefined ? Number(student.raw.agreeableness) : undefined,
+    conscientiousness: student.raw.conscientiousness !== undefined ? Number(student.raw.conscientiousness) : undefined,
+    neuroticism: student.raw.neuroticism !== undefined ? Number(student.raw.neuroticism) : undefined,
+    openness: student.raw.openness !== undefined ? Number(student.raw.openness) : undefined,
     universityId: student.meta.universityId,
     degreeLevel: student.meta.degreeLevel,
     programId: student.meta.programmeId,
@@ -389,18 +394,28 @@ export async function runMatchingAsSuggestions({
               academic_bonus: explanation.academic_bonus
             }
           })
+          // Observability: count missing dimensions
+          const missingDims = [
+            profileA.cleanlinessRoom === undefined || profileB.cleanlinessRoom === undefined,
+            profileA.cleanlinessKitchen === undefined || profileB.cleanlinessKitchen === undefined,
+            profileA.guestsFrequency === undefined || profileB.guestsFrequency === undefined,
+            profileA.noiseTolerance === undefined || profileB.noiseTolerance === undefined,
+            profileA.partiesFrequency === undefined || profileB.partiesFrequency === undefined,
+            profileA.sleepStart === undefined || profileB.sleepStart === undefined,
+            profileA.sleepEnd === undefined || profileB.sleepEnd === undefined,
+          ].filter(Boolean).length
+          if (missingDims > 0) {
+            console.log(`[DEBUG] Missing dimensions for pair ${studentA.id} <-> ${studentB.id}:`, { missingDims })
+          }
           
           if (fitIndex >= minFitIndex) {
             // Extract section scores
             const sectionScores = {
               personality: explanation.similarity_score,
               schedule: explanation.schedule_overlap,
-              lifestyle: (explanation.cleanliness_align + explanation.guests_noise_align) / 2,
+              lifestyle: explanation.cleanliness_align, // separate lifestyle vs social
               social: explanation.guests_noise_align,
-              academic: explanation.academic_bonus ? 
-                (explanation.academic_bonus.university_affinity ? 0.08 : 0) +
-                (explanation.academic_bonus.program_affinity ? 0.12 : 0) +
-                (explanation.academic_bonus.faculty_affinity ? 0.05 : 0) : 0
+              academic: new MatchingEngine(DEFAULT_WEIGHTS).computeAcademicScore(profileA, profileB)
             }
             
             // Determine status based on fit index (dual-tier system)
@@ -439,13 +454,13 @@ export async function runMatchingAsSuggestions({
     console.log(`[Suggestions] Found ${pairFits.length} valid pairs above threshold`)
     
     // 3) Pick topN per user (symmetric pairs)
-    const byUser: Record<string, { key: string; otherId: string; fit: number; fitIndex: number; ps: any }[]> = {}
+    const byUser: Record<string, { key: string; otherId: string; fit: number; fitIndex: number; ps: any; status: 'pending' | 'accepted'; acceptedBy: string[] }[]> = {}
     
     for (const pf of pairFits) {
       if (!byUser[pf.aId]) byUser[pf.aId] = []
       if (!byUser[pf.bId]) byUser[pf.bId] = []
-      byUser[pf.aId].push({ key: pf.key, otherId: pf.bId, fit: pf.fit, fitIndex: pf.fitIndex, ps: pf.ps })
-      byUser[pf.bId].push({ key: pf.key, otherId: pf.aId, fit: pf.fit, fitIndex: pf.fitIndex, ps: pf.ps })
+      byUser[pf.aId].push({ key: pf.key, otherId: pf.bId, fit: pf.fit, fitIndex: pf.fitIndex, ps: pf.ps, status: pf.status as any, acceptedBy: pf.acceptedBy })
+      byUser[pf.bId].push({ key: pf.key, otherId: pf.aId, fit: pf.fit, fitIndex: pf.fitIndex, ps: pf.ps, status: pf.status as any, acceptedBy: pf.acceptedBy })
     }
     
     // Sort and limit per user

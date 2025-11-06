@@ -133,12 +133,14 @@ export function SuggestionCard({ suggestion, onRespond, isLoading = false }: Sug
         </div>
       )}
       
-      {/* Run Info */}
-      <div className="mt-4 pt-4 border-t border-gray-100">
-        <div className="text-xs text-gray-500">
-          Run ID: {suggestion.runId}
+      {/* Run Info (debug only) */}
+      {process.env.NEXT_PUBLIC_DEBUG_MATCHES === 'true' && (
+        <div className="mt-4 pt-4 border-t border-gray-100">
+          <div className="text-xs text-gray-500">
+            Run ID: {suggestion.runId}
+          </div>
         </div>
-      </div>
+      )}
     </div>
   )
 }
