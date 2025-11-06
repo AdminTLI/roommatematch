@@ -915,12 +915,14 @@ export class SupabaseMatchRepo implements MatchRepo {
     }
 
     const supabase = await this.getSupabase()
+    
+    // Fetch all pair suggestions that contain either user, then filter in JavaScript
+    // This is more reliable than chaining .contains() filters
     let query = supabase
       .from('match_suggestions')
       .select('*')
-      .contains('member_ids', [userAId])
-      .contains('member_ids', [userBId])
       .eq('kind', 'pair')
+      .or(`member_ids.cs.{${userAId}},member_ids.cs.{${userBId}}`)
       .order('created_at', { ascending: false })
 
     if (!includeExpired) {
@@ -929,6 +931,12 @@ export class SupabaseMatchRepo implements MatchRepo {
 
     const { data, error } = await query
     if (error) throw new Error(`Failed to get suggestions for pair: ${error.message}`)
+
+    // Filter to only suggestions that contain BOTH users
+    const filtered = (data || []).filter((record: any) => {
+      const memberIds = record.member_ids as string[]
+      return memberIds && memberIds.includes(userAId) && memberIds.includes(userBId)
+    })
 
     return (data || []).map((record: any) => ({
       id: record.id,
