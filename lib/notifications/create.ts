@@ -1,11 +1,11 @@
-import { createClient } from '@/lib/supabase/server';
+import { createAdminClient } from '@/lib/supabase/server';
 import { CreateNotificationData, Notification, NotificationType } from './types';
 
 /**
  * Create a single notification
  */
 export async function createNotification(data: CreateNotificationData): Promise<Notification> {
-  const supabase = await createClient();
+  const supabase = await createAdminClient();
   
   const { data: notification, error } = await supabase
     .from('notifications')
@@ -36,7 +36,7 @@ export async function createNotificationsForUsers(
   message: string,
   metadata?: Record<string, any>
 ): Promise<Notification[]> {
-  const supabase = await createClient();
+  const supabase = await createAdminClient();
   
   const notifications = userIds.map(userId => ({
     user_id: userId,
@@ -68,7 +68,7 @@ export async function createMatchNotification(
   matchId: string,
   chatId?: string
 ): Promise<void> {
-  const supabase = await createClient();
+  const supabase = await createAdminClient();
   
   // Get user names for personalized messages
   const { data: profiles } = await supabase

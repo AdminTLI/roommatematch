@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createClient } from '@/lib/supabase/server'
+import { createClient, createAdminClient } from '@/lib/supabase/server'
 import { getMatchRepo } from '@/lib/matching/repo.factory'
 import type { MatchRecord } from '@/lib/matching/repo'
 import { createMatchNotification, createGroupMatchNotification } from '@/lib/notifications/create'
@@ -96,26 +96,73 @@ export async function POST(request: NextRequest) {
       await repo.lockMatch(suggestion.memberIds, suggestion.runId)
       await repo.markUsersMatched(suggestion.memberIds, suggestion.runId)
       
-      // Create notifications for confirmed match
+      // Create chat on confirmation (idempotent)
       try {
-        if (suggestion.kind === 'pair') {
-          await createMatchNotification(
-            suggestion.memberIds[0],
-            suggestion.memberIds[1],
-            'match_confirmed',
-            suggestion.id, // Use suggestion ID as match reference
-            undefined // Chat will be created by database trigger
-          )
-        } else {
-          await createGroupMatchNotification(
-            suggestion.memberIds,
-            suggestion.id,
-            undefined // Chat will be created by database trigger
-          )
+        const admin = await createAdminClient()
+        const [userA, userB] = suggestion.memberIds
+        // Check if chat already exists for these two users
+        const { data: existingChats } = await admin
+          .from('chat_members')
+          .select('chat_id')
+          .eq('user_id', userA)
+        let chatId: string | undefined
+        if (existingChats && existingChats.length > 0) {
+          const chatIds = existingChats.map((r: any) => r.chat_id)
+          const { data: common } = await admin
+            .from('chat_members')
+            .select('chat_id')
+            .in('chat_id', chatIds)
+            .eq('user_id', userB)
+          if (common && common.length > 0) {
+            chatId = common[0].chat_id
+          }
         }
-      } catch (notificationError) {
-        console.error('Failed to create match notifications:', notificationError)
-        // Don't fail the entire request if notifications fail
+        if (!chatId) {
+          // Create chat
+          const { data: createdChat, error: chatErr } = await admin
+            .from('chats')
+            .insert({ is_group: false, created_by: user.id, match_id: null })
+            .select('id')
+            .single()
+          if (chatErr) throw chatErr
+          chatId = createdChat.id
+          // Add members
+          await admin.from('chat_members').insert([
+            { chat_id: chatId, user_id: userA },
+            { chat_id: chatId, user_id: userB }
+          ])
+          // System message
+          await admin.from('messages').insert({
+            chat_id: chatId,
+            user_id: user.id,
+            content: "You’re matched! Start your conversation 👋"
+          })
+          // Touch chat updated_at
+          await admin.from('chats').update({ updated_at: new Date().toISOString() }).eq('id', chatId)
+        }
+        
+        // Create notifications for confirmed match
+        try {
+          if (suggestion.kind === 'pair') {
+            await createMatchNotification(
+              suggestion.memberIds[0],
+              suggestion.memberIds[1],
+              'match_confirmed',
+              suggestion.id,
+              chatId
+            )
+          } else {
+            await createGroupMatchNotification(
+              suggestion.memberIds,
+              suggestion.id,
+              chatId
+            )
+          }
+        } catch (notificationError) {
+          console.error('Failed to create match notifications:', notificationError)
+        }
+      } catch (chatError) {
+        console.error('Failed to create chat on confirmation:', chatError)
       }
       
       return NextResponse.json({ ok: true, suggestion, match })
