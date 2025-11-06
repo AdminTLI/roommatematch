@@ -70,7 +70,8 @@ export async function POST(request: NextRequest) {
     }
 
     // Fetch all suggestions for this pair (across runs) and merge acceptance
-    const pairSugs = await repo.getSuggestionsForPair(user.id, otherId, false)
+    // IMPORTANT: Include expired suggestions so we can merge acceptances even if one user refreshed
+    const pairSugs = await repo.getSuggestionsForPair(user.id, otherId, true)
     let unionAccepted = new Set<string>()
     for (const s of pairSugs) {
       (s.acceptedBy || []).forEach(a => unionAccepted.add(a))
