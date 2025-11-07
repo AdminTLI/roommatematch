@@ -82,7 +82,7 @@ export function SuggestionCard({ suggestion, onRespond, isLoading = false, curre
       case 'accepted':
         return (
           <span className="px-2 py-1 rounded-full bg-blue-100 text-blue-800 text-xs font-medium">
-            {pendingCount === 1 ? 'Waiting for response' : 'Waiting for others'}
+            Waiting for the other person to accept
           </span>
         )
       case 'confirmed':
@@ -127,12 +127,6 @@ export function SuggestionCard({ suggestion, onRespond, isLoading = false, curre
                   Expires in {hoursLeft}h
                 </span>
               )}
-            </div>
-            <div className="text-sm text-gray-700">
-              {suggestion.memberIds.length === 2 
-                ? `You + 1 other person`
-                : `You + ${suggestion.memberIds.length - 1} others`
-              }
             </div>
           </div>
         </div>

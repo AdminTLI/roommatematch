@@ -184,17 +184,15 @@ export function StudentMatchesInterface({ user }: StudentMatchesInterfaceProps) 
             </button>
           ))}
         </div>
-      </div>
-
-      {/* Actions */}
-      <div className="mb-6 flex gap-3">
-        <button
-          onClick={handleRefresh}
-          disabled={isLoading}
-          className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-        >
-          {isLoading ? 'Loading...' : 'Refresh Suggestions'}
-        </button>
+        {/* Tab-specific description */}
+        <div className="mt-4 text-center">
+          <p className="text-sm text-gray-600">
+            {activeTab === 'suggested' && 'New matches waiting for your response'}
+            {activeTab === 'pending' && "Matches you've accepted, waiting for others to respond"}
+            {activeTab === 'confirmed' && 'Matches where everyone has accepted'}
+            {activeTab === 'history' && 'Past matches you've declined or that have expired'}
+          </p>
+        </div>
       </div>
 
       {/* Content */}
@@ -210,31 +208,38 @@ export function StudentMatchesInterface({ user }: StudentMatchesInterfaceProps) 
             {activeTab === 'confirmed' && 'No confirmed matches yet.'}
             {activeTab === 'history' && 'No match history available.'}
           </div>
+          <button
+            onClick={handleRefresh}
+            disabled={isLoading}
+            className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+          >
+            {isLoading ? 'Loading...' : 'Refresh Suggestions'}
+          </button>
         </div>
       ) : (
-        <div className="grid gap-6">
-          {filteredSuggestions.map((suggestion) => (
-            <SuggestionCard
-              key={suggestion.id}
-              suggestion={suggestion}
-              onRespond={handleRespond}
-              isLoading={isResponding}
-              currentUserId={user.id}
-            />
-          ))}
-        </div>
+        <>
+          <div className="grid gap-6 mb-6">
+            {filteredSuggestions.map((suggestion) => (
+              <SuggestionCard
+                key={suggestion.id}
+                suggestion={suggestion}
+                onRespond={handleRespond}
+                isLoading={isResponding}
+                currentUserId={user.id}
+              />
+            ))}
+          </div>
+          <div className="flex justify-center">
+            <button
+              onClick={handleRefresh}
+              disabled={isLoading}
+              className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+            >
+              {isLoading ? 'Loading...' : 'Refresh Suggestions'}
+            </button>
+          </div>
+        </>
       )}
-
-      {/* Info */}
-      <div className="mt-8 p-4 bg-blue-50 rounded-lg">
-        <h3 className="text-sm font-medium text-blue-900 mb-2">How it works</h3>
-        <ul className="text-sm text-blue-800 space-y-1">
-          <li>• <strong>Suggested:</strong> New matches waiting for your response</li>
-          <li>• <strong>Pending:</strong> Matches you've accepted, waiting for others to respond</li>
-          <li>• <strong>Confirmed:</strong> Matches where everyone has accepted</li>
-          <li>• <strong>History:</strong> Past matches you've declined or that have expired</li>
-        </ul>
-      </div>
     </div>
   )
 }

@@ -16,6 +16,13 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog'
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu'
 import { createClient } from '@/lib/supabase/client'
 import { User } from '@supabase/supabase-js'
 import { showErrorToast, showSuccessToast } from '@/lib/toast'
@@ -29,7 +36,10 @@ import {
   Clock,
   Check,
   CheckCheck,
-  Flag
+  Flag,
+  MoreVertical,
+  Ban,
+  Trash2
 } from 'lucide-react'
 
 interface ChatInterfaceProps {
@@ -74,6 +84,9 @@ export function ChatInterface({ roomId, user }: ChatInterfaceProps) {
   const [showReportDialog, setShowReportDialog] = useState(false)
   const [reportReason, setReportReason] = useState('')
   const [isReporting, setIsReporting] = useState(false)
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false)
+  const [isDeleting, setIsDeleting] = useState(false)
+  const [isBlocking, setIsBlocking] = useState(false)
   
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const typingTimeoutRef = useRef<NodeJS.Timeout>()
@@ -1006,7 +1019,7 @@ export function ChatInterface({ roomId, user }: ChatInterfaceProps) {
     }
     setIsReporting(true)
     try {
-      const otherUserId = members[0]?.id
+      const otherUserId = members.find(m => m.id !== user.id)?.id
       if (!otherUserId) {
         alert('Unable to identify user to report.')
         return
@@ -1028,6 +1041,67 @@ export function ChatInterface({ roomId, user }: ChatInterfaceProps) {
       showErrorToast('Failed to submit report', 'Please try again.')
     } finally {
       setIsReporting(false)
+    }
+  }
+
+  const handleBlockUser = async () => {
+    if (isGroup) {
+      showErrorToast('Cannot block', 'Blocking is only available for individual chats.')
+      return
+    }
+    
+    setIsBlocking(true)
+    try {
+      const otherUserId = members.find(m => m.id !== user.id)?.id
+      if (!otherUserId) {
+        alert('Unable to identify user to block.')
+        return
+      }
+      
+      // Block user via API
+      const response = await fetch('/api/match/block', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ userId: otherUserId })
+      })
+      
+      if (response.ok) {
+        showSuccessToast('User blocked', 'This user has been blocked and you will no longer receive messages from them.')
+        router.push('/chat')
+      } else {
+        const errorData = await response.json()
+        throw new Error(errorData.error || 'Failed to block user')
+      }
+    } catch (error: any) {
+      console.error('Failed to block:', error)
+      showErrorToast('Failed to block user', error.message || 'Please try again.')
+    } finally {
+      setIsBlocking(false)
+    }
+  }
+
+  const handleDeleteConversation = async () => {
+    setIsDeleting(true)
+    try {
+      // Remove user from chat members (effectively deleting the conversation for them)
+      const response = await fetch(`/api/chat/${roomId}/leave`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' }
+      })
+      
+      if (response.ok) {
+        showSuccessToast('Conversation deleted', 'The conversation has been deleted.')
+        router.push('/chat')
+      } else {
+        const errorData = await response.json()
+        throw new Error(errorData.error || 'Failed to delete conversation')
+      }
+    } catch (error: any) {
+      console.error('Failed to delete:', error)
+      showErrorToast('Failed to delete conversation', error.message || 'Please try again.')
+    } finally {
+      setIsDeleting(false)
+      setShowDeleteDialog(false)
     }
   }
 
@@ -1078,15 +1152,44 @@ export function ChatInterface({ roomId, user }: ChatInterfaceProps) {
               Safe Chat
             </Badge>
             {!isGroup && (
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => setShowReportDialog(true)}
-                className="text-red-600 hover:text-red-700 hover:bg-red-50"
-              >
-                <Flag className="h-4 w-4 mr-1" />
-                Report
-              </Button>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="h-9 w-9 p-0"
+                  >
+                    <MoreVertical className="h-4 w-4" />
+                    <span className="sr-only">Open menu</span>
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                  <DropdownMenuItem
+                    onClick={handleBlockUser}
+                    disabled={isBlocking}
+                    className="text-red-600 focus:text-red-600 focus:bg-red-50"
+                  >
+                    <Ban className="h-4 w-4 mr-2" />
+                    {isBlocking ? 'Blocking...' : 'Block User'}
+                  </DropdownMenuItem>
+                  <DropdownMenuItem
+                    onClick={() => setShowReportDialog(true)}
+                    className="text-red-600 focus:text-red-600 focus:bg-red-50"
+                  >
+                    <Flag className="h-4 w-4 mr-2" />
+                    Report User
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem
+                    onClick={() => setShowDeleteDialog(true)}
+                    disabled={isDeleting}
+                    className="text-red-600 focus:text-red-600 focus:bg-red-50"
+                  >
+                    <Trash2 className="h-4 w-4 mr-2" />
+                    {isDeleting ? 'Deleting...' : 'Delete Conversation'}
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
             )}
           </div>
         </div>
@@ -1336,6 +1439,26 @@ export function ChatInterface({ roomId, user }: ChatInterfaceProps) {
             </Button>
             <Button variant="destructive" onClick={handleReportUser} disabled={isReporting || !reportReason}>
               {isReporting ? 'Submitting...' : 'Submit Report'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Delete Conversation Dialog */}
+      <Dialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Delete Conversation?</DialogTitle>
+            <DialogDescription>
+              Are you sure you want to delete this conversation? This action cannot be undone.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowDeleteDialog(false)}>
+              Cancel
+            </Button>
+            <Button variant="destructive" onClick={handleDeleteConversation} disabled={isDeleting}>
+              {isDeleting ? 'Deleting...' : 'Delete'}
             </Button>
           </DialogFooter>
         </DialogContent>

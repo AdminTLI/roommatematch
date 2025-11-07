@@ -134,8 +134,20 @@ export function Sidebar({ user, onClose }: SidebarProps) {
 
   return (
     <div className="flex flex-col h-full w-full bg-white dark:bg-[#1E2433] border-r border-gray-200 dark:border-[#2D3548]">
+      {/* Branding Header */}
+      <div className="px-4 pt-4 pb-2 border-b border-gray-200 dark:border-[#2D3548]">
+        <Link href="/dashboard" className="flex items-center gap-3">
+          <div className="w-8 h-8 bg-gradient-to-br from-brand-500 to-accent-500 rounded-xl flex items-center justify-center">
+            <Users className="w-4 h-4 text-white" />
+          </div>
+          <div>
+            <h1 className="text-lg font-bold text-ink-900 dark:text-gray-100">Roommate Match</h1>
+            <p className="text-xs text-ink-500 dark:text-gray-400">Find your perfect match</p>
+          </div>
+        </Link>
+      </div>
       {/* Navigation - starts at top */}
-      <nav className="flex-1 p-4 space-y-2 overflow-y-auto mt-4">
+      <nav className="flex-1 p-4 space-y-2 overflow-y-auto">
         {navigation.map((item, index) => {
           const isActive = pathname === item.href || pathname.startsWith(item.href + '/')
           const Icon = item.icon

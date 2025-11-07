@@ -23,9 +23,10 @@ interface NewChatModalProps {
   isOpen: boolean
   onClose: () => void
   user: User
+  initialMode?: 'individual' | 'group'
 }
 
-export function NewChatModal({ isOpen, onClose, user }: NewChatModalProps) {
+export function NewChatModal({ isOpen, onClose, user, initialMode }: NewChatModalProps) {
   const router = useRouter()
   const supabase = createClient()
   const [matches, setMatches] = useState<Match[]>([])
@@ -34,17 +35,17 @@ export function NewChatModal({ isOpen, onClose, user }: NewChatModalProps) {
   const [selectedMatches, setSelectedMatches] = useState<Set<string>>(new Set())
   const [isCreatingChat, setIsCreatingChat] = useState(false)
   const [groupName, setGroupName] = useState('')
-  const [isGroupMode, setIsGroupMode] = useState(false)
+  const [isGroupMode, setIsGroupMode] = useState(initialMode === 'group')
 
   useEffect(() => {
     if (isOpen) {
       loadMatches()
       setSelectedMatches(new Set())
       setGroupName('')
-      setIsGroupMode(false)
+      setIsGroupMode(initialMode === 'group' || false)
       setSearchQuery('')
     }
-  }, [isOpen])
+  }, [isOpen, initialMode])
 
   const loadMatches = async () => {
     setIsLoading(true)
@@ -92,8 +93,8 @@ export function NewChatModal({ isOpen, onClose, user }: NewChatModalProps) {
       newSelected.delete(matchId)
     } else {
       if (isGroupMode) {
-        if (newSelected.size >= 6) {
-          alert('Maximum 6 people allowed in a group')
+        if (newSelected.size >= 5) {
+          alert('Maximum 5 people allowed in a group')
           return
         }
         newSelected.add(matchId)
@@ -117,8 +118,8 @@ export function NewChatModal({ isOpen, onClose, user }: NewChatModalProps) {
       return
     }
 
-    if (isGroupMode && selectedMatches.size > 6) {
-      alert('Maximum 6 people allowed in a group')
+    if (isGroupMode && selectedMatches.size > 5) {
+      alert('Maximum 5 people allowed in a group')
       return
     }
 
@@ -190,7 +191,7 @@ export function NewChatModal({ isOpen, onClose, user }: NewChatModalProps) {
           </DialogTitle>
           <DialogDescription>
             {isGroupMode 
-              ? 'Select up to 6 people to create a group chat'
+              ? 'Select up to 5 people to create a group chat'
               : 'Select a person to start a conversation'
             }
           </DialogDescription>
@@ -253,7 +254,7 @@ export function NewChatModal({ isOpen, onClose, user }: NewChatModalProps) {
                   </button>
                 </Badge>
               ))}
-              {selectedMatches.size >= 6 && (
+              {selectedMatches.size >= 5 && (
                 <Badge variant="outline" className="text-xs">
                   Maximum reached
                 </Badge>
@@ -278,9 +279,13 @@ export function NewChatModal({ isOpen, onClose, user }: NewChatModalProps) {
               <div className="flex items-center justify-center py-12">
                 <Loader2 className="w-6 h-6 animate-spin text-gray-400" />
               </div>
+            ) : matches.length === 0 ? (
+              <div className="text-center py-12 text-gray-500">
+                No matches available. Complete your profile to get matched!
+              </div>
             ) : filteredMatches.length === 0 ? (
               <div className="text-center py-12 text-gray-500">
-                {searchQuery ? 'No matches found' : matches.length === 0 ? 'No matches available. Complete your profile to get matched!' : 'No matches match your search'}
+                No matches found matching your search
               </div>
             ) : (
               <div className="divide-y">
@@ -330,7 +335,7 @@ export function NewChatModal({ isOpen, onClose, user }: NewChatModalProps) {
             <div className="text-sm text-gray-600">
               {isGroupMode && (
                 <span>
-                  {selectedMatches.size} of 6 selected
+                  {selectedMatches.size} of 5 selected
                 </span>
               )}
             </div>

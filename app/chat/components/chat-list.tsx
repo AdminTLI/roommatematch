@@ -44,6 +44,7 @@ interface ChatRoom {
   compatibilityScore?: number
   firstMessageAt?: string
   isRecentlyMatched: boolean
+  allMessages?: string[] // All message content for search
 }
 
 interface ChatListProps {
@@ -55,6 +56,7 @@ export function ChatList({ user }: ChatListProps) {
   const [isLoading, setIsLoading] = useState(true)
   const [searchQuery, setSearchQuery] = useState('')
   const [isNewChatModalOpen, setIsNewChatModalOpen] = useState(false)
+  const [newChatMode, setNewChatMode] = useState<'individual' | 'group' | null>(null)
 
   const router = useRouter()
   const supabase = createClient()
@@ -228,7 +230,8 @@ export function ChatList({ user }: ChatListProps) {
           matchId: undefined,
           compatibilityScore,
           firstMessageAt: undefined,
-          isRecentlyMatched
+          isRecentlyMatched,
+          allMessages: allMessages.map((msg: any) => msg.content) // Store all message content for search
         }
       })
 
@@ -246,9 +249,35 @@ export function ChatList({ user }: ChatListProps) {
     loadChats()
   }, [loadChats])
 
-  const filteredChats = chats.filter(chat =>
-    chat.name.toLowerCase().includes(searchQuery.toLowerCase())
-  )
+  const filteredChats = chats.filter(chat => {
+    if (!searchQuery.trim()) return true
+    
+    const query = searchQuery.toLowerCase()
+    
+    // Search in chat name
+    if (chat.name.toLowerCase().includes(query)) {
+      return true
+    }
+    
+    // Search in participant names
+    if (chat.participants.some(p => p.name.toLowerCase().includes(query))) {
+      return true
+    }
+    
+    // Search in message content
+    if (chat.allMessages && chat.allMessages.some(msg => 
+      msg.toLowerCase().includes(query)
+    )) {
+      return true
+    }
+    
+    // Search in last message
+    if (chat.lastMessage?.content.toLowerCase().includes(query)) {
+      return true
+    }
+    
+    return false
+  })
 
   // Separate chats into recently matched and active conversations
   const recentlyMatchedChats = filteredChats.filter(chat => chat.isRecentlyMatched)
@@ -258,7 +287,8 @@ export function ChatList({ user }: ChatListProps) {
     router.push(`/chat/${chatId}`)
   }
 
-  const handleNewChat = () => {
+  const handleNewChat = (mode?: 'individual' | 'group') => {
+    setNewChatMode(mode || null)
     setIsNewChatModalOpen(true)
   }
 
@@ -540,13 +570,20 @@ export function ChatList({ user }: ChatListProps) {
       {/* New Chat Modal */}
       <NewChatModal
         isOpen={isNewChatModalOpen}
-        onClose={() => setIsNewChatModalOpen(false)}
+        onClose={() => {
+          setIsNewChatModalOpen(false)
+          setNewChatMode(null)
+        }}
         user={user}
+        initialMode={newChatMode || undefined}
       />
 
       {/* Quick Actions */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <Card className="cursor-pointer hover:shadow-lg transition-shadow">
+        <Card 
+          className="cursor-pointer hover:shadow-lg transition-shadow"
+          onClick={() => handleNewChat('group')}
+        >
           <CardContent className="p-6 text-center">
             <div className="w-12 h-12 bg-primary-100 rounded-xl flex items-center justify-center mx-auto mb-4">
               <Users className="h-6 w-6 text-primary-600" />
@@ -558,7 +595,10 @@ export function ChatList({ user }: ChatListProps) {
           </CardContent>
         </Card>
         
-        <Card className="cursor-pointer hover:shadow-lg transition-shadow">
+        <Card 
+          className="cursor-pointer hover:shadow-lg transition-shadow"
+          onClick={() => handleNewChat('individual')}
+        >
           <CardContent className="p-6 text-center">
             <div className="w-12 h-12 bg-success-100 rounded-xl flex items-center justify-center mx-auto mb-4">
               <MessageCircle className="h-6 w-6 text-success-600" />

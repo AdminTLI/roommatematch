@@ -79,7 +79,7 @@ export function DashboardContent({ hasCompletedQuestionnaire = false, hasPartial
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user?.id])
 
-  // Set up real-time subscription for notifications
+  // Set up real-time subscription for notifications and messages
   useEffect(() => {
     if (!user?.id) return
 
@@ -95,6 +95,56 @@ export function DashboardContent({ hasCompletedQuestionnaire = false, hasPartial
         },
         () => {
           loadRecentActivity()
+        }
+      )
+      .on(
+        'postgres_changes',
+        {
+          event: 'INSERT',
+          schema: 'public',
+          table: 'messages'
+        },
+        () => {
+          loadRecentActivity()
+        }
+      )
+      .subscribe()
+
+    return () => {
+      supabase.removeChannel(channel)
+    }
+  }, [user?.id, supabase])
+
+  // Set up real-time subscription for matches
+  useEffect(() => {
+    if (!user?.id) return
+
+    const channel = supabase
+      .channel('dashboard-matches')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'matches',
+          filter: `a_user=eq.${user.id}`
+        },
+        () => {
+          loadTopMatches()
+          loadTotalMatchesCount()
+        }
+      )
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'matches',
+          filter: `b_user=eq.${user.id}`
+        },
+        () => {
+          loadTopMatches()
+          loadTotalMatchesCount()
         }
       )
       .subscribe()
@@ -125,10 +175,10 @@ export function DashboardContent({ hasCompletedQuestionnaire = false, hasPartial
         return
       }
 
-      // Fetch more matches for accurate average calculation
+      // Fetch all matches for accurate average calculation (use a high limit to get all)
       const { data: allMatchesData, error: avgError } = await supabase.rpc('get_user_matches', {
         p_user_id: user.id,
-        p_limit: 20,
+        p_limit: 1000, // High limit to get all matches
         p_offset: 0,
         p_university_ids: null,
         p_degree_levels: null,
@@ -151,27 +201,23 @@ export function DashboardContent({ hasCompletedQuestionnaire = false, hasPartial
         setTopMatches([])
       }
 
-      // Calculate average compatibility from all matches (up to 20)
+      // Calculate average compatibility from all matches
       if (allMatchesData && allMatchesData.length > 0) {
         const scores = allMatchesData.map((match: any) => 
-          Math.round((match.compatibility_score || 0) * 100)
+          (match.compatibility_score || 0) * 100
         )
         const average = scores.length > 0 
           ? Math.round(scores.reduce((sum, score) => sum + score, 0) / scores.length)
           : 0
         setAvgCompatibility(average)
-        
-        // If we got fewer than 20 matches, that's the total. Otherwise, fetch count separately
-        if (allMatchesData.length < 20) {
-          setTotalMatches(allMatchesData.length)
-        } else {
-          // Fetch total count if we have 20+ matches
-          loadTotalMatchesCount()
-        }
+        setTotalMatches(allMatchesData.length)
       } else {
         setAvgCompatibility(0)
         setTotalMatches(0)
       }
+      
+      // Always fetch total count separately for accuracy
+      loadTotalMatchesCount()
     } catch (error) {
       console.error('Failed to load matches:', error)
     } finally {
@@ -207,26 +253,96 @@ export function DashboardContent({ hasCompletedQuestionnaire = false, hasPartial
 
     setIsLoadingActivity(true)
     try {
-      const response = await fetch('/api/notifications/my?limit=5')
-      if (response.ok) {
-        const data = await response.json()
-        const notifications = data.notifications || []
+      // Fetch notifications
+      const response = await fetch('/api/notifications/my?limit=10')
+      const notificationsData = response.ok ? await response.json() : { notifications: [] }
+      const notifications = notificationsData.notifications || []
+      
+      // Fetch recent chat messages
+      const { data: chatMembers } = await supabase
+        .from('chat_members')
+        .select('chat_id')
+        .eq('user_id', user.id)
+
+      let chatMessages: any[] = []
+      if (chatMembers && chatMembers.length > 0) {
+        const chatIds = chatMembers.map(cm => cm.chat_id)
         
-        const formattedActivity = notifications.map((notif: any) => {
-          const timeAgo = formatTimeAgo(notif.created_at)
-          return {
-            id: notif.id,
-            type: notif.type,
-            title: notif.title,
-            message: notif.message,
-            timeAgo,
-            isRead: notif.is_read,
-            metadata: notif.metadata || {}
+        // Get last_read_at for each chat
+        const { data: memberships } = await supabase
+          .from('chat_members')
+          .select('chat_id, last_read_at')
+          .eq('user_id', user.id)
+          .in('chat_id', chatIds)
+
+        if (memberships) {
+          // Get recent messages from user's chats
+          const { data: messages } = await supabase
+            .from('messages')
+            .select(`
+              id,
+              content,
+              user_id,
+              chat_id,
+              created_at,
+              profiles!messages_user_id_fkey(first_name)
+            `)
+            .in('chat_id', chatIds)
+            .neq('user_id', user.id)
+            .order('created_at', { ascending: false })
+            .limit(10)
+
+          if (messages) {
+            // Get profile names for messages
+            const userIds = new Set(messages.map(m => m.user_id))
+            const { data: profiles } = await supabase
+              .from('profiles')
+              .select('user_id, first_name')
+              .in('user_id', Array.from(userIds))
+
+            const profilesMap = new Map(profiles?.map(p => [p.user_id, p]) || [])
+            
+            chatMessages = messages.map((msg: any) => {
+              const profile = profilesMap.get(msg.user_id)
+              const senderName = profile?.first_name || 'User'
+              const timeAgo = formatTimeAgo(msg.created_at)
+              return {
+                id: `message-${msg.id}`,
+                type: 'chat_message',
+                title: `${senderName} has sent you a message`,
+                message: '', // Don't show content
+                timeAgo,
+                isRead: false, // We'll check this based on last_read_at
+                metadata: { chat_id: msg.chat_id, message_id: msg.id }
+              }
+            })
           }
-        })
-        
-        setRecentActivity(formattedActivity)
+        }
       }
+      
+      // Combine notifications and chat messages, sort by time
+      const allActivity = [...notifications.map((notif: any) => {
+        const timeAgo = formatTimeAgo(notif.created_at)
+        return {
+          id: notif.id,
+          type: notif.type,
+          title: notif.title,
+          message: notif.message,
+          timeAgo,
+          isRead: notif.is_read,
+          metadata: notif.metadata || {}
+        }
+      }), ...chatMessages]
+      
+      // Sort by created_at (newest first) - approximate sort by timeAgo
+      allActivity.sort((a, b) => {
+        // Simple sort - items with "Just now" come first, then minutes, hours, days
+        if (a.timeAgo === 'Just now') return -1
+        if (b.timeAgo === 'Just now') return 1
+        return 0
+      })
+      
+      setRecentActivity(allActivity.slice(0, 10))
     } catch (error) {
       console.error('Failed to load activity:', error)
     } finally {
@@ -322,9 +438,6 @@ export function DashboardContent({ hasCompletedQuestionnaire = false, hasPartial
     router.push('/chat')
   }
 
-  const handleScheduleTour = () => {
-    router.push('/housing')
-  }
 
   const handleUpdateProfile = () => {
     router.push('/settings')
@@ -472,7 +585,7 @@ export function DashboardContent({ hasCompletedQuestionnaire = false, hasPartial
         initial="initial"
         animate="animate"
         variants={staggerChildren}
-        className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6"
+        className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6"
       >
         <motion.div variants={fadeInUp}>
           <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-200">
@@ -496,13 +609,6 @@ export function DashboardContent({ hasCompletedQuestionnaire = false, hasPartial
             <div className="text-sm text-gray-600 mt-1">Active Chats</div>
           </div>
         </motion.div>
-        
-        <motion.div variants={fadeInUp}>
-          <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-200">
-            <div className="text-3xl font-bold text-gray-900">{dashboardData.kpis.toursScheduled}</div>
-            <div className="text-sm text-gray-600 mt-1">Tours Scheduled</div>
-          </div>
-        </motion.div>
       </motion.div>
 
       {/* Main Content Grid */}
@@ -514,84 +620,88 @@ export function DashboardContent({ hasCompletedQuestionnaire = false, hasPartial
       >
         {/* Top Matches - Real Data */}
         <motion.div variants={fadeInUp}>
-          <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-200">
+          <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-200 flex flex-col h-full">
             <div className="flex items-center justify-between mb-6">
               <h3 className="text-xl font-bold text-gray-900">Your Top Matches</h3>
-              <div className="flex items-center gap-3">
-                <button 
-                  className="flex items-center gap-1 text-sm text-gray-600 hover:text-gray-700 font-medium" 
-                  onClick={loadTopMatches}
-                  disabled={isLoadingMatches}
-                >
-                  {isLoadingMatches ? (
-                    <Loader2 className="w-4 h-4 animate-spin" />
-                  ) : (
-                    <>
-                      Refresh
-                    </>
-                  )}
-                </button>
-                <button 
-                  className="flex items-center gap-1 text-sm text-blue-600 hover:text-blue-700 font-medium" 
-                  onClick={handleBrowseMatches}
-                >
-                  View all
-                  <ArrowRight className="w-4 h-4" />
-                </button>
-              </div>
+              <button 
+                className="flex items-center gap-1 text-sm text-gray-600 hover:text-gray-700 font-medium" 
+                onClick={loadTopMatches}
+                disabled={isLoadingMatches}
+              >
+                {isLoadingMatches ? (
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                ) : (
+                  <>
+                    Refresh
+                  </>
+                )}
+              </button>
             </div>
             
             {isLoadingMatches ? (
-              <div className="flex items-center justify-center py-8">
+              <div className="flex items-center justify-center py-8 flex-1">
                 <Loader2 className="w-6 h-6 animate-spin text-gray-400" />
               </div>
             ) : topMatches.length > 0 ? (
-              <div className="space-y-4">
-                {topMatches.map((match) => (
-                  <div key={match.id} className="flex items-center gap-4 p-4 bg-gray-50 rounded-lg">
-                    <div className="text-2xl font-bold text-blue-600">{match.score}%</div>
-                    <div className="flex items-center gap-4 flex-1">
-                      <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-purple-500 rounded-full flex items-center justify-center text-white font-bold text-lg">
-                        {match.name[0].toUpperCase()}
-                      </div>
-                      <div className="flex-1">
-                        <h4 className="font-bold text-gray-900">{match.name}</h4>
-                        <p className="text-sm text-gray-600">
-                          <span>{match.program}</span>
-                          <span className="mx-2">•</span>
-                          <span>{match.university}</span>
-                        </p>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <Heart className="w-5 h-5 text-rose-500" />
-                        <button 
-                          onClick={() => handleChatWithMatch(match.userId || match.id)}
-                          className="px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors"
-                        >
-                          Chat
-                        </button>
+              <div className="flex flex-col flex-1 min-h-0">
+                <div className="space-y-4 overflow-y-auto flex-1 pr-2">
+                  {topMatches.map((match) => (
+                    <div key={match.id} className="flex items-center gap-4 p-4 bg-gray-50 rounded-lg">
+                      <div className="text-2xl font-bold text-blue-600">{match.score}%</div>
+                      <div className="flex items-center gap-4 flex-1">
+                        <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-purple-500 rounded-full flex items-center justify-center text-white font-bold text-lg">
+                          {match.name[0].toUpperCase()}
+                        </div>
+                        <div className="flex-1">
+                          <h4 className="font-bold text-gray-900">{match.name}</h4>
+                          <p className="text-sm text-gray-600">
+                            <span>{match.program}</span>
+                            <span className="mx-2">•</span>
+                            <span>{match.university}</span>
+                          </p>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <Heart className="w-5 h-5 text-rose-500" />
+                          <button 
+                            onClick={() => handleChatWithMatch(match.userId || match.id)}
+                            className="px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors"
+                          >
+                            Chat
+                          </button>
+                        </div>
                       </div>
                     </div>
-                  </div>
-                ))}
+                  ))}
+                </div>
+                <div className="pt-3 border-t border-gray-200 mt-4">
+                  <button 
+                    className="w-full flex items-center justify-center gap-1 text-sm text-blue-600 hover:text-blue-700 font-medium py-2" 
+                    onClick={handleBrowseMatches}
+                  >
+                    View all
+                    <ArrowRight className="w-4 h-4" />
+                  </button>
+                </div>
               </div>
             ) : (
-              <EmptyState
-                icon={Users}
-                title="No matches yet"
-                description="Complete your profile and questionnaire to find compatible roommates"
-                action={{
-                  label: "Browse Matches",
-                  onClick: handleBrowseMatches
-                }}
-              />
+              <div className="flex-1 flex items-center justify-center">
+                <EmptyState
+                  icon={Users}
+                  title="No matches yet"
+                  description="Complete your profile and questionnaire to find compatible roommates"
+                  action={{
+                    label: "Browse Matches",
+                    onClick: handleBrowseMatches
+                  }}
+                />
+              </div>
             )}
           </div>
         </motion.div>
 
         {/* Recent Activity - Live Notifications */}
         <motion.div variants={fadeInUp}>
-          <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-200">
+          <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-200 flex flex-col h-full">
             <div className="flex items-center justify-between mb-6">
               <h3 className="text-xl font-bold text-gray-900">Recent Activity</h3>
               <button 
@@ -610,49 +720,53 @@ export function DashboardContent({ hasCompletedQuestionnaire = false, hasPartial
             </div>
             
             {isLoadingActivity ? (
-              <div className="flex items-center justify-center py-8">
+              <div className="flex items-center justify-center py-8 flex-1">
                 <Loader2 className="w-6 h-6 animate-spin text-gray-400" />
               </div>
             ) : recentActivity.length > 0 ? (
-              <div className="space-y-3">
-                {recentActivity.map((activity) => (
-                  <button
-                    key={activity.id}
-                    onClick={() => handleActivityClick(activity)}
-                    className={`w-full flex items-start gap-3 p-3 rounded-lg transition-colors text-left ${
-                      activity.isRead 
-                        ? 'bg-gray-50 hover:bg-gray-100' 
-                        : 'bg-blue-50 hover:bg-blue-100 border border-blue-200'
-                    }`}
-                  >
-                    <div className={`flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center ${
-                      activity.isRead ? 'bg-gray-200' : getActivityColor(activity.type)
-                    }`}>
-                      <div className={activity.isRead ? 'text-gray-600' : ''}>
-                        {getActivityIcon(activity.type)}
+              <div className="flex flex-col flex-1 min-h-0">
+                <div className="space-y-3 overflow-y-auto flex-1 pr-2">
+                  {recentActivity.map((activity) => (
+                    <button
+                      key={activity.id}
+                      onClick={() => handleActivityClick(activity)}
+                      className={`w-full flex items-start gap-3 p-3 rounded-lg transition-colors text-left ${
+                        activity.isRead 
+                          ? 'bg-gray-50 hover:bg-gray-100' 
+                          : 'bg-blue-50 hover:bg-blue-100 border border-blue-200'
+                      }`}
+                    >
+                      <div className={`flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center ${
+                        activity.isRead ? 'bg-gray-200' : getActivityColor(activity.type)
+                      }`}>
+                        <div className={activity.isRead ? 'text-gray-600' : ''}>
+                          {getActivityIcon(activity.type)}
+                        </div>
                       </div>
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <p className={`font-medium text-sm ${
-                        activity.isRead ? 'text-gray-700' : 'text-gray-900'
-                      }`}>
-                        {activity.title}
-                      </p>
-                      <p className={`text-xs mt-0.5 ${
-                        activity.isRead ? 'text-gray-500' : 'text-gray-600'
-                      }`}>
-                        {activity.message}
-                      </p>
-                      <p className="text-xs text-gray-400 mt-1">
-                        {activity.timeAgo}
-                      </p>
-                    </div>
-                    {!activity.isRead && (
-                      <div className="flex-shrink-0 w-2 h-2 bg-blue-600 rounded-full mt-2" />
-                    )}
-                  </button>
-                ))}
-                <div className="pt-3 border-t border-gray-200">
+                      <div className="flex-1 min-w-0">
+                        <p className={`font-medium text-sm ${
+                          activity.isRead ? 'text-gray-700' : 'text-gray-900'
+                        }`}>
+                          {activity.title}
+                        </p>
+                        {activity.message && (
+                          <p className={`text-xs mt-0.5 ${
+                            activity.isRead ? 'text-gray-500' : 'text-gray-600'
+                          }`}>
+                            {activity.message}
+                          </p>
+                        )}
+                        <p className="text-xs text-gray-400 mt-1">
+                          {activity.timeAgo}
+                        </p>
+                      </div>
+                      {!activity.isRead && (
+                        <div className="flex-shrink-0 w-2 h-2 bg-blue-600 rounded-full mt-2" />
+                      )}
+                    </button>
+                  ))}
+                </div>
+                <div className="pt-3 border-t border-gray-200 mt-3">
                   <button 
                     className="w-full flex items-center justify-center gap-1 text-sm text-blue-600 hover:text-blue-700 font-medium py-2" 
                     onClick={handleViewAllActivity}
@@ -663,11 +777,13 @@ export function DashboardContent({ hasCompletedQuestionnaire = false, hasPartial
                 </div>
               </div>
             ) : (
-              <EmptyState
-                icon={Bell}
-                title="No recent activity"
-                description="Your activity feed will appear here once you start matching and chatting"
-              />
+              <div className="flex-1 flex items-center justify-center">
+                <EmptyState
+                  icon={Bell}
+                  title="No recent activity"
+                  description="Your activity feed will appear here once you start matching and chatting"
+                />
+              </div>
             )}
           </div>
         </motion.div>
@@ -682,7 +798,7 @@ export function DashboardContent({ hasCompletedQuestionnaire = false, hasPartial
         <motion.div variants={fadeInUp}>
           <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-200">
             <h3 className="text-xl font-bold text-gray-900 mb-6">Quick Actions</h3>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
               <button 
                 className="flex flex-col items-center justify-center gap-2 h-20 px-4 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors" 
                 onClick={handleBrowseMatches}
@@ -697,14 +813,6 @@ export function DashboardContent({ hasCompletedQuestionnaire = false, hasPartial
               >
                 <MessageCircle className="w-6 h-6" />
                 <span className="text-sm font-medium">Start Chat</span>
-              </button>
-              
-              <button 
-                className="flex flex-col items-center justify-center gap-2 h-20 px-4 bg-white text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors" 
-                onClick={handleScheduleTour}
-              >
-                <Calendar className="w-6 h-6" />
-                <span className="text-sm font-medium">Schedule Tour</span>
               </button>
               
               <button 
