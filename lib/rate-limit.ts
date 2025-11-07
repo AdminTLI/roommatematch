@@ -1,12 +1,15 @@
 // Rate Limiting Implementation
 // This module provides rate limiting functionality for API endpoints and user actions
 
+import { getRateLimitStore } from './rate-limit-store'
+
 export interface RateLimitConfig {
   windowMs: number // Time window in milliseconds
   maxRequests: number // Maximum requests per window
   keyGenerator?: (request: any) => string // Custom key generator
   skipSuccessfulRequests?: boolean // Don't count successful requests
   skipFailedRequests?: boolean // Don't count failed requests
+  failClosed?: boolean // If true, deny requests when rate limit store fails (default: false for backward compat)
 }
 
 export interface RateLimitResult {
@@ -195,7 +198,16 @@ export class RateLimiter {
       }
     } catch (error) {
       console.error('Rate limit check error:', error)
-      // Fail open - allow request if rate limiting fails
+      // Fail-closed for critical routes, fail-open for others (backward compat)
+      if (this.config.failClosed) {
+        return {
+          allowed: false,
+          remaining: 0,
+          resetTime: now + this.config.windowMs,
+          totalHits: 0
+        }
+      }
+      // Fail open - allow request if rate limiting fails (default behavior)
       return {
         allowed: true,
         remaining: this.config.maxRequests,
@@ -240,6 +252,15 @@ export class RateLimiter {
       }
     } catch (error) {
       console.error('Rate limit status error:', error)
+      // Fail-closed for critical routes, fail-open for others (backward compat)
+      if (this.config.failClosed) {
+        return {
+          allowed: false,
+          remaining: 0,
+          resetTime: now + this.config.windowMs,
+          totalHits: 0
+        }
+      }
       return {
         allowed: true,
         remaining: this.config.maxRequests,
@@ -250,73 +271,95 @@ export class RateLimiter {
   }
 }
 
+// Shared store for distributed rate limiting (uses Upstash Redis in production)
+const sharedStore = getRateLimitStore()
+
 // Pre-configured rate limiters for different use cases
+// Critical routes use failClosed: true and shared store
 export const RATE_LIMITS = {
-  // API endpoints
+  // API endpoints (fail-closed for security)
   api: new RateLimiter({
     windowMs: 15 * 60 * 1000, // 15 minutes
-    maxRequests: 100
-  }),
+    maxRequests: 100,
+    failClosed: true
+  }, sharedStore),
 
-  // Authentication
+  // Authentication (fail-closed for security)
   auth: new RateLimiter({
     windowMs: 15 * 60 * 1000, // 15 minutes
-    maxRequests: 10
-  }),
+    maxRequests: 10,
+    failClosed: true
+  }, sharedStore),
 
-  // Messages
+  // Messages (fail-closed to prevent spam)
   messages: new RateLimiter({
     windowMs: 5 * 60 * 1000, // 5 minutes
-    maxRequests: 30
-  }),
+    maxRequests: 30,
+    failClosed: true
+  }, sharedStore),
 
-  // Reports
+  // Reports (fail-closed to prevent abuse)
   reports: new RateLimiter({
     windowMs: 60 * 60 * 1000, // 1 hour
-    maxRequests: 5
-  }),
+    maxRequests: 5,
+    failClosed: true
+  }, sharedStore),
 
-  // Forum posts
+  // Forum posts (fail-closed to prevent spam)
   forum_posts: new RateLimiter({
     windowMs: 60 * 60 * 1000, // 1 hour
-    maxRequests: 3
-  }),
+    maxRequests: 3,
+    failClosed: true
+  }, sharedStore),
 
-  // Forum comments
+  // Forum comments (fail-closed to prevent spam)
   forum_comments: new RateLimiter({
     windowMs: 15 * 60 * 1000, // 15 minutes
-    maxRequests: 10
-  }),
+    maxRequests: 10,
+    failClosed: true
+  }, sharedStore),
 
-  // ID verification
+  // ID verification (fail-closed to prevent abuse)
   id_verification: new RateLimiter({
     windowMs: 60 * 60 * 1000, // 1 hour
-    maxRequests: 3
-  }),
+    maxRequests: 3,
+    failClosed: true
+  }, sharedStore),
 
-  // Matching requests
+  // Matching requests (fail-closed to prevent DoS)
   matching: new RateLimiter({
     windowMs: 60 * 60 * 1000, // 1 hour
-    maxRequests: 5
-  }),
+    maxRequests: 5,
+    failClosed: true
+  }, sharedStore),
 
-  // Chat profiles (to prevent enumeration)
+  // Chat profiles (fail-closed to prevent enumeration)
   chat_profiles: new RateLimiter({
     windowMs: 60 * 1000, // 1 minute
-    maxRequests: 60
-  }),
+    maxRequests: 60,
+    failClosed: true
+  }, sharedStore),
 
-  // PDF generation
+  // PDF generation (fail-closed to prevent abuse)
   pdf_generation: new RateLimiter({
     windowMs: 60 * 60 * 1000, // 1 hour
-    maxRequests: 5
-  }),
+    maxRequests: 5,
+    failClosed: true
+  }, sharedStore),
 
-  // Chat creation (prevent spam)
+  // Chat creation (fail-closed to prevent spam)
   chat_creation: new RateLimiter({
     windowMs: 60 * 60 * 1000, // 1 hour
-    maxRequests: 10
-  })
+    maxRequests: 10,
+    failClosed: true
+  }, sharedStore),
+
+  // Matching refresh (fail-closed to prevent DoS)
+  matching_refresh: new RateLimiter({
+    windowMs: 5 * 60 * 1000, // 5 minutes
+    maxRequests: 1,
+    failClosed: true
+  }, sharedStore)
 }
 
 // Utility functions

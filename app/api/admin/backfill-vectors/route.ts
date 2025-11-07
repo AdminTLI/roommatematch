@@ -1,28 +1,28 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
+import { requireAdmin, logAdminAction } from '@/lib/auth/admin'
+import { safeLogger } from '@/lib/utils/logger'
 
 export async function POST(request: NextRequest) {
   try {
-    const supabase = await createClient()
-    const { data: { user } } = await supabase.auth.getUser()
-
-    if (!user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-    }
-
-    // Check if user is admin
-    const { data: adminRecord } = await supabase
-      .from('admins')
-      .select('role')
-      .eq('user_id', user.id)
-      .maybeSingle()
-
-    if (!adminRecord) {
-      return NextResponse.json({ error: 'Admin access required' }, { status: 403 })
-    }
-
-    console.log('[Admin] Starting vector backfill for all users with responses')
+    // Use requireAdmin helper (includes audit logging and prevents enumeration)
+    const adminCheck = await requireAdmin(request)
     
+    if (!adminCheck.ok) {
+      return NextResponse.json(
+        { error: adminCheck.error || 'Admin access required' },
+        { status: adminCheck.status }
+      )
+    }
+
+    const { user, adminRecord } = adminCheck
+    const supabase = await createClient()
+
+    // Audit log admin action
+    logAdminAction('backfill_vectors', {
+      action: 'Starting vector backfill for all users with responses'
+    }, user!.id, adminRecord!.role)
+
     // Get all users with responses
     const { data: usersWithResponses, error: usersError } = await supabase
       .from('responses')
@@ -43,7 +43,9 @@ export async function POST(request: NextRequest) {
 
     // Get unique user IDs
     const uniqueUserIds = Array.from(new Set(usersWithResponses.map(r => r.user_id)))
-    console.log(`[Admin] Found ${uniqueUserIds.length} unique users with responses`)
+    safeLogger.info('[Admin] Found unique users with responses', {
+      count: uniqueUserIds.length
+    })
 
     let processed = 0
     let skipped = 0
@@ -73,21 +75,32 @@ export async function POST(request: NextRequest) {
         })
         
         if (vectorError) {
-          const errorMsg = `Failed to generate vector for user ${userId}: ${vectorError.message}`
-          console.error(errorMsg)
+          const errorMsg = `Failed to generate vector: ${vectorError.message}`
+          safeLogger.error('[Admin] Vector generation failed', vectorError)
           errors.push(errorMsg)
         } else {
           processed++
           if (processed % 10 === 0) {
-            console.log(`[Admin] Processed ${processed}/${uniqueUserIds.length} users`)
+            safeLogger.debug('[Admin] Processing progress', {
+              processed,
+              total: uniqueUserIds.length
+            })
           }
         }
       } catch (error) {
-        const errorMsg = `Error processing user ${userId}: ${error instanceof Error ? error.message : 'Unknown error'}`
-        console.error(errorMsg)
+        const errorMsg = `Error processing user: ${error instanceof Error ? error.message : 'Unknown error'}`
+        safeLogger.error('[Admin] Error processing user', error)
         errors.push(errorMsg)
       }
     }
+
+    // Audit log completion
+    logAdminAction('backfill_vectors_complete', {
+      processed,
+      skipped,
+      total: uniqueUserIds.length,
+      errorCount: errors.length
+    }, user!.id, adminRecord!.role)
 
     return NextResponse.json({
       success: true,
@@ -99,7 +112,7 @@ export async function POST(request: NextRequest) {
     })
 
   } catch (error) {
-    console.error('[Admin] Vector backfill failed:', error)
+    safeLogger.error('[Admin] Vector backfill failed', error)
     return NextResponse.json(
       { 
         error: 'Vector backfill failed', 

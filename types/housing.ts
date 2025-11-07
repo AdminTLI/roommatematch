@@ -73,16 +73,16 @@ export type Listing = {
   parkingCost: number
   universityId?: string
   landlordName: string
-  landlordEmail: string
+  landlordEmail?: string // Optional - only included for authenticated users
   landlordPhone?: string
   agencyName?: string
-  agencyLicense?: string
+  agencyLicense?: string // Optional - only included for authenticated users
   photos: string[]
   virtualTourUrl?: string
   floorPlanUrl?: string
   status: 'active' | 'pending' | 'suspended' | 'rented' | 'expired'
-  moderationStatus: 'pending' | 'approved' | 'rejected' | 'needs_review'
-  moderationNotes?: string
+  moderationStatus?: 'pending' | 'approved' | 'rejected' | 'needs_review' // Optional - only included for authenticated users
+  moderationNotes?: string // Optional - only included for authenticated users
   createdAt: string
   updatedAt: string
   expiresAt?: string

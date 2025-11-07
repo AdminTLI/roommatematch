@@ -1,42 +1,37 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createClient } from '@/lib/supabase/server'
+import { requireAdmin } from '@/lib/auth/admin'
 
+/**
+ * Debug endpoint - should be disabled in production
+ * Only returns minimal info to authenticated admin, no enumeration
+ */
 export async function GET(request: NextRequest) {
+  // Disable in production for security
+  if (process.env.NODE_ENV === 'production') {
+    return NextResponse.json(
+      { error: 'Debug endpoint disabled in production' },
+      { status: 404 }
+    )
+  }
+
   try {
-    const supabase = await createClient()
-    const { data: { user }, error: authError } = await supabase.auth.getUser()
+    const adminCheck = await requireAdmin(request)
     
-    if (authError || !user) {
-      return NextResponse.json({ 
-        error: 'Not authenticated',
-        authError: authError?.message 
-      }, { status: 401 })
+    if (!adminCheck.ok) {
+      return NextResponse.json(
+        { error: adminCheck.error || 'Admin access required' },
+        { status: adminCheck.status }
+      )
     }
 
-    // Check admin record
-    const { data: adminRecord, error: adminError } = await supabase
-      .from('admins')
-      .select('*')
-      .eq('user_id', user.id)
-      .maybeSingle()
+    const { user, adminRecord } = adminCheck
 
-    // Also check all admins to see what's in the table
-    const { data: allAdmins, error: allAdminsError } = await supabase
-      .from('admins')
-      .select('user_id, role, university_id')
-      .limit(10)
-
+    // Only return info about the current admin, no enumeration
     return NextResponse.json({
-      user: {
-        id: user.id,
-        email: user.email,
-        email_confirmed_at: user.email_confirmed_at
-      },
-      adminRecord: adminRecord || null,
-      adminError: adminError?.message,
-      allAdmins: allAdmins || [],
-      allAdminsError: allAdminsError?.message,
-      isAdmin: !!adminRecord
+      isAdmin: true,
+      role: adminRecord?.role,
+      universityId: adminRecord?.university_id
+      // Do not return user ID, email, or other admins
     })
   } catch (error) {
     return NextResponse.json(

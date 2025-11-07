@@ -108,17 +108,36 @@ export async function GET(request: NextRequest) {
       }
     }
     
-    // Build base query
-    let queryBuilder = supabase
-      .from('housing_listings')
-      .select(`
-        *,
+    // Build base query - select fields conditionally based on authentication
+    // For anonymous users, explicitly exclude sensitive PII fields (landlord_email, landlord_phone,
+    // agency_license, moderation_status, moderation_notes) from SELECT
+    const isAuthenticated = !!user
+    const selectFields = isAuthenticated
+      ? `*,
         housing_compatibility_scores!left(
           overall_compatibility,
           positive_factors,
           negative_factors
-        )
-      `)
+        )`
+      : `id, title, address, city, latitude, longitude, postal_code, property_type,
+        rent_monthly, available_from, available_until, min_stay_months, max_stay_months,
+        room_type, total_rooms, available_rooms, total_bathrooms, square_meters,
+        utilities_cost, deposit_amount, agency_fee, parking_available, parking_cost,
+        furnished, utilities_included, pet_friendly, smoking_allowed, amenities,
+        photos, virtual_tour_url, floor_plan_url, description, status,
+        verified_by_university, verification_date, university_id, landlord_name, agency_name,
+        created_at, updated_at, expires_at,
+        housing_compatibility_scores!left(
+          overall_compatibility,
+          positive_factors,
+          negative_factors
+        )`
+    // Note: moderation_status is used in WHERE clause but NOT selected for anonymous users
+    // landlord_email, landlord_phone, agency_license, moderation_status, moderation_notes are excluded
+    
+    let queryBuilder = supabase
+      .from('housing_listings')
+      .select(selectFields)
       .eq('status', 'active')
       .eq('moderation_status', 'approved')
     
@@ -191,7 +210,10 @@ export async function GET(request: NextRequest) {
     }
     
     // Transform data to our Listing type
-    const transformedListings: Listing[] = (listings || []).map((item: any) => ({
+    // Sensitive PII (landlord contact, moderation info) already excluded from query for anonymous users
+    const transformedListings: Listing[] = (listings || []).map((item: any) => {
+      // Build base listing object
+      const listing: any = {
       id: item.id,
       title: item.title,
       address: item.address,
@@ -257,20 +279,35 @@ export async function GET(request: NextRequest) {
       parkingCost: item.parking_cost,
       universityId: item.university_id,
       landlordName: item.landlord_name,
-      landlordEmail: item.landlord_email,
-      landlordPhone: item.landlord_phone,
       agencyName: item.agency_name,
-      agencyLicense: item.agency_license,
       photos: item.photos || [],
       virtualTourUrl: item.virtual_tour_url,
       floorPlanUrl: item.floor_plan_url,
       status: item.status,
-      moderationStatus: item.moderation_status,
-      moderationNotes: item.moderation_notes,
       createdAt: item.created_at,
       updatedAt: item.updated_at,
       expiresAt: item.expires_at
-    }))
+    }
+    
+    // Only include sensitive PII for authenticated users
+    // For anonymous users, these fields are not in the SELECT query, so item.* will be undefined
+    // We defensively check isAuthenticated AND that the field exists before adding it
+    if (isAuthenticated) {
+      // Only add fields if they exist (defensive check)
+      if (item.landlord_email !== undefined) listing.landlordEmail = item.landlord_email
+      if (item.landlord_phone !== undefined) listing.landlordPhone = item.landlord_phone
+      if (item.agency_license !== undefined) listing.agencyLicense = item.agency_license
+      if (item.moderation_status !== undefined) listing.moderationStatus = item.moderation_status
+      if (item.moderation_notes !== undefined) listing.moderationNotes = item.moderation_notes
+    } else {
+      // For anonymous users: fields are excluded from SELECT, so they won't be in item
+      // Only set moderationStatus to 'approved' (already filtered in WHERE clause)
+      // Do NOT add landlordEmail, landlordPhone, agencyLicense, or moderationNotes
+      listing.moderationStatus = 'approved'
+    }
+    
+    return listing as Listing
+    })
     
     // Apply sorting
     const sort = query.sort || 'best'

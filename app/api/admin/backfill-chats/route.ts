@@ -1,29 +1,28 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient, createAdminClient } from '@/lib/supabase/server'
+import { requireAdmin, logAdminAction } from '@/lib/auth/admin'
+import { safeLogger } from '@/lib/utils/logger'
 
 export async function POST(request: NextRequest) {
   try {
-    const supabase = await createClient()
-    const { data: { user }, error: authError } = await supabase.auth.getUser()
-
-    if (authError || !user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-    }
-
-    // Use admin client to check admin status (bypasses RLS)
-    const adminClient = await createAdminClient()
-    const { data: adminRecord } = await adminClient
-      .from('admins')
-      .select('role, user_id, university_id')
-      .eq('user_id', user.id)
-      .maybeSingle()
-
-    if (!adminRecord) {
-      return NextResponse.json({ error: 'Admin access required' }, { status: 403 })
-    }
-
-    console.log('[Admin] Starting chat backfill for confirmed matches')
+    // Use requireAdmin helper (includes audit logging and prevents enumeration)
+    const adminCheck = await requireAdmin(request)
     
+    if (!adminCheck.ok) {
+      return NextResponse.json(
+        { error: adminCheck.error || 'Admin access required' },
+        { status: adminCheck.status }
+      )
+    }
+
+    const { user, adminRecord } = adminCheck
+    const supabase = await createClient()
+
+    // Audit log admin action
+    logAdminAction('backfill_chats', {
+      action: 'Starting chat backfill for confirmed matches'
+    }, user!.id, adminRecord!.role)
+
     const admin = await createAdminClient()
     
     // Get all confirmed pair suggestions
@@ -45,7 +44,9 @@ export async function POST(request: NextRequest) {
       })
     }
 
-    console.log(`[Admin] Found ${confirmedSuggestions.length} confirmed pair suggestions`)
+    safeLogger.info('[Admin] Found confirmed pair suggestions', {
+      count: confirmedSuggestions.length
+    })
 
     // Group by pair (sorted memberIds as key)
     const pairMap = new Map<string, any[]>()
@@ -62,7 +63,9 @@ export async function POST(request: NextRequest) {
       pairMap.get(pairKey)!.push(sug)
     }
 
-    console.log(`[Admin] Grouped into ${pairMap.size} unique confirmed pairs`)
+    safeLogger.info('[Admin] Grouped into unique confirmed pairs', {
+      pairCount: pairMap.size
+    })
 
     let processed = 0
     let skipped = 0
@@ -73,7 +76,7 @@ export async function POST(request: NextRequest) {
       try {
         const [userA, userB] = pairKey.split('::')
         
-        console.log(`[Admin] Processing pair ${pairKey} for chat creation`)
+        safeLogger.debug('[Admin] Processing pair for chat creation')
 
         // Check if chat already exists
         let chatId: string | undefined
@@ -83,7 +86,7 @@ export async function POST(request: NextRequest) {
           .eq('user_id', userA)
 
         if (existingChatsError) {
-          console.warn(`[Admin] Error checking existing chats for userA:`, existingChatsError)
+          safeLogger.warn('[Admin] Error checking existing chats', existingChatsError)
         }
 
         if (existingChatsA && existingChatsA.length > 0) {
@@ -95,19 +98,19 @@ export async function POST(request: NextRequest) {
             .eq('user_id', userB)
           
           if (commonError) {
-            console.warn(`[Admin] Error checking common chats:`, commonError)
+            safeLogger.warn('[Admin] Error checking common chats', commonError)
           }
           
           if (common && common.length > 0) {
             chatId = common[0].chat_id
-            console.log(`[Admin] Chat ${chatId} already exists for pair ${pairKey}`)
+            safeLogger.debug('[Admin] Chat already exists for pair')
             skipped++
             continue
           }
         }
 
         // Create chat
-        console.log(`[Admin] Creating chat for confirmed pair ${pairKey}`)
+        safeLogger.info('[Admin] Creating chat for confirmed pair')
         const { data: createdChat, error: chatErr } = await admin
           .from('chats')
           .insert({ is_group: false, created_by: userA })
@@ -119,7 +122,7 @@ export async function POST(request: NextRequest) {
         }
 
         chatId = createdChat.id
-        console.log(`[Admin] Created chat ${chatId}`)
+        safeLogger.debug('[Admin] Created chat for pair')
 
         // Add members
         const { error: membersErr } = await admin.from('chat_members').insert([
@@ -130,7 +133,7 @@ export async function POST(request: NextRequest) {
         if (membersErr) {
           throw new Error(`Failed to add chat members: ${membersErr.message}`)
         }
-        console.log(`[Admin] Added members to chat ${chatId}`)
+        safeLogger.debug('[Admin] Added members to chat')
 
         // Create system message
         const { error: msgErr } = await admin.from('messages').insert({
@@ -140,10 +143,10 @@ export async function POST(request: NextRequest) {
         })
 
         if (msgErr) {
-          console.warn(`[Admin] Failed to create system message for chat ${chatId}:`, msgErr)
+          safeLogger.warn('[Admin] Failed to create system message for chat', msgErr)
           // Don't fail if message creation fails
         } else {
-          console.log(`[Admin] Created system message in chat ${chatId}`)
+          safeLogger.debug('[Admin] Created system message in chat')
         }
 
         // Update chat updated_at
@@ -153,17 +156,25 @@ export async function POST(request: NextRequest) {
           .eq('id', chatId)
 
         if (updateErr) {
-          console.warn(`[Admin] Failed to update chat ${chatId} updated_at:`, updateErr)
+          safeLogger.warn('[Admin] Failed to update chat updated_at', updateErr)
         }
 
-        console.log(`[Admin] Successfully created chat ${chatId} for pair ${pairKey}`)
+        safeLogger.info('[Admin] Successfully created chat for pair')
         processed++
       } catch (error) {
-        const errorMsg = `Error processing pair ${pairKey}: ${error instanceof Error ? error.message : 'Unknown error'}`
-        console.error(errorMsg)
+        const errorMsg = `Error processing pair: ${error instanceof Error ? error.message : 'Unknown error'}`
+        safeLogger.error('[Admin] Error processing pair', error)
         errors.push(errorMsg)
       }
     }
+
+    // Audit log completion
+    logAdminAction('backfill_chats_complete', {
+      processed,
+      skipped,
+      totalPairs: pairMap.size,
+      errorCount: errors.length
+    }, user!.id, adminRecord!.role)
 
     return NextResponse.json({
       success: true,
@@ -175,7 +186,7 @@ export async function POST(request: NextRequest) {
     })
 
   } catch (error) {
-    console.error('[Admin] Chat backfill failed:', error)
+    safeLogger.error('[Admin] Chat backfill failed', error)
     return NextResponse.json(
       { 
         error: 'Chat backfill failed', 

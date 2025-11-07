@@ -2,53 +2,28 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createClient, createAdminClient } from '@/lib/supabase/server'
 import { getMatchRepo } from '@/lib/matching/repo.factory'
 import { createMatchNotification } from '@/lib/notifications/create'
+import { requireAdmin, logAdminAction } from '@/lib/auth/admin'
+import { safeLogger } from '@/lib/utils/logger'
 
 export async function POST(request: NextRequest) {
   try {
+    // Use requireAdmin helper (includes audit logging and prevents enumeration)
+    const adminCheck = await requireAdmin(request)
+    
+    if (!adminCheck.ok) {
+      return NextResponse.json(
+        { error: adminCheck.error || 'Admin access required' },
+        { status: adminCheck.status }
+      )
+    }
+
+    const { user, adminRecord } = adminCheck
     const supabase = await createClient()
-    const { data: { user }, error: authError } = await supabase.auth.getUser()
 
-    if (authError || !user) {
-      console.log('[Admin] Auth error:', authError?.message)
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-    }
-
-    console.log('[Admin] Checking admin status for user:', user.id, user.email)
-
-    // Use admin client to check admin status (bypasses RLS)
-    const adminClient = await createAdminClient()
-    const { data: adminRecord, error: adminError } = await adminClient
-      .from('admins')
-      .select('role, user_id, university_id')
-      .eq('user_id', user.id)
-      .maybeSingle()
-
-    console.log('[Admin] Admin query result:', {
-      adminRecord,
-      adminError: adminError?.message,
-      userId: user.id
-    })
-
-    if (!adminRecord) {
-      // Use admin client to check all admins (bypasses RLS)
-      const { data: sampleAdmins } = await adminClient
-        .from('admins')
-        .select('user_id, role')
-        .limit(5)
-      
-      console.log('[Admin] Sample admins in table:', sampleAdmins)
-      
-      return NextResponse.json({ 
-        error: 'Admin access required',
-        debug: {
-          userId: user.id,
-          userEmail: user.email,
-          sampleAdmins: sampleAdmins || []
-        }
-      }, { status: 403 })
-    }
-
-    console.log('[Admin] Starting manual confirmation of pending matches')
+    // Audit log admin action
+    logAdminAction('confirm_pending_matches', {
+      action: 'Starting manual confirmation of pending matches'
+    }, user!.id, adminRecord!.role)
     
     const admin = await createAdminClient()
     const repo = await getMatchRepo()
@@ -72,7 +47,9 @@ export async function POST(request: NextRequest) {
       })
     }
 
-    console.log(`[Admin] Found ${allPairSuggestions.length} total pair suggestions`)
+    safeLogger.info('[Admin] Found pair suggestions', {
+      count: allPairSuggestions.length
+    })
 
     // Group by pair (sorted memberIds as key) - this groups ALL suggestions for each pair
     const pairMap = new Map<string, any[]>()
@@ -89,7 +66,9 @@ export async function POST(request: NextRequest) {
       pairMap.get(pairKey)!.push(sug)
     }
 
-    console.log(`[Admin] Grouped into ${pairMap.size} unique pairs`)
+    safeLogger.info('[Admin] Grouped into unique pairs', {
+      pairCount: pairMap.size
+    })
 
     let processed = 0
     let skipped = 0
@@ -108,12 +87,10 @@ export async function POST(request: NextRequest) {
           acceptedBy.forEach(id => unionAccepted.add(id))
         }
 
-        console.log(`[Admin] Pair ${pairKey}:`, {
+        safeLogger.debug('[Admin] Processing pair', {
           suggestionCount: suggestions.length,
-          suggestionIds: suggestions.map(s => s.id),
           suggestionStatuses: suggestions.map(s => s.status),
-          acceptedByArrays: suggestions.map(s => s.accepted_by || []),
-          unionAccepted: Array.from(unionAccepted)
+          unionAcceptedCount: unionAccepted.size
         })
 
         // Check if both users have accepted (regardless of suggestion status)
@@ -121,14 +98,14 @@ export async function POST(request: NextRequest) {
         
         if (!bothAccepted) {
           skipped++
-          console.log(`[Admin] Skipping pair ${pairKey} - not both accepted (union: ${Array.from(unionAccepted).join(', ')})`)
+          safeLogger.debug('[Admin] Skipping pair - not both accepted')
           continue
         }
 
         // Check if already confirmed
         const alreadyConfirmed = suggestions.some(s => s.status === 'confirmed')
         if (alreadyConfirmed) {
-          console.log(`[Admin] Pair ${pairKey} already confirmed - checking if chat exists`)
+          safeLogger.debug('[Admin] Pair already confirmed - checking if chat exists')
           
           // Even if already confirmed, ensure chat exists
           let chatId: string | undefined
@@ -147,12 +124,12 @@ export async function POST(request: NextRequest) {
                 .eq('user_id', userB)
               if (common && common.length > 0) {
                 chatId = common[0].chat_id
-                console.log(`[Admin] Chat ${chatId} already exists for confirmed pair ${pairKey}`)
+                safeLogger.debug('[Admin] Chat already exists for confirmed pair')
               }
             }
 
             if (!chatId) {
-              console.log(`[Admin] Creating missing chat for already-confirmed pair ${pairKey}`)
+              safeLogger.info('[Admin] Creating missing chat for already-confirmed pair')
               const { data: createdChat, error: chatErr } = await admin
                 .from('chats')
                 .insert({ is_group: false, created_by: userA })
@@ -174,24 +151,21 @@ export async function POST(request: NextRequest) {
                   .from('chats')
                   .update({ updated_at: new Date().toISOString() })
                   .eq('id', chatId)
-                console.log(`[Admin] Created missing chat ${chatId} for confirmed pair ${pairKey}`)
+                safeLogger.info('[Admin] Created missing chat for confirmed pair')
                 processed++ // Count as processed since we created the chat
               } else if (chatErr) {
-                console.error(`[Admin] Failed to create chat for confirmed pair ${pairKey}:`, chatErr)
+                safeLogger.error('[Admin] Failed to create chat for confirmed pair', chatErr)
               }
             }
           } catch (chatError) {
-            console.error(`[Admin] Error checking/creating chat for confirmed pair ${pairKey}:`, chatError)
+            safeLogger.error('[Admin] Error checking/creating chat for confirmed pair', chatError)
           }
           
           skipped++
           continue
         }
 
-        console.log(`[Admin] Confirming match for pair ${userA} <-> ${userB}`, {
-          suggestionIds: suggestions.map(s => s.id),
-          unionAccepted: Array.from(unionAccepted)
-        })
+        safeLogger.info('[Admin] Confirming match for pair')
 
         // Update ALL suggestions for this pair to confirmed (including expired ones)
         // This ensures consistency across all suggestion records for the pair
@@ -199,7 +173,10 @@ export async function POST(request: NextRequest) {
           const merged = new Set<string>(sug.accepted_by as string[] || [])
           unionAccepted.forEach(a => merged.add(a))
           
-          console.log(`[Admin] Updating suggestion ${sug.id} from status ${sug.status} to confirmed`)
+          safeLogger.debug('[Admin] Updating suggestion to confirmed', {
+            suggestionId: sug.id,
+            previousStatus: sug.status
+          })
           await repo.updateSuggestionAcceptedByAndStatus(
             sug.id,
             Array.from(merged),
@@ -229,26 +206,28 @@ export async function POST(request: NextRequest) {
           await repo.lockMatch([userA, userB], firstSug.run_id as string)
           await repo.markUsersMatched([userA, userB], firstSug.run_id as string)
         } catch (matchRecordError) {
-          console.warn(`[Admin] Failed to save match record for pair ${pairKey}:`, matchRecordError)
+          safeLogger.warn('[Admin] Failed to save match record for pair', matchRecordError)
           // Continue anyway - suggestions are already confirmed
         }
 
         // Create chat if it doesn't exist
         let chatId: string | undefined
         try {
-          console.log(`[Admin] Checking for existing chat for pair ${userA} <-> ${userB}`)
+          safeLogger.debug('[Admin] Checking for existing chat for pair')
           const { data: existingChatsA, error: existingChatsError } = await admin
             .from('chat_members')
             .select('chat_id')
             .eq('user_id', userA)
 
           if (existingChatsError) {
-            console.warn(`[Admin] Error checking existing chats for userA:`, existingChatsError)
+            safeLogger.warn('[Admin] Error checking existing chats', existingChatsError)
           }
 
           if (existingChatsA && existingChatsA.length > 0) {
             const chatIds = existingChatsA.map((r: any) => r.chat_id)
-            console.log(`[Admin] Found ${chatIds.length} existing chats for userA, checking if userB is in any`)
+            safeLogger.debug('[Admin] Found existing chats, checking if pair exists', {
+              chatCount: chatIds.length
+            })
             const { data: common, error: commonError } = await admin
               .from('chat_members')
               .select('chat_id')
@@ -256,17 +235,17 @@ export async function POST(request: NextRequest) {
               .eq('user_id', userB)
             
             if (commonError) {
-              console.warn(`[Admin] Error checking common chats:`, commonError)
+              safeLogger.warn('[Admin] Error checking common chats', commonError)
             }
             
             if (common && common.length > 0) {
               chatId = common[0].chat_id
-              console.log(`[Admin] Found existing chat ${chatId} for pair ${userA} <-> ${userB}`)
+              safeLogger.debug('[Admin] Found existing chat for pair')
             }
           }
 
           if (!chatId) {
-            console.log(`[Admin] Creating new chat for pair ${userA} <-> ${userB}`)
+            safeLogger.info('[Admin] Creating new chat for pair')
             const { data: createdChat, error: chatErr } = await admin
               .from('chats')
               .insert({ is_group: false, created_by: userA, match_id: null })
@@ -278,7 +257,7 @@ export async function POST(request: NextRequest) {
             }
 
             chatId = createdChat.id
-            console.log(`[Admin] Created chat ${chatId}`)
+            safeLogger.info('[Admin] Created chat for pair')
 
             const { error: membersErr } = await admin.from('chat_members').insert([
               { chat_id: chatId, user_id: userA },
@@ -288,7 +267,7 @@ export async function POST(request: NextRequest) {
             if (membersErr) {
               throw new Error(`Failed to add chat members: ${membersErr.message}`)
             }
-            console.log(`[Admin] Added members to chat ${chatId}`)
+            safeLogger.debug('[Admin] Added members to chat')
 
             const { error: msgErr } = await admin.from('messages').insert({
               chat_id: chatId,
@@ -297,10 +276,10 @@ export async function POST(request: NextRequest) {
             })
 
             if (msgErr) {
-              console.warn(`[Admin] Failed to create system message for chat ${chatId}:`, msgErr)
+              safeLogger.warn('[Admin] Failed to create system message for chat', msgErr)
               // Don't fail if message creation fails
             } else {
-              console.log(`[Admin] Created system message in chat ${chatId}`)
+              safeLogger.debug('[Admin] Created system message in chat')
             }
 
             const { error: updateErr } = await admin
@@ -309,13 +288,13 @@ export async function POST(request: NextRequest) {
               .eq('id', chatId)
 
             if (updateErr) {
-              console.warn(`[Admin] Failed to update chat ${chatId} updated_at:`, updateErr)
+              safeLogger.warn('[Admin] Failed to update chat updated_at', updateErr)
             }
             
-            console.log(`[Admin] Successfully created chat ${chatId} for pair ${userA} <-> ${userB}`)
+            safeLogger.info('[Admin] Successfully created chat for pair')
           }
         } catch (chatError) {
-          console.error(`[Admin] Failed to create chat for pair ${pairKey}:`, chatError)
+          safeLogger.error('[Admin] Failed to create chat for pair', chatError)
           // Don't fail the whole operation if chat creation fails
           // The match is still confirmed
         }
@@ -330,16 +309,24 @@ export async function POST(request: NextRequest) {
             chatId
           )
         } catch (notifError) {
-          console.warn(`[Admin] Failed to create notifications for pair ${pairKey}:`, notifError)
+          safeLogger.warn('[Admin] Failed to create notifications for pair', notifError)
         }
 
         processed++
       } catch (error) {
-        const errorMsg = `Error processing pair ${pairKey}: ${error instanceof Error ? error.message : 'Unknown error'}`
-        console.error(errorMsg)
+        const errorMsg = `Error processing pair: ${error instanceof Error ? error.message : 'Unknown error'}`
+        safeLogger.error('[Admin] Error processing pair', error)
         errors.push(errorMsg)
       }
     }
+
+    // Audit log completion
+    logAdminAction('confirm_pending_matches_complete', {
+      processed,
+      skipped,
+      totalPairs: pairMap.size,
+      errorCount: errors.length
+    }, user!.id, adminRecord!.role)
 
     return NextResponse.json({
       success: true,
@@ -351,7 +338,7 @@ export async function POST(request: NextRequest) {
     })
 
   } catch (error) {
-    console.error('[Admin] Match confirmation failed:', error)
+    safeLogger.error('[Admin] Match confirmation failed', error)
     return NextResponse.json(
       { 
         error: 'Match confirmation failed', 
