@@ -67,6 +67,7 @@ export function ChatInterface({ roomId, user }: ChatInterfaceProps) {
   const typingTimeoutRef = useRef<NodeJS.Timeout>()
   const typingChannelRef = useRef<any>(null)
   const messagesChannelRef = useRef<any>(null)
+  const resubscribeTimeoutRef = useRef<NodeJS.Timeout | null>(null)
 
   // Mock data for demonstration
   const mockMessages: Message[] = [
@@ -444,37 +445,65 @@ export function ChatInterface({ roomId, user }: ChatInterfaceProps) {
         filter: `chat_id=eq.${roomId}`
       }, async (payload) => {
         console.log('[Realtime] ===== CALLBACK TRIGGERED =====')
+        console.log('[Realtime] Timestamp:', new Date().toISOString())
+        console.log('[Realtime] Event type:', payload.eventType)
         console.log('[Realtime] Full payload:', JSON.stringify(payload, null, 2))
-        console.log('[Realtime] Payload type:', payload.eventType)
-        console.log('[Realtime] Payload new:', payload.new)
-        console.log('[Realtime] Payload old:', payload.old)
         
         try {
-          console.log('[Realtime] New message received:', {
-            messageId: payload.new?.id,
-            userId: payload.new?.user_id,
-            chatId: payload.new?.chat_id,
-            content: payload.new?.content?.substring(0, 50),
+          // Validate payload structure
+          if (!payload || typeof payload !== 'object') {
+            console.error('[Realtime] ❌ Invalid payload structure:', payload)
+            return
+          }
+
+          if (!payload.new || typeof payload.new !== 'object') {
+            console.error('[Realtime] ❌ Missing or invalid payload.new:', payload)
+            return
+          }
+
+          const newMessage = payload.new as any
+          
+          // Validate required fields
+          if (!newMessage.id) {
+            console.error('[Realtime] ❌ Missing message ID in payload:', payload)
+            return
+          }
+
+          if (!newMessage.chat_id) {
+            console.error('[Realtime] ❌ Missing chat_id in payload:', payload)
+            return
+          }
+
+          // Verify this message belongs to the current chat room
+          if (newMessage.chat_id !== roomId) {
+            console.warn('[Realtime] ⚠️ Message chat_id mismatch:', {
+              messageChatId: newMessage.chat_id,
+              currentRoomId: roomId,
+              messageId: newMessage.id
+            })
+            return
+          }
+
+          console.log('[Realtime] ✅ Valid message received:', {
+            messageId: newMessage.id,
+            userId: newMessage.user_id,
+            chatId: newMessage.chat_id,
+            content: newMessage.content?.substring(0, 50),
+            createdAt: newMessage.created_at,
             currentUserId: user.id,
             roomId: roomId
           })
           
-          const newMessage = payload.new as any
-          
-          if (!newMessage || !newMessage.id) {
-            console.error('[Realtime] Invalid message payload:', payload)
-            return
-          }
-          
           // Only add if it's not from the current user (to avoid duplicates from optimistic updates)
           if (newMessage.user_id === user.id) {
-            console.log('[Realtime] Skipping own message:', newMessage.id)
+            console.log('[Realtime] ℹ️ Skipping own message (optimistic update already handled):', newMessage.id)
             return
           }
           
           // Fetch profile for the sender using API route
           let senderName = 'Unknown User'
           try {
+            console.log('[Realtime] Fetching profile for user:', newMessage.user_id)
             const profilesResponse = await fetch('/api/chat/profiles', {
               method: 'POST',
               headers: {
@@ -487,22 +516,26 @@ export function ChatInterface({ roomId, user }: ChatInterfaceProps) {
             })
 
             if (profilesResponse.ok) {
-              const { profiles } = await profilesResponse.json()
-              const profile = profiles?.[0]
+              const responseData = await profilesResponse.json()
+              const profile = responseData?.profiles?.[0]
               if (profile) {
                 senderName = [profile.first_name?.trim(), profile.last_name?.trim()].filter(Boolean).join(' ') || 'User'
+                console.log('[Realtime] ✅ Profile fetched successfully:', senderName)
                 // Update profilesMap in state for use in typing indicators
                 setProfilesMap(prev => {
                   const updated = new Map(prev)
                   updated.set(profile.user_id, profile)
                   return updated
                 })
+              } else {
+                console.warn('[Realtime] ⚠️ Profile not found in response:', responseData)
               }
             } else {
-              console.warn('[Realtime] Failed to fetch profile, status:', profilesResponse.status)
+              const errorText = await profilesResponse.text()
+              console.warn('[Realtime] ⚠️ Failed to fetch profile, status:', profilesResponse.status, 'Error:', errorText)
             }
           } catch (err) {
-            console.error('[Realtime] Error fetching profile for new message:', err)
+            console.error('[Realtime] ❌ Error fetching profile for new message:', err)
             // Continue with 'Unknown User' - don't block message display
           }
           
@@ -510,24 +543,35 @@ export function ChatInterface({ roomId, user }: ChatInterfaceProps) {
           const isSystemGreeting = newMessage.content === "You're matched! Start your conversation 👋"
           
           setMessages(prev => {
-            console.log('[Realtime] Current messages count:', prev.length)
-            console.log('[Realtime] Current message IDs:', prev.map(m => m.id))
+            console.log('[Realtime] 📊 Current state before update:', {
+              currentMessagesCount: prev.length,
+              currentMessageIDs: prev.map(m => m.id),
+              newMessageId: newMessage.id
+            })
             
             // Double-check for duplicates
             const exists = prev.some(msg => msg.id === newMessage.id)
             if (exists) {
-              console.log('[Realtime] Message already exists, skipping:', newMessage.id)
+              console.warn('[Realtime] ⚠️ Message already exists in state, skipping duplicate:', newMessage.id)
               return prev
             }
             
-            console.log('[Realtime] Adding new message to state:', {
+            // Validate message content
+            if (!newMessage.content || typeof newMessage.content !== 'string') {
+              console.error('[Realtime] ❌ Invalid message content:', newMessage)
+              return prev
+            }
+            
+            console.log('[Realtime] ➕ Adding new message to state:', {
               id: newMessage.id,
               sender: senderName,
+              senderId: newMessage.user_id,
               isSystem: isSystemGreeting,
-              content: newMessage.content.substring(0, 30)
+              contentPreview: newMessage.content.substring(0, 30),
+              createdAt: newMessage.created_at
             })
             
-            const updatedMessages = [...prev, {
+            const messageToAdd: Message = {
               id: newMessage.id,
               content: newMessage.content,
               sender_id: newMessage.user_id,
@@ -536,42 +580,93 @@ export function ChatInterface({ roomId, user }: ChatInterfaceProps) {
               read_by: [],
               is_own: false,
               is_system_message: isSystemGreeting
-            }]
+            }
             
-            console.log('[Realtime] Updated messages count:', updatedMessages.length)
-            console.log('[Realtime] Updated message IDs:', updatedMessages.map(m => m.id))
+            const updatedMessages = [...prev, messageToAdd]
+            
+            console.log('[Realtime] ✅ State updated successfully:', {
+              previousCount: prev.length,
+              newCount: updatedMessages.length,
+              addedMessageId: newMessage.id
+            })
             
             return updatedMessages
           })
           
           // Scroll to bottom when new message arrives
           setTimeout(() => {
-            messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
+            try {
+              messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
+            } catch (scrollError) {
+              console.warn('[Realtime] ⚠️ Error scrolling to bottom:', scrollError)
+            }
           }, 100)
+          
+          console.log('[Realtime] ✅ Message processing completed successfully')
         } catch (error) {
-          console.error('[Realtime] Error processing new message:', error)
-          console.error('[Realtime] Payload:', payload)
+          console.error('[Realtime] ❌ Fatal error processing new message:', error)
+          console.error('[Realtime] Error details:', {
+            message: error instanceof Error ? error.message : String(error),
+            stack: error instanceof Error ? error.stack : undefined,
+            payload: payload
+          })
+          
+          // Try to reload chat data as fallback
+          console.log('[Realtime] 🔄 Attempting to reload chat data as fallback...')
+          try {
+            await loadChatData()
+          } catch (reloadError) {
+            console.error('[Realtime] ❌ Failed to reload chat data:', reloadError)
+          }
         }
       })
       .subscribe((status, err) => {
         console.log('[Realtime] ===== SUBSCRIPTION STATUS CHANGE =====')
+        console.log('[Realtime] Timestamp:', new Date().toISOString())
         console.log('[Realtime] Status:', status)
         console.log('[Realtime] Error:', err)
         console.log('[Realtime] Channel:', channelName)
         console.log('[Realtime] RoomId:', roomId)
+        console.log('[Realtime] User ID:', user.id)
         
         if (status === 'SUBSCRIBED') {
           console.log('[Realtime] ✅ Successfully subscribed to messages channel')
-          console.log('[Realtime] Listening for INSERT events on messages table')
-          console.log('[Realtime] Filter: chat_id=eq.' + roomId)
+          console.log('[Realtime] 📡 Listening for INSERT events on messages table')
+          console.log('[Realtime] 🔍 Filter: chat_id=eq.' + roomId)
+          console.log('[Realtime] ✅ Ready to receive real-time messages')
         } else if (status === 'CHANNEL_ERROR') {
           console.error('[Realtime] ❌ Channel subscription error:', err)
+          console.error('[Realtime] ❌ Error details:', {
+            error: err,
+            channel: channelName,
+            roomId: roomId
+          })
+          // Attempt to resubscribe after a delay (prevent multiple simultaneous attempts)
+          if (resubscribeTimeoutRef.current) {
+            clearTimeout(resubscribeTimeoutRef.current)
+          }
+          resubscribeTimeoutRef.current = setTimeout(() => {
+            console.log('[Realtime] 🔄 Attempting to resubscribe after error...')
+            setupRealtimeSubscription()
+            resubscribeTimeoutRef.current = null
+          }, 3000)
         } else if (status === 'TIMED_OUT') {
           console.error('[Realtime] ❌ Channel subscription timed out')
+          console.error('[Realtime] ❌ This may indicate network issues or Supabase Realtime service problems')
+          // Attempt to resubscribe after a delay (prevent multiple simultaneous attempts)
+          if (resubscribeTimeoutRef.current) {
+            clearTimeout(resubscribeTimeoutRef.current)
+          }
+          resubscribeTimeoutRef.current = setTimeout(() => {
+            console.log('[Realtime] 🔄 Attempting to resubscribe after timeout...')
+            setupRealtimeSubscription()
+            resubscribeTimeoutRef.current = null
+          }, 3000)
         } else if (status === 'CLOSED') {
-          console.log('[Realtime] Channel closed')
+          console.log('[Realtime] ℹ️ Channel closed')
+          console.log('[Realtime] ℹ️ This is normal when component unmounts or connection is lost')
         } else {
-          console.log('[Realtime] Unknown status:', status)
+          console.warn('[Realtime] ⚠️ Unknown subscription status:', status)
         }
       })
 
@@ -652,6 +747,10 @@ export function ChatInterface({ roomId, user }: ChatInterfaceProps) {
 
     return () => {
       console.log('[Realtime] Cleaning up subscriptions')
+      if (resubscribeTimeoutRef.current) {
+        clearTimeout(resubscribeTimeoutRef.current)
+        resubscribeTimeoutRef.current = null
+      }
       if (messagesChannelRef.current) {
         messagesChannelRef.current.unsubscribe()
         supabase.removeChannel(messagesChannelRef.current)
