@@ -439,8 +439,7 @@ export function ChatInterface({ roomId, user }: ChatInterfaceProps) {
     const messagesChannel = supabase
       .channel(channelName, {
         config: {
-          broadcast: { self: true, ack: true },
-          private: true
+          broadcast: { self: true, ack: true }
         }
       })
       .on('broadcast', { event: 'INSERT' }, async (payload) => {
