@@ -60,10 +60,13 @@ export function ChatInterface({ roomId, user }: ChatInterfaceProps) {
   const [error, setError] = useState('')
   const [typingUsers, setTypingUsers] = useState<string[]>([])
   const [profilesMap, setProfilesMap] = useState<Map<string, any>>(new Map())
+  const [isGroup, setIsGroup] = useState(false)
+  const [otherPersonName, setOtherPersonName] = useState<string>('')
   
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const typingTimeoutRef = useRef<NodeJS.Timeout>()
   const typingChannelRef = useRef<any>(null)
+  const messagesChannelRef = useRef<any>(null)
 
   // Mock data for demonstration
   const mockMessages: Message[] = [
@@ -390,6 +393,16 @@ export function ChatInterface({ roomId, user }: ChatInterfaceProps) {
           }
         })
 
+      // Store chat type and other person's name for 1-on-1 chats
+      setIsGroup(roomData.is_group || false)
+      
+      // For 1-on-1 chats, store the other person's name
+      if (!roomData.is_group && transformedMembers.length === 1) {
+        setOtherPersonName(transformedMembers[0].name)
+      } else {
+        setOtherPersonName('')
+      }
+
       setMessages(transformedMessages)
       setMembers(transformedMembers)
       
@@ -406,6 +419,14 @@ export function ChatInterface({ roomId, user }: ChatInterfaceProps) {
   }, [user.id, roomId])
 
   const setupRealtimeSubscription = useCallback(() => {
+    // Clean up existing subscription if any
+    if (messagesChannelRef.current) {
+      console.log('[Realtime] Cleaning up existing messages channel')
+      messagesChannelRef.current.unsubscribe()
+      supabase.removeChannel(messagesChannelRef.current)
+      messagesChannelRef.current = null
+    }
+
     // Subscribe to new messages
     const messagesChannel = supabase
       .channel(`chat:${roomId}`, {
@@ -525,6 +546,9 @@ export function ChatInterface({ roomId, user }: ChatInterfaceProps) {
         }
       })
 
+    // Store channel reference
+    messagesChannelRef.current = messagesChannel
+
     // Subscribe to typing indicators - reuse channel
     const typingChannel = supabase
       .channel(`typing:${roomId}`)
@@ -599,8 +623,11 @@ export function ChatInterface({ roomId, user }: ChatInterfaceProps) {
 
     return () => {
       console.log('[Realtime] Cleaning up subscriptions')
-      messagesChannel.unsubscribe()
-      supabase.removeChannel(messagesChannel)
+      if (messagesChannelRef.current) {
+        messagesChannelRef.current.unsubscribe()
+        supabase.removeChannel(messagesChannelRef.current)
+        messagesChannelRef.current = null
+      }
       if (typingChannelRef.current) {
         typingChannelRef.current.unsubscribe()
         supabase.removeChannel(typingChannelRef.current)
@@ -610,13 +637,11 @@ export function ChatInterface({ roomId, user }: ChatInterfaceProps) {
   }, [roomId, user.id, supabase])
 
   useEffect(() => {
-    // Load chat data first
-    loadChatData()
+    // Set up realtime subscription immediately
+    setupRealtimeSubscription()
     
-    // Set up realtime subscription after a short delay to ensure data is loaded
-    const subscriptionTimer = setTimeout(() => {
-      setupRealtimeSubscription()
-    }, 500)
+    // Load chat data
+    loadChatData()
     
     // Mark as read
     markAsRead()
@@ -625,7 +650,6 @@ export function ChatInterface({ roomId, user }: ChatInterfaceProps) {
       if (typingTimeoutRef.current) {
         clearTimeout(typingTimeoutRef.current)
       }
-      clearTimeout(subscriptionTimer)
     }
   }, [roomId, loadChatData, setupRealtimeSubscription, markAsRead])
 
@@ -777,14 +801,16 @@ export function ChatInterface({ roomId, user }: ChatInterfaceProps) {
           </Button>
           <div>
             <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
-              Roommate Chat
+              {isGroup ? 'Roommate Chat' : (otherPersonName || 'Chat')}
             </h1>
-            <div className="flex items-center gap-2 mt-1">
-              <Users className="h-4 w-4 text-gray-500" />
-              <span className="text-sm text-gray-500">
-                {members.length} members
-              </span>
-            </div>
+            {isGroup && (
+              <div className="flex items-center gap-2 mt-1">
+                <Users className="h-4 w-4 text-gray-500" />
+                <span className="text-sm text-gray-500">
+                  {members.length} members
+                </span>
+              </div>
+            )}
           </div>
         </div>
         
@@ -805,32 +831,34 @@ export function ChatInterface({ roomId, user }: ChatInterfaceProps) {
         </AlertDescription>
       </Alert>
 
-      {/* Chat Members */}
-      <Card className="mb-6">
-        <CardHeader>
-          <CardTitle className="text-lg">Chat Members</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="flex items-center gap-4">
-            {members.map((member) => (
-              <div key={member.id} className="flex items-center gap-2">
-                <div className="relative">
-                  <Avatar className="w-8 h-8">
-                    <AvatarImage src={member.avatar} />
-                    <AvatarFallback className="text-xs">
-                      {member.name.charAt(0)}
-                    </AvatarFallback>
-                  </Avatar>
-                  {member.is_online && (
-                    <div className="absolute -bottom-1 -right-1 w-3 h-3 bg-green-500 rounded-full border-2 border-white"></div>
-                  )}
+      {/* Chat Members - Only show for group chats */}
+      {isGroup && members.length > 0 && (
+        <Card className="mb-6">
+          <CardHeader>
+            <CardTitle className="text-lg">Chat Members</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="flex items-center gap-4">
+              {members.map((member) => (
+                <div key={member.id} className="flex items-center gap-2">
+                  <div className="relative">
+                    <Avatar className="w-8 h-8">
+                      <AvatarImage src={member.avatar} />
+                      <AvatarFallback className="text-xs">
+                        {member.name.charAt(0)}
+                      </AvatarFallback>
+                    </Avatar>
+                    {member.is_online && (
+                      <div className="absolute -bottom-1 -right-1 w-3 h-3 bg-green-500 rounded-full border-2 border-white"></div>
+                    )}
+                  </div>
+                  <span className="text-sm font-medium">{member.name}</span>
                 </div>
-                <span className="text-sm font-medium">{member.name}</span>
-              </div>
-            ))}
-          </div>
-        </CardContent>
-      </Card>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
       {/* Messages */}
       <Card className="mb-6">
