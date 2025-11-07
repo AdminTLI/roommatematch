@@ -138,40 +138,25 @@ export class UpstashRateLimitStore implements RateLimitStore {
  * Get the appropriate rate limit store based on environment
  * Uses Upstash Redis in production if configured, otherwise falls back to in-memory
  * 
- * IMPORTANT: In production runtime, Upstash Redis is REQUIRED for distributed rate limiting.
- * During build time, this function returns undefined to allow the build to complete.
- * The store will be validated when actually used at runtime (when check() is called).
+ * IMPORTANT: This function NEVER throws - it only returns undefined if credentials are missing.
+ * Validation happens when the store is actually used (in RateLimiter.getStore()).
+ * This allows builds to complete without requiring Redis credentials.
  */
 export function getRateLimitStore(): RateLimitStore | undefined {
-  // During Next.js build phase, don't require Redis (env vars may not be available)
-  // Vercel sets VERCEL_ENV during runtime, so if it's not set and we're in production mode,
-  // we're likely in build phase
-  const isRuntime = process.env.VERCEL_ENV || process.env.NEXT_PUBLIC_SUPABASE_URL
+  // NEVER throw here - Next.js executes this during build phase
+  // If credentials are missing, return undefined
+  // Validation will happen when store is actually used at runtime
   
-  // If we're not in runtime (i.e., during build), return undefined
-  // This allows the build to complete without requiring Redis credentials
-  if (!isRuntime && process.env.NODE_ENV === 'production') {
+  if (!process.env.UPSTASH_REDIS_REST_URL || !process.env.UPSTASH_REDIS_REST_TOKEN) {
+    // No credentials available - return undefined
+    // This allows build to complete
+    // Runtime validation happens in RateLimiter.getStore()
     return undefined
   }
   
-  // At runtime in production, Upstash Redis is REQUIRED - fail fast if not configured
-  if (process.env.VERCEL_ENV || (process.env.NODE_ENV === 'production' && isRuntime)) {
-    if (!process.env.UPSTASH_REDIS_REST_URL || !process.env.UPSTASH_REDIS_REST_TOKEN) {
-      throw new Error(
-        '[RateLimit] Upstash Redis is required in production but not configured. ' +
-        'Set UPSTASH_REDIS_REST_URL and UPSTASH_REDIS_REST_TOKEN environment variables.'
-      )
-    }
-    // Create store with requireCredentials=true to ensure it validates on construction
-    return new UpstashRateLimitStore(true)
-  }
-  
-  // In development, try to use Upstash if configured, otherwise fall back to in-memory
-  if (process.env.UPSTASH_REDIS_REST_URL && process.env.UPSTASH_REDIS_REST_TOKEN) {
-    return new UpstashRateLimitStore(false)
-  }
-  
-  // Return undefined to use default in-memory store (development only)
-  return undefined
+  // Credentials are available - create store
+  // Don't use requireCredentials=true here (it throws) - validate later when used
+  // During build, credentials won't be available anyway
+  return new UpstashRateLimitStore(false)
 }
 

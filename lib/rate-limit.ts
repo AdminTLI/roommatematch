@@ -156,7 +156,24 @@ export class RateLimiter {
   private getStore(): RateLimitStore {
     if (!this.store) {
       if (this.storeFactory) {
-        this.store = this.storeFactory() || new MemoryRateLimitStore()
+        const factoryResult = this.storeFactory()
+        if (factoryResult) {
+          this.store = factoryResult
+        } else {
+          // Factory returned undefined - validate if we're in production runtime
+          // This is where we do runtime validation (not during build)
+          if (this.config.failClosed && 
+              (process.env.NODE_ENV === 'production' || process.env.VERCEL_ENV) &&
+              process.env.VERCEL_ENV) {
+            // We're at runtime in production but don't have Redis - this is an error
+            throw new Error(
+              '[RateLimit] Upstash Redis is required in production but not configured. ' +
+              'Set UPSTASH_REDIS_REST_URL and UPSTASH_REDIS_REST_TOKEN environment variables.'
+            )
+          }
+          // Development or build - use in-memory store
+          this.store = new MemoryRateLimitStore()
+        }
       } else {
         this.store = new MemoryRateLimitStore()
       }
@@ -296,7 +313,22 @@ let sharedStore: RateLimitStore | undefined = undefined
 
 function getSharedStore(): RateLimitStore | undefined {
   if (sharedStore === undefined) {
+    // This is called lazily when check() is invoked at runtime
+    // During build, getRateLimitStore() returns undefined (no error)
+    // At runtime, it will return the appropriate store or undefined
     sharedStore = getRateLimitStore()
+    
+    // Runtime validation: if we're in production runtime and got undefined, that's an error
+    // But only validate when actually used (not during build)
+    if (sharedStore === undefined && 
+        (process.env.NODE_ENV === 'production' || process.env.VERCEL_ENV) &&
+        process.env.VERCEL_ENV) {
+      // We're at runtime in production but don't have Redis - this is an error
+      throw new Error(
+        '[RateLimit] Upstash Redis is required in production but not configured. ' +
+        'Set UPSTASH_REDIS_REST_URL and UPSTASH_REDIS_REST_TOKEN environment variables.'
+      )
+    }
   }
   return sharedStore
 }
