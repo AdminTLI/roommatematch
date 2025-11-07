@@ -263,15 +263,6 @@ export function MatchCard({
         {/* Action Buttons */}
         <div className="flex flex-col sm:flex-row gap-3 pt-4">
           <Button 
-            variant="outline" 
-            size="sm" 
-            onClick={() => onViewProfile(id)}
-            className="flex-1"
-          >
-            View Profile
-          </Button>
-          
-          <Button 
             size="sm" 
             onClick={() => onStartChat(id)}
             className="flex-1"

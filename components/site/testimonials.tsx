@@ -5,7 +5,7 @@ import { Star } from 'lucide-react'
 
 const testimonials = [
   {
-    name: "Emma van der Berg",
+    name: "Emma",
     university: "TU Delft",
     program: "Computer Science",
     avatar: "E",
@@ -14,7 +14,7 @@ const testimonials = [
     highlight: "Perfect match!"
   },
   {
-    name: "Lucas Janssen",
+    name: "Lucas",
     university: "University of Amsterdam",
     program: "Economics",
     avatar: "L",
@@ -23,7 +23,7 @@ const testimonials = [
     highlight: "Highly recommend!"
   },
   {
-    name: "Sofia Rodriguez",
+    name: "Sofia",
     university: "Rotterdam School of Management", 
     program: "Business Administration",
     avatar: "S",
@@ -79,7 +79,9 @@ export function Testimonials() {
                       {testimonial.name}
                     </div>
                     <div className="text-sm text-brand-muted">
-                      {testimonial.program} • {testimonial.university}
+                      <span>{testimonial.program}</span>
+                      <span className="mx-2">•</span>
+                      <span>{testimonial.university}</span>
                     </div>
                   </div>
                   <div className="text-sm font-medium text-brand-accent">

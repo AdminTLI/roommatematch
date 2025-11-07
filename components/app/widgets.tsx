@@ -107,7 +107,7 @@ export function CompatibilityScoreWidget({ score = 94 }: { score?: number }) {
 export function TopMatchesWidget() {
   const matches = [
     { 
-      name: "Emma van der Berg", 
+      name: "Emma", 
       score: 94, 
       program: "Computer Science", 
       university: "TU Delft",
@@ -115,7 +115,7 @@ export function TopMatchesWidget() {
       isOnline: true
     },
     { 
-      name: "Lucas Janssen", 
+      name: "Lucas", 
       score: 89, 
       program: "Engineering", 
       university: "Eindhoven",
@@ -123,7 +123,7 @@ export function TopMatchesWidget() {
       isOnline: false
     },
     { 
-      name: "Sofia Rodriguez", 
+      name: "Sofia", 
       score: 87, 
       program: "Business", 
       university: "Rotterdam",
@@ -182,7 +182,9 @@ export function TopMatchesWidget() {
                     </Badge>
                   </div>
                   <p className="text-body-sm text-ink-500 truncate">
-                    {match.program} • {match.university}
+                    <span>{match.program}</span>
+                    <span className="mx-2">•</span>
+                    <span>{match.university}</span>
                   </p>
                 </div>
                 

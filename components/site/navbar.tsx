@@ -50,12 +50,12 @@ export function Navbar() {
             </div>
 
             {/* Tablet Navigation */}
-            <div className="hidden md:flex lg:hidden items-center space-x-6">
+            <div className="hidden md:flex lg:hidden items-center space-x-6 h-full">
               {navigation.slice(0, 2).map((item) => (
                 <Link
                   key={item.name}
                   href={item.href}
-                  className="text-brand-muted hover:text-brand-text transition-colors font-medium text-sm"
+                  className="text-brand-muted hover:text-brand-text transition-colors font-medium text-sm flex items-center h-full"
                 >
                   {item.name}
                 </Link>
@@ -63,12 +63,12 @@ export function Navbar() {
             </div>
 
             {/* Desktop Navigation */}
-            <div className="hidden lg:flex items-center space-x-8">
+            <div className="hidden lg:flex items-center space-x-8 h-full">
               {navigation.map((item) => (
                 <Link
                   key={item.name}
                   href={item.href}
-                  className="text-brand-muted hover:text-brand-text transition-colors font-medium"
+                  className="text-brand-muted hover:text-brand-text transition-colors font-medium flex items-center h-full"
                 >
                   {item.name}
                 </Link>

@@ -177,7 +177,9 @@ export function SocialProof({ locale = 'en' }: SocialProofProps) {
                     {testimonial.name}
                   </div>
                   <div className="text-sm text-gray-500">
-                    {testimonial.program} • {testimonial.university}
+                    <span>{testimonial.program}</span>
+                    <span className="mx-2">•</span>
+                    <span>{testimonial.university}</span>
                   </div>
                 </div>
               </CardContent>

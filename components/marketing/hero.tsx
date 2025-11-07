@@ -143,7 +143,11 @@ export function Hero() {
                             {match.score}% match
                           </Badge>
                         </div>
-                        <p className="text-body-xs text-ink-500">{match.program} • {match.university}</p>
+                        <p className="text-body-xs text-ink-500">
+                          <span>{match.program}</span>
+                          <span className="mx-2">•</span>
+                          <span>{match.university}</span>
+                        </p>
                       </div>
                       <Heart className="w-4 h-4 text-rose-500" />
                     </motion.div>

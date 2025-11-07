@@ -126,7 +126,9 @@ export function Hero() {
                     {match.name}
                   </h3>
                   <p className="text-brand-muted">
-                    {match.program} • {match.university}
+                    <span>{match.program}</span>
+                    <span className="mx-2">•</span>
+                    <span>{match.university}</span>
                   </p>
                   <ul className="text-sm text-brand-muted list-disc pl-5 space-y-1">
                     {match.traits.map((trait, traitIndex) => (
