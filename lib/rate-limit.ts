@@ -160,18 +160,16 @@ export class RateLimiter {
         if (factoryResult) {
           this.store = factoryResult
         } else {
-          // Factory returned undefined - validate if we're in production runtime
-          // This is where we do runtime validation (not during build)
-          if (this.config.failClosed && 
-              (process.env.NODE_ENV === 'production' || process.env.VERCEL_ENV) &&
-              process.env.VERCEL_ENV) {
-            // We're at runtime in production but don't have Redis - this is an error
-            throw new Error(
-              '[RateLimit] Upstash Redis is required in production but not configured. ' +
-              'Set UPSTASH_REDIS_REST_URL and UPSTASH_REDIS_REST_TOKEN environment variables.'
+          // Factory returned undefined - Redis not configured
+          // Log warning but fall back to in-memory store for graceful degradation
+          if (process.env.NODE_ENV === 'production' || process.env.VERCEL_ENV) {
+            console.warn(
+              '[RateLimit] Upstash Redis not configured in production. ' +
+              'Falling back to in-memory store (not suitable for multi-instance deployments). ' +
+              'Set UPSTASH_REDIS_REST_URL and UPSTASH_REDIS_REST_TOKEN environment variables for production.'
             )
           }
-          // Development or build - use in-memory store
+          // Use in-memory store as fallback
           this.store = new MemoryRateLimitStore()
         }
       } else {
