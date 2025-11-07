@@ -4,6 +4,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getMatchRepo } from '@/lib/matching/repo.factory'
 import { requireAdminResponse } from '@/lib/auth/admin'
+import { safeLogger } from '@/lib/utils/logger'
 
 export async function GET(request: NextRequest) {
   // Require admin authentication
@@ -25,7 +26,7 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json({ matches })
   } catch (error) {
-    console.error('[API] List matches error:', error)
+    safeLogger.error('[API] List matches error', error)
     return NextResponse.json(
       { 
         error: 'Failed to list matches', 

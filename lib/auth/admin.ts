@@ -52,15 +52,26 @@ export async function requireAdmin(request?: NextRequest): Promise<AdminAuthResu
     }
   }
 
-  // Optional: Validate shared secret from environment variable
+  // Validate shared secret from environment variable
   // This provides an additional layer of security for sensitive admin operations
-  if (request && process.env.ADMIN_SHARED_SECRET) {
-    const providedSecret = request.headers.get('x-admin-secret')
-    if (providedSecret !== process.env.ADMIN_SHARED_SECRET) {
+  if (request) {
+    // In production, require ADMIN_SHARED_SECRET to be set
+    if (process.env.NODE_ENV === 'production' && !process.env.ADMIN_SHARED_SECRET) {
       return {
         ok: false,
-        status: 403,
-        error: 'Invalid admin secret'
+        status: 500,
+        error: 'Admin shared secret not configured'
+      }
+    }
+    
+    if (process.env.ADMIN_SHARED_SECRET) {
+      const providedSecret = request.headers.get('x-admin-secret')
+      if (providedSecret !== process.env.ADMIN_SHARED_SECRET) {
+        return {
+          ok: false,
+          status: 403,
+          error: 'Invalid admin secret'
+        }
       }
     }
   }

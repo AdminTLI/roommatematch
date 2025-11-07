@@ -10,9 +10,20 @@ interface SuggestionCardProps {
   onRespond: (id: string, action: 'accept' | 'decline') => Promise<void>
   isLoading?: boolean
   currentUserId: string
+  isSelectable?: boolean
+  isSelected?: boolean
+  onToggleSelection?: () => void
 }
 
-export function SuggestionCard({ suggestion, onRespond, isLoading = false, currentUserId }: SuggestionCardProps) {
+export function SuggestionCard({ 
+  suggestion, 
+  onRespond, 
+  isLoading = false, 
+  currentUserId,
+  isSelectable = false,
+  isSelected = false,
+  onToggleSelection
+}: SuggestionCardProps) {
   const [isResponding, setIsResponding] = useState(false)
   const [isOpeningChat, setIsOpeningChat] = useState(false)
   const router = useRouter()
@@ -109,10 +120,35 @@ export function SuggestionCard({ suggestion, onRespond, isLoading = false, curre
   }
   
   return (
-    <div className="bg-white rounded-xl border border-gray-200 p-4 sm:p-6 shadow-sm hover:shadow-md transition-shadow">
+    <div 
+      className={`bg-white rounded-xl border p-4 sm:p-6 shadow-sm hover:shadow-md transition-all cursor-pointer ${
+        isSelected 
+          ? 'border-blue-500 border-2 bg-blue-50' 
+          : 'border-gray-200'
+      } ${isSelectable ? 'hover:border-blue-300' : ''}`}
+      onClick={isSelectable && suggestion.status === 'confirmed' ? onToggleSelection : undefined}
+    >
       {/* Header - Compact layout */}
       <div className="flex items-start justify-between mb-3 sm:mb-4">
         <div className="flex items-center gap-3 sm:gap-4 flex-1 min-w-0">
+          {/* Selection checkbox */}
+          {isSelectable && suggestion.status === 'confirmed' && (
+            <div 
+              className="flex-shrink-0 w-6 h-6 border-2 rounded border-gray-300 flex items-center justify-center cursor-pointer"
+              onClick={(e) => {
+                e.stopPropagation()
+                onToggleSelection?.()
+              }}
+            >
+              {isSelected && (
+                <div className="w-4 h-4 bg-blue-600 rounded-sm flex items-center justify-center">
+                  <svg className="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                  </svg>
+                </div>
+              )}
+            </div>
+          )}
           <div className="text-center flex-shrink-0">
             <div className="text-2xl sm:text-3xl font-bold text-blue-600">
               {suggestion.fitIndex}
@@ -175,10 +211,13 @@ export function SuggestionCard({ suggestion, onRespond, isLoading = false, curre
         </div>
       )}
       
-      {/* Chat Now button for confirmed matches */}
-      {suggestion.status === 'confirmed' && (
+      {/* Chat Now button for confirmed matches - only show when not in selection mode */}
+      {suggestion.status === 'confirmed' && !isSelectable && (
         <button
-          onClick={handleChatNow}
+          onClick={(e) => {
+            e.stopPropagation()
+            handleChatNow()
+          }}
           disabled={isOpeningChat}
           className="w-full px-4 py-2.5 rounded-lg bg-green-600 text-white hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors font-medium text-sm sm:text-base"
         >

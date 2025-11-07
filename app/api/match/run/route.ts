@@ -7,6 +7,7 @@ import { getMatchRepo } from '@/lib/matching/repo.factory'
 import type { CohortFilter } from '@/lib/matching/repo'
 import matchModeConfig from '@/config/match-mode.json'
 import { requireAdminResponse } from '@/lib/auth/admin'
+import { safeLogger } from '@/lib/utils/logger'
 
 export async function POST(request: NextRequest) {
   // Require admin authentication
@@ -31,7 +32,7 @@ export async function POST(request: NextRequest) {
       suggestionMode?: boolean
     }
 
-    console.log('[API] Running matching with params:', { mode, groupSize, cohort, runId, suggestionMode })
+    safeLogger.info('[API] Running matching', { mode, groupSize, runId, suggestionMode })
 
     const repo = await getMatchRepo()
     
@@ -58,7 +59,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json(result)
     }
   } catch (error) {
-    console.error('[API] Matching error:', error)
+    safeLogger.error('[API] Matching error', error)
     return NextResponse.json(
       { 
         error: 'Failed to run matching', 

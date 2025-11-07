@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import type { SectionKey } from '@/types/questionnaire'
+import { checkRateLimit, getUserRateLimitKey } from '@/lib/rate-limit'
 
 type SaveBody = { section: SectionKey; answers: any[] }
 
@@ -12,6 +13,28 @@ export async function POST(request: Request) {
   } = await supabase.auth.getUser()
   if (authError || !user) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  }
+
+  // Rate limiting: 100 requests per 15 minutes per user
+  const rateLimitKey = getUserRateLimitKey('api', user.id)
+  const rateLimitResult = await checkRateLimit('api', rateLimitKey)
+  
+  if (!rateLimitResult.allowed) {
+    return NextResponse.json(
+      { 
+        error: 'Too many requests',
+        retryAfter: Math.ceil((rateLimitResult.resetTime - Date.now()) / 1000)
+      },
+      { 
+        status: 429,
+        headers: {
+          'X-RateLimit-Limit': '100',
+          'X-RateLimit-Remaining': '0',
+          'X-RateLimit-Reset': new Date(rateLimitResult.resetTime).toISOString(),
+          'Retry-After': Math.ceil((rateLimitResult.resetTime - Date.now()) / 1000).toString()
+        }
+      }
+    )
   }
 
   const body = (await request.json()) as SaveBody

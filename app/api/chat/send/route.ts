@@ -1,6 +1,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { NextRequest, NextResponse } from 'next/server'
 import { safeLogger } from '@/lib/utils/logger'
+import { checkRateLimit, getUserRateLimitKey } from '@/lib/rate-limit'
 
 export async function POST(request: NextRequest) {
   try {
@@ -9,6 +10,28 @@ export async function POST(request: NextRequest) {
 
     if (!user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
+
+    // Rate limiting: 30 messages per 5 minutes per user
+    const rateLimitKey = getUserRateLimitKey('messages', user.id)
+    const rateLimitResult = await checkRateLimit('messages', rateLimitKey)
+    
+    if (!rateLimitResult.allowed) {
+      return NextResponse.json(
+        { 
+          error: 'Too many requests',
+          retryAfter: Math.ceil((rateLimitResult.resetTime - Date.now()) / 1000)
+        },
+        { 
+          status: 429,
+          headers: {
+            'X-RateLimit-Limit': '30',
+            'X-RateLimit-Remaining': '0',
+            'X-RateLimit-Reset': new Date(rateLimitResult.resetTime).toISOString(),
+            'Retry-After': Math.ceil((rateLimitResult.resetTime - Date.now()) / 1000).toString()
+          }
+        }
+      )
     }
 
     const { chat_id, content } = await request.json()
@@ -51,7 +74,8 @@ export async function POST(request: NextRequest) {
     // Insert message using regular authenticated client (ensures RLS is evaluated for realtime)
     // This is critical: Supabase Realtime evaluates RLS from each subscriber's perspective
     // When inserts bypass RLS (admin client), Realtime cannot properly evaluate permissions
-    // Insert first without join to ensure we get the message ID even if profile doesn't exist
+    // Insert with profile join - if profile doesn't exist, the insert will still succeed
+    // but we'll fetch the message separately to avoid relying on the join
     const { data: insertedMessage, error: insertError } = await supabase
       .from('messages')
       .insert({
@@ -104,15 +128,16 @@ export async function POST(request: NextRequest) {
       chatId: chat_id
     })
 
-    // Try to fetch the message with profile join (if profile exists)
-    const { data: messageWithProfile, error: fetchError } = await supabase
+    // Fetch the message with profile data if available (using LEFT join via optional select)
+    // This ensures we only fetch once and don't have a fallback path that could cause issues
+    const { data: messageWithProfile } = await supabase
       .from('messages')
       .select(`
         id,
         content,
         created_at,
         user_id,
-        profiles!inner(
+        profiles(
           user_id,
           first_name,
           last_name
@@ -121,16 +146,8 @@ export async function POST(request: NextRequest) {
       .eq('id', insertedMessage.id)
       .single()
 
-    // Use message with profile if available, otherwise use the basic message
+    // Use message with profile if available, otherwise use the basic inserted message
     const message = messageWithProfile || insertedMessage
-
-    if (fetchError && fetchError.code !== 'PGRST116') {
-      // PGRST116 is "not found" which is okay if profile doesn't exist
-      safeLogger.warn('Failed to fetch message with profile, using basic message', {
-        error: fetchError,
-        messageId: insertedMessage.id
-      })
-    }
 
     // Update chat's updated_at timestamp (using regular client - we've verified membership)
     const { error: updateError } = await supabase

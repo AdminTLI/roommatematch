@@ -19,6 +19,11 @@ export default async function ChatPage({ params }: ChatPageProps) {
     redirect('/auth/sign-in')
   }
 
+  // Block demo user from accessing real chat rooms in production
+  if (process.env.NODE_ENV === 'production' && user.email === process.env.DEMO_USER_EMAIL) {
+    redirect('/dashboard')
+  }
+
   // Check if user has completed onboarding
   const { data: submission } = await supabase
     .from('onboarding_submissions')

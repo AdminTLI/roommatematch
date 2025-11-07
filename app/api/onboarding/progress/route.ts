@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { checkQuestionnaireCompletion } from '@/lib/onboarding/validation'
+import { safeLogger } from '@/lib/utils/logger'
 
 export async function GET() {
   const supabase = await createClient()
@@ -37,6 +38,7 @@ export async function GET() {
     const nextSection = completionStatus.isComplete ? null : 
       allSections[Math.min(completedSections, allSections.length - 1)]
 
+    // Return only high-level progress - don't expose missingKeys (reveals questionnaire structure)
     return NextResponse.json({
       completedSections: allSections.slice(0, completedSections),
       totalSections,
@@ -45,12 +47,12 @@ export async function GET() {
       hasPartialProgress: completionStatus.responseCount > 0 && !completionStatus.isComplete,
       nextSection,
       lastUpdated: null, // Not tracked in new system
-      submittedAt: completionStatus.hasSubmission ? new Date().toISOString() : null,
-      missingKeys: completionStatus.missingKeys
+      submittedAt: completionStatus.hasSubmission ? new Date().toISOString() : null
+      // missingKeys removed - don't expose questionnaire structure
     })
 
   } catch (error) {
-    console.error('[Progress] Unexpected error:', error)
+    safeLogger.error('[Progress] Unexpected error', error)
     return NextResponse.json({ 
       error: 'Internal server error' 
     }, { status: 500 })

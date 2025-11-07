@@ -298,6 +298,18 @@ export const RATE_LIMITS = {
   matching: new RateLimiter({
     windowMs: 60 * 60 * 1000, // 1 hour
     maxRequests: 5
+  }),
+
+  // Chat profiles (to prevent enumeration)
+  chat_profiles: new RateLimiter({
+    windowMs: 60 * 1000, // 1 minute
+    maxRequests: 60
+  }),
+
+  // PDF generation
+  pdf_generation: new RateLimiter({
+    windowMs: 60 * 60 * 1000, // 1 hour
+    maxRequests: 5
   })
 }
 

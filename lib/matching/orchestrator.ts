@@ -352,7 +352,7 @@ export async function runMatchingAsSuggestions({
         
         safeLogger.debug(`[DEBUG] Pair check`, {
           canMatch: dealBreakerResult.canMatch,
-          conflicts: dealBreakerResult.conflicts
+          conflictCount: dealBreakerResult.conflicts?.length || 0
         })
         
         if (dealBreakerResult.canMatch) {
@@ -426,6 +426,13 @@ export async function runMatchingAsSuggestions({
             const autoMatchThreshold = matchModeConfig.autoMatchThreshold || 80
             const status = fitIndex >= autoMatchThreshold ? 'accepted' : 'pending'
             const acceptedBy = fitIndex >= autoMatchThreshold ? [studentA.id, studentB.id] : []
+            
+            // Log aggregate metrics only (no PII)
+            safeLogger.debug(`[DEBUG] Pair fit calculated`, {
+              fitIndex,
+              status,
+              passesThreshold: fitIndex >= minFitIndex
+            })
             
             pairFits.push({
               key: `${studentA.id}::${studentB.id}`,

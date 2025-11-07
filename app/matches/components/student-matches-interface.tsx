@@ -1,7 +1,10 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { useRouter } from 'next/navigation'
 import { SuggestionCard } from './suggestion-card'
+import { Button } from '@/components/ui/button'
+import { MessageCircle, Users, X } from 'lucide-react'
 import type { MatchSuggestion } from '@/lib/matching/types'
 
 interface StudentMatchesInterfaceProps {
@@ -16,10 +19,13 @@ interface StudentMatchesInterfaceProps {
 type TabType = 'suggested' | 'pending' | 'confirmed' | 'history'
 
 export function StudentMatchesInterface({ user }: StudentMatchesInterfaceProps) {
+  const router = useRouter()
   const [activeTab, setActiveTab] = useState<TabType>('suggested')
   const [suggestions, setSuggestions] = useState<MatchSuggestion[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [isResponding, setIsResponding] = useState(false)
+  const [selectedMatches, setSelectedMatches] = useState<Set<string>>(new Set())
+  const [isCreatingChat, setIsCreatingChat] = useState(false)
 
   // Fetch suggestions
   const fetchSuggestions = async (includeExpired = false) => {
@@ -114,7 +120,121 @@ export function StudentMatchesInterface({ user }: StudentMatchesInterfaceProps) 
     } else {
       fetchSuggestions(false)
     }
+    // Clear selection when switching tabs
+    setSelectedMatches(new Set())
   }, [activeTab])
+
+  // Handle match selection toggle
+  const handleToggleSelection = (suggestionId: string) => {
+    const newSelected = new Set(selectedMatches)
+    if (newSelected.has(suggestionId)) {
+      newSelected.delete(suggestionId)
+    } else {
+      newSelected.add(suggestionId)
+    }
+    setSelectedMatches(newSelected)
+  }
+
+  // Handle individual chat creation
+  const handleIndividualChat = async () => {
+    if (selectedMatches.size !== 1) {
+      alert('Please select exactly one match for individual chat')
+      return
+    }
+
+    setIsCreatingChat(true)
+    try {
+      const suggestionId = Array.from(selectedMatches)[0]
+      const suggestion = suggestions.find(s => s.id === suggestionId)
+      if (!suggestion) {
+        alert('Match not found')
+        return
+      }
+
+      const otherUserId = suggestion.memberIds.find(id => id !== user.id)
+      if (!otherUserId) {
+        alert('Could not find other user')
+        return
+      }
+
+      const response = await fetch('/api/chat/get-or-create', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ otherUserId }),
+      })
+
+      if (!response.ok) {
+        const error = await response.json()
+        alert(error.error || 'Failed to create chat')
+        return
+      }
+
+      const { chat_id } = await response.json()
+      router.push(`/chat/${chat_id}`)
+      setSelectedMatches(new Set())
+    } catch (error) {
+      console.error('Error creating individual chat:', error)
+      alert('Failed to create chat. Please try again.')
+    } finally {
+      setIsCreatingChat(false)
+    }
+  }
+
+  // Handle group chat creation
+  const handleGroupChat = async () => {
+    if (selectedMatches.size < 2) {
+      alert('Please select at least 2 matches for group chat')
+      return
+    }
+
+    if (selectedMatches.size > 5) {
+      alert('Maximum 5 people allowed in a group chat')
+      return
+    }
+
+    setIsCreatingChat(true)
+    try {
+      const selectedSuggestionIds = Array.from(selectedMatches)
+      const selectedSuggestions = suggestions.filter(s => selectedSuggestionIds.includes(s.id))
+      
+      // Get all other user IDs from selected matches
+      const otherUserIds = selectedSuggestions
+        .map(s => s.memberIds.find(id => id !== user.id))
+        .filter((id): id is string => id !== undefined)
+
+      if (otherUserIds.length === 0) {
+        alert('Could not find users to add to group')
+        return
+      }
+
+      const response = await fetch('/api/chat/create-group', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          member_ids: otherUserIds,
+        }),
+      })
+
+      if (!response.ok) {
+        const error = await response.json()
+        alert(error.error || 'Failed to create group chat')
+        return
+      }
+
+      const { chat_id } = await response.json()
+      router.push(`/chat/${chat_id}`)
+      setSelectedMatches(new Set())
+    } catch (error) {
+      console.error('Error creating group chat:', error)
+      alert('Failed to create group chat. Please try again.')
+    } finally {
+      setIsCreatingChat(false)
+    }
+  }
 
   // Filter suggestions by tab
   const getFilteredSuggestions = () => {
@@ -219,6 +339,15 @@ export function StudentMatchesInterface({ user }: StudentMatchesInterfaceProps) 
         </div>
       ) : (
         <>
+          {/* Selection mode info for confirmed tab */}
+          {activeTab === 'confirmed' && filteredSuggestions.length > 0 && (
+            <div className="mb-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+              <p className="text-sm text-blue-800">
+                💡 Select multiple matches to create a group chat, or select one for individual chat
+              </p>
+            </div>
+          )}
+
           <div className="grid gap-4 sm:gap-6 mb-4 sm:mb-6">
             {filteredSuggestions.map((suggestion) => (
               <SuggestionCard
@@ -227,9 +356,55 @@ export function StudentMatchesInterface({ user }: StudentMatchesInterfaceProps) 
                 onRespond={handleRespond}
                 isLoading={isResponding}
                 currentUserId={user.id}
+                isSelectable={activeTab === 'confirmed'}
+                isSelected={selectedMatches.has(suggestion.id)}
+                onToggleSelection={() => handleToggleSelection(suggestion.id)}
               />
             ))}
           </div>
+
+          {/* Action buttons for selected matches */}
+          {activeTab === 'confirmed' && selectedMatches.size > 0 && (
+            <div className="fixed bottom-6 left-1/2 transform -translate-x-1/2 z-50">
+              <div className="bg-white rounded-xl shadow-lg border border-gray-200 p-4 flex items-center gap-3">
+                <div className="text-sm font-medium text-gray-700">
+                  {selectedMatches.size} {selectedMatches.size === 1 ? 'match' : 'matches'} selected
+                </div>
+                <div className="flex gap-2">
+                  {selectedMatches.size === 1 && (
+                    <Button
+                      onClick={handleIndividualChat}
+                      disabled={isCreatingChat}
+                      variant="default"
+                      className="flex items-center gap-2"
+                    >
+                      <MessageCircle className="w-4 h-4" />
+                      Individual Chat
+                    </Button>
+                  )}
+                  {selectedMatches.size >= 2 && (
+                    <Button
+                      onClick={handleGroupChat}
+                      disabled={isCreatingChat}
+                      variant="default"
+                      className="flex items-center gap-2"
+                    >
+                      <Users className="w-4 h-4" />
+                      Group Chat ({selectedMatches.size})
+                    </Button>
+                  )}
+                  <Button
+                    onClick={() => setSelectedMatches(new Set())}
+                    variant="outline"
+                    size="sm"
+                  >
+                    <X className="w-4 h-4" />
+                  </Button>
+                </div>
+              </div>
+            </div>
+          )}
+
           <div className="flex justify-center">
             <button
               onClick={handleRefresh}

@@ -4,6 +4,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getMatchRepo } from '@/lib/matching/repo.factory'
 import { requireAdminResponse } from '@/lib/auth/admin'
+import { safeLogger } from '@/lib/utils/logger'
 
 export async function POST(request: NextRequest) {
   // Require admin authentication
@@ -26,7 +27,7 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    console.log('[API] Locking match:', { runId, userIds })
+    safeLogger.info('[API] Locking match', { runId, userIdCount: userIds.length })
 
     const repo = await getMatchRepo()
     await repo.lockMatch(userIds, runId)
@@ -37,7 +38,7 @@ export async function POST(request: NextRequest) {
       message: `Locked match for ${userIds.length} users` 
     })
   } catch (error) {
-    console.error('[API] Lock match error:', error)
+    safeLogger.error('[API] Lock match error', error)
     return NextResponse.json(
       { 
         error: 'Failed to lock match', 

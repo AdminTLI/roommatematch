@@ -4,6 +4,7 @@ import { getMatchRepo } from '@/lib/matching/repo.factory'
 import type { MatchRecord } from '@/lib/matching/repo'
 import { createMatchNotification, createGroupMatchNotification } from '@/lib/notifications/create'
 import { safeLogger } from '@/lib/utils/logger'
+import { checkRateLimit, getUserRateLimitKey } from '@/lib/rate-limit'
 
 export async function POST(request: NextRequest) {
   try {
@@ -12,6 +13,28 @@ export async function POST(request: NextRequest) {
     
     if (authError || !user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
+
+    // Rate limiting: 10 requests per hour per user
+    const rateLimitKey = getUserRateLimitKey('matching', user.id)
+    const rateLimitResult = await checkRateLimit('matching', rateLimitKey)
+    
+    if (!rateLimitResult.allowed) {
+      return NextResponse.json(
+        { 
+          error: 'Too many requests',
+          retryAfter: Math.ceil((rateLimitResult.resetTime - Date.now()) / 1000)
+        },
+        { 
+          status: 429,
+          headers: {
+            'X-RateLimit-Limit': '10',
+            'X-RateLimit-Remaining': '0',
+            'X-RateLimit-Reset': new Date(rateLimitResult.resetTime).toISOString(),
+            'Retry-After': Math.ceil((rateLimitResult.resetTime - Date.now()) / 1000).toString()
+          }
+        }
+      )
     }
 
     const { suggestionId, action } = await request.json()
@@ -137,10 +160,33 @@ export async function POST(request: NextRequest) {
         const admin = await createAdminClient()
         const [userA, userB] = suggestion.memberIds
         
-        // Prevent self-matching in chat creation
-        if (userA === userB) {
-          safeLogger.error(`[ERROR] Cannot create chat: self-match detected`)
-        } else {
+          // Prevent self-matching in chat creation
+          if (userA === userB) {
+            safeLogger.error(`[ERROR] Cannot create chat: self-match detected`)
+          } else {
+            // In production, prevent demo user from being added to chats with real users
+            if (process.env.NODE_ENV === 'production') {
+              const { data: userAProfile } = await admin
+                .from('profiles')
+                .select('user_id, users!inner(email)')
+                .eq('user_id', userA)
+                .single()
+              
+              const { data: userBProfile } = await admin
+                .from('profiles')
+                .select('user_id, users!inner(email)')
+                .eq('user_id', userB)
+                .single()
+              
+              const demoEmail = process.env.DEMO_USER_EMAIL
+              const userAIsDemo = userAProfile?.users?.email === demoEmail
+              const userBIsDemo = userBProfile?.users?.email === demoEmail
+              
+              if (userAIsDemo || userBIsDemo) {
+                safeLogger.warn(`[WARN] Blocked chat creation: demo user cannot be matched with real users in production`)
+                throw new Error('Demo users cannot be matched in production')
+              }
+            }
           // Check if chat already exists for these two users
           const { data: existingChats } = await admin
             .from('chat_members')
@@ -298,6 +344,30 @@ export async function POST(request: NextRequest) {
           const [userA, userB] = suggestion.memberIds
           
           if (userA !== userB) {
+            // In production, prevent demo user from being added to chats with real users
+            if (process.env.NODE_ENV === 'production') {
+              const { data: userAProfile } = await admin
+                .from('profiles')
+                .select('user_id, users!inner(email)')
+                .eq('user_id', userA)
+                .single()
+              
+              const { data: userBProfile } = await admin
+                .from('profiles')
+                .select('user_id, users!inner(email)')
+                .eq('user_id', userB)
+                .single()
+              
+              const demoEmail = process.env.DEMO_USER_EMAIL
+              const userAIsDemo = userAProfile?.users?.email === demoEmail
+              const userBIsDemo = userBProfile?.users?.email === demoEmail
+              
+              if (userAIsDemo || userBIsDemo) {
+                safeLogger.warn(`[WARN] Blocked chat creation: demo user cannot be matched with real users in production`)
+                throw new Error('Demo users cannot be matched in production')
+              }
+            }
+            
             const { data: existingChats } = await admin
               .from('chat_members')
               .select('chat_id')
