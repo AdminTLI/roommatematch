@@ -196,8 +196,8 @@ export function ListingDetail({
         </div>
 
         {/* Image Gallery */}
-        <Card className="mb-6">
-          <div className="relative h-96 bg-gray-100 rounded-t-lg overflow-hidden">
+        <Card className="mb-4 sm:mb-6">
+          <div className="relative h-64 sm:h-80 lg:h-96 bg-gray-100 rounded-t-lg overflow-hidden">
             {listing.photos.length > 0 ? (
               <>
                 <Image
@@ -212,15 +212,15 @@ export function ListingDetail({
                   <>
                     <button
                       onClick={prevImage}
-                      className="absolute left-4 top-1/2 -translate-y-1/2 bg-black/50 text-white rounded-full p-2 hover:bg-black/70 transition-colors"
+                      className="absolute left-2 sm:left-4 top-1/2 -translate-y-1/2 bg-black/50 text-white rounded-full p-1.5 sm:p-2 hover:bg-black/70 transition-colors touch-manipulation"
                     >
-                      <ChevronLeft className="h-5 w-5" />
+                      <ChevronLeft className="h-4 w-4 sm:h-5 sm:w-5" />
                     </button>
                     <button
                       onClick={nextImage}
-                      className="absolute right-4 top-1/2 -translate-y-1/2 bg-black/50 text-white rounded-full p-2 hover:bg-black/70 transition-colors"
+                      className="absolute right-2 sm:right-4 top-1/2 -translate-y-1/2 bg-black/50 text-white rounded-full p-1.5 sm:p-2 hover:bg-black/70 transition-colors touch-manipulation"
                     >
-                      <ChevronRight className="h-5 w-5" />
+                      <ChevronRight className="h-4 w-4 sm:h-5 sm:w-5" />
                     </button>
                     
                     {/* Counter */}

@@ -109,6 +109,7 @@
     scroll-behavior: smooth;
     -webkit-overflow-scrolling: touch;
     -webkit-text-size-adjust: 100%;
+    touch-action: manipulation;
   }
 
   button {
@@ -138,5 +139,23 @@
   *:focus-visible {
     outline: none;
     box-shadow: 0 0 0 2px #4F46E5, 0 0 0 4px rgba(79, 70, 229, 0.2);
+  }
+}
+
+@layer utilities {
+  /* Safe area inset utilities */
+  .safe-area-inset {
+    padding-top: env(safe-area-inset-top);
+    padding-bottom: env(safe-area-inset-bottom);
+    padding-left: env(safe-area-inset-left);
+    padding-right: env(safe-area-inset-right);
+  }
+  
+  .pb-safe-bottom {
+    padding-bottom: calc(1rem + env(safe-area-inset-bottom));
+  }
+  
+  .pt-safe-top {
+    padding-top: calc(1rem + env(safe-area-inset-top));
   }
 }

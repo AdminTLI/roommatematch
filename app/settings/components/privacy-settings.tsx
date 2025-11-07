@@ -164,7 +164,7 @@ export function PrivacySettings({ user }: PrivacySettingsProps) {
             <Button 
               onClick={handleSavePrivacy}
               disabled={isLoading}
-              className="min-w-[120px]"
+              className="w-full sm:w-auto min-w-[120px]"
             >
               {isLoading ? (
                 <>

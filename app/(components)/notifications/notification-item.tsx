@@ -110,7 +110,7 @@ export function NotificationItem({
                 {/* Priority Badge */}
                 <Badge 
                   variant="outline" 
-                  className={`text-xs ${getPriorityColor(config.priority)}`}
+                  className={`text-xs capitalize ${getPriorityColor(config.priority)}`}
                 >
                   {config.priority}
                 </Badge>

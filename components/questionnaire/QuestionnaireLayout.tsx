@@ -35,7 +35,7 @@ export function QuestionnaireLayout({
   return (
     <div className="min-h-screen flex flex-col">
       <header className="sticky top-0 z-40 bg-white/80 dark:bg-gray-900/80 backdrop-blur border-b">
-        <div className="container mx-auto px-3 sm:px-4 py-3">
+        <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-3">
           <div className="flex items-center justify-between mb-3 sm:mb-0">
             <div className="font-semibold text-sm sm:text-base">Roommate Match</div>
             <button
@@ -54,7 +54,7 @@ export function QuestionnaireLayout({
         </div>
       </header>
 
-      <main className="container mx-auto px-3 sm:px-4 flex-1 py-6 sm:py-8">
+      <main className="container mx-auto px-4 sm:px-6 lg:px-8 flex-1 py-4 sm:py-6 lg:py-8">
         <div className="max-w-3xl mx-auto space-y-4 sm:space-y-6">
           <div>
             <h1 className="text-xl sm:text-2xl font-semibold">{title}</h1>

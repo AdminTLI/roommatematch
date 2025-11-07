@@ -109,21 +109,21 @@ export function SuggestionCard({ suggestion, onRespond, isLoading = false, curre
   }
   
   return (
-    <div className="bg-white rounded-xl border border-gray-200 p-6 shadow-sm hover:shadow-md transition-shadow">
+    <div className="bg-white rounded-xl border border-gray-200 p-4 sm:p-6 shadow-sm hover:shadow-md transition-shadow">
       {/* Header - Compact layout */}
-      <div className="flex items-start justify-between mb-4">
-        <div className="flex items-center gap-4">
-          <div className="text-center">
-            <div className="text-3xl font-bold text-blue-600">
+      <div className="flex items-start justify-between mb-3 sm:mb-4">
+        <div className="flex items-center gap-3 sm:gap-4 flex-1 min-w-0">
+          <div className="text-center flex-shrink-0">
+            <div className="text-2xl sm:text-3xl font-bold text-blue-600">
               {suggestion.fitIndex}
             </div>
             <div className="text-xs text-gray-500 mt-0.5">Compatibility</div>
           </div>
-          <div className="flex-1">
-            <div className="flex items-center gap-2 mb-2">
+          <div className="flex-1 min-w-0">
+            <div className="flex flex-wrap items-center gap-2 mb-2">
               {getStatusBadge()}
               {suggestion.status === 'pending' && (
-                <span className="text-xs text-gray-500">
+                <span className="text-xs text-gray-500 whitespace-nowrap">
                   Expires in {hoursLeft}h
                 </span>
               )}
@@ -157,18 +157,18 @@ export function SuggestionCard({ suggestion, onRespond, isLoading = false, curre
       
       {/* Actions */}
       {suggestion.status === 'pending' && (
-        <div className="flex gap-3">
+        <div className="flex flex-col sm:flex-row gap-2 sm:gap-3">
           <button
             onClick={() => handleRespond('decline')}
             disabled={isResponding || isLoading}
-            className="flex-1 px-4 py-2 rounded-lg border border-gray-300 text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+            className="flex-1 px-4 py-2.5 rounded-lg border border-gray-300 text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors text-sm sm:text-base font-medium"
           >
             {isResponding ? 'Declining...' : 'Decline'}
           </button>
           <button
             onClick={() => handleRespond('accept')}
             disabled={isResponding || isLoading}
-            className="flex-1 px-4 py-2 rounded-lg bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+            className="flex-1 px-4 py-2.5 rounded-lg bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors text-sm sm:text-base font-medium"
           >
             {isResponding ? 'Accepting...' : 'Accept'}
           </button>
@@ -180,7 +180,7 @@ export function SuggestionCard({ suggestion, onRespond, isLoading = false, curre
         <button
           onClick={handleChatNow}
           disabled={isOpeningChat}
-          className="w-full px-4 py-2 rounded-lg bg-green-600 text-white hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors font-medium"
+          className="w-full px-4 py-2.5 rounded-lg bg-green-600 text-white hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors font-medium text-sm sm:text-base"
         >
           {isOpeningChat ? 'Opening chat...' : '💬 Chat Now'}
         </button>

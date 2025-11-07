@@ -159,67 +159,123 @@ export function DashboardContent({ hasCompletedQuestionnaire = false, hasPartial
     
     setIsLoadingMatches(true)
     try {
-      // Fetch top 3 matches for display
-      const { data: topMatchesData, error: topError } = await supabase.rpc('get_user_matches', {
-        p_user_id: user.id,
-        p_limit: 3,
-        p_offset: 0,
-        p_university_ids: null,
-        p_degree_levels: null,
-        p_program_ids: null,
-        p_study_years: null
-      })
+      // Fetch matches from chat_members table (same logic as chat page)
+      // Get chat memberships for this user
+      const { data: memberships, error: membershipsError } = await supabase
+        .from('chat_members')
+        .select('chat_id, user_id')
+        .eq('user_id', user.id)
 
-      if (topError) {
-        console.error('Error loading matches:', topError)
+      if (membershipsError) {
+        console.error('Error loading chat memberships:', membershipsError)
+        setTopMatches([])
+        setIsLoadingMatches(false)
         return
       }
 
-      // Fetch all matches for accurate average calculation (use a high limit to get all)
-      const { data: allMatchesData, error: avgError } = await supabase.rpc('get_user_matches', {
-        p_user_id: user.id,
-        p_limit: 1000, // High limit to get all matches
-        p_offset: 0,
-        p_university_ids: null,
-        p_degree_levels: null,
-        p_program_ids: null,
-        p_study_years: null
-      })
-
-      if (topMatchesData && topMatchesData.length > 0) {
-        const formattedMatches = topMatchesData.map((match: any) => ({
-          id: match.match_user_id,
-          userId: match.match_user_id,
-          name: match.name || 'User',
-          score: Math.round((match.compatibility_score || 0) * 100),
-          program: match.program_name || 'Program',
-          university: match.university_name || 'University',
-          avatar: undefined
-        }))
-        setTopMatches(formattedMatches)
-      } else {
+      if (!memberships || memberships.length === 0) {
         setTopMatches([])
+        setIsLoadingMatches(false)
+        return
       }
 
+      const chatIds = memberships.map(m => m.chat_id)
+
+      // Fetch chats to get other participants
+      const { data: chatRooms, error: chatsError } = await supabase
+        .from('chats')
+        .select(`
+          id,
+          is_group,
+          chat_members!inner(user_id)
+        `)
+        .in('id', chatIds)
+        .eq('is_group', false) // Only individual chats for top matches
+        .order('created_at', { ascending: false })
+        .limit(3)
+
+      if (chatsError) {
+        console.error('Error loading chats:', chatsError)
+        setTopMatches([])
+        setIsLoadingMatches(false)
+        return
+      }
+
+      // Get other user IDs from chat members
+      const otherUserIds = new Set<string>()
+      chatRooms?.forEach((room: any) => {
+        room.chat_members?.forEach((member: any) => {
+          if (member.user_id !== user.id) {
+            otherUserIds.add(member.user_id)
+          }
+        })
+      })
+
+      if (otherUserIds.size === 0) {
+        setTopMatches([])
+        setIsLoadingMatches(false)
+        return
+      }
+
+      // Fetch profiles for other users
+      const { data: profiles } = await supabase
+        .from('profiles')
+        .select('user_id, first_name, last_name, program, university_id, universities(name)')
+        .in('user_id', Array.from(otherUserIds))
+
+      // Fetch match data for compatibility scores
+      const userIdsArray = Array.from(otherUserIds)
+      const { data: matchesAsA } = await supabase
+        .from('matches')
+        .select('b_user, score')
+        .eq('a_user', user.id)
+        .in('b_user', userIdsArray)
+
+      const { data: matchesAsB } = await supabase
+        .from('matches')
+        .select('a_user, score')
+        .eq('b_user', user.id)
+        .in('a_user', userIdsArray)
+
+      // Create a map of user_id to match score
+      const matchScoreMap = new Map<string, number>()
+      matchesAsA?.forEach((m: any) => matchScoreMap.set(m.b_user, m.score || 0))
+      matchesAsB?.forEach((m: any) => matchScoreMap.set(m.a_user, m.score || 0))
+
+      // Format matches
+      const formattedMatches = (profiles || []).slice(0, 3).map((profile: any) => {
+        const fullName = [profile.first_name?.trim(), profile.last_name?.trim()].filter(Boolean).join(' ') || 'User'
+        const score = matchScoreMap.get(profile.user_id) || 0
+        
+        return {
+          id: profile.user_id,
+          userId: profile.user_id,
+          name: fullName,
+          score: Math.round(score * 100),
+          program: profile.program || 'Program',
+          university: profile.universities?.name || 'University',
+          avatar: undefined
+        }
+      }).sort((a, b) => b.score - a.score) // Sort by score descending
+
+      setTopMatches(formattedMatches)
+
       // Calculate average compatibility from all matches
-      if (allMatchesData && allMatchesData.length > 0) {
-        const scores = allMatchesData.map((match: any) => 
-          (match.compatibility_score || 0) * 100
+      const allMatchScores = Array.from(matchScoreMap.values())
+      if (allMatchScores.length > 0) {
+        const average = Math.round(
+          (allMatchScores.reduce((sum, score) => sum + score, 0) / allMatchScores.length) * 100
         )
-        const average = scores.length > 0 
-          ? Math.round(scores.reduce((sum, score) => sum + score, 0) / scores.length)
-          : 0
         setAvgCompatibility(average)
-        setTotalMatches(allMatchesData.length)
       } else {
         setAvgCompatibility(0)
-        setTotalMatches(0)
       }
       
       // Always fetch total count separately for accuracy
       loadTotalMatchesCount()
     } catch (error) {
       console.error('Failed to load matches:', error)
+      setTopMatches([])
     } finally {
       setIsLoadingMatches(false)
     }
@@ -538,13 +594,13 @@ export function DashboardContent({ hasCompletedQuestionnaire = false, hasPartial
       >
         <motion.div variants={fadeInUp} className="flex items-center justify-between">
           <div>
-            <h1 className="text-3xl font-bold text-gray-900">Welcome back!</h1>
-            <p className="text-lg text-gray-600 mt-1">Here's what's happening with your matches today.</p>
+            <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">Welcome back!</h1>
+            <p className="text-base sm:text-lg text-gray-600 mt-1">Here's what's happening with your matches today.</p>
           </div>
         </motion.div>
         
         {/* Summary Badges - Real Data */}
-        <motion.div variants={fadeInUp} className="flex flex-wrap gap-3">
+        <motion.div variants={fadeInUp} className="flex flex-wrap gap-2 sm:gap-3">
           {dashboardData.summary.newMatchesCount > 0 && (
             <div className="inline-flex items-center gap-2 px-3 py-1 bg-green-100 text-green-800 text-sm font-medium rounded-full">
               <Star className="w-3 h-3" />
@@ -585,28 +641,28 @@ export function DashboardContent({ hasCompletedQuestionnaire = false, hasPartial
         initial="initial"
         animate="animate"
         variants={staggerChildren}
-        className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6"
+        className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6"
       >
         <motion.div variants={fadeInUp}>
-          <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-200">
-            <div className="text-3xl font-bold text-gray-900">
+          <div className="bg-white p-4 sm:p-6 rounded-xl shadow-sm border border-gray-200">
+            <div className="text-2xl sm:text-3xl font-bold text-gray-900">
               {avgCompatibility > 0 ? `${avgCompatibility}%` : '-'}
             </div>
-            <div className="text-sm text-gray-600 mt-1">Avg Compatibility</div>
+            <div className="text-xs sm:text-sm text-gray-600 mt-1">Avg Compatibility</div>
           </div>
         </motion.div>
         
         <motion.div variants={fadeInUp}>
-          <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-200">
-            <div className="text-3xl font-bold text-gray-900">{totalMatches}</div>
-            <div className="text-sm text-gray-600 mt-1">Total Matches</div>
+          <div className="bg-white p-4 sm:p-6 rounded-xl shadow-sm border border-gray-200">
+            <div className="text-2xl sm:text-3xl font-bold text-gray-900">{totalMatches}</div>
+            <div className="text-xs sm:text-sm text-gray-600 mt-1">Total Matches</div>
           </div>
         </motion.div>
         
         <motion.div variants={fadeInUp}>
-          <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-200">
-            <div className="text-3xl font-bold text-gray-900">{dashboardData.kpis.activeChats}</div>
-            <div className="text-sm text-gray-600 mt-1">Active Chats</div>
+          <div className="bg-white p-4 sm:p-6 rounded-xl shadow-sm border border-gray-200">
+            <div className="text-2xl sm:text-3xl font-bold text-gray-900">{dashboardData.kpis.activeChats}</div>
+            <div className="text-xs sm:text-sm text-gray-600 mt-1">Active Chats</div>
           </div>
         </motion.div>
       </motion.div>
@@ -616,13 +672,13 @@ export function DashboardContent({ hasCompletedQuestionnaire = false, hasPartial
         initial="initial"
         animate="animate"
         variants={staggerChildren}
-        className="grid grid-cols-1 lg:grid-cols-2 gap-8"
+        className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6 lg:gap-8"
       >
         {/* Top Matches - Real Data */}
         <motion.div variants={fadeInUp}>
-          <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-200 flex flex-col h-full">
-            <div className="flex items-center justify-between mb-6">
-              <h3 className="text-xl font-bold text-gray-900">Your Top Matches</h3>
+          <div className="bg-white p-4 sm:p-6 rounded-xl shadow-sm border border-gray-200 flex flex-col h-full">
+            <div className="flex items-center justify-between mb-4 sm:mb-6">
+              <h3 className="text-lg sm:text-xl font-bold text-gray-900">Your Top Matches</h3>
               <button 
                 className="flex items-center gap-1 text-sm text-gray-600 hover:text-gray-700 font-medium" 
                 onClick={loadTopMatches}
@@ -644,31 +700,31 @@ export function DashboardContent({ hasCompletedQuestionnaire = false, hasPartial
               </div>
             ) : topMatches.length > 0 ? (
               <div className="flex flex-col flex-1 min-h-0">
-                <div className="space-y-4 overflow-y-auto flex-1 pr-2">
+                <div className="space-y-3 sm:space-y-4 overflow-y-auto flex-1 pr-2">
                   {topMatches.map((match) => (
-                    <div key={match.id} className="flex items-center gap-4 p-4 bg-gray-50 rounded-lg">
-                      <div className="text-2xl font-bold text-blue-600">{match.score}%</div>
-                      <div className="flex items-center gap-4 flex-1">
-                        <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-purple-500 rounded-full flex items-center justify-center text-white font-bold text-lg">
+                    <div key={match.id} className="flex flex-col sm:flex-row items-start sm:items-center gap-3 sm:gap-4 p-3 sm:p-4 bg-gray-50 rounded-lg">
+                      <div className="flex items-center gap-3 sm:gap-4 flex-1 w-full sm:w-auto">
+                        <div className="text-xl sm:text-2xl font-bold text-blue-600">{match.score}%</div>
+                        <div className="w-10 h-10 sm:w-12 sm:h-12 bg-gradient-to-br from-blue-500 to-purple-500 rounded-full flex items-center justify-center text-white font-bold text-base sm:text-lg flex-shrink-0">
                           {match.name[0].toUpperCase()}
                         </div>
-                        <div className="flex-1">
-                          <h4 className="font-bold text-gray-900">{match.name}</h4>
-                          <p className="text-sm text-gray-600">
+                        <div className="flex-1 min-w-0">
+                          <h4 className="font-bold text-sm sm:text-base text-gray-900 truncate">{match.name}</h4>
+                          <p className="text-xs sm:text-sm text-gray-600 truncate">
                             <span>{match.program}</span>
-                            <span className="mx-2">•</span>
+                            <span className="mx-1 sm:mx-2">•</span>
                             <span>{match.university}</span>
                           </p>
                         </div>
-                        <div className="flex items-center gap-2">
-                          <Heart className="w-5 h-5 text-rose-500" />
-                          <button 
-                            onClick={() => handleChatWithMatch(match.userId || match.id)}
-                            className="px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors"
-                          >
-                            Chat
-                          </button>
-                        </div>
+                      </div>
+                      <div className="flex items-center gap-2 w-full sm:w-auto justify-end sm:justify-start">
+                        <Heart className="w-4 h-4 sm:w-5 sm:h-5 text-rose-500 flex-shrink-0" />
+                        <button 
+                          onClick={() => handleChatWithMatch(match.userId || match.id)}
+                          className="px-3 sm:px-4 py-2 bg-blue-600 text-white text-xs sm:text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors"
+                        >
+                          Chat
+                        </button>
                       </div>
                     </div>
                   ))}
@@ -701,9 +757,9 @@ export function DashboardContent({ hasCompletedQuestionnaire = false, hasPartial
 
         {/* Recent Activity - Live Notifications */}
         <motion.div variants={fadeInUp}>
-          <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-200 flex flex-col h-full">
-            <div className="flex items-center justify-between mb-6">
-              <h3 className="text-xl font-bold text-gray-900">Recent Activity</h3>
+          <div className="bg-white p-4 sm:p-6 rounded-xl shadow-sm border border-gray-200 flex flex-col h-full">
+            <div className="flex items-center justify-between mb-4 sm:mb-6">
+              <h3 className="text-lg sm:text-xl font-bold text-gray-900">Recent Activity</h3>
               <button 
                 className="flex items-center gap-1 text-sm text-gray-600 hover:text-gray-700 font-medium" 
                 onClick={loadRecentActivity}
@@ -796,9 +852,9 @@ export function DashboardContent({ hasCompletedQuestionnaire = false, hasPartial
         variants={staggerChildren}
       >
         <motion.div variants={fadeInUp}>
-          <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-200">
-            <h3 className="text-xl font-bold text-gray-900 mb-6">Quick Actions</h3>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          <div className="bg-white p-4 sm:p-6 rounded-xl shadow-sm border border-gray-200">
+            <h3 className="text-lg sm:text-xl font-bold text-gray-900 mb-4 sm:mb-6">Quick Actions</h3>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
               <button 
                 className="flex flex-col items-center justify-center gap-2 h-20 px-4 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors" 
                 onClick={handleBrowseMatches}

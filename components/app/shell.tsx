@@ -64,8 +64,8 @@ export function AppShell({ children, user, showQuestionnairePrompt = false }: Ap
 
   return (
     <ThemeProvider>
-      <div className="min-h-screen bg-dashboard dark:bg-[#0F1419]">
-        <div className="flex h-screen">
+      <div className="min-h-screen bg-dashboard dark:bg-[#0F1419] safe-area-inset">
+        <div className="flex min-h-screen lg:h-screen">
           {/* Sidebar - hidden on mobile */}
           <aside className="hidden lg:block lg:w-64 lg:flex-shrink-0">
             <Sidebar user={user} />
@@ -74,7 +74,7 @@ export function AppShell({ children, user, showQuestionnairePrompt = false }: Ap
           {/* Main content area */}
           <div className="flex-1 flex flex-col overflow-hidden">
             <Topbar user={user} />
-            <main className="flex-1 overflow-y-auto p-6 lg:p-8">
+            <main className="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8 pb-safe-bottom">
               <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}

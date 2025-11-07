@@ -184,17 +184,16 @@ export function NotificationDropdown({
             </CardTitle>
             
             <div className="flex items-center gap-2">
-              {counts && counts.unread > 0 && (
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={handleMarkAllAsRead}
-                  className="text-xs"
-                >
-                  <CheckCheck className="h-3 w-3 mr-1" />
-                  Mark all read
-                </Button>
-              )}
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={handleMarkAllAsRead}
+                disabled={!counts || counts.unread === 0}
+                className="text-xs"
+              >
+                <CheckCheck className="h-3 w-3 mr-1" />
+                Mark all read
+              </Button>
               
               <Button
                 variant="ghost"
@@ -213,7 +212,7 @@ export function NotificationDropdown({
         </CardHeader>
 
         <CardContent className="p-0">
-          <div className="h-96 overflow-y-auto">
+          <div className="h-[400px] sm:h-96 overflow-y-auto">
             {isLoading ? (
               <div className="p-4 text-center text-gray-500">
                 Loading notifications...

@@ -8,3 +8,4 @@ ALTER PUBLICATION supabase_realtime ADD TABLE messages;
 -- This allows Supabase to track changes
 ALTER TABLE messages REPLICA IDENTITY FULL;
 
+

@@ -149,31 +149,32 @@ export function StudentMatchesInterface({ user }: StudentMatchesInterfaceProps) 
   ]
 
   return (
-    <div className="max-w-4xl mx-auto px-4 py-6">
+    <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-6">
       {/* Header */}
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold text-gray-900 mb-2">Your Matches</h1>
-        <p className="text-gray-600">
+      <div className="mb-6 sm:mb-8">
+        <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-2">Your Matches</h1>
+        <p className="text-sm sm:text-base text-gray-600">
           Review and respond to your roommate suggestions. Matches are based on compatibility scores and shared preferences.
         </p>
       </div>
 
       {/* Tabs */}
-      <div className="mb-6">
-        <div className="flex gap-1 bg-white border border-gray-200 p-1 rounded-2xl shadow-sm">
+      <div className="mb-4 sm:mb-6">
+        <div className="flex gap-1 bg-white border border-gray-200 p-0.5 sm:p-1 rounded-2xl shadow-sm overflow-x-auto">
           {tabs.map((tab) => (
             <button
               key={tab.id}
               onClick={() => setActiveTab(tab.id)}
-              className={`flex-1 px-4 py-2 rounded-xl text-sm font-medium transition-colors ${
+              className={`flex-1 min-w-0 px-2 sm:px-4 py-2 rounded-xl text-xs sm:text-sm font-medium transition-colors whitespace-nowrap ${
                 activeTab === tab.id
                   ? 'bg-blue-600 text-white shadow-sm'
                   : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
               }`}
             >
-              {tab.label}
+              <span className="hidden sm:inline">{tab.label}</span>
+              <span className="sm:hidden">{tab.label.split(' ')[0]}</span>
               {tab.count > 0 && (
-                <span className={`ml-2 px-2 py-0.5 rounded-full text-xs ${
+                <span className={`ml-1 sm:ml-2 px-1.5 sm:px-2 py-0.5 rounded-full text-xs ${
                   activeTab === tab.id
                     ? 'bg-white/20 text-white'
                     : 'bg-gray-200 text-gray-600'
@@ -185,8 +186,8 @@ export function StudentMatchesInterface({ user }: StudentMatchesInterfaceProps) 
           ))}
         </div>
         {/* Tab-specific description */}
-        <div className="mt-4 text-center">
-          <p className="text-sm text-gray-600">
+        <div className="mt-3 sm:mt-4 text-center">
+          <p className="text-xs sm:text-sm text-gray-600">
             {activeTab === 'suggested' && 'New matches waiting for your response'}
             {activeTab === 'pending' && "Matches you've accepted, waiting for others to respond"}
             {activeTab === 'confirmed' && 'Matches where everyone has accepted'}
@@ -218,7 +219,7 @@ export function StudentMatchesInterface({ user }: StudentMatchesInterfaceProps) 
         </div>
       ) : (
         <>
-          <div className="grid gap-6 mb-6">
+          <div className="grid gap-4 sm:gap-6 mb-4 sm:mb-6">
             {filteredSuggestions.map((suggestion) => (
               <SuggestionCard
                 key={suggestion.id}

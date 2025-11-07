@@ -1234,9 +1234,9 @@ export function ChatInterface({ roomId, user }: ChatInterfaceProps) {
       )}
 
       {/* Messages */}
-      <Card className="mb-6">
+      <Card className="mb-4 sm:mb-6">
         <CardContent className="p-0">
-          <div className="h-96 overflow-y-auto p-4 space-y-4">
+          <div className="h-[400px] sm:h-96 overflow-y-auto p-3 sm:p-4 space-y-3 sm:space-y-4">
             {messages.length === 0 ? (
               <div className="text-center py-8">
                 <MessageCircle className="h-12 w-12 text-gray-400 mx-auto mb-4" />
@@ -1271,10 +1271,10 @@ export function ChatInterface({ roomId, user }: ChatInterfaceProps) {
                     ) : (
                       // Regular message rendering
                       <div 
-                        className={`flex gap-3 ${message.is_own ? 'justify-end' : 'justify-start'}`}
+                        className={`flex gap-2 sm:gap-3 ${message.is_own ? 'justify-end' : 'justify-start'}`}
                       >
                     {!message.is_own && (
-                      <Avatar className="w-8 h-8 flex-shrink-0">
+                      <Avatar className="w-7 h-7 sm:w-8 sm:h-8 flex-shrink-0">
                         <AvatarImage src={message.sender_avatar} />
                         <AvatarFallback className="text-xs">
                           {message.sender_name.charAt(0)}
@@ -1282,21 +1282,21 @@ export function ChatInterface({ roomId, user }: ChatInterfaceProps) {
                       </Avatar>
                     )}
                     
-                    <div className={`max-w-xs lg:max-w-md ${message.is_own ? 'order-first' : ''}`}>
+                    <div className={`max-w-[75%] sm:max-w-xs lg:max-w-md ${message.is_own ? 'order-first' : ''}`}>
                       {!message.is_own && (
                         <div className="text-xs text-gray-500 mb-1">
                           {message.sender_name}
                         </div>
                       )}
-                      <div className={`rounded-lg px-3 py-2 ${
+                      <div className={`rounded-lg px-2.5 sm:px-3 py-1.5 sm:py-2 ${
                         message.is_own 
                           ? 'bg-primary text-primary-foreground' 
                           : 'bg-gray-100 dark:bg-gray-800'
                       }`}>
-                        <p className="text-sm">{message.content}</p>
+                        <p className="text-xs sm:text-sm break-words">{message.content}</p>
                       </div>
-                      <div className="flex items-center gap-1 mt-1">
-                        <span className="text-xs text-gray-400">
+                      <div className="flex items-center gap-1 mt-0.5 sm:mt-1">
+                        <span className="text-[10px] sm:text-xs text-gray-400">
                           {formatTime(message.created_at)}
                         </span>
                         {message.is_own && getReadStatus(message)}
@@ -1366,8 +1366,8 @@ export function ChatInterface({ roomId, user }: ChatInterfaceProps) {
 
       {/* Message Input */}
       <Card>
-        <CardContent className="p-4">
-          <div className="flex gap-3 items-center">
+        <CardContent className="p-3 sm:p-4">
+          <div className="flex gap-2 sm:gap-3 items-center">
             <Input
               value={newMessage}
               onChange={(e) => {
@@ -1380,21 +1380,22 @@ export function ChatInterface({ roomId, user }: ChatInterfaceProps) {
                   sendMessage()
                 }
               }}
-              placeholder="Type your message... (Links are not allowed)"
+              placeholder="Type your message..."
               disabled={isSending}
-              className="flex-1 h-10"
+              className="flex-1 h-11 text-sm sm:text-base"
             />
             <Button 
               onClick={sendMessage}
               disabled={!newMessage.trim() || isSending}
-              className="h-10 w-10 p-0"
+              className="h-11 w-11 sm:w-11 p-0 flex-shrink-0"
             >
               <Send className="h-4 w-4" />
             </Button>
           </div>
           
-          <div className="flex items-center justify-between mt-2 text-xs text-gray-500">
-            <span>Press Enter to send, Shift+Enter for new line</span>
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mt-2 gap-1 text-[10px] sm:text-xs text-gray-500">
+            <span className="hidden sm:inline">Press Enter to send, Shift+Enter for new line</span>
+            <span className="sm:hidden">Enter to send</span>
             <span>{newMessage.length}/500 characters</span>
           </div>
         </CardContent>

@@ -123,39 +123,45 @@ export function QuestionnaireSettings({ progressData }: QuestionnaireSettingsPro
             Track your compatibility questionnaire completion status.
           </CardDescription>
         </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="flex items-center justify-between">
-            <div className="space-y-1">
-              <div className="flex items-center gap-2">
-                <span className="text-2xl font-bold">{completedSections.length}</span>
-                <span className="text-gray-500">/ {totalSections} sections</span>
+        <CardContent className="space-y-6">
+          {/* Progress Section */}
+          <div className="space-y-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-gray-600 mb-1">Progress</p>
+                <div className="flex items-baseline gap-2">
+                  <span className="text-3xl font-bold text-gray-900">{completedSections.length}</span>
+                  <span className="text-lg text-gray-500">/ {totalSections}</span>
+                  <span className="text-sm text-gray-500">sections</span>
+                </div>
               </div>
-              <Progress value={progressPercentage} className="w-full" />
+              <div>
+                {isFullySubmitted ? (
+                  <Badge variant="default" className="bg-green-100 text-green-800 border-green-200 px-3 py-1.5">
+                    <CheckCircle className="w-4 h-4 mr-1.5" />
+                    Completed
+                  </Badge>
+                ) : (
+                  <Badge variant="secondary" className="px-3 py-1.5">
+                    <Clock className="w-4 h-4 mr-1.5" />
+                    In Progress
+                  </Badge>
+                )}
+              </div>
             </div>
-            <div className="text-right">
-              {isFullySubmitted ? (
-                <Badge variant="default" className="bg-green-100 text-green-800">
-                  <CheckCircle className="w-3 h-3 mr-1" />
-                  Completed
-                </Badge>
-              ) : (
-                <Badge variant="secondary">
-                  <Clock className="w-3 h-3 mr-1" />
-                  In Progress
-                </Badge>
-              )}
-            </div>
+            <Progress value={progressPercentage} className="h-3" />
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
-            <div>
-              <span className="text-gray-500">Last updated:</span>
-              <span className="ml-2 font-medium">{formatDate(lastUpdated)}</span>
+          {/* Status Information */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-4 border-t border-gray-200">
+            <div className="space-y-1">
+              <p className="text-xs font-medium text-gray-500 uppercase tracking-wide">Last Updated</p>
+              <p className="text-sm font-semibold text-gray-900">{formatDate(lastUpdated)}</p>
             </div>
             {submittedAt && (
-              <div>
-                <span className="text-gray-500">Submitted:</span>
-                <span className="ml-2 font-medium">{formatDate(submittedAt)}</span>
+              <div className="space-y-1">
+                <p className="text-xs font-medium text-gray-500 uppercase tracking-wide">Submitted</p>
+                <p className="text-sm font-semibold text-gray-900">{formatDate(submittedAt)}</p>
               </div>
             )}
           </div>
@@ -172,11 +178,11 @@ export function QuestionnaireSettings({ progressData }: QuestionnaireSettingsPro
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
               {completedSections.map((section) => (
-                <div key={section} className="flex items-center gap-2 p-2 bg-green-50 rounded-lg">
-                  <CheckCircle className="w-4 h-4 text-green-600" />
-                  <span className="text-sm font-medium">{getSectionDisplayName(section)}</span>
+                <div key={section} className="flex items-center gap-3 p-3 bg-green-50 border border-green-200 rounded-xl hover:bg-green-100 transition-colors">
+                  <CheckCircle className="w-5 h-5 text-green-600 flex-shrink-0" />
+                  <span className="text-sm font-medium text-gray-900">{getSectionDisplayName(section)}</span>
                 </div>
               ))}
             </div>

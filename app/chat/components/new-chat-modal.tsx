@@ -50,32 +50,104 @@ export function NewChatModal({ isOpen, onClose, user, initialMode }: NewChatModa
   const loadMatches = async () => {
     setIsLoading(true)
     try {
-      const { data, error } = await supabase.rpc('get_user_matches', {
-        p_user_id: user.id,
-        p_limit: 50,
-        p_offset: 0,
-        p_university_ids: null,
-        p_degree_levels: null,
-        p_program_ids: null,
-        p_study_years: null
-      })
+      // Fetch matches from chat_members table (users you've actually matched and accepted with)
+      const { data: memberships, error: membershipsError } = await supabase
+        .from('chat_members')
+        .select('chat_id, user_id')
+        .eq('user_id', user.id)
 
-      if (error) {
-        console.error('Error loading matches:', error)
+      if (membershipsError) {
+        console.error('Error loading chat memberships:', membershipsError)
+        setMatches([])
+        setIsLoading(false)
         return
       }
 
-      if (data) {
-        setMatches(data.map((match: any) => ({
-          match_user_id: match.match_user_id,
-          name: match.name || 'User',
-          university_name: match.university_name || 'University',
-          program_name: match.program_name || 'Program',
-          compatibility_score: match.compatibility_score || 0
-        })))
+      if (!memberships || memberships.length === 0) {
+        setMatches([])
+        setIsLoading(false)
+        return
       }
+
+      const chatIds = memberships.map(m => m.chat_id)
+
+      // Fetch chats to get other participants (only individual chats)
+      const { data: chatRooms, error: chatsError } = await supabase
+        .from('chats')
+        .select(`
+          id,
+          is_group,
+          chat_members!inner(user_id)
+        `)
+        .in('id', chatIds)
+        .eq('is_group', false) // Only individual chats for matches
+
+      if (chatsError) {
+        console.error('Error loading chats:', chatsError)
+        setMatches([])
+        setIsLoading(false)
+        return
+      }
+
+      // Get other user IDs from chat members
+      const otherUserIds = new Set<string>()
+      chatRooms?.forEach((room: any) => {
+        room.chat_members?.forEach((member: any) => {
+          if (member.user_id !== user.id) {
+            otherUserIds.add(member.user_id)
+          }
+        })
+      })
+
+      if (otherUserIds.size === 0) {
+        setMatches([])
+        setIsLoading(false)
+        return
+      }
+
+      // Fetch profiles for other users
+      const { data: profiles } = await supabase
+        .from('profiles')
+        .select('user_id, first_name, last_name, program, university_id, universities(name)')
+        .in('user_id', Array.from(otherUserIds))
+
+      // Fetch match data for compatibility scores
+      const userIdsArray = Array.from(otherUserIds)
+      const { data: matchesAsA } = await supabase
+        .from('matches')
+        .select('b_user, score')
+        .eq('a_user', user.id)
+        .in('b_user', userIdsArray)
+
+      const { data: matchesAsB } = await supabase
+        .from('matches')
+        .select('a_user, score')
+        .eq('b_user', user.id)
+        .in('a_user', userIdsArray)
+
+      // Create a map of user_id to match score
+      const matchScoreMap = new Map<string, number>()
+      matchesAsA?.forEach((m: any) => matchScoreMap.set(m.b_user, m.score || 0))
+      matchesAsB?.forEach((m: any) => matchScoreMap.set(m.a_user, m.score || 0))
+
+      // Format matches
+      const formattedMatches = (profiles || []).map((profile: any) => {
+        const fullName = [profile.first_name?.trim(), profile.last_name?.trim()].filter(Boolean).join(' ') || 'User'
+        const score = matchScoreMap.get(profile.user_id) || 0
+        
+        return {
+          match_user_id: profile.user_id,
+          name: fullName,
+          university_name: profile.universities?.name || 'University',
+          program_name: profile.program || 'Program',
+          compatibility_score: score
+        }
+      }).sort((a, b) => b.compatibility_score - a.compatibility_score) // Sort by score descending
+
+      setMatches(formattedMatches)
     } catch (error) {
       console.error('Failed to load matches:', error)
+      setMatches([])
     } finally {
       setIsLoading(false)
     }
@@ -206,6 +278,7 @@ export function NewChatModal({ isOpen, onClose, user, initialMode }: NewChatModa
                 setIsGroupMode(false)
                 setSelectedMatches(new Set())
                 setGroupName('')
+                setSearchQuery('')
               }}
               className="flex-1"
             >
@@ -216,6 +289,7 @@ export function NewChatModal({ isOpen, onClose, user, initialMode }: NewChatModa
               onClick={() => {
                 setIsGroupMode(true)
                 setSelectedMatches(new Set())
+                setSearchQuery('')
               }}
               className="flex-1"
             >

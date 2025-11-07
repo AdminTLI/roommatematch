@@ -125,7 +125,7 @@ export function ListingCard({
       onMouseLeave={handleMouseLeave}
     >
       {/* Image Gallery */}
-      <div className="relative h-48 bg-gray-100 rounded-t-lg overflow-hidden">
+      <div className="relative h-40 sm:h-48 bg-gray-100 rounded-t-lg overflow-hidden">
         {listing.photos.length > 0 ? (
           <>
             <Image
@@ -145,7 +145,7 @@ export function ListingCard({
                     e.stopPropagation()
                     prevImage()
                   }}
-                  className="absolute left-2 top-1/2 -translate-y-1/2 bg-black/50 text-white rounded-full p-2 hover:bg-black/70 transition-colors opacity-0 group-hover:opacity-100"
+                  className="absolute left-2 top-1/2 -translate-y-1/2 bg-black/50 text-white rounded-full p-1.5 sm:p-2 hover:bg-black/70 transition-colors opacity-100 sm:opacity-0 sm:group-hover:opacity-100 touch-manipulation"
                   aria-label="Previous image"
                 >
                   ←
@@ -155,7 +155,7 @@ export function ListingCard({
                     e.stopPropagation()
                     nextImage()
                   }}
-                  className="absolute right-2 top-1/2 -translate-y-1/2 bg-black/50 text-white rounded-full p-2 hover:bg-black/70 transition-colors opacity-0 group-hover:opacity-100"
+                  className="absolute right-2 top-1/2 -translate-y-1/2 bg-black/50 text-white rounded-full p-1.5 sm:p-2 hover:bg-black/70 transition-colors opacity-100 sm:opacity-0 sm:group-hover:opacity-100 touch-manipulation"
                   aria-label="Next image"
                 >
                   →
@@ -208,13 +208,13 @@ export function ListingCard({
         )}
       </div>
 
-      <CardHeader className="pb-3">
-        <div className="flex items-start justify-between">
+      <CardHeader className="pb-2 sm:pb-3 px-4 sm:px-6 pt-4 sm:pt-6">
+        <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-2">
           <div className="flex-1 min-w-0">
-            <h3 className="text-lg font-semibold line-clamp-2 mb-1 group-hover:text-primary transition-colors">
+            <h3 className="text-base sm:text-lg font-semibold line-clamp-2 mb-1 group-hover:text-primary transition-colors">
               {listing.title}
             </h3>
-            <div className="flex items-center gap-1 text-sm text-gray-600 mb-2">
+            <div className="flex items-center gap-1 text-xs sm:text-sm text-gray-600 mb-2">
               <MapPin className="h-3 w-3 flex-shrink-0" />
               <span className="truncate">{listing.address}, {listing.city}</span>
             </div>
@@ -255,9 +255,9 @@ export function ListingCard({
         </div>
       </CardHeader>
 
-      <CardContent className="space-y-4">
+      <CardContent className="space-y-3 sm:space-y-4 px-4 sm:px-6 pb-4 sm:pb-6">
         {/* Key Details */}
-        <div className="grid grid-cols-2 gap-3 text-sm">
+        <div className="grid grid-cols-2 gap-2 sm:gap-3 text-xs sm:text-sm">
           <div className="flex items-center gap-2">
             <Euro className="h-4 w-4 text-green-600" />
             <span className="font-medium">{formatPrice()}</span>
@@ -318,12 +318,13 @@ export function ListingCard({
         <div className="flex gap-2 pt-2">
           <Button 
             asChild
-            className="flex-1"
+            className="flex-1 text-xs sm:text-sm"
             size="sm"
           >
             <Link href={`/housing/${listing.id}`}>
-              <MessageCircle className="h-4 w-4 mr-2" />
-              View Details
+              <MessageCircle className="h-3.5 w-3.5 sm:h-4 sm:w-4 mr-1.5 sm:mr-2" />
+              <span className="hidden sm:inline">View Details</span>
+              <span className="sm:hidden">View</span>
             </Link>
           </Button>
           
@@ -335,7 +336,7 @@ export function ListingCard({
               onSave(listing.id)
             }}
             className={cn(
-              "px-3",
+              "px-2 sm:px-3 min-w-[44px]",
               isSaved && "text-red-600 border-red-200 hover:bg-red-50"
             )}
           >
@@ -344,7 +345,7 @@ export function ListingCard({
         </div>
 
         {/* Secondary Actions */}
-        <div className="flex items-center justify-between pt-2 border-t">
+        <div className="flex items-center justify-between pt-2 border-t text-xs sm:text-sm">
           <div className="flex gap-2">
             <Button
               variant="ghost"
@@ -371,7 +372,7 @@ export function ListingCard({
             </Button>
           </div>
           
-          <div className="text-xs text-gray-500">
+          <div className="text-[10px] sm:text-xs text-gray-500 truncate ml-2">
             Listed {listing.createdAt 
               ? (() => {
                   const date = new Date(listing.createdAt)

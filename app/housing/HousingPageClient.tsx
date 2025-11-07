@@ -179,7 +179,7 @@ export function HousingPageClient({
         </div>
 
         {/* Content */}
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-6">
           {viewMode === 'list' ? (
             <ListPane
               listings={listings}
@@ -205,7 +205,7 @@ export function HousingPageClient({
               onViewportChange={() => {}}
               onListingClick={(id) => router.push(`/housing/${id}`)}
               highlightedId={hoveredId}
-              className="h-[600px]"
+              className="h-[calc(100vh-280px)] sm:h-[600px]"
             />
           )}
         </div>
