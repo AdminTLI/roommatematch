@@ -6,13 +6,10 @@ import { Badge } from '@/components/ui/badge'
 import { 
   Bell, 
   Search, 
-  Users,
   Menu,
   Sun,
   Moon
 } from 'lucide-react'
-import Link from 'next/link'
-import { usePathname } from 'next/navigation'
 import { cn } from '@/lib/utils'
 import { NotificationBell } from '@/app/(components)/notifications/notification-bell'
 import { ThemeToggle } from '@/components/ui/theme-toggle'
@@ -56,16 +53,6 @@ export function Topbar({ user }: TopbarProps) {
             </Sheet>
           </div>
 
-          {/* Logo */}
-          <Link href="/dashboard" className="flex items-center gap-3">
-            <div className="w-8 h-8 bg-gradient-to-br from-brand-500 to-accent-500 rounded-xl flex items-center justify-center">
-              <Users className="w-4 h-4 text-white" />
-            </div>
-            <div className="hidden sm:block">
-              <h1 className="text-lg font-bold text-ink-900">Roommate Match</h1>
-              <p className="text-xs text-ink-500">Find your perfect match</p>
-            </div>
-          </Link>
         </div>
 
         {/* Right side - Search, Actions, User */}

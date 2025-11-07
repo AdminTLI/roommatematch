@@ -8,6 +8,8 @@ import { useEffect } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog'
 import { ThemeProvider } from '@/lib/theme/theme-provider'
+import Link from 'next/link'
+import { Users } from 'lucide-react'
 
 interface AppShellProps {
   children: React.ReactNode
@@ -70,6 +72,18 @@ export function AppShell({ children, user, showQuestionnairePrompt = false }: Ap
           
           {/* Main content area */}
           <div className="flex-1 flex flex-col overflow-hidden">
+            {/* Branding Header - Above Navbar */}
+            <div className="bg-surface-0 border-b border-line px-4 lg:px-6 py-3">
+              <Link href="/dashboard" className="flex items-center gap-3">
+                <div className="w-8 h-8 bg-gradient-to-br from-brand-500 to-accent-500 rounded-xl flex items-center justify-center">
+                  <Users className="w-4 h-4 text-white" />
+                </div>
+                <div>
+                  <h1 className="text-lg font-bold text-ink-900">Roommate Match</h1>
+                  <p className="text-xs text-ink-500">Find your perfect match</p>
+                </div>
+              </Link>
+            </div>
             <Topbar user={user} />
             <main className="flex-1 overflow-y-auto p-6 lg:p-8">
               <motion.div
