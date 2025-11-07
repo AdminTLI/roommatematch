@@ -2,6 +2,7 @@
 
 import { motion } from 'framer-motion'
 import { useRouter } from 'next/navigation'
+import { useState, useEffect } from 'react'
 import { 
   TrendingUp, 
   Users, 
@@ -13,11 +14,16 @@ import {
   Heart,
   Bell,
   AlertCircle,
-  FileText
+  FileText,
+  Loader2,
+  CheckCircle,
+  UserPlus,
+  Home
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { EmptyState } from '@/components/ui/empty-state'
 import type { DashboardData } from '@/types/dashboard'
+import { createClient } from '@/lib/supabase/client'
 
 const fadeInUp = {
   initial: { opacity: 0, y: 20 },
@@ -55,6 +61,258 @@ interface DashboardContentProps {
 
 export function DashboardContent({ hasCompletedQuestionnaire = false, hasPartialProgress = false, progressCount = 0, profileCompletion = 0, questionnaireProgress, dashboardData, user }: DashboardContentProps) {
   const router = useRouter()
+  const supabase = createClient()
+  const [topMatches, setTopMatches] = useState(dashboardData.topMatches)
+  const [isLoadingMatches, setIsLoadingMatches] = useState(false)
+  const [recentActivity, setRecentActivity] = useState<any[]>([])
+  const [isLoadingActivity, setIsLoadingActivity] = useState(false)
+  const [avgCompatibility, setAvgCompatibility] = useState(dashboardData.kpis.avgCompatibility)
+  const [totalMatches, setTotalMatches] = useState(dashboardData.kpis.totalMatches)
+
+  // Fetch matches on mount and when user changes
+  useEffect(() => {
+    if (user?.id) {
+      loadTopMatches()
+      loadRecentActivity()
+      loadTotalMatchesCount()
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user?.id])
+
+  // Set up real-time subscription for notifications
+  useEffect(() => {
+    if (!user?.id) return
+
+    const channel = supabase
+      .channel('dashboard-activity')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'notifications',
+          filter: `user_id=eq.${user.id}`
+        },
+        () => {
+          loadRecentActivity()
+        }
+      )
+      .subscribe()
+
+    return () => {
+      supabase.removeChannel(channel)
+    }
+  }, [user?.id, supabase])
+
+  const loadTopMatches = async () => {
+    if (!user?.id) return
+    
+    setIsLoadingMatches(true)
+    try {
+      // Fetch top 3 matches for display
+      const { data: topMatchesData, error: topError } = await supabase.rpc('get_user_matches', {
+        p_user_id: user.id,
+        p_limit: 3,
+        p_offset: 0,
+        p_university_ids: null,
+        p_degree_levels: null,
+        p_program_ids: null,
+        p_study_years: null
+      })
+
+      if (topError) {
+        console.error('Error loading matches:', topError)
+        return
+      }
+
+      // Fetch more matches for accurate average calculation
+      const { data: allMatchesData, error: avgError } = await supabase.rpc('get_user_matches', {
+        p_user_id: user.id,
+        p_limit: 20,
+        p_offset: 0,
+        p_university_ids: null,
+        p_degree_levels: null,
+        p_program_ids: null,
+        p_study_years: null
+      })
+
+      if (topMatchesData && topMatchesData.length > 0) {
+        const formattedMatches = topMatchesData.map((match: any) => ({
+          id: match.match_user_id,
+          userId: match.match_user_id,
+          name: match.name || 'User',
+          score: Math.round((match.compatibility_score || 0) * 100),
+          program: match.program_name || 'Program',
+          university: match.university_name || 'University',
+          avatar: undefined
+        }))
+        setTopMatches(formattedMatches)
+      } else {
+        setTopMatches([])
+      }
+
+      // Calculate average compatibility from all matches (up to 20)
+      if (allMatchesData && allMatchesData.length > 0) {
+        const scores = allMatchesData.map((match: any) => 
+          Math.round((match.compatibility_score || 0) * 100)
+        )
+        const average = scores.length > 0 
+          ? Math.round(scores.reduce((sum, score) => sum + score, 0) / scores.length)
+          : 0
+        setAvgCompatibility(average)
+        
+        // If we got fewer than 20 matches, that's the total. Otherwise, fetch count separately
+        if (allMatchesData.length < 20) {
+          setTotalMatches(allMatchesData.length)
+        } else {
+          // Fetch total count if we have 20+ matches
+          loadTotalMatchesCount()
+        }
+      } else {
+        setAvgCompatibility(0)
+        setTotalMatches(0)
+      }
+    } catch (error) {
+      console.error('Failed to load matches:', error)
+    } finally {
+      setIsLoadingMatches(false)
+    }
+  }
+
+  const loadTotalMatchesCount = async () => {
+    if (!user?.id) return
+
+    try {
+      // Count matches where user is a_user
+      const { count: countAsA } = await supabase
+        .from('matches')
+        .select('*', { count: 'exact', head: true })
+        .eq('a_user', user.id)
+
+      // Count matches where user is b_user
+      const { count: countAsB } = await supabase
+        .from('matches')
+        .select('*', { count: 'exact', head: true })
+        .eq('b_user', user.id)
+
+      const total = (countAsA || 0) + (countAsB || 0)
+      setTotalMatches(total)
+    } catch (error) {
+      console.error('Failed to load total matches count:', error)
+    }
+  }
+
+  const loadRecentActivity = async () => {
+    if (!user?.id) return
+
+    setIsLoadingActivity(true)
+    try {
+      const response = await fetch('/api/notifications/my?limit=5')
+      if (response.ok) {
+        const data = await response.json()
+        const notifications = data.notifications || []
+        
+        const formattedActivity = notifications.map((notif: any) => {
+          const timeAgo = formatTimeAgo(notif.created_at)
+          return {
+            id: notif.id,
+            type: notif.type,
+            title: notif.title,
+            message: notif.message,
+            timeAgo,
+            isRead: notif.is_read,
+            metadata: notif.metadata || {}
+          }
+        })
+        
+        setRecentActivity(formattedActivity)
+      }
+    } catch (error) {
+      console.error('Failed to load activity:', error)
+    } finally {
+      setIsLoadingActivity(false)
+    }
+  }
+
+  const formatTimeAgo = (dateString: string): string => {
+    const date = new Date(dateString)
+    const now = new Date()
+    const diffInSeconds = Math.floor((now.getTime() - date.getTime()) / 1000)
+
+    if (diffInSeconds < 60) return 'Just now'
+    if (diffInSeconds < 3600) return `${Math.floor(diffInSeconds / 60)}m ago`
+    if (diffInSeconds < 86400) return `${Math.floor(diffInSeconds / 3600)}h ago`
+    if (diffInSeconds < 604800) return `${Math.floor(diffInSeconds / 86400)}d ago`
+    return date.toLocaleDateString()
+  }
+
+  const getActivityIcon = (type: string) => {
+    switch (type) {
+      case 'match_created':
+      case 'match_accepted':
+      case 'match_confirmed':
+        return <Heart className="w-4 h-4" />
+      case 'chat_message':
+        return <MessageCircle className="w-4 h-4" />
+      case 'profile_updated':
+      case 'questionnaire_completed':
+        return <CheckCircle className="w-4 h-4" />
+      case 'housing_update':
+        return <Home className="w-4 h-4" />
+      default:
+        return <Bell className="w-4 h-4" />
+    }
+  }
+
+  const getActivityColor = (type: string) => {
+    switch (type) {
+      case 'match_created':
+      case 'match_accepted':
+      case 'match_confirmed':
+        return 'bg-green-100 text-green-800'
+      case 'chat_message':
+        return 'bg-blue-100 text-blue-800'
+      case 'profile_updated':
+      case 'questionnaire_completed':
+        return 'bg-purple-100 text-purple-800'
+      case 'housing_update':
+        return 'bg-orange-100 text-orange-800'
+      default:
+        return 'bg-gray-100 text-gray-800'
+    }
+  }
+
+  const handleActivityClick = (activity: any) => {
+    const { metadata, type } = activity
+    
+    switch (type) {
+      case 'match_created':
+      case 'match_accepted':
+      case 'match_confirmed':
+        if (metadata.chat_id) {
+          router.push(`/chat/${metadata.chat_id}`)
+        } else {
+          router.push('/matches')
+        }
+        break
+      case 'chat_message':
+        if (metadata.chat_id) {
+          router.push(`/chat/${metadata.chat_id}`)
+        }
+        break
+      case 'profile_updated':
+        router.push('/settings')
+        break
+      case 'questionnaire_completed':
+        router.push('/matches')
+        break
+      case 'housing_update':
+        router.push('/housing')
+        break
+      default:
+        router.push('/notifications')
+    }
+  }
 
   const handleBrowseMatches = () => {
     router.push('/matches')
@@ -219,7 +477,7 @@ export function DashboardContent({ hasCompletedQuestionnaire = false, hasPartial
         <motion.div variants={fadeInUp}>
           <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-200">
             <div className="text-3xl font-bold text-gray-900">
-              {dashboardData.kpis.avgCompatibility > 0 ? `${dashboardData.kpis.avgCompatibility}%` : '-'}
+              {avgCompatibility > 0 ? `${avgCompatibility}%` : '-'}
             </div>
             <div className="text-sm text-gray-600 mt-1">Avg Compatibility</div>
           </div>
@@ -227,7 +485,7 @@ export function DashboardContent({ hasCompletedQuestionnaire = false, hasPartial
         
         <motion.div variants={fadeInUp}>
           <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-200">
-            <div className="text-3xl font-bold text-gray-900">{dashboardData.kpis.totalMatches}</div>
+            <div className="text-3xl font-bold text-gray-900">{totalMatches}</div>
             <div className="text-sm text-gray-600 mt-1">Total Matches</div>
           </div>
         </motion.div>
@@ -259,18 +517,37 @@ export function DashboardContent({ hasCompletedQuestionnaire = false, hasPartial
           <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-200">
             <div className="flex items-center justify-between mb-6">
               <h3 className="text-xl font-bold text-gray-900">Your Top Matches</h3>
-              <button 
-                className="flex items-center gap-1 text-sm text-blue-600 hover:text-blue-700 font-medium" 
-                onClick={handleBrowseMatches}
-              >
-                View all
-                <ArrowRight className="w-4 h-4" />
-              </button>
+              <div className="flex items-center gap-3">
+                <button 
+                  className="flex items-center gap-1 text-sm text-gray-600 hover:text-gray-700 font-medium" 
+                  onClick={loadTopMatches}
+                  disabled={isLoadingMatches}
+                >
+                  {isLoadingMatches ? (
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                  ) : (
+                    <>
+                      Refresh
+                    </>
+                  )}
+                </button>
+                <button 
+                  className="flex items-center gap-1 text-sm text-blue-600 hover:text-blue-700 font-medium" 
+                  onClick={handleBrowseMatches}
+                >
+                  View all
+                  <ArrowRight className="w-4 h-4" />
+                </button>
+              </div>
             </div>
             
-            {dashboardData.topMatches.length > 0 ? (
+            {isLoadingMatches ? (
+              <div className="flex items-center justify-center py-8">
+                <Loader2 className="w-6 h-6 animate-spin text-gray-400" />
+              </div>
+            ) : topMatches.length > 0 ? (
               <div className="space-y-4">
-                {dashboardData.topMatches.map((match) => (
+                {topMatches.map((match) => (
                   <div key={match.id} className="flex items-center gap-4 p-4 bg-gray-50 rounded-lg">
                     <div className="text-2xl font-bold text-blue-600">{match.score}%</div>
                     <div className="flex items-center gap-4 flex-1">
@@ -279,12 +556,16 @@ export function DashboardContent({ hasCompletedQuestionnaire = false, hasPartial
                       </div>
                       <div className="flex-1">
                         <h4 className="font-bold text-gray-900">{match.name}</h4>
-                        <p className="text-sm text-gray-600">{match.program} • {match.university}</p>
+                        <p className="text-sm text-gray-600">
+                          <span>{match.program}</span>
+                          <span className="mx-2">•</span>
+                          <span>{match.university}</span>
+                        </p>
                       </div>
                       <div className="flex items-center gap-2">
                         <Heart className="w-5 h-5 text-rose-500" />
                         <button 
-                          onClick={() => handleChatWithMatch(match.userId)}
+                          onClick={() => handleChatWithMatch(match.userId || match.id)}
                           className="px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors"
                         >
                           Chat
@@ -308,41 +589,78 @@ export function DashboardContent({ hasCompletedQuestionnaire = false, hasPartial
           </div>
         </motion.div>
 
-        {/* Recent Activity - Real Data */}
+        {/* Recent Activity - Live Notifications */}
         <motion.div variants={fadeInUp}>
           <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-200">
             <div className="flex items-center justify-between mb-6">
               <h3 className="text-xl font-bold text-gray-900">Recent Activity</h3>
               <button 
-                className="flex items-center gap-1 text-sm text-blue-600 hover:text-blue-700 font-medium" 
-                onClick={handleViewAllActivity}
+                className="flex items-center gap-1 text-sm text-gray-600 hover:text-gray-700 font-medium" 
+                onClick={loadRecentActivity}
+                disabled={isLoadingActivity}
               >
-                View all
-                <ArrowRight className="w-4 h-4" />
+                {isLoadingActivity ? (
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                ) : (
+                  <>
+                    Refresh
+                  </>
+                )}
               </button>
             </div>
             
-            {dashboardData.recentActivity.length > 0 ? (
-              <div className="space-y-4">
-                {dashboardData.recentActivity.map((activity) => (
-                  <div key={activity.id} className="flex items-center gap-4 p-4 bg-gray-50 rounded-lg">
-                    <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-500 rounded-full flex items-center justify-center text-white text-sm font-semibold">
-                      {activity.user[0].toUpperCase()}
-                    </div>
-                    <div className="flex-1">
-                      <p className="font-medium text-gray-900">{activity.action}</p>
-                      <p className="text-sm text-gray-600">{activity.user} • {activity.timeAgo}</p>
-                    </div>
-                    <div className={`px-2 py-1 text-xs font-medium rounded-full ${
-                      activity.type === 'match' ? 'bg-green-100 text-green-800' : 
-                      activity.type === 'message' ? 'bg-blue-100 text-blue-800' :
-                      activity.type === 'housing' ? 'bg-purple-100 text-purple-800' :
-                      'bg-gray-100 text-gray-800'
+            {isLoadingActivity ? (
+              <div className="flex items-center justify-center py-8">
+                <Loader2 className="w-6 h-6 animate-spin text-gray-400" />
+              </div>
+            ) : recentActivity.length > 0 ? (
+              <div className="space-y-3">
+                {recentActivity.map((activity) => (
+                  <button
+                    key={activity.id}
+                    onClick={() => handleActivityClick(activity)}
+                    className={`w-full flex items-start gap-3 p-3 rounded-lg transition-colors text-left ${
+                      activity.isRead 
+                        ? 'bg-gray-50 hover:bg-gray-100' 
+                        : 'bg-blue-50 hover:bg-blue-100 border border-blue-200'
+                    }`}
+                  >
+                    <div className={`flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center ${
+                      activity.isRead ? 'bg-gray-200' : getActivityColor(activity.type)
                     }`}>
-                      {activity.type}
+                      <div className={activity.isRead ? 'text-gray-600' : ''}>
+                        {getActivityIcon(activity.type)}
+                      </div>
                     </div>
-                  </div>
+                    <div className="flex-1 min-w-0">
+                      <p className={`font-medium text-sm ${
+                        activity.isRead ? 'text-gray-700' : 'text-gray-900'
+                      }`}>
+                        {activity.title}
+                      </p>
+                      <p className={`text-xs mt-0.5 ${
+                        activity.isRead ? 'text-gray-500' : 'text-gray-600'
+                      }`}>
+                        {activity.message}
+                      </p>
+                      <p className="text-xs text-gray-400 mt-1">
+                        {activity.timeAgo}
+                      </p>
+                    </div>
+                    {!activity.isRead && (
+                      <div className="flex-shrink-0 w-2 h-2 bg-blue-600 rounded-full mt-2" />
+                    )}
+                  </button>
                 ))}
+                <div className="pt-3 border-t border-gray-200">
+                  <button 
+                    className="w-full flex items-center justify-center gap-1 text-sm text-blue-600 hover:text-blue-700 font-medium py-2" 
+                    onClick={handleViewAllActivity}
+                  >
+                    View all
+                    <ArrowRight className="w-4 h-4" />
+                  </button>
+                </div>
               </div>
             ) : (
               <EmptyState

@@ -16,7 +16,6 @@ export function SignInForm() {
   const [showPassword, setShowPassword] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState('')
-  const [isMagicLinkLoading, setIsMagicLinkLoading] = useState(false)
 
   const router = useRouter()
   const supabase = createClient()
@@ -52,30 +51,6 @@ export function SignInForm() {
       setError('An unexpected error occurred')
     } finally {
       setIsLoading(false)
-    }
-  }
-
-  const handleMagicLinkSignIn = async () => {
-    setIsMagicLinkLoading(true)
-    setError('')
-
-    try {
-      const { error } = await supabase.auth.signInWithOtp({
-        email,
-        options: {
-          emailRedirectTo: `${window.location.origin}/auth/callback`
-        }
-      })
-
-      if (error) {
-        setError(error.message)
-      } else {
-        setError('Check your email for the magic link!')
-      }
-    } catch (err) {
-      setError('An unexpected error occurred')
-    } finally {
-      setIsMagicLinkLoading(false)
     }
   }
 
@@ -157,36 +132,6 @@ export function SignInForm() {
             )}
           </Button>
         </form>
-
-        {/* Divider */}
-        <div className="relative my-6">
-          <div className="absolute inset-0 flex items-center">
-            <span className="w-full border-t border-gray-200 dark:border-gray-700" />
-          </div>
-          <div className="relative flex justify-center text-xs uppercase">
-            <span className="bg-white dark:bg-gray-900 px-2 text-gray-500">
-              Or continue with
-            </span>
-          </div>
-        </div>
-
-        {/* Magic Link */}
-        <Button 
-          type="button"
-          variant="outline" 
-          className="w-full"
-          onClick={handleMagicLinkSignIn}
-          disabled={isMagicLinkLoading || !email}
-        >
-          {isMagicLinkLoading ? (
-            <>
-              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-              Sending magic link...
-            </>
-          ) : (
-            'Send Magic Link'
-          )}
-        </Button>
 
         <div className="mt-6 text-center">
           <a 

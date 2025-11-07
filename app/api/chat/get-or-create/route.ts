@@ -10,17 +10,31 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    const { otherUserId } = await request.json()
+    const { other_user_id, otherUserId } = await request.json()
+    const targetUserId = other_user_id || otherUserId
     
-    if (!otherUserId) {
-      return NextResponse.json({ error: 'otherUserId is required' }, { status: 400 })
+    if (!targetUserId) {
+      return NextResponse.json({ error: 'other_user_id is required' }, { status: 400 })
     }
 
-    if (otherUserId === user.id) {
+    if (targetUserId === user.id) {
       return NextResponse.json({ error: 'Cannot chat with yourself' }, { status: 400 })
     }
 
+    // Verify users are matched
     const admin = await createAdminClient()
+    const { data: match } = await admin
+      .from('matches')
+      .select('id')
+      .or(`and(a_user.eq.${user.id},b_user.eq.${targetUserId}),and(a_user.eq.${targetUserId},b_user.eq.${user.id})`)
+      .maybeSingle()
+    
+    if (!match) {
+      return NextResponse.json(
+        { error: 'You can only chat with people you\'ve matched with' },
+        { status: 403 }
+      )
+    }
 
     // Check if chat already exists
     const { data: existingChats } = await admin
@@ -34,10 +48,10 @@ export async function POST(request: NextRequest) {
         .from('chat_members')
         .select('chat_id')
         .in('chat_id', chatIds)
-        .eq('user_id', otherUserId)
+        .eq('user_id', targetUserId)
       
       if (common && common.length > 0) {
-        return NextResponse.json({ chatId: common[0].chat_id })
+        return NextResponse.json({ chat_id: common[0].chat_id })
       }
     }
 
@@ -60,7 +74,7 @@ export async function POST(request: NextRequest) {
     // Add members
     const { error: membersErr } = await admin.from('chat_members').insert([
       { chat_id: chatId, user_id: user.id },
-      { chat_id: chatId, user_id: otherUserId }
+      { chat_id: chatId, user_id: targetUserId }
     ])
 
     if (membersErr) {
@@ -83,7 +97,7 @@ export async function POST(request: NextRequest) {
       .update({ updated_at: new Date().toISOString() })
       .eq('id', chatId)
 
-    return NextResponse.json({ chatId })
+    return NextResponse.json({ chat_id: chatId })
   } catch (error) {
     console.error('Error getting or creating chat:', error)
     return NextResponse.json(

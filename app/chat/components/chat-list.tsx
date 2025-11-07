@@ -19,6 +19,7 @@ import {
   Video,
   Star
 } from 'lucide-react'
+import { NewChatModal } from './new-chat-modal'
 
 interface ChatRoom {
   id: string
@@ -53,6 +54,7 @@ export function ChatList({ user }: ChatListProps) {
   const [chats, setChats] = useState<ChatRoom[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [searchQuery, setSearchQuery] = useState('')
+  const [isNewChatModalOpen, setIsNewChatModalOpen] = useState(false)
 
   const router = useRouter()
   const supabase = createClient()
@@ -257,8 +259,7 @@ export function ChatList({ user }: ChatListProps) {
   }
 
   const handleNewChat = () => {
-    // In a real app, this would open a modal to start a new chat
-    console.log('Start new chat')
+    setIsNewChatModalOpen(true)
   }
 
   if (isLoading) {
@@ -535,6 +536,13 @@ export function ChatList({ user }: ChatListProps) {
           </div>
         )}
       </div>
+
+      {/* New Chat Modal */}
+      <NewChatModal
+        isOpen={isNewChatModalOpen}
+        onClose={() => setIsNewChatModalOpen(false)}
+        user={user}
+      />
 
       {/* Quick Actions */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
