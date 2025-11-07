@@ -45,12 +45,31 @@ export default async function ChatPage({ params }: ChatPageProps) {
     .maybeSingle()
 
   if (chatMemberError) {
-    console.error(`[ChatRoom] Error checking membership for chat ${roomId}:`, chatMemberError)
+    console.error(`[ChatRoom] Error checking membership for chat ${roomId}:`, {
+      error: chatMemberError,
+      roomId,
+      userId: user.id,
+      errorCode: chatMemberError.code,
+      errorMessage: chatMemberError.message
+    })
+    // Redirect to chat list on error - better UX than showing error page
     redirect('/chat')
   }
 
   if (!chatMember) {
-    console.warn(`[ChatRoom] User ${user.id} is not a member of chat ${roomId}`)
+    // Check if chat exists at all for debugging
+    const { data: chatExists } = await supabase
+      .from('chats')
+      .select('id')
+      .eq('id', roomId)
+      .maybeSingle()
+    
+    console.warn(`[ChatRoom] User ${user.id} is not a member of chat ${roomId}`, {
+      roomId,
+      userId: user.id,
+      chatExists: !!chatExists,
+      chatId: chatExists?.id
+    })
     redirect('/chat')
   }
 

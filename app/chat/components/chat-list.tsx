@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
+import Link from 'next/link'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -160,11 +161,26 @@ export function ChatList({ user }: ChatListProps) {
                   profilesMap.set(profile.user_id, profile)
                 }
               })
-              console.log(`[ChatList] Loaded ${profilesMap.size} profiles for ${finalChatRooms.length} chats`)
+              console.log(`[ChatList] Loaded ${profilesMap.size} profiles for ${finalChatRooms.length} chats`, {
+                profileCount: profilesMap.size,
+                chatCount: finalChatRooms.length,
+                profiles: Array.from(profilesMap.entries()).map(([id, p]) => ({
+                  userId: id,
+                  firstName: p.first_name,
+                  lastName: p.last_name,
+                  fullName: [p.first_name?.trim(), p.last_name?.trim()].filter(Boolean).join(' ') || 'User'
+                }))
+              })
+            } else {
+              console.warn(`[ChatList] Profiles data is not an array:`, profilesData)
             }
           } else {
             const errorText = await profilesResponse.text()
-            console.warn(`[ChatList] Failed to fetch profiles batch:`, errorText)
+            console.warn(`[ChatList] Failed to fetch profiles batch:`, {
+              status: profilesResponse.status,
+              statusText: profilesResponse.statusText,
+              error: errorText
+            })
           }
         } catch (err) {
           console.error('[ChatList] Failed to fetch profiles:', err)
@@ -312,13 +328,23 @@ export function ChatList({ user }: ChatListProps) {
       if (target.closest('button') || target.closest('a')) {
         return
       }
+      // Prevent default to avoid any form submission or other default behaviors
+      e.preventDefault()
+      e.stopPropagation()
     }
     
     if (!chatId) {
       console.error('[ChatList] Cannot navigate: chatId is missing')
       return
     }
-    console.log(`[ChatList] Navigating to chat room: ${chatId}`)
+    
+    console.log(`[ChatList] Navigating to chat room: ${chatId}`, {
+      chatId,
+      userId: user.id,
+      chatUrl: `/chat/${chatId}`
+    })
+    
+    // Use router.push with explicit pathname
     router.push(`/chat/${chatId}`)
   }
 
@@ -399,11 +425,10 @@ export function ChatList({ user }: ChatListProps) {
           
           <div className="space-y-3">
             {recentlyMatchedChats.map((chat) => (
-              <Card 
-                key={chat.id} 
-                className="cursor-pointer transition-all duration-200 hover:shadow-lg border-blue-200 bg-blue-50"
-                onClick={(e) => handleChatClick(chat.id, e)}
-              >
+              <Link key={chat.id} href={`/chat/${chat.id}`} className="block">
+                <Card 
+                  className="cursor-pointer transition-all duration-200 hover:shadow-lg border-blue-200 bg-blue-50"
+                >
                 <CardContent className="p-6">
                   <div className="flex items-center gap-4">
                     {/* Avatar */}
@@ -471,13 +496,14 @@ export function ChatList({ user }: ChatListProps) {
 
                     {/* Actions */}
                     <div className="flex items-center gap-2">
-                      <Button variant="ghost" size="sm">
+                      <Button variant="ghost" size="sm" onClick={(e) => e.preventDefault()}>
                         <MoreVertical className="h-4 w-4" />
                       </Button>
                     </div>
                   </div>
                 </CardContent>
               </Card>
+              </Link>
             ))}
           </div>
         </div>
@@ -517,13 +543,12 @@ export function ChatList({ user }: ChatListProps) {
         ) : (
           <div className="space-y-3">
             {activeConversations.map((chat) => (
-              <Card 
-                key={chat.id} 
-                className={`cursor-pointer transition-all duration-200 hover:shadow-lg ${
-                  chat.isActive ? 'ring-2 ring-primary-600' : ''
-                }`}
-                onClick={(e) => handleChatClick(chat.id, e)}
-              >
+              <Link key={chat.id} href={`/chat/${chat.id}`} className="block">
+                <Card 
+                  className={`cursor-pointer transition-all duration-200 hover:shadow-lg ${
+                    chat.isActive ? 'ring-2 ring-primary-600' : ''
+                  }`}
+                >
                 <CardContent className="p-6">
                   <div className="flex items-center gap-4">
                     {/* Avatar */}
@@ -606,13 +631,14 @@ export function ChatList({ user }: ChatListProps) {
 
                     {/* Actions */}
                     <div className="flex items-center gap-2">
-                      <Button variant="ghost" size="sm">
+                      <Button variant="ghost" size="sm" onClick={(e) => e.preventDefault()}>
                         <MoreVertical className="h-4 w-4" />
                       </Button>
                     </div>
                   </div>
                 </CardContent>
               </Card>
+              </Link>
             ))}
           </div>
         )}
