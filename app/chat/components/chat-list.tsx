@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { Card, CardContent } from '@/components/ui/card'
+import { getCSRFHeaders } from '@/lib/utils/csrf-client'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
@@ -144,9 +145,7 @@ export function ChatList({ user }: ChatListProps) {
           
           const profilesResponse = await fetch('/api/chat/profiles', {
             method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-            },
+            headers: getCSRFHeaders(),
             body: JSON.stringify({
               chatIds: chatIds
             }),
@@ -187,7 +186,7 @@ export function ChatList({ user }: ChatListProps) {
         }
       }
 
-      // Fetch unread counts
+      // Fetch unread counts (GET request doesn't need CSRF)
       const unreadResponse = await fetch('/api/chat/unread')
       const unreadData = unreadResponse.ok ? await unreadResponse.json() : { chat_counts: [] }
       const unreadMap = new Map(unreadData.chat_counts.map((c: any) => [c.chat_id, c.unread_count]))
@@ -447,7 +446,7 @@ export function ChatList({ user }: ChatListProps) {
                 participants: chat.participants.map((p: any) => ({ id: p.id, name: p.name }))
               })
               return (
-              <Link key={chat.id} href={chatUrl} className="block" prefetch={true}>
+              <Link key={chat.id} href={chatUrl} className="block">
                 <Card 
                   className="cursor-pointer transition-all duration-200 hover:shadow-lg border-blue-200 bg-blue-50"
                 >
@@ -568,7 +567,7 @@ export function ChatList({ user }: ChatListProps) {
             {activeConversations.map((chat) => {
               const chatUrl = `/chat/${chat.id}`
               return (
-              <Link key={chat.id} href={chatUrl} className="block" prefetch={true}>
+              <Link key={chat.id} href={chatUrl} className="block">
                 <Card 
                   className={`cursor-pointer transition-all duration-200 hover:shadow-lg ${
                     chat.isActive ? 'ring-2 ring-primary-600' : ''

@@ -26,6 +26,7 @@ import {
 import { createClient } from '@/lib/supabase/client'
 import { User } from '@supabase/supabase-js'
 import { showErrorToast, showSuccessToast } from '@/lib/toast'
+import { getCSRFHeaders } from '@/lib/utils/csrf-client'
 import { 
   Send, 
   ArrowLeft, 
@@ -238,9 +239,7 @@ export function ChatInterface({ roomId, user }: ChatInterfaceProps) {
     try {
       await fetch('/api/chat/read', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers: getCSRFHeaders(),
         body: JSON.stringify({
           chat_id: roomId
         })
@@ -361,9 +360,7 @@ export function ChatInterface({ roomId, user }: ChatInterfaceProps) {
         try {
           const profilesResponse = await fetch('/api/chat/profiles', {
             method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-            },
+            headers: getCSRFHeaders(),
             body: JSON.stringify({
               chatId: roomId
             }),
@@ -543,18 +540,17 @@ export function ChatInterface({ roomId, user }: ChatInterfaceProps) {
             console.log('[Realtime] Fetching profile for user:', newMessage.user_id)
             const profilesResponse = await fetch('/api/chat/profiles', {
               method: 'POST',
-              headers: {
-                'Content-Type': 'application/json',
-              },
+              headers: getCSRFHeaders(),
               body: JSON.stringify({
-                userIds: [newMessage.user_id],
                 chatId: roomId
               }),
             })
 
             if (profilesResponse.ok) {
               const responseData = await profilesResponse.json()
-              const profile = responseData?.profiles?.[0]
+              const profiles = responseData?.profiles || []
+              // Find the profile for the message sender
+              const profile = profiles.find((p: any) => p.user_id === newMessage.user_id)
               if (profile) {
                 senderName = [profile.first_name?.trim(), profile.last_name?.trim()].filter(Boolean).join(' ') || 'User'
                 console.log('[Realtime] ✅ Profile fetched successfully:', senderName)
@@ -565,7 +561,7 @@ export function ChatInterface({ roomId, user }: ChatInterfaceProps) {
                   return updated
                 })
               } else {
-                console.warn('[Realtime] ⚠️ Profile not found in response:', responseData)
+                console.warn('[Realtime] ⚠️ Profile not found for user:', newMessage.user_id, 'Available profiles:', profiles.map((p: any) => p.user_id))
               }
             } else {
               const errorText = await profilesResponse.text()
@@ -835,9 +831,7 @@ export function ChatInterface({ roomId, user }: ChatInterfaceProps) {
       // Use the API endpoint for sending messages
       const response = await fetch('/api/chat/send', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers: getCSRFHeaders(),
         body: JSON.stringify({
           chat_id: roomId,
           content: newMessage.trim()
@@ -1086,7 +1080,7 @@ export function ChatInterface({ roomId, user }: ChatInterfaceProps) {
       // Remove user from chat members (effectively deleting the conversation for them)
       const response = await fetch(`/api/chat/${roomId}/leave`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' }
+        headers: getCSRFHeaders()
       })
       
       if (response.ok) {
