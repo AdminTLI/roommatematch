@@ -1,4 +1,4 @@
-import { createClient } from '@/lib/supabase/server'
+import { createClient, createAdminClient } from '@/lib/supabase/server'
 import { NextRequest, NextResponse } from 'next/server'
 
 export async function POST(request: NextRequest) {
@@ -57,13 +57,15 @@ export async function POST(request: NextRequest) {
     }
 
     // Insert read receipts for all unread messages
+    // Use admin client to bypass RLS (we've already verified user is a member)
     if (unreadMessages && unreadMessages.length > 0) {
       const readReceipts = unreadMessages.map(msg => ({
         message_id: msg.id,
         user_id: user.id
       }))
 
-      const { error: readsError } = await supabase
+      const admin = await createAdminClient()
+      const { error: readsError } = await admin
         .from('message_reads')
         .upsert(readReceipts, { onConflict: 'message_id,user_id' })
 

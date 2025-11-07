@@ -225,6 +225,8 @@ export function ChatInterface({ roomId, user }: ChatInterfaceProps) {
   }, [roomId])
 
   useEffect(() => {
+    console.log('[Realtime] Messages state updated, count:', messages.length)
+    console.log('[Realtime] Message IDs:', messages.map(m => m.id))
     scrollToBottom()
   }, [messages])
 
@@ -419,6 +421,8 @@ export function ChatInterface({ roomId, user }: ChatInterfaceProps) {
   }, [user.id, roomId])
 
   const setupRealtimeSubscription = useCallback(() => {
+    console.log('[Realtime] Setting up subscription for roomId:', roomId)
+    
     // Clean up existing subscription if any
     if (messagesChannelRef.current) {
       console.log('[Realtime] Cleaning up existing messages channel')
@@ -428,24 +432,31 @@ export function ChatInterface({ roomId, user }: ChatInterfaceProps) {
     }
 
     // Subscribe to new messages
+    const channelName = `chat:${roomId}`
+    console.log('[Realtime] Creating channel:', channelName)
+    
     const messagesChannel = supabase
-      .channel(`chat:${roomId}`, {
-        config: {
-          broadcast: { self: false }
-        }
-      })
+      .channel(channelName)
       .on('postgres_changes', {
         event: 'INSERT',
         schema: 'public',
         table: 'messages',
         filter: `chat_id=eq.${roomId}`
       }, async (payload) => {
+        console.log('[Realtime] ===== CALLBACK TRIGGERED =====')
+        console.log('[Realtime] Full payload:', JSON.stringify(payload, null, 2))
+        console.log('[Realtime] Payload type:', payload.eventType)
+        console.log('[Realtime] Payload new:', payload.new)
+        console.log('[Realtime] Payload old:', payload.old)
+        
         try {
           console.log('[Realtime] New message received:', {
             messageId: payload.new?.id,
             userId: payload.new?.user_id,
+            chatId: payload.new?.chat_id,
             content: payload.new?.content?.substring(0, 50),
-            currentUserId: user.id
+            currentUserId: user.id,
+            roomId: roomId
           })
           
           const newMessage = payload.new as any
@@ -499,6 +510,9 @@ export function ChatInterface({ roomId, user }: ChatInterfaceProps) {
           const isSystemGreeting = newMessage.content === "You're matched! Start your conversation 👋"
           
           setMessages(prev => {
+            console.log('[Realtime] Current messages count:', prev.length)
+            console.log('[Realtime] Current message IDs:', prev.map(m => m.id))
+            
             // Double-check for duplicates
             const exists = prev.some(msg => msg.id === newMessage.id)
             if (exists) {
@@ -509,10 +523,11 @@ export function ChatInterface({ roomId, user }: ChatInterfaceProps) {
             console.log('[Realtime] Adding new message to state:', {
               id: newMessage.id,
               sender: senderName,
-              isSystem: isSystemGreeting
+              isSystem: isSystemGreeting,
+              content: newMessage.content.substring(0, 30)
             })
             
-            return [...prev, {
+            const updatedMessages = [...prev, {
               id: newMessage.id,
               content: newMessage.content,
               sender_id: newMessage.user_id,
@@ -522,6 +537,11 @@ export function ChatInterface({ roomId, user }: ChatInterfaceProps) {
               is_own: false,
               is_system_message: isSystemGreeting
             }]
+            
+            console.log('[Realtime] Updated messages count:', updatedMessages.length)
+            console.log('[Realtime] Updated message IDs:', updatedMessages.map(m => m.id))
+            
+            return updatedMessages
           })
           
           // Scroll to bottom when new message arrives
@@ -533,16 +553,25 @@ export function ChatInterface({ roomId, user }: ChatInterfaceProps) {
           console.error('[Realtime] Payload:', payload)
         }
       })
-      .subscribe((status) => {
-        console.log('[Realtime] Subscription status:', status)
+      .subscribe((status, err) => {
+        console.log('[Realtime] ===== SUBSCRIPTION STATUS CHANGE =====')
+        console.log('[Realtime] Status:', status)
+        console.log('[Realtime] Error:', err)
+        console.log('[Realtime] Channel:', channelName)
+        console.log('[Realtime] RoomId:', roomId)
+        
         if (status === 'SUBSCRIBED') {
-          console.log('[Realtime] Successfully subscribed to messages channel')
+          console.log('[Realtime] ✅ Successfully subscribed to messages channel')
+          console.log('[Realtime] Listening for INSERT events on messages table')
+          console.log('[Realtime] Filter: chat_id=eq.' + roomId)
         } else if (status === 'CHANNEL_ERROR') {
-          console.error('[Realtime] Channel subscription error')
+          console.error('[Realtime] ❌ Channel subscription error:', err)
         } else if (status === 'TIMED_OUT') {
-          console.error('[Realtime] Channel subscription timed out')
+          console.error('[Realtime] ❌ Channel subscription timed out')
         } else if (status === 'CLOSED') {
           console.log('[Realtime] Channel closed')
+        } else {
+          console.log('[Realtime] Unknown status:', status)
         }
       })
 
