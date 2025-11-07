@@ -154,13 +154,17 @@ export function ChatList({ user }: ChatListProps) {
 
               if (profilesResponse.ok) {
                 const { profiles: profilesData } = await profilesResponse.json()
-                return profilesData || []
+                if (profilesData && Array.isArray(profilesData)) {
+                  return profilesData
+                }
+                return []
               } else {
-                console.warn(`Failed to fetch profiles for chat ${room.id}:`, await profilesResponse.text())
+                const errorText = await profilesResponse.text()
+                console.warn(`Failed to fetch profiles for chat ${room.id}:`, errorText)
                 return []
               }
             } catch (err) {
-              console.warn(`Failed to fetch profiles for chat ${room.id}:`, err)
+              console.error(`Failed to fetch profiles for chat ${room.id}:`, err)
               return []
             }
           })
@@ -172,8 +176,11 @@ export function ChatList({ user }: ChatListProps) {
               profilesMap.set(profile.user_id, profile)
             }
           })
+          
+          // Debug: Log profile count
+          console.log(`[ChatList] Loaded ${profilesMap.size} profiles for ${finalChatRooms.length} chats`)
         } catch (err) {
-          console.warn('Failed to fetch profiles:', err)
+          console.error('[ChatList] Failed to fetch profiles:', err)
         }
       }
 
@@ -201,9 +208,23 @@ export function ChatList({ user }: ChatListProps) {
         // Get the other participant for individual chats
         const otherParticipant = room.chat_members?.find((p: any) => p.user_id !== user.id)
         const otherProfile = otherParticipant ? profilesMap.get(otherParticipant.user_id) : null
-        const participantName = otherProfile 
-          ? [otherProfile.first_name?.trim(), otherProfile.last_name?.trim()].filter(Boolean).join(' ') || 'User'
-          : 'User'
+        
+        // Construct participant name with better fallback logic
+        let participantName = 'User'
+        if (otherProfile) {
+          const firstName = otherProfile.first_name?.trim()
+          const lastName = otherProfile.last_name?.trim()
+          if (firstName) {
+            participantName = lastName ? `${firstName} ${lastName}` : firstName
+          } else if (lastName) {
+            participantName = lastName
+          }
+        }
+        
+        // Debug: Log if profile is missing
+        if (!otherProfile && otherParticipant) {
+          console.warn(`[ChatList] Profile not found for user ${otherParticipant.user_id} in chat ${room.id}`)
+        }
         
         // Get last message
         const lastMessage = room.messages?.[0]
@@ -222,9 +243,16 @@ export function ChatList({ user }: ChatListProps) {
           } : undefined,
           participants: room.chat_members?.map((p: any) => {
             const profile = profilesMap.get(p.user_id)
-            const fullName = profile 
-              ? [profile.first_name?.trim(), profile.last_name?.trim()].filter(Boolean).join(' ') || 'User'
-              : 'User'
+            let fullName = 'User'
+            if (profile) {
+              const firstName = profile.first_name?.trim()
+              const lastName = profile.last_name?.trim()
+              if (firstName) {
+                fullName = lastName ? `${firstName} ${lastName}` : firstName
+              } else if (lastName) {
+                fullName = lastName
+              }
+            }
             return {
               id: p.user_id,
               name: fullName,
@@ -290,7 +318,20 @@ export function ChatList({ user }: ChatListProps) {
   const recentlyMatchedChats = filteredChats.filter(chat => chat.isRecentlyMatched)
   const activeConversations = filteredChats.filter(chat => !chat.isRecentlyMatched)
 
-  const handleChatClick = (chatId: string) => {
+  const handleChatClick = (chatId: string, e?: React.MouseEvent) => {
+    // Prevent event propagation if clicked on nested interactive elements
+    if (e) {
+      const target = e.target as HTMLElement
+      if (target.closest('button') || target.closest('a')) {
+        return
+      }
+    }
+    
+    if (!chatId) {
+      console.error('[ChatList] Cannot navigate: chatId is missing')
+      return
+    }
+    console.log(`[ChatList] Navigating to chat room: ${chatId}`)
     router.push(`/chat/${chatId}`)
   }
 
@@ -374,7 +415,7 @@ export function ChatList({ user }: ChatListProps) {
               <Card 
                 key={chat.id} 
                 className="cursor-pointer transition-all duration-200 hover:shadow-lg border-blue-200 bg-blue-50"
-                onClick={() => handleChatClick(chat.id)}
+                onClick={(e) => handleChatClick(chat.id, e)}
               >
                 <CardContent className="p-6">
                   <div className="flex items-center gap-4">
@@ -382,10 +423,18 @@ export function ChatList({ user }: ChatListProps) {
                     <div className="relative">
                       {chat.type === 'individual' ? (
                         <Avatar className="w-14 h-14">
-                          <AvatarImage src={chat.participants[0]?.avatar} />
-                          <AvatarFallback className="text-lg font-semibold">
-                            {chat.participants[0]?.name?.charAt(0) || '?'}
-                          </AvatarFallback>
+                          {(() => {
+                            // For individual chats, find the other participant (not the current user)
+                            const otherParticipant = chat.participants.find((p: any) => p.id !== user.id) || chat.participants[0]
+                            return (
+                              <>
+                                <AvatarImage src={otherParticipant?.avatar} />
+                                <AvatarFallback className="text-lg font-semibold">
+                                  {otherParticipant?.name?.charAt(0) || chat.name?.charAt(0) || '?'}
+                                </AvatarFallback>
+                              </>
+                            )
+                          })()}
                         </Avatar>
                       ) : (
                         <div className="relative w-14 h-14">
@@ -486,7 +535,7 @@ export function ChatList({ user }: ChatListProps) {
                 className={`cursor-pointer transition-all duration-200 hover:shadow-lg ${
                   chat.isActive ? 'ring-2 ring-primary-600' : ''
                 }`}
-                onClick={() => handleChatClick(chat.id)}
+                onClick={(e) => handleChatClick(chat.id, e)}
               >
                 <CardContent className="p-6">
                   <div className="flex items-center gap-4">
@@ -494,10 +543,18 @@ export function ChatList({ user }: ChatListProps) {
                     <div className="relative">
                       {chat.type === 'individual' ? (
                         <Avatar className="w-14 h-14">
-                          <AvatarImage src={chat.participants[0]?.avatar} />
-                          <AvatarFallback className="text-lg font-semibold">
-                            {chat.participants[0]?.name?.charAt(0) || '?'}
-                          </AvatarFallback>
+                          {(() => {
+                            // For individual chats, find the other participant (not the current user)
+                            const otherParticipant = chat.participants.find((p: any) => p.id !== user.id) || chat.participants[0]
+                            return (
+                              <>
+                                <AvatarImage src={otherParticipant?.avatar} />
+                                <AvatarFallback className="text-lg font-semibold">
+                                  {otherParticipant?.name?.charAt(0) || chat.name?.charAt(0) || '?'}
+                                </AvatarFallback>
+                              </>
+                            )
+                          })()}
                         </Avatar>
                       ) : (
                         <div className="relative w-14 h-14">

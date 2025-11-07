@@ -44,8 +44,13 @@ export default async function ChatPage({ params }: ChatPageProps) {
     .eq('user_id', user.id)
     .maybeSingle()
 
-  if (chatMemberError || !chatMember) {
-    // Redirect to chat list if user doesn't have access to this specific chat
+  if (chatMemberError) {
+    console.error(`[ChatRoom] Error checking membership for chat ${roomId}:`, chatMemberError)
+    redirect('/chat')
+  }
+
+  if (!chatMember) {
+    console.warn(`[ChatRoom] User ${user.id} is not a member of chat ${roomId}`)
     redirect('/chat')
   }
 
