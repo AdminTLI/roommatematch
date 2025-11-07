@@ -432,21 +432,21 @@ export function ChatInterface({ roomId, user }: ChatInterfaceProps) {
       messagesChannelRef.current = null
     }
 
-    // Subscribe to new messages
-    const channelName = `chat:${roomId}`
-    console.log('[Realtime] Creating channel:', channelName)
+    // Subscribe to new messages via broadcast channel
+    const channelName = `room:${roomId}:messages`
+    console.log('[Realtime] Creating broadcast channel:', channelName)
     
     const messagesChannel = supabase
-      .channel(channelName)
-      .on('postgres_changes', {
-        event: 'INSERT',
-        schema: 'public',
-        table: 'messages',
-        filter: `chat_id=eq.${roomId}`
-      }, async (payload) => {
-        console.log('[Realtime] ===== CALLBACK TRIGGERED =====')
+      .channel(channelName, {
+        config: {
+          broadcast: { self: true, ack: true },
+          private: true
+        }
+      })
+      .on('broadcast', { event: 'INSERT' }, async (payload) => {
+        console.log('[Realtime] ===== BROADCAST CALLBACK TRIGGERED =====')
         console.log('[Realtime] Timestamp:', new Date().toISOString())
-        console.log('[Realtime] Event type:', payload.eventType)
+        console.log('[Realtime] Event:', payload.event)
         console.log('[Realtime] Full payload:', JSON.stringify(payload, null, 2))
         
         try {
@@ -456,12 +456,13 @@ export function ChatInterface({ roomId, user }: ChatInterfaceProps) {
             return
           }
 
-          if (!payload.new || typeof payload.new !== 'object') {
-            console.error('[Realtime] ❌ Missing or invalid payload.new:', payload)
+          // Broadcast events have payload.payload instead of payload.new
+          if (!payload.payload || typeof payload.payload !== 'object') {
+            console.error('[Realtime] ❌ Missing or invalid payload.payload:', payload)
             return
           }
 
-          const newMessage = payload.new as any
+          const newMessage = payload.payload as any
           
           // Validate required fields
           if (!newMessage.id) {
@@ -630,10 +631,10 @@ export function ChatInterface({ roomId, user }: ChatInterfaceProps) {
         console.log('[Realtime] User ID:', user.id)
         
         if (status === 'SUBSCRIBED') {
-          console.log('[Realtime] ✅ Successfully subscribed to messages channel')
-          console.log('[Realtime] 📡 Listening for INSERT events on messages table')
-          console.log('[Realtime] 🔍 Filter: chat_id=eq.' + roomId)
-          console.log('[Realtime] ✅ Ready to receive real-time messages')
+          console.log('[Realtime] ✅ Successfully subscribed to broadcast channel')
+          console.log('[Realtime] 📡 Listening for INSERT broadcast events')
+          console.log('[Realtime] 🔍 Channel: ' + channelName)
+          console.log('[Realtime] ✅ Ready to receive real-time messages via broadcast')
         } else if (status === 'CHANNEL_ERROR') {
           console.error('[Realtime] ❌ Channel subscription error:', err)
           console.error('[Realtime] ❌ Error details:', {
