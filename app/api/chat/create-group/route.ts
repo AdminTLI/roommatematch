@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient, createAdminClient } from '@/lib/supabase/server'
+import { safeLogger } from '@/lib/utils/logger'
+import { requireAdmin } from '@/lib/auth/admin'
 
 export async function POST(request: NextRequest) {
   try {
@@ -27,24 +29,46 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Maximum 6 members allowed in a group' }, { status: 400 })
     }
 
-    // Verify all members are matched with the current user
+    // Allow admin override for testing/debugging
+    const adminCheck = await requireAdmin(request)
+    const isAdmin = adminCheck.ok
+
+    // Verify all members share confirmed matches with each other
     const admin = await createAdminClient()
     
-    for (const memberId of member_ids) {
-      if (memberId === user.id) continue
+    // For group chats, verify that all pairs share confirmed matches
+    // This ensures the group is valid (all members are matched with each other)
+    for (let i = 0; i < allMemberIds.length; i++) {
+      for (let j = i + 1; j < allMemberIds.length; j++) {
+        const userA = allMemberIds[i]
+        const userB = allMemberIds[j]
+        
+        // Skip if same user
+        if (userA === userB) continue
       
-      // Check if there's a match between user and this member
-      const { data: match } = await admin
-        .from('matches')
+        // Check for confirmed match suggestion
+        const { data: confirmedSuggestion } = await admin
+          .from('match_suggestions')
+          .select('id')
+          .eq('status', 'confirmed')
+          .contains('member_ids', [userA, userB])
+          .maybeSingle()
+        
+        // Check for locked match record
+        const { data: lockedMatch } = await admin
+          .from('match_records')
         .select('id')
-        .or(`and(a_user.eq.${user.id},b_user.eq.${memberId}),and(a_user.eq.${memberId},b_user.eq.${user.id})`)
+          .eq('locked', true)
+          .contains('user_ids', [userA, userB])
         .maybeSingle()
       
-      if (!match) {
+        // If no confirmed match found and not admin, reject
+        if (!confirmedSuggestion && !lockedMatch && !isAdmin) {
         return NextResponse.json(
-          { error: `You can only chat with people you've matched with` },
+            { error: `All group members must be matched with each other. ${userA === user.id ? 'You' : 'A member'} is not matched with another member.` },
           { status: 403 }
         )
+        }
       }
     }
 
@@ -100,7 +124,7 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({ chat_id: chatId })
   } catch (error) {
-    console.error('Error creating group chat:', error)
+    safeLogger.error('Error creating group chat', error)
     return NextResponse.json(
       { error: 'Failed to create group chat' },
       { status: 500 }

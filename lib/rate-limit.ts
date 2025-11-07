@@ -310,6 +310,12 @@ export const RATE_LIMITS = {
   pdf_generation: new RateLimiter({
     windowMs: 60 * 60 * 1000, // 1 hour
     maxRequests: 5
+  }),
+
+  // Chat creation (prevent spam)
+  chat_creation: new RateLimiter({
+    windowMs: 60 * 60 * 1000, // 1 hour
+    maxRequests: 10
   })
 }
 

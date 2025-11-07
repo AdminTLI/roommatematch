@@ -1,27 +1,26 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
+import { requireAdmin, logAdminAction } from '@/lib/auth/admin'
+import { safeLogger } from '@/lib/utils/logger'
 
 export async function POST(request: NextRequest) {
   try {
+    const adminCheck = await requireAdmin(request)
+    
+    if (!adminCheck.ok) {
+      return NextResponse.json(
+        { error: adminCheck.error || 'Admin access required' },
+        { status: adminCheck.status }
+      )
+    }
+
+    const { user, adminRecord } = adminCheck
     const supabase = await createClient()
-    const { data: { user } } = await supabase.auth.getUser()
 
-    if (!user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-    }
-
-    // Check if user is admin
-    const { data: adminRecord } = await supabase
-      .from('admins')
-      .select('role')
-      .eq('user_id', user.id)
-      .maybeSingle()
-
-    if (!adminRecord) {
-      return NextResponse.json({ error: 'Admin access required' }, { status: 403 })
-    }
-
-    console.log('[Admin] Manually triggering match computation for all users')
+    // Audit log admin action
+    logAdminAction('trigger_matches', {
+      action: 'Manually triggering match computation for all users'
+    }, user!.id, adminRecord!.role)
     
     // Get all active users with profiles and vectors
     const { data: users } = await supabase
@@ -51,13 +50,22 @@ export async function POST(request: NextRequest) {
           target_user_id: userRecord.id
         })
         processed++
-        console.log(`[Admin] Processed matches for user ${userRecord.id}`)
       } catch (error) {
-        const errorMsg = `Failed to compute matches for user ${userRecord.id}: ${error}`
-        console.error(errorMsg)
+        const errorMsg = `Failed to compute matches for user: ${error instanceof Error ? error.message : String(error)}`
+        safeLogger.error('[Admin] Match computation failed for user', {
+          error: errorMsg,
+          adminUserId: user!.id
+        })
         errors.push(errorMsg)
       }
     }
+
+    // Audit log completion
+    logAdminAction('trigger_matches_complete', {
+      processed,
+      total: users.length,
+      errorCount: errors.length
+    }, user!.id, adminRecord!.role)
 
     return NextResponse.json({
       success: true,
@@ -68,7 +76,9 @@ export async function POST(request: NextRequest) {
     })
 
   } catch (error) {
-    console.error('[Admin] Manual match trigger failed:', error)
+    safeLogger.error('[Admin] Manual match trigger failed', {
+      error: error instanceof Error ? error.message : String(error)
+    })
     return NextResponse.json(
       { 
         error: 'Match computation failed', 

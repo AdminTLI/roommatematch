@@ -1,5 +1,6 @@
 import { createClient } from '@/lib/supabase/server'
 import { NextRequest, NextResponse } from 'next/server'
+import { safeLogger } from '@/lib/utils/logger'
 
 export interface AdminAuthResult {
   ok: boolean
@@ -55,8 +56,9 @@ export async function requireAdmin(request?: NextRequest): Promise<AdminAuthResu
   // Validate shared secret from environment variable
   // This provides an additional layer of security for sensitive admin operations
   if (request) {
-    // In production, require ADMIN_SHARED_SECRET to be set
-    if (process.env.NODE_ENV === 'production' && !process.env.ADMIN_SHARED_SECRET) {
+    // Strict enforcement: if request is provided, ADMIN_SHARED_SECRET must be set and provided
+    if (!process.env.ADMIN_SHARED_SECRET) {
+      safeLogger.error('[Admin] Admin shared secret not configured')
       return {
         ok: false,
         status: 500,
@@ -64,17 +66,42 @@ export async function requireAdmin(request?: NextRequest): Promise<AdminAuthResu
       }
     }
     
-    if (process.env.ADMIN_SHARED_SECRET) {
-      const providedSecret = request.headers.get('x-admin-secret')
-      if (providedSecret !== process.env.ADMIN_SHARED_SECRET) {
-        return {
-          ok: false,
-          status: 403,
-          error: 'Invalid admin secret'
-        }
+    // Require the secret to be provided in the request header
+    const providedSecret = request.headers.get('x-admin-secret')
+    if (!providedSecret) {
+      safeLogger.warn('[Admin] Admin access attempted without secret', {
+        userId: user.id,
+        path: request.nextUrl?.pathname || 'unknown'
+      })
+      return {
+        ok: false,
+        status: 403,
+        error: 'Admin secret required'
+      }
+    }
+    
+    // Verify the provided secret matches
+    if (providedSecret !== process.env.ADMIN_SHARED_SECRET) {
+      safeLogger.warn('[Admin] Invalid admin secret provided', {
+        userId: user.id,
+        path: request.nextUrl?.pathname || 'unknown'
+      })
+      return {
+        ok: false,
+        status: 403,
+        error: 'Invalid admin secret'
       }
     }
   }
+
+  // Audit log successful admin access
+  safeLogger.info('[Admin] Admin access granted', {
+    userId: user.id,
+    role: adminRecord.role,
+    universityId: adminRecord.university_id,
+    path: request?.nextUrl?.pathname || 'unknown',
+    method: request?.method || 'unknown'
+  })
 
   return {
     ok: true,
@@ -100,6 +127,13 @@ export async function requireAdminResponse(
   const result = await requireAdmin(requireSecret ? request : undefined)
   
   if (!result.ok) {
+    // Audit log failed admin access attempt
+    safeLogger.warn('[Admin] Admin access denied', {
+      error: result.error,
+      status: result.status,
+      path: request.nextUrl?.pathname || 'unknown',
+      method: request.method || 'unknown'
+    })
     return NextResponse.json(
       { error: result.error || 'Admin access required' },
       { status: result.status }
@@ -107,5 +141,23 @@ export async function requireAdminResponse(
   }
   
   return null
+}
+
+/**
+ * Audit log admin action
+ */
+export function logAdminAction(
+  action: string,
+  details: Record<string, any>,
+  adminUserId: string,
+  adminRole?: string
+): void {
+  safeLogger.info('[Admin] Admin action', {
+    action,
+    adminUserId,
+    adminRole,
+    ...details,
+    timestamp: new Date().toISOString()
+  })
 }
 

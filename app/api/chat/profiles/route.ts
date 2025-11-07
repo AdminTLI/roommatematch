@@ -34,29 +34,20 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    const { userIds, chatId } = await request.json()
+    const { chatId } = await request.json()
     
-    // Require chatId - no fallback path
+    // Require chatId only - no userIds parameter to prevent enumeration
     if (!chatId) {
       return NextResponse.json({ error: 'chatId is required' }, { status: 400 })
-    }
-    
-    if (!userIds || !Array.isArray(userIds) || userIds.length === 0) {
-      return NextResponse.json({ error: 'userIds array is required' }, { status: 400 })
-    }
-
-    // Limit to max 10 userIds per request
-    if (userIds.length > 10) {
-      return NextResponse.json({ error: 'Maximum 10 userIds per request' }, { status: 400 })
     }
 
     // Verify user is a member of this chat
     const { data: membership, error: membershipError } = await supabase
-      .from('chat_members')
-      .select('id')
-      .eq('chat_id', chatId)
-      .eq('user_id', user.id)
-      .maybeSingle()
+        .from('chat_members')
+        .select('id')
+        .eq('chat_id', chatId)
+        .eq('user_id', user.id)
+        .maybeSingle()
 
     if (membershipError) {
       safeLogger.error('Failed to check chat membership', membershipError)
@@ -67,35 +58,30 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Not a member of this chat' }, { status: 403 })
     }
 
-    // Verify all requested userIds are members of this chat
-    const { data: chatMembers, error: chatMembersError } = await supabase
-      .from('chat_members')
-      .select('user_id')
-      .eq('chat_id', chatId)
-      .in('user_id', userIds)
+    // Fetch all chat members server-side (prevents client-controlled enumeration)
+    const admin = await createAdminClient()
+    const { data: chatMembers, error: chatMembersError } = await admin
+        .from('chat_members')
+        .select('user_id')
+        .eq('chat_id', chatId)
 
     if (chatMembersError) {
       safeLogger.error('Failed to fetch chat members', chatMembersError)
-      return NextResponse.json({ error: 'Failed to verify chat members' }, { status: 500 })
+      return NextResponse.json({ error: 'Failed to fetch chat members' }, { status: 500 })
     }
 
-    const allowedUserIds = new Set(chatMembers?.map(m => m.user_id) || [])
-    const invalidUserIds = userIds.filter(id => !allowedUserIds.has(id))
-    
-    if (invalidUserIds.length > 0) {
-      return NextResponse.json(
-        { error: `User IDs not in chat: ${invalidUserIds.length} invalid` },
-        { status: 403 }
-      )
+    if (!chatMembers || chatMembers.length === 0) {
+      return NextResponse.json({ profiles: [] })
     }
 
-    // Use admin client to fetch profiles (bypasses RLS)
-    // At this point, we've verified all userIds are authorized members of the chat
-    const admin = await createAdminClient()
+    // Cap to max 10 members per chat (security limit)
+    const memberUserIds = chatMembers.slice(0, 10).map(m => m.user_id)
+
+    // Fetch profiles for chat members only
     const { data: profiles, error: profilesError } = await admin
       .from('profiles')
       .select('user_id, first_name, last_name')
-      .in('user_id', userIds)
+      .in('user_id', memberUserIds)
 
     if (profilesError) {
       safeLogger.error('Failed to fetch profiles', profilesError)

@@ -58,12 +58,12 @@ export async function GET(req: NextRequest) {
         }, 30000);
       });
 
-      // Fetch and normalize data
-      const rawData = await fetchReportData(user.id);
-      const normalizedData = normalizeSections(rawData);
+    // Fetch and normalize data
+    const rawData = await fetchReportData(user.id);
+    const normalizedData = normalizeSections(rawData);
 
-      // Generate HTML using template strings (no JSX)
-      const html = generateReportHtml(normalizedData);
+    // Generate HTML using template strings (no JSX)
+    const html = generateReportHtml(normalizedData);
 
       // Generate PDF with timeout
       const pdfBuffer = await Promise.race([
@@ -71,19 +71,19 @@ export async function GET(req: NextRequest) {
         timeoutPromise
       ]);
 
-      // Return PDF with proper headers
-      return new NextResponse(pdfBuffer, {
-        headers: {
-          'Content-Type': 'application/pdf',
-          'Content-Disposition': `attachment; filename="roommate-profile-${user.id.slice(0, 8)}.pdf"`,
-          'Cache-Control': 'no-cache, no-store, must-revalidate',
-          'Pragma': 'no-cache',
+    // Return PDF with proper headers
+    return new NextResponse(pdfBuffer, {
+      headers: {
+        'Content-Type': 'application/pdf',
+        'Content-Disposition': `attachment; filename="roommate-profile-${user.id.slice(0, 8)}.pdf"`,
+        'Cache-Control': 'no-cache, no-store, must-revalidate',
+        'Pragma': 'no-cache',
           'Expires': '0',
           'X-RateLimit-Limit': '5',
           'X-RateLimit-Remaining': (rateLimitResult.remaining - 1).toString(),
           'X-RateLimit-Reset': new Date(rateLimitResult.resetTime).toISOString()
-        }
-      });
+      }
+    });
     } finally {
       // Always release queue slot
       pdfQueue.release();

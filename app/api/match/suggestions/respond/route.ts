@@ -160,10 +160,10 @@ export async function POST(request: NextRequest) {
         const admin = await createAdminClient()
         const [userA, userB] = suggestion.memberIds
         
-          // Prevent self-matching in chat creation
-          if (userA === userB) {
-            safeLogger.error(`[ERROR] Cannot create chat: self-match detected`)
-          } else {
+        // Prevent self-matching in chat creation
+        if (userA === userB) {
+          safeLogger.error(`[ERROR] Cannot create chat: self-match detected`)
+        } else {
             // In production, prevent demo user from being added to chats with real users
             if (process.env.NODE_ENV === 'production') {
               const { data: userAProfile } = await admin

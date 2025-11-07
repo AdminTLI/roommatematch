@@ -115,12 +115,9 @@ export class SupabaseMatchRepo implements MatchRepo {
     safeLogger.debug('[DEBUG] getCandidateByUserId - User responses', {
       answersCount: Object.keys(answers).length,
       answerKeys: Object.keys(answers).sort(),
-      sampleAnswers: Object.fromEntries(Object.entries(answers).slice(0, 5)),
-      normalizedFromProfile: {
-        degree_level: answers.degree_level,
-        campus: answers.campus,
-        program: answers.program
-      }
+      hasDegreeLevel: !!answers.degree_level,
+      hasCampus: !!answers.campus,
+      hasProgram: !!answers.program
     })
 
     const eligible = await isEligibleForMatching(answers)
@@ -332,23 +329,17 @@ export class SupabaseMatchRepo implements MatchRepo {
           return acc
         }, {})
 
-        // Log pre-normalization state to diagnose issues
+        // Log pre-normalization state to diagnose issues (no PII)
         safeLogger.debug('[DEBUG] loadCandidates - Pre-normalization', {
           hasAcademic: !!academic,
           hasProfile: !!profile,
-          academicData: academic ? {
-            degree_level: academic.degree_level,
-            program_id: academic.program_id,
-            undecided_program: academic.undecided_program
-          } : null,
-          profileData: profile ? {
-            degree_level: profile.degree_level,
-            campus: profile.campus
-          } : null,
+          hasDegreeLevel: !!academic?.degree_level || !!profile?.degree_level,
+          hasProgram: !!academic?.program_id || !!academic?.undecided_program,
+          hasCampus: !!profile?.campus,
           answersBeforeNorm: {
-            degree_level: answers.degree_level,
-            program: answers.program,
-            campus: answers.campus
+            hasDegreeLevel: !!answers.degree_level,
+            hasProgram: !!answers.program,
+            hasCampus: !!answers.campus
           }
         })
 
@@ -377,14 +368,13 @@ export class SupabaseMatchRepo implements MatchRepo {
           }
         }
 
-        // Log post-normalization state
+        // Log post-normalization state (no PII)
         safeLogger.debug('[DEBUG] loadCandidates - Post-normalization', {
-          userId: user.id,
           answersAfterNorm: {
-            degree_level: answers.degree_level,
-            program: answers.program,
-            campus: answers.campus,
-            study_intensity: answers.study_intensity
+            hasDegreeLevel: !!answers.degree_level,
+            hasProgram: !!answers.program,
+            hasCampus: !!answers.campus,
+            hasStudyIntensity: !!answers.study_intensity
           }
         })
 
@@ -437,8 +427,7 @@ export class SupabaseMatchRepo implements MatchRepo {
           const { getMissingFields } = require('./completeness')
           const missing = getMissingFields(candidate.answers)
           safeLogger.debug('[DEBUG] loadCandidates - Candidate not eligible', {
-            userId: candidate.id,
-            email: candidate.email,
+            missingFieldsCount: missing.length,
             missingFields: missing,
             hasVector: !!candidate.vector
           })
@@ -496,10 +485,7 @@ export class SupabaseMatchRepo implements MatchRepo {
     // Final filter: only return candidates with vectors
     const finalCandidates = eligibleCandidates.filter(candidate => {
         if (!candidate.vector) {
-          safeLogger.debug('[DEBUG] loadCandidates - Candidate still missing vector after generation', {
-            userId: candidate.id,
-            email: candidate.email
-          })
+          safeLogger.debug('[DEBUG] loadCandidates - Candidate still missing vector after generation')
           return false
         }
         return true
@@ -507,8 +493,7 @@ export class SupabaseMatchRepo implements MatchRepo {
     
     safeLogger.debug('[DEBUG] loadCandidates - Final eligible candidates', {
       eligibleCount: finalCandidates.length,
-      filteredOut: transformedCandidates.length - finalCandidates.length,
-      eligibleUserIds: finalCandidates.map(c => c.id)
+      filteredOut: transformedCandidates.length - finalCandidates.length
     })
     
     return finalCandidates
@@ -960,19 +945,10 @@ export class SupabaseMatchRepo implements MatchRepo {
       filteredSuggestions: filtered.map(s => ({
         id: s.id,
         status: s.status,
-        acceptedBy: s.accepted_by || [],
-        memberIds: s.member_ids,
+        acceptedByCount: (s.accepted_by || []).length,
+        memberCount: (s.member_ids || []).length,
         createdAt: s.created_at,
         runId: s.run_id
-      })),
-      // Show sample of non-matching suggestions for debugging
-      nonMatchingSample: (data || []).slice(0, 3).filter((record: any) => {
-        const memberIds = record.member_ids as string[]
-        return !(memberIds && Array.isArray(memberIds) && memberIds.includes(userAId) && memberIds.includes(userBId))
-      }).map((s: any) => ({
-        id: s.id,
-        memberIds: s.member_ids,
-        status: s.status
       }))
     })
 

@@ -355,8 +355,9 @@ export function ChatInterface({ roomId, user }: ChatInterfaceProps) {
       messagesData?.forEach(m => userIds.add(m.user_id))
 
       // Fetch profiles separately using API route (bypasses RLS)
+      // Only send chatId - server will fetch members server-side
       let profilesMap = new Map<string, any>()
-      if (userIds.size > 0) {
+      if (roomId) {
         try {
           const profilesResponse = await fetch('/api/chat/profiles', {
             method: 'POST',
@@ -364,7 +365,6 @@ export function ChatInterface({ roomId, user }: ChatInterfaceProps) {
               'Content-Type': 'application/json',
             },
             body: JSON.stringify({
-              userIds: Array.from(userIds),
               chatId: roomId
             }),
           })
