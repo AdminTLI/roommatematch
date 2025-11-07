@@ -12,12 +12,18 @@ interface ChatPageProps {
 
 export default async function ChatPage({ params }: ChatPageProps) {
   const { roomId } = await params
+  
+  console.log(`[ChatRoom] Page loading for roomId: ${roomId}`)
+  
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
 
   if (!user) {
+    console.log(`[ChatRoom] No user, redirecting to sign-in`)
     redirect('/auth/sign-in')
   }
+  
+  console.log(`[ChatRoom] User authenticated: ${user.id}`)
 
   // Block demo user from accessing real chat rooms in production
   // Redirect to chat list instead of dashboard for better UX

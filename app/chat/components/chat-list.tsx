@@ -224,9 +224,22 @@ export function ChatList({ user }: ChatListProps) {
           }
         }
         
-        // Debug: Log if profile is missing
+        // Debug: Log detailed info about profile lookup
         if (!otherProfile && otherParticipant) {
-          console.warn(`[ChatList] Profile not found for user ${otherParticipant.user_id} in chat ${room.id}`)
+          console.warn(`[ChatList] Profile not found for user ${otherParticipant.user_id} in chat ${room.id}`, {
+            otherParticipantUserId: otherParticipant.user_id,
+            chatId: room.id,
+            profilesMapSize: profilesMap.size,
+            profilesMapKeys: Array.from(profilesMap.keys()),
+            allChatMemberIds: room.chat_members?.map((m: any) => m.user_id)
+          })
+        } else if (otherProfile) {
+          console.log(`[ChatList] Found profile for user ${otherParticipant.user_id}:`, {
+            userId: otherParticipant.user_id,
+            firstName: otherProfile.first_name,
+            lastName: otherProfile.last_name,
+            constructedName: participantName
+          })
         }
         
         // Get last message
@@ -424,8 +437,17 @@ export function ChatList({ user }: ChatListProps) {
           </p>
           
           <div className="space-y-3">
-            {recentlyMatchedChats.map((chat) => (
-              <Link key={chat.id} href={`/chat/${chat.id}`} className="block">
+            {recentlyMatchedChats.map((chat) => {
+              const chatUrl = `/chat/${chat.id}`
+              console.log(`[ChatList] Rendering chat card:`, {
+                chatId: chat.id,
+                chatName: chat.name,
+                chatUrl,
+                participantCount: chat.participants.length,
+                participants: chat.participants.map((p: any) => ({ id: p.id, name: p.name }))
+              })
+              return (
+              <Link key={chat.id} href={chatUrl} className="block" prefetch={true}>
                 <Card 
                   className="cursor-pointer transition-all duration-200 hover:shadow-lg border-blue-200 bg-blue-50"
                 >
@@ -542,8 +564,10 @@ export function ChatList({ user }: ChatListProps) {
           </Card>
         ) : (
           <div className="space-y-3">
-            {activeConversations.map((chat) => (
-              <Link key={chat.id} href={`/chat/${chat.id}`} className="block">
+            {activeConversations.map((chat) => {
+              const chatUrl = `/chat/${chat.id}`
+              return (
+              <Link key={chat.id} href={chatUrl} className="block" prefetch={true}>
                 <Card 
                   className={`cursor-pointer transition-all duration-200 hover:shadow-lg ${
                     chat.isActive ? 'ring-2 ring-primary-600' : ''
@@ -639,7 +663,8 @@ export function ChatList({ user }: ChatListProps) {
                 </CardContent>
               </Card>
               </Link>
-            ))}
+              )
+            })}
           </div>
         )}
       </div>
