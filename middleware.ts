@@ -94,7 +94,7 @@ export async function middleware(req: NextRequest) {
 
   // Set CSRF token cookie for authenticated users
   if (user) {
-    const csrfCookie = createCSRFTokenCookie()
+    const csrfCookie = await createCSRFTokenCookie()
     // Set httpOnly cookie for server-side validation
     res.cookies.set(csrfCookie.httpOnlyCookie.name, csrfCookie.httpOnlyCookie.value, csrfCookie.httpOnlyCookie.options)
     // Also set non-httpOnly cookie so client can read it for header

@@ -14,7 +14,7 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
-  const csrfCookie = createCSRFTokenCookie()
+  const csrfCookie = await createCSRFTokenCookie()
   const response = NextResponse.json({ token: csrfCookie.exposedToken })
   
   // Set both cookies

@@ -1,50 +1,88 @@
 /**
  * CSRF Protection Utility
  * Generates and validates CSRF tokens for state-changing requests
+ * Uses Web Crypto API for Edge runtime compatibility
  */
-
-import { randomBytes, createHmac } from 'crypto'
 
 const CSRF_SECRET = process.env.CSRF_SECRET || process.env.NEXT_PUBLIC_SUPABASE_URL || 'default-secret-change-in-production'
 const CSRF_TOKEN_COOKIE = 'csrf-token'
 const CSRF_HEADER = 'x-csrf-token'
 
 /**
- * Generate a CSRF token
+ * Generate a CSRF token using Web Crypto API (Edge-compatible)
  */
 export function generateCSRFToken(): string {
-  const token = randomBytes(32).toString('hex')
-  return token
+  // Generate 32 random bytes using Web Crypto API
+  const array = new Uint8Array(32)
+  crypto.getRandomValues(array)
+  
+  // Convert to hex string
+  return Array.from(array)
+    .map(b => b.toString(16).padStart(2, '0'))
+    .join('')
 }
 
 /**
- * Create a signed CSRF token
+ * Create a signed CSRF token using Web Crypto API
  */
-export function createSignedToken(token: string): string {
-  const hmac = createHmac('sha256', CSRF_SECRET)
-  hmac.update(token)
-  const signature = hmac.digest('hex')
-  return `${token}.${signature}`
+export async function createSignedToken(token: string): Promise<string> {
+  // Import secret as a key for HMAC
+  const encoder = new TextEncoder()
+  const keyData = encoder.encode(CSRF_SECRET)
+  const tokenData = encoder.encode(token)
+  
+  const key = await crypto.subtle.importKey(
+    'raw',
+    keyData,
+    { name: 'HMAC', hash: 'SHA-256' },
+    false,
+    ['sign']
+  )
+  
+  // Sign the token
+  const signature = await crypto.subtle.sign('HMAC', key, tokenData)
+  
+  // Convert signature to hex string
+  const signatureHex = Array.from(new Uint8Array(signature))
+    .map(b => b.toString(16).padStart(2, '0'))
+    .join('')
+  
+  return `${token}.${signatureHex}`
 }
 
 /**
- * Verify a signed CSRF token
+ * Verify a signed CSRF token using Web Crypto API
  */
-export function verifySignedToken(signedToken: string): boolean {
+export async function verifySignedToken(signedToken: string): Promise<boolean> {
   try {
     const [token, signature] = signedToken.split('.')
     if (!token || !signature) return false
 
-    const hmac = createHmac('sha256', CSRF_SECRET)
-    hmac.update(token)
-    const expectedSignature = hmac.digest('hex')
+    // Import secret as a key for HMAC
+    const encoder = new TextEncoder()
+    const keyData = encoder.encode(CSRF_SECRET)
+    const tokenData = encoder.encode(token)
+    
+    const key = await crypto.subtle.importKey(
+      'raw',
+      keyData,
+      { name: 'HMAC', hash: 'SHA-256' },
+      false,
+      ['sign']
+    )
+    
+    // Sign the token to get expected signature
+    const expectedSignature = await crypto.subtle.sign('HMAC', key, tokenData)
+    const expectedSignatureHex = Array.from(new Uint8Array(expectedSignature))
+      .map(b => b.toString(16).padStart(2, '0'))
+      .join('')
 
     // Use timing-safe comparison
-    if (signature.length !== expectedSignature.length) return false
+    if (signature.length !== expectedSignatureHex.length) return false
     
     let result = 0
     for (let i = 0; i < signature.length; i++) {
-      result |= signature.charCodeAt(i) ^ expectedSignature.charCodeAt(i)
+      result |= signature.charCodeAt(i) ^ expectedSignatureHex.charCodeAt(i)
     }
     
     return result === 0
@@ -91,7 +129,10 @@ export async function validateCSRFToken(request: Request): Promise<boolean> {
   }
 
   // Verify both tokens are valid and match
-  if (!verifySignedToken(headerToken) || !verifySignedToken(cookieToken)) {
+  const headerValid = await verifySignedToken(headerToken)
+  const cookieValid = await verifySignedToken(cookieToken)
+  
+  if (!headerValid || !cookieValid) {
     return false
   }
 
@@ -114,12 +155,12 @@ export async function validateCSRFToken(request: Request): Promise<boolean> {
  * Create CSRF token cookie value
  * Returns both httpOnly cookie (for validation) and exposed token (for client to read)
  */
-export function createCSRFTokenCookie(): { 
+export async function createCSRFTokenCookie(): Promise<{ 
   httpOnlyCookie: { name: string; value: string; options: { httpOnly: boolean; secure: boolean; sameSite: 'strict' | 'lax' | 'none'; maxAge: number } },
   exposedToken: string
-} {
+}> {
   const token = generateCSRFToken()
-  const signedToken = createSignedToken(token)
+  const signedToken = await createSignedToken(token)
   
   return {
     httpOnlyCookie: {
