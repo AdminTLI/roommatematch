@@ -526,7 +526,8 @@ export function ChatList({ user }: ChatListProps) {
                 </CardContent>
               </Card>
               </Link>
-            ))}
+              )
+            })}
           </div>
         </div>
       )}
