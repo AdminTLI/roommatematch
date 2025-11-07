@@ -17,6 +17,7 @@ import { createAdminClient } from '@/lib/supabase/server'
 import type { MatchRepo, CohortFilter, MatchRecord, Candidate, MatchRun } from './repo'
 import type { MatchSuggestion } from './types'
 import { isEligibleForMatching } from './completeness'
+import { safeLogger } from '@/lib/utils/logger'
 
 export class SupabaseMatchRepo implements MatchRepo {
   private async getSupabase() {
@@ -59,7 +60,7 @@ export class SupabaseMatchRepo implements MatchRepo {
       .single()
 
     if (error || !data) {
-      console.error('Error fetching candidate by user ID:', error)
+      safeLogger.error('Error fetching candidate by user ID', error)
       return null
     }
 
@@ -111,8 +112,7 @@ export class SupabaseMatchRepo implements MatchRepo {
       answers.guests_max = 4 // Reasonable default (4 per month)
     }
 
-    console.log('[DEBUG] getCandidateByUserId - User responses:', {
-      userId,
+    safeLogger.debug('[DEBUG] getCandidateByUserId - User responses', {
       answersCount: Object.keys(answers).length,
       answerKeys: Object.keys(answers).sort(),
       sampleAnswers: Object.fromEntries(Object.entries(answers).slice(0, 5)),
@@ -127,8 +127,7 @@ export class SupabaseMatchRepo implements MatchRepo {
     if (!eligible) {
       const { getMissingFields } = await import('./completeness')
       const missing = getMissingFields(answers)
-      console.log('[DEBUG] User not eligible - missing fields:', {
-        userId,
+      safeLogger.debug('[DEBUG] User not eligible - missing fields', {
         missingCount: missing.length,
         missingFields: missing
       })
@@ -157,7 +156,7 @@ export class SupabaseMatchRepo implements MatchRepo {
     const supabase = await this.getSupabase()
     
     // Debug logging for filter analysis
-    console.log('[DEBUG] loadCandidates - Filter input:', {
+    safeLogger.debug('[DEBUG] loadCandidates - Filter input', {
       campusCity: filter.campusCity,
       institutionId: filter.institutionId,
       degreeLevel: filter.degreeLevel,
@@ -202,22 +201,22 @@ export class SupabaseMatchRepo implements MatchRepo {
     // Apply filters
     if (filter.campusCity) {
       query = query.eq('profiles.campus', filter.campusCity)
-      console.log('[DEBUG] loadCandidates - Applied campusCity filter:', filter.campusCity)
+      safeLogger.debug('[DEBUG] loadCandidates - Applied campusCity filter')
     }
     
     if (filter.institutionId) {
       query = query.eq('user_academic.university_id', filter.institutionId)
-      console.log('[DEBUG] loadCandidates - Applied institutionId filter:', filter.institutionId)
+      safeLogger.debug('[DEBUG] loadCandidates - Applied institutionId filter')
     }
     
     if (filter.degreeLevel) {
       query = query.eq('user_academic.degree_level', filter.degreeLevel)
-      console.log('[DEBUG] loadCandidates - Applied degreeLevel filter:', filter.degreeLevel)
+      safeLogger.debug('[DEBUG] loadCandidates - Applied degreeLevel filter')
     }
     
     if (filter.programmeId) {
       query = query.eq('user_academic.program_id', filter.programmeId)
-      console.log('[DEBUG] loadCandidates - Applied programmeId filter:', filter.programmeId)
+      safeLogger.debug('[DEBUG] loadCandidates - Applied programmeId filter')
     }
     
     if (filter.graduationYearFrom) {
@@ -230,14 +229,14 @@ export class SupabaseMatchRepo implements MatchRepo {
     
     if (filter.onlyActive) {
       query = query.eq('profiles.verification_status', 'verified')
-      console.log('[DEBUG] loadCandidates - Applied onlyActive filter (verified only)')
+      safeLogger.debug('[DEBUG] loadCandidates - Applied onlyActive filter (verified only)')
     } else {
-      console.log('[DEBUG] loadCandidates - onlyActive is false, including unverified users')
+      safeLogger.debug('[DEBUG] loadCandidates - onlyActive is false, including unverified users')
     }
 
     if (filter.excludeUserIds?.length) {
       query = query.not('id', 'in', `(${filter.excludeUserIds.join(',')})`)
-      console.log('[DEBUG] loadCandidates - Excluding user IDs:', filter.excludeUserIds)
+      safeLogger.debug('[DEBUG] loadCandidates - Excluding user IDs', { count: filter.excludeUserIds?.length || 0 })
     }
 
     // Note: Email verification is checked via profiles.verification_status
@@ -250,7 +249,7 @@ export class SupabaseMatchRepo implements MatchRepo {
     const { data, error } = await query
 
     if (error) {
-      console.error('[DEBUG] loadCandidates - Query error:', {
+      safeLogger.error('[DEBUG] loadCandidates - Query error', {
         error: error.message,
         code: error.code,
         details: error.details,
@@ -259,9 +258,8 @@ export class SupabaseMatchRepo implements MatchRepo {
       throw new Error(`Failed to load candidates: ${error.message}`)
     }
     
-    console.log('[DEBUG] loadCandidates - Raw query results:', {
-      count: data?.length || 0,
-      userIds: data?.map((u: any) => u.id) || []
+    safeLogger.debug('[DEBUG] loadCandidates - Raw query results', {
+      count: data?.length || 0
     })
 
     // If joins didn't return academic/profile data, fetch them separately
@@ -272,7 +270,7 @@ export class SupabaseMatchRepo implements MatchRepo {
     // Fetch missing academic data in parallel
     let academicDataMap = new Map<string, any>()
     if (usersMissingAcademic.length > 0) {
-      console.log('[DEBUG] loadCandidates - Fetching missing academic data for', usersMissingAcademic.length, 'users')
+      safeLogger.debug(`[DEBUG] loadCandidates - Fetching missing academic data for ${usersMissingAcademic.length} users`)
       const adminClient = await this.getSupabase()
       const { data: academicData, error: academicError } = await adminClient
         .from('user_academic')
@@ -281,14 +279,14 @@ export class SupabaseMatchRepo implements MatchRepo {
       
       if (!academicError && academicData) {
         academicData.forEach((a: any) => academicDataMap.set(a.user_id, a))
-        console.log('[DEBUG] loadCandidates - Fetched', academicData.length, 'academic records')
+        safeLogger.debug(`[DEBUG] loadCandidates - Fetched ${academicData.length} academic records`)
       }
     }
 
     // Fetch missing profile data in parallel
     let profileDataMap = new Map<string, any>()
     if (usersMissingProfile.length > 0) {
-      console.log('[DEBUG] loadCandidates - Fetching missing profile data for', usersMissingProfile.length, 'users')
+      safeLogger.debug(`[DEBUG] loadCandidates - Fetching missing profile data for ${usersMissingProfile.length} users`)
       const adminClient = await this.getSupabase()
       const { data: profileData, error: profileError } = await adminClient
         .from('profiles')
@@ -297,7 +295,7 @@ export class SupabaseMatchRepo implements MatchRepo {
       
       if (!profileError && profileData) {
         profileData.forEach((p: any) => profileDataMap.set(p.user_id, p))
-        console.log('[DEBUG] loadCandidates - Fetched', profileData.length, 'profile records')
+        safeLogger.debug(`[DEBUG] loadCandidates - Fetched ${profileData.length} profile records`)
       }
     }
 
@@ -306,7 +304,7 @@ export class SupabaseMatchRepo implements MatchRepo {
     const usersMissingVector = (data || []).filter((u: any) => !u.user_vectors?.[0]?.vector).map((u: any) => u.id)
     let vectorDataMap = new Map<string, any>()
     if (usersMissingVector.length > 0) {
-      console.log('[DEBUG] loadCandidates - Fetching missing vector data for', usersMissingVector.length, 'users')
+      safeLogger.debug(`[DEBUG] loadCandidates - Fetching missing vector data for ${usersMissingVector.length} users`)
       const adminClient = await this.getSupabase()
       const { data: vectorData, error: vectorError } = await adminClient
         .from('user_vectors')
@@ -315,7 +313,7 @@ export class SupabaseMatchRepo implements MatchRepo {
       
       if (!vectorError && vectorData) {
         vectorData.forEach((v: any) => vectorDataMap.set(v.user_id, v.vector))
-        console.log('[DEBUG] loadCandidates - Fetched', vectorData.length, 'vector records')
+        safeLogger.debug(`[DEBUG] loadCandidates - Fetched ${vectorData.length} vector records`)
       }
     }
 
@@ -335,9 +333,7 @@ export class SupabaseMatchRepo implements MatchRepo {
         }, {})
 
         // Log pre-normalization state to diagnose issues
-        console.log('[DEBUG] loadCandidates - Pre-normalization:', {
-          userId: user.id,
-          email: user.email,
+        safeLogger.debug('[DEBUG] loadCandidates - Pre-normalization', {
           hasAcademic: !!academic,
           hasProfile: !!profile,
           academicData: academic ? {
@@ -361,28 +357,28 @@ export class SupabaseMatchRepo implements MatchRepo {
         if (!answers.degree_level) {
           answers.degree_level = academic?.degree_level || profile?.degree_level
           if (answers.degree_level) {
-            console.log('[DEBUG] Normalized degree_level to:', answers.degree_level)
+            safeLogger.debug('[DEBUG] Normalized degree_level')
           }
         }
         if (!answers.campus || answers.campus === '') {
           answers.campus = profile?.campus || null // Use null instead of empty string
           if (answers.campus) {
-            console.log('[DEBUG] Normalized campus to:', answers.campus)
+            safeLogger.debug('[DEBUG] Normalized campus')
           }
         }
         if (!answers.program) {
           // Handle undecided program case - use "undecided" as value
           if (academic?.undecided_program) {
             answers.program = 'undecided'
-            console.log('[DEBUG] Set program to undecided')
+            safeLogger.debug('[DEBUG] Set program to undecided')
           } else if (academic?.program_id) {
             answers.program = academic.program_id
-            console.log('[DEBUG] Normalized program to:', academic.program_id)
+            safeLogger.debug('[DEBUG] Normalized program')
           }
         }
 
         // Log post-normalization state
-        console.log('[DEBUG] loadCandidates - Post-normalization:', {
+        safeLogger.debug('[DEBUG] loadCandidates - Post-normalization', {
           userId: user.id,
           answersAfterNorm: {
             degree_level: answers.degree_level,
@@ -429,9 +425,8 @@ export class SupabaseMatchRepo implements MatchRepo {
         }
       })
     
-    console.log('[DEBUG] loadCandidates - After transformation:', {
-      transformedCount: transformedCandidates.length,
-      userIds: transformedCandidates.map(c => c.id)
+    safeLogger.debug('[DEBUG] loadCandidates - After transformation', {
+      transformedCount: transformedCandidates.length
     })
     
     // First pass: filter by eligibility
@@ -441,7 +436,7 @@ export class SupabaseMatchRepo implements MatchRepo {
         if (!eligible) {
           const { getMissingFields } = require('./completeness')
           const missing = getMissingFields(candidate.answers)
-          console.log('[DEBUG] loadCandidates - Candidate not eligible:', {
+          safeLogger.debug('[DEBUG] loadCandidates - Candidate not eligible', {
             userId: candidate.id,
             email: candidate.email,
             missingFields: missing,
@@ -455,7 +450,7 @@ export class SupabaseMatchRepo implements MatchRepo {
     // Auto-generate missing vectors for eligible candidates
     const candidatesMissingVectors = eligibleCandidates.filter(c => !c.vector)
     if (candidatesMissingVectors.length > 0) {
-      console.log(`[DEBUG] loadCandidates - Auto-generating ${candidatesMissingVectors.length} missing vectors...`)
+      safeLogger.debug(`[DEBUG] loadCandidates - Auto-generating ${candidatesMissingVectors.length} missing vectors...`)
       const supabase = await this.getSupabase()
       
       // Generate vectors in parallel
@@ -465,18 +460,18 @@ export class SupabaseMatchRepo implements MatchRepo {
             p_user_id: candidate.id 
           })
           if (error) {
-            console.error(`[DEBUG] Failed to generate vector for ${candidate.id}:`, error)
+            safeLogger.error(`[DEBUG] Failed to generate vector`, error)
             return null
           }
           return candidate.id
         } catch (err) {
-          console.error(`[DEBUG] Error generating vector for ${candidate.id}:`, err)
+          safeLogger.error(`[DEBUG] Error generating vector`, err)
           return null
         }
       })
       
       const generatedUserIds = (await Promise.all(vectorPromises)).filter(id => id !== null)
-      console.log(`[DEBUG] Generated ${generatedUserIds.length} vectors successfully`)
+      safeLogger.debug(`[DEBUG] Generated ${generatedUserIds.length} vectors successfully`)
       
       // Refetch vectors for users we just generated
       if (generatedUserIds.length > 0) {
@@ -501,7 +496,7 @@ export class SupabaseMatchRepo implements MatchRepo {
     // Final filter: only return candidates with vectors
     const finalCandidates = eligibleCandidates.filter(candidate => {
         if (!candidate.vector) {
-          console.log('[DEBUG] loadCandidates - Candidate still missing vector after generation:', {
+          safeLogger.debug('[DEBUG] loadCandidates - Candidate still missing vector after generation', {
             userId: candidate.id,
             email: candidate.email
           })
@@ -510,7 +505,7 @@ export class SupabaseMatchRepo implements MatchRepo {
         return true
       })
     
-    console.log('[DEBUG] loadCandidates - Final eligible candidates:', {
+    safeLogger.debug('[DEBUG] loadCandidates - Final eligible candidates', {
       eligibleCount: finalCandidates.length,
       filteredOut: transformedCandidates.length - finalCandidates.length,
       eligibleUserIds: finalCandidates.map(c => c.id)
@@ -702,7 +697,7 @@ export class SupabaseMatchRepo implements MatchRepo {
   // Suggestions (student flow)
   async createSuggestions(sugs: MatchSuggestion[]): Promise<void> {
     if (sugs.length === 0) {
-      console.log('[DEBUG] createSuggestions - No suggestions to create')
+      safeLogger.debug('[DEBUG] createSuggestions - No suggestions to create')
       return
     }
 
@@ -721,10 +716,8 @@ export class SupabaseMatchRepo implements MatchRepo {
       created_at: sug.createdAt
     }))
 
-    console.log(`[DEBUG] createSuggestions - Inserting ${records.length} suggestions:`, {
-      ids: records.map(r => r.id),
-      memberIds: records.map(r => r.member_ids),
-      fitIndices: records.map(r => r.fit_index)
+    safeLogger.debug(`[DEBUG] createSuggestions - Inserting ${records.length} suggestions`, {
+      count: records.length
     })
 
     const supabase = await this.getSupabase()
@@ -734,7 +727,7 @@ export class SupabaseMatchRepo implements MatchRepo {
       .select()
 
     if (error) {
-      console.error('[DEBUG] createSuggestions - Error details:', {
+      safeLogger.error('[DEBUG] createSuggestions - Error details', {
         error: error.message,
         code: error.code,
         details: error.details,
@@ -744,7 +737,7 @@ export class SupabaseMatchRepo implements MatchRepo {
       throw new Error(`Failed to create suggestions: ${error.message}`)
     }
 
-    console.log(`[DEBUG] createSuggestions - Successfully created ${data?.length || 0} suggestions`)
+    safeLogger.debug(`[DEBUG] createSuggestions - Successfully created ${data?.length || 0} suggestions`)
   }
 
   async listSuggestionsForUser(userId: string, includeExpired = false): Promise<MatchSuggestion[]> {
@@ -896,7 +889,7 @@ export class SupabaseMatchRepo implements MatchRepo {
     if (!data || data.length === 0) return 0
 
     const ids = data.map((r: any) => r.id)
-    const { error: updErr } = await supremely
+    const { error: updErr } = await supabase
       .from('match_suggestions')
       .update({ status: 'expired' })
       .in('id', ids)
@@ -906,6 +899,26 @@ export class SupabaseMatchRepo implements MatchRepo {
     }
 
     return ids.length
+  }
+
+  async expireAllOldSuggestions(): Promise<number> {
+    const supabase = await this.getSupabase()
+    const nowIso = new Date().toISOString()
+    
+    // Use set-based SQL UPDATE to expire all suggestions that are pending/accepted and past expiry
+    // This is much more efficient than fetching and updating individually
+    const { data, error } = await supabase
+      .from('match_suggestions')
+      .update({ status: 'expired' })
+      .in('status', ['pending', 'accepted'])
+      .lte('expires_at', nowIso)
+      .select('id')
+
+    if (error) {
+      throw new Error(`Failed to expire all old suggestions: ${error.message}`)
+    }
+
+    return data?.length || 0
   }
 
   async getSuggestionsForPair(userAId: string, userBId: string, includeExpired = false): Promise<MatchSuggestion[]> {
@@ -940,10 +953,8 @@ export class SupabaseMatchRepo implements MatchRepo {
              memberIds.includes(userBId)
     })
     
-    console.log(`[DEBUG] getSuggestionsForPair - Found ${filtered.length} suggestions for pair ${userAId} <-> ${userBId} out of ${data?.length || 0} total pair suggestions`, {
+    safeLogger.debug(`[DEBUG] getSuggestionsForPair - Found ${filtered.length} suggestions for pair out of ${data?.length || 0} total pair suggestions`, {
       includeExpired,
-      userAId,
-      userBId,
       totalPairSuggestions: data?.length || 0,
       filteredCount: filtered.length,
       filteredSuggestions: filtered.map(s => ({

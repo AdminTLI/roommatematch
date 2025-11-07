@@ -95,22 +95,39 @@ export function ChatList({ user }: ChatListProps) {
       
       if (chatsError) throw chatsError
 
-      // Fetch latest message for each chat separately to ensure proper ordering
-      const chatRoomsWithMessages = await Promise.all(
-        (chatRooms || []).map(async (room: any) => {
-          const { data: latestMessages } = await supabase
-            .from('messages')
-            .select('content, created_at, user_id')
-            .eq('chat_id', room.id)
-            .order('created_at', { ascending: false })
-            .limit(1)
-          
-          return {
-            ...room,
-            messages: latestMessages || []
-          }
-        })
-      )
+      // Optimize: Fetch all messages for all chats in a single query, then process in memory
+      // This reduces from O(n²) queries to O(1) query
+      // Reuse chatIds already defined above
+      let allMessagesMap = new Map<string, any[]>()
+      
+      if (chatIds.length > 0) {
+        const { data: allMessages } = await supabase
+          .from('messages')
+          .select('chat_id, content, created_at, user_id')
+          .in('chat_id', chatIds)
+          .order('created_at', { ascending: false })
+        
+        // Group messages by chat_id
+        if (allMessages) {
+          allMessages.forEach((msg: any) => {
+            const existing = allMessagesMap.get(msg.chat_id) || []
+            allMessagesMap.set(msg.chat_id, [...existing, msg])
+          })
+        }
+      }
+
+      // Process chat rooms with messages from the map
+      const chatRoomsWithMessages = (chatRooms || []).map((room: any) => {
+        const messages = allMessagesMap.get(room.id) || []
+        // Get latest message (first one since we ordered descending)
+        const latestMessage = messages.length > 0 ? [messages[0]] : []
+        
+        return {
+          ...room,
+          messages: latestMessage,
+          allMessages: messages // Store all messages for recently matched check
+        }
+      })
       
       const finalChatRooms = chatRoomsWithMessages
 
@@ -155,22 +172,17 @@ export function ChatList({ user }: ChatListProps) {
       const unreadMap = new Map(unreadData.chat_counts.map((c: any) => [c.chat_id, c.unread_count]))
 
       // Transform database results to ChatRoom format
-      // Note: We need to check all messages for each room to determine if it's recently matched
-      const transformedChats: ChatRoom[] = await Promise.all(
-        (finalChatRooms || []).map(async (room: any) => {
-          // Check if recently matched: A chat is "recently matched" if all messages are system greetings
-          // Fetch all messages to check if any are user messages
-          const { data: allMessages } = await supabase
-            .from('messages')
-            .select('id, content, created_at')
-            .eq('chat_id', room.id)
-          
-          const hasUserMessages = allMessages?.some((msg: any) => 
-            msg.content !== "You're matched! Start your conversation 👋"
-          ) || false
-          
-          // A chat is recently matched if it has no user messages (only system greetings or empty)
-          const isRecentlyMatched = !hasUserMessages
+      // Use allMessages already fetched above to determine if recently matched
+      const transformedChats: ChatRoom[] = (finalChatRooms || []).map((room: any) => {
+        // Check if recently matched: A chat is "recently matched" if all messages are system greetings
+        // Use allMessages already fetched in the optimization above
+        const allMessages = room.allMessages || []
+        const hasUserMessages = allMessages.some((msg: any) => 
+          msg.content !== "You're matched! Start your conversation 👋"
+        )
+        
+        // A chat is recently matched if it has no user messages (only system greetings or empty)
+        const isRecentlyMatched = !hasUserMessages
           
           // Compatibility score not available without matches table - set to undefined
           const compatibilityScore = undefined

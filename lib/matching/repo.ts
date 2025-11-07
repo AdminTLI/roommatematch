@@ -89,6 +89,7 @@ export interface MatchRepo {
   getSuggestionById(id: string): Promise<MatchSuggestion | null>;
   updateSuggestion(s: MatchSuggestion): Promise<void>;
   expireOldSuggestionsForUser(userId: string): Promise<number>;
+  expireAllOldSuggestions(): Promise<number>; // Expire all suggestions past expiry (admin operation)
   getSuggestionsForPair(userAId: string, userBId: string, includeExpired?: boolean): Promise<MatchSuggestion[]>;
   updateSuggestionAcceptedByAndStatus(id: string, acceptedBy: string[], status: 'pending' | 'accepted' | 'declined' | 'expired' | 'confirmed'): Promise<void>;
   

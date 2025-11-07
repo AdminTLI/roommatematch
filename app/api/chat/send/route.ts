@@ -30,14 +30,26 @@ export async function POST(request: NextRequest) {
     }
 
     // Insert message using admin client (bypasses RLS, but we've verified membership above)
+    // Insert first without join to ensure we get the message ID even if profile doesn't exist
     const admin = await createAdminClient()
-    const { data: message, error: messageError } = await admin
+    const { data: insertedMessage, error: insertError } = await admin
       .from('messages')
       .insert({
         chat_id,
         user_id: user.id,
         content: content.trim()
       })
+      .select('id, content, created_at, user_id')
+      .single()
+
+    if (insertError || !insertedMessage) {
+      safeLogger.error('Failed to create message', insertError)
+      return NextResponse.json({ error: 'Failed to send message' }, { status: 500 })
+    }
+
+    // Try to fetch the message with profile join (if profile exists)
+    const { data: messageWithProfile } = await admin
+      .from('messages')
       .select(`
         id,
         content,
@@ -49,35 +61,11 @@ export async function POST(request: NextRequest) {
           last_name
         )
       `)
+      .eq('id', insertedMessage.id)
       .single()
 
-    if (messageError) {
-      // If profile join fails, try to fetch the message without profile join
-      // This can happen if profile doesn't exist yet
-      // First, insert the message without the join to get its ID
-      const { data: insertedMessage, error: insertError } = await admin
-        .from('messages')
-        .insert({
-          chat_id,
-          user_id: user.id,
-          content: content.trim()
-        })
-        .select('id, content, created_at, user_id')
-        .single()
-      
-      if (insertError || !insertedMessage) {
-        safeLogger.error('Failed to create message after profile join failure', insertError)
-        return NextResponse.json({ error: 'Failed to send message' }, { status: 500 })
-      }
-      
-      // Update chat's updated_at timestamp
-      await admin
-        .from('chats')
-        .update({ updated_at: new Date().toISOString() })
-        .eq('id', chat_id)
-      
-      return NextResponse.json({ message: insertedMessage }, { status: 201 })
-    }
+    // Use message with profile if available, otherwise use the basic message
+    const message = messageWithProfile || insertedMessage
 
     // Update chat's updated_at timestamp (using admin client)
     await admin
