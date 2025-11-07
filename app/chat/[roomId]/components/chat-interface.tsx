@@ -830,6 +830,39 @@ export function ChatInterface({ roomId, user }: ChatInterfaceProps) {
         is_own: true
       }])
 
+      // Broadcast the message to all subscribers via realtime channel
+      const channel = messagesChannelRef.current
+      if (channel) {
+        try {
+          const channelName = `room:${roomId}:messages`
+          console.log('[Realtime] Broadcasting message to channel:', channelName)
+          const broadcastPayload = {
+            id: message.id,
+            chat_id: roomId,
+            user_id: message.user_id,
+            content: message.content,
+            created_at: message.created_at
+          }
+          
+          const { error: broadcastError } = await channel.send({
+            type: 'broadcast',
+            event: 'INSERT',
+            payload: broadcastPayload
+          })
+          
+          if (broadcastError) {
+            console.error('[Realtime] Failed to broadcast message:', broadcastError)
+          } else {
+            console.log('[Realtime] ✅ Message broadcasted successfully')
+          }
+        } catch (broadcastErr) {
+          console.error('[Realtime] Error broadcasting message:', broadcastErr)
+          // Don't fail the send - message was already inserted
+        }
+      } else {
+        console.warn('[Realtime] Channel not available for broadcasting')
+      }
+
             setNewMessage('')
             showSuccessToast('Message sent', 'Your message has been delivered.')
             
