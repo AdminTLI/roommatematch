@@ -182,54 +182,53 @@ export function ChatList({ user }: ChatListProps) {
         )
         
         // A chat is recently matched if it has no user messages (only system greetings or empty)
-        const isRecentlyMatched = !hasUserMessages
-          
-          // Compatibility score not available without matches table - set to undefined
-          const compatibilityScore = undefined
-          
-          // Get the other participant for individual chats
-          const otherParticipant = room.chat_members?.find((p: any) => p.user_id !== user.id)
-          const otherProfile = otherParticipant ? profilesMap.get(otherParticipant.user_id) : null
-          const participantName = otherProfile 
-            ? [otherProfile.first_name?.trim(), otherProfile.last_name?.trim()].filter(Boolean).join(' ') || 'User'
-            : 'User'
-          
-          // Get last message
-          const lastMessage = room.messages?.[0]
-          const userMembership = room.chat_members?.find((p: any) => p.user_id === user.id)
-          const lastReadAt = userMembership?.last_read_at || new Date(0).toISOString()
-          
-          return {
-            id: room.id,
-            name: room.is_group ? `Group Chat` : participantName,
-            type: room.is_group ? 'group' : 'individual',
-            lastMessage: lastMessage ? {
-              content: lastMessage.content,
-              sender: lastMessage.user_id === user.id ? 'You' : participantName,
-              timestamp: new Date(lastMessage.created_at).toLocaleString(),
-              isRead: new Date(lastMessage.created_at) <= new Date(lastReadAt)
-            } : undefined,
-            participants: room.chat_members?.map((p: any) => {
-              const profile = profilesMap.get(p.user_id)
-              const fullName = profile 
-                ? [profile.first_name?.trim(), profile.last_name?.trim()].filter(Boolean).join(' ') || 'User'
-                : 'User'
-              return {
-                id: p.user_id,
-                name: fullName,
-                avatar: undefined, // Avatars not implemented - Avatar component will show initials via AvatarFallback
-                isOnline: false
-              }
-            }) || [],
-            unreadCount: unreadMap.get(room.id) || 0,
-            isActive: false,
-            matchId: undefined,
-            compatibilityScore,
-            firstMessageAt: undefined,
-            isRecentlyMatched
-          }
-        })
-      )
+        const isRecentlyMatched = !hasUserMessages;
+        
+        // Compatibility score not available without matches table - set to undefined
+        const compatibilityScore = undefined;
+        
+        // Get the other participant for individual chats
+        const otherParticipant = room.chat_members?.find((p: any) => p.user_id !== user.id)
+        const otherProfile = otherParticipant ? profilesMap.get(otherParticipant.user_id) : null
+        const participantName = otherProfile 
+          ? [otherProfile.first_name?.trim(), otherProfile.last_name?.trim()].filter(Boolean).join(' ') || 'User'
+          : 'User'
+        
+        // Get last message
+        const lastMessage = room.messages?.[0]
+        const userMembership = room.chat_members?.find((p: any) => p.user_id === user.id)
+        const lastReadAt = userMembership?.last_read_at || new Date(0).toISOString()
+        
+        return {
+          id: room.id,
+          name: room.is_group ? `Group Chat` : participantName,
+          type: room.is_group ? 'group' : 'individual',
+          lastMessage: lastMessage ? {
+            content: lastMessage.content,
+            sender: lastMessage.user_id === user.id ? 'You' : participantName,
+            timestamp: new Date(lastMessage.created_at).toLocaleString(),
+            isRead: new Date(lastMessage.created_at) <= new Date(lastReadAt)
+          } : undefined,
+          participants: room.chat_members?.map((p: any) => {
+            const profile = profilesMap.get(p.user_id)
+            const fullName = profile 
+              ? [profile.first_name?.trim(), profile.last_name?.trim()].filter(Boolean).join(' ') || 'User'
+              : 'User'
+            return {
+              id: p.user_id,
+              name: fullName,
+              avatar: undefined, // Avatars not implemented - Avatar component will show initials via AvatarFallback
+              isOnline: false
+            }
+          }) || [],
+          unreadCount: unreadMap.get(room.id) || 0,
+          isActive: false,
+          matchId: undefined,
+          compatibilityScore,
+          firstMessageAt: undefined,
+          isRecentlyMatched
+        }
+      })
 
       setChats(transformedChats)
       setIsLoading(false)
