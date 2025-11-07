@@ -2,19 +2,19 @@
 -- Drop and recreate the policy to ensure it's properly structured
 -- 
 -- IMPORTANT: This migration must be applied in Supabase SQL Editor
--- The issue is that WITH CHECK policies need to use NEW.column_name
--- instead of table_name.column_name for proper evaluation
+-- The issue is that WITH CHECK policies reference columns directly (not NEW.column_name)
+-- Unqualified column names in WITH CHECK refer to the row being inserted
 
 DROP POLICY IF EXISTS "Chat members can send messages" ON messages;
 
--- Recreate the policy with explicit NEW reference
--- This ensures PostgreSQL can properly evaluate the policy during INSERT
+-- Recreate the policy with correct syntax
+-- In WITH CHECK policies, unqualified column names refer to the row being inserted
 CREATE POLICY "Chat members can send messages" ON messages
   FOR INSERT WITH CHECK (
     user_id = auth.uid() AND
     EXISTS (
       SELECT 1 FROM chat_members cm
-      WHERE cm.chat_id = NEW.chat_id
+      WHERE cm.chat_id = chat_id
       AND cm.user_id = auth.uid()
     )
   );
