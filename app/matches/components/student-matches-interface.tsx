@@ -190,7 +190,7 @@ export function StudentMatchesInterface({ user }: StudentMatchesInterfaceProps) 
             {activeTab === 'suggested' && 'New matches waiting for your response'}
             {activeTab === 'pending' && "Matches you've accepted, waiting for others to respond"}
             {activeTab === 'confirmed' && 'Matches where everyone has accepted'}
-            {activeTab === 'history' && 'Past matches you've declined or that have expired'}
+            {activeTab === 'history' && "Past matches you've declined or that have expired"}
           </p>
         </div>
       </div>
