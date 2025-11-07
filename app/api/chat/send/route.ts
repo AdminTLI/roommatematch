@@ -1,4 +1,4 @@
-import { createClient } from '@/lib/supabase/server'
+import { createClient, createAdminClient } from '@/lib/supabase/server'
 import { NextRequest, NextResponse } from 'next/server'
 import { safeLogger } from '@/lib/utils/logger'
 
@@ -29,9 +29,11 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Not a member of this chat' }, { status: 403 })
     }
 
-    // Insert message using regular client (ensures RLS is evaluated for realtime broadcasting)
+    // Insert message using admin client (bypasses RLS, but we've verified membership above)
+    // Supabase Realtime will still broadcast events to subscribers based on their RLS policies
     // Insert first without join to ensure we get the message ID even if profile doesn't exist
-    const { data: insertedMessage, error: insertError } = await supabase
+    const admin = await createAdminClient()
+    const { data: insertedMessage, error: insertError } = await admin
       .from('messages')
       .insert({
         chat_id,
@@ -47,7 +49,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Try to fetch the message with profile join (if profile exists)
-    const { data: messageWithProfile } = await supabase
+    const { data: messageWithProfile } = await admin
       .from('messages')
       .select(`
         id,
@@ -66,8 +68,8 @@ export async function POST(request: NextRequest) {
     // Use message with profile if available, otherwise use the basic message
     const message = messageWithProfile || insertedMessage
 
-    // Update chat's updated_at timestamp (using regular client - we've verified membership)
-    await supabase
+    // Update chat's updated_at timestamp (using admin client)
+    await admin
       .from('chats')
       .update({ updated_at: new Date().toISOString() })
       .eq('id', chat_id)
