@@ -139,11 +139,29 @@ class RedisRateLimitStore implements RateLimitStore {
 
 export class RateLimiter {
   private config: RateLimitConfig
-  private store: RateLimitStore
+  private store: RateLimitStore | undefined
+  private storeFactory?: () => RateLimitStore | undefined
 
-  constructor(config: RateLimitConfig, store?: RateLimitStore) {
+  constructor(config: RateLimitConfig, store?: RateLimitStore | (() => RateLimitStore | undefined)) {
     this.config = config
-    this.store = store || new MemoryRateLimitStore()
+    if (typeof store === 'function') {
+      // Lazy initialization: store factory function
+      this.storeFactory = store
+    } else {
+      // Direct store instance
+      this.store = store || new MemoryRateLimitStore()
+    }
+  }
+
+  private getStore(): RateLimitStore {
+    if (!this.store) {
+      if (this.storeFactory) {
+        this.store = this.storeFactory() || new MemoryRateLimitStore()
+      } else {
+        this.store = new MemoryRateLimitStore()
+      }
+    }
+    return this.store
   }
 
   /**
@@ -165,7 +183,7 @@ export class RateLimiter {
           windowStart
         }
 
-        await this.store.set(key, newEntry)
+        await store.set(key, newEntry)
 
         return {
           allowed: true,
@@ -188,7 +206,7 @@ export class RateLimiter {
 
       // Increment counter
       entry.count++
-      await this.store.set(key, entry)
+      await store.set(key, entry)
 
       return {
         allowed: true,
@@ -221,7 +239,7 @@ export class RateLimiter {
    * Reset rate limit for a specific key
    */
   async reset(key: string): Promise<void> {
-    await this.store.delete(key)
+    await this.getStore().delete(key)
   }
 
   /**
@@ -233,7 +251,8 @@ export class RateLimiter {
     const resetTime = windowStart + this.config.windowMs
 
     try {
-      const entry = await this.store.get(key)
+      const store = this.getStore()
+      const entry = await store.get(key)
 
       if (!entry || entry.windowStart !== windowStart) {
         return {
@@ -271,95 +290,104 @@ export class RateLimiter {
   }
 }
 
-// Shared store for distributed rate limiting (uses Upstash Redis in production)
-const sharedStore = getRateLimitStore()
+// Lazy initialization of shared store
+// This prevents errors during build time when env vars may not be available
+let sharedStore: RateLimitStore | undefined = undefined
+
+function getSharedStore(): RateLimitStore | undefined {
+  if (sharedStore === undefined) {
+    sharedStore = getRateLimitStore()
+  }
+  return sharedStore
+}
 
 // Pre-configured rate limiters for different use cases
 // Critical routes use failClosed: true and shared store
+// Store is initialized lazily on first use (not at module load time)
 export const RATE_LIMITS = {
   // API endpoints (fail-closed for security)
   api: new RateLimiter({
     windowMs: 15 * 60 * 1000, // 15 minutes
     maxRequests: 100,
     failClosed: true
-  }, sharedStore),
+  }, getSharedStore),
 
   // Authentication (fail-closed for security)
   auth: new RateLimiter({
     windowMs: 15 * 60 * 1000, // 15 minutes
     maxRequests: 10,
     failClosed: true
-  }, sharedStore),
+  }, getSharedStore),
 
   // Messages (fail-closed to prevent spam)
   messages: new RateLimiter({
     windowMs: 5 * 60 * 1000, // 5 minutes
     maxRequests: 30,
     failClosed: true
-  }, sharedStore),
+  }, getSharedStore),
 
   // Reports (fail-closed to prevent abuse)
   reports: new RateLimiter({
     windowMs: 60 * 60 * 1000, // 1 hour
     maxRequests: 5,
     failClosed: true
-  }, sharedStore),
+  }, getSharedStore),
 
   // Forum posts (fail-closed to prevent spam)
   forum_posts: new RateLimiter({
     windowMs: 60 * 60 * 1000, // 1 hour
     maxRequests: 3,
     failClosed: true
-  }, sharedStore),
+  }, getSharedStore),
 
   // Forum comments (fail-closed to prevent spam)
   forum_comments: new RateLimiter({
     windowMs: 15 * 60 * 1000, // 15 minutes
     maxRequests: 10,
     failClosed: true
-  }, sharedStore),
+  }, getSharedStore),
 
   // ID verification (fail-closed to prevent abuse)
   id_verification: new RateLimiter({
     windowMs: 60 * 60 * 1000, // 1 hour
     maxRequests: 3,
     failClosed: true
-  }, sharedStore),
+  }, getSharedStore),
 
   // Matching requests (fail-closed to prevent DoS)
   matching: new RateLimiter({
     windowMs: 60 * 60 * 1000, // 1 hour
     maxRequests: 5,
     failClosed: true
-  }, sharedStore),
+  }, getSharedStore),
 
   // Chat profiles (fail-closed to prevent enumeration)
   chat_profiles: new RateLimiter({
     windowMs: 60 * 1000, // 1 minute
     maxRequests: 60,
     failClosed: true
-  }, sharedStore),
+  }, getSharedStore),
 
   // PDF generation (fail-closed to prevent abuse)
   pdf_generation: new RateLimiter({
     windowMs: 60 * 60 * 1000, // 1 hour
     maxRequests: 5,
     failClosed: true
-  }, sharedStore),
+  }, getSharedStore),
 
   // Chat creation (fail-closed to prevent spam)
   chat_creation: new RateLimiter({
     windowMs: 60 * 60 * 1000, // 1 hour
     maxRequests: 10,
     failClosed: true
-  }, sharedStore),
+  }, getSharedStore),
 
   // Matching refresh (fail-closed to prevent DoS)
   matching_refresh: new RateLimiter({
     windowMs: 5 * 60 * 1000, // 5 minutes
     maxRequests: 1,
     failClosed: true
-  }, sharedStore)
+  }, getSharedStore())
 }
 
 // Utility functions

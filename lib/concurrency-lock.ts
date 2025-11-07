@@ -18,14 +18,24 @@ export class DistributedLock {
     this.baseUrl = process.env.UPSTASH_REDIS_REST_URL || ''
     this.token = process.env.UPSTASH_REDIS_REST_TOKEN || ''
 
+    // Don't validate during build - only validate at runtime when actually used
+    // Check if we're in runtime (Vercel sets VERCEL_ENV)
+    const isRuntime = process.env.VERCEL_ENV || process.env.NEXT_PUBLIC_SUPABASE_URL
+    
     if (!this.baseUrl || !this.token) {
-      if (process.env.NODE_ENV === 'production') {
+      // Only throw error at runtime in production, not during build
+      if ((process.env.NODE_ENV === 'production' || process.env.VERCEL_ENV) && isRuntime) {
         throw new Error(
           '[ConcurrencyLock] Upstash Redis is required in production but not configured. ' +
           'Set UPSTASH_REDIS_REST_URL and UPSTASH_REDIS_REST_TOKEN environment variables.'
         )
       }
-      console.warn('[ConcurrencyLock] Upstash Redis not configured. Locks will not work across instances.')
+      if (!isRuntime) {
+        // During build, just warn (don't throw)
+        console.warn('[ConcurrencyLock] Upstash Redis not configured during build. Will validate at runtime.')
+      } else {
+        console.warn('[ConcurrencyLock] Upstash Redis not configured. Locks will not work across instances.')
+      }
     }
   }
 
