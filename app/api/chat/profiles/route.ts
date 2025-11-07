@@ -48,7 +48,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Maximum 20 chatIds allowed per request' }, { status: 400 })
     }
 
-    // Verify user is a member of all requested chats
+    // Verify user is a member of requested chats - return profiles only for chats they're a member of
     const { data: memberships, error: membershipError } = await supabase
         .from('chat_members')
         .select('chat_id')
@@ -61,21 +61,33 @@ export async function POST(request: NextRequest) {
     }
 
     const userChatIds = new Set(memberships?.map(m => m.chat_id) || [])
-    const unauthorizedChats = chatIdsToProcess.filter(id => !userChatIds.has(id))
+    const authorizedChatIds = chatIdsToProcess.filter(id => userChatIds.has(id))
     
-    if (unauthorizedChats.length > 0) {
-      return NextResponse.json({ 
-        error: 'Not a member of some chats',
-        unauthorizedChats 
-      }, { status: 403 })
+    // If user is not a member of any requested chats, return empty profiles (not 403)
+    if (authorizedChatIds.length === 0) {
+      safeLogger.warn('User not a member of any requested chats', {
+        userId: user.id,
+        requestedChatIds: chatIdsToProcess
+      })
+      return NextResponse.json({ profiles: [] })
     }
 
-    // Fetch all chat members for all requested chats server-side (prevents client-controlled enumeration)
+    // Log if some chats were filtered out
+    if (authorizedChatIds.length < chatIdsToProcess.length) {
+      const unauthorizedChats = chatIdsToProcess.filter(id => !userChatIds.has(id))
+      safeLogger.warn('User not a member of some requested chats, returning profiles for authorized chats only', {
+        userId: user.id,
+        authorizedChatIds,
+        unauthorizedChatIds
+      })
+    }
+
+    // Fetch all chat members for authorized chats only (prevents client-controlled enumeration)
     const admin = await createAdminClient()
     const { data: chatMembers, error: chatMembersError } = await admin
         .from('chat_members')
         .select('chat_id, user_id')
-        .in('chat_id', chatIdsToProcess)
+        .in('chat_id', authorizedChatIds)
 
     if (chatMembersError) {
       safeLogger.error('Failed to fetch chat members', chatMembersError)

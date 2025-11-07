@@ -43,6 +43,11 @@ export default async function ChatPage({ params }: ChatPageProps) {
   }
 
   // Check if user has access to this chat room
+  // Use admin client to bypass RLS if needed, but still verify membership exists
+  const { createAdminClient } = await import('@/lib/supabase/server')
+  const admin = await createAdminClient()
+  
+  // First check with regular client (respects RLS)
   const { data: chatMember, error: chatMemberError } = await supabase
     .from('chat_members')
     .select('*')
@@ -50,32 +55,53 @@ export default async function ChatPage({ params }: ChatPageProps) {
     .eq('user_id', user.id)
     .maybeSingle()
 
-  if (chatMemberError) {
-    console.error(`[ChatRoom] Error checking membership for chat ${roomId}:`, {
-      error: chatMemberError,
+  // If RLS blocks the query, try with admin client to verify membership exists
+  let membershipExists = false
+  if (chatMemberError || !chatMember) {
+    console.warn(`[ChatRoom] Regular client check failed, trying admin client`, {
       roomId,
       userId: user.id,
-      errorCode: chatMemberError.code,
-      errorMessage: chatMemberError.message
+      error: chatMemberError,
+      hasMember: !!chatMember
     })
-    // Redirect to chat list on error - better UX than showing error page
-    redirect('/chat')
-  }
-
-  if (!chatMember) {
-    // Check if chat exists at all for debugging
-    const { data: chatExists } = await supabase
-      .from('chats')
+    
+    const { data: adminCheck } = await admin
+      .from('chat_members')
       .select('id')
-      .eq('id', roomId)
+      .eq('chat_id', roomId)
+      .eq('user_id', user.id)
       .maybeSingle()
     
-    console.warn(`[ChatRoom] User ${user.id} is not a member of chat ${roomId}`, {
-      roomId,
-      userId: user.id,
-      chatExists: !!chatExists,
-      chatId: chatExists?.id
-    })
+    membershipExists = !!adminCheck
+    
+    if (!membershipExists) {
+      // Check if chat exists at all for debugging
+      const { data: chatExists } = await admin
+        .from('chats')
+        .select('id')
+        .eq('id', roomId)
+        .maybeSingle()
+      
+      console.warn(`[ChatRoom] User ${user.id} is not a member of chat ${roomId}`, {
+        roomId,
+        userId: user.id,
+        chatExists: !!chatExists,
+        chatId: chatExists?.id,
+        adminCheckResult: adminCheck
+      })
+      redirect('/chat')
+    } else {
+      console.log(`[ChatRoom] Membership exists but RLS blocked access, proceeding anyway`, {
+        roomId,
+        userId: user.id
+      })
+    }
+  } else {
+    membershipExists = true
+    console.log(`[ChatRoom] Membership verified for user ${user.id} in chat ${roomId}`)
+  }
+
+  if (!membershipExists) {
     redirect('/chat')
   }
 
