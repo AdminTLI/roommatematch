@@ -1,11 +1,27 @@
 'use client'
 
+import { useState } from 'react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu'
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog'
 import { useApp } from '@/app/providers'
-import { Users, MessageCircle, Heart, X, AlertTriangle, CheckCircle, Award } from 'lucide-react'
+import { Users, MessageCircle, Heart, X, AlertTriangle, CheckCircle, Award, MoreVertical, UserX, Shield, Flag, User } from 'lucide-react'
 import { ReputationPreview } from './reputation-profile'
 import { getDemoReputationSummary } from '@/lib/reputation/utils'
 
@@ -67,6 +83,73 @@ export function MatchCard({
   onStartChat
 }: MatchCardProps) {
   const { t } = useApp()
+  const [showUnmatchDialog, setShowUnmatchDialog] = useState(false)
+  const [showBlockDialog, setShowBlockDialog] = useState(false)
+  const [showReportDialog, setShowReportDialog] = useState(false)
+  const [reportReason, setReportReason] = useState('')
+  const [isProcessing, setIsProcessing] = useState(false)
+
+  const handleUnmatch = async () => {
+    setIsProcessing(true)
+    try {
+      // TODO: Implement unmatch API call
+      await fetch('/api/match/unmatch', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ matchId: id })
+      })
+      setShowUnmatchDialog(false)
+      // Refresh or remove from list
+    } catch (error) {
+      console.error('Failed to unmatch:', error)
+      alert('Failed to unmatch. Please try again.')
+    } finally {
+      setIsProcessing(false)
+    }
+  }
+
+  const handleBlock = async () => {
+    setIsProcessing(true)
+    try {
+      // TODO: Implement block API call
+      await fetch('/api/match/block', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ userId: id })
+      })
+      setShowBlockDialog(false)
+      // Refresh or remove from list
+    } catch (error) {
+      console.error('Failed to block:', error)
+      alert('Failed to block user. Please try again.')
+    } finally {
+      setIsProcessing(false)
+    }
+  }
+
+  const handleReport = async () => {
+    if (!reportReason.trim()) {
+      alert('Please select a reason for reporting.')
+      return
+    }
+    setIsProcessing(true)
+    try {
+      // TODO: Implement report API call
+      await fetch('/api/match/report', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ userId: id, reason: reportReason })
+      })
+      setShowReportDialog(false)
+      setReportReason('')
+      alert('Thank you for your report. We will review it shortly.')
+    } catch (error) {
+      console.error('Failed to report:', error)
+      alert('Failed to submit report. Please try again.')
+    } finally {
+      setIsProcessing(false)
+    }
+  }
 
   const getCompatibilityColor = (score: number) => {
     if (score >= 0.8) return 'bg-green-500'
@@ -270,6 +353,33 @@ export function MatchCard({
             <MessageCircle className="w-4 h-4 mr-2" />
             Start Chat
           </Button>
+          
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="outline" size="sm">
+                <MoreVertical className="w-4 h-4" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuItem onClick={() => onViewProfile(id)}>
+                <User className="w-4 h-4 mr-2" />
+                View Profile
+              </DropdownMenuItem>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem onClick={() => setShowUnmatchDialog(true)}>
+                <UserX className="w-4 h-4 mr-2" />
+                Unmatch
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => setShowBlockDialog(true)}>
+                <Shield className="w-4 h-4 mr-2" />
+                Block User
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => setShowReportDialog(true)} className="text-red-600">
+                <Flag className="w-4 h-4 mr-2" />
+                Report User
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
 
         <div className="flex flex-col sm:flex-row gap-3">
@@ -293,6 +403,90 @@ export function MatchCard({
           </Button>
         </div>
       </CardContent>
+
+      {/* Unmatch Confirmation Dialog */}
+      <Dialog open={showUnmatchDialog} onOpenChange={setShowUnmatchDialog}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Unmatch with {name}?</DialogTitle>
+            <DialogDescription>
+              This will remove this match from your list. You can still find them again through new suggestions.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowUnmatchDialog(false)}>
+              Cancel
+            </Button>
+            <Button variant="destructive" onClick={handleUnmatch} disabled={isProcessing}>
+              {isProcessing ? 'Processing...' : 'Unmatch'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Block Confirmation Dialog */}
+      <Dialog open={showBlockDialog} onOpenChange={setShowBlockDialog}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Block {name}?</DialogTitle>
+            <DialogDescription>
+              This will block this user and prevent them from seeing your profile or matching with you in the future.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowBlockDialog(false)}>
+              Cancel
+            </Button>
+            <Button variant="destructive" onClick={handleBlock} disabled={isProcessing}>
+              {isProcessing ? 'Processing...' : 'Block User'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Report Confirmation Dialog */}
+      <Dialog open={showReportDialog} onOpenChange={setShowReportDialog}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Report {name}?</DialogTitle>
+            <DialogDescription>
+              Please select the reason for reporting this user. Our team will review your report.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-2 py-4">
+            {[
+              'Inappropriate behavior',
+              'Spam or fake profile',
+              'Harassment',
+              'Safety concerns',
+              'Other'
+            ].map((reason) => (
+              <label key={reason} className="flex items-center space-x-2 cursor-pointer">
+                <input
+                  type="radio"
+                  name="reportReason"
+                  value={reason}
+                  checked={reportReason === reason}
+                  onChange={(e) => setReportReason(e.target.value)}
+                  className="w-4 h-4"
+                />
+                <span className="text-sm">{reason}</span>
+              </label>
+            ))}
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => {
+              setShowReportDialog(false)
+              setReportReason('')
+            }}>
+              Cancel
+            </Button>
+            <Button variant="destructive" onClick={handleReport} disabled={isProcessing || !reportReason}>
+              {isProcessing ? 'Submitting...' : 'Submit Report'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </Card>
   )
 }

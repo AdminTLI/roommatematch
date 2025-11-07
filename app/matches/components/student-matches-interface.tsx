@@ -107,10 +107,12 @@ export function StudentMatchesInterface({ user }: StudentMatchesInterfaceProps) 
     fetchSuggestions()
   }, [])
 
-  // Refetch with includeExpired when switching to history tab
+  // Refetch with includeExpired when switching to history or confirmed tab
   useEffect(() => {
-    if (activeTab === 'history') {
+    if (activeTab === 'history' || activeTab === 'confirmed') {
       fetchSuggestions(true)
+    } else {
+      fetchSuggestions(false)
     }
   }, [activeTab])
 
@@ -158,22 +160,22 @@ export function StudentMatchesInterface({ user }: StudentMatchesInterfaceProps) 
 
       {/* Tabs */}
       <div className="mb-6">
-        <div className="flex gap-1 bg-gray-100 p-1 rounded-lg">
+        <div className="flex gap-1 bg-white border border-gray-200 p-1 rounded-2xl shadow-sm">
           {tabs.map((tab) => (
             <button
               key={tab.id}
               onClick={() => setActiveTab(tab.id)}
-              className={`flex-1 px-4 py-2 rounded-md text-sm font-medium transition-colors ${
+              className={`flex-1 px-4 py-2 rounded-xl text-sm font-medium transition-colors ${
                 activeTab === tab.id
-                  ? 'bg-white text-gray-900 shadow-sm'
-                  : 'text-gray-600 hover:text-gray-900'
+                  ? 'bg-blue-600 text-white shadow-sm'
+                  : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
               }`}
             >
               {tab.label}
               {tab.count > 0 && (
                 <span className={`ml-2 px-2 py-0.5 rounded-full text-xs ${
                   activeTab === tab.id
-                    ? 'bg-gray-100 text-gray-700'
+                    ? 'bg-white/20 text-white'
                     : 'bg-gray-200 text-gray-600'
                 }`}>
                   {tab.count}
@@ -208,14 +210,6 @@ export function StudentMatchesInterface({ user }: StudentMatchesInterfaceProps) 
             {activeTab === 'confirmed' && 'No confirmed matches yet.'}
             {activeTab === 'history' && 'No match history available.'}
           </div>
-          {activeTab === 'suggested' && (
-            <button
-              onClick={handleRefresh}
-              className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-            >
-              Get New Suggestions
-            </button>
-          )}
         </div>
       ) : (
         <div className="grid gap-6">

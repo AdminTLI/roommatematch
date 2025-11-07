@@ -324,7 +324,7 @@ export function ChatList({ user }: ChatListProps) {
         <div className="space-y-4">
           <div className="flex items-center gap-2">
             <h2 className="text-xl font-semibold text-gray-900">Recently Matched</h2>
-            <Badge variant="secondary" className="bg-blue-100 text-blue-700">
+            <Badge variant="destructive" className="bg-red-600 text-white font-semibold">
               {recentlyMatchedChats.length}
             </Badge>
           </div>
@@ -515,7 +515,7 @@ export function ChatList({ user }: ChatListProps) {
                             <span className="font-medium">{chat.lastMessage.sender}:</span> {chat.lastMessage.content}
                           </p>
                           {chat.unreadCount > 0 && (
-                            <Badge className="bg-primary-600 text-white">
+                            <Badge variant="destructive" className="bg-red-600 text-white font-semibold">
                               {chat.unreadCount}
                             </Badge>
                           )}
@@ -545,7 +545,7 @@ export function ChatList({ user }: ChatListProps) {
       />
 
       {/* Quick Actions */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <Card className="cursor-pointer hover:shadow-lg transition-shadow">
           <CardContent className="p-6 text-center">
             <div className="w-12 h-12 bg-primary-100 rounded-xl flex items-center justify-center mx-auto mb-4">
@@ -570,17 +570,6 @@ export function ChatList({ user }: ChatListProps) {
           </CardContent>
         </Card>
         
-        <Card className="cursor-pointer hover:shadow-lg transition-shadow">
-          <CardContent className="p-6 text-center">
-            <div className="w-12 h-12 bg-secondary-100 rounded-xl flex items-center justify-center mx-auto mb-4">
-              <Video className="h-6 w-6 text-secondary-600" />
-            </div>
-            <h3 className="font-semibold text-gray-900 mb-2">Video Calls</h3>
-            <p className="text-body-sm text-gray-600">
-              Meet face-to-face safely
-            </p>
-          </CardContent>
-        </Card>
       </div>
     </div>
   )

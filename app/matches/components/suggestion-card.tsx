@@ -67,6 +67,11 @@ export function SuggestionCard({ suggestion, onRespond, isLoading = false, curre
   }
   
   const getStatusBadge = () => {
+    // Check how many users still need to accept
+    const acceptedCount = (suggestion.acceptedBy || []).length
+    const totalMembers = suggestion.memberIds.length
+    const pendingCount = totalMembers - acceptedCount
+    
     switch (suggestion.status) {
       case 'pending':
         return (
@@ -77,7 +82,7 @@ export function SuggestionCard({ suggestion, onRespond, isLoading = false, curre
       case 'accepted':
         return (
           <span className="px-2 py-1 rounded-full bg-blue-100 text-blue-800 text-xs font-medium">
-            Waiting for others
+            {pendingCount === 1 ? 'Waiting for response' : 'Waiting for others'}
           </span>
         )
       case 'confirmed':
@@ -105,50 +110,53 @@ export function SuggestionCard({ suggestion, onRespond, isLoading = false, curre
   
   return (
     <div className="bg-white rounded-xl border border-gray-200 p-6 shadow-sm hover:shadow-md transition-shadow">
-      {/* Header */}
-      <div className="flex items-center justify-between mb-4">
-        <div className="flex items-center gap-3">
-          <div className="text-2xl font-bold text-gray-900">
-            {suggestion.fitIndex}
-          </div>
-          <div className="text-sm text-gray-500">
-            Compatibility Score
-          </div>
-        </div>
-        <div className="flex items-center gap-2">
-          {getStatusBadge()}
-          {suggestion.status === 'pending' && (
-            <div className="text-xs text-gray-500">
-              Expires in {hoursLeft}h
+      {/* Header - Compact layout */}
+      <div className="flex items-start justify-between mb-4">
+        <div className="flex items-center gap-4">
+          <div className="text-center">
+            <div className="text-3xl font-bold text-blue-600">
+              {suggestion.fitIndex}
             </div>
-          )}
+            <div className="text-xs text-gray-500 mt-0.5">Compatibility</div>
+          </div>
+          <div className="flex-1">
+            <div className="flex items-center gap-2 mb-2">
+              {getStatusBadge()}
+              {suggestion.status === 'pending' && (
+                <span className="text-xs text-gray-500">
+                  Expires in {hoursLeft}h
+                </span>
+              )}
+            </div>
+            <div className="text-sm text-gray-700">
+              {suggestion.memberIds.length === 2 
+                ? `You + 1 other person`
+                : `You + ${suggestion.memberIds.length - 1} others`
+              }
+            </div>
+          </div>
         </div>
       </div>
       
-      {/* Members */}
-      <div className="mb-4">
-        <div className="text-sm text-gray-600 mb-1">Potential Roommates:</div>
-        <div className="text-sm font-medium text-gray-900">
-          {suggestion.memberIds.length === 2 
-            ? `You + 1 other person`
-            : `You + ${suggestion.memberIds.length - 1} others`
-          }
-        </div>
-      </div>
-      
-      {/* Section Scores */}
+      {/* Section Scores - More compact */}
       {suggestion.sectionScores && (
-        <div className="mb-4">
+        <div className="mb-4 pb-4 border-b border-gray-100">
           <SectionScores scores={suggestion.sectionScores} />
         </div>
       )}
       
-      {/* Reasons */}
+      {/* Reasons - Compact */}
       {suggestion.reasons && suggestion.reasons.length > 0 && (
         <div className="mb-4">
-          <div className="text-sm text-gray-600 mb-1">Why this match works:</div>
-          <div className="text-sm text-gray-700">
-            {suggestion.reasons.join(', ')}
+          <div className="text-xs font-medium text-gray-600 mb-1">Why this match works:</div>
+          <div className="text-sm text-gray-700 leading-relaxed">
+            {suggestion.reasons.map((reason, index) => {
+              // Capitalize first letter, lowercase rest after commas
+              const formatted = index === 0 
+                ? reason.charAt(0).toUpperCase() + reason.slice(1).toLowerCase()
+                : reason.toLowerCase()
+              return index === 0 ? formatted : `, ${formatted}`
+            }).join('')}
           </div>
         </div>
       )}

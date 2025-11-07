@@ -96,11 +96,12 @@ export function NewChatModal({ isOpen, onClose, user }: NewChatModalProps) {
           alert('Maximum 6 people allowed in a group')
           return
         }
+        newSelected.add(matchId)
       } else {
         // For individual chat, clear selection and select only this one
         newSelected.clear()
+        newSelected.add(matchId)
       }
-      newSelected.add(matchId)
     }
     setSelectedMatches(newSelected)
   }
@@ -279,22 +280,20 @@ export function NewChatModal({ isOpen, onClose, user }: NewChatModalProps) {
               </div>
             ) : filteredMatches.length === 0 ? (
               <div className="text-center py-12 text-gray-500">
-                {searchQuery ? 'No matches found' : 'No matches available'}
+                {searchQuery ? 'No matches found' : matches.length === 0 ? 'No matches available. Complete your profile to get matched!' : 'No matches match your search'}
               </div>
             ) : (
               <div className="divide-y">
                 {filteredMatches.map((match) => {
                   const isSelected = selectedMatches.has(match.match_user_id)
-                  const isDisabled = !isGroupMode && selectedMatches.size > 0 && !isSelected
                   
                   return (
                     <button
                       key={match.match_user_id}
                       onClick={() => toggleMatchSelection(match.match_user_id)}
-                      disabled={isDisabled}
                       className={`w-full flex items-center gap-3 p-4 hover:bg-gray-50 transition-colors text-left ${
-                        isSelected ? 'bg-blue-50' : ''
-                      } ${isDisabled ? 'opacity-50 cursor-not-allowed' : ''}`}
+                        isSelected ? 'bg-blue-50 border-l-4 border-blue-600' : ''
+                      }`}
                     >
                       <Avatar className="w-12 h-12">
                         <AvatarFallback className="text-lg font-semibold">

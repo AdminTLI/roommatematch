@@ -154,13 +154,13 @@ export function Sidebar({ user, onClose }: SidebarProps) {
                     "w-full justify-start gap-3 h-11 px-3 transition-colors",
                     isActive 
                       ? "bg-blue-50 text-blue-600 dark:bg-blue-900/20 dark:text-[#67E8F9] border-l-4 border-blue-600 rounded-l-none" 
-                      : "text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-[#2D3548]"
+                      : "text-gray-600 dark:text-gray-300 hover:bg-gray-50 hover:text-gray-900 dark:hover:bg-[#2D3548] dark:hover:text-gray-100"
                   )}
                 >
                   <Icon className="w-5 h-5" />
                   <span className="font-medium">{item.name}</span>
                   {item.name === 'Chat' && unreadChatCount > 0 && (
-                    <Badge variant="destructive" size="sm" className="ml-auto">
+                    <Badge variant="destructive" size="sm" className="ml-auto bg-red-600 text-white font-semibold">
                       {unreadChatCount > 99 ? '99+' : unreadChatCount}
                     </Badge>
                   )}

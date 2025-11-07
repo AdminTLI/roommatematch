@@ -8,6 +8,14 @@ import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Alert, AlertDescription } from '@/components/ui/alert'
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog'
 import { createClient } from '@/lib/supabase/client'
 import { User } from '@supabase/supabase-js'
 import { showErrorToast, showSuccessToast } from '@/lib/toast'
@@ -20,7 +28,8 @@ import {
   MessageCircle,
   Clock,
   Check,
-  CheckCheck
+  CheckCheck,
+  Flag
 } from 'lucide-react'
 
 interface ChatInterfaceProps {
@@ -62,6 +71,9 @@ export function ChatInterface({ roomId, user }: ChatInterfaceProps) {
   const [profilesMap, setProfilesMap] = useState<Map<string, any>>(new Map())
   const [isGroup, setIsGroup] = useState(false)
   const [otherPersonName, setOtherPersonName] = useState<string>('')
+  const [showReportDialog, setShowReportDialog] = useState(false)
+  const [reportReason, setReportReason] = useState('')
+  const [isReporting, setIsReporting] = useState(false)
   
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const typingTimeoutRef = useRef<NodeJS.Timeout>()
@@ -228,8 +240,20 @@ export function ChatInterface({ roomId, user }: ChatInterfaceProps) {
   useEffect(() => {
     console.log('[Realtime] Messages state updated, count:', messages.length)
     console.log('[Realtime] Message IDs:', messages.map(m => m.id))
-    scrollToBottom()
+    // Auto-scroll to bottom when messages change
+    setTimeout(() => {
+      scrollToBottom()
+    }, 100)
   }, [messages])
+
+  // Auto-scroll when typing indicators change
+  useEffect(() => {
+    if (typingUsers.length > 0) {
+      setTimeout(() => {
+        scrollToBottom()
+      }, 100)
+    }
+  }, [typingUsers])
 
   const loadChatData = useCallback(async () => {
     setIsLoading(true)
@@ -688,14 +712,14 @@ export function ChatInterface({ roomId, user }: ChatInterfaceProps) {
         const typingUsers = Object.keys(state).filter(key => {
           // Defensive check: never include current user
           // Check both the key itself and the user_id in presence data
-          const presence = state[key]
+          const presence = state[key] as any
           const presenceUserId = presence?.[0]?.user_id || key
           if (presenceUserId === user.id || key === user.id) return false
           return presence && presence[0] && presence[0].typing === true
         })
         // Additional defensive filter before setting state - filter by both key and user_id
         const filtered = typingUsers.filter(id => {
-          const presence = state[id]
+          const presence = state[id] as any
           const presenceUserId = presence?.[0]?.user_id || id
           return id !== user.id && presenceUserId !== user.id
         })
@@ -706,18 +730,19 @@ export function ChatInterface({ roomId, user }: ChatInterfaceProps) {
       })
       .on('presence', { event: 'join' }, ({ key, newPresences }) => {
         // Handle when someone joins - defensive check to never add current user
-        const presenceUserId = newPresences[0]?.user_id || key
-        if (key !== user.id && presenceUserId !== user.id && newPresences[0]?.typing) {
+        const newPresence = newPresences[0] as any
+        const presenceUserId = newPresence?.user_id || key
+        if (key !== user.id && presenceUserId !== user.id && newPresence?.typing) {
           setTypingUsers(prev => {
             const updated = [...prev.filter(id => {
               // Filter out both by key and by checking presence state
-              const presence = typingChannel.presenceState()[id]
+              const presence = typingChannel.presenceState()[id] as any
               const idUserId = presence?.[0]?.user_id || id
               return id !== key && id !== user.id && idUserId !== user.id
             }), key]
             // Final defensive filter - check both key and user_id
             return updated.filter(id => {
-              const presence = typingChannel.presenceState()[id]
+              const presence = typingChannel.presenceState()[id] as any
               const idUserId = presence?.[0]?.user_id || id
               return id !== user.id && idUserId !== user.id
             })
@@ -727,7 +752,7 @@ export function ChatInterface({ roomId, user }: ChatInterfaceProps) {
       .on('presence', { event: 'leave' }, ({ key }) => {
         // Handle when someone leaves - filter by both key and user_id
         setTypingUsers(prev => prev.filter(id => {
-          const presence = typingChannel.presenceState()[id]
+          const presence = typingChannel.presenceState()[id] as any
           const idUserId = presence?.[0]?.user_id || id
           return id !== key && id !== user.id && idUserId !== user.id
         }))
@@ -911,7 +936,9 @@ export function ChatInterface({ roomId, user }: ChatInterfaceProps) {
   }
 
   const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
+    if (messagesEndRef.current) {
+      messagesEndRef.current.scrollIntoView({ behavior: 'smooth', block: 'end' })
+    }
   }
 
   const formatTime = (timestamp: string) => {
@@ -919,6 +946,42 @@ export function ChatInterface({ roomId, user }: ChatInterfaceProps) {
       hour: '2-digit', 
       minute: '2-digit' 
     })
+  }
+
+  const formatDate = (timestamp: string) => {
+    const date = new Date(timestamp)
+    const today = new Date()
+    const yesterday = new Date(today)
+    yesterday.setDate(yesterday.getDate() - 1)
+    
+    const dateStr = date.toDateString()
+    const todayStr = today.toDateString()
+    const yesterdayStr = yesterday.toDateString()
+    
+    if (dateStr === todayStr) {
+      return 'Today'
+    } else if (dateStr === yesterdayStr) {
+      return 'Yesterday'
+    } else {
+      return date.toLocaleDateString([], { 
+        month: 'short', 
+        day: 'numeric',
+        year: date.getFullYear() !== today.getFullYear() ? 'numeric' : undefined
+      })
+    }
+  }
+
+  const shouldShowDateSeparator = (currentIndex: number) => {
+    if (currentIndex === 0) return true
+    const currentMessage = messages[currentIndex]
+    const previousMessage = messages[currentIndex - 1]
+    
+    if (!currentMessage || !previousMessage) return false
+    
+    const currentDate = new Date(currentMessage.created_at).toDateString()
+    const previousDate = new Date(previousMessage.created_at).toDateString()
+    
+    return currentDate !== previousDate
   }
 
   const getReadStatus = (message: Message) => {
@@ -936,6 +999,38 @@ export function ChatInterface({ roomId, user }: ChatInterfaceProps) {
     }
   }
 
+  const handleReportUser = async () => {
+    if (!reportReason.trim()) {
+      alert('Please select a reason for reporting.')
+      return
+    }
+    setIsReporting(true)
+    try {
+      const otherUserId = members[0]?.id
+      if (!otherUserId) {
+        alert('Unable to identify user to report.')
+        return
+      }
+      const response = await fetch('/api/match/report', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ userId: otherUserId, reason: reportReason, chatId: roomId })
+      })
+      if (response.ok) {
+        setShowReportDialog(false)
+        setReportReason('')
+        showSuccessToast('Report submitted', 'Thank you for your report. We will review it shortly.')
+      } else {
+        throw new Error('Failed to submit report')
+      }
+    } catch (error) {
+      console.error('Failed to report:', error)
+      showErrorToast('Failed to submit report', 'Please try again.')
+    } finally {
+      setIsReporting(false)
+    }
+  }
+
   if (isLoading) {
     return (
       <div className="max-w-4xl mx-auto">
@@ -950,43 +1045,57 @@ export function ChatInterface({ roomId, user }: ChatInterfaceProps) {
   return (
     <div className="max-w-4xl mx-auto">
       {/* Chat Header */}
-      <div className="flex items-center justify-between mb-6">
-        <div className="flex items-center gap-4">
-          <Button 
-            variant="ghost" 
-            size="sm"
-            onClick={() => router.back()}
-          >
-            <ArrowLeft className="h-4 w-4 mr-2" />
-            Back
-          </Button>
-          <div>
-            <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
-              {isGroup ? 'Roommate Chat' : (otherPersonName || 'Chat')}
-            </h1>
-            {isGroup && (
-              <div className="flex items-center gap-2 mt-1">
-                <Users className="h-4 w-4 text-gray-500" />
-                <span className="text-sm text-gray-500">
-                  {members.length} members
-                </span>
-              </div>
+      <div className="mb-6">
+        <div className="flex items-start justify-between mb-4">
+          <div className="flex-1">
+            <Button 
+              variant="ghost" 
+              size="sm"
+              onClick={() => router.back()}
+              className="mb-3 px-3 py-2 hover:bg-gray-100 rounded-lg transition-colors"
+            >
+              <ArrowLeft className="h-4 w-4 mr-2" />
+              Back
+            </Button>
+            <div>
+              <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
+                {isGroup ? 'Roommate Chat' : (otherPersonName || 'Chat')}
+              </h1>
+              {isGroup && (
+                <div className="flex items-center gap-2 mt-1">
+                  <Users className="h-4 w-4 text-gray-500" />
+                  <span className="text-sm text-gray-500">
+                    {members.length} members
+                  </span>
+                </div>
+              )}
+            </div>
+          </div>
+          
+          <div className="flex items-center gap-2">
+            <Badge variant="secondary" className="flex items-center gap-1.5 px-3 py-1.5 bg-blue-100 text-blue-800 border-blue-200 font-semibold text-sm">
+              <Shield className="h-4 w-4" />
+              Safe Chat
+            </Badge>
+            {!isGroup && (
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setShowReportDialog(true)}
+                className="text-red-600 hover:text-red-700 hover:bg-red-50"
+              >
+                <Flag className="h-4 w-4 mr-1" />
+                Report
+              </Button>
             )}
           </div>
-        </div>
-        
-        <div className="flex items-center gap-2">
-          <Badge variant="secondary" className="flex items-center gap-1">
-            <Shield className="h-3 w-3" />
-            Safe Chat
-          </Badge>
         </div>
       </div>
 
       {/* Safety Notice */}
       <Alert className="mb-6">
-        <Shield className="h-4 w-4" />
-        <AlertDescription>
+        <Shield className="h-4 w-4 mt-0.5" />
+        <AlertDescription className="flex items-center">
           This is a safe, text-only chat. Links and files are blocked for your protection. 
           All messages are moderated.
         </AlertDescription>
@@ -1031,26 +1140,36 @@ export function ChatInterface({ roomId, user }: ChatInterfaceProps) {
                 <p className="text-gray-500">No messages yet. Start the conversation!</p>
               </div>
             ) : (
-              messages.map((message) => {
-                // Render system messages centered and styled differently
-                if (message.is_system_message) {
-                  return (
-                    <div key={message.id} className="flex justify-center my-4">
-                      <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg px-4 py-2">
-                        <p className="text-sm text-blue-700 dark:text-blue-300 text-center">
-                          {message.content}
-                        </p>
-                      </div>
-                    </div>
-                  )
-                }
+              messages.map((message, index) => {
+                // Show date separator if day changed
+                const showDateSeparator = shouldShowDateSeparator(index)
                 
-                // Regular message rendering
                 return (
-                  <div 
-                    key={message.id} 
-                    className={`flex gap-3 ${message.is_own ? 'justify-end' : 'justify-start'}`}
-                  >
+                  <div key={message.id}>
+                    {showDateSeparator && (
+                      <div className="flex justify-center my-4">
+                        <div className="bg-gray-100 dark:bg-gray-800 px-3 py-1 rounded-full">
+                          <span className="text-xs text-gray-500 dark:text-gray-400 font-medium">
+                            {formatDate(message.created_at)}
+                          </span>
+                        </div>
+                      </div>
+                    )}
+                    
+                    {/* Render system messages centered and styled differently */}
+                    {message.is_system_message ? (
+                      <div className="flex justify-center my-4">
+                        <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg px-4 py-2">
+                          <p className="text-sm text-blue-700 dark:text-blue-300 text-center">
+                            {message.content}
+                          </p>
+                        </div>
+                      </div>
+                    ) : (
+                      // Regular message rendering
+                      <div 
+                        className={`flex gap-3 ${message.is_own ? 'justify-end' : 'justify-start'}`}
+                      >
                     {!message.is_own && (
                       <Avatar className="w-8 h-8 flex-shrink-0">
                         <AvatarImage src={message.sender_avatar} />
@@ -1080,6 +1199,8 @@ export function ChatInterface({ roomId, user }: ChatInterfaceProps) {
                         {message.is_own && getReadStatus(message)}
                       </div>
                     </div>
+                    </div>
+                  )}
                   </div>
                 )
               })
@@ -1143,7 +1264,7 @@ export function ChatInterface({ roomId, user }: ChatInterfaceProps) {
       {/* Message Input */}
       <Card>
         <CardContent className="p-4">
-          <div className="flex gap-3">
+          <div className="flex gap-3 items-center">
             <Input
               value={newMessage}
               onChange={(e) => {
@@ -1158,11 +1279,12 @@ export function ChatInterface({ roomId, user }: ChatInterfaceProps) {
               }}
               placeholder="Type your message... (Links are not allowed)"
               disabled={isSending}
-              className="flex-1"
+              className="flex-1 h-10"
             />
             <Button 
               onClick={sendMessage}
               disabled={!newMessage.trim() || isSending}
+              className="h-10 w-10 p-0"
             >
               <Send className="h-4 w-4" />
             </Button>
@@ -1174,6 +1296,50 @@ export function ChatInterface({ roomId, user }: ChatInterfaceProps) {
           </div>
         </CardContent>
       </Card>
+
+      {/* Report User Dialog */}
+      <Dialog open={showReportDialog} onOpenChange={setShowReportDialog}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Report {otherPersonName || 'User'}?</DialogTitle>
+            <DialogDescription>
+              Please select the reason for reporting this user. Our team will review your report.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-2 py-4">
+            {[
+              'Inappropriate behavior',
+              'Spam or fake profile',
+              'Harassment',
+              'Safety concerns',
+              'Other'
+            ].map((reason) => (
+              <label key={reason} className="flex items-center space-x-2 cursor-pointer">
+                <input
+                  type="radio"
+                  name="reportReason"
+                  value={reason}
+                  checked={reportReason === reason}
+                  onChange={(e) => setReportReason(e.target.value)}
+                  className="w-4 h-4"
+                />
+                <span className="text-sm">{reason}</span>
+              </label>
+            ))}
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => {
+              setShowReportDialog(false)
+              setReportReason('')
+            }}>
+              Cancel
+            </Button>
+            <Button variant="destructive" onClick={handleReportUser} disabled={isReporting || !reportReason}>
+              {isReporting ? 'Submitting...' : 'Submit Report'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }
