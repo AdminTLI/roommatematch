@@ -190,7 +190,8 @@ export class RateLimiter {
     const resetTime = windowStart + this.config.windowMs
 
     try {
-      const entry = await this.store.get(key)
+      const store = this.getStore()
+      const entry = await store.get(key)
 
       if (!entry || entry.windowStart !== windowStart) {
         // New window or no existing entry

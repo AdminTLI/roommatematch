@@ -135,50 +135,37 @@ export function ChatList({ user }: ChatListProps) {
       
       const finalChatRooms = chatRoomsWithMessages
 
-      // Fetch profiles for each chat room using API route (bypasses RLS)
-      // Fetch in parallel for better performance
+      // Fetch profiles for all chat rooms in a single batch request
       let profilesMap = new Map<string, any>()
       if (finalChatRooms && finalChatRooms.length > 0) {
         try {
-          const profilePromises = finalChatRooms.map(async (room: any) => {
-            try {
-              const profilesResponse = await fetch('/api/chat/profiles', {
-                method: 'POST',
-                headers: {
-                  'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                  chatId: room.id
-                }),
-              })
-
-              if (profilesResponse.ok) {
-                const { profiles: profilesData } = await profilesResponse.json()
-                if (profilesData && Array.isArray(profilesData)) {
-                  return profilesData
-                }
-                return []
-              } else {
-                const errorText = await profilesResponse.text()
-                console.warn(`Failed to fetch profiles for chat ${room.id}:`, errorText)
-                return []
-              }
-            } catch (err) {
-              console.error(`Failed to fetch profiles for chat ${room.id}:`, err)
-              return []
-            }
-          })
-
-          const allProfilesArrays = await Promise.all(profilePromises)
-          // Flatten and deduplicate profiles by user_id
-          allProfilesArrays.flat().forEach((profile: any) => {
-            if (profile && profile.user_id) {
-              profilesMap.set(profile.user_id, profile)
-            }
-          })
+          const chatIds = finalChatRooms.map((room: any) => room.id)
           
-          // Debug: Log profile count
-          console.log(`[ChatList] Loaded ${profilesMap.size} profiles for ${finalChatRooms.length} chats`)
+          const profilesResponse = await fetch('/api/chat/profiles', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              chatIds: chatIds
+            }),
+          })
+
+          if (profilesResponse.ok) {
+            const { profiles: profilesData } = await profilesResponse.json()
+            if (profilesData && Array.isArray(profilesData)) {
+              // Build map of profiles by user_id
+              profilesData.forEach((profile: any) => {
+                if (profile && profile.user_id) {
+                  profilesMap.set(profile.user_id, profile)
+                }
+              })
+              console.log(`[ChatList] Loaded ${profilesMap.size} profiles for ${finalChatRooms.length} chats`)
+            }
+          } else {
+            const errorText = await profilesResponse.text()
+            console.warn(`[ChatList] Failed to fetch profiles batch:`, errorText)
+          }
         } catch (err) {
           console.error('[ChatList] Failed to fetch profiles:', err)
         }
