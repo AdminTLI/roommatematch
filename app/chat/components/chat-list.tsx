@@ -135,36 +135,43 @@ export function ChatList({ user }: ChatListProps) {
       
       const finalChatRooms = chatRoomsWithMessages
 
-      // Get all unique user IDs from chat members
-      const userIds = new Set<string>()
-      finalChatRooms?.forEach((room: any) => {
-        room.chat_members?.forEach((member: any) => {
-          userIds.add(member.user_id)
-        })
-      })
-
-      // Fetch profiles for all users separately using API route (bypasses RLS)
+      // Fetch profiles for each chat room using API route (bypasses RLS)
+      // Fetch in parallel for better performance
       let profilesMap = new Map<string, any>()
-      if (userIds.size > 0) {
+      if (finalChatRooms && finalChatRooms.length > 0) {
         try {
-          const profilesResponse = await fetch('/api/chat/profiles', {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-              userIds: Array.from(userIds)
-            }),
+          const profilePromises = finalChatRooms.map(async (room: any) => {
+            try {
+              const profilesResponse = await fetch('/api/chat/profiles', {
+                method: 'POST',
+                headers: {
+                  'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                  chatId: room.id
+                }),
+              })
+
+              if (profilesResponse.ok) {
+                const { profiles: profilesData } = await profilesResponse.json()
+                return profilesData || []
+              } else {
+                console.warn(`Failed to fetch profiles for chat ${room.id}:`, await profilesResponse.text())
+                return []
+              }
+            } catch (err) {
+              console.warn(`Failed to fetch profiles for chat ${room.id}:`, err)
+              return []
+            }
           })
 
-          if (profilesResponse.ok) {
-            const { profiles: profilesData } = await profilesResponse.json()
-            if (profilesData) {
-              profilesMap = new Map(profilesData.map((p: any) => [p.user_id, p]))
+          const allProfilesArrays = await Promise.all(profilePromises)
+          // Flatten and deduplicate profiles by user_id
+          allProfilesArrays.flat().forEach((profile: any) => {
+            if (profile && profile.user_id) {
+              profilesMap.set(profile.user_id, profile)
             }
-          } else {
-            console.warn('Failed to fetch profiles via API:', await profilesResponse.text())
-          }
+          })
         } catch (err) {
           console.warn('Failed to fetch profiles:', err)
         }

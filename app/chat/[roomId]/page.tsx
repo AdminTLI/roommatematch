@@ -20,8 +20,9 @@ export default async function ChatPage({ params }: ChatPageProps) {
   }
 
   // Block demo user from accessing real chat rooms in production
-  if (process.env.NODE_ENV === 'production' && user.email === process.env.DEMO_USER_EMAIL) {
-    redirect('/dashboard')
+  // Redirect to chat list instead of dashboard for better UX
+  if (process.env.NODE_ENV === 'production' && process.env.DEMO_USER_EMAIL && user.email === process.env.DEMO_USER_EMAIL) {
+    redirect('/chat')
   }
 
   // Check if user has completed onboarding
@@ -36,15 +37,16 @@ export default async function ChatPage({ params }: ChatPageProps) {
   }
 
   // Check if user has access to this chat room
-  const { data: chatMember } = await supabase
+  const { data: chatMember, error: chatMemberError } = await supabase
     .from('chat_members')
     .select('*')
     .eq('chat_id', roomId)
     .eq('user_id', user.id)
-    .single()
+    .maybeSingle()
 
-  if (!chatMember) {
-    redirect('/matches')
+  if (chatMemberError || !chatMember) {
+    // Redirect to chat list if user doesn't have access to this specific chat
+    redirect('/chat')
   }
 
   // Get user profile with proper name
