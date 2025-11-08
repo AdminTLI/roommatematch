@@ -34,6 +34,7 @@ export const EVENT_TYPES = {
 
   // Questionnaire events
   QUESTIONNAIRE_STARTED: 'questionnaire_started',
+  QUESTIONNAIRE_SECTION_STARTED: 'questionnaire_section_started',
   QUESTIONNAIRE_SECTION_COMPLETED: 'questionnaire_section_completed',
   QUESTIONNAIRE_COMPLETED: 'questionnaire_completed',
   QUESTIONNAIRE_ABANDONED: 'questionnaire_abandoned',

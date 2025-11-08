@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import type { SectionKey } from '@/types/questionnaire'
 import { checkRateLimit, getUserRateLimitKey } from '@/lib/rate-limit'
+import { trackEvent, EVENT_TYPES } from '@/lib/events'
 
 type SaveBody = { section: SectionKey; answers: any[] }
 
@@ -56,6 +57,27 @@ export async function POST(request: Request) {
 
   if (error) {
     return NextResponse.json({ error: error.message }, { status: 500 })
+  }
+
+  // Track section completion analytics
+  try {
+    await trackEvent(EVENT_TYPES.QUESTIONNAIRE_SECTION_COMPLETED, {
+      section: body.section,
+      answer_count: body.answers.length,
+      user_id: user.id
+    }, user.id)
+  } catch (analyticsError) {
+    // Don't fail the save if analytics fails
+    console.error('Failed to track analytics:', analyticsError)
+  }
+
+  // Automatically generate/update user vector when section is saved
+  // This ensures vectors are up-to-date for matching
+  try {
+    await supabase.rpc('compute_user_vector_and_store', { p_user_id: user.id })
+  } catch (vectorError) {
+    // Don't fail the save if vector generation fails
+    console.error('Failed to generate user vector:', vectorError)
   }
 
   const lastSavedAt = new Date().toISOString()

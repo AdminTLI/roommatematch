@@ -96,6 +96,27 @@ export function QuestionnaireSettings({ progressData }: QuestionnaireSettingsPro
     return names[section] || section
   }
 
+  const getSectionRoute = (section: string) => {
+    const routes: Record<string, string> = {
+      'intro': '/onboarding/intro',
+      'location-commute': '/onboarding/location-commute',
+      'personality-values': '/onboarding/personality-values',
+      'sleep-circadian': '/onboarding/sleep-circadian',
+      'noise-sensory': '/onboarding/noise-sensory',
+      'home-operations': '/onboarding/home-operations',
+      'social-hosting-language': '/onboarding/social-hosting-language',
+      'communication-conflict': '/onboarding/communication-conflict',
+      'privacy-territoriality': '/onboarding/privacy-territoriality',
+      'reliability-logistics': '/onboarding/reliability-logistics'
+    }
+    return routes[section] || '/onboarding'
+  }
+
+  const handleEditSection = (section: string) => {
+    const route = getSectionRoute(section)
+    router.push(`${route}?mode=edit`)
+  }
+
   return (
     <div className="space-y-6">
       {error && (
@@ -174,16 +195,23 @@ export function QuestionnaireSettings({ progressData }: QuestionnaireSettingsPro
           <CardHeader>
             <CardTitle>Completed Sections</CardTitle>
             <CardDescription>
-              Sections you have already filled out.
+              Click on any section to edit your responses.
             </CardDescription>
           </CardHeader>
           <CardContent>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
               {completedSections.map((section) => (
-                <div key={section} className="flex items-center gap-3 p-3 bg-green-50 border border-green-200 rounded-xl hover:bg-green-100 transition-colors">
-                  <CheckCircle className="w-5 h-5 text-green-600 flex-shrink-0" />
-                  <span className="text-sm font-medium text-gray-900">{getSectionDisplayName(section)}</span>
-                </div>
+                <button
+                  key={section}
+                  onClick={() => handleEditSection(section)}
+                  className="flex items-center justify-between gap-3 p-3 bg-green-50 border border-green-200 rounded-xl hover:bg-green-100 transition-colors text-left group"
+                >
+                  <div className="flex items-center gap-3 flex-1 min-w-0">
+                    <CheckCircle className="w-5 h-5 text-green-600 flex-shrink-0" />
+                    <span className="text-sm font-medium text-gray-900 truncate">{getSectionDisplayName(section)}</span>
+                  </div>
+                  <Edit className="w-4 h-4 text-gray-400 group-hover:text-gray-600 flex-shrink-0 opacity-0 group-hover:opacity-100 transition-opacity" />
+                </button>
               ))}
             </div>
           </CardContent>

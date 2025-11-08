@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useMemo, useState, Suspense } from 'react'
+import { useEffect, useMemo, useState, Suspense, useRef } from 'react'
 import { useSearchParams } from 'next/navigation'
 import itemsJson from '@/data/item-bank.v1.json'
 import type { Item } from '@/types/questionnaire'
@@ -15,6 +15,7 @@ import { TimeRange } from '@/components/questionnaire/TimeRange'
 import { NumberInput } from '@/components/questionnaire/NumberInput'
 import { useOnboardingStore } from '@/store/onboarding'
 import { SuspenseWrapper } from '@/components/questionnaire/SuspenseWrapper'
+import { createClient } from '@/lib/supabase/client'
 
 function SectionClientContent() {
   const sectionKey = 'personality-values' as const
@@ -24,9 +25,42 @@ function SectionClientContent() {
   const countAnswered = useOnboardingStore((s) => s.countAnsweredInSection)
   const answers = useOnboardingStore((s) => s.sections[sectionKey])
   const searchParams = useSearchParams()
+  const sectionStartTime = useRef<number>(Date.now())
+  const hasTrackedStart = useRef<boolean>(false)
 
   // Check edit mode using React hook for proper reactivity
   const isEditMode = searchParams.get('mode') === 'edit'
+
+  // Track section started analytics
+  useEffect(() => {
+    if (hasTrackedStart.current) return
+    hasTrackedStart.current = true
+    
+    const trackSectionStart = async () => {
+      try {
+        const supabase = createClient()
+        const { data: { user } } = await supabase.auth.getUser()
+        if (user) {
+          await fetch('/api/analytics/track', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              event: 'questionnaire_section_started',
+              props: {
+                section: sectionKey,
+                is_edit_mode: isEditMode
+              },
+              user_id: user.id
+            })
+          }).catch(() => {}) // Silently fail if analytics unavailable
+        }
+      } catch (error) {
+        // Silently fail analytics tracking
+      }
+    }
+    
+    trackSectionStart()
+  }, [sectionKey, isEditMode])
 
   const total = items.length
   const answered = countAnswered(sectionKey)
