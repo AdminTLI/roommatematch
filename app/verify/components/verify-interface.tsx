@@ -49,6 +49,7 @@ export function VerifyInterface({ user }: VerifyInterfaceProps) {
   const [status, setStatus] = useState<VerificationStatus>('unverified')
   const [isLoading, setIsLoading] = useState(true)
   const [isStarting, setIsStarting] = useState(false)
+  const [isPersonaActive, setIsPersonaActive] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [pollingInterval, setPollingInterval] = useState<NodeJS.Timeout | null>(null)
   
@@ -127,6 +128,7 @@ export function VerifyInterface({ user }: VerifyInterfaceProps) {
           // This matches the Persona embedded flow pattern: onReady: () => client.open()
           if (status === 'unverified' || status === 'failed') {
             setIsStarting(true)
+            setIsPersonaActive(true)
             client.open()
           }
         },
@@ -134,6 +136,7 @@ export function VerifyInterface({ user }: VerifyInterfaceProps) {
           console.log(`Completed inquiry ${inquiryId} with status ${personaStatus}`)
           
           setIsStarting(false)
+          setIsPersonaActive(false)
           
           // Update verification status in our database
           try {
@@ -166,12 +169,14 @@ export function VerifyInterface({ user }: VerifyInterfaceProps) {
         onCancel: () => {
           console.log('Persona verification cancelled by user')
           setIsStarting(false)
+          setIsPersonaActive(false)
           setError(null)
         },
         onError: (error) => {
           console.error('Persona verification error:', error)
           setError('Verification failed. Please try again.')
           setIsStarting(false)
+          setIsPersonaActive(false)
         }
       })
       
@@ -207,11 +212,13 @@ export function VerifyInterface({ user }: VerifyInterfaceProps) {
 
   const startVerification = () => {
     setIsStarting(true)
+    setIsPersonaActive(true)
     setError(null)
 
     if (!personaClientRef.current) {
       setError('Verification service not ready. Please wait a moment and try again.')
       setIsStarting(false)
+      setIsPersonaActive(false)
       return
     }
 
@@ -221,6 +228,7 @@ export function VerifyInterface({ user }: VerifyInterfaceProps) {
       console.error('Failed to open Persona verification:', err)
       setError('Failed to start verification. Please try again.')
       setIsStarting(false)
+      setIsPersonaActive(false)
     }
   }
 
@@ -239,6 +247,22 @@ export function VerifyInterface({ user }: VerifyInterfaceProps) {
             </div>
           </CardContent>
         </Card>
+      </div>
+    )
+  }
+
+  // Hide background content when Persona is active
+  if (isPersonaActive) {
+    return (
+      <div className="max-w-4xl mx-auto">
+        {/* Minimal UI when Persona is active - just show error if any */}
+        {error && (
+          <Alert className="mb-6" variant="destructive">
+            <AlertCircle className="h-4 w-4" />
+            <AlertDescription>{error}</AlertDescription>
+          </Alert>
+        )}
+        {/* Persona popup will overlay everything */}
       </div>
     )
   }

@@ -48,18 +48,31 @@ export function SignInForm() {
         return
       }
 
-      // Check verification status after successful login
+      // Check email verification directly from auth response first (most reliable)
+      // This avoids race conditions with session cookies not being set yet
+      const emailVerified = Boolean(
+        data.user?.email_confirmed_at &&
+        typeof data.user.email_confirmed_at === 'string' &&
+        data.user.email_confirmed_at.length > 0 &&
+        !isNaN(Date.parse(data.user.email_confirmed_at))
+      )
+
+      if (!emailVerified) {
+        // Email not verified - redirect to email verification
+        sessionStorage.setItem('verification-email', email)
+        router.push('/auth/verify-email')
+        return
+      }
+
+      // Email is verified, check Persona verification status
+      // Wait a bit for session to be established, then check via API
       try {
+        // Small delay to ensure session cookie is set
+        await new Promise(resolve => setTimeout(resolve, 100))
+        
         const response = await fetch('/api/auth/verification-status')
         if (response.ok) {
           const verificationStatus = await response.json()
-          
-          // Store email for verification page if needed
-          if (verificationStatus.needsEmailVerification) {
-            sessionStorage.setItem('verification-email', email)
-            router.push('/auth/verify-email')
-            return
-          }
           
           if (verificationStatus.needsPersonaVerification) {
             router.push('/verify')
@@ -69,23 +82,15 @@ export function SignInForm() {
           // Both verifications complete, proceed to matches
           router.push('/matches')
         } else {
-          // If API fails, still check email_confirmed_at from auth response
-          if (data.user && !data.user.email_confirmed_at) {
-            sessionStorage.setItem('verification-email', email)
-            router.push('/auth/verify-email')
-          } else {
-            router.push('/matches')
-          }
+          // If API fails, assume Persona verification needed (safer default)
+          // User will be redirected by middleware if already verified
+          router.push('/verify')
         }
       } catch (verificationError) {
         console.error('Failed to check verification status:', verificationError)
-        // Fallback: check email_confirmed_at from auth response
-        if (data.user && !data.user.email_confirmed_at) {
-          sessionStorage.setItem('verification-email', email)
-          router.push('/auth/verify-email')
-        } else {
-          router.push('/matches')
-        }
+        // If API fails, assume Persona verification needed (safer default)
+        // User will be redirected by middleware if already verified
+        router.push('/verify')
       }
     } catch (err) {
       setError('An unexpected error occurred')
