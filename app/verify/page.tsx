@@ -1,8 +1,9 @@
 import { VerifyInterface } from './components/verify-interface'
-import { AppHeader } from '@/app/(components)/app-header'
+import { AppShell } from '@/components/app/shell'
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
-import { checkUserVerificationStatus } from '@/lib/auth/verification-check'
+import { checkUserVerificationStatus, getVerificationRedirectUrl } from '@/lib/auth/verification-check'
+import { getUserProfile } from '@/lib/auth/user-profile'
 
 export default async function VerifyPage() {
   const supabase = await createClient()
@@ -12,7 +13,16 @@ export default async function VerifyPage() {
     redirect('/auth/sign-in')
   }
 
-  // Check email verification first - must be verified before Persona verification
+  // STRICT email verification check - must be verified before Persona verification
+  // Check using the centralized verification utility for consistency
+  const verificationStatus = await checkUserVerificationStatus(user)
+  
+  // If email is not verified, redirect immediately
+  if (verificationStatus.needsEmailVerification) {
+    redirect(`/auth/verify-email?email=${encodeURIComponent(user.email || '')}&auto=1`)
+  }
+
+  // Double-check email_confirmed_at directly as well (defense in depth)
   const emailVerified = Boolean(
     user.email_confirmed_at &&
     typeof user.email_confirmed_at === 'string' &&
@@ -37,30 +47,17 @@ export default async function VerifyPage() {
     redirect('/onboarding/intro')
   }
 
+  // Get user profile for AppShell
+  const userProfile = await getUserProfile(user.id)
+  if (!userProfile) {
+    redirect('/auth/sign-in')
+  }
+
   // If no profile exists yet, that's fine - verification happens before profile creation
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
-      {/* Skip to content link for accessibility */}
-      <a 
-        href="#main-content" 
-        className="sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 z-50 bg-primary text-primary-foreground px-4 py-2 rounded-md transition-all duration-200"
-      >
-        Skip to main content
-      </a>
-
-      {/* Header */}
-      <AppHeader user={{
-        id: user.id,
-        email: user.email || '',
-        name: user.user_metadata?.full_name,
-        avatar: user.user_metadata?.avatar_url
-      }} />
-
-      {/* Main Content */}
-      <main id="main-content" className="container mx-auto px-4 py-8">
-        <VerifyInterface user={user} />
-      </main>
-    </div>
+    <AppShell user={userProfile}>
+      <VerifyInterface user={user} />
+    </AppShell>
   )
 }

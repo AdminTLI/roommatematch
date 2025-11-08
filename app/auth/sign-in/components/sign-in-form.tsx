@@ -68,11 +68,18 @@ export function SignInForm() {
       // Wait a bit for session to be established, then check via API
       try {
         // Small delay to ensure session cookie is set
-        await new Promise(resolve => setTimeout(resolve, 100))
+        await new Promise(resolve => setTimeout(resolve, 200))
         
         const response = await fetch('/api/auth/verification-status')
         if (response.ok) {
           const verificationStatus = await response.json()
+          
+          // DOUBLE CHECK: Make sure email is still verified (defense in depth)
+          if (verificationStatus.needsEmailVerification) {
+            sessionStorage.setItem('verification-email', email)
+            router.push('/auth/verify-email')
+            return
+          }
           
           if (verificationStatus.needsPersonaVerification) {
             router.push('/verify')
@@ -82,15 +89,18 @@ export function SignInForm() {
           // Both verifications complete, proceed to matches
           router.push('/matches')
         } else {
-          // If API fails, assume Persona verification needed (safer default)
-          // User will be redirected by middleware if already verified
-          router.push('/verify')
+          // If API fails, don't assume - redirect to email verification to be safe
+          // This ensures we never skip email verification
+          console.warn('Verification status API failed, redirecting to email verification for safety')
+          sessionStorage.setItem('verification-email', email)
+          router.push('/auth/verify-email')
         }
       } catch (verificationError) {
         console.error('Failed to check verification status:', verificationError)
-        // If API fails, assume Persona verification needed (safer default)
-        // User will be redirected by middleware if already verified
-        router.push('/verify')
+        // If API fails, don't assume - redirect to email verification to be safe
+        // This ensures we never skip email verification
+        sessionStorage.setItem('verification-email', email)
+        router.push('/auth/verify-email')
       }
     } catch (err) {
       setError('An unexpected error occurred')

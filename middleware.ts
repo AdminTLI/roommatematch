@@ -160,8 +160,23 @@ export async function middleware(req: NextRequest) {
     }
   }
 
-  // Gate /verify route - require email verification first
+  // Gate /verify route - require email verification first (STRICT CHECK)
   if (user && pathname === '/verify') {
+    // Use centralized verification check for consistency
+    const verificationStatus = await checkUserVerificationStatus(user)
+    
+    // STRICT: If email is not verified, redirect immediately - no exceptions
+    if (verificationStatus.needsEmailVerification) {
+      const url = req.nextUrl.clone()
+      url.pathname = '/auth/verify-email'
+      if (user.email) {
+        url.searchParams.set('email', user.email)
+      }
+      url.searchParams.set('auto', '1')
+      return NextResponse.redirect(url)
+    }
+
+    // Double-check email_confirmed_at directly as well (defense in depth)
     const emailVerified = Boolean(
       user.email_confirmed_at &&
       typeof user.email_confirmed_at === 'string' &&
