@@ -11,7 +11,7 @@ export default async function VerifyPage() {
     redirect('/auth/sign-in')
   }
 
-  // Check verification status
+  // Check verification status (profile may not exist yet since verification comes before onboarding)
   const { data: profile } = await supabase
     .from('profiles')
     .select('id, verification_status')
@@ -22,6 +22,8 @@ export default async function VerifyPage() {
   if (profile && profile.verification_status === 'verified') {
     redirect('/onboarding/intro')
   }
+
+  // If no profile exists yet, that's fine - verification happens before profile creation
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
