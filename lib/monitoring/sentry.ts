@@ -1,9 +1,20 @@
-import * as Sentry from '@sentry/nextjs'
+let Sentry: any = null
+
+try {
+  Sentry = require('@sentry/nextjs')
+} catch {
+  // Sentry not installed, will be handled gracefully
+}
 
 const SENTRY_DSN = process.env.NEXT_PUBLIC_SENTRY_DSN
 const SENTRY_ENVIRONMENT = process.env.NEXT_PUBLIC_SENTRY_ENVIRONMENT || process.env.NODE_ENV || 'development'
 
 export function initSentry() {
+  if (!Sentry) {
+    console.warn('[Sentry] Package not available, skipping initialization')
+    return
+  }
+
   if (!SENTRY_DSN) {
     console.warn('[Sentry] DSN not configured, skipping initialization')
     return
@@ -80,7 +91,7 @@ export function initSentry() {
 }
 
 export function captureException(error: Error, context?: Record<string, any>) {
-  if (!SENTRY_DSN) return
+  if (!Sentry || !SENTRY_DSN) return
 
   Sentry.withScope((scope) => {
     if (context) {
@@ -92,8 +103,8 @@ export function captureException(error: Error, context?: Record<string, any>) {
   })
 }
 
-export function captureMessage(message: string, level: Sentry.SeverityLevel = 'info', context?: Record<string, any>) {
-  if (!SENTRY_DSN) return
+export function captureMessage(message: string, level: any = 'info', context?: Record<string, any>) {
+  if (!Sentry || !SENTRY_DSN) return
 
   Sentry.withScope((scope) => {
     if (context) {
@@ -106,7 +117,7 @@ export function captureMessage(message: string, level: Sentry.SeverityLevel = 'i
 }
 
 export function setUser(user: { id: string; email?: string; name?: string } | null) {
-  if (!SENTRY_DSN) return
+  if (!Sentry || !SENTRY_DSN) return
 
   if (user) {
     Sentry.setUser({
