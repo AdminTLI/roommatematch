@@ -112,11 +112,29 @@ export async function GET(request: NextRequest) {
 
     const { count } = await countQuery
 
+    // Calculate statistics
+    const { data: allSuggestions } = await admin
+      .from('match_suggestions')
+      .select('status, fit_score')
+    
+    const stats = {
+      total: count || 0,
+      pending: allSuggestions?.filter(s => s.status === 'pending').length || 0,
+      accepted: allSuggestions?.filter(s => s.status === 'accepted').length || 0,
+      declined: allSuggestions?.filter(s => s.status === 'declined').length || 0,
+      expired: allSuggestions?.filter(s => s.status === 'expired').length || 0,
+      confirmed: allSuggestions?.filter(s => s.status === 'confirmed').length || 0,
+      avgScore: allSuggestions && allSuggestions.length > 0
+        ? allSuggestions.reduce((sum, s) => sum + (s.fit_score || 0), 0) / allSuggestions.length
+        : 0
+    }
+
     return NextResponse.json({
       matches: enriched || [],
       total: count || 0,
       limit,
-      offset
+      offset,
+      statistics: stats
     })
   } catch (error) {
     safeLogger.error('[Admin] Matches list error', error)
@@ -140,7 +158,7 @@ export async function POST(request: NextRequest) {
 
     const { user, adminRecord } = adminCheck
     const body = await request.json()
-    const { action } = body
+    const { action, matchIds } = body
 
     if (action === 'refresh') {
       // Trigger match refresh
@@ -167,6 +185,51 @@ export async function POST(request: NextRequest) {
         runId: result.runId,
         count: result.suggestions?.length || 0
       })
+    }
+
+    if (action === 'expire' && matchIds && Array.isArray(matchIds)) {
+      const admin = await createAdminClient()
+      const { error } = await admin
+        .from('match_suggestions')
+        .update({ status: 'expired', expires_at: new Date().toISOString() })
+        .in('id', matchIds)
+
+      if (error) {
+        safeLogger.error('[Admin] Failed to expire matches', error)
+        return NextResponse.json({ error: 'Failed to expire matches' }, { status: 500 })
+      }
+
+      await logAdminAction(user!.id, 'expire_matches', null, null, {
+        action: 'Expired matches',
+        match_ids: matchIds,
+        count: matchIds.length,
+        role: adminRecord!.role
+      })
+
+      return NextResponse.json({ success: true, message: `Expired ${matchIds.length} match(es)` })
+    }
+
+    if (action === 'archive' && matchIds && Array.isArray(matchIds)) {
+      // Archive by updating status to expired (or create archive table if needed)
+      const admin = await createAdminClient()
+      const { error } = await admin
+        .from('match_suggestions')
+        .update({ status: 'expired', expires_at: new Date().toISOString() })
+        .in('id', matchIds)
+
+      if (error) {
+        safeLogger.error('[Admin] Failed to archive matches', error)
+        return NextResponse.json({ error: 'Failed to archive matches' }, { status: 500 })
+      }
+
+      await logAdminAction(user!.id, 'archive_matches', null, null, {
+        action: 'Archived matches',
+        match_ids: matchIds,
+        count: matchIds.length,
+        role: adminRecord!.role
+      })
+
+      return NextResponse.json({ success: true, message: `Archived ${matchIds.length} match(es)` })
     }
 
     return NextResponse.json(
