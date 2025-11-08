@@ -48,59 +48,108 @@ export function SignInForm() {
         return
       }
 
-      // Check email verification directly from auth response first (most reliable)
-      // This avoids race conditions with session cookies not being set yet
+      // CRITICAL: Check email verification directly from auth response first
+      // Since Supabase has enable_confirmations = false, users can log in without email verification
+      // We MUST enforce email verification at application level
+      console.log('[SignIn] User object after login:', {
+        id: data.user?.id,
+        email: data.user?.email,
+        email_confirmed_at: data.user?.email_confirmed_at,
+        email_confirmed_at_type: typeof data.user?.email_confirmed_at,
+        raw_user: data.user
+      })
+
+      // STRICT check: email_confirmed_at must be a valid date string
       const emailVerified = Boolean(
         data.user?.email_confirmed_at &&
         typeof data.user.email_confirmed_at === 'string' &&
         data.user.email_confirmed_at.length > 0 &&
-        !isNaN(Date.parse(data.user.email_confirmed_at))
+        !isNaN(Date.parse(data.user.email_confirmed_at)) &&
+        new Date(data.user.email_confirmed_at).getTime() > 0
       )
 
+      console.log('[SignIn] Email verified check result:', emailVerified)
+
       if (!emailVerified) {
-        // Email not verified - redirect to email verification
+        // Email not verified - CRITICAL: redirect to email verification IMMEDIATELY
+        console.log('[SignIn] Email not verified, redirecting to email verification')
         sessionStorage.setItem('verification-email', email)
-        router.push('/auth/verify-email')
+        // Use window.location.href for immediate redirect (no client-side navigation delay)
+        window.location.href = `/auth/verify-email?email=${encodeURIComponent(email)}&auto=1`
         return
       }
 
-      // Email is verified, check Persona verification status
-      // Wait a bit for session to be established, then check via API
+      // Email is verified, now check Persona verification status
+      // Refresh user session to get latest data before checking
       try {
-        // Small delay to ensure session cookie is set
-        await new Promise(resolve => setTimeout(resolve, 200))
+        // Refresh the session to ensure we have latest user data
+        const { data: { user: refreshedUser } } = await supabase.auth.getUser()
         
-        const response = await fetch('/api/auth/verification-status')
+        console.log('[SignIn] Refreshed user after login:', {
+          id: refreshedUser?.id,
+          email: refreshedUser?.email,
+          email_confirmed_at: refreshedUser?.email_confirmed_at,
+          email_confirmed_at_type: typeof refreshedUser?.email_confirmed_at
+        })
+
+        // TRIPLE CHECK: Verify email_confirmed_at again after refresh
+        const emailStillVerified = Boolean(
+          refreshedUser?.email_confirmed_at &&
+          typeof refreshedUser.email_confirmed_at === 'string' &&
+          refreshedUser.email_confirmed_at.length > 0 &&
+          !isNaN(Date.parse(refreshedUser.email_confirmed_at)) &&
+          new Date(refreshedUser.email_confirmed_at).getTime() > 0
+        )
+
+        if (!emailStillVerified) {
+          console.log('[SignIn] Email verification lost after refresh, redirecting to email verification')
+          sessionStorage.setItem('verification-email', email)
+          window.location.href = `/auth/verify-email?email=${encodeURIComponent(email)}&auto=1`
+          return
+        }
+
+        // Small delay to ensure session cookie is set for API calls
+        await new Promise(resolve => setTimeout(resolve, 300))
+        
+        const response = await fetch('/api/auth/verification-status', {
+          cache: 'no-store',
+          headers: {
+            'Cache-Control': 'no-cache'
+          }
+        })
+        
         if (response.ok) {
           const verificationStatus = await response.json()
+          console.log('[SignIn] Verification status from API:', verificationStatus)
           
-          // DOUBLE CHECK: Make sure email is still verified (defense in depth)
-          if (verificationStatus.needsEmailVerification) {
+          // QUADRUPLE CHECK: Make sure email is still verified (defense in depth)
+          if (verificationStatus.needsEmailVerification || !verificationStatus.emailVerified) {
+            console.log('[SignIn] API reports email not verified, redirecting to email verification')
             sessionStorage.setItem('verification-email', email)
-            router.push('/auth/verify-email')
+            window.location.href = `/auth/verify-email?email=${encodeURIComponent(email)}&auto=1`
             return
           }
           
           if (verificationStatus.needsPersonaVerification) {
+            console.log('[SignIn] Email verified, redirecting to Persona verification')
             router.push('/verify')
             return
           }
           
           // Both verifications complete, proceed to matches
+          console.log('[SignIn] Both verifications complete, redirecting to matches')
           router.push('/matches')
         } else {
           // If API fails, don't assume - redirect to email verification to be safe
-          // This ensures we never skip email verification
-          console.warn('Verification status API failed, redirecting to email verification for safety')
+          console.warn('[SignIn] Verification status API failed, redirecting to email verification for safety')
           sessionStorage.setItem('verification-email', email)
-          router.push('/auth/verify-email')
+          window.location.href = `/auth/verify-email?email=${encodeURIComponent(email)}&auto=1`
         }
       } catch (verificationError) {
-        console.error('Failed to check verification status:', verificationError)
+        console.error('[SignIn] Failed to check verification status:', verificationError)
         // If API fails, don't assume - redirect to email verification to be safe
-        // This ensures we never skip email verification
         sessionStorage.setItem('verification-email', email)
-        router.push('/auth/verify-email')
+        window.location.href = `/auth/verify-email?email=${encodeURIComponent(email)}&auto=1`
       }
     } catch (err) {
       setError('An unexpected error occurred')

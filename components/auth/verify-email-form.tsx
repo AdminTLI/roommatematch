@@ -77,10 +77,41 @@ export function VerifyEmailForm() {
         // Clear stored email
         sessionStorage.removeItem('verification-email')
         
+        // Verify that email_confirmed_at is now set
+        console.log('[VerifyEmail] After OTP verification:', {
+          email_confirmed_at: data.user.email_confirmed_at,
+          user_id: data.user.id
+        })
+        
+        // Refresh the session to ensure email_confirmed_at is properly set
+        await supabase.auth.refreshSession()
+        
+        // Get refreshed user to verify email_confirmed_at is set
+        const { data: { user: refreshedUser } } = await supabase.auth.getUser()
+        console.log('[VerifyEmail] After session refresh:', {
+          email_confirmed_at: refreshedUser?.email_confirmed_at,
+          user_id: refreshedUser?.id
+        })
+        
+        // Verify email is actually confirmed before redirecting
+        const emailConfirmed = Boolean(
+          refreshedUser?.email_confirmed_at &&
+          typeof refreshedUser.email_confirmed_at === 'string' &&
+          refreshedUser.email_confirmed_at.length > 0 &&
+          !isNaN(Date.parse(refreshedUser.email_confirmed_at))
+        )
+        
+        if (!emailConfirmed) {
+          setError('Email verification completed but confirmation status not updated. Please try logging in again.')
+          setIsVerified(false)
+          return
+        }
+        
         // Redirect to identity verification (Persona) after email verification
+        // Use window.location for full page reload to ensure session is properly established
         setTimeout(() => {
-          router.push('/verify')
-        }, 2000)
+          window.location.href = '/verify'
+        }, 1500)
       }
     } catch (err) {
       setError('An unexpected error occurred. Please try again.')

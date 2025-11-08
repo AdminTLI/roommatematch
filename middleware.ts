@@ -136,6 +136,35 @@ export async function middleware(req: NextRequest) {
   const isProtectedRoute = protectedRoutes.some(route => pathname.startsWith(route))
   const isAllowedRoute = allowedRoutes.some(route => pathname.startsWith(route))
 
+  // CRITICAL: For authenticated users, ALWAYS check email verification first
+  // This applies to ALL routes except auth pages and email verification page itself
+  if (user && pathname !== '/auth/verify-email' && !pathname.startsWith('/auth/')) {
+    // Check email verification FIRST before anything else
+    const emailVerified = Boolean(
+      user.email_confirmed_at &&
+      typeof user.email_confirmed_at === 'string' &&
+      user.email_confirmed_at.length > 0 &&
+      !isNaN(Date.parse(user.email_confirmed_at)) &&
+      new Date(user.email_confirmed_at).getTime() > 0
+    )
+
+    // If email is not verified, redirect to email verification IMMEDIATELY
+    // This is the FIRST and MOST IMPORTANT check
+    if (!emailVerified) {
+      const url = req.nextUrl.clone()
+      url.pathname = '/auth/verify-email'
+      if (user.email) {
+        url.searchParams.set('email', user.email)
+      }
+      url.searchParams.set('auto', '1')
+      // Preserve intended destination
+      if (pathname !== '/verify') {
+        url.searchParams.set('redirect', pathname)
+      }
+      return NextResponse.redirect(url)
+    }
+  }
+
   // Enforce verification for authenticated users accessing protected routes
   if (user && isProtectedRoute && !isAllowedRoute) {
     const verificationStatus = await checkUserVerificationStatus(user)
