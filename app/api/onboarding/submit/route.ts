@@ -3,12 +3,17 @@ import { createClient } from '@/lib/supabase/server'
 import { submitCompleteOnboarding, extractSubmissionDataFromIntro, extractLanguagesFromSections, mapSubmissionError } from '@/lib/onboarding/submission'
 import { transformAnswer } from '@/lib/question-key-mapping'
 import { safeLogger } from '@/lib/utils/logger'
+import { trackEvent, EVENT_TYPES } from '@/lib/events'
 
-export async function POST() {
+export async function POST(request: Request) {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   
-  console.log('[Submit] User:', user?.id, 'isDemo:', !user)
+  // Check if this is edit mode
+  const url = new URL(request.url)
+  const isEditMode = url.searchParams.get('mode') === 'edit'
+  
+  console.log('[Submit] User:', user?.id, 'isDemo:', !user, 'isEditMode:', isEditMode)
   
   // Require authentication
   if (!user?.id) {
@@ -243,6 +248,7 @@ export async function POST() {
 
         // 6. Generate user vector from responses
         console.log('[Submit] Generating user vector...')
+        let vectorGenerated = false
         try {
           const { error: vectorError } = await supabase.rpc('update_user_vector', {
             p_user_id: userId
@@ -257,6 +263,7 @@ export async function POST() {
             })
           } else {
             console.log('[Submit] User vector generated successfully')
+            vectorGenerated = true
           }
         } catch (vectorErr) {
           console.error('[Submit] Vector generation error:', vectorErr)
@@ -265,6 +272,21 @@ export async function POST() {
             userId,
             error: vectorErr instanceof Error ? vectorErr.message : String(vectorErr)
           })
+        }
+
+        // 7. Track analytics event
+        try {
+          await trackEvent(EVENT_TYPES.QUESTIONNAIRE_COMPLETED, {
+            user_id: userId,
+            university_id: submissionData.university_id,
+            program_id: submissionData.program_id,
+            response_count: deduplicatedResponses.length,
+            vector_generated: vectorGenerated,
+            is_edit: isEditMode
+          }, userId)
+        } catch (analyticsError) {
+          // Don't fail submission if analytics fails
+          console.error('[Submit] Analytics tracking failed:', analyticsError)
         }
       } else {
         console.warn('[Submit] No submission data or responses to process')

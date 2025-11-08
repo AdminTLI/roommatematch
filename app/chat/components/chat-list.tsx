@@ -332,10 +332,10 @@ export function ChatList({ user }: ChatListProps) {
     loadChats()
     
     // Check for last visited room and redirect if exists (unless disabled)
-    if (typeof window !== 'undefined') {
+    if (typeof window !== 'undefined' && user?.id) {
       const disableAutoRedirect = localStorage.getItem('disableChatAutoRedirect') === 'true'
       if (!disableAutoRedirect) {
-        const lastRoomId = localStorage.getItem('lastChatRoomId')
+        const lastRoomId = localStorage.getItem(`last_chat_room_${user.id}`)
         if (lastRoomId && chats.length > 0) {
           // Check if last room still exists in user's chats
           const lastRoomExists = chats.some(chat => chat.id === lastRoomId)
@@ -346,12 +346,12 @@ export function ChatList({ user }: ChatListProps) {
             }, 100)
           } else {
             // Clear invalid last room
-            localStorage.removeItem('lastChatRoomId')
+            localStorage.removeItem(`last_chat_room_${user.id}`)
           }
         }
       }
     }
-  }, [loadChats, chats, router])
+  }, [loadChats, chats, router, user?.id])
 
   const filteredChats = chats.filter(chat => {
     if (!searchQuery.trim()) return true

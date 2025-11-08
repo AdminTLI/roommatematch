@@ -117,38 +117,64 @@ function redactObject(obj: any): any {
 }
 
 /**
- * Safe logger that redacts PII before logging
+ * Safe logger that redacts PII before logging and integrates with Sentry
  */
 export const safeLogger = {
   /**
    * Log info-level messages with PII redaction
    */
   info(message: string, data?: any): void {
+    const redactedData = data ? redactObject(data) : undefined
     if (process.env.NODE_ENV === 'production') {
-      // In production, only log errors
+      // In production, send to Sentry as breadcrumb
+      try {
+        const { captureMessage } = require('@/lib/monitoring/sentry')
+        captureMessage(message, 'info', redactedData)
+      } catch {
+        // Sentry not available, skip
+      }
       return
     }
-    const redactedData = data ? redactObject(data) : undefined
     console.log(`[INFO] ${message}`, redactedData || '')
   },
 
   /**
-   * Log error-level messages with PII redaction
+   * Log error-level messages with PII redaction and send to Sentry
    */
   error(message: string, error?: any): void {
     const redactedError = error ? redactObject(error) : undefined
     console.error(`[ERROR] ${message}`, redactedError || '')
+    
+    // Send to Sentry in production
+    if (process.env.NODE_ENV === 'production') {
+      try {
+        const { captureException, captureMessage } = require('@/lib/monitoring/sentry')
+        if (error instanceof Error) {
+          captureException(error, { message, context: redactedError })
+        } else {
+          captureMessage(`${message}: ${JSON.stringify(redactedError)}`, 'error', redactedError)
+        }
+      } catch {
+        // Sentry not available, skip
+      }
+    }
   },
 
   /**
    * Log warning-level messages with PII redaction
    */
   warn(message: string, data?: any): void {
+    const redactedData = data ? redactObject(data) : undefined
     if (process.env.NODE_ENV === 'production') {
-      // In production, only log errors
+      // In production, send to Sentry as warning
+      try {
+        const { captureMessage } = require('@/lib/monitoring/sentry')
+        captureMessage(message, 'warning', redactedData)
+      } catch {
+        // Sentry not available, skip
+      }
       return
     }
-    const redactedData = data ? redactObject(data) : undefined
     console.warn(`[WARN] ${message}`, redactedData || '')
   },
 

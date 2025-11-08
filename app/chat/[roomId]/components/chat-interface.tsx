@@ -339,12 +339,12 @@ export function ChatInterface({ roomId, user }: ChatInterfaceProps) {
     }
   }, [readFailureCount, readError])
 
-  // Persist last visited room
+  // Persist last visited room (user-specific)
   useEffect(() => {
-    if (roomId && typeof window !== 'undefined') {
-      localStorage.setItem('lastChatRoomId', roomId)
+    if (roomId && user?.id && typeof window !== 'undefined') {
+      localStorage.setItem(`last_chat_room_${user.id}`, roomId)
     }
-  }, [roomId])
+  }, [roomId, user?.id])
 
   useEffect(() => {
     console.log('[Realtime] Messages state updated, count:', messages.length)
