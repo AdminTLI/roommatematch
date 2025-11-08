@@ -1,19 +1,20 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createAdminClient } from '@/lib/supabase/server'
-import { requireAdminResponse } from '@/lib/auth/admin'
+import { requireAdmin } from '@/lib/auth/admin'
 import { logAdminAction } from '@/lib/admin/audit'
 import { safeLogger } from '@/lib/utils/logger'
 
 export async function GET(request: NextRequest) {
-  const authError = await requireAdminResponse(request, false)
-  if (authError) return authError
+  const adminCheck = await requireAdmin(request, false)
+  if (!adminCheck.ok) {
+    return NextResponse.json(
+      { error: adminCheck.error || 'Admin access required' },
+      { status: adminCheck.status }
+    )
+  }
 
   try {
     const supabase = await createAdminClient()
-    const { data: { user } } = await supabase.auth.getUser()
-    if (!user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-    }
 
     const { searchParams } = new URL(request.url)
     const search = searchParams.get('search') || ''
@@ -67,16 +68,16 @@ export async function GET(request: NextRequest) {
 }
 
 export async function POST(request: NextRequest) {
-  const authError = await requireAdminResponse(request, false)
-  if (authError) return authError
+  const adminCheck = await requireAdmin(request, false)
+  if (!adminCheck.ok) {
+    return NextResponse.json(
+      { error: adminCheck.error || 'Admin access required' },
+      { status: adminCheck.status }
+    )
+  }
 
   try {
-    const supabase = await createAdminClient()
-    const { data: { user } } = await supabase.auth.getUser()
-    if (!user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-    }
-
+    const { user } = adminCheck
     const body = await request.json()
     const { action, userIds } = body
 
@@ -89,11 +90,11 @@ export async function POST(request: NextRequest) {
     switch (action) {
       case 'suspend':
         await admin.from('users').update({ is_active: false }).in('id', userIds)
-        await logAdminAction(user.id, 'suspend_users', 'user', null, { userIds })
+        await logAdminAction(user!.id, 'suspend_users', 'user', null, { userIds })
         break
       case 'activate':
         await admin.from('users').update({ is_active: true }).in('id', userIds)
-        await logAdminAction(user.id, 'activate_users', 'user', null, { userIds })
+        await logAdminAction(user!.id, 'activate_users', 'user', null, { userIds })
         break
       default:
         return NextResponse.json({ error: 'Invalid action' }, { status: 400 })

@@ -14,10 +14,11 @@ export interface AdminAuthResult {
  * Verifies that the current user is an admin by checking the admins table.
  * Optionally validates a shared secret from request headers for additional security.
  * 
- * @param request - The Next.js request object (optional, for shared secret check)
+ * @param request - The Next.js request object (optional, for shared secret check and logging)
+ * @param requireSecret - Whether to require the x-admin-secret header. Defaults to true if request is provided, false otherwise.
  * @returns AdminAuthResult with authentication status
  */
-export async function requireAdmin(request?: NextRequest): Promise<AdminAuthResult> {
+export async function requireAdmin(request?: NextRequest, requireSecret?: boolean): Promise<AdminAuthResult> {
   const supabase = await createClient()
   const { data: { user }, error: authError } = await supabase.auth.getUser()
 
@@ -55,8 +56,11 @@ export async function requireAdmin(request?: NextRequest): Promise<AdminAuthResu
 
   // Validate shared secret from environment variable
   // This provides an additional layer of security for sensitive admin operations
-  if (request) {
-    // Strict enforcement: if request is provided, ADMIN_SHARED_SECRET must be set and provided
+  // Default behavior: if request is provided and requireSecret is undefined, require secret (backward compatible)
+  const shouldRequireSecret = requireSecret !== undefined ? requireSecret : (request !== undefined)
+  
+  if (shouldRequireSecret && request) {
+    // Strict enforcement: if secret is required, ADMIN_SHARED_SECRET must be set and provided
     if (!process.env.ADMIN_SHARED_SECRET) {
       safeLogger.error('[Admin] Admin shared secret not configured')
       return {
@@ -124,7 +128,7 @@ export async function requireAdminResponse(
   request: NextRequest,
   requireSecret: boolean = false
 ): Promise<NextResponse | null> {
-  const result = await requireAdmin(requireSecret ? request : undefined)
+  const result = await requireAdmin(request, requireSecret)
   
   if (!result.ok) {
     // Audit log failed admin access attempt

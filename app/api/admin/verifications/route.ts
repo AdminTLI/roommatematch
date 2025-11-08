@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createAdminClient } from '@/lib/supabase/server'
-import { requireAdminResponse } from '@/lib/auth/admin'
+import { requireAdminResponse, requireAdmin } from '@/lib/auth/admin'
 import { logAdminAction } from '@/lib/admin/audit'
 import { safeLogger } from '@/lib/utils/logger'
 
@@ -46,16 +46,16 @@ export async function GET(request: NextRequest) {
 }
 
 export async function POST(request: NextRequest) {
-  const authError = await requireAdminResponse(request, false)
-  if (authError) return authError
+  const adminCheck = await requireAdmin(request, false)
+  if (!adminCheck.ok) {
+    return NextResponse.json(
+      { error: adminCheck.error || 'Admin access required' },
+      { status: adminCheck.status }
+    )
+  }
 
   try {
-    const supabase = await createAdminClient()
-    const { data: { user } } = await supabase.auth.getUser()
-    if (!user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-    }
-
+    const { user } = adminCheck
     const body = await request.json()
     const { action, verificationId, userId, status: newStatus } = body
 
@@ -81,7 +81,7 @@ export async function POST(request: NextRequest) {
           .eq('user_id', userId)
       }
 
-      await logAdminAction(user.id, 'override_verification', 'verification', verificationId, { newStatus })
+      await logAdminAction(user!.id, 'override_verification', 'verification', verificationId, { newStatus })
 
       return NextResponse.json({ success: true })
     }

@@ -6,7 +6,7 @@ import { safeLogger } from '@/lib/utils/logger'
 
 export async function GET(request: NextRequest) {
   try {
-    const adminCheck = await requireAdmin(request)
+    const adminCheck = await requireAdmin(request, false)
     
     if (!adminCheck.ok) {
       return NextResponse.json(
@@ -129,7 +129,7 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
-    const adminCheck = await requireAdmin(request)
+    const adminCheck = await requireAdmin(request, false)
     
     if (!adminCheck.ok) {
       return NextResponse.json(

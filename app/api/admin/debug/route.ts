@@ -15,7 +15,7 @@ export async function GET(request: NextRequest) {
   }
 
   try {
-    const adminCheck = await requireAdmin(request)
+    const adminCheck = await requireAdmin(request, false)
     
     if (!adminCheck.ok) {
       return NextResponse.json(
