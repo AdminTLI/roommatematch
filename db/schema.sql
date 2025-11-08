@@ -4,6 +4,9 @@ CREATE EXTENSION IF NOT EXISTS "vector";
 
 -- Create custom types
 CREATE TYPE verification_status AS ENUM ('unverified', 'pending', 'verified', 'failed');
+CREATE TYPE kyc_provider AS ENUM ('veriff', 'persona', 'onfido');
+CREATE TYPE kyc_status AS ENUM ('pending', 'approved', 'rejected', 'expired');
+CREATE TYPE report_category AS ENUM ('spam', 'harassment', 'inappropriate', 'other');
 CREATE TYPE degree_level AS ENUM ('bachelor', 'master', 'phd', 'exchange', 'other');
 CREATE TYPE match_status AS ENUM ('pending', 'accepted', 'rejected');
 CREATE TYPE report_status AS ENUM ('open', 'actioned', 'dismissed');
@@ -236,6 +239,42 @@ CREATE TABLE forum_comments (
   updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
+-- KYC Verifications
+CREATE TABLE verifications (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  provider kyc_provider NOT NULL,
+  provider_session_id VARCHAR(255) NOT NULL,
+  status kyc_status NOT NULL DEFAULT 'pending',
+  review_reason TEXT,
+  provider_data JSONB DEFAULT '{}',
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+  updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+  UNIQUE(user_id, provider_session_id)
+);
+
+-- Verification webhooks audit
+CREATE TABLE verification_webhooks (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  provider kyc_provider NOT NULL,
+  event_type VARCHAR(100) NOT NULL,
+  payload JSONB NOT NULL,
+  processed BOOLEAN DEFAULT false,
+  error TEXT,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+-- Admin actions audit
+CREATE TABLE admin_actions (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  admin_user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  action VARCHAR(255) NOT NULL,
+  entity_type VARCHAR(100),
+  entity_id UUID,
+  metadata JSONB DEFAULT '{}',
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
 -- App events for analytics
 CREATE TABLE app_events (
   id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
@@ -293,6 +332,16 @@ CREATE INDEX idx_forum_posts_author_id ON forum_posts(author_id);
 CREATE INDEX idx_forum_posts_status ON forum_posts(status);
 CREATE INDEX idx_forum_comments_post_id ON forum_comments(post_id);
 CREATE INDEX idx_forum_comments_author_id ON forum_comments(author_id);
+CREATE INDEX idx_reports_category ON reports(category);
+CREATE INDEX idx_reports_auto_blocked ON reports(auto_blocked);
+CREATE INDEX idx_verifications_user_id ON verifications(user_id);
+CREATE INDEX idx_verifications_provider_session_id ON verifications(provider_session_id);
+CREATE INDEX idx_verifications_status ON verifications(status);
+CREATE INDEX idx_verification_webhooks_processed ON verification_webhooks(processed);
+CREATE INDEX idx_admin_actions_admin_user_id ON admin_actions(admin_user_id);
+CREATE INDEX idx_admin_actions_entity_type ON admin_actions(entity_type);
+CREATE INDEX idx_admin_actions_created_at ON admin_actions(created_at DESC);
+CREATE INDEX idx_admin_actions_entity ON admin_actions(entity_type, entity_id) WHERE entity_type IS NOT NULL AND entity_id IS NOT NULL;
 CREATE INDEX idx_app_events_user_id ON app_events(user_id);
 CREATE INDEX idx_app_events_name ON app_events(name);
 CREATE INDEX idx_app_events_created_at ON app_events(created_at);

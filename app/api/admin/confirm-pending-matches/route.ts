@@ -2,7 +2,8 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createClient, createAdminClient } from '@/lib/supabase/server'
 import { getMatchRepo } from '@/lib/matching/repo.factory'
 import { createMatchNotification } from '@/lib/notifications/create'
-import { requireAdmin, logAdminAction } from '@/lib/auth/admin'
+import { requireAdmin } from '@/lib/auth/admin'
+import { logAdminAction } from '@/lib/admin/audit'
 import { safeLogger } from '@/lib/utils/logger'
 
 export async function POST(request: NextRequest) {
@@ -21,9 +22,10 @@ export async function POST(request: NextRequest) {
     const supabase = await createClient()
 
     // Audit log admin action
-    logAdminAction('confirm_pending_matches', {
-      action: 'Starting manual confirmation of pending matches'
-    }, user!.id, adminRecord!.role)
+    await logAdminAction(user!.id, 'confirm_pending_matches', null, null, {
+      action: 'Starting manual confirmation of pending matches',
+      role: adminRecord!.role
+    })
     
     const admin = await createAdminClient()
     const repo = await getMatchRepo()
@@ -321,12 +323,13 @@ export async function POST(request: NextRequest) {
     }
 
     // Audit log completion
-    logAdminAction('confirm_pending_matches_complete', {
+    await logAdminAction(user!.id, 'confirm_pending_matches_complete', null, null, {
       processed,
       skipped,
       totalPairs: pairMap.size,
-      errorCount: errors.length
-    }, user!.id, adminRecord!.role)
+      errorCount: errors.length,
+      role: adminRecord!.role
+    })
 
     return NextResponse.json({
       success: true,

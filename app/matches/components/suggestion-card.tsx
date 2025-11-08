@@ -3,6 +3,18 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { SectionScores } from './section-scores'
+import { fetchWithCSRF } from '@/lib/utils/fetch-with-csrf'
+import { Clock, Ban } from 'lucide-react'
+import { Button } from '@/components/ui/button'
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog'
+import { showErrorToast, showSuccessToast } from '@/lib/toast'
 import type { MatchSuggestion } from '@/lib/matching/types'
 
 interface SuggestionCardProps {
@@ -26,6 +38,8 @@ export function SuggestionCard({
 }: SuggestionCardProps) {
   const [isResponding, setIsResponding] = useState(false)
   const [isOpeningChat, setIsOpeningChat] = useState(false)
+  const [showBlockDialog, setShowBlockDialog] = useState(false)
+  const [isBlocking, setIsBlocking] = useState(false)
   const router = useRouter()
   
   const now = Date.now()
@@ -52,7 +66,7 @@ export function SuggestionCard({
       }
 
       // Get or create chat
-      const response = await fetch('/api/chat/get-or-create', {
+      const response = await fetchWithCSRF('/api/chat/get-or-create', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -76,6 +90,41 @@ export function SuggestionCard({
       setIsOpeningChat(false)
     }
   }
+
+  const handleBlockUser = async () => {
+    setIsBlocking(true)
+    try {
+      // Find the other user ID
+      const otherUserId = suggestion.memberIds.find(id => id !== currentUserId)
+      if (!otherUserId) {
+        showErrorToast('Error', 'Could not identify user to block')
+        return
+      }
+
+      const response = await fetchWithCSRF('/api/match/block', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ blocked_user_id: otherUserId }),
+      })
+
+      if (!response.ok) {
+        const error = await response.json()
+        throw new Error(error.error || 'Failed to block user')
+      }
+
+      showSuccessToast('User blocked', 'This user has been blocked and will not appear in future matches.')
+      setShowBlockDialog(false)
+      // Remove this suggestion from the UI by calling onRespond with decline
+      await onRespond(suggestion.id, 'decline')
+    } catch (error: any) {
+      console.error('Failed to block user:', error)
+      showErrorToast('Failed to block user', error.message || 'Please try again.')
+    } finally {
+      setIsBlocking(false)
+    }
+  }
   
   const getStatusBadge = () => {
     // Check how many users still need to accept
@@ -91,11 +140,25 @@ export function SuggestionCard({
           </span>
         )
       case 'accepted':
-        return (
-          <span className="px-2 py-1 rounded-full bg-blue-100 text-blue-800 text-xs font-medium">
-            Waiting for the other person to accept
-          </span>
-        )
+        // Find which users haven't accepted yet
+        const notAccepted = suggestion.memberIds.filter(id => !suggestion.acceptedBy?.includes(id))
+        const waitingForCurrentUser = notAccepted.includes(currentUserId)
+        
+        if (waitingForCurrentUser) {
+          return (
+            <span className="px-2 py-1 rounded-full bg-yellow-100 text-yellow-800 text-xs font-medium flex items-center gap-1">
+              <Clock className="h-3 w-3" />
+              Waiting for your response
+            </span>
+          )
+        } else {
+          return (
+            <span className="px-2 py-1 rounded-full bg-blue-100 text-blue-800 text-xs font-medium flex items-center gap-1">
+              <Clock className="h-3 w-3" />
+              Waiting for {pendingCount > 1 ? `${pendingCount} others` : 'other person'} to accept
+            </span>
+          )
+        }
       case 'confirmed':
         return (
           <span className="px-2 py-1 rounded-full bg-green-100 text-green-800 text-xs font-medium">
@@ -210,20 +273,69 @@ export function SuggestionCard({
           </button>
         </div>
       )}
-      
-      {/* Chat Now button for confirmed matches - only show when not in selection mode */}
-      {suggestion.status === 'confirmed' && !isSelectable && (
-        <button
-          onClick={(e) => {
-            e.stopPropagation()
-            handleChatNow()
-          }}
-          disabled={isOpeningChat}
-          className="w-full px-4 py-2.5 rounded-lg bg-green-600 text-white hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors font-medium text-sm sm:text-base"
-        >
-          {isOpeningChat ? 'Opening chat...' : '💬 Chat Now'}
-        </button>
+
+      {/* Block button for pending/accepted matches */}
+      {(suggestion.status === 'pending' || suggestion.status === 'accepted') && (
+        <div className="flex gap-2 mt-2">
+          <button
+            onClick={(e) => {
+              e.stopPropagation()
+              setShowBlockDialog(true)
+            }}
+            className="flex-1 px-4 py-2 rounded-lg border border-red-300 text-red-600 hover:bg-red-50 transition-colors font-medium text-sm flex items-center justify-center gap-2"
+          >
+            <Ban className="h-4 w-4" />
+            Block User
+          </button>
+        </div>
       )}
+      
+      {/* Actions for confirmed matches */}
+      {suggestion.status === 'confirmed' && !isSelectable && (
+        <div className="flex gap-2">
+          <button
+            onClick={(e) => {
+              e.stopPropagation()
+              handleChatNow()
+            }}
+            disabled={isOpeningChat}
+            className="flex-1 px-4 py-2.5 rounded-lg bg-green-600 text-white hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors font-medium text-sm sm:text-base"
+          >
+            {isOpeningChat ? 'Opening chat...' : '💬 Chat Now'}
+          </button>
+          <button
+            onClick={(e) => {
+              e.stopPropagation()
+              setShowBlockDialog(true)
+            }}
+            className="px-4 py-2.5 rounded-lg border border-red-300 text-red-600 hover:bg-red-50 transition-colors font-medium text-sm sm:text-base"
+            title="Block user"
+          >
+            <Ban className="h-4 w-4" />
+          </button>
+        </div>
+      )}
+
+      {/* Block User Confirmation Dialog */}
+      <Dialog open={showBlockDialog} onOpenChange={setShowBlockDialog}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Block User?</DialogTitle>
+            <DialogDescription>
+              Are you sure you want to block this user? You will not be matched with them again, 
+              and any existing matches will be declined. This action cannot be undone.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowBlockDialog(false)}>
+              Cancel
+            </Button>
+            <Button variant="destructive" onClick={handleBlockUser} disabled={isBlocking}>
+              {isBlocking ? 'Blocking...' : 'Block User'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
       
       {/* Run Info (debug only) */}
       {process.env.NEXT_PUBLIC_DEBUG_MATCHES === 'true' && (

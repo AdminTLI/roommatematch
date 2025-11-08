@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
-import { requireAdmin, logAdminAction } from '@/lib/auth/admin'
+import { requireAdmin } from '@/lib/auth/admin'
+import { logAdminAction } from '@/lib/admin/audit'
 import { safeLogger } from '@/lib/utils/logger'
 
 export async function POST(request: NextRequest) {
@@ -18,9 +19,10 @@ export async function POST(request: NextRequest) {
     const supabase = await createClient()
 
     // Audit log admin action
-    logAdminAction('trigger_matches', {
-      action: 'Manually triggering match computation for all users'
-    }, user!.id, adminRecord!.role)
+    await logAdminAction(user!.id, 'trigger_matches', null, null, {
+      action: 'Manually triggering match computation for all users',
+      role: adminRecord!.role
+    })
     
     // Get all active users with profiles and vectors
     const { data: users } = await supabase
@@ -61,11 +63,12 @@ export async function POST(request: NextRequest) {
     }
 
     // Audit log completion
-    logAdminAction('trigger_matches_complete', {
+    await logAdminAction(user!.id, 'trigger_matches_complete', null, null, {
       processed,
       total: users.length,
-      errorCount: errors.length
-    }, user!.id, adminRecord!.role)
+      errorCount: errors.length,
+      role: adminRecord!.role
+    })
 
     return NextResponse.json({
       success: true,

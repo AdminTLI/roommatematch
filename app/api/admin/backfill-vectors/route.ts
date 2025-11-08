@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
-import { requireAdmin, logAdminAction } from '@/lib/auth/admin'
+import { requireAdmin } from '@/lib/auth/admin'
+import { logAdminAction } from '@/lib/admin/audit'
 import { safeLogger } from '@/lib/utils/logger'
 
 export async function POST(request: NextRequest) {
@@ -19,9 +20,10 @@ export async function POST(request: NextRequest) {
     const supabase = await createClient()
 
     // Audit log admin action
-    logAdminAction('backfill_vectors', {
-      action: 'Starting vector backfill for all users with responses'
-    }, user!.id, adminRecord!.role)
+    await logAdminAction(user!.id, 'backfill_vectors', null, null, {
+      action: 'Starting vector backfill for all users with responses',
+      role: adminRecord!.role
+    })
 
     // Get all users with responses
     const { data: usersWithResponses, error: usersError } = await supabase
@@ -95,12 +97,13 @@ export async function POST(request: NextRequest) {
     }
 
     // Audit log completion
-    logAdminAction('backfill_vectors_complete', {
+    await logAdminAction(user!.id, 'backfill_vectors_complete', null, null, {
       processed,
       skipped,
       total: uniqueUserIds.length,
-      errorCount: errors.length
-    }, user!.id, adminRecord!.role)
+      errorCount: errors.length,
+      role: adminRecord!.role
+    })
 
     return NextResponse.json({
       success: true,

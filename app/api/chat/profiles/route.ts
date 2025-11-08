@@ -101,11 +101,22 @@ export async function POST(request: NextRequest) {
     // Get all unique user IDs (cap to max 200 total members across all chats)
     const allUserIds = [...new Set(chatMembers.slice(0, 200).map(m => m.user_id))]
 
-    // Fetch profiles for all chat members
+    // Get user's blocklist to exclude blocked users
+    const { data: blocklist, error: blocklistError } = await admin
+      .from('match_blocklist')
+      .select('blocked_user_id')
+      .eq('user_id', user.id)
+
+    const blockedUserIds = new Set(blocklist?.map(b => b.blocked_user_id) || [])
+
+    // Filter out blocked users
+    const allowedUserIds = allUserIds.filter(id => !blockedUserIds.has(id))
+
+    // Fetch profiles for all chat members (excluding blocked users)
     const { data: profiles, error: profilesError } = await admin
       .from('profiles')
       .select('user_id, first_name, last_name')
-      .in('user_id', allUserIds)
+      .in('user_id', allowedUserIds.length > 0 ? allowedUserIds : [])
 
     if (profilesError) {
       safeLogger.error('Failed to fetch profiles', profilesError)

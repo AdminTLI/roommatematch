@@ -23,13 +23,24 @@ export default async function ChatPage({ params }: ChatPageProps) {
     redirect('/auth/sign-in')
   }
   
-  console.log(`[ChatRoom] User authenticated: ${user.id}`, {
-    email: user.email,
-    isDemoUser: process.env.DEMO_USER_EMAIL && user.email === process.env.DEMO_USER_EMAIL
-  })
-
-  // Note: Demo user check removed - demo users should be able to access chats they're members of
-  // If you need to block demo users, do it at the chat creation level, not at access level
+  // Check demo chat flag
+  const allowDemoChat = process.env.ALLOW_DEMO_CHAT === 'true'
+  const isDemoUser = process.env.DEMO_USER_EMAIL && user.email === process.env.DEMO_USER_EMAIL
+  
+  // If demo chat is disabled and user is demo, redirect (unless they're admin)
+  if (!allowDemoChat && isDemoUser) {
+    const { createAdminClient } = await import('@/lib/supabase/server')
+    const admin = await createAdminClient()
+    const { data: adminRecord } = await admin
+      .from('admins')
+      .select('id')
+      .eq('user_id', user.id)
+      .maybeSingle()
+    
+    if (!adminRecord) {
+      redirect('/dashboard')
+    }
+  }
 
   // Check if user has completed onboarding
   const { data: submission } = await supabase

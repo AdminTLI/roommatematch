@@ -19,6 +19,7 @@ import { usePathname } from 'next/navigation'
 import { cn } from '@/lib/utils'
 import { useState, useEffect } from 'react'
 import { createClient } from '@/lib/supabase/client'
+import { isFeatureEnabled } from '@/lib/feature-flags'
 
 interface SidebarProps {
   user: {
@@ -30,18 +31,26 @@ interface SidebarProps {
   onClose?: () => void
 }
 
-const navigation = [
-  { name: 'Dashboard', href: '/dashboard', icon: Home },
-  { name: 'Matches', href: '/matches', icon: Users },
-  { name: 'Housing', href: '/housing', icon: Home },
-  { name: 'Chat', href: '/chat', icon: MessageCircle },
-  { name: 'Agreements', href: '/agreements', icon: FileText },
-  { name: 'Move-in', href: '/move-in', icon: Calendar },
-  { name: 'Safety', href: '/safety', icon: Shield },
-  { name: 'Reputation', href: '/reputation', icon: Award },
-  { name: 'Video Intros', href: '/video-intros', icon: Video },
-  { name: 'Admin', href: '/admin', icon: BarChart3 },
+const allNavigationItems = [
+  { name: 'Dashboard', href: '/dashboard', icon: Home, featureFlag: null as string | null },
+  { name: 'Matches', href: '/matches', icon: Users, featureFlag: null },
+  { name: 'Housing', href: '/housing', icon: Home, featureFlag: 'housing' },
+  { name: 'Chat', href: '/chat', icon: MessageCircle, featureFlag: null },
+  { name: 'Agreements', href: '/agreements', icon: FileText, featureFlag: null },
+  { name: 'Move-in', href: '/move-in', icon: Calendar, featureFlag: 'move_in' },
+  { name: 'Safety', href: '/safety', icon: Shield, featureFlag: null },
+  { name: 'Reputation', href: '/reputation', icon: Award, featureFlag: null },
+  { name: 'Video Intros', href: '/video-intros', icon: Video, featureFlag: null },
+  { name: 'Admin', href: '/admin', icon: BarChart3, featureFlag: null },
 ]
+
+// Filter navigation based on feature flags
+const getNavigation = () => {
+  return allNavigationItems.filter(item => {
+    if (item.featureFlag === null) return true
+    return isFeatureEnabled(item.featureFlag as 'housing' | 'move_in')
+  })
+}
 
 export function Sidebar({ user, onClose }: SidebarProps) {
   const pathname = usePathname()
@@ -148,7 +157,7 @@ export function Sidebar({ user, onClose }: SidebarProps) {
       </div>
       {/* Navigation - starts at top */}
       <nav className="flex-1 p-4 space-y-2 overflow-y-auto">
-        {navigation.map((item, index) => {
+        {getNavigation().map((item, index) => {
           const isActive = pathname === item.href || pathname.startsWith(item.href + '/')
           const Icon = item.icon
 

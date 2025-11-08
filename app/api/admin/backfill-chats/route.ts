@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient, createAdminClient } from '@/lib/supabase/server'
-import { requireAdmin, logAdminAction } from '@/lib/auth/admin'
+import { requireAdmin } from '@/lib/auth/admin'
+import { logAdminAction } from '@/lib/admin/audit'
 import { safeLogger } from '@/lib/utils/logger'
 
 export async function POST(request: NextRequest) {
@@ -19,9 +20,10 @@ export async function POST(request: NextRequest) {
     const supabase = await createClient()
 
     // Audit log admin action
-    logAdminAction('backfill_chats', {
-      action: 'Starting chat backfill for confirmed matches'
-    }, user!.id, adminRecord!.role)
+    await logAdminAction(user!.id, 'backfill_chats', null, null, {
+      action: 'Starting chat backfill for confirmed matches',
+      role: adminRecord!.role
+    })
 
     const admin = await createAdminClient()
     
@@ -169,12 +171,13 @@ export async function POST(request: NextRequest) {
     }
 
     // Audit log completion
-    logAdminAction('backfill_chats_complete', {
+    await logAdminAction(user!.id, 'backfill_chats_complete', null, null, {
       processed,
       skipped,
       totalPairs: pairMap.size,
-      errorCount: errors.length
-    }, user!.id, adminRecord!.role)
+      errorCount: errors.length,
+      role: adminRecord!.role
+    })
 
     return NextResponse.json({
       success: true,

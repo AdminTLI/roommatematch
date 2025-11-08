@@ -2,6 +2,7 @@ import { NextResponse, NextRequest } from 'next/server'
 import { createServerClient } from '@supabase/ssr'
 import { createCSRFTokenCookie, validateCSRFToken } from '@/lib/csrf'
 import { checkRateLimit, getIPRateLimitKey } from '@/lib/rate-limit'
+import { isFeatureEnabled } from '@/lib/feature-flags'
 
 export async function middleware(req: NextRequest) {
   // Allow public routes without checks
@@ -112,6 +113,67 @@ export async function middleware(req: NextRequest) {
     url.pathname = '/auth/verify-email'
     url.searchParams.set('auto', '1')
     return NextResponse.redirect(url)
+  }
+
+  // Feature flag gating for housing and move-in routes
+  if (user) {
+    if (pathname.startsWith('/housing') && !isFeatureEnabled('housing')) {
+      // Allow admins to access even if feature is disabled
+      const { data: adminRecord } = await supabase
+        .from('admins')
+        .select('id')
+        .eq('user_id', user.id)
+        .maybeSingle()
+
+      if (!adminRecord) {
+        const url = req.nextUrl.clone()
+        url.pathname = '/dashboard'
+        return NextResponse.redirect(url)
+      }
+    }
+
+    if (pathname.startsWith('/move-in') && !isFeatureEnabled('move_in')) {
+      // Allow admins to access even if feature is disabled
+      const { data: adminRecord } = await supabase
+        .from('admins')
+        .select('id')
+        .eq('user_id', user.id)
+        .maybeSingle()
+
+      if (!adminRecord) {
+        const url = req.nextUrl.clone()
+        url.pathname = '/dashboard'
+        return NextResponse.redirect(url)
+      }
+    }
+  }
+
+  // Verification gating for matches and chat routes
+  if (user) {
+    const protectedRoutes = ['/matches', '/chat']
+    const isProtectedRoute = protectedRoutes.some(route => pathname.startsWith(route))
+    
+    if (isProtectedRoute) {
+      // Check if demo chat is allowed
+      const allowDemoChat = process.env.ALLOW_DEMO_CHAT === 'true'
+      const isDemoUser = process.env.DEMO_USER_EMAIL && user.email === process.env.DEMO_USER_EMAIL
+      
+      if (!allowDemoChat || !isDemoUser) {
+        // Check verification status
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('verification_status')
+          .eq('user_id', user.id)
+          .single()
+
+        if (profile && profile.verification_status !== 'verified') {
+          const url = req.nextUrl.clone()
+          url.pathname = '/verify'
+          url.searchParams.set('redirect', pathname)
+          return NextResponse.redirect(url)
+        }
+      }
+    }
   }
 
   return res

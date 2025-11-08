@@ -26,7 +26,7 @@ import {
 import { createClient } from '@/lib/supabase/client'
 import { User } from '@supabase/supabase-js'
 import { showErrorToast, showSuccessToast } from '@/lib/toast'
-import { getCSRFHeaders } from '@/lib/utils/csrf-client'
+import { fetchWithCSRF } from '@/lib/utils/fetch-with-csrf'
 import { 
   Send, 
   ArrowLeft, 
@@ -88,12 +88,18 @@ export function ChatInterface({ roomId, user }: ChatInterfaceProps) {
   const [showDeleteDialog, setShowDeleteDialog] = useState(false)
   const [isDeleting, setIsDeleting] = useState(false)
   const [isBlocking, setIsBlocking] = useState(false)
+  const [isBlocked, setIsBlocked] = useState(false)
+  const [blockedUserId, setBlockedUserId] = useState<string | null>(null)
+  const [readRetryQueue, setReadRetryQueue] = useState<number[]>([])
+  const [readFailureCount, setReadFailureCount] = useState(0)
   
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const typingTimeoutRef = useRef<NodeJS.Timeout>()
+  const typingDebounceRef = useRef<NodeJS.Timeout>()
   const typingChannelRef = useRef<any>(null)
   const messagesChannelRef = useRef<any>(null)
   const resubscribeTimeoutRef = useRef<NodeJS.Timeout | null>(null)
+  const readRetryIntervalRef = useRef<NodeJS.Timeout | null>(null)
 
   // Mock data for demonstration
   const mockMessages: Message[] = [
@@ -235,17 +241,65 @@ export function ChatInterface({ roomId, user }: ChatInterfaceProps) {
     }
   }
 
-  const markAsRead = useCallback(async () => {
+  const markAsRead = useCallback(async (retry = false) => {
     try {
-      await fetch('/api/chat/read', {
+      const response = await fetchWithCSRF('/api/chat/read', {
         method: 'POST',
-        headers: getCSRFHeaders(),
         body: JSON.stringify({
           chat_id: roomId
         })
       })
+      
+      if (!response.ok && !retry) {
+        // Add to retry queue
+        setReadRetryQueue(prev => [...prev, Date.now()])
+        setReadFailureCount(prev => prev + 1)
+      } else if (response.ok) {
+        // Reset failure count on success
+        setReadFailureCount(0)
+        setReadRetryQueue([])
+      }
     } catch (error) {
       console.error('Failed to mark as read:', error)
+      if (!retry) {
+        setReadRetryQueue(prev => [...prev, Date.now()])
+        setReadFailureCount(prev => prev + 1)
+      }
+    }
+  }, [roomId])
+
+  // Retry failed read receipts
+  useEffect(() => {
+    if (readRetryQueue.length === 0) return
+
+    const retryInterval = setInterval(() => {
+      if (readRetryQueue.length > 0) {
+        markAsRead(true)
+        setReadRetryQueue(prev => prev.slice(1))
+      }
+    }, 5000) // Retry every 5 seconds
+
+    readRetryIntervalRef.current = retryInterval
+
+    return () => {
+      if (readRetryIntervalRef.current) {
+        clearInterval(readRetryIntervalRef.current)
+      }
+    }
+  }, [readRetryQueue, markAsRead])
+
+  // Show error toast if read receipts fail repeatedly
+  useEffect(() => {
+    if (readFailureCount >= 3) {
+      showErrorToast('Connection issue', 'Unable to mark messages as read. Please refresh the page.')
+      setReadFailureCount(0) // Reset to avoid spam
+    }
+  }, [readFailureCount])
+
+  // Persist last visited room
+  useEffect(() => {
+    if (roomId && typeof window !== 'undefined') {
+      localStorage.setItem('lastChatRoomId', roomId)
     }
   }, [roomId])
 
@@ -358,9 +412,8 @@ export function ChatInterface({ roomId, user }: ChatInterfaceProps) {
       let profilesMap = new Map<string, any>()
       if (roomId) {
         try {
-          const profilesResponse = await fetch('/api/chat/profiles', {
+          const profilesResponse = await fetchWithCSRF('/api/chat/profiles', {
             method: 'POST',
-            headers: getCSRFHeaders(),
             body: JSON.stringify({
               chatId: roomId
             }),
@@ -433,11 +486,30 @@ export function ChatInterface({ roomId, user }: ChatInterfaceProps) {
       // Store chat type and other person's name for 1-on-1 chats
       setIsGroup(roomData.is_group || false)
       
-      // For 1-on-1 chats, store the other person's name
+      // For 1-on-1 chats, store the other person's name and check if blocked
       if (!roomData.is_group && transformedMembers.length === 1) {
-        setOtherPersonName(transformedMembers[0].name)
+        const otherMember = transformedMembers[0]
+        setOtherPersonName(otherMember.name)
+        setBlockedUserId(otherMember.id)
+        
+        // Check if this user is blocked
+        try {
+          const { data: blockCheck } = await supabase
+            .from('match_blocklist')
+            .select('id')
+            .eq('user_id', user.id)
+            .eq('blocked_user_id', otherMember.id)
+            .maybeSingle()
+          
+          setIsBlocked(!!blockCheck)
+        } catch (err) {
+          console.error('Failed to check block status:', err)
+          setIsBlocked(false)
+        }
       } else {
         setOtherPersonName('')
+        setBlockedUserId(null)
+        setIsBlocked(false)
       }
 
       setMessages(transformedMessages)
@@ -538,9 +610,8 @@ export function ChatInterface({ roomId, user }: ChatInterfaceProps) {
           let senderName = 'Unknown User'
           try {
             console.log('[Realtime] Fetching profile for user:', newMessage.user_id)
-            const profilesResponse = await fetch('/api/chat/profiles', {
+            const profilesResponse = await fetchWithCSRF('/api/chat/profiles', {
               method: 'POST',
-              headers: getCSRFHeaders(),
               body: JSON.stringify({
                 chatId: roomId
               }),
@@ -698,6 +769,19 @@ export function ChatInterface({ roomId, user }: ChatInterfaceProps) {
         } else if (status === 'CLOSED') {
           console.log('[Realtime] ℹ️ Channel closed')
           console.log('[Realtime] ℹ️ This is normal when component unmounts or connection is lost')
+          // Show disconnect message if not intentional
+          if (messagesChannelRef.current) {
+            setError('Connection lost. Attempting to reconnect...')
+            // Attempt to resubscribe after a delay
+            if (resubscribeTimeoutRef.current) {
+              clearTimeout(resubscribeTimeoutRef.current)
+            }
+            resubscribeTimeoutRef.current = setTimeout(() => {
+              console.log('[Realtime] 🔄 Attempting to resubscribe after disconnect...')
+              setupRealtimeSubscription()
+              resubscribeTimeoutRef.current = null
+            }, 2000)
+          }
         } else {
           console.warn('[Realtime] ⚠️ Unknown subscription status:', status)
         }
@@ -812,6 +896,12 @@ export function ChatInterface({ roomId, user }: ChatInterfaceProps) {
       if (typingTimeoutRef.current) {
         clearTimeout(typingTimeoutRef.current)
       }
+      if (typingDebounceRef.current) {
+        clearTimeout(typingDebounceRef.current)
+      }
+      if (readRetryIntervalRef.current) {
+        clearInterval(readRetryIntervalRef.current)
+      }
     }
   }, [roomId, loadChatData, setupRealtimeSubscription, markAsRead])
 
@@ -829,9 +919,8 @@ export function ChatInterface({ roomId, user }: ChatInterfaceProps) {
 
     try {
       // Use the API endpoint for sending messages
-      const response = await fetch('/api/chat/send', {
+      const response = await fetchWithCSRF('/api/chat/send', {
         method: 'POST',
-        headers: getCSRFHeaders(),
         body: JSON.stringify({
           chat_id: roomId,
           content: newMessage.trim()
@@ -914,32 +1003,39 @@ export function ChatInterface({ roomId, user }: ChatInterfaceProps) {
   }
 
   const handleTyping = () => {
-    // Reuse existing typing channel instead of creating new one
-    const channel = typingChannelRef.current
-    
-    if (!channel) {
-      console.warn('Typing channel not initialized')
-      return
+    // Debounce typing indicator updates (500ms)
+    if (typingDebounceRef.current) {
+      clearTimeout(typingDebounceRef.current)
     }
 
-    // Send typing indicator
-    channel.track({
-      typing: true,
-      user_id: user.id
-    })
+    typingDebounceRef.current = setTimeout(() => {
+      // Reuse existing typing channel instead of creating new one
+      const channel = typingChannelRef.current
+      
+      if (!channel) {
+        console.warn('Typing channel not initialized')
+        return
+      }
 
-    // Clear previous timeout
-    if (typingTimeoutRef.current) {
-      clearTimeout(typingTimeoutRef.current)
-    }
-
-    // Stop typing after 3 seconds
-    typingTimeoutRef.current = setTimeout(() => {
+      // Send typing indicator
       channel.track({
-        typing: false,
+        typing: true,
         user_id: user.id
       })
-    }, 3000)
+
+      // Clear previous timeout
+      if (typingTimeoutRef.current) {
+        clearTimeout(typingTimeoutRef.current)
+      }
+
+      // Stop typing after 3 seconds
+      typingTimeoutRef.current = setTimeout(() => {
+        channel.track({
+          typing: false,
+          user_id: user.id
+        })
+      }, 3000)
+    }, 500) // Debounce delay
   }
 
   const scrollToBottom = () => {
@@ -1006,6 +1102,20 @@ export function ChatInterface({ roomId, user }: ChatInterfaceProps) {
     }
   }
 
+  const mapReportReasonToCategory = (reason: string): 'spam' | 'harassment' | 'inappropriate' | 'other' => {
+    const lowerReason = reason.toLowerCase()
+    if (lowerReason.includes('spam') || lowerReason.includes('fake')) {
+      return 'spam'
+    }
+    if (lowerReason.includes('harassment')) {
+      return 'harassment'
+    }
+    if (lowerReason.includes('inappropriate') || lowerReason.includes('safety')) {
+      return 'inappropriate'
+    }
+    return 'other'
+  }
+
   const handleReportUser = async () => {
     if (!reportReason.trim()) {
       alert('Please select a reason for reporting.')
@@ -1018,10 +1128,15 @@ export function ChatInterface({ roomId, user }: ChatInterfaceProps) {
         alert('Unable to identify user to report.')
         return
       }
-      const response = await fetch('/api/match/report', {
+      const response = await fetchWithCSRF('/api/chat/report', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ userId: otherUserId, reason: reportReason, chatId: roomId })
+        body: JSON.stringify({ 
+          target_user_id: otherUserId, 
+          category: mapReportReasonToCategory(reportReason),
+          details: reportReason,
+          message_id: null
+        })
       })
       if (response.ok) {
         setShowReportDialog(false)
@@ -1053,10 +1168,10 @@ export function ChatInterface({ roomId, user }: ChatInterfaceProps) {
       }
       
       // Block user via API
-      const response = await fetch('/api/match/block', {
+      const response = await fetchWithCSRF('/api/match/block', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ userId: otherUserId })
+        body: JSON.stringify({ blocked_user_id: otherUserId })
       })
       
       if (response.ok) {
@@ -1078,9 +1193,8 @@ export function ChatInterface({ roomId, user }: ChatInterfaceProps) {
     setIsDeleting(true)
     try {
       // Remove user from chat members (effectively deleting the conversation for them)
-      const response = await fetch(`/api/chat/${roomId}/leave`, {
-        method: 'POST',
-        headers: getCSRFHeaders()
+      const response = await fetchWithCSRF(`/api/chat/${roomId}/leave`, {
+        method: 'POST'
       })
       
       if (response.ok) {
@@ -1227,6 +1341,16 @@ export function ChatInterface({ roomId, user }: ChatInterfaceProps) {
         </Card>
       )}
 
+      {/* Blocked User Notice */}
+      {isBlocked && blockedUserId && (
+        <Alert className="mb-4" variant="destructive">
+          <Ban className="h-4 w-4" />
+          <AlertDescription>
+            You have blocked this user. Messages from blocked users are hidden.
+          </AlertDescription>
+        </Alert>
+      )}
+
       {/* Messages */}
       <Card className="mb-4 sm:mb-6">
         <CardContent className="p-0">
@@ -1237,7 +1361,9 @@ export function ChatInterface({ roomId, user }: ChatInterfaceProps) {
                 <p className="text-gray-500">No messages yet. Start the conversation!</p>
               </div>
             ) : (
-              messages.map((message, index) => {
+              messages
+                .filter(message => !isBlocked || message.sender_id !== blockedUserId) // Hide messages from blocked users
+                .map((message, index) => {
                 // Show date separator if day changed
                 const showDateSeparator = shouldShowDateSeparator(index)
                 
@@ -1374,8 +1500,8 @@ export function ChatInterface({ roomId, user }: ChatInterfaceProps) {
                   sendMessage()
                 }
               }}
-              placeholder="Type your message..."
-              disabled={isSending}
+              placeholder={isBlocked ? "You cannot send messages to a blocked user" : "Type your message..."}
+              disabled={isSending || isBlocked}
               className="flex-1 h-11 text-sm sm:text-base"
             />
             <Button 

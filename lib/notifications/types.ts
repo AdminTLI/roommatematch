@@ -9,7 +9,8 @@ export type NotificationType =
   | 'housing_update'
   | 'agreement_update'
   | 'safety_alert'
-  | 'system_announcement';
+  | 'system_announcement'
+  | 'admin_alert';
 
 export interface Notification {
   id: string;

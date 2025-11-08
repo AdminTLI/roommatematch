@@ -20,6 +20,9 @@ ALTER TABLE forum_posts ENABLE ROW LEVEL SECURITY;
 ALTER TABLE forum_comments ENABLE ROW LEVEL SECURITY;
 ALTER TABLE app_events ENABLE ROW LEVEL SECURITY;
 ALTER TABLE notifications ENABLE ROW LEVEL SECURITY;
+ALTER TABLE verifications ENABLE ROW LEVEL SECURITY;
+ALTER TABLE verification_webhooks ENABLE ROW LEVEL SECURITY;
+ALTER TABLE admin_actions ENABLE ROW LEVEL SECURITY;
 
 -- Universities: Read by anyone, write by admins only
 CREATE POLICY "Universities are readable by everyone" ON universities
@@ -439,3 +442,44 @@ CREATE POLICY "Users can update own notifications" ON notifications
 
 CREATE POLICY "System can insert notifications" ON notifications
   FOR INSERT WITH CHECK (true);
+
+-- Verifications: Users can read their own, admins can read all in their university
+CREATE POLICY "Users can read own verifications" ON verifications
+  FOR SELECT USING (user_id = auth.uid());
+
+CREATE POLICY "Service role can manage verifications" ON verifications
+  FOR ALL USING (auth.jwt()->>'role' = 'service_role');
+
+CREATE POLICY "Admins can read verifications in university" ON verifications
+  FOR SELECT USING (
+    EXISTS (
+      SELECT 1 FROM profiles p
+      JOIN admins a ON a.university_id = p.university_id
+      WHERE p.user_id = verifications.user_id
+      AND a.user_id = auth.uid()
+    )
+  );
+
+-- Verification webhooks: Service role only
+CREATE POLICY "Service role can manage webhooks" ON verification_webhooks
+  FOR ALL USING (auth.jwt()->>'role' = 'service_role');
+
+CREATE POLICY "Admins can read webhooks" ON verification_webhooks
+  FOR SELECT USING (
+    EXISTS (
+      SELECT 1 FROM admins
+      WHERE admins.user_id = auth.uid()
+    )
+  );
+
+-- Admin actions: Admins can read all
+CREATE POLICY "Admins can read admin actions" ON admin_actions
+  FOR SELECT USING (
+    EXISTS (
+      SELECT 1 FROM admins
+      WHERE admins.user_id = auth.uid()
+    )
+  );
+
+CREATE POLICY "Service role can insert admin actions" ON admin_actions
+  FOR INSERT WITH CHECK (auth.jwt()->>'role' = 'service_role');

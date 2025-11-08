@@ -4,7 +4,8 @@ import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { SuggestionCard } from './suggestion-card'
 import { Button } from '@/components/ui/button'
-import { MessageCircle, Users, X } from 'lucide-react'
+import { MessageCircle, Users, X, Clock } from 'lucide-react'
+import { fetchWithCSRF } from '@/lib/utils/fetch-with-csrf'
 import type { MatchSuggestion } from '@/lib/matching/types'
 
 interface StudentMatchesInterfaceProps {
@@ -18,10 +19,19 @@ interface StudentMatchesInterfaceProps {
 
 type TabType = 'suggested' | 'pending' | 'confirmed' | 'history'
 
+interface MatchWithStatus extends MatchSuggestion {
+  otherUserId?: string
+  otherUserName?: string
+  waitingForResponse?: boolean
+}
+
 export function StudentMatchesInterface({ user }: StudentMatchesInterfaceProps) {
   const router = useRouter()
   const [activeTab, setActiveTab] = useState<TabType>('suggested')
-  const [suggestions, setSuggestions] = useState<MatchSuggestion[]>([])
+  const [suggestions, setSuggestions] = useState<MatchWithStatus[]>([])
+  const [pendingSuggestions, setPendingSuggestions] = useState<MatchWithStatus[]>([])
+  const [confirmedMatches, setConfirmedMatches] = useState<MatchWithStatus[]>([])
+  const [historyMatches, setHistoryMatches] = useState<MatchWithStatus[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [isResponding, setIsResponding] = useState(false)
   const [selectedMatches, setSelectedMatches] = useState<Set<string>>(new Set())
@@ -49,7 +59,18 @@ export function StudentMatchesInterface({ user }: StudentMatchesInterfaceProps) 
           }
         }
         
-        setSuggestions(Array.from(deduped.values()))
+        const allSuggestions = Array.from(deduped.values())
+        
+        // Categorize suggestions
+        const suggested = allSuggestions.filter(s => s.status === 'pending' && !s.acceptedBy?.includes(user.id))
+        const pending = allSuggestions.filter(s => s.status === 'accepted' && s.acceptedBy?.includes(user.id) && s.acceptedBy.length < s.memberIds.length)
+        const confirmed = allSuggestions.filter(s => s.status === 'accepted' && s.acceptedBy?.length === s.memberIds.length)
+        const history = allSuggestions.filter(s => s.status === 'declined' || s.status === 'expired')
+        
+        setSuggestions(suggested)
+        setPendingSuggestions(pending)
+        setConfirmedMatches(confirmed)
+        setHistoryMatches(history)
       } else {
         console.error('Failed to fetch suggestions')
       }
@@ -64,7 +85,7 @@ export function StudentMatchesInterface({ user }: StudentMatchesInterfaceProps) 
   const handleRespond = async (suggestionId: string, action: 'accept' | 'decline') => {
     try {
       setIsResponding(true)
-      const response = await fetch('/api/match/suggestions/respond', {
+      const response = await fetchWithCSRF('/api/match/suggestions/respond', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -94,7 +115,7 @@ export function StudentMatchesInterface({ user }: StudentMatchesInterfaceProps) 
   // Refresh suggestions
   const handleRefresh = async () => {
     try {
-      const response = await fetch('/api/match/suggestions/refresh', {
+      const response = await fetchWithCSRF('/api/match/suggestions/refresh', {
         method: 'POST',
       })
 
@@ -157,7 +178,7 @@ export function StudentMatchesInterface({ user }: StudentMatchesInterfaceProps) 
         return
       }
 
-      const response = await fetch('/api/chat/get-or-create', {
+      const response = await fetchWithCSRF('/api/chat/get-or-create', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -209,7 +230,7 @@ export function StudentMatchesInterface({ user }: StudentMatchesInterfaceProps) 
         return
       }
 
-      const response = await fetch('/api/chat/create-group', {
+      const response = await fetchWithCSRF('/api/chat/create-group', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -238,22 +259,15 @@ export function StudentMatchesInterface({ user }: StudentMatchesInterfaceProps) 
 
   // Filter suggestions by tab
   const getFilteredSuggestions = () => {
-    const now = Date.now()
-    
     switch (activeTab) {
       case 'suggested':
-        return suggestions.filter(s => s.status === 'pending')
+        return suggestions
       case 'pending':
-        return suggestions.filter(s => 
-          s.status === 'accepted' && 
-          new Date(s.expiresAt).getTime() > now
-        )
+        return pendingSuggestions
       case 'confirmed':
-        return suggestions.filter(s => s.status === 'confirmed')
+        return confirmedMatches
       case 'history':
-        return suggestions.filter(s => 
-          s.status === 'declined' || s.status === 'expired'
-        )
+        return historyMatches
       default:
         return []
     }
@@ -262,10 +276,10 @@ export function StudentMatchesInterface({ user }: StudentMatchesInterfaceProps) 
   const filteredSuggestions = getFilteredSuggestions()
 
   const tabs = [
-    { id: 'suggested' as TabType, label: 'Suggested', count: suggestions.filter(s => s.status === 'pending').length },
-    { id: 'pending' as TabType, label: 'Pending', count: suggestions.filter(s => s.status === 'accepted').length },
-    { id: 'confirmed' as TabType, label: 'Confirmed', count: suggestions.filter(s => s.status === 'confirmed').length },
-    { id: 'history' as TabType, label: 'History', count: suggestions.filter(s => s.status === 'declined' || s.status === 'expired').length },
+    { id: 'suggested' as TabType, label: 'Suggested', count: suggestions.length },
+    { id: 'pending' as TabType, label: 'Pending', count: pendingSuggestions.length },
+    { id: 'confirmed' as TabType, label: 'Confirmed', count: confirmedMatches.length },
+    { id: 'history' as TabType, label: 'History', count: historyMatches.length },
   ]
 
   return (
@@ -315,6 +329,24 @@ export function StudentMatchesInterface({ user }: StudentMatchesInterfaceProps) 
           </p>
         </div>
       </div>
+
+      {/* Progress Banner for Pending Tab */}
+      {activeTab === 'pending' && pendingSuggestions.length > 0 && (
+        <div className="mb-4 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
+          <div className="flex items-start gap-3">
+            <Clock className="h-5 w-5 text-blue-600 dark:text-blue-400 mt-0.5" />
+            <div>
+              <h3 className="font-medium text-blue-900 dark:text-blue-200 mb-1">
+                Waiting for Response
+              </h3>
+              <p className="text-sm text-blue-800 dark:text-blue-300">
+                You've accepted {pendingSuggestions.length} match{pendingSuggestions.length !== 1 ? 'es' : ''}. 
+                The other person needs to accept before you can start chatting.
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Content */}
       {isLoading ? (

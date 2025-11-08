@@ -4,7 +4,7 @@ import { useState, useEffect, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { Card, CardContent } from '@/components/ui/card'
-import { getCSRFHeaders } from '@/lib/utils/csrf-client'
+import { fetchWithCSRF } from '@/lib/utils/fetch-with-csrf'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
@@ -143,9 +143,8 @@ export function ChatList({ user }: ChatListProps) {
         try {
           const chatIds = finalChatRooms.map((room: any) => room.id)
           
-          const profilesResponse = await fetch('/api/chat/profiles', {
+          const profilesResponse = await fetchWithCSRF('/api/chat/profiles', {
             method: 'POST',
-            headers: getCSRFHeaders(),
             body: JSON.stringify({
               chatIds: chatIds
             }),
@@ -297,7 +296,28 @@ export function ChatList({ user }: ChatListProps) {
 
   useEffect(() => {
     loadChats()
-  }, [loadChats])
+    
+    // Check for last visited room and redirect if exists (unless disabled)
+    if (typeof window !== 'undefined') {
+      const disableAutoRedirect = localStorage.getItem('disableChatAutoRedirect') === 'true'
+      if (!disableAutoRedirect) {
+        const lastRoomId = localStorage.getItem('lastChatRoomId')
+        if (lastRoomId && chats.length > 0) {
+          // Check if last room still exists in user's chats
+          const lastRoomExists = chats.some(chat => chat.id === lastRoomId)
+          if (lastRoomExists) {
+            // Small delay to allow UI to render first
+            setTimeout(() => {
+              router.push(`/chat/${lastRoomId}`)
+            }, 100)
+          } else {
+            // Clear invalid last room
+            localStorage.removeItem('lastChatRoomId')
+          }
+        }
+      }
+    }
+  }, [loadChats, chats, router])
 
   const filteredChats = chats.filter(chat => {
     if (!searchQuery.trim()) return true

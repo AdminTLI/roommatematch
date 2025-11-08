@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { submitCompleteOnboarding, extractSubmissionDataFromIntro, extractLanguagesFromSections, mapSubmissionError } from '@/lib/onboarding/submission'
 import { transformAnswer } from '@/lib/question-key-mapping'
+import { safeLogger } from '@/lib/utils/logger'
 
 export async function POST() {
   const supabase = await createClient()
@@ -239,6 +240,32 @@ export async function POST() {
         }
 
         console.log('[Submit] Saved to onboarding_submissions successfully')
+
+        // 6. Generate user vector from responses
+        console.log('[Submit] Generating user vector...')
+        try {
+          const { error: vectorError } = await supabase.rpc('update_user_vector', {
+            p_user_id: userId
+          })
+
+          if (vectorError) {
+            console.error('[Submit] Vector generation failed:', vectorError)
+            // Log but don't fail - vector can be generated later via backfill
+            safeLogger.warn('[Submit] Vector generation failed, will be generated on next matching run', {
+              userId,
+              error: vectorError.message
+            })
+          } else {
+            console.log('[Submit] User vector generated successfully')
+          }
+        } catch (vectorErr) {
+          console.error('[Submit] Vector generation error:', vectorErr)
+          // Don't fail submission if vector generation fails
+          safeLogger.warn('[Submit] Vector generation error, will be generated on next matching run', {
+            userId,
+            error: vectorErr instanceof Error ? vectorErr.message : String(vectorErr)
+          })
+        }
       } else {
         console.warn('[Submit] No submission data or responses to process')
       }
