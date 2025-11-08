@@ -22,7 +22,7 @@ export async function GET(request: NextRequest) {
     const limit = parseInt(searchParams.get('limit') || '100')
     const offset = parseInt(searchParams.get('offset') || '0')
 
-    const admin = await createAdminClient()
+    const admin = createAdminClient()
 
     // Build query
     let query = admin
@@ -111,7 +111,7 @@ export async function PATCH(request: NextRequest) {
       )
     }
 
-    const admin = await createAdminClient()
+    const admin = createAdminClient()
 
     // Update report status
     const { data: report, error: updateError } = await admin
@@ -177,7 +177,7 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    const admin = await createAdminClient()
+    const admin = createAdminClient()
 
     // Get report details
     const { data: report } = await admin

@@ -1,4 +1,4 @@
-import { createClient } from '@/lib/supabase/server'
+import { createClient, createAdminClient } from '@/lib/supabase/server'
 import { NextRequest, NextResponse } from 'next/server'
 import { safeLogger } from '@/lib/utils/logger'
 
@@ -39,8 +39,9 @@ export async function requireAdmin(request?: NextRequest, requireSecret?: boolea
     }
   }
 
-  // Check admin record in database
-  const { data: adminRecord, error: adminError } = await supabase
+  // Check admin record in database using admin client to bypass RLS
+  const adminClient = createAdminClient()
+  const { data: adminRecord, error: adminError } = await adminClient
     .from('admins')
     .select('role, university_id')
     .eq('user_id', user.id)

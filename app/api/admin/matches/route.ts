@@ -25,7 +25,7 @@ export async function GET(request: NextRequest) {
     const limit = parseInt(searchParams.get('limit') || '100')
     const offset = parseInt(searchParams.get('offset') || '0')
 
-    const admin = await createAdminClient()
+    const admin = createAdminClient()
 
     // Build query
     let query = admin
@@ -188,7 +188,7 @@ export async function POST(request: NextRequest) {
     }
 
     if (action === 'expire' && matchIds && Array.isArray(matchIds)) {
-      const admin = await createAdminClient()
+      const admin = createAdminClient()
       const { error } = await admin
         .from('match_suggestions')
         .update({ status: 'expired', expires_at: new Date().toISOString() })
@@ -211,7 +211,7 @@ export async function POST(request: NextRequest) {
 
     if (action === 'archive' && matchIds && Array.isArray(matchIds)) {
       // Archive by updating status to expired (or create archive table if needed)
-      const admin = await createAdminClient()
+      const admin = createAdminClient()
       const { error } = await admin
         .from('match_suggestions')
         .update({ status: 'expired', expires_at: new Date().toISOString() })
