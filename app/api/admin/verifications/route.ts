@@ -23,8 +23,7 @@ export async function GET(request: NextRequest) {
         status,
         review_reason,
         created_at,
-        updated_at,
-        profiles!inner(first_name, last_name, email:users(email))
+        updated_at
       `)
 
     if (status) {
@@ -38,7 +37,27 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'Failed to fetch verifications' }, { status: 500 })
     }
 
-    return NextResponse.json({ verifications: verifications || [] })
+    // Fetch profile data separately
+    const userIds = verifications?.map((v: any) => v.user_id).filter(Boolean) || []
+    const profilesMap = new Map()
+    if (userIds.length > 0) {
+      const { data: profiles } = await admin
+        .from('profiles')
+        .select('user_id, first_name, last_name, email')
+        .in('user_id', userIds)
+      
+      profiles?.forEach((profile: any) => {
+        profilesMap.set(profile.user_id, profile)
+      })
+    }
+
+    // Enrich verifications with profile data
+    const enrichedVerifications = verifications?.map((v: any) => ({
+      ...v,
+      profile: profilesMap.get(v.user_id) || { user_id: v.user_id }
+    })) || []
+
+    return NextResponse.json({ verifications: enrichedVerifications || [] })
   } catch (error) {
     safeLogger.error('[Admin Verifications] Error', error)
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })

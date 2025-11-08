@@ -24,7 +24,7 @@ export async function GET(request: NextRequest) {
 
     const admin = createAdminClient()
 
-    // Build query
+    // Build query - simplified to avoid foreign key issues
     let query = admin
       .from('reports')
       .select(`
@@ -41,10 +41,7 @@ export async function GET(request: NextRequest) {
         admin_id,
         action_taken,
         created_at,
-        updated_at,
-        reporter:profiles!reports_reporter_id_fkey(user_id, first_name, last_name, email),
-        target:profiles!reports_target_user_id_fkey(user_id, first_name, last_name, email),
-        message:messages(id, content, created_at)
+        updated_at
       `)
       .order('created_at', { ascending: false })
       .range(offset, offset + limit - 1)
@@ -74,8 +71,34 @@ export async function GET(request: NextRequest) {
 
     const { count } = await countQuery
 
+    // Fetch profile data for reporter and target users separately
+    const userIds = new Set<string>()
+    reports?.forEach((report: any) => {
+      if (report.reporter_id) userIds.add(report.reporter_id)
+      if (report.target_user_id) userIds.add(report.target_user_id)
+    })
+
+    const profilesMap = new Map()
+    if (userIds.size > 0) {
+      const { data: profiles } = await admin
+        .from('profiles')
+        .select('user_id, first_name, last_name, email')
+        .in('user_id', Array.from(userIds))
+      
+      profiles?.forEach((profile: any) => {
+        profilesMap.set(profile.user_id, profile)
+      })
+    }
+
+    // Enrich reports with profile data
+    const enrichedReports = reports?.map((report: any) => ({
+      ...report,
+      reporter: profilesMap.get(report.reporter_id) || { user_id: report.reporter_id },
+      target: profilesMap.get(report.target_user_id) || { user_id: report.target_user_id }
+    })) || []
+
     return NextResponse.json({
-      reports: reports || [],
+      reports: enrichedReports,
       total: count || 0,
       limit,
       offset
