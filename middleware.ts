@@ -108,11 +108,14 @@ export async function middleware(req: NextRequest) {
   }
 
   if (user && !user.email_confirmed_at) {
-    // Redirect unverified users to verify page and auto-trigger resend via query
-    const url = req.nextUrl.clone()
-    url.pathname = '/auth/verify-email'
-    url.searchParams.set('auto', '1')
-    return NextResponse.redirect(url)
+    // Redirect unverified users to email verification page
+    // Allow access to email verification page itself
+    if (pathname !== '/auth/verify-email' && pathname !== '/auth/sign-up' && pathname !== '/auth/sign-in') {
+      const url = req.nextUrl.clone()
+      url.pathname = '/auth/verify-email'
+      url.searchParams.set('auto', '1')
+      return NextResponse.redirect(url)
+    }
   }
 
   // Feature flag gating for housing and move-in routes
@@ -148,8 +151,20 @@ export async function middleware(req: NextRequest) {
     }
   }
 
+  // Gate /verify route - require email verification first
+  if (user && user.email_confirmed_at && pathname === '/verify') {
+    // Email is verified, allow access to Persona verification
+    // This is fine - continue to the route
+  } else if (user && !user.email_confirmed_at && pathname === '/verify') {
+    // User trying to access Persona verification but email not verified yet
+    const url = req.nextUrl.clone()
+    url.pathname = '/auth/verify-email'
+    url.searchParams.set('auto', '1')
+    return NextResponse.redirect(url)
+  }
+
   // Verification gating for onboarding, matches and chat routes
-  if (user) {
+  if (user && user.email_confirmed_at) {
     const protectedRoutes = ['/onboarding', '/matches', '/chat']
     const isProtectedRoute = protectedRoutes.some(route => pathname.startsWith(route))
     

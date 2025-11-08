@@ -117,15 +117,23 @@ export function VerifyInterface({ user }: VerifyInterfaceProps) {
     }
 
     try {
-      personaClientRef.current = new window.Persona.Client({
+      const client = new window.Persona.Client({
         templateId,
         environmentId,
         onReady: () => {
-          // Persona is ready, but don't auto-open - wait for user to click button
+          // Auto-open Persona widget when ready (embedded flow)
           setIsLoading(false)
+          // Auto-open immediately when ready, but only if user is unverified
+          // This matches the Persona embedded flow pattern: onReady: () => client.open()
+          if (status === 'unverified' || status === 'failed') {
+            setIsStarting(true)
+            client.open()
+          }
         },
         onComplete: async ({ inquiryId, status: personaStatus }) => {
-          console.log(`Persona verification completed: inquiry ${inquiryId} with status ${personaStatus}`)
+          console.log(`Completed inquiry ${inquiryId} with status ${personaStatus}`)
+          
+          setIsStarting(false)
           
           // Update verification status in our database
           try {
@@ -157,6 +165,7 @@ export function VerifyInterface({ user }: VerifyInterfaceProps) {
         },
         onCancel: () => {
           console.log('Persona verification cancelled by user')
+          setIsStarting(false)
           setError(null)
         },
         onError: (error) => {
@@ -165,6 +174,9 @@ export function VerifyInterface({ user }: VerifyInterfaceProps) {
           setIsStarting(false)
         }
       })
+      
+      // Store client reference
+      personaClientRef.current = client
     } catch (err) {
       console.error('Failed to initialize Persona:', err)
       setError('Failed to initialize verification service. Please refresh the page.')

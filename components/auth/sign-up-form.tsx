@@ -66,7 +66,9 @@ export function SignUpForm() {
     setIsLoading(true)
 
     try {
-      const { error } = await supabase.auth.signUp({
+      // Sign up user - Supabase will send OTP code if email confirmations are enabled
+      // If confirmations are disabled, we'll need to explicitly request OTP
+      const { data, error } = await supabase.auth.signUp({
         email,
         password,
         options: {
@@ -74,16 +76,23 @@ export function SignUpForm() {
             first_name: firstName,
             last_name: lastName,
           },
+          emailRedirectTo: `${window.location.origin}/auth/verify-email`,
         },
       })
 
       if (error) {
         setError(error.message)
-      } else {
-        // Store email for OTP verification and navigate to OTP screen
-        sessionStorage.setItem('verification-email', email)
-        router.push('/auth/verify-email')
+        setIsLoading(false)
+        return
       }
+
+      // Store email for OTP verification
+      sessionStorage.setItem('verification-email', email)
+      
+      // If user was created but email confirmation is required,
+      // Supabase should have sent an OTP code automatically
+      // Navigate to verification page
+      router.push('/auth/verify-email')
     } catch (err) {
       setError('An unexpected error occurred. Please try again.')
     } finally {

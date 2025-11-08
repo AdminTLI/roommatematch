@@ -75,7 +75,10 @@ export async function GET(request: NextRequest) {
       verificationRate: analytics.total_users > 0 
         ? ((analytics.verified_users || 0) / analytics.total_users) * 100 
         : 0,
-      matchActivity: matchActivity || 0
+      matchActivity: matchActivity || 0,
+      universityStats: analytics.university_stats || [],
+      programStats: analytics.program_stats || [],
+      studyYearDistribution: analytics.study_year_distribution || []
     })
   } catch (error) {
     safeLogger.error('[Admin] Analytics error', error)
