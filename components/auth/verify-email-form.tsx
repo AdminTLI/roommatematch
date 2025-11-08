@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
@@ -19,21 +19,54 @@ export function VerifyEmailForm() {
   const [resendSuccess, setResendSuccess] = useState(false)
   const [isVerified, setIsVerified] = useState(false)
   const router = useRouter()
+  const searchParams = useSearchParams()
   const supabase = createBrowserClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
   )
 
-  // Get email from sessionStorage on mount
+  // Get email from multiple sources in priority order:
+  // 1. URL query parameter (?email=...)
+  // 2. sessionStorage
+  // 3. Authenticated Supabase user's email
   useEffect(() => {
-    const storedEmail = sessionStorage.getItem('verification-email')
-    if (storedEmail) {
-      setEmail(storedEmail)
-    } else {
-      // If no email in storage, redirect to sign up
+    const resolveEmail = async () => {
+      // Priority 1: Check URL query parameter
+      const queryEmail = searchParams.get('email')
+      if (queryEmail) {
+        setEmail(queryEmail)
+        // Also store in sessionStorage for consistency
+        sessionStorage.setItem('verification-email', queryEmail)
+        return
+      }
+
+      // Priority 2: Check sessionStorage
+      const storedEmail = sessionStorage.getItem('verification-email')
+      if (storedEmail) {
+        setEmail(storedEmail)
+        return
+      }
+
+      // Priority 3: Check authenticated Supabase user
+      try {
+        const { data: { user } } = await supabase.auth.getUser()
+        if (user?.email) {
+          setEmail(user.email)
+          // Store in sessionStorage for consistency
+          sessionStorage.setItem('verification-email', user.email)
+          return
+        }
+      } catch (err) {
+        // User not authenticated or error fetching user
+        console.error('Error fetching user:', err)
+      }
+
+      // If no email found from any source, redirect to sign up
       router.push('/auth/sign-up')
     }
-  }, [router])
+
+    resolveEmail()
+  }, [router, searchParams, supabase])
 
   // Auto-resend when arriving with ?auto=1 and we have an email
   useEffect(() => {

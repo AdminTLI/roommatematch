@@ -34,12 +34,42 @@ export function SignInForm() {
       })
 
       if (error) {
+        // Check if error is due to unconfirmed email
+        const isEmailNotConfirmed = 
+          error.message.toLowerCase().includes('email not confirmed') ||
+          error.message.toLowerCase().includes('email_not_confirmed') ||
+          error.message.toLowerCase().includes('email confirmation')
+
+        if (isEmailNotConfirmed) {
+          // Clear any existing session/cookies to prevent stale sessions
+          await supabase.auth.signOut()
+          
+          // Store email for OTP screen
+          sessionStorage.setItem('verification-email', email)
+          
+          // Auto-resend OTP
+          try {
+            await supabase.auth.signInWithOtp({
+              email,
+              options: { shouldCreateUser: false }
+            })
+          } catch (otpError) {
+            // Log but don't block redirect - user can resend manually
+            console.error('Error sending OTP:', otpError)
+          }
+          
+          // Redirect to verify-email page with email query param
+          router.push(`/auth/verify-email?email=${encodeURIComponent(email)}&auto=1`)
+          return
+        }
+        
+        // For other errors, show the error message
         setError(error.message)
       } else {
-        // Check verification status
+        // Sign-in successful - check verification status as backup
         const { data: { user } } = await supabase.auth.getUser()
         if (user && !user.email_confirmed_at) {
-          // Store email for OTP screen and auto-resend
+          // This shouldn't happen with enable_confirmations = true, but handle it anyway
           sessionStorage.setItem('verification-email', email)
           try {
             await supabase.auth.signInWithOtp({
@@ -47,9 +77,9 @@ export function SignInForm() {
               options: { shouldCreateUser: false }
             })
           } catch {}
-          router.push('/auth/verify-email?auto=1')
+          router.push(`/auth/verify-email?email=${encodeURIComponent(email)}&auto=1`)
         } else {
-        router.push('/dashboard')
+          router.push('/dashboard')
         }
       }
     } catch (err) {

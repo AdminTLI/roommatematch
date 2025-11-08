@@ -1,6 +1,7 @@
 import { VerifyEmailForm } from '@/components/auth/verify-email-form'
 import { Navbar } from '@/components/site/navbar'
 import { Metadata } from 'next'
+import { Suspense } from 'react'
 
 export const metadata: Metadata = {
   title: 'Verify Email | Roommate Match',
@@ -13,7 +14,9 @@ export default function VerifyEmailPage() {
       <Navbar />
       <div className="flex min-h-[calc(100vh-80px)] items-center justify-center px-4">
         <div className="w-full max-w-md">
-          <VerifyEmailForm />
+          <Suspense fallback={<div className="text-center">Loading...</div>}>
+            <VerifyEmailForm />
+          </Suspense>
         </div>
       </div>
     </main>
