@@ -88,11 +88,24 @@ export function VerifyEmailForm() {
     setError('')
 
     try {
-      const { data, error } = await supabase.auth.verifyOtp({
+      // Try both OTP types since signInWithOtp sends 'email' type
+      // but signUp sends 'signup' type when enable_confirmations = true
+      let verificationResult = await supabase.auth.verifyOtp({
         email,
         token: otpCode,
-        type: 'signup'
+        type: 'email' // Try 'email' first (from signInWithOtp)
       })
+
+      // If 'email' type fails and no user was returned, try 'signup' type (from signUp)
+      if (verificationResult.error && !verificationResult.data?.user) {
+        verificationResult = await supabase.auth.verifyOtp({
+          email,
+          token: otpCode,
+          type: 'signup' // Fallback to 'signup' type
+        })
+      }
+
+      const { data, error } = verificationResult
 
       if (error) {
         // Provide more user-friendly error messages
