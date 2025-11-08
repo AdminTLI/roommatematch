@@ -90,16 +90,20 @@ export function ChatInterface({ roomId, user }: ChatInterfaceProps) {
   const [isBlocking, setIsBlocking] = useState(false)
   const [isBlocked, setIsBlocked] = useState(false)
   const [blockedUserId, setBlockedUserId] = useState<string | null>(null)
-  const [readRetryQueue, setReadRetryQueue] = useState<number[]>([])
+  const [readRetryQueue, setReadRetryQueue] = useState<Array<{ timestamp: number; attempt: number }>>([])
   const [readFailureCount, setReadFailureCount] = useState(0)
+  const [readError, setReadError] = useState<string | null>(null)
   
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const typingTimeoutRef = useRef<NodeJS.Timeout>()
   const typingDebounceRef = useRef<NodeJS.Timeout>()
   const typingChannelRef = useRef<any>(null)
+  const presenceChannelRef = useRef<any>(null)
   const messagesChannelRef = useRef<any>(null)
   const resubscribeTimeoutRef = useRef<NodeJS.Timeout | null>(null)
   const readRetryIntervalRef = useRef<NodeJS.Timeout | null>(null)
+  const [onlineUsers, setOnlineUsers] = useState<Set<string>>(new Set())
+  const [lastSeenMap, setLastSeenMap] = useState<Map<string, string>>(new Map())
 
   // Mock data for demonstration
   const mockMessages: Message[] = [
@@ -241,7 +245,7 @@ export function ChatInterface({ roomId, user }: ChatInterfaceProps) {
     }
   }
 
-  const markAsRead = useCallback(async (retry = false) => {
+  const markAsRead = useCallback(async (retry = false, attempt = 0) => {
     try {
       const response = await fetchWithCSRF('/api/chat/read', {
         method: 'POST',
@@ -250,35 +254,71 @@ export function ChatInterface({ roomId, user }: ChatInterfaceProps) {
         })
       })
       
-      if (!response.ok && !retry) {
-        // Add to retry queue
-        setReadRetryQueue(prev => [...prev, Date.now()])
-        setReadFailureCount(prev => prev + 1)
-      } else if (response.ok) {
-        // Reset failure count on success
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({ error: 'Unknown error' }))
+        const errorMessage = errorData.error || `Failed to mark messages as read (${response.status})`
+        
+        if (!retry) {
+          // Add to retry queue with attempt number for exponential backoff
+          setReadRetryQueue(prev => [...prev, { timestamp: Date.now(), attempt: 0 }])
+          setReadFailureCount(prev => prev + 1)
+          setReadError(errorMessage)
+        } else {
+          // Update attempt count for retry
+          setReadFailureCount(prev => prev + 1)
+        }
+      } else {
+        // Reset failure count and error on success
         setReadFailureCount(0)
         setReadRetryQueue([])
+        setReadError(null)
       }
     } catch (error) {
       console.error('Failed to mark as read:', error)
+      const errorMessage = error instanceof Error ? error.message : 'Network error while marking as read'
+      
       if (!retry) {
-        setReadRetryQueue(prev => [...prev, Date.now()])
+        setReadRetryQueue(prev => [...prev, { timestamp: Date.now(), attempt: 0 }])
+        setReadFailureCount(prev => prev + 1)
+        setReadError(errorMessage)
+      } else {
         setReadFailureCount(prev => prev + 1)
       }
     }
   }, [roomId])
 
-  // Retry failed read receipts
+  // Retry failed read receipts with exponential backoff
   useEffect(() => {
     if (readRetryQueue.length === 0) return
 
-    const retryInterval = setInterval(() => {
-      if (readRetryQueue.length > 0) {
-        markAsRead(true)
-        setReadRetryQueue(prev => prev.slice(1))
-      }
-    }, 5000) // Retry every 5 seconds
+    const processRetryQueue = () => {
+      if (readRetryQueue.length === 0) return
 
+      const [nextRetry, ...remaining] = readRetryQueue
+      const now = Date.now()
+      const timeSinceFailure = now - nextRetry.timestamp
+      
+      // Exponential backoff: 2^attempt seconds (max 60 seconds)
+      const backoffDelay = Math.min(1000 * Math.pow(2, nextRetry.attempt), 60000)
+      
+      if (timeSinceFailure >= backoffDelay) {
+        // Time to retry
+        markAsRead(true, nextRetry.attempt + 1).then(() => {
+          // Remove this retry from queue after attempting
+          setReadRetryQueue(prev => prev.slice(1))
+        })
+      } else {
+        // Not time yet, wait and check again
+        const waitTime = backoffDelay - timeSinceFailure
+        setTimeout(processRetryQueue, waitTime)
+      }
+    }
+
+    // Process queue immediately
+    processRetryQueue()
+
+    // Also set up periodic check (every 5 seconds) as fallback
+    const retryInterval = setInterval(processRetryQueue, 5000)
     readRetryIntervalRef.current = retryInterval
 
     return () => {
@@ -290,11 +330,14 @@ export function ChatInterface({ roomId, user }: ChatInterfaceProps) {
 
   // Show error toast if read receipts fail repeatedly
   useEffect(() => {
-    if (readFailureCount >= 3) {
-      showErrorToast('Connection issue', 'Unable to mark messages as read. Please refresh the page.')
-      setReadFailureCount(0) // Reset to avoid spam
+    if (readFailureCount >= 3 && readError) {
+      showErrorToast(
+        'Connection issue', 
+        `Unable to mark messages as read. Retrying automatically... (${readFailureCount} attempts)`
+      )
+      // Don't reset count - let exponential backoff handle retries
     }
-  }, [readFailureCount])
+  }, [readFailureCount, readError])
 
   // Persist last visited room
   useEffect(() => {
@@ -479,7 +522,8 @@ export function ChatInterface({ roomId, user }: ChatInterfaceProps) {
             id: member.user_id,
             name: memberName,
             avatar: undefined, // Avatars not implemented - Avatar component will show initials via AvatarFallback
-            is_online: true // This would need real-time presence tracking
+            is_online: onlineUsers.has(member.user_id),
+            last_seen: lastSeenMap.get(member.user_id)
           }
         })
 
@@ -863,6 +907,86 @@ export function ChatInterface({ roomId, user }: ChatInterfaceProps) {
     // Store channel reference for reuse
     typingChannelRef.current = typingChannel
 
+    // Set up presence channel for online/offline status
+    const presenceChannel = supabase
+      .channel(`presence:${roomId}`)
+      .on('presence', { event: 'sync' }, () => {
+        const state = presenceChannel.presenceState()
+        const onlineSet = new Set<string>()
+        const lastSeen = new Map<string, string>()
+        
+        Object.keys(state).forEach(key => {
+          const presence = state[key] as any
+          const presenceUserId = presence?.[0]?.user_id || key
+          if (presenceUserId !== user.id) {
+            const presenceData = presence?.[0]
+            if (presenceData?.online) {
+              onlineSet.add(presenceUserId)
+            }
+            if (presenceData?.last_seen) {
+              lastSeen.set(presenceUserId, presenceData.last_seen)
+            }
+          }
+        })
+        
+        setOnlineUsers(onlineSet)
+        setLastSeenMap(lastSeen)
+      })
+      .on('presence', { event: 'join' }, ({ key, newPresences }) => {
+        const newPresence = newPresences[0] as any
+        const presenceUserId = newPresence?.user_id || key
+        if (presenceUserId !== user.id) {
+          setOnlineUsers(prev => {
+            const updated = new Set(prev)
+            updated.add(presenceUserId)
+            return updated
+          })
+          if (newPresence?.last_seen) {
+            setLastSeenMap(prev => new Map(prev).set(presenceUserId, newPresence.last_seen))
+          }
+        }
+      })
+      .on('presence', { event: 'leave' }, ({ key }) => {
+        const state = presenceChannel.presenceState()
+        const presence = state[key] as any
+        const presenceUserId = presence?.[0]?.user_id || key
+        if (presenceUserId !== user.id) {
+          setOnlineUsers(prev => {
+            const updated = new Set(prev)
+            updated.delete(presenceUserId)
+            return updated
+          })
+          // Update last seen when user goes offline
+          setLastSeenMap(prev => new Map(prev).set(presenceUserId, new Date().toISOString()))
+        }
+      })
+      .subscribe(async (status) => {
+        if (status === 'SUBSCRIBED') {
+          // Track our own presence
+          await presenceChannel.track({
+            online: true,
+            user_id: user.id,
+            last_seen: new Date().toISOString()
+          })
+          
+          // Update presence every 30 seconds to show we're still online
+          const presenceInterval = setInterval(async () => {
+            if (presenceChannelRef.current) {
+              await presenceChannelRef.current.track({
+                online: true,
+                user_id: user.id,
+                last_seen: new Date().toISOString()
+              })
+            }
+          }, 30000)
+          
+          // Store interval ID for cleanup
+          ;(presenceChannelRef.current as any).intervalId = presenceInterval
+        }
+      })
+    
+    presenceChannelRef.current = presenceChannel
+
     return () => {
       console.log('[Realtime] Cleaning up subscriptions')
       if (resubscribeTimeoutRef.current) {
@@ -878,6 +1002,23 @@ export function ChatInterface({ roomId, user }: ChatInterfaceProps) {
         typingChannelRef.current.unsubscribe()
         supabase.removeChannel(typingChannelRef.current)
         typingChannelRef.current = null
+      }
+      if (presenceChannelRef.current) {
+        // Clear presence interval if it exists
+        const intervalId = (presenceChannelRef.current as any).intervalId
+        if (intervalId) {
+          clearInterval(intervalId)
+        }
+        // Mark ourselves as offline before leaving
+        presenceChannelRef.current.track({
+          online: false,
+          user_id: user.id,
+          last_seen: new Date().toISOString()
+        }).then(() => {
+          presenceChannelRef.current?.unsubscribe()
+          supabase.removeChannel(presenceChannelRef.current!)
+          presenceChannelRef.current = null
+        })
       }
     }
   }, [roomId, user.id, supabase])
@@ -1028,14 +1169,16 @@ export function ChatInterface({ roomId, user }: ChatInterfaceProps) {
         clearTimeout(typingTimeoutRef.current)
       }
 
-      // Stop typing after 3 seconds
+      // Stop typing after 3 seconds of inactivity (improved timeout)
       typingTimeoutRef.current = setTimeout(() => {
-        channel.track({
-          typing: false,
-          user_id: user.id
-        })
+        if (channel) {
+          channel.track({
+            typing: false,
+            user_id: user.id
+          })
+        }
       }, 3000)
-    }, 500) // Debounce delay
+    }, 300) // Reduced debounce delay for better responsiveness
   }
 
   const scrollToBottom = () => {
