@@ -2,6 +2,7 @@ import { VerifyInterface } from './components/verify-interface'
 import { AppHeader } from '@/app/(components)/app-header'
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
+import { checkUserVerificationStatus } from '@/lib/auth/verification-check'
 
 export default async function VerifyPage() {
   const supabase = await createClient()
@@ -9,6 +10,19 @@ export default async function VerifyPage() {
 
   if (!user) {
     redirect('/auth/sign-in')
+  }
+
+  // Check email verification first - must be verified before Persona verification
+  const emailVerified = Boolean(
+    user.email_confirmed_at &&
+    typeof user.email_confirmed_at === 'string' &&
+    user.email_confirmed_at.length > 0 &&
+    !isNaN(Date.parse(user.email_confirmed_at))
+  )
+
+  if (!emailVerified) {
+    // Redirect to email verification page
+    redirect(`/auth/verify-email?email=${encodeURIComponent(user.email || '')}&auto=1`)
   }
 
   // Check verification status (profile may not exist yet since verification comes before onboarding)

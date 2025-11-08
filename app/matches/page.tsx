@@ -3,6 +3,7 @@ import { AppShell } from '@/components/app/shell'
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import { getUserProfile } from '@/lib/auth/user-profile'
+import { checkUserVerificationStatus, getVerificationRedirectUrl } from '@/lib/auth/verification-check'
 
 export default async function MatchesPage() {
   const supabase = await createClient()
@@ -23,20 +24,18 @@ export default async function MatchesPage() {
     redirect('/onboarding')
   }
 
-  // Check verification status
-  const { data: profile } = await supabase
-    .from('profiles')
-    .select('verification_status')
-    .eq('user_id', user.id)
-    .maybeSingle()
-
-  // Comment out verification check for now
-  // Will re-enable when verification system is ready
-  /*
-  if (profile && profile.verification_status !== 'verified') {
-    redirect('/verify')
+  // Check verification status (backup check - middleware also enforces this)
+  const verificationStatus = await checkUserVerificationStatus(user)
+  const redirectUrl = getVerificationRedirectUrl(verificationStatus)
+  if (redirectUrl) {
+    if (redirectUrl === '/auth/verify-email' && user.email) {
+      redirect(`/auth/verify-email?email=${encodeURIComponent(user.email)}&auto=1`)
+    } else if (redirectUrl === '/verify') {
+      redirect('/verify?redirect=/matches')
+    } else {
+      redirect(redirectUrl)
+    }
   }
-  */
 
   // Get user profile with proper name
   const userProfile = await getUserProfile(user.id)

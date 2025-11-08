@@ -3,6 +3,7 @@ import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import { SettingsContent } from './components/settings-content'
 import { getUserProfile } from '@/lib/auth/user-profile'
+import { checkUserVerificationStatus, getVerificationRedirectUrl } from '@/lib/auth/verification-check'
 
 export default async function SettingsPage() {
   const supabase = await createClient()
@@ -19,6 +20,17 @@ export default async function SettingsPage() {
 
   if (!user) {
     redirect('/auth/sign-in')
+  }
+
+  // Check verification status (backup check - middleware also enforces this)
+  const verificationStatus = await checkUserVerificationStatus(user)
+  const redirectUrl = getVerificationRedirectUrl(verificationStatus)
+  if (redirectUrl) {
+    if (redirectUrl === '/auth/verify-email' && user.email) {
+      redirect(`/auth/verify-email?email=${encodeURIComponent(user.email)}&auto=1`)
+    } else {
+      redirect(redirectUrl)
+    }
   }
 
   // Fetch user profile data

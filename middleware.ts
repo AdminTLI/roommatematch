@@ -3,6 +3,7 @@ import { createServerClient } from '@supabase/ssr'
 import { createCSRFTokenCookie, validateCSRFToken } from '@/lib/csrf'
 import { checkRateLimit, getIPRateLimitKey } from '@/lib/rate-limit'
 import { isFeatureEnabled } from '@/lib/feature-flags'
+import { checkUserVerificationStatus, getVerificationRedirectUrl } from '@/lib/auth/verification-check'
 
 export async function middleware(req: NextRequest) {
   // Allow public routes without checks
@@ -107,12 +108,73 @@ export async function middleware(req: NextRequest) {
     })
   }
 
-  if (user && !user.email_confirmed_at) {
-    // Redirect unverified users to email verification page
-    // Allow access to email verification page itself
-    if (pathname !== '/auth/verify-email' && pathname !== '/auth/sign-up' && pathname !== '/auth/sign-in') {
+  // Define protected routes that require full verification
+  const protectedRoutes = [
+    '/dashboard',
+    '/settings',
+    '/matches',
+    '/chat',
+    '/onboarding',
+    '/forum',
+    '/notifications',
+    '/housing',
+    '/move-in',
+    '/reputation',
+    '/safety',
+  ]
+
+  // Define routes that are always allowed (verification pages, auth pages)
+  const allowedRoutes = [
+    '/auth/verify-email',
+    '/auth/sign-up',
+    '/auth/sign-in',
+    '/auth/callback',
+    '/verify', // Persona verification page (will check email verification internally)
+  ]
+
+  // Check if current path is a protected route
+  const isProtectedRoute = protectedRoutes.some(route => pathname.startsWith(route))
+  const isAllowedRoute = allowedRoutes.some(route => pathname.startsWith(route))
+
+  // Enforce verification for authenticated users accessing protected routes
+  if (user && isProtectedRoute && !isAllowedRoute) {
+    const verificationStatus = await checkUserVerificationStatus(user)
+    const redirectUrl = getVerificationRedirectUrl(verificationStatus)
+
+    if (redirectUrl) {
+      const url = req.nextUrl.clone()
+      url.pathname = redirectUrl
+      
+      // Preserve email for verification page
+      if (redirectUrl === '/auth/verify-email' && user.email) {
+        url.searchParams.set('email', user.email)
+        url.searchParams.set('auto', '1')
+      }
+      
+      // Preserve redirect path for after verification
+      if (redirectUrl === '/verify') {
+        url.searchParams.set('redirect', pathname)
+      }
+      
+      return NextResponse.redirect(url)
+    }
+  }
+
+  // Gate /verify route - require email verification first
+  if (user && pathname === '/verify') {
+    const emailVerified = Boolean(
+      user.email_confirmed_at &&
+      typeof user.email_confirmed_at === 'string' &&
+      user.email_confirmed_at.length > 0 &&
+      !isNaN(Date.parse(user.email_confirmed_at))
+    )
+
+    if (!emailVerified) {
       const url = req.nextUrl.clone()
       url.pathname = '/auth/verify-email'
+      if (user.email) {
+        url.searchParams.set('email', user.email)
+      }
       url.searchParams.set('auto', '1')
       return NextResponse.redirect(url)
     }
@@ -147,49 +209,6 @@ export async function middleware(req: NextRequest) {
         const url = req.nextUrl.clone()
         url.pathname = '/dashboard'
         return NextResponse.redirect(url)
-      }
-    }
-  }
-
-  // Gate /verify route - require email verification first
-  if (user && user.email_confirmed_at && pathname === '/verify') {
-    // Email is verified, allow access to Persona verification
-    // This is fine - continue to the route
-  } else if (user && !user.email_confirmed_at && pathname === '/verify') {
-    // User trying to access Persona verification but email not verified yet
-    const url = req.nextUrl.clone()
-    url.pathname = '/auth/verify-email'
-    url.searchParams.set('auto', '1')
-    return NextResponse.redirect(url)
-  }
-
-  // Verification gating for onboarding, matches and chat routes
-  if (user && user.email_confirmed_at) {
-    const protectedRoutes = ['/onboarding', '/matches', '/chat']
-    const isProtectedRoute = protectedRoutes.some(route => pathname.startsWith(route))
-    
-    if (isProtectedRoute) {
-      // Check if demo chat is allowed (only for matches/chat, not onboarding)
-      const allowDemoChat = process.env.ALLOW_DEMO_CHAT === 'true'
-      const isDemoUser = process.env.DEMO_USER_EMAIL && user.email === process.env.DEMO_USER_EMAIL
-      const isOnboardingRoute = pathname.startsWith('/onboarding')
-      
-      // Onboarding always requires verification (no demo bypass)
-      // Matches/chat can bypass if ALLOW_DEMO_CHAT is true
-      if (isOnboardingRoute || (!allowDemoChat || !isDemoUser)) {
-        // Check verification status
-        const { data: profile } = await supabase
-          .from('profiles')
-          .select('verification_status')
-          .eq('user_id', user.id)
-          .maybeSingle()
-
-        if (profile && profile.verification_status !== 'verified') {
-          const url = req.nextUrl.clone()
-          url.pathname = '/verify'
-          url.searchParams.set('redirect', pathname)
-          return NextResponse.redirect(url)
-        }
       }
     }
   }

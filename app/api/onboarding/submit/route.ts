@@ -4,6 +4,7 @@ import { submitCompleteOnboarding, extractSubmissionDataFromIntro, extractLangua
 import { transformAnswer } from '@/lib/question-key-mapping'
 import { safeLogger } from '@/lib/utils/logger'
 import { trackEvent, EVENT_TYPES } from '@/lib/events'
+import { checkUserVerificationStatus } from '@/lib/auth/verification-check'
 
 export async function POST(request: Request) {
   const supabase = await createClient()
@@ -26,11 +27,20 @@ export async function POST(request: Request) {
   const userId = user.id
   
   try {
-    // Check if user is verified (optional for development)
-    if (!user.email_confirmed_at) {
+    // Check verification status (email and Persona)
+    const verificationStatus = await checkUserVerificationStatus(user)
+    
+    if (verificationStatus.needsEmailVerification) {
       console.log('[Submit] User email not verified:', user.email)
       return NextResponse.json({ 
         error: 'Please verify your email before submitting the questionnaire. Check your email for a verification link or go to Settings to resend verification email.' 
+      }, { status: 403 })
+    }
+
+    if (verificationStatus.needsPersonaVerification) {
+      console.log('[Submit] User Persona not verified:', user.email)
+      return NextResponse.json({ 
+        error: 'Please complete identity verification before submitting the questionnaire. Go to Settings to complete verification.' 
       }, { status: 403 })
     }
 

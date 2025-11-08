@@ -37,15 +37,55 @@ export function SignInForm() {
     }
 
     try {
-      const { error } = await supabase.auth.signInWithPassword({
+      const { error: signInError, data } = await supabase.auth.signInWithPassword({
         email,
         password
       })
 
-      if (error) {
-        setError(error.message)
-      } else {
-        router.push('/matches')
+      if (signInError) {
+        setError(signInError.message)
+        setIsLoading(false)
+        return
+      }
+
+      // Check verification status after successful login
+      try {
+        const response = await fetch('/api/auth/verification-status')
+        if (response.ok) {
+          const verificationStatus = await response.json()
+          
+          // Store email for verification page if needed
+          if (verificationStatus.needsEmailVerification) {
+            sessionStorage.setItem('verification-email', email)
+            router.push('/auth/verify-email')
+            return
+          }
+          
+          if (verificationStatus.needsPersonaVerification) {
+            router.push('/verify')
+            return
+          }
+          
+          // Both verifications complete, proceed to matches
+          router.push('/matches')
+        } else {
+          // If API fails, still check email_confirmed_at from auth response
+          if (data.user && !data.user.email_confirmed_at) {
+            sessionStorage.setItem('verification-email', email)
+            router.push('/auth/verify-email')
+          } else {
+            router.push('/matches')
+          }
+        }
+      } catch (verificationError) {
+        console.error('Failed to check verification status:', verificationError)
+        // Fallback: check email_confirmed_at from auth response
+        if (data.user && !data.user.email_confirmed_at) {
+          sessionStorage.setItem('verification-email', email)
+          router.push('/auth/verify-email')
+        } else {
+          router.push('/matches')
+        }
       }
     } catch (err) {
       setError('An unexpected error occurred')

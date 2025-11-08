@@ -6,6 +6,7 @@ import type { DashboardData } from '@/types/dashboard'
 import { checkQuestionnaireCompletion, questionSchemas } from '@/lib/onboarding/validation'
 import { calculateSectionProgress } from '@/lib/onboarding/sections'
 import { getUserProfile } from '@/lib/auth/user-profile'
+import { checkUserVerificationStatus, getVerificationRedirectUrl } from '@/lib/auth/verification-check'
 
 export default async function DashboardPage() {
   const supabase = await createClient()
@@ -25,6 +26,17 @@ export default async function DashboardPage() {
   // Redirect to sign-in if user is not authenticated
   if (!user) {
     redirect('/auth/sign-in')
+  }
+
+  // Check verification status (backup check - middleware also enforces this)
+  const verificationStatus = await checkUserVerificationStatus(user)
+  const redirectUrl = getVerificationRedirectUrl(verificationStatus)
+  if (redirectUrl) {
+    if (redirectUrl === '/auth/verify-email' && user.email) {
+      redirect(`/auth/verify-email?email=${encodeURIComponent(user.email)}&auto=1`)
+    } else {
+      redirect(redirectUrl)
+    }
   }
 
   // Check questionnaire completion status using the helper
