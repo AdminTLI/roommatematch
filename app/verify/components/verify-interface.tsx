@@ -1,10 +1,9 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { Badge } from '@/components/ui/badge'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { createClient } from '@/lib/supabase/client'
 import { User } from '@supabase/supabase-js'
@@ -13,10 +12,27 @@ import {
   AlertCircle, 
   Shield, 
   Clock,
-  UserCheck,
-  RefreshCw,
-  ExternalLink
+  RefreshCw
 } from 'lucide-react'
+
+// Declare Persona types for TypeScript
+declare global {
+  interface Window {
+    Persona: {
+      Client: new (config: {
+        templateId: string
+        environmentId: string
+        onReady: () => void
+        onComplete: (data: { inquiryId: string; status: string; fields?: any }) => void
+        onCancel?: () => void
+        onError?: (error: any) => void
+      }) => {
+        open: () => void
+        close: () => void
+      }
+    }
+  }
+}
 
 interface VerifyInterfaceProps {
   user: User
@@ -24,26 +40,49 @@ interface VerifyInterfaceProps {
 
 type VerificationStatus = 'unverified' | 'pending' | 'verified' | 'failed'
 
-interface VerificationData {
-  id: string
-  provider: string
-  status: 'pending' | 'approved' | 'rejected' | 'expired'
-  reviewReason?: string
-  createdAt: string
-  updatedAt: string
-}
-
 export function VerifyInterface({ user }: VerifyInterfaceProps) {
   const router = useRouter()
   const supabase = createClient()
+  const personaClientRef = useRef<any>(null)
+  const scriptLoadedRef = useRef(false)
   
   const [status, setStatus] = useState<VerificationStatus>('unverified')
-  const [verification, setVerification] = useState<VerificationData | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [isStarting, setIsStarting] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [pollingInterval, setPollingInterval] = useState<NodeJS.Timeout | null>(null)
   
+  // Load Persona script
+  useEffect(() => {
+    if (scriptLoadedRef.current) return
+
+    const script = document.createElement('script')
+    script.src = 'https://cdn.withpersona.com/dist/persona-v5.1.2.js'
+    script.integrity = 'sha384-nuMfOsYXMwp5L13VJicJkSs8tObai/UtHEOg3f7tQuFWU5j6LAewJbjbF5ZkfoDo'
+    script.crossOrigin = 'anonymous'
+    script.async = true
+    
+    script.onload = () => {
+      scriptLoadedRef.current = true
+      initializePersona()
+    }
+    
+    script.onerror = () => {
+      setError('Failed to load verification service. Please refresh the page.')
+      setIsLoading(false)
+    }
+    
+    document.head.appendChild(script)
+    
+    return () => {
+      // Cleanup: remove script if component unmounts
+      const existingScript = document.querySelector('script[src*="persona"]')
+      if (existingScript) {
+        existingScript.remove()
+      }
+    }
+  }, [])
+
   // Fetch verification status on mount
   useEffect(() => {
     fetchStatus()
@@ -67,18 +106,83 @@ export function VerifyInterface({ user }: VerifyInterfaceProps) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [status])
 
+  const initializePersona = () => {
+    const templateId = process.env.NEXT_PUBLIC_PERSONA_TEMPLATE_ID || 'itmpl_8XHCzE9HWCT7fFm2qwUie3fNicGw'
+    const environmentId = process.env.NEXT_PUBLIC_PERSONA_ENVIRONMENT_ID || 'env_xx8qopwH2mtfVV7ZHYxXFnjW1YDA'
+
+    if (!window.Persona) {
+      setError('Persona verification service not available. Please refresh the page.')
+      setIsLoading(false)
+      return
+    }
+
+    try {
+      personaClientRef.current = new window.Persona.Client({
+        templateId,
+        environmentId,
+        onReady: () => {
+          // Persona is ready, but don't auto-open - wait for user to click button
+          setIsLoading(false)
+        },
+        onComplete: async ({ inquiryId, status: personaStatus }) => {
+          console.log(`Persona verification completed: inquiry ${inquiryId} with status ${personaStatus}`)
+          
+          // Update verification status in our database
+          try {
+            const response = await fetch('/api/verification/persona-complete', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                inquiryId,
+                status: personaStatus
+              })
+            })
+
+            if (response.ok) {
+              // Refresh status and redirect to onboarding if approved
+              await fetchStatus()
+              
+              if (personaStatus === 'approved' || personaStatus === 'completed') {
+                setTimeout(() => {
+                  router.push('/onboarding/intro')
+                }, 2000)
+              }
+            } else {
+              setError('Failed to update verification status. Please contact support.')
+            }
+          } catch (err) {
+            console.error('Failed to update verification status:', err)
+            setError('Verification completed but failed to update status. Please contact support.')
+          }
+        },
+        onCancel: () => {
+          console.log('Persona verification cancelled by user')
+          setError(null)
+        },
+        onError: (error) => {
+          console.error('Persona verification error:', error)
+          setError('Verification failed. Please try again.')
+          setIsStarting(false)
+        }
+      })
+    } catch (err) {
+      console.error('Failed to initialize Persona:', err)
+      setError('Failed to initialize verification service. Please refresh the page.')
+      setIsLoading(false)
+    }
+  }
+
   const fetchStatus = async () => {
     try {
       const response = await fetch('/api/verification/status')
       if (response.ok) {
         const data = await response.json()
         setStatus(data.status)
-        setVerification(data.verification)
         
-        // Redirect to matches if verified
+        // Redirect to onboarding if verified
         if (data.status === 'verified') {
           setTimeout(() => {
-            router.push('/matches')
+            router.push('/onboarding/intro')
           }, 2000)
         }
       }
@@ -89,43 +193,27 @@ export function VerifyInterface({ user }: VerifyInterfaceProps) {
     }
   }
 
-  const startVerification = async () => {
+  const startVerification = () => {
     setIsStarting(true)
     setError(null)
 
+    if (!personaClientRef.current) {
+      setError('Verification service not ready. Please wait a moment and try again.')
+      setIsStarting(false)
+      return
+    }
+
     try {
-      const response = await fetch('/api/verification/start', {
-        method: 'POST'
-      })
-
-      const data = await response.json()
-
-      if (!response.ok) {
-        throw new Error(data.error || 'Failed to start verification')
-      }
-
-      // Redirect to provider-hosted flow
-      if (data.redirectUrl) {
-        window.location.href = data.redirectUrl
-      } else if (data.clientToken) {
-        // For providers that return a token, redirect to their SDK
-        // This would typically open an iframe or modal
-        // For now, we'll show a message
-        setError('Please check your email for verification instructions')
-      }
-
-      // Refresh status
-      await fetchStatus()
-    } catch (error) {
-      console.error('Failed to start verification:', error)
-      setError(error instanceof Error ? error.message : 'Failed to start verification')
-    } finally {
+      personaClientRef.current.open()
+    } catch (err) {
+      console.error('Failed to open Persona verification:', err)
+      setError('Failed to start verification. Please try again.')
       setIsStarting(false)
     }
   }
 
-  const retryVerification = async () => {
-    await startVerification()
+  const retryVerification = () => {
+    startVerification()
   }
 
   if (isLoading) {
@@ -135,7 +223,7 @@ export function VerifyInterface({ user }: VerifyInterfaceProps) {
           <CardContent className="pt-6">
             <div className="text-center space-y-4">
               <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
-              <p className="text-gray-600 dark:text-gray-300">Loading verification status...</p>
+              <p className="text-gray-600 dark:text-gray-300">Loading verification service...</p>
             </div>
           </CardContent>
         </Card>
@@ -178,10 +266,10 @@ export function VerifyInterface({ user }: VerifyInterfaceProps) {
             {status === 'unverified' && 'Identity Not Verified'}
           </CardTitle>
           <CardDescription>
-            {status === 'verified' && 'Your identity has been successfully verified.'}
+            {status === 'verified' && 'Your identity has been successfully verified. Redirecting to onboarding...'}
             {status === 'pending' && 'Your verification is being processed. This may take a few minutes.'}
-            {status === 'failed' && verification?.reviewReason && `Reason: ${verification.reviewReason}`}
-            {status === 'unverified' && 'Start the verification process to access all platform features.'}
+            {status === 'failed' && 'Your verification was not successful. Please try again.'}
+            {status === 'unverified' && 'Start the verification process to continue to your profile setup.'}
           </CardDescription>
         </CardHeader>
 
@@ -197,16 +285,11 @@ export function VerifyInterface({ user }: VerifyInterfaceProps) {
                   Verification Complete!
                 </h3>
                 <p className="text-gray-600 dark:text-gray-300">
-                  Your identity has been verified. You now have full access to the platform.
+                  Your identity has been verified. Redirecting you to complete your profile...
                 </p>
               </div>
-              {verification && (
-                <div className="text-sm text-gray-500">
-                  Verified on {new Date(verification.updatedAt).toLocaleDateString()}
-                </div>
-              )}
-              <Button onClick={() => router.push('/matches')} className="w-full">
-                Continue to Matches
+              <Button onClick={() => router.push('/onboarding/intro')} className="w-full">
+                Continue to Profile Setup
               </Button>
             </div>
           )}
@@ -221,11 +304,6 @@ export function VerifyInterface({ user }: VerifyInterfaceProps) {
                   Your verification is being processed. This page will update automatically when complete.
                 </p>
               </div>
-              {verification && (
-                <div className="text-sm text-gray-500">
-                  Started on {new Date(verification.createdAt).toLocaleDateString()}
-                </div>
-              )}
             </div>
           )}
 
@@ -239,11 +317,6 @@ export function VerifyInterface({ user }: VerifyInterfaceProps) {
                 <h3 className="text-xl font-medium text-red-900 dark:text-red-200 mb-2">
                   Verification Failed
                 </h3>
-                {verification?.reviewReason && (
-                  <p className="text-gray-600 dark:text-gray-300 mb-4">
-                    {verification.reviewReason}
-                  </p>
-                )}
                 <p className="text-gray-600 dark:text-gray-300">
                   Please try again or contact support if you continue to experience issues.
                 </p>
@@ -267,7 +340,7 @@ export function VerifyInterface({ user }: VerifyInterfaceProps) {
                   Start Verification
                 </h3>
                 <p className="text-gray-600 dark:text-gray-300 mb-4">
-                  You'll be redirected to our secure verification partner to complete the process. 
+                  Complete identity verification to continue setting up your profile. 
                   This typically takes just a few minutes.
                 </p>
               </div>
@@ -285,7 +358,7 @@ export function VerifyInterface({ user }: VerifyInterfaceProps) {
 
               <Button 
                 onClick={startVerification} 
-                disabled={isStarting}
+                disabled={isStarting || !personaClientRef.current}
                 size="lg"
                 className="w-full"
               >
@@ -297,7 +370,6 @@ export function VerifyInterface({ user }: VerifyInterfaceProps) {
                 ) : (
                   <>
                     Start Verification
-                    <ExternalLink className="h-4 w-4 ml-2" />
                   </>
                 )}
               </Button>
@@ -316,8 +388,8 @@ export function VerifyInterface({ user }: VerifyInterfaceProps) {
                 Your Privacy & Security
               </h4>
               <p className="text-sm text-blue-800 dark:text-blue-300">
-                Verification is handled by our trusted partner who complies with GDPR and Dutch privacy regulations. 
-                We never store your raw documents - verification data is retained by the provider according to their 
+                Verification is handled by Persona, our trusted partner who complies with GDPR and Dutch privacy regulations. 
+                We never store your raw documents - verification data is retained by Persona according to their 
                 retention policy. Your information is encrypted and used solely for identity verification purposes.
               </p>
             </div>

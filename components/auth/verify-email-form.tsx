@@ -77,9 +77,9 @@ export function VerifyEmailForm() {
         // Clear stored email
         sessionStorage.removeItem('verification-email')
         
-        // Redirect to onboarding after a short delay
+        // Redirect to identity verification (Persona) after email verification
         setTimeout(() => {
-          router.push('/onboarding/intro')
+          router.push('/verify')
         }, 2000)
       }
     } catch (err) {
@@ -133,7 +133,7 @@ export function VerifyEmailForm() {
   }
 
   const handleContinue = () => {
-    router.push('/onboarding/intro')
+    router.push('/verify')
   }
 
   if (isVerified) {
@@ -156,7 +156,7 @@ export function VerifyEmailForm() {
             onClick={handleContinue} 
             className="w-full"
           >
-            Continue to Profile Setup
+            Continue to Identity Verification
             <ArrowRight className="ml-2 h-4 w-4" />
           </Button>
         </CardContent>

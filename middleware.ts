@@ -148,23 +148,26 @@ export async function middleware(req: NextRequest) {
     }
   }
 
-  // Verification gating for matches and chat routes
+  // Verification gating for onboarding, matches and chat routes
   if (user) {
-    const protectedRoutes = ['/matches', '/chat']
+    const protectedRoutes = ['/onboarding', '/matches', '/chat']
     const isProtectedRoute = protectedRoutes.some(route => pathname.startsWith(route))
     
     if (isProtectedRoute) {
-      // Check if demo chat is allowed
+      // Check if demo chat is allowed (only for matches/chat, not onboarding)
       const allowDemoChat = process.env.ALLOW_DEMO_CHAT === 'true'
       const isDemoUser = process.env.DEMO_USER_EMAIL && user.email === process.env.DEMO_USER_EMAIL
+      const isOnboardingRoute = pathname.startsWith('/onboarding')
       
-      if (!allowDemoChat || !isDemoUser) {
+      // Onboarding always requires verification (no demo bypass)
+      // Matches/chat can bypass if ALLOW_DEMO_CHAT is true
+      if (isOnboardingRoute || (!allowDemoChat || !isDemoUser)) {
         // Check verification status
         const { data: profile } = await supabase
           .from('profiles')
           .select('verification_status')
           .eq('user_id', user.id)
-          .single()
+          .maybeSingle()
 
         if (profile && profile.verification_status !== 'verified') {
           const url = req.nextUrl.clone()

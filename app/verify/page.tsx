@@ -11,20 +11,16 @@ export default async function VerifyPage() {
     redirect('/auth/sign-in')
   }
 
-  // Check if user has completed onboarding
+  // Check verification status
   const { data: profile } = await supabase
     .from('profiles')
     .select('id, verification_status')
     .eq('user_id', user.id)
-    .single()
+    .maybeSingle()
 
-  if (!profile) {
-    redirect('/onboarding')
-  }
-
-  // If already verified, redirect to matches
-  if (profile.verification_status === 'verified') {
-    redirect('/matches')
+  // If already verified, redirect to onboarding (verification comes before onboarding now)
+  if (profile && profile.verification_status === 'verified') {
+    redirect('/onboarding/intro')
   }
 
   return (
