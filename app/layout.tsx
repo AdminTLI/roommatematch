@@ -3,7 +3,7 @@ import { Inter } from 'next/font/google'
 import { Analytics } from '@vercel/analytics/react'
 import { SpeedInsights } from '@vercel/speed-insights/next'
 import { Toaster } from 'sonner'
-import { ErrorBoundary } from '@/components/ErrorBoundary'
+import { ErrorBoundaryWrapper } from '@/components/ErrorBoundaryWrapper'
 import './globals.css'
 
 const inter = Inter({ subsets: ['latin'] })
@@ -29,23 +29,9 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <body className={`${inter.className} antialiased`}>
-        <ErrorBoundary
-          fallback={({ error, resetError }) => (
-            <div className="flex min-h-screen flex-col items-center justify-center p-4">
-              <h1 className="text-2xl font-bold mb-4">Something went wrong</h1>
-              <p className="text-gray-600 mb-4">{error.message}</p>
-              <button
-                onClick={resetError}
-                className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
-              >
-                Try again
-              </button>
-            </div>
-          )}
-          showDialog
-        >
+        <ErrorBoundaryWrapper>
           {children}
-        </ErrorBoundary>
+        </ErrorBoundaryWrapper>
         <Toaster position="top-right" richColors />
         <Analytics />
         <SpeedInsights />
