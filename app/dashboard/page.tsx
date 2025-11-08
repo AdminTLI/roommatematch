@@ -22,6 +22,11 @@ export default async function DashboardPage() {
     userError
   })
 
+  // Redirect to sign-in if user is not authenticated
+  if (!user) {
+    redirect('/auth/sign-in')
+  }
+
   // Check questionnaire completion status using the helper
   const completionStatus = await checkQuestionnaireCompletion(user.id)
   const hasCompletedQuestionnaire = completionStatus.isComplete
