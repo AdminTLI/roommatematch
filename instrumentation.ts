@@ -1,12 +1,14 @@
+import * as Sentry from '@sentry/nextjs';
+
 export async function register() {
   if (process.env.NEXT_RUNTIME === 'nodejs') {
-    // Initialize Sentry on server-side
-    try {
-      const { initSentry } = await import('@/lib/monitoring/sentry')
-      initSentry()
-    } catch (error) {
-      console.warn('[Instrumentation] Failed to initialize Sentry:', error)
-    }
+    await import('./sentry.server.config');
+  }
+
+  if (process.env.NEXT_RUNTIME === 'edge') {
+    await import('./sentry.edge.config');
   }
 }
+
+export const onRequestError = Sentry.captureRequestError;
 
