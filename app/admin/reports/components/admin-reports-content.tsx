@@ -62,8 +62,8 @@ export function AdminReportsContent() {
   const [actionMessage, setActionMessage] = useState('')
   const [isProcessing, setIsProcessing] = useState(false)
   const [filters, setFilters] = useState({
-    status: '',
-    category: ''
+    status: 'all',
+    category: 'all'
   })
   const [total, setTotal] = useState(0)
 
@@ -75,8 +75,8 @@ export function AdminReportsContent() {
     setIsLoading(true)
     try {
       const params = new URLSearchParams()
-      if (filters.status) params.append('status', filters.status)
-      if (filters.category) params.append('category', filters.category)
+      if (filters.status && filters.status !== 'all') params.append('status', filters.status)
+      if (filters.category && filters.category !== 'all') params.append('category', filters.category)
       params.append('limit', '100')
 
       const response = await fetch(`/api/admin/reports?${params}`)
@@ -308,7 +308,7 @@ export function AdminReportsContent() {
                   <SelectValue placeholder="All statuses" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">All</SelectItem>
+                  <SelectItem value="all">All</SelectItem>
                   <SelectItem value="open">Open</SelectItem>
                   <SelectItem value="actioned">Actioned</SelectItem>
                   <SelectItem value="dismissed">Dismissed</SelectItem>
@@ -322,7 +322,7 @@ export function AdminReportsContent() {
                   <SelectValue placeholder="All categories" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">All</SelectItem>
+                  <SelectItem value="all">All</SelectItem>
                   <SelectItem value="spam">Spam</SelectItem>
                   <SelectItem value="harassment">Harassment</SelectItem>
                   <SelectItem value="inappropriate">Inappropriate</SelectItem>

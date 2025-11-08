@@ -47,7 +47,7 @@ export function AdminMatchesContent() {
   const [selectedMatch, setSelectedMatch] = useState<Match | null>(null)
   const [isProcessingBulk, setIsProcessingBulk] = useState(false)
   const [filters, setFilters] = useState({
-    status: '',
+    status: 'all',
     minScore: '',
     maxScore: ''
   })
@@ -70,7 +70,7 @@ export function AdminMatchesContent() {
     setIsLoading(true)
     try {
       const params = new URLSearchParams()
-      if (filters.status) params.append('status', filters.status)
+      if (filters.status && filters.status !== 'all') params.append('status', filters.status)
       if (filters.minScore) params.append('minScore', filters.minScore)
       if (filters.maxScore) params.append('maxScore', filters.maxScore)
       params.append('limit', '100')
@@ -153,7 +153,7 @@ export function AdminMatchesContent() {
   const handleExport = async () => {
     try {
       const params = new URLSearchParams()
-      if (filters.status) params.append('status', filters.status)
+      if (filters.status && filters.status !== 'all') params.append('status', filters.status)
       if (filters.minScore) params.append('minScore', filters.minScore)
       if (filters.maxScore) params.append('maxScore', filters.maxScore)
       params.append('format', 'csv')
@@ -425,7 +425,7 @@ export function AdminMatchesContent() {
                   <SelectValue placeholder="All statuses" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">All</SelectItem>
+                  <SelectItem value="all">All</SelectItem>
                   <SelectItem value="pending">Pending</SelectItem>
                   <SelectItem value="accepted">Accepted</SelectItem>
                   <SelectItem value="declined">Declined</SelectItem>
