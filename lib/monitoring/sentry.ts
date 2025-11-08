@@ -1,10 +1,4 @@
-let Sentry: any = null
-
-try {
-  Sentry = require('@sentry/nextjs')
-} catch {
-  // Sentry not installed, will be handled gracefully
-}
+import * as Sentry from '@sentry/nextjs'
 
 const SENTRY_DSN = process.env.NEXT_PUBLIC_SENTRY_DSN
 const SENTRY_ENVIRONMENT = process.env.NEXT_PUBLIC_SENTRY_ENVIRONMENT || process.env.NODE_ENV || 'development'
