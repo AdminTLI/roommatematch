@@ -9,6 +9,7 @@ import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Loader2, Check, User, Mail, GraduationCap, Phone } from 'lucide-react'
 import { Textarea } from '@/components/ui/textarea'
 import { trackProfileUpdate } from '@/lib/notifications/activity-tracker'
+import { fetchWithCSRF } from '@/lib/utils/fetch-with-csrf'
 
 interface ProfileSettingsProps {
   user: any
@@ -43,7 +44,7 @@ export function ProfileSettings({ user, profile, academic }: ProfileSettingsProp
     setIsSuccess(false)
 
     try {
-      const response = await fetch('/api/settings/profile', {
+      const response = await fetchWithCSRF('/api/settings/profile', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
