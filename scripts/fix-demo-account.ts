@@ -12,6 +12,30 @@
  */
 
 import { createClient } from '@supabase/supabase-js'
+import { readFileSync, existsSync } from 'fs'
+import * as path from 'path'
+
+// Load .env.local if it exists
+try {
+  const envPath = path.join(process.cwd(), '.env.local')
+  if (existsSync(envPath)) {
+    const envFile = readFileSync(envPath, 'utf-8')
+    for (const line of envFile.split('\n')) {
+      const trimmed = line.trim()
+      if (trimmed && !trimmed.startsWith('#')) {
+        const [key, ...valueParts] = trimmed.split('=')
+        if (key && valueParts.length > 0) {
+          const value = valueParts.join('=').trim().replace(/^["']|["']$/g, '')
+          if (!process.env[key]) {
+            process.env[key] = value
+          }
+        }
+      }
+    }
+  }
+} catch (error) {
+  // Silently fail if .env.local doesn't exist or can't be read
+}
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
 const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY!
