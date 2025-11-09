@@ -63,39 +63,6 @@ export function ChatList({ user }: ChatListProps) {
   const router = useRouter()
   const supabase = createClient()
 
-  // Check for last visited room and redirect if it exists
-  useEffect(() => {
-    const checkLastRoom = async () => {
-      try {
-        const lastRoomId = localStorage.getItem(`last_chat_room_${user.id}`)
-        if (lastRoomId) {
-          // Verify the room still exists and user is still a member
-          const { data: membership } = await supabase
-            .from('chat_members')
-            .select('chat_id')
-            .eq('chat_id', lastRoomId)
-            .eq('user_id', user.id)
-            .maybeSingle()
-          
-          if (membership) {
-            // Redirect to last room
-            router.push(`/chat/${lastRoomId}`)
-            return
-          } else {
-            // Clean up invalid last room
-            localStorage.removeItem(`last_chat_room_${user.id}`)
-          }
-        }
-      } catch (error) {
-        // Silently fail if check fails
-      }
-    }
-    
-    // Only check if we have chats loaded (to avoid redirecting before showing list)
-    if (!isLoading && chats.length > 0) {
-      checkLastRoom()
-    }
-  }, [isLoading, chats, user.id, router, supabase])
 
   const loadChats = useCallback(async () => {
     setIsLoading(true)
@@ -328,15 +295,19 @@ export function ChatList({ user }: ChatListProps) {
     }
   }, [user.id])
 
+  // Load chats on mount and when user changes
   useEffect(() => {
     loadChats()
-    
+  }, [loadChats])
+  
+  // Separate effect for auto-redirect (only runs when chats change, not on every render)
+  useEffect(() => {
     // Check for last visited room and redirect if exists (unless disabled)
-    if (typeof window !== 'undefined' && user?.id) {
+    if (typeof window !== 'undefined' && user?.id && chats.length > 0) {
       const disableAutoRedirect = localStorage.getItem('disableChatAutoRedirect') === 'true'
       if (!disableAutoRedirect) {
         const lastRoomId = localStorage.getItem(`last_chat_room_${user.id}`)
-        if (lastRoomId && chats.length > 0) {
+        if (lastRoomId) {
           // Check if last room still exists in user's chats
           const lastRoomExists = chats.some(chat => chat.id === lastRoomId)
           if (lastRoomExists) {
@@ -351,7 +322,7 @@ export function ChatList({ user }: ChatListProps) {
         }
       }
     }
-  }, [loadChats, chats, router, user?.id])
+  }, [chats, router, user?.id])
 
   const filteredChats = chats.filter(chat => {
     if (!searchQuery.trim()) return true
