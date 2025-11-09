@@ -219,7 +219,7 @@ export function DashboardContent({ hasCompletedQuestionnaire = false, hasPartial
         return
       }
 
-      // Fetch profiles for other users with program names
+      // Fetch profiles for other users
       const { data: profiles, error: profilesError } = await supabase
         .from('profiles')
         .select(`
@@ -227,11 +227,7 @@ export function DashboardContent({ hasCompletedQuestionnaire = false, hasPartial
           first_name, 
           last_name, 
           university_id, 
-          universities(name),
-          user_academic(
-            program_id,
-            programs!user_academic_program_id_fkey(name)
-          )
+          universities(name)
         `)
         .in('user_id', Array.from(otherUserIds))
 
@@ -242,8 +238,26 @@ export function DashboardContent({ hasCompletedQuestionnaire = false, hasPartial
         return
       }
 
-      // Fetch match data for compatibility scores
+      // Fetch program names separately from user_academic
       const userIdsArray = Array.from(otherUserIds)
+      const { data: academicData } = await supabase
+        .from('user_academic')
+        .select(`
+          user_id,
+          program_id,
+          programs!user_academic_program_id_fkey(name)
+        `)
+        .in('user_id', userIdsArray)
+
+      // Create a map of user_id to program name
+      const programMap = new Map<string, string>()
+      academicData?.forEach((academic: any) => {
+        if (academic.programs?.name) {
+          programMap.set(academic.user_id, academic.programs.name)
+        }
+      })
+
+      // Fetch match data for compatibility scores
       const { data: matchesAsA } = await supabase
         .from('matches')
         .select('b_user, score')
@@ -265,13 +279,8 @@ export function DashboardContent({ hasCompletedQuestionnaire = false, hasPartial
       const formattedMatches = (profiles || []).slice(0, 3).map((profile: any) => {
         const fullName = [profile.first_name?.trim(), profile.last_name?.trim()].filter(Boolean).join(' ') || 'User'
         const score = matchScoreMap.get(profile.user_id) || 0
-        // Get program name from user_academic -> programs relationship
-        // user_academic can be an array or single object, or might not exist
-        let programDisplay = null
-        if (profile.user_academic) {
-          const userAcademic = Array.isArray(profile.user_academic) ? profile.user_academic[0] : profile.user_academic
-          programDisplay = userAcademic?.programs?.name || null
-        }
+        // Get program name from the program map
+        const programDisplay = programMap.get(profile.user_id) || null
         
         return {
           id: profile.user_id,
