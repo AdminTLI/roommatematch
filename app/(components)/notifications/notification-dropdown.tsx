@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'
 // ScrollArea not available, using div with overflow styling
 import { NotificationItem } from './notification-item'
 import { Notification, NotificationCounts } from '@/lib/notifications/types'
@@ -185,27 +186,45 @@ export function NotificationDropdown({
             </CardTitle>
             
             <div className="flex items-center gap-1 flex-shrink-0">
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={handleMarkAllAsRead}
-                disabled={!counts || counts.unread === 0}
-                className="text-xs px-2"
-              >
-                <CheckCheck className="h-3 w-3" />
-              </Button>
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={handleMarkAllAsRead}
+                      disabled={!counts || counts.unread === 0}
+                      className="text-xs px-2"
+                    >
+                      <CheckCheck className="h-3 w-3" />
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p>Mark all as read</p>
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
               
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => {
-                  router.push('/notifications')
-                  onClose()
-                }}
-                className="text-xs px-2"
-              >
-                <Eye className="h-3 w-3" />
-              </Button>
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => {
+                        router.push('/notifications')
+                        onClose()
+                      }}
+                      className="text-xs px-2"
+                    >
+                      <Eye className="h-3 w-3" />
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p>View all notifications</p>
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
             </div>
           </div>
         </CardHeader>

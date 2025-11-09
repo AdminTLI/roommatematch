@@ -219,10 +219,20 @@ export function DashboardContent({ hasCompletedQuestionnaire = false, hasPartial
         return
       }
 
-      // Fetch profiles for other users
+      // Fetch profiles for other users with program names
       const { data: profiles } = await supabase
         .from('profiles')
-        .select('user_id, first_name, last_name, program, university_id, universities(name)')
+        .select(`
+          user_id, 
+          first_name, 
+          last_name, 
+          university_id, 
+          universities(name),
+          user_academic(
+            program_id,
+            programs!user_academic_program_id_fkey(name)
+          )
+        `)
         .in('user_id', Array.from(otherUserIds))
 
       // Fetch match data for compatibility scores
@@ -248,13 +258,19 @@ export function DashboardContent({ hasCompletedQuestionnaire = false, hasPartial
       const formattedMatches = (profiles || []).slice(0, 3).map((profile: any) => {
         const fullName = [profile.first_name?.trim(), profile.last_name?.trim()].filter(Boolean).join(' ') || 'User'
         const score = matchScoreMap.get(profile.user_id) || 0
+        // Get program name from user_academic -> programs relationship
+        // user_academic can be an array or single object
+        const userAcademic = Array.isArray(profile.user_academic) ? profile.user_academic[0] : profile.user_academic
+        const programName = userAcademic?.programs?.name || null
+        // If no program name found, don't display anything (hide UUIDs)
+        const programDisplay = programName || null
         
         return {
           id: profile.user_id,
           userId: profile.user_id,
           name: fullName,
-          score: Math.round(score * 100),
-          program: profile.program || 'Program',
+          score: score, // Keep as decimal 0-1 for display
+          program: programDisplay,
           university: profile.universities?.name || 'University',
           avatar: undefined
         }
@@ -278,21 +294,27 @@ export function DashboardContent({ hasCompletedQuestionnaire = false, hasPartial
 
     try {
       // Count matches where user is a_user
-      const { count: countAsA } = await supabase
+      const { count: countAsA, error: errorA } = await supabase
         .from('matches')
         .select('*', { count: 'exact', head: true })
         .eq('a_user', user.id)
 
       // Count matches where user is b_user
-      const { count: countAsB } = await supabase
+      const { count: countAsB, error: errorB } = await supabase
         .from('matches')
         .select('*', { count: 'exact', head: true })
         .eq('b_user', user.id)
+
+      if (errorA || errorB) {
+        console.error('Error fetching total matches count:', errorA || errorB)
+        return
+      }
 
       const total = (countAsA || 0) + (countAsB || 0)
       setTotalMatches(total)
     } catch (error) {
       console.error('Failed to load total matches count:', error)
+      setTotalMatches(0)
     }
   }
 
@@ -301,15 +323,20 @@ export function DashboardContent({ hasCompletedQuestionnaire = false, hasPartial
 
     try {
       // Fetch ALL matches (not just chat members)
-      const { data: matchesAsA } = await supabase
+      const { data: matchesAsA, error: errorA } = await supabase
         .from('matches')
         .select('score')
         .eq('a_user', user.id)
 
-      const { data: matchesAsB } = await supabase
+      const { data: matchesAsB, error: errorB } = await supabase
         .from('matches')
         .select('score')
         .eq('b_user', user.id)
+
+      if (errorA || errorB) {
+        console.error('Error fetching matches for avg compatibility:', errorA || errorB)
+        return
+      }
 
       const allScores = [
         ...(matchesAsA || []).map((m: any) => m.score || 0),
@@ -326,6 +353,7 @@ export function DashboardContent({ hasCompletedQuestionnaire = false, hasPartial
       }
     } catch (error) {
       console.error('Failed to load average compatibility:', error)
+      setAvgCompatibility(0)
     }
   }
 
@@ -534,7 +562,7 @@ export function DashboardContent({ hasCompletedQuestionnaire = false, hasPartial
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 lg:space-y-3">
       {/* Email verification warning */}
       {user && !user.email_confirmed_at && (
         <motion.div
@@ -615,12 +643,12 @@ export function DashboardContent({ hasCompletedQuestionnaire = false, hasPartial
         initial="initial"
         animate="animate"
         variants={staggerChildren}
-        className="space-y-6"
+        className="space-y-4 lg:space-y-3"
       >
         <motion.div variants={fadeInUp} className="flex items-center justify-between">
           <div>
-            <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">Welcome back{firstName ? ` ${firstName}` : ''}!</h1>
-            <p className="text-base sm:text-lg text-gray-600 mt-1">Here's what's happening with your matches today.</p>
+            <h1 className="text-xl lg:text-2xl font-bold text-gray-900">Welcome back{firstName ? ` ${firstName}` : ''}!</h1>
+            <p className="text-sm lg:text-base text-gray-600 mt-1">Here's what's happening with your matches today.</p>
           </div>
         </motion.div>
         
@@ -672,7 +700,7 @@ export function DashboardContent({ hasCompletedQuestionnaire = false, hasPartial
         initial="initial"
         animate="animate"
         variants={staggerChildren}
-        className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-4"
+        className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-3"
       >
         <motion.div variants={fadeInUp}>
           <div className="bg-white p-4 sm:p-6 rounded-xl shadow-sm border border-gray-200">
@@ -703,13 +731,13 @@ export function DashboardContent({ hasCompletedQuestionnaire = false, hasPartial
         initial="initial"
         animate="animate"
         variants={staggerChildren}
-        className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-4 lg:gap-6"
+        className="grid grid-cols-1 lg:grid-cols-2 gap-3 sm:gap-3 lg:gap-4"
       >
         {/* Top Matches - Real Data */}
         <motion.div variants={fadeInUp}>
-          <div className="bg-white p-4 sm:p-5 rounded-xl shadow-sm border border-gray-200 flex flex-col h-full max-h-[400px]">
-            <div className="flex items-center justify-between mb-4 sm:mb-6">
-              <h3 className="text-lg sm:text-xl font-bold text-gray-900">Your Top Matches</h3>
+          <div className="bg-white p-4 sm:p-5 rounded-xl shadow-sm border border-gray-200 flex flex-col h-full lg:max-h-[320px]">
+            <div className="flex items-center justify-between mb-3 lg:mb-3">
+              <h3 className="text-base lg:text-lg font-bold text-gray-900">Your Top Matches</h3>
               <button 
                 className="flex items-center gap-1 text-sm text-gray-600 hover:text-gray-700 font-medium" 
                 onClick={loadTopMatches}
@@ -733,33 +761,36 @@ export function DashboardContent({ hasCompletedQuestionnaire = false, hasPartial
               <div className="flex flex-col flex-1 min-h-0">
                 <div className="space-y-3 sm:space-y-4 overflow-y-auto flex-1 pr-2 max-h-[280px]">
                   {topMatches.map((match) => (
-                    <div key={match.id} className="flex flex-col sm:flex-row items-start sm:items-center gap-3 sm:gap-4 p-3 sm:p-4 bg-gray-50 rounded-lg">
-                      <div className="flex items-center gap-3 sm:gap-4 flex-1 w-full sm:w-auto">
-                        <div className="text-xl sm:text-2xl font-bold text-blue-600">{match.score}%</div>
-                        <div className="w-10 h-10 sm:w-12 sm:h-12 bg-gradient-to-br from-blue-500 to-purple-500 rounded-full flex items-center justify-center text-white font-bold text-base sm:text-lg flex-shrink-0">
+                    <div key={match.id} className="flex flex-col items-start gap-3 p-3 bg-gray-50 rounded-lg overflow-x-hidden">
+                      <div className="flex items-center gap-3 w-full">
+                        <div className="text-xl font-bold text-blue-600 flex-shrink-0">
+                          {(match.score * 100).toFixed(1)}%
+                        </div>
+                        <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-500 rounded-full flex items-center justify-center text-white font-bold text-base flex-shrink-0">
                           {match.name[0].toUpperCase()}
                         </div>
                         <div className="flex-1 min-w-0">
-                          <h4 className="font-bold text-sm sm:text-base text-gray-900 truncate">{match.name}</h4>
-                          <p className="text-xs sm:text-sm text-gray-600 truncate">
-                            {match.program && match.university && (
+                          <h4 className="font-bold text-sm text-gray-900 truncate">{match.name}</h4>
+                          <p className="text-xs text-gray-600 truncate">
+                            {match.program && match.university ? (
                               <>
-                                <span>{match.program}</span>
-                                <span className="mx-1 sm:mx-2">•</span>
-                                <span>{match.university}</span>
+                                <span className="truncate">{match.program}</span>
+                                <span className="mx-1">•</span>
+                                <span className="truncate">{match.university}</span>
                               </>
-                            )}
-                            {!match.program && !match.university && (
+                            ) : match.university ? (
+                              <span className="truncate">{match.university}</span>
+                            ) : (
                               <span className="text-gray-400">No program information</span>
                             )}
                           </p>
                         </div>
                       </div>
-                      <div className="flex items-center gap-2 w-full sm:w-auto justify-end sm:justify-start">
-                        <Heart className="w-4 h-4 sm:w-5 sm:h-5 text-rose-500 flex-shrink-0" />
+                      <div className="flex items-center gap-2 w-full justify-end">
+                        <Heart className="w-4 h-4 text-rose-500 flex-shrink-0" />
                         <button 
                           onClick={() => handleChatWithMatch(match.userId || match.id)}
-                          className="px-3 sm:px-4 py-2 bg-blue-600 text-white text-xs sm:text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors"
+                          className="px-3 py-1.5 bg-blue-600 text-white text-xs font-medium rounded-lg hover:bg-blue-700 transition-colors flex-shrink-0"
                         >
                           Chat
                         </button>
@@ -795,9 +826,9 @@ export function DashboardContent({ hasCompletedQuestionnaire = false, hasPartial
 
         {/* Recent Activity - Live Notifications */}
         <motion.div variants={fadeInUp}>
-          <div className="bg-white p-4 sm:p-5 rounded-xl shadow-sm border border-gray-200 flex flex-col h-full max-h-[400px]">
-            <div className="flex items-center justify-between mb-4 sm:mb-6">
-              <h3 className="text-lg sm:text-xl font-bold text-gray-900">Recent Activity</h3>
+          <div className="bg-white p-4 sm:p-5 rounded-xl shadow-sm border border-gray-200 flex flex-col h-full lg:max-h-[320px]">
+            <div className="flex items-center justify-between mb-3 lg:mb-3">
+              <h3 className="text-base lg:text-lg font-bold text-gray-900">Recent Activity</h3>
               <button 
                 className="flex items-center gap-1 text-sm text-gray-600 hover:text-gray-700 font-medium" 
                 onClick={loadRecentActivity}
@@ -888,6 +919,7 @@ export function DashboardContent({ hasCompletedQuestionnaire = false, hasPartial
         initial="initial"
         animate="animate"
         variants={staggerChildren}
+        className="lg:hidden"
       >
         <motion.div variants={fadeInUp}>
           <div className="bg-white p-4 sm:p-6 rounded-xl shadow-sm border border-gray-200">
