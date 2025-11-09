@@ -88,24 +88,8 @@ export function SignUpForm() {
       // Store email for OTP verification
       sessionStorage.setItem('verification-email', email)
       
-      // Explicitly send OTP code even if Supabase confirmations are disabled
-      // This ensures OTP is always sent regardless of Supabase config
-      try {
-        const { error: otpError } = await supabase.auth.signInWithOtp({
-          email,
-          options: {
-            shouldCreateUser: false, // User already created, just send OTP
-          },
-        })
-
-        if (otpError) {
-          console.warn('OTP send error (may be expected if already sent):', otpError)
-          // Continue anyway - user might already have received OTP from signUp
-        }
-      } catch (otpErr) {
-        console.warn('Failed to send OTP:', otpErr)
-        // Continue anyway - user might already have received OTP from signUp
-      }
+      // signUp() automatically sends OTP with type 'signup' when enable_confirmations = true
+      // No need to call signInWithOtp here - it would send a different OTP type
       
       // Navigate to verification page
       router.push('/auth/verify-email')
