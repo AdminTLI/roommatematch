@@ -102,6 +102,16 @@ export async function POST(request: NextRequest) {
       })
   }
 
+  // Ensure onboarding submission exists (required for accessing chat and other features)
+  await admin
+    .from('onboarding_submissions')
+    .upsert({
+      user_id: userId,
+      completed_at: new Date().toISOString()
+    }, {
+      onConflict: 'user_id'
+    })
+
   return NextResponse.json({ 
     status: userFound ? 'exists' : 'created', 
     userId,

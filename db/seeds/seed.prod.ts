@@ -297,6 +297,22 @@ async function seedProduction() {
             console.log('   ✓ Demo user verification record created (fully verified)')
           }
         }
+
+        // Ensure onboarding submission exists (required for accessing chat and other features)
+        const { error: onboardingError } = await supabase
+          .from('onboarding_submissions')
+          .upsert({
+            user_id: demoUserId,
+            completed_at: new Date().toISOString()
+          }, {
+            onConflict: 'user_id'
+          })
+        
+        if (onboardingError) {
+          console.warn('   ⚠️  Warning creating onboarding submission:', onboardingError.message)
+        } else {
+          console.log('   ✓ Demo user onboarding submission created/updated')
+        }
       }
     }
 
