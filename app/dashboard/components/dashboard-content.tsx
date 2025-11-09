@@ -797,7 +797,7 @@ export function DashboardContent({ hasCompletedQuestionnaire = false, hasPartial
               <div className="flex flex-col flex-1 min-h-0">
                 <div className="space-y-2 overflow-y-auto flex-1 pr-2">
                   {topMatches.map((match) => (
-                    <div key={match.id} className="flex flex-col items-start gap-3 p-3 bg-gray-50 rounded-lg overflow-x-hidden">
+                    <div key={match.id} className="flex flex-col items-start gap-2 p-2 bg-gray-50 rounded-lg overflow-x-hidden">
                       <div className="flex items-center gap-2 w-full">
                         <div className="text-lg font-bold text-blue-600 flex-shrink-0">
                           {(match.score * 100).toFixed(1)}%
