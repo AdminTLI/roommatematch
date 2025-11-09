@@ -12,6 +12,7 @@ import { FileDown, AlertCircle } from 'lucide-react'
 import jsPDF from 'jspdf'
 import autoTable from 'jspdf-autotable'
 import { SuspenseWrapper } from '@/components/questionnaire/SuspenseWrapper'
+import { fetchWithCSRF } from '@/lib/utils/fetch-with-csrf'
 
 const scaleAnchors = {
   agreement: ['Strongly disagree', 'Disagree', 'Neutral', 'Agree', 'Strongly agree'],
@@ -338,7 +339,7 @@ function ReviewClientContent() {
 
   const submit = async () => {
     try {
-      const response = await fetch('/api/onboarding/submit', { method: 'POST' })
+      const response = await fetchWithCSRF('/api/onboarding/submit', { method: 'POST' })
       const result = await response.json()
       
       if (!response.ok) {

@@ -11,6 +11,7 @@ import { useRouter } from 'next/navigation'
 import { ErrorBoundary } from '@/components/ErrorBoundary'
 import { createClient } from '@/lib/supabase/client'
 import { SuspenseWrapper } from '@/components/questionnaire/SuspenseWrapper'
+import { fetchWithCSRF } from '@/lib/utils/fetch-with-csrf'
 
 function IntroClientContent() {
   const [academicData, setAcademicData] = useState<Record<string, any>>({})
@@ -132,7 +133,7 @@ function IntroClientContent() {
           value
         }))
 
-        const response = await fetch('/api/onboarding/save', {
+        const response = await fetchWithCSRF('/api/onboarding/save', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',

@@ -17,6 +17,7 @@ import { useOnboardingStore } from '@/store/onboarding'
 import { SuspenseWrapper } from '@/components/questionnaire/SuspenseWrapper'
 import { AutosaveToaster } from '@/components/questionnaire/AutosaveToaster'
 import { useAutosave } from '@/components/questionnaire/useAutosave'
+import { fetchWithCSRF } from '@/lib/utils/fetch-with-csrf'
 
 function SectionClientContent() {
   const sectionKey = 'noise-sensory' as const
@@ -42,7 +43,7 @@ function SectionClientContent() {
   const saveSection = async () => {
     try {
       const answersArray = Object.values(answers)
-      await fetch('/api/onboarding/save', {
+      await fetchWithCSRF('/api/onboarding/save', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ section: sectionKey, answers: answersArray })

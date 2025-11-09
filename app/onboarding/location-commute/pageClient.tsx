@@ -12,6 +12,7 @@ import { GroupedSearchSelect } from '@/components/questionnaire/GroupedSearchSel
 import { toGroupedOptions } from '@/lib/loadInstitutions'
 import { loadCampuses } from '@/lib/loadCampuses'
 import { SuspenseWrapper } from '@/components/questionnaire/SuspenseWrapper'
+import { fetchWithCSRF } from '@/lib/utils/fetch-with-csrf'
 
 function SectionClientContent() {
   const sectionKey = 'location-commute' as const
@@ -35,7 +36,7 @@ function SectionClientContent() {
   const saveSection = async () => {
     try {
       const answersArray = Object.values(answers)
-      await fetch('/api/onboarding/save', {
+      await fetchWithCSRF('/api/onboarding/save', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ section: sectionKey, answers: answersArray })

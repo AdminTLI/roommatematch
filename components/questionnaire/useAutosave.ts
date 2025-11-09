@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import type { SectionKey } from '@/types/questionnaire'
 import { useOnboardingStore, type Answer } from '@/store/onboarding'
+import { fetchWithCSRF } from '@/lib/utils/fetch-with-csrf'
 
 function toArrayRecord(record: Record<string, Answer>): Answer[] {
   return Object.values(record)
@@ -53,7 +54,7 @@ export function useAutosave(section: SectionKey) {
     pendingRef.current = false
     setIsSaving(true)
     try {
-      const res = await fetch('/api/onboarding/save', {
+      const res = await fetchWithCSRF('/api/onboarding/save', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ section, answers: answersArray }),
