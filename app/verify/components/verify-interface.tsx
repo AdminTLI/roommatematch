@@ -140,9 +140,31 @@ export function VerifyInterface({ user }: VerifyInterfaceProps) {
           
           // Update verification status in our database
           try {
+            // Get CSRF token from cookie
+            const getCSRFToken = () => {
+              const cookies = document.cookie.split(';')
+              for (const cookie of cookies) {
+                const [name, value] = cookie.trim().split('=')
+                if (name === 'csrf-token-header') {
+                  return decodeURIComponent(value)
+                }
+              }
+              return null
+            }
+
+            const csrfToken = getCSRFToken()
+            const headers: HeadersInit = {
+              'Content-Type': 'application/json',
+            }
+            
+            // Add CSRF token if available
+            if (csrfToken) {
+              headers['x-csrf-token'] = csrfToken
+            }
+
             const response = await fetch('/api/verification/persona-complete', {
               method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
+              headers,
               body: JSON.stringify({
                 inquiryId,
                 status: personaStatus
@@ -150,6 +172,9 @@ export function VerifyInterface({ user }: VerifyInterfaceProps) {
             })
 
             if (response.ok) {
+              const data = await response.json()
+              console.log('[Verification] Persona complete success:', data)
+              
               // Refresh status and redirect to onboarding if approved
               await fetchStatus()
               
@@ -159,11 +184,34 @@ export function VerifyInterface({ user }: VerifyInterfaceProps) {
                 }, 2000)
               }
             } else {
-              setError('Failed to update verification status. Please contact support.')
+              // Get error message from response if available
+              let errorMessage = 'Failed to update verification status. Please contact support.'
+              try {
+                const errorData = await response.json()
+                if (errorData.error) {
+                  errorMessage = `Failed to update verification status: ${errorData.error}`
+                }
+              } catch {
+                // If response is not JSON, use status-based message
+                if (response.status === 403) {
+                  errorMessage = 'Access denied. Please refresh the page and try again.'
+                } else if (response.status === 401) {
+                  errorMessage = 'Session expired. Please refresh the page and try again.'
+                } else if (response.status >= 500) {
+                  errorMessage = 'Server error. Please try again in a moment or contact support.'
+                }
+              }
+              console.error('[Verification] Persona complete failed:', {
+                status: response.status,
+                statusText: response.statusText,
+                inquiryId,
+                personaStatus
+              })
+              setError(errorMessage)
             }
           } catch (err) {
-            console.error('Failed to update verification status:', err)
-            setError('Verification completed but failed to update status. Please contact support.')
+            console.error('[Verification] Failed to update verification status:', err)
+            setError('Verification completed but failed to update status. Please refresh the page or contact support.')
           }
         },
         onCancel: () => {
@@ -191,7 +239,12 @@ export function VerifyInterface({ user }: VerifyInterfaceProps) {
 
   const fetchStatus = async () => {
     try {
-      const response = await fetch('/api/verification/status')
+      const response = await fetch('/api/verification/status', {
+        cache: 'no-store',
+        headers: {
+          'Cache-Control': 'no-cache'
+        }
+      })
       if (response.ok) {
         const data = await response.json()
         setStatus(data.status)
@@ -202,9 +255,21 @@ export function VerifyInterface({ user }: VerifyInterfaceProps) {
             router.push('/onboarding/intro')
           }, 2000)
         }
+      } else if (response.status === 404) {
+        // Profile doesn't exist yet - user is unverified
+        console.log('[Verification] Status endpoint returned 404, treating as unverified')
+        setStatus('unverified')
+      } else if (response.status === 401) {
+        // Unauthorized - session might have expired
+        console.warn('[Verification] Status check unauthorized, redirecting to sign in')
+        router.push('/auth/sign-in')
+      } else {
+        console.error('[Verification] Status check failed:', response.status, response.statusText)
+        // Don't set error for status check failures - just log it
       }
     } catch (error) {
-      console.error('Failed to fetch verification status:', error)
+      console.error('[Verification] Failed to fetch verification status:', error)
+      // Don't set error for status check failures - just log it
     } finally {
       setIsLoading(false)
     }

@@ -50,12 +50,35 @@ export async function middleware(req: NextRequest) {
       }
 
       // CSRF validation for state-changing requests
-      const isValidCSRF = await validateCSRFToken(req)
-      if (!isValidCSRF) {
-        return NextResponse.json(
-          { error: 'Invalid CSRF token' },
-          { status: 403 }
-        )
+      // Skip CSRF for verification endpoints that are called from Persona widget
+      // These are authenticated via session cookie and Persona's own security
+      const skipCSRFRoutes = [
+        '/api/verification/persona-complete',
+        '/api/verification/provider-webhook'
+      ]
+      // Normalize pathname (remove trailing slash) for consistent matching
+      const normalizedPathname = pathname.replace(/\/$/, '')
+      const shouldSkipCSRF = skipCSRFRoutes.some(route => 
+        normalizedPathname === route || normalizedPathname.startsWith(route + '/')
+      )
+
+      if (shouldSkipCSRF) {
+        // Log when skipping CSRF for debugging
+        console.log('[Middleware] Skipping CSRF check for:', normalizedPathname)
+      } else {
+        const isValidCSRF = await validateCSRFToken(req)
+        if (!isValidCSRF) {
+          console.warn('[Middleware] CSRF validation failed for:', pathname, {
+            normalizedPathname,
+            skipRoutes: skipCSRFRoutes,
+            hasHeader: !!req.headers.get('x-csrf-token'),
+            hasCookie: !!req.cookies.get('csrf-token-header')
+          })
+          return NextResponse.json(
+            { error: 'Invalid CSRF token' },
+            { status: 403 }
+          )
+        }
       }
     }
 

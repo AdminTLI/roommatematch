@@ -12,15 +12,15 @@ export async function GET(request: NextRequest) {
     }
 
     // Get user profile verification status
+    // Profile may not exist yet during verification flow
     const { data: profile } = await supabase
       .from('profiles')
       .select('verification_status')
       .eq('user_id', user.id)
-      .single()
+      .maybeSingle()
 
-    if (!profile) {
-      return NextResponse.json({ error: 'Profile not found' }, { status: 404 })
-    }
+    // If no profile exists, user is unverified
+    const verificationStatus = profile?.verification_status || 'unverified'
 
     // Get latest verification record
     const { data: verification } = await supabase
@@ -32,7 +32,7 @@ export async function GET(request: NextRequest) {
       .maybeSingle()
 
     return NextResponse.json({
-      status: profile.verification_status,
+      status: verificationStatus,
       verification: verification ? {
         id: verification.id,
         provider: verification.provider,

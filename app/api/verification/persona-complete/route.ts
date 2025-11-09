@@ -12,14 +12,35 @@ export async function POST(request: NextRequest) {
     const { data: { user }, error: authError } = await supabase.auth.getUser()
 
     if (authError || !user) {
+      safeLogger.warn('[Verification] Persona complete - unauthorized', { 
+        hasAuthError: !!authError,
+        authError: authError?.message 
+      })
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    const { inquiryId, status: personaStatus } = await request.json()
+    let inquiryId: string
+    let personaStatus: string
+    
+    try {
+      const body = await request.json()
+      inquiryId = body.inquiryId
+      personaStatus = body.status
+    } catch (parseError) {
+      safeLogger.error('[Verification] Persona complete - invalid JSON', parseError)
+      return NextResponse.json({ error: 'Invalid request body' }, { status: 400 })
+    }
 
     if (!inquiryId) {
+      safeLogger.warn('[Verification] Persona complete - missing inquiryId', { userId: user.id })
       return NextResponse.json({ error: 'Missing inquiryId' }, { status: 400 })
     }
+    
+    safeLogger.info('[Verification] Persona complete - processing', {
+      userId: user.id,
+      inquiryId,
+      personaStatus
+    })
 
     const admin = createAdminClient()
 
@@ -91,11 +112,37 @@ export async function POST(request: NextRequest) {
 
     // Update profile verification status if approved
     if (verificationStatus === 'approved') {
-      await admin
+      // Check if profile exists
+      const { data: existingProfile } = await admin
         .from('profiles')
-        .update({ verification_status: 'verified' })
+        .select('id')
         .eq('user_id', user.id)
+        .maybeSingle()
+
+      if (existingProfile) {
+        // Update existing profile
+        const { error: updateError } = await admin
+          .from('profiles')
+          .update({ verification_status: 'verified' })
+          .eq('user_id', user.id)
+
+        if (updateError) {
+          safeLogger.error('[Verification] Failed to update profile verification status', updateError)
+          // Don't fail the request - verification record was created successfully
+        }
+      } else {
+        // Profile doesn't exist yet - that's okay, it will be created during onboarding
+        // We'll update it then, or create a minimal profile here if needed
+        safeLogger.info('[Verification] Profile does not exist yet for user', user.id)
+        // Note: Profile will be created during onboarding with verification_status set
+      }
     }
+
+    safeLogger.info('[Verification] Persona complete - success', {
+      userId: user.id,
+      inquiryId,
+      verificationStatus
+    })
 
     return NextResponse.json({
       success: true,
