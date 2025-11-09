@@ -191,7 +191,7 @@ export function ProgrammeSelect({
                   No programmes found for this institution and degree level.
                 </p>
                 <p className="text-xs text-gray-500 mt-1">
-                  This institution may not have programmes in the DUO database, or they may not be available for the selected degree level.
+                  Data temporarily unavailable. This institution may not have programmes in the DUO database, or they may not be available for the selected degree level.
                 </p>
                 <div className="mt-3 p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-800">
                   <p className="text-xs text-blue-600 dark:text-blue-400 font-medium mb-2">

@@ -96,7 +96,64 @@ This document summarizes the implementation of the MVP Rescue + Roadmap plan, tr
 - Auto-block after 3+ reports in 24 hours
 - Rate limiting on reports
 
-### 5. Feature Flags & Scope Reduction ✅
+### 5. Programme Data Migration to Database ✅
+
+**Database Schema:**
+- `db/migrations/025_programmes_table.sql` - Creates new `programmes` table for DUO-backed programme data
+- Separate from existing `programs` table to maintain legacy compatibility
+- Columns: institution_slug, brin_code, rio_code (UNIQUE), name, name_en, level, sector, modes, is_variant, discipline, sub_discipline, city, isat_code, metadata
+- Indexes: BRIN on institution_slug, brin_code, rio_code; composite on (institution_slug, level), (brin_code, level)
+- RLS policies: public read access, service_role write access
+
+**Data Access Layer:**
+- `lib/programmes/repo.ts` - Repository functions for programme data access
+- Functions: `getProgrammesByInstitutionAndLevel`, `getAllProgrammesForInstitution`, `getProgrammeByRioCode`, `searchProgrammes`, `upsertProgrammesForInstitution`, `getProgrammeCountsByInstitution`
+- Uses Supabase client (server-side) or createClient (client-side)
+- Maps DB rows to Programme type from `types/programme.ts`
+
+**Sync Script Refactoring:**
+- `scripts/sync-duo-programmes.ts` - Refactored to upsert to database instead of JSON files
+- Default behavior: writes to `programmes` table
+- `--export-json` flag: optional JSON backup generation
+- Coverage validation: checks onboarding institutions, fails if any lack data
+- Generates coverage report: `data/programmes/.coverage-report.json`
+- Exit non-zero if onboarding institutions incomplete
+
+**Coverage Report Script:**
+- `scripts/report-programme-coverage.ts` - Manual/CI verification script
+- Queries programmes table, compares against onboarding institutions
+- Prints formatted report with counts per institution/level
+- Exit non-zero if onboarding institutions incomplete
+
+**API Route Updates:**
+- `app/api/programmes/route.ts` - Updated to use `lib/programmes/repo.ts` instead of JSON file reads
+- Removed file system operations
+- Same API contract maintained (GET with `inst` and `level` params)
+- Graceful error handling with fallback messages
+
+**Frontend Component Updates:**
+- `components/ui/programme-select.tsx` - Removed JSON file fetch fallback, uses API route only
+- Shows "Data temporarily unavailable" if API returns empty array
+- `components/questionnaire/ProgrammeSelect.tsx` - Already API-based, improved error messaging
+- All components now read from database via API
+
+**Migration Notes:**
+- Existing `programs` table kept untouched (legacy references remain stable)
+- New `programmes` table populated going forward
+- Consumers gradually migrate to new data path
+- JSON files deprecated but can be generated with `--export-json` flag
+
+**Monitoring:**
+- Run `pnpm tsx scripts/report-programme-coverage.ts` in CI to verify data completeness
+- Sync script fails (non-zero exit) when onboarding institutions lack data
+- Coverage report clearly surfaces gaps
+
+**Usage:**
+- Sync: `pnpm tsx scripts/sync-duo-programmes.ts [--export-json]`
+- Coverage check: `pnpm tsx scripts/report-programme-coverage.ts`
+- Environment variables required: `NEXT_PUBLIC_SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`
+
+### 6. Feature Flags & Scope Reduction ✅
 
 **Feature Flags Utility:**
 - `lib/feature-flags.ts` - Centralized feature flag management

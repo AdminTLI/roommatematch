@@ -34,7 +34,7 @@ SELECT 'Core Tables Check' as check_type,
 FROM pg_tables 
 WHERE schemaname = 'public' 
   AND tablename IN (
-    'universities', 'users', 'admins', 'profiles', 'programs', 'user_academic',
+    'universities', 'users', 'admins', 'profiles', 'programs', 'programmes', 'user_academic',
     'question_items', 'responses', 'user_vectors', 'matches', 'group_suggestions',
     'chats', 'chat_members', 'messages', 'message_reads', 'reports', 'announcements',
     'eligibility_rules', 'forum_posts', 'forum_comments', 'app_events'
@@ -155,7 +155,7 @@ SELECT 'RLS Enabled Tables Check' as check_type,
 FROM pg_tables 
 WHERE schemaname = 'public' 
   AND tablename IN (
-    'universities', 'users', 'admins', 'profiles', 'programs', 'user_academic',
+    'universities', 'users', 'admins', 'profiles', 'programs', 'programmes', 'user_academic',
     'question_items', 'responses', 'user_vectors', 'matches', 'group_suggestions',
     'chats', 'chat_members', 'messages', 'message_reads', 'reports', 'announcements',
     'eligibility_rules', 'forum_posts', 'forum_comments', 'app_events',
@@ -236,6 +236,13 @@ FROM universities;
 SELECT 'Programs Seed Data Check' as check_type,
        COUNT(*) as program_count
 FROM programs;
+
+-- Check programmes
+SELECT 'Programmes Seed Data Check' as check_type,
+       COUNT(*) as programme_count,
+       COUNT(DISTINCT institution_slug) as institution_count,
+       COUNT(DISTINCT level) as level_count
+FROM programmes;
 
 -- Check question items
 SELECT 'Question Items Seed Data Check' as check_type,

@@ -3,18 +3,21 @@
 /**
  * DUO Programme Sync Script
  * 
- * Fetches programme data from DUO's "Overzicht Erkenningen ho" CSV and generates
- * JSON files for each institution containing their programmes by level.
+ * Fetches programme data from DUO's "Overzicht Erkenningen ho" CSV and upserts
+ * to the programmes database table. Optionally exports JSON files for backup.
  * 
  * Usage:
- *   pnpm tsx scripts/sync-duo-programmes.ts
+ *   pnpm tsx scripts/sync-duo-programmes.ts [--export-json]
  * 
  * Environment variables:
  *   DUO_ERKENNINGEN_CSV_URL - Override default DUO CSV URL
+ *   NEXT_PUBLIC_SUPABASE_URL - Supabase project URL
+ *   SUPABASE_SERVICE_ROLE_KEY - Supabase service role key (required for DB writes)
  * 
  * Output:
- *   /data/programmes/<institutionId>.json - Programme data per institution
- *   /data/programmes/.sync-metadata.json - Sync statistics and timestamp
+ *   - Upserts to programmes table in Supabase
+ *   - Optional: /data/programmes/<institutionId>.json (if --export-json flag)
+ *   - /data/programmes/.coverage-report.json - Coverage report
  */
 
 import fs from 'node:fs/promises';
@@ -26,9 +29,42 @@ import { loadInstitutions } from '@/lib/loadInstitutions';
 import { normalise, mapSector, getInstitutionBrinCode, validateInstitutionMappings, counters } from '@/lib/duo/erkenningen';
 import { resolveDuoCsv, resolveDuoErkenningenCsv } from '@/lib/duo/ckan';
 import { parseHoOpleidingsoverzicht } from '@/lib/duo/ho-opleidingsoverzicht';
+import { upsertProgrammesForInstitution, getProgrammeCountsByInstitution } from '@/lib/programmes/repo';
 
 const DEFAULT_CSV_URL = process.env.DUO_ERKENNINGEN_CSV_URL || 
   'https://onderwijsdata.duo.nl/dataset/bb07cc6e-00fe-4100-9528-a0c5fd27d2fb/resource/0b2e9c4a-2c8e-4b2a-9f3a-1c2d3e4f5g6h/download/overzicht-erkenningen-ho.csv';
+
+// Parse command line arguments
+const exportJson = process.argv.includes('--export-json');
+
+/**
+ * Coverage report structure
+ */
+interface CoverageReport {
+  syncedAt: string;
+  sourceUrl: string;
+  institutions: Array<{
+    id: string;
+    slug: string;
+    brin: string | null;
+    hasBrin: boolean;
+    programmes: {
+      bachelor: number;
+      premaster: number;
+      master: number;
+    };
+    missingLevels: DegreeLevel[];
+    status: 'complete' | 'incomplete' | 'missing';
+  }>;
+  summary: {
+    totalInstitutions: number;
+    onboardingInstitutions: number;
+    completeInstitutions: number;
+    incompleteInstitutions: number;
+    totalProgrammes: number;
+  };
+  failures: string[]; // Onboarding institutions that lack data
+}
 
 /**
  * Fetch HO Opleidingsoverzicht CSV data (primary source)
@@ -178,9 +214,11 @@ function processInstitutionProgrammes(
 }
 
 /**
- * Write programme data to JSON file
+ * Write programme data to JSON file (optional, behind --export-json flag)
  */
 async function writeProgrammeFile(institutionId: string, programmes: ProgrammesByLevel): Promise<void> {
+  if (!exportJson) return;
+  
   const outputDir = path.join(process.cwd(), 'data', 'programmes');
   await fs.mkdir(outputDir, { recursive: true });
   
@@ -189,21 +227,49 @@ async function writeProgrammeFile(institutionId: string, programmes: ProgrammesB
 }
 
 /**
- * Write sync metadata
+ * Write coverage report
  */
-async function writeSyncMetadata(stats: {
-  syncedAt: string;
-  sourceUrl: string;
-  totalProgrammes: number;
-  byLevel: Record<DegreeLevel, number>;
-  institutions: number;
-  institutionsWithProgrammes: number;
-}): Promise<void> {
+async function writeCoverageReport(report: CoverageReport): Promise<void> {
   const outputDir = path.join(process.cwd(), 'data', 'programmes');
   await fs.mkdir(outputDir, { recursive: true });
   
-  const metadataPath = path.join(outputDir, '.sync-metadata.json');
-  await fs.writeFile(metadataPath, JSON.stringify(stats, null, 2), 'utf8');
+  const reportPath = path.join(outputDir, '.coverage-report.json');
+  await fs.writeFile(reportPath, JSON.stringify(report, null, 2), 'utf8');
+}
+
+/**
+ * Validate coverage for onboarding institutions
+ */
+function validateCoverage(
+  report: CoverageReport,
+  onboardingInstitutions: Institution[]
+): { isValid: boolean; failures: string[] } {
+  const failures: string[] = [];
+  
+  for (const inst of onboardingInstitutions) {
+    const instReport = report.institutions.find(i => i.id === inst.id);
+    
+    if (!instReport) {
+      failures.push(inst.id);
+      continue;
+    }
+    
+    // Check if institution has BRIN code
+    if (!instReport.hasBrin) {
+      failures.push(inst.id);
+      continue;
+    }
+    
+    // Check if any level is missing (zero programmes)
+    if (instReport.missingLevels.length > 0) {
+      failures.push(inst.id);
+    }
+  }
+  
+  return {
+    isValid: failures.length === 0,
+    failures
+  };
 }
 
 /**
@@ -211,9 +277,17 @@ async function writeSyncMetadata(stats: {
  */
 async function main(): Promise<void> {
   console.log('🚀 Starting DUO programme sync...');
+  if (exportJson) {
+    console.log('📦 JSON export enabled (--export-json flag)');
+  }
   console.log('');
   
   try {
+    // Validate environment variables
+    if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.SUPABASE_SERVICE_ROLE_KEY) {
+      throw new Error('Missing required environment variables: NEXT_PUBLIC_SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY must be set');
+    }
+    
     // Validate institution mappings
     console.log('🔍 Validating institution mappings...');
     const validation = validateInstitutionMappings();
@@ -228,34 +302,51 @@ async function main(): Promise<void> {
     // Fetch both datasets
     const hoCsv = await fetchHoCsv();
     const erkCsv = await fetchErkCsv();
+    const sourceUrl = await resolveDuoCsv('ho-opleidingsoverzicht', /opleidingsoverzicht/i);
     
-    // Load our institutions
+    // Load our institutions (onboarding subset)
     const institutions = loadInstitutions();
     const allInstitutions = [...institutions.wo, ...institutions.wo_special, ...institutions.hbo];
+    const onboardingInstitutions = allInstitutions; // All institutions in loadInstitutions are used in onboarding
     
     // Process each institution
     console.log('');
-    console.log('📚 Processing institutions...');
+    console.log('📚 Processing institutions and upserting to database...');
     
-    const stats = {
+    const coverageReport: CoverageReport = {
       syncedAt: new Date().toISOString(),
-      sourceUrl: 'HO Opleidingsoverzicht (primary) + Erkenningen (fallback)',
-      totalProgrammes: 0,
-      byLevel: { bachelor: 0, premaster: 0, master: 0 } as Record<DegreeLevel, number>,
-      institutions: allInstitutions.length,
-      institutionsWithProgrammes: 0
+      sourceUrl,
+      institutions: [],
+      summary: {
+        totalInstitutions: allInstitutions.length,
+        onboardingInstitutions: onboardingInstitutions.length,
+        completeInstitutions: 0,
+        incompleteInstitutions: 0,
+        totalProgrammes: 0
+      },
+      failures: []
     };
     
     for (const institution of allInstitutions) {
       const brinCode = getInstitutionBrinCode(institution.id);
-      if (!brinCode) {
-        console.log(`⏭️  Skipping ${institution.label} (no BRIN code)`);
-        continue;
-      }
       
       // Try HO Opleidingsoverzicht first (primary source)
       let programmes: ProgrammesByLevel = { bachelor: [], premaster: [], master: [] };
       let source = 'none';
+      
+      if (!brinCode) {
+        console.log(`⏭️  Skipping ${institution.label} (no BRIN code)`);
+        coverageReport.institutions.push({
+          id: institution.id,
+          slug: institution.id,
+          brin: null,
+          hasBrin: false,
+          programmes: { bachelor: 0, premaster: 0, master: 0 },
+          missingLevels: ['bachelor', 'premaster', 'master'],
+          status: 'missing'
+        });
+        continue;
+      }
       
       try {
         const sector = mapSector(brinCode);
@@ -286,30 +377,84 @@ async function main(): Promise<void> {
         }
       }
       
+      // Upsert to database
+      const allProgrammes = [...programmes.bachelor, ...programmes.premaster, ...programmes.master];
+      if (allProgrammes.length > 0) {
+        try {
+          await upsertProgrammesForInstitution(institution.id, allProgrammes);
+        } catch (error) {
+          console.error(`❌ Failed to upsert programmes for ${institution.label}:`, error);
+          throw error;
+        }
+      }
+      
+      // Write JSON file if flag is set
       await writeProgrammeFile(institution.id, programmes);
       
       const total = programmes.bachelor.length + programmes.premaster.length + programmes.master.length;
       console.log(`📚 ${institution.label} → B:${programmes.bachelor.length} PM:${programmes.premaster.length} M:${programmes.master.length} (${total} total) [${source}]`);
       
-      // Update statistics
-      stats.totalProgrammes += total;
-      stats.byLevel.bachelor += programmes.bachelor.length;
-      stats.byLevel.premaster += programmes.premaster.length;
-      stats.byLevel.master += programmes.master.length;
-      if (total > 0) stats.institutionsWithProgrammes++;
+      // Determine missing levels (for onboarding institutions)
+      const missingLevels: DegreeLevel[] = [];
+      if (programmes.bachelor.length === 0) missingLevels.push('bachelor');
+      if (programmes.premaster.length === 0) missingLevels.push('premaster');
+      if (programmes.master.length === 0) missingLevels.push('master');
+      
+      const status = total === 0 ? 'missing' : missingLevels.length === 0 ? 'complete' : 'incomplete';
+      
+      coverageReport.institutions.push({
+        id: institution.id,
+        slug: institution.id,
+        brin: brinCode,
+        hasBrin: true,
+        programmes: {
+          bachelor: programmes.bachelor.length,
+          premaster: programmes.premaster.length,
+          master: programmes.master.length
+        },
+        missingLevels,
+        status
+      });
+      
+      // Update summary
+      coverageReport.summary.totalProgrammes += total;
+      if (status === 'complete') {
+        coverageReport.summary.completeInstitutions++;
+      } else if (status === 'incomplete' || status === 'missing') {
+        coverageReport.summary.incompleteInstitutions++;
+      }
     }
     
-    // Write sync metadata
-    await writeSyncMetadata(stats);
+    // Validate coverage for onboarding institutions
+    console.log('');
+    console.log('🔍 Validating coverage for onboarding institutions...');
+    const validation = validateCoverage(coverageReport, onboardingInstitutions);
+    
+    if (!validation.isValid) {
+      coverageReport.failures = validation.failures;
+      console.error('');
+      console.error('❌ Coverage validation failed!');
+      console.error(`   ${validation.failures.length} onboarding institution(s) lack complete programme data:`);
+      validation.failures.forEach(id => {
+        const inst = onboardingInstitutions.find(i => i.id === id);
+        const report = coverageReport.institutions.find(i => i.id === id);
+        console.error(`   - ${inst?.label || id}: ${report?.missingLevels.join(', ') || 'missing BRIN'}`);
+      });
+    } else {
+      console.log('✅ All onboarding institutions have complete programme data');
+    }
+    
+    // Write coverage report
+    await writeCoverageReport(coverageReport);
     
     console.log('');
     console.log('📊 Sync Statistics:');
-    console.log(`   Total programmes: ${stats.totalProgrammes.toLocaleString()}`);
-    console.log(`   Bachelor: ${stats.byLevel.bachelor.toLocaleString()}`);
-    console.log(`   Pre-master: ${stats.byLevel.premaster.toLocaleString()}`);
-    console.log(`   Master: ${stats.byLevel.master.toLocaleString()}`);
-    console.log(`   Institutions with programmes: ${stats.institutionsWithProgrammes}/${stats.institutions}`);
-    console.log(`   Synced at: ${stats.syncedAt}`);
+    console.log(`   Total programmes: ${coverageReport.summary.totalProgrammes.toLocaleString()}`);
+    console.log(`   Institutions processed: ${coverageReport.institutions.length}`);
+    console.log(`   Complete institutions: ${coverageReport.summary.completeInstitutions}`);
+    console.log(`   Incomplete institutions: ${coverageReport.summary.incompleteInstitutions}`);
+    console.log(`   Onboarding institutions: ${coverageReport.summary.onboardingInstitutions}`);
+    console.log(`   Synced at: ${coverageReport.syncedAt}`);
     console.log('');
     console.log('🔍 Classification Counters:');
     console.log(`   Kept Bachelor: ${counters.keptBachelor.toLocaleString()}`);
@@ -318,7 +463,12 @@ async function main(): Promise<void> {
     console.log(`   Skipped Other: ${counters.skippedOther.toLocaleString()}`);
     
     console.log('');
-    console.log('✅ Programme sync completed successfully!');
+    if (validation.isValid) {
+      console.log('✅ Programme sync completed successfully!');
+    } else {
+      console.error('❌ Programme sync completed with coverage failures!');
+      process.exit(1);
+    }
     
   } catch (error) {
     console.error('');

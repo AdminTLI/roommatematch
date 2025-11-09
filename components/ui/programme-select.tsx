@@ -35,73 +35,45 @@ export function ProgrammeSelect({
 }: ProgrammeSelectProps) {
   const [programmes, setProgrammes] = useState<Programme[]>([])
   const [loading, setLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
   const [showManualEntry, setShowManualEntry] = useState(false)
   const [manualProgramme, setManualProgramme] = useState('')
 
   useEffect(() => {
     if (!institutionId || !degreeLevel) {
       setProgrammes([])
+      setError(null)
+      setShowManualEntry(false)
       return
     }
 
     const loadProgrammes = async () => {
       setLoading(true)
-      let dataSource = 'unknown'
+      setError(null)
       
       try {
-        // First try loading from JSON file
-        const res = await fetch(`/data/programmes/${institutionId}.json`)
-        if (res.ok) {
-          dataSource = 'json'
-          const data = await res.json()
-          const levelProgrammes = data[degreeLevel] || []
-          
-          // Deduplicate and add language labels
-          const deduped = deduplicateProgrammes(levelProgrammes)
-          setProgrammes(deduped)
-          setShowManualEntry(deduped.length === 0)
-          console.log(`[ProgrammeSelect] Loaded ${deduped.length} programmes from JSON for ${institutionId}/${degreeLevel}`)
-          setLoading(false)
-          return
+        const apiRes = await fetch(`/api/programmes?inst=${institutionId}&level=${degreeLevel}`)
+        
+        if (!apiRes.ok) {
+          throw new Error(`Failed to load programmes: ${apiRes.status} ${apiRes.statusText}`)
         }
         
-        // If JSON file doesn't exist (404), try API fallback
-        if (res.status === 404) {
-          console.warn(`[ProgrammeSelect] JSON file not found for ${institutionId}, trying API fallback...`)
-          
-          try {
-            const apiRes = await fetch(`/api/programmes?inst=${institutionId}&level=${degreeLevel}`)
-            if (apiRes.ok) {
-              dataSource = 'api'
-              const apiData = await apiRes.json()
-              const apiProgrammes = apiData.programmes || []
-              
-              // Deduplicate and add language labels
-              const deduped = deduplicateProgrammes(apiProgrammes)
-              setProgrammes(deduped)
-              setShowManualEntry(deduped.length === 0)
-              console.log(`[ProgrammeSelect] Loaded ${deduped.length} programmes from API for ${institutionId}/${degreeLevel}`)
-              setLoading(false)
-              return
-            } else {
-              console.warn(`[ProgrammeSelect] API also failed (${apiRes.status}) for ${institutionId}/${degreeLevel}`)
-            }
-          } catch (apiError) {
-            console.error('[ProgrammeSelect] API fallback failed:', apiError)
-          }
-          
-          // Both JSON and API failed - show manual entry
-          console.warn(`[ProgrammeSelect] No programme data available for institution: ${institutionId}`)
-          setProgrammes([])
-          setShowManualEntry(true)
-          setLoading(false)
-          return
+        const apiData = await apiRes.json()
+        const apiProgrammes = apiData.programmes || []
+        
+        // Deduplicate and add language labels
+        const deduped = deduplicateProgrammes(apiProgrammes)
+        setProgrammes(deduped)
+        setShowManualEntry(deduped.length === 0)
+        
+        if (deduped.length === 0) {
+          setError('Data temporarily unavailable')
         }
         
-        // Other error from JSON fetch
-        throw new Error(`Failed to load programmes: ${res.status} ${res.statusText}`)
-      } catch (error) {
-        console.error(`[ProgrammeSelect] Failed to load programmes from ${dataSource}:`, error)
+        console.log(`[ProgrammeSelect] Loaded ${deduped.length} programmes from API for ${institutionId}/${degreeLevel}`)
+      } catch (err) {
+        console.error('[ProgrammeSelect] Failed to load programmes:', err)
+        setError(err instanceof Error ? err.message : 'Failed to load programmes')
         setProgrammes([])
         setShowManualEntry(true)
       } finally {
@@ -143,20 +115,28 @@ export function ProgrammeSelect({
           placeholder="Enter your programme name"
           className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
         />
-        <p className="text-sm text-gray-600">
-          Programme not listed? Enter it manually above.
-        </p>
+        {error && (
+          <p className="text-sm text-amber-600">
+            {error}. Programme not listed? Enter it manually above.
+          </p>
+        )}
+        {!error && (
+          <p className="text-sm text-gray-600">
+            Programme not listed? Enter it manually above.
+          </p>
+        )}
       </div>
     )
   }
 
   return (
-    <Select value={value} onValueChange={handleChange} disabled={!institutionId || !degreeLevel}>
+    <Select value={value} onValueChange={handleChange} disabled={!institutionId || !degreeLevel || loading}>
       <SelectTrigger>
         <SelectValue placeholder={
           !institutionId ? "Select university first" :
           !degreeLevel ? "Select degree level first" :
           loading ? "Loading programmes..." :
+          error ? "Data temporarily unavailable" :
           "Select your programme"
         } />
       </SelectTrigger>

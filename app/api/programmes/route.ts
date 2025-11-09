@@ -4,50 +4,12 @@
  * GET /api/programmes?inst=<institutionId>&level=<degreeLevel>
  * 
  * Returns programmes for a specific institution and degree level.
- * Data is loaded from generated JSON files created by sync-duo-programmes script.
+ * Data is loaded from the programmes database table.
  */
 
 import { NextRequest, NextResponse } from 'next/server';
-import { Programme, DegreeLevel } from '@/types/programme';
-import fs from 'node:fs/promises';
-import path from 'node:path';
-
-/**
- * Load programme data for an institution
- */
-async function loadInstitutionProgrammes(institutionId: string): Promise<Programme[] | null> {
-  try {
-    const filePath = path.join(process.cwd(), 'data', 'programmes', `${institutionId}.json`);
-    const fileContent = await fs.readFile(filePath, 'utf8');
-    const data = JSON.parse(fileContent);
-    
-    // Return all programmes combined
-    return [
-      ...(data.bachelor || []),
-      ...(data.premaster || []),
-      ...(data.master || [])
-    ];
-  } catch (error) {
-    // File doesn't exist or is invalid
-    return null;
-  }
-}
-
-/**
- * Load programmes for a specific level
- */
-async function loadProgrammesByLevel(institutionId: string, level: DegreeLevel): Promise<Programme[]> {
-  try {
-    const filePath = path.join(process.cwd(), 'data', 'programmes', `${institutionId}.json`);
-    const fileContent = await fs.readFile(filePath, 'utf8');
-    const data = JSON.parse(fileContent);
-    
-    return data[level] || [];
-  } catch (error) {
-    // File doesn't exist or is invalid
-    return [];
-  }
-}
+import { DegreeLevel } from '@/types/programme';
+import { getProgrammesByInstitutionAndLevel, getAllProgrammesForInstitution } from '@/lib/programmes/repo';
 
 /**
  * GET /api/programmes
@@ -59,7 +21,7 @@ async function loadProgrammesByLevel(institutionId: string, level: DegreeLevel):
  * Returns:
  * - 200: { programmes: Programme[] }
  * - 400: Missing required parameters
- * - 404: Institution not found
+ * - 500: Internal server error
  */
 export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);
@@ -82,7 +44,7 @@ export async function GET(request: NextRequest) {
   }
 
   try {
-    const programmes = await loadProgrammesByLevel(institutionId, level);
+    const programmes = await getProgrammesByInstitutionAndLevel(institutionId, level, true);
     
     // Set cache headers (programmes are relatively static)
     const response = NextResponse.json({ programmes });
@@ -92,14 +54,14 @@ export async function GET(request: NextRequest) {
   } catch (error) {
     console.error('Error loading programmes:', error);
     return NextResponse.json(
-      { error: 'Internal server error' },
+      { error: 'Internal server error', programmes: [] },
       { status: 500 }
     );
   }
 }
 
 /**
- * GET /api/programmes/all
+ * POST /api/programmes/all
  * 
  * Query parameters:
  * - inst: Institution ID (required)
@@ -118,14 +80,12 @@ export async function POST(request: NextRequest) {
   }
 
   try {
-    const programmes = await loadInstitutionProgrammes(institutionId);
-    
-    if (programmes === null) {
-      return NextResponse.json(
-        { programmes: [] },
-        { status: 200 }
-      );
-    }
+    const programmesByLevel = await getAllProgrammesForInstitution(institutionId, true);
+    const programmes = [
+      ...programmesByLevel.bachelor,
+      ...programmesByLevel.premaster,
+      ...programmesByLevel.master
+    ];
     
     const response = NextResponse.json({ programmes });
     response.headers.set('Cache-Control', 'public, max-age=3600, stale-while-revalidate=86400');
@@ -134,7 +94,7 @@ export async function POST(request: NextRequest) {
   } catch (error) {
     console.error('Error loading all programmes:', error);
     return NextResponse.json(
-      { error: 'Internal server error' },
+      { error: 'Internal server error', programmes: [] },
       { status: 500 }
     );
   }
