@@ -220,7 +220,7 @@ export function DashboardContent({ hasCompletedQuestionnaire = false, hasPartial
       }
 
       // Fetch profiles for other users with program names
-      const { data: profiles } = await supabase
+      const { data: profiles, error: profilesError } = await supabase
         .from('profiles')
         .select(`
           user_id, 
@@ -234,6 +234,13 @@ export function DashboardContent({ hasCompletedQuestionnaire = false, hasPartial
           )
         `)
         .in('user_id', Array.from(otherUserIds))
+
+      if (profilesError) {
+        console.error('Error loading profiles:', profilesError)
+        setTopMatches([])
+        setIsLoadingMatches(false)
+        return
+      }
 
       // Fetch match data for compatibility scores
       const userIdsArray = Array.from(otherUserIds)
@@ -259,11 +266,12 @@ export function DashboardContent({ hasCompletedQuestionnaire = false, hasPartial
         const fullName = [profile.first_name?.trim(), profile.last_name?.trim()].filter(Boolean).join(' ') || 'User'
         const score = matchScoreMap.get(profile.user_id) || 0
         // Get program name from user_academic -> programs relationship
-        // user_academic can be an array or single object
-        const userAcademic = Array.isArray(profile.user_academic) ? profile.user_academic[0] : profile.user_academic
-        const programName = userAcademic?.programs?.name || null
-        // If no program name found, don't display anything (hide UUIDs)
-        const programDisplay = programName || null
+        // user_academic can be an array or single object, or might not exist
+        let programDisplay = null
+        if (profile.user_academic) {
+          const userAcademic = Array.isArray(profile.user_academic) ? profile.user_academic[0] : profile.user_academic
+          programDisplay = userAcademic?.programs?.name || null
+        }
         
         return {
           id: profile.user_id,
@@ -275,6 +283,8 @@ export function DashboardContent({ hasCompletedQuestionnaire = false, hasPartial
           avatar: undefined
         }
       }).sort((a, b) => b.score - a.score) // Sort by score descending
+
+      console.log('loadTopMatches: Formatted', formattedMatches.length, 'matches')
 
       setTopMatches(formattedMatches)
 
@@ -290,9 +300,13 @@ export function DashboardContent({ hasCompletedQuestionnaire = false, hasPartial
   }
 
   const loadTotalMatchesCount = async () => {
-    if (!user?.id) return
+    if (!user?.id) {
+      console.log('loadTotalMatchesCount: No user ID')
+      return
+    }
 
     try {
+      console.log('loadTotalMatchesCount: Fetching matches for user', user.id)
       // Count matches where user is a_user
       const { count: countAsA, error: errorA } = await supabase
         .from('matches')
@@ -305,12 +319,15 @@ export function DashboardContent({ hasCompletedQuestionnaire = false, hasPartial
         .select('*', { count: 'exact', head: true })
         .eq('b_user', user.id)
 
-      if (errorA || errorB) {
-        console.error('Error fetching total matches count:', errorA || errorB)
-        return
+      if (errorA) {
+        console.error('Error fetching matches as A:', errorA)
+      }
+      if (errorB) {
+        console.error('Error fetching matches as B:', errorB)
       }
 
       const total = (countAsA || 0) + (countAsB || 0)
+      console.log('loadTotalMatchesCount: Total matches', total, '(A:', countAsA, 'B:', countAsB, ')')
       setTotalMatches(total)
     } catch (error) {
       console.error('Failed to load total matches count:', error)
@@ -319,9 +336,13 @@ export function DashboardContent({ hasCompletedQuestionnaire = false, hasPartial
   }
 
   const loadAvgCompatibility = async () => {
-    if (!user?.id) return
+    if (!user?.id) {
+      console.log('loadAvgCompatibility: No user ID')
+      return
+    }
 
     try {
+      console.log('loadAvgCompatibility: Fetching matches for user', user.id)
       // Fetch ALL matches (not just chat members)
       const { data: matchesAsA, error: errorA } = await supabase
         .from('matches')
@@ -333,9 +354,11 @@ export function DashboardContent({ hasCompletedQuestionnaire = false, hasPartial
         .select('score')
         .eq('b_user', user.id)
 
-      if (errorA || errorB) {
-        console.error('Error fetching matches for avg compatibility:', errorA || errorB)
-        return
+      if (errorA) {
+        console.error('Error fetching matches as A for avg:', errorA)
+      }
+      if (errorB) {
+        console.error('Error fetching matches as B for avg:', errorB)
       }
 
       const allScores = [
@@ -343,12 +366,16 @@ export function DashboardContent({ hasCompletedQuestionnaire = false, hasPartial
         ...(matchesAsB || []).map((m: any) => m.score || 0)
       ]
 
+      console.log('loadAvgCompatibility: Found', allScores.length, 'matches', 'scores:', allScores)
+
       if (allScores.length > 0) {
         const average = Math.round(
           (allScores.reduce((sum, score) => sum + score, 0) / allScores.length) * 100
         )
+        console.log('loadAvgCompatibility: Average calculated as', average)
         setAvgCompatibility(average)
       } else {
+        console.log('loadAvgCompatibility: No matches found, setting to 0')
         setAvgCompatibility(0)
       }
     } catch (error) {
@@ -919,7 +946,6 @@ export function DashboardContent({ hasCompletedQuestionnaire = false, hasPartial
         initial="initial"
         animate="animate"
         variants={staggerChildren}
-        className="lg:hidden"
       >
         <motion.div variants={fadeInUp}>
           <div className="bg-white p-4 sm:p-6 rounded-xl shadow-sm border border-gray-200">
