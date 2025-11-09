@@ -311,6 +311,7 @@ export async function POST(request: Request) {
           // Don't fail submission if analytics fails
           console.error('[Submit] Analytics tracking failed:', analyticsError)
         }
+      }
 
     console.log('[Submit] Submission complete')
     return NextResponse.json({ ok: true })
