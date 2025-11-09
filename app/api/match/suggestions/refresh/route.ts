@@ -99,12 +99,18 @@ export async function POST(request: NextRequest) {
       // Auto-generate vector if missing
       if (!currentUser.vector) {
         safeLogger.debug('[Matching] Current user missing vector, generating...')
-        const { error: vectorError } = await supabase.rpc('compute_user_vector_and_store', { 
+        // Use update_user_vector which we know works with JSONB
+        const { error: vectorError } = await supabase.rpc('update_user_vector', { 
           p_user_id: user.id 
         })
         
         if (vectorError) {
-          safeLogger.error('[Matching] Vector generation failed', vectorError)
+          safeLogger.error('[Matching] Vector generation failed', {
+            error: vectorError,
+            code: vectorError.code,
+            message: vectorError.message,
+            details: vectorError.details
+          })
         } else {
           safeLogger.debug('[Matching] Vector generated successfully, refetching user...')
           // Refetch user to get updated vector
@@ -200,9 +206,20 @@ export async function POST(request: NextRequest) {
       safeLogger.debug('[Matching] Error during lock cleanup', cleanupError)
     }
 
-    safeLogger.error('[Matching] Error refreshing suggestions', error)
+    safeLogger.error('[Matching] Error refreshing suggestions', {
+      error: error instanceof Error ? {
+        message: error.message,
+        stack: error.stack,
+        name: error.name
+      } : error,
+      errorString: String(error),
+      errorType: typeof error
+    })
     return NextResponse.json(
-      { error: 'Failed to refresh suggestions' },
+      { 
+        error: 'Failed to refresh suggestions',
+        details: error instanceof Error ? error.message : String(error)
+      },
       { status: 500 }
     )
   }
