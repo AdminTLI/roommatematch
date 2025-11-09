@@ -103,14 +103,21 @@ export async function POST(request: NextRequest) {
   }
 
   // Ensure onboarding submission exists (required for accessing chat and other features)
-  await admin
+  const { data: existingSubmission } = await admin
     .from('onboarding_submissions')
-    .upsert({
-      user_id: userId,
-      completed_at: new Date().toISOString()
-    }, {
-      onConflict: 'user_id'
-    })
+    .select('id')
+    .eq('user_id', userId)
+    .maybeSingle()
+
+  if (!existingSubmission) {
+    await admin
+      .from('onboarding_submissions')
+      .insert({
+        user_id: userId,
+        snapshot: {}, // Empty snapshot is fine - just marks as completed
+        submitted_at: new Date().toISOString()
+      })
+  }
 
   return NextResponse.json({ 
     status: userFound ? 'exists' : 'created', 

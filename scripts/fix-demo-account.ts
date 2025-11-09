@@ -146,20 +146,31 @@ async function fixDemoAccount() {
 
     // 4. Ensure onboarding submission exists (THIS IS THE KEY FIX!)
     console.log('\n📋 Ensuring onboarding submission exists...')
-    const { error: onboardingError } = await supabase
+    // Check if submission already exists
+    const { data: existingSubmission } = await supabase
       .from('onboarding_submissions')
-      .upsert({
-        user_id: userId,
-        completed_at: new Date().toISOString()
-      }, {
-        onConflict: 'user_id'
-      })
+      .select('id')
+      .eq('user_id', userId)
+      .maybeSingle()
 
-    if (onboardingError) {
-      console.error(`❌ Onboarding submission error: ${onboardingError.message}`)
-      throw onboardingError
+    if (existingSubmission) {
+      console.log('✓ Onboarding submission already exists')
     } else {
-      console.log('✓ Onboarding submission created/updated')
+      // Create new submission with required fields
+      const { error: onboardingError } = await supabase
+        .from('onboarding_submissions')
+        .insert({
+          user_id: userId,
+          snapshot: {}, // Empty snapshot is fine - just marks as completed
+          submitted_at: new Date().toISOString()
+        })
+
+      if (onboardingError) {
+        console.error(`❌ Onboarding submission error: ${onboardingError.message}`)
+        throw onboardingError
+      } else {
+        console.log('✓ Onboarding submission created')
+      }
     }
 
     console.log('\n✅ Demo account fixed successfully!')

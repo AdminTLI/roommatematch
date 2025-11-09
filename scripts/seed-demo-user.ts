@@ -264,17 +264,29 @@ async function createDemoUser() {
 
     // 7. Create onboarding submission
     console.log('📋 Creating onboarding submission...')
-    const { error: submissionError } = await supabase
+    // Check if submission already exists
+    const { data: existingSubmission } = await supabase
       .from('onboarding_submissions')
-      .upsert({
-        user_id: userId,
-        completed_at: new Date().toISOString()
-      })
+      .select('id')
+      .eq('user_id', userId)
+      .maybeSingle()
 
-    if (submissionError) {
-      console.log('⚠️  Onboarding submission already exists or error:', submissionError.message)
+    if (existingSubmission) {
+      console.log('✅ Onboarding submission already exists')
     } else {
-      console.log('✅ Onboarding submission created')
+      const { error: submissionError } = await supabase
+        .from('onboarding_submissions')
+        .insert({
+          user_id: userId,
+          snapshot: {}, // Empty snapshot is fine - just marks as completed
+          submitted_at: new Date().toISOString()
+        })
+
+      if (submissionError) {
+        console.log('⚠️  Onboarding submission error:', submissionError.message)
+      } else {
+        console.log('✅ Onboarding submission created')
+      }
     }
 
     // 8. Create housing preferences

@@ -299,19 +299,28 @@ async function seedProduction() {
         }
 
         // Ensure onboarding submission exists (required for accessing chat and other features)
-        const { error: onboardingError } = await supabase
+        const { data: existingSubmission } = await supabase
           .from('onboarding_submissions')
-          .upsert({
-            user_id: demoUserId,
-            completed_at: new Date().toISOString()
-          }, {
-            onConflict: 'user_id'
-          })
-        
-        if (onboardingError) {
-          console.warn('   ⚠️  Warning creating onboarding submission:', onboardingError.message)
+          .select('id')
+          .eq('user_id', demoUserId)
+          .maybeSingle()
+
+        if (!existingSubmission) {
+          const { error: onboardingError } = await supabase
+            .from('onboarding_submissions')
+            .insert({
+              user_id: demoUserId,
+              snapshot: {}, // Empty snapshot is fine - just marks as completed
+              submitted_at: new Date().toISOString()
+            })
+          
+          if (onboardingError) {
+            console.warn('   ⚠️  Warning creating onboarding submission:', onboardingError.message)
+          } else {
+            console.log('   ✓ Demo user onboarding submission created')
+          }
         } else {
-          console.log('   ✓ Demo user onboarding submission created/updated')
+          console.log('   ✓ Demo user onboarding submission already exists')
         }
       }
     }
