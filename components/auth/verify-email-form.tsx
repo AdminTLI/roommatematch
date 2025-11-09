@@ -73,8 +73,11 @@ export function VerifyEmailForm() {
     const params = new URLSearchParams(window.location.search)
     const shouldAuto = params.get('auto') === '1'
     if (shouldAuto && email) {
-      // Fire and forget resend
-      supabase.auth.signInWithOtp({ email, options: { shouldCreateUser: false } }).catch(() => {})
+      // Use resend() for email confirmation (not signInWithOtp which triggers recovery)
+      supabase.auth.resend({
+        type: 'signup',
+        email: email
+      }).catch(() => {})
     }
   }, [email, supabase])
 
@@ -88,20 +91,21 @@ export function VerifyEmailForm() {
     setError('')
 
     try {
-      // Primary flow: signInWithOtp → verifyOtp with type 'email' (for resends/sign-in)
-      // Fallback: signUp → verifyOtp with type 'signup' (for new signups)
+      // Primary flow: resend({ type: 'signup' }) → verifyOtp with type 'signup'
+      // This creates confirmation_token (not recovery_token)
+      // Fallback: try 'email' type for any signInWithOtp flows (though we're not using those anymore)
       let verificationResult = await supabase.auth.verifyOtp({
         email,
         token: otpCode,
-        type: 'email' // Sign-in/confirmation OTP type (from signInWithOtp)
+        type: 'signup' // Signup confirmation token (from resend() or signUp())
       })
 
-      // If 'email' type fails, try 'signup' type (from signUp during new signup)
+      // If 'signup' type fails, try 'email' type as fallback
       if (verificationResult.error && !verificationResult.data?.user) {
         verificationResult = await supabase.auth.verifyOtp({
           email,
           token: otpCode,
-          type: 'signup' // Fallback for signUp flow
+          type: 'email' // Fallback for signInWithOtp flow (if any)
         })
       }
 
@@ -181,13 +185,11 @@ export function VerifyEmailForm() {
     setError('')
 
     try {
-      // Use signInWithOtp to resend the OTP code for signup verification
-      // shouldCreateUser: false ensures we don't create a duplicate user
-      const { error } = await supabase.auth.signInWithOtp({
-        email,
-        options: {
-          shouldCreateUser: false, // User already exists, just needs verification
-        }
+      // Use resend() for email confirmation (not signInWithOtp which triggers recovery flow)
+      // This creates a confirmation_token, not a recovery_token
+      const { error } = await supabase.auth.resend({
+        type: 'signup',
+        email: email
       })
 
       if (error) {

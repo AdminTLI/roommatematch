@@ -47,15 +47,15 @@ export function SignInForm() {
           // Store email for OTP screen
           sessionStorage.setItem('verification-email', email)
           
-          // Auto-resend OTP
+          // Auto-resend confirmation email (not signInWithOtp which triggers recovery)
           try {
-            await supabase.auth.signInWithOtp({
-              email,
-              options: { shouldCreateUser: false }
+            await supabase.auth.resend({
+              type: 'signup',
+              email: email
             })
           } catch (otpError) {
             // Log but don't block redirect - user can resend manually
-            console.error('Error sending OTP:', otpError)
+            console.error('Error resending confirmation:', otpError)
           }
           
           // Redirect to verify-email page with email query param
