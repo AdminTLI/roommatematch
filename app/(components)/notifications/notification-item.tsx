@@ -1,9 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
-import { Button } from '@/components/ui/button'
 import { 
   Users, 
   Heart, 
@@ -68,15 +66,15 @@ export function NotificationItem({
   }
 
   return (
-    <Card 
-      className={`cursor-pointer transition-all duration-200 hover:shadow-md ${
-        !notification.is_read ? 'bg-blue-50 border-blue-200' : 'bg-white'
-      } ${isHovered ? 'shadow-md' : ''}`}
+    <div 
+      className={`cursor-pointer transition-all duration-200 hover:bg-gray-50 ${
+        !notification.is_read ? 'bg-white border-l-4 border-l-blue-500' : 'bg-white border-l-4 border-l-transparent'
+      } ${isHovered ? 'bg-gray-50' : ''}`}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
       onClick={handleClick}
     >
-      <CardContent className="p-4">
+      <div className="p-4">
         <div className="flex items-start gap-3">
           {/* Icon */}
           <div className={`p-2 rounded-full ${
@@ -139,7 +137,7 @@ export function NotificationItem({
             )}
           </div>
         </div>
-      </CardContent>
-    </Card>
+      </div>
+    </div>
   )
 }

@@ -116,6 +116,7 @@ export default async function DashboardPage() {
         questionnaireProgress={questionnaireProgress}
         dashboardData={dashboardData}
         user={userProfile}
+        firstName={profile?.first_name || ''}
       />
     </AppShell>
   )

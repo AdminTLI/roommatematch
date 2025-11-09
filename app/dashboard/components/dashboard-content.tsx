@@ -57,9 +57,10 @@ interface DashboardContentProps {
     name?: string
     avatar?: string
   }
+  firstName?: string
 }
 
-export function DashboardContent({ hasCompletedQuestionnaire = false, hasPartialProgress = false, progressCount = 0, profileCompletion = 0, questionnaireProgress, dashboardData, user }: DashboardContentProps) {
+export function DashboardContent({ hasCompletedQuestionnaire = false, hasPartialProgress = false, progressCount = 0, profileCompletion = 0, questionnaireProgress, dashboardData, user, firstName = '' }: DashboardContentProps) {
   const router = useRouter()
   const supabase = createClient()
   const [topMatches, setTopMatches] = useState(dashboardData.topMatches)
@@ -75,6 +76,7 @@ export function DashboardContent({ hasCompletedQuestionnaire = false, hasPartial
       loadTopMatches()
       loadRecentActivity()
       loadTotalMatchesCount()
+      loadAvgCompatibility()
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user?.id])
@@ -260,19 +262,9 @@ export function DashboardContent({ hasCompletedQuestionnaire = false, hasPartial
 
       setTopMatches(formattedMatches)
 
-      // Calculate average compatibility from all matches
-      const allMatchScores = Array.from(matchScoreMap.values())
-      if (allMatchScores.length > 0) {
-        const average = Math.round(
-          (allMatchScores.reduce((sum, score) => sum + score, 0) / allMatchScores.length) * 100
-        )
-        setAvgCompatibility(average)
-      } else {
-        setAvgCompatibility(0)
-      }
-      
-      // Always fetch total count separately for accuracy
+      // Always fetch total count and avg compatibility separately for accuracy
       loadTotalMatchesCount()
+      loadAvgCompatibility()
     } catch (error) {
       console.error('Failed to load matches:', error)
       setTopMatches([])
@@ -301,6 +293,39 @@ export function DashboardContent({ hasCompletedQuestionnaire = false, hasPartial
       setTotalMatches(total)
     } catch (error) {
       console.error('Failed to load total matches count:', error)
+    }
+  }
+
+  const loadAvgCompatibility = async () => {
+    if (!user?.id) return
+
+    try {
+      // Fetch ALL matches (not just chat members)
+      const { data: matchesAsA } = await supabase
+        .from('matches')
+        .select('score')
+        .eq('a_user', user.id)
+
+      const { data: matchesAsB } = await supabase
+        .from('matches')
+        .select('score')
+        .eq('b_user', user.id)
+
+      const allScores = [
+        ...(matchesAsA || []).map((m: any) => m.score || 0),
+        ...(matchesAsB || []).map((m: any) => m.score || 0)
+      ]
+
+      if (allScores.length > 0) {
+        const average = Math.round(
+          (allScores.reduce((sum, score) => sum + score, 0) / allScores.length) * 100
+        )
+        setAvgCompatibility(average)
+      } else {
+        setAvgCompatibility(0)
+      }
+    } catch (error) {
+      console.error('Failed to load average compatibility:', error)
     }
   }
 
@@ -509,7 +534,7 @@ export function DashboardContent({ hasCompletedQuestionnaire = false, hasPartial
   }
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-6">
       {/* Email verification warning */}
       {user && !user.email_confirmed_at && (
         <motion.div
@@ -594,7 +619,7 @@ export function DashboardContent({ hasCompletedQuestionnaire = false, hasPartial
       >
         <motion.div variants={fadeInUp} className="flex items-center justify-between">
           <div>
-            <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">Welcome back!</h1>
+            <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">Welcome back{firstName ? ` ${firstName}` : ''}!</h1>
             <p className="text-base sm:text-lg text-gray-600 mt-1">Here's what's happening with your matches today.</p>
           </div>
         </motion.div>
@@ -608,17 +633,23 @@ export function DashboardContent({ hasCompletedQuestionnaire = false, hasPartial
             </div>
           )}
           {dashboardData.summary.unreadMessagesCount > 0 && (
-            <div className="inline-flex items-center gap-2 px-3 py-1 bg-blue-100 text-blue-800 text-sm font-medium rounded-full">
+            <button
+              onClick={() => router.push('/chat')}
+              className="inline-flex items-center gap-2 px-3 py-1 bg-blue-100 text-blue-800 text-sm font-medium rounded-full hover:bg-blue-200 transition-colors cursor-pointer"
+            >
               <MessageCircle className="w-3 h-3" />
               {dashboardData.summary.unreadMessagesCount} unread {dashboardData.summary.unreadMessagesCount === 1 ? 'message' : 'messages'}
-            </div>
+            </button>
           )}
           {/* Profile Completion Badge */}
           {profileCompletion < 100 && (
-            <div className="inline-flex items-center gap-2 px-3 py-1 bg-purple-100 text-purple-800 text-sm font-medium rounded-full">
+            <button
+              onClick={() => router.push('/settings')}
+              className="inline-flex items-center gap-2 px-3 py-1 bg-purple-100 text-purple-800 text-sm font-medium rounded-full hover:bg-purple-200 transition-colors cursor-pointer"
+            >
               <TrendingUp className="w-3 h-3" />
               Profile {profileCompletion}% complete
-            </div>
+            </button>
           )}
           {/* Questionnaire Progress Badge */}
           {questionnaireProgress && !questionnaireProgress.isSubmitted && (
@@ -641,7 +672,7 @@ export function DashboardContent({ hasCompletedQuestionnaire = false, hasPartial
         initial="initial"
         animate="animate"
         variants={staggerChildren}
-        className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6"
+        className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-4"
       >
         <motion.div variants={fadeInUp}>
           <div className="bg-white p-4 sm:p-6 rounded-xl shadow-sm border border-gray-200">
@@ -672,11 +703,11 @@ export function DashboardContent({ hasCompletedQuestionnaire = false, hasPartial
         initial="initial"
         animate="animate"
         variants={staggerChildren}
-        className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6 lg:gap-8"
+        className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-4 lg:gap-6"
       >
         {/* Top Matches - Real Data */}
         <motion.div variants={fadeInUp}>
-          <div className="bg-white p-4 sm:p-6 rounded-xl shadow-sm border border-gray-200 flex flex-col h-full">
+          <div className="bg-white p-4 sm:p-5 rounded-xl shadow-sm border border-gray-200 flex flex-col h-full max-h-[400px]">
             <div className="flex items-center justify-between mb-4 sm:mb-6">
               <h3 className="text-lg sm:text-xl font-bold text-gray-900">Your Top Matches</h3>
               <button 
@@ -700,7 +731,7 @@ export function DashboardContent({ hasCompletedQuestionnaire = false, hasPartial
               </div>
             ) : topMatches.length > 0 ? (
               <div className="flex flex-col flex-1 min-h-0">
-                <div className="space-y-3 sm:space-y-4 overflow-y-auto flex-1 pr-2">
+                <div className="space-y-3 sm:space-y-4 overflow-y-auto flex-1 pr-2 max-h-[280px]">
                   {topMatches.map((match) => (
                     <div key={match.id} className="flex flex-col sm:flex-row items-start sm:items-center gap-3 sm:gap-4 p-3 sm:p-4 bg-gray-50 rounded-lg">
                       <div className="flex items-center gap-3 sm:gap-4 flex-1 w-full sm:w-auto">
@@ -711,9 +742,16 @@ export function DashboardContent({ hasCompletedQuestionnaire = false, hasPartial
                         <div className="flex-1 min-w-0">
                           <h4 className="font-bold text-sm sm:text-base text-gray-900 truncate">{match.name}</h4>
                           <p className="text-xs sm:text-sm text-gray-600 truncate">
-                            <span>{match.program}</span>
-                            <span className="mx-1 sm:mx-2">•</span>
-                            <span>{match.university}</span>
+                            {match.program && match.university && (
+                              <>
+                                <span>{match.program}</span>
+                                <span className="mx-1 sm:mx-2">•</span>
+                                <span>{match.university}</span>
+                              </>
+                            )}
+                            {!match.program && !match.university && (
+                              <span className="text-gray-400">No program information</span>
+                            )}
                           </p>
                         </div>
                       </div>
@@ -757,7 +795,7 @@ export function DashboardContent({ hasCompletedQuestionnaire = false, hasPartial
 
         {/* Recent Activity - Live Notifications */}
         <motion.div variants={fadeInUp}>
-          <div className="bg-white p-4 sm:p-6 rounded-xl shadow-sm border border-gray-200 flex flex-col h-full">
+          <div className="bg-white p-4 sm:p-5 rounded-xl shadow-sm border border-gray-200 flex flex-col h-full max-h-[400px]">
             <div className="flex items-center justify-between mb-4 sm:mb-6">
               <h3 className="text-lg sm:text-xl font-bold text-gray-900">Recent Activity</h3>
               <button 
@@ -781,7 +819,7 @@ export function DashboardContent({ hasCompletedQuestionnaire = false, hasPartial
               </div>
             ) : recentActivity.length > 0 ? (
               <div className="flex flex-col flex-1 min-h-0">
-                <div className="space-y-3 overflow-y-auto flex-1 pr-2">
+                <div className="space-y-3 overflow-y-auto flex-1 pr-2 max-h-[280px]">
                   {recentActivity.map((activity) => (
                     <button
                       key={activity.id}

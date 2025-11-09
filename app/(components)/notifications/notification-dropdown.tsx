@@ -174,26 +174,25 @@ export function NotificationDropdown({
       <Card className="shadow-lg border">
         <CardHeader className="pb-3">
           <div className="flex items-center justify-between">
-            <CardTitle className="text-lg font-semibold flex items-center gap-2">
-              <Bell className="h-5 w-5" />
-              Notifications
+            <CardTitle className="text-lg font-semibold flex items-center gap-2 flex-1 min-w-0">
+              <Bell className="h-5 w-5 flex-shrink-0" />
+              <span className="truncate">Notifications</span>
               {counts && counts.unread > 0 && (
-                <Badge variant="destructive" className="ml-2">
+                <Badge variant="destructive" className="ml-2 flex-shrink-0">
                   {counts.unread}
                 </Badge>
               )}
             </CardTitle>
             
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-1 flex-shrink-0">
               <Button
                 variant="ghost"
                 size="sm"
                 onClick={handleMarkAllAsRead}
                 disabled={!counts || counts.unread === 0}
-                className="text-xs"
+                className="text-xs px-2"
               >
-                <CheckCheck className="h-3 w-3 mr-1" />
-                Mark all read
+                <CheckCheck className="h-3 w-3" />
               </Button>
               
               <Button
@@ -203,10 +202,9 @@ export function NotificationDropdown({
                   router.push('/notifications')
                   onClose()
                 }}
-                className="text-xs"
+                className="text-xs px-2"
               >
-                <Eye className="h-3 w-3 mr-1" />
-                View all
+                <Eye className="h-3 w-3" />
               </Button>
             </div>
           </div>
