@@ -1598,19 +1598,34 @@ BEGIN
     ORDER BY qi.key
   LOOP
     -- Normalize different response types to 0-1 scale
+    -- Note: response_record.value is JSONB, so we need to extract values properly
     CASE response_record.type
       WHEN 'slider' THEN
-        normalized_value := (response_record.value::numeric) / 10.0;
+        -- Extract numeric value from JSONB
+        normalized_value := CASE 
+          WHEN jsonb_typeof(response_record.value) = 'number' 
+          THEN (response_record.value::numeric) / 10.0
+          WHEN jsonb_typeof(response_record.value) = 'string'
+          THEN (response_record.value#>>'{}')::numeric / 10.0
+          ELSE 0.5
+        END;
       WHEN 'boolean' THEN
-        normalized_value := CASE WHEN response_record.value::boolean THEN 1.0 ELSE 0.0 END;
+        -- Extract boolean value from JSONB
+        normalized_value := CASE 
+          WHEN jsonb_typeof(response_record.value) = 'boolean'
+          THEN CASE WHEN response_record.value::boolean THEN 1.0 ELSE 0.0 END
+          WHEN jsonb_typeof(response_record.value) = 'string'
+          THEN CASE WHEN (response_record.value#>>'{}')::boolean THEN 1.0 ELSE 0.0 END
+          ELSE 0.0
+        END;
       WHEN 'single' THEN
         -- For single choice, map to numeric value based on options
         normalized_value := 0.5; -- Default middle value
       WHEN 'multiple' THEN
-        -- For multiple choice, count selections
+        -- For multiple choice, count selections from JSONB array
         normalized_value := CASE 
-          WHEN response_record.value::text[] IS NOT NULL 
-          THEN array_length(response_record.value::text[], 1)::numeric / 5.0
+          WHEN jsonb_typeof(response_record.value) = 'array'
+          THEN LEAST(jsonb_array_length(response_record.value)::numeric / 5.0, 1.0)
           ELSE 0.0
         END;
       ELSE
