@@ -92,7 +92,8 @@ export function AdminChatsContent() {
 
     setIsClosing(true)
     try {
-      const response = await fetch('/api/admin/chats', {
+      const { fetchWithCSRF } = await import('@/lib/utils/fetch-with-csrf')
+      const response = await fetchWithCSRF('/api/admin/chats', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

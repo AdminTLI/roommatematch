@@ -16,6 +16,7 @@ import {
   AlertCircle,
   Loader2
 } from 'lucide-react'
+import { fetchWithCSRF } from '@/lib/utils/fetch-with-csrf'
 
 interface QuestionnaireSettingsProps {
   progressData: {
@@ -46,7 +47,7 @@ export function QuestionnaireSettings({ progressData }: QuestionnaireSettingsPro
     setSuccess(null)
 
     try {
-      const response = await fetch('/api/settings/questionnaire/reset', {
+      const response = await fetchWithCSRF('/api/settings/questionnaire/reset', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

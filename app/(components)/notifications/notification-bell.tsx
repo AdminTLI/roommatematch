@@ -79,7 +79,8 @@ export function NotificationBell({ userId }: NotificationBellProps) {
 
   const handleMarkAsRead = async (notificationId: string) => {
     try {
-      const response = await fetch('/api/notifications/mark-read', {
+      const { fetchWithCSRF } = await import('@/lib/utils/fetch-with-csrf')
+      const response = await fetchWithCSRF('/api/notifications/mark-read', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -106,7 +107,8 @@ export function NotificationBell({ userId }: NotificationBellProps) {
 
   const handleMarkAllAsRead = async () => {
     try {
-      const response = await fetch('/api/notifications/mark-all-read', {
+      const { fetchWithCSRF } = await import('@/lib/utils/fetch-with-csrf')
+      const response = await fetchWithCSRF('/api/notifications/mark-all-read', {
         method: 'POST'
       })
 

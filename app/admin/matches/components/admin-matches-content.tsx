@@ -93,7 +93,8 @@ export function AdminMatchesContent() {
   const handleRefresh = async () => {
     setIsRefreshing(true)
     try {
-      const response = await fetch('/api/admin/matches', {
+      const { fetchWithCSRF } = await import('@/lib/utils/fetch-with-csrf')
+      const response = await fetchWithCSRF('/api/admin/matches', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ action: 'refresh' })
@@ -121,7 +122,8 @@ export function AdminMatchesContent() {
 
     setIsProcessingBulk(true)
     try {
-      const response = await fetch('/api/admin/matches', {
+      const { fetchWithCSRF } = await import('@/lib/utils/fetch-with-csrf')
+      const response = await fetchWithCSRF('/api/admin/matches', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

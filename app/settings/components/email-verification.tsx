@@ -63,7 +63,8 @@ export function EmailVerification({ user }: EmailVerificationProps) {
     setMessage('')
 
     try {
-      const response = await fetch('/api/auth/resend-verification', {
+      const { fetchWithCSRF } = await import('@/lib/utils/fetch-with-csrf')
+      const response = await fetchWithCSRF('/api/auth/resend-verification', {
         method: 'POST'
       })
 

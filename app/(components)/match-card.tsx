@@ -93,7 +93,8 @@ export function MatchCard({
     setIsProcessing(true)
     try {
       // TODO: Implement unmatch API call
-      await fetch('/api/match/unmatch', {
+      const { fetchWithCSRF } = await import('@/lib/utils/fetch-with-csrf')
+      await fetchWithCSRF('/api/match/unmatch', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ matchId: id })
@@ -112,7 +113,8 @@ export function MatchCard({
     setIsProcessing(true)
     try {
       // TODO: Implement block API call
-      await fetch('/api/match/block', {
+      const { fetchWithCSRF } = await import('@/lib/utils/fetch-with-csrf')
+      await fetchWithCSRF('/api/match/block', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ userId: id })
@@ -135,7 +137,8 @@ export function MatchCard({
     setIsProcessing(true)
     try {
       // TODO: Implement report API call
-      await fetch('/api/match/report', {
+      const { fetchWithCSRF } = await import('@/lib/utils/fetch-with-csrf')
+      await fetchWithCSRF('/api/match/report', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ userId: id, reason: reportReason })

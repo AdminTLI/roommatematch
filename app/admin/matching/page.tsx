@@ -47,7 +47,8 @@ export default function AdminMatchingPage() {
     setError(null)
     
     try {
-      const response = await fetch('/api/match/run', {
+      const { fetchWithCSRF } = await import('@/lib/utils/fetch-with-csrf')
+      const response = await fetchWithCSRF('/api/match/run', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -77,8 +78,9 @@ export default function AdminMatchingPage() {
 
     setIsLocking(true)
     try {
+      const { fetchWithCSRF } = await import('@/lib/utils/fetch-with-csrf')
       const userIds = Array.from(selectedMatches)
-      const response = await fetch('/api/match/lock', {
+      const response = await fetchWithCSRF('/api/match/lock', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

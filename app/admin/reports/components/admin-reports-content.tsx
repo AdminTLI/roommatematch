@@ -95,7 +95,8 @@ export function AdminReportsContent() {
 
   const handleStatusUpdate = async (reportId: string, status: string) => {
     try {
-      const response = await fetch('/api/admin/reports', {
+      const { fetchWithCSRF } = await import('@/lib/utils/fetch-with-csrf')
+      const response = await fetchWithCSRF('/api/admin/reports', {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -128,7 +129,8 @@ export function AdminReportsContent() {
         return
       }
 
-      const response = await fetch('/api/admin/reports', {
+      const { fetchWithCSRF } = await import('@/lib/utils/fetch-with-csrf')
+      const response = await fetchWithCSRF('/api/admin/reports', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

@@ -56,7 +56,8 @@ export function ReportListingDialog({
 
     setIsLoading(true)
     try {
-      const response = await fetch(`/api/housing/listings/${listingId}/report`, {
+      const { fetchWithCSRF } = await import('@/lib/utils/fetch-with-csrf')
+      const response = await fetchWithCSRF(`/api/housing/listings/${listingId}/report`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

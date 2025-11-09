@@ -45,7 +45,8 @@ export function AdminVerificationsContent() {
 
   const handleOverride = async (verificationId: string, userId: string, newStatus: string) => {
     try {
-      const response = await fetch('/api/admin/verifications', {
+      const { fetchWithCSRF } = await import('@/lib/utils/fetch-with-csrf')
+      const response = await fetchWithCSRF('/api/admin/verifications', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

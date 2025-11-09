@@ -56,7 +56,8 @@ export function VerificationSettings({ userId }: VerificationSettingsProps) {
     setError(null)
 
     try {
-      const response = await fetch('/api/verification/start', {
+      const { fetchWithCSRF } = await import('@/lib/utils/fetch-with-csrf')
+      const response = await fetchWithCSRF('/api/verification/start', {
         method: 'POST'
       })
 

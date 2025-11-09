@@ -10,7 +10,7 @@ import { Badge } from '@/components/ui/badge'
 import { createClient } from '@/lib/supabase/client'
 import { User } from '@supabase/supabase-js'
 import { Search, X, Users, Check, Loader2 } from 'lucide-react'
-import { getCSRFHeaders } from '@/lib/utils/csrf-client'
+import { fetchWithCSRF } from '@/lib/utils/fetch-with-csrf'
 
 interface Match {
   match_user_id: string
@@ -202,9 +202,11 @@ export function NewChatModal({ isOpen, onClose, user, initialMode }: NewChatModa
       
       if (isGroupMode) {
         // Create group chat
-        const response = await fetch('/api/chat/create-group', {
+        const response = await fetchWithCSRF('/api/chat/create-group', {
           method: 'POST',
-          headers: getCSRFHeaders(),
+          headers: {
+            'Content-Type': 'application/json',
+          },
           body: JSON.stringify({
             member_ids: selectedUserIds,
             name: groupName || undefined
@@ -221,9 +223,11 @@ export function NewChatModal({ isOpen, onClose, user, initialMode }: NewChatModa
       } else {
         // Create individual chat
         const otherUserId = selectedUserIds[0]
-        const response = await fetch('/api/chat/get-or-create', {
+        const response = await fetchWithCSRF('/api/chat/get-or-create', {
           method: 'POST',
-          headers: getCSRFHeaders(),
+          headers: {
+            'Content-Type': 'application/json',
+          },
           body: JSON.stringify({
             other_user_id: otherUserId
           }),
