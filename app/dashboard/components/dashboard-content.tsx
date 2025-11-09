@@ -598,7 +598,7 @@ export function DashboardContent({ hasCompletedQuestionnaire = false, hasPartial
   }
 
   return (
-    <div className="space-y-4 lg:space-y-3">
+    <div className="space-y-2 lg:space-y-2 flex flex-col lg:h-[calc(100vh-14rem)] lg:overflow-hidden">
       {/* Email verification warning */}
       {user && !user.email_confirmed_at && (
         <motion.div
@@ -679,29 +679,29 @@ export function DashboardContent({ hasCompletedQuestionnaire = false, hasPartial
         initial="initial"
         animate="animate"
         variants={staggerChildren}
-        className="space-y-4 lg:space-y-3"
+        className="space-y-2 flex-shrink-0"
       >
         <motion.div variants={fadeInUp} className="flex items-center justify-between">
           <div>
-            <h1 className="text-xl lg:text-2xl font-bold text-gray-900">Welcome back{firstName ? ` ${firstName}` : ''}!</h1>
-            <p className="text-sm lg:text-base text-gray-600 mt-1">Here's what's happening with your matches today.</p>
+            <h1 className="text-lg lg:text-xl font-bold text-gray-900">Welcome back{firstName ? ` ${firstName}` : ''}!</h1>
+            <p className="text-xs lg:text-sm text-gray-600 mt-0.5">Here's what's happening with your matches today.</p>
           </div>
         </motion.div>
         
         {/* Summary Badges - Real Data */}
-        <motion.div variants={fadeInUp} className="flex flex-wrap gap-2 sm:gap-3">
+        <motion.div variants={fadeInUp} className="flex flex-wrap gap-1.5 sm:gap-2">
           {dashboardData.summary.newMatchesCount > 0 && (
-            <div className="inline-flex items-center gap-2 px-3 py-1 bg-green-100 text-green-800 text-sm font-medium rounded-full">
-              <Star className="w-3 h-3" />
-              {dashboardData.summary.newMatchesCount} new {dashboardData.summary.newMatchesCount === 1 ? 'match' : 'matches'} found
+            <div className="inline-flex items-center gap-1.5 px-2 py-0.5 bg-green-100 text-green-800 text-xs font-medium rounded-full">
+              <Star className="w-2.5 h-2.5" />
+              {dashboardData.summary.newMatchesCount} new {dashboardData.summary.newMatchesCount === 1 ? 'match' : 'matches'}
             </div>
           )}
           {dashboardData.summary.unreadMessagesCount > 0 && (
             <button
               onClick={() => router.push('/chat')}
-              className="inline-flex items-center gap-2 px-3 py-1 bg-blue-100 text-blue-800 text-sm font-medium rounded-full hover:bg-blue-200 transition-colors cursor-pointer"
+              className="inline-flex items-center gap-1.5 px-2 py-0.5 bg-blue-100 text-blue-800 text-xs font-medium rounded-full hover:bg-blue-200 transition-colors cursor-pointer"
             >
-              <MessageCircle className="w-3 h-3" />
+              <MessageCircle className="w-2.5 h-2.5" />
               {dashboardData.summary.unreadMessagesCount} unread {dashboardData.summary.unreadMessagesCount === 1 ? 'message' : 'messages'}
             </button>
           )}
@@ -709,22 +709,22 @@ export function DashboardContent({ hasCompletedQuestionnaire = false, hasPartial
           {profileCompletion < 100 && (
             <button
               onClick={() => router.push('/settings')}
-              className="inline-flex items-center gap-2 px-3 py-1 bg-purple-100 text-purple-800 text-sm font-medium rounded-full hover:bg-purple-200 transition-colors cursor-pointer"
+              className="inline-flex items-center gap-1.5 px-2 py-0.5 bg-purple-100 text-purple-800 text-xs font-medium rounded-full hover:bg-purple-200 transition-colors cursor-pointer"
             >
-              <TrendingUp className="w-3 h-3" />
+              <TrendingUp className="w-2.5 h-2.5" />
               Profile {profileCompletion}% complete
             </button>
           )}
           {/* Questionnaire Progress Badge */}
           {questionnaireProgress && !questionnaireProgress.isSubmitted && (
-            <div className="inline-flex items-center gap-2 px-3 py-1 bg-blue-100 text-blue-800 text-sm font-medium rounded-full">
-              <FileText className="w-3 h-3" />
+            <div className="inline-flex items-center gap-1.5 px-2 py-0.5 bg-blue-100 text-blue-800 text-xs font-medium rounded-full">
+              <FileText className="w-2.5 h-2.5" />
               Questionnaire {questionnaireProgress.completedSections}/{questionnaireProgress.totalSections} sections
             </div>
           )}
           {dashboardData.summary.newMatchesCount === 0 && dashboardData.summary.unreadMessagesCount === 0 && profileCompletion === 100 && (!questionnaireProgress || questionnaireProgress.isSubmitted) && (
-            <div className="inline-flex items-center gap-2 px-3 py-1 bg-green-100 text-green-800 text-sm font-medium rounded-full">
-              <Star className="w-3 h-3" />
+            <div className="inline-flex items-center gap-1.5 px-2 py-0.5 bg-green-100 text-green-800 text-xs font-medium rounded-full">
+              <Star className="w-2.5 h-2.5" />
               All caught up!
             </div>
           )}
@@ -736,44 +736,44 @@ export function DashboardContent({ hasCompletedQuestionnaire = false, hasPartial
         initial="initial"
         animate="animate"
         variants={staggerChildren}
-        className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-3"
+        className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2 sm:gap-2 flex-shrink-0"
       >
         <motion.div variants={fadeInUp}>
-          <div className="bg-white p-4 sm:p-6 rounded-xl shadow-sm border border-gray-200">
-            <div className="text-2xl sm:text-3xl font-bold text-gray-900">
+          <div className="bg-white p-3 sm:p-4 rounded-xl shadow-sm border border-gray-200">
+            <div className="text-xl sm:text-2xl font-bold text-gray-900">
               {avgCompatibility > 0 ? `${avgCompatibility}%` : '-'}
             </div>
-            <div className="text-xs sm:text-sm text-gray-600 mt-1">Avg Compatibility</div>
+            <div className="text-xs text-gray-600 mt-0.5">Avg Compatibility</div>
           </div>
         </motion.div>
         
         <motion.div variants={fadeInUp}>
-          <div className="bg-white p-4 sm:p-6 rounded-xl shadow-sm border border-gray-200">
-            <div className="text-2xl sm:text-3xl font-bold text-gray-900">{totalMatches}</div>
-            <div className="text-xs sm:text-sm text-gray-600 mt-1">Total Matches</div>
+          <div className="bg-white p-3 sm:p-4 rounded-xl shadow-sm border border-gray-200">
+            <div className="text-xl sm:text-2xl font-bold text-gray-900">{totalMatches}</div>
+            <div className="text-xs text-gray-600 mt-0.5">Total Matches</div>
           </div>
         </motion.div>
         
         <motion.div variants={fadeInUp}>
-          <div className="bg-white p-4 sm:p-6 rounded-xl shadow-sm border border-gray-200">
-            <div className="text-2xl sm:text-3xl font-bold text-gray-900">{dashboardData.kpis.activeChats}</div>
-            <div className="text-xs sm:text-sm text-gray-600 mt-1">Active Chats</div>
+          <div className="bg-white p-3 sm:p-4 rounded-xl shadow-sm border border-gray-200">
+            <div className="text-xl sm:text-2xl font-bold text-gray-900">{dashboardData.kpis.activeChats}</div>
+            <div className="text-xs text-gray-600 mt-0.5">Active Chats</div>
           </div>
         </motion.div>
       </motion.div>
 
-      {/* Main Content Grid */}
+      {/* Main Content Grid - Top Matches and Recent Activity */}
       <motion.div
         initial="initial"
         animate="animate"
         variants={staggerChildren}
-        className="grid grid-cols-1 lg:grid-cols-2 gap-3 sm:gap-3 lg:gap-4"
+        className="grid grid-cols-1 lg:grid-cols-2 gap-2 sm:gap-2 lg:gap-3 flex-1 min-h-0"
       >
         {/* Top Matches - Real Data */}
-        <motion.div variants={fadeInUp}>
-          <div className="bg-white p-4 sm:p-5 rounded-xl shadow-sm border border-gray-200 flex flex-col h-full lg:max-h-[320px]">
-            <div className="flex items-center justify-between mb-3 lg:mb-3">
-              <h3 className="text-base lg:text-lg font-bold text-gray-900">Your Top Matches</h3>
+        <motion.div variants={fadeInUp} className="flex flex-col min-h-0">
+          <div className="bg-white p-3 sm:p-4 rounded-xl shadow-sm border border-gray-200 flex flex-col h-full max-h-full">
+            <div className="flex items-center justify-between mb-2">
+              <h3 className="text-sm lg:text-base font-bold text-gray-900">Your Top Matches</h3>
               <button 
                 className="flex items-center gap-1 text-sm text-gray-600 hover:text-gray-700 font-medium" 
                 onClick={loadTopMatches}
@@ -795,18 +795,18 @@ export function DashboardContent({ hasCompletedQuestionnaire = false, hasPartial
               </div>
             ) : topMatches.length > 0 ? (
               <div className="flex flex-col flex-1 min-h-0">
-                <div className="space-y-3 sm:space-y-4 overflow-y-auto flex-1 pr-2 max-h-[280px]">
+                <div className="space-y-2 overflow-y-auto flex-1 pr-2">
                   {topMatches.map((match) => (
                     <div key={match.id} className="flex flex-col items-start gap-3 p-3 bg-gray-50 rounded-lg overflow-x-hidden">
-                      <div className="flex items-center gap-3 w-full">
-                        <div className="text-xl font-bold text-blue-600 flex-shrink-0">
+                      <div className="flex items-center gap-2 w-full">
+                        <div className="text-lg font-bold text-blue-600 flex-shrink-0">
                           {(match.score * 100).toFixed(1)}%
                         </div>
-                        <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-500 rounded-full flex items-center justify-center text-white font-bold text-base flex-shrink-0">
+                        <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-purple-500 rounded-full flex items-center justify-center text-white font-bold text-sm flex-shrink-0">
                           {match.name[0].toUpperCase()}
                         </div>
                         <div className="flex-1 min-w-0">
-                          <h4 className="font-bold text-sm text-gray-900 truncate">{match.name}</h4>
+                          <h4 className="font-bold text-xs text-gray-900 truncate">{match.name}</h4>
                           <p className="text-xs text-gray-600 truncate">
                             {match.program && match.university ? (
                               <>
@@ -822,11 +822,11 @@ export function DashboardContent({ hasCompletedQuestionnaire = false, hasPartial
                           </p>
                         </div>
                       </div>
-                      <div className="flex items-center gap-2 w-full justify-end">
-                        <Heart className="w-4 h-4 text-rose-500 flex-shrink-0" />
+                      <div className="flex items-center gap-1.5 w-full justify-end mt-1">
+                        <Heart className="w-3 h-3 text-rose-500 flex-shrink-0" />
                         <button 
                           onClick={() => handleChatWithMatch(match.userId || match.id)}
-                          className="px-3 py-1.5 bg-blue-600 text-white text-xs font-medium rounded-lg hover:bg-blue-700 transition-colors flex-shrink-0"
+                          className="px-2 py-1 bg-blue-600 text-white text-xs font-medium rounded-lg hover:bg-blue-700 transition-colors flex-shrink-0"
                         >
                           Chat
                         </button>
@@ -834,13 +834,13 @@ export function DashboardContent({ hasCompletedQuestionnaire = false, hasPartial
                     </div>
                   ))}
                 </div>
-                <div className="pt-3 border-t border-gray-200 mt-4">
+                <div className="pt-2 border-t border-gray-200 mt-2 flex-shrink-0">
                   <button 
-                    className="w-full flex items-center justify-center gap-1 text-sm text-blue-600 hover:text-blue-700 font-medium py-2" 
+                    className="w-full flex items-center justify-center gap-1 text-xs text-blue-600 hover:text-blue-700 font-medium py-1.5" 
                     onClick={handleBrowseMatches}
                   >
                     View all
-                    <ArrowRight className="w-4 h-4" />
+                    <ArrowRight className="w-3 h-3" />
                   </button>
                 </div>
               </div>
@@ -861,10 +861,10 @@ export function DashboardContent({ hasCompletedQuestionnaire = false, hasPartial
         </motion.div>
 
         {/* Recent Activity - Live Notifications */}
-        <motion.div variants={fadeInUp}>
-          <div className="bg-white p-4 sm:p-5 rounded-xl shadow-sm border border-gray-200 flex flex-col h-full lg:max-h-[320px]">
-            <div className="flex items-center justify-between mb-3 lg:mb-3">
-              <h3 className="text-base lg:text-lg font-bold text-gray-900">Recent Activity</h3>
+        <motion.div variants={fadeInUp} className="flex flex-col min-h-0">
+          <div className="bg-white p-3 sm:p-4 rounded-xl shadow-sm border border-gray-200 flex flex-col h-full max-h-full">
+            <div className="flex items-center justify-between mb-2">
+              <h3 className="text-sm lg:text-base font-bold text-gray-900">Recent Activity</h3>
               <button 
                 className="flex items-center gap-1 text-sm text-gray-600 hover:text-gray-700 font-medium" 
                 onClick={loadRecentActivity}
@@ -886,18 +886,18 @@ export function DashboardContent({ hasCompletedQuestionnaire = false, hasPartial
               </div>
             ) : recentActivity.length > 0 ? (
               <div className="flex flex-col flex-1 min-h-0">
-                <div className="space-y-3 overflow-y-auto flex-1 pr-2 max-h-[280px]">
+                <div className="space-y-1.5 overflow-y-auto flex-1 pr-2">
                   {recentActivity.map((activity) => (
                     <button
                       key={activity.id}
                       onClick={() => handleActivityClick(activity)}
-                      className={`w-full flex items-start gap-3 p-3 rounded-lg transition-colors text-left ${
+                      className={`w-full flex items-start gap-2 p-2 rounded-lg transition-colors text-left ${
                         activity.isRead 
                           ? 'bg-gray-50 hover:bg-gray-100' 
                           : 'bg-blue-50 hover:bg-blue-100 border border-blue-200'
                       }`}
                     >
-                      <div className={`flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center ${
+                      <div className={`flex-shrink-0 w-6 h-6 rounded-full flex items-center justify-center ${
                         activity.isRead ? 'bg-gray-200' : getActivityColor(activity.type)
                       }`}>
                         <div className={activity.isRead ? 'text-gray-600' : ''}>
@@ -905,7 +905,7 @@ export function DashboardContent({ hasCompletedQuestionnaire = false, hasPartial
                         </div>
                       </div>
                       <div className="flex-1 min-w-0">
-                        <p className={`font-medium text-sm ${
+                        <p className={`font-medium text-xs ${
                           activity.isRead ? 'text-gray-700' : 'text-gray-900'
                         }`}>
                           {activity.title}
@@ -917,23 +917,23 @@ export function DashboardContent({ hasCompletedQuestionnaire = false, hasPartial
                             {activity.message}
                           </p>
                         )}
-                        <p className="text-xs text-gray-400 mt-1">
+                        <p className="text-xs text-gray-400 mt-0.5">
                           {activity.timeAgo}
                         </p>
                       </div>
                       {!activity.isRead && (
-                        <div className="flex-shrink-0 w-2 h-2 bg-blue-600 rounded-full mt-2" />
+                        <div className="flex-shrink-0 w-1.5 h-1.5 bg-blue-600 rounded-full mt-1.5" />
                       )}
                     </button>
                   ))}
                 </div>
-                <div className="pt-3 border-t border-gray-200 mt-3">
+                <div className="pt-2 border-t border-gray-200 mt-2 flex-shrink-0">
                   <button 
-                    className="w-full flex items-center justify-center gap-1 text-sm text-blue-600 hover:text-blue-700 font-medium py-2" 
+                    className="w-full flex items-center justify-center gap-1 text-xs text-blue-600 hover:text-blue-700 font-medium py-1.5" 
                     onClick={handleViewAllActivity}
                   >
                     View all
-                    <ArrowRight className="w-4 h-4" />
+                    <ArrowRight className="w-3 h-3" />
                   </button>
                 </div>
               </div>
@@ -950,43 +950,6 @@ export function DashboardContent({ hasCompletedQuestionnaire = false, hasPartial
         </motion.div>
       </motion.div>
 
-      {/* Quick Actions */}
-      <motion.div
-        initial="initial"
-        animate="animate"
-        variants={staggerChildren}
-      >
-        <motion.div variants={fadeInUp}>
-          <div className="bg-white p-4 sm:p-6 rounded-xl shadow-sm border border-gray-200">
-            <h3 className="text-lg sm:text-xl font-bold text-gray-900 mb-4 sm:mb-6">Quick Actions</h3>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
-              <button 
-                className="flex flex-col items-center justify-center gap-2 h-20 px-4 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors" 
-                onClick={handleBrowseMatches}
-              >
-                <Users className="w-6 h-6" />
-                <span className="text-sm font-medium">Browse Matches</span>
-              </button>
-              
-              <button 
-                className="flex flex-col items-center justify-center gap-2 h-20 px-4 bg-white text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors" 
-                onClick={handleStartChat}
-              >
-                <MessageCircle className="w-6 h-6" />
-                <span className="text-sm font-medium">Start Chat</span>
-              </button>
-              
-              <button 
-                className="flex flex-col items-center justify-center gap-2 h-20 px-4 bg-white text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors" 
-                onClick={handleUpdateProfile}
-              >
-                <Plus className="w-6 h-6" />
-                <span className="text-sm font-medium">Update Profile</span>
-              </button>
-            </div>
-          </div>
-        </motion.div>
-      </motion.div>
     </div>
   )
 }
