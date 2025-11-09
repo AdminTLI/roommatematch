@@ -4,22 +4,14 @@ import { createClient } from '@/lib/supabase/server'
 export async function GET() {
   const supabase = await createClient()
   
-  // Refresh the session to get latest user data
-  const { data: { session }, error: sessionError } = await supabase.auth.getSession()
-  
-  if (sessionError || !session) {
-    return NextResponse.json({ 
-      error: 'No active session' 
-    }, { status: 401 })
-  }
-  
-  // Get fresh user data
+  // Get fresh user data (getUser() validates the session server-side)
+  // Using getUser() instead of getSession() for security - it authenticates with Supabase Auth server
   const { data: { user }, error: userError } = await supabase.auth.getUser()
   
   if (userError || !user) {
     return NextResponse.json({ 
-      error: 'Failed to get user data' 
-    }, { status: 500 })
+      error: 'No active session or failed to get user data' 
+    }, { status: 401 })
   }
   
   return NextResponse.json({ 
