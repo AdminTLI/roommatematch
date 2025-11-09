@@ -17,6 +17,11 @@ export default async function VerifyPage() {
   // Check using the centralized verification utility for consistency
   const verificationStatus = await checkUserVerificationStatus(user)
   
+  // If already fully verified (including demo account bypass), redirect to onboarding
+  if (!verificationStatus.needsEmailVerification && !verificationStatus.needsPersonaVerification) {
+    redirect('/onboarding/intro')
+  }
+  
   // If email is not verified, redirect immediately
   if (verificationStatus.needsEmailVerification) {
     redirect(`/auth/verify-email?email=${encodeURIComponent(user.email || '')}&auto=1`)

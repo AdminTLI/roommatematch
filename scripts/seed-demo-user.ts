@@ -101,6 +101,59 @@ async function createDemoUser() {
       console.log('✅ Profile created')
     }
 
+    // 3.5. Create verification record (fully verified with Persona)
+    console.log('✅ Creating verification record...')
+    // Check if verification already exists
+    const { data: existingVerification } = await supabase
+      .from('verifications')
+      .select('id')
+      .eq('user_id', userId)
+      .eq('provider', 'persona')
+      .maybeSingle()
+
+    if (existingVerification) {
+      // Update existing verification
+      const { error: verificationError } = await supabase
+        .from('verifications')
+        .update({
+          status: 'approved',
+          provider_data: {
+            inquiry_id: `demo-inquiry-${userId}`,
+            persona_status: 'approved',
+            demo_account: true
+          },
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', existingVerification.id)
+
+      if (verificationError) {
+        console.log('⚠️  Error updating verification record:', verificationError.message)
+      } else {
+        console.log('✅ Verification record updated (fully verified)')
+      }
+    } else {
+      // Create new verification
+      const { error: verificationError } = await supabase
+        .from('verifications')
+        .insert({
+          user_id: userId,
+          provider: 'persona',
+          provider_session_id: `demo-verification-${userId}`,
+          status: 'approved',
+          provider_data: {
+            inquiry_id: `demo-inquiry-${userId}`,
+            persona_status: 'approved',
+            demo_account: true
+          }
+        })
+
+      if (verificationError) {
+        console.log('⚠️  Error creating verification record:', verificationError.message)
+      } else {
+        console.log('✅ Verification record created (fully verified)')
+      }
+    }
+
     // 4. Create academic record
     console.log('🎓 Creating academic record...')
     const { error: academicError } = await supabase

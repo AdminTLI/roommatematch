@@ -198,9 +198,12 @@ async function seedProduction() {
     } else {
       const demoUser = existingUsers.users.find(u => u.email?.toLowerCase() === DEMO_USER_EMAIL.toLowerCase())
       
+      let demoUserId: string | undefined
+      
       if (demoUser) {
         console.log(`   ✓ Demo user already exists (ID: ${demoUser.id})`)
         console.log('   → Skipping creation (idempotent)')
+        demoUserId = demoUser.id
       } else {
         // Create the demo user
         const { data: newUser, error: createError } = await supabase.auth.admin.createUser({
@@ -216,6 +219,7 @@ async function seedProduction() {
           console.error('   ❌ Error creating demo user:', createError.message)
         } else {
           console.log(`   ✓ Demo user created successfully (ID: ${newUser.user?.id})`)
+          demoUserId = newUser.user?.id
           
           // Create profile for demo user
           if (newUser.user) {
@@ -237,6 +241,60 @@ async function seedProduction() {
             } else {
               console.log('   ✓ Demo user profile created')
             }
+          }
+        }
+      }
+
+      // Ensure verification record exists (for both new and existing users)
+      if (demoUserId) {
+        // Check if verification already exists
+        const { data: existingVerification } = await supabase
+          .from('verifications')
+          .select('id')
+          .eq('user_id', demoUserId)
+          .eq('provider', 'persona')
+          .maybeSingle()
+
+        if (existingVerification) {
+          // Update existing verification
+          const { error: verificationError } = await supabase
+            .from('verifications')
+            .update({
+              status: 'approved',
+              provider_data: {
+                inquiry_id: `demo-inquiry-${demoUserId}`,
+                persona_status: 'approved',
+                demo_account: true
+              },
+              updated_at: new Date().toISOString()
+            })
+            .eq('id', existingVerification.id)
+          
+          if (verificationError) {
+            console.warn('   ⚠️  Warning updating verification record:', verificationError.message)
+          } else {
+            console.log('   ✓ Demo user verification record updated (fully verified)')
+          }
+        } else {
+          // Create new verification
+          const { error: verificationError } = await supabase
+            .from('verifications')
+            .insert({
+              user_id: demoUserId,
+              provider: 'persona',
+              provider_session_id: `demo-verification-${demoUserId}`,
+              status: 'approved',
+              provider_data: {
+                inquiry_id: `demo-inquiry-${demoUserId}`,
+                persona_status: 'approved',
+                demo_account: true
+              }
+            })
+          
+          if (verificationError) {
+            console.warn('   ⚠️  Warning creating verification record:', verificationError.message)
+          } else {
+            console.log('   ✓ Demo user verification record created (fully verified)')
           }
         }
       }
