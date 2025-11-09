@@ -148,10 +148,19 @@ This document summarizes the implementation of the MVP Rescue + Roadmap plan, tr
 - Sync script fails (non-zero exit) when onboarding institutions lack data
 - Coverage report clearly surfaces gaps
 
+**Programme Enrichment:**
+- `db/migrations/026_enrich_programmes_table.sql` - Adds enrichment fields (croho_code, language_codes, faculty, active, enrichment_status, enriched_at)
+- `scripts/enrich-programmes.ts` - Enrichment script that matches DUO programmes with Studiekeuzedatabase data
+- Matching strategy: Primary by croho_code, fallback by name + institution + level (fuzzy matching with Levenshtein distance)
+- Generates enrichment report: `data/programmes/.enrichment-report.json`
+- Repository functions: `enrichProgramme()`, `getUnenrichedProgrammes()`, `getProgrammeByCrohoCode()`, `findProgrammesByNameAndInstitution()`
+
 **Usage:**
-- Sync: `pnpm tsx scripts/sync-duo-programmes.ts [--export-json]`
+- Sync: `pnpm tsx scripts/sync-duo-programmes.ts [--export-json] [--enrich]`
+- Enrichment: `pnpm tsx scripts/enrich-programmes.ts` (standalone or via --enrich flag)
 - Coverage check: `pnpm tsx scripts/report-programme-coverage.ts`
 - Environment variables required: `NEXT_PUBLIC_SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`
+- Enrichment requires: `SKDB_API_BASE` + `SKDB_API_KEY` OR `SKDB_DUMP_PATH` (CSV/XLSX file)
 
 ### 6. Feature Flags & Scope Reduction ✅
 

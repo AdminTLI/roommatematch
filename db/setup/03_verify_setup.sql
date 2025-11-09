@@ -244,6 +244,14 @@ SELECT 'Programmes Seed Data Check' as check_type,
        COUNT(DISTINCT level) as level_count
 FROM programmes;
 
+-- Check programme enrichment status
+SELECT 'Programme Enrichment Status Check' as check_type,
+       enrichment_status,
+       COUNT(*) as programme_count
+FROM programmes
+GROUP BY enrichment_status
+ORDER BY enrichment_status;
+
 -- Check question items
 SELECT 'Question Items Seed Data Check' as check_type,
        COUNT(*) as question_count,

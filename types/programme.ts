@@ -51,6 +51,22 @@ export type Programme = {
     /** Institution code (INSTELLINGSCODE) */
     instCode: string;
   };
+  
+  /** Enrichment fields from Studiekeuzedatabase */
+  /** CROHO code from Studiekeuzedatabase */
+  crohoCode?: string;
+  
+  /** Language codes (e.g., ['nl', 'en']) */
+  languageCodes?: string[];
+  
+  /** Faculty or department name */
+  faculty?: string;
+  
+  /** Whether the programme is currently active */
+  active?: boolean;
+  
+  /** Enrichment status */
+  enrichmentStatus?: 'pending' | 'enriched' | 'failed' | 'not_found';
 };
 
 export type ProgrammesByLevel = {

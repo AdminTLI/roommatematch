@@ -7,7 +7,7 @@
  * to the programmes database table. Optionally exports JSON files for backup.
  * 
  * Usage:
- *   pnpm tsx scripts/sync-duo-programmes.ts [--export-json]
+ *   pnpm tsx scripts/sync-duo-programmes.ts [--export-json] [--enrich]
  * 
  * Environment variables:
  *   DUO_ERKENNINGEN_CSV_URL - Override default DUO CSV URL
@@ -36,6 +36,7 @@ const DEFAULT_CSV_URL = process.env.DUO_ERKENNINGEN_CSV_URL ||
 
 // Parse command line arguments
 const exportJson = process.argv.includes('--export-json');
+const runEnrichment = process.argv.includes('--enrich');
 
 /**
  * Coverage report structure
@@ -465,6 +466,20 @@ async function main(): Promise<void> {
     console.log('');
     if (validation.isValid) {
       console.log('✅ Programme sync completed successfully!');
+      
+      // Optionally run enrichment
+      if (runEnrichment) {
+        console.log('');
+        console.log('🔗 Running enrichment...');
+        try {
+          const { enrichProgrammes } = await import('./enrich-programmes');
+          await enrichProgrammes();
+        } catch (error) {
+          console.error('❌ Enrichment failed:', error);
+          // Don't fail the sync if enrichment fails
+          console.warn('⚠️  Continuing despite enrichment failure');
+        }
+      }
     } else {
       console.error('❌ Programme sync completed with coverage failures!');
       process.exit(1);
