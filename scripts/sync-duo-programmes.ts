@@ -429,14 +429,14 @@ async function main(): Promise<void> {
     // Validate coverage for onboarding institutions
     console.log('');
     console.log('🔍 Validating coverage for onboarding institutions...');
-    const validation = validateCoverage(coverageReport, onboardingInstitutions);
+    const coverageValidation = validateCoverage(coverageReport, onboardingInstitutions);
     
-    if (!validation.isValid) {
-      coverageReport.failures = validation.failures;
+    if (!coverageValidation.isValid) {
+      coverageReport.failures = coverageValidation.failures;
       console.error('');
       console.error('❌ Coverage validation failed!');
-      console.error(`   ${validation.failures.length} onboarding institution(s) lack complete programme data:`);
-      validation.failures.forEach(id => {
+      console.error(`   ${coverageValidation.failures.length} onboarding institution(s) lack complete programme data:`);
+      coverageValidation.failures.forEach(id => {
         const inst = onboardingInstitutions.find(i => i.id === id);
         const report = coverageReport.institutions.find(i => i.id === id);
         console.error(`   - ${inst?.label || id}: ${report?.missingLevels.join(', ') || 'missing BRIN'}`);
@@ -464,7 +464,7 @@ async function main(): Promise<void> {
     console.log(`   Skipped Other: ${counters.skippedOther.toLocaleString()}`);
     
     console.log('');
-    if (validation.isValid) {
+    if (coverageValidation.isValid) {
       console.log('✅ Programme sync completed successfully!');
       
       // Optionally run enrichment
