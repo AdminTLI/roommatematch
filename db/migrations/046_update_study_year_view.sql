@@ -1,6 +1,16 @@
 -- Migration: Update user_study_year_v view with month-aware calculation logic
 -- This replaces the simple calendar year calculation with accurate academic year logic
 
+-- Ensure expected_graduation_year column exists (from migration 004)
+-- This makes the migration idempotent and safe to run even if migration 004 wasn't run
+ALTER TABLE user_academic 
+ADD COLUMN IF NOT EXISTS expected_graduation_year int 
+CHECK (expected_graduation_year IS NULL OR (expected_graduation_year >= EXTRACT(YEAR FROM now()) AND expected_graduation_year <= EXTRACT(YEAR FROM now()) + 10));
+
+-- Create index if it doesn't exist
+CREATE INDEX IF NOT EXISTS idx_user_academic_graduation_year ON user_academic(expected_graduation_year);
+
+-- Update the view with month-aware calculation logic
 CREATE OR REPLACE VIEW user_study_year_v AS
 SELECT 
     ua.user_id,
