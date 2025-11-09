@@ -147,11 +147,14 @@ export async function POST(request: Request) {
           
           if (programError) {
             console.error('[Submit] Program lookup failed:', programError)
-            // If program not found, set to null to avoid UUID constraint violation
-            console.log('[Submit] Setting program_id to null since program not found in database')
+            // If program not found, set to null and mark as undecided to satisfy constraint
+            // Constraint: (program_id IS NOT NULL AND undecided_program = false) OR (program_id IS NULL AND undecided_program = true)
+            console.log('[Submit] Setting program_id to null and undecided_program to true since program not found in database')
             submissionData.program_id = undefined
+            submissionData.undecided_program = true
           } else if (program) {
             submissionData.program_id = program.id
+            submissionData.undecided_program = false
             console.log('[Submit] Found program UUID:', program.id)
           }
         }
@@ -226,6 +229,9 @@ export async function POST(request: Request) {
           campus: submissionData.campus,
           languages_daily: extractedLanguages,
           study_start_year: submissionData.study_start_year,
+          study_start_month: submissionData.study_start_month,
+          expected_graduation_year: submissionData.expected_graduation_year,
+          graduation_month: submissionData.graduation_month,
           undecided_program: submissionData.undecided_program,
           responses: deduplicatedResponses
         })
