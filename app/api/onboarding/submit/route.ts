@@ -192,7 +192,20 @@ export async function POST(request: Request) {
 
       console.log(`[Submit] Deduplicated ${responsesToInsert.length} responses to ${deduplicatedResponses.length} unique keys`)
 
-      // 4. Use consolidated submission helper
+      // 4. Validate we have data to submit
+      if (!submissionData || deduplicatedResponses.length === 0) {
+        console.warn('[Submit] No submission data or responses to process', {
+          hasSubmissionData: !!submissionData,
+          responseCount: deduplicatedResponses.length,
+          sectionsCount: sections?.length || 0
+        })
+        return NextResponse.json({ 
+          error: 'No questionnaire data found. Please ensure all sections are saved before submitting. Try refreshing the page and submitting again.',
+          title: 'No Data to Submit'
+        }, { status: 400 })
+      }
+
+      // 5. Use consolidated submission helper
       if (submissionData && deduplicatedResponses.length > 0) {
         // Ensure we have a valid university_id
         if (!submissionData.university_id) {
@@ -298,9 +311,6 @@ export async function POST(request: Request) {
           // Don't fail submission if analytics fails
           console.error('[Submit] Analytics tracking failed:', analyticsError)
         }
-      } else {
-        console.warn('[Submit] No submission data or responses to process')
-      }
 
     console.log('[Submit] Submission complete')
     return NextResponse.json({ ok: true })

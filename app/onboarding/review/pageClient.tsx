@@ -339,6 +339,45 @@ function ReviewClientContent() {
 
   const submit = async () => {
     try {
+      // Before submitting, ensure all sections are saved to the database
+      // This is important because autosave has an 800ms debounce and might not have completed
+      console.log('[Review] Flushing all sections before submission...')
+      const allSections = Object.keys(sections) as Array<keyof typeof sections>
+      
+      // Save all sections that have answers
+      const savePromises = allSections
+        .filter(sectionKey => {
+          const sectionAnswers = sections[sectionKey]
+          return sectionAnswers && Object.keys(sectionAnswers).length > 0
+        })
+        .map(async (sectionKey) => {
+          const sectionAnswers = sections[sectionKey]
+          const answersArray = Object.values(sectionAnswers)
+          
+          if (answersArray.length === 0) return Promise.resolve()
+          
+          try {
+            const res = await fetchWithCSRF('/api/onboarding/save', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ section: sectionKey, answers: answersArray }),
+            })
+            if (!res.ok) {
+              console.warn(`[Review] Failed to save section ${sectionKey} before submission`)
+            }
+          } catch (error) {
+            console.error(`[Review] Error saving section ${sectionKey}:`, error)
+          }
+        })
+      
+      // Wait for all saves to complete
+      await Promise.all(savePromises)
+      console.log('[Review] All sections saved, proceeding with submission...')
+      
+      // Small delay to ensure database has processed the saves
+      await new Promise(resolve => setTimeout(resolve, 200))
+      
+      // Now submit
       const response = await fetchWithCSRF('/api/onboarding/submit', { method: 'POST' })
       const result = await response.json()
       
