@@ -46,28 +46,62 @@ export function ProgrammeSelect({
 
     const loadProgrammes = async () => {
       setLoading(true)
+      let dataSource = 'unknown'
+      
       try {
+        // First try loading from JSON file
         const res = await fetch(`/data/programmes/${institutionId}.json`)
-        if (!res.ok) {
-          if (res.status === 404) {
-            console.warn(`Missing programme data for institution: ${institutionId}`)
-            // Show manual entry option
-            setProgrammes([])
-            setShowManualEntry(true)
-            return
-          }
-          throw new Error('Failed to load programmes')
+        if (res.ok) {
+          dataSource = 'json'
+          const data = await res.json()
+          const levelProgrammes = data[degreeLevel] || []
+          
+          // Deduplicate and add language labels
+          const deduped = deduplicateProgrammes(levelProgrammes)
+          setProgrammes(deduped)
+          setShowManualEntry(deduped.length === 0)
+          console.log(`[ProgrammeSelect] Loaded ${deduped.length} programmes from JSON for ${institutionId}/${degreeLevel}`)
+          setLoading(false)
+          return
         }
         
-        const data = await res.json()
-        const levelProgrammes = data[degreeLevel] || []
+        // If JSON file doesn't exist (404), try API fallback
+        if (res.status === 404) {
+          console.warn(`[ProgrammeSelect] JSON file not found for ${institutionId}, trying API fallback...`)
+          
+          try {
+            const apiRes = await fetch(`/api/programmes?inst=${institutionId}&level=${degreeLevel}`)
+            if (apiRes.ok) {
+              dataSource = 'api'
+              const apiData = await apiRes.json()
+              const apiProgrammes = apiData.programmes || []
+              
+              // Deduplicate and add language labels
+              const deduped = deduplicateProgrammes(apiProgrammes)
+              setProgrammes(deduped)
+              setShowManualEntry(deduped.length === 0)
+              console.log(`[ProgrammeSelect] Loaded ${deduped.length} programmes from API for ${institutionId}/${degreeLevel}`)
+              setLoading(false)
+              return
+            } else {
+              console.warn(`[ProgrammeSelect] API also failed (${apiRes.status}) for ${institutionId}/${degreeLevel}`)
+            }
+          } catch (apiError) {
+            console.error('[ProgrammeSelect] API fallback failed:', apiError)
+          }
+          
+          // Both JSON and API failed - show manual entry
+          console.warn(`[ProgrammeSelect] No programme data available for institution: ${institutionId}`)
+          setProgrammes([])
+          setShowManualEntry(true)
+          setLoading(false)
+          return
+        }
         
-        // Deduplicate and add language labels
-        const deduped = deduplicateProgrammes(levelProgrammes)
-        setProgrammes(deduped)
-        setShowManualEntry(deduped.length === 0)
+        // Other error from JSON fetch
+        throw new Error(`Failed to load programmes: ${res.status} ${res.statusText}`)
       } catch (error) {
-        console.error('Failed to load programmes:', error)
+        console.error(`[ProgrammeSelect] Failed to load programmes from ${dataSource}:`, error)
         setProgrammes([])
         setShowManualEntry(true)
       } finally {
@@ -159,39 +193,101 @@ export function ProgrammeSelect({
 }
 
 function deduplicateProgrammes(programmes: Programme[]): Programme[] {
-  // Group by name
-  const grouped = new Map<string, Programme[]>()
+  // First, group by unique ID/RIO code to remove true duplicates
+  const byId = new Map<string, Programme>()
+  const byRioCode = new Map<string, Programme>()
   
   for (const prog of programmes) {
-    const key = prog.name
-    if (!grouped.has(key)) {
-      grouped.set(key, [])
+    // Use ID as primary key
+    if (prog.id && !byId.has(prog.id)) {
+      byId.set(prog.id, prog)
     }
-    grouped.get(key)!.push(prog)
+    
+    // Also track by RIO code if available
+    if (prog.externalRefs?.rioCode) {
+      const rioCode = prog.externalRefs.rioCode
+      if (!byRioCode.has(rioCode)) {
+        byRioCode.set(rioCode, prog)
+      } else {
+        // If RIO code already exists, prefer the one with ID match
+        const existing = byRioCode.get(rioCode)!
+        if (prog.id && existing.id !== prog.id) {
+          // Different IDs but same RIO code - keep both, will handle by name later
+        }
+      }
+    }
+  }
+  
+  // Get unique programmes by ID first
+  const uniqueById = Array.from(byId.values())
+  
+  // Now group by name for language variant handling
+  const groupedByName = new Map<string, Programme[]>()
+  
+  for (const prog of uniqueById) {
+    const nameKey = prog.name.toLowerCase().trim()
+    if (!groupedByName.has(nameKey)) {
+      groupedByName.set(nameKey, [])
+    }
+    groupedByName.get(nameKey)!.push(prog)
   }
 
   // Deduplicate and add language labels
   const result: Programme[] = []
   
-  for (const [name, progs] of grouped.entries()) {
+  for (const [nameKey, progs] of groupedByName.entries()) {
     if (progs.length === 1) {
       result.push(progs[0])
     } else {
-      // Multiple with same name - check if different languages
-      const hasEn = progs.some(p => p.nameEn)
-      const hasNl = progs.some(p => !p.nameEn || p.name !== p.nameEn)
-      
-      if (hasEn && hasNl) {
-        // Add language labels
-        for (const prog of progs) {
-          result.push({
-            ...prog,
-            name: prog.nameEn ? `${prog.name} (English)` : `${prog.name} (Nederlands)`
-          })
+      // Multiple programmes with same name - check if they're truly duplicates or language variants
+      // First check if they have different IDs/RIO codes
+      const uniqueProgs = new Map<string, Programme>()
+      for (const prog of progs) {
+        const uniqueKey = prog.id || prog.externalRefs?.rioCode || `${prog.name}-${prog.level}`
+        if (!uniqueProgs.has(uniqueKey)) {
+          uniqueProgs.set(uniqueKey, prog)
         }
+      }
+      
+      const uniqueProgsArray = Array.from(uniqueProgs.values())
+      
+      if (uniqueProgsArray.length === 1) {
+        // True duplicates with same ID/RIO code - just take one
+        result.push(uniqueProgsArray[0])
       } else {
-        // Just take first one
-        result.push(progs[0])
+        // Different programmes with same name - check if different languages
+        const hasEn = uniqueProgsArray.some(p => p.nameEn && p.nameEn !== p.name)
+        const hasNl = uniqueProgsArray.some(p => !p.nameEn || p.name === p.nameEn)
+        
+        if (hasEn && hasNl) {
+          // Add language labels to distinguish
+          for (const prog of uniqueProgsArray) {
+            if (prog.nameEn && prog.nameEn !== prog.name) {
+              result.push({
+                ...prog,
+                name: `${prog.name} (English)`
+              })
+            } else {
+              result.push({
+                ...prog,
+                name: `${prog.name} (Nederlands)`
+              })
+            }
+          }
+        } else {
+          // Same name, different IDs - keep all but add distinguishing info
+          for (const prog of uniqueProgsArray) {
+            const displayName = prog.externalRefs?.rioCode 
+              ? `${prog.name} (${prog.externalRefs.rioCode})`
+              : prog.nameEn && prog.nameEn !== prog.name
+              ? `${prog.name} (${prog.nameEn})`
+              : prog.name
+            result.push({
+              ...prog,
+              name: displayName
+            })
+          }
+        }
       }
     }
   }

@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Label } from '@/components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group'
@@ -23,6 +23,84 @@ export function AcademicStep({ data, onChange, user }: AcademicStepProps) {
   const currentYear = new Date().getFullYear()
   const graduationYears = Array.from({ length: 11 }, (_, i) => currentYear + i)
   const supabase = createClient()
+  const [universityName, setUniversityName] = useState<string | null>(null)
+  const [hasUniversityFromBasics, setHasUniversityFromBasics] = useState(false)
+  
+  // Check if university was already selected in basics step
+  useEffect(() => {
+    const checkExistingUniversity = async () => {
+      // Check if we have university_id or institution_slug from basics step
+      if (data.university_id && !data.institution_slug && !data.university_slug) {
+        // Look up slug from university_id
+        try {
+          const { data: uniData, error } = await supabase
+            .from('universities')
+            .select('id, slug, name')
+            .eq('id', data.university_id)
+            .maybeSingle()
+          
+          if (!error && uniData) {
+            setUniversityName(uniData.name)
+            setHasUniversityFromBasics(true)
+            // Set institution_slug for compatibility (only update if missing)
+            onChange({
+              ...data,
+              institution_slug: uniData.slug,
+              university_slug: uniData.slug
+            })
+          }
+        } catch (error) {
+          console.error('Error looking up university:', error)
+        }
+      } else if ((data.institution_slug || data.university_slug) && !universityName) {
+        // We have slug, look up name (only if we don't have it yet)
+        const slug = data.institution_slug || data.university_slug
+        try {
+          const { data: uniData, error } = await supabase
+            .from('universities')
+            .select('id, slug, name')
+            .eq('slug', slug)
+            .maybeSingle()
+          
+          if (!error && uniData) {
+            setUniversityName(uniData.name)
+            setHasUniversityFromBasics(true)
+            // Ensure university_id is set (only if not already set)
+            if (!data.university_id) {
+              onChange({
+                ...data,
+                university_id: uniData.id
+              })
+            }
+          }
+        } catch (error) {
+          console.error('Error looking up university:', error)
+        }
+      } else if ((data.university_id || data.institution_slug || data.university_slug) && !hasUniversityFromBasics) {
+        // We have university data, mark as from basics
+        setHasUniversityFromBasics(true)
+        // Look up name if we don't have it
+        if (!universityName) {
+          const slug = data.institution_slug || data.university_slug
+          if (slug) {
+            try {
+              const { data: uniData } = await supabase
+                .from('universities')
+                .select('name')
+                .eq('slug', slug)
+                .maybeSingle()
+              if (uniData) setUniversityName(uniData.name)
+            } catch (error) {
+              // Ignore errors
+            }
+          }
+        }
+      }
+    }
+    
+    checkExistingUniversity()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [data.university_id, data.institution_slug, data.university_slug]) // Run when university data changes
 
   // Calculate current year status based on expected graduation year
   const calculateCurrentYearStatus = (graduationYear: number, institutionSlug: string, degreeLevel: string) => {
@@ -82,45 +160,124 @@ export function AcademicStep({ data, onChange, user }: AcademicStepProps) {
       </div>
 
       {/* University Selection */}
-      <div className="space-y-2">
-        <Label htmlFor="university">University *</Label>
-        <InstitutionSelect
-          value={data.institution_slug}
-          onChange={async ({ institutionId, institutionOther, universityDbId }) => {
-            const newData = { ...data }
-            newData.institution_slug = institutionId
-            
-            if (institutionId === 'other') {
-              newData.institution_other = institutionOther
-              newData.university_id = null
-            } else {
-              newData.institution_other = undefined
+      {hasUniversityFromBasics ? (
+        <div className="space-y-2">
+          <Label htmlFor="university">University *</Label>
+          <div className="p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-800">
+            <div className="flex items-center gap-2">
+              <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
+              <span className="text-sm font-medium text-blue-800 dark:text-blue-200">
+                Already selected: {universityName || 'Your university'}
+              </span>
+            </div>
+            <p className="text-xs text-blue-600 dark:text-blue-300 mt-1">
+              University was selected in the previous step. You can change it below if needed.
+            </p>
+          </div>
+          <InstitutionSelect
+            value={data.institution_slug}
+            onChange={async ({ institutionId, institutionOther, universityDbId }) => {
+              const newData = { ...data }
+              newData.institution_slug = institutionId
               
-              // If we don't have universityDbId, try to find it
-              if (!universityDbId && institutionId) {
-                try {
-                  const { data: uniData, error } = await supabase
-                    .from('universities')
-                    .select('id, slug')
-                    .eq('slug', institutionId)
-                    .maybeSingle()
-                  
-                  if (!error && uniData) {
-                    newData.university_id = uniData.id
+              if (institutionId === 'other') {
+                newData.institution_other = institutionOther
+                newData.university_id = null
+                setHasUniversityFromBasics(false)
+                setUniversityName(null)
+              } else {
+                newData.institution_other = undefined
+                
+                // If we don't have universityDbId, try to find it
+                if (!universityDbId && institutionId) {
+                  try {
+                    const { data: uniData, error } = await supabase
+                      .from('universities')
+                      .select('id, slug, name')
+                      .eq('slug', institutionId)
+                      .maybeSingle()
+                    
+                    if (!error && uniData) {
+                      newData.university_id = uniData.id
+                      setUniversityName(uniData.name)
+                    }
+                  } catch (error) {
+                    console.error('Error finding university ID:', error)
                   }
-                } catch (error) {
-                  console.error('Error finding university ID:', error)
+                } else if (universityDbId) {
+                  newData.university_id = universityDbId
+                  // Look up name
+                  try {
+                    const { data: uniData } = await supabase
+                      .from('universities')
+                      .select('name')
+                      .eq('id', universityDbId)
+                      .maybeSingle()
+                    if (uniData) setUniversityName(uniData.name)
+                  } catch (error) {
+                    console.error('Error looking up university name:', error)
+                  }
                 }
-              } else if (universityDbId) {
-                newData.university_id = universityDbId
               }
-            }
-            
-            onChange(newData)
-          }}
-        />
-        <p className="text-sm text-gray-500">Choose your HBO or WO institution. Programs are loaded from our database.</p>
-      </div>
+              
+              onChange(newData)
+            }}
+          />
+          <p className="text-sm text-gray-500">Choose your HBO or WO institution. Programs are loaded from our database.</p>
+        </div>
+      ) : (
+        <div className="space-y-2">
+          <Label htmlFor="university">University *</Label>
+          <InstitutionSelect
+            value={data.institution_slug}
+            onChange={async ({ institutionId, institutionOther, universityDbId }) => {
+              const newData = { ...data }
+              newData.institution_slug = institutionId
+              
+              if (institutionId === 'other') {
+                newData.institution_other = institutionOther
+                newData.university_id = null
+              } else {
+                newData.institution_other = undefined
+                
+                // If we don't have universityDbId, try to find it
+                if (!universityDbId && institutionId) {
+                  try {
+                    const { data: uniData, error } = await supabase
+                      .from('universities')
+                      .select('id, slug, name')
+                      .eq('slug', institutionId)
+                      .maybeSingle()
+                    
+                    if (!error && uniData) {
+                      newData.university_id = uniData.id
+                      setUniversityName(uniData.name)
+                    }
+                  } catch (error) {
+                    console.error('Error finding university ID:', error)
+                  }
+                } else if (universityDbId) {
+                  newData.university_id = universityDbId
+                  // Look up name
+                  try {
+                    const { data: uniData } = await supabase
+                      .from('universities')
+                      .select('name')
+                      .eq('id', universityDbId)
+                      .maybeSingle()
+                    if (uniData) setUniversityName(uniData.name)
+                  } catch (error) {
+                    console.error('Error looking up university name:', error)
+                  }
+                }
+              }
+              
+              onChange(newData)
+            }}
+          />
+          <p className="text-sm text-gray-500">Choose your HBO or WO institution. Programs are loaded from our database.</p>
+        </div>
+      )}
 
       {/* Degree Level */}
       <div className="space-y-3">

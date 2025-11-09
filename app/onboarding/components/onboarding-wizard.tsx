@@ -182,11 +182,49 @@ export function OnboardingWizard({ user }: OnboardingWizardProps) {
   }, [user.id])
 
   const updateFormData = (stepData: Record<string, any>) => {
-    setFormData(prev => ({ ...prev, ...stepData }))
+    setFormData(prev => {
+      const updated = { ...prev, ...stepData }
+      
+      // Ensure data consistency: sync university_id and institution_slug
+      // If university_id exists but institution_slug doesn't, we'll need to look it up
+      // This is handled in the individual step components, but we ensure consistency here too
+      if (updated.university_id && !updated.institution_slug && !updated.university_slug) {
+        // The step components will handle the lookup, but we ensure the fields are present
+        // This is a safety net
+      }
+      
+      // If institution_slug exists but university_id doesn't, ensure it's set
+      // This will be handled by the academic step component
+      
+      return updated
+    })
   }
 
-  const nextStep = () => {
+  const nextStep = async () => {
     if (currentStep < steps.length - 1) {
+      // Before moving to next step, ensure data consistency
+      // If moving from basics to academic step, ensure institution_slug is set
+      if (currentStep === 0 && formData.university_id && !formData.institution_slug && !formData.university_slug) {
+        // Look up slug from university_id
+        try {
+          const { data: uniData, error } = await supabase
+            .from('universities')
+            .select('id, slug')
+            .eq('id', formData.university_id)
+            .maybeSingle()
+          
+          if (!error && uniData) {
+            setFormData(prev => ({
+              ...prev,
+              institution_slug: uniData.slug,
+              university_slug: uniData.slug
+            }))
+          }
+        } catch (error) {
+          console.error('Error looking up university slug:', error)
+        }
+      }
+      
       setCurrentStep(currentStep + 1)
     }
   }

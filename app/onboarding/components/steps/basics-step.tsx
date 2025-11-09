@@ -50,15 +50,16 @@ export function BasicsStep({ data, onChange, user }: BasicsStepProps) {
   }, [supabase])
 
   const handleChange = (field: string, value: any) => {
-    onChange({
-      ...data,
-      [field]: value
-    })
+    const newData = { ...data, [field]: value }
     
-    // When university changes, update available campuses
+    // When university changes, update available campuses and store slug
     if (field === 'university_id') {
       const selectedUni = universities.find(uni => uni.id === value)
       if (selectedUni) {
+        // Store both university_id and university_slug for consistency
+        newData.university_slug = selectedUni.slug
+        newData.institution_slug = selectedUni.slug // Also set for academic step compatibility
+        
         // Use the university slug directly
         const universitySlug = selectedUni.slug
         const availableCampuses = getCampusesForUniversity(universitySlug)
@@ -79,16 +80,29 @@ export function BasicsStep({ data, onChange, user }: BasicsStepProps) {
           ])
         }
         
-        // Clear campus selection when university changes
-        onChange({
-          ...data,
-          [field]: value,
-          campus: ''
-        })
+        // Clear campus and program selection when university changes
+        newData.campus = ''
+        newData.program_id = ''
       } else {
         setCampuses([])
+        newData.university_slug = ''
+        newData.institution_slug = ''
       }
     }
+    
+    onChange(newData)
+  }
+  
+  // Get university slug from university_id for ProgrammeSelect
+  const getUniversitySlug = (): string | null => {
+    if (data.university_slug) {
+      return data.university_slug
+    }
+    if (data.university_id) {
+      const selectedUni = universities.find(uni => uni.id === data.university_id)
+      return selectedUni?.slug || null
+    }
+    return null
   }
 
   return (
@@ -140,7 +154,7 @@ export function BasicsStep({ data, onChange, user }: BasicsStepProps) {
       <div className="space-y-2">
         <Label htmlFor="program">Program of Study *</Label>
         <ProgrammeSelect
-          institutionId={data.university_id}
+          institutionId={getUniversitySlug()}
           degreeLevel={data.degree_level}
           value={data.program_id || ''}
           onValueChange={(value) => handleChange('program_id', value)}
@@ -241,3 +255,4 @@ export function BasicsStep({ data, onChange, user }: BasicsStepProps) {
     </div>
   )
 }
+
