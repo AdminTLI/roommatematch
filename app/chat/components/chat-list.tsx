@@ -299,30 +299,6 @@ export function ChatList({ user }: ChatListProps) {
   useEffect(() => {
     loadChats()
   }, [loadChats])
-  
-  // Separate effect for auto-redirect (only runs when chats change, not on every render)
-  useEffect(() => {
-    // Check for last visited room and redirect if exists (unless disabled)
-    if (typeof window !== 'undefined' && user?.id && chats.length > 0) {
-      const disableAutoRedirect = localStorage.getItem('disableChatAutoRedirect') === 'true'
-      if (!disableAutoRedirect) {
-        const lastRoomId = localStorage.getItem(`last_chat_room_${user.id}`)
-        if (lastRoomId) {
-          // Check if last room still exists in user's chats
-          const lastRoomExists = chats.some(chat => chat.id === lastRoomId)
-          if (lastRoomExists) {
-            // Small delay to allow UI to render first
-            setTimeout(() => {
-              router.push(`/chat/${lastRoomId}`)
-            }, 100)
-          } else {
-            // Clear invalid last room
-            localStorage.removeItem(`last_chat_room_${user.id}`)
-          }
-        }
-      }
-    }
-  }, [chats, router, user?.id])
 
   const filteredChats = chats.filter(chat => {
     if (!searchQuery.trim()) return true
