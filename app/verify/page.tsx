@@ -36,13 +36,28 @@ export default async function VerifyPage() {
   }
 
   // Check verification status (profile may not exist yet since verification comes before onboarding)
+  // First check verifications table (source of truth)
+  const { data: verification } = await supabase
+    .from('verifications')
+    .select('status')
+    .eq('user_id', user.id)
+    .order('created_at', { ascending: false })
+    .limit(1)
+    .maybeSingle()
+
+  // If verification is approved, redirect to onboarding
+  if (verification?.status === 'approved') {
+    redirect('/onboarding/intro')
+  }
+
+  // Also check profile status as fallback
   const { data: profile } = await supabase
     .from('profiles')
     .select('id, verification_status')
     .eq('user_id', user.id)
     .maybeSingle()
 
-  // If already verified, redirect to onboarding (verification comes before onboarding now)
+  // If profile exists and is verified, redirect to onboarding
   if (profile && profile.verification_status === 'verified') {
     redirect('/onboarding/intro')
   }

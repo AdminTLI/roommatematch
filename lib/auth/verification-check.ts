@@ -33,15 +33,32 @@ export async function checkUserVerificationStatus(
     !isNaN(Date.parse(user.email_confirmed_at))
   )
 
-  // Check Persona verification status from profiles table
+  // Check Persona verification status
+  // First check verifications table (source of truth), then fall back to profile
   const supabase = await createClient()
-  const { data: profile } = await supabase
-    .from('profiles')
-    .select('verification_status')
+  
+  // Check verifications table first
+  const { data: verification } = await supabase
+    .from('verifications')
+    .select('status')
     .eq('user_id', user.id)
+    .order('created_at', { ascending: false })
+    .limit(1)
     .maybeSingle()
 
-  const personaVerified = profile?.verification_status === 'verified'
+  // If verification is approved, user is verified
+  let personaVerified = verification?.status === 'approved'
+  
+  // If no verification record or not approved, check profile status
+  if (!personaVerified) {
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('verification_status')
+      .eq('user_id', user.id)
+      .maybeSingle()
+    
+    personaVerified = profile?.verification_status === 'verified'
+  }
 
   return {
     emailVerified,

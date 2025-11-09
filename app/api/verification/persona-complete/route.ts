@@ -115,7 +115,7 @@ export async function POST(request: NextRequest) {
       // Check if profile exists
       const { data: existingProfile } = await admin
         .from('profiles')
-        .select('id')
+        .select('id, verification_status')
         .eq('user_id', user.id)
         .maybeSingle()
 
@@ -123,18 +123,25 @@ export async function POST(request: NextRequest) {
         // Update existing profile
         const { error: updateError } = await admin
           .from('profiles')
-          .update({ verification_status: 'verified' })
+          .update({ 
+            verification_status: 'verified',
+            updated_at: new Date().toISOString()
+          })
           .eq('user_id', user.id)
 
         if (updateError) {
           safeLogger.error('[Verification] Failed to update profile verification status', updateError)
           // Don't fail the request - verification record was created successfully
+        } else {
+          safeLogger.info('[Verification] Profile verification status updated', { userId: user.id })
         }
       } else {
         // Profile doesn't exist yet - that's okay, it will be created during onboarding
-        // We'll update it then, or create a minimal profile here if needed
+        // The verification status will be checked from the verifications table
+        // When the profile is created during onboarding, it will use the verification_status
+        // from the verifications table (see onboarding submission logic)
         safeLogger.info('[Verification] Profile does not exist yet for user', user.id)
-        // Note: Profile will be created during onboarding with verification_status set
+        safeLogger.info('[Verification] Status will be checked from verifications table until profile is created')
       }
     }
 

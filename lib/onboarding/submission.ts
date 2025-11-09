@@ -174,6 +174,26 @@ export async function upsertProfileAndAcademic(
   supabase: SupabaseClient,
   data: OnboardingSubmissionData
 ) {
+  // Check verification status from verifications table first
+  // This ensures we preserve the verified status if user completed verification before onboarding
+  const { data: verification } = await supabase
+    .from('verifications')
+    .select('status')
+    .eq('user_id', data.user_id)
+    .order('created_at', { ascending: false })
+    .limit(1)
+    .maybeSingle()
+
+  // Determine verification status: if verification is approved, use 'verified', otherwise 'unverified'
+  let verificationStatus: 'unverified' | 'pending' | 'verified' | 'failed' = 'unverified'
+  if (verification?.status === 'approved') {
+    verificationStatus = 'verified'
+  } else if (verification?.status === 'rejected' || verification?.status === 'expired') {
+    verificationStatus = 'failed'
+  } else if (verification?.status === 'pending') {
+    verificationStatus = 'pending'
+  }
+
   // 1. Upsert profile
   const { data: profile, error: profileError } = await supabase
     .from('profiles')
@@ -187,7 +207,7 @@ export async function upsertProfileAndAcademic(
         : null,
       campus: data.campus,
       languages: data.languages_daily || [],
-      verification_status: 'unverified',
+      verification_status: verificationStatus,
       updated_at: new Date().toISOString()
     }, {
       onConflict: 'user_id'
