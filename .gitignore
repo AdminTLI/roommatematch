@@ -122,3 +122,9 @@ jspm_packages/
 # Temporary files
 *.tmp
 *.temp
+
+# Sentry Config File
+.env.sentry-build-plugin
+
+# Generated programme data and reports
+data/programmes/

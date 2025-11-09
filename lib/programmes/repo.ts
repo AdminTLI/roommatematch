@@ -219,8 +219,26 @@ export async function upsertProgrammesForInstitution(
 ): Promise<number> {
   const supabase = createAdminClient()
   
+  // Deduplicate programmes by rio_code (keep the first occurrence)
+  const seen = new Set<string>()
+  const uniqueProgrammes: Programme[] = []
+  
+  for (const prog of programmes) {
+    const rioCode = prog.externalRefs?.rioCode || prog.id
+    if (!seen.has(rioCode)) {
+      seen.add(rioCode)
+      uniqueProgrammes.push(prog)
+    } else {
+      console.warn(`⚠️  Skipping duplicate programme with rio_code: ${rioCode} (${prog.name})`)
+    }
+  }
+  
+  if (uniqueProgrammes.length !== programmes.length) {
+    console.log(`   Deduplicated ${programmes.length - uniqueProgrammes.length} duplicate programme(s)`)
+  }
+  
   // Map Programme to database row format
-  const rows = programmes.map(prog => ({
+  const rows = uniqueProgrammes.map(prog => ({
     institution_slug: institutionSlug,
     brin_code: prog.externalRefs?.instCode || null,
     rio_code: prog.externalRefs?.rioCode || prog.id,

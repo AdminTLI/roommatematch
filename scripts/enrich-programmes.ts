@@ -37,6 +37,28 @@ import {
 } from '@/lib/programmes/repo'
 import type { DegreeLevel } from '@/types/programme'
 
+// Load .env.local if it exists
+try {
+  const envPath = path.join(process.cwd(), '.env.local')
+  if (existsSync(envPath)) {
+    const envFile = readFileSync(envPath, 'utf-8')
+    for (const line of envFile.split('\n')) {
+      const trimmed = line.trim()
+      if (trimmed && !trimmed.startsWith('#')) {
+        const [key, ...valueParts] = trimmed.split('=')
+        if (key && valueParts.length > 0) {
+          const value = valueParts.join('=').trim().replace(/^["']|["']$/g, '')
+          if (!process.env[key]) {
+            process.env[key] = value
+          }
+        }
+      }
+    }
+  }
+} catch (error) {
+  // .env.local doesn't exist or can't be read - that's okay
+}
+
 // Environment configuration
 const SKDB_API_BASE = process.env.SKDB_API_BASE
 const SKDB_API_KEY = process.env.SKDB_API_KEY

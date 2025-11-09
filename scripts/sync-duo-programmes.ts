@@ -22,6 +22,7 @@
 
 import fs from 'node:fs/promises';
 import path from 'node:path';
+import { readFileSync, existsSync } from 'fs';
 import { parse } from 'csv-parse/sync';
 import { DuoRow, Programme, ProgrammesByLevel, DegreeLevel } from '@/types/programme';
 import { Institution } from '@/types/institution';
@@ -30,6 +31,28 @@ import { normalise, mapSector, getInstitutionBrinCode, validateInstitutionMappin
 import { resolveDuoCsv, resolveDuoErkenningenCsv } from '@/lib/duo/ckan';
 import { parseHoOpleidingsoverzicht } from '@/lib/duo/ho-opleidingsoverzicht';
 import { upsertProgrammesForInstitution, getProgrammeCountsByInstitution } from '@/lib/programmes/repo';
+
+// Load .env.local if it exists
+try {
+  const envPath = path.join(process.cwd(), '.env.local');
+  if (existsSync(envPath)) {
+    const envFile = readFileSync(envPath, 'utf-8');
+    for (const line of envFile.split('\n')) {
+      const trimmed = line.trim();
+      if (trimmed && !trimmed.startsWith('#')) {
+        const [key, ...valueParts] = trimmed.split('=');
+        if (key && valueParts.length > 0) {
+          const value = valueParts.join('=').trim().replace(/^["']|["']$/g, '');
+          if (!process.env[key]) {
+            process.env[key] = value;
+          }
+        }
+      }
+    }
+  }
+} catch (error) {
+  // .env.local doesn't exist or can't be read - that's okay
+}
 
 const DEFAULT_CSV_URL = process.env.DUO_ERKENNINGEN_CSV_URL || 
   'https://onderwijsdata.duo.nl/dataset/bb07cc6e-00fe-4100-9528-a0c5fd27d2fb/resource/0b2e9c4a-2c8e-4b2a-9f3a-1c2d3e4f5g6h/download/overzicht-erkenningen-ho.csv';
@@ -70,7 +93,7 @@ interface CoverageReport {
 /**
  * Fetch HO Opleidingsoverzicht CSV data (primary source)
  */
-async function fetchHoCsv(): Promise<string> {
+async function fetchHoCsv(): Promise<string | null> {
   console.log('📡 Resolving HO Opleidingsoverzicht CSV URL...');
   
   try {
@@ -92,7 +115,9 @@ async function fetchHoCsv(): Promise<string> {
     console.log(`✅ Fetched ${csvText.length.toLocaleString()} characters`);
     return csvText;
   } catch (error) {
-    throw new Error(`Failed to fetch HO Opleidingsoverzicht CSV: ${error}`);
+    console.warn(`⚠️  Failed to fetch HO Opleidingsoverzicht CSV: ${error}`);
+    console.warn('   Will fall back to Erkenningen CSV if available');
+    return null;
   }
 }
 
@@ -148,25 +173,52 @@ function parseCsv(csvText: string): DuoRow[] {
 }
 
 /**
- * Group programmes by institution BRIN code
+ * Normalize institution name for fuzzy matching
  */
-function groupByInstitution(rows: DuoRow[]): Map<string, DuoRow[]> {
+function normalizeInstitutionName(name: string): string {
+  return name
+    .toLowerCase()
+    .trim()
+    .replace(/[^\w\s]/g, '')
+    .replace(/\s+/g, ' ')
+    .replace(/\b(university|universiteit|hogeschool|university of|university &|university and)\b/gi, '')
+    .trim();
+}
+
+/**
+ * Group programmes by institution BRIN code AND by name (for fallback matching)
+ */
+function groupByInstitution(rows: DuoRow[]): { byCode: Map<string, DuoRow[]>, byName: Map<string, DuoRow[]> } {
   console.log('🏢 Grouping programmes by institution...');
   
-  const byInstitution = new Map<string, DuoRow[]>();
+  const byCode = new Map<string, DuoRow[]>();
+  const byName = new Map<string, DuoRow[]>();
   
   for (const row of rows) {
     const instCode = row.INSTELLINGSCODE;
-    if (!instCode) continue;
+    const instName = row.INSTELLINGSNAAM;
     
-    if (!byInstitution.has(instCode)) {
-      byInstitution.set(instCode, []);
+    if (instCode) {
+      // Normalize BRIN code: uppercase and trim
+      const normalizedCode = instCode.toUpperCase().trim();
+      if (!byCode.has(normalizedCode)) {
+        byCode.set(normalizedCode, []);
+      }
+      byCode.get(normalizedCode)!.push(row);
     }
-    byInstitution.get(instCode)!.push(row);
+    
+    if (instName) {
+      // Group by normalized name for fallback matching
+      const normalizedName = normalizeInstitutionName(instName);
+      if (!byName.has(normalizedName)) {
+        byName.set(normalizedName, []);
+      }
+      byName.get(normalizedName)!.push(row);
+    }
   }
   
-  console.log(`✅ Grouped into ${byInstitution.size} institutions`);
-  return byInstitution;
+  console.log(`✅ Grouped into ${byCode.size} institutions by code, ${byName.size} by name`);
+  return { byCode, byName };
 }
 
 /**
@@ -303,7 +355,39 @@ async function main(): Promise<void> {
     // Fetch both datasets
     const hoCsv = await fetchHoCsv();
     const erkCsv = await fetchErkCsv();
-    const sourceUrl = await resolveDuoCsv('ho-opleidingsoverzicht', /opleidingsoverzicht/i);
+    
+    // Resolve source URL for reporting (try HO first, fallback to Erkenningen)
+    let sourceUrl = 'unknown';
+    try {
+      sourceUrl = await resolveDuoCsv('ho-opleidingsoverzicht', /opleidingsoverzicht/i);
+    } catch (error) {
+      try {
+        sourceUrl = await resolveDuoErkenningenCsv();
+      } catch (err) {
+        console.warn('⚠️  Could not resolve source URL for reporting');
+      }
+    }
+    
+    // Ensure we have at least one data source
+    if (!hoCsv && !erkCsv) {
+      throw new Error('Failed to fetch both HO Opleidingsoverzicht and Erkenningen CSV files. Please check your internet connection and try again.');
+    }
+    
+    // Parse and group CSV data once (before the loop for efficiency)
+    let erkRowsByCode: Map<string, DuoRow[]> | null = null;
+    let erkRowsByName: Map<string, DuoRow[]> | null = null;
+    if (erkCsv) {
+      console.log('');
+      console.log('📄 Parsing Erkenningen CSV data...');
+      const erkRows = parseCsv(erkCsv);
+      const grouped = groupByInstitution(erkRows);
+      erkRowsByCode = grouped.byCode;
+      erkRowsByName = grouped.byName;
+      
+      // Debug: Show sample of BRIN codes found in CSV
+      const sampleCodes = Array.from(erkRowsByCode.keys()).slice(0, 10);
+      console.log(`   Sample BRIN codes in CSV: ${sampleCodes.join(', ')}`);
+    }
     
     // Load our institutions (onboarding subset)
     const institutions = loadInstitutions();
@@ -349,21 +433,52 @@ async function main(): Promise<void> {
         continue;
       }
       
-      try {
-        const sector = mapSector(brinCode);
-        programmes = parseHoOpleidingsoverzicht(hoCsv, brinCode, sector);
-        source = 'HO Opleidingsoverzicht';
-      } catch (error) {
-        console.warn(`⚠️  HO Opleidingsoverzicht failed for ${institution.label}: ${error}`);
+      // Normalize BRIN code for matching (uppercase)
+      const normalizedBrinCode = brinCode.toUpperCase().trim();
+      
+      if (hoCsv) {
+        try {
+          const sector = mapSector(brinCode);
+          // Try both normalized and original BRIN code
+          programmes = parseHoOpleidingsoverzicht(hoCsv, normalizedBrinCode, sector);
+          if (programmes.bachelor.length === 0 && programmes.premaster.length === 0 && programmes.master.length === 0) {
+            // Try original BRIN code if normalized didn't work
+            programmes = parseHoOpleidingsoverzicht(hoCsv, brinCode, sector);
+          }
+          source = 'HO Opleidingsoverzicht';
+        } catch (error) {
+          console.warn(`⚠️  HO Opleidingsoverzicht failed for ${institution.label}: ${error}`);
+        }
       }
       
       // If HO yields no programmes, try Erkenningen as fallback
       const totalFromHo = programmes.bachelor.length + programmes.premaster.length + programmes.master.length;
-      if (totalFromHo === 0 && erkCsv) {
+      if (totalFromHo === 0 && erkRowsByCode && erkRowsByName) {
         try {
-          const erkRows = parseCsv(erkCsv);
-          const byInstitution = groupByInstitution(erkRows);
-          const institutionRows = byInstitution.get(brinCode);
+          // Strategy 1: Try normalized BRIN code first
+          let institutionRows = erkRowsByCode.get(normalizedBrinCode);
+          
+          // Strategy 2: Try original BRIN code (in case CSV uses different format)
+          if (!institutionRows) {
+            institutionRows = erkRowsByCode.get(brinCode);
+          }
+          
+          // Strategy 3: Fallback to name-based matching
+          if (!institutionRows) {
+            const normalizedInstitutionName = normalizeInstitutionName(institution.label);
+            institutionRows = erkRowsByName.get(normalizedInstitutionName);
+            
+            // Try partial matches if exact match fails
+            if (!institutionRows) {
+              for (const [name, rows] of erkRowsByName.entries()) {
+                if (normalizedInstitutionName.includes(name) || name.includes(normalizedInstitutionName)) {
+                  institutionRows = rows;
+                  console.log(`   ℹ️  ${institution.label}: Matched by name "${name}"`);
+                  break;
+                }
+              }
+            }
+          }
           
           if (institutionRows && institutionRows.length > 0) {
             programmes = processInstitutionProgrammes(
@@ -372,6 +487,14 @@ async function main(): Promise<void> {
               institutionRows
             );
             source = 'Erkenningen (fallback)';
+          } else {
+            // Debug: show what BRIN codes are available for this institution
+            const availableCodes = Array.from(erkRowsByCode.keys()).filter(code => 
+              code.includes(brinCode.substring(0, 2)) || brinCode.includes(code.substring(0, 2))
+            );
+            if (availableCodes.length > 0) {
+              console.log(`   ⚠️  ${institution.label}: BRIN ${brinCode} not found, but found similar codes: ${availableCodes.slice(0, 3).join(', ')}`);
+            }
           }
         } catch (error) {
           console.warn(`⚠️  Erkenningen fallback failed for ${institution.label}: ${error}`);
