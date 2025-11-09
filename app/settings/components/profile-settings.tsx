@@ -227,11 +227,47 @@ export function ProfileSettings({ user, profile, academic }: ProfileSettingsProp
             <div className="space-y-2">
               <Label>Expected Graduation Year</Label>
               <Input 
-                value={academic?.study_start_year || 'Not specified'} 
+                value={academic?.expected_graduation_year || 'Not specified'} 
                 disabled 
                 className="bg-gray-50" 
               />
             </div>
+            <div className="space-y-2">
+              <Label>Current Study Year</Label>
+              <Input 
+                value={
+                  academic?.study_year 
+                    ? `Year ${academic.study_year}`
+                    : 'Not available'
+                } 
+                disabled 
+                className="bg-gray-50" 
+              />
+            </div>
+            {academic?.study_start_month && (
+              <div className="space-y-2">
+                <Label>Study Start Month</Label>
+                <Input 
+                  value={
+                    academic.study_start_month === 9 ? 'September/Fall' :
+                    academic.study_start_month === 2 ? 'February/Spring' :
+                    new Date(2000, academic.study_start_month - 1).toLocaleString('default', { month: 'long' })
+                  } 
+                  disabled 
+                  className="bg-gray-50" 
+                />
+              </div>
+            )}
+            {academic?.graduation_month && (
+              <div className="space-y-2">
+                <Label>Expected Graduation Month</Label>
+                <Input 
+                  value={new Date(2000, academic.graduation_month - 1).toLocaleString('default', { month: 'long' })} 
+                  disabled 
+                  className="bg-gray-50" 
+                />
+              </div>
+            )}
           </div>
           <p className="text-sm text-gray-500 mt-4">
             To update your academic information, please edit your questionnaire responses.

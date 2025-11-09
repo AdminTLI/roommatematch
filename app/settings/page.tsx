@@ -59,6 +59,17 @@ export default async function SettingsPage() {
     .eq('user_id', user.id)
     .maybeSingle()
 
+  // Fetch study year from view separately (Supabase doesn't support direct view joins)
+  let studyYear: number | null = null
+  if (academic) {
+    const { data: studyYearData } = await supabase
+      .from('user_study_year_v')
+      .select('study_year')
+      .eq('user_id', user.id)
+      .maybeSingle()
+    studyYear = studyYearData?.study_year ?? null
+  }
+
   // If missing, try to derive from intro answers for display purposes
   if (!academic) {
     console.log('[Settings] No user_academic found, checking intro section...')
@@ -172,12 +183,15 @@ export default async function SettingsPage() {
     redirect('/auth/sign-in')
   }
 
+  // Add study year to academic data for display
+  const academicWithStudyYear = academic ? { ...academic, study_year: studyYear } : academic
+
   return (
     <AppShell user={userProfile}>
       <SettingsContent 
         user={user}
         profile={profile}
-        academic={academic}
+        academic={academicWithStudyYear}
         progressData={progressData}
       />
     </AppShell>

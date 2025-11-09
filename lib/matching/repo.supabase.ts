@@ -46,7 +46,10 @@ export class SupabaseMatchRepo implements MatchRepo {
           degree_level,
           program_id,
           undecided_program,
-          study_start_year
+          study_start_year,
+          study_start_month,
+          expected_graduation_year,
+          graduation_month
         ),
         responses(
           question_key,
@@ -184,7 +187,10 @@ export class SupabaseMatchRepo implements MatchRepo {
           degree_level,
           program_id,
           undecided_program,
-          study_start_year
+          study_start_year,
+          study_start_month,
+          expected_graduation_year,
+          graduation_month
         ),
         responses(
           question_key,
@@ -271,7 +277,7 @@ export class SupabaseMatchRepo implements MatchRepo {
       const adminClient = await this.getSupabase()
       const { data: academicData, error: academicError } = await adminClient
         .from('user_academic')
-        .select('user_id, university_id, degree_level, program_id, undecided_program, study_start_year')
+        .select('user_id, university_id, degree_level, program_id, undecided_program, study_start_year, study_start_month, expected_graduation_year, graduation_month')
         .in('user_id', usersMissingAcademic)
       
       if (!academicError && academicData) {

@@ -11,6 +11,7 @@ import { User } from '@supabase/supabase-js'
 import { cn } from '@/lib/utils'
 import { createClient } from '@/lib/supabase/client'
 import { getInstitutionType } from '@/lib/getInstitutionType'
+import { calculateStudyYearWithMonths, getStudyYearStatus } from '@/lib/academic/calculateStudyYear'
 
 interface AcademicStepProps {
   data: Record<string, any>
@@ -102,32 +103,24 @@ export function AcademicStep({ data, onChange, user }: AcademicStepProps) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [data.university_id, data.institution_slug, data.university_slug]) // Run when university data changes
 
-  // Calculate current year status based on expected graduation year
-  const calculateCurrentYearStatus = (graduationYear: number, institutionSlug: string, degreeLevel: string) => {
-    if (!graduationYear || !institutionSlug || !degreeLevel) return null
+  // Calculate current year status using month-aware helper
+  const calculateCurrentYearStatus = () => {
+    if (!data.expected_graduation_year || !data.institution_slug || !data.degree_level) return null
     
-    // For pre-master and master students
-    if (degreeLevel === 'premaster') return 'Pre-Master Student'
-    if (degreeLevel === 'master') return "Master's Student"
+    const institutionType = getInstitutionType(data.institution_slug) as 'wo' | 'hbo'
+    if (!institutionType) return null
     
-    // Determine institution type and programme duration
-    const institutionType = getInstitutionType(institutionSlug)
-    const programDuration = institutionType === 'wo' ? 3 : 4
-    
-    const yearsUntilGraduation = graduationYear - currentYear
-    const currentYearNumber = programDuration - yearsUntilGraduation
-    
-    if (currentYearNumber < 1) return 'Not yet started'
-    if (currentYearNumber > programDuration) return 'Graduated'
-    
-    return `Year ${currentYearNumber}`
+    return getStudyYearStatus({
+      studyStartYear: data.study_start_year || (data.expected_graduation_year - (institutionType === 'wo' ? 3 : 4)),
+      studyStartMonth: data.study_start_month || null,
+      expectedGraduationYear: data.expected_graduation_year,
+      graduationMonth: data.graduation_month || null,
+      institutionType,
+      degreeLevel: data.degree_level as 'bachelor' | 'master' | 'premaster'
+    })
   }
 
-  const currentYearStatus = calculateCurrentYearStatus(
-    data.expected_graduation_year, 
-    data.institution_slug, 
-    data.degree_level
-  )
+  const currentYearStatus = calculateCurrentYearStatus()
 
   const handleChange = (field: string, value: any) => {
     const newData = { ...data, [field]: value }
@@ -429,6 +422,66 @@ export function AcademicStep({ data, onChange, user }: AcademicStepProps) {
         
         <p className="text-sm text-gray-500">
           When do you expect to finish your studies? This helps match you with students at similar academic stages.
+        </p>
+      </div>
+
+      {/* Study Start Month */}
+      <div className="space-y-2">
+        <Label htmlFor="study_start_month">Study Start Month</Label>
+        <Select 
+          value={data.study_start_month?.toString() || ''} 
+          onValueChange={(value) => handleChange('study_start_month', value ? parseInt(value) : null)}
+        >
+          <SelectTrigger>
+            <SelectValue placeholder="When did/will you start your studies?" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="9">September/Fall</SelectItem>
+            <SelectItem value="2">February/Spring</SelectItem>
+            <SelectItem value="1">January</SelectItem>
+            <SelectItem value="3">March</SelectItem>
+            <SelectItem value="4">April</SelectItem>
+            <SelectItem value="5">May</SelectItem>
+            <SelectItem value="6">June</SelectItem>
+            <SelectItem value="7">July</SelectItem>
+            <SelectItem value="8">August</SelectItem>
+            <SelectItem value="10">October</SelectItem>
+            <SelectItem value="11">November</SelectItem>
+            <SelectItem value="12">December</SelectItem>
+          </SelectContent>
+        </Select>
+        <p className="text-sm text-gray-500">
+          When did or will you start your studies? This helps calculate your current academic year more accurately.
+        </p>
+      </div>
+
+      {/* Graduation Month */}
+      <div className="space-y-2">
+        <Label htmlFor="graduation_month">Expected Graduation Month</Label>
+        <Select 
+          value={data.graduation_month?.toString() || '6'} 
+          onValueChange={(value) => handleChange('graduation_month', parseInt(value))}
+        >
+          <SelectTrigger>
+            <SelectValue placeholder="When do you expect to graduate?" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="6">June (Summer)</SelectItem>
+            <SelectItem value="7">July</SelectItem>
+            <SelectItem value="8">August</SelectItem>
+            <SelectItem value="5">May</SelectItem>
+            <SelectItem value="4">April</SelectItem>
+            <SelectItem value="3">March</SelectItem>
+            <SelectItem value="2">February</SelectItem>
+            <SelectItem value="1">January</SelectItem>
+            <SelectItem value="9">September</SelectItem>
+            <SelectItem value="10">October</SelectItem>
+            <SelectItem value="11">November</SelectItem>
+            <SelectItem value="12">December</SelectItem>
+          </SelectContent>
+        </Select>
+        <p className="text-sm text-gray-500">
+          In which month do you expect to graduate? Defaults to June for summer graduation.
         </p>
       </div>
 

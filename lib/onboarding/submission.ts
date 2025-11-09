@@ -2,6 +2,7 @@ import { SupabaseClient } from '@supabase/supabase-js'
 import { User } from '@supabase/supabase-js'
 import { itemIdToQuestionKey } from '@/lib/question-key-mapping'
 import { getInstitutionType } from '@/lib/getInstitutionType'
+import { calculateStudyYearWithMonths } from '@/lib/academic/calculateStudyYear'
 
 export interface OnboardingSubmissionData {
   user_id: string
@@ -13,6 +14,9 @@ export interface OnboardingSubmissionData {
   campus?: string
   languages_daily?: string[]
   study_start_year?: number
+  study_start_month?: number | null
+  expected_graduation_year?: number
+  graduation_month?: number | null
   undecided_program?: boolean
 }
 
@@ -27,8 +31,10 @@ export function extractSubmissionDataFromIntro(
   let program = ''
   let campus = ''
   let study_start_year: number | undefined
+  let study_start_month: number | null = null
   let undecided_program = false
   let expected_graduation_year: number | undefined
+  let graduation_month: number | null = null
 
   for (const answer of answers) {
     switch (answer.itemId) {
@@ -53,8 +59,14 @@ export function extractSubmissionDataFromIntro(
       case 'study_start_year':
         study_start_year = parseInt(answer.value)
         break
+      case 'study_start_month':
+        study_start_month = answer.value ? parseInt(answer.value) : null
+        break
       case 'expected_graduation_year':
         expected_graduation_year = parseInt(answer.value)
+        break
+      case 'graduation_month':
+        graduation_month = answer.value ? parseInt(answer.value) : null
         break
       case 'undecided_program':
         undecided_program = answer.value
@@ -74,25 +86,43 @@ export function extractSubmissionDataFromIntro(
     undecided_program = true
   }
 
-  // If study_start_year is not provided, calculate it from expected_graduation_year
-  if (!study_start_year && expected_graduation_year && degree_level) {
-    let calculatedStartYear = expected_graduation_year - 3 // Default for bachelor
+  // Calculate study_start_year using month-aware logic if months are provided
+  // Otherwise fall back to institution-type defaults
+  if (!study_start_year && expected_graduation_year && degree_level && institution_slug) {
+    const institutionType = getInstitutionType(institution_slug) as 'wo' | 'hbo'
     
-    if (degree_level === 'master' || degree_level === 'premaster') {
-      calculatedStartYear = expected_graduation_year - 1
-    } else if (degree_level === 'bachelor' && institution_slug) {
-      // Use institution sector to determine bachelor duration
-      // Note: getInstitutionType expects institution slug (e.g., "uva", "vu"), not UUID
-      const institutionType = getInstitutionType(institution_slug)
-      const bachelorDuration = institutionType === 'hbo' ? 4 : 3
-      calculatedStartYear = expected_graduation_year - bachelorDuration
+    if (institutionType && study_start_month !== null && graduation_month !== null) {
+      // Use month-aware calculation
+      // Calculate academic year offsets
+      // Academic year starts in September (month 9)
+      const graduationAcademicYear = expected_graduation_year + (graduation_month >= 9 ? 1 : 0)
+      const startAcademicYear = graduationAcademicYear - (institutionType === 'wo' ? 3 : 4) + 1
+      
+      // Convert academic year back to calendar year
+      // If start month >= 9, the academic year started in the previous calendar year
+      study_start_year = startAcademicYear - (study_start_month >= 9 ? 1 : 0)
+    } else {
+      // Fallback to old calculation
+      let calculatedStartYear = expected_graduation_year - 3 // Default for bachelor
+      
+      if (degree_level === 'master' || degree_level === 'premaster') {
+        calculatedStartYear = expected_graduation_year - 1
+      } else if (degree_level === 'bachelor' && institutionType) {
+        const bachelorDuration = institutionType === 'hbo' ? 4 : 3
+        calculatedStartYear = expected_graduation_year - bachelorDuration
+      }
+      
+      // Clamp to DB constraints: >= 2015 AND <= EXTRACT(YEAR FROM now()) + 1
+      const currentYear = new Date().getFullYear()
+      const minYear = 2015
+      const maxYear = currentYear + 1
+      study_start_year = Math.max(minYear, Math.min(maxYear, calculatedStartYear))
     }
-    
-    // Clamp to DB constraints: >= 2015 AND <= EXTRACT(YEAR FROM now()) + 1
-    const currentYear = new Date().getFullYear()
-    const minYear = 2015
-    const maxYear = currentYear + 1
-    study_start_year = Math.max(minYear, Math.min(maxYear, calculatedStartYear))
+  }
+  
+  // Default graduation_month to June (6) if not provided
+  if (graduation_month === null && expected_graduation_year) {
+    graduation_month = 6
   }
 
   const firstName = user.user_metadata?.full_name?.split(' ')[0] || user.email?.split('@')[0] || 'User'
@@ -106,6 +136,9 @@ export function extractSubmissionDataFromIntro(
     program,
     campus,
     study_start_year,
+    study_start_month,
+    expected_graduation_year,
+    graduation_month,
     undecided_program
   }
 }
@@ -249,6 +282,9 @@ export async function upsertProfileAndAcademic(
       degree_level: data.degree_level,
       program_id: programIdForDb,
       study_start_year: data.study_start_year,
+      study_start_month: data.study_start_month ?? null,
+      expected_graduation_year: data.expected_graduation_year ?? null,
+      graduation_month: data.graduation_month ?? null,
       undecided_program: data.undecided_program,
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString()
@@ -287,6 +323,9 @@ export interface CompleteOnboardingData {
   campus?: string
   languages_daily?: string[]
   study_start_year?: number
+  study_start_month?: number | null
+  expected_graduation_year?: number
+  graduation_month?: number | null
   undecided_program?: boolean
   responses: Array<{
     question_key: string
@@ -362,6 +401,9 @@ export async function submitCompleteOnboarding(
       campus: data.campus,
       languages_daily: data.languages_daily,
       study_start_year: data.study_start_year,
+      study_start_month: data.study_start_month,
+      expected_graduation_year: data.expected_graduation_year,
+      graduation_month: data.graduation_month,
       undecided_program: data.undecided_program
     })
 

@@ -111,13 +111,14 @@ BEGIN
   ) INTO v_study_year_distribution
   FROM (
     SELECT 
-      GREATEST(1, EXTRACT(YEAR FROM NOW())::int - ua.study_start_year + 1) as study_year,
+      usy.study_year,
       COUNT(*) as user_count
     FROM profiles p
     JOIN user_academic ua ON p.user_id = ua.user_id
+    JOIN user_study_year_v usy ON p.user_id = usy.user_id
     WHERE p_admin_university_id IS NULL OR ua.university_id = p_admin_university_id
-    GROUP BY GREATEST(1, EXTRACT(YEAR FROM NOW())::int - ua.study_start_year + 1)
-    ORDER BY study_year
+    GROUP BY usy.study_year
+    ORDER BY usy.study_year
   ) yearly_stats;
   
   -- Return the results

@@ -50,10 +50,11 @@ BEGIN
     ua.program_id,
     ua.study_start_year,
     p.faculty,
-    GREATEST(1, EXTRACT(YEAR FROM NOW())::int - ua.study_start_year + 1) as study_year
+    usy.study_year
   INTO user_a_profile
   FROM user_academic ua
   LEFT JOIN programs p ON ua.program_id = p.id
+  LEFT JOIN user_study_year_v usy ON ua.user_id = usy.user_id
   WHERE ua.user_id = user_a_id;
   
   SELECT 
@@ -62,10 +63,11 @@ BEGIN
     ua.program_id,
     ua.study_start_year,
     p.faculty,
-    GREATEST(1, EXTRACT(YEAR FROM NOW())::int - ua.study_start_year + 1) as study_year
+    usy.study_year
   INTO user_b_profile
   FROM user_academic ua
   LEFT JOIN programs p ON ua.program_id = p.id
+  LEFT JOIN user_study_year_v usy ON ua.user_id = usy.user_id
   WHERE ua.user_id = user_b_id;
 
   -- Compute cosine similarity (simplified)

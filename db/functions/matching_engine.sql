@@ -50,10 +50,11 @@ BEGIN
     ua.program_id,
     ua.study_start_year,
     p.faculty,
-    GREATEST(1, EXTRACT(YEAR FROM NOW())::int - ua.study_start_year + 1) as study_year
+    usy.study_year
   INTO user_a_profile
   FROM user_academic ua
   LEFT JOIN programs p ON ua.program_id = p.id
+  LEFT JOIN user_study_year_v usy ON ua.user_id = usy.user_id
   WHERE ua.user_id = user_a_id;
   
   SELECT 
@@ -62,10 +63,11 @@ BEGIN
     ua.program_id,
     ua.study_start_year,
     p.faculty,
-    GREATEST(1, EXTRACT(YEAR FROM NOW())::int - ua.study_start_year + 1) as study_year
+    usy.study_year
   INTO user_b_profile
   FROM user_academic ua
   LEFT JOIN programs p ON ua.program_id = p.id
+  LEFT JOIN user_study_year_v usy ON ua.user_id = usy.user_id
   WHERE ua.user_id = user_b_id;
 
   -- Compute cosine similarity (simplified)
@@ -202,12 +204,13 @@ BEGIN
     FROM profiles p
     JOIN user_academic ua ON p.user_id = ua.user_id
     LEFT JOIN programs pr ON ua.program_id = pr.id
+    LEFT JOIN user_study_year_v usy ON p.user_id = usy.user_id
     WHERE p.user_id != p_user_id
       AND p.verification_status = 'verified'
       AND (p_university_ids IS NULL OR ua.university_id = ANY(p_university_ids))
       AND (p_degree_levels IS NULL OR ua.degree_level = ANY(p_degree_levels))
       AND (p_program_ids IS NULL OR ua.program_id = ANY(p_program_ids))
-      AND (p_study_years IS NULL OR GREATEST(1, EXTRACT(YEAR FROM NOW())::int - ua.study_start_year + 1) = ANY(p_study_years))
+      AND (p_study_years IS NULL OR usy.study_year = ANY(p_study_years))
   )
   SELECT 
     fu.user_id,
@@ -216,7 +219,7 @@ BEGIN
     u.common_name as university_name,
     COALESCE(prog.name, 'Undecided') as program_name,
     ua.degree_level,
-    GREATEST(1, EXTRACT(YEAR FROM NOW())::int - ua.study_start_year + 1) as study_year,
+    usy.study_year,
     pr.budget_min,
     pr.budget_max,
     cs.compatibility_score,
@@ -234,6 +237,7 @@ BEGIN
   JOIN user_academic ua ON fu.user_id = ua.user_id
   JOIN universities u ON ua.university_id = u.id
   LEFT JOIN programs prog ON ua.program_id = prog.id
+  LEFT JOIN user_study_year_v usy ON fu.user_id = usy.user_id
   CROSS JOIN LATERAL compute_compatibility_score(p_user_id, fu.user_id) cs
   WHERE NOT EXISTS (
     SELECT 1 FROM match_decisions md 
@@ -402,13 +406,14 @@ BEGIN
       )
       FROM (
         SELECT 
-          GREATEST(1, EXTRACT(YEAR FROM NOW())::int - ua.study_start_year + 1) as study_year,
+          usy.study_year,
           COUNT(*) as user_count
         FROM profiles p
         JOIN user_academic ua ON p.user_id = ua.user_id
+        JOIN user_study_year_v usy ON p.user_id = usy.user_id
         WHERE p_admin_university_id IS NULL OR ua.university_id = p_admin_university_id
-        GROUP BY GREATEST(1, EXTRACT(YEAR FROM NOW())::int - ua.study_start_year + 1)
-        ORDER BY study_year
+        GROUP BY usy.study_year
+        ORDER BY usy.study_year
       ) yearly_stats
     );
 END;
