@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
+import { toast } from 'sonner'
 import { SuggestionCard } from './suggestion-card'
 import { Button } from '@/components/ui/button'
 import { MessageCircle, Users, X, Clock } from 'lucide-react'
@@ -122,10 +123,32 @@ export function StudentMatchesInterface({ user }: StudentMatchesInterfaceProps) 
       if (response.ok) {
         await fetchSuggestions()
       } else {
-        console.error('Failed to refresh suggestions')
+        // Read the error response to show helpful message
+        const errorData = await response.json().catch(() => ({ error: 'Failed to refresh suggestions' }))
+        const errorMessage = errorData.error || 'Failed to refresh suggestions'
+        const retryAfter = errorData.retryAfter
+        
+        console.error('Failed to refresh suggestions:', errorMessage)
+        
+        // Show error toast with retry information
+        if (retryAfter && retryAfter > 0) {
+          const minutes = Math.ceil(retryAfter / 60)
+          toast.error(errorMessage, {
+            description: `Please try again in ${minutes} minute${minutes !== 1 ? 's' : ''}.`,
+            duration: 7000,
+          })
+        } else {
+          toast.error(errorMessage, {
+            duration: 5000,
+          })
+        }
       }
     } catch (error) {
       console.error('Error refreshing suggestions:', error)
+      toast.error('Failed to refresh suggestions', {
+        description: error instanceof Error ? error.message : 'An unexpected error occurred',
+        duration: 5000,
+      })
     }
   }
 

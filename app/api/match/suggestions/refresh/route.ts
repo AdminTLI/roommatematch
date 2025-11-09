@@ -57,11 +57,26 @@ export async function POST(request: NextRequest) {
     
     const lockAcquired = await lock.acquire(lockKey, LOCK_TTL_SECONDS)
     if (!lockAcquired) {
+      // Check how long until the lock expires to provide helpful error message
+      const ttl = await lock.getTTL(lockKey)
+      const minutesRemaining = ttl > 0 ? Math.ceil(ttl / 60) : 0
+      
       safeLogger.warn('[Matching] Duplicate refresh request detected (lock already held)', {
-        userId: user.id
+        userId: user.id,
+        lockKey,
+        ttlSeconds: ttl,
+        minutesRemaining
       })
+      
+      const errorMessage = ttl > 0
+        ? `A refresh is already in progress. Please wait ${minutesRemaining} minute${minutesRemaining !== 1 ? 's' : ''}.`
+        : 'A refresh is already in progress. Please wait a few minutes and try again.'
+      
       return NextResponse.json(
-        { error: 'A refresh is already in progress. Please wait.' },
+        { 
+          error: errorMessage,
+          retryAfter: ttl > 0 ? ttl : 60 // Suggest retry after TTL or 60 seconds
+        },
         { status: 409 }
       )
     }

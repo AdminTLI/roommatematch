@@ -17,6 +17,8 @@ Verify all required environment variables are set in your deployment platform (V
 - [ ] `PERSONA_API_KEY` - Persona API key
 - [ ] `NEXT_PUBLIC_PERSONA_TEMPLATE_ID` - Persona template ID
 - [ ] `NEXT_PUBLIC_PERSONA_ENVIRONMENT_ID` - Persona environment ID
+- [ ] `UPSTASH_REDIS_REST_URL` - Upstash Redis REST API URL (required for distributed locking and rate limiting in multi-instance deployments)
+- [ ] `UPSTASH_REDIS_REST_TOKEN` - Upstash Redis REST API token (get from https://console.upstash.com/)
 
 #### Optional but Recommended
 

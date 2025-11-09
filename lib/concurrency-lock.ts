@@ -26,8 +26,17 @@ export class DistributedLock {
       // Only throw error at runtime in production, not during build
       if ((process.env.NODE_ENV === 'production' || process.env.VERCEL_ENV) && isRuntime) {
         throw new Error(
-          '[ConcurrencyLock] Upstash Redis is required in production but not configured. ' +
-          'Set UPSTASH_REDIS_REST_URL and UPSTASH_REDIS_REST_TOKEN environment variables.'
+          '[ConcurrencyLock] Upstash Redis is required in production but not configured.\n' +
+          'This is required for distributed locking across serverless instances (e.g., Vercel).\n' +
+          'Without it, concurrent matching operations may run simultaneously, causing issues.\n\n' +
+          'Setup instructions:\n' +
+          '1. Create a free Redis database at https://console.upstash.com/redis\n' +
+          '2. Copy the REST URL and token from your Upstash dashboard\n' +
+          '3. Add these environment variables to your deployment platform:\n' +
+          '   - UPSTASH_REDIS_REST_URL (e.g., https://your-instance.upstash.io)\n' +
+          '   - UPSTASH_REDIS_REST_TOKEN (your API token)\n' +
+          '4. Redeploy your application\n\n' +
+          'See env.example for more details.'
         )
       }
       if (!isRuntime) {
@@ -48,7 +57,11 @@ export class DistributedLock {
   async acquire(key: string, ttlSeconds: number): Promise<boolean> {
     if (!this.baseUrl || !this.token) {
       if (process.env.NODE_ENV === 'production') {
-        throw new Error('[ConcurrencyLock] Upstash Redis not configured in production')
+        throw new Error(
+          '[ConcurrencyLock] Upstash Redis not configured in production.\n' +
+          'Set UPSTASH_REDIS_REST_URL and UPSTASH_REDIS_REST_TOKEN environment variables.\n' +
+          'Get credentials from https://console.upstash.com/redis'
+        )
       }
       // In development without Redis, allow the operation (no distributed locking)
       return true
@@ -96,7 +109,11 @@ export class DistributedLock {
   async release(key: string): Promise<void> {
     if (!this.baseUrl || !this.token) {
       if (process.env.NODE_ENV === 'production') {
-        throw new Error('[ConcurrencyLock] Upstash Redis not configured in production')
+        throw new Error(
+          '[ConcurrencyLock] Upstash Redis not configured in production.\n' +
+          'Set UPSTASH_REDIS_REST_URL and UPSTASH_REDIS_REST_TOKEN environment variables.\n' +
+          'Get credentials from https://console.upstash.com/redis'
+        )
       }
       // In development without Redis, nothing to release
       return
@@ -129,7 +146,11 @@ export class DistributedLock {
   async exists(key: string): Promise<boolean> {
     if (!this.baseUrl || !this.token) {
       if (process.env.NODE_ENV === 'production') {
-        throw new Error('[ConcurrencyLock] Upstash Redis not configured in production')
+        throw new Error(
+          '[ConcurrencyLock] Upstash Redis not configured in production.\n' +
+          'Set UPSTASH_REDIS_REST_URL and UPSTASH_REDIS_REST_TOKEN environment variables.\n' +
+          'Get credentials from https://console.upstash.com/redis'
+        )
       }
       return false
     }
@@ -155,6 +176,48 @@ export class DistributedLock {
       console.error('[ConcurrencyLock] Failed to check lock existence', error)
       // Fail-closed: if we can't check, assume lock exists (safer)
       return true
+    }
+  }
+
+  /**
+   * Get the remaining TTL (time-to-live) of a lock in seconds
+   * @param key - Lock key to check
+   * @returns TTL in seconds, or -1 if lock doesn't exist, or -2 if error
+   */
+  async getTTL(key: string): Promise<number> {
+    if (!this.baseUrl || !this.token) {
+      if (process.env.NODE_ENV === 'production') {
+        throw new Error(
+          '[ConcurrencyLock] Upstash Redis not configured in production.\n' +
+          'Set UPSTASH_REDIS_REST_URL and UPSTASH_REDIS_REST_TOKEN environment variables.\n' +
+          'Get credentials from https://console.upstash.com/redis'
+        )
+      }
+      return -1
+    }
+
+    try {
+      const response = await fetch(`${this.baseUrl}/ttl/${encodeURIComponent(key)}`, {
+        headers: {
+          'Authorization': `Bearer ${this.token}`
+        },
+        next: { revalidate: 0 }
+      })
+
+      if (!response.ok) {
+        if (response.status === 404) {
+          return -1 // Lock doesn't exist
+        }
+        throw new Error(`Upstash Redis TTL failed: ${response.statusText}`)
+      }
+
+      const data = await response.json()
+      // TTL returns -1 if key exists but has no expiration, -2 if key doesn't exist
+      // Positive number is seconds remaining
+      return typeof data.result === 'number' ? data.result : -2
+    } catch (error) {
+      console.error('[ConcurrencyLock] Failed to get lock TTL', error)
+      return -2 // Error
     }
   }
 }
