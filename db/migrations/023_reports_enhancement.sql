@@ -17,3 +17,4 @@ CREATE INDEX IF NOT EXISTS idx_reports_auto_blocked ON reports (auto_blocked);
 -- Update existing reports to have default category
 UPDATE reports SET category = 'other' WHERE category IS NULL;
 
+

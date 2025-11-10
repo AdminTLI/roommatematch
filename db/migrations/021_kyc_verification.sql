@@ -105,3 +105,4 @@ CREATE TRIGGER trigger_update_profile_verification_status
 GRANT SELECT ON verifications TO authenticated;
 GRANT SELECT ON verification_webhooks TO authenticated;
 
+

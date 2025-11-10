@@ -37,3 +37,4 @@ CREATE POLICY "Service role can insert admin actions" ON admin_actions
 -- Grant permissions
 GRANT SELECT ON admin_actions TO authenticated;
 
+

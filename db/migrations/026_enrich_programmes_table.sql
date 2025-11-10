@@ -28,3 +28,4 @@ COMMENT ON COLUMN programmes.active IS 'Whether the programme is currently activ
 COMMENT ON COLUMN programmes.enrichment_status IS 'Status of enrichment: pending (not yet enriched), enriched (successfully enriched), failed (enrichment failed), not_found (no match found in Studiekeuzedatabase)';
 COMMENT ON COLUMN programmes.enriched_at IS 'Timestamp when enrichment was last performed';
 
+

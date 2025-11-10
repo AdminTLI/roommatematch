@@ -33,6 +33,7 @@ CREATE TABLE universities (
   slug VARCHAR(100) UNIQUE NOT NULL,
   branding JSONB DEFAULT '{}',
   eligibility_domains TEXT[] DEFAULT '{}',
+  security_phone VARCHAR(20),
   is_active BOOLEAN DEFAULT true,
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
   updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()

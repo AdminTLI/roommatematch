@@ -11,6 +11,36 @@ export default async function SafetyPage() {
     redirect('/auth/sign-in')
   }
 
+  // Fetch user's university to get security phone number
+  let universitySecurityPhone: string | null = null
+  let universityName: string | null = null
+
+  try {
+    // Get user's profile to find university_id
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('university_id')
+      .eq('user_id', user.id)
+      .maybeSingle()
+
+    if (profile?.university_id) {
+      // Fetch university security phone
+      const { data: university } = await supabase
+        .from('universities')
+        .select('security_phone, name')
+        .eq('id', profile.university_id)
+        .maybeSingle()
+
+      if (university) {
+        universitySecurityPhone = university.security_phone || null
+        universityName = university.name || null
+      }
+    }
+  } catch (error) {
+    console.error('Error fetching university security phone:', error)
+    // Continue with null values - component will handle fallback
+  }
+
   return (
     <AppShell user={{
       id: user.id,
@@ -18,7 +48,10 @@ export default async function SafetyPage() {
       name: user.user_metadata?.full_name || 'User',
       avatar: user.user_metadata?.avatar_url
     }}>
-      <SafetyContent />
+      <SafetyContent 
+        universitySecurityPhone={universitySecurityPhone}
+        universityName={universityName}
+      />
     </AppShell>
   )
 }

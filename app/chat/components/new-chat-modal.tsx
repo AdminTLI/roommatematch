@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import type { MouseEvent } from 'react'
 import { useRouter } from 'next/navigation'
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
@@ -46,7 +47,8 @@ export function NewChatModal({ isOpen, onClose, user, initialMode }: NewChatModa
       setIsGroupMode(initialMode === 'group' || false)
       setSearchQuery('')
     }
-  }, [isOpen, initialMode])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isOpen, initialMode, user.id])
 
   const loadMatches = async () => {
     setIsLoading(true)
@@ -131,14 +133,18 @@ export function NewChatModal({ isOpen, onClose, user, initialMode }: NewChatModa
       matchesAsA?.forEach((m: any) => matchScoreMap.set(m.b_user, m.score || 0))
       matchesAsB?.forEach((m: any) => matchScoreMap.set(m.a_user, m.score || 0))
 
-      // Format matches
+      // Format matches - ensure no user codes are displayed
       const formattedMatches = (profiles || []).map((profile: any) => {
-        const fullName = [profile.first_name?.trim(), profile.last_name?.trim()].filter(Boolean).join(' ') || 'User'
+        // Construct name from first_name and last_name only - never use user_id
+        const firstName = profile.first_name?.trim() || ''
+        const lastName = profile.last_name?.trim() || ''
+        const fullName = [firstName, lastName].filter(Boolean).join(' ') || 'User'
         const score = matchScoreMap.get(profile.user_id) || 0
         
+        // Ensure we never expose user_id in the UI - only use it as internal identifier
         return {
-          match_user_id: profile.user_id,
-          name: fullName,
+          match_user_id: profile.user_id, // Internal use only - never displayed
+          name: fullName, // Only display name
           university_name: profile.universities?.name || 'University',
           program_name: profile.program || 'Program',
           compatibility_score: score
@@ -160,24 +166,37 @@ export function NewChatModal({ isOpen, onClose, user, initialMode }: NewChatModa
     match.program_name.toLowerCase().includes(searchQuery.toLowerCase())
   )
 
-  const toggleMatchSelection = (matchId: string) => {
-    const newSelected = new Set(selectedMatches)
-    if (newSelected.has(matchId)) {
-      newSelected.delete(matchId)
-    } else {
-      if (isGroupMode) {
-        if (newSelected.size >= 5) {
-          alert('Maximum 5 people allowed in a group')
-          return
-        }
-        newSelected.add(matchId)
-      } else {
-        // For individual chat, clear selection and select only this one
-        newSelected.clear()
-        newSelected.add(matchId)
-      }
+  const toggleMatchSelection = (matchId: string, e?: MouseEvent) => {
+    // Prevent event propagation to avoid any conflicts
+    if (e) {
+      e.preventDefault()
+      e.stopPropagation()
     }
-    setSelectedMatches(newSelected)
+    
+    setSelectedMatches(prev => {
+      const newSelected = new Set(prev)
+      
+      if (newSelected.has(matchId)) {
+        // Deselect if already selected
+        newSelected.delete(matchId)
+      } else {
+        // Select logic
+        if (isGroupMode) {
+          // Group mode: allow multiple selections (up to 5)
+          if (newSelected.size >= 5) {
+            alert('Maximum 5 people allowed in a group')
+            return prev // Return previous state if limit reached
+          }
+          newSelected.add(matchId)
+        } else {
+          // Individual mode: clear and select only this one
+          newSelected.clear()
+          newSelected.add(matchId)
+        }
+      }
+      
+      return newSelected
+    })
   }
 
   const handleCreateChat = async () => {
@@ -280,6 +299,8 @@ export function NewChatModal({ isOpen, onClose, user, initialMode }: NewChatModa
                 setSelectedMatches(new Set())
                 setGroupName('')
                 setSearchQuery('')
+                // Reload matches when switching to individual mode
+                loadMatches()
               }}
               className="flex-1"
             >
@@ -291,6 +312,8 @@ export function NewChatModal({ isOpen, onClose, user, initialMode }: NewChatModa
                 setIsGroupMode(true)
                 setSelectedMatches(new Set())
                 setSearchQuery('')
+                // Reload matches when switching to group mode
+                loadMatches()
               }}
               className="flex-1"
             >
@@ -322,7 +345,12 @@ export function NewChatModal({ isOpen, onClose, user, initialMode }: NewChatModa
                 >
                   {match.name}
                   <button
-                    onClick={() => toggleMatchSelection(match.match_user_id)}
+                    onClick={(e) => {
+                      e.preventDefault()
+                      e.stopPropagation()
+                      toggleMatchSelection(match.match_user_id, e)
+                    }}
+                    type="button"
                     className="ml-1 hover:bg-gray-300 rounded-full p-0.5"
                   >
                     <X className="w-3 h-3" />
@@ -370,7 +398,8 @@ export function NewChatModal({ isOpen, onClose, user, initialMode }: NewChatModa
                   return (
                     <button
                       key={match.match_user_id}
-                      onClick={() => toggleMatchSelection(match.match_user_id)}
+                      onClick={(e) => toggleMatchSelection(match.match_user_id, e)}
+                      type="button"
                       className={`w-full flex items-center gap-3 p-4 hover:bg-gray-50 transition-colors text-left ${
                         isSelected ? 'bg-blue-50 border-l-4 border-blue-600' : ''
                       }`}
@@ -386,7 +415,7 @@ export function NewChatModal({ isOpen, onClose, user, initialMode }: NewChatModa
                             {match.name}
                           </p>
                           <Badge variant="outline" className="text-xs">
-                            {Math.round(match.compatibility_score * 100)}%
+                            {Math.round(match.compatibility_score * 100)}
                           </Badge>
                         </div>
                         <p className="text-sm text-gray-600 truncate">
