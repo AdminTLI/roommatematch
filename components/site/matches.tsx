@@ -69,26 +69,16 @@ export function Matches() {
                 <h3 className="text-2xl font-semibold text-brand-text">
                   {match.name}
                 </h3>
-                <p className="text-brand-muted">
-                  <span>{match.program}</span>
-                  <span className="mx-2">•</span>
-                  <span>{match.university}</span>
-                </p>
+                <div className="text-brand-muted">
+                  <div>{match.program}</div>
+                  <div>{match.university}</div>
+                </div>
                 <ul className="text-sm text-brand-muted list-disc pl-5 space-y-1">
                   {match.traits.map((trait, traitIndex) => (
                     <li key={traitIndex}>{trait}</li>
                   ))}
                 </ul>
               </div>
-              
-              <Button 
-                variant="outline" 
-                size="lg"
-                className="mt-6 self-start"
-                onClick={() => router.push('/matches')}
-              >
-                View Profile
-              </Button>
             </Card>
           ))}
         </div>
@@ -99,7 +89,7 @@ export function Matches() {
             size="lg"
             onClick={() => router.push('/matches')}
           >
-            View all matches
+            Match me now
           </Button>
         </div>
       </Container>
