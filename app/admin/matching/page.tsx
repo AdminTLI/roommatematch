@@ -377,13 +377,31 @@ export default function AdminMatchingPage() {
                       <div className="mt-4 space-y-2">
                         <div className="text-sm font-medium">Section Scores:</div>
                         <div className="grid grid-cols-2 gap-2">
-                          {Object.entries(match.sectionScores).map(([section, score]) => (
-                            <div key={section} className="flex items-center space-x-2">
-                              <span className="text-xs capitalize w-20">{section}:</span>
-                              <Progress value={score * 100} className="flex-1 h-2" />
-                              <span className="text-xs w-8">{Math.round(score * 100)}%</span>
-                            </div>
-                          ))}
+                          {(() => {
+                            // Standard order: Academic, Personality, Social, Lifestyle, Schedule
+                            const orderMap: Record<string, number> = {
+                              academic: 1,
+                              personality: 2,
+                              social: 3,
+                              lifestyle: 4,
+                              schedule: 5
+                            }
+
+                            // Sort entries by the standard order
+                            const sortedEntries = Object.entries(match.sectionScores).sort((a, b) => {
+                              const orderA = orderMap[a[0].toLowerCase()] || 999
+                              const orderB = orderMap[b[0].toLowerCase()] || 999
+                              return orderA - orderB
+                            })
+
+                            return sortedEntries.map(([section, score]) => (
+                              <div key={section} className="flex items-center space-x-2">
+                                <span className="text-xs capitalize w-20">{section}:</span>
+                                <Progress value={score * 100} className="flex-1 h-2" />
+                                <span className="text-xs w-8">{Math.round(score * 100)}%</span>
+                              </div>
+                            ))
+                          })()}
                         </div>
                       </div>
                     )}

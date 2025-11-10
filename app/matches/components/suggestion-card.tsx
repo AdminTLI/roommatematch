@@ -46,6 +46,19 @@ export function SuggestionCard({
   const expiresAt = new Date(suggestion.expiresAt).getTime()
   const hoursLeft = Math.max(0, Math.ceil((expiresAt - now) / 3600000))
   
+  // Convert hours to days and hours format
+  const formatExpirationTime = (hours: number): string => {
+    if (hours < 24) {
+      return `${hours} hour${hours !== 1 ? 's' : ''}`
+    }
+    const days = Math.floor(hours / 24)
+    const remainingHours = hours % 24
+    if (remainingHours === 0) {
+      return `${days} day${days !== 1 ? 's' : ''}`
+    }
+    return `${days} day${days !== 1 ? 's' : ''} ${remainingHours} hour${remainingHours !== 1 ? 's' : ''}`
+  }
+  
   const handleRespond = async (action: 'accept' | 'decline') => {
     setIsResponding(true)
     try {
@@ -223,7 +236,7 @@ export function SuggestionCard({
               {getStatusBadge()}
               {suggestion.status === 'pending' && (
                 <span className="text-xs text-gray-500 whitespace-nowrap">
-                  Expires in {hoursLeft}h
+                  Expires in {formatExpirationTime(hoursLeft)}
                 </span>
               )}
             </div>
@@ -238,18 +251,61 @@ export function SuggestionCard({
         </div>
       )}
       
-      {/* Reasons - Compact */}
+      {/* Match Explanation */}
       {suggestion.reasons && suggestion.reasons.length > 0 && (
         <div className="mb-4">
           <div className="text-xs font-medium text-gray-600 mb-1">Why this match works:</div>
           <div className="text-sm text-gray-700 leading-relaxed">
-            {suggestion.reasons.map((reason, index) => {
-              // Capitalize first letter, lowercase rest after commas
-              const formatted = index === 0 
-                ? reason.charAt(0).toUpperCase() + reason.slice(1).toLowerCase()
-                : reason.toLowerCase()
-              return index === 0 ? formatted : `, ${formatted}`
-            }).join('')}
+            {(() => {
+              // Generate human-like explanation from reasons and scores
+              const reasons = suggestion.reasons || []
+              const scores = suggestion.sectionScores || {}
+              
+              // Get top strengths
+              const academicScore = scores.academic || 0
+              const personalityScore = scores.personality || 0
+              const socialScore = scores.social || 0
+              const lifestyleScore = scores.lifestyle || 0
+              const scheduleScore = scores.schedule || 0
+              
+              // Build explanation sentences
+              const strengths: string[] = []
+              const concerns: string[] = []
+              
+              // First sentence: Main strengths
+              if (reasons.length > 0) {
+                const mainReasons = reasons.slice(0, 2).join(' and ')
+                strengths.push(`You two seem like a great fit because ${mainReasons.toLowerCase()}.`)
+              } else {
+                strengths.push(`Based on your profiles, you both share similar values and lifestyle preferences that should make living together comfortable.`)
+              }
+              
+              // Second sentence: Specific compatibility highlights
+              const topScores: string[] = []
+              if (academicScore > 0.7) topScores.push('academic backgrounds')
+              if (personalityScore > 0.7) topScores.push('personality traits')
+              if (socialScore > 0.7) topScores.push('social preferences')
+              if (lifestyleScore > 0.7) topScores.push('lifestyle habits')
+              
+              if (topScores.length > 0) {
+                strengths.push(`Your ${topScores.slice(0, 2).join(' and ')} align really well, which should help you both feel at home and understand each other's routines.`)
+              } else {
+                strengths.push(`You both seem to value similar things when it comes to shared living spaces, which is always a good foundation for a roommate relationship.`)
+              }
+              
+              // Third sentence: Constructive feedback/things to watch out for
+              if (scheduleScore < 0.5) {
+                concerns.push(`One thing to keep in mind is that your schedules might be quite different, so it'd be worth discussing quiet hours and study times early on to make sure you're both comfortable.`)
+              } else if (lifestyleScore < 0.5) {
+                concerns.push(`You might want to chat about cleanliness expectations and how you both like to keep shared spaces, since those small differences can sometimes cause friction if not discussed upfront.`)
+              } else if (socialScore < 0.5) {
+                concerns.push(`Since you have different preferences around guests and socializing at home, having an open conversation about boundaries and house rules would help you both feel respected.`)
+              } else {
+                concerns.push(`Like with any roommate situation, communication is key - make sure you're both on the same page about the important stuff like bills, shared responsibilities, and what happens if plans change.`)
+              }
+              
+              return [...strengths, ...concerns].join(' ')
+            })()}
           </div>
         </div>
       )}

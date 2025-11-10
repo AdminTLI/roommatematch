@@ -66,7 +66,21 @@ export function StudentMatchesInterface({ user }: StudentMatchesInterfaceProps) 
         const suggested = allSuggestions.filter(s => s.status === 'pending' && !s.acceptedBy?.includes(user.id))
         const pending = allSuggestions.filter(s => s.status === 'accepted' && s.acceptedBy?.includes(user.id) && s.acceptedBy.length < s.memberIds.length)
         const confirmed = allSuggestions.filter(s => s.status === 'accepted' && s.acceptedBy?.length === s.memberIds.length)
-        const history = allSuggestions.filter(s => s.status === 'declined' || s.status === 'expired')
+        
+        // History: Show all matches that are not currently active (declined, expired, confirmed, or old pending/accepted)
+        // Sort chronologically (newest first)
+        const history = allSuggestions
+          .filter(s => {
+            // Include declined and expired
+            if (s.status === 'declined' || s.status === 'expired') return true
+            // Include confirmed matches (they're in history once confirmed)
+            if (s.status === 'accepted' && s.acceptedBy?.length === s.memberIds.length) return true
+            // Include old pending/accepted that are no longer active
+            const isOld = new Date(s.expiresAt) < new Date()
+            if (isOld && (s.status === 'pending' || s.status === 'accepted')) return true
+            return false
+          })
+          .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
         
         setSuggestions(suggested)
         setPendingSuggestions(pending)
@@ -394,15 +408,6 @@ export function StudentMatchesInterface({ user }: StudentMatchesInterfaceProps) 
         </div>
       ) : (
         <>
-          {/* Selection mode info for confirmed tab */}
-          {activeTab === 'confirmed' && filteredSuggestions.length > 0 && (
-            <div className="mb-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
-              <p className="text-sm text-blue-800">
-                💡 Select multiple matches to create a group chat, or select one for individual chat
-              </p>
-            </div>
-          )}
-
           <div className="grid gap-4 sm:gap-6 mb-4 sm:mb-6">
             {filteredSuggestions.map((suggestion) => (
               <SuggestionCard

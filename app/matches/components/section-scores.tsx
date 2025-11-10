@@ -10,11 +10,27 @@ export function SectionScores({ scores }: SectionScoresProps) {
   const entries = Object.entries(scores)
   if (entries.length === 0) return null
 
+  // Standard order: Academic, Personality, Social, Lifestyle, Schedule
+  const orderMap: Record<string, number> = {
+    academic: 1,
+    personality: 2,
+    social: 3,
+    lifestyle: 4,
+    schedule: 5
+  }
+
+  // Sort entries by the standard order
+  const sortedEntries = entries.sort((a, b) => {
+    const orderA = orderMap[a[0].toLowerCase()] || 999
+    const orderB = orderMap[b[0].toLowerCase()] || 999
+    return orderA - orderB
+  })
+
   return (
     <div className="space-y-2">
       <h4 className="text-sm font-medium text-gray-700">Compatibility Breakdown</h4>
       <div className="space-y-1">
-        {entries.map(([section, value]) => (
+        {sortedEntries.map(([section, value]) => (
           <div key={section} className="flex items-center gap-3">
             <span className="w-24 text-sm capitalize text-gray-600">
               {section.replace('_', ' ')}

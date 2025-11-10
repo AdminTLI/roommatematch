@@ -275,24 +275,42 @@ export function MatchCard({
             Compatibility Breakdown
           </h4>
           
-          {Object.entries(compatibilityBreakdown).map(([key, score]) => (
-            <div key={key} className="space-y-1">
-              <div className="flex items-center justify-between">
-                <span className="text-sm font-medium capitalize">
-                  {key}
-                </span>
-                <span className="text-sm text-gray-600">
-                  {formatCompatibilityScore(score)}
-                </span>
+          {(() => {
+            // Standard order: Academic, Personality, Social, Lifestyle, Schedule
+            const orderMap: Record<string, number> = {
+              academic: 1,
+              personality: 2,
+              social: 3,
+              lifestyle: 4,
+              schedule: 5
+            }
+
+            // Sort entries by the standard order
+            const sortedEntries = Object.entries(compatibilityBreakdown).sort((a, b) => {
+              const orderA = orderMap[a[0].toLowerCase()] || 999
+              const orderB = orderMap[b[0].toLowerCase()] || 999
+              return orderA - orderB
+            })
+
+            return sortedEntries.map(([key, score]) => (
+              <div key={key} className="space-y-1">
+                <div className="flex items-center justify-between">
+                  <span className="text-sm font-medium capitalize">
+                    {key}
+                  </span>
+                  <span className="text-sm text-gray-600">
+                    {formatCompatibilityScore(score)}
+                  </span>
+                </div>
+                <div className="w-full bg-gray-200 rounded-full h-2">
+                  <div 
+                    className={`h-2 rounded-full transition-all duration-500 ${getCompatibilityColor(score)}`}
+                    style={{ width: `${score * 100}%` }}
+                  />
+                </div>
               </div>
-              <div className="w-full bg-gray-200 rounded-full h-2">
-                <div 
-                  className={`h-2 rounded-full transition-all duration-500 ${getCompatibilityColor(score)}`}
-                  style={{ width: `${score * 100}%` }}
-                />
-              </div>
-            </div>
-          ))}
+            ))
+          })()}
         </div>
 
         {/* Top Alignment & Watch Out */}
