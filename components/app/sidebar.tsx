@@ -44,9 +44,28 @@ const allNavigationItems = [
   { name: 'Admin', href: '/admin', icon: BarChart3, featureFlag: null },
 ]
 
-// Filter navigation based on feature flags
-const getNavigation = () => {
+// MVP hidden features - kept in code but hidden from UI
+const MVP_HIDDEN_ITEMS = ['Agreements', 'Reputation', 'Video Intros']
+
+// Super admin email - only this account can see Admin button
+const SUPER_ADMIN_EMAIL = 'demo@account.com'
+
+// Filter navigation based on feature flags, MVP hidden items, and admin access
+const getNavigation = (userEmail: string) => {
+  const isSuperAdmin = userEmail.toLowerCase() === SUPER_ADMIN_EMAIL.toLowerCase()
+  
   return allNavigationItems.filter(item => {
+    // Filter out MVP hidden items
+    if (MVP_HIDDEN_ITEMS.includes(item.name)) {
+      return false
+    }
+    
+    // Filter out Admin unless user is super admin
+    if (item.name === 'Admin' && !isSuperAdmin) {
+      return false
+    }
+    
+    // Filter based on feature flags
     if (item.featureFlag === null) return true
     return isFeatureEnabled(item.featureFlag as 'housing' | 'move_in')
   })
@@ -157,7 +176,7 @@ export function Sidebar({ user, onClose }: SidebarProps) {
       </div>
       {/* Navigation - starts at top */}
       <nav className="flex-1 p-4 space-y-2 overflow-y-auto">
-        {getNavigation().map((item, index) => {
+        {getNavigation(user.email).map((item, index) => {
           const isActive = pathname === item.href || pathname.startsWith(item.href + '/')
           const Icon = item.icon
 

@@ -47,7 +47,16 @@ export function AppHeader({ user }: AppHeaderProps) {
     router.push('/')
   }
 
-  const navigation = [
+  // MVP hidden features - kept in code but hidden from UI
+  const MVP_HIDDEN_ITEMS = ['Agreements', 'Reputation', 'Video Intros']
+  
+  // Super admin email - only this account can see Admin button
+  const SUPER_ADMIN_EMAIL = 'demo@account.com'
+  
+  // Check if current user is super admin
+  const isSuperAdmin = user.email.toLowerCase() === SUPER_ADMIN_EMAIL.toLowerCase()
+  
+  const allNavigationItems = [
     { name: 'Matches', href: '/matches', icon: Users },
     { name: 'Housing', href: '/housing', icon: Home },
     { name: 'Chat', href: '/chat', icon: MessageCircle },
@@ -59,6 +68,21 @@ export function AppHeader({ user }: AppHeaderProps) {
     { name: 'Admin', href: '/admin', icon: BarChart3 },
     { name: 'Settings', href: '/settings', icon: Settings }
   ]
+  
+  // Filter navigation to hide MVP features and restrict Admin access
+  const navigation = allNavigationItems.filter(item => {
+    // Filter out MVP hidden items
+    if (MVP_HIDDEN_ITEMS.includes(item.name)) {
+      return false
+    }
+    
+    // Filter out Admin unless user is super admin
+    if (item.name === 'Admin' && !isSuperAdmin) {
+      return false
+    }
+    
+    return true
+  })
 
   return (
     <header className="sticky top-0 z-50 bg-white/95 dark:bg-gray-900/95 backdrop-blur-sm border-b border-gray-200 dark:border-gray-800">
