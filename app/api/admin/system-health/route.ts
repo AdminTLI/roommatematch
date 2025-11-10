@@ -226,12 +226,13 @@ export async function GET(request: NextRequest) {
     }
 
     // Run all health checks in parallel
-    const [database, authentication, matchingEngine, fileStorage] = await Promise.all([
+    const healthCheckPromises = [
       checkDatabase(),
       checkAuthentication(),
       checkMatchingEngine(),
-      checkFileStorage()
-    })
+      checkFileStorage(),
+    ]
+    const [database, authentication, matchingEngine, fileStorage] = await Promise.all(healthCheckPromises)
 
     // Calculate overall system health
     const allChecks = [database, authentication, matchingEngine, fileStorage]
