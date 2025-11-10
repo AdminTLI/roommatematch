@@ -1,6 +1,5 @@
 'use client'
 
-import { useState } from 'react'
 import { Badge } from '@/components/ui/badge'
 import { 
   Users, 
@@ -14,8 +13,7 @@ import {
   FileCheck, 
   AlertTriangle, 
   Megaphone,
-  Clock,
-  ExternalLink
+  Clock
 } from 'lucide-react'
 import { Notification, NOTIFICATION_CONFIG } from '@/lib/notifications/types'
 import { formatDistanceToNow } from 'date-fns'
@@ -45,7 +43,6 @@ export function NotificationItem({
   onMarkAsRead, 
   onNavigate 
 }: NotificationItemProps) {
-  const [isHovered, setIsHovered] = useState(false)
   const config = NOTIFICATION_CONFIG[notification.type]
   const IconComponent = iconMap[config.icon as keyof typeof iconMap] || MessageCircle
 
@@ -69,9 +66,7 @@ export function NotificationItem({
     <div 
       className={`cursor-pointer transition-all duration-200 hover:bg-gray-50 ${
         !notification.is_read ? 'bg-white border-l-4 border-l-blue-500' : 'bg-white border-l-4 border-l-transparent'
-      } ${isHovered ? 'bg-gray-50' : ''}`}
-      onMouseEnter={() => setIsHovered(true)}
-      onMouseLeave={() => setIsHovered(false)}
+      }`}
       onClick={handleClick}
     >
       <div className="p-4">
@@ -127,14 +122,6 @@ export function NotificationItem({
                 {formatDistanceToNow(new Date(notification.created_at), { addSuffix: true })}
               </span>
             </div>
-
-            {/* Action indicator */}
-            {isHovered && (
-              <div className="flex items-center gap-1 mt-2 text-xs text-blue-600">
-                <ExternalLink className="h-3 w-3" />
-                <span>Click to view</span>
-              </div>
-            )}
           </div>
         </div>
       </div>

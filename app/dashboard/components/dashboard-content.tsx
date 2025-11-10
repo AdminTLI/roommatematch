@@ -287,7 +287,7 @@ export function DashboardContent({ hasCompletedQuestionnaire = false, hasPartial
           userId: profile.user_id,
           name: fullName,
           score: score, // Keep as decimal 0-1 for display
-          program: programDisplay,
+          program: programDisplay || '',
           university: profile.universities?.name || 'University',
           avatar: undefined
         }
@@ -619,7 +619,7 @@ export function DashboardContent({ hasCompletedQuestionnaire = false, hasPartial
               <Button 
                 asChild
                 className="mt-3"
-                variant="default"
+                variant="primary"
               >
                 <a href="/settings">
                   Go to Settings to Verify Email
@@ -663,7 +663,7 @@ export function DashboardContent({ hasCompletedQuestionnaire = false, hasPartial
               <Button 
                 asChild
                 className="mt-3"
-                variant="default"
+                variant="primary"
               >
                 <a href={hasPartialProgress ? "/onboarding?mode=edit" : "/onboarding"}>
                   {hasPartialProgress ? 'Update Profile' : 'Start Questionnaire'}
@@ -741,7 +741,7 @@ export function DashboardContent({ hasCompletedQuestionnaire = false, hasPartial
         <motion.div variants={fadeInUp}>
           <div className="bg-white p-3 sm:p-4 rounded-xl shadow-sm border border-gray-200">
             <div className="text-xl sm:text-2xl font-bold text-gray-900">
-              {avgCompatibility > 0 ? `${avgCompatibility}%` : '-'}
+              {avgCompatibility > 0 ? `${avgCompatibility}%` : '0%'}
             </div>
             <div className="text-xs text-gray-600 mt-0.5">Avg Compatibility</div>
           </div>
@@ -797,36 +797,30 @@ export function DashboardContent({ hasCompletedQuestionnaire = false, hasPartial
               <div className="flex flex-col flex-1 min-h-0">
                 <div className="space-y-2 overflow-y-auto flex-1 pr-2">
                   {topMatches.map((match) => (
-                    <div key={match.id} className="flex flex-col items-start gap-2 p-2 bg-gray-50 rounded-lg overflow-x-hidden">
-                      <div className="flex items-center gap-2 w-full">
-                        <div className="text-lg font-bold text-blue-600 flex-shrink-0">
-                          {(match.score * 100).toFixed(1)}%
-                        </div>
-                        <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-purple-500 rounded-full flex items-center justify-center text-white font-bold text-sm flex-shrink-0">
-                          {match.name[0].toUpperCase()}
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <h4 className="font-bold text-xs text-gray-900 truncate">{match.name}</h4>
-                          <p className="text-xs text-gray-600 truncate">
-                            {match.program && match.university ? (
-                              <>
-                                <span className="truncate">{match.program}</span>
-                                <span className="mx-1">•</span>
-                                <span className="truncate">{match.university}</span>
-                              </>
-                            ) : match.university ? (
-                              <span className="truncate">{match.university}</span>
-                            ) : (
-                              <span className="text-gray-400">No program information</span>
-                            )}
-                          </p>
+                    <div key={match.id} className="flex items-center gap-3 p-3 bg-white border border-gray-200 rounded-lg hover:shadow-md transition-shadow">
+                      <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-500 rounded-full flex items-center justify-center text-white font-bold text-sm flex-shrink-0">
+                        {match.name[0].toUpperCase()}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <h4 className="font-semibold text-sm text-gray-900 truncate">{match.name}</h4>
+                        <div className="text-xs text-gray-600 mt-0.5">
+                          {match.program && (
+                            <div className="truncate">{match.program}</div>
+                          )}
+                          {match.university && (
+                            <div className="truncate">{match.university}</div>
+                          )}
                         </div>
                       </div>
-                      <div className="flex items-center gap-1.5 w-full justify-end mt-1">
-                        <Heart className="w-3 h-3 text-rose-500 flex-shrink-0" />
+                      <div className="flex items-center gap-2 flex-shrink-0">
+                        {match.score > 0 && (
+                          <div className="text-base font-bold text-blue-600">
+                            {Math.round(match.score * 100)}%
+                          </div>
+                        )}
                         <button 
                           onClick={() => handleChatWithMatch(match.userId || match.id)}
-                          className="px-2 py-1 bg-blue-600 text-white text-xs font-medium rounded-lg hover:bg-blue-700 transition-colors flex-shrink-0"
+                          className="px-3 py-1.5 bg-blue-600 text-white text-xs font-medium rounded-lg hover:bg-blue-700 transition-colors"
                         >
                           Chat
                         </button>
@@ -953,3 +947,4 @@ export function DashboardContent({ hasCompletedQuestionnaire = false, hasPartial
     </div>
   )
 }
+
