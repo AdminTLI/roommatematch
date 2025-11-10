@@ -40,7 +40,9 @@ import {
   Flag,
   MoreVertical,
   Ban,
-  Trash2
+  Trash2,
+  CheckCircle,
+  XCircle
 } from 'lucide-react'
 
 interface ChatInterfaceProps {
@@ -93,6 +95,7 @@ export function ChatInterface({ roomId, user }: ChatInterfaceProps) {
   const [readRetryQueue, setReadRetryQueue] = useState<Array<{ timestamp: number; attempt: number }>>([])
   const [readFailureCount, setReadFailureCount] = useState(0)
   const [readError, setReadError] = useState<string | null>(null)
+  const [otherUserVerificationStatus, setOtherUserVerificationStatus] = useState<'verified' | 'unverified' | null>(null)
   
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const typingTimeoutRef = useRef<NodeJS.Timeout>()
@@ -550,10 +553,37 @@ export function ChatInterface({ roomId, user }: ChatInterfaceProps) {
           console.error('Failed to check block status:', err)
           setIsBlocked(false)
         }
+        
+        // Check verification status for the other user
+        try {
+          const { data: verification } = await supabase
+            .from('verifications')
+            .select('status')
+            .eq('user_id', otherMember.id)
+            .order('created_at', { ascending: false })
+            .limit(1)
+            .maybeSingle()
+          
+          if (verification?.status === 'approved') {
+            setOtherUserVerificationStatus('verified')
+          } else {
+            // Also check profile verification_status as fallback
+            const profile = profilesMap.get(otherMember.id)
+            if (profile?.verification_status === 'verified') {
+              setOtherUserVerificationStatus('verified')
+            } else {
+              setOtherUserVerificationStatus('unverified')
+            }
+          }
+        } catch (err) {
+          console.error('Failed to check verification status:', err)
+          setOtherUserVerificationStatus('unverified')
+        }
       } else {
         setOtherPersonName('')
         setBlockedUserId(null)
         setIsBlocked(false)
+        setOtherUserVerificationStatus(null)
       }
 
       setMessages(transformedMessages)
@@ -1369,23 +1399,47 @@ export function ChatInterface({ roomId, user }: ChatInterfaceProps) {
 
   return (
     <div className="max-w-4xl mx-auto">
+      {/* Safety Notice - Moved to top */}
+      <Alert className="mb-6">
+        <Shield className="h-4 w-4 mt-0.5" />
+        <AlertDescription className="flex items-center">
+          This is a safe, text-only chat. Links and files are blocked for your protection. 
+          All messages are moderated.
+        </AlertDescription>
+      </Alert>
+
       {/* Chat Header */}
       <div className="mb-6">
         <div className="flex items-start justify-between mb-4">
           <div className="flex-1">
             <Button 
-              variant="ghost" 
-              size="sm"
+              variant="outline" 
+              size="md"
               onClick={() => router.back()}
-              className="mb-3 px-3 py-2 hover:bg-gray-100 rounded-lg transition-colors"
+              className="mb-3 px-4 py-2 border-gray-300 hover:bg-gray-50 hover:border-gray-400 transition-colors shadow-sm"
             >
               <ArrowLeft className="h-4 w-4 mr-2" />
               Back
             </Button>
-            <div>
+            <div className="flex items-center gap-2">
               <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
                 {isGroup ? 'Roommate Chat' : (otherPersonName || 'Chat')}
               </h1>
+              {!isGroup && otherUserVerificationStatus && (
+                <div className="flex items-center">
+                  {otherUserVerificationStatus === 'verified' ? (
+                    <Badge variant="outline" className="flex items-center gap-1 px-2 py-1 bg-green-50 text-green-700 border-green-200">
+                      <CheckCircle className="h-4 w-4" />
+                      <span className="text-xs font-medium">Verified</span>
+                    </Badge>
+                  ) : (
+                    <Badge variant="outline" className="flex items-center gap-1 px-2 py-1 bg-gray-50 text-gray-600 border-gray-200">
+                      <XCircle className="h-4 w-4" />
+                      <span className="text-xs font-medium">Unverified</span>
+                    </Badge>
+                  )}
+                </div>
+              )}
               {isGroup && (
                 <div className="flex items-center gap-2 mt-1">
                   <Users className="h-4 w-4 text-gray-500" />
@@ -1445,15 +1499,6 @@ export function ChatInterface({ roomId, user }: ChatInterfaceProps) {
           </div>
         </div>
       </div>
-
-      {/* Safety Notice */}
-      <Alert className="mb-6">
-        <Shield className="h-4 w-4 mt-0.5" />
-        <AlertDescription className="flex items-center">
-          This is a safe, text-only chat. Links and files are blocked for your protection. 
-          All messages are moderated.
-        </AlertDescription>
-      </Alert>
 
       {/* Chat Members - Only show for group chats */}
       {isGroup && members.length > 0 && (
