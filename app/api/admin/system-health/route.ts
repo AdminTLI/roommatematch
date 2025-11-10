@@ -63,8 +63,8 @@ async function checkAuthentication(): Promise<HealthCheckResult> {
   try {
     const supabase = await createClient()
     
-    // Test authentication service by getting current user session
-    const { error, data } = await supabase.auth.getSession()
+    // Test authentication service by getting current user (authenticated via server)
+    const { error, data } = await supabase.auth.getUser()
     
     const responseTime = Date.now() - startTime
     
@@ -87,8 +87,8 @@ async function checkAuthentication(): Promise<HealthCheckResult> {
       responseTime,
       lastCheck: new Date().toISOString(),
       details: {
-        sessionAvailable: !!data.session,
-        userAuthenticated: !!data.session?.user
+        authServiceAvailable: true,
+        userAuthenticated: !!data.user
       }
     }
   } catch (error: any) {
