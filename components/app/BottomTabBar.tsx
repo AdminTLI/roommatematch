@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { Home, Users, MessageCircle, Settings, Building2 } from 'lucide-react'
+import { Home, Users, MessageCircle, Settings } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { useEffect, useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
@@ -20,7 +20,6 @@ const tabs = [
 	{ name: 'Dashboard', href: '/dashboard', icon: Home },
 	{ name: 'Matches', href: '/matches', icon: Users },
 	{ name: 'Chat', href: '/chat', icon: MessageCircle, badge: true },
-	{ name: 'Housing', href: '/housing', icon: Building2 },
 	{ name: 'Settings', href: '/settings', icon: Settings },
 ]
 

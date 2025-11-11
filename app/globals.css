@@ -175,4 +175,9 @@
   .scrollbar-hide::-webkit-scrollbar {
     display: none;  /* Chrome, Safari and Opera */
   }
+
+  /* Edge fade hint for horizontal scroll areas */
+  .edge-fade-right {
+    background: linear-gradient(to right, rgba(255,255,255,0), rgba(255,255,255,1));
+  }
 }

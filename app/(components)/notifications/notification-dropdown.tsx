@@ -262,7 +262,7 @@ export function NotificationDropdown({
       {/* Mobile: Full-screen Sheet */}
       <Sheet open={isOpen} onOpenChange={onClose}>
         <SheetContent side="right" className="w-full sm:hidden p-4">
-          <SheetHeader className="mb-4">
+          <SheetHeader className="mb-4 pr-10">
             <SheetTitle>
               <HeaderContent />
             </SheetTitle>

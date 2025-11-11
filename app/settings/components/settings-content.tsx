@@ -27,7 +27,7 @@ export function SettingsContent({ user, profile, academic, progressData }: Setti
   const [activeTab, setActiveTab] = useState('profile')
 
   return (
-    <div className="max-w-4xl mx-auto p-4 sm:p-6">
+    <div className="max-w-4xl mx-auto p-4 sm:p-6 pb-24">
       <div className="mb-6 sm:mb-8">
         <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">Settings</h1>
         <p className="text-sm sm:text-base text-gray-600 mt-2">
@@ -37,7 +37,7 @@ export function SettingsContent({ user, profile, academic, progressData }: Setti
 
 
       <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4 sm:space-y-6">
-        <TabsList className="grid w-full grid-cols-2 sm:grid-cols-4 gap-1 sm:gap-2 rounded-2xl">
+        <TabsList className="flex sm:grid w-full sm:grid-cols-4 gap-1 sm:gap-2 rounded-2xl overflow-x-auto scrollbar-hide pr-6">
           <TabsTrigger value="profile" className="flex items-center gap-1 sm:gap-2 text-xs sm:text-sm px-2 sm:px-4 rounded-xl">
             <User className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
             <span className="hidden sm:inline">Profile</span>
@@ -62,13 +62,13 @@ export function SettingsContent({ user, profile, academic, progressData }: Setti
 
         <TabsContent value="profile">
           <Card>
-            <CardHeader>
+            <CardHeader className="pb-2 sm:pb-4">
               <CardTitle>Profile Information</CardTitle>
               <CardDescription>
                 Update your personal information and preferences.
               </CardDescription>
             </CardHeader>
-            <CardContent>
+            <CardContent className="p-4 sm:p-6">
               <ProfileSettings 
                 user={user}
                 profile={profile}
@@ -80,13 +80,13 @@ export function SettingsContent({ user, profile, academic, progressData }: Setti
 
         <TabsContent value="questionnaire">
           <Card>
-            <CardHeader>
+            <CardHeader className="pb-2 sm:pb-4">
               <CardTitle>Questionnaire Management</CardTitle>
               <CardDescription>
                 View and manage your compatibility questionnaire responses.
               </CardDescription>
             </CardHeader>
-            <CardContent>
+            <CardContent className="p-4 sm:p-6">
               <QuestionnaireSettings 
                 progressData={progressData}
               />
@@ -96,13 +96,13 @@ export function SettingsContent({ user, profile, academic, progressData }: Setti
 
         <TabsContent value="account">
           <Card>
-            <CardHeader>
+            <CardHeader className="pb-2 sm:pb-4">
               <CardTitle>Account Settings</CardTitle>
               <CardDescription>
                 Manage your account preferences and security settings.
               </CardDescription>
             </CardHeader>
-            <CardContent>
+            <CardContent className="p-4 sm:p-6">
               <AccountSettings user={user} />
             </CardContent>
           </Card>
@@ -110,13 +110,13 @@ export function SettingsContent({ user, profile, academic, progressData }: Setti
 
         <TabsContent value="privacy">
           <Card>
-            <CardHeader>
+            <CardHeader className="pb-2 sm:pb-4">
               <CardTitle>Privacy & Data</CardTitle>
               <CardDescription>
                 Control your data visibility and privacy settings.
               </CardDescription>
             </CardHeader>
-            <CardContent>
+            <CardContent className="p-4 sm:p-6">
               <PrivacySettings user={user} />
             </CardContent>
           </Card>

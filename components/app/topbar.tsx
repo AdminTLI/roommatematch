@@ -118,8 +118,8 @@ export function Topbar({ user }: TopbarProps) {
       <div className="flex items-center justify-between px-4 lg:px-6 py-4">
         {/* Left side - Mobile Menu & Logo */}
         <div className="flex items-center gap-4">
-          {/* Mobile Menu Button */}
-          <div className="lg:hidden">
+          {/* Mobile Menu Button (hidden on mobile since BottomTabBar provides navigation) */}
+          <div className="hidden lg:block">
             <Sheet>
               <SheetTrigger asChild>
                 <Button variant="ghost" size="sm" className="h-11 w-11 p-0">

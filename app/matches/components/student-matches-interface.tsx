@@ -320,7 +320,7 @@ export function StudentMatchesInterface({ user }: StudentMatchesInterfaceProps) 
   ]
 
   return (
-    <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-6">
+    <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-6 pb-24">
       {/* Header */}
       <div className="mb-5 sm:mb-8">
         <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-2 sm:mb-2">Your Matches</h1>
@@ -331,7 +331,9 @@ export function StudentMatchesInterface({ user }: StudentMatchesInterfaceProps) 
 
       {/* Tabs */}
       <div className="mb-4 sm:mb-6">
-        <div className="flex gap-1.5 sm:gap-1 bg-white border border-gray-200 p-1 sm:p-1 rounded-2xl shadow-sm overflow-x-auto scrollbar-hide -mx-4 sm:mx-0 px-4 sm:px-0">
+        <div className="relative">
+          {/* Tabs container with edge fade and chevron hint when overflowing */}
+          <div className="flex gap-1.5 sm:gap-1 bg-white border border-gray-200 p-1 sm:p-1 rounded-2xl shadow-sm overflow-x-auto scrollbar-hide -mx-4 sm:mx-0 px-4 sm:px-0 pr-8">
           {tabs.map((tab) => (
             <button
               key={tab.id}
@@ -355,6 +357,12 @@ export function StudentMatchesInterface({ user }: StudentMatchesInterfaceProps) 
               )}
             </button>
           ))}
+            {/* Edge fade + chevron */}
+            <div className="pointer-events-none absolute right-0 top-0 h-full w-10 edge-fade-right hidden sm:block" />
+            <div className="pointer-events-none absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 sm:hidden">
+              ›
+            </div>
+          </div>
         </div>
         {/* Tab-specific description */}
         <div className="mt-3 sm:mt-4 text-center px-2">
