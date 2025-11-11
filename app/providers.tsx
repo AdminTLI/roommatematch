@@ -42,18 +42,21 @@ export function useApp() {
 }
 
 export function Providers({ children }: { children: React.ReactNode }) {
-  const [locale, setLocale] = useState<Locale>(DEFAULT_LOCALE)
+  const [locale, setLocale] = useState<Locale>(() => {
+    // Initialize from localStorage on client side only
+    if (typeof window !== 'undefined') {
+      const savedLocale = localStorage.getItem('locale') as Locale
+      if (savedLocale && ['en', 'nl'].includes(savedLocale)) {
+        return savedLocale
+      }
+    }
+    return DEFAULT_LOCALE
+  })
   const [supabase] = useState(() => createClient())
 
   useEffect(() => {
     // Initialize event tracker
     initializeEventTracker(supabase)
-
-    // Get locale from localStorage
-    const savedLocale = localStorage.getItem('locale') as Locale
-    if (savedLocale && ['en', 'nl'].includes(savedLocale)) {
-      setLocale(savedLocale)
-    }
   }, [supabase])
 
   // Update HTML lang attribute when locale changes
@@ -65,7 +68,9 @@ export function Providers({ children }: { children: React.ReactNode }) {
 
   const handleSetLocale = (newLocale: Locale) => {
     setLocale(newLocale)
-    localStorage.setItem('locale', newLocale)
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('locale', newLocale)
+    }
   }
 
   const dictionary = getDictionary(locale)

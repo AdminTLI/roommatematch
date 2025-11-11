@@ -8,17 +8,40 @@ import { Button } from '@/components/ui/button'
 import Container from '@/components/ui/primitives/container'
 import { Menu, X, ChevronRight } from 'lucide-react'
 import { LanguageSwitcher } from '@/app/(marketing)/components/language-switcher'
+import { useApp } from '@/app/providers'
 
-export function Navbar() {
-  const router = useRouter()
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
-
-  const navigation = [
+const navigationContent = {
+  en: [
     { name: 'How it works', href: '/how-it-works' },
     { name: 'Features', href: '/features' },
     { name: 'Universities', href: '/universities' },
     { name: 'Pricing', href: '/pricing' },
+  ],
+  nl: [
+    { name: 'Hoe het werkt', href: '/how-it-works' },
+    { name: 'Functies', href: '/features' },
+    { name: 'Universiteiten', href: '/universities' },
+    { name: 'Prijzen', href: '/pricing' },
   ]
+}
+
+const buttonContent = {
+  en: {
+    signIn: 'Sign In',
+    getStarted: 'Get Started'
+  },
+  nl: {
+    signIn: 'Inloggen',
+    getStarted: 'Aan de slag'
+  }
+}
+
+export function Navbar() {
+  const router = useRouter()
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
+  const { locale } = useApp()
+  const navigation = navigationContent[locale]
+  const buttons = buttonContent[locale]
 
   const handleGetStarted = () => {
     router.push('/auth/sign-up')
@@ -104,14 +127,14 @@ export function Navbar() {
                 size="sm"
                 onClick={handleSignIn}
               >
-                Sign In
+                {buttons.signIn}
               </Button>
               <Button 
                 variant="primary"
                 size="sm"
                 onClick={handleGetStarted}
               >
-                Get Started
+                {buttons.getStarted}
                 <ChevronRight className="ml-1 h-3 w-3" />
               </Button>
             </div>
@@ -124,14 +147,14 @@ export function Navbar() {
                 size="lg"
                 onClick={handleSignIn}
               >
-                Sign In
+                {buttons.signIn}
               </Button>
               <Button 
                 variant="primary"
                 size="lg"
                 onClick={handleGetStarted}
               >
-                Get Started
+                {buttons.getStarted}
                 <ChevronRight className="ml-1 h-4 w-4" />
               </Button>
             </div>
@@ -183,7 +206,7 @@ export function Navbar() {
                       setIsMobileMenuOpen(false)
                     }}
                   >
-                    Sign In
+                    {buttons.signIn}
                   </Button>
                   <Button 
                     variant="primary"
@@ -194,7 +217,7 @@ export function Navbar() {
                       setIsMobileMenuOpen(false)
                     }}
                   >
-                    Get Started
+                    {buttons.getStarted}
                     <ChevronRight className="ml-1 h-4 w-4" />
                   </Button>
                 </div>

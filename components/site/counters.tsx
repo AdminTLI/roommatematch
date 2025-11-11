@@ -1,50 +1,92 @@
+'use client'
+
 import { Card, CardContent } from '@/components/ui/card'
 import Container from '@/components/ui/primitives/container'
 import Section from '@/components/ui/primitives/section'
 import { Brain, Shield, Eye, Zap } from 'lucide-react'
+import { useApp } from '@/app/providers'
 
-const stats = [
-  {
-    icon: Brain,
-    value: "40+",
-    label: "Compatibility factors",
-    description: "Science-backed matching algorithm"
+const content = {
+  en: {
+    title: "Built for better matches",
+    subtitle: "Our science-backed approach helps you find roommates as compatible as your best friends",
+    stats: [
+      {
+        icon: Brain,
+        value: "40+",
+        label: "Compatibility factors",
+        description: "Science-backed matching algorithm"
+      },
+      {
+        icon: Shield,
+        value: "100%",
+        label: "Verified profiles",
+        description: "ID-verified community only"
+      },
+      {
+        icon: Eye,
+        value: "100%",
+        label: "Transparent matching",
+        description: "See why you're compatible"
+      },
+      {
+        icon: Zap,
+        value: "10 min",
+        label: "Quick setup",
+        description: "Get matched in days, not weeks"
+      }
+    ]
   },
-  {
-    icon: Shield,
-    value: "100%",
-    label: "Verified profiles",
-    description: "ID-verified community only"
-  },
-  {
-    icon: Eye,
-    value: "100%",
-    label: "Transparent matching",
-    description: "See why you're compatible"
-  },
-  {
-    icon: Zap,
-    value: "10 min",
-    label: "Quick setup",
-    description: "Get matched in days, not weeks"
+  nl: {
+    title: "Gebouwd voor betere matches",
+    subtitle: "Onze wetenschappelijk onderbouwde aanpak helpt je huisgenoten te vinden die zo compatibel zijn als je beste vrienden",
+    stats: [
+      {
+        icon: Brain,
+        value: "40+",
+        label: "Compatibiliteitsfactoren",
+        description: "Wetenschappelijk onderbouwd matching algoritme"
+      },
+      {
+        icon: Shield,
+        value: "100%",
+        label: "Geverifieerde profielen",
+        description: "Alleen ID-geverifieerde community"
+      },
+      {
+        icon: Eye,
+        value: "100%",
+        label: "Transparante matching",
+        description: "Zie waarom je compatibel bent"
+      },
+      {
+        icon: Zap,
+        value: "10 min",
+        label: "Snelle setup",
+        description: "Krijg matches in dagen, niet weken"
+      }
+    ]
   }
-]
+}
 
 export function Counters() {
+  const { locale } = useApp()
+  const t = content[locale]
+  
   return (
     <Section>
       <Container>
         <div className="text-center mb-12">
           <h2 className="text-3xl md:text-4xl font-bold text-brand-text mb-4">
-            Built for better matches
+            {t.title}
           </h2>
           <p className="text-base md:text-lg leading-relaxed max-w-prose mx-auto text-brand-muted">
-            Our science-backed approach helps you find roommates as compatible as your best friends
+            {t.subtitle}
           </p>
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-          {stats.map((stat, index) => {
+          {t.stats.map((stat, index) => {
             const Icon = stat.icon
             return (
               <Card 

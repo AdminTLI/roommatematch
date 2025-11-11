@@ -53,10 +53,22 @@ export function LanguageSwitcher({
   }, [isOpen])
 
   const handleLanguageChange = (newLocale: Locale) => {
-    setLocale(newLocale)
-    setIsOpen(false)
-    // The locale state change will trigger a re-render with the new dictionary
-    // No page reload needed since all components using useApp() will get the new dictionary
+    if (newLocale === locale) {
+      console.log('Locale already set to', newLocale)
+      return // Already on this locale
+    }
+    try {
+      console.log('Changing locale from', locale, 'to', newLocale)
+      setLocale(newLocale)
+      setIsOpen(false)
+      // Verify the change was applied
+      setTimeout(() => {
+        const currentLocale = localStorage.getItem('locale')
+        console.log('Locale after change:', currentLocale)
+      }, 100)
+    } catch (error) {
+      console.error('Error changing locale:', error)
+    }
   }
 
   const currentLanguage = languages.find(lang => lang.code === locale)
@@ -67,7 +79,12 @@ export function LanguageSwitcher({
         {languages.map((language) => (
           <button
             key={language.code}
-            onClick={() => handleLanguageChange(language.code)}
+            type="button"
+            onClick={(e) => {
+              e.preventDefault()
+              e.stopPropagation()
+              handleLanguageChange(language.code)
+            }}
             className={`px-2 py-1 text-sm rounded transition-colors focus:outline-none focus:ring-2 focus:ring-brand-primary ${
               locale === language.code
                 ? 'bg-brand-primary text-white'
@@ -115,7 +132,12 @@ export function LanguageSwitcher({
               {languages.map((language) => (
                 <button
                   key={language.code}
-                  onClick={() => handleLanguageChange(language.code)}
+                  type="button"
+                  onClick={(e) => {
+                    e.preventDefault()
+                    e.stopPropagation()
+                    handleLanguageChange(language.code)
+                  }}
                   className="w-full flex items-center gap-3 px-4 py-3 text-left hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors first:rounded-t-md last:rounded-b-md focus:outline-none focus:ring-2 focus:ring-brand-primary"
                   role="menuitem"
                   aria-selected={locale === language.code}
@@ -149,7 +171,12 @@ export function LanguageSwitcher({
         {languages.map((language) => (
           <button
             key={language.code}
-            onClick={() => handleLanguageChange(language.code)}
+            type="button"
+            onClick={(e) => {
+              e.preventDefault()
+              e.stopPropagation()
+              handleLanguageChange(language.code)
+            }}
             className={`flex items-center gap-2 px-3 py-2 text-sm rounded-md transition-all focus:outline-none focus:ring-2 focus:ring-brand-primary ${
               locale === language.code
                 ? 'bg-white dark:bg-gray-700 text-gray-900 dark:text-white shadow-sm'

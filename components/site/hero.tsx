@@ -7,9 +7,35 @@ import { Card } from '@/components/ui/card'
 import Container from '@/components/ui/primitives/container'
 import Section from '@/components/ui/primitives/section'
 import { Check } from 'lucide-react'
+import { useApp } from '@/app/providers'
+
+const content = {
+  en: {
+    title: "From strangers to roommates",
+    subtitle: "Domu Match pairs you with compatible students based on lifestyle, study habits, and personality. Our science-backed algorithm analyzes 40+ factors to prevent conflicts before they start—so moving in feels easy.",
+    getMatched: "Get matched",
+    seeHowItWorks: "See how it works",
+    verified: "Verified students only",
+    free: "Free for students",
+    scienceBacked: "Science-backed matching",
+    transparent: "Transparent compatibility"
+  },
+  nl: {
+    title: "Van vreemden tot huisgenoten",
+    subtitle: "Domu Match koppelt je aan compatibele studenten op basis van levensstijl, studiegewoonten en persoonlijkheid. Ons wetenschappelijk onderbouwde algoritme analyseert 40+ factoren om conflicten te voorkomen voordat ze beginnen—zodat verhuizen gemakkelijk aanvoelt.",
+    getMatched: "Krijg matches",
+    seeHowItWorks: "Bekijk hoe het werkt",
+    verified: "Alleen geverifieerde studenten",
+    free: "Gratis voor studenten",
+    scienceBacked: "Wetenschappelijk onderbouwde matching",
+    transparent: "Transparante compatibiliteit"
+  }
+}
 
 export function Hero() {
   const router = useRouter()
+  const { locale } = useApp()
+  const t = content[locale]
 
   const handleGetMatched = () => {
     router.push('/auth/sign-up')
@@ -51,11 +77,10 @@ export function Hero() {
           {/* Left column - Content */}
           <div className="relative z-10 space-y-6">
             <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl leading-tight tracking-tight text-brand-text">
-              From strangers to roommates
+              {t.title}
             </h1>
             <p className="text-base md:text-lg leading-relaxed max-w-prose text-brand-muted">
-              Domu Match pairs you with compatible students based on lifestyle, study habits, and personality. 
-              Our science-backed algorithm analyzes 40+ factors to prevent conflicts before they start—so moving in feels easy.
+              {t.subtitle}
             </p>
             
             {/* CTA Buttons */}
@@ -67,7 +92,7 @@ export function Hero() {
                   'w-full sm:w-auto bg-gradient-to-r from-brand-600 via-accent-600 to-mint-600 text-white shadow-lg shadow-brand-600/20 hover:shadow-brand-600/30 transition-shadow'
                 )}
               >
-                Get matched
+                {t.getMatched}
               </Button>
               <Button
                 variant="outline"
@@ -75,7 +100,7 @@ export function Hero() {
                 onClick={handleSeeHowItWorks}
                 className="w-full sm:w-auto border-brand-600/30 hover:border-brand-600"
               >
-                See how it works
+                {t.seeHowItWorks}
               </Button>
             </div>
 
@@ -83,19 +108,19 @@ export function Hero() {
             <ul className="flex flex-wrap gap-4 text-sm text-brand-muted">
               <li className="flex items-center gap-2">
                 <Check className="h-4 w-4 text-green-500" />
-                Verified students only
+                {t.verified}
               </li>
               <li className="flex items-center gap-2">
                 <Check className="h-4 w-4 text-green-500" />
-                Free for students
+                {t.free}
               </li>
               <li className="flex items-center gap-2">
                 <Check className="h-4 w-4 text-green-500" />
-                Science-backed matching
+                {t.scienceBacked}
               </li>
               <li className="flex items-center gap-2">
                 <Check className="h-4 w-4 text-green-500" />
-                Transparent compatibility
+                {t.transparent}
               </li>
             </ul>
           </div>
