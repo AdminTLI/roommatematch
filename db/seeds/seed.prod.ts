@@ -47,7 +47,7 @@ async function seedProduction() {
         branding: {
           primary_color: '#003082',
           logo_url: '/logos/uva.png',
-          welcome_message: 'Find your perfect roommate at UvA!'
+          welcome_message: 'From strangers to roommates at UvA!'
         },
         eligibility_domains: ['student.uva.nl', 'uva.nl'],
         is_active: true

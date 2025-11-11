@@ -7,7 +7,7 @@
 
 INSERT INTO universities (id, name, slug, branding, eligibility_domains, is_active) VALUES
   ('550e8400-e29b-41d4-a716-446655440001', 'University of Amsterdam', 'uva', 
-   '{"primary_color": "#003082", "logo_url": "/logos/uva.png", "welcome_message": "Find your perfect roommate at UvA!"}', 
+   '{"primary_color": "#003082", "logo_url": "/logos/uva.png", "welcome_message": "From strangers to roommates at UvA!"}', 
    '{"student.uva.nl", "uva.nl"}', true),
   ('550e8400-e29b-41d4-a716-446655440002', 'Delft University of Technology', 'tudelft', 
    '{"primary_color": "#00a6d6", "logo_url": "/logos/tudelft.png", "welcome_message": "Connect with fellow TU Delft students!"}', 

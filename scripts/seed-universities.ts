@@ -65,7 +65,7 @@ async function seedUniversities() {
       branding: {
         logo_url: `/logos/${inst.id}.png`,
         primary_color: "#4F46E5", // Default brand color
-        welcome_message: `Find your perfect roommate at ${inst.label}!`
+        welcome_message: `From strangers to roommates at ${inst.label}!`
       },
       eligibility_domains: [], // Empty for now
       is_active: true,
