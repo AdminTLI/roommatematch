@@ -405,15 +405,15 @@ export function ChatList({ user }: ChatListProps) {
   return (
     <div className="max-w-4xl mx-auto space-y-6 sm:space-y-8">
       {/* Header */}
-      <div className="text-center space-y-4">
-        <h1 className="text-h1 text-gray-900">Messages</h1>
-        <p className="text-body-lg text-gray-600 max-w-2xl mx-auto">
+      <div className="text-center space-y-3 sm:space-y-4">
+        <h1 className="text-2xl sm:text-h1 font-bold text-gray-900">Messages</h1>
+        <p className="text-sm sm:text-body-lg text-gray-600 max-w-2xl mx-auto px-2">
           Connect with your potential roommates and start meaningful conversations
         </p>
       </div>
 
       {/* Search and New Chat */}
-      <div className="flex flex-col md:flex-row gap-4">
+      <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
         <div className="relative flex-1">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
           <input
@@ -421,29 +421,29 @@ export function ChatList({ user }: ChatListProps) {
             placeholder="Search conversations..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-600 focus:border-transparent text-body"
+            className="w-full pl-10 pr-4 py-2.5 sm:py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-600 focus:border-transparent text-sm sm:text-body min-h-[44px]"
           />
         </div>
-        <Button onClick={handleNewChat} className="flex items-center gap-2">
+        <Button onClick={handleNewChat} className="flex items-center justify-center gap-2 min-h-[44px] px-4 sm:px-6">
           <Plus className="h-4 w-4" />
-          New Chat
+          <span className="text-sm sm:text-base">New Chat</span>
         </Button>
       </div>
 
       {/* Recently Matched Section */}
       {recentlyMatchedChats.length > 0 && (
-        <div className="space-y-4">
+        <div className="space-y-3 sm:space-y-4">
           <div className="flex items-center gap-2">
-            <h2 className="text-xl font-semibold text-gray-900">Recently Matched</h2>
-            <Badge variant="destructive" className="bg-red-600 text-white font-semibold">
+            <h2 className="text-lg sm:text-xl font-semibold text-gray-900">Recently Matched</h2>
+            <Badge variant="destructive" className="bg-red-600 text-white font-semibold text-xs">
               {recentlyMatchedChats.length}
             </Badge>
           </div>
-          <p className="text-sm text-gray-600">
+          <p className="text-xs sm:text-sm text-gray-600">
             Start conversations with your new matches
           </p>
           
-          <div className="space-y-3">
+          <div className="space-y-2 sm:space-y-3">
             {recentlyMatchedChats.map((chat) => {
               const chatUrl = `/chat/${chat.id}`
               console.log(`[ChatList] Rendering chat card:`, {
@@ -458,19 +458,19 @@ export function ChatList({ user }: ChatListProps) {
                 <Card 
                   className="cursor-pointer transition-all duration-200 hover:shadow-lg border-blue-200 bg-blue-50"
                 >
-                <CardContent className="p-6">
-                  <div className="flex items-center gap-4">
+                <CardContent className="p-4 sm:p-6">
+                  <div className="flex items-center gap-3 sm:gap-4">
                     {/* Avatar */}
-                    <div className="relative">
+                    <div className="relative flex-shrink-0">
                       {chat.type === 'individual' ? (
-                        <Avatar className="w-14 h-14">
+                        <Avatar className="w-12 h-12 sm:w-14 sm:h-14">
                           {(() => {
                             // For individual chats, find the other participant (not the current user)
                             const otherParticipant = chat.participants.find((p: any) => p.id !== user.id) || chat.participants[0]
                             return (
                               <>
                                 <AvatarImage src={otherParticipant?.avatar} />
-                                <AvatarFallback className="text-lg font-semibold">
+                                <AvatarFallback className="text-base sm:text-lg font-semibold">
                                   {otherParticipant?.name?.charAt(0) || chat.name?.charAt(0) || '?'}
                                 </AvatarFallback>
                               </>
@@ -478,16 +478,16 @@ export function ChatList({ user }: ChatListProps) {
                           })()}
                         </Avatar>
                       ) : (
-                        <div className="relative w-14 h-14">
-                          <Avatar className="w-10 h-10 absolute top-0 left-0">
+                        <div className="relative w-12 h-12 sm:w-14 sm:h-14">
+                          <Avatar className="w-8 h-8 sm:w-10 sm:h-10 absolute top-0 left-0">
                             <AvatarImage src={chat.participants[0]?.avatar} />
-                            <AvatarFallback className="text-sm font-semibold">
+                            <AvatarFallback className="text-xs sm:text-sm font-semibold">
                               {chat.participants[0]?.name?.charAt(0) || '?'}
                             </AvatarFallback>
                           </Avatar>
-                          <Avatar className="w-10 h-10 absolute bottom-0 right-0">
+                          <Avatar className="w-8 h-8 sm:w-10 sm:h-10 absolute bottom-0 right-0">
                             <AvatarImage src={chat.participants[1]?.avatar} />
-                            <AvatarFallback className="text-sm font-semibold">
+                            <AvatarFallback className="text-xs sm:text-sm font-semibold">
                               {chat.participants[1]?.name?.charAt(0) || '?'}
                             </AvatarFallback>
                           </Avatar>
@@ -497,18 +497,18 @@ export function ChatList({ user }: ChatListProps) {
 
                     {/* Chat Info */}
                     <div className="flex-1 min-w-0">
-                      <div className="flex items-center justify-between mb-2">
-                        <h3 className="text-lg font-semibold text-gray-900 truncate">
+                      <div className="flex items-center justify-between mb-1.5 sm:mb-2 gap-2">
+                        <h3 className="text-base sm:text-lg font-semibold text-gray-900 truncate">
                           {chat.name}
                         </h3>
-                        <div className="flex items-center gap-2">
+                        <div className="flex items-center gap-1.5 sm:gap-2 flex-shrink-0">
                           {chat.compatibilityScore && (
-                            <Badge className="bg-green-100 text-green-700 border-green-200">
+                            <Badge className="bg-green-100 text-green-700 border-green-200 text-xs">
                               {chat.compatibilityScore}% match
                             </Badge>
                           )}
                           {chat.type === 'group' && (
-                            <Badge className="bg-secondary-100 text-secondary-700 border-secondary-200">
+                            <Badge className="bg-secondary-100 text-secondary-700 border-secondary-200 text-xs">
                               <Users className="w-3 h-3 mr-1" />
                               Group
                             </Badge>
@@ -517,15 +517,15 @@ export function ChatList({ user }: ChatListProps) {
                       </div>
                       
                       <div className="flex items-center gap-3">
-                        <p className="text-body-sm text-blue-700 font-medium">
+                        <p className="text-xs sm:text-body-sm text-blue-700 font-medium truncate">
                           Start a conversation with your new match!
                         </p>
                       </div>
                     </div>
 
                     {/* Actions */}
-                    <div className="flex items-center gap-2">
-                      <Button variant="ghost" size="sm" onClick={(e) => e.preventDefault()}>
+                    <div className="flex items-center gap-2 flex-shrink-0">
+                      <Button variant="ghost" size="sm" onClick={(e) => e.preventDefault()} className="min-w-[44px] min-h-[44px]">
                         <MoreVertical className="h-4 w-4" />
                       </Button>
                     </div>
@@ -540,22 +540,22 @@ export function ChatList({ user }: ChatListProps) {
       )}
 
       {/* Active Conversations Section */}
-      <div className="space-y-4">
+      <div className="space-y-3 sm:space-y-4">
         <div className="flex items-center gap-2">
-          <h2 className="text-xl font-semibold text-gray-900">Active Conversations</h2>
-          <Badge variant="secondary">
+          <h2 className="text-lg sm:text-xl font-semibold text-gray-900">Active Conversations</h2>
+          <Badge variant="secondary" className="text-xs">
             {activeConversations.length}
           </Badge>
         </div>
         
         {activeConversations.length === 0 ? (
           <Card>
-            <CardContent className="p-12 text-center">
-              <MessageCircle className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-              <h3 className="text-h3 text-gray-900 mb-2">
+            <CardContent className="p-8 sm:p-12 text-center">
+              <MessageCircle className="h-10 w-10 sm:h-12 sm:w-12 text-gray-400 mx-auto mb-4" />
+              <h3 className="text-lg sm:text-h3 font-semibold text-gray-900 mb-2">
                 {searchQuery ? 'No conversations found' : 'No active conversations'}
               </h3>
-              <p className="text-body text-gray-600 mb-6">
+              <p className="text-sm sm:text-body text-gray-600 mb-6">
                 {searchQuery 
                   ? 'Try adjusting your search terms' 
                   : recentlyMatchedChats.length > 0 
@@ -564,14 +564,14 @@ export function ChatList({ user }: ChatListProps) {
                 }
               </p>
               {!searchQuery && recentlyMatchedChats.length === 0 && (
-                <Button onClick={handleNewChat}>
+                <Button onClick={handleNewChat} className="min-h-[44px]">
                   Start New Chat
                 </Button>
               )}
             </CardContent>
           </Card>
         ) : (
-          <div className="space-y-3">
+          <div className="space-y-2 sm:space-y-3">
             {activeConversations.map((chat) => {
               const chatUrl = `/chat/${chat.id}`
               return (
@@ -581,19 +581,19 @@ export function ChatList({ user }: ChatListProps) {
                     chat.isActive ? 'ring-2 ring-primary-600' : ''
                   }`}
                 >
-                <CardContent className="p-6">
-                  <div className="flex items-center gap-4">
+                <CardContent className="p-4 sm:p-6">
+                  <div className="flex items-center gap-3 sm:gap-4">
                     {/* Avatar */}
-                    <div className="relative">
+                    <div className="relative flex-shrink-0">
                       {chat.type === 'individual' ? (
-                        <Avatar className="w-14 h-14">
+                        <Avatar className="w-12 h-12 sm:w-14 sm:h-14">
                           {(() => {
                             // For individual chats, find the other participant (not the current user)
                             const otherParticipant = chat.participants.find((p: any) => p.id !== user.id) || chat.participants[0]
                             return (
                               <>
                                 <AvatarImage src={otherParticipant?.avatar} />
-                                <AvatarFallback className="text-lg font-semibold">
+                                <AvatarFallback className="text-base sm:text-lg font-semibold">
                                   {otherParticipant?.name?.charAt(0) || chat.name?.charAt(0) || '?'}
                                 </AvatarFallback>
                               </>
@@ -601,51 +601,52 @@ export function ChatList({ user }: ChatListProps) {
                           })()}
                         </Avatar>
                       ) : (
-                        <div className="relative w-14 h-14">
-                          <Avatar className="w-10 h-10 absolute top-0 left-0">
+                        <div className="relative w-12 h-12 sm:w-14 sm:h-14">
+                          <Avatar className="w-8 h-8 sm:w-10 sm:h-10 absolute top-0 left-0">
                             <AvatarImage src={chat.participants[0]?.avatar} />
-                            <AvatarFallback className="text-sm font-semibold">
+                            <AvatarFallback className="text-xs sm:text-sm font-semibold">
                               {chat.participants[0]?.name?.charAt(0) || '?'}
                             </AvatarFallback>
                           </Avatar>
-                          <Avatar className="w-10 h-10 absolute bottom-0 right-0">
+                          <Avatar className="w-8 h-8 sm:w-10 sm:h-10 absolute bottom-0 right-0">
                             <AvatarImage src={chat.participants[1]?.avatar} />
-                            <AvatarFallback className="text-sm font-semibold">
+                            <AvatarFallback className="text-xs sm:text-sm font-semibold">
                               {chat.participants[1]?.name?.charAt(0) || '?'}
                             </AvatarFallback>
                           </Avatar>
                         </div>
                       )}
                       {chat.participants.some(p => p.isOnline) && (
-                        <div className="absolute -bottom-1 -right-1 w-4 h-4 bg-success-500 border-2 border-white rounded-full"></div>
+                        <div className="absolute -bottom-1 -right-1 w-3 h-3 sm:w-4 sm:h-4 bg-success-500 border-2 border-white rounded-full"></div>
                       )}
                     </div>
 
                     {/* Chat Info */}
                     <div className="flex-1 min-w-0">
-                      <div className="flex items-center justify-between mb-2">
-                        <h3 className="text-lg font-semibold text-gray-900 truncate">
+                      <div className="flex items-center justify-between mb-1.5 sm:mb-2 gap-2">
+                        <h3 className="text-base sm:text-lg font-semibold text-gray-900 truncate">
                           {chat.name}
                         </h3>
-                        <div className="flex items-center gap-2">
+                        <div className="flex items-center gap-1.5 sm:gap-2 flex-shrink-0">
                           {chat.type === 'group' && (
-                            <Badge className="bg-secondary-100 text-secondary-700 border-secondary-200">
+                            <Badge className="bg-secondary-100 text-secondary-700 border-secondary-200 text-xs">
                               <Users className="w-3 h-3 mr-1" />
                               Group
                             </Badge>
                           )}
                           {chat.lastMessage && (
-                            <span className="text-body-xs text-gray-500 flex items-center gap-1">
+                            <span className="text-[10px] sm:text-body-xs text-gray-500 flex items-center gap-1 whitespace-nowrap">
                               <Clock className="w-3 h-3" />
-                              {chat.lastMessage.timestamp}
+                              <span className="hidden sm:inline">{chat.lastMessage.timestamp}</span>
+                              <span className="sm:hidden">{new Date(chat.lastMessage.timestamp).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}</span>
                             </span>
                           )}
                         </div>
                       </div>
                       
                       {chat.lastMessage && (
-                        <div className="flex items-center gap-3">
-                          <p className={`text-body-sm truncate flex-1 ${
+                        <div className="flex items-center gap-2 sm:gap-3">
+                          <p className={`text-xs sm:text-body-sm truncate flex-1 ${
                             !chat.lastMessage.isRead 
                               ? 'font-semibold text-gray-900' 
                               : 'text-gray-600'
@@ -653,7 +654,7 @@ export function ChatList({ user }: ChatListProps) {
                             <span className="font-medium">{chat.lastMessage.sender}:</span> {chat.lastMessage.content}
                           </p>
                           {chat.unreadCount > 0 && (
-                            <Badge variant="destructive" className="bg-red-600 text-white font-semibold">
+                            <Badge variant="destructive" className="bg-red-600 text-white font-semibold text-xs flex-shrink-0">
                               {chat.unreadCount}
                             </Badge>
                           )}
@@ -662,8 +663,8 @@ export function ChatList({ user }: ChatListProps) {
                     </div>
 
                     {/* Actions */}
-                    <div className="flex items-center gap-2">
-                      <Button variant="ghost" size="sm" onClick={(e) => e.preventDefault()}>
+                    <div className="flex items-center gap-2 flex-shrink-0">
+                      <Button variant="ghost" size="sm" onClick={(e) => e.preventDefault()} className="min-w-[44px] min-h-[44px]">
                         <MoreVertical className="h-4 w-4" />
                       </Button>
                     </div>

@@ -257,14 +257,14 @@ export function NotificationsPage({ user }: NotificationsPageProps) {
   const totalCount = counts?.total || 0
 
   return (
-    <div className="max-w-4xl mx-auto space-y-6">
+    <div className="max-w-4xl mx-auto space-y-4 sm:space-y-6 px-4 sm:px-0">
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-0">
         <div>
-          <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white">
+          <h1 className="text-xl sm:text-2xl md:text-3xl font-bold text-gray-900 dark:text-white">
             Notifications
           </h1>
-          <p className="text-gray-600 dark:text-gray-300 mt-2">
+          <p className="text-sm sm:text-base text-gray-600 dark:text-gray-300 mt-1 sm:mt-2">
             Stay updated with your matches, messages, and platform updates
           </p>
         </div>
@@ -274,10 +274,11 @@ export function NotificationsPage({ user }: NotificationsPageProps) {
             <Button
               variant="outline"
               onClick={handleMarkAllAsRead}
-              className="flex items-center gap-2"
+              className="flex items-center gap-2 text-xs sm:text-sm min-h-[44px] sm:min-h-0"
             >
               <CheckCheck className="h-4 w-4" />
-              Mark all read
+              <span className="hidden sm:inline">Mark all read</span>
+              <span className="sm:hidden">Mark read</span>
             </Button>
           )}
           
@@ -285,6 +286,7 @@ export function NotificationsPage({ user }: NotificationsPageProps) {
             variant="outline"
             onClick={() => fetchNotifications(true)}
             disabled={isLoading}
+            className="min-h-[44px] min-w-[44px] sm:min-h-0 sm:min-w-0"
           >
             <RefreshCw className={`h-4 w-4 ${isLoading ? 'animate-spin' : ''}`} />
           </Button>
@@ -292,42 +294,42 @@ export function NotificationsPage({ user }: NotificationsPageProps) {
       </div>
 
       {/* Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3 sm:gap-4">
         <Card>
-          <CardContent className="pt-6">
-            <div className="flex items-center gap-3">
-              <Bell className="h-8 w-8 text-blue-500" />
+          <CardContent className="pt-4 sm:pt-6 p-4 sm:p-6">
+            <div className="flex items-center gap-2.5 sm:gap-3">
+              <Bell className="h-6 w-6 sm:h-8 sm:w-8 text-blue-500 flex-shrink-0" />
               <div>
-                <div className="text-2xl font-bold">{totalCount}</div>
-                <div className="text-sm text-gray-500">Total Notifications</div>
+                <div className="text-xl sm:text-2xl font-bold">{totalCount}</div>
+                <div className="text-xs sm:text-sm text-gray-500">Total Notifications</div>
               </div>
             </div>
           </CardContent>
         </Card>
         
         <Card>
-          <CardContent className="pt-6">
-            <div className="flex items-center gap-3">
-              <div className="h-8 w-8 bg-orange-100 rounded-full flex items-center justify-center">
-                <div className="h-4 w-4 bg-orange-500 rounded-full"></div>
+          <CardContent className="pt-4 sm:pt-6 p-4 sm:p-6">
+            <div className="flex items-center gap-2.5 sm:gap-3">
+              <div className="h-6 w-6 sm:h-8 sm:w-8 bg-orange-100 rounded-full flex items-center justify-center flex-shrink-0">
+                <div className="h-3 w-3 sm:h-4 sm:w-4 bg-orange-500 rounded-full"></div>
               </div>
               <div>
-                <div className="text-2xl font-bold">{unreadCount}</div>
-                <div className="text-sm text-gray-500">Unread</div>
+                <div className="text-xl sm:text-2xl font-bold">{unreadCount}</div>
+                <div className="text-xs sm:text-sm text-gray-500">Unread</div>
               </div>
             </div>
           </CardContent>
         </Card>
         
         <Card>
-          <CardContent className="pt-6">
-            <div className="flex items-center gap-3">
-              <div className="h-8 w-8 bg-green-100 rounded-full flex items-center justify-center">
-                <div className="h-4 w-4 bg-green-500 rounded-full"></div>
+          <CardContent className="pt-4 sm:pt-6 p-4 sm:p-6">
+            <div className="flex items-center gap-2.5 sm:gap-3">
+              <div className="h-6 w-6 sm:h-8 sm:w-8 bg-green-100 rounded-full flex items-center justify-center flex-shrink-0">
+                <div className="h-3 w-3 sm:h-4 sm:w-4 bg-green-500 rounded-full"></div>
               </div>
               <div>
-                <div className="text-2xl font-bold">{totalCount - unreadCount}</div>
-                <div className="text-sm text-gray-500">Read</div>
+                <div className="text-xl sm:text-2xl font-bold">{totalCount - unreadCount}</div>
+                <div className="text-xs sm:text-sm text-gray-500">Read</div>
               </div>
             </div>
           </CardContent>
@@ -336,8 +338,8 @@ export function NotificationsPage({ user }: NotificationsPageProps) {
 
       {/* Filters */}
       <Card>
-        <CardContent className="pt-6">
-          <div className="flex flex-col md:flex-row gap-4">
+        <CardContent className="pt-4 sm:pt-6 p-4 sm:p-6">
+          <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
             <div className="flex-1">
               <div className="relative">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
@@ -345,13 +347,13 @@ export function NotificationsPage({ user }: NotificationsPageProps) {
                   placeholder="Search notifications..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="pl-10"
+                  className="pl-10 min-h-[44px] text-sm sm:text-base"
                 />
               </div>
             </div>
             
             <Select value={selectedType} onValueChange={(value) => setSelectedType(value as NotificationType | 'all')}>
-              <SelectTrigger className="w-full md:w-48">
+              <SelectTrigger className="w-full sm:w-48 min-h-[44px] sm:min-h-0">
                 <SelectValue placeholder="Filter by type" />
               </SelectTrigger>
               <SelectContent>
@@ -375,14 +377,15 @@ export function NotificationsPage({ user }: NotificationsPageProps) {
 
       {/* Notifications */}
       <Tabs value={selectedTab} onValueChange={(value) => setSelectedTab(value as 'all' | 'unread')}>
-        <TabsList className="grid w-full grid-cols-2">
-          <TabsTrigger value="all" className="flex items-center gap-2">
-            All Notifications
-            <Badge variant="secondary">{totalCount}</Badge>
+        <TabsList className="grid w-full grid-cols-2 h-auto">
+          <TabsTrigger value="all" className="flex items-center gap-1.5 sm:gap-2 text-xs sm:text-sm py-2.5 sm:py-2 min-h-[44px] sm:min-h-0">
+            <span className="hidden sm:inline">All Notifications</span>
+            <span className="sm:hidden">All</span>
+            <Badge variant="secondary" className="text-xs">{totalCount}</Badge>
           </TabsTrigger>
-          <TabsTrigger value="unread" className="flex items-center gap-2">
+          <TabsTrigger value="unread" className="flex items-center gap-1.5 sm:gap-2 text-xs sm:text-sm py-2.5 sm:py-2 min-h-[44px] sm:min-h-0">
             Unread
-            <Badge variant="destructive">{unreadCount}</Badge>
+            <Badge variant="destructive" className="text-xs">{unreadCount}</Badge>
           </TabsTrigger>
         </TabsList>
 

@@ -6,6 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'
+import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet'
 // ScrollArea not available, using div with overflow styling
 import { NotificationItem } from './notification-item'
 import { Notification, NotificationCounts } from '@/lib/notifications/types'
@@ -15,7 +16,8 @@ import {
   Settings, 
   CheckCheck, 
   Eye,
-  MoreHorizontal
+  MoreHorizontal,
+  X
 } from 'lucide-react'
 
 interface NotificationDropdownProps {
@@ -170,94 +172,118 @@ export function NotificationDropdown({
 
   if (!isOpen) return null
 
-  return (
-    <div className="absolute right-0 top-full mt-2 w-96 z-50">
-      <Card className="shadow-lg border">
-        <CardHeader className="pb-3">
-          <div className="flex items-center justify-between">
-            <CardTitle className="text-lg font-semibold flex items-center gap-2 flex-1 min-w-0">
-              <Bell className="h-5 w-5 flex-shrink-0" />
-              <span className="truncate">Notifications</span>
-              {counts && counts.unread > 0 && (
-                <Badge variant="destructive" className="ml-2 flex-shrink-0">
-                  {counts.unread}
-                </Badge>
-              )}
-            </CardTitle>
-            
-            <div className="flex items-center gap-1 flex-shrink-0">
-              <TooltipProvider>
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={handleMarkAllAsRead}
-                      disabled={!counts || counts.unread === 0}
-                      className="text-xs px-2"
-                    >
-                      <CheckCheck className="h-3 w-3" />
-                    </Button>
-                  </TooltipTrigger>
-                  <TooltipContent>
-                    <p>Mark all as read</p>
-                  </TooltipContent>
-                </Tooltip>
-              </TooltipProvider>
-              
-              <TooltipProvider>
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => {
-                        router.push('/notifications')
-                        onClose()
-                      }}
-                      className="text-xs px-2"
-                    >
-                      <Eye className="h-3 w-3" />
-                    </Button>
-                  </TooltipTrigger>
-                  <TooltipContent>
-                    <p>View all notifications</p>
-                  </TooltipContent>
-                </Tooltip>
-              </TooltipProvider>
-            </div>
-          </div>
-        </CardHeader>
-
-        <CardContent className="p-0">
-          <div className="h-[400px] sm:h-96 overflow-y-auto">
-            {isLoading ? (
-              <div className="p-4 text-center text-gray-500">
-                Loading notifications...
-              </div>
-            ) : notifications.length === 0 ? (
-              <div className="p-8 text-center">
-                <Bell className="h-12 w-12 text-gray-300 mx-auto mb-3" />
-                <p className="text-gray-500 text-sm">No notifications yet</p>
-                <p className="text-gray-400 text-xs mt-1">
-                  We'll notify you about matches, messages, and updates
-                </p>
-              </div>
-            ) : (
-              <div className="space-y-1 p-2">
-                {notifications.map((notification) => (
-                  <NotificationItem
-                    key={notification.id}
-                    notification={notification}
-                    onMarkAsRead={onMarkAsRead}
-                    onNavigate={handleNotificationClick}
-                  />
-                ))}
-              </div>
-            )}
-          </div>
-        </CardContent>
-      </Card>
+  const HeaderContent = () => (
+    <div className="flex items-center justify-between">
+      <div className="flex items-center gap-2 flex-1 min-w-0">
+        <Bell className="h-5 w-5 flex-shrink-0" />
+        <h2 className="text-lg font-semibold truncate">Notifications</h2>
+        {counts && counts.unread > 0 && (
+          <Badge variant="destructive" className="ml-2 flex-shrink-0 text-xs">
+            {counts.unread}
+          </Badge>
+        )}
+      </div>
+      
+      <div className="flex items-center gap-1 flex-shrink-0">
+        <TooltipProvider>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={handleMarkAllAsRead}
+                disabled={!counts || counts.unread === 0}
+                className="text-xs px-2 min-h-[44px] min-w-[44px] sm:min-h-0 sm:min-w-0"
+              >
+                <CheckCheck className="h-4 w-4 sm:h-3 sm:w-3" />
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent>
+              <p>Mark all as read</p>
+            </TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
+        
+        <TooltipProvider>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => {
+                  router.push('/notifications')
+                  onClose()
+                }}
+                className="text-xs px-2 min-h-[44px] min-w-[44px] sm:min-h-0 sm:min-w-0"
+              >
+                <Eye className="h-4 w-4 sm:h-3 sm:w-3" />
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent>
+              <p>View all notifications</p>
+            </TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
+      </div>
     </div>
+  )
+
+  const NotificationList = () => (
+    <div className="h-[calc(100vh-160px)] sm:h-[400px] md:h-96 overflow-y-auto">
+      {isLoading ? (
+        <div className="p-4 text-center text-gray-500">
+          Loading notifications...
+        </div>
+      ) : notifications.length === 0 ? (
+        <div className="p-8 text-center">
+          <Bell className="h-12 w-12 text-gray-300 mx-auto mb-3" />
+          <p className="text-gray-500 text-sm">No notifications yet</p>
+          <p className="text-gray-400 text-xs mt-1">
+            We'll notify you about matches, messages, and updates
+          </p>
+        </div>
+      ) : (
+        <div className="space-y-1 p-2">
+          {notifications.map((notification) => (
+            <NotificationItem
+              key={notification.id}
+              notification={notification}
+              onMarkAsRead={onMarkAsRead}
+              onNavigate={handleNotificationClick}
+            />
+          ))}
+        </div>
+      )}
+    </div>
+  )
+
+  return (
+    <>
+      {/* Mobile: Full-screen Sheet */}
+      <Sheet open={isOpen} onOpenChange={onClose}>
+        <SheetContent side="right" className="w-full sm:hidden p-4">
+          <SheetHeader className="mb-4">
+            <SheetTitle>
+              <HeaderContent />
+            </SheetTitle>
+          </SheetHeader>
+          <NotificationList />
+        </SheetContent>
+      </Sheet>
+
+      {/* Desktop: Card Dropdown */}
+      <div className="hidden sm:block absolute right-0 top-full mt-2 w-96 z-50">
+        <Card className="shadow-lg border">
+          <CardHeader className="pb-3">
+            <CardTitle>
+              <HeaderContent />
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="p-0">
+            <NotificationList />
+          </CardContent>
+        </Card>
+      </div>
+    </>
   )
 }
