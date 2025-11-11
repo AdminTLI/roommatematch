@@ -7,6 +7,7 @@ import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import Container from '@/components/ui/primitives/container'
 import { Menu, X, ChevronRight } from 'lucide-react'
+import { LanguageSwitcher } from '@/app/(marketing)/components/language-switcher'
 
 export function Navbar() {
   const router = useRouter()
@@ -97,6 +98,7 @@ export function Navbar() {
 
             {/* Tablet CTA */}
             <div className="hidden md:flex lg:hidden items-center space-x-3">
+              <LanguageSwitcher variant="minimal" />
               <Button 
                 variant="outline" 
                 size="sm"
@@ -116,6 +118,7 @@ export function Navbar() {
 
             {/* Desktop CTA */}
             <div className="hidden lg:flex items-center space-x-4">
+              <LanguageSwitcher variant="minimal" />
               <Button 
                 variant="outline" 
                 size="lg"
@@ -133,19 +136,22 @@ export function Navbar() {
               </Button>
             </div>
 
-            {/* Mobile menu button */}
-            <button
-              onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-              className="lg:hidden p-2 rounded-md hover:bg-brand-surface transition-colors focus-visible:ring-2 focus-visible:ring-brand-primary"
-              aria-expanded={isMobileMenuOpen}
-              aria-controls="mobile-menu"
-            >
-              {isMobileMenuOpen ? (
-                <X className="h-6 w-6" />
-              ) : (
-                <Menu className="h-6 w-6" />
-              )}
-            </button>
+            {/* Mobile menu button and language switcher */}
+            <div className="lg:hidden flex items-center space-x-2">
+              <LanguageSwitcher variant="minimal" />
+              <button
+                onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+                className="p-2 rounded-md hover:bg-brand-surface transition-colors focus-visible:ring-2 focus-visible:ring-brand-primary"
+                aria-expanded={isMobileMenuOpen}
+                aria-controls="mobile-menu"
+              >
+                {isMobileMenuOpen ? (
+                  <X className="h-6 w-6" />
+                ) : (
+                  <Menu className="h-6 w-6" />
+                )}
+              </button>
+            </div>
           </div>
         </Container>
 

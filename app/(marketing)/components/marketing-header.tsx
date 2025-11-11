@@ -2,14 +2,12 @@
 
 import { Button } from '@/components/ui/button'
 import { LanguageSwitcher } from './language-switcher'
-import { useApp } from '@/app/providers'
 import Link from 'next/link'
 import Image from 'next/image'
 import { Users, Menu, X } from 'lucide-react'
 import { useState } from 'react'
 
 export function MarketingHeader() {
-  const { t } = useApp()
   const [isMenuOpen, setIsMenuOpen] = useState(false)
 
   const navigation = [

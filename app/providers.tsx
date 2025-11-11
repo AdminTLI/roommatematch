@@ -56,6 +56,13 @@ export function Providers({ children }: { children: React.ReactNode }) {
     }
   }, [supabase])
 
+  // Update HTML lang attribute when locale changes
+  useEffect(() => {
+    if (typeof document !== 'undefined') {
+      document.documentElement.lang = locale
+    }
+  }, [locale])
+
   const handleSetLocale = (newLocale: Locale) => {
     setLocale(newLocale)
     localStorage.setItem('locale', newLocale)
