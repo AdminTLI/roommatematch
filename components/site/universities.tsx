@@ -27,7 +27,6 @@ const content = {
   en: {
     title: "Find out how many potential matches are waiting for you",
     subtitle: "Select your city to see available universities and see how many students are already using Domu Match",
-    initialMessage: "Find out how many potential matches are waiting for you at your university",
     selectCityPlaceholder: "Select a city",
     noUniversities: "No universities found in this city",
     students: "students",
@@ -35,12 +34,10 @@ const content = {
     contactText: "Interested in bringing Domu Match to your university? Get in touch to learn more.",
     buttonText: "Contact us",
     loading: "Loading...",
-    selectCityHint: "Select a city above to get started",
   },
   nl: {
     title: "Ontdek hoeveel potentiële matches op je wachten",
     subtitle: "Selecteer je stad om beschikbare universiteiten te zien en ontdek hoeveel studenten Domu Match al gebruiken",
-    initialMessage: "Ontdek hoeveel potentiële matches op je universiteit op je wachten",
     selectCityPlaceholder: "Selecteer een stad",
     noUniversities: "Geen universiteiten gevonden in deze stad",
     students: "studenten",
@@ -48,7 +45,6 @@ const content = {
     contactText: "Geïnteresseerd om Domu Match naar je universiteit te halen? Neem contact op om meer te weten te komen.",
     buttonText: "Neem contact op",
     loading: "Laden...",
-    selectCityHint: "Selecteer hierboven een stad om te beginnen",
   }
 }
 
@@ -132,7 +128,7 @@ export function Universities() {
   return (
     <Section>
       <Container>
-        <div className="text-center mb-12">
+        <div className="text-center">
           <h2 className="text-3xl md:text-4xl font-bold text-brand-text mb-4">
             {t.title}
           </h2>
@@ -141,7 +137,7 @@ export function Universities() {
           </p>
 
           {/* City Selector */}
-          <div className="max-w-md mx-auto mb-8">
+          <div className="max-w-md mx-auto mb-12">
             <Select
               value={selectedCity || ''}
               onValueChange={(value) => setSelectedCity(value || null)}
@@ -170,48 +166,43 @@ export function Universities() {
             </Select>
           </div>
 
-          {/* Initial Message or University List */}
-          {!selectedCity ? (
-            <div className="max-w-2xl mx-auto">
-              <p className="text-xl md:text-2xl font-semibold text-brand-text mb-4">
-                {t.initialMessage}
-              </p>
-              <p className="text-base text-brand-muted">
-                {t.selectCityHint}
-              </p>
-            </div>
-          ) : loading ? (
-            <div className="text-center py-12">
-              <p className="text-brand-muted">{t.loading}</p>
-            </div>
-          ) : error ? (
-            <div className="text-center py-12">
-              <p className="text-red-600">{error}</p>
-            </div>
-          ) : universities.length === 0 ? (
-            <div className="text-center py-12">
-              <p className="text-brand-muted">{t.noUniversities}</p>
-            </div>
-          ) : (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 mt-8">
-              {universities.map((university) => (
-                <Card
-                  key={university.id}
-                  className="rounded-xl border border-brand-border/50 bg-white/80 backdrop-blur-sm p-6 shadow-elev-1 hover:shadow-elev-2 transition-shadow duration-200"
-                >
-                  <div className="flex flex-col h-full">
-                    <h3 className="font-semibold text-brand-text text-lg mb-2 leading-tight">
-                      {university.name}
-                    </h3>
-                    <div className="mt-auto pt-4 border-t border-brand-border/30">
-                      <p className="text-sm text-brand-muted">
-                        {formatUserCount(university.user_count)}
-                      </p>
-                    </div>
-                  </div>
-                </Card>
-              ))}
-            </div>
+          {/* University List - Only show when city is selected */}
+          {selectedCity && (
+            <>
+              {loading ? (
+                <div className="text-center py-12">
+                  <p className="text-brand-muted">{t.loading}</p>
+                </div>
+              ) : error ? (
+                <div className="text-center py-12">
+                  <p className="text-red-600">{error}</p>
+                </div>
+              ) : universities.length === 0 ? (
+                <div className="text-center py-12">
+                  <p className="text-brand-muted">{t.noUniversities}</p>
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 mt-8">
+                  {universities.map((university) => (
+                    <Card
+                      key={university.id}
+                      className="rounded-xl border border-brand-border/50 bg-white/80 backdrop-blur-sm p-6 shadow-elev-1 hover:shadow-elev-2 transition-shadow duration-200"
+                    >
+                      <div className="flex flex-col h-full">
+                        <h3 className="font-semibold text-brand-text text-lg mb-2 leading-tight">
+                          {university.name}
+                        </h3>
+                        <div className="mt-auto pt-4 border-t border-brand-border/30">
+                          <p className="text-sm text-brand-muted">
+                            {formatUserCount(university.user_count)}
+                          </p>
+                        </div>
+                      </div>
+                    </Card>
+                  ))}
+                </div>
+              )}
+            </>
           )}
         </div>
 
