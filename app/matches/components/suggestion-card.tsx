@@ -197,7 +197,7 @@ export function SuggestionCard({
   
   return (
     <div 
-      className={`bg-white rounded-xl border p-4 sm:p-6 shadow-sm hover:shadow-md transition-all cursor-pointer ${
+      className={`bg-white rounded-xl border p-3 sm:p-6 shadow-sm hover:shadow-md transition-all cursor-pointer ${
         isSelected 
           ? 'border-blue-500 border-2 bg-blue-50' 
           : 'border-gray-200'
@@ -206,19 +206,19 @@ export function SuggestionCard({
     >
       {/* Header - Compact layout */}
       <div className="flex items-start justify-between mb-3 sm:mb-4">
-        <div className="flex items-center gap-3 sm:gap-4 flex-1 min-w-0">
+        <div className="flex items-center gap-2.5 sm:gap-4 flex-1 min-w-0">
           {/* Selection checkbox */}
           {isSelectable && suggestion.status === 'confirmed' && (
             <div 
-              className="flex-shrink-0 w-6 h-6 border-2 rounded border-gray-300 flex items-center justify-center cursor-pointer"
+              className="flex-shrink-0 w-5 h-5 sm:w-6 sm:h-6 border-2 rounded border-gray-300 flex items-center justify-center cursor-pointer touch-manipulation"
               onClick={(e) => {
                 e.stopPropagation()
                 onToggleSelection?.()
               }}
             >
               {isSelected && (
-                <div className="w-4 h-4 bg-blue-600 rounded-sm flex items-center justify-center">
-                  <svg className="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <div className="w-3 h-3 sm:w-4 sm:h-4 bg-blue-600 rounded-sm flex items-center justify-center">
+                  <svg className="w-2 h-2 sm:w-3 sm:h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                   </svg>
                 </div>
@@ -226,16 +226,16 @@ export function SuggestionCard({
             </div>
           )}
           <div className="text-center flex-shrink-0">
-            <div className="text-2xl sm:text-3xl font-bold text-blue-600">
+            <div className="text-xl sm:text-3xl font-bold text-blue-600">
               {suggestion.fitIndex}
             </div>
-            <div className="text-xs text-gray-500 mt-0.5">Compatibility</div>
+            <div className="text-[10px] sm:text-xs text-gray-500 mt-0.5">Compatibility</div>
           </div>
           <div className="flex-1 min-w-0">
-            <div className="flex flex-wrap items-center gap-2 mb-2">
+            <div className="flex flex-wrap items-center gap-1.5 sm:gap-2 mb-1.5 sm:mb-2">
               {getStatusBadge()}
               {suggestion.status === 'pending' && (
-                <span className="text-xs text-gray-500 whitespace-nowrap">
+                <span className="text-[10px] sm:text-xs text-gray-500 whitespace-nowrap">
                   Expires in {formatExpirationTime(hoursLeft)}
                 </span>
               )}
@@ -246,16 +246,16 @@ export function SuggestionCard({
       
       {/* Section Scores - More compact */}
       {suggestion.sectionScores && (
-        <div className="mb-4 pb-4 border-b border-gray-100">
+        <div className="mb-3 sm:mb-4 pb-3 sm:pb-4 border-b border-gray-100">
           <SectionScores scores={suggestion.sectionScores} />
         </div>
       )}
       
       {/* Match Explanation */}
       {suggestion.reasons && suggestion.reasons.length > 0 && (
-        <div className="mb-4">
-          <div className="text-xs font-medium text-gray-600 mb-1">Why this match works:</div>
-          <div className="text-sm text-gray-700 leading-relaxed">
+        <div className="mb-3 sm:mb-4">
+          <div className="text-xs sm:text-sm font-medium text-gray-600 mb-1.5 sm:mb-1">Why this match works:</div>
+          <div className="text-xs sm:text-sm text-gray-700 leading-relaxed sm:leading-relaxed">
             {(() => {
               // Generate human-like explanation from reasons and scores
               const reasons = suggestion.reasons || []
@@ -316,14 +316,14 @@ export function SuggestionCard({
           <button
             onClick={() => handleRespond('decline')}
             disabled={isResponding || isLoading}
-            className="flex-1 px-4 py-2.5 rounded-lg border border-gray-300 text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors text-sm sm:text-base font-medium"
+            className="flex-1 px-4 py-2.5 sm:py-2.5 rounded-lg border border-gray-300 text-gray-700 hover:bg-gray-50 active:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed transition-colors text-sm sm:text-base font-medium touch-manipulation min-h-[44px]"
           >
             {isResponding ? 'Declining...' : 'Decline'}
           </button>
           <button
             onClick={() => handleRespond('accept')}
             disabled={isResponding || isLoading}
-            className="flex-1 px-4 py-2.5 rounded-lg bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors text-sm sm:text-base font-medium"
+            className="flex-1 px-4 py-2.5 sm:py-2.5 rounded-lg bg-blue-600 text-white hover:bg-blue-700 active:bg-blue-800 disabled:opacity-50 disabled:cursor-not-allowed transition-colors text-sm sm:text-base font-medium touch-manipulation min-h-[44px]"
           >
             {isResponding ? 'Accepting...' : 'Accept'}
           </button>
@@ -338,7 +338,7 @@ export function SuggestionCard({
               e.stopPropagation()
               setShowBlockDialog(true)
             }}
-            className="flex-1 px-4 py-2 rounded-lg border border-red-300 text-red-600 hover:bg-red-50 transition-colors font-medium text-sm flex items-center justify-center gap-2"
+            className="flex-1 px-4 py-2.5 rounded-lg border border-red-300 text-red-600 hover:bg-red-50 active:bg-red-100 transition-colors font-medium text-sm flex items-center justify-center gap-2 touch-manipulation min-h-[44px]"
           >
             <Ban className="h-4 w-4" />
             Block User
@@ -355,7 +355,7 @@ export function SuggestionCard({
               handleChatNow()
             }}
             disabled={isOpeningChat}
-            className="flex-1 px-4 py-2.5 rounded-lg bg-green-600 text-white hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors font-medium text-sm sm:text-base"
+            className="flex-1 px-4 py-2.5 rounded-lg bg-green-600 text-white hover:bg-green-700 active:bg-green-800 disabled:opacity-50 disabled:cursor-not-allowed transition-colors font-medium text-sm sm:text-base touch-manipulation min-h-[44px]"
           >
             {isOpeningChat ? 'Opening chat...' : '💬 Chat Now'}
           </button>
@@ -364,7 +364,7 @@ export function SuggestionCard({
               e.stopPropagation()
               setShowBlockDialog(true)
             }}
-            className="px-4 py-2.5 rounded-lg border border-red-300 text-red-600 hover:bg-red-50 transition-colors font-medium text-sm sm:text-base"
+            className="px-4 py-2.5 rounded-lg border border-red-300 text-red-600 hover:bg-red-50 active:bg-red-100 transition-colors font-medium text-sm sm:text-base touch-manipulation min-h-[44px] min-w-[44px]"
             title="Block user"
           >
             <Ban className="h-4 w-4" />

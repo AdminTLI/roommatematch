@@ -1,5 +1,49 @@
 # MVP Rescue Implementation Summary
 
+## Responsive Design Implementation (2025-11)
+
+### Navigation
+- Added mobile-first navigation with top hamburger and bottom tab bar:
+  - `components/app/TopNav.tsx` (wraps existing topbar)
+  - `components/app/MobileDrawer.tsx` (Sheet + `Sidebar`)
+  - `components/app/BottomTabBar.tsx` (Quick access to Dashboard, Matches, Chat, Housing, Settings)
+- Integrated in `components/app/shell.tsx`; bottom tabs auto-hide on ≥md.
+
+### Global styles and Tailwind
+- `app/globals.css`:
+  - Added responsive media defaults for `img`, `video`, `canvas`, `svg`
+  - Ensured touch-friendly defaults and focus-visible styles
+  - Provided safe-area utilities (`safe-area-inset`, `pb-safe-bottom`, `pt-safe-top`)
+- `app/layout.tsx`:
+  - Exported viewport with `viewportFit: 'cover'` to support notches and safe-areas
+- `tailwind.config.ts`:
+  - Enabled `@tailwindcss/aspect-ratio` and `@tailwindcss/line-clamp`
+
+### Shared responsive primitives
+- `components/ui/ResponsiveContainer.tsx`
+- `components/ui/ResponsiveGrid.tsx`
+- `components/ui/CollapsibleSidebar.tsx`
+- `components/ui/StackedCardList.tsx`
+- `components/ui/ResponsiveChartContainer.tsx`
+- Existing `components/ui/responsive-table.tsx` leveraged for mobile table stacks.
+
+### Page updates
+- Onboarding: sticky mobile action bar and safe-area spacing in `onboarding-wizard.tsx`
+- Chat: sticky composer on mobile, scroll area constrained with viewport calc, safe-area padding
+- Housing: added `pb-safe-bottom` in mobile layouts; map/list tabs optimized for mobile
+- Admin/analytics: existing layouts are grid/card based; `ResponsiveTable` available where needed
+
+### Testing and Stories
+- Playwright responsive tests: `tests/responsive/*.spec.ts` for nav and chat
+- Storybook configuration:
+  - `.storybook/main.ts`, `.storybook/preview.tsx`
+  - Stories: `components/app/__stories__/BottomTabBar.stories.tsx`, `components/ui/__stories__/ResponsiveGrid.stories.tsx`
+
+### Guidelines
+- Prefer `ResponsiveGrid` and `StackedCardList` on small screens.
+- Keep CTAs visible on mobile (use sticky containers and `pb-safe-bottom`).
+- Use `ResponsiveChartContainer` for charts and `responsive-table` for data tables.
+
 ## Overview
 This document summarizes the implementation of the MVP Rescue + Roadmap plan, transforming the Roommate Match platform into an MVP-ready product.
 

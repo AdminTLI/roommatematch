@@ -151,7 +151,7 @@ export function HousingPageClient({
   // Mobile view
   if (viewMode === 'list' || viewMode === 'map') {
     return (
-      <div className="min-h-screen bg-gray-50">
+      <div className="min-h-screen bg-gray-50 pb-safe-bottom md:pb-0">
         {/* Toolbar */}
         <Toolbar
           filters={filters}
@@ -215,7 +215,7 @@ export function HousingPageClient({
 
   // Desktop split view
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 pb-safe-bottom md:pb-0">
       {/* Toolbar */}
       <Toolbar
         filters={filters}

@@ -197,38 +197,42 @@ export function AdminContent() {
   return (
     <div className="space-y-8">
       {/* Header with refresh button */}
-      <div className="flex justify-between items-center">
-        <div>
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+        <div className="min-w-0">
           <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">Admin Dashboard</h1>
-          <p className="text-lg text-gray-600 mt-1">Monitor and manage the platform</p>
+          <p className="text-base sm:text-lg text-gray-600 mt-1">Monitor and manage the platform</p>
         </div>
-        <Button 
-          onClick={handleRefresh} 
-          disabled={isLoading || isHealthLoading || isActivityLoading}
-          variant="outline"
-          className="flex items-center gap-2"
-        >
-          <RefreshCw className={`w-4 h-4 ${(isLoading || isHealthLoading || isActivityLoading) ? 'animate-spin' : ''}`} />
-          Refresh
-        </Button>
+        <div className="w-full sm:w-auto">
+          <Button 
+            onClick={handleRefresh} 
+            disabled={isLoading || isHealthLoading || isActivityLoading}
+            variant="outline"
+            className="w-full sm:w-auto flex items-center justify-center gap-2"
+          >
+            <RefreshCw className={`w-4 h-4 ${(isLoading || isHealthLoading || isActivityLoading) ? 'animate-spin' : ''}`} />
+            Refresh
+          </Button>
+        </div>
       </div>
 
       {/* Time Period Toggle */}
       <Card>
         <CardContent className="p-4">
-          <div className="flex flex-wrap gap-2">
-            <span className="text-sm text-gray-600 mr-2 self-center">Time Period:</span>
-            {(Object.keys(timePeriodLabels) as TimePeriod[]).map((period) => (
-              <Button
-                key={period}
-                variant={timePeriod === period ? 'default' : 'outline'}
-                size="sm"
-                onClick={() => setTimePeriod(period)}
-                className="text-xs"
-              >
-                {timePeriodLabels[period]}
-              </Button>
-            ))}
+          <div className="-mx-2 overflow-x-auto">
+            <div className="px-2 inline-flex items-center gap-2 whitespace-nowrap">
+              <span className="text-sm text-gray-600 mr-2">Time Period:</span>
+              {(Object.keys(timePeriodLabels) as TimePeriod[]).map((period) => (
+                <Button
+                  key={period}
+                  variant={timePeriod === period ? 'default' : 'outline'}
+                  size="sm"
+                  onClick={() => setTimePeriod(period)}
+                  className="text-xs"
+                >
+                  {timePeriodLabels[period]}
+                </Button>
+              ))}
+            </div>
           </div>
         </CardContent>
       </Card>
@@ -309,7 +313,7 @@ export function AdminContent() {
       </div>
 
       {/* System Status */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">

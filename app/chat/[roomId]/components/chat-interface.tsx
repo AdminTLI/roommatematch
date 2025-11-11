@@ -1398,7 +1398,7 @@ export function ChatInterface({ roomId, user }: ChatInterfaceProps) {
   }
 
   return (
-    <div className="max-w-4xl mx-auto">
+    <div className="max-w-4xl mx-auto pb-safe-bottom">
       {/* Safety Notice - Moved to top */}
       <Alert className="mb-6">
         <Shield className="h-4 w-4 mt-0.5" />
@@ -1542,7 +1542,7 @@ export function ChatInterface({ roomId, user }: ChatInterfaceProps) {
       {/* Messages */}
       <Card className="mb-4 sm:mb-6">
         <CardContent className="p-0">
-          <div className="h-[400px] sm:h-96 overflow-y-auto p-3 sm:p-4 space-y-3 sm:space-y-4">
+          <div className="overflow-y-auto p-3 sm:p-4 space-y-3 sm:space-y-4 md:h-96 max-h-[calc(100vh-280px)]">
             {messages.length === 0 ? (
               <div className="text-center py-8">
                 <MessageCircle className="h-12 w-12 text-gray-400 mx-auto mb-4" />
@@ -1673,8 +1673,8 @@ export function ChatInterface({ roomId, user }: ChatInterfaceProps) {
       )}
 
       {/* Message Input */}
-      <Card>
-        <CardContent className="p-3 sm:p-4">
+      <Card className="sticky bottom-16 md:static z-20">
+        <CardContent className="p-3 sm:p-4 pb-safe-bottom">
           <div className="flex gap-2 sm:gap-3 items-center">
             <Input
               value={newMessage}

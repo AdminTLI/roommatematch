@@ -410,7 +410,7 @@ export function OnboardingWizard({ user }: OnboardingWizardProps) {
       </Card>
 
       {/* Navigation */}
-      <div className="flex items-center justify-between">
+      <div className="md:flex md:items-center md:justify-between md:mt-0 fixed md:static left-0 right-0 bottom-16 z-30 md:z-auto bg-surface-0/95 md:bg-transparent backdrop-blur supports-[backdrop-filter]:bg-surface-0/80 md:backdrop-blur-none border-t md:border-0 px-4 sm:px-0 py-3 md:py-0 safe-area-inset">
         <Button
           variant="outline"
           onClick={prevStep}

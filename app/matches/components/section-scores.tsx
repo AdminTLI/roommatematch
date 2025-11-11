@@ -27,21 +27,21 @@ export function SectionScores({ scores }: SectionScoresProps) {
   })
 
   return (
-    <div className="space-y-2">
-      <h4 className="text-sm font-medium text-gray-700">Compatibility Breakdown</h4>
-      <div className="space-y-1">
+    <div className="space-y-1.5 sm:space-y-2">
+      <h4 className="text-xs sm:text-sm font-medium text-gray-700">Compatibility Breakdown</h4>
+      <div className="space-y-1 sm:space-y-1">
         {sortedEntries.map(([section, value]) => (
-          <div key={section} className="flex items-center gap-3">
-            <span className="w-24 text-sm capitalize text-gray-600">
+          <div key={section} className="flex items-center gap-2 sm:gap-3">
+            <span className="w-20 sm:w-24 text-xs sm:text-sm capitalize text-gray-600 flex-shrink-0">
               {section.replace('_', ' ')}
             </span>
-            <div className="flex-1 h-2 bg-gray-200 rounded-full overflow-hidden">
+            <div className="flex-1 h-1.5 sm:h-2 bg-gray-200 rounded-full overflow-hidden min-w-0">
               <div 
                 className="h-full bg-gradient-to-r from-blue-500 to-green-500 transition-all duration-300"
                 style={{ width: `${Math.round((value || 0) * 100)}%` }}
               />
             </div>
-            <span className="w-10 text-right text-xs font-medium text-gray-500">
+            <span className="w-8 sm:w-10 text-right text-xs font-medium text-gray-500 flex-shrink-0">
               {Math.round((value || 0) * 100)}%
             </span>
           </div>
