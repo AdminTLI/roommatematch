@@ -41,8 +41,7 @@ import {
   MoreVertical,
   Ban,
   Trash2,
-  CheckCircle,
-  XCircle
+  CheckCircle
 } from 'lucide-react'
 
 interface ChatInterfaceProps {
@@ -1437,9 +1436,17 @@ export function ChatInterface({ roomId, user }: ChatInterfaceProps) {
               {!isGroup && otherUserVerificationStatus && (
                 <div className="flex-shrink-0">
                   {otherUserVerificationStatus === 'verified' ? (
-                    <CheckCircle className="h-5 w-5 text-green-600" title="Verified" />
+                    <div className="relative">
+                      <div className="w-5 h-5 rounded-full bg-blue-500 flex items-center justify-center">
+                        <CheckCircle className="h-3.5 w-3.5 text-white fill-white" />
+                      </div>
+                    </div>
                   ) : (
-                    <XCircle className="h-5 w-5 text-gray-400" title="Unverified" />
+                    <div className="relative">
+                      <div className="w-5 h-5 rounded-full border-2 border-gray-300 flex items-center justify-center bg-white">
+                        <div className="w-2.5 h-2.5 rounded-full bg-gray-300"></div>
+                      </div>
+                    </div>
                   )}
                 </div>
               )}
@@ -1499,35 +1506,6 @@ export function ChatInterface({ roomId, user }: ChatInterfaceProps) {
         </div>
       </div>
 
-      {/* Message Input - Moved to top */}
-      <div className="flex-shrink-0 border-b border-gray-200 bg-white px-4 py-3">
-        <div className="flex gap-2 items-center">
-          <Input
-            value={newMessage}
-            onChange={(e) => {
-              setNewMessage(e.target.value)
-              handleTyping()
-            }}
-            onKeyPress={(e) => {
-              if (e.key === 'Enter' && !e.shiftKey) {
-                e.preventDefault()
-                sendMessage()
-              }
-            }}
-            placeholder={isBlocked ? "You cannot send messages to a blocked user" : "Type your message..."}
-            disabled={isSending || isBlocked}
-            className="flex-1 h-10 text-sm"
-          />
-          <Button 
-            onClick={sendMessage}
-            disabled={!newMessage.trim() || isSending || isBlocked}
-            className="h-10 w-10 p-0 flex-shrink-0"
-          >
-            <Send className="h-4 w-4" />
-          </Button>
-        </div>
-      </div>
-
       {/* Blocked User Notice */}
       {isBlocked && blockedUserId && (
         <div className="flex-shrink-0 px-4 py-2 bg-red-50 border-b border-red-200">
@@ -1575,7 +1553,7 @@ export function ChatInterface({ roomId, user }: ChatInterfaceProps) {
       )}
 
       {/* Messages - Scrollable area */}
-      <div ref={messagesContainerRef} className="flex-1 overflow-y-auto bg-gray-50 px-4 py-4">
+      <div ref={messagesContainerRef} className="flex-1 overflow-y-auto bg-gray-50 px-4 py-4 pb-24">
         {messages.length === 0 ? (
           <div className="text-center py-12">
             <MessageCircle className="h-12 w-12 text-gray-400 mx-auto mb-4" />
@@ -1691,6 +1669,35 @@ export function ChatInterface({ roomId, user }: ChatInterfaceProps) {
             <div ref={messagesEndRef} />
           </div>
         )}
+      </div>
+
+      {/* Message Input - At bottom */}
+      <div className="flex-shrink-0 border-t border-gray-200 bg-white px-4 py-3 pb-safe-bottom">
+        <div className="flex gap-2 items-center">
+          <Input
+            value={newMessage}
+            onChange={(e) => {
+              setNewMessage(e.target.value)
+              handleTyping()
+            }}
+            onKeyPress={(e) => {
+              if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault()
+                sendMessage()
+              }
+            }}
+            placeholder={isBlocked ? "You cannot send messages to a blocked user" : "Type your message..."}
+            disabled={isSending || isBlocked}
+            className="flex-1 h-10 text-sm"
+          />
+          <Button 
+            onClick={sendMessage}
+            disabled={!newMessage.trim() || isSending || isBlocked}
+            className="h-10 w-10 p-0 flex-shrink-0"
+          >
+            <Send className="h-4 w-4" />
+          </Button>
+        </div>
       </div>
 
       {/* Report User Dialog */}

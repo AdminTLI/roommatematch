@@ -85,16 +85,16 @@ export function PrivacySettings({ user }: PrivacySettingsProps) {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-8">
       {error && (
-        <Alert variant="destructive">
+        <Alert variant="destructive" className="mb-2">
           <AlertTriangle className="h-4 w-4" />
           <AlertDescription>{error}</AlertDescription>
         </Alert>
       )}
 
       {isSuccess && (
-        <Alert className="border-green-200 bg-green-50">
+        <Alert className="border-green-200 bg-green-50 mb-2">
           <Check className="h-4 w-4 text-green-600" />
           <AlertDescription className="text-green-800">
             Privacy settings saved successfully!
@@ -103,22 +103,22 @@ export function PrivacySettings({ user }: PrivacySettingsProps) {
       )}
 
       {/* Privacy Controls */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Eye className="w-5 h-5" />
+      <Card className="border-gray-200">
+        <CardHeader className="pb-4">
+          <CardTitle className="flex items-center gap-3 text-xl">
+            <Eye className="w-5 h-5 text-gray-600" />
             Privacy Controls
           </CardTitle>
-          <CardDescription>
+          <CardDescription className="text-base mt-2">
             Control who can see your profile and contact you.
           </CardDescription>
         </CardHeader>
-        <CardContent className="space-y-6">
-          <div className="space-y-4">
-            <div className="flex items-center justify-between">
-              <div className="space-y-0.5">
-                <Label>Make Profile Visible</Label>
-                <p className="text-sm text-gray-500">Allow other users to see your profile in search results</p>
+        <CardContent className="space-y-6 pt-2">
+          <div className="space-y-4 pt-2">
+            <div className="flex items-center justify-between py-3 border-b border-gray-100">
+              <div className="space-y-1 flex-1 pr-4">
+                <Label className="text-sm font-medium">Make Profile Visible</Label>
+                <p className="text-sm text-gray-600">Allow other users to see your profile in search results</p>
               </div>
               <Switch
                 checked={privacySettings.profileVisible}
@@ -126,10 +126,10 @@ export function PrivacySettings({ user }: PrivacySettingsProps) {
               />
             </div>
 
-            <div className="flex items-center justify-between">
-              <div className="space-y-0.5">
-                <Label>Show in Matches</Label>
-                <p className="text-sm text-gray-500">Include your profile in roommate matching algorithm</p>
+            <div className="flex items-center justify-between py-3 border-b border-gray-100">
+              <div className="space-y-1 flex-1 pr-4">
+                <Label className="text-sm font-medium">Show in Matches</Label>
+                <p className="text-sm text-gray-600">Include your profile in roommate matching algorithm</p>
               </div>
               <Switch
                 checked={privacySettings.showInMatches}
@@ -137,10 +137,10 @@ export function PrivacySettings({ user }: PrivacySettingsProps) {
               />
             </div>
 
-            <div className="flex items-center justify-between">
-              <div className="space-y-0.5">
-                <Label>Allow Messages</Label>
-                <p className="text-sm text-gray-500">Let other users send you messages</p>
+            <div className="flex items-center justify-between py-3 border-b border-gray-100">
+              <div className="space-y-1 flex-1 pr-4">
+                <Label className="text-sm font-medium">Allow Messages</Label>
+                <p className="text-sm text-gray-600">Let other users send you messages</p>
               </div>
               <Switch
                 checked={privacySettings.allowMessages}
@@ -148,10 +148,10 @@ export function PrivacySettings({ user }: PrivacySettingsProps) {
               />
             </div>
 
-            <div className="flex items-center justify-between">
-              <div className="space-y-0.5">
-                <Label>Data Sharing</Label>
-                <p className="text-sm text-gray-500">Allow anonymized data to be used for research and improvements</p>
+            <div className="flex items-center justify-between py-3">
+              <div className="space-y-1 flex-1 pr-4">
+                <Label className="text-sm font-medium">Data Sharing</Label>
+                <p className="text-sm text-gray-600">Allow anonymized data to be used for research and improvements</p>
               </div>
               <Switch
                 checked={privacySettings.dataSharing}
@@ -160,11 +160,11 @@ export function PrivacySettings({ user }: PrivacySettingsProps) {
             </div>
           </div>
 
-          <div className="flex justify-end">
+          <div className="flex justify-end pt-4 border-t border-gray-100">
             <Button 
               onClick={handleSavePrivacy}
               disabled={isLoading}
-              className="w-full sm:w-auto min-w-[120px]"
+              className="w-full sm:w-auto min-w-[140px] h-11 text-base"
             >
               {isLoading ? (
                 <>
@@ -180,26 +180,27 @@ export function PrivacySettings({ user }: PrivacySettingsProps) {
       </Card>
 
       {/* Data Management */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Download className="w-5 h-5" />
+      <Card className="border-gray-200">
+        <CardHeader className="pb-4">
+          <CardTitle className="flex items-center gap-3 text-xl">
+            <Download className="w-5 h-5 text-gray-600" />
             Data Management
           </CardTitle>
-          <CardDescription>
+          <CardDescription className="text-base mt-2">
             Download your data or manage your account.
           </CardDescription>
         </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="flex items-center justify-between p-4 border rounded-lg">
-            <div>
-              <h4 className="font-medium">Download Your Data</h4>
-              <p className="text-sm text-gray-500">Get a copy of all your data in a portable format</p>
+        <CardContent className="space-y-6 pt-2">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 p-6 border border-gray-200 rounded-lg bg-gray-50">
+            <div className="flex-1">
+              <h4 className="font-semibold text-base mb-2">Download Your Data</h4>
+              <p className="text-sm text-gray-600">Get a copy of all your data in a portable format</p>
             </div>
             <Button 
               variant="outline" 
               onClick={handleDownloadData}
               disabled={isLoading}
+              className="w-full sm:w-auto min-w-[140px] h-11 text-base whitespace-nowrap"
             >
               <Download className="w-4 h-4 mr-2" />
               Download
@@ -210,19 +211,19 @@ export function PrivacySettings({ user }: PrivacySettingsProps) {
 
       {/* Account Deletion */}
       <Card className="border-red-200">
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2 text-red-600">
+        <CardHeader className="pb-4">
+          <CardTitle className="flex items-center gap-3 text-xl text-red-600">
             <Trash2 className="w-5 h-5" />
             Danger Zone
           </CardTitle>
-          <CardDescription>
+          <CardDescription className="text-base mt-2">
             Permanently delete your account and all associated data.
           </CardDescription>
         </CardHeader>
-        <CardContent className="space-y-4">
-          <Alert variant="destructive">
-            <AlertTriangle className="h-4 w-4" />
-            <AlertDescription>
+        <CardContent className="space-y-6 pt-2">
+          <Alert variant="destructive" className="py-4">
+            <AlertTriangle className="h-5 w-5" />
+            <AlertDescription className="text-base">
               <strong>Warning:</strong> This action cannot be undone. This will permanently delete your account, 
               profile, questionnaire responses, matches, and all other data.
             </AlertDescription>
@@ -232,22 +233,22 @@ export function PrivacySettings({ user }: PrivacySettingsProps) {
             <Button 
               variant="destructive" 
               onClick={handleDeleteAccount}
-              className="w-full sm:w-auto"
+              className="w-full sm:w-auto min-w-[160px] h-11 text-base"
             >
               <Trash2 className="w-4 h-4 mr-2" />
               Delete Account
             </Button>
           ) : (
-            <div className="space-y-3">
-              <p className="text-sm text-gray-600">
+            <div className="space-y-4">
+              <p className="text-base text-gray-700 font-medium">
                 Are you absolutely sure? Type "DELETE" to confirm.
               </p>
-              <div className="flex gap-2">
+              <div className="flex flex-col sm:flex-row gap-3">
                 <Button 
                   variant="destructive" 
                   onClick={handleDeleteAccount}
                   disabled={isLoading}
-                  className="flex-1"
+                  className="flex-1 sm:flex-initial min-w-[200px] h-11 text-base"
                 >
                   {isLoading ? (
                     <>
@@ -265,6 +266,7 @@ export function PrivacySettings({ user }: PrivacySettingsProps) {
                   variant="outline" 
                   onClick={() => setShowDeleteConfirm(false)}
                   disabled={isLoading}
+                  className="flex-1 sm:flex-initial min-w-[120px] h-11 text-base"
                 >
                   Cancel
                 </Button>

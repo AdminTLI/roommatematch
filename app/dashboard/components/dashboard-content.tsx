@@ -599,7 +599,7 @@ export function DashboardContent({ hasCompletedQuestionnaire = false, hasPartial
   }
 
   return (
-    <div className="space-y-2 lg:space-y-2 flex flex-col lg:h-[calc(100vh-14rem)] lg:overflow-hidden">
+    <div className="space-y-2 lg:space-y-2 flex flex-col lg:h-[calc(100vh-14rem)] lg:overflow-hidden pb-24 md:pb-6">
       {/* Email verification warning */}
       {user && !user.email_confirmed_at && (
         <motion.div
@@ -921,9 +921,9 @@ export function DashboardContent({ hasCompletedQuestionnaire = false, hasPartial
                   ))}
                 </div>
                 {recentActivity.length > 3 && (
-                  <div className="pt-2 border-t border-gray-200 mt-2 flex-shrink-0">
+                  <div className="pt-2 border-t border-gray-200 mt-2 flex-shrink-0 mb-4">
                     <button 
-                      className="w-full flex items-center justify-center gap-1 text-xs text-blue-600 hover:text-blue-700 font-medium py-1.5" 
+                      className="w-full flex items-center justify-center gap-1 text-xs text-blue-600 hover:text-blue-700 font-medium py-2" 
                       onClick={handleViewAllActivity}
                     >
                       View more

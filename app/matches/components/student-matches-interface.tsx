@@ -333,7 +333,7 @@ export function StudentMatchesInterface({ user }: StudentMatchesInterfaceProps) 
       <div className="mb-4 sm:mb-6">
         <div className="relative">
           {/* Tabs container with edge fade and chevron hint when overflowing */}
-          <div className="flex gap-1.5 sm:gap-1 bg-white border border-gray-200 p-1 sm:p-1 rounded-2xl shadow-sm overflow-x-auto scrollbar-hide -mx-4 sm:mx-0 px-4 sm:px-0 pr-8">
+          <div className="flex gap-1.5 sm:gap-1 bg-white border border-gray-200 p-1 sm:p-1 rounded-2xl shadow-sm overflow-x-auto scrollbar-hide -mx-4 sm:mx-0 px-4 sm:px-0">
           {tabs.map((tab) => (
             <button
               key={tab.id}
@@ -357,10 +357,12 @@ export function StudentMatchesInterface({ user }: StudentMatchesInterfaceProps) 
               )}
             </button>
           ))}
-            {/* Edge fade + chevron */}
-            <div className="pointer-events-none absolute right-0 top-0 h-full w-10 edge-fade-right hidden sm:block" />
-            <div className="pointer-events-none absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 sm:hidden">
-              ›
+            {/* Enhanced edge fade + scroll indicator */}
+            <div className="pointer-events-none absolute right-0 top-0 h-full w-16 bg-gradient-to-r from-transparent via-white/80 to-white hidden sm:block" />
+            {/* Mobile scroll indicator - more prominent */}
+            <div className="pointer-events-none absolute right-0 top-1/2 -translate-y-1/2 flex items-center gap-1 bg-white/95 backdrop-blur-sm px-2 py-1 rounded-l-lg shadow-sm sm:hidden">
+              <div className="w-1 h-1 bg-blue-500 rounded-full animate-pulse"></div>
+              <span className="text-xs font-medium text-blue-600">→</span>
             </div>
           </div>
         </div>

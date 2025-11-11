@@ -95,34 +95,34 @@ export function EmailVerification({ user }: EmailVerificationProps) {
   }
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-6">
       {/* Email Verification Card */}
-      <Card className={`border-2 ${needsEmailVerification ? 'border-amber-300 bg-amber-50/50' : 'shadow-sm'}`}>
-        <CardContent className="p-6">
-          <div className="space-y-4">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <div className={`p-2 rounded-xl ${
+      <Card className={`border-2 ${needsEmailVerification ? 'border-amber-300 bg-amber-50/50' : 'border-gray-200 shadow-sm'}`}>
+        <CardContent className="p-6 sm:p-8">
+          <div className="space-y-6">
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+              <div className="flex items-center gap-4 flex-1">
+                <div className={`p-3 rounded-xl flex-shrink-0 ${
                   isEmailVerified ? 'bg-green-100' : 'bg-amber-100'
                 }`}>
-                  <Mail className={`w-5 h-5 ${
+                  <Mail className={`w-6 h-6 ${
                     isEmailVerified ? 'text-green-600' : 'text-amber-600'
                   }`} />
                 </div>
-                <div>
-                  <p className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">Email Address</p>
-                  <p className="text-base font-semibold text-gray-900">{user.email}</p>
+                <div className="flex-1 min-w-0">
+                  <p className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-2">Email Address</p>
+                  <p className="text-base sm:text-lg font-semibold text-gray-900 break-all">{user.email}</p>
                 </div>
               </div>
               {isEmailVerified ? (
-                <Badge className="bg-green-100 text-green-800 border-green-200 px-3 py-1.5 flex items-center gap-1.5">
-                  <CheckCircle className="w-4 h-4" />
-                  <span className="font-semibold">Verified</span>
+                <Badge className="bg-green-100 text-green-800 border-green-200 px-4 py-2 flex items-center gap-2 flex-shrink-0">
+                  <CheckCircle className="w-4 h-4 flex-shrink-0" />
+                  <span className="font-semibold text-sm whitespace-nowrap">Verified</span>
                 </Badge>
               ) : (
-                <Badge className="bg-amber-100 text-amber-800 border-amber-200 px-3 py-1.5 flex items-center gap-1.5">
-                  <AlertCircle className="w-4 h-4" />
-                  <span className="font-semibold">Not Verified</span>
+                <Badge className="bg-amber-100 text-amber-800 border-amber-200 px-4 py-2 flex items-center gap-2 flex-shrink-0">
+                  <AlertCircle className="w-4 h-4 flex-shrink-0" />
+                  <span className="font-semibold text-sm whitespace-nowrap">Not Verified</span>
                 </Badge>
               )}
             </div>
@@ -136,10 +136,10 @@ export function EmailVerification({ user }: EmailVerificationProps) {
                     <p className="text-sm">
                       You must verify your email address to access all features of the platform.
                     </p>
-                    <div className="flex flex-col sm:flex-row gap-2">
+                    <div className="flex flex-col sm:flex-row gap-3">
                       <Button 
                         onClick={handleCompleteEmailVerification}
-                        className="bg-amber-600 hover:bg-amber-700 text-white"
+                        className="bg-amber-600 hover:bg-amber-700 text-white h-11 text-base min-w-[200px]"
                       >
                         Complete Email Verification
                         <ArrowRight className="ml-2 h-4 w-4" />
@@ -148,7 +148,7 @@ export function EmailVerification({ user }: EmailVerificationProps) {
                         onClick={handleResendVerification}
                         disabled={isResending}
                         variant="outline"
-                        className="border-amber-300 text-amber-700 hover:bg-amber-100"
+                        className="border-amber-300 text-amber-700 hover:bg-amber-100 h-11 text-base min-w-[200px]"
                       >
                         {isResending ? 'Sending...' : 'Resend Verification Email'}
                       </Button>
@@ -173,7 +173,7 @@ export function EmailVerification({ user }: EmailVerificationProps) {
                   onClick={handleResendVerification}
                   disabled={isResending}
                   variant="outline"
-                  className="w-full sm:w-auto"
+                  className="w-full sm:w-auto min-w-[200px] h-11 text-base"
                 >
                   {isResending ? 'Sending...' : 'Resend Verification Email'}
                 </Button>
@@ -195,32 +195,32 @@ export function EmailVerification({ user }: EmailVerificationProps) {
 
       {/* Persona Verification Card */}
       {isEmailVerified && (
-        <Card className={`border-2 ${needsPersonaVerification ? 'border-amber-300 bg-amber-50/50' : 'shadow-sm'}`}>
-          <CardContent className="p-6">
-            <div className="space-y-4">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <div className={`p-2 rounded-xl ${
+        <Card className={`border-2 ${needsPersonaVerification ? 'border-amber-300 bg-amber-50/50' : 'border-gray-200 shadow-sm'}`}>
+          <CardContent className="p-6 sm:p-8">
+            <div className="space-y-6">
+              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                <div className="flex items-center gap-4 flex-1">
+                  <div className={`p-3 rounded-xl flex-shrink-0 ${
                     isPersonaVerified ? 'bg-green-100' : 'bg-amber-100'
                   }`}>
-                    <Shield className={`w-5 h-5 ${
+                    <Shield className={`w-6 h-6 ${
                       isPersonaVerified ? 'text-green-600' : 'text-amber-600'
                     }`} />
                   </div>
-                  <div>
-                    <p className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">Identity Verification</p>
-                    <p className="text-base font-semibold text-gray-900">Persona Verification</p>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-2">Identity Verification</p>
+                    <p className="text-base sm:text-lg font-semibold text-gray-900">Persona Verification</p>
                   </div>
                 </div>
                 {isPersonaVerified ? (
-                  <Badge className="bg-green-100 text-green-800 border-green-200 px-3 py-1.5 flex items-center gap-1.5">
-                    <CheckCircle className="w-4 h-4" />
-                    <span className="font-semibold">Verified</span>
+                  <Badge className="bg-green-100 text-green-800 border-green-200 px-4 py-2 flex items-center gap-2 flex-shrink-0">
+                    <CheckCircle className="w-4 h-4 flex-shrink-0" />
+                    <span className="font-semibold text-sm whitespace-nowrap">Verified</span>
                   </Badge>
                 ) : (
-                  <Badge className="bg-amber-100 text-amber-800 border-amber-200 px-3 py-1.5 flex items-center gap-1.5">
-                    <AlertCircle className="w-4 h-4" />
-                    <span className="font-semibold">Not Verified</span>
+                  <Badge className="bg-amber-100 text-amber-800 border-amber-200 px-4 py-2 flex items-center gap-2 flex-shrink-0">
+                    <AlertCircle className="w-4 h-4 flex-shrink-0" />
+                    <span className="font-semibold text-sm whitespace-nowrap">Not Verified</span>
                   </Badge>
                 )}
               </div>
@@ -236,7 +236,7 @@ export function EmailVerification({ user }: EmailVerificationProps) {
                       </p>
                       <Button 
                         onClick={handleCompletePersonaVerification}
-                        className="bg-amber-600 hover:bg-amber-700 text-white"
+                        className="bg-amber-600 hover:bg-amber-700 text-white h-11 text-base min-w-[220px]"
                       >
                         Complete Identity Verification
                         <ArrowRight className="ml-2 h-4 w-4" />

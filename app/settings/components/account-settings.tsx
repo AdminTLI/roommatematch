@@ -63,16 +63,16 @@ export function AccountSettings({ user }: AccountSettingsProps) {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-8">
       {error && (
-        <Alert variant="destructive">
+        <Alert variant="destructive" className="mb-2">
           <AlertCircle className="h-4 w-4" />
           <AlertDescription>{error}</AlertDescription>
         </Alert>
       )}
 
       {isSuccess && (
-        <Alert className="border-green-200 bg-green-50">
+        <Alert className="border-green-200 bg-green-50 mb-2">
           <Check className="h-4 w-4 text-green-600" />
           <AlertDescription className="text-green-800">
             Settings saved successfully!
@@ -82,39 +82,41 @@ export function AccountSettings({ user }: AccountSettingsProps) {
 
       {/* Email Verification Section - Always visible */}
       <div>
-        <h3 className="text-lg font-semibold mb-4">Email Verification</h3>
+        <h3 className="text-xl font-semibold mb-6">Email Verification</h3>
         <EmailVerification user={user} />
       </div>
 
       {/* Security Settings */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Shield className="w-5 h-5" />
+      <Card className="border-gray-200">
+        <CardHeader className="pb-4">
+          <CardTitle className="flex items-center gap-3 text-xl">
+            <Shield className="w-5 h-5 text-gray-600" />
             Security
           </CardTitle>
-          <CardDescription>
+          <CardDescription className="text-base mt-2">
             Manage your account security settings.
           </CardDescription>
         </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="space-y-2">
-            <Label>Email Address</Label>
-            <div className="flex items-center gap-2">
-              <Mail className="w-4 h-4 text-gray-400" />
-              <Input value={user.email} disabled className="bg-gray-50" />
+        <CardContent className="space-y-6 pt-2">
+          <div className="space-y-3">
+            <Label className="text-sm font-medium">Email Address</Label>
+            <div className="flex items-center gap-3">
+              <Mail className="w-5 h-5 text-gray-400 flex-shrink-0" />
+              <Input value={user.email} disabled className="bg-gray-50 h-11" />
             </div>
-            <p className="text-sm text-gray-500">
+            <p className="text-sm text-gray-500 ml-8">
               Contact support to change your email address.
             </p>
           </div>
 
-          <div className="space-y-2">
-            <Label>Password</Label>
-            <div className="flex items-center gap-2">
-              <Key className="w-4 h-4 text-gray-400" />
-              <Input type="password" value="••••••••" disabled className="bg-gray-50" />
-              <Button variant="outline" onClick={handleChangePassword}>
+          <div className="space-y-3 pt-2 border-t border-gray-100">
+            <Label className="text-sm font-medium">Password</Label>
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
+              <div className="flex items-center gap-3 flex-1">
+                <Key className="w-5 h-5 text-gray-400 flex-shrink-0" />
+                <Input type="password" value="••••••••" disabled className="bg-gray-50 h-11 flex-1" />
+              </div>
+              <Button variant="outline" onClick={handleChangePassword} className="w-full sm:w-auto min-w-[120px] h-11 text-base">
                 Change
               </Button>
             </div>
@@ -123,25 +125,25 @@ export function AccountSettings({ user }: AccountSettingsProps) {
       </Card>
 
       {/* Notification Preferences */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Bell className="w-5 h-5" />
+      <Card className="border-gray-200">
+        <CardHeader className="pb-4">
+          <CardTitle className="flex items-center gap-3 text-xl">
+            <Bell className="w-5 h-5 text-gray-600" />
             Notification Preferences
           </CardTitle>
-          <CardDescription>
+          <CardDescription className="text-base mt-2">
             Choose how you want to be notified about matches and messages.
           </CardDescription>
         </CardHeader>
-        <CardContent className="space-y-6">
-          <div className="space-y-4">
-            <div className="space-y-3">
-              <h4 className="font-medium text-gray-900">Email Notifications</h4>
+        <CardContent className="space-y-8 pt-2">
+          <div className="space-y-6">
+            <div className="space-y-4 pt-2">
+              <h4 className="font-semibold text-base text-gray-900">Email Notifications</h4>
               
-              <div className="flex items-center justify-between">
-                <div className="space-y-0.5">
-                  <Label>New Matches</Label>
-                  <p className="text-sm text-gray-500">Get notified when you have new compatible matches</p>
+              <div className="flex items-center justify-between py-3 border-b border-gray-100">
+                <div className="space-y-1 flex-1 pr-4">
+                  <Label className="text-sm font-medium">New Matches</Label>
+                  <p className="text-sm text-gray-600">Get notified when you have new compatible matches</p>
                 </div>
                 <Switch
                   checked={notifications.emailMatches}
@@ -149,10 +151,10 @@ export function AccountSettings({ user }: AccountSettingsProps) {
                 />
               </div>
 
-              <div className="flex items-center justify-between">
-                <div className="space-y-0.5">
-                  <Label>New Messages</Label>
-                  <p className="text-sm text-gray-500">Get notified when you receive new messages</p>
+              <div className="flex items-center justify-between py-3 border-b border-gray-100">
+                <div className="space-y-1 flex-1 pr-4">
+                  <Label className="text-sm font-medium">New Messages</Label>
+                  <p className="text-sm text-gray-600">Get notified when you receive new messages</p>
                 </div>
                 <Switch
                   checked={notifications.emailMessages}
@@ -160,10 +162,10 @@ export function AccountSettings({ user }: AccountSettingsProps) {
                 />
               </div>
 
-              <div className="flex items-center justify-between">
-                <div className="space-y-0.5">
-                  <Label>Platform Updates</Label>
-                  <p className="text-sm text-gray-500">Get notified about new features and updates</p>
+              <div className="flex items-center justify-between py-3">
+                <div className="space-y-1 flex-1 pr-4">
+                  <Label className="text-sm font-medium">Platform Updates</Label>
+                  <p className="text-sm text-gray-600">Get notified about new features and updates</p>
                 </div>
                 <Switch
                   checked={notifications.emailUpdates}
@@ -172,13 +174,13 @@ export function AccountSettings({ user }: AccountSettingsProps) {
               </div>
             </div>
 
-            <div className="space-y-3">
-              <h4 className="font-medium text-gray-900">Push Notifications</h4>
+            <div className="space-y-4 pt-4 border-t border-gray-200">
+              <h4 className="font-semibold text-base text-gray-900">Push Notifications</h4>
               
-              <div className="flex items-center justify-between">
-                <div className="space-y-0.5">
-                  <Label>New Matches</Label>
-                  <p className="text-sm text-gray-500">Receive push notifications for new matches</p>
+              <div className="flex items-center justify-between py-3 border-b border-gray-100">
+                <div className="space-y-1 flex-1 pr-4">
+                  <Label className="text-sm font-medium">New Matches</Label>
+                  <p className="text-sm text-gray-600">Receive push notifications for new matches</p>
                 </div>
                 <Switch
                   checked={notifications.pushMatches}
@@ -186,10 +188,10 @@ export function AccountSettings({ user }: AccountSettingsProps) {
                 />
               </div>
 
-              <div className="flex items-center justify-between">
-                <div className="space-y-0.5">
-                  <Label>New Messages</Label>
-                  <p className="text-sm text-gray-500">Receive push notifications for new messages</p>
+              <div className="flex items-center justify-between py-3">
+                <div className="space-y-1 flex-1 pr-4">
+                  <Label className="text-sm font-medium">New Messages</Label>
+                  <p className="text-sm text-gray-600">Receive push notifications for new messages</p>
                 </div>
                 <Switch
                   checked={notifications.pushMessages}
@@ -199,11 +201,11 @@ export function AccountSettings({ user }: AccountSettingsProps) {
             </div>
           </div>
 
-          <div className="flex justify-end">
+          <div className="flex justify-end pt-4 border-t border-gray-100">
             <Button 
               onClick={handleSaveNotifications}
               disabled={isLoading}
-              className="w-full sm:w-auto min-w-[120px]"
+              className="w-full sm:w-auto min-w-[160px] h-11 text-base"
             >
               {isLoading ? (
                 <>
