@@ -46,7 +46,8 @@ export function Navbar() {
                 href="/"
                 className="flex items-center space-x-2 hover:opacity-80 transition-opacity"
               >
-                <div className="relative h-8 w-8 md:h-10 md:w-10 flex-shrink-0">
+                {/* Logo Image - will show if file exists, otherwise fallback to text */}
+                <div className="relative h-8 w-8 md:h-10 md:w-10 flex-shrink-0 hidden sm:block">
                   <Image 
                     src="/images/logo.png" 
                     alt="Domu Match" 
@@ -54,10 +55,17 @@ export function Navbar() {
                     className="object-contain"
                     priority
                     sizes="(max-width: 768px) 32px, 40px"
+                    onError={(e) => {
+                      // Hide image container if logo fails to load
+                      const target = e.target as HTMLElement;
+                      const container = target.closest('.relative');
+                      if (container) {
+                        container.style.display = 'none';
+                      }
+                    }}
                   />
                 </div>
-                <span className="text-2xl font-bold text-brand-text hidden sm:inline-block">Domu Match</span>
-                <span className="text-xl font-bold text-brand-text sm:hidden">DM</span>
+                <span className="text-2xl font-bold text-brand-text">Domu Match</span>
               </Link>
             </div>
 

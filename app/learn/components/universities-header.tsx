@@ -35,6 +35,14 @@ export function UniversitiesHeader() {
                 className="object-contain"
                 priority
                 sizes="32px"
+                onError={(e) => {
+                  // Hide image container if logo fails to load
+                  const target = e.target as HTMLElement;
+                  const container = target.closest('.relative');
+                  if (container) {
+                    container.style.display = 'none';
+                  }
+                }}
               />
             </div>
             <span className="text-2xl font-bold text-primary">Domu Match</span>
