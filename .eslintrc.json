@@ -24,6 +24,21 @@
     "jsx-a11y/tabindex-no-positive": "error",
     "@next/next/no-img-element": "warn",
     "react-hooks/exhaustive-deps": "warn",
-    "react/no-unescaped-entities": "warn"
+    "react/no-unescaped-entities": "warn",
+    "no-restricted-syntax": [
+      "error",
+      {
+        "selector": "JSXAttribute[name.name='className'][value.type='Literal'][value.value=/\\b(?:w|h|max-w|min-w|max-h|min-h)-\\[\\d+(?:px)?\\]/]",
+        "message": "Avoid fixed pixel dimensions in Tailwind arbitrary values. Use responsive utilities or fluid sizing."
+      },
+      {
+        "selector": "JSXAttribute[name.name='className'][value.type='Literal'][value.value=/\\boverflow-x-hidden\\b/]",
+        "message": "Do not hide horizontal overflow globally; prefer fixing layout overflow at the source."
+      },
+      {
+        "selector": "JSXAttribute[name.name='style'] > JSXExpressionContainer > ObjectExpression > Property[key.name=/^(width|height|maxWidth|maxHeight|minWidth|minHeight)$/][value.type=/^(Literal|TemplateLiteral)$/]",
+        "message": "Avoid inline fixed dimensions. Use responsive CSS/Tailwind classes or container queries."
+      }
+    ]
   }
 }
