@@ -65,15 +65,28 @@ export function Universities() {
     const fetchCities = async () => {
       try {
         setLoadingCities(true)
+        setError(null)
         const response = await fetch('/api/universities')
         if (!response.ok) {
-          throw new Error('Failed to fetch cities')
+          const errorData = await response.json().catch(() => ({}))
+          console.error('Failed to fetch cities:', response.status, errorData)
+          throw new Error(`Failed to fetch cities: ${response.status}`)
         }
         const data = await response.json()
-        setCities(data.cities || [])
+        console.log('Cities data received:', data)
+        if (data.cities && Array.isArray(data.cities)) {
+          setCities(data.cities)
+          if (data.cities.length === 0) {
+            console.warn('No cities returned from API')
+          }
+        } else {
+          console.error('Invalid cities data format:', data)
+          setCities([])
+        }
       } catch (err) {
         console.error('Error fetching cities:', err)
         setError('Failed to load cities')
+        setCities([])
       } finally {
         setLoadingCities(false)
       }
@@ -151,9 +164,13 @@ export function Universities() {
                   <SelectItem value="loading" disabled>
                     {t.loading}
                   </SelectItem>
+                ) : error ? (
+                  <SelectItem value="error" disabled>
+                    Error loading cities
+                  </SelectItem>
                 ) : cities.length === 0 ? (
                   <SelectItem value="none" disabled>
-                    {t.noUniversities}
+                    No cities available
                   </SelectItem>
                 ) : (
                   cities.map((city) => (

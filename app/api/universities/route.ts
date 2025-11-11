@@ -10,6 +10,7 @@
 
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient, createAdminClient } from '@/lib/supabase/server'
+import { createServiceClient } from '@/lib/supabase/service'
 
 /**
  * GET /api/universities
@@ -30,24 +31,74 @@ export async function GET(request: NextRequest) {
 
     // If no city parameter, return list of cities with universities
     if (!city) {
-      const { data: citiesData, error: citiesError } = await supabase
-        .from('universities')
-        .select('city')
-        .eq('is_active', true)
-        .not('city', 'is', null)
+      // Try using service client first (simpler, more reliable)
+      let citiesData: any[] | null = null
+      let citiesError: any = null
+      
+      try {
+        const serviceClient = createServiceClient()
+        const result = await serviceClient
+          .from('universities')
+          .select('city')
+          .eq('is_active', true)
+          .not('city', 'is', null)
+        
+        citiesData = result.data
+        citiesError = result.error
+      } catch (err: any) {
+        console.error('Error creating service client, trying admin client:', err)
+        // Fallback to admin client
+        try {
+          const adminSupabase = createAdminClient()
+          const result = await adminSupabase
+            .from('universities')
+            .select('city')
+            .eq('is_active', true)
+            .not('city', 'is', null)
+          
+          citiesData = result.data
+          citiesError = result.error
+        } catch (adminErr: any) {
+          console.error('Error with admin client, trying regular client:', adminErr)
+          // Last resort: try regular client (might work if RLS allows)
+          const result = await supabase
+            .from('universities')
+            .select('city')
+            .eq('is_active', true)
+            .not('city', 'is', null)
+          
+          citiesData = result.data
+          citiesError = result.error
+        }
+      }
 
       if (citiesError) {
         console.error('Error fetching cities:', citiesError)
+        console.error('Error code:', citiesError.code)
+        console.error('Error message:', citiesError.message)
+        console.error('Error details:', JSON.stringify(citiesError, null, 2))
         return NextResponse.json(
-          { error: 'Internal server error', cities: [] },
+          { 
+            error: 'Internal server error', 
+            cities: [], 
+            details: citiesError.message,
+            code: citiesError.code
+          },
           { status: 500 }
         )
+      }
+
+      if (!citiesData || citiesData.length === 0) {
+        console.warn('No cities found in database - this should not happen if migration was applied')
+        return NextResponse.json({ cities: [] })
       }
 
       // Get unique cities and sort them
       const uniqueCities = Array.from(
         new Set(citiesData.map(u => u.city).filter(Boolean))
       ).sort() as string[]
+
+      console.log(`✅ Returning ${uniqueCities.length} cities`)
 
       // Set cache headers (cities list is relatively static)
       const response = NextResponse.json({ cities: uniqueCities })
@@ -61,7 +112,10 @@ export async function GET(request: NextRequest) {
 
     // If city provided, return universities in that city with user counts
     // Count ALL users who selected that university (not just active users)
-    const { data: universitiesData, error: universitiesError } = await supabase
+    // Use service client for reliable access
+    const serviceClient = createServiceClient()
+    
+    const { data: universitiesData, error: universitiesError } = await serviceClient
       .from('universities')
       .select('id, name, slug, city')
       .eq('is_active', true)
@@ -83,13 +137,12 @@ export async function GET(request: NextRequest) {
     // Get all university IDs
     const universityIds = universitiesData.map(u => u.id)
 
-    // Use admin client to bypass RLS for counting profiles
+    // Use service client to bypass RLS for counting profiles
     // This is safe as we're only counting, not exposing sensitive data
-    const adminSupabase = createAdminClient()
     
     // Fetch all profiles for these universities in a single query
     // Count ALL profiles (not filtering by user active status)
-    const { data: profilesData, error: profilesError } = await adminSupabase
+    const { data: profilesData, error: profilesError } = await serviceClient
       .from('profiles')
       .select('university_id')
       .in('university_id', universityIds)
