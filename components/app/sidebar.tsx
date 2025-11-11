@@ -20,6 +20,7 @@ import { cn } from '@/lib/utils'
 import { useState, useEffect } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { isFeatureEnabled } from '@/lib/feature-flags'
+import { Separator } from '@/components/ui/separator'
 
 interface SidebarProps {
   user: {
@@ -42,6 +43,17 @@ const allNavigationItems = [
   { name: 'Reputation', href: '/reputation', icon: Award, featureFlag: null },
   { name: 'Video Intros', href: '/video-intros', icon: Video, featureFlag: null },
   { name: 'Admin', href: '/admin', icon: BarChart3, featureFlag: null },
+]
+
+const adminNavigationItems = [
+  { name: 'Dashboard', href: '/admin', icon: BarChart3 },
+  { name: 'Users', href: '/admin/users', icon: Users },
+  { name: 'Matches', href: '/admin/matches', icon: BarChart3 },
+  { name: 'Chats', href: '/admin/chats', icon: MessageCircle },
+  { name: 'Reports', href: '/admin/reports', icon: Shield },
+  { name: 'Verifications', href: '/admin/verifications', icon: Shield },
+  { name: 'Metrics', href: '/admin/metrics', icon: BarChart3 },
+  { name: 'Logs', href: '/admin/logs', icon: FileText },
 ]
 
 // MVP hidden features - kept in code but hidden from UI
@@ -74,6 +86,7 @@ const getNavigation = (userEmail: string) => {
 export function Sidebar({ user, onClose }: SidebarProps) {
   const pathname = usePathname()
   const [unreadChatCount, setUnreadChatCount] = useState(0)
+  const isAdminRoute = pathname?.startsWith('/admin')
 
   useEffect(() => {
     const supabase = createClient()
@@ -164,18 +177,63 @@ export function Sidebar({ user, onClose }: SidebarProps) {
     <div className="flex flex-col h-full w-full bg-white dark:bg-[#1E2433] border-r border-gray-200 dark:border-[#2D3548]">
       {/* Branding Header */}
       <div className="px-4 pt-4 pb-2 border-b border-gray-200 dark:border-[#2D3548]">
-        <Link href="/dashboard" className="flex items-center gap-3">
+        <Link href={isAdminRoute ? '/admin' : '/dashboard'} className="flex items-center gap-3">
           <div className="w-8 h-8 bg-gradient-to-br from-brand-500 to-accent-500 rounded-xl flex items-center justify-center">
             <Users className="w-4 h-4 text-white" />
           </div>
           <div>
-            <h1 className="text-lg font-bold text-ink-900 dark:text-gray-100">Roommate Match</h1>
-            <p className="text-xs text-ink-500 dark:text-gray-400">Find your perfect match</p>
+            <h1 className="text-lg font-bold text-ink-900 dark:text-gray-100">
+              {isAdminRoute ? 'Admin Panel' : 'Roommate Match'}
+            </h1>
+            <p className="text-xs text-ink-500 dark:text-gray-400">
+              {isAdminRoute ? 'Manage the platform' : 'Find your perfect match'}
+            </p>
           </div>
         </Link>
       </div>
       {/* Navigation - starts at top */}
-      <nav className="flex-1 p-4 space-y-2 overflow-y-auto">
+      <nav className="flex-1 p-4 space-y-4 overflow-y-auto">
+        {/* Admin Section (only on admin routes) */}
+        {isAdminRoute && (
+          <div>
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-xs uppercase tracking-wide text-ink-500">Admin</span>
+              <Link href="/dashboard" className="text-xs text-blue-600 hover:underline" onClick={onClose}>
+                Back to App
+              </Link>
+            </div>
+            <div className="space-y-2">
+              {adminNavigationItems.map((item) => {
+                const isActive = pathname === item.href || pathname.startsWith(item.href + '/')
+                const Icon = item.icon
+                return (
+                  <Link key={item.name} href={item.href} onClick={onClose}>
+                    <Button
+                      variant={isActive ? "primary" : "ghost"}
+                      className={cn(
+                        "w-full justify-start gap-3 h-11 px-3 transition-colors",
+                        isActive 
+                          ? "bg-blue-50 text-blue-600 dark:bg-blue-900/20 dark:text-[#67E8F9] border-l-4 border-blue-600 rounded-l-none" 
+                          : "text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-[#2D3548]"
+                      )}
+                    >
+                      <Icon className="w-5 h-5" />
+                      <span className="font-medium">{item.name}</span>
+                    </Button>
+                  </Link>
+                )
+              })}
+            </div>
+            <div className="my-3">
+              <Separator />
+            </div>
+          </div>
+        )}
+
+        {/* App Section */}
+        <div>
+          <span className="text-xs uppercase tracking-wide text-ink-500">App</span>
+          <div className="mt-2 space-y-2">
         {getNavigation(user.email).map((item, index) => {
           const isActive = pathname === item.href || pathname.startsWith(item.href + '/')
           const Icon = item.icon
@@ -209,6 +267,8 @@ export function Sidebar({ user, onClose }: SidebarProps) {
             </motion.div>
           )
         })}
+          </div>
+        </div>
       </nav>
     </div>
   )

@@ -272,12 +272,12 @@ export function AdminDashboard({ admin }: AdminDashboardProps) {
 
       {/* Main Content Tabs */}
       <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-        <TabsList className="grid w-full grid-cols-4">
-          <TabsTrigger value="overview" className="flex items-center gap-2">
+        <TabsList className="w-full md:grid md:grid-cols-4 flex overflow-x-auto gap-2">
+          <TabsTrigger value="overview" className="flex items-center gap-2 flex-shrink-0">
             <BarChart3 className="h-4 w-4" />
             Overview
           </TabsTrigger>
-          <TabsTrigger value="moderation" className="flex items-center gap-2">
+          <TabsTrigger value="moderation" className="flex items-center gap-2 flex-shrink-0">
             <Shield className="h-4 w-4" />
             Moderation
             {analytics?.reportsPending && analytics.reportsPending > 0 && (
@@ -286,11 +286,11 @@ export function AdminDashboard({ admin }: AdminDashboardProps) {
               </Badge>
             )}
           </TabsTrigger>
-          <TabsTrigger value="analytics" className="flex items-center gap-2">
+          <TabsTrigger value="analytics" className="flex items-center gap-2 flex-shrink-0">
             <TrendingUp className="h-4 w-4" />
             Analytics
           </TabsTrigger>
-          <TabsTrigger value="settings" className="flex items-center gap-2">
+          <TabsTrigger value="settings" className="flex items-center gap-2 flex-shrink-0">
             <Settings className="h-4 w-4" />
             Settings
           </TabsTrigger>
