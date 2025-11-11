@@ -1,35 +1,28 @@
 import { Card, CardContent } from '@/components/ui/card'
 import Container from '@/components/ui/primitives/container'
 import Section from '@/components/ui/primitives/section'
-import { Star } from 'lucide-react'
+import { Shield, Brain, Zap, Heart } from 'lucide-react'
 
-const testimonials = [
+const benefits = [
   {
-    name: "Emma",
-    university: "TU Delft",
-    program: "Computer Science",
-    avatar: "E",
-    rating: 5,
-    text: "I was skeptical at first, but the AI matching really works. My roommate and I have complementary personalities and study habits. Couldn't be happier!",
-    highlight: "Perfect match!"
+    icon: Brain,
+    title: "Science-backed matching",
+    description: "Our algorithm analyzes 40+ compatibility factors to predict roommate success before conflicts start. No more gambling on random matches."
   },
   {
-    name: "Lucas",
-    university: "University of Amsterdam",
-    program: "Economics",
-    avatar: "L",
-    rating: 5,
-    text: "The compatibility scoring is spot on. We clicked immediately and now we're best friends. The platform made the whole process so much easier.",
-    highlight: "Highly recommend!"
+    icon: Shield,
+    title: "Verified & safe",
+    description: "Every student is verified with government ID and selfie verification. You can focus on compatibility, not safety concerns."
   },
   {
-    name: "Sofia",
-    university: "Rotterdam School of Management", 
-    program: "Business Administration",
-    avatar: "S",
-    rating: 5,
-    text: "I was skeptical at first, but the AI matching really works. My roommate and I have complementary personalities and study habits. Couldn't be happier!",
-    highlight: "Highly recommend!"
+    icon: Zap,
+    title: "Save time & money",
+    description: "Get matched in days, not weeks. Prevent costly move-outs and disputes by finding compatible roommates from the start."
+  },
+  {
+    icon: Heart,
+    title: "Find your perfect match",
+    description: "See exactly why you're compatible with transparent explanations. Match on lifestyle, study habits, and values that matter."
   }
 ]
 
@@ -39,56 +32,39 @@ export function Testimonials() {
       <Container>
         <div className="text-center mb-12">
           <h2 className="text-3xl md:text-4xl font-bold text-brand-text mb-4">
-            What students are saying
+            Why Domu Match works
           </h2>
           <p className="text-base md:text-lg leading-relaxed max-w-prose mx-auto text-brand-muted">
-            Join thousands of students who found their perfect roommate match
+            Our compatibility-first approach helps you find roommates as compatible as your best friends
           </p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          {testimonials.map((testimonial, index) => (
-            <Card 
-              key={index}
-              className="rounded-2xl border border-brand-border/50 shadow-elev-1 p-6 md:p-8 bg-white/80 backdrop-blur-sm h-full flex flex-col transition-transform duration-200 hover:-translate-y-0.5 hover:shadow-elev-2"
-            >
-              <CardContent className="p-0 flex flex-col h-full items-center text-center">
-                {/* Quote */}
-                <blockquote className="flex-1 mb-4">
-                  <p className="text-brand-text leading-relaxed mb-4 line-clamp-3">
-                    "{testimonial.text}"
-                  </p>
-                </blockquote>
-
-                {/* Stars */}
-                <div className="flex items-center justify-center mb-4">
-                  {[...Array(testimonial.rating)].map((_, i) => (
-                    <Star key={i} className="h-5 w-5 fill-yellow-400 text-yellow-400" />
-                  ))}
-                </div>
-
-                {/* Author */}
-                <div className="flex flex-col items-center gap-3 pt-4 border-t border-brand-border w-full">
-                  <div className="h-12 w-12 bg-brand-primary/10 rounded-full flex items-center justify-center">
-                  </div>
-                  <div className="flex flex-col items-center">
-                    <div className="font-semibold text-brand-text">
-                      {testimonial.name}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          {benefits.map((benefit, index) => {
+            const Icon = benefit.icon
+            return (
+              <Card 
+                key={index}
+                className="rounded-2xl border border-brand-border/50 shadow-elev-1 p-6 md:p-8 bg-white/80 backdrop-blur-sm h-full flex flex-col transition-transform duration-200 hover:-translate-y-0.5 hover:shadow-elev-2"
+              >
+                <CardContent className="p-0 flex flex-col h-full">
+                  <div className="flex items-start gap-4 mb-4">
+                    <div className="h-12 w-12 bg-brand-primary/10 rounded-xl flex items-center justify-center flex-shrink-0">
+                      <Icon className="h-6 w-6 text-brand-primary" />
                     </div>
-                    <div className="text-sm text-brand-muted">
-                      <div>{testimonial.program}</div>
-                      <div>{testimonial.university}</div>
+                    <div className="flex-1">
+                      <h3 className="text-xl font-semibold text-brand-text mb-2">
+                        {benefit.title}
+                      </h3>
+                      <p className="text-brand-muted leading-relaxed">
+                        {benefit.description}
+                      </p>
                     </div>
                   </div>
-                </div>
-
-                {/* Highlight */}
-                <div className="text-sm font-medium text-brand-accent mt-auto pt-4">
-                  {testimonial.highlight}
-                </div>
-              </CardContent>
-            </Card>
-          ))}
+                </CardContent>
+              </Card>
+            )
+          })}
         </div>
       </Container>
     </Section>

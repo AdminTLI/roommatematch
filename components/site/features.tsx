@@ -276,7 +276,7 @@ export function Features() {
             whileTap={{ scale: 0.95 }}
           >
             <Users className="h-5 w-5" />
-            Join 10,000+ students already matched
+            Get started today and find your perfect match
             <Zap className="h-4 w-4" />
           </motion.div>
         </motion.div>

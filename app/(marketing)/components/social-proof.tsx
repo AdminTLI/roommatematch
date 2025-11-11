@@ -3,7 +3,7 @@
 import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { useApp } from '@/app/providers'
-import { Star, Quote, Users, TrendingUp, Shield, CheckCircle } from 'lucide-react'
+import { Brain, Shield, Eye, Zap } from 'lucide-react'
 
 interface SocialProofProps {
   locale?: 'en' | 'nl'
@@ -14,44 +14,13 @@ export function SocialProof({ locale = 'en' }: SocialProofProps) {
 
   const content = {
     en: {
-      title: "Trusted by students across Dutch universities",
-      subtitle: "Join thousands of students who found their perfect roommate match",
-      mainStat: {
-        value: "90%+",
-        label: "of surveyed students would try a compatibility-based app",
-        description: "Based on our research with 500+ Dutch university students"
-      },
-      testimonials: [
-        {
-          name: "Emma",
-          university: "University of Amsterdam",
-          program: "Computer Science",
-          text: "Found my perfect roommate in just 2 days! The matching system really works.",
-          rating: 5,
-          verified: true
-        },
-        {
-          name: "Liam", 
-          university: "TU Delft",
-          program: "Aerospace Engineering",
-          text: "Finally, a platform that understands student housing needs in the Netherlands.",
-          rating: 5,
-          verified: true
-        },
-        {
-          name: "Sophie",
-          university: "Erasmus University",
-          program: "Economics", 
-          text: "The verification process made me feel safe meeting new people.",
-          rating: 5,
-          verified: true
-        }
-      ],
+      title: "Built for better matches",
+      subtitle: "Our science-backed approach helps you find roommates as compatible as your best friends",
       stats: [
-        { value: "1000+", label: "Students Matched", icon: Users },
-        { value: "95%", label: "Success Rate", icon: TrendingUp },
-        { value: "3", label: "Major Universities", icon: Shield },
-        { value: "24/7", label: "Safety Support", icon: CheckCircle }
+        { value: "40+", label: "Compatibility Factors", icon: Brain, description: "Science-backed algorithm" },
+        { value: "100%", label: "Verified Profiles", icon: Shield, description: "ID-verified community" },
+        { value: "100%", label: "Transparent Matching", icon: Eye, description: "See why you're compatible" },
+        { value: "10 min", label: "Quick Setup", icon: Zap, description: "Get started fast" }
       ],
       universityLogos: [
         { name: "University of Amsterdam", short: "UvA" },
@@ -60,44 +29,13 @@ export function SocialProof({ locale = 'en' }: SocialProofProps) {
       ]
     },
     nl: {
-      title: "Vertrouwd door studenten van Nederlandse universiteiten",
-      subtitle: "Sluit je aan bij duizenden studenten die hun perfecte huisgenoot hebben gevonden",
-      mainStat: {
-        value: "90%+",
-        label: "van ondervraagde studenten zou een compatibiliteits-app proberen",
-        description: "Gebaseerd op ons onderzoek met 500+ Nederlandse universiteitsstudenten"
-      },
-      testimonials: [
-        {
-          name: "Emma",
-          university: "Universiteit van Amsterdam",
-          program: "Informatica",
-          text: "Vond mijn perfecte huisgenoot in slechts 2 dagen! Het matching systeem werkt echt.",
-          rating: 5,
-          verified: true
-        },
-        {
-          name: "Liam",
-          university: "TU Delft", 
-          program: "Luchtvaarttechniek",
-          text: "Eindelijk een platform dat de huisvestingsbehoeften van studenten in Nederland begrijpt.",
-          rating: 5,
-          verified: true
-        },
-        {
-          name: "Sophie",
-          university: "Erasmus Universiteit",
-          program: "Economie",
-          text: "Het verificatieproces liet me veilig voelen bij het ontmoeten van nieuwe mensen.",
-          rating: 5,
-          verified: true
-        }
-      ],
+      title: "Gebouwd voor betere matches",
+      subtitle: "Onze wetenschappelijk onderbouwde aanpak helpt je huisgenoten te vinden die zo compatibel zijn als je beste vrienden",
       stats: [
-        { value: "1000+", label: "Studenten Gematcht", icon: Users },
-        { value: "95%", label: "Succesratio", icon: TrendingUp },
-        { value: "3", label: "Grote Universiteiten", icon: Shield },
-        { value: "24/7", label: "Veiligheidsondersteuning", icon: CheckCircle }
+        { value: "40+", label: "Compatibiliteitsfactoren", icon: Brain, description: "Wetenschappelijk onderbouwd algoritme" },
+        { value: "100%", label: "Geverifieerde Profielen", icon: Shield, description: "ID-geverifieerde community" },
+        { value: "100%", label: "Transparante Matching", icon: Eye, description: "Zie waarom je compatibel bent" },
+        { value: "10 min", label: "Snelle Setup", icon: Zap, description: "Snel aan de slag" }
       ],
       universityLogos: [
         { name: "Universiteit van Amsterdam", short: "UvA" },
@@ -119,78 +57,35 @@ export function SocialProof({ locale = 'en' }: SocialProofProps) {
           <p className="text-xl text-gray-600 dark:text-gray-300 max-w-3xl mx-auto mb-8">
             {text.subtitle}
           </p>
-
-          {/* Main Stat */}
-          <div className="inline-flex items-center gap-4 bg-primary/10 rounded-2xl px-8 py-4 mb-8">
-            <div className="text-4xl font-bold text-primary">{text.mainStat.value}</div>
-            <div className="text-left">
-              <div className="text-lg font-semibold text-gray-900 dark:text-white">
-                {text.mainStat.label}
-              </div>
-              <div className="text-sm text-gray-600 dark:text-gray-300">
-                {text.mainStat.description}
-              </div>
-            </div>
-          </div>
         </div>
 
         {/* Stats Grid */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-6 mb-16">
-          {text.stats.map((stat, index) => (
-            <Card key={index} className="text-center border-2 border-gray-100 hover:border-primary/20 transition-colors">
-              <CardContent className="pt-6">
-                <stat.icon className="h-8 w-8 text-primary mx-auto mb-3" />
-                <div className="text-3xl font-bold text-gray-900 dark:text-white mb-1">
-                  {stat.value}
-                </div>
-                <div className="text-sm text-gray-600 dark:text-gray-300">
-                  {stat.label}
-                </div>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
-
-        {/* Testimonials */}
-        <div className="grid md:grid-cols-3 gap-8 mb-16">
-          {text.testimonials.map((testimonial, index) => (
-            <Card key={index} className="border-2 border-gray-100 hover:border-primary/20 transition-colors">
-              <CardContent className="pt-6">
-                <div className="flex items-center mb-4">
-                  {[...Array(testimonial.rating)].map((_, i) => (
-                    <Star key={i} className="h-5 w-5 text-yellow-400 fill-current" />
-                  ))}
-                  {testimonial.verified && (
-                    <Badge variant="secondary" className="ml-2 text-xs">
-                      Verified
-                    </Badge>
-                  )}
-                </div>
-                
-                <Quote className="h-6 w-6 text-primary mb-3" />
-                <p className="text-gray-600 dark:text-gray-300 mb-4 italic">
-                  &quot;{testimonial.text}&quot;
-                </p>
-                
-                <div className="border-t border-gray-200 dark:border-gray-700 pt-4">
-                  <div className="font-semibold text-gray-900 dark:text-white">
-                    {testimonial.name}
+          {text.stats.map((stat, index) => {
+            const Icon = stat.icon
+            return (
+              <Card key={index} className="text-center border-2 border-gray-100 hover:border-primary/20 transition-colors">
+                <CardContent className="pt-6">
+                  <Icon className="h-8 w-8 text-primary mx-auto mb-3" />
+                  <div className="text-3xl font-bold text-gray-900 dark:text-white mb-1">
+                    {stat.value}
                   </div>
-                  <div className="text-sm text-gray-500">
-                    <span>{testimonial.program}</span>
-                    <span className="mx-2">•</span>
-                    <span>{testimonial.university}</span>
+                  <div className="text-sm font-medium text-gray-900 dark:text-white mb-1">
+                    {stat.label}
                   </div>
-                </div>
-              </CardContent>
-            </Card>
-          ))}
+                  <div className="text-xs text-gray-600 dark:text-gray-300">
+                    {stat.description}
+                  </div>
+                </CardContent>
+              </Card>
+            )
+          })}
         </div>
 
         {/* University Logos */}
         <div className="text-center">
           <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-6">
-            Trusted by leading Dutch universities
+            Designed for Dutch universities
           </h3>
           <div className="flex flex-wrap justify-center items-center gap-8 opacity-60">
             {text.universityLogos.map((uni, index) => (

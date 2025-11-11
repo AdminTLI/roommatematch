@@ -27,8 +27,8 @@ export function FinalCTA() {
               Ready to go from strangers to roommates?
             </h2>
             <p className="text-base md:text-lg leading-relaxed max-w-prose text-brand-muted">
-              Join thousands of students who found their ideal roommate match. 
-              Get started today and discover who you're compatible with.
+              Get started today and discover who you're compatible with. 
+              Our science-backed matching helps you find roommates as compatible as your best friends.
             </p>
             
             {/* CTA Buttons */}

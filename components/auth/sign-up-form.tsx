@@ -107,7 +107,7 @@ export function SignUpForm() {
       <CardHeader className="text-center">
         <CardTitle className="text-2xl">Create your account</CardTitle>
         <CardDescription>
-          Join thousands of students finding their perfect roommate match
+          Start your compatibility-based roommate search today
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-6">

@@ -55,7 +55,7 @@ export function Hero() {
             </h1>
             <p className="text-base md:text-lg leading-relaxed max-w-prose text-brand-muted">
               Domu Match pairs you with compatible students based on lifestyle, study habits, and personality. 
-              Join thousands of students who found their perfect roommate match.
+              Our science-backed algorithm analyzes 40+ factors to prevent conflicts before they start—so moving in feels easy.
             </p>
             
             {/* CTA Buttons */}
@@ -91,11 +91,11 @@ export function Hero() {
               </li>
               <li className="flex items-center gap-2">
                 <Check className="h-4 w-4 text-green-500" />
-                University partnerships
+                Science-backed matching
               </li>
               <li className="flex items-center gap-2">
                 <Check className="h-4 w-4 text-green-500" />
-                Proven results
+                Transparent compatibility
               </li>
             </ul>
           </div>

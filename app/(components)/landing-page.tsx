@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { useApp } from '@/app/providers'
 import Link from 'next/link'
-import { ArrowRight, Shield, Users, Heart, CheckCircle, Star } from 'lucide-react'
+import { ArrowRight, Shield, Users, Heart, CheckCircle, Brain, Eye, Zap } from 'lucide-react'
 
 export function LandingPage() {
   const { t } = useApp()
@@ -27,24 +27,26 @@ export function LandingPage() {
     }
   ]
 
-  const testimonials = [
+  const benefits = [
     {
-      name: 'Emma',
-      university: 'University of Amsterdam',
-      text: 'Found my perfect roommate in just 2 days! The matching system really works.',
-      rating: 5
+      icon: Brain,
+      title: '40+ Compatibility Factors',
+      description: 'Science-backed algorithm analyzes lifestyle, study habits, and personality'
     },
     {
-      name: 'Liam',
-      university: 'TU Delft',
-      text: 'Finally, a platform that understands student housing needs in the Netherlands.',
-      rating: 5
+      icon: Shield,
+      title: '100% Verified Profiles',
+      description: 'Every student is ID-verified for your safety and peace of mind'
     },
     {
-      name: 'Sophie',
-      university: 'Erasmus University',
-      text: 'The verification process made me feel safe meeting new people.',
-      rating: 5
+      icon: Eye,
+      title: 'Transparent Matching',
+      description: 'See exactly why you\'re compatible with clear explanations'
+    },
+    {
+      icon: Zap,
+      title: 'Quick & Easy',
+      description: 'Get matched in days, not weeks. Complete your profile in 10 minutes'
     }
   ]
 
@@ -119,57 +121,28 @@ export function LandingPage() {
           </div>
         </section>
 
-        {/* Stats Section */}
+        {/* Benefits Section */}
         <section className="bg-primary text-primary-foreground py-16">
           <div className="container mx-auto px-4">
-            <div className="grid md:grid-cols-4 gap-8 text-center">
-              <div>
-                <div className="text-4xl font-bold mb-2">1000+</div>
-                <div className="text-lg opacity-90">Students Matched</div>
-              </div>
-              <div>
-                <div className="text-4xl font-bold mb-2">95%</div>
-                <div className="text-lg opacity-90">Success Rate</div>
-              </div>
-              <div>
-                <div className="text-4xl font-bold mb-2">3</div>
-                <div className="text-lg opacity-90">Major Universities</div>
-              </div>
-              <div>
-                <div className="text-4xl font-bold mb-2">24/7</div>
-                <div className="text-lg opacity-90">Safety Support</div>
-              </div>
+            <div className="text-center mb-12">
+              <h2 className="text-3xl font-bold mb-4">
+                Why Domu Match Works
+              </h2>
+              <p className="text-lg opacity-90 max-w-2xl mx-auto">
+                Our science-backed approach helps you find roommates as compatible as your best friends
+              </p>
             </div>
-          </div>
-        </section>
-
-        {/* Testimonials Section */}
-        <section className="container mx-auto px-4 py-16">
-          <div className="text-center mb-12">
-            <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-4">
-              What Students Say
-            </h2>
-            <p className="text-lg text-gray-600 dark:text-gray-300">
-              Join thousands of happy students who went from strangers to roommates
-            </p>
-          </div>
-          <div className="grid md:grid-cols-3 gap-8">
-            {testimonials.map((testimonial, index) => (
-              <Card key={index}>
-                <CardContent className="pt-6">
-                  <div className="flex items-center mb-4">
-                    {[...Array(testimonial.rating)].map((_, i) => (
-                      <Star key={i} className="h-5 w-5 text-yellow-400 fill-current" />
-                    ))}
-                  </div>
-                  <p className="text-gray-600 dark:text-gray-300 mb-4">
-                    &quot;{testimonial.text}&quot;
-                  </p>
-                  <div className="font-semibold">{testimonial.name}</div>
-                  <div className="text-sm text-gray-500">{testimonial.university}</div>
-                </CardContent>
-              </Card>
-            ))}
+            <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
+              {benefits.map((benefit, index) => (
+                <Card key={index} className="bg-white/10 border-white/20 text-center">
+                  <CardContent className="pt-6">
+                    <benefit.icon className="h-12 w-12 mx-auto mb-4 opacity-90" />
+                    <h3 className="text-xl font-bold mb-2">{benefit.title}</h3>
+                    <p className="text-sm opacity-90">{benefit.description}</p>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
           </div>
         </section>
 
@@ -180,7 +153,7 @@ export function LandingPage() {
               Ready to go from strangers to roommates?
             </h2>
             <p className="text-lg text-gray-600 dark:text-gray-300 mb-8 max-w-2xl mx-auto">
-              Join thousands of students who have already found their ideal living situation through our platform.
+              Get started today and discover who you're compatible with. Our science-backed matching helps you find roommates as compatible as your best friends.
             </p>
             <Link href="/auth/sign-up">
               <Button size="lg" className="w-full sm:w-auto">

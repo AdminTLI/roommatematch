@@ -3,7 +3,7 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { useApp } from '@/app/providers'
-import { X, Check, AlertTriangle, Users, Target, Clock } from 'lucide-react'
+import { X, Check, AlertTriangle, Users, Target, Clock, Shield } from 'lucide-react'
 
 interface DiffGridProps {
   locale?: 'en' | 'nl'
@@ -35,8 +35,8 @@ export function DiffGrid({ locale = 'en' }: DiffGridProps) {
           ],
           metrics: [
             { label: "Average time to find", value: "3-6 weeks", icon: Clock },
-            { label: "Conflict rate", value: "40-60%", icon: AlertTriangle },
-            { label: "Success rate", value: "30-50%", icon: Target }
+            { label: "No compatibility check", value: "Manual search", icon: AlertTriangle },
+            { label: "Safety risks", value: "Unverified users", icon: Target }
           ]
         },
         domuMatch: {
@@ -57,8 +57,8 @@ export function DiffGrid({ locale = 'en' }: DiffGridProps) {
           ],
           metrics: [
             { label: "Average time to find", value: "3-7 days", icon: Clock },
-            { label: "Conflict rate", value: "5-15%", icon: AlertTriangle },
-            { label: "Success rate", value: "85-95%", icon: Target }
+            { label: "Compatibility factors", value: "40+", icon: Target },
+            { label: "Verified profiles", value: "100%", icon: Shield }
           ]
         }
       }
@@ -85,8 +85,8 @@ export function DiffGrid({ locale = 'en' }: DiffGridProps) {
           ],
           metrics: [
             { label: "Gemiddelde zoektijd", value: "3-6 weken", icon: Clock },
-            { label: "Conflictratio", value: "40-60%", icon: AlertTriangle },
-            { label: "Succesratio", value: "30-50%", icon: Target }
+            { label: "Geen compatibiliteitscheck", value: "Handmatig zoeken", icon: AlertTriangle },
+            { label: "Veiligheidsrisico's", value: "Niet-geverifieerde gebruikers", icon: Target }
           ]
         },
         domuMatch: {
@@ -107,8 +107,8 @@ export function DiffGrid({ locale = 'en' }: DiffGridProps) {
           ],
           metrics: [
             { label: "Gemiddelde zoektijd", value: "3-7 dagen", icon: Clock },
-            { label: "Conflictratio", value: "5-15%", icon: AlertTriangle },
-            { label: "Succesratio", value: "85-95%", icon: Target }
+            { label: "Compatibiliteitsfactoren", value: "40+", icon: Target },
+            { label: "Geverifieerde profielen", value: "100%", icon: Shield }
           ]
         }
       }

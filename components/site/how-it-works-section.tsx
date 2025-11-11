@@ -222,8 +222,8 @@ export function HowItWorksSection() {
             Ready to find your perfect match?
           </h2>
           <p className="text-lg text-brand-muted mb-8 max-w-2xl mx-auto">
-            Join thousands of students who found their ideal roommate. 
-            The process takes just 10 minutes to get started.
+            Get started today and find your ideal roommate. 
+            The process takes just 10 minutes to complete your compatibility profile.
           </p>
           <Button size="lg" className="bg-brand-primary hover:bg-brand-primary/90">
             Get started for free

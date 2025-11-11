@@ -33,10 +33,10 @@ export function Universities() {
       <Container>
         <div className="text-center mb-12">
           <h2 className="text-3xl md:text-4xl font-bold text-brand-text mb-4">
-            Partnered with leading Dutch universities
+            Designed for Dutch universities
           </h2>
           <p className="text-base md:text-lg leading-relaxed max-w-prose mx-auto text-brand-muted">
-            We work closely with universities to provide the best roommate matching experience for their students
+            Built specifically for students at Dutch universities. Available for students across the Netherlands.
           </p>
         </div>
 
@@ -55,14 +55,14 @@ export function Universities() {
 
         <div className="text-center mt-12">
           <p className="text-sm text-brand-muted mb-6">
-            Want to partner with us? Join our network of trusted universities.
+            Interested in bringing Domu Match to your university? Get in touch to learn more.
           </p>
           <Button 
             variant="outline"
             size="lg"
             onClick={handleBecomePartner}
           >
-            Become a partner
+            Contact us
           </Button>
         </div>
       </Container>

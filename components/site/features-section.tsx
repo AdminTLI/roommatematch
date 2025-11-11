@@ -226,22 +226,18 @@ export function FeaturesSection() {
         </div>
 
         {/* Stats */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-6 mb-16">
+        <div className="grid grid-cols-2 md:grid-cols-3 gap-6 mb-16">
           <div className="text-center">
             <div className="text-3xl font-bold text-brand-primary mb-2">40+</div>
             <div className="text-sm text-brand-muted">Compatibility factors</div>
           </div>
           <div className="text-center">
-            <div className="text-3xl font-bold text-brand-primary mb-2">94%</div>
-            <div className="text-sm text-brand-muted">Match accuracy</div>
-          </div>
-          <div className="text-center">
-            <div className="text-3xl font-bold text-brand-primary mb-2">40%</div>
-            <div className="text-sm text-brand-muted">Fewer disputes</div>
-          </div>
-          <div className="text-center">
             <div className="text-3xl font-bold text-brand-primary mb-2">100%</div>
             <div className="text-sm text-brand-muted">Verified profiles</div>
+          </div>
+          <div className="text-center">
+            <div className="text-3xl font-bold text-brand-primary mb-2">10 min</div>
+            <div className="text-sm text-brand-muted">Quick setup</div>
           </div>
         </div>
 
@@ -251,8 +247,8 @@ export function FeaturesSection() {
             Experience the difference
           </h2>
           <p className="text-lg text-brand-muted mb-8 max-w-2xl mx-auto">
-            Join thousands of students and universities who've transformed their housing experience 
-            with intelligent matching technology.
+            Experience the difference with our science-backed matching technology. 
+            Find roommates as compatible as your best friends.
           </p>
           <div className="flex flex-wrap justify-center gap-4">
             <Button size="lg" className="bg-brand-primary hover:bg-brand-primary/90">

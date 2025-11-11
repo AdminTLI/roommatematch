@@ -1,32 +1,32 @@
 import { Card, CardContent } from '@/components/ui/card'
 import Container from '@/components/ui/primitives/container'
 import Section from '@/components/ui/primitives/section'
-import { Users, Heart, GraduationCap, Star } from 'lucide-react'
+import { Brain, Shield, Eye, Zap } from 'lucide-react'
 
 const stats = [
   {
-    icon: Users,
-    value: "10,000+",
-    label: "Students matched",
-    description: "Successfully paired roommates"
+    icon: Brain,
+    value: "40+",
+    label: "Compatibility factors",
+    description: "Science-backed matching algorithm"
   },
   {
-    icon: Heart,
-    value: "94%",
-    label: "Satisfaction rate",
-    description: "Happy with their match"
+    icon: Shield,
+    value: "100%",
+    label: "Verified profiles",
+    description: "ID-verified community only"
   },
   {
-    icon: GraduationCap,
-    value: "50+",
-    label: "Partner universities",
-    description: "Trusted by leading institutions"
+    icon: Eye,
+    value: "100%",
+    label: "Transparent matching",
+    description: "See why you're compatible"
   },
   {
-    icon: Star,
-    value: "4.8★",
-    label: "Average rating",
-    description: "Based on 2,000+ reviews"
+    icon: Zap,
+    value: "10 min",
+    label: "Quick setup",
+    description: "Get matched in days, not weeks"
   }
 ]
 
@@ -36,10 +36,10 @@ export function Counters() {
       <Container>
         <div className="text-center mb-12">
           <h2 className="text-3xl md:text-4xl font-bold text-brand-text mb-4">
-            Trusted by thousands of students
+            Built for better matches
           </h2>
           <p className="text-base md:text-lg leading-relaxed max-w-prose mx-auto text-brand-muted">
-            Join the growing community of students who found their perfect roommate match
+            Our science-backed approach helps you find roommates as compatible as your best friends
           </p>
         </div>
 

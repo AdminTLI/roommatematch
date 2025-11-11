@@ -10,7 +10,7 @@ export default function Footer() {
           {/* Brand */}
           <div className="space-y-4">
             <h3 className="text-white text-xl font-semibold">Domu Match</h3>
-            <p className="text-slate-400 max-w-prose">The smartest way to find compatible roommates. Join thousands who found their perfect match.</p>
+            <p className="text-slate-400 max-w-prose">The smartest way to find compatible roommates. Science-backed matching for better living.</p>
             <div className="flex items-center gap-3">
               <a aria-label="Twitter" className="rounded-full p-2 bg-white/5 hover:bg-white/10 focus-visible:ring-2 focus-visible:ring-brand-primary"><Twitter size={18}/></a>
               <a aria-label="LinkedIn" className="rounded-full p-2 bg-white/5 hover:bg-white/10 focus-visible:ring-2 focus-visible:ring-brand-primary"><Linkedin size={18}/></a>

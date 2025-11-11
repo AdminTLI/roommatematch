@@ -59,7 +59,7 @@ export function Hero() {
             <motion.div variants={fadeInUp} className="space-y-4">
               <Badge variant="accent" className="w-fit">
                 <Star className="w-3 h-3 mr-1" />
-                Trusted by 50+ universities
+                Science-backed matching
               </Badge>
               
               <h1 className="text-display text-ink-900">
@@ -68,7 +68,7 @@ export function Hero() {
               </h1>
               
               <p className="text-h4 text-ink-700 max-w-2xl">
-                Domu Match pairs you with compatible students based on lifestyle and study rhythm—so moving in feels easy.
+                Domu Match pairs you with compatible students based on lifestyle and study rhythm. Our algorithm analyzes 40+ factors to prevent conflicts before they start—so moving in feels easy.
               </p>
             </motion.div>
 
@@ -94,7 +94,7 @@ export function Hero() {
               </div>
               <div className="flex items-center gap-2">
                 <CheckCircle className="w-4 h-4 text-mint-600" />
-                <span>University partnerships</span>
+                <span>Designed for Dutch universities</span>
               </div>
             </motion.div>
           </motion.div>
@@ -167,8 +167,8 @@ export function Hero() {
                 className="absolute -top-4 -right-4 z-20"
               >
                 <Card variant="accent" className="p-4 text-center">
-                  <div className="text-2xl font-bold text-brand-900">94%</div>
-                  <div className="text-body-xs text-brand-700">Compatibility</div>
+                  <div className="text-2xl font-bold text-brand-900">40+</div>
+                  <div className="text-body-xs text-brand-700">Factors</div>
                 </Card>
               </motion.div>
 

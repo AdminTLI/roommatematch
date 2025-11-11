@@ -2,21 +2,21 @@ import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import Container from '@/components/ui/primitives/container'
 import Section from '@/components/ui/primitives/section'
-import { CheckCircle, TrendingDown, Users, BarChart3, Shield, Clock } from 'lucide-react'
+import { CheckCircle, Brain, Shield, Clock, Eye, BarChart3 } from 'lucide-react'
 
 export function UniversitiesSection() {
   const stats = [
-    { icon: TrendingDown, value: '40%', label: 'Reduction in housing disputes' },
-    { icon: Users, value: '10,000+', label: 'Students matched successfully' },
-    { icon: BarChart3, value: '4.8★', label: 'Average satisfaction rating' },
+    { icon: Brain, value: '40+', label: 'Compatibility factors analyzed' },
     { icon: Shield, value: '100%', label: 'Verified student profiles' },
+    { icon: Eye, value: '100%', label: 'Transparent matching process' },
+    { icon: Clock, value: '10 min', label: 'Quick setup time' },
   ]
 
   const benefits = [
     {
-      title: "Reduce Housing Disputes by 40%",
-      description: "Our intelligent matching algorithm prevents compatibility issues before they start, reducing staff workload and improving student satisfaction.",
-      icon: TrendingDown,
+      title: "Science-Backed Matching",
+      description: "Our algorithm analyzes 40+ compatibility factors to prevent conflicts before they start, improving student satisfaction and reducing disputes.",
+      icon: Brain,
     },
     {
       title: "Streamline Housing Operations",
@@ -30,7 +30,7 @@ export function UniversitiesSection() {
     },
     {
       title: "Save Time & Resources",
-      description: "Reduce manual matching time by 80%. Your housing team can focus on high-value activities instead of endless roommate disputes.",
+      description: "Automate the matching process so your housing team can focus on high-value activities instead of manual roommate matching.",
       icon: Clock,
     },
   ]
@@ -111,36 +111,33 @@ export function UniversitiesSection() {
         <div className="bg-white rounded-2xl border border-brand-border p-8 md:p-12">
           <div className="text-center mb-8">
             <h2 className="text-3xl font-bold text-brand-text mb-4">
-              Trusted by leading universities
+              Designed for Dutch universities
             </h2>
             <p className="text-lg text-brand-muted">
-              Join housing departments who've transformed their student accommodation experience
+              Built specifically for university housing departments to improve student accommodation experience
             </p>
           </div>
 
           <div className="grid md:grid-cols-3 gap-8">
             <div className="text-center">
-              <div className="text-lg font-semibold text-brand-text mb-2">TU Delft</div>
+              <div className="text-lg font-semibold text-brand-text mb-2">Science-Backed</div>
               <p className="text-sm text-brand-muted">
-                "Reduced housing disputes by 45% in our pilot program. Students love the transparency of the matching process."
+                Our algorithm analyzes 40+ compatibility factors to match students based on lifestyle, study habits, and preferences.
               </p>
-              <div className="text-sm font-medium text-brand-primary mt-2">— Housing Department</div>
             </div>
             
             <div className="text-center">
-              <div className="text-lg font-semibold text-brand-text mb-2">University of Amsterdam</div>
+              <div className="text-lg font-semibold text-brand-text mb-2">Transparent Process</div>
               <p className="text-sm text-brand-muted">
-                "The admin dashboard gives us insights we never had before. We can proactively address housing issues."
+                Students see exactly why they're matched with clear explanations. No black box—just transparent compatibility matching.
               </p>
-              <div className="text-sm font-medium text-brand-primary mt-2">— Student Services</div>
             </div>
             
             <div className="text-center">
-              <div className="text-lg font-semibold text-brand-text mb-2">Maastricht University</div>
+              <div className="text-lg font-semibold text-brand-text mb-2">Safe & Verified</div>
               <p className="text-sm text-brand-muted">
-                "Integration was seamless. Our international students feel safer with the verification process."
+                Every student is verified with government ID. All communication is moderated and logged for safety and peace of mind.
               </p>
-              <div className="text-sm font-medium text-brand-primary mt-2">— Accommodation Office</div>
             </div>
           </div>
         </div>

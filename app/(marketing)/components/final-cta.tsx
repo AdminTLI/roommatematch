@@ -16,7 +16,7 @@ export function FinalCTA({ locale = 'en' }: FinalCTAProps) {
   const content = {
     en: {
       title: "Ready to go from strangers to roommates?",
-      subtitle: "Join thousands of students who have already found their ideal living situation through our platform.",
+      subtitle: "Get started today and discover who you're compatible with. Our science-backed matching helps you find roommates as compatible as your best friends.",
       cta: {
         student: {
           title: "For Students",
@@ -36,7 +36,7 @@ export function FinalCTA({ locale = 'en' }: FinalCTAProps) {
     },
     nl: {
       title: "Klaar om van vreemden tot huisgenoten te gaan?",
-      subtitle: "Sluit je aan bij duizenden studenten die hun ideale woonsituatie al hebben gevonden via ons platform.",
+      subtitle: "Begin vandaag en ontdek met wie je compatibel bent. Onze wetenschappelijk onderbouwde matching helpt je huisgenoten te vinden die zo compatibel zijn als je beste vrienden.",
       cta: {
         student: {
           title: "Voor Studenten",
@@ -124,7 +124,7 @@ export function FinalCTA({ locale = 'en' }: FinalCTAProps) {
         {/* Bottom trust indicator */}
         <div className="text-center mt-12">
           <p className="text-sm text-gray-500 dark:text-gray-400">
-            Trusted by students at University of Amsterdam, TU Delft, and Erasmus University
+            Designed for students at Dutch universities
           </p>
         </div>
       </div>

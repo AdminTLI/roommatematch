@@ -19,8 +19,8 @@ const features = [
   {
     icon: Brain,
     title: "Real compatibility, not guesswork",
-    description: "Our AI analyzes lifestyle, study habits, and personality to find your perfect match—not just random roommates.",
-    highlight: "94% success rate",
+    description: "Our AI analyzes 40+ lifestyle factors, study habits, and personality to find your perfect match—not just random roommates.",
+    highlight: "40+ factors",
     color: "brand"
   },
   {
@@ -46,9 +46,9 @@ const features = [
   },
   {
     icon: Users,
-    title: "University partnerships",
-    description: "Integrated with 50+ universities across the Netherlands. Seamless onboarding through your student portal.",
-    highlight: "50+ universities",
+    title: "Designed for Dutch universities",
+    description: "Built specifically for students at Dutch universities. Seamless onboarding through your student email.",
+    highlight: "Dutch universities",
     color: "brand"
   },
   {
