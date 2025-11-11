@@ -199,24 +199,26 @@ export function Universities() {
                   <p className="text-brand-muted">{t.noUniversities}</p>
                 </div>
               ) : (
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 mt-8">
-                  {universities.map((university) => (
-                    <Card
-                      key={university.id}
-                      className="rounded-xl border border-brand-border/50 bg-white/80 backdrop-blur-sm p-6 shadow-elev-1 hover:shadow-elev-2 transition-shadow duration-200"
-                    >
-                      <div className="flex flex-col h-full">
-                        <h3 className="font-semibold text-brand-text text-lg mb-2 leading-tight">
-                          {university.name}
-                        </h3>
-                        <div className="mt-auto pt-4 border-t border-brand-border/30">
-                          <p className="text-sm text-brand-muted">
-                            {formatUserCount(university.user_count)}
-                          </p>
+                <div className="flex justify-center mt-8">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 w-full max-w-7xl mx-auto">
+                    {universities.map((university) => (
+                      <Card
+                        key={university.id}
+                        className="rounded-xl border border-brand-border/50 bg-white/80 backdrop-blur-sm p-6 shadow-elev-1 hover:shadow-elev-2 transition-shadow duration-200"
+                      >
+                        <div className="flex flex-col h-full">
+                          <h3 className="font-semibold text-brand-text text-lg mb-2 leading-tight text-center">
+                            {university.name}
+                          </h3>
+                          <div className="mt-auto pt-4 border-t border-brand-border/30 text-center">
+                            <p className="text-sm text-brand-muted">
+                              {formatUserCount(university.user_count)}
+                            </p>
+                          </div>
                         </div>
-                      </div>
-                    </Card>
-                  ))}
+                      </Card>
+                    ))}
+                  </div>
                 </div>
               )}
             </>
