@@ -354,10 +354,10 @@ CREATE INDEX idx_user_vectors_vector_hnsw ON user_vectors USING hnsw (vector vec
 CREATE OR REPLACE FUNCTION update_updated_at_column()
 RETURNS TRIGGER AS $$
 BEGIN
-  NEW.updated_at = NOW();
+  NEW.updated_at = public.now();
   RETURN NEW;
 END;
-$$ language 'plpgsql';
+$$ language 'plpgsql' SET search_path = '';
 
 -- Apply updated_at triggers to relevant tables
 CREATE TRIGGER update_universities_updated_at BEFORE UPDATE ON universities FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();

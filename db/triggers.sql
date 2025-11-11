@@ -456,12 +456,12 @@ CREATE TRIGGER handle_user_deletion_trigger
 CREATE OR REPLACE FUNCTION handle_new_user()
 RETURNS TRIGGER AS $$
 BEGIN
-  INSERT INTO users (id, email, is_active)
+  INSERT INTO public.users (id, email, is_active)
   VALUES (NEW.id, NEW.email, true);
   
   RETURN NEW;
 END;
-$$ LANGUAGE plpgsql SECURITY DEFINER;
+$$ LANGUAGE plpgsql SECURITY DEFINER SET search_path = '';
 
 -- Apply trigger to auth.users
 CREATE TRIGGER on_auth_user_created
@@ -532,13 +532,13 @@ CREATE OR REPLACE FUNCTION create_notification(
 DECLARE
   notification_id UUID;
 BEGIN
-  INSERT INTO notifications (user_id, type, title, message, metadata)
+  INSERT INTO public.notifications (user_id, type, title, message, metadata)
   VALUES (p_user_id, p_type, p_title, p_message, p_metadata)
   RETURNING id INTO notification_id;
   
   RETURN notification_id;
 END;
-$$ LANGUAGE plpgsql;
+$$ LANGUAGE plpgsql SET search_path = '';
 
 -- Function to update first_message_at when first message is sent
 CREATE OR REPLACE FUNCTION update_chat_first_message()

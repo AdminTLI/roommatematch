@@ -20,6 +20,7 @@ CREATE OR REPLACE FUNCTION compute_compatibility_score(
 ) 
 LANGUAGE plpgsql
 SECURITY DEFINER
+SET search_path = ''
 AS $$
 DECLARE
   user_a_vector numeric[];
@@ -40,8 +41,8 @@ DECLARE
   academic_details jsonb;
 BEGIN
   -- Get user vectors and profiles
-  SELECT vector INTO user_a_vector FROM user_vectors WHERE user_id = user_a_id;
-  SELECT vector INTO user_b_vector FROM user_vectors WHERE user_id = user_b_id;
+  SELECT vector INTO user_a_vector FROM public.user_vectors WHERE user_id = user_a_id;
+  SELECT vector INTO user_b_vector FROM public.user_vectors WHERE user_id = user_b_id;
   
   -- Get user profiles for lifestyle matching
   SELECT 
@@ -52,9 +53,9 @@ BEGIN
     p.faculty,
     usy.study_year
   INTO user_a_profile
-  FROM user_academic ua
-  LEFT JOIN programs p ON ua.program_id = p.id
-  LEFT JOIN user_study_year_v usy ON ua.user_id = usy.user_id
+  FROM public.user_academic ua
+  LEFT JOIN public.programs p ON ua.program_id = p.id
+  LEFT JOIN public.user_study_year_v usy ON ua.user_id = usy.user_id
   WHERE ua.user_id = user_a_id;
   
   SELECT 
@@ -65,9 +66,9 @@ BEGIN
     p.faculty,
     usy.study_year
   INTO user_b_profile
-  FROM user_academic ua
-  LEFT JOIN programs p ON ua.program_id = p.id
-  LEFT JOIN user_study_year_v usy ON ua.user_id = usy.user_id
+  FROM public.user_academic ua
+  LEFT JOIN public.programs p ON ua.program_id = p.id
+  LEFT JOIN public.user_study_year_v usy ON ua.user_id = usy.user_id
   WHERE ua.user_id = user_b_id;
 
   -- Compute cosine similarity (simplified)
@@ -196,15 +197,16 @@ CREATE OR REPLACE FUNCTION get_user_matches(
 )
 LANGUAGE plpgsql
 SECURITY DEFINER
+SET search_path = ''
 AS $$
 BEGIN
   RETURN QUERY
   WITH filtered_users AS (
     SELECT DISTINCT p.user_id
-    FROM profiles p
-    JOIN user_academic ua ON p.user_id = ua.user_id
-    LEFT JOIN programs pr ON ua.program_id = pr.id
-    LEFT JOIN user_study_year_v usy ON p.user_id = usy.user_id
+    FROM public.profiles p
+    JOIN public.user_academic ua ON p.user_id = ua.user_id
+    LEFT JOIN public.programs pr ON ua.program_id = pr.id
+    LEFT JOIN public.user_study_year_v usy ON p.user_id = usy.user_id
     WHERE p.user_id != p_user_id
       AND p.verification_status = 'verified'
       AND (p_university_ids IS NULL OR ua.university_id = ANY(p_university_ids))
@@ -233,14 +235,14 @@ BEGIN
     cs.house_rules_suggestion,
     cs.academic_details
   FROM filtered_users fu
-  JOIN profiles pr ON fu.user_id = pr.user_id
-  JOIN user_academic ua ON fu.user_id = ua.user_id
-  JOIN universities u ON ua.university_id = u.id
-  LEFT JOIN programs prog ON ua.program_id = prog.id
-  LEFT JOIN user_study_year_v usy ON fu.user_id = usy.user_id
-  CROSS JOIN LATERAL compute_compatibility_score(p_user_id, fu.user_id) cs
+  JOIN public.profiles pr ON fu.user_id = pr.user_id
+  JOIN public.user_academic ua ON fu.user_id = ua.user_id
+  JOIN public.universities u ON ua.university_id = u.id
+  LEFT JOIN public.programs prog ON ua.program_id = prog.id
+  LEFT JOIN public.user_study_year_v usy ON fu.user_id = usy.user_id
+  CROSS JOIN LATERAL public.compute_compatibility_score(p_user_id, fu.user_id) cs
   WHERE NOT EXISTS (
-    SELECT 1 FROM match_decisions md 
+    SELECT 1 FROM public.match_decisions md 
     WHERE md.user_id = p_user_id AND md.matched_user_id = fu.user_id
   )
   ORDER BY cs.compatibility_score DESC
@@ -262,13 +264,14 @@ CREATE OR REPLACE FUNCTION get_group_matches(
 )
 LANGUAGE plpgsql
 SECURITY DEFINER
+SET search_path = ''
 AS $$
 BEGIN
   RETURN QUERY
   WITH user_compatible_groups AS (
     SELECT DISTINCT g.id as group_id
-    FROM groups g
-    JOIN group_members gm ON g.id = gm.group_id
+    FROM public.groups g
+    JOIN public.group_members gm ON g.id = gm.group_id
     WHERE gm.user_id = p_user_id
       AND g.status = 'active'
   ),
@@ -279,12 +282,12 @@ BEGIN
       AVG(
         CASE 
           WHEN gm.user_id = p_user_id THEN 0
-          ELSE (SELECT compatibility_score FROM compute_compatibility_score(p_user_id, gm.user_id))
+          ELSE (SELECT compatibility_score FROM public.compute_compatibility_score(p_user_id, gm.user_id))
         END
       ) as avg_compatibility
     FROM user_compatible_groups ug
-    JOIN groups g ON ug.group_id = g.id
-    JOIN group_members gm ON g.id = gm.group_id
+    JOIN public.groups g ON ug.group_id = g.id
+    JOIN public.group_members gm ON g.id = gm.group_id
     GROUP BY g.id
     HAVING COUNT(gm.user_id) >= 2
   )
@@ -301,11 +304,11 @@ BEGIN
           'program', COALESCE(prog.name, 'Undecided')
         )
       )
-      FROM group_members gm
-      JOIN profiles pr ON gm.user_id = pr.user_id
-      JOIN user_academic ua ON gm.user_id = ua.user_id
-      JOIN universities u ON ua.university_id = u.id
-      LEFT JOIN programs prog ON ua.program_id = prog.id
+      FROM public.group_members gm
+      JOIN public.profiles pr ON gm.user_id = pr.user_id
+      JOIN public.user_academic ua ON gm.user_id = ua.user_id
+      JOIN public.universities u ON ua.university_id = u.id
+      LEFT JOIN public.programs prog ON ua.program_id = prog.id
       WHERE gm.group_id = gc.group_id AND gm.user_id != p_user_id
     ) as members
   FROM group_compatibility gc
@@ -330,50 +333,42 @@ CREATE OR REPLACE FUNCTION get_admin_analytics(
 )
 LANGUAGE plpgsql
 SECURITY DEFINER
+SET search_path = ''
 AS $$
-DECLARE
-  filter_condition text;
 BEGIN
-  -- Build filter condition based on admin's university
-  IF p_admin_university_id IS NOT NULL THEN
-    filter_condition := 'WHERE ua.university_id = ''' || p_admin_university_id || '''';
-  ELSE
-    filter_condition := '';
-  END IF;
-
   RETURN QUERY
   SELECT 
-    (SELECT COUNT(*) FROM profiles p 
-     JOIN user_academic ua ON p.user_id = ua.user_id 
+    (SELECT COUNT(*) FROM public.profiles p 
+     JOIN public.user_academic ua ON p.user_id = ua.user_id 
      WHERE p_admin_university_id IS NULL OR ua.university_id = p_admin_university_id)::int,
     
-    (SELECT COUNT(*) FROM profiles p 
-     JOIN user_academic ua ON p.user_id = ua.user_id 
+    (SELECT COUNT(*) FROM public.profiles p 
+     JOIN public.user_academic ua ON p.user_id = ua.user_id 
      WHERE p.verification_status = 'verified' 
      AND (p_admin_university_id IS NULL OR ua.university_id = p_admin_university_id))::int,
     
-    (SELECT COUNT(DISTINCT room_id) FROM chat_messages 
-     WHERE created_at > NOW() - INTERVAL '24 hours')::int,
+    (SELECT COUNT(DISTINCT chat_id) FROM public.messages 
+     WHERE created_at > public.now() - INTERVAL '24 hours')::int,
     
-    (SELECT COUNT(*) FROM match_decisions 
-     WHERE decision = 'accepted' 
-     AND created_at > NOW() - INTERVAL '7 days')::int,
+    (SELECT COUNT(*) FROM public.matches 
+     WHERE status = 'accepted' 
+     AND created_at > public.now() - INTERVAL '7 days')::int,
     
-    (SELECT COUNT(*) FROM reports WHERE status = 'pending')::int,
+    (SELECT COUNT(*) FROM public.reports WHERE status = 'open')::int,
     
     (
       SELECT jsonb_agg(
         jsonb_build_object(
-          'university_name', u.common_name,
+          'university_name', u.name,
           'total_users', COUNT(*),
           'verified_users', COUNT(*) FILTER (WHERE p.verification_status = 'verified')
         )
       )
-      FROM profiles p
-      JOIN user_academic ua ON p.user_id = ua.user_id
-      JOIN universities u ON ua.university_id = u.id
+      FROM public.profiles p
+      JOIN public.user_academic ua ON p.user_id = ua.user_id
+      JOIN public.universities u ON ua.university_id = u.id
       WHERE p_admin_university_id IS NULL OR ua.university_id = p_admin_university_id
-      GROUP BY u.id, u.common_name
+      GROUP BY u.id, u.name
       ORDER BY COUNT(*) DESC
       LIMIT 10
     ),
@@ -382,17 +377,17 @@ BEGIN
       SELECT jsonb_agg(
         jsonb_build_object(
           'program_name', prog.name,
-          'university_name', u.common_name,
+          'university_name', u.name,
           'total_users', COUNT(*)
         )
       )
-      FROM profiles p
-      JOIN user_academic ua ON p.user_id = ua.user_id
-      JOIN universities u ON ua.university_id = u.id
-      LEFT JOIN programs prog ON ua.program_id = prog.id
+      FROM public.profiles p
+      JOIN public.user_academic ua ON p.user_id = ua.user_id
+      JOIN public.universities u ON ua.university_id = u.id
+      LEFT JOIN public.programs prog ON ua.program_id = prog.id
       WHERE (p_admin_university_id IS NULL OR ua.university_id = p_admin_university_id)
         AND prog.name IS NOT NULL
-      GROUP BY prog.id, prog.name, u.common_name
+      GROUP BY prog.id, prog.name, u.name
       ORDER BY COUNT(*) DESC
       LIMIT 10
     ),
@@ -408,9 +403,9 @@ BEGIN
         SELECT 
           usy.study_year,
           COUNT(*) as user_count
-        FROM profiles p
-        JOIN user_academic ua ON p.user_id = ua.user_id
-        JOIN user_study_year_v usy ON p.user_id = usy.user_id
+        FROM public.profiles p
+        JOIN public.user_academic ua ON p.user_id = ua.user_id
+        JOIN public.user_study_year_v usy ON p.user_id = usy.user_id
         WHERE p_admin_university_id IS NULL OR ua.university_id = p_admin_university_id
         GROUP BY usy.study_year
         ORDER BY usy.study_year
