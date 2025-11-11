@@ -39,8 +39,8 @@ export function DiffGrid({ locale = 'en' }: DiffGridProps) {
             { label: "Success rate", value: "30-50%", icon: Target }
           ]
         },
-        roommateMatch: {
-          title: "Roommate Match",
+        domuMatch: {
+          title: "Domu Match",
           subtitle: "Compatibility-first for campus life",
           description: "Algorithm-driven matching with lifestyle analysis",
           icon: Check,
@@ -89,8 +89,8 @@ export function DiffGrid({ locale = 'en' }: DiffGridProps) {
             { label: "Succesratio", value: "30-50%", icon: Target }
           ]
         },
-        roommateMatch: {
-          title: "Roommate Match",
+        domuMatch: {
+          title: "Domu Match",
           subtitle: "Compatibiliteit-eerst voor campus leven",
           description: "Algoritme-gedreven matching met leefstijl analyse",
           icon: Check,
@@ -179,24 +179,24 @@ export function DiffGrid({ locale = 'en' }: DiffGridProps) {
             </CardContent>
           </Card>
 
-          {/* Roommate Match */}
-          <Card className={`border-2 ${text.comparison.roommateMatch.borderColor} ${text.comparison.roommateMatch.bgColor}`}>
+          {/* Domu Match */}
+          <Card className={`border-2 ${text.comparison.domuMatch.borderColor} ${text.comparison.domuMatch.bgColor}`}>
             <CardHeader>
               <div className="flex items-center gap-3 mb-2">
-                <div className={`p-2 rounded-full ${text.comparison.roommateMatch.bgColor}`}>
-                  <text.comparison.roommateMatch.icon className={`h-6 w-6 ${text.comparison.roommateMatch.color}`} />
+                <div className={`p-2 rounded-full ${text.comparison.domuMatch.bgColor}`}>
+                  <text.comparison.domuMatch.icon className={`h-6 w-6 ${text.comparison.domuMatch.color}`} />
                 </div>
                 <div>
-                  <CardTitle className={`${text.comparison.roommateMatch.color}`}>
-                    {text.comparison.roommateMatch.title}
+                  <CardTitle className={`${text.comparison.domuMatch.color}`}>
+                    {text.comparison.domuMatch.title}
                   </CardTitle>
                   <CardDescription className="text-sm">
-                    {text.comparison.roommateMatch.subtitle}
+                    {text.comparison.domuMatch.subtitle}
                   </CardDescription>
                 </div>
               </div>
               <p className="text-sm text-gray-600 dark:text-gray-300">
-                {text.comparison.roommateMatch.description}
+                {text.comparison.domuMatch.description}
               </p>
             </CardHeader>
             <CardContent className="space-y-6">
@@ -206,7 +206,7 @@ export function DiffGrid({ locale = 'en' }: DiffGridProps) {
                   Our Solutions:
                 </h4>
                 <ul className="space-y-2">
-                  {text.comparison.roommateMatch.solutions.map((solution, index) => (
+                  {text.comparison.domuMatch.solutions.map((solution, index) => (
                     <li key={index} className="flex items-start gap-2 text-sm text-gray-600 dark:text-gray-300">
                       <Check className="h-4 w-4 text-green-500 mt-0.5 flex-shrink-0" />
                       <span>{solution}</span>
@@ -217,7 +217,7 @@ export function DiffGrid({ locale = 'en' }: DiffGridProps) {
 
               {/* Metrics */}
               <div className="grid grid-cols-3 gap-4 pt-4 border-t border-gray-200 dark:border-gray-700">
-                {text.comparison.roommateMatch.metrics.map((metric, index) => (
+                {text.comparison.domuMatch.metrics.map((metric, index) => (
                   <div key={index} className="text-center">
                     <metric.icon className="h-5 w-5 text-green-500 mx-auto mb-2" />
                     <div className="text-lg font-bold text-green-600">{metric.value}</div>

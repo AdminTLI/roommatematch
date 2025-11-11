@@ -103,7 +103,7 @@ async function fetchHoCsv(): Promise<string | null> {
     console.log('📡 Fetching HO Opleidingsoverzicht CSV data...');
     const response = await fetch(url, {
       headers: {
-        'User-Agent': 'RoommateMatch/1.0 (programme-data-sync)'
+        'User-Agent': 'DomuMatch/1.0 (programme-data-sync)'
       }
     });
     
@@ -134,7 +134,7 @@ async function fetchErkCsv(): Promise<string | null> {
     console.log('📡 Fetching Erkenningen CSV data...');
     const response = await fetch(url, {
       headers: {
-        'User-Agent': 'RoommateMatch/1.0 (programme-data-sync)'
+        'User-Agent': 'DomuMatch/1.0 (programme-data-sync)'
       }
     });
     

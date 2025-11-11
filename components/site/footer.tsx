@@ -9,7 +9,7 @@ export default function Footer() {
         <div className="grid gap-10 md:grid-cols-4">
           {/* Brand */}
           <div className="space-y-4">
-            <h3 className="text-white text-xl font-semibold">Roommate Match</h3>
+            <h3 className="text-white text-xl font-semibold">Domu Match</h3>
             <p className="text-slate-400 max-w-prose">The smartest way to find compatible roommates. Join thousands who found their perfect match.</p>
             <div className="flex items-center gap-3">
               <a aria-label="Twitter" className="rounded-full p-2 bg-white/5 hover:bg-white/10 focus-visible:ring-2 focus-visible:ring-brand-primary"><Twitter size={18}/></a>
@@ -51,7 +51,7 @@ export default function Footer() {
         </div>
 
         <div className="mt-12 border-t border-white/10 pt-6 flex flex-col md:flex-row items-center justify-between gap-4">
-          <p className="text-slate-500 text-sm">© {new Date().getFullYear()} Roommate Match. All rights reserved.</p>
+          <p className="text-slate-500 text-sm">© {new Date().getFullYear()} Domu Match. All rights reserved.</p>
           <div className="flex items-center gap-6 text-sm text-slate-400">
             <Link href="/privacy" className="hover:text-white">Privacy</Link>
             <Link href="/terms" className="hover:text-white">Terms</Link>

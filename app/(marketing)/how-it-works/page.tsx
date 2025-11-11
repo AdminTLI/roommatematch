@@ -6,12 +6,12 @@ import { FinalCTA } from '@/components/site/final-cta'
 import { Metadata } from 'next'
 
 export const metadata: Metadata = {
-  title: 'How It Works | Roommate Match - Student Flow Guide',
-  description: 'Learn how Roommate Match works for students. From sign up to move-in, discover our intelligent matching process and safety features.',
+  title: 'How It Works | Domu Match - Student Flow Guide',
+  description: 'Learn how Domu Match works for students. From sign up to move-in, discover our intelligent matching process and safety features.',
   keywords: 'how roommate matching works, student housing process, roommate finder, housing matching algorithm',
   openGraph: {
-    title: 'How It Works | Roommate Match',
-    description: 'Learn how Roommate Match works for students. From sign up to move-in.',
+    title: 'How It Works | Domu Match',
+    description: 'Learn how Domu Match works for students. From sign up to move-in.',
     type: 'website',
   },
 }

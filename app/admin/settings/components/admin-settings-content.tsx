@@ -48,7 +48,7 @@ export function AdminSettingsContent() {
   const [isSaving, setIsSaving] = useState(false)
   const [saveStatus, setSaveStatus] = useState<'idle' | 'success' | 'error'>('idle')
   const [settings, setSettings] = useState<PlatformSettings>({
-    siteName: 'Roommate Match',
+    siteName: 'Domu Match',
     siteDescription: 'Find your perfect roommate match',
     maintenanceMode: false,
     registrationEnabled: true,
@@ -188,7 +188,7 @@ export function AdminSettingsContent() {
               id="siteName"
               value={settings.siteName}
               onChange={(e) => updateSetting('siteName', e.target.value)}
-              placeholder="Roommate Match"
+              placeholder="Domu Match"
             />
           </div>
           

@@ -3,8 +3,8 @@ import { Navbar } from '@/components/site/navbar'
 import { Metadata } from 'next'
 
 export const metadata: Metadata = {
-  title: 'Sign In | Roommate Match',
-  description: 'Sign in to your Roommate Match account to find compatible roommates.',
+  title: 'Sign In | Domu Match',
+  description: 'Sign in to your Domu Match account to find compatible roommates.',
 }
 
 export default function SignInPage() {

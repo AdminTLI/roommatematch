@@ -1,7 +1,7 @@
 #!/usr/bin/env tsx
 
 /**
- * Program Importer for Roommate Match
+ * Program Importer for Domu Match
  * 
  * Imports WO programmes from Studiekeuzedatabase via OData API or CSV/XLSX dump
  * Maps programmes to our 14 UNL universities and creates program records

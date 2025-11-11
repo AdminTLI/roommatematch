@@ -8,7 +8,7 @@
 
 ## Executive Summary
 
-This document details the comprehensive cleanup of demo/fake data from the Roommate Match codebase. All hard-coded demo entities have been removed while preserving a single whitelisted demo account for access and testing purposes.
+This document details the comprehensive cleanup of demo/fake data from the Domu Match codebase. All hard-coded demo entities have been removed while preserving a single whitelisted demo account for access and testing purposes.
 
 ### Key Achievements
 

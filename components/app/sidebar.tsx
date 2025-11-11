@@ -183,7 +183,7 @@ export function Sidebar({ user, onClose }: SidebarProps) {
           </div>
           <div>
             <h1 className="text-lg font-bold text-ink-900 dark:text-gray-100">
-              {isAdminRoute ? 'Admin Panel' : 'Roommate Match'}
+              {isAdminRoute ? 'Admin Panel' : 'Domu Match'}
             </h1>
             <p className="text-xs text-ink-500 dark:text-gray-400">
               {isAdminRoute ? 'Manage the platform' : 'Find your perfect match'}

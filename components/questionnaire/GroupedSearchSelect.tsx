@@ -39,7 +39,7 @@ export function GroupedSearchSelect({ placeholder, groups, value, onChange, allo
   const handleOtherInput = (text: string) => {
     setOther(text)
     if (mboRegex.test(text)) {
-      setMboHint('MBO is not part of Roommate Match; select an HBO or WO.')
+      setMboHint('MBO is not part of Domu Match; select an HBO or WO.')
     } else {
       setMboHint(null)
     }

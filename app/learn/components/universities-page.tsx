@@ -108,7 +108,7 @@ export function UniversitiesPage() {
               Reduce conflicts. Improve satisfaction. Save staff time.
             </h1>
             <p className="text-xl text-gray-600 dark:text-gray-300 mb-8 max-w-3xl mx-auto">
-              Roommate Match helps universities create safer, more compatible living environments 
+              Domu Match helps universities create safer, more compatible living environments 
               while reducing administrative burden and improving student satisfaction.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
@@ -132,7 +132,7 @@ export function UniversitiesPage() {
               Proven Outcomes
             </h2>
             <p className="text-xl text-gray-600 dark:text-gray-300 max-w-3xl mx-auto">
-              Universities using Roommate Match see significant improvements in student housing satisfaction and reduced administrative overhead.
+              Universities using Domu Match see significant improvements in student housing satisfaction and reduced administrative overhead.
             </p>
           </div>
 

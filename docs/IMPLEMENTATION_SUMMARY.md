@@ -45,7 +45,7 @@
 - Use `ResponsiveChartContainer` for charts and `responsive-table` for data tables.
 
 ## Overview
-This document summarizes the implementation of the MVP Rescue + Roadmap plan, transforming the Roommate Match platform into an MVP-ready product.
+This document summarizes the implementation of the MVP Rescue + Roadmap plan, transforming the Domu Match platform into an MVP-ready product.
 
 ## Completed Features
 

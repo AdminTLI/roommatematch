@@ -1,6 +1,6 @@
-# Programme Data (WO) - Roommate Match
+# Programme Data (WO) - Domu Match
 
-This document describes how programme data is sourced, imported, and integrated into the Roommate Match platform for Dutch research universities (WO).
+This document describes how programme data is sourced, imported, and integrated into the Domu Match platform for Dutch research universities (WO).
 
 ## Data Source
 

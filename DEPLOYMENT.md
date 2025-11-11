@@ -1,6 +1,6 @@
-# 🚀 Deployment Guide - Roommate Match Platform
+# 🚀 Deployment Guide - Domu Match Platform
 
-This guide will walk you through deploying the Roommate Match platform to GitHub and Vercel.
+This guide will walk you through deploying the Domu Match platform to GitHub and Vercel.
 
 ## 📋 Prerequisites
 
@@ -14,22 +14,22 @@ Before starting, ensure you have:
 
 ### 1.1 Initialize Git Repository (if not already done)
 ```bash
-cd "/Users/danishsamsudin/Roommate Match"
+cd "/Users/danishsamsudin/Domu Match"
 git init
 git add .
-git commit -m "Initial commit: Roommate Match platform"
+git commit -m "Initial commit: Domu Match platform"
 ```
 
 ### 1.2 Create GitHub Repository
 1. Go to [GitHub](https://github.com) and click "New repository"
-2. Name it: `roommate-match` (or your preferred name)
+2. Name it: `domu-match` (or your preferred name)
 3. Make it **Public** (required for Vercel free tier)
 4. **Don't** initialize with README, .gitignore, or license (we already have these)
 5. Click "Create repository"
 
 ### 1.3 Connect Local Repository to GitHub
 ```bash
-git remote add origin https://github.com/YOUR_USERNAME/roommate-match.git
+git remote add origin https://github.com/YOUR_USERNAME/domu-match.git
 git branch -M main
 git push -u origin main
 ```
@@ -165,7 +165,7 @@ The included `.github/workflows/deploy.yml` will automatically:
 - [ ] Use different secrets for production/preview
 
 ### 7.3 Domain Setup (Optional)
-1. Buy a domain (e.g., `roommatematch.nl`)
+1. Buy a domain (e.g., `domumatch.nl`)
 2. In Vercel dashboard, go to Settings > Domains
 3. Add your domain
 4. Update DNS records as instructed
@@ -207,7 +207,7 @@ The included `.github/workflows/deploy.yml` will automatically:
 
 ## 🎉 Success!
 
-Once deployed, your Roommate Match platform will be live at:
+Once deployed, your Domu Match platform will be live at:
 - **Production**: `https://your-domain.vercel.app`
 - **Preview**: `https://your-project-git-branch.vercel.app`
 

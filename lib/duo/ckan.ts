@@ -37,7 +37,7 @@ export async function resolveDuoCsv(pkgId: string, preferNameRegex?: RegExp): Pr
   const res = await fetch(`https://onderwijsdata.duo.nl/api/3/action/package_show?id=${encodeURIComponent(pkgId)}`, {
     headers: {
       'Accept': 'application/json',
-      'User-Agent': 'RoommateMatch/1.0 (programme-data-sync)'
+      'User-Agent': 'DomuMatch/1.0 (programme-data-sync)'
     }
   });
   

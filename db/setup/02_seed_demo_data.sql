@@ -1,4 +1,4 @@
--- Enhanced Seed Data for Roommate Match with Complete Demo User Profile
+-- Enhanced Seed Data for Domu Match with Complete Demo User Profile
 -- This file contains comprehensive seed data including a full demo profile for testing
 
 -- ============================================

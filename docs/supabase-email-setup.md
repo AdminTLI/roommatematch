@@ -5,7 +5,7 @@ This guide explains how to configure the professional email template for OTP ver
 ## Step 1: Access Supabase Dashboard
 
 1. Go to [supabase.com](https://supabase.com) and sign in
-2. Select your Roommate Match project
+2. Select your Domu Match project
 3. Navigate to **Authentication** → **Email Templates**
 
 ## Step 2: Configure Confirm Signup Template
@@ -42,7 +42,7 @@ The custom template includes:
 - **Responsive**: Works on mobile and desktop email clients
 - **Clear OTP Display**: Large, monospace font for the 6-digit code
 - **Expiration Notice**: 10-minute expiry warning
-- **Branding**: Roommate Match logo and colors
+- **Branding**: Domu Match logo and colors
 - **Support Links**: Help center, contact, and privacy policy links
 - **Accessibility**: High contrast and readable fonts
 

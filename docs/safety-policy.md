@@ -1,8 +1,8 @@
-# Safety Policy - Roommate Match
+# Safety Policy - Domu Match
 
 ## Overview
 
-Roommate Match is committed to providing a safe and secure platform for students to find compatible roommates. This document outlines our safety policies, reporting procedures, and user rights.
+Domu Match is committed to providing a safe and secure platform for students to find compatible roommates. This document outlines our safety policies, reporting procedures, and user rights.
 
 ## Reporting Process
 
@@ -133,7 +133,7 @@ Users have the right to:
 
 For safety concerns or GDPR requests:
 
-- **Email**: safety@roommatematch.nl
+- **Email**: safety@domumatch.nl
 - **Response Time**: Within 48 hours for urgent safety issues
 - **GDPR Requests**: Processed within 30 days
 

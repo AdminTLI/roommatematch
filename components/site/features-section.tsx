@@ -36,7 +36,7 @@ export function FeaturesSection() {
       icon: Shield,
       title: "Verified & Safe Platform",
       subtitle: "Verified. Trusted. Yours.",
-      description: "Every student on Roommate Match has passed government ID + selfie verification. No catfish, no fake profiles, no surprises. Universities back it. You can focus on compatibility, not safety.",
+      description: "Every student on Domu Match has passed government ID + selfie verification. No catfish, no fake profiles, no surprises. Universities back it. You can focus on compatibility, not safety.",
       details: [
         "Government ID verification",
         "Selfie matching technology",

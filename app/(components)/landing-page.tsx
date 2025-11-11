@@ -55,7 +55,7 @@ export function LandingPage() {
         <nav className="flex items-center justify-between">
           <div className="flex items-center space-x-2">
             <Users className="h-8 w-8 text-primary" />
-            <span className="text-2xl font-bold text-primary">Roommate Match</span>
+            <span className="text-2xl font-bold text-primary">Domu Match</span>
           </div>
           <div className="flex items-center space-x-4">
             <Link href="/auth/sign-in">
@@ -96,7 +96,7 @@ export function LandingPage() {
         <section className="container mx-auto px-4 py-16">
           <div className="text-center mb-12">
             <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-4">
-              Why Choose Roommate Match?
+              Why Choose Domu Match?
             </h2>
             <p className="text-lg text-gray-600 dark:text-gray-300 max-w-2xl mx-auto">
               We combine technology with safety to create the best roommate matching experience for Dutch university students.
@@ -199,7 +199,7 @@ export function LandingPage() {
             <div>
               <div className="flex items-center space-x-2 mb-4">
                 <Users className="h-6 w-6" />
-                <span className="text-xl font-bold">Roommate Match</span>
+                <span className="text-xl font-bold">Domu Match</span>
               </div>
               <p className="text-gray-400">
                 The safest way to find your perfect roommate in the Netherlands.
@@ -231,7 +231,7 @@ export function LandingPage() {
             </div>
           </div>
           <div className="border-t border-gray-800 mt-8 pt-8 text-center text-gray-400">
-            <p>&copy; 2024 Roommate Match. All rights reserved.</p>
+            <p>&copy; 2024 Domu Match. All rights reserved.</p>
           </div>
         </div>
       </footer>

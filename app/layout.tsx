@@ -9,8 +9,20 @@ import './globals.css'
 const inter = Inter({ subsets: ['latin'] })
 
 export const metadata: Metadata = {
-  title: 'Roommate Match - Find Your Perfect Roommate',
+  title: 'Domu Match - Find Your Perfect Roommate',
   description: 'Connect with fellow students and find your ideal roommate match. Safe, verified, and designed for Dutch universities.',
+  icons: {
+    icon: [
+      { url: '/favicon.ico', sizes: 'any' },
+      { url: '/icon.png', type: 'image/png', sizes: '180x180' },
+      { url: '/icon-192.png', type: 'image/png', sizes: '192x192' },
+      { url: '/icon-512.png', type: 'image/png', sizes: '512x512' },
+    ],
+    apple: [
+      { url: '/icon.png', sizes: '180x180', type: 'image/png' },
+    ],
+  },
+  manifest: '/manifest.json',
 }
 
 export const viewport = {

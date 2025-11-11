@@ -1,10 +1,10 @@
-# 🏠 Roommate Match
+# 🏠 Domu Match
 
 **Find roommates who actually fit your life**
 
 A modern, AI-powered roommate matching platform designed specifically for students in the Netherlands. Built with Next.js, TypeScript, and Supabase.
 
-![Roommate Match](https://img.shields.io/badge/Next.js-15-black?style=for-the-badge&logo=next.js)
+![Domu Match](https://img.shields.io/badge/Next.js-15-black?style=for-the-badge&logo=next.js)
 ![TypeScript](https://img.shields.io/badge/TypeScript-5-blue?style=for-the-badge&logo=typescript)
 ![Supabase](https://img.shields.io/badge/Supabase-2.75-green?style=for-the-badge&logo=supabase)
 ![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-3.3-38B2AC?style=for-the-badge&logo=tailwind-css)
@@ -97,8 +97,8 @@ This is the only whitelisted demo account in the system. All other users must si
 
 1. **Clone the repository**
    ```bash
-   git clone https://github.com/YOUR_USERNAME/roommate-match.git
-   cd roommate-match
+   git clone https://github.com/YOUR_USERNAME/domu-match.git
+   cd domu-match
    ```
 
 2. **Install dependencies**
@@ -141,7 +141,7 @@ This is the only whitelisted demo account in the system. All other users must si
 ## 📁 Project Structure
 
 ```
-roommate-match/
+domu-match/
 ├── app/                          # Next.js App Router
 │   ├── (marketing)/             # Marketing pages
 │   ├── (components)/            # Shared components
@@ -291,9 +291,9 @@ A: Verify your Supabase credentials in `.env.local` and ensure the database is p
 
 ### Getting Help
 
-1. Check the [Issues](https://github.com/YOUR_USERNAME/roommate-match/issues) page
+1. Check the [Issues](https://github.com/YOUR_USERNAME/domu-match/issues) page
 2. Review the [Documentation](docs/)
-3. Contact support at support@roommatematch.nl
+3. Contact support at support@domumatch.nl
 
 ## 🤝 Contributing
 
@@ -319,14 +319,14 @@ This project is licensed under the MIT License - see the [LICENSE](./LICENSE) fi
 
 ## 📞 Support
 
-- **Documentation**: [docs.roommatematch.nl](https://docs.roommatematch.nl)
-- **Issues**: [GitHub Issues](https://github.com/YOUR_USERNAME/roommate-match/issues)
-- **Email**: support@roommatematch.nl
+- **Documentation**: [docs.domumatch.nl](https://docs.domumatch.nl)
+- **Issues**: [GitHub Issues](https://github.com/YOUR_USERNAME/domu-match/issues)
+- **Email**: support@domumatch.nl
 
 ---
 
 **Made with ❤️ for students in the Netherlands** 🇳🇱
 
-[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https://github.com/YOUR_USERNAME/roommate-match)# Force deployment update
+[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https://github.com/YOUR_USERNAME/domu-match)# Force deployment update
 
 <!-- Deployment trigger: Mon Oct 20 22:52:56 CEST 2025 -->

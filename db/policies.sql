@@ -1,4 +1,4 @@
--- Row Level Security (RLS) Policies for Roommate Match
+-- Row Level Security (RLS) Policies for Domu Match
 -- Enable RLS on all tables
 ALTER TABLE universities ENABLE ROW LEVEL SECURITY;
 ALTER TABLE users ENABLE ROW LEVEL SECURITY;

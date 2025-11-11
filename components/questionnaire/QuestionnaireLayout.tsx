@@ -37,7 +37,7 @@ export function QuestionnaireLayout({
       <header className="sticky top-0 z-40 bg-white/80 dark:bg-gray-900/80 backdrop-blur border-b">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-3">
           <div className="flex items-center justify-between mb-3 sm:mb-0">
-            <div className="font-semibold text-sm sm:text-base">Roommate Match</div>
+            <div className="font-semibold text-sm sm:text-base">Domu Match</div>
             <button
               className="text-xs sm:text-sm text-gray-600 hover:text-gray-900 underline"
               onClick={() => router.push('/dashboard')}

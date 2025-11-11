@@ -4,8 +4,8 @@ import { Metadata } from 'next'
 import { Suspense } from 'react'
 
 export const metadata: Metadata = {
-  title: 'Verify Email | Roommate Match',
-  description: 'Verify your email address to complete your Roommate Match account setup.',
+  title: 'Verify Email | Domu Match',
+  description: 'Verify your email address to complete your Domu Match account setup.',
 }
 
 export default function VerifyEmailPage() {

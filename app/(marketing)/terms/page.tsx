@@ -5,8 +5,8 @@ import Section from '@/components/ui/primitives/section'
 import { Metadata } from 'next'
 
 export const metadata: Metadata = {
-  title: 'Terms of Service | Roommate Match',
-  description: 'Terms of service for Roommate Match. Read our terms and conditions for using our platform.',
+  title: 'Terms of Service | Domu Match',
+  description: 'Terms of service for Domu Match. Read our terms and conditions for using our platform.',
   robots: 'noindex, nofollow',
 }
 
@@ -26,13 +26,13 @@ export default function TermsPage() {
                 
                 <h2 className="text-2xl font-semibold text-brand-text mt-8 mb-4">1. Acceptance of Terms</h2>
                 <p className="mb-6">
-                  By accessing and using Roommate Match, you accept and agree to be bound by the terms 
+                  By accessing and using Domu Match, you accept and agree to be bound by the terms 
                   and provision of this agreement.
                 </p>
 
                 <h2 className="text-2xl font-semibold text-brand-text mt-8 mb-4">2. Use License</h2>
                 <p className="mb-4">
-                  Permission is granted to temporarily use Roommate Match for personal, 
+                  Permission is granted to temporarily use Domu Match for personal, 
                   non-commercial transitory viewing only. This is the grant of a license, not a transfer of title.
                 </p>
 
@@ -83,7 +83,7 @@ export default function TermsPage() {
                   If you have any questions about these Terms of Service, please contact us at:
                 </p>
                 <p className="mb-6">
-                  Email: legal@roommatematch.com<br />
+                  Email: legal@domumatch.com<br />
                   Address: [Your Business Address]
                 </p>
               </div>

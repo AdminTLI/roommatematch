@@ -1,6 +1,6 @@
 # Supabase Database Setup Guide
 
-This guide will help you set up the complete Roommate Match database schema in your Supabase project.
+This guide will help you set up the complete Domu Match database schema in your Supabase project.
 
 ## Prerequisites
 
@@ -259,4 +259,4 @@ If you encounter issues:
 4. Refer to this troubleshooting guide
 5. Check the Supabase documentation
 
-The database schema is comprehensive and production-ready, supporting all features of the Roommate Match platform.
+The database schema is comprehensive and production-ready, supporting all features of the Domu Match platform.

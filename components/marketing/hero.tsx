@@ -68,7 +68,7 @@ export function Hero() {
               </h1>
               
               <p className="text-h4 text-ink-700 max-w-2xl">
-                Roommate Match pairs you with compatible students based on lifestyle and study rhythm—so moving in feels easy.
+                Domu Match pairs you with compatible students based on lifestyle and study rhythm—so moving in feels easy.
               </p>
             </motion.div>
 

@@ -179,7 +179,7 @@ export function PricingSection() {
         {/* Benefits Section */}
         <div className="bg-white rounded-2xl border border-brand-border p-8 md:p-12">
           <h2 className="text-3xl font-bold text-center text-brand-text mb-12">
-            Why universities choose Roommate Match
+            Why universities choose Domu Match
           </h2>
           
           <div className="grid md:grid-cols-3 gap-8">

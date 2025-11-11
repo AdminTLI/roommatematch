@@ -54,7 +54,7 @@ export function Hero() {
               Find roommates who actually fit your life
             </h1>
             <p className="text-base md:text-lg leading-relaxed max-w-prose text-brand-muted">
-              Roommate Match pairs you with compatible students based on lifestyle, study habits, and personality. 
+              Domu Match pairs you with compatible students based on lifestyle, study habits, and personality. 
               Join thousands of students who found their perfect roommate match.
             </p>
             

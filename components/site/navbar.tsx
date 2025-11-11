@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import Link from 'next/link'
+import Image from 'next/image'
 import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import Container from '@/components/ui/primitives/container'
@@ -41,12 +42,23 @@ export function Navbar() {
           <div className="flex items-center justify-between h-full py-0">
             {/* Logo */}
             <div className="flex items-center">
-              <button 
-                onClick={() => router.push('/')}
-                className="text-2xl font-bold text-brand-text hover:text-brand-primary transition-colors"
+              <Link 
+                href="/"
+                className="flex items-center space-x-2 hover:opacity-80 transition-opacity"
               >
-                Roommate Match
-              </button>
+                <div className="relative h-8 w-8 md:h-10 md:w-10 flex-shrink-0">
+                  <Image 
+                    src="/images/logo.png" 
+                    alt="Domu Match" 
+                    fill
+                    className="object-contain"
+                    priority
+                    sizes="(max-width: 768px) 32px, 40px"
+                  />
+                </div>
+                <span className="text-2xl font-bold text-brand-text hidden sm:inline-block">Domu Match</span>
+                <span className="text-xl font-bold text-brand-text sm:hidden">DM</span>
+              </Link>
             </div>
 
             {/* Tablet Navigation */}

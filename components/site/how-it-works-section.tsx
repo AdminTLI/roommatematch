@@ -111,7 +111,7 @@ export function HowItWorksSection() {
         {/* Header */}
         <div className="text-center mb-16">
           <h1 className="text-4xl md:text-5xl font-bold text-brand-text mb-6">
-            How Roommate Match works
+            How Domu Match works
           </h1>
           <p className="text-xl text-brand-muted max-w-3xl mx-auto">
             From sign up to move-in, discover how our intelligent matching process 

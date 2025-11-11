@@ -32,7 +32,7 @@ export default function AccessibilityPage() {
                 Our Commitment
               </h2>
               <p className="text-gray-600 dark:text-gray-300 leading-relaxed">
-                Roommate Match is committed to ensuring digital accessibility for people with 
+                Domu Match is committed to ensuring digital accessibility for people with 
                 disabilities. We continually improve the user experience for everyone and apply 
                 the relevant accessibility standards, including WCAG 2.2 AA guidelines.
               </p>
@@ -165,13 +165,13 @@ export default function AccessibilityPage() {
                 Feedback and Support
               </h2>
               <p className="text-gray-600 dark:text-gray-300 leading-relaxed mb-4">
-                We welcome your feedback on the accessibility of Roommate Match. If you 
+                We welcome your feedback on the accessibility of Domu Match. If you 
                 encounter any accessibility barriers or have suggestions for improvement, 
                 please contact us:
               </p>
               <div className="mt-4 p-4 bg-gray-50 dark:bg-gray-800 rounded-lg">
                 <p className="text-gray-700 dark:text-gray-300">
-                  <strong>Email:</strong> accessibility@roommatematch.nl<br />
+                  <strong>Email:</strong> accessibility@domumatch.nl<br />
                   <strong>Phone:</strong> +31 (0) 20 123 4567<br />
                   <strong>Response time:</strong> We aim to respond within 48 hours
                 </p>

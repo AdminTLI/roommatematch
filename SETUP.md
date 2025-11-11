@@ -1,4 +1,4 @@
-# Quick Setup Guide - Roommate Match
+# Quick Setup Guide - Domu Match
 
 ## 🚀 Getting Started
 

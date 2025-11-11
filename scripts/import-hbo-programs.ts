@@ -1,7 +1,7 @@
 #!/usr/bin/env tsx
 
 /**
- * HBO Program Importer for Roommate Match
+ * HBO Program Importer for Domu Match
  * 
  * Imports HBO programmes from JSON files in /data/programmes/
  * Maps programmes to universities in the database and creates program records

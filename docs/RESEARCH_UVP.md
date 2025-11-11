@@ -1,4 +1,4 @@
-# Roommate Match: Research-Driven UVP & Positioning
+# Domu Match: Research-Driven UVP & Positioning
 
 ## Market Analysis
 
@@ -28,7 +28,7 @@
 | **Facebook Groups** | Free, large communities, trusted peers | Zero verification, chaotic, no matchmaking, safety risks | Most students still use this |
 | **University Housing** | Official, secure, affordable | Algorithmic (not intelligent), limited choice, poor UX | Freshmen, risk-averse |
 
-### Unique Position: Roommate Match
+### Unique Position: Domu Match
 
 **Why we win:**
 1. **Campus-first + University-backed**: Official integration ≠ social discovery. Students feel institutional support + safety.
@@ -64,7 +64,7 @@ Rationale: Emphasizes outcome (friendship-level match), mechanism (algorithmic s
 #### 2. **Verified + Safe**
 **Heading:** "Verified. Trusted. Yours."  
 **Body:**
-> "Every student on Roommate Match has passed government ID + selfie verification. No catfish, no fake profiles, no surprises. Universities back it. You can focus on compatibility, not safety."
+> "Every student on Domu Match has passed government ID + selfie verification. No catfish, no fake profiles, no surprises. Universities back it. You can focus on compatibility, not safety."
 
 **Visual:** 🛡️ Badge, verification flow animation.
 
@@ -191,7 +191,7 @@ SIMPLE      Facebook         Uniplaces
                 ↓              ↓
 INTELLIGENT   ??? (US-only) (Expensive)
 
-↑ Roommate Match: Campus-first + intelligent + free for students + university-backed
+↑ Domu Match: Campus-first + intelligent + free for students + university-backed
 ```
 
 ---
@@ -210,7 +210,7 @@ INTELLIGENT   ??? (US-only) (Expensive)
 - "Housing matching algorithm"
 
 **Tier 3 (Brand + Long-tail):**
-- "Roommate Match + [university name]"
+- "Domu Match + [university name]"
 - "No more bad roommates"
 
 ---

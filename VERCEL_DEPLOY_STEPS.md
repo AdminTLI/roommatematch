@@ -1,7 +1,7 @@
 # Vercel Production Sync — Action Steps
 
 ## Problem Summary
-Production at `https://roommatematch.vercel.app/` was showing outdated UI despite the same commit SHA being deployed. Root cause: **`postcss.config.js` had all plugins disabled**, preventing Tailwind CSS from being processed during the build.
+Production at `https://domumatch.vercel.app/` was showing outdated UI despite the same commit SHA being deployed. Root cause: **`postcss.config.js` had all plugins disabled**, preventing Tailwind CSS from being processed during the build.
 
 ## Solution Applied
 ✅ **Committed Fix**: Re-enabled `tailwindcss` and `autoprefixer` plugins in `postcss.config.js`
@@ -13,10 +13,10 @@ Production at `https://roommatematch.vercel.app/` was showing outdated UI despit
 ## Vercel Verification Checklist
 
 ### Step 1: Verify Project Linkage (2 min)
-Go to **Vercel Dashboard** → Select `roommatematch` project
+Go to **Vercel Dashboard** → Select `domumatch` project
 
 - [ ] **Settings → Git**
-  - Repository: `AdminTLI/roommatematch` ✓
+  - Repository: `AdminTLI/domumatch` ✓
   - Production Branch: `main` ✓
   - Root Directory: (blank / repo root) ✓
 
@@ -32,7 +32,7 @@ Go to **Vercel Dashboard** → Select `roommatematch` project
 
 ### Step 2: Verify Domain Attachment (1 min)
 - [ ] **Domains** tab
-  - `roommatematch.vercel.app` is attached to **this project** (not another)
+  - `domumatch.vercel.app` is attached to **this project** (not another)
   - Status: Active ✓
 
 ---
@@ -65,7 +65,7 @@ Once build completes:
   - No "CSS not found" or "Tailwind purge" warnings ✓
   - Size should be ~100-150KB for JS (similar to local `npm run build`)
 
-- [ ] **Visit `https://roommatematch.vercel.app/`** and verify:
+- [ ] **Visit `https://domumatch.vercel.app/`** and verify:
   - [ ] **Colors visible**: Brand blue (#4F46E5), cyan accent (#06B6D4) ✓
   - [ ] **Hero section**: Two-column layout with CTAs ✓
   - [ ] **Cards have shadows**: `shadow-elev-1` visible ✓
@@ -142,6 +142,6 @@ Once production is live with new UI:
 ---
 
 **Questions?** Check build logs at:
-`https://vercel.com/AdminTLI/roommatematch/deployments`
+`https://vercel.com/AdminTLI/domumatch/deployments`
 
 **Estimated Total Time:** 10-15 minutes

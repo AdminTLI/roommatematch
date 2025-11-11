@@ -5,12 +5,12 @@ import { FinalCTA } from '@/components/site/final-cta'
 import { Metadata } from 'next'
 
 export const metadata: Metadata = {
-  title: 'Features | Roommate Match - Smart Matching Technology',
-  description: 'Discover Roommate Match features: AI-powered matching, verified students, safe chat, academic integration, and admin tools for universities.',
+  title: 'Features | Domu Match - Smart Matching Technology',
+  description: 'Discover Domu Match features: AI-powered matching, verified students, safe chat, academic integration, and admin tools for universities.',
   keywords: 'roommate matching features, AI matching algorithm, verified students, safe chat, academic integration',
   openGraph: {
-    title: 'Features | Roommate Match',
-    description: 'Discover Roommate Match features: AI-powered matching, verified students, safe chat.',
+    title: 'Features | Domu Match',
+    description: 'Discover Domu Match features: AI-powered matching, verified students, safe chat.',
     type: 'website',
   },
 }

@@ -5,8 +5,8 @@ import Section from '@/components/ui/primitives/section'
 import { Metadata } from 'next'
 
 export const metadata: Metadata = {
-  title: 'Privacy Policy | Roommate Match',
-  description: 'Privacy policy for Roommate Match. Learn how we protect and handle your personal data.',
+  title: 'Privacy Policy | Domu Match',
+  description: 'Privacy policy for Domu Match. Learn how we protect and handle your personal data.',
   robots: 'noindex, nofollow',
 }
 
@@ -76,7 +76,7 @@ export default function PrivacyPage() {
                   If you have questions about this Privacy Policy, please contact us at:
                 </p>
                 <p className="mb-6">
-                  Email: privacy@roommatematch.com<br />
+                  Email: privacy@domumatch.com<br />
                   Address: [Your Business Address]
                 </p>
               </div>

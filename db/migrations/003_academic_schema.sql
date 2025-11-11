@@ -1,5 +1,5 @@
 -- Academic schema extensions for WO programmes and user academic data
--- Part of Roommate Match MVP extension
+-- Part of Domu Match MVP extension
 
 -- Create programs table for WO programmes from Studiekeuzedatabase
 CREATE TABLE IF NOT EXISTS programs (

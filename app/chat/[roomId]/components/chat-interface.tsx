@@ -112,7 +112,7 @@ export function ChatInterface({ roomId, user }: ChatInterfaceProps) {
   const mockMessages: Message[] = [
     {
       id: '1',
-      content: 'Hi! Great to meet you through Roommate Match!',
+      content: 'Hi! Great to meet you through Domu Match!',
       sender_id: 'other1',
       sender_name: 'Emma',
       created_at: new Date(Date.now() - 3600000).toISOString(),

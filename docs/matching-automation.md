@@ -2,7 +2,7 @@
 
 ## Overview
 
-The Roommate Match platform uses an automated matching system that runs periodically to create compatibility suggestions between users. The system uses a sophisticated algorithm that considers lifestyle preferences, schedules, cleanliness standards, and academic compatibility.
+The Domu Match platform uses an automated matching system that runs periodically to create compatibility suggestions between users. The system uses a sophisticated algorithm that considers lifestyle preferences, schedules, cleanliness standards, and academic compatibility.
 
 ## How It Works
 

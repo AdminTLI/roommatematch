@@ -16,12 +16,12 @@ Tailwind CSS now processes correctly in all builds (dev, production).
 ### Option 1: Auto-Deploy (Recommended)
 - Vercel watches main branch
 - Should auto-detect new commit
-- Check: https://vercel.com/AdminTLI/roommatematch/deployments
+- Check: https://vercel.com/AdminTLI/domumatch/deployments
 - Wait for "Latest Production" to build
 - Status should show ✅ (green)
 
 ### Option 2: Manual Redeploy
-1. Go to: https://vercel.com/AdminTLI/roommatematch
+1. Go to: https://vercel.com/AdminTLI/domumatch
 2. Deployments tab → Latest Production
 3. 3-dot menu → Redeploy
 4. ✅ Check "Clear build cache"
@@ -37,7 +37,7 @@ vercel deploy --prod --force
 ## Verification Checklist After Deploy
 
 - [ ] Build logs show "Compiled successfully"
-- [ ] Visit https://roommatematch.vercel.app/ (hard refresh)
+- [ ] Visit https://domumatch.vercel.app/ (hard refresh)
 - [ ] See brand blue color (#4F46E5) on buttons/hero
 - [ ] See shadow effects on cards
 - [ ] All sections visible (Navbar, Hero, Features, etc.)

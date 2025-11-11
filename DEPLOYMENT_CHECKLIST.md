@@ -1,4 +1,4 @@
-# ✅ Deployment Checklist - Roommate Match Platform
+# ✅ Deployment Checklist - Domu Match Platform
 
 ## 📋 Pre-Deployment Checklist
 
@@ -28,22 +28,22 @@
 ### Step 1: GitHub Repository
 ```bash
 # 1. Initialize git (if not already done)
-cd "/Users/danishsamsudin/Roommate Match"
+cd "/Users/danishsamsudin/Domu Match"
 git init
 
 # 2. Add all files
 git add .
 
 # 3. Initial commit
-git commit -m "Initial commit: Roommate Match platform with new design system"
+git commit -m "Initial commit: Domu Match platform with new design system"
 
 # 4. Create GitHub repository at https://github.com/new
-#    - Name: roommate-match (or your preferred name)
+#    - Name: domu-match (or your preferred name)
 #    - Make it PUBLIC (required for Vercel free tier)
 #    - Don't initialize with README, .gitignore, or license
 
 # 5. Connect to GitHub
-git remote add origin https://github.com/YOUR_USERNAME/roommate-match.git
+git remote add origin https://github.com/YOUR_USERNAME/domu-match.git
 git branch -M main
 git push -u origin main
 ```
@@ -125,7 +125,7 @@ NODE_ENV=development
 - [ ] Configure CORS settings
 
 ### Domain Setup (Optional)
-- [ ] Buy domain (e.g., roommatematch.nl)
+- [ ] Buy domain (e.g., domumatch.nl)
 - [ ] Add domain in Vercel dashboard
 - [ ] Update DNS records
 - [ ] Update environment variables with new domain
@@ -197,4 +197,4 @@ Once deployed, your platform will be live at:
 
 ---
 
-**Ready to deploy? Follow the steps above and your Roommate Match platform will be live! 🚀**
+**Ready to deploy? Follow the steps above and your Domu Match platform will be live! 🚀**

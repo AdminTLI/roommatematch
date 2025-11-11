@@ -2,7 +2,7 @@ import Container from '@/components/ui/primitives/container'
 import Section from '@/components/ui/primitives/section'
 import Footer from '@/components/site/footer'
 
-export const metadata = { title: 'Blog | Roommate Match' }
+export const metadata = { title: 'Blog | Domu Match' }
 
 const posts = [
   { title: 'How to find a great roommate', excerpt: 'Evidence-based tips for compatibility and harmony in student housing.' },

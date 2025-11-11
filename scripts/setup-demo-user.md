@@ -5,7 +5,7 @@
 You need to set these environment variables in your Vercel project:
 
 1. Go to your Vercel dashboard
-2. Select your `roommatematch` project
+2. Select your `domumatch` project
 3. Go to Settings → Environment Variables
 4. Add these variables:
 
@@ -33,7 +33,7 @@ After setting the environment variables in Vercel:
 # Replace YOUR_ADMIN_SEED_TOKEN with the token you set in Vercel
 curl -X POST \
   -H "x-seed-token: YOUR_ADMIN_SEED_TOKEN" \
-  https://roommatematch.vercel.app/api/admin/seed-demo-user
+  https://domumatch.vercel.app/api/admin/seed-demo-user
 ```
 
 ## Step 4: Test Login

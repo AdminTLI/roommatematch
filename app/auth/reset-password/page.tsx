@@ -3,8 +3,8 @@ import { Navbar } from '@/components/site/navbar'
 import { Metadata } from 'next'
 
 export const metadata: Metadata = {
-  title: 'Reset Password | Roommate Match',
-  description: 'Reset your Roommate Match account password.',
+  title: 'Reset Password | Domu Match',
+  description: 'Reset your Domu Match account password.',
 }
 
 export default function ResetPasswordPage() {

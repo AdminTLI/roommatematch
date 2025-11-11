@@ -3,6 +3,7 @@
 import { Button } from '@/components/ui/button'
 import { LanguageSwitcher } from '@/app/(marketing)/components/language-switcher'
 import Link from 'next/link'
+import Image from 'next/image'
 import { Users, Menu, X } from 'lucide-react'
 import { useState } from 'react'
 
@@ -25,9 +26,18 @@ export function UniversitiesHeader() {
       <nav className="container mx-auto px-4 py-4" role="navigation" aria-label="Main navigation">
         <div className="flex items-center justify-between">
           {/* Logo */}
-          <Link href="/" className="flex items-center space-x-2">
-            <Users className="h-8 w-8 text-primary" />
-            <span className="text-2xl font-bold text-primary">Roommate Match</span>
+          <Link href="/" className="flex items-center space-x-2 hover:opacity-80 transition-opacity">
+            <div className="relative h-8 w-8 flex-shrink-0">
+              <Image 
+                src="/images/logo.png" 
+                alt="Domu Match" 
+                fill
+                className="object-contain"
+                priority
+                sizes="32px"
+              />
+            </div>
+            <span className="text-2xl font-bold text-primary">Domu Match</span>
           </Link>
 
           {/* Desktop Navigation */}

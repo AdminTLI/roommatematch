@@ -2,7 +2,7 @@ import Container from '@/components/ui/primitives/container'
 import Section from '@/components/ui/primitives/section'
 import Footer from '@/components/site/footer'
 
-export const metadata = { title: 'Help Center | Roommate Match' }
+export const metadata = { title: 'Help Center | Domu Match' }
 
 const faqs = [
   { q: 'Getting started', a: 'Create an account, verify your identity, and complete the compatibility quiz.' },

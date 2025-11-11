@@ -1,4 +1,4 @@
--- Complete Supabase Database Schema for Roommate Match
+-- Complete Supabase Database Schema for Domu Match
 -- This file contains all tables, indexes, triggers, functions, and policies in the correct order
 
 -- ============================================

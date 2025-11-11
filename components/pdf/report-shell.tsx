@@ -36,7 +36,7 @@ function CoverPage({ student, date }: { student: { name: string; email?: string 
     <div className="page cover-page">
       <div className="cover-content">
         <div className="logo-section">
-          <h1 className="brand-title">Roommate Match</h1>
+          <h1 className="brand-title">Domu Match</h1>
           <div className="brand-subtitle">Compatibility Report</div>
         </div>
         

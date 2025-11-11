@@ -1,4 +1,4 @@
--- Matching Engine Functions for Roommate Match
+-- Matching Engine Functions for Domu Match
 -- These functions implement the matching algorithm using pgvector and academic affinity
 
 -- Function to compute user compatibility score

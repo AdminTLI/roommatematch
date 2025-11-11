@@ -339,49 +339,49 @@ export function mapSubmissionError(technicalError: string): { title: string; mes
   if (error.includes('failed to upsert profile')) {
     return {
       title: 'Profile Save Failed',
-      message: 'Unable to save your profile information. Please check your internet connection and try again. If the problem persists, contact support at help@roommatematch.nl'
+      message: 'Unable to save your profile information. Please check your internet connection and try again. If the problem persists, contact support at help@domumatch.nl'
     }
   }
   
   if (error.includes('failed to upsert user_academic')) {
     return {
       title: 'Academic Information Save Failed',
-      message: 'Unable to save your academic information. Please verify your university and program details are correct, then try again. Contact support at help@roommatematch.nl if the issue continues.'
+      message: 'Unable to save your academic information. Please verify your university and program details are correct, then try again. Contact support at help@domumatch.nl if the issue continues.'
     }
   }
   
   if (error.includes('failed to save responses')) {
     return {
       title: 'Questionnaire Save Failed',
-      message: 'Unable to save your questionnaire responses. Please try again. If the problem persists, contact support at help@roommatematch.nl'
+      message: 'Unable to save your questionnaire responses. Please try again. If the problem persists, contact support at help@domumatch.nl'
     }
   }
   
   if (error.includes('failed to create submission record')) {
     return {
       title: 'Submission Record Failed',
-      message: 'Unable to create your submission record. Please try again. Contact support at help@roommatematch.nl if this continues.'
+      message: 'Unable to create your submission record. Please try again. Contact support at help@domumatch.nl if this continues.'
     }
   }
   
   if (error.includes('authentication required')) {
     return {
       title: 'Authentication Required',
-      message: 'Please log in to your account and try again. If you continue having issues, contact support at help@roommatematch.nl'
+      message: 'Please log in to your account and try again. If you continue having issues, contact support at help@domumatch.nl'
     }
   }
   
   if (error.includes('email not verified')) {
     return {
       title: 'Email Verification Required',
-      message: 'Please verify your email address before submitting. Check your email for a verification link or go to Settings to resend it. Contact support at help@roommatematch.nl if you need assistance.'
+      message: 'Please verify your email address before submitting. Check your email for a verification link or go to Settings to resend it. Contact support at help@domumatch.nl if you need assistance.'
     }
   }
   
   // Generic fallback
   return {
     title: 'Submission Failed',
-    message: `Something went wrong while saving your information. Please try again. If the problem persists, contact support at help@roommatematch.nl with this error: "${technicalError}"`
+    message: `Something went wrong while saving your information. Please try again. If the problem persists, contact support at help@domumatch.nl with this error: "${technicalError}"`
   }
 }
 

@@ -3,7 +3,7 @@ import Section from '@/components/ui/primitives/section'
 import Footer from '@/components/site/footer'
 
 export const metadata = {
-  title: 'About Us | Roommate Match'
+  title: 'About Us | Domu Match'
 }
 
 export default function AboutPage() {
@@ -11,8 +11,8 @@ export default function AboutPage() {
     <main>
       <Section className="bg-white">
         <Container>
-          <h1 className="text-4xl font-bold mb-6 text-brand-text">About Roommate Match</h1>
-          <p className="text-brand-muted max-w-3xl">Roommate Match helps students find compatible roommates using a science-driven compatibility model. We partner with universities and prioritize safety with government ID verification.</p>
+          <h1 className="text-4xl font-bold mb-6 text-brand-text">About Domu Match</h1>
+          <p className="text-brand-muted max-w-3xl">Domu Match helps students find compatible roommates using a science-driven compatibility model. We partner with universities and prioritize safety with government ID verification.</p>
           <div className="grid md:grid-cols-3 gap-8 mt-10">
             <div>
               <h2 className="text-xl font-semibold mb-2">Our Mission</h2>

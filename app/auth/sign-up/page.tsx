@@ -3,8 +3,8 @@ import { Navbar } from '@/components/site/navbar'
 import { Metadata } from 'next'
 
 export const metadata: Metadata = {
-  title: 'Sign Up | Roommate Match',
-  description: 'Create your Roommate Match account to find compatible roommates.',
+  title: 'Sign Up | Domu Match',
+  description: 'Create your Domu Match account to find compatible roommates.',
 }
 
 export default function SignUpPage() {

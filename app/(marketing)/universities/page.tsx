@@ -6,11 +6,11 @@ import { FinalCTA } from '@/components/site/final-cta'
 import { Metadata } from 'next'
 
 export const metadata: Metadata = {
-  title: 'For Universities | Roommate Match - Housing Management Solutions',
+  title: 'For Universities | Domu Match - Housing Management Solutions',
   description: 'Reduce housing disputes by 40% with our intelligent roommate matching platform. Admin dashboard, analytics, and dedicated support for university housing teams.',
   keywords: 'university housing, housing management, student accommodation, roommate matching, admin dashboard, housing analytics',
   openGraph: {
-    title: 'For Universities | Roommate Match',
+    title: 'For Universities | Domu Match',
     description: 'Reduce housing disputes by 40% with our intelligent roommate matching platform.',
     type: 'website',
   },

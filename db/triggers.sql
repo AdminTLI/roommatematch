@@ -1,4 +1,4 @@
--- Database Triggers and Functions for Roommate Match
+-- Database Triggers and Functions for Domu Match
 
 -- Function to enforce 30-day cooldown on questionnaire changes
 CREATE OR REPLACE FUNCTION enforce_questionnaire_cooldown()

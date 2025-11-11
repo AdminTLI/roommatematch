@@ -1,8 +1,8 @@
-# Operational Runbooks - Roommate Match
+# Operational Runbooks - Domu Match
 
 ## Overview
 
-This document provides operational procedures for common issues and maintenance tasks in the Roommate Match platform.
+This document provides operational procedures for common issues and maintenance tasks in the Domu Match platform.
 
 ## Common Issues
 
@@ -246,8 +246,8 @@ Set up alerts for:
 ## Support Contacts
 
 - **Technical Issues**: Check logs and runbooks first
-- **Security Issues**: security@roommatematch.nl
-- **User Support**: support@roommatematch.nl
+- **Security Issues**: security@domumatch.nl
+- **User Support**: support@domumatch.nl
 - **Emergency**: Use on-call rotation
 
 **Last Updated**: December 2024

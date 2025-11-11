@@ -49,7 +49,7 @@ export default function Page() {
           Click the button below, and view the sample error on the Sentry{' '}
           <a
             target="_blank"
-            href="https://roommate-match.sentry.io/issues/?project=4510330161070160"
+            href="https://domu-match.sentry.io/issues/?project=4510330161070160"
           >
             Issues Page
           </a>

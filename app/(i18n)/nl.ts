@@ -1,4 +1,4 @@
-// Dutch translations for Roommate Match
+// Dutch translations for Domu Match
 
 export const nl = {
   // Common

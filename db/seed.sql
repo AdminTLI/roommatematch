@@ -1,4 +1,4 @@
--- Seed data for Roommate Match MVP
+-- Seed data for Domu Match MVP
 
 -- Insert sample universities
 INSERT INTO universities (id, name, slug, branding, eligibility_domains, is_active) VALUES
@@ -182,7 +182,7 @@ INSERT INTO user_vectors (user_id, vector) VALUES
 
 -- Insert sample announcements
 INSERT INTO announcements (university_id, title, body, starts_at, ends_at) VALUES
-  ('550e8400-e29b-41d4-a716-446655440001', 'Welcome to UvA Roommate Match!', 
+  ('550e8400-e29b-41d4-a716-446655440001', 'Welcome to UvA Domu Match!', 
    'We are excited to help you find your perfect roommate. Complete your profile and questionnaire to get started with matching!', 
    NOW(), NOW() + INTERVAL '30 days'),
   ('550e8400-e29b-41d4-a716-446655440002', 'TU Delft Housing Support', 

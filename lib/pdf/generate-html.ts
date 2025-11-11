@@ -30,7 +30,7 @@ function generateCoverPage(student: { name: string; email?: string }, date: stri
 <div class="page cover-page">
   <div class="cover-content">
     <div class="logo-section">
-      <h1 class="brand-title">Roommate Match</h1>
+      <h1 class="brand-title">Domu Match</h1>
       <div class="brand-subtitle">Compatibility Report</div>
     </div>
     

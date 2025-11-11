@@ -1,4 +1,4 @@
-// English translations for Roommate Match
+// English translations for Domu Match
 
 export const en = {
   // Common

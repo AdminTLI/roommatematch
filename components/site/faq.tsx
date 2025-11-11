@@ -48,7 +48,7 @@ export function FAQ() {
             Frequently asked questions
           </h2>
           <p className="text-lg text-brand-muted max-w-2xl mx-auto">
-            Everything you need to know about Roommate Match for universities
+            Everything you need to know about Domu Match for universities
           </p>
         </div>
 
@@ -84,8 +84,8 @@ export function FAQ() {
           </p>
           <p className="text-sm text-brand-muted">
             Contact our team at{' '}
-            <a href="mailto:universities@roommatematch.com" className="text-brand-primary hover:underline">
-              universities@roommatematch.com
+            <a href="mailto:universities@domumatch.com" className="text-brand-primary hover:underline">
+              universities@domumatch.com
             </a>
           </p>
         </div>

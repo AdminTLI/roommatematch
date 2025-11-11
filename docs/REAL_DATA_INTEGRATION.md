@@ -1,10 +1,10 @@
-# Real Data Integration - Roommate Match
+# Real Data Integration - Domu Match
 
 This document describes the transition from mock data to real Supabase integration with live database operations.
 
 ## Overview
 
-The Roommate Match platform has been fully integrated with Supabase for real-time data operations, replacing all mock data with live database queries, RPC functions, and real-time subscriptions.
+The Domu Match platform has been fully integrated with Supabase for real-time data operations, replacing all mock data with live database queries, RPC functions, and real-time subscriptions.
 
 ## Database Architecture
 

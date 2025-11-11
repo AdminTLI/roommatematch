@@ -94,7 +94,7 @@ export function SignInForm() {
       <CardHeader className="text-center">
         <CardTitle className="text-2xl">Welcome back</CardTitle>
         <CardDescription>
-          Sign in to your Roommate Match account
+          Sign in to your Domu Match account
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-6">
