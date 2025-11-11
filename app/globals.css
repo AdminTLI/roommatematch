@@ -112,6 +112,13 @@
     touch-action: manipulation;
   }
 
+  /* Responsive media defaults */
+  img, video, canvas, svg {
+    max-width: 100%;
+    height: auto;
+    display: block;
+  }
+
   button {
     word-break: keep-all;
   }

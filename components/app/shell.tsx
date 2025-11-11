@@ -1,8 +1,9 @@
 'use client'
 
 import { motion, AnimatePresence } from 'framer-motion'
-import { Topbar } from './topbar'
+import { TopNav } from './TopNav'
 import { Sidebar } from './sidebar'
+import { BottomTabBar } from './BottomTabBar'
 import { useState } from 'react'
 import { useEffect } from 'react'
 import { useRouter } from 'next/navigation'
@@ -123,7 +124,7 @@ export function AppShell({ children, user, showQuestionnairePrompt = false }: Ap
           
           {/* Main content area */}
           <div className="flex-1 flex flex-col overflow-hidden">
-            <Topbar user={user} />
+            <TopNav user={user} />
             {/* Verification Banner */}
             {showVerificationBanner && (
               <Alert variant="destructive" className="m-4 mb-0 border-amber-300 bg-amber-50 dark:bg-amber-900/20">
@@ -162,7 +163,7 @@ export function AppShell({ children, user, showQuestionnairePrompt = false }: Ap
                 </AlertDescription>
               </Alert>
             )}
-            <main className="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8 pb-safe-bottom">
+            <main className="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8 pb-safe-bottom md:pb-6">
               <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -174,6 +175,9 @@ export function AppShell({ children, user, showQuestionnairePrompt = false }: Ap
             </main>
           </div>
         </div>
+
+        {/* Bottom mobile tabs */}
+        <BottomTabBar user={user} />
 
         {/* Message Notification Popup */}
         <MessageNotificationPopup userId={user.id} />
