@@ -85,7 +85,7 @@ Open browser DevTools (F12) and check:
 Ensure these are set in Vercel:
 - `NEXT_PUBLIC_SUPABASE_URL`
 - `NEXT_PUBLIC_SUPABASE_ANON_KEY`
-- `SUPABASE_SERVICE_ROLE_KEY` (for API routes)
+- `SUPABASE_SERVICE_ROLE_KEY` (for API routes) - **Critical: Must be the service role key, not the anon key**
 
 ## Common Issues
 
@@ -109,7 +109,16 @@ Ensure these are set in Vercel:
 1. Database has cities (run SQL queries above)
 2. API endpoint is deployed
 3. Environment variables are set in Vercel
-4. No RLS issues (API uses admin client)
+4. No RLS issues (API uses service role key to bypass RLS)
+
+### Issue: "infinite recursion detected in policy for relation 'admins'" error
+
+**Cause:** The API endpoint was trying to use RLS policies which have recursion issues with the `admins` table.
+
+**Solution:** The API now uses the service role key directly to completely bypass RLS. Ensure:
+1. `SUPABASE_SERVICE_ROLE_KEY` is set in Vercel (not the anon key)
+2. The service role key is correct (from Supabase Dashboard → Settings → API → Service Role Key)
+3. The API route has been redeployed with the latest code
 
 ## Quick Fix Commands
 
