@@ -209,7 +209,7 @@ export const nl = {
   // Questionnaire
   questionnaire: {
     title: 'Vertel ons over jezelf',
-    subtitle: 'Help ons je perfecte huisgenoot te vinden',
+    subtitle: 'Help ons van vreemden tot huisgenoten te gaan',
     progress: 'Stap {current} van {total}',
     timeEstimate: 'Dit duurt ongeveer {minutes} minuten',
     sections: {
@@ -399,7 +399,7 @@ export const nl = {
   // Matches
   matches: {
     title: 'Je Matches',
-    subtitle: 'Vind je perfecte huisgenoot',
+    subtitle: 'Van vreemden tot huisgenoten',
     tabs: {
       groups: 'Groep Matches',
       individuals: 'Individuele Matches'
