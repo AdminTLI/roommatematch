@@ -1,7 +1,6 @@
 'use client'
 
 import { Card, CardContent } from '@/components/ui/card'
-import { Button } from '@/components/ui/button'
 import Container from '@/components/ui/primitives/container'
 import Section from '@/components/ui/primitives/section'
 import { 
@@ -11,7 +10,6 @@ import {
   ShieldCheck, 
   Building2, 
   Home,
-  ChevronRight,
   Sparkles,
   Users,
   Zap
@@ -23,7 +21,6 @@ const features = [
     icon: Brain,
     title: "Smart matching",
     description: "AI-powered compatibility analysis based on lifestyle, study habits, and personality traits to help you go from strangers to roommates.",
-    link: "Learn more",
     size: "large",
     gradient: "from-blue-500/20 via-purple-500/20 to-pink-500/20",
     iconGradient: "from-blue-500 to-purple-600"
@@ -32,7 +29,6 @@ const features = [
     icon: Filter,
     title: "Advanced filters",
     description: "Filter by university, program, study year, budget, lifestyle preferences, and more to narrow down your ideal matches.",
-    link: "Learn more",
     size: "medium",
     gradient: "from-emerald-500/20 via-teal-500/20 to-cyan-500/20",
     iconGradient: "from-emerald-500 to-teal-600"
@@ -41,7 +37,6 @@ const features = [
     icon: MessageSquare,
     title: "Conversation starters",
     description: "Get personalized ice-breaker questions and compatibility insights to help you start meaningful conversations with potential roommates.",
-    link: "Learn more",
     size: "medium",
     gradient: "from-orange-500/20 via-red-500/20 to-pink-500/20",
     iconGradient: "from-orange-500 to-red-600"
@@ -50,7 +45,6 @@ const features = [
     icon: ShieldCheck,
     title: "Verified & secure",
     description: "All users are verified through university email and ID verification. Your data is protected with enterprise-grade security.",
-    link: "Learn more",
     size: "small",
     gradient: "from-green-500/20 via-emerald-500/20 to-teal-500/20",
     iconGradient: "from-green-500 to-emerald-600"
@@ -59,7 +53,6 @@ const features = [
     icon: Building2,
     title: "University partnerships",
     description: "Trusted by 50+ leading Dutch universities. Get access to exclusive housing opportunities and student support services.",
-    link: "Learn more",
     size: "small",
     gradient: "from-indigo-500/20 via-blue-500/20 to-purple-500/20",
     iconGradient: "from-indigo-500 to-blue-600"
@@ -68,7 +61,6 @@ const features = [
     icon: Home,
     title: "Complete housing solution",
     description: "Find roommates, discover verified housing listings, and get help with move-in planning all in one platform.",
-    link: "Learn more",
     size: "large",
     gradient: "from-violet-500/20 via-purple-500/20 to-fuchsia-500/20",
     iconGradient: "from-violet-500 to-purple-600"
@@ -162,7 +154,7 @@ export function Features() {
             Powered by AI
           </motion.div>
           
-          <h2 className="text-4xl md:text-5xl lg:text-6xl font-bold text-brand-text mb-6 bg-gradient-to-r from-gray-900 via-gray-800 to-gray-900 bg-clip-text text-transparent">
+          <h2 className="text-4xl md:text-5xl lg:text-6xl font-bold text-brand-text mb-10 bg-gradient-to-r from-gray-900 via-gray-800 to-gray-900 bg-clip-text text-transparent">
             Everything you need to go from strangers to roommates
           </h2>
           <p className="text-lg md:text-xl leading-relaxed max-w-3xl mx-auto text-brand-muted">
@@ -234,26 +226,6 @@ export function Features() {
                           {feature.description}
                         </p>
                       </div>
-                      
-                      <motion.div 
-                        className="mt-6 pt-4 border-t border-gray-100"
-                        whileHover={{ x: 4 }}
-                        transition={{ duration: 0.2 }}
-                      >
-                        <Button 
-                          variant="ghost" 
-                          className="inline-flex items-center text-sm font-semibold text-gray-700 hover:text-gray-900 transition-colors duration-300 p-0 h-auto group/link"
-                        >
-                          {feature.link}
-                          <motion.div
-                            className="ml-2"
-                            whileHover={{ x: 2 }}
-                            transition={{ duration: 0.2 }}
-                          >
-                            <ChevronRight className="h-4 w-4" />
-                          </motion.div>
-                        </Button>
-                      </motion.div>
                     </CardContent>
                   </Card>
                 </motion.div>

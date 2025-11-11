@@ -9,8 +9,10 @@ interface SocialProofProps {
   locale?: 'en' | 'nl'
 }
 
-export function SocialProof({ locale = 'en' }: SocialProofProps) {
-  const { t } = useApp()
+export function SocialProof({ locale: localeProp }: SocialProofProps) {
+  const { locale: contextLocale } = useApp()
+  // Use prop if provided, otherwise use context locale
+  const locale = localeProp || contextLocale
 
   const content = {
     en: {

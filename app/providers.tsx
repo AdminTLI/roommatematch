@@ -1,6 +1,6 @@
 'use client'
 
-import { createContext, useContext, useEffect, useState } from 'react'
+import { createContext, useContext, useEffect, useState, useMemo } from 'react'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { createClient } from '@/lib/supabase/client'
 import { initializeEventTracker } from '@/lib/events'
@@ -73,7 +73,8 @@ export function Providers({ children }: { children: React.ReactNode }) {
     }
   }
 
-  const dictionary = getDictionary(locale)
+  // Memoize dictionary to ensure it updates when locale changes
+  const dictionary = useMemo(() => getDictionary(locale), [locale])
 
   return (
     <QueryClientProvider client={queryClient}>

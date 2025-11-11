@@ -10,8 +10,10 @@ interface FinalCTAProps {
   locale?: 'en' | 'nl'
 }
 
-export function FinalCTA({ locale = 'en' }: FinalCTAProps) {
-  const { t } = useApp()
+export function FinalCTA({ locale: localeProp }: FinalCTAProps) {
+  const { locale: contextLocale } = useApp()
+  // Use prop if provided, otherwise use context locale
+  const locale = localeProp || contextLocale
 
   const content = {
     en: {

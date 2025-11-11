@@ -44,7 +44,7 @@ export function Universities() {
           {universities.map((university, index) => (
             <Card 
               key={index}
-              className="rounded-xl border border-brand-border/50 bg-white/80 backdrop-blur-sm p-4 text-center shadow-elev-1 hover:shadow-elev-2 transition-shadow duration-200"
+              className="rounded-xl border border-brand-border/50 bg-white/80 backdrop-blur-sm p-4 text-center shadow-elev-1 hover:shadow-elev-2 transition-shadow duration-200 flex items-center justify-center min-h-[80px]"
             >
               <div className="font-medium text-brand-text text-sm leading-tight">
                 {university}

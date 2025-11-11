@@ -12,9 +12,9 @@ export default function Footer() {
             <h3 className="text-white text-xl font-semibold">Domu Match</h3>
             <p className="text-slate-400 max-w-prose">The smartest way to find compatible roommates. Science-backed matching for better living.</p>
             <div className="flex items-center gap-3">
-              <a aria-label="Twitter" className="rounded-full p-2 bg-white/5 hover:bg-white/10 focus-visible:ring-2 focus-visible:ring-brand-primary"><Twitter size={18}/></a>
-              <a aria-label="LinkedIn" className="rounded-full p-2 bg-white/5 hover:bg-white/10 focus-visible:ring-2 focus-visible:ring-brand-primary"><Linkedin size={18}/></a>
-              <a aria-label="Instagram" className="rounded-full p-2 bg-white/5 hover:bg-white/10 focus-visible:ring-2 focus-visible:ring-brand-primary"><Instagram size={18}/></a>
+              <a aria-label="Twitter" className="rounded-full p-2 bg-white/5 hover:bg-white/10 focus-visible:ring-2 focus-visible:ring-brand-primary flex items-center justify-center"><Twitter size={18}/></a>
+              <a aria-label="LinkedIn" className="rounded-full p-2 bg-white/5 hover:bg-white/10 focus-visible:ring-2 focus-visible:ring-brand-primary flex items-center justify-center"><Linkedin size={18}/></a>
+              <a aria-label="Instagram" className="rounded-full p-2 bg-white/5 hover:bg-white/10 focus-visible:ring-2 focus-visible:ring-brand-primary flex items-center justify-center"><Instagram size={18}/></a>
             </div>
           </div>
 
