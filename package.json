@@ -30,7 +30,8 @@
     "infer:brin": "tsx scripts/infer-brin-map.ts",
     "qa:premasters": "tsx scripts/qa-premasters.ts",
     "demo:user": "tsx scripts/create-demo-user.ts",
-    "generate:sample-pdf": "tsx scripts/generate-sample-pdf.ts"
+    "generate:sample-pdf": "tsx scripts/generate-sample-pdf.ts",
+    "map:universities": "tsx scripts/map-universities-to-cities.ts"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.3.2",
@@ -67,6 +68,7 @@
     "@supabase/auth-ui-shared": "^0.1.8",
     "@supabase/ssr": "^0.7.0",
     "@supabase/supabase-js": "^2.75.1",
+    "@tailwindcss/aspect-ratio": "^0.4.2",
     "@tanstack/react-query": "^5.8.4",
     "@types/puppeteer": "^5.4.7",
     "@vercel/analytics": "^1.5.0",
@@ -91,7 +93,6 @@
     "sonner": "^2.0.7",
     "tailwind-merge": "^2.6.0",
     "tailwindcss-animate": "^1.0.7",
-    "@tailwindcss/aspect-ratio": "^0.4.2",
     "tsx": "^4.6.0",
     "xlsx": "^0.18.5",
     "zod": "^3.22.4",
@@ -106,6 +107,7 @@
     "@types/node": "^20",
     "@types/react": "^18",
     "@types/react-dom": "^18",
+    "dotenv": "^17.2.3",
     "eslint": "^8",
     "eslint-config-next": "14.0.4",
     "eslint-config-prettier": "^9.0.0",

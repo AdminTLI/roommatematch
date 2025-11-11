@@ -1,5 +1,12 @@
 #!/usr/bin/env tsx
 
+// Load environment variables from .env.local
+import { config } from 'dotenv'
+import { resolve } from 'path'
+
+// Load .env.local file
+config({ path: resolve(process.cwd(), '.env.local') })
+
 import { createClient } from '@supabase/supabase-js'
 import fs from 'fs'
 import path from 'path'
