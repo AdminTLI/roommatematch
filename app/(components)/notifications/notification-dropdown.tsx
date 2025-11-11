@@ -173,7 +173,7 @@ export function NotificationDropdown({
   if (!isOpen) return null
 
   const HeaderContent = () => (
-    <div className="flex items-center justify-between">
+    <div className="flex items-center justify-between gap-4">
       <div className="flex items-center gap-2 flex-1 min-w-0">
         <Bell className="h-5 w-5 flex-shrink-0" />
         <h2 className="text-lg font-semibold truncate">Notifications</h2>
@@ -184,7 +184,7 @@ export function NotificationDropdown({
         )}
       </div>
       
-      <div className="flex items-center gap-1 flex-shrink-0">
+      <div className="flex items-center gap-3 flex-shrink-0">
         <TooltipProvider>
           <Tooltip>
             <TooltipTrigger asChild>
@@ -193,12 +193,14 @@ export function NotificationDropdown({
                 size="sm"
                 onClick={handleMarkAllAsRead}
                 disabled={!counts || counts.unread === 0}
-                className="text-xs px-2 min-h-[44px] min-w-[44px] sm:min-h-0 sm:min-w-0"
+                className="h-9 w-9 p-0 hover:bg-gray-100"
+                title="Mark all as read"
               >
-                <CheckCheck className="h-4 w-4 sm:h-3 sm:w-3" />
+                <CheckCheck className="h-4 w-4" />
+                <span className="sr-only">Mark all as read</span>
               </Button>
             </TooltipTrigger>
-            <TooltipContent>
+            <TooltipContent side="bottom">
               <p>Mark all as read</p>
             </TooltipContent>
           </Tooltip>
@@ -214,13 +216,35 @@ export function NotificationDropdown({
                   router.push('/notifications')
                   onClose()
                 }}
-                className="text-xs px-2 min-h-[44px] min-w-[44px] sm:min-h-0 sm:min-w-0"
+                className="h-9 w-9 p-0 hover:bg-gray-100"
+                title="View all notifications"
               >
-                <Eye className="h-4 w-4 sm:h-3 sm:w-3" />
+                <Eye className="h-4 w-4" />
+                <span className="sr-only">View all notifications</span>
               </Button>
             </TooltipTrigger>
-            <TooltipContent>
+            <TooltipContent side="bottom">
               <p>View all notifications</p>
+            </TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
+        
+        <TooltipProvider>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={onClose}
+                className="h-9 w-9 p-0 hover:bg-gray-100 ml-2"
+                title="Close notifications"
+              >
+                <X className="h-4 w-4" />
+                <span className="sr-only">Close</span>
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent side="bottom">
+              <p>Close</p>
             </TooltipContent>
           </Tooltip>
         </TooltipProvider>
@@ -262,8 +286,8 @@ export function NotificationDropdown({
       {/* Mobile: Full-screen Sheet */}
       <Sheet open={isOpen} onOpenChange={onClose}>
         <SheetContent side="right" className="w-full sm:hidden p-4">
-          <SheetHeader className="mb-4 pr-10">
-            <SheetTitle>
+          <SheetHeader className="mb-4 pr-16">
+            <SheetTitle className="pr-4">
               <HeaderContent />
             </SheetTitle>
           </SheetHeader>
@@ -274,8 +298,8 @@ export function NotificationDropdown({
       {/* Desktop: Card Dropdown */}
       <div className="hidden sm:block absolute right-0 top-full mt-2 w-96 z-50">
         <Card className="shadow-lg border">
-          <CardHeader className="pb-3">
-            <CardTitle>
+          <CardHeader className="pb-3 px-4 pt-4">
+            <CardTitle className="text-base">
               <HeaderContent />
             </CardTitle>
           </CardHeader>

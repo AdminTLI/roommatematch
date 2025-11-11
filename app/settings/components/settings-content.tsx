@@ -37,28 +37,60 @@ export function SettingsContent({ user, profile, academic, progressData }: Setti
 
 
       <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4 sm:space-y-6">
-        <TabsList className="flex sm:grid w-full sm:grid-cols-4 gap-1 sm:gap-2 rounded-2xl overflow-x-auto scrollbar-hide pr-6">
-          <TabsTrigger value="profile" className="flex items-center gap-1 sm:gap-2 text-xs sm:text-sm px-2 sm:px-4 rounded-xl">
-            <User className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
-            <span className="hidden sm:inline">Profile</span>
-            <span className="sm:hidden">Profile</span>
-          </TabsTrigger>
-          <TabsTrigger value="questionnaire" className="flex items-center gap-1 sm:gap-2 text-xs sm:text-sm px-2 sm:px-4 rounded-xl">
-            <FileText className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
-            <span className="hidden sm:inline">Questionnaire</span>
-            <span className="sm:hidden">Q&A</span>
-          </TabsTrigger>
-          <TabsTrigger value="account" className="flex items-center gap-1 sm:gap-2 text-xs sm:text-sm px-2 sm:px-4 rounded-xl">
-            <SettingsIcon className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
-            <span className="hidden sm:inline">Account</span>
-            <span className="sm:hidden">Account</span>
-          </TabsTrigger>
-          <TabsTrigger value="privacy" className="flex items-center gap-1 sm:gap-2 text-xs sm:text-sm px-2 sm:px-4 rounded-xl">
-            <Shield className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
-            <span className="hidden sm:inline">Privacy</span>
-            <span className="sm:hidden">Privacy</span>
-          </TabsTrigger>
-        </TabsList>
+        {/* Scrollable Tabs - Similar to Matches page */}
+        <div className="mb-4 sm:mb-6">
+          <div className="relative">
+            <div className="flex gap-1.5 sm:gap-2 bg-white border border-gray-200 p-1 sm:p-1.5 rounded-2xl shadow-sm overflow-x-auto scrollbar-hide -mx-4 sm:mx-0 px-4 sm:px-0">
+              <button
+                onClick={() => setActiveTab('profile')}
+                className={`flex items-center gap-2 flex-shrink-0 min-w-[100px] sm:min-w-[120px] px-4 sm:px-5 py-2.5 sm:py-3 rounded-xl text-sm sm:text-base font-medium transition-colors whitespace-nowrap touch-manipulation ${
+                  activeTab === 'profile'
+                    ? 'bg-blue-600 text-white shadow-sm'
+                    : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50 active:bg-gray-100'
+                }`}
+              >
+                <User className="w-4 h-4 sm:w-5 sm:h-5" />
+                <span>Profile</span>
+              </button>
+              <button
+                onClick={() => setActiveTab('questionnaire')}
+                className={`flex items-center gap-2 flex-shrink-0 min-w-[100px] sm:min-w-[140px] px-4 sm:px-5 py-2.5 sm:py-3 rounded-xl text-sm sm:text-base font-medium transition-colors whitespace-nowrap touch-manipulation ${
+                  activeTab === 'questionnaire'
+                    ? 'bg-blue-600 text-white shadow-sm'
+                    : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50 active:bg-gray-100'
+                }`}
+              >
+                <FileText className="w-4 h-4 sm:w-5 sm:h-5" />
+                <span className="hidden sm:inline">Questionnaire</span>
+                <span className="sm:hidden">Q&A</span>
+              </button>
+              <button
+                onClick={() => setActiveTab('account')}
+                className={`flex items-center gap-2 flex-shrink-0 min-w-[100px] sm:min-w-[120px] px-4 sm:px-5 py-2.5 sm:py-3 rounded-xl text-sm sm:text-base font-medium transition-colors whitespace-nowrap touch-manipulation ${
+                  activeTab === 'account'
+                    ? 'bg-blue-600 text-white shadow-sm'
+                    : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50 active:bg-gray-100'
+                }`}
+              >
+                <SettingsIcon className="w-4 h-4 sm:w-5 sm:h-5" />
+                <span>Account</span>
+              </button>
+              <button
+                onClick={() => setActiveTab('privacy')}
+                className={`flex items-center gap-2 flex-shrink-0 min-w-[100px] sm:min-w-[120px] px-4 sm:px-5 py-2.5 sm:py-3 rounded-xl text-sm sm:text-base font-medium transition-colors whitespace-nowrap touch-manipulation ${
+                  activeTab === 'privacy'
+                    ? 'bg-blue-600 text-white shadow-sm'
+                    : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50 active:bg-gray-100'
+                }`}
+              >
+                <Shield className="w-4 h-4 sm:w-5 sm:h-5" />
+                <span>Privacy</span>
+              </button>
+            </div>
+            {/* Edge fade indicator */}
+            <div className="pointer-events-none absolute right-0 top-0 h-full w-10 bg-gradient-to-r from-transparent to-white hidden sm:block" />
+          </div>
+        </div>
 
         <TabsContent value="profile">
           <Card>

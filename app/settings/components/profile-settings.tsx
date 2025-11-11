@@ -83,15 +83,15 @@ export function ProfileSettings({ user, profile, academic }: ProfileSettingsProp
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-8">
       {error && (
-        <Alert variant="destructive">
+        <Alert variant="destructive" className="mb-2">
           <AlertDescription>{error}</AlertDescription>
         </Alert>
       )}
 
       {isSuccess && (
-        <Alert className="border-green-200 bg-green-50">
+        <Alert className="border-green-200 bg-green-50 mb-2">
           <Check className="h-4 w-4 text-green-600" />
           <AlertDescription className="text-green-800">
             Profile updated successfully!
@@ -100,74 +100,78 @@ export function ProfileSettings({ user, profile, academic }: ProfileSettingsProp
       )}
 
       {/* Personal Information */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <User className="w-5 h-5" />
+      <Card className="border-gray-200">
+        <CardHeader className="pb-4">
+          <CardTitle className="flex items-center gap-3 text-xl">
+            <User className="w-5 h-5 text-gray-600" />
             Personal Information
           </CardTitle>
-          <CardDescription>
+          <CardDescription className="text-base mt-2">
             Update your basic profile information.
           </CardDescription>
         </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="firstName">First Name</Label>
+        <CardContent className="space-y-6 pt-2">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="space-y-3">
+              <Label htmlFor="firstName" className="text-sm font-medium">First Name</Label>
               <Input
                 id="firstName"
                 value={formData.firstName}
                 onChange={(e) => handleInputChange('firstName', e.target.value)}
                 placeholder="Enter your first name"
+                className="h-11"
               />
             </div>
-            <div className="space-y-2">
-              <Label htmlFor="lastName">Last Name</Label>
+            <div className="space-y-3">
+              <Label htmlFor="lastName" className="text-sm font-medium">Last Name</Label>
               <Input
                 id="lastName"
                 value={formData.lastName}
                 onChange={(e) => handleInputChange('lastName', e.target.value)}
                 placeholder="Enter your last name"
+                className="h-11"
               />
             </div>
           </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="phone">Phone Number</Label>
-            <div className="flex items-center gap-2">
-              <Phone className="w-4 h-4 text-gray-400" />
+          <div className="space-y-3">
+            <Label htmlFor="phone" className="text-sm font-medium">Phone Number</Label>
+            <div className="flex items-center gap-3">
+              <Phone className="w-5 h-5 text-gray-400 flex-shrink-0" />
               <Input
                 id="phone"
                 value={formData.phone}
                 onChange={(e) => handleInputChange('phone', e.target.value)}
                 placeholder="Enter your phone number"
+                className="h-11"
               />
             </div>
           </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="bio">Bio</Label>
+          <div className="space-y-3">
+            <Label htmlFor="bio" className="text-sm font-medium">Bio</Label>
             <Textarea
               id="bio"
               value={formData.bio}
               onChange={(e) => handleInputChange('bio', e.target.value)}
               placeholder="Tell us about yourself..."
-              rows={4}
+              rows={5}
+              className="resize-none"
             />
           </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="email">Email Address</Label>
-            <div className="flex items-center gap-2">
-              <Mail className="w-4 h-4 text-gray-400" />
+          <div className="space-y-3 pt-2 border-t border-gray-100">
+            <Label htmlFor="email" className="text-sm font-medium">Email Address</Label>
+            <div className="flex items-center gap-3">
+              <Mail className="w-5 h-5 text-gray-400 flex-shrink-0" />
               <Input
                 id="email"
                 value={formData.email}
                 disabled
-                className="bg-gray-50"
+                className="bg-gray-50 h-11"
               />
             </div>
-            <p className="text-sm text-gray-500">
+            <p className="text-sm text-gray-500 ml-8">
               Email cannot be changed. Contact support if you need to update your email.
             </p>
           </div>
@@ -175,20 +179,20 @@ export function ProfileSettings({ user, profile, academic }: ProfileSettingsProp
       </Card>
 
       {/* Academic Information */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <GraduationCap className="w-5 h-5" />
+      <Card className="border-gray-200">
+        <CardHeader className="pb-4">
+          <CardTitle className="flex items-center gap-3 text-xl">
+            <GraduationCap className="w-5 h-5 text-gray-600" />
             Academic Information
           </CardTitle>
-          <CardDescription>
+          <CardDescription className="text-base mt-2">
             Your academic details from your questionnaire.
           </CardDescription>
         </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label>University</Label>
+        <CardContent className="space-y-6 pt-2">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="space-y-3">
+              <Label className="text-sm font-medium">University</Label>
               <Input 
                 value={
                   academic?.universities?.name || 
@@ -196,11 +200,11 @@ export function ProfileSettings({ user, profile, academic }: ProfileSettingsProp
                   'Not specified'
                 } 
                 disabled 
-                className="bg-gray-50" 
+                className="bg-gray-50 h-11" 
               />
             </div>
-            <div className="space-y-2">
-              <Label>Degree Level</Label>
+            <div className="space-y-3">
+              <Label className="text-sm font-medium">Degree Level</Label>
               <Input 
                 value={
                   academic?.degree_level 
@@ -208,11 +212,11 @@ export function ProfileSettings({ user, profile, academic }: ProfileSettingsProp
                     : 'Not specified'
                 } 
                 disabled 
-                className="bg-gray-50" 
+                className="bg-gray-50 h-11" 
               />
             </div>
-            <div className="space-y-2">
-              <Label>Program</Label>
+            <div className="space-y-3">
+              <Label className="text-sm font-medium">Program</Label>
               <Input 
                 value={
                   academic?.undecided_program 
@@ -222,19 +226,19 @@ export function ProfileSettings({ user, profile, academic }: ProfileSettingsProp
                       'Not specified'
                 } 
                 disabled 
-                className="bg-gray-50" 
+                className="bg-gray-50 h-11" 
               />
             </div>
-            <div className="space-y-2">
-              <Label>Expected Graduation Year</Label>
+            <div className="space-y-3">
+              <Label className="text-sm font-medium">Expected Graduation Year</Label>
               <Input 
                 value={academic?.expected_graduation_year || 'Not specified'} 
                 disabled 
-                className="bg-gray-50" 
+                className="bg-gray-50 h-11" 
               />
             </div>
-            <div className="space-y-2">
-              <Label>Current Study Year</Label>
+            <div className="space-y-3">
+              <Label className="text-sm font-medium">Current Study Year</Label>
               <Input 
                 value={
                   academic?.study_year 
@@ -242,12 +246,12 @@ export function ProfileSettings({ user, profile, academic }: ProfileSettingsProp
                     : 'Not available'
                 } 
                 disabled 
-                className="bg-gray-50" 
+                className="bg-gray-50 h-11" 
               />
             </div>
             {academic?.study_start_month && (
-              <div className="space-y-2">
-                <Label>Study Start Month</Label>
+              <div className="space-y-3">
+                <Label className="text-sm font-medium">Study Start Month</Label>
                 <Input 
                   value={
                     academic.study_start_month === 9 ? 'September/Fall' :
@@ -255,32 +259,32 @@ export function ProfileSettings({ user, profile, academic }: ProfileSettingsProp
                     new Date(2000, academic.study_start_month - 1).toLocaleString('default', { month: 'long' })
                   } 
                   disabled 
-                  className="bg-gray-50" 
+                  className="bg-gray-50 h-11" 
                 />
               </div>
             )}
             {academic?.graduation_month && (
-              <div className="space-y-2">
-                <Label>Expected Graduation Month</Label>
+              <div className="space-y-3">
+                <Label className="text-sm font-medium">Expected Graduation Month</Label>
                 <Input 
                   value={new Date(2000, academic.graduation_month - 1).toLocaleString('default', { month: 'long' })} 
                   disabled 
-                  className="bg-gray-50" 
+                  className="bg-gray-50 h-11" 
                 />
               </div>
             )}
           </div>
-          <p className="text-sm text-gray-500 mt-4">
+          <p className="text-sm text-gray-500 mt-4 pt-4 border-t border-gray-100">
             To update your academic information, please edit your questionnaire responses.
           </p>
         </CardContent>
       </Card>
 
-      <div className="flex justify-end">
+      <div className="flex justify-end pt-4">
         <Button 
           onClick={handleSave} 
           disabled={isLoading}
-          className="w-full sm:w-auto min-w-[120px]"
+          className="w-full sm:w-auto min-w-[140px] h-11 text-base"
         >
           {isLoading ? (
             <>

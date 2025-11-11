@@ -18,7 +18,8 @@ import {
   Loader2,
   CheckCircle,
   UserPlus,
-  Home
+  Home,
+  RefreshCw
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { EmptyState } from '@/components/ui/empty-state'
@@ -775,16 +776,15 @@ export function DashboardContent({ hasCompletedQuestionnaire = false, hasPartial
             <div className="flex items-center justify-between mb-2">
               <h3 className="text-sm lg:text-base font-bold text-gray-900">Your Top Matches</h3>
               <button 
-                className="flex items-center gap-1 text-sm text-gray-600 hover:text-gray-700 font-medium" 
+                className="flex items-center justify-center w-8 h-8 text-gray-600 hover:text-gray-700 hover:bg-gray-100 rounded-lg transition-colors" 
                 onClick={loadTopMatches}
                 disabled={isLoadingMatches}
+                title="Refresh matches"
               >
                 {isLoadingMatches ? (
                   <Loader2 className="w-4 h-4 animate-spin" />
                 ) : (
-                  <>
-                    Refresh
-                  </>
+                  <RefreshCw className="w-4 h-4" />
                 )}
               </button>
             </div>
@@ -860,16 +860,15 @@ export function DashboardContent({ hasCompletedQuestionnaire = false, hasPartial
             <div className="flex items-center justify-between mb-2">
               <h3 className="text-sm lg:text-base font-bold text-gray-900">Recent Activity</h3>
               <button 
-                className="flex items-center gap-1 text-sm text-gray-600 hover:text-gray-700 font-medium" 
+                className="flex items-center justify-center w-8 h-8 text-gray-600 hover:text-gray-700 hover:bg-gray-100 rounded-lg transition-colors" 
                 onClick={loadRecentActivity}
                 disabled={isLoadingActivity}
+                title="Refresh activity"
               >
                 {isLoadingActivity ? (
                   <Loader2 className="w-4 h-4 animate-spin" />
                 ) : (
-                  <>
-                    Refresh
-                  </>
+                  <RefreshCw className="w-4 h-4" />
                 )}
               </button>
             </div>
@@ -881,7 +880,7 @@ export function DashboardContent({ hasCompletedQuestionnaire = false, hasPartial
             ) : recentActivity.length > 0 ? (
               <div className="flex flex-col flex-1 min-h-0">
                 <div className="space-y-1.5 overflow-y-auto flex-1 pr-2">
-                  {recentActivity.map((activity) => (
+                  {recentActivity.slice(0, 3).map((activity) => (
                     <button
                       key={activity.id}
                       onClick={() => handleActivityClick(activity)}
@@ -921,15 +920,17 @@ export function DashboardContent({ hasCompletedQuestionnaire = false, hasPartial
                     </button>
                   ))}
                 </div>
-                <div className="pt-2 border-t border-gray-200 mt-2 flex-shrink-0">
-                  <button 
-                    className="w-full flex items-center justify-center gap-1 text-xs text-blue-600 hover:text-blue-700 font-medium py-1.5" 
-                    onClick={handleViewAllActivity}
-                  >
-                    View all
-                    <ArrowRight className="w-3 h-3" />
-                  </button>
-                </div>
+                {recentActivity.length > 3 && (
+                  <div className="pt-2 border-t border-gray-200 mt-2 flex-shrink-0">
+                    <button 
+                      className="w-full flex items-center justify-center gap-1 text-xs text-blue-600 hover:text-blue-700 font-medium py-1.5" 
+                      onClick={handleViewAllActivity}
+                    >
+                      View more
+                      <ArrowRight className="w-3 h-3" />
+                    </button>
+                  </div>
+                )}
               </div>
             ) : (
               <div className="flex-1 flex items-center justify-center">

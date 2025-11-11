@@ -84,23 +84,23 @@ export function BottomTabBar({ user }: BottomTabBarProps) {
 
 	return (
 		<nav className="fixed bottom-0 left-0 right-0 z-40 border-t border-line bg-surface-0/95 backdrop-blur supports-[backdrop-filter]:bg-surface-0/80 md:hidden">
-			<ul className="safe-area-inset grid grid-cols-5 h-16">
+			<ul className="safe-area-inset grid grid-cols-4 h-16 w-full">
 				{tabs.map((tab) => {
 					const isActive = pathname === tab.href || pathname.startsWith(tab.href + '/')
 					const Icon = tab.icon
 					return (
-						<li key={tab.name} className="h-full">
+						<li key={tab.name} className="h-full w-full flex items-center justify-center">
 							<Link
 								href={tab.href}
 								className={cn(
-									'flex h-full flex-col items-center justify-center gap-1 text-xs',
+									'flex h-full w-full flex-col items-center justify-center gap-1 text-xs',
 									isActive
 										? 'text-brand-600'
 										: 'text-ink-500 hover:text-ink-700',
 								)}
 								aria-current={isActive ? 'page' : undefined}
 							>
-								<div className="relative">
+								<div className="relative flex items-center justify-center">
 									<Icon className="h-5 w-5" />
 									{tab.badge && unreadChatCount > 0 && (
 										<span className="absolute -top-1 -right-2 min-w-[18px] h-[18px] rounded-full bg-red-600 text-white text-[10px] leading-[18px] px-1 text-center">

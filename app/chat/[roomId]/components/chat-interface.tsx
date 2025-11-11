@@ -98,6 +98,7 @@ export function ChatInterface({ roomId, user }: ChatInterfaceProps) {
   const [otherUserVerificationStatus, setOtherUserVerificationStatus] = useState<'verified' | 'unverified' | null>(null)
   
   const messagesEndRef = useRef<HTMLDivElement>(null)
+  const messagesContainerRef = useRef<HTMLDivElement>(null)
   const typingTimeoutRef = useRef<NodeJS.Timeout>()
   const typingDebounceRef = useRef<NodeJS.Timeout>()
   const typingChannelRef = useRef<any>(null)
@@ -1076,6 +1077,21 @@ export function ChatInterface({ roomId, user }: ChatInterfaceProps) {
     }
   }, [roomId, loadChatData, setupRealtimeSubscription, markAsRead])
 
+  // Auto-scroll to bottom when messages change
+  useEffect(() => {
+    if (messages.length > 0 && messagesContainerRef.current) {
+      // Small delay to ensure DOM is updated
+      setTimeout(() => {
+        if (messagesContainerRef.current) {
+          messagesContainerRef.current.scrollTo({
+            top: messagesContainerRef.current.scrollHeight,
+            behavior: 'smooth'
+          })
+        }
+      }, 100)
+    }
+  }, [messages.length])
+
   const sendMessage = async () => {
     if (!newMessage.trim() || isSending) return
 
@@ -1212,8 +1228,11 @@ export function ChatInterface({ roomId, user }: ChatInterfaceProps) {
   }
 
   const scrollToBottom = () => {
-    if (messagesEndRef.current) {
-      messagesEndRef.current.scrollIntoView({ behavior: 'smooth', block: 'end' })
+    if (messagesContainerRef.current) {
+      messagesContainerRef.current.scrollTo({
+        top: messagesContainerRef.current.scrollHeight,
+        behavior: 'smooth'
+      })
     }
   }
 
@@ -1398,71 +1417,51 @@ export function ChatInterface({ roomId, user }: ChatInterfaceProps) {
   }
 
   return (
-    <div className="max-w-4xl mx-auto pb-safe-bottom">
-      {/* Safety Notice - Moved to top */}
-      <Alert className="mb-6">
-        <Shield className="h-4 w-4 mt-0.5" />
-        <AlertDescription className="flex items-center">
-          This is a safe, text-only chat. Links and files are blocked for your protection. 
-          All messages are moderated.
-        </AlertDescription>
-      </Alert>
-
-      {/* Chat Header */}
-      <div className="mb-6">
-        <div className="flex items-start justify-between mb-4">
-          <div className="flex-1">
+    <div className="flex flex-col h-[calc(100vh-8rem)] sm:h-[calc(100vh-6rem)] max-w-4xl mx-auto">
+      {/* Compact Chat Header */}
+      <div className="flex-shrink-0 border-b border-gray-200 bg-white px-4 py-3">
+        <div className="flex items-center justify-between gap-3">
+          <div className="flex items-center gap-3 flex-1 min-w-0">
             <Button 
-              variant="outline" 
-              size="md"
+              variant="ghost" 
+              size="sm"
               onClick={() => router.back()}
-              className="mb-3 px-4 py-2 border-gray-300 hover:bg-gray-50 hover:border-gray-400 transition-colors shadow-sm"
+              className="h-8 w-8 p-0 flex-shrink-0"
             >
-              <ArrowLeft className="h-4 w-4 mr-2" />
-              Back
+              <ArrowLeft className="h-4 w-4" />
             </Button>
-            <div className="flex items-center gap-2">
-              <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
+            <div className="flex items-center gap-2 flex-1 min-w-0">
+              <h1 className="text-lg font-semibold text-gray-900 dark:text-white truncate whitespace-nowrap">
                 {isGroup ? 'Roommate Chat' : (otherPersonName || 'Chat')}
               </h1>
               {!isGroup && otherUserVerificationStatus && (
-                <div className="flex items-center">
+                <div className="flex-shrink-0">
                   {otherUserVerificationStatus === 'verified' ? (
-                    <Badge variant="outline" className="flex items-center gap-1 px-2 py-1 bg-green-50 text-green-700 border-green-200">
-                      <CheckCircle className="h-4 w-4" />
-                      <span className="text-xs font-medium">Verified</span>
-                    </Badge>
+                    <CheckCircle className="h-5 w-5 text-green-600" title="Verified" />
                   ) : (
-                    <Badge variant="outline" className="flex items-center gap-1 px-2 py-1 bg-gray-50 text-gray-600 border-gray-200">
-                      <XCircle className="h-4 w-4" />
-                      <span className="text-xs font-medium">Unverified</span>
-                    </Badge>
+                    <XCircle className="h-5 w-5 text-gray-400" title="Unverified" />
                   )}
                 </div>
               )}
               {isGroup && (
-                <div className="flex items-center gap-2 mt-1">
+                <div className="flex items-center gap-1 flex-shrink-0">
                   <Users className="h-4 w-4 text-gray-500" />
-                  <span className="text-sm text-gray-500">
-                    {members.length} members
+                  <span className="text-xs text-gray-500">
+                    {members.length}
                   </span>
                 </div>
               )}
             </div>
           </div>
           
-          <div className="flex items-center gap-2">
-            <Badge variant="secondary" className="flex items-center gap-1.5 px-3 py-1.5 bg-blue-100 text-blue-800 border-blue-200 font-semibold text-sm">
-              <Shield className="h-4 w-4" />
-              Safe Chat
-            </Badge>
+          <div className="flex items-center gap-2 flex-shrink-0">
             {!isGroup && (
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <Button
                     variant="ghost"
                     size="sm"
-                    className="h-9 w-9 p-0"
+                    className="h-8 w-8 p-0"
                   >
                     <MoreVertical className="h-4 w-4" />
                     <span className="sr-only">Open menu</span>
@@ -1500,126 +1499,156 @@ export function ChatInterface({ roomId, user }: ChatInterfaceProps) {
         </div>
       </div>
 
-      {/* Chat Members - Only show for group chats */}
-      {isGroup && members.length > 0 && (
-        <Card className="mb-6">
-          <CardHeader>
-            <CardTitle className="text-lg">Chat Members</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="flex items-center gap-4">
-              {members.map((member) => (
-                <div key={member.id} className="flex items-center gap-2">
-                  <div className="relative">
-                    <Avatar className="w-8 h-8">
-                      <AvatarImage src={member.avatar} />
-                      <AvatarFallback className="text-xs">
-                        {member.name.charAt(0)}
-                      </AvatarFallback>
-                    </Avatar>
-                    {member.is_online && (
-                      <div className="absolute -bottom-1 -right-1 w-3 h-3 bg-green-500 rounded-full border-2 border-white"></div>
-                    )}
-                  </div>
-                  <span className="text-sm font-medium">{member.name}</span>
-                </div>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
-      )}
+      {/* Message Input - Moved to top */}
+      <div className="flex-shrink-0 border-b border-gray-200 bg-white px-4 py-3">
+        <div className="flex gap-2 items-center">
+          <Input
+            value={newMessage}
+            onChange={(e) => {
+              setNewMessage(e.target.value)
+              handleTyping()
+            }}
+            onKeyPress={(e) => {
+              if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault()
+                sendMessage()
+              }
+            }}
+            placeholder={isBlocked ? "You cannot send messages to a blocked user" : "Type your message..."}
+            disabled={isSending || isBlocked}
+            className="flex-1 h-10 text-sm"
+          />
+          <Button 
+            onClick={sendMessage}
+            disabled={!newMessage.trim() || isSending || isBlocked}
+            className="h-10 w-10 p-0 flex-shrink-0"
+          >
+            <Send className="h-4 w-4" />
+          </Button>
+        </div>
+      </div>
 
       {/* Blocked User Notice */}
       {isBlocked && blockedUserId && (
-        <Alert className="mb-4" variant="destructive">
-          <Ban className="h-4 w-4" />
-          <AlertDescription>
-            You have blocked this user. Messages from blocked users are hidden.
-          </AlertDescription>
-        </Alert>
+        <div className="flex-shrink-0 px-4 py-2 bg-red-50 border-b border-red-200">
+          <Alert variant="destructive" className="py-2">
+            <Ban className="h-4 w-4" />
+            <AlertDescription className="text-sm">
+              You have blocked this user. Messages from blocked users are hidden.
+            </AlertDescription>
+          </Alert>
+        </div>
       )}
 
-      {/* Messages */}
-      <Card className="mb-4 sm:mb-6">
-        <CardContent className="p-0">
-          <div className="overflow-y-auto p-3 sm:p-4 space-y-3 sm:space-y-4 md:h-96 max-h-[calc(100vh-280px)]">
-            {messages.length === 0 ? (
-              <div className="text-center py-8">
-                <MessageCircle className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-                <p className="text-gray-500">No messages yet. Start the conversation!</p>
+      {/* Error Message */}
+      {error && (
+        <div className="flex-shrink-0 px-4 py-2">
+          <Alert variant="destructive">
+            <AlertTriangle className="h-4 w-4" />
+            <AlertDescription>{error}</AlertDescription>
+          </Alert>
+        </div>
+      )}
+
+      {/* Chat Members - Compact display for group chats */}
+      {isGroup && members.length > 0 && (
+        <div className="flex-shrink-0 px-4 py-2 bg-gray-50 border-b border-gray-200">
+          <div className="flex items-center gap-2 overflow-x-auto scrollbar-hide">
+            {members.map((member) => (
+              <div key={member.id} className="flex items-center gap-2 flex-shrink-0">
+                <div className="relative">
+                  <Avatar className="w-6 h-6">
+                    <AvatarImage src={member.avatar} />
+                    <AvatarFallback className="text-xs">
+                      {member.name.charAt(0)}
+                    </AvatarFallback>
+                  </Avatar>
+                  {member.is_online && (
+                    <div className="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 bg-green-500 rounded-full border border-white"></div>
+                  )}
+                </div>
+                <span className="text-xs font-medium text-gray-700 whitespace-nowrap">{member.name}</span>
               </div>
-            ) : (
-              messages
-                .filter(message => !isBlocked || message.sender_id !== blockedUserId) // Hide messages from blocked users
-                .map((message, index) => {
-                // Show date separator if day changed
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Messages - Scrollable area */}
+      <div ref={messagesContainerRef} className="flex-1 overflow-y-auto bg-gray-50 px-4 py-4">
+        {messages.length === 0 ? (
+          <div className="text-center py-12">
+            <MessageCircle className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+            <p className="text-gray-500">No messages yet. Start the conversation!</p>
+          </div>
+        ) : (
+          <div className="space-y-3">
+            {messages
+              .filter(message => !isBlocked || message.sender_id !== blockedUserId)
+              .map((message, index) => {
                 const showDateSeparator = shouldShowDateSeparator(index)
                 
                 return (
                   <div key={message.id}>
                     {showDateSeparator && (
                       <div className="flex justify-center my-4">
-                        <div className="bg-gray-100 dark:bg-gray-800 px-3 py-1 rounded-full">
-                          <span className="text-xs text-gray-500 dark:text-gray-400 font-medium">
+                        <div className="bg-gray-200 px-3 py-1 rounded-full">
+                          <span className="text-xs text-gray-600 font-medium">
                             {formatDate(message.created_at)}
                           </span>
                         </div>
                       </div>
                     )}
                     
-                    {/* Render system messages centered and styled differently */}
                     {message.is_system_message ? (
                       <div className="flex justify-center my-4">
-                        <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg px-4 py-2">
-                          <p className="text-sm text-blue-700 dark:text-blue-300 text-center">
+                        <div className="bg-blue-50 border border-blue-200 rounded-lg px-4 py-2">
+                          <p className="text-sm text-blue-700 text-center">
                             {message.content}
                           </p>
                         </div>
                       </div>
                     ) : (
-                      // Regular message rendering
                       <div 
-                        className={`flex gap-2 sm:gap-3 ${message.is_own ? 'justify-end' : 'justify-start'}`}
+                        className={`flex gap-2 ${message.is_own ? 'justify-end' : 'justify-start'}`}
                       >
-                    {!message.is_own && (
-                      <Avatar className="w-7 h-7 sm:w-8 sm:h-8 flex-shrink-0">
-                        <AvatarImage src={message.sender_avatar} />
-                        <AvatarFallback className="text-xs">
-                          {message.sender_name.charAt(0)}
-                        </AvatarFallback>
-                      </Avatar>
-                    )}
-                    
-                    <div className={`max-w-[75%] sm:max-w-xs lg:max-w-md ${message.is_own ? 'order-first' : ''}`}>
-                      {!message.is_own && (
-                        <div className="text-xs text-gray-500 mb-1">
-                          {message.sender_name}
+                        {!message.is_own && (
+                          <Avatar className="w-7 h-7 flex-shrink-0">
+                            <AvatarImage src={message.sender_avatar} />
+                            <AvatarFallback className="text-xs">
+                              {message.sender_name.charAt(0)}
+                            </AvatarFallback>
+                          </Avatar>
+                        )}
+                        
+                        <div className={`max-w-[75%] ${message.is_own ? 'order-first' : ''}`}>
+                          {!message.is_own && (
+                            <div className="text-xs text-gray-500 mb-1">
+                              {message.sender_name}
+                            </div>
+                          )}
+                          <div className={`rounded-lg px-3 py-2 ${
+                            message.is_own 
+                              ? 'bg-primary text-primary-foreground' 
+                              : 'bg-white border border-gray-200'
+                          }`}>
+                            <p className="text-sm break-words">{message.content}</p>
+                          </div>
+                          <div className="flex items-center gap-1 mt-1">
+                            <span className="text-xs text-gray-400">
+                              {formatTime(message.created_at)}
+                            </span>
+                            {message.is_own && getReadStatus(message)}
+                          </div>
                         </div>
-                      )}
-                      <div className={`rounded-lg px-2.5 sm:px-3 py-1.5 sm:py-2 ${
-                        message.is_own 
-                          ? 'bg-primary text-primary-foreground' 
-                          : 'bg-gray-100 dark:bg-gray-800'
-                      }`}>
-                        <p className="text-xs sm:text-sm break-words">{message.content}</p>
                       </div>
-                      <div className="flex items-center gap-1 mt-0.5 sm:mt-1">
-                        <span className="text-[10px] sm:text-xs text-gray-400">
-                          {formatTime(message.created_at)}
-                        </span>
-                        {message.is_own && getReadStatus(message)}
-                      </div>
-                    </div>
-                    </div>
-                  )}
+                    )}
                   </div>
                 )
-              })
-            )}
+              })}
             
             {/* Typing Indicator */}
             {(() => {
-              // Filter out current user and get names
               const otherTypingUsers = typingUsers.filter(userId => userId !== user.id)
               if (otherTypingUsers.length === 0) return null
 
@@ -1641,9 +1670,9 @@ export function ChatInterface({ roomId, user }: ChatInterfaceProps) {
               }
 
               return (
-                <div className="flex gap-3">
-                  <div className="w-8 h-8 flex-shrink-0"></div>
-                  <div className="bg-gray-100 dark:bg-gray-800 rounded-lg px-3 py-2">
+                <div className="flex gap-2">
+                  <div className="w-7 h-7 flex-shrink-0"></div>
+                  <div className="bg-white border border-gray-200 rounded-lg px-3 py-2">
                     <div className="flex items-center gap-1">
                       <div className="flex gap-1">
                         <div className="w-1 h-1 bg-gray-400 rounded-full animate-bounce"></div>
@@ -1661,53 +1690,8 @@ export function ChatInterface({ roomId, user }: ChatInterfaceProps) {
             
             <div ref={messagesEndRef} />
           </div>
-        </CardContent>
-      </Card>
-
-      {/* Error Message */}
-      {error && (
-        <Alert variant="destructive" className="mb-4">
-          <AlertTriangle className="h-4 w-4" />
-          <AlertDescription>{error}</AlertDescription>
-        </Alert>
-      )}
-
-      {/* Message Input */}
-      <Card className="sticky bottom-16 md:static z-20">
-        <CardContent className="p-3 sm:p-4 pb-safe-bottom">
-          <div className="flex gap-2 sm:gap-3 items-center">
-            <Input
-              value={newMessage}
-              onChange={(e) => {
-                setNewMessage(e.target.value)
-                handleTyping()
-              }}
-              onKeyPress={(e) => {
-                if (e.key === 'Enter' && !e.shiftKey) {
-                  e.preventDefault()
-                  sendMessage()
-                }
-              }}
-              placeholder={isBlocked ? "You cannot send messages to a blocked user" : "Type your message..."}
-              disabled={isSending || isBlocked}
-              className="flex-1 h-11 text-sm sm:text-base"
-            />
-            <Button 
-              onClick={sendMessage}
-              disabled={!newMessage.trim() || isSending}
-              className="h-11 w-11 sm:w-11 p-0 flex-shrink-0"
-            >
-              <Send className="h-4 w-4" />
-            </Button>
-          </div>
-          
-          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mt-2 gap-1 text-[10px] sm:text-xs text-gray-500">
-            <span className="hidden sm:inline">Press Enter to send, Shift+Enter for new line</span>
-            <span className="sm:hidden">Enter to send</span>
-            <span>{newMessage.length}/500 characters</span>
-          </div>
-        </CardContent>
-      </Card>
+        )}
+      </div>
 
       {/* Report User Dialog */}
       <Dialog open={showReportDialog} onOpenChange={setShowReportDialog}>
