@@ -1,6 +1,6 @@
 # 🏠 Domu Match
 
-**Find roommates who actually fit your life**
+**From strangers to roommates**
 
 A modern, AI-powered roommate matching platform designed specifically for students in the Netherlands. Built with Next.js, TypeScript, and Supabase.
 

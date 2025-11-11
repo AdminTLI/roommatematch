@@ -15,7 +15,7 @@ export function FinalCTA({ locale = 'en' }: FinalCTAProps) {
 
   const content = {
     en: {
-      title: "Ready to Find Your Perfect Roommate?",
+      title: "Ready to go from strangers to roommates?",
       subtitle: "Join thousands of students who have already found their ideal living situation through our platform.",
       cta: {
         student: {
@@ -35,7 +35,7 @@ export function FinalCTA({ locale = 'en' }: FinalCTAProps) {
       }
     },
     nl: {
-      title: "Klaar om je Perfecte Huisgenoot te Vinden?",
+      title: "Klaar om van vreemden tot huisgenoten te gaan?",
       subtitle: "Sluit je aan bij duizenden studenten die hun ideale woonsituatie al hebben gevonden via ons platform.",
       cta: {
         student: {

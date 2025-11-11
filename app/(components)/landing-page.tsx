@@ -73,7 +73,7 @@ export function LandingPage() {
         <section className="container mx-auto px-4 py-16 text-center">
           <div className="max-w-4xl mx-auto">
             <h1 className="text-5xl font-bold text-gray-900 dark:text-white mb-6">
-              Find Your Perfect Roommate
+              From strangers to roommates
             </h1>
             <p className="text-xl text-gray-600 dark:text-gray-300 mb-8 max-w-2xl mx-auto">
               Connect with fellow students across Dutch universities. Safe, verified, and designed to help you find your ideal living situation.
@@ -150,7 +150,7 @@ export function LandingPage() {
               What Students Say
             </h2>
             <p className="text-lg text-gray-600 dark:text-gray-300">
-              Join thousands of happy students who found their perfect roommate
+              Join thousands of happy students who went from strangers to roommates
             </p>
           </div>
           <div className="grid md:grid-cols-3 gap-8">
@@ -177,7 +177,7 @@ export function LandingPage() {
         <section className="bg-gray-50 dark:bg-gray-800 py-16">
           <div className="container mx-auto px-4 text-center">
             <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-4">
-              Ready to Find Your Perfect Roommate?
+              Ready to go from strangers to roommates?
             </h2>
             <p className="text-lg text-gray-600 dark:text-gray-300 mb-8 max-w-2xl mx-auto">
               Join thousands of students who have already found their ideal living situation through our platform.
@@ -202,7 +202,7 @@ export function LandingPage() {
                 <span className="text-xl font-bold">Domu Match</span>
               </div>
               <p className="text-gray-400">
-                The safest way to find your perfect roommate in the Netherlands.
+                From strangers to roommates - the safest way in the Netherlands.
               </p>
             </div>
             <div>

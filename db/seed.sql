@@ -3,7 +3,7 @@
 -- Insert sample universities
 INSERT INTO universities (id, name, slug, branding, eligibility_domains, is_active) VALUES
   ('550e8400-e29b-41d4-a716-446655440001', 'University of Amsterdam', 'uva', 
-   '{"primary_color": "#003082", "logo_url": "/logos/uva.png", "welcome_message": "Find your perfect roommate at UvA!"}', 
+   '{"primary_color": "#003082", "logo_url": "/logos/uva.png", "welcome_message": "From strangers to roommates at UvA!"}', 
    '{"student.uva.nl", "uva.nl"}', true),
   ('550e8400-e29b-41d4-a716-446655440002', 'Delft University of Technology', 'tudelft', 
    '{"primary_color": "#00a6d6", "logo_url": "/logos/tudelft.png", "welcome_message": "Connect with fellow TU Delft students!"}', 
@@ -183,7 +183,7 @@ INSERT INTO user_vectors (user_id, vector) VALUES
 -- Insert sample announcements
 INSERT INTO announcements (university_id, title, body, starts_at, ends_at) VALUES
   ('550e8400-e29b-41d4-a716-446655440001', 'Welcome to UvA Domu Match!', 
-   'We are excited to help you find your perfect roommate. Complete your profile and questionnaire to get started with matching!', 
+   'We are excited to help you go from strangers to roommates. Complete your profile and questionnaire to get started with matching!', 
    NOW(), NOW() + INTERVAL '30 days'),
   ('550e8400-e29b-41d4-a716-446655440002', 'TU Delft Housing Support', 
    'Need help with housing? Check out our resources and connect with fellow students through roommate matching.', 

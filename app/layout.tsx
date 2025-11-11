@@ -9,8 +9,8 @@ import './globals.css'
 const inter = Inter({ subsets: ['latin'] })
 
 export const metadata: Metadata = {
-  title: 'Domu Match - Find Your Perfect Roommate',
-  description: 'Connect with fellow students and find your ideal roommate match. Safe, verified, and designed for Dutch universities.',
+  title: 'Domu Match - From strangers to roommates',
+  description: 'From strangers to roommates. Connect with fellow students and find your ideal roommate match. Safe, verified, and designed for Dutch universities.',
   icons: {
     icon: '/favicon.ico',
     apple: '/favicon.ico',

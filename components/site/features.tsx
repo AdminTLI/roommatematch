@@ -22,7 +22,7 @@ const features = [
   {
     icon: Brain,
     title: "Smart matching",
-    description: "AI-powered compatibility analysis based on lifestyle, study habits, and personality traits to find your perfect roommate match.",
+    description: "AI-powered compatibility analysis based on lifestyle, study habits, and personality traits to help you go from strangers to roommates.",
     link: "Learn more",
     size: "large",
     gradient: "from-blue-500/20 via-purple-500/20 to-pink-500/20",
@@ -163,7 +163,7 @@ export function Features() {
           </motion.div>
           
           <h2 className="text-4xl md:text-5xl lg:text-6xl font-bold text-brand-text mb-6 bg-gradient-to-r from-gray-900 via-gray-800 to-gray-900 bg-clip-text text-transparent">
-            Everything you need to find your perfect roommate
+            Everything you need to go from strangers to roommates
           </h2>
           <p className="text-lg md:text-xl leading-relaxed max-w-3xl mx-auto text-brand-muted">
             Our comprehensive platform makes finding the right roommate simple and stress-free

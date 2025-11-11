@@ -88,7 +88,7 @@ export const nl = {
     },
     signUp: {
       title: 'Maak je account aan',
-      subtitle: 'Sluit je aan bij duizenden studenten die hun perfecte huisgenoot zoeken',
+      subtitle: 'Van vreemden tot huisgenoten',
       email: 'E-mailadres',
       password: 'Wachtwoord',
       confirmPassword: 'Bevestig wachtwoord',

@@ -356,7 +356,7 @@ export function OnboardingWizard({ user }: OnboardingWizardProps) {
               Welcome to Domu Match
             </h1>
             <p className="text-gray-600 dark:text-gray-300 mt-2">
-              Let's get to know you better to find your perfect roommate match
+              Let's get to know you better to go from strangers to roommates
             </p>
           </div>
           <div className="text-right">

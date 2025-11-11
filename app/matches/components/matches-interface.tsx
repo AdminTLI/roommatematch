@@ -218,7 +218,7 @@ export function MatchesInterface({ user }: MatchesInterfaceProps) {
               Your Matches
             </h1>
             <p className="text-gray-600 dark:text-gray-300 mt-2">
-              Find your perfect roommate match based on compatibility
+              From strangers to roommates - find your perfect match based on compatibility
             </p>
           </div>
           <div className="flex items-center gap-4">

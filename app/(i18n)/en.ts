@@ -88,7 +88,7 @@ export const en = {
     },
     signUp: {
       title: 'Create your account',
-      subtitle: 'Join thousands of students finding their perfect roommate',
+      subtitle: 'From strangers to roommates',
       email: 'Email address',
       password: 'Password',
       confirmPassword: 'Confirm password',
@@ -209,7 +209,7 @@ export const en = {
   // Questionnaire
   questionnaire: {
     title: 'Tell us about yourself',
-    subtitle: 'Help us find your perfect roommate match',
+    subtitle: 'Help us go from strangers to roommates',
     progress: 'Step {current} of {total}',
     timeEstimate: 'This will take about {minutes} minutes',
     sections: {
@@ -399,7 +399,7 @@ export const en = {
   // Matches
   matches: {
     title: 'Your Matches',
-    subtitle: 'Find your perfect roommate',
+    subtitle: 'From strangers to roommates',
     tabs: {
       groups: 'Group Matches',
       individuals: 'Individual Matches'

@@ -1,7 +1,7 @@
 {
   "name": "Domu Match",
   "short_name": "Domu Match",
-  "description": "Find your perfect roommate match",
+  "description": "From strangers to roommates",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#ffffff",

@@ -44,7 +44,7 @@ export function Matches() {
             See who you could match with
           </h2>
           <p className="text-base md:text-lg leading-relaxed max-w-prose mx-auto text-brand-muted">
-            Our AI analyzes hundreds of factors to find your perfect roommate match
+            Our AI analyzes hundreds of factors to help you go from strangers to roommates
           </p>
         </div>
 

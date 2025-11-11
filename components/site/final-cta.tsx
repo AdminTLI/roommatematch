@@ -24,7 +24,7 @@ export function FinalCTA() {
           {/* Left column - Content */}
           <div className="space-y-6">
             <h2 className="text-3xl md:text-4xl font-bold text-brand-text">
-              Ready to find your perfect roommate?
+              Ready to go from strangers to roommates?
             </h2>
             <p className="text-base md:text-lg leading-relaxed max-w-prose text-brand-muted">
               Join thousands of students who found their ideal roommate match. 

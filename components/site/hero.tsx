@@ -51,7 +51,7 @@ export function Hero() {
           {/* Left column - Content */}
           <div className="relative z-10 space-y-6">
             <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl leading-tight tracking-tight text-brand-text">
-              Find roommates who actually fit your life
+              From strangers to roommates
             </h1>
             <p className="text-base md:text-lg leading-relaxed max-w-prose text-brand-muted">
               Domu Match pairs you with compatible students based on lifestyle, study habits, and personality. 

@@ -14,7 +14,7 @@ export function HowItWorks({ locale = 'en' }: HowItWorksProps) {
   const content = {
     en: {
       title: "How it works",
-      subtitle: "Three simple steps to find your perfect roommate match",
+      subtitle: "Three simple steps to go from strangers to roommates",
       steps: [
         {
           icon: FileText,

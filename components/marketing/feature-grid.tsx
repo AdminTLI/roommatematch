@@ -99,7 +99,7 @@ export function FeatureGrid() {
           </motion.div>
           
           <motion.h2 variants={fadeInUp} className="text-h1 text-ink-900">
-            Everything you need to find your perfect roommate
+            Everything you need to go from strangers to roommates
           </motion.h2>
           
           <motion.p variants={fadeInUp} className="text-h4 text-ink-700 max-w-3xl mx-auto">

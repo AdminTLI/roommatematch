@@ -63,8 +63,8 @@ export function Hero() {
               </Badge>
               
               <h1 className="text-display text-ink-900">
-                Find roommates who actually{' '}
-                <span className="text-gradient">fit your life</span>
+                From strangers to{' '}
+                <span className="text-gradient">roommates</span>
               </h1>
               
               <p className="text-h4 text-ink-700 max-w-2xl">

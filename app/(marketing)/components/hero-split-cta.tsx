@@ -15,7 +15,7 @@ export function HeroSplitCTA({ locale = 'en' }: HeroSplitCTAProps) {
 
   const content = {
     en: {
-      title: "Find compatible roommates, faster.",
+      title: "From strangers to roommates",
       subtitle: "Campus-verified community, ID-checked accounts, and a scientific match that prevents conflicts.",
       microcopy: "No listings, no spam—just people you'll actually live well with.",
       primaryCta: "Start as a student",
@@ -23,7 +23,7 @@ export function HeroSplitCTA({ locale = 'en' }: HeroSplitCTAProps) {
       secondaryLink: "See how it works"
     },
     nl: {
-      title: "Vind sneller de juiste huisgenoten.",
+      title: "Van vreemden tot huisgenoten",
       subtitle: "Campus-geverifieerde community, ID-gecontroleerde accounts en een wetenschappelijke match die conflicten voorkomt.",
       microcopy: "Geen advertenties, geen spam—alleen mensen waarmee je echt goed kunt samenwonen.",
       primaryCta: "Start als student",

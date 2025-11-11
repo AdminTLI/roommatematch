@@ -58,7 +58,7 @@ export function MarketingFooter() {
               <span className="text-2xl font-bold">Domu Match</span>
             </div>
             <p className="text-gray-400 mb-6 max-w-md">
-              The safest way to find your perfect roommate in the Netherlands. 
+              From strangers to roommates - the safest way in the Netherlands. 
               Campus-verified, ID-checked, and compatibility-first.
             </p>
             
