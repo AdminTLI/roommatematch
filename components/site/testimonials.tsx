@@ -1,46 +1,84 @@
+'use client'
+
 import { Card, CardContent } from '@/components/ui/card'
 import Container from '@/components/ui/primitives/container'
 import Section from '@/components/ui/primitives/section'
 import { Shield, Brain, Zap, Heart } from 'lucide-react'
+import { useApp } from '@/app/providers'
 
-const benefits = [
-  {
-    icon: Brain,
-    title: "Science-backed matching",
-    description: "Our algorithm analyzes 40+ compatibility factors to predict roommate success before conflicts start. No more gambling on random matches."
+const content = {
+  en: {
+    title: "Why Domu Match works",
+    subtitle: "Our compatibility-first approach helps you find roommates as compatible as your best friends",
+    benefits: [
+      {
+        icon: Brain,
+        title: "Science-backed matching",
+        description: "Our algorithm analyzes 40+ compatibility factors to predict roommate success before conflicts start. No more gambling on random matches."
+      },
+      {
+        icon: Shield,
+        title: "Verified & safe",
+        description: "Every student is verified with government ID and selfie verification. You can focus on compatibility, not safety concerns."
+      },
+      {
+        icon: Zap,
+        title: "Save time & money",
+        description: "Get matched in days, not weeks. Prevent costly move-outs and disputes by finding compatible roommates from the start."
+      },
+      {
+        icon: Heart,
+        title: "Find your perfect match",
+        description: "See exactly why you're compatible with transparent explanations. Match on lifestyle, study habits, and values that matter."
+      }
+    ]
   },
-  {
-    icon: Shield,
-    title: "Verified & safe",
-    description: "Every student is verified with government ID and selfie verification. You can focus on compatibility, not safety concerns."
-  },
-  {
-    icon: Zap,
-    title: "Save time & money",
-    description: "Get matched in days, not weeks. Prevent costly move-outs and disputes by finding compatible roommates from the start."
-  },
-  {
-    icon: Heart,
-    title: "Find your perfect match",
-    description: "See exactly why you're compatible with transparent explanations. Match on lifestyle, study habits, and values that matter."
+  nl: {
+    title: "Waarom Domu Match werkt",
+    subtitle: "Onze compatibiliteit-eerst aanpak helpt je huisgenoten te vinden die zo compatibel zijn als je beste vrienden",
+    benefits: [
+      {
+        icon: Brain,
+        title: "Wetenschappelijk onderbouwde matching",
+        description: "Ons algoritme analyseert 40+ compatibiliteitsfactoren om het succes van huisgenoten te voorspellen voordat conflicten beginnen. Geen gokken meer op willekeurige matches."
+      },
+      {
+        icon: Shield,
+        title: "Geverifieerd en veilig",
+        description: "Elke student is geverifieerd met overheids-ID en selfie-verificatie. Je kunt je focussen op compatibiliteit, niet op veiligheidszorgen."
+      },
+      {
+        icon: Zap,
+        title: "Bespaar tijd en geld",
+        description: "Krijg matches in dagen, niet weken. Voorkom kostbare verhuizingen en geschillen door vanaf het begin compatibele huisgenoten te vinden."
+      },
+      {
+        icon: Heart,
+        title: "Vind je perfecte match",
+        description: "Zie precies waarom je compatibel bent met transparante uitleg. Match op levensstijl, studiegewoonten en waarden die ertoe doen."
+      }
+    ]
   }
-]
+}
 
 export function Testimonials() {
+  const { locale } = useApp()
+  const t = content[locale]
+
   return (
     <Section>
       <Container>
         <div className="text-center mb-12">
           <h2 className="text-3xl md:text-4xl font-bold text-brand-text mb-4">
-            Why Domu Match works
+            {t.title}
           </h2>
           <p className="text-base md:text-lg leading-relaxed max-w-prose mx-auto text-brand-muted">
-            Our compatibility-first approach helps you find roommates as compatible as your best friends
+            {t.subtitle}
           </p>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {benefits.map((benefit, index) => {
+          {t.benefits.map((benefit, index) => {
             const Icon = benefit.icon
             return (
               <Card 

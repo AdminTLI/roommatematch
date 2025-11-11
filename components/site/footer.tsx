@@ -1,8 +1,61 @@
+'use client'
+
 import Container from "@/components/ui/primitives/container"
 import Link from "next/link"
 import { Twitter, Linkedin, Instagram } from "lucide-react"
+import { useApp } from '@/app/providers'
+
+const content = {
+  en: {
+    brandDescription: "The smartest way to find compatible roommates. Science-backed matching for better living.",
+    product: "Product",
+    company: "Company",
+    support: "Support",
+    howItWorks: "How it works",
+    features: "Features",
+    pricing: "Pricing",
+    universities: "Universities",
+    aboutUs: "About us",
+    blog: "Blog",
+    careers: "Careers",
+    contact: "Contact",
+    helpCenter: "Help center",
+    safety: "Safety",
+    privacyPolicy: "Privacy policy",
+    termsOfService: "Terms of service",
+    privacy: "Privacy",
+    terms: "Terms",
+    cookies: "Cookies",
+    allRightsReserved: "All rights reserved."
+  },
+  nl: {
+    brandDescription: "De slimste manier om compatibele huisgenoten te vinden. Wetenschappelijk onderbouwde matching voor beter wonen.",
+    product: "Product",
+    company: "Bedrijf",
+    support: "Ondersteuning",
+    howItWorks: "Hoe het werkt",
+    features: "Functies",
+    pricing: "Prijzen",
+    universities: "Universiteiten",
+    aboutUs: "Over ons",
+    blog: "Blog",
+    careers: "Carrières",
+    contact: "Contact",
+    helpCenter: "Helpcentrum",
+    safety: "Veiligheid",
+    privacyPolicy: "Privacybeleid",
+    termsOfService: "Servicevoorwaarden",
+    privacy: "Privacy",
+    terms: "Voorwaarden",
+    cookies: "Cookies",
+    allRightsReserved: "Alle rechten voorbehouden."
+  }
+}
 
 export default function Footer() {
+  const { locale } = useApp()
+  const t = content[locale]
+
   return (
     <footer className="bg-[#0B1220] text-slate-300">
       <Container className="py-16">
@@ -10,7 +63,7 @@ export default function Footer() {
           {/* Brand */}
           <div className="space-y-4">
             <h3 className="text-white text-xl font-semibold">Domu Match</h3>
-            <p className="text-slate-400 max-w-prose">The smartest way to find compatible roommates. Science-backed matching for better living.</p>
+            <p className="text-slate-400 max-w-prose">{t.brandDescription}</p>
             <div className="flex items-center gap-3">
               <a aria-label="Twitter" className="rounded-full p-2 bg-white/5 hover:bg-white/10 focus-visible:ring-2 focus-visible:ring-brand-primary flex items-center justify-center"><Twitter size={18}/></a>
               <a aria-label="LinkedIn" className="rounded-full p-2 bg-white/5 hover:bg-white/10 focus-visible:ring-2 focus-visible:ring-brand-primary flex items-center justify-center"><Linkedin size={18}/></a>
@@ -20,42 +73,42 @@ export default function Footer() {
 
           {/* Columns */}
           <div>
-            <h4 className="text-white font-semibold mb-4">Product</h4>
+            <h4 className="text-white font-semibold mb-4">{t.product}</h4>
             <ul className="space-y-3 text-slate-400">
-              <li><Link href="/how-it-works" className="hover:text-white">How it works</Link></li>
-              <li><Link href="/features" className="hover:text-white">Features</Link></li>
-              <li><Link href="/pricing" className="hover:text-white">Pricing</Link></li>
-              <li><Link href="/universities" className="hover:text-white">Universities</Link></li>
+              <li><Link href="/how-it-works" className="hover:text-white">{t.howItWorks}</Link></li>
+              <li><Link href="/features" className="hover:text-white">{t.features}</Link></li>
+              <li><Link href="/pricing" className="hover:text-white">{t.pricing}</Link></li>
+              <li><Link href="/universities" className="hover:text-white">{t.universities}</Link></li>
             </ul>
           </div>
 
           <div>
-            <h4 className="text-white font-semibold mb-4">Company</h4>
+            <h4 className="text-white font-semibold mb-4">{t.company}</h4>
             <ul className="space-y-3 text-slate-400">
-              <li><Link href="/about" className="hover:text-white">About us</Link></li>
-              <li><Link href="/blog" className="hover:text-white">Blog</Link></li>
-              <li><Link href="/careers" className="hover:text-white">Careers</Link></li>
-              <li><Link href="/contact" className="hover:text-white">Contact</Link></li>
+              <li><Link href="/about" className="hover:text-white">{t.aboutUs}</Link></li>
+              <li><Link href="/blog" className="hover:text-white">{t.blog}</Link></li>
+              <li><Link href="/careers" className="hover:text-white">{t.careers}</Link></li>
+              <li><Link href="/contact" className="hover:text-white">{t.contact}</Link></li>
             </ul>
           </div>
 
           <div>
-            <h4 className="text-white font-semibold mb-4">Support</h4>
+            <h4 className="text-white font-semibold mb-4">{t.support}</h4>
             <ul className="space-y-3 text-slate-400">
-              <li><Link href="/help-center" className="hover:text-white">Help center</Link></li>
-              <li><Link href="/safety" className="hover:text-white">Safety</Link></li>
-              <li><Link href="/privacy" className="hover:text-white">Privacy policy</Link></li>
-              <li><Link href="/terms" className="hover:text-white">Terms of service</Link></li>
+              <li><Link href="/help-center" className="hover:text-white">{t.helpCenter}</Link></li>
+              <li><Link href="/safety" className="hover:text-white">{t.safety}</Link></li>
+              <li><Link href="/privacy" className="hover:text-white">{t.privacyPolicy}</Link></li>
+              <li><Link href="/terms" className="hover:text-white">{t.termsOfService}</Link></li>
             </ul>
           </div>
         </div>
 
         <div className="mt-12 border-t border-white/10 pt-6 flex flex-col md:flex-row items-center justify-between gap-4">
-          <p className="text-slate-500 text-sm">© {new Date().getFullYear()} Domu Match. All rights reserved.</p>
+          <p className="text-slate-500 text-sm">© {new Date().getFullYear()} Domu Match. {t.allRightsReserved}</p>
           <div className="flex items-center gap-6 text-sm text-slate-400">
-            <Link href="/privacy" className="hover:text-white">Privacy</Link>
-            <Link href="/terms" className="hover:text-white">Terms</Link>
-            <a className="hover:text-white">Cookies</a>
+            <Link href="/privacy" className="hover:text-white">{t.privacy}</Link>
+            <Link href="/terms" className="hover:text-white">{t.terms}</Link>
+            <a className="hover:text-white">{t.cookies}</a>
           </div>
         </div>
       </Container>

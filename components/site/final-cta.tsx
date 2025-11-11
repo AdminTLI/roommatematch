@@ -5,9 +5,55 @@ import { Button } from '@/components/ui/button'
 import Container from '@/components/ui/primitives/container'
 import Section from '@/components/ui/primitives/section'
 import { Check } from 'lucide-react'
+import { useApp } from '@/app/providers'
+
+const content = {
+  en: {
+    title: "Ready to go from",
+    titleStrangers: "strangers",
+    titleTo: "to",
+    titleRoommates: "roommates",
+    titleQuestion: "?",
+    subtitle: "Get started today and discover who you're",
+    subtitleCompatible: "compatible",
+    subtitleWith: "with.",
+    subtitleOur: "Our",
+    subtitleScienceBacked: "science-backed matching",
+    subtitleHelps: "helps you find roommates as compatible as your",
+    subtitleBestFriends: "best friends",
+    getStarted: "Get started for free",
+    learnMore: "Learn more",
+    freeForStudents: "Free for students",
+    noCreditCard: "No credit card required",
+    verifiedStudents: "Verified students only",
+    startJourney: "Start your journey today"
+  },
+  nl: {
+    title: "Klaar om van",
+    titleStrangers: "vreemden",
+    titleTo: "tot",
+    titleRoommates: "huisgenoten",
+    titleQuestion: "te gaan?",
+    subtitle: "Begin vandaag en ontdek met wie je",
+    subtitleCompatible: "compatibel",
+    subtitleWith: "bent.",
+    subtitleOur: "Onze",
+    subtitleScienceBacked: "wetenschappelijk onderbouwde matching",
+    subtitleHelps: "helpt je huisgenoten te vinden die zo compatibel zijn als je",
+    subtitleBestFriends: "beste vrienden",
+    getStarted: "Begin gratis",
+    learnMore: "Meer informatie",
+    freeForStudents: "Gratis voor studenten",
+    noCreditCard: "Geen creditcard vereist",
+    verifiedStudents: "Alleen geverifieerde studenten",
+    startJourney: "Begin je reis vandaag"
+  }
+}
 
 export function FinalCTA() {
   const router = useRouter()
+  const { locale } = useApp()
+  const t = content[locale]
 
   const handleGetStarted = () => {
     router.push('/auth/sign-up')
@@ -25,11 +71,11 @@ export function FinalCTA() {
           <div className="space-y-8">
             <div className="space-y-4">
               <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-brand-text leading-tight">
-                Ready to go from <span className="text-brand-primary">strangers</span> to <span className="text-brand-primary">roommates</span>?
+                {t.title} <span className="text-brand-primary">{t.titleStrangers}</span> {t.titleTo} <span className="text-brand-primary">{t.titleRoommates}</span>{t.titleQuestion}
               </h2>
               <p className="text-base md:text-lg lg:text-xl leading-relaxed text-brand-muted max-w-prose">
-                Get started today and discover who you're <span className="font-semibold text-brand-text">compatible</span> with.{' '}
-                Our <span className="font-semibold text-brand-text">science-backed matching</span> helps you find roommates as compatible as your <span className="font-semibold text-brand-text">best friends</span>.
+                {t.subtitle} <span className="font-semibold text-brand-text">{t.subtitleCompatible}</span> {t.subtitleWith}{' '}
+                {t.subtitleOur} <span className="font-semibold text-brand-text">{t.subtitleScienceBacked}</span> {t.subtitleHelps} <span className="font-semibold text-brand-text">{t.subtitleBestFriends}</span>.
               </p>
             </div>
             
@@ -41,7 +87,7 @@ export function FinalCTA() {
                 onClick={handleGetStarted}
                 className="text-base px-8 py-6"
               >
-                Get started for free
+                {t.getStarted}
               </Button>
               <Button 
                 variant="outline"
@@ -49,7 +95,7 @@ export function FinalCTA() {
                 onClick={handleLearnMore}
                 className="text-base px-8 py-6"
               >
-                Learn more
+                {t.learnMore}
               </Button>
             </div>
 
@@ -57,15 +103,15 @@ export function FinalCTA() {
             <ul className="flex flex-wrap gap-6 text-sm text-brand-muted pt-2">
               <li className="flex items-center gap-2">
                 <Check className="h-5 w-5 text-green-500 flex-shrink-0" />
-                <span className="font-medium">Free for students</span>
+                <span className="font-medium">{t.freeForStudents}</span>
               </li>
               <li className="flex items-center gap-2">
                 <Check className="h-5 w-5 text-green-500 flex-shrink-0" />
-                <span className="font-medium">No credit card required</span>
+                <span className="font-medium">{t.noCreditCard}</span>
               </li>
               <li className="flex items-center gap-2">
                 <Check className="h-5 w-5 text-green-500 flex-shrink-0" />
-                <span className="font-medium">Verified students only</span>
+                <span className="font-medium">{t.verifiedStudents}</span>
               </li>
             </ul>
           </div>
@@ -76,7 +122,7 @@ export function FinalCTA() {
               <div className="text-center space-y-4 p-8">
                 <div className="text-5xl mb-2">🎓</div>
                 <p className="text-brand-muted font-semibold text-lg">
-                  Start your journey today
+                  {t.startJourney}
                 </p>
               </div>
             </div>

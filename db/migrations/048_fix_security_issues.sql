@@ -13,14 +13,17 @@ BEGIN;
 -- 1. FIX VIEW: Remove SECURITY DEFINER
 -- ============================================
 
--- Recreate the view without SECURITY DEFINER
+-- Drop the existing view first to avoid column name conflicts
+-- Then recreate it without SECURITY DEFINER
 -- Views should use SECURITY INVOKER by default (the user's permissions)
-CREATE OR REPLACE VIEW public.user_study_year_v AS
+DROP VIEW IF EXISTS public.user_study_year_v CASCADE;
+
+CREATE VIEW public.user_study_year_v AS
 SELECT 
     ua.user_id,
     ua.expected_graduation_year,
     ua.degree_level,
-    ua.institution_slug,
+    u.slug AS institution_slug,
     CASE 
         -- For pre-master and master students
         WHEN ua.degree_level IN ('premaster', 'master') THEN 
@@ -31,7 +34,7 @@ SELECT
             END
         -- For bachelor students at WO institutions (3 years)
         WHEN ua.degree_level = 'bachelor' AND (
-            ua.institution_slug IN (
+            u.slug IN (
                 'uva', 'vu', 'uu', 'ru', 'rug', 'tud', 'tue', 'ut', 'ou', 'wur', 
                 'um', 'tilburg', 'eur', 'tiu', 'leiden', 'utwente', 'pthu', 'tua', 'tuu'
             )
@@ -53,7 +56,8 @@ SELECT
             END
         ELSE 'unknown'
     END AS current_year_status
-FROM public.user_academic ua;
+FROM public.user_academic ua
+JOIN public.universities u ON ua.university_id = u.id;
 
 -- ============================================
 -- 2. FIX FUNCTIONS: Add SET search_path
@@ -447,7 +451,7 @@ BEGIN
   
   -- Insert normalized vector
   INSERT INTO public.user_vectors (user_id, vector)
-  VALUES (p_user_id, vector_array::vector);
+  VALUES (p_user_id, vector_array::public.vector);
   
   RETURN true;
 END;
@@ -615,7 +619,7 @@ $$ LANGUAGE plpgsql SET search_path = '';
 CREATE OR REPLACE FUNCTION public.compute_user_vector_and_store(p_user_id UUID)
 RETURNS void AS $$
 DECLARE
-  computed_vector vector(50);
+  computed_vector public.vector(50);
 BEGIN
   -- Compute the vector using the existing function
   -- Note: compute_user_vector must exist and be accessible

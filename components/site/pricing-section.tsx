@@ -1,94 +1,195 @@
+'use client'
+
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import Container from '@/components/ui/primitives/container'
 import Section from '@/components/ui/primitives/section'
 import { Check, Star, Users, BarChart3, Shield, HeadphonesIcon } from 'lucide-react'
+import { useApp } from '@/app/providers'
+
+const content = {
+  en: {
+    title: "Simple, transparent pricing",
+    subtitle: "Choose the plan that fits your university's needs. All plans include our core matching technology and are backed by our satisfaction guarantee.",
+    benefitsTitle: "Why universities choose Domu Match",
+    trustText: "Trusted by housing departments at leading universities",
+    plans: [
+      {
+        name: 'Pilot',
+        description: 'Perfect for testing our platform with a small cohort',
+        price: 'Free',
+        period: 'for 3 months',
+        badge: 'Most Popular',
+        icon: Star,
+        features: [
+          'Up to 500 students',
+          'Basic matching algorithm',
+          'Email support',
+          'Admin dashboard',
+          '30-day pilot period',
+          'Basic analytics',
+          'White-label branding',
+        ],
+        cta: 'Start Free Trial',
+        highlight: true,
+      },
+      {
+        name: 'University',
+        description: 'Complete solution for university housing departments',
+        price: '€2,500',
+        period: 'per semester',
+        badge: 'Best Value',
+        icon: Users,
+        features: [
+          'Unlimited students',
+          'Advanced matching algorithm',
+          'Priority support',
+          'Full admin dashboard',
+          'Academic integration',
+          'Advanced analytics',
+          'Custom branding',
+          'API access',
+          'Moderation tools',
+          'Conflict resolution support',
+        ],
+        cta: 'Contact Sales',
+        highlight: false,
+      },
+      {
+        name: 'Enterprise',
+        description: 'For large universities with complex housing needs',
+        price: 'Custom',
+        period: 'annual contract',
+        badge: 'Custom',
+        icon: BarChart3,
+        features: [
+          'Everything in University',
+          'Multi-campus support',
+          'Dedicated account manager',
+          'Custom integrations',
+          'Advanced reporting',
+          'SLA guarantees',
+          'Training & onboarding',
+          'Custom development',
+          '24/7 support',
+          'Compliance reporting',
+        ],
+        cta: 'Contact Sales',
+        highlight: false,
+      },
+    ],
+    benefits: [
+      {
+        icon: Shield,
+        title: 'Reduce Housing Disputes by 40%',
+        description: 'Our intelligent matching algorithm prevents compatibility issues before they start.',
+      },
+      {
+        icon: BarChart3,
+        title: 'Real-time Analytics',
+        description: 'Monitor housing satisfaction, identify trends, and make data-driven decisions.',
+      },
+      {
+        icon: HeadphonesIcon,
+        title: 'Dedicated Support',
+        description: 'Get help from our housing experts who understand your unique challenges.',
+      },
+    ]
+  },
+  nl: {
+    title: "Eenvoudige, transparante prijzen",
+    subtitle: "Kies het plan dat past bij de behoeften van je universiteit. Alle plannen bevatten onze kern matchingtechnologie en worden ondersteund door onze tevredenheidsgarantie.",
+    benefitsTitle: "Waarom universiteiten voor Domu Match kiezen",
+    trustText: "Vertrouwd door huisvestingsafdelingen bij toonaangevende universiteiten",
+    plans: [
+      {
+        name: 'Pilot',
+        description: 'Perfect voor het testen van ons platform met een kleine groep',
+        price: 'Gratis',
+        period: 'voor 3 maanden',
+        badge: 'Meest Populair',
+        icon: Star,
+        features: [
+          'Tot 500 studenten',
+          'Basis matchingalgoritme',
+          'E-mailondersteuning',
+          'Beheerdersdashboard',
+          '30-daagse proefperiode',
+          'Basisanalyses',
+          'White-label branding',
+        ],
+        cta: 'Start Gratis Proefperiode',
+        highlight: true,
+      },
+      {
+        name: 'Universiteit',
+        description: 'Volledige oplossing voor universiteitshuisvestingsafdelingen',
+        price: '€2.500',
+        period: 'per semester',
+        badge: 'Beste Waarde',
+        icon: Users,
+        features: [
+          'Onbeperkte studenten',
+          'Geavanceerd matchingalgoritme',
+          'Prioriteitsondersteuning',
+          'Volledig beheerdersdashboard',
+          'Academische integratie',
+          'Geavanceerde analyses',
+          'Aangepaste branding',
+          'API-toegang',
+          'Moderatietools',
+          'Ondersteuning bij conflictoplossing',
+        ],
+        cta: 'Neem Contact Op',
+        highlight: false,
+      },
+      {
+        name: 'Enterprise',
+        description: 'Voor grote universiteiten met complexe huisvestingsbehoeften',
+        price: 'Op Maat',
+        period: 'jaarcontract',
+        badge: 'Op Maat',
+        icon: BarChart3,
+        features: [
+          'Alles in Universiteit',
+          'Multi-campus ondersteuning',
+          'Toegewijd accountmanager',
+          'Aangepaste integraties',
+          'Geavanceerde rapportage',
+          'SLA-garanties',
+          'Training & onboarding',
+          'Aangepaste ontwikkeling',
+          '24/7 ondersteuning',
+          'Nalevingsrapportage',
+        ],
+        cta: 'Neem Contact Op',
+        highlight: false,
+      },
+    ],
+    benefits: [
+      {
+        icon: Shield,
+        title: 'Verminder huisvestingsgeschillen met 40%',
+        description: 'Ons intelligente matchingalgoritme voorkomt compatibiliteitsproblemen voordat ze beginnen.',
+      },
+      {
+        icon: BarChart3,
+        title: 'Real-time analyses',
+        description: 'Monitor huisvestingstevredenheid, identificeer trends en maak datagestuurde beslissingen.',
+      },
+      {
+        icon: HeadphonesIcon,
+        title: 'Toegewijd ondersteuningsteam',
+        description: 'Krijg hulp van onze huisvestingsexperts die je unieke uitdagingen begrijpen.',
+      },
+    ]
+  }
+}
 
 export function PricingSection() {
-  const plans = [
-    {
-      name: 'Pilot',
-      description: 'Perfect for testing our platform with a small cohort',
-      price: 'Free',
-      period: 'for 3 months',
-      badge: 'Most Popular',
-      icon: Star,
-      features: [
-        'Up to 500 students',
-        'Basic matching algorithm',
-        'Email support',
-        'Admin dashboard',
-        '30-day pilot period',
-        'Basic analytics',
-        'White-label branding',
-      ],
-      cta: 'Start Free Trial',
-      highlight: true,
-    },
-    {
-      name: 'University',
-      description: 'Complete solution for university housing departments',
-      price: '€2,500',
-      period: 'per semester',
-      badge: 'Best Value',
-      icon: Users,
-      features: [
-        'Unlimited students',
-        'Advanced matching algorithm',
-        'Priority support',
-        'Full admin dashboard',
-        'Academic integration',
-        'Advanced analytics',
-        'Custom branding',
-        'API access',
-        'Moderation tools',
-        'Conflict resolution support',
-      ],
-      cta: 'Contact Sales',
-      highlight: false,
-    },
-    {
-      name: 'Enterprise',
-      description: 'For large universities with complex housing needs',
-      price: 'Custom',
-      period: 'annual contract',
-      badge: 'Custom',
-      icon: BarChart3,
-      features: [
-        'Everything in University',
-        'Multi-campus support',
-        'Dedicated account manager',
-        'Custom integrations',
-        'Advanced reporting',
-        'SLA guarantees',
-        'Training & onboarding',
-        'Custom development',
-        '24/7 support',
-        'Compliance reporting',
-      ],
-      cta: 'Contact Sales',
-      highlight: false,
-    },
-  ]
-
-  const benefits = [
-    {
-      icon: Shield,
-      title: 'Reduce Housing Disputes by 40%',
-      description: 'Our intelligent matching algorithm prevents compatibility issues before they start.',
-    },
-    {
-      icon: BarChart3,
-      title: 'Real-time Analytics',
-      description: 'Monitor housing satisfaction, identify trends, and make data-driven decisions.',
-    },
-    {
-      icon: HeadphonesIcon,
-      title: 'Dedicated Support',
-      description: 'Get help from our housing experts who understand your unique challenges.',
-    },
-  ]
+  const { locale } = useApp()
+  const t = content[locale]
 
   return (
     <Section className="bg-gradient-to-b from-white to-slate-50">
@@ -96,17 +197,16 @@ export function PricingSection() {
         {/* Header */}
         <div className="text-center mb-16">
           <h1 className="text-4xl md:text-5xl font-bold text-brand-text mb-6">
-            Simple, transparent pricing
+            {t.title}
           </h1>
           <p className="text-xl text-brand-muted max-w-3xl mx-auto">
-            Choose the plan that fits your university's needs. All plans include our core matching technology 
-            and are backed by our satisfaction guarantee.
+            {t.subtitle}
           </p>
         </div>
 
         {/* Pricing Cards */}
         <div className="grid md:grid-cols-3 gap-8 mb-16">
-          {plans.map((plan, index) => {
+          {t.plans.map((plan, index) => {
             const Icon = plan.icon
             return (
               <Card 
@@ -179,11 +279,11 @@ export function PricingSection() {
         {/* Benefits Section */}
         <div className="bg-white rounded-2xl border border-brand-border p-8 md:p-12">
           <h2 className="text-3xl font-bold text-center text-brand-text mb-12">
-            Why universities choose Domu Match
+            {t.benefitsTitle}
           </h2>
           
           <div className="grid md:grid-cols-3 gap-8">
-            {benefits.map((benefit, index) => {
+            {t.benefits.map((benefit, index) => {
               const Icon = benefit.icon
               return (
                 <div key={index} className="text-center">
@@ -205,7 +305,7 @@ export function PricingSection() {
         {/* Trust Indicators */}
         <div className="text-center mt-16">
           <p className="text-brand-muted mb-6">
-            Trusted by housing departments at leading universities
+            {t.trustText}
           </p>
           <div className="flex flex-wrap justify-center items-center gap-8 opacity-60">
             <div className="text-lg font-semibold text-brand-text">TU Delft</div>

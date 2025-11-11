@@ -61,15 +61,20 @@ CREATE EXTENSION vector SCHEMA extensions;
 **Alternative Approach:**
 If moving the extension is too disruptive, you can leave it in the `public` schema but document this as an accepted risk. The extension itself doesn't expose sensitive data, but it's a best practice to keep extensions in a separate schema.
 
+**Current Status:** The vector extension is currently in the `public` schema. This has been documented as an accepted risk and can be addressed during a future maintenance window if needed.
+
 ## 2. Enable Leaked Password Protection
 
 ### Issue
 Supabase Auth's leaked password protection is currently disabled. This feature checks passwords against HaveIBeenPwned.org to prevent users from using compromised passwords.
 
+### Important Note
+⚠️ **This feature requires a Supabase Pro plan or higher.** If you're on the Free plan, you'll need to upgrade to enable this feature.
+
 ### Manual Steps
 
 1. Go to your Supabase project dashboard
-2. Navigate to **Authentication** → **Policies** (or **Settings**)
+2. Navigate to **Authentication** → **Settings** (or **Configuration**)
 3. Look for **Password Security** or **Password Strength** settings
 4. Find the **Leaked Password Protection** option
 5. Enable the feature
@@ -84,6 +89,7 @@ Supabase Auth's leaked password protection is currently disabled. This feature c
 
 ### Documentation Reference
 - [Supabase Password Security Documentation](https://supabase.com/docs/guides/auth/password-security#password-strength-and-leaked-password-protection)
+- [Supabase Pricing Plans](https://supabase.com/pricing) - Check which plan includes this feature
 
 ## Verification
 
@@ -99,6 +105,7 @@ After completing the manual steps:
    The `nspname` should be `extensions` (not `public`).
 
 2. **Verify Leaked Password Protection:**
+   - ⚠️ **Note:** This feature requires Pro plan. If unavailable, you may need to upgrade.
    - Try creating a test user with a known compromised password (e.g., "password123")
    - The system should reject it if the feature is enabled
    - Check the Supabase Auth logs for password validation messages

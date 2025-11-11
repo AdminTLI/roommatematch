@@ -1,3 +1,5 @@
+'use client'
+
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import Container from '@/components/ui/primitives/container'
@@ -13,97 +15,208 @@ import {
   Shield,
   Zap
 } from 'lucide-react'
+import { useApp } from '@/app/providers'
+
+const content = {
+  en: {
+    title: "How Domu Match works",
+    subtitle: "From sign up to move-in, discover how our intelligent matching process helps you find roommates as compatible as your best friends.",
+    featuresTitle: "Why our process works",
+    featuresSubtitle: "Built on science, backed by universities, designed for safety",
+    ctaTitle: "Ready to find your perfect match?",
+    ctaSubtitle: "Get started today and find your ideal roommate. The process takes just 10 minutes to complete your compatibility profile.",
+    ctaButton: "Get started for free",
+    steps: [
+      {
+        step: "01",
+        icon: UserPlus,
+        title: "Sign Up & Verify",
+        description: "Create your account with your university email and complete ID verification for safety.",
+        details: [
+          "Government ID + selfie verification",
+          "University email confirmation",
+          "Profile setup with basic info",
+          "Privacy settings configuration"
+        ],
+        color: "bg-blue-500"
+      },
+      {
+        step: "02", 
+        icon: FileText,
+        title: "Complete Compatibility Quiz",
+        description: "Answer questions about your lifestyle, study habits, and preferences to build your compatibility profile.",
+        details: [
+          "40+ compatibility factors",
+          "Study schedule and habits",
+          "Cleanliness preferences",
+          "Social activities and interests",
+          "Quiet hours and lifestyle choices"
+        ],
+        color: "bg-green-500"
+      },
+      {
+        step: "03",
+        icon: Users,
+        title: "Get Matched",
+        description: "Our algorithm analyzes compatibility and shows you potential roommates with explainable reasoning.",
+        details: [
+          "AI-powered matching algorithm",
+          "Compatibility score explanation",
+          "Academic program matching",
+          "Study year consideration",
+          "Shared interests highlighting"
+        ],
+        color: "bg-purple-500"
+      },
+      {
+        step: "04",
+        icon: MessageSquare,
+        title: "Chat Safely",
+        description: "Connect with matches through our moderated chat system. Text-only, rate-limited, and secure.",
+        details: [
+          "Text-only messaging",
+          "Rate-limited conversations",
+          "Moderated content",
+          "Report and block features",
+          "Move-in planning tools"
+        ],
+        color: "bg-orange-500"
+      },
+      {
+        step: "05",
+        icon: Home,
+        title: "Move In Together",
+        description: "Once you've found your perfect match, coordinate move-in plans and start your university journey together.",
+        details: [
+          "Move-in coordination",
+          "Shared agreement templates",
+          "Safety guidelines",
+          "University integration",
+          "Ongoing support"
+        ],
+        color: "bg-red-500"
+      }
+    ],
+    features: [
+      {
+        icon: Zap,
+        title: "Smart Matching Algorithm",
+        description: "Our algorithm analyzes 40+ compatibility factors to predict roommate success before conflicts start."
+      },
+      {
+        icon: Shield,
+        title: "Verified Students Only",
+        description: "Every student is verified with government ID and selfie verification for maximum safety."
+      },
+      {
+        icon: CheckCircle,
+        title: "Transparent Process",
+        description: "See exactly why you're matched with someone. No black box - just clear, explainable compatibility."
+      }
+    ]
+  },
+  nl: {
+    title: "Hoe Domu Match werkt",
+    subtitle: "Van aanmelding tot verhuizing, ontdek hoe ons intelligente matchingproces je helpt huisgenoten te vinden die zo compatibel zijn als je beste vrienden.",
+    featuresTitle: "Waarom ons proces werkt",
+    featuresSubtitle: "Gebouwd op wetenschap, ondersteund door universiteiten, ontworpen voor veiligheid",
+    ctaTitle: "Klaar om je perfecte match te vinden?",
+    ctaSubtitle: "Begin vandaag en vind je ideale huisgenoot. Het proces duurt slechts 10 minuten om je compatibiliteitsprofiel te voltooien.",
+    ctaButton: "Begin gratis",
+    steps: [
+      {
+        step: "01",
+        icon: UserPlus,
+        title: "Aanmelden en verifiëren",
+        description: "Maak je account aan met je universiteits-e-mail en voltooi ID-verificatie voor veiligheid.",
+        details: [
+          "Overheids-ID + selfie-verificatie",
+          "Universiteits-e-mailbevestiging",
+          "Profiel instellen met basisinfo",
+          "Privacy-instellingen configureren"
+        ],
+        color: "bg-blue-500"
+      },
+      {
+        step: "02", 
+        icon: FileText,
+        title: "Compatibiliteitsquiz voltooien",
+        description: "Beantwoord vragen over je levensstijl, studiegewoonten en voorkeuren om je compatibiliteitsprofiel op te bouwen.",
+        details: [
+          "40+ compatibiliteitsfactoren",
+          "Studierooster en gewoonten",
+          "Netheidsvoorkeuren",
+          "Sociale activiteiten en interesses",
+          "Stilte uren en levensstijlkeuzes"
+        ],
+        color: "bg-green-500"
+      },
+      {
+        step: "03",
+        icon: Users,
+        title: "Krijg matches",
+        description: "Ons algoritme analyseert compatibiliteit en toont je potentiële huisgenoten met uitlegbare redenering.",
+        details: [
+          "AI-aangedreven matchingalgoritme",
+          "Uitleg van compatibiliteitsscore",
+          "Academische programma-matching",
+          "Studiejaar overweging",
+          "Gedeelde interesses benadrukken"
+        ],
+        color: "bg-purple-500"
+      },
+      {
+        step: "04",
+        icon: MessageSquare,
+        title: "Chat veilig",
+        description: "Maak contact met matches via ons gemodereerde chatsysteem. Alleen tekst, beperkt in frequentie en veilig.",
+        details: [
+          "Alleen tekstberichten",
+          "Beperkte conversaties",
+          "Gemodereerde inhoud",
+          "Rapporteer- en blokkeerfuncties",
+          "Verhuisplanningstools"
+        ],
+        color: "bg-orange-500"
+      },
+      {
+        step: "05",
+        icon: Home,
+        title: "Verhuis samen",
+        description: "Zodra je je perfecte match hebt gevonden, coördineer verhuisplannen en begin je universiteitsreis samen.",
+        details: [
+          "Verhuiscoördinatie",
+          "Gedeelde overeenkomstssjablonen",
+          "Veiligheidsrichtlijnen",
+          "Universiteitsintegratie",
+          "Doorlopende ondersteuning"
+        ],
+        color: "bg-red-500"
+      }
+    ],
+    features: [
+      {
+        icon: Zap,
+        title: "Slim matchingalgoritme",
+        description: "Ons algoritme analyseert 40+ compatibiliteitsfactoren om het succes van huisgenoten te voorspellen voordat conflicten beginnen."
+      },
+      {
+        icon: Shield,
+        title: "Alleen geverifieerde studenten",
+        description: "Elke student is geverifieerd met overheids-ID en selfie-verificatie voor maximale veiligheid."
+      },
+      {
+        icon: CheckCircle,
+        title: "Transparant proces",
+        description: "Zie precies waarom je met iemand bent gematcht. Geen black box - alleen duidelijke, uitlegbare compatibiliteit."
+      }
+    ]
+  }
+}
 
 export function HowItWorksSection() {
-  const steps = [
-    {
-      step: "01",
-      icon: UserPlus,
-      title: "Sign Up & Verify",
-      description: "Create your account with your university email and complete ID verification for safety.",
-      details: [
-        "Government ID + selfie verification",
-        "University email confirmation",
-        "Profile setup with basic info",
-        "Privacy settings configuration"
-      ],
-      color: "bg-blue-500"
-    },
-    {
-      step: "02", 
-      icon: FileText,
-      title: "Complete Compatibility Quiz",
-      description: "Answer questions about your lifestyle, study habits, and preferences to build your compatibility profile.",
-      details: [
-        "40+ compatibility factors",
-        "Study schedule and habits",
-        "Cleanliness preferences",
-        "Social activities and interests",
-        "Quiet hours and lifestyle choices"
-      ],
-      color: "bg-green-500"
-    },
-    {
-      step: "03",
-      icon: Users,
-      title: "Get Matched",
-      description: "Our algorithm analyzes compatibility and shows you potential roommates with explainable reasoning.",
-      details: [
-        "AI-powered matching algorithm",
-        "Compatibility score explanation",
-        "Academic program matching",
-        "Study year consideration",
-        "Shared interests highlighting"
-      ],
-      color: "bg-purple-500"
-    },
-    {
-      step: "04",
-      icon: MessageSquare,
-      title: "Chat Safely",
-      description: "Connect with matches through our moderated chat system. Text-only, rate-limited, and secure.",
-      details: [
-        "Text-only messaging",
-        "Rate-limited conversations",
-        "Moderated content",
-        "Report and block features",
-        "Move-in planning tools"
-      ],
-      color: "bg-orange-500"
-    },
-    {
-      step: "05",
-      icon: Home,
-      title: "Move In Together",
-      description: "Once you've found your perfect match, coordinate move-in plans and start your university journey together.",
-      details: [
-        "Move-in coordination",
-        "Shared agreement templates",
-        "Safety guidelines",
-        "University integration",
-        "Ongoing support"
-      ],
-      color: "bg-red-500"
-    }
-  ]
-
-  const features = [
-    {
-      icon: Zap,
-      title: "Smart Matching Algorithm",
-      description: "Our algorithm analyzes 40+ compatibility factors to predict roommate success before conflicts start."
-    },
-    {
-      icon: Shield,
-      title: "Verified Students Only",
-      description: "Every student is verified with government ID and selfie verification for maximum safety."
-    },
-    {
-      icon: CheckCircle,
-      title: "Transparent Process",
-      description: "See exactly why you're matched with someone. No black box - just clear, explainable compatibility."
-    }
-  ]
+  const { locale } = useApp()
+  const t = content[locale]
 
   return (
     <Section className="bg-gradient-to-b from-white to-slate-50">
@@ -111,17 +224,16 @@ export function HowItWorksSection() {
         {/* Header */}
         <div className="text-center mb-16">
           <h1 className="text-4xl md:text-5xl font-bold text-brand-text mb-6">
-            How Domu Match works
+            {t.title}
           </h1>
           <p className="text-xl text-brand-muted max-w-3xl mx-auto">
-            From sign up to move-in, discover how our intelligent matching process 
-            helps you find roommates as compatible as your best friends.
+            {t.subtitle}
           </p>
         </div>
 
         {/* Steps */}
         <div className="space-y-16 mb-16">
-          {steps.map((step, index) => {
+          {t.steps.map((step, index) => {
             const Icon = step.icon
             const isEven = index % 2 === 0
             
@@ -189,15 +301,15 @@ export function HowItWorksSection() {
         <div className="bg-white rounded-2xl border border-brand-border p-8 md:p-12">
           <div className="text-center mb-12">
             <h2 className="text-3xl font-bold text-brand-text mb-4">
-              Why our process works
+              {t.featuresTitle}
             </h2>
             <p className="text-lg text-brand-muted">
-              Built on science, backed by universities, designed for safety
+              {t.featuresSubtitle}
             </p>
           </div>
 
           <div className="grid md:grid-cols-3 gap-8">
-            {features.map((feature, index) => {
+            {t.features.map((feature, index) => {
               const Icon = feature.icon
               return (
                 <div key={index} className="text-center">
@@ -219,14 +331,13 @@ export function HowItWorksSection() {
         {/* CTA */}
         <div className="text-center mt-16">
           <h2 className="text-3xl font-bold text-brand-text mb-4">
-            Ready to find your perfect match?
+            {t.ctaTitle}
           </h2>
           <p className="text-lg text-brand-muted mb-8 max-w-2xl mx-auto">
-            Get started today and find your ideal roommate. 
-            The process takes just 10 minutes to complete your compatibility profile.
+            {t.ctaSubtitle}
           </p>
           <Button size="lg" className="bg-brand-primary hover:bg-brand-primary/90">
-            Get started for free
+            {t.ctaButton}
             <ArrowRight className="ml-2 h-5 w-5" />
           </Button>
         </div>

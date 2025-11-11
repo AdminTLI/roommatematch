@@ -45,8 +45,25 @@ export function Hero() {
     router.push('/how-it-works')
   }
 
-  // Mock match cards for the right side
-  const mockMatches = [
+  // Mock match cards for the right side - translated
+  const mockMatches = locale === 'nl' ? [
+    {
+      name: "Emma",
+      match: 94,
+      university: "TU Delft",
+      program: "Informatica",
+      avatar: "E",
+      traits: ["Studierooster", "Netheid", "Stilte uren"]
+    },
+    {
+      name: "Lucas", 
+      match: 89,
+      university: "Universiteit van Amsterdam",
+      program: "Economie",
+      avatar: "L",
+      traits: ["Sociaal leven", "Budgetteren", "Gedeelde ruimtes"]
+    }
+  ] : [
     {
       name: "Emma",
       match: 94,

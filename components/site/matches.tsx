@@ -5,46 +5,88 @@ import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import Container from '@/components/ui/primitives/container'
 import Section from '@/components/ui/primitives/section'
+import { useApp } from '@/app/providers'
 
-const mockMatches = [
-  {
-    name: "Emma",
-    match: 94,
-    university: "TU Delft",
-    program: "Computer Science",
-    avatar: "E",
-    traits: ["Study schedule", "Cleanliness", "Quiet hours"]
+const content = {
+  en: {
+    title: "See who you could match with",
+    subtitle: "Our AI analyzes hundreds of factors to help you go from strangers to roommates",
+    buttonText: "Match me now",
+    matches: [
+      {
+        name: "Emma",
+        match: 94,
+        university: "TU Delft",
+        program: "Computer Science",
+        avatar: "E",
+        traits: ["Study schedule", "Cleanliness", "Quiet hours"]
+      },
+      {
+        name: "Lucas", 
+        match: 89,
+        university: "University of Amsterdam",
+        program: "Economics",
+        avatar: "L",
+        traits: ["Social life", "Budgeting", "Shared spaces"]
+      },
+      {
+        name: "Sofia",
+        match: 87,
+        university: "Rotterdam School of Management",
+        program: "Business Administration", 
+        avatar: "S",
+        traits: ["Communication", "House rules", "Guest policy"]
+      }
+    ]
   },
-  {
-    name: "Lucas", 
-    match: 89,
-    university: "University of Amsterdam",
-    program: "Economics",
-    avatar: "L",
-    traits: ["Social life", "Budgeting", "Shared spaces"]
-  },
-  {
-    name: "Sofia",
-    match: 87,
-    university: "Rotterdam School of Management",
-    program: "Business Administration", 
-    avatar: "S",
-    traits: ["Communication", "House rules", "Guest policy"]
+  nl: {
+    title: "Zie met wie je zou kunnen matchen",
+    subtitle: "Onze AI analyseert honderden factoren om je te helpen van vreemden tot huisgenoten te gaan",
+    buttonText: "Match me nu",
+    matches: [
+      {
+        name: "Emma",
+        match: 94,
+        university: "TU Delft",
+        program: "Informatica",
+        avatar: "E",
+        traits: ["Studierooster", "Netheid", "Stilte uren"]
+      },
+      {
+        name: "Lucas", 
+        match: 89,
+        university: "Universiteit van Amsterdam",
+        program: "Economie",
+        avatar: "L",
+        traits: ["Sociaal leven", "Budgetteren", "Gedeelde ruimtes"]
+      },
+      {
+        name: "Sofia",
+        match: 87,
+        university: "Rotterdam School of Management",
+        program: "Bedrijfskunde", 
+        avatar: "S",
+        traits: ["Communicatie", "Huisregels", "Beleid voor gasten"]
+      }
+    ]
   }
-]
+}
 
 export function Matches() {
   const router = useRouter()
+  const { locale } = useApp()
+  const t = content[locale]
+  const mockMatches = t.matches
 
   return (
     <Section>
       <Container>
         <div className="text-center mb-12">
           <h2 className="text-3xl md:text-4xl font-bold text-brand-text mb-4">
-            See who you could match with
+            {t.title}
           </h2>
           <p className="text-base md:text-lg leading-relaxed max-w-prose mx-auto text-brand-muted">
-            Our AI analyzes hundreds of factors to help you go from strangers to roommates
+            {t.subtitle}
           </p>
         </div>
 
@@ -89,7 +131,7 @@ export function Matches() {
             size="lg"
             onClick={() => router.push('/matches')}
           >
-            Match me now
+            {t.buttonText}
           </Button>
         </div>
       </Container>
