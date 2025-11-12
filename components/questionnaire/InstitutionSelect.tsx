@@ -13,6 +13,33 @@ interface Props {
 export function InstitutionSelect({ value, onChange }: Props) {
   const groups = useMemo(() => toGroupedOptions(), [])
   const [other, setOther] = useState<string | undefined>(undefined)
+  const supabase = createClient()
+
+  const handleInstitutionChange = async (v: string) => {
+    if (v === 'other') {
+      onChange({ institutionId: 'other', institutionOther: other })
+    } else {
+      // Look up university_id from slug
+      try {
+        const { data: uniData, error } = await supabase
+          .from('universities')
+          .select('id, slug')
+          .eq('slug', v)
+          .maybeSingle()
+        
+        if (!error && uniData) {
+          onChange({ institutionId: v, universityDbId: uniData.id })
+        } else {
+          // If lookup fails, still pass the slug (submit route will handle it)
+          onChange({ institutionId: v })
+        }
+      } catch (error) {
+        console.error('Error looking up university:', error)
+        // If lookup fails, still pass the slug (submit route will handle it)
+        onChange({ institutionId: v })
+      }
+    }
+  }
 
   return (
     <div className="space-y-2">
@@ -20,13 +47,7 @@ export function InstitutionSelect({ value, onChange }: Props) {
         placeholder="Select your HBO/WO institution"
         groups={groups}
         value={value}
-        onChange={(v) => {
-          if (v === 'other') {
-            onChange({ institutionId: 'other', institutionOther: other })
-          } else {
-            onChange({ institutionId: v })
-          }
-        }}
+        onChange={handleInstitutionChange}
         allowOther
         otherLabel="Other (HBO/WO, not listed)"
         onOtherChange={(t) => {

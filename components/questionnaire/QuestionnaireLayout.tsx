@@ -54,14 +54,14 @@ export function QuestionnaireLayout({
         </div>
       </header>
 
-      <main className="container mx-auto px-4 sm:px-6 lg:px-8 flex-1 py-4 sm:py-6 lg:py-8">
-        <div className="max-w-3xl mx-auto space-y-4 sm:space-y-6">
+      <main className="container mx-auto px-4 sm:px-6 lg:px-8 flex-1 py-5 sm:py-6 lg:py-8">
+        <div className="max-w-3xl mx-auto space-y-5 sm:space-y-6">
           <div>
             <h1 className="text-xl sm:text-2xl font-semibold">{title}</h1>
-            {subtitle && <p className="text-sm sm:text-base text-gray-600 mt-1">{subtitle}</p>}
+            {subtitle && <p className="text-base sm:text-base text-gray-600 mt-2 sm:mt-1">{subtitle}</p>}
           </div>
           <Card className="rounded-2xl shadow-sm">
-            <CardContent className="p-4 sm:p-6 space-y-4 sm:space-y-6">{children}</CardContent>
+            <CardContent className="p-5 sm:p-6 space-y-6 sm:space-y-6">{children}</CardContent>
           </Card>
         </div>
       </main>

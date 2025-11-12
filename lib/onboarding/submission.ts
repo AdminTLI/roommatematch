@@ -40,7 +40,10 @@ export function extractSubmissionDataFromIntro(
   for (const answer of answers) {
     switch (answer.itemId) {
       case 'university_id':
-        university_id = answer.value
+        // Only set if it's a valid UUID (not empty string)
+        if (answer.value && typeof answer.value === 'string' && answer.value.trim() !== '') {
+          university_id = answer.value
+        }
         break
       case 'institution_slug':
         institution_slug = answer.value
@@ -158,9 +161,13 @@ export function extractSubmissionDataFromIntro(
 
   const firstName = user.user_metadata?.full_name?.split(' ')[0] || user.email?.split('@')[0] || 'User'
 
+  // Ensure university_id is set if we have institution_slug (will be looked up in submit route if not set)
+  // Return empty string if not set (submit route will handle lookup)
+  const finalUniversityId = university_id && university_id.trim() !== '' ? university_id : ''
+
   return {
     user_id: user.id,
-    university_id,
+    university_id: finalUniversityId,
     first_name: firstName,
     degree_level,
     program_id,

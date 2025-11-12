@@ -115,23 +115,34 @@ export async function POST(request: Request) {
         console.log('[Submit] Extracted submission data:', submissionData)
         
         // Look up university_id from institution_slug if university_id is empty
-        if (!submissionData.university_id) {
+        if (!submissionData.university_id || submissionData.university_id === '') {
           const institutionSlugAnswer = introSection.answers.find((a: any) => a.itemId === 'institution_slug')
-          if (institutionSlugAnswer?.value) {
+          if (institutionSlugAnswer?.value && institutionSlugAnswer.value !== 'other') {
             console.log('[Submit] Looking up university for slug:', institutionSlugAnswer.value)
             
             const { data: university, error: universityError } = await supabase
               .from('universities')
               .select('id')
               .eq('slug', institutionSlugAnswer.value)
-              .single()
+              .maybeSingle()
             
             if (universityError) {
               console.error('[Submit] University lookup failed:', universityError)
+              // Don't fail submission if lookup fails - user might have selected "other"
             } else if (university) {
               submissionData.university_id = university.id
               console.log('[Submit] Found university_id:', university.id)
+            } else {
+              console.warn('[Submit] University not found for slug:', institutionSlugAnswer.value)
+              // If university not found and not "other", this is an error
+              if (institutionSlugAnswer.value !== 'other') {
+                console.error('[Submit] University not found in database for slug:', institutionSlugAnswer.value)
+              }
             }
+          } else if (institutionSlugAnswer?.value === 'other') {
+            console.warn('[Submit] User selected "other" institution - university_id cannot be set')
+            // For "other" institutions, we cannot set university_id
+            // This should be handled by the validation below
           }
         }
         
@@ -211,12 +222,23 @@ export async function POST(request: Request) {
       // 5. Use consolidated submission helper
       if (submissionData && deduplicatedResponses.length > 0) {
         // Ensure we have a valid university_id
-        if (!submissionData.university_id) {
-          console.error('[Submit] No university_id found, cannot proceed with submission')
-          return NextResponse.json({ 
-            error: 'University information is required. Please complete the academic information section.',
-            title: 'Missing University Information'
-          }, { status: 400 })
+        // Check if university_id is empty or missing
+        if (!submissionData.university_id || submissionData.university_id === '' || submissionData.university_id === null) {
+          // Check if we have institution_slug (might be "other")
+          const institutionSlugAnswer = introSection?.answers?.find((a: any) => a.itemId === 'institution_slug')
+          if (institutionSlugAnswer?.value === 'other') {
+            console.error('[Submit] User selected "other" institution - university_id is required but cannot be set for "other"')
+            return NextResponse.json({ 
+              error: 'University information is incomplete. Please select a valid institution from the list or contact support if your institution is not listed.',
+              title: 'Missing University Information'
+            }, { status: 400 })
+          } else {
+            console.error('[Submit] No university_id found and institution_slug lookup failed, cannot proceed with submission')
+            return NextResponse.json({ 
+              error: 'University information is required. Please complete the academic information section.',
+              title: 'Missing University Information'
+            }, { status: 400 })
+          }
         }
         
         const result = await submitCompleteOnboarding(supabase, {

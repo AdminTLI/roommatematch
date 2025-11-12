@@ -14,11 +14,11 @@ interface Props {
 export function BipolarScale({ id, leftLabel, rightLabel, value, onChange }: Props) {
   return (
     <div>
-      <div className="flex items-center justify-between text-sm text-gray-600 mb-2">
-        <Label>{leftLabel}</Label>
-        <Label>{rightLabel}</Label>
+      <div className="flex items-center justify-between text-base sm:text-sm text-gray-600 mb-3 sm:mb-2 gap-2">
+        <Label className="break-words flex-1 text-left">{leftLabel}</Label>
+        <Label className="break-words flex-1 text-right">{rightLabel}</Label>
       </div>
-      <div className="grid grid-cols-5 gap-2">
+      <div className="grid grid-cols-5 gap-3 sm:gap-2">
         {[1, 2, 3, 4, 5].map((v) => (
           <button
             key={v}
@@ -26,7 +26,7 @@ export function BipolarScale({ id, leftLabel, rightLabel, value, onChange }: Pro
             aria-pressed={value === v}
             onClick={() => onChange(v as 1 | 2 | 3 | 4 | 5)}
             className={cn(
-              'h-10 rounded-xl border text-sm px-2 focus:outline-none focus:ring-2 focus:ring-indigo-500',
+              'h-12 sm:h-10 rounded-xl border text-base sm:text-sm px-3 sm:px-2 focus:outline-none focus:ring-2 focus:ring-indigo-500 font-semibold',
               value === v ? 'bg-indigo-600 text-white border-indigo-600' : 'hover:bg-gray-50'
             )}
           >
@@ -34,7 +34,7 @@ export function BipolarScale({ id, leftLabel, rightLabel, value, onChange }: Pro
           </button>
         ))}
       </div>
-      <p className="text-xs text-gray-500 mt-2 text-center">1 = strongly prefer left, 3 = no preference, 5 = strongly prefer right</p>
+      <p className="text-xs sm:text-xs text-gray-500 mt-3 sm:mt-2 text-center">1 = strongly prefer left, 3 = no preference, 5 = strongly prefer right</p>
     </div>
   )
 }

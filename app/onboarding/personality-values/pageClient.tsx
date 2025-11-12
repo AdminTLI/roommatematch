@@ -15,6 +15,8 @@ import { TimeRange } from '@/components/questionnaire/TimeRange'
 import { NumberInput } from '@/components/questionnaire/NumberInput'
 import { useOnboardingStore } from '@/store/onboarding'
 import { SuspenseWrapper } from '@/components/questionnaire/SuspenseWrapper'
+import { AutosaveToaster } from '@/components/questionnaire/AutosaveToaster'
+import { useAutosave } from '@/components/questionnaire/useAutosave'
 import { createClient } from '@/lib/supabase/client'
 import { fetchWithCSRF } from '@/lib/utils/fetch-with-csrf'
 
@@ -85,6 +87,8 @@ function SectionClientContent() {
     }
   }
 
+  const { isSaving, showToast } = useAutosave(sectionKey)
+
   return (
     <QuestionnaireLayout
       stepIndex={2}
@@ -95,11 +99,12 @@ function SectionClientContent() {
       onNext={async () => { await saveSection(); window.location.href = isEditMode ? '/onboarding/sleep-circadian?mode=edit' : '/onboarding/sleep-circadian' }}
       nextDisabled={nextDisabled}
     >
+      <AutosaveToaster show={showToast} />
       <div className="flex items-center justify-between">
         <SectionIntro title="Personality & Values" purpose="Reliability, flexibility, and how you prefer the home to ‘feel’." />
         <div className="text-sm text-gray-600">{answered}/{total} answered</div>
       </div>
-      <div className="space-y-8">
+      <div className="space-y-8 sm:space-y-6">
         {items.map((item) => (
           <QuestionRow
             key={item.id}

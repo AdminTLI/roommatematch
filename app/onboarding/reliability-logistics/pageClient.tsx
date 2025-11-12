@@ -69,7 +69,7 @@ function SectionClientContent() {
         <SectionIntro title="Reliability & Logistics" purpose="House rules, registration (BRP), pets, and commitments." />
         <div className="text-sm text-gray-600">{answered}/{total} answered</div>
       </div>
-      <div className="space-y-6">
+      <div className="space-y-8 sm:space-y-6">
         {items.map((item) => (
           <QuestionRow
             key={item.id}

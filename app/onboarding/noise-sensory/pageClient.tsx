@@ -69,7 +69,7 @@ function SectionClientContent() {
         <SectionIntro title="Noise & Sensory" purpose="Sound, light, air, and thermal comfort in shared spaces." />
         <div className="text-sm text-gray-600">{answered}/{total} answered</div>
       </div>
-      <div className="space-y-6">
+      <div className="space-y-8 sm:space-y-6">
         {items.map((item) => (
           <QuestionRow
             key={item.id}

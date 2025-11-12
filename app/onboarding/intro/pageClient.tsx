@@ -76,9 +76,8 @@ function IntroClientContent() {
           }
         }
 
-        // Only load intro section data if user has existing submission or in edit mode
-        // This prevents new users from seeing pre-filled data from other accounts
-        if (isEditMode) {
+        // Load intro section data - always load if available
+        // This ensures data persistence across page refreshes
         const response = await fetch(`/api/onboarding/load?section=intro`)
         if (response.ok) {
           const { answers } = await response.json()
@@ -95,9 +94,10 @@ function IntroClientContent() {
             const hasDegreeLevel = savedData.degree_level
             const hasProgram = savedData.program_id || savedData.undecided_program
             const hasGraduationYear = savedData.expected_graduation_year
+            const hasStudyStartMonth = savedData.study_start_month !== null && savedData.study_start_month !== undefined
+            const hasGraduationMonth = savedData.graduation_month !== null && savedData.graduation_month !== undefined
             
-            setIsValid(hasUniversity && hasDegreeLevel && hasProgram && hasGraduationYear)
-            }
+            setIsValid(hasUniversity && hasDegreeLevel && hasProgram && hasGraduationYear && hasStudyStartMonth && hasGraduationMonth)
           }
         }
       } catch (error) {

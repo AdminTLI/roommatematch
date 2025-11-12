@@ -12,6 +12,8 @@ import { GroupedSearchSelect } from '@/components/questionnaire/GroupedSearchSel
 import { toGroupedOptions } from '@/lib/loadInstitutions'
 import { loadCampuses } from '@/lib/loadCampuses'
 import { SuspenseWrapper } from '@/components/questionnaire/SuspenseWrapper'
+import { AutosaveToaster } from '@/components/questionnaire/AutosaveToaster'
+import { useAutosave } from '@/components/questionnaire/useAutosave'
 import { fetchWithCSRF } from '@/lib/utils/fetch-with-csrf'
 
 function SectionClientContent() {
@@ -46,6 +48,8 @@ function SectionClientContent() {
     }
   }
 
+  const { isSaving, showToast } = useAutosave(sectionKey)
+
   return (
     <QuestionnaireLayout
       stepIndex={1}
@@ -59,12 +63,13 @@ function SectionClientContent() {
       }}
       nextDisabled={nextDisabled}
     >
+      <AutosaveToaster show={showToast} />
       <div className="flex items-center justify-between">
         <SectionIntro title="Location & Commute" purpose="Set your institution and campus to tune location pairing." />
         <div className="text-sm text-gray-600">{answered}/{total} answered</div>
       </div>
 
-      <div className="space-y-6">
+      <div className="space-y-8 sm:space-y-6">
         {items.map((item) => (
           <QuestionRow key={item.id} label={item.label}>
             {item.optionsFrom === 'nl-institutions' && (

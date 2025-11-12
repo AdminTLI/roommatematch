@@ -395,10 +395,15 @@ export async function trackEvent(
   userId?: string
 ): Promise<void> {
   if (globalTracker) {
-    await globalTracker.trackEvent(name, props, userId)
-  } else {
-    console.warn('Event tracker not initialized')
+    try {
+      await globalTracker.trackEvent(name, props, userId)
+    } catch (error) {
+      // Silently fail - don't log errors for analytics failures
+      // This is expected in server-side contexts where tracker isn't initialized
+    }
   }
+  // Silently return if tracker isn't initialized
+  // This is expected in server-side contexts or before client-side initialization
 }
 
 export async function trackUserAction(
@@ -407,8 +412,13 @@ export async function trackUserAction(
   userId?: string
 ): Promise<void> {
   if (globalTracker) {
-    await globalTracker.trackUserAction(action, context, userId)
+    try {
+      await globalTracker.trackUserAction(action, context, userId)
+    } catch (error) {
+      // Silently fail - don't log errors for analytics failures
+    }
   }
+  // Silently return if tracker isn't initialized
 }
 
 export async function trackPageView(
@@ -417,8 +427,13 @@ export async function trackPageView(
   additionalProps: EventProps = {}
 ): Promise<void> {
   if (globalTracker) {
-    await globalTracker.trackPageView(page, userId, additionalProps)
+    try {
+      await globalTracker.trackPageView(page, userId, additionalProps)
+    } catch (error) {
+      // Silently fail - don't log errors for analytics failures
+    }
   }
+  // Silently return if tracker isn't initialized
 }
 
 export async function trackError(
@@ -427,8 +442,13 @@ export async function trackError(
   userId?: string
 ): Promise<void> {
   if (globalTracker) {
-    await globalTracker.trackError(error, context, userId)
+    try {
+      await globalTracker.trackError(error, context, userId)
+    } catch (trackingError) {
+      // Silently fail - don't log errors for analytics failures
+    }
   }
+  // Silently return if tracker isn't initialized
 }
 
 export function getEventTracker(): EventTracker | null {
