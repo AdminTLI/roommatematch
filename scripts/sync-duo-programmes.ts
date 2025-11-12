@@ -32,6 +32,30 @@ import { resolveDuoCsv, resolveDuoErkenningenCsv } from '@/lib/duo/ckan';
 import { parseHoOpleidingsoverzicht } from '@/lib/duo/ho-opleidingsoverzicht';
 import { upsertProgrammesForInstitution, getProgrammeCountsByInstitution } from '@/lib/programmes/repo';
 
+/**
+ * Load programme coverage whitelist from config file
+ */
+function loadCoverageWhitelist(): Map<string, Set<DegreeLevel>> {
+  try {
+    const whitelistPath = path.join(process.cwd(), 'config', 'programme-coverage-whitelist.json');
+    const whitelistData = JSON.parse(readFileSync(whitelistPath, 'utf-8'));
+    const whitelistMap = new Map<string, Set<DegreeLevel>>();
+    
+    if (whitelistData.institutions) {
+      for (const [institutionId, config] of Object.entries(whitelistData.institutions) as [string, any][]) {
+        if (config.allowedMissingLevels && Array.isArray(config.allowedMissingLevels)) {
+          whitelistMap.set(institutionId, new Set(config.allowedMissingLevels));
+        }
+      }
+    }
+    
+    return whitelistMap;
+  } catch (error) {
+    console.warn('⚠️  Failed to load coverage whitelist, continuing without whitelist:', error);
+    return new Map();
+  }
+}
+
 // Load .env.local if it exists
 try {
   const envPath = path.join(process.cwd(), '.env.local');
@@ -298,6 +322,7 @@ function validateCoverage(
   onboardingInstitutions: Institution[]
 ): { isValid: boolean; failures: string[] } {
   const failures: string[] = [];
+  const whitelist = loadCoverageWhitelist();
   
   for (const inst of onboardingInstitutions) {
     const instReport = report.institutions.find(i => i.id === inst.id);
@@ -314,7 +339,13 @@ function validateCoverage(
     }
     
     // Check if any level is missing (zero programmes)
-    if (instReport.missingLevels.length > 0) {
+    // But exclude missing levels that are whitelisted for this institution
+    const allowedMissing = whitelist.get(inst.id);
+    const actualMissingLevels = allowedMissing
+      ? instReport.missingLevels.filter(level => !allowedMissing.has(level))
+      : instReport.missingLevels;
+    
+    if (actualMissingLevels.length > 0) {
       failures.push(inst.id);
     }
   }

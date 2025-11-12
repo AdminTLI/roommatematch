@@ -2,6 +2,24 @@
 
 This document summarizes the implementation of Medium, High, and Critical priority items from the ChatGPT assessment.
 
+## Recent Updates
+
+### Base Schema Synchronization ✅
+- **Status**: Completed
+- **Issue**: Base schema file (`db/setup/01_complete_schema.sql`) was lagging behind migrations 045, 046, and 050
+- **Changes**:
+  - Added `study_start_month` and `graduation_month` columns to `user_academic` table with CHECK constraints and indexes
+  - Added `expected_graduation_year` column with CHECK constraint and index
+  - Added `programme_duration_months` column with CHECK constraint and index
+  - Added `calculate_programme_duration_months()` function for duration calculation
+  - Added `update_programme_duration_months()` trigger function and trigger
+  - Replaced `user_study_year_v` view with month-aware academic year calculation logic
+  - View now includes all academic columns and uses academic year offsets (September = month 9)
+  - Includes fallback to duration-based calculation and backward compatibility for NULL months
+- **Files Modified**:
+  - `db/setup/01_complete_schema.sql`
+- **Impact**: Fresh database installs now match the latest migrations, ensuring consistency across environments
+
 ## Completed Implementations
 
 ### 1. Study Year Fix (Critical) ✅
@@ -30,13 +48,21 @@ This document summarizes the implementation of Medium, High, and Critical priori
   - API endpoints (`/api/admin/coverage`)
   - Daily cron job (`/api/cron/coverage-check`)
   - Alert system for coverage regressions
+  - Programme coverage whitelist mechanism for institutions that legitimately lack certain degree levels
 - **Files Created/Modified**:
   - `lib/admin/coverage-monitor.ts`
   - `app/api/admin/coverage/route.ts`
   - `app/api/cron/coverage-check/route.ts`
   - `lib/admin/utils.ts`
   - `app/admin/components/admin-dashboard.tsx`
+  - `config/programme-coverage-whitelist.json` (new)
+  - `scripts/sync-duo-programmes.ts`
   - `vercel.json`
+- **Whitelist Mechanism**:
+  - Configuration file at `config/programme-coverage-whitelist.json` defines institutions that legitimately lack certain degree levels (e.g., TU/e, WUR, Avans don't offer premaster programs)
+  - Coverage monitor and sync script respect the whitelist when determining if an institution is "incomplete"
+  - Institutions with all missing levels whitelisted are marked as "complete" in coverage reports
+  - This prevents false positives for institutions that intentionally don't offer certain degree levels
 
 ### 3. Security Monitoring (High) ✅
 - **Status**: Completed

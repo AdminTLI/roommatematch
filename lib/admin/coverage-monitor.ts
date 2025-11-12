@@ -6,8 +6,34 @@ import { getInstitutionBrinCode } from '@/lib/duo/erkenningen'
 import { getProgrammeCountsByInstitution } from '@/lib/programmes/repo'
 import { createClient } from '@supabase/supabase-js'
 import { safeLogger } from '@/lib/utils/logger'
+import { readFileSync } from 'fs'
+import { join } from 'path'
 import type { Institution } from '@/types/institution'
 import type { DegreeLevel } from '@/types/programme'
+
+/**
+ * Load programme coverage whitelist from config file
+ */
+function loadCoverageWhitelist(): Map<string, Set<DegreeLevel>> {
+  try {
+    const whitelistPath = join(process.cwd(), 'config', 'programme-coverage-whitelist.json')
+    const whitelistData = JSON.parse(readFileSync(whitelistPath, 'utf-8'))
+    const whitelistMap = new Map<string, Set<DegreeLevel>>()
+    
+    if (whitelistData.institutions) {
+      for (const [institutionId, config] of Object.entries(whitelistData.institutions) as [string, any][]) {
+        if (config.allowedMissingLevels && Array.isArray(config.allowedMissingLevels)) {
+          whitelistMap.set(institutionId, new Set(config.allowedMissingLevels))
+        }
+      }
+    }
+    
+    return whitelistMap
+  } catch (error) {
+    safeLogger.warn('Failed to load coverage whitelist, continuing without whitelist', { error })
+    return new Map()
+  }
+}
 
 export interface InstitutionCoverage {
   id: string
@@ -43,6 +69,9 @@ export async function checkProgrammeCoverage(): Promise<CoverageReport> {
     const institutions = loadInstitutions()
     const allInstitutions = [...institutions.wo, ...institutions.wo_special, ...institutions.hbo]
 
+    // Load whitelist for institutions that legitimately lack certain degree levels
+    const whitelist = loadCoverageWhitelist()
+
     // Get programme counts from database
     const countsByInstitution = await getProgrammeCountsByInstitution(true)
 
@@ -62,8 +91,15 @@ export async function checkProgrammeCoverage(): Promise<CoverageReport> {
       if (counts.premaster === 0) missingLevels.push('premaster')
       if (counts.master === 0) missingLevels.push('master')
 
+      // Check whitelist: remove missing levels that are allowed for this institution
+      const allowedMissing = whitelist.get(institution.id)
+      const actualMissingLevels = allowedMissing
+        ? missingLevels.filter(level => !allowedMissing.has(level))
+        : missingLevels
+
       const total = counts.bachelor + counts.premaster + counts.master
-      const status = !brinCode ? 'missing' : total === 0 ? 'missing' : missingLevels.length === 0 ? 'complete' : 'incomplete'
+      // Status calculation: if all missing levels are whitelisted, treat as complete
+      const status = !brinCode ? 'missing' : total === 0 ? 'missing' : actualMissingLevels.length === 0 ? 'complete' : 'incomplete'
 
       coverage.push({
         id: institution.id,
@@ -72,7 +108,7 @@ export async function checkProgrammeCoverage(): Promise<CoverageReport> {
         brin: brinCode || null,
         hasBrin: !!brinCode,
         programmes: counts,
-        missingLevels,
+        missingLevels: actualMissingLevels, // Use filtered missing levels
         status,
         totalProgrammes: total
       })

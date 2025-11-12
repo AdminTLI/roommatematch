@@ -101,6 +101,10 @@ CREATE TABLE user_academic (
     program_id uuid REFERENCES programs(id),
     undecided_program boolean DEFAULT false,
     study_start_year int NOT NULL CHECK (study_start_year >= 2015 AND study_start_year <= EXTRACT(YEAR FROM now()) + 1),
+    study_start_month int CHECK (study_start_month IS NULL OR (study_start_month >= 1 AND study_start_month <= 12)),
+    expected_graduation_year int CHECK (expected_graduation_year IS NULL OR (expected_graduation_year >= EXTRACT(YEAR FROM now()) AND expected_graduation_year <= EXTRACT(YEAR FROM now()) + 10)),
+    graduation_month int CHECK (graduation_month IS NULL OR (graduation_month >= 1 AND graduation_month <= 12)),
+    programme_duration_months int CHECK (programme_duration_months IS NULL OR (programme_duration_months >= 12 AND programme_duration_months <= 120)),
     created_at timestamptz DEFAULT now(),
     updated_at timestamptz DEFAULT now(),
     
@@ -109,6 +113,11 @@ CREATE TABLE user_academic (
         CHECK ((program_id IS NOT NULL AND undecided_program = false) OR 
                (program_id IS NULL AND undecided_program = true))
 );
+
+-- Add comments for clarity
+COMMENT ON COLUMN user_academic.study_start_month IS 'Month when studies started (1-12). Used for accurate academic year calculation. NULL falls back to institution defaults.';
+COMMENT ON COLUMN user_academic.graduation_month IS 'Expected month of graduation (1-12). Used for accurate academic year calculation. NULL defaults to June (6).';
+COMMENT ON COLUMN user_academic.programme_duration_months IS 'Programme duration in months, calculated from study_start_month/graduation_month. Used for accurate study year calculation.';
 
 -- ============================================
 -- 4. QUESTIONNAIRE SYSTEM
@@ -892,6 +901,10 @@ CREATE INDEX idx_user_academic_university ON user_academic(university_id);
 CREATE INDEX idx_user_academic_degree ON user_academic(degree_level);
 CREATE INDEX idx_user_academic_program ON user_academic(program_id);
 CREATE INDEX idx_user_academic_start_year ON user_academic(study_start_year);
+CREATE INDEX idx_user_academic_start_month ON user_academic(study_start_month);
+CREATE INDEX idx_user_academic_graduation_month ON user_academic(graduation_month);
+CREATE INDEX idx_user_academic_graduation_year ON user_academic(expected_graduation_year);
+CREATE INDEX idx_user_academic_duration ON user_academic(programme_duration_months);
 
 -- Housing indexes
 CREATE INDEX idx_housing_listings_city ON housing_listings(city);
@@ -963,6 +976,60 @@ BEGIN
 END;
 $$ language 'plpgsql';
 
+-- Function to calculate programme duration in months
+CREATE OR REPLACE FUNCTION calculate_programme_duration_months(
+  p_study_start_year INTEGER,
+  p_study_start_month INTEGER,
+  p_expected_graduation_year INTEGER,
+  p_graduation_month INTEGER
+) RETURNS INTEGER AS $$
+DECLARE
+  start_date DATE;
+  end_date DATE;
+  duration_months INTEGER;
+BEGIN
+  -- Validate inputs
+  IF p_study_start_year IS NULL OR p_study_start_month IS NULL OR 
+     p_expected_graduation_year IS NULL OR p_graduation_month IS NULL THEN
+    RETURN NULL;
+  END IF;
+  
+  -- Create date objects
+  start_date := MAKE_DATE(p_study_start_year, p_study_start_month, 1);
+  end_date := MAKE_DATE(p_expected_graduation_year, p_graduation_month, 1);
+  
+  -- Calculate duration in months
+  duration_months := EXTRACT(YEAR FROM age(end_date, start_date))::INTEGER * 12 + 
+                     EXTRACT(MONTH FROM age(end_date, start_date))::INTEGER;
+  
+  -- Clamp to reasonable range (12-120 months = 1-10 years)
+  duration_months := GREATEST(12, LEAST(120, duration_months));
+  
+  RETURN duration_months;
+END;
+$$ LANGUAGE plpgsql IMMUTABLE;
+
+-- Trigger function to automatically calculate programme_duration_months
+CREATE OR REPLACE FUNCTION update_programme_duration_months()
+RETURNS TRIGGER AS $$
+BEGIN
+  -- Calculate duration if all required fields are present
+  IF NEW.study_start_year IS NOT NULL AND NEW.study_start_month IS NOT NULL AND
+     NEW.expected_graduation_year IS NOT NULL AND NEW.graduation_month IS NOT NULL THEN
+    NEW.programme_duration_months := calculate_programme_duration_months(
+      NEW.study_start_year,
+      NEW.study_start_month,
+      NEW.expected_graduation_year,
+      NEW.graduation_month
+    );
+  ELSE
+    NEW.programme_duration_months := NULL;
+  END IF;
+  
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
 -- Apply updated_at triggers to relevant tables
 CREATE TRIGGER update_universities_updated_at BEFORE UPDATE ON universities FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 CREATE TRIGGER update_users_updated_at BEFORE UPDATE ON users FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
@@ -991,6 +1058,11 @@ CREATE TRIGGER trigger_user_academic_updated_at
     FOR EACH ROW
     EXECUTE FUNCTION update_updated_at_column();
 
+CREATE TRIGGER trigger_update_programme_duration
+    BEFORE INSERT OR UPDATE ON user_academic
+    FOR EACH ROW
+    EXECUTE FUNCTION update_programme_duration_months();
+
 -- Housing table triggers
 CREATE TRIGGER update_housing_listings_updated_at BEFORE UPDATE ON housing_listings FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 CREATE TRIGGER update_tour_bookings_updated_at BEFORE UPDATE ON tour_bookings FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
@@ -1017,12 +1089,51 @@ CREATE TRIGGER update_onboarding_sections_updated_at BEFORE UPDATE ON onboarding
 -- 14. VIEWS
 -- ============================================
 
--- View for computed study year
+-- View for computed study year using month-aware academic year logic
 CREATE OR REPLACE VIEW user_study_year_v AS
 SELECT 
-    user_id,
-    GREATEST(1, EXTRACT(YEAR FROM now())::int - study_start_year + 1) AS study_year
-FROM user_academic;
+    ua.user_id,
+    ua.university_id,
+    ua.degree_level,
+    ua.program_id,
+    ua.study_start_year,
+    ua.study_start_month,
+    ua.expected_graduation_year,
+    ua.graduation_month,
+    ua.programme_duration_months,
+    -- Calculate study year using month-aware academic year logic
+    CASE 
+        -- Month-aware calculation when all required data is provided
+        WHEN ua.study_start_month IS NOT NULL 
+             AND ua.graduation_month IS NOT NULL 
+             AND ua.expected_graduation_year IS NOT NULL 
+             AND ua.study_start_year IS NOT NULL THEN
+            GREATEST(1, LEAST(
+                -- Current academic year (starts in September, month 9)
+                -- Academic year offset: if current month >= 9, add 1 to year
+                (EXTRACT(YEAR FROM now())::int + CASE WHEN EXTRACT(MONTH FROM now()) >= 9 THEN 1 ELSE 0 END) -
+                -- Start academic year (if start month >= 9, add 1 to year)
+                (ua.study_start_year + CASE WHEN ua.study_start_month >= 9 THEN 1 ELSE 0 END) + 1,
+                -- Maximum possible year (calculated from duration or fallback)
+                COALESCE(
+                    -- Use duration in months if available
+                    CASE WHEN ua.programme_duration_months IS NOT NULL 
+                         THEN (ua.programme_duration_months / 12)::INTEGER + 1
+                         ELSE NULL
+                    END,
+                    -- Fallback to graduation year calculation
+                    (ua.expected_graduation_year + CASE WHEN ua.graduation_month >= 9 THEN 1 ELSE 0 END) -
+                    (ua.study_start_year + CASE WHEN ua.study_start_month >= 9 THEN 1 ELSE 0 END) + 1
+                )
+            ))
+        -- Fallback to old calculation for backward compatibility (when months are NULL)
+        ELSE
+            GREATEST(1, EXTRACT(YEAR FROM now())::int - ua.study_start_year + 1)
+    END AS study_year
+FROM user_academic ua;
+
+-- Update comment
+COMMENT ON VIEW user_study_year_v IS 'View to calculate current academic year status using month-aware logic and programme duration. Falls back to calendar year calculation when months or expected_graduation_year are NULL. Academic year starts in September (month 9).';
 
 -- ============================================
 -- 15. STORAGE BUCKETS

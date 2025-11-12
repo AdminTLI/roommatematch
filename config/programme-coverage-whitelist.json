@@ -1,0 +1,99 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "description": "Whitelist of institutions that legitimately lack certain degree levels. These institutions will not be marked as 'incomplete' in coverage reports.",
+  "institutions": {
+    "tue": {
+      "allowedMissingLevels": ["premaster"],
+      "reason": "TU/e (Eindhoven University of Technology) does not offer premaster programs. Students enter directly into master's programs after completing a bachelor's degree."
+    },
+    "wur": {
+      "allowedMissingLevels": ["premaster"],
+      "reason": "Wageningen University & Research does not offer premaster programs."
+    },
+    "tilburg": {
+      "allowedMissingLevels": ["premaster"],
+      "reason": "Tilburg University does not offer premaster programs."
+    },
+    "ou": {
+      "allowedMissingLevels": ["premaster"],
+      "reason": "Open Universiteit (Open University) does not offer premaster programs."
+    },
+    "pthu": {
+      "allowedMissingLevels": ["premaster"],
+      "reason": "Protestant Theological University does not offer premaster programs."
+    },
+    "tua": {
+      "allowedMissingLevels": ["premaster"],
+      "reason": "Theologische Universiteit Apeldoorn does not offer premaster programs."
+    },
+    "tuu": {
+      "allowedMissingLevels": ["premaster"],
+      "reason": "Theologische Universiteit Utrecht does not offer premaster programs."
+    },
+    "aeres": {
+      "allowedMissingLevels": ["premaster"],
+      "reason": "Aeres University of Applied Sciences does not offer premaster programs."
+    },
+    "ahk": {
+      "allowedMissingLevels": ["premaster"],
+      "reason": "Amsterdam University of the Arts does not offer premaster programs."
+    },
+    "artez": {
+      "allowedMissingLevels": ["premaster"],
+      "reason": "ArtEZ University of the Arts does not offer premaster programs."
+    },
+    "avans": {
+      "allowedMissingLevels": ["premaster"],
+      "reason": "Avans University of Applied Sciences does not offer premaster programs."
+    },
+    "fontys": {
+      "allowedMissingLevels": ["premaster"],
+      "reason": "Fontys University of Applied Sciences does not offer premaster programs."
+    },
+    "gerritrietveld": {
+      "allowedMissingLevels": ["premaster"],
+      "reason": "Gerrit Rietveld Academy does not offer premaster programs."
+    },
+    "hdk-denhaag": {
+      "allowedMissingLevels": ["premaster"],
+      "reason": "Royal Academy of Art, The Hague does not offer premaster programs."
+    },
+    "hku": {
+      "allowedMissingLevels": ["premaster"],
+      "reason": "HKU University of the Arts Utrecht does not offer premaster programs."
+    },
+    "hz": {
+      "allowedMissingLevels": ["premaster"],
+      "reason": "HZ University of Applied Sciences does not offer premaster programs."
+    },
+    "has": {
+      "allowedMissingLevels": ["premaster", "master"],
+      "reason": "HAS University of Applied Sciences is primarily a bachelor's degree institution."
+    },
+    "ipabo": {
+      "allowedMissingLevels": ["premaster", "master"],
+      "reason": "IPABO University of Applied Sciences is primarily a bachelor's degree institution."
+    },
+    "iselinge": {
+      "allowedMissingLevels": ["premaster", "master"],
+      "reason": "Iselinge University of Applied Sciences is primarily a bachelor's degree institution."
+    },
+    "viaa": {
+      "allowedMissingLevels": ["premaster", "master"],
+      "reason": "Viaa University of Applied Sciences is primarily a bachelor's degree institution."
+    },
+    "thomasmore": {
+      "allowedMissingLevels": ["premaster", "master"],
+      "reason": "Thomas More University of Applied Sciences is primarily a bachelor's degree institution."
+    },
+    "dae": {
+      "allowedMissingLevels": ["premaster"],
+      "reason": "Design Academy Eindhoven does not offer premaster programs."
+    },
+    "kpz": {
+      "allowedMissingLevels": ["master"],
+      "reason": "KPZ University of Applied Sciences does not offer master's programs."
+    }
+  }
+}
+
