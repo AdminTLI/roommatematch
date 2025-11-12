@@ -14,5 +14,15 @@
         }
       ]
     }
+  ],
+  "crons": [
+    {
+      "path": "/api/cron/match",
+      "schedule": "0 0 * * *"
+    },
+    {
+      "path": "/api/cron/maintenance",
+      "schedule": "0 2 * * *"
+    }
   ]
 }
