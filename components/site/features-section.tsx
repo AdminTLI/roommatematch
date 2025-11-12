@@ -81,7 +81,7 @@ const content = {
         icon: MessageSquare,
         title: "Safe Chat System",
         description: "Text-only, rate-limited, moderated messaging with built-in safety features and escalation paths.",
-        features: ["Text-only messaging", "Rate limiting", "Content moderation", "Report & block", "Move-in coordination"]
+        features: ["Text-only messaging", "Rate limiting", "Content moderation", "Report & block", "Safe communication"]
       },
       {
         icon: Users,
@@ -176,7 +176,7 @@ const content = {
         icon: MessageSquare,
         title: "Veilig Chatsysteem",
         description: "Alleen tekst, beperkt in frequentie, gemodereerde berichten met ingebouwde veiligheidsfuncties en escalatiepaden.",
-        features: ["Alleen tekstberichten", "Frequentiebeperking", "Contentmoderatie", "Rapporteer & blokkeer", "Verhuiscoördinatie"]
+        features: ["Alleen tekstberichten", "Frequentiebeperking", "Contentmoderatie", "Rapporteer & blokkeer", "Veilige communicatie"]
       },
       {
         icon: Users,

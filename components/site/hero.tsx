@@ -15,8 +15,8 @@ const content = {
     titleStrangers: "strangers",
     titleTo: "to",
     titleRoommates: "roommates",
-    subtitle: "Domu Match pairs you with compatible students based on lifestyle, study habits, and personality. Our science-backed algorithm analyzes 40+ factors to prevent conflicts before they start—so moving in feels easy.",
-    getMatched: "Get matched",
+    subtitle: "Domu Match connects you with compatible students based on lifestyle, study habits, and personality. Our science-backed algorithm analyzes 40+ factors to prevent conflicts before they start—so finding your ideal roommate feels easy.",
+    getMatched: "Get started",
     seeHowItWorks: "See how it works",
     verified: "Verified students only",
     free: "Free for students",
@@ -28,8 +28,8 @@ const content = {
     titleStrangers: "vreemden",
     titleTo: "tot",
     titleRoommates: "huisgenoten",
-    subtitle: "Domu Match koppelt je aan compatibele studenten op basis van levensstijl, studiegewoonten en persoonlijkheid. Ons wetenschappelijk onderbouwde algoritme analyseert 40+ factoren om conflicten te voorkomen voordat ze beginnen—zodat verhuizen gemakkelijk aanvoelt.",
-    getMatched: "Krijg matches",
+    subtitle: "Domu Match verbindt je met compatibele studenten op basis van levensstijl, studiegewoonten en persoonlijkheid. Ons wetenschappelijk onderbouwde algoritme analyseert 40+ factoren om conflicten te voorkomen voordat ze beginnen—zodat het vinden van je ideale huisgenoot gemakkelijk aanvoelt.",
+    getMatched: "Begin nu",
     seeHowItWorks: "Bekijk hoe het werkt",
     verified: "Alleen geverifieerde studenten",
     free: "Gratis voor studenten",
@@ -89,7 +89,7 @@ export function Hero() {
   ]
 
   return (
-    <Section className="relative overflow-hidden bg-gradient-to-b from-white via-blue-50/20 to-white">
+    <Section className="relative overflow-hidden bg-white">
       {/* Subtle background accents */}
       <div aria-hidden className="pointer-events-none absolute inset-0 -z-10">
         <div className="absolute top-0 left-0 h-96 w-96 rounded-full bg-gradient-to-br from-brand-primary/10 via-accent/10 to-brand-primary/5 blur-3xl opacity-50" />

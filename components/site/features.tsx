@@ -8,8 +8,7 @@ import {
   Filter, 
   MessageSquare, 
   ShieldCheck, 
-  Building2, 
-  Home
+  Building2
 } from 'lucide-react'
 import { motion } from 'framer-motion'
 
@@ -17,7 +16,7 @@ const features = [
   {
     icon: Brain,
     title: "Smart matching",
-    description: "AI-powered compatibility analysis based on lifestyle, study habits, and personality traits to help you go from strangers to roommates.",
+    description: "AI-powered compatibility analysis based on lifestyle, study habits, and personality traits to help you connect with ideal roommates.",
     size: "large",
     gradient: "from-blue-500/20 via-purple-500/20 to-pink-500/20",
     iconGradient: "from-blue-500 to-purple-600"
@@ -25,7 +24,7 @@ const features = [
   {
     icon: Filter,
     title: "Advanced filters",
-    description: "Filter by university, program, study year, budget, lifestyle preferences, and more to narrow down your ideal matches.",
+    description: "Filter by university, program, study year, budget, lifestyle preferences, and more to find compatible students.",
     size: "medium",
     gradient: "from-emerald-500/20 via-teal-500/20 to-cyan-500/20",
     iconGradient: "from-emerald-500 to-teal-600"
@@ -49,18 +48,10 @@ const features = [
   {
     icon: Building2,
     title: "University partnerships",
-    description: "Trusted by 50+ leading Dutch universities. Get access to exclusive housing opportunities and student support services.",
+    description: "Trusted by 50+ leading Dutch universities. Get access to student support services and university resources.",
     size: "small",
     gradient: "from-indigo-500/20 via-blue-500/20 to-purple-500/20",
     iconGradient: "from-indigo-500 to-blue-600"
-  },
-  {
-    icon: Home,
-    title: "Complete housing solution",
-    description: "Find roommates, discover verified housing listings, and get help with move-in planning all in one platform.",
-    size: "large",
-    gradient: "from-violet-500/20 via-purple-500/20 to-fuchsia-500/20",
-    iconGradient: "from-violet-500 to-purple-600"
   }
 ]
 
@@ -111,7 +102,7 @@ export function Features() {
           viewport={{ once: true, margin: "-50px" }}
         >
           <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-brand-text mb-6 leading-tight pt-4">
-            Everything you need to go from <span className="text-brand-primary">strangers</span> to <span className="text-brand-primary">roommates</span>
+            Everything you need to <span className="text-brand-primary">find your ideal roommate</span>
           </h2>
           <p className="text-base md:text-lg lg:text-xl leading-relaxed max-w-3xl mx-auto text-brand-muted">
             Our comprehensive platform makes finding the right roommate simple and stress-free
@@ -119,7 +110,7 @@ export function Features() {
         </motion.div>
 
         <motion.div 
-          className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6"
+          className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
           variants={containerVariants}
           initial="hidden"
           whileInView="visible"

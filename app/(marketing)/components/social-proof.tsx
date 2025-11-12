@@ -16,7 +16,7 @@ export function SocialProof({ locale: localeProp }: SocialProofProps) {
 
   const content = {
     en: {
-      title: "Built for better matches",
+      title: "Built for better connections",
       subtitle: "Our science-backed approach helps you find roommates as compatible as your best friends",
       stats: [
         { value: "40+", label: "Compatibility Factors", icon: Brain, description: "Science-backed algorithm" },
@@ -31,7 +31,7 @@ export function SocialProof({ locale: localeProp }: SocialProofProps) {
       ]
     },
     nl: {
-      title: "Gebouwd voor betere matches",
+      title: "Gebouwd voor betere verbindingen",
       subtitle: "Onze wetenschappelijk onderbouwde aanpak helpt je huisgenoten te vinden die zo compatibel zijn als je beste vrienden",
       stats: [
         { value: "40+", label: "Compatibiliteitsfactoren", icon: Brain, description: "Wetenschappelijk onderbouwd algoritme" },
@@ -50,7 +50,7 @@ export function SocialProof({ locale: localeProp }: SocialProofProps) {
   const text = content[locale]
 
   return (
-    <Section className="bg-gradient-to-b from-white to-slate-50/50">
+    <Section className="bg-white">
       <Container>
         <div className="text-center mb-12">
           <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-brand-text mb-4 leading-tight">

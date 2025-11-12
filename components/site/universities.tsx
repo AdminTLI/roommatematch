@@ -25,7 +25,7 @@ interface University {
 
 const content = {
   en: {
-    title: "Find out how many potential matches are waiting for you",
+    title: "Find out how many compatible students are waiting for you",
     subtitle: "Select your city to see available universities and see how many students are already using Domu Match",
     selectCityPlaceholder: "Select a city",
     noUniversities: "No universities found in this city",
@@ -36,7 +36,7 @@ const content = {
     loading: "Loading...",
   },
   nl: {
-    title: "Ontdek hoeveel potentiële matches op je wachten",
+    title: "Ontdek hoeveel compatibele studenten op je wachten",
     subtitle: "Selecteer je stad om beschikbare universiteiten te zien en ontdek hoeveel studenten Domu Match al gebruiken",
     selectCityPlaceholder: "Selecteer een stad",
     noUniversities: "Geen universiteiten gevonden in deze stad",
@@ -156,25 +156,25 @@ export function Universities() {
               onValueChange={(value) => setSelectedCity(value || null)}
               disabled={loadingCities}
             >
-              <SelectTrigger className="w-full">
+              <SelectTrigger className="w-full [&>span]:flex-1 [&>span]:text-center">
                 <SelectValue placeholder={t.selectCityPlaceholder} />
               </SelectTrigger>
               <SelectContent>
                 {loadingCities ? (
-                  <SelectItem value="loading" disabled>
+                  <SelectItem value="loading" disabled className="justify-center [&>span:last-child]:text-center">
                     {t.loading}
                   </SelectItem>
                 ) : error ? (
-                  <SelectItem value="error" disabled>
+                  <SelectItem value="error" disabled className="justify-center [&>span:last-child]:text-center">
                     Error loading cities
                   </SelectItem>
                 ) : cities.length === 0 ? (
-                  <SelectItem value="none" disabled>
+                  <SelectItem value="none" disabled className="justify-center [&>span:last-child]:text-center">
                     No cities available
                   </SelectItem>
                 ) : (
                   cities.map((city) => (
-                    <SelectItem key={city} value={city}>
+                    <SelectItem key={city} value={city} className="justify-center [&>span:last-child]:text-center">
                       {city}
                     </SelectItem>
                   ))

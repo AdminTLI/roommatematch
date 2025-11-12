@@ -14,7 +14,7 @@ const content = {
       {
         icon: Brain,
         title: "Science-backed matching",
-        description: "Our algorithm analyzes 40+ compatibility factors to predict roommate success before conflicts start. No more gambling on random matches."
+        description: "Our algorithm analyzes 40+ compatibility factors to predict roommate success before conflicts start. No more guessing—find your perfect fit."
       },
       {
         icon: Shield,
@@ -24,12 +24,12 @@ const content = {
       {
         icon: Zap,
         title: "Save time & money",
-        description: "Get matched in days, not weeks. Prevent costly move-outs and disputes by finding compatible roommates from the start."
+        description: "Find compatible students in days, not weeks. Prevent conflicts and disputes by connecting with ideal roommates from the start."
       },
       {
         icon: Heart,
-        title: "Find your perfect match",
-        description: "See exactly why you're compatible with transparent explanations. Match on lifestyle, study habits, and values that matter."
+        title: "Find your ideal roommate",
+        description: "See exactly why you're compatible with transparent explanations. Connect based on lifestyle, study habits, and values that matter."
       }
     ]
   },
@@ -40,7 +40,7 @@ const content = {
       {
         icon: Brain,
         title: "Wetenschappelijk onderbouwde matching",
-        description: "Ons algoritme analyseert 40+ compatibiliteitsfactoren om het succes van huisgenoten te voorspellen voordat conflicten beginnen. Geen gokken meer op willekeurige matches."
+        description: "Ons algoritme analyseert 40+ compatibiliteitsfactoren om het succes van huisgenoten te voorspellen voordat conflicten beginnen. Geen gokken meer—vind je perfecte match."
       },
       {
         icon: Shield,
@@ -50,12 +50,12 @@ const content = {
       {
         icon: Zap,
         title: "Bespaar tijd en geld",
-        description: "Krijg matches in dagen, niet weken. Voorkom kostbare verhuizingen en geschillen door vanaf het begin compatibele huisgenoten te vinden."
+        description: "Vind compatibele studenten in dagen, niet weken. Voorkom conflicten en geschillen door vanaf het begin verbinding te maken met ideale huisgenoten."
       },
       {
         icon: Heart,
-        title: "Vind je perfecte match",
-        description: "Zie precies waarom je compatibel bent met transparante uitleg. Match op levensstijl, studiegewoonten en waarden die ertoe doen."
+        title: "Vind je ideale huisgenoot",
+        description: "Zie precies waarom je compatibel bent met transparante uitleg. Verbind op basis van levensstijl, studiegewoonten en waarden die ertoe doen."
       }
     ]
   }

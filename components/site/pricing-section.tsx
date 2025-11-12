@@ -60,7 +60,7 @@ const content = {
         name: 'Enterprise',
         description: 'For large universities with complex housing needs',
         price: 'Custom',
-        period: 'annual contract',
+        period: 'per year',
         badge: 'Custom',
         icon: BarChart3,
         features: [
@@ -148,7 +148,7 @@ const content = {
         name: 'Enterprise',
         description: 'Voor grote universiteiten met complexe huisvestingsbehoeften',
         price: 'Op Maat',
-        period: 'jaarcontract',
+        period: 'per jaar',
         badge: 'Op Maat',
         icon: BarChart3,
         features: [

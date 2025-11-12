@@ -78,21 +78,21 @@ const content = {
           "Rate-limited conversations",
           "Moderated content",
           "Report and block features",
-          "Move-in planning tools"
+          "Safe communication platform"
         ],
         color: "bg-orange-500"
       },
       {
         step: "05",
         icon: Home,
-        title: "Move In Together",
-        description: "Once you've found your perfect match, coordinate move-in plans and start your university journey together.",
+        title: "Start Together",
+        description: "Once you've found your ideal roommate, coordinate plans and start your university journey together.",
         details: [
-          "Move-in coordination",
-          "Shared agreement templates",
+          "Roommate coordination",
           "Safety guidelines",
           "University integration",
-          "Ongoing support"
+          "Ongoing support",
+          "Compatibility insights"
         ],
         color: "bg-red-500"
       }
@@ -175,21 +175,21 @@ const content = {
           "Beperkte conversaties",
           "Gemodereerde inhoud",
           "Rapporteer- en blokkeerfuncties",
-          "Verhuisplanningstools"
+          "Veilig communicatieplatform"
         ],
         color: "bg-orange-500"
       },
       {
         step: "05",
         icon: Home,
-        title: "Verhuis samen",
-        description: "Zodra je je perfecte match hebt gevonden, coördineer verhuisplannen en begin je universiteitsreis samen.",
+        title: "Start samen",
+        description: "Zodra je je ideale huisgenoot hebt gevonden, coördineer plannen en begin je universiteitsreis samen.",
         details: [
-          "Verhuiscoördinatie",
-          "Gedeelde overeenkomstssjablonen",
+          "Huisgenootcoördinatie",
           "Veiligheidsrichtlijnen",
           "Universiteitsintegratie",
-          "Doorlopende ondersteuning"
+          "Doorlopende ondersteuning",
+          "Compatibiliteitsinzichten"
         ],
         color: "bg-red-500"
       }

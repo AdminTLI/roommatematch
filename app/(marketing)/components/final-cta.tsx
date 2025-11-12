@@ -61,7 +61,7 @@ export function FinalCTA({ locale: localeProp }: FinalCTAProps) {
   const text = content[locale]
 
   return (
-    <section className="py-16 bg-gradient-to-br from-primary/5 via-white to-indigo-50 dark:from-primary/10 dark:via-gray-900 dark:to-gray-800">
+    <section className="py-16 bg-white">
       <div className="container mx-auto px-4">
         <div className="text-center mb-16">
           <h2 className="text-3xl lg:text-4xl font-bold text-gray-900 dark:text-white mb-4">
