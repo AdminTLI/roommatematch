@@ -18,6 +18,15 @@ END;
 $$ LANGUAGE plpgsql;
 
 -- ============================================
+-- 1.5. DROP VIEW FIRST (to avoid column conflicts)
+-- ============================================
+
+-- IMPORTANT: Drop the view FIRST before adding columns
+-- The existing view may have different columns, so we need to drop it completely
+-- Using CASCADE to drop dependent objects (if any)
+DROP VIEW IF EXISTS user_study_year_v CASCADE;
+
+-- ============================================
 -- 2. STUDY MONTHS MIGRATION (045)
 -- ============================================
 
@@ -55,11 +64,8 @@ CREATE INDEX IF NOT EXISTS idx_user_academic_graduation_year ON user_academic(ex
 -- 4. ENFORCE STUDY MONTHS (050)
 -- ============================================
 
--- IMPORTANT: Drop the view first to avoid column name conflicts
--- The existing view may have different columns, so we need to drop it completely
-DROP VIEW IF EXISTS user_study_year_v CASCADE;
-
 -- Add programme_duration_months column to user_academic
+-- Note: View was already dropped in section 1.5
 ALTER TABLE user_academic 
 ADD COLUMN IF NOT EXISTS programme_duration_months INTEGER 
 CHECK (programme_duration_months IS NULL OR (programme_duration_months >= 12 AND programme_duration_months <= 120));
