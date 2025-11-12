@@ -177,7 +177,8 @@ export async function grantMultipleConsents(
  */
 export async function withdrawAllConsents(userId?: string): Promise<void> {
   const supabase = await createClient()
-  const { NON_ESSENTIAL_CONSENTS } = await import('./cookie-consent-client')
+  // Non-essential consent types
+  const nonEssentialTypes: ConsentType[] = ['analytics', 'error_tracking', 'session_replay', 'marketing']
 
   const { error } = await supabase
     .from('user_consents')
@@ -186,7 +187,7 @@ export async function withdrawAllConsents(userId?: string): Promise<void> {
       withdrawn_at: new Date().toISOString()
     })
     .eq('user_id', userId || null)
-    .in('consent_type', NON_ESSENTIAL_CONSENTS)
+    .in('consent_type', nonEssentialTypes)
     .eq('status', 'granted')
 
   if (error) {
