@@ -200,11 +200,19 @@ export function Universities() {
                 </div>
               ) : (
                 <div className="flex justify-center mt-8">
-                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 w-full max-w-7xl mx-auto">
+                  <div 
+                    className="grid gap-4"
+                    style={{
+                      gridTemplateColumns: `repeat(${Math.min(universities.length, 4)}, minmax(280px, 300px))`,
+                      maxWidth: '1200px',
+                      width: '100%',
+                      justifyContent: 'center'
+                    }}
+                  >
                     {universities.map((university) => (
                       <Card
                         key={university.id}
-                        className="rounded-xl border border-brand-border/50 bg-white/80 backdrop-blur-sm p-6 shadow-elev-1 hover:shadow-elev-2 transition-shadow duration-200"
+                        className="rounded-xl border border-brand-border/50 bg-white/80 backdrop-blur-sm p-6 shadow-elev-1 hover:shadow-elev-2 transition-shadow duration-200 w-full"
                       >
                         <div className="flex flex-col h-full">
                           <h3 className="font-semibold text-brand-text text-lg mb-2 leading-tight text-center">

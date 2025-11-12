@@ -31,7 +31,8 @@
     "qa:premasters": "tsx scripts/qa-premasters.ts",
     "demo:user": "tsx scripts/create-demo-user.ts",
     "generate:sample-pdf": "tsx scripts/generate-sample-pdf.ts",
-    "map:universities": "tsx scripts/map-universities-to-cities.ts"
+    "map:universities": "tsx scripts/map-universities-to-cities.ts",
+    "merge:duplicates": "tsx scripts/merge-duplicate-universities.ts"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.3.2",
