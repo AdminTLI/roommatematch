@@ -10,7 +10,7 @@ import { createClient } from '@supabase/supabase-js'
 import { createAdminClient } from '@/lib/supabase/server'
 import { safeLogger } from '@/lib/utils/logger'
 
-export const maxDuration = 600 // 10 minutes - increased to handle all maintenance tasks including data retention
+export const maxDuration = 300 // 5 minutes - maximum allowed for Hobby plan
 export const dynamic = 'force-dynamic'
 
 /**
@@ -161,9 +161,11 @@ export async function GET(request: Request) {
         }
       }
 
-      // Calculate cohort retention metrics for last 30 days (reduced from 90 to save execution time)
+      // Calculate cohort retention metrics for last 7 days only (reduced to stay within 5min timeout)
+      // Process only the most recent days to prioritize current data
       const today = new Date()
-      for (let daysAgo = 0; daysAgo < 30; daysAgo++) {
+      const daysToProcess = 7 // Reduced from 30 to save execution time
+      for (let daysAgo = 0; daysAgo < daysToProcess; daysAgo++) {
         const cohortDate = new Date(today.getTime() - daysAgo * 24 * 60 * 60 * 1000)
         const cohortDateStr = cohortDate.toISOString().split('T')[0]
 
