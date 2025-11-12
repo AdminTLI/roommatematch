@@ -17,6 +17,7 @@ export interface OnboardingSubmissionData {
   study_start_month?: number | null
   expected_graduation_year?: number
   graduation_month?: number | null
+  programme_duration_months?: number
   undecided_program?: boolean
 }
 
@@ -86,6 +87,19 @@ export function extractSubmissionDataFromIntro(
     undecided_program = true
   }
 
+  // Validate study_start_month and graduation_month are provided (required)
+  if (expected_graduation_year && (!study_start_month || !graduation_month)) {
+    throw new Error('Study start month and graduation month are required for accurate academic year calculation')
+  }
+
+  // Validate months are in valid range (1-12)
+  if (study_start_month !== null && (study_start_month < 1 || study_start_month > 12)) {
+    throw new Error('Study start month must be between 1 and 12')
+  }
+  if (graduation_month !== null && (graduation_month < 1 || graduation_month > 12)) {
+    throw new Error('Graduation month must be between 1 and 12')
+  }
+
   // Calculate study_start_year using month-aware logic if months are provided
   // Otherwise fall back to institution-type defaults
   if (!study_start_year && expected_graduation_year && degree_level && institution_slug) {
@@ -120,9 +134,26 @@ export function extractSubmissionDataFromIntro(
     }
   }
   
-  // Default graduation_month to June (6) if not provided
+  // Ensure graduation_month defaults to June (6) if not provided (should not happen with validation)
   if (graduation_month === null && expected_graduation_year) {
     graduation_month = 6
+  }
+  
+  // Ensure study_start_month is set if expected_graduation_year is provided (should not happen with validation)
+  if (study_start_month === null && expected_graduation_year) {
+    // Default to September (9) for most students
+    study_start_month = 9
+  }
+
+  // Calculate programme duration in months
+  let programme_duration_months: number | undefined = undefined
+  if (study_start_year && study_start_month !== null && expected_graduation_year && graduation_month !== null) {
+    const startDate = new Date(study_start_year, study_start_month - 1, 1)
+    const endDate = new Date(expected_graduation_year, graduation_month - 1, 1)
+    const monthsDiff = (endDate.getFullYear() - startDate.getFullYear()) * 12 + 
+                       (endDate.getMonth() - startDate.getMonth())
+    // Clamp to reasonable range (12-120 months = 1-10 years)
+    programme_duration_months = Math.max(12, Math.min(120, monthsDiff))
   }
 
   const firstName = user.user_metadata?.full_name?.split(' ')[0] || user.email?.split('@')[0] || 'User'
@@ -139,6 +170,7 @@ export function extractSubmissionDataFromIntro(
     study_start_month,
     expected_graduation_year,
     graduation_month,
+    programme_duration_months,
     undecided_program
   }
 }
@@ -274,6 +306,18 @@ export async function upsertProfileAndAcademic(
     ? data.program_id 
     : null
   
+  // Calculate programme duration if months are provided (trigger will also calculate, but we set it here for consistency)
+  let programme_duration_months: number | null = null
+  if (data.study_start_year && data.study_start_month !== null && 
+      data.expected_graduation_year && data.graduation_month !== null) {
+    const startDate = new Date(data.study_start_year, data.study_start_month - 1, 1)
+    const endDate = new Date(data.expected_graduation_year, data.graduation_month - 1, 1)
+    const monthsDiff = (endDate.getFullYear() - startDate.getFullYear()) * 12 + 
+                       (endDate.getMonth() - startDate.getMonth())
+    // Clamp to reasonable range (12-120 months = 1-10 years)
+    programme_duration_months = Math.max(12, Math.min(120, monthsDiff))
+  }
+
   const { error: academicError } = await supabase
     .from('user_academic')
     .upsert({
@@ -285,6 +329,7 @@ export async function upsertProfileAndAcademic(
       study_start_month: data.study_start_month ?? null,
       expected_graduation_year: data.expected_graduation_year ?? null,
       graduation_month: data.graduation_month ?? null,
+      programme_duration_months: programme_duration_months,
       undecided_program: data.undecided_program,
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString()
@@ -326,6 +371,7 @@ export interface CompleteOnboardingData {
   study_start_month?: number | null
   expected_graduation_year?: number
   graduation_month?: number | null
+  programme_duration_months?: number
   undecided_program?: boolean
   responses: Array<{
     question_key: string
@@ -404,6 +450,7 @@ export async function submitCompleteOnboarding(
       study_start_month: data.study_start_month,
       expected_graduation_year: data.expected_graduation_year,
       graduation_month: data.graduation_month,
+      programme_duration_months: data.programme_duration_months,
       undecided_program: data.undecided_program
     })
 

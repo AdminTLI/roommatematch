@@ -232,6 +232,7 @@ export async function POST(request: Request) {
           study_start_month: submissionData.study_start_month,
           expected_graduation_year: submissionData.expected_graduation_year,
           graduation_month: submissionData.graduation_month,
+          programme_duration_months: submissionData.programme_duration_months,
           undecided_program: submissionData.undecided_program,
           responses: deduplicatedResponses
         })

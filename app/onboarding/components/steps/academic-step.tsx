@@ -427,12 +427,13 @@ export function AcademicStep({ data, onChange, user }: AcademicStepProps) {
 
       {/* Study Start Month */}
       <div className="space-y-2">
-        <Label htmlFor="study_start_month">Study Start Month</Label>
+        <Label htmlFor="study_start_month">Study Start Month *</Label>
         <Select 
           value={data.study_start_month?.toString() || ''} 
           onValueChange={(value) => handleChange('study_start_month', value ? parseInt(value) : null)}
+          required
         >
-          <SelectTrigger>
+          <SelectTrigger className={!data.study_start_month ? 'border-red-300' : ''}>
             <SelectValue placeholder="When did/will you start your studies?" />
           </SelectTrigger>
           <SelectContent>
@@ -450,19 +451,25 @@ export function AcademicStep({ data, onChange, user }: AcademicStepProps) {
             <SelectItem value="12">December</SelectItem>
           </SelectContent>
         </Select>
+        {!data.study_start_month && (
+          <p className="text-sm text-red-600 dark:text-red-400">
+            Study start month is required for accurate academic year calculation.
+          </p>
+        )}
         <p className="text-sm text-gray-500">
-          When did or will you start your studies? This helps calculate your current academic year more accurately.
+          When did or will you start your studies? This helps calculate your current academic year more accurately. Academic year typically starts in September (month 9).
         </p>
       </div>
 
       {/* Graduation Month */}
       <div className="space-y-2">
-        <Label htmlFor="graduation_month">Expected Graduation Month</Label>
+        <Label htmlFor="graduation_month">Expected Graduation Month *</Label>
         <Select 
-          value={data.graduation_month?.toString() || '6'} 
-          onValueChange={(value) => handleChange('graduation_month', parseInt(value))}
+          value={data.graduation_month?.toString() || ''} 
+          onValueChange={(value) => handleChange('graduation_month', value ? parseInt(value) : null)}
+          required
         >
-          <SelectTrigger>
+          <SelectTrigger className={!data.graduation_month ? 'border-red-300' : ''}>
             <SelectValue placeholder="When do you expect to graduate?" />
           </SelectTrigger>
           <SelectContent>
@@ -480,13 +487,36 @@ export function AcademicStep({ data, onChange, user }: AcademicStepProps) {
             <SelectItem value="12">December</SelectItem>
           </SelectContent>
         </Select>
+        {!data.graduation_month && (
+          <p className="text-sm text-red-600 dark:text-red-400">
+            Graduation month is required for accurate academic year calculation.
+          </p>
+        )}
         <p className="text-sm text-gray-500">
-          In which month do you expect to graduate? Defaults to June for summer graduation.
+          In which month do you expect to graduate? This helps us calculate your academic stage accurately. Most students graduate in June (summer).
         </p>
       </div>
 
+      {/* Validation Error */}
+      {data.expected_graduation_year && (!data.study_start_month || !data.graduation_month) && (
+        <div className="p-4 bg-red-50 dark:bg-red-900/20 rounded-lg border border-red-200 dark:border-red-800">
+          <div className="flex items-start gap-3">
+            <div className="w-5 h-5 text-red-600 dark:text-red-400 mt-0.5">⚠️</div>
+            <div className="text-sm">
+              <p className="text-red-800 dark:text-red-200 font-medium mb-1">
+                Missing Required Information
+              </p>
+              <p className="text-red-700 dark:text-red-300">
+                Please provide both your study start month and graduation month to proceed. This information is required for accurate academic year calculation and matching.
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Academic Summary */}
-      {data.institution_slug && data.degree_level && (data.program_id || data.undecided_program) && data.expected_graduation_year && (
+      {data.institution_slug && data.degree_level && (data.program_id || data.undecided_program) && 
+       data.expected_graduation_year && data.study_start_month && data.graduation_month && (
         <div className="p-4 bg-green-50 dark:bg-green-900/20 rounded-lg border border-green-200 dark:border-green-800">
           <h4 className="font-medium text-green-800 dark:text-green-200 mb-2">
             Academic Profile Summary
@@ -501,7 +531,8 @@ export function AcademicStep({ data, onChange, user }: AcademicStepProps) {
             <div><strong>Programme:</strong> {
               data.undecided_program ? "Undecided" : "Selected"
             }</div>
-            <div><strong>Expected Graduation:</strong> {data.expected_graduation_year}</div>
+            <div><strong>Expected Graduation:</strong> {data.expected_graduation_year} ({data.graduation_month === 6 ? 'June' : `Month ${data.graduation_month}`})</div>
+            <div><strong>Study Start:</strong> {data.study_start_month === 9 ? 'September' : `Month ${data.study_start_month}`} {data.study_start_year ? `(${data.study_start_year})` : ''}</div>
             {currentYearStatus && <div><strong>Current Status:</strong> {currentYearStatus}</div>}
           </div>
         </div>

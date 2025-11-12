@@ -118,11 +118,28 @@ function IntroClientContent() {
     const hasDegreeLevel = data.degree_level
     const hasProgram = data.program_id || data.undecided_program
     const hasGraduationYear = data.expected_graduation_year
+    const hasStudyStartMonth = data.study_start_month !== null && data.study_start_month !== undefined
+    const hasGraduationMonth = data.graduation_month !== null && data.graduation_month !== undefined
     
-    setIsValid(hasUniversity && hasDegreeLevel && hasProgram && hasGraduationYear)
+    setIsValid(hasUniversity && hasDegreeLevel && hasProgram && hasGraduationYear && hasStudyStartMonth && hasGraduationMonth)
   }
 
   const handleNext = async () => {
+    // Validate required fields before proceeding
+    if (!isValid) {
+      // Check which fields are missing
+      const missing = []
+      if (!academicData.institution_slug && !academicData.institution_other) missing.push('University')
+      if (!academicData.degree_level) missing.push('Degree Level')
+      if (!academicData.program_id && !academicData.undecided_program) missing.push('Programme')
+      if (!academicData.expected_graduation_year) missing.push('Expected Graduation Year')
+      if (!academicData.study_start_month) missing.push('Study Start Month')
+      if (!academicData.graduation_month) missing.push('Graduation Month')
+      
+      alert(`Please complete all required fields: ${missing.join(', ')}`)
+      return
+    }
+    
     if (isValid && !isSaving) {
       setIsSaving(true)
       
@@ -145,7 +162,8 @@ function IntroClientContent() {
         })
 
         if (!response.ok) {
-          throw new Error('Failed to save data')
+          const errorData = await response.json()
+          throw new Error(errorData.error || 'Failed to save data')
         }
 
         // Navigate based on mode
@@ -158,8 +176,8 @@ function IntroClientContent() {
         }
       } catch (error) {
         console.error('Failed to save academic data:', error)
-        // Still navigate even if save fails to not block user progress
-        router.push('/onboarding/location-commute')
+        alert(error instanceof Error ? error.message : 'Failed to save data. Please try again.')
+        // Don't navigate if save fails - keep user on page to fix issues
       } finally {
         setIsSaving(false)
       }

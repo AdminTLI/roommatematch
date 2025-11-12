@@ -27,6 +27,8 @@ import {
   SURVEY_TYPE_CONFIG,
   RISK_LEVEL_CONFIG
 } from './types'
+import { checkProgrammeCoverage, getCoverageMetrics, storeCoverageMetrics } from './coverage-monitor'
+import { checkAndAlertStudyMonthCompleteness } from '@/lib/monitoring/alerts'
 
 const supabase = createClient()
 
@@ -446,6 +448,94 @@ export async function createAnalyticsReport(reportData: CreateReportData): Promi
   }
 }
 
+// Coverage metrics functions
+export async function getCoverageMetricsForDashboard(
+  universityId?: string,
+  periodDays: number = 30
+): Promise<{
+  coveragePercentage: number
+  completeInstitutions: number
+  incompleteInstitutions: number
+  missingInstitutions: number
+  totalInstitutions: number
+  institutions: Array<{
+    id: string
+    name: string
+    status: 'complete' | 'incomplete' | 'missing'
+    missingLevels: string[]
+    programmeCount: number
+  }>
+}> {
+  try {
+    const coverageReport = await checkProgrammeCoverage()
+    const coverageMetrics = await getCoverageMetrics(universityId, periodDays)
+
+    // Calculate coverage percentage from latest metric
+    const latestMetric = coverageMetrics.find(m => m.metric_name === 'programme_coverage_percentage')
+    const coveragePercentage = latestMetric?.metric_value || 0
+
+    return {
+      coveragePercentage,
+      completeInstitutions: coverageReport.completeInstitutions,
+      incompleteInstitutions: coverageReport.incompleteInstitutions,
+      missingInstitutions: coverageReport.missingInstitutions,
+      totalInstitutions: coverageReport.totalInstitutions,
+      institutions: coverageReport.institutions.map(inst => ({
+        id: inst.id,
+        name: inst.label,
+        status: inst.status,
+        missingLevels: inst.missingLevels,
+        programmeCount: inst.totalProgrammes
+      }))
+    }
+  } catch (error) {
+    console.error('Error fetching coverage metrics:', error)
+    return {
+      coveragePercentage: 0,
+      completeInstitutions: 0,
+      incompleteInstitutions: 0,
+      missingInstitutions: 0,
+      totalInstitutions: 0,
+      institutions: []
+    }
+  }
+}
+
+// Study month completeness metrics
+export async function getStudyMonthCompletenessMetrics(): Promise<{
+  totalUsers: number
+  usersWithMissingMonths: number
+  percentage: number
+  shouldAlert: boolean
+}> {
+  try {
+    const alert = await checkAndAlertStudyMonthCompleteness(10)
+    if (!alert) {
+      return {
+        totalUsers: 0,
+        usersWithMissingMonths: 0,
+        percentage: 0,
+        shouldAlert: false
+      }
+    }
+
+    return {
+      totalUsers: alert.totalUsers,
+      usersWithMissingMonths: alert.usersWithMissingMonths,
+      percentage: alert.percentage,
+      shouldAlert: alert.shouldAlert
+    }
+  } catch (error) {
+    console.error('Error fetching study month completeness metrics:', error)
+    return {
+      totalUsers: 0,
+      usersWithMissingMonths: 0,
+      percentage: 0,
+      shouldAlert: false
+    }
+  }
+}
+
 // Dashboard data aggregation functions
 export async function getDashboardData(
   universityId?: string,
@@ -455,11 +545,13 @@ export async function getDashboardData(
     // This would typically call an RPC function that aggregates all the data
     // For now, we'll fetch individual pieces and combine them
     
-    const [metrics, anomalies, surveys, hotspots] = await Promise.all([
+    const [metrics, anomalies, surveys, hotspots, coverage, studyMonths] = await Promise.all([
       getAnalyticsMetrics(universityId, undefined, periodDays),
       getAnalyticsAnomalies(universityId, undefined, 'detected'),
       getSatisfactionSurveys(universityId),
-      getConflictHotspots(universityId, undefined, periodDays)
+      getConflictHotspots(universityId, undefined, periodDays),
+      getCoverageMetricsForDashboard(universityId, periodDays),
+      getStudyMonthCompletenessMetrics()
     ])
 
     const dashboardData: DashboardData = {
@@ -468,6 +560,40 @@ export async function getDashboardData(
       alerts: anomalies.slice(0, 10),
       trends: await generateTrendData(metrics),
       summary: await generateDashboardSummary(metrics, surveys, hotspots)
+    }
+
+    // Add coverage and study month alerts to alerts array
+    if (coverage.coveragePercentage < 90) {
+      dashboardData.alerts.push({
+        id: 'coverage-alert',
+        type: 'data_quality',
+        severity: coverage.coveragePercentage < 70 ? 'high' : 'medium',
+        title: 'Programme Coverage Below Threshold',
+        message: `${coverage.incompleteInstitutions} institutions have incomplete programme coverage (${coverage.coveragePercentage.toFixed(1)}%)`,
+        detected_at: new Date().toISOString(),
+        status: 'detected',
+        metadata: {
+          coveragePercentage: coverage.coveragePercentage,
+          incompleteInstitutions: coverage.incompleteInstitutions
+        }
+      } as any)
+    }
+
+    if (studyMonths.shouldAlert) {
+      dashboardData.alerts.push({
+        id: 'study-months-alert',
+        type: 'data_quality',
+        severity: studyMonths.percentage > 50 ? 'high' : 'medium',
+        title: 'Study Month Data Completeness Alert',
+        message: `${studyMonths.percentage.toFixed(1)}% of users (${studyMonths.usersWithMissingMonths}/${studyMonths.totalUsers}) have missing study month data`,
+        detected_at: new Date().toISOString(),
+        status: 'detected',
+        metadata: {
+          percentage: studyMonths.percentage,
+          usersWithMissingMonths: studyMonths.usersWithMissingMonths,
+          totalUsers: studyMonths.totalUsers
+        }
+      } as any)
     }
 
     return dashboardData

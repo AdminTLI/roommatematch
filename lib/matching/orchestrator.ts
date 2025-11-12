@@ -7,10 +7,11 @@ import type { MatchSuggestion } from './types'
 import { toStudent, mapAnswersToVector } from './answer-map'
 import { checkDealBreakers, getReadableReasons } from './dealbreakers'
 import { solvePairs, solveGroups } from './optimize'
-import { MatchingEngine, DEFAULT_WEIGHTS } from './scoring'
+import { MatchingEngine, DEFAULT_WEIGHTS, type MatchingWeights } from './scoring'
 import itemBank from '@/data/item-bank.v1.json'
 import matchModeConfig from '@/config/match-mode.json'
 import { safeLogger } from '@/lib/utils/logger'
+import { getActiveExperiments, assignUserToExperiment, getUserVariant, trackMatchQualityMetrics } from './experiments'
 
 export interface MatchingResult {
   runId: string
@@ -78,6 +79,54 @@ export async function runMatching({
       })
     })
     
+    // Get active experiments for A/B testing
+    const universityId = cohort.universityId || students[0]?.meta?.universityId
+    const activeExperiments = universityId ? await getActiveExperiments(students[0]?.id || '', universityId) : []
+    
+    // Assign users to experiment variants and get variant configurations
+    const userVariantMap: Record<string, { experimentId: string; variantName: string; weights: MatchingWeights }> = {}
+    
+    if (activeExperiments.length > 0) {
+      for (const experiment of activeExperiments) {
+        for (const student of students) {
+          try {
+            let variantName = await getUserVariant(student.id, experiment.id)
+            
+            if (!variantName) {
+              variantName = await assignUserToExperiment(student.id, experiment.id, experiment)
+            }
+            
+            if (variantName) {
+              const variant = experiment.variants.find(v => v.name === variantName)
+              if (variant && variant.configuration?.weights) {
+                userVariantMap[student.id] = {
+                  experimentId: experiment.id,
+                  variantName,
+                  weights: { ...DEFAULT_WEIGHTS, ...variant.configuration.weights }
+                }
+              }
+            }
+          } catch (error) {
+            safeLogger.error('Failed to assign user to experiment', { error, userId: student.id, experimentId: experiment.id })
+          }
+        }
+      }
+    }
+    
+    // Helper function to get weights for a user pair
+    const getWeightsForPair = (userIdA: string, userIdB: string): MatchingWeights => {
+      // If both users are in the same experiment variant, use variant weights
+      // Otherwise, use default weights
+      const variantA = userVariantMap[userIdA]
+      const variantB = userVariantMap[userIdB]
+      
+      if (variantA && variantB && variantA.experimentId === variantB.experimentId && variantA.variantName === variantB.variantName) {
+        return variantA.weights
+      }
+      
+      return DEFAULT_WEIGHTS
+    }
+    
     // 2) Apply deal-breaker filtering
     safeLogger.debug(`[Matching] Applying deal-breaker filtering`)
     const validPairs: { a: number; b: number; score: number }[] = []
@@ -91,8 +140,11 @@ export async function runMatching({
         const dealBreakerResult = checkDealBreakers(studentA, studentB)
         
         if (dealBreakerResult.canMatch) {
+          // Get weights for this pair (considering experiments)
+          const weights = getWeightsForPair(studentA.id, studentB.id)
+          
           // Calculate compatibility score
-          const engine = new MatchingEngine(DEFAULT_WEIGHTS)
+          const engine = new MatchingEngine(weights)
           const profileA = toEngineProfile(studentA)
           const profileB = toEngineProfile(studentB)
           
@@ -155,8 +207,11 @@ export async function runMatching({
         const studentA = students.find(s => s.id === pair.aId)!
         const studentB = students.find(s => s.id === pair.bId)!
         
+        // Get weights for this pair (considering experiments)
+        const weights = getWeightsForPair(studentA.id, studentB.id)
+        
         // Get detailed scoring
-        const engine = new MatchingEngine(DEFAULT_WEIGHTS)
+        const engine = new MatchingEngine(weights)
         const profileA = toEngineProfile(studentA)
         const profileB = toEngineProfile(studentB)
         
@@ -189,6 +244,28 @@ export async function runMatching({
           locked: false,
           createdAt: now
         })
+        
+        // Track quality metrics for experiments (async, don't block)
+        for (const userId of [pair.aId, pair.bId]) {
+          const variant = userVariantMap[userId]
+          if (variant) {
+            // Track metrics asynchronously (don't await to avoid blocking)
+            trackMatchQualityMetrics(
+              `${pair.aId}-${pair.bId}`, // Use pair ID as match ID
+              userId,
+              variant.experimentId,
+              variant.variantName,
+              {
+                compatibility_score: score,
+                match_quality_score: score,
+                outcome: 'created',
+                outcome_timestamp: now
+              }
+            ).catch(err => {
+              safeLogger.error('Failed to track match quality metrics', { error: err })
+            })
+          }
+        }
       }
     } else if (optimizationResult.groups) {
       safeLogger.debug(`[Matching] Processing ${optimizationResult.groups.length} groups`)

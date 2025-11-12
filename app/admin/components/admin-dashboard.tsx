@@ -34,6 +34,11 @@ interface AnalyticsData {
   activeChats: number
   totalMatches: number
   reportsPending: number
+  coveragePercentage: number
+  completeInstitutions: number
+  incompleteInstitutions: number
+  studyMonthCompleteness: number
+  usersWithMissingMonths: number
   recentActivity: Array<{
     id: string
     type: string
@@ -67,6 +72,11 @@ export function AdminDashboard({ admin }: AdminDashboardProps) {
     activeChats: 89,
     totalMatches: 423,
     reportsPending: 3,
+    coveragePercentage: 95,
+    completeInstitutions: 19,
+    incompleteInstitutions: 1,
+    studyMonthCompleteness: 92,
+    usersWithMissingMonths: 100,
     recentActivity: [
       {
         id: '1',
@@ -107,6 +117,14 @@ export function AdminDashboard({ admin }: AdminDashboardProps) {
 
       if (analyticsError) throw analyticsError
 
+      // Load coverage metrics
+      const coverageResponse = await fetch('/api/admin/coverage')
+      const coverageData = coverageResponse.ok ? await coverageResponse.json() : null
+
+      // Load study month completeness (from API or calculate)
+      const studyMonthsResponse = await fetch('/api/admin/metrics/study-months')
+      const studyMonthsData = studyMonthsResponse.ok ? await studyMonthsResponse.json() : null
+
       // Load reports
       const { data: reportsData, error: reportsError } = await supabase
         .from('reports')
@@ -131,6 +149,12 @@ export function AdminDashboard({ admin }: AdminDashboardProps) {
         activeChats: analyticsData?.[0]?.active_chats || 0,
         totalMatches: analyticsData?.[0]?.total_matches || 0,
         reportsPending: analyticsData?.[0]?.reports_pending || 0,
+        coveragePercentage: coverageData?.data ? 
+          (coverageData.data.completeInstitutions / coverageData.data.totalInstitutions) * 100 : 100,
+        completeInstitutions: coverageData?.data?.completeInstitutions || 0,
+        incompleteInstitutions: coverageData?.data?.incompleteInstitutions || 0,
+        studyMonthCompleteness: studyMonthsData?.data?.percentage || 100,
+        usersWithMissingMonths: studyMonthsData?.data?.usersWithMissingMonths || 0,
         recentActivity: [
           {
             id: '1',
@@ -265,6 +289,70 @@ export function AdminDashboard({ admin }: AdminDashboardProps) {
                 <div className="text-2xl font-bold">{analytics?.totalMatches || 0}</div>
                 <div className="text-sm text-gray-500">Total Matches</div>
               </div>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Data Quality Metrics */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+        <Card className={analytics?.coveragePercentage && analytics.coveragePercentage < 90 ? 'border-red-300' : ''}>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <BarChart3 className="h-5 w-5" />
+              Programme Coverage
+              {analytics?.coveragePercentage && analytics.coveragePercentage < 90 && (
+                <Badge variant="destructive" className="ml-2">Alert</Badge>
+              )}
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-2">
+              <div className="flex items-center justify-between">
+                <span className="text-sm text-gray-600">Coverage Percentage</span>
+                <span className={`text-2xl font-bold ${analytics?.coveragePercentage && analytics.coveragePercentage < 90 ? 'text-red-600' : 'text-green-600'}`}>
+                  {analytics?.coveragePercentage?.toFixed(1) || 0}%
+                </span>
+              </div>
+              <div className="text-sm text-gray-500">
+                <div>Complete: {analytics?.completeInstitutions || 0}</div>
+                <div>Incomplete: {analytics?.incompleteInstitutions || 0}</div>
+              </div>
+              {analytics?.coveragePercentage && analytics.coveragePercentage < 90 && (
+                <p className="text-xs text-red-600 mt-2">
+                  Programme coverage is below 90% threshold. Review incomplete institutions.
+                </p>
+              )}
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card className={analytics?.studyMonthCompleteness && analytics.studyMonthCompleteness < 90 ? 'border-red-300' : ''}>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <AlertTriangle className="h-5 w-5" />
+              Study Month Completeness
+              {analytics?.studyMonthCompleteness && analytics.studyMonthCompleteness < 90 && (
+                <Badge variant="destructive" className="ml-2">Alert</Badge>
+              )}
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-2">
+              <div className="flex items-center justify-between">
+                <span className="text-sm text-gray-600">Completeness</span>
+                <span className={`text-2xl font-bold ${analytics?.studyMonthCompleteness && analytics.studyMonthCompleteness < 90 ? 'text-red-600' : 'text-green-600'}`}>
+                  {(100 - (analytics?.studyMonthCompleteness || 0)).toFixed(1)}%
+                </span>
+              </div>
+              <div className="text-sm text-gray-500">
+                Users with missing months: {analytics?.usersWithMissingMonths || 0}
+              </div>
+              {analytics?.studyMonthCompleteness && analytics.studyMonthCompleteness < 90 && (
+                <p className="text-xs text-red-600 mt-2">
+                  {analytics.usersWithMissingMonths} users have missing study month data. Run backfill script.
+                </p>
+              )}
             </div>
           </CardContent>
         </Card>

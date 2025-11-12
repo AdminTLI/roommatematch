@@ -8,6 +8,22 @@
     {
       "path": "/api/cron/match",
       "schedule": "0 0 * * *"
+    },
+    {
+      "path": "/api/cron/coverage-check",
+      "schedule": "0 2 * * *"
+    },
+    {
+      "path": "/api/cron/metrics",
+      "schedule": "0 3 * * *"
+    },
+    {
+      "path": "/api/cron/anomaly-detection",
+      "schedule": "0 * * * *"
+    },
+    {
+      "path": "/api/cron/email-sequences",
+      "schedule": "0 * * * *"
     }
   ],
   "headers": [
