@@ -55,6 +55,10 @@ CREATE INDEX IF NOT EXISTS idx_user_academic_graduation_year ON user_academic(ex
 -- 4. ENFORCE STUDY MONTHS (050)
 -- ============================================
 
+-- IMPORTANT: Drop the view first to avoid column name conflicts
+-- The existing view may have different columns, so we need to drop it completely
+DROP VIEW IF EXISTS user_study_year_v CASCADE;
+
 -- Add programme_duration_months column to user_academic
 ALTER TABLE user_academic 
 ADD COLUMN IF NOT EXISTS programme_duration_months INTEGER 
@@ -99,8 +103,9 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql IMMUTABLE;
 
--- Update user_study_year_v view to use duration for more accurate calculation
-CREATE OR REPLACE VIEW user_study_year_v AS
+-- Recreate user_study_year_v view with all columns and month-aware calculation
+-- Note: View was already dropped above, so we can safely create it now
+CREATE VIEW user_study_year_v AS
 SELECT 
     ua.user_id,
     ua.university_id,
@@ -137,8 +142,11 @@ SELECT
                 )
             ))
         -- Fallback to old calculation for backward compatibility (when months are NULL)
-        ELSE
+        WHEN ua.study_start_year IS NOT NULL THEN
             GREATEST(1, EXTRACT(YEAR FROM now())::int - ua.study_start_year + 1)
+        -- If no start year, return NULL
+        ELSE
+            NULL
     END AS study_year
 FROM user_academic ua;
 
