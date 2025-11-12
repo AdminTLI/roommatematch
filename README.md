@@ -62,10 +62,12 @@ This is the only whitelisted demo account in the system. All other users must si
 - Admin dashboard for university staff
 
 ### 🔒 **Security & Verification**
-- Optional ID verification (currently disabled for demo)
+- Optional ID verification (KYC providers: Persona, Veriff, Onfido)
 - University email verification
-- GDPR compliant
+- **GDPR & Dutch Law Compliant**: Full implementation with DSAR, consent management, retention policies
 - Row Level Security (RLS) on all data
+- Age verification (17+ requirement)
+- Cookie consent management (Telecommunicatiewet compliant)
 
 ### 💬 **Communication**
 - Built-in messaging system
@@ -263,12 +265,66 @@ NEXTAUTH_SECRET=your_secret_key
 
 ## 🔒 Security & Privacy
 
-- **GDPR Compliant**: Full data protection compliance
-- **Row Level Security**: Database-level security
+### GDPR & Dutch Law Compliance
+
+Domu Match is fully compliant with GDPR (General Data Protection Regulation) and Dutch national laws (AVG, UAVG, Telecommunicatiewet). Our compliance implementation includes:
+
+#### ✅ **Data Subject Rights (GDPR Articles 15-20)**
+- **Right of Access**: Data export API (`/api/privacy/export`) - Download all your data in JSON format
+- **Right to Erasure**: Account deletion API (`/api/privacy/delete`) - 7-day grace period, 4-week verification document retention (Dutch law)
+- **Right to Rectification**: Profile settings for data correction
+- **Right to Data Portability**: Machine-readable JSON export
+- **Right to Restrict Processing**: Available via privacy settings
+- **Right to Object**: Object to automated decision-making (matching algorithm)
+
+#### ✅ **Cookie & Tracking Consent (Telecommunicatiewet)**
+- **Opt-in Consent Banner**: Explicit consent required before loading analytics/tracking
+- **Cookie Preference Center**: Granular control over cookie categories
+- **Consent Logging**: All consent actions logged per Dutch law requirements
+- **Sentry PII**: Only sent with explicit consent (disabled by default)
+- **Analytics**: Vercel Analytics only loads with user consent
+
+#### ✅ **Data Retention Policies**
+- **Verification Documents**: 4 weeks after verification (Dutch law - UAVG)
+- **Chat Messages**: 1 year after last message
+- **Match Suggestions**: 90 days after expiry
+- **Reports**: 1 year after resolution
+- **Application Logs**: 90 days
+- **Automated Cleanup**: Daily cron job enforces retention policies
+
+#### ✅ **Documentation**
+- **DPIA**: Data Protection Impact Assessment (`docs/DPIA.md`)
+- **ROPA**: Record of Processing Activities (`docs/ROPA.md`)
+- **Third-Party Processors**: Complete processor inventory with DPA status (`docs/THIRD_PARTY_PROCESSORS.md`)
+- **UAVG Compliance**: Dutch-specific compliance documentation (`docs/UAVG_COMPLIANCE.md`)
+- **DUO Licensing**: Education data usage compliance (`docs/DUO_LICENSING.md`)
+
+#### ✅ **Age Verification**
+- **Minimum Age**: 17 years (enforced at signup)
+- **Date of Birth**: Required during registration
+- **Database Validation**: Age verification at database level
+
+#### ✅ **DSAR Workflow**
+- **Request Tracking**: Automated DSAR request system with SLA deadlines (30 days)
+- **Admin Dashboard**: DSAR management interface (`/admin/dsar`)
+- **Automated Reminders**: SLA deadline reminders and escalation
+- **Breach Notification**: 72-hour DPA notification system
+
+#### ✅ **Security Measures**
+- **Row Level Security**: Database-level security on all tables
 - **Email Verification**: Mandatory university email verification
-- **ID Verification**: Government ID verification system
+- **ID Verification**: Government ID verification system (KYC providers)
 - **Rate Limiting**: API rate limiting and abuse prevention
 - **Content Moderation**: Automated and manual content filtering
+- **Compensating Controls**: Documented for all security gaps (see `docs/SECURITY_CONTROLS.md`)
+
+### Privacy Features
+
+- **Privacy Settings Page**: User-friendly interface for data management
+- **Cookie Policy**: Detailed cookie policy per Telecommunicatiewet (`/cookies`)
+- **Privacy Policy**: Comprehensive privacy policy in English and Dutch (`/privacy`)
+- **DSAR Automation**: Automated request processing and tracking
+- **Consent Management**: Full consent lifecycle management
 
 ## 🔧 Troubleshooting
 
@@ -322,6 +378,20 @@ This project is licensed under the MIT License - see the [LICENSE](./LICENSE) fi
 - **Documentation**: [docs.domumatch.nl](https://docs.domumatch.nl)
 - **Issues**: [GitHub Issues](https://github.com/YOUR_USERNAME/domu-match/issues)
 - **Email**: support@domumatch.nl
+- **Privacy**: privacy@domumatch.nl
+- **DPO**: dpo@domumatch.nl
+
+## 📋 GDPR Compliance Documentation
+
+For detailed GDPR and Dutch law compliance information, see:
+
+- **DPIA**: [`docs/DPIA.md`](./docs/DPIA.md) - Data Protection Impact Assessment
+- **ROPA**: [`docs/ROPA.md`](./docs/ROPA.md) - Record of Processing Activities
+- **Third-Party Processors**: [`docs/THIRD_PARTY_PROCESSORS.md`](./docs/THIRD_PARTY_PROCESSORS.md)
+- **DPA References**: [`docs/DPA_REFERENCES.md`](./docs/DPA_REFERENCES.md)
+- **UAVG Compliance**: [`docs/UAVG_COMPLIANCE.md`](./docs/UAVG_COMPLIANCE.md)
+- **DUO Licensing**: [`docs/DUO_LICENSING.md`](./docs/DUO_LICENSING.md)
+- **Security Controls**: [`docs/SECURITY_CONTROLS.md`](./docs/SECURITY_CONTROLS.md)
 
 ---
 

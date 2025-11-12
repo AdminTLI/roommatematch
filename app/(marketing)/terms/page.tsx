@@ -36,7 +36,7 @@ const content = {
           "Providing accurate and complete information during registration",
           "Maintaining the security and confidentiality of your password",
           "Accepting responsibility for all activities that occur under your account",
-          "Being at least 18 years old or having parental consent",
+          "Being at least 17 years old or having parental consent",
           "Completing identity verification as required",
           "Keeping your profile information up to date",
           "Complying with all applicable laws and regulations"

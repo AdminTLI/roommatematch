@@ -8,17 +8,20 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
-import { Loader2, Mail, Lock, Eye, EyeOff, CheckCircle } from 'lucide-react'
+import { Loader2, Mail, Lock, Eye, EyeOff, CheckCircle, Calendar } from 'lucide-react'
+import { validateDateOfBirth, getAgeVerificationError } from '@/lib/auth/age-verification'
 
 export function SignUpForm() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
+  const [dateOfBirth, setDateOfBirth] = useState('')
   const [showPassword, setShowPassword] = useState(false)
   const [showConfirmPassword, setShowConfirmPassword] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState('')
   const [success, setSuccess] = useState('')
+  const [ageError, setAgeError] = useState('')
 
   const router = useRouter()
   const supabase = createClient()
@@ -45,6 +48,21 @@ export function SignUpForm() {
     setIsLoading(true)
     setError('')
     setSuccess('')
+    setAgeError('')
+
+    // Validate age
+    if (!dateOfBirth) {
+      setAgeError('Date of birth is required')
+      setIsLoading(false)
+      return
+    }
+
+    const ageValidation = validateDateOfBirth(dateOfBirth)
+    if (!ageValidation.valid) {
+      setAgeError(ageValidation.error || getAgeVerificationError(ageValidation.age))
+      setIsLoading(false)
+      return
+    }
 
     if (password !== confirmPassword) {
       setError('Passwords do not match')
@@ -59,21 +77,27 @@ export function SignUpForm() {
     }
 
     try {
-      const { error } = await supabase.auth.signUp({
+      const { data: authData, error: authError } = await supabase.auth.signUp({
         email,
         password,
         options: {
-          emailRedirectTo: `${window.location.origin}/auth/callback`
+          emailRedirectTo: `${window.location.origin}/auth/callback`,
+          data: {
+            date_of_birth: dateOfBirth
+          }
         }
       })
 
-      if (error) {
-        setError(error.message)
-      } else {
+      if (authError) {
+        setError(authError.message)
+      } else if (authData.user) {
+        // Store date of birth in profile when user is created
+        // This will be done via profile creation trigger or onboarding flow
         setSuccess('Check your email for a confirmation link!')
         setEmail('')
         setPassword('')
         setConfirmPassword('')
+        setDateOfBirth('')
       }
     } catch (err) {
       setError('An unexpected error occurred')
@@ -199,12 +223,46 @@ export function SignUpForm() {
                 <p className="text-xs text-red-600">Passwords do not match</p>
               )}
             </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="dateOfBirth">Date of Birth</Label>
+              <div className="relative">
+                <Calendar className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+                <Input
+                  id="dateOfBirth"
+                  type="date"
+                  placeholder="YYYY-MM-DD"
+                  value={dateOfBirth}
+                  onChange={(e) => {
+                    setDateOfBirth(e.target.value)
+                    setAgeError('')
+                    // Validate on change
+                    if (e.target.value) {
+                      const validation = validateDateOfBirth(e.target.value)
+                      if (!validation.valid) {
+                        setAgeError(validation.error || getAgeVerificationError(validation.age))
+                      }
+                    }
+                  }}
+                  className="pl-10"
+                  required
+                  max={new Date(new Date().setFullYear(new Date().getFullYear() - 17)).toISOString().split('T')[0]}
+                  aria-describedby={ageError ? 'age-error' : undefined}
+                />
+              </div>
+              {ageError && (
+                <p id="age-error" className="text-xs text-red-600">{ageError}</p>
+              )}
+              <p className="text-xs text-gray-500">
+                You must be at least 17 years old to use this platform
+              </p>
+            </div>
           </div>
 
           <Button 
             type="submit" 
             className="w-full" 
-            disabled={isLoading || !email || !passwordValidation.isValid || password !== confirmPassword}
+            disabled={isLoading || !email || !passwordValidation.isValid || password !== confirmPassword || !dateOfBirth || !!ageError}
           >
             {isLoading ? (
               <>

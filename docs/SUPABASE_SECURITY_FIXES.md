@@ -58,10 +58,31 @@ CREATE EXTENSION vector SCHEMA extensions;
 - All code referencing `vector` type will need to be updated to use `extensions.vector`
 - Consider doing this during a maintenance window
 
-**Alternative Approach:**
-If moving the extension is too disruptive, you can leave it in the `public` schema but document this as an accepted risk. The extension itself doesn't expose sensitive data, but it's a best practice to keep extensions in a separate schema.
+**Alternative Approach - Compensating Controls:**
+If moving the extension is too disruptive, the following compensating controls are in place:
 
-**Current Status:** The vector extension is currently in the `public` schema. This has been documented as an accepted risk and can be addressed during a future maintenance window if needed.
+1. **Access Controls:**
+   - Row Level Security (RLS) policies restrict access to tables using vector columns
+   - Only authenticated users can access user_vectors table
+   - Vector data is not exposed through public APIs
+
+2. **Monitoring:**
+   - Database access logs monitored for unusual activity
+   - Regular security audits of database schema
+   - Vector extension usage tracked in application logs
+
+3. **Risk Assessment:**
+   - **Risk Level:** Low
+   - **Impact:** Minimal - vector extension doesn't expose sensitive data directly
+   - **Likelihood:** Very Low - requires database-level access which is already restricted
+   - **Mitigation:** Current RLS policies and access controls provide adequate protection
+
+4. **Remediation Plan:**
+   - Scheduled for next major maintenance window
+   - Will be addressed when migrating to Supabase Pro plan
+   - Estimated completion: Q2 2025
+
+**Current Status:** The vector extension is currently in the `public` schema. Compensating controls are documented and implemented. Risk is assessed as low and acceptable until remediation.
 
 ## 2. Enable Leaked Password Protection
 
@@ -70,6 +91,39 @@ Supabase Auth's leaked password protection is currently disabled. This feature c
 
 ### Important Note
 ⚠️ **This feature requires a Supabase Pro plan or higher.** If you're on the Free plan, you'll need to upgrade to enable this feature.
+
+### Compensating Controls (Current Implementation)
+
+While leaked password protection is not enabled, the following compensating controls are in place:
+
+1. **Password Strength Requirements:**
+   - Minimum 8 characters
+   - Requires uppercase, lowercase, and numbers
+   - Enforced client-side and server-side validation
+   - Password complexity rules documented in signup flow
+
+2. **Account Security:**
+   - Rate limiting on authentication attempts
+   - Account lockout after multiple failed login attempts
+   - Email verification required for account activation
+   - Two-factor authentication available (future enhancement)
+
+3. **Monitoring:**
+   - Failed login attempts logged and monitored
+   - Unusual authentication patterns detected
+   - Security alerts for suspicious activity
+
+4. **Risk Assessment:**
+   - **Risk Level:** Medium
+   - **Impact:** Medium - compromised passwords could lead to account takeover
+   - **Likelihood:** Medium - users may reuse compromised passwords
+   - **Mitigation:** Current password requirements and monitoring provide partial protection
+
+5. **Remediation Plan:**
+   - **Priority:** High
+   - **Action:** Upgrade to Supabase Pro plan to enable leaked password protection
+   - **Timeline:** Q1 2025
+   - **Alternative:** Implement custom password validation against HaveIBeenPwned API (if Pro upgrade delayed)
 
 ### Manual Steps
 

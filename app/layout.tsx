@@ -1,10 +1,10 @@
 import type { Metadata } from 'next'
 import { Inter } from 'next/font/google'
-import { Analytics } from '@vercel/analytics/react'
-import { SpeedInsights } from '@vercel/speed-insights/next'
 import { Toaster } from 'sonner'
 import { ErrorBoundaryWrapper } from '@/components/ErrorBoundaryWrapper'
 import { Providers } from '@/app/providers'
+import { ConditionalAnalytics } from '@/components/privacy/conditional-analytics'
+import { CookieConsentBanner } from '@/components/privacy/cookie-consent-banner'
 import './globals.css'
 
 const inter = Inter({ subsets: ['latin'] })
@@ -41,8 +41,8 @@ export default function RootLayout({
           </Providers>
         </ErrorBoundaryWrapper>
         <Toaster position="top-right" richColors />
-        <Analytics />
-        <SpeedInsights />
+        <ConditionalAnalytics />
+        <CookieConsentBanner />
       </body>
     </html>
   )

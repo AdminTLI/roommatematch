@@ -90,7 +90,7 @@ const content = {
           },
           {
             title: "With Service Providers",
-            description: "We may share information with third-party service providers who assist in platform operations, such as cloud hosting, email services, and analytics."
+            description: "We may share information with third-party service providers who assist in platform operations. All processors have signed Data Processing Agreements (DPAs) and comply with GDPR requirements. See our Third-Party Processors section below for details."
           },
           {
             title: "For Legal Compliance",
@@ -116,34 +116,39 @@ const content = {
         note: "While we strive to protect your information, no method of transmission over the Internet or electronic storage is 100% secure. We cannot guarantee absolute security."
       },
       yourRights: {
-        title: "5. Your Rights and Choices",
+        title: "5. Your Rights and Choices (GDPR Articles 15-20)",
         description: "You have the following rights regarding your personal information:",
         rights: [
           {
-            title: "Access",
-            description: "You have the right to access and review your personal information."
+            title: "Right of Access (Article 15)",
+            description: "You have the right to access and review your personal information. Request a data export through Privacy Settings → Download Your Data, or contact privacy@domumatch.nl. We will provide your data within 30 days."
           },
           {
-            title: "Correction",
+            title: "Right to Rectification (Article 16)",
             description: "You can update or correct your profile information at any time through your account settings."
           },
           {
-            title: "Deletion",
-            description: "You can request deletion of your account and associated data, subject to legal retention requirements."
+            title: "Right to Erasure (Article 17)",
+            description: "You can request deletion of your account and associated data through Privacy Settings → Delete Account. Your account will be deleted after a 7-day grace period, subject to legal retention requirements (e.g., verification documents: 4 weeks per Dutch law)."
           },
           {
-            title: "Data Portability",
-            description: "You can request a copy of your data in a structured, machine-readable format."
+            title: "Right to Data Portability (Article 20)",
+            description: "You can request a copy of your data in JSON format through Privacy Settings → Download Your Data. Data is provided in a structured, machine-readable format."
           },
           {
-            title: "Opt-Out",
-            description: "You can opt out of certain communications and marketing emails through your account settings."
+            title: "Right to Restrict Processing (Article 18)",
+            description: "You can request restriction of processing by contacting privacy@domumatch.nl. We will restrict processing while your request is being reviewed."
           },
           {
-            title: "Objection",
-            description: "You can object to certain processing activities, such as automated decision-making."
+            title: "Right to Object (Article 21)",
+            description: "You can object to certain processing activities, such as automated decision-making (matching algorithm). Contact privacy@domumatch.nl to exercise this right."
+          },
+          {
+            title: "Right to Withdraw Consent (Article 7)",
+            description: "You can withdraw consent for non-essential cookies and tracking at any time through the Cookie Preference Center (accessible from the cookie banner or settings)."
           }
-        ]
+        ],
+        dsarInstructions: "To exercise your rights, you can: (1) Use the Privacy Settings page in your account, (2) Email privacy@domumatch.nl with your request, or (3) Contact our Data Protection Officer at dpo@domumatch.nl. All requests are processed within 30 days as required by GDPR."
       },
       cookies: {
         title: "6. Cookies and Tracking Technologies",
@@ -187,29 +192,70 @@ const content = {
       },
       dataRetention: {
         title: "8. Data Retention",
-        description: "We retain your personal information for as long as necessary to fulfill the purposes outlined in this Privacy Policy:",
+        description: "We retain your personal information for as long as necessary to fulfill the purposes outlined in this Privacy Policy, in compliance with GDPR and Dutch law:",
         periods: [
-          "Account data: Retained while your account is active and for a reasonable period after account deletion",
-          "Verification documents: Retained as required by law and platform safety requirements",
-          "Communication data: Retained for the duration necessary to provide support and resolve disputes",
-          "Usage data: Retained in aggregated and anonymized form for analytics purposes"
+          "Account data: Retained while your account is active, anonymized after 2 years of inactivity",
+          "Verification documents: Retained for 4 weeks after verification (Dutch law requirement - UAVG), then deleted",
+          "Chat messages: Retained for 1 year after last message in chat, then deleted",
+          "Match suggestions: Retained for 90 days after expiry, then deleted",
+          "Reports: Retained for 1 year after resolution, then deleted",
+          "Application logs: Retained for 90 days, then deleted",
+          "Analytics data: Retained in anonymized form for up to 2 years"
         ],
-        deletion: "You can request deletion of your account and data at any time. We will delete your information within 30 days of your request, subject to legal retention requirements."
+        deletion: "You can request deletion of your account and data at any time through your Privacy Settings or by contacting privacy@domumatch.nl. We will process your request within 30 days (GDPR requirement), subject to legal retention requirements (e.g., verification documents: 4 weeks per Dutch law)."
       },
       children: {
         title: "9. Children's Privacy",
-        description: "Our platform is intended for students aged 18 and older. We do not knowingly collect personal information from children under 18. If you believe we have collected information from a child under 18, please contact us immediately."
+        description: "Our platform is intended for students aged 17 and older. We do not knowingly collect personal information from children under 17. If you believe we have collected information from a child under 17, please contact us immediately."
       },
       changes: {
         title: "10. Changes to This Privacy Policy",
         description: "We may update this Privacy Policy from time to time. We will notify you of any material changes by posting the new Privacy Policy on this page and updating the 'Last updated' date. We encourage you to review this Privacy Policy periodically."
       },
+      thirdPartyProcessors: {
+        title: "11. Third-Party Processors",
+        description: "We use the following third-party service providers to operate our platform. All processors have signed Data Processing Agreements (DPAs) and comply with GDPR requirements:",
+        processors: [
+          {
+            name: "Supabase",
+            purpose: "Database, authentication, hosting, storage",
+            location: "EU (primary), US (backup)",
+            dpa: "Standard Contractual Clauses (SCCs)"
+          },
+          {
+            name: "Sentry",
+            purpose: "Error tracking, session replay (with your consent)",
+            location: "US, EU",
+            dpa: "Standard Contractual Clauses (SCCs)"
+          },
+          {
+            name: "Vercel",
+            purpose: "Hosting, analytics (with your consent)",
+            location: "US, EU",
+            dpa: "Standard Contractual Clauses (SCCs)"
+          },
+          {
+            name: "Persona/Veriff/Onfido",
+            purpose: "Identity verification (KYC)",
+            location: "US, EU",
+            dpa: "Signed DPAs"
+          },
+          {
+            name: "Email Providers",
+            purpose: "Transactional emails, notifications",
+            location: "US, EU",
+            dpa: "Standard Contractual Clauses (SCCs)"
+          }
+        ],
+        note: "For detailed information about our processors, DPAs, and transfer mechanisms, see our Third-Party Processors documentation. You can request information about processors by contacting privacy@domumatch.nl."
+      },
       contact: {
-        title: "11. Contact Us",
+        title: "12. Contact Us",
         description: "If you have any questions, concerns, or requests regarding this Privacy Policy or our data practices, please contact us:",
-        email: "Email: privacy@domumatch.com",
-        address: "Address: [Your Business Address]",
-        dpo: "Data Protection Officer: dpo@domumatch.com"
+        email: "Email: privacy@domumatch.nl",
+        dpo: "Data Protection Officer: dpo@domumatch.nl",
+        dsar: "DSAR Requests: Use Privacy Settings in your account or email privacy@domumatch.nl",
+        note: "For Data Subject Access Requests (DSAR), you can also use the Privacy Settings page in your account to request data export or account deletion."
       }
     }
   },
@@ -322,34 +368,39 @@ const content = {
         note: "Hoewel we ernaar streven uw informatie te beschermen, is geen enkele methode van overdracht via internet of elektronische opslag 100% veilig. We kunnen absolute veiligheid niet garanderen."
       },
       yourRights: {
-        title: "5. Uw rechten en keuzes",
+        title: "5. Uw rechten en keuzes (AVG Artikelen 15-20)",
         description: "U heeft de volgende rechten met betrekking tot uw persoonlijke informatie:",
         rights: [
           {
-            title: "Toegang",
-            description: "U heeft het recht om toegang te krijgen tot en uw persoonlijke informatie te bekijken."
+            title: "Recht van toegang (Artikel 15)",
+            description: "U heeft het recht om toegang te krijgen tot en uw persoonlijke informatie te bekijken. Vraag een gegevensexport aan via Privacy Instellingen → Uw gegevens downloaden, of neem contact op met privacy@domumatch.nl. We zullen uw gegevens binnen 30 dagen verstrekken."
           },
           {
-            title: "Correctie",
+            title: "Recht op rectificatie (Artikel 16)",
             description: "U kunt uw profielinformatie op elk moment bijwerken of corrigeren via uw accountinstellingen."
           },
           {
-            title: "Verwijdering",
-            description: "U kunt verwijdering van uw account en bijbehorende gegevens aanvragen, onder voorbehoud van wettelijke bewaarvereisten."
+            title: "Recht op gegevenswissing (Artikel 17)",
+            description: "U kunt verwijdering van uw account en bijbehorende gegevens aanvragen via Privacy Instellingen → Account verwijderen. Uw account wordt verwijderd na een respijtperiode van 7 dagen, onder voorbehoud van wettelijke bewaarvereisten (bijv. verificatiedocumenten: 4 weken volgens Nederlandse wet)."
           },
           {
-            title: "Gegevensportabiliteit",
-            description: "U kunt een kopie van uw gegevens aanvragen in een gestructureerd, machineleesbaar formaat."
+            title: "Recht op gegevensportabiliteit (Artikel 20)",
+            description: "U kunt een kopie van uw gegevens aanvragen in JSON-formaat via Privacy Instellingen → Uw gegevens downloaden. Gegevens worden verstrekt in een gestructureerd, machineleesbaar formaat."
           },
           {
-            title: "Afmelden",
-            description: "U kunt zich afmelden voor bepaalde communicatie en marketing-e-mails via uw accountinstellingen."
+            title: "Recht op beperking van verwerking (Artikel 18)",
+            description: "U kunt beperking van verwerking aanvragen door contact op te nemen met privacy@domumatch.nl. We zullen de verwerking beperken terwijl uw verzoek wordt beoordeeld."
           },
           {
-            title: "Bezwaar",
-            description: "U kunt bezwaar maken tegen bepaalde verwerkingsactiviteiten, zoals geautomatiseerde besluitvorming."
+            title: "Recht van bezwaar (Artikel 21)",
+            description: "U kunt bezwaar maken tegen bepaalde verwerkingsactiviteiten, zoals geautomatiseerde besluitvorming (matchingalgoritme). Neem contact op met privacy@domumatch.nl om dit recht uit te oefenen."
+          },
+          {
+            title: "Recht om toestemming in te trekken (Artikel 7)",
+            description: "U kunt toestemming voor niet-essentiële cookies en tracking op elk moment intrekken via het Cookie Voorkeurencentrum (toegankelijk via de cookiebanner of instellingen)."
           }
-        ]
+        ],
+        dsarInstructions: "Om uw rechten uit te oefenen, kunt u: (1) De pagina Privacy Instellingen in uw account gebruiken, (2) E-mailen naar privacy@domumatch.nl met uw verzoek, of (3) Contact opnemen met onze Functionaris voor gegevensbescherming op dpo@domumatch.nl. Alle verzoeken worden binnen 30 dagen verwerkt zoals vereist door de AVG."
       },
       cookies: {
         title: "6. Cookies en trackingtechnologieën",
@@ -393,29 +444,96 @@ const content = {
       },
       dataRetention: {
         title: "8. Gegevensbewaring",
-        description: "We bewaren uw persoonlijke informatie zolang als nodig is om de doeleinden uiteengezet in dit Privacybeleid te vervullen:",
+        description: "We bewaren uw persoonlijke informatie zolang als nodig is om de doeleinden uiteengezet in dit Privacybeleid te vervullen, in overeenstemming met de AVG en Nederlandse wet:",
         periods: [
-          "Accountgegevens: Bewaard zolang uw account actief is en voor een redelijke periode na accountverwijdering",
-          "Verificatiedocumenten: Bewaard zoals vereist door de wet en platforms veiligheidsvereisten",
-          "Communicatiegegevens: Bewaard voor de duur die nodig is om ondersteuning te bieden en geschillen op te lossen",
-          "Gebruiksgegevens: Bewaard in geaggregeerde en geanonimiseerde vorm voor analytische doeleinden"
+          "Accountgegevens: Bewaard zolang uw account actief is, geanonimiseerd na 2 jaar inactiviteit",
+          "Verificatiedocumenten: Bewaard voor 4 weken na verificatie (Nederlandse wet vereiste - UAVG), daarna verwijderd",
+          "Chatberichten: Bewaard voor 1 jaar na laatste bericht in chat, daarna verwijderd",
+          "Match suggesties: Bewaard voor 90 dagen na vervaldatum, daarna verwijderd",
+          "Rapporten: Bewaard voor 1 jaar na afhandeling, daarna verwijderd",
+          "Applicatielogs: Bewaard voor 90 dagen, daarna verwijderd",
+          "Analytische gegevens: Bewaard in geanonimiseerde vorm tot 2 jaar"
         ],
-        deletion: "U kunt op elk moment verwijdering van uw account en gegevens aanvragen. We zullen uw informatie binnen 30 dagen na uw verzoek verwijderen, onder voorbehoud van wettelijke bewaarvereisten."
+        deletion: "U kunt op elk moment verwijdering van uw account en gegevens aanvragen via uw Privacy Instellingen of door contact op te nemen met privacy@domumatch.nl. We zullen uw verzoek binnen 30 dagen verwerken (AVG vereiste), onder voorbehoud van wettelijke bewaarvereisten (bijv. verificatiedocumenten: 4 weken volgens Nederlandse wet)."
       },
       children: {
         title: "9. Privacy van kinderen",
-        description: "Ons platform is bedoeld voor studenten van 18 jaar en ouder. We verzamelen niet opzettelijk persoonlijke informatie van kinderen onder de 18. Als u denkt dat we informatie hebben verzameld van een kind onder de 18, neem dan onmiddellijk contact met ons op."
+        description: "Ons platform is bedoeld voor studenten van 17 jaar en ouder. We verzamelen niet opzettelijk persoonlijke informatie van kinderen onder de 17. Als u denkt dat we informatie hebben verzameld van een kind onder de 17, neem dan onmiddellijk contact met ons op."
       },
       changes: {
         title: "10. Wijzigingen in dit Privacybeleid",
         description: "We kunnen dit Privacybeleid van tijd tot tijd bijwerken. We zullen u op de hoogte stellen van belangrijke wijzigingen door het nieuwe Privacybeleid op deze pagina te plaatsen en de datum 'Laatst bijgewerkt' bij te werken. We moedigen u aan dit Privacybeleid periodiek te bekijken."
       },
+      informationSharing: {
+        title: "3. Informatiedeling en openbaarmaking",
+        description: "We verkopen uw persoonlijke informatie niet. We kunnen uw informatie delen in de volgende omstandigheden:",
+        sharing: [
+          {
+            title: "Met uw universiteit",
+            description: "We kunnen informatie delen met uw universiteitshuisvestingsafdeling voor verificatiedoeleinden en om ondersteuningsdiensten te verlenen."
+          },
+          {
+            title: "Met potentiële matches",
+            description: "We delen uw profielinformatie (exclusief gevoelige gegevens zoals ID-documenten) met compatibele studenten om huisgenootmatching te vergemakkelijken."
+          },
+          {
+            title: "Met dienstverleners",
+            description: "We kunnen informatie delen met externe dienstverleners die helpen bij platformoperaties. Alle verwerkers hebben ondertekende gegevensverwerkingsovereenkomsten (DPA's) en voldoen aan AVG-vereisten. Zie onze sectie Verwerkers van derden hieronder voor details."
+          },
+          {
+            title: "Voor wettelijke naleving",
+            description: "We kunnen informatie openbaar maken wanneer dit wordt vereist door de wet, gerechtelijk bevel of overheidsautoriteit, of om onze rechten en veiligheid te beschermen."
+          },
+          {
+            title: "Met uw toestemming",
+            description: "We kunnen informatie delen met uw uitdrukkelijke toestemming of op uw aanwijzing."
+          }
+        ]
+      },
+      thirdPartyProcessors: {
+        title: "11. Verwerkers van derden",
+        description: "We gebruiken de volgende externe dienstverleners om ons platform te exploiteren. Alle verwerkers hebben ondertekende gegevensverwerkingsovereenkomsten (DPA's) en voldoen aan AVG-vereisten:",
+        processors: [
+          {
+            name: "Supabase",
+            purpose: "Database, authenticatie, hosting, opslag",
+            location: "EU (primair), VS (backup)",
+            dpa: "Standaard contractuele bepalingen (SCC's)"
+          },
+          {
+            name: "Sentry",
+            purpose: "Foutopsporing, sessieherhaling (met uw toestemming)",
+            location: "VS, EU",
+            dpa: "Standaard contractuele bepalingen (SCC's)"
+          },
+          {
+            name: "Vercel",
+            purpose: "Hosting, analyses (met uw toestemming)",
+            location: "VS, EU",
+            dpa: "Standaard contractuele bepalingen (SCC's)"
+          },
+          {
+            name: "Persona/Veriff/Onfido",
+            purpose: "Identiteitsverificatie (KYC)",
+            location: "VS, EU",
+            dpa: "Ondertekende DPA's"
+          },
+          {
+            name: "E-mailproviders",
+            purpose: "Transactionele e-mails, meldingen",
+            location: "VS, EU",
+            dpa: "Standaard contractuele bepalingen (SCC's)"
+          }
+        ],
+        note: "Voor gedetailleerde informatie over onze verwerkers, DPA's en overdrachtsmechanismen, zie onze documentatie over verwerkers van derden. U kunt informatie over verwerkers aanvragen door contact op te nemen met privacy@domumatch.nl."
+      },
       contact: {
-        title: "11. Neem contact met ons op",
+        title: "12. Neem contact met ons op",
         description: "Als u vragen, zorgen of verzoeken heeft met betrekking tot dit Privacybeleid of onze gegevenspraktijken, neem dan contact met ons op:",
-        email: "E-mail: privacy@domumatch.com",
-        address: "Adres: [Uw bedrijfsadres]",
-        dpo: "Functionaris voor gegevensbescherming: dpo@domumatch.com"
+        email: "E-mail: privacy@domumatch.nl",
+        dpo: "Functionaris voor gegevensbescherming: dpo@domumatch.nl",
+        dsar: "DSAR Verzoeken: Gebruik Privacy Instellingen in uw account of e-mail privacy@domumatch.nl",
+        note: "Voor verzoeken tot toegang tot persoonsgegevens (DSAR) kunt u ook de pagina Privacy Instellingen in uw account gebruiken om gegevensexport of accountverwijdering aan te vragen."
       }
     }
   }
@@ -543,6 +661,13 @@ export default function PrivacyPage() {
                     </div>
                   ))}
                 </div>
+                {t.sections.yourRights.dsarInstructions && (
+                  <div className="mt-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                    <p className="text-sm text-blue-900">
+                      <strong>How to Exercise Your Rights:</strong> {t.sections.yourRights.dsarInstructions}
+                    </p>
+                  </div>
+                )}
               </section>
 
               {/* Cookies */}
@@ -601,13 +726,36 @@ export default function PrivacyPage() {
                 <p className="text-brand-muted">{t.sections.changes.description}</p>
               </section>
 
+              {/* Third-Party Processors */}
+              {t.sections.thirdPartyProcessors && (
+                <section className="mb-12">
+                  <h2 className="text-2xl font-semibold text-brand-text mt-8 mb-4">{t.sections.thirdPartyProcessors.title}</h2>
+                  <p className="text-brand-muted mb-6">{t.sections.thirdPartyProcessors.description}</p>
+                  <div className="space-y-4">
+                    {t.sections.thirdPartyProcessors.processors.map((processor: any, index: number) => (
+                      <div key={index} className="border-l-4 border-brand-600 pl-4 py-2">
+                        <h3 className="font-semibold text-brand-text mb-1">{processor.name}</h3>
+                        <p className="text-sm text-brand-muted mb-1">{processor.purpose}</p>
+                        <p className="text-xs text-brand-muted">
+                          <strong>Location:</strong> {processor.location} | <strong>DPA:</strong> {processor.dpa}
+                        </p>
+                      </div>
+                    ))}
+                  </div>
+                  {t.sections.thirdPartyProcessors.note && (
+                    <p className="text-brand-muted mt-4 text-sm italic">{t.sections.thirdPartyProcessors.note}</p>
+                  )}
+                </section>
+              )}
+
               {/* Contact */}
               <section className="mb-12">
                 <h2 className="text-2xl font-semibold text-brand-text mt-8 mb-4">{t.sections.contact.title}</h2>
                 <p className="text-brand-muted mb-4">{t.sections.contact.description}</p>
                 <p className="text-brand-muted mb-2">{t.sections.contact.email}</p>
-                <p className="text-brand-muted mb-2">{t.sections.contact.address}</p>
-                <p className="text-brand-muted">{t.sections.contact.dpo}</p>
+                {t.sections.contact.dpo && <p className="text-brand-muted mb-2">{t.sections.contact.dpo}</p>}
+                {t.sections.contact.dsar && <p className="text-brand-muted mb-2">{t.sections.contact.dsar}</p>}
+                {t.sections.contact.note && <p className="text-brand-muted text-sm italic mt-4">{t.sections.contact.note}</p>}
               </section>
             </div>
           </Container>
