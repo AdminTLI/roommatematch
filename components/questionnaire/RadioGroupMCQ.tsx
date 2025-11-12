@@ -17,13 +17,13 @@ interface Props {
 export function RadioGroupMCQ({ id, label, helperText, options, value, onChange }: Props) {
   return (
     <div>
-      {helperText && <p className="text-sm text-gray-600 mb-3">{helperText}</p>}
+      {helperText && <p className="text-base sm:text-sm text-gray-600 mb-3 sm:mb-2">{helperText}</p>}
       <RadioGroup value={value} onValueChange={onChange} aria-labelledby={`${id}-legend`}>
-        <div className="grid gap-2">
+        <div className="grid gap-3 sm:gap-2">
           {options.map((opt) => (
-            <div key={opt.value} className="flex items-center gap-3">
-              <RadioGroupItem id={`${id}-${opt.value}`} value={opt.value} />
-              <Label htmlFor={`${id}-${opt.value}`}>{opt.label}</Label>
+            <div key={opt.value} className="flex items-center gap-3 sm:gap-2">
+              <RadioGroupItem id={`${id}-${opt.value}`} value={opt.value} className="mt-0.5" />
+              <Label htmlFor={`${id}-${opt.value}`} className="text-base sm:text-sm break-words cursor-pointer">{opt.label}</Label>
             </div>
           ))}
         </div>

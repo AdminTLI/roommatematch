@@ -20,11 +20,11 @@ const times = Array.from({ length: 24 * 2 }, (_, i) => {
 export function TimeRange({ id, label, start, end, onChange }: Props) {
   return (
     <div>
-      <div className="grid grid-cols-2 gap-3">
+      <div className="grid grid-cols-2 gap-3 sm:gap-2">
         <div>
-          <Label htmlFor={`${id}-start`}>Start</Label>
+          <Label htmlFor={`${id}-start`} className="text-base sm:text-sm mb-2 sm:mb-1 block">Start</Label>
           <Select value={start || ''} onValueChange={(v) => onChange(v, end || '')}>
-            <SelectTrigger id={`${id}-start`}>
+            <SelectTrigger id={`${id}-start`} className="h-12 sm:h-11 text-base sm:text-sm">
               <SelectValue placeholder="HH:mm" />
             </SelectTrigger>
             <SelectContent>
@@ -37,9 +37,9 @@ export function TimeRange({ id, label, start, end, onChange }: Props) {
           </Select>
         </div>
         <div>
-          <Label htmlFor={`${id}-end`}>End</Label>
+          <Label htmlFor={`${id}-end`} className="text-base sm:text-sm mb-2 sm:mb-1 block">End</Label>
           <Select value={end || ''} onValueChange={(v) => onChange(start || '', v)}>
-            <SelectTrigger id={`${id}-end`}>
+            <SelectTrigger id={`${id}-end`} className="h-12 sm:h-11 text-base sm:text-sm">
               <SelectValue placeholder="HH:mm" />
             </SelectTrigger>
             <SelectContent>
@@ -52,7 +52,7 @@ export function TimeRange({ id, label, start, end, onChange }: Props) {
           </Select>
         </div>
       </div>
-      <p className="text-xs text-gray-500 mt-2">End should be after start.</p>
+      <p className="text-xs sm:text-xs text-gray-500 mt-3 sm:mt-2">End should be after start.</p>
     </div>
   )
 }

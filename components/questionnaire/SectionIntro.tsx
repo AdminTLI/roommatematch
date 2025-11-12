@@ -10,11 +10,11 @@ interface Props {
 
 export function SectionIntro({ icon, title, purpose }: Props) {
   return (
-    <div className="flex items-start gap-3">
-      {icon && <div className="mt-1 text-indigo-600">{icon}</div>}
-      <div>
-        <h2 className="text-xl font-semibold">{title}</h2>
-        <p className="text-gray-600">{purpose}</p>
+    <div className="flex items-start gap-3 sm:gap-2">
+      {icon && <div className="mt-1 text-indigo-600 flex-shrink-0">{icon}</div>}
+      <div className="min-w-0 flex-1">
+        <h2 className="text-xl sm:text-lg font-semibold break-words">{title}</h2>
+        <p className="text-base sm:text-sm text-gray-600 mt-1 break-words">{purpose}</p>
       </div>
     </div>
   )

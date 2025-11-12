@@ -26,6 +26,7 @@ export function NumberInput({ id, label, value, min, max, step = 1, onChange }: 
           max={max}
           step={step}
           onChange={(e) => onChange(e.target.value === '' ? undefined : Number(e.target.value))}
+          className="h-12 sm:h-11 text-base sm:text-sm px-4 sm:px-3"
         />
       </div>
     </div>
