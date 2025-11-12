@@ -5,6 +5,7 @@ import { checkAndAlertStudyMonthCompleteness } from '@/lib/monitoring/alerts'
 import { calculateSupplyDemandMetrics, storeSupplyDemandMetrics, calculateCohortRetentionMetrics, storeCohortRetentionMetrics } from '@/lib/analytics/supply-demand'
 import { detectAllAnomalies } from '@/lib/analytics/anomaly-detection'
 import { processOnboardingEmailSequence, getUsersNeedingEmailReminders, sendVerificationReminderEmail } from '@/lib/email/onboarding-sequences'
+import { sendSLAReminders, processPendingDSARRequests } from '@/lib/privacy/dsar-automation'
 import { createClient } from '@supabase/supabase-js'
 import { safeLogger } from '@/lib/utils/logger'
 
@@ -39,7 +40,8 @@ export async function GET(request: Request) {
       coverage: { success: false, error: null as string | null },
       metrics: { success: false, error: null as string | null },
       anomalies: { success: false, error: null as string | null },
-      emails: { success: false, error: null as string | null }
+      emails: { success: false, error: null as string | null },
+      dsar: { success: false, error: null as string | null }
     }
 
     // 1. Coverage Check
@@ -255,6 +257,39 @@ export async function GET(request: Request) {
       safeLogger.error('[Cron] Email sequence processing failed', { error })
     }
 
+    // 5. DSAR Automation (SLA reminders and processing)
+    try {
+      safeLogger.info('[Cron] Starting DSAR automation')
+      
+      // Send SLA reminders and escalate overdue requests
+      const reminderResults = await sendSLAReminders()
+      safeLogger.info('[Cron] SLA reminders processed', {
+        approaching: reminderResults.approaching,
+        overdue: reminderResults.overdue,
+        errors: reminderResults.errors
+      })
+
+      // Process pending DSAR requests
+      const processingResults = await processPendingDSARRequests()
+      safeLogger.info('[Cron] Pending DSAR requests processed', {
+        processed: processingResults.processed,
+        errors: processingResults.errors
+      })
+
+      results.dsar.success = true
+      safeLogger.info('[Cron] DSAR automation complete', {
+        reminders: {
+          approaching: reminderResults.approaching,
+          overdue: reminderResults.overdue
+        },
+        processed: processingResults.processed,
+        totalErrors: reminderResults.errors + processingResults.errors
+      })
+    } catch (error) {
+      results.dsar.error = error instanceof Error ? error.message : 'Unknown error'
+      safeLogger.error('[Cron] DSAR automation failed', { error })
+    }
+
     const successCount = Object.values(results).filter(r => r.success).length
     const failureCount = Object.values(results).filter(r => !r.success).length
 
@@ -271,7 +306,8 @@ export async function GET(request: Request) {
         coverage: results.coverage.success ? 'success' : `error: ${results.coverage.error}`,
         metrics: results.metrics.success ? 'success' : `error: ${results.metrics.error}`,
         anomalies: results.anomalies.success ? 'success' : `error: ${results.anomalies.error}`,
-        emails: results.emails.success ? 'success' : `error: ${results.emails.error}`
+        emails: results.emails.success ? 'success' : `error: ${results.emails.error}`,
+        dsar: results.dsar.success ? 'success' : `error: ${results.dsar.error}`
       },
       timestamp: new Date().toISOString()
     })
