@@ -11,7 +11,10 @@ import { useApp } from '@/app/providers'
 
 const content = {
   en: {
-    title: "From strangers to roommates",
+    title: "From",
+    titleStrangers: "strangers",
+    titleTo: "to",
+    titleRoommates: "roommates",
     subtitle: "Domu Match pairs you with compatible students based on lifestyle, study habits, and personality. Our science-backed algorithm analyzes 40+ factors to prevent conflicts before they start—so moving in feels easy.",
     getMatched: "Get matched",
     seeHowItWorks: "See how it works",
@@ -21,7 +24,10 @@ const content = {
     transparent: "Transparent compatibility"
   },
   nl: {
-    title: "Van vreemden tot huisgenoten",
+    title: "Van",
+    titleStrangers: "vreemden",
+    titleTo: "tot",
+    titleRoommates: "huisgenoten",
     subtitle: "Domu Match koppelt je aan compatibele studenten op basis van levensstijl, studiegewoonten en persoonlijkheid. Ons wetenschappelijk onderbouwde algoritme analyseert 40+ factoren om conflicten te voorkomen voordat ze beginnen—zodat verhuizen gemakkelijk aanvoelt.",
     getMatched: "Krijg matches",
     seeHowItWorks: "Bekijk hoe het werkt",
@@ -101,7 +107,7 @@ export function Hero() {
             
             {/* Main Heading */}
             <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold leading-tight tracking-tight text-brand-text">
-              {t.title}
+              {t.title} <span className="text-brand-primary">{t.titleStrangers}</span> {t.titleTo} <span className="text-brand-primary">{t.titleRoommates}</span>
             </h1>
             
             {/* Subtitle */}
