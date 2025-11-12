@@ -83,31 +83,38 @@ export function Hero() {
   ]
 
   return (
-    <Section className="relative overflow-hidden">
-      {/* Vibrant background accents */}
+    <Section className="relative overflow-hidden bg-gradient-to-b from-white via-blue-50/20 to-white">
+      {/* Subtle background accents */}
       <div aria-hidden className="pointer-events-none absolute inset-0 -z-10">
-        <div className="absolute -top-32 -left-40 h-[420px] w-[420px] rounded-full bg-gradient-to-br from-brand-600/25 via-accent-600/25 to-mint-600/25 blur-3xl" />
-        <div className="absolute -bottom-40 -right-32 h-[520px] w-[520px] rounded-full bg-gradient-to-tr from-accent-200/30 via-brand-600/20 to-mint-200/30 blur-3xl" />
+        <div className="absolute top-0 left-0 h-96 w-96 rounded-full bg-gradient-to-br from-brand-primary/10 via-accent/10 to-brand-primary/5 blur-3xl opacity-50" />
+        <div className="absolute bottom-0 right-0 h-96 w-96 rounded-full bg-gradient-to-tr from-accent/10 via-brand-primary/10 to-accent/5 blur-3xl opacity-50" />
       </div>
       <Container>
-        <div className="grid items-center gap-8 md:grid-cols-2">
+        <div className="grid items-center gap-12 lg:gap-16 md:grid-cols-2">
           {/* Left column - Content */}
-          <div className="relative z-10 space-y-6">
-            <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl leading-tight tracking-tight text-brand-text">
+          <div className="relative z-10 space-y-8">
+            {/* Badge */}
+            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-brand-primary/10 border border-brand-primary/20 text-sm font-medium text-brand-primary">
+              <span className="text-xs">✨</span>
+              {locale === 'nl' ? 'Aangedreven door AI' : 'Powered by AI'}
+            </div>
+            
+            {/* Main Heading */}
+            <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold leading-tight tracking-tight text-brand-text">
               {t.title}
             </h1>
-            <p className="text-base md:text-lg leading-relaxed max-w-prose text-brand-muted">
+            
+            {/* Subtitle */}
+            <p className="text-lg md:text-xl lg:text-2xl leading-relaxed text-brand-muted max-w-2xl">
               {t.subtitle}
             </p>
             
             {/* CTA Buttons */}
-            <div className="flex flex-col sm:flex-row flex-wrap items-center gap-3">
+            <div className="flex flex-col sm:flex-row gap-4 pt-2">
               <Button
                 size="lg"
                 onClick={handleGetMatched}
-                className={cn(
-                  'w-full sm:w-auto bg-gradient-to-r from-brand-600 via-accent-600 to-mint-600 text-white shadow-lg shadow-brand-600/20 hover:shadow-brand-600/30 transition-shadow'
-                )}
+                className="w-full sm:w-auto bg-brand-primary hover:bg-brand-primaryHover text-white shadow-lg shadow-brand-primary/20 hover:shadow-brand-primary/30 transition-all duration-200 px-8 py-6 text-base font-semibold"
               >
                 {t.getMatched}
               </Button>
@@ -115,67 +122,71 @@ export function Hero() {
                 variant="outline"
                 size="lg"
                 onClick={handleSeeHowItWorks}
-                className="w-full sm:w-auto border-brand-600/30 hover:border-brand-600"
+                className="w-full sm:w-auto border-2 border-brand-border hover:border-brand-primary text-brand-text hover:bg-brand-primary/5 transition-all duration-200 px-8 py-6 text-base font-semibold"
               >
                 {t.seeHowItWorks}
               </Button>
             </div>
 
             {/* Trust indicators */}
-            <ul className="flex flex-wrap gap-4 text-sm text-brand-muted">
-              <li className="flex items-center gap-2">
-                <Check className="h-4 w-4 text-green-500" />
-                {t.verified}
-              </li>
-              <li className="flex items-center gap-2">
-                <Check className="h-4 w-4 text-green-500" />
-                {t.free}
-              </li>
-              <li className="flex items-center gap-2">
-                <Check className="h-4 w-4 text-green-500" />
-                {t.scienceBacked}
-              </li>
-              <li className="flex items-center gap-2">
-                <Check className="h-4 w-4 text-green-500" />
-                {t.transparent}
-              </li>
-            </ul>
+            <div className="flex flex-wrap gap-6 pt-4">
+              <div className="flex items-center gap-2 text-sm font-medium text-brand-muted">
+                <Check className="h-5 w-5 text-emerald-500 flex-shrink-0" />
+                <span>{t.verified}</span>
+              </div>
+              <div className="flex items-center gap-2 text-sm font-medium text-brand-muted">
+                <Check className="h-5 w-5 text-emerald-500 flex-shrink-0" />
+                <span>{t.free}</span>
+              </div>
+              <div className="flex items-center gap-2 text-sm font-medium text-brand-muted">
+                <Check className="h-5 w-5 text-emerald-500 flex-shrink-0" />
+                <span>{t.scienceBacked}</span>
+              </div>
+              <div className="flex items-center gap-2 text-sm font-medium text-brand-muted">
+                <Check className="h-5 w-5 text-emerald-500 flex-shrink-0" />
+                <span>{t.transparent}</span>
+              </div>
+            </div>
           </div>
 
-          {/* Right column - Visual */}
-          <div className="relative z-10 grid gap-4 md:gap-6">
+          {/* Right column - Match Cards */}
+          <div className="relative z-10 grid gap-6 lg:gap-8">
             {mockMatches.map((match, index) => (
               <Card 
                 key={match.name}
-                className="rounded-2xl border border-brand-border/50 bg-white/80 backdrop-blur-sm shadow-elev-1 p-4 sm:p-6 md:p-8 transition-transform duration-200 hover:-translate-y-0.5 hover:shadow-elev-2"
-                style={{
-                  transform: `translateY(${index * 4}px) rotate(${index % 2 === 0 ? '1deg' : '-1deg'})`,
-                }}
+                className="rounded-2xl border-2 border-brand-border/50 bg-white shadow-elev-2 p-6 lg:p-8 transition-all duration-300 hover:shadow-elev-2 hover:-translate-y-1 hover:border-brand-primary/30"
               >
-                <div className="flex items-start justify-between mb-4">
-                  <span className="inline-flex items-center rounded-full bg-emerald-50 text-emerald-700 px-3 py-1 text-sm font-semibold">
+                <div className="flex items-start justify-between mb-6">
+                  <span className="inline-flex items-center rounded-full bg-emerald-50 border border-emerald-200 text-emerald-700 px-4 py-1.5 text-base font-bold">
                     {match.match}%
                   </span>
-                  <div className="h-12 w-12 bg-brand-primary/10 rounded-full flex items-center justify-center">
-                    <span className="text-lg font-semibold text-brand-primary">
+                  <div className="h-14 w-14 bg-gradient-to-br from-brand-primary/20 to-accent/20 rounded-full flex items-center justify-center border-2 border-brand-primary/20">
+                    <span className="text-xl font-bold text-brand-primary">
                       {match.avatar}
                     </span>
                   </div>
                 </div>
                 
-                <div className="space-y-2">
-                  <h3 className="text-2xl font-semibold text-brand-text">
+                <div className="space-y-3">
+                  <h3 className="text-2xl lg:text-3xl font-bold text-brand-text">
                     {match.name}
                   </h3>
-                  <div className="text-brand-muted">
-                    <div>{match.program}</div>
+                  <div className="space-y-1 text-base text-brand-muted">
+                    <div className="font-medium">{match.program}</div>
                     <div>{match.university}</div>
                   </div>
-                  <ul className="text-sm text-brand-muted list-disc pl-5 space-y-1">
-                    {match.traits.map((trait, traitIndex) => (
-                      <li key={traitIndex}>{trait}</li>
-                    ))}
-                  </ul>
+                  <div className="pt-2">
+                    <div className="flex flex-wrap gap-2">
+                      {match.traits.map((trait, traitIndex) => (
+                        <span 
+                          key={traitIndex}
+                          className="inline-flex items-center px-3 py-1.5 rounded-full bg-brand-primary/5 border border-brand-primary/10 text-sm font-medium text-brand-text"
+                        >
+                          {trait}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
                 </div>
               </Card>
             ))}

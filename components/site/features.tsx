@@ -9,10 +9,7 @@ import {
   MessageSquare, 
   ShieldCheck, 
   Building2, 
-  Home,
-  Sparkles,
-  Users,
-  Zap
+  Home
 } from 'lucide-react'
 import { motion } from 'framer-motion'
 
@@ -104,60 +101,19 @@ export function Features() {
   }
 
   return (
-    <Section className="relative overflow-hidden">
-      {/* Background gradient blobs */}
-      <div className="absolute inset-0 overflow-hidden">
-        <motion.div
-          className="absolute -top-40 -right-40 w-80 h-80 bg-gradient-to-br from-blue-400/20 via-purple-400/20 to-pink-400/20 rounded-full blur-3xl"
-          animate={{
-            x: [0, 30, 0],
-            y: [0, -20, 0],
-            scale: [1, 1.1, 1],
-          }}
-          transition={{
-            duration: 8,
-            repeat: Infinity,
-            ease: "easeInOut"
-          }}
-        />
-        <motion.div
-          className="absolute -bottom-40 -left-40 w-80 h-80 bg-gradient-to-tr from-emerald-400/20 via-teal-400/20 to-cyan-400/20 rounded-full blur-3xl"
-          animate={{
-            x: [0, -30, 0],
-            y: [0, 20, 0],
-            scale: [1, 1.1, 1],
-          }}
-          transition={{
-            duration: 10,
-            repeat: Infinity,
-            ease: "easeInOut"
-          }}
-        />
-      </div>
-
-      <Container className="relative z-10">
+    <Section className="relative overflow-hidden bg-white">
+      <Container>
         <motion.div 
-          className="text-center mb-16"
+          className="text-center mb-12"
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8 }}
-          viewport={{ once: true }}
+          viewport={{ once: true, margin: "-50px" }}
         >
-          <motion.div
-            className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-gradient-to-r from-blue-50 to-purple-50 border border-blue-200/50 text-sm font-medium text-blue-700 mb-6"
-            initial={{ scale: 0.9, opacity: 0 }}
-            whileInView={{ scale: 1, opacity: 1 }}
-            transition={{ duration: 0.6, delay: 0.2 }}
-            viewport={{ once: true }}
-          >
-            <Sparkles className="h-4 w-4" />
-            Powered by AI
-          </motion.div>
-          
-          <h2 className="text-4xl md:text-5xl lg:text-6xl font-bold text-brand-text mb-10 bg-gradient-to-r from-gray-900 via-gray-800 to-gray-900 bg-clip-text text-transparent">
-            Everything you need to go from strangers to roommates
+          <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-brand-text mb-6 leading-tight pt-4">
+            Everything you need to go from <span className="text-brand-primary">strangers</span> to <span className="text-brand-primary">roommates</span>
           </h2>
-          <p className="text-lg md:text-xl leading-relaxed max-w-3xl mx-auto text-brand-muted">
+          <p className="text-base md:text-lg lg:text-xl leading-relaxed max-w-3xl mx-auto text-brand-muted">
             Our comprehensive platform makes finding the right roommate simple and stress-free
           </p>
         </motion.div>
@@ -182,76 +138,30 @@ export function Features() {
                   whileHover={{ scale: 1.02 }}
                   transition={{ duration: 0.2 }}
                 >
-                  <Card className="h-full rounded-3xl border-0 bg-white/90 backdrop-blur-xl shadow-xl hover:shadow-2xl transition-all duration-500 overflow-hidden relative">
-                    {/* Gradient overlay */}
-                    <div className={`absolute inset-0 bg-gradient-to-br ${feature.gradient} opacity-0 group-hover:opacity-100 transition-opacity duration-500`} />
-                    
-                    {/* Animated background pattern */}
-                    <div className="absolute inset-0 opacity-5 group-hover:opacity-10 transition-opacity duration-500">
-                      <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(0,0,0,0.1),transparent_50%)]" />
-                    </div>
-
-                    <CardContent className="p-6 md:p-8 h-full flex flex-col relative z-10 min-h-[320px]">
-                      <motion.div 
-                        className="flex items-center mb-6"
-                        whileHover={{ scale: 1.1 }}
-                        transition={{ duration: 0.2 }}
-                      >
-                        <div className={`h-14 w-14 bg-gradient-to-br ${feature.iconGradient} rounded-2xl flex items-center justify-center shadow-lg group-hover:shadow-xl transition-shadow duration-300`}>
-                          <Icon className="h-7 w-7 text-white" />
+                    <Card className="h-full rounded-2xl border border-brand-border/50 bg-white/80 backdrop-blur-sm shadow-elev-1 hover:shadow-elev-2 transition-all duration-200 overflow-hidden">
+                      <CardContent className="p-6 md:p-8 h-full flex flex-col min-h-[280px]">
+                        <div className="flex items-center mb-6">
+                          <div className={`h-14 w-14 bg-gradient-to-br ${feature.iconGradient} rounded-xl flex items-center justify-center shadow-md group-hover:shadow-lg transition-shadow duration-200`}>
+                            <Icon className="h-7 w-7 text-white" />
+                          </div>
                         </div>
                         
-                        {/* Floating sparkles */}
-                        <motion.div
-                          className="absolute -top-1 -right-1"
-                          animate={{
-                            rotate: [0, 360],
-                            scale: [1, 1.2, 1],
-                          }}
-                          transition={{
-                            duration: 3,
-                            repeat: Infinity,
-                            ease: "easeInOut"
-                          }}
-                        >
-                          <Sparkles className="h-4 w-4 text-yellow-400" />
-                        </motion.div>
-                      </motion.div>
-                      
-                      <div className="flex-1 flex flex-col">
-                        <h3 className="text-xl md:text-2xl font-bold text-brand-text mb-4 group-hover:text-gray-900 transition-colors duration-300">
-                          {feature.title}
-                        </h3>
-                        <p className="text-brand-muted leading-relaxed group-hover:text-gray-700 transition-colors duration-300 flex-1">
-                          {feature.description}
-                        </p>
-                      </div>
-                    </CardContent>
-                  </Card>
+                        <div className="flex-1 flex flex-col">
+                          <h3 className="text-xl md:text-2xl font-bold text-brand-text mb-4">
+                            {feature.title}
+                          </h3>
+                          <p className="text-base text-brand-muted leading-relaxed flex-1">
+                            {feature.description}
+                          </p>
+                        </div>
+                      </CardContent>
+                    </Card>
                 </motion.div>
               </motion.div>
             )
           })}
         </motion.div>
 
-        {/* Bottom CTA section */}
-        <motion.div 
-          className="text-center mt-16"
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8, delay: 0.4 }}
-          viewport={{ once: true }}
-        >
-          <motion.div
-            className="inline-flex items-center gap-3 px-6 py-3 rounded-full bg-gradient-to-r from-blue-600 to-purple-600 text-white font-semibold shadow-lg hover:shadow-xl transition-shadow duration-300 cursor-pointer"
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
-          >
-            <Users className="h-5 w-5" />
-            Get started today and find your perfect match
-            <Zap className="h-4 w-4" />
-          </motion.div>
-        </motion.div>
       </Container>
     </Section>
   )

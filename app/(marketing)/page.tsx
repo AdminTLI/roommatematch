@@ -15,7 +15,7 @@ export default function MarketingPage() {
   const { locale } = useApp()
   
   return (
-    <main id="main-content" className="min-h-screen bg-gradient-to-b from-blue-50/30 via-white to-blue-50/20">
+    <main id="main-content" className="min-h-screen bg-white">
       <Navbar />
       <Hero />
       <SocialProof locale={locale} />
