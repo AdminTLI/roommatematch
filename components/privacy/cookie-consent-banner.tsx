@@ -9,6 +9,7 @@ import {
   shouldShowConsentBanner, 
   saveClientConsents, 
   getClientConsents,
+  getOrCreateAnonymousSessionId,
   type ConsentType 
 } from '@/lib/privacy/cookie-consent-client'
 import { CookiePreferenceCenter } from './cookie-preference-center'
@@ -60,14 +61,16 @@ export function CookieConsentBanner({ locale = 'en' }: CookieConsentBannerProps)
       marketing: true
     })
 
-    // Save to server if user is authenticated
+    // Save to server (for both authenticated and anonymous users)
     try {
+      const sessionId = getOrCreateAnonymousSessionId()
       const response = await fetch('/api/privacy/consent', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           consents: ['analytics', 'error_tracking', 'session_replay', 'marketing'],
-          action: 'grant'
+          action: 'grant',
+          sessionId: sessionId || undefined
         })
       })
       
@@ -92,14 +95,16 @@ export function CookieConsentBanner({ locale = 'en' }: CookieConsentBannerProps)
       marketing: false
     })
 
-    // Save to server if user is authenticated
+    // Save to server (for both authenticated and anonymous users)
     try {
+      const sessionId = getOrCreateAnonymousSessionId()
       const response = await fetch('/api/privacy/consent', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           consents: ['analytics', 'error_tracking', 'session_replay', 'marketing'],
-          action: 'withdraw'
+          action: 'withdraw',
+          sessionId: sessionId || undefined
         })
       })
       

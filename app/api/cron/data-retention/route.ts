@@ -177,9 +177,13 @@ export async function GET(request: Request) {
             const fourWeeksAgo = new Date()
             fourWeeksAgo.setDate(fourWeeksAgo.getDate() - 28) // 4 weeks
 
+            let verificationFilesDeleted = false
+            let verificationFilesRetained = false
+
             if (latestVerificationDate && latestVerificationDate > fourWeeksAgo) {
               // Verification documents must be retained for 4 weeks
               // Skip deletion and log retention requirement
+              verificationFilesRetained = true
               safeLogger.info('[Cron] Preserving verification documents per Dutch law', {
                 userId: targetUserId,
                 requestId: request.id,
@@ -196,9 +200,68 @@ export async function GET(request: Request) {
                 .eq('id', request.id)
               
               continue // Skip this deletion for now
+            } else if (latestVerificationDate) {
+              // Verification retention period has passed, delete files from storage
+              try {
+                // List all files in the user's verification folder
+                const { data: files, error: listError } = await supabase.storage
+                  .from('verification-documents')
+                  .list(`${targetUserId}`, {
+                    limit: 1000,
+                    sortBy: { column: 'created_at', order: 'desc' }
+                  })
+
+                if (!listError && files && files.length > 0) {
+                  // Delete all verification files
+                  const filePaths = files.map(file => `${targetUserId}/${file.name}`)
+                  const { error: deleteStorageError } = await supabase.storage
+                    .from('verification-documents')
+                    .remove(filePaths)
+
+                  if (deleteStorageError) {
+                    safeLogger.warn('[Cron] Failed to delete some verification files from storage', {
+                      error: deleteStorageError,
+                      userId: targetUserId,
+                      requestId: request.id
+                    })
+                  } else {
+                    verificationFilesDeleted = true
+                    safeLogger.info('[Cron] Deleted verification files from storage', {
+                      userId: targetUserId,
+                      fileCount: files.length,
+                      requestId: request.id
+                    })
+                  }
+                }
+              } catch (storageError) {
+                safeLogger.error('[Cron] Error deleting verification files from storage', {
+                  error: storageError,
+                  userId: targetUserId,
+                  requestId: request.id
+                })
+                // Continue with deletion even if storage cleanup fails
+              }
             }
 
-            // 2. Delete user data (cascade will handle most tables)
+            // 2. Delete verification records from database (after files are deleted or if no files)
+            if (!verificationFilesRetained) {
+              const { error: deleteVerificationsError } = await supabase
+                .from('verifications')
+                .delete()
+                .eq('user_id', targetUserId)
+
+              if (deleteVerificationsError) {
+                safeLogger.warn('[Cron] Failed to delete verification records', {
+                  error: deleteVerificationsError,
+                  userId: targetUserId,
+                  requestId: request.id
+                })
+                // Continue with deletion even if verification records deletion fails
+              }
+            }
+
+            // 3. Delete user data (cascade will handle most tables)
+            // This will cascade delete: profiles, responses, matches, chats, messages, etc.
             const { error: deleteError } = await supabase
               .from('users')
               .delete()
@@ -208,7 +271,7 @@ export async function GET(request: Request) {
               throw new Error(`Failed to delete user: ${deleteError.message}`)
             }
 
-            // 3. Delete auth user
+            // 4. Delete auth user (this must be done with admin client)
             const { error: authDeleteError } = await adminClient.auth.admin.deleteUser(targetUserId)
 
             if (authDeleteError) {
@@ -217,16 +280,22 @@ export async function GET(request: Request) {
                 userId: targetUserId,
                 requestId: request.id
               })
-              // Continue even if auth deletion fails, as the user record is already deleted
+              throw new Error(`Failed to delete auth user: ${authDeleteError.message}`)
             }
 
-            // 4. Update DSAR request
+            // 5. Update DSAR request with completion
+            const adminNotes = verificationFilesRetained
+              ? 'Account permanently deleted by automated cron job. Verification documents retained per Dutch law (4 weeks).'
+              : verificationFilesDeleted
+              ? 'Account permanently deleted by automated cron job. Verification files and records deleted after 4-week retention period.'
+              : 'Account permanently deleted by automated cron job.'
+
             await supabase
               .from('dsar_requests')
               .update({
                 status: 'completed',
                 deletion_completed_at: new Date().toISOString(),
-                admin_notes: 'Account permanently deleted by automated cron job. Verification documents retained per Dutch law (4 weeks) if applicable.'
+                admin_notes: adminNotes
               })
               .eq('id', request.id)
 

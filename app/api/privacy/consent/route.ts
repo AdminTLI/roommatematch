@@ -14,7 +14,7 @@ export async function POST(req: NextRequest) {
     const { data: { user } } = await supabase.auth.getUser()
 
     const body = await req.json()
-    const { consents, action } = body
+    const { consents, action, sessionId } = body
 
     if (!Array.isArray(consents) || !['grant', 'withdraw'].includes(action)) {
       return NextResponse.json(
@@ -23,10 +23,19 @@ export async function POST(req: NextRequest) {
       )
     }
 
+    // For anonymous users, sessionId is required
+    if (!user && !sessionId) {
+      return NextResponse.json(
+        { error: 'Session ID required for anonymous users' },
+        { status: 400 }
+      )
+    }
+
     const metadata = {
       ip_address: req.headers.get('x-forwarded-for') || req.headers.get('x-real-ip') || undefined,
       user_agent: req.headers.get('user-agent') || undefined,
-      consent_method: 'preference_center'
+      consent_method: 'preference_center',
+      sessionId: sessionId || undefined
     }
 
     const results = []
@@ -37,7 +46,7 @@ export async function POST(req: NextRequest) {
           const record = await grantConsent(consentType, user?.id, metadata)
           results.push({ consent_type: consentType, status: 'granted', record_id: record.id })
         } else {
-          await withdrawConsent(consentType, user?.id)
+          await withdrawConsent(consentType, user?.id, sessionId)
           results.push({ consent_type: consentType, status: 'withdrawn' })
         }
       } catch (error) {

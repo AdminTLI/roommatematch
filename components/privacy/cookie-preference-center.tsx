@@ -9,6 +9,7 @@ import { X, Cookie, Info } from 'lucide-react'
 import { 
   saveClientConsents, 
   getClientConsents,
+  getOrCreateAnonymousSessionId,
   type ConsentType,
   NON_ESSENTIAL_CONSENTS 
 } from '@/lib/privacy/cookie-consent-client'
@@ -99,14 +100,16 @@ export function CookiePreferenceCenter({ locale = 'en', onClose }: CookiePrefere
     setPreferences(updated)
     saveClientConsents(updated)
 
-    // Save to server if user is authenticated
+    // Save to server (for both authenticated and anonymous users)
     try {
+      const sessionId = getOrCreateAnonymousSessionId()
       const response = await fetch('/api/privacy/consent', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           consents: [consentType],
-          action: value ? 'grant' : 'withdraw'
+          action: value ? 'grant' : 'withdraw',
+          sessionId: sessionId || undefined
         })
       })
       
@@ -121,8 +124,9 @@ export function CookiePreferenceCenter({ locale = 'en', onClose }: CookiePrefere
   const handleSave = async () => {
     saveClientConsents(preferences)
 
-    // Save all preferences to server
+    // Save all preferences to server (for both authenticated and anonymous users)
     try {
+      const sessionId = getOrCreateAnonymousSessionId()
       const granted: ConsentType[] = []
       const withdrawn: ConsentType[] = []
 
@@ -140,7 +144,8 @@ export function CookiePreferenceCenter({ locale = 'en', onClose }: CookiePrefere
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             consents: granted,
-            action: 'grant'
+            action: 'grant',
+            sessionId: sessionId || undefined
           })
         })
       }
@@ -151,7 +156,8 @@ export function CookiePreferenceCenter({ locale = 'en', onClose }: CookiePrefere
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             consents: withdrawn,
-            action: 'withdraw'
+            action: 'withdraw',
+            sessionId: sessionId || undefined
           })
         })
       }
