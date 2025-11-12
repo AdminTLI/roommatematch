@@ -32,11 +32,13 @@ CREATE TABLE user_consents (
   withdrawn_at TIMESTAMP WITH TIME ZONE,
   
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-  updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-  
-  -- Ensure one active consent per type per user
-  UNIQUE(user_id, consent_type, status) WHERE status = 'granted'
+  updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
+
+-- Partial unique index to ensure one active consent per type per user
+CREATE UNIQUE INDEX idx_user_consents_unique_active 
+  ON user_consents(user_id, consent_type) 
+  WHERE status = 'granted' AND withdrawn_at IS NULL;
 
 -- Indexes for efficient queries
 CREATE INDEX idx_user_consents_user_id ON user_consents(user_id);
