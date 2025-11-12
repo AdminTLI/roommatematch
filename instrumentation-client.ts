@@ -3,7 +3,7 @@
 // https://docs.sentry.io/platforms/javascript/guides/nextjs/
 
 import * as Sentry from '@sentry/nextjs'
-import { getClientConsents } from '@/lib/privacy/cookie-consent'
+import { getClientConsents } from '@/lib/privacy/cookie-consent-client'
 
 /**
  * Check if user has consented to error tracking

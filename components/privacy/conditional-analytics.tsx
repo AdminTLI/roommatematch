@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react'
 import { Analytics } from '@vercel/analytics/react'
 import { SpeedInsights } from '@vercel/speed-insights/next'
-import { getClientConsents } from '@/lib/privacy/cookie-consent'
+import { getClientConsents } from '@/lib/privacy/cookie-consent-client'
 
 /**
  * Conditionally load analytics based on user consent

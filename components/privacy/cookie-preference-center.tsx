@@ -11,7 +11,7 @@ import {
   getClientConsents,
   type ConsentType,
   NON_ESSENTIAL_CONSENTS 
-} from '@/lib/privacy/cookie-consent'
+} from '@/lib/privacy/cookie-consent-client'
 
 interface CookiePreferenceCenterProps {
   locale?: 'en' | 'nl'

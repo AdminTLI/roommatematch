@@ -10,7 +10,7 @@ import {
   saveClientConsents, 
   getClientConsents,
   type ConsentType 
-} from '@/lib/privacy/cookie-consent'
+} from '@/lib/privacy/cookie-consent-client'
 import { CookiePreferenceCenter } from './cookie-preference-center'
 
 interface CookieConsentBannerProps {

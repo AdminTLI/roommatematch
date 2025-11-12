@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
-import { grantConsent, withdrawConsent, type ConsentType } from '@/lib/privacy/cookie-consent'
+import { grantConsent, withdrawConsent, type ConsentType } from '@/lib/privacy/cookie-consent-server'
 import { safeLogger } from '@/lib/utils/logger'
 
 /**

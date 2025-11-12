@@ -6,7 +6,7 @@
  */
 
 import { createClient } from '@/lib/supabase/server'
-import { grantConsent, withdrawConsent, type ConsentType } from './cookie-consent'
+import { grantConsent, withdrawConsent, type ConsentType } from './cookie-consent-server'
 import { safeLogger } from '@/lib/utils/logger'
 
 /**
