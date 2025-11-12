@@ -146,9 +146,9 @@ export async function GET(request: Request) {
         }
       }
 
-      // Calculate cohort retention metrics for last 90 days
+      // Calculate cohort retention metrics for last 30 days (reduced from 90 to save execution time)
       const today = new Date()
-      for (let daysAgo = 0; daysAgo < 90; daysAgo++) {
+      for (let daysAgo = 0; daysAgo < 30; daysAgo++) {
         const cohortDate = new Date(today.getTime() - daysAgo * 24 * 60 * 60 * 1000)
         const cohortDateStr = cohortDate.toISOString().split('T')[0]
 
