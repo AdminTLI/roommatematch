@@ -220,23 +220,23 @@ export function FeaturesSection() {
     <Section className="bg-gradient-to-b from-white to-slate-50">
       <Container>
         {/* Header */}
-        <div className="text-center mb-16">
-          <h1 className="text-4xl md:text-5xl font-bold text-brand-text mb-6">
+        <div className="text-center mb-12 sm:mb-16">
+          <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold text-brand-text mb-4 sm:mb-6">
             {t.title}
           </h1>
-          <p className="text-xl text-brand-muted max-w-3xl mx-auto">
+          <p className="text-base sm:text-lg md:text-xl text-brand-muted max-w-3xl mx-auto">
             {t.subtitle}
           </p>
         </div>
 
         {/* Main Features */}
-        <div className="space-y-16 mb-16">
+        <div className="space-y-12 sm:space-y-16 mb-12 sm:mb-16">
           {t.mainFeatures.map((feature, index) => {
             const Icon = feature.icon
             const isEven = index % 2 === 0
             
             return (
-              <div key={feature.title} className={`flex flex-col ${isEven ? 'md:flex-row' : 'md:flex-row-reverse'} items-center gap-12`}>
+              <div key={feature.title} className={`flex flex-col ${isEven ? 'md:flex-row' : 'md:flex-row-reverse'} items-center gap-8 sm:gap-12`}>
                 {/* Content */}
                 <div className="flex-1">
                   <Card className={`border-brand-border ${feature.highlight ? 'border-brand-primary shadow-elev-2' : ''}`}>
@@ -273,19 +273,19 @@ export function FeaturesSection() {
                 </div>
 
                 {/* Visual */}
-                <div className="flex-1 flex justify-center">
-                  <div className={`w-full max-w-lg h-80 rounded-2xl flex items-center justify-center ${
+                <div className="flex-1 flex justify-center w-full">
+                  <div className={`w-full max-w-lg aspect-[4/3] min-h-[200px] sm:h-80 rounded-2xl flex items-center justify-center p-4 sm:p-6 ${
                     feature.highlight 
                       ? 'bg-gradient-to-br from-brand-primary/5 to-brand-accent/5' 
                       : 'bg-gradient-to-br from-slate-50 to-slate-100'
                   }`}>
                     <div className="text-center">
-                      <div className="text-6xl mb-6">
+                      <div className="text-4xl sm:text-5xl md:text-6xl mb-4 sm:mb-6">
                         {(feature.title.includes('Smart Matching') || feature.title.includes('Slim Matching')) && "🧠"}
                         {(feature.title.includes('Verified') || feature.title.includes('Geverifieerd')) && "🛡️"}
                         {(feature.title.includes('Explainable') || feature.title.includes('Uitlegbare')) && "👁️"}
                       </div>
-                      <p className="text-brand-muted font-medium text-lg">
+                      <p className="text-brand-muted font-medium text-sm sm:text-base md:text-lg">
                         {feature.subtitle}
                       </p>
                     </div>
@@ -297,17 +297,17 @@ export function FeaturesSection() {
         </div>
 
         {/* Additional Features Grid */}
-        <div className="bg-white rounded-2xl border border-brand-border p-8 md:p-12 mb-16">
-          <div className="text-center mb-12">
-            <h2 className="text-3xl font-bold text-brand-text mb-4">
+        <div className="bg-white rounded-2xl border border-brand-border p-6 sm:p-8 md:p-12 mb-12 sm:mb-16">
+          <div className="text-center mb-8 sm:mb-12">
+            <h2 className="text-2xl sm:text-3xl font-bold text-brand-text mb-3 sm:mb-4">
               {t.completeFeaturesTitle}
             </h2>
-            <p className="text-lg text-brand-muted">
+            <p className="text-base sm:text-lg text-brand-muted">
               {t.completeFeaturesSubtitle}
             </p>
           </div>
 
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">
             {t.additionalFeatures.map((feature, index) => {
               const Icon = feature.icon
               return (
@@ -340,34 +340,34 @@ export function FeaturesSection() {
         </div>
 
         {/* Stats */}
-        <div className="grid grid-cols-2 md:grid-cols-3 gap-6 mb-16">
+        <div className="grid grid-cols-2 md:grid-cols-3 gap-4 sm:gap-6 mb-12 sm:mb-16">
           <div className="text-center">
-            <div className="text-3xl font-bold text-brand-primary mb-2">40+</div>
-            <div className="text-sm text-brand-muted">{t.compatibilityFactors}</div>
+            <div className="text-2xl sm:text-3xl font-bold text-brand-primary mb-1 sm:mb-2">40+</div>
+            <div className="text-xs sm:text-sm text-brand-muted">{t.compatibilityFactors}</div>
           </div>
           <div className="text-center">
-            <div className="text-3xl font-bold text-brand-primary mb-2">100%</div>
-            <div className="text-sm text-brand-muted">{t.verifiedProfiles}</div>
+            <div className="text-2xl sm:text-3xl font-bold text-brand-primary mb-1 sm:mb-2">100%</div>
+            <div className="text-xs sm:text-sm text-brand-muted">{t.verifiedProfiles}</div>
           </div>
-          <div className="text-center">
-            <div className="text-3xl font-bold text-brand-primary mb-2">10 min</div>
-            <div className="text-sm text-brand-muted">{t.quickSetup}</div>
+          <div className="text-center col-span-2 md:col-span-1">
+            <div className="text-2xl sm:text-3xl font-bold text-brand-primary mb-1 sm:mb-2">10 min</div>
+            <div className="text-xs sm:text-sm text-brand-muted">{t.quickSetup}</div>
           </div>
         </div>
 
         {/* CTA */}
         <div className="text-center">
-          <h2 className="text-3xl font-bold text-brand-text mb-4">
+          <h2 className="text-2xl sm:text-3xl font-bold text-brand-text mb-3 sm:mb-4">
             {t.ctaTitle}
           </h2>
-          <p className="text-lg text-brand-muted mb-8 max-w-2xl mx-auto">
+          <p className="text-base sm:text-lg text-brand-muted mb-6 sm:mb-8 max-w-2xl mx-auto">
             {t.ctaSubtitle}
           </p>
-          <div className="flex flex-wrap justify-center gap-4">
-            <Button size="lg" className="bg-brand-primary hover:bg-brand-primary/90">
+          <div className="flex flex-col sm:flex-row justify-center gap-3 sm:gap-4">
+            <Button size="lg" className="bg-brand-primary hover:bg-brand-primary/90 min-h-[44px] w-full sm:w-auto">
               {t.getStarted}
             </Button>
-            <Button variant="outline" size="lg">
+            <Button variant="outline" size="lg" className="min-h-[44px] w-full sm:w-auto">
               {t.scheduleDemo}
             </Button>
           </div>

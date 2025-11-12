@@ -195,17 +195,17 @@ export function PricingSection() {
     <Section className="bg-gradient-to-b from-white to-slate-50">
       <Container>
         {/* Header */}
-        <div className="text-center mb-16">
-          <h1 className="text-4xl md:text-5xl font-bold text-brand-text mb-6">
+        <div className="text-center mb-12 sm:mb-16">
+          <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold text-brand-text mb-4 sm:mb-6">
             {t.title}
           </h1>
-          <p className="text-xl text-brand-muted max-w-3xl mx-auto">
+          <p className="text-base sm:text-lg md:text-xl text-brand-muted max-w-3xl mx-auto">
             {t.subtitle}
           </p>
         </div>
 
         {/* Pricing Cards */}
-        <div className="grid md:grid-cols-3 gap-8 mb-16">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8 mb-12 sm:mb-16">
           {t.plans.map((plan, index) => {
             const Icon = plan.icon
             return (
@@ -261,7 +261,7 @@ export function PricingSection() {
                   </ul>
 
                   <Button 
-                    className={`w-full ${
+                    className={`w-full min-h-[44px] ${
                       plan.highlight 
                         ? 'bg-brand-primary hover:bg-brand-primary/90' 
                         : 'bg-brand-accent hover:bg-brand-accent/90'
@@ -277,12 +277,12 @@ export function PricingSection() {
         </div>
 
         {/* Benefits Section */}
-        <div className="bg-white rounded-2xl border border-brand-border p-8 md:p-12">
-          <h2 className="text-3xl font-bold text-center text-brand-text mb-12">
+        <div className="bg-white rounded-2xl border border-brand-border p-6 sm:p-8 md:p-12">
+          <h2 className="text-2xl sm:text-3xl font-bold text-center text-brand-text mb-8 sm:mb-12">
             {t.benefitsTitle}
           </h2>
           
-          <div className="grid md:grid-cols-3 gap-8">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 sm:gap-8">
             {t.benefits.map((benefit, index) => {
               const Icon = benefit.icon
               return (
@@ -303,16 +303,16 @@ export function PricingSection() {
         </div>
 
         {/* Trust Indicators */}
-        <div className="text-center mt-16">
-          <p className="text-brand-muted mb-6">
+        <div className="text-center mt-12 sm:mt-16">
+          <p className="text-sm sm:text-base text-brand-muted mb-4 sm:mb-6">
             {t.trustText}
           </p>
-          <div className="flex flex-wrap justify-center items-center gap-8 opacity-60">
-            <div className="text-lg font-semibold text-brand-text">TU Delft</div>
-            <div className="text-lg font-semibold text-brand-text">UvA</div>
-            <div className="text-lg font-semibold text-brand-text">Maastricht</div>
-            <div className="text-lg font-semibold text-brand-text">Utrecht</div>
-            <div className="text-lg font-semibold text-brand-text">Groningen</div>
+          <div className="flex flex-wrap justify-center items-center gap-4 sm:gap-6 md:gap-8 opacity-60">
+            <div className="text-sm sm:text-base md:text-lg font-semibold text-brand-text">TU Delft</div>
+            <div className="text-sm sm:text-base md:text-lg font-semibold text-brand-text">UvA</div>
+            <div className="text-sm sm:text-base md:text-lg font-semibold text-brand-text">Maastricht</div>
+            <div className="text-sm sm:text-base md:text-lg font-semibold text-brand-text">Utrecht</div>
+            <div className="text-sm sm:text-base md:text-lg font-semibold text-brand-text">Groningen</div>
           </div>
         </div>
       </Container>

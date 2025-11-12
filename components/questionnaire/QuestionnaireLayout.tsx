@@ -69,14 +69,14 @@ export function QuestionnaireLayout({
       <div className="sticky bottom-0 bg-white/90 dark:bg-gray-900/90 backdrop-blur border-t">
         <div className="container mx-auto px-3 sm:px-4 py-3 sm:py-4">
           <div className="flex items-center justify-between gap-2 sm:gap-4">
-            <Button variant="outline" onClick={onPrev} disabled={!onPrev} className="h-11 px-4 sm:px-6 rounded-xl text-sm sm:text-base">
+            <Button variant="outline" onClick={onPrev} disabled={!onPrev} className="min-h-[44px] px-4 sm:px-6 rounded-xl text-sm sm:text-base">
               Previous
             </Button>
             <div className="flex items-center gap-2 sm:gap-4">
               {lastSavedAt && (
                 <span className="text-xs sm:text-sm text-gray-600 hidden sm:block">Last saved at {new Date(lastSavedAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
               )}
-              <Button onClick={onNext} disabled={!!nextDisabled} className="h-11 px-4 sm:px-6 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-sm sm:text-base">
+              <Button onClick={onNext} disabled={!!nextDisabled} className="min-h-[44px] px-4 sm:px-6 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-sm sm:text-base">
                 Next
               </Button>
             </div>

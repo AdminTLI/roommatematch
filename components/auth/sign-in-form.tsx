@@ -91,13 +91,13 @@ export function SignInForm() {
 
   return (
     <Card className="w-full">
-      <CardHeader className="text-center">
-        <CardTitle className="text-2xl">Welcome back</CardTitle>
-        <CardDescription>
+      <CardHeader className="text-center px-4 sm:px-6 pt-6 sm:pt-6">
+        <CardTitle className="text-xl sm:text-2xl">Welcome back</CardTitle>
+        <CardDescription className="text-sm sm:text-base">
           Sign in to your Domu Match account
         </CardDescription>
       </CardHeader>
-      <CardContent className="space-y-6">
+      <CardContent className="space-y-4 sm:space-y-6 px-4 sm:px-6 pb-6 sm:pb-6">
         {error && (
           <Alert variant="destructive">
             <AlertDescription>{error}</AlertDescription>
@@ -106,32 +106,32 @@ export function SignInForm() {
 
         <form onSubmit={handleEmailSignIn} className="space-y-4">
           <div className="space-y-2">
-            <Label htmlFor="email">Email</Label>
+            <Label htmlFor="email" className="text-sm sm:text-base">Email</Label>
             <div className="relative">
-              <Mail className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+              <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <Input
                 id="email"
                 type="email"
                 placeholder="Enter your email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="pl-10"
+                className="pl-10 min-h-[44px]"
                 required
               />
             </div>
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="password">Password</Label>
+            <Label htmlFor="password" className="text-sm sm:text-base">Password</Label>
             <div className="relative">
-              <Lock className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+              <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <Input
                 id="password"
                 type="password"
                 placeholder="Enter your password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="pl-10"
+                className="pl-10 min-h-[44px]"
                 required
               />
             </div>
@@ -140,19 +140,19 @@ export function SignInForm() {
           <div className="flex items-center justify-between">
             <Link
               href="/auth/reset-password"
-              className="text-sm text-primary hover:underline"
+              className="text-xs sm:text-sm text-primary hover:underline py-2"
             >
               Forgot password?
             </Link>
           </div>
 
-          <Button type="submit" className="w-full" disabled={isLoading}>
+          <Button type="submit" className="w-full min-h-[44px] text-base" disabled={isLoading}>
             {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
             Sign in
           </Button>
         </form>
 
-        <p className="text-center text-sm text-muted-foreground">
+        <p className="text-center text-xs sm:text-sm text-muted-foreground">
           Don't have an account?{' '}
           <Link href="/auth/sign-up" className="text-primary hover:underline">
             Sign up

@@ -619,7 +619,7 @@ export function DashboardContent({ hasCompletedQuestionnaire = false, hasPartial
               </p>
               <Button 
                 asChild
-                className="mt-3"
+                className="mt-3 min-h-[44px] w-full sm:w-auto"
                 variant="primary"
               >
                 <a href="/settings">
@@ -663,7 +663,7 @@ export function DashboardContent({ hasCompletedQuestionnaire = false, hasPartial
               </p>
               <Button 
                 asChild
-                className="mt-3"
+                className="mt-3 min-h-[44px] w-full sm:w-auto"
                 variant="primary"
               >
                 <a href={hasPartialProgress ? "/onboarding?mode=edit" : "/onboarding"}>
@@ -820,7 +820,7 @@ export function DashboardContent({ hasCompletedQuestionnaire = false, hasPartial
                         )}
                         <button 
                           onClick={() => handleChatWithMatch(match.userId || match.id)}
-                          className="px-3 py-1.5 bg-blue-600 text-white text-xs font-medium rounded-lg hover:bg-blue-700 transition-colors"
+                          className="px-3 py-1.5 bg-blue-600 text-white text-xs font-medium rounded-lg hover:bg-blue-700 transition-colors min-h-[44px] min-w-[60px]"
                         >
                           Chat
                         </button>

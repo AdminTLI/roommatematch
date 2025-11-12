@@ -104,13 +104,13 @@ export function SignUpForm() {
 
   return (
     <Card className="w-full">
-      <CardHeader className="text-center">
-        <CardTitle className="text-2xl">Create your account</CardTitle>
-        <CardDescription>
+      <CardHeader className="text-center px-4 sm:px-6 pt-6 sm:pt-6">
+        <CardTitle className="text-xl sm:text-2xl">Create your account</CardTitle>
+        <CardDescription className="text-sm sm:text-base">
           Start your compatibility-based roommate search today
         </CardDescription>
       </CardHeader>
-      <CardContent className="space-y-6">
+      <CardContent className="space-y-4 sm:space-y-6 px-4 sm:px-6 pb-6 sm:pb-6">
         {error && (
           <Alert variant="destructive">
             <AlertDescription>{error}</AlertDescription>
@@ -118,33 +118,33 @@ export function SignUpForm() {
         )}
 
         <form onSubmit={handleEmailSignUp} className="space-y-4">
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="firstName">First name</Label>
+              <Label htmlFor="firstName" className="text-sm sm:text-base">First name</Label>
               <div className="relative">
-                <User className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                <User className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                 <Input
                   id="firstName"
                   type="text"
                   placeholder="First name"
                   value={firstName}
                   onChange={(e) => setFirstName(e.target.value)}
-                  className="pl-10"
+                  className="pl-10 min-h-[44px]"
                   required
                 />
               </div>
             </div>
             <div className="space-y-2">
-              <Label htmlFor="lastName">Last name</Label>
+              <Label htmlFor="lastName" className="text-sm sm:text-base">Last name</Label>
               <div className="relative">
-                <User className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                <User className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                 <Input
                   id="lastName"
                   type="text"
                   placeholder="Last name"
                   value={lastName}
                   onChange={(e) => setLastName(e.target.value)}
-                  className="pl-10"
+                  className="pl-10 min-h-[44px]"
                   required
                 />
               </div>
@@ -152,32 +152,32 @@ export function SignUpForm() {
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="email">Email</Label>
+            <Label htmlFor="email" className="text-sm sm:text-base">Email</Label>
             <div className="relative">
-              <Mail className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+              <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <Input
                 id="email"
                 type="email"
                 placeholder="Enter your email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="pl-10"
+                className="pl-10 min-h-[44px]"
                 required
               />
             </div>
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="password">Password</Label>
+            <Label htmlFor="password" className="text-sm sm:text-base">Password</Label>
             <div className="relative">
-              <Lock className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+              <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <Input
                 id="password"
                 type="password"
                 placeholder="Create a password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="pl-10"
+                className="pl-10 min-h-[44px]"
                 required
               />
             </div>
@@ -187,28 +187,29 @@ export function SignUpForm() {
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="confirmPassword">Confirm password</Label>
+            <Label htmlFor="confirmPassword" className="text-sm sm:text-base">Confirm password</Label>
             <div className="relative">
-              <Lock className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+              <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <Input
                 id="confirmPassword"
                 type="password"
                 placeholder="Confirm your password"
                 value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}
-                className="pl-10"
+                className="pl-10 min-h-[44px]"
                 required
               />
             </div>
           </div>
 
-          <div className="flex items-center space-x-2">
+          <div className="flex items-start space-x-2">
             <Checkbox
               id="terms"
               checked={acceptTerms}
               onCheckedChange={setAcceptTerms}
+              className="mt-1"
             />
-            <Label htmlFor="terms" className="text-sm">
+            <Label htmlFor="terms" className="text-xs sm:text-sm leading-relaxed cursor-pointer">
               I agree to the{' '}
               <Link href="/terms" className="text-primary hover:underline">
                 Terms of Service
@@ -220,7 +221,7 @@ export function SignUpForm() {
             </Label>
           </div>
 
-          <Button type="submit" className="w-full" disabled={isLoading}>
+          <Button type="submit" className="w-full min-h-[44px] text-base" disabled={isLoading}>
             {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
             Create account
           </Button>
@@ -228,7 +229,7 @@ export function SignUpForm() {
 
         {/* Removed alternative magic-link option for OTP-only flow */}
 
-        <p className="text-center text-sm text-muted-foreground">
+        <p className="text-center text-xs sm:text-sm text-muted-foreground">
           Already have an account?{' '}
           <Link href="/auth/sign-in" className="text-primary hover:underline">
             Sign in

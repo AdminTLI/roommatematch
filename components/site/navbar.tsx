@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
 import { useRouter } from 'next/navigation'
@@ -43,12 +43,30 @@ export function Navbar() {
   const navigation = navigationContent[locale]
   const buttons = buttonContent[locale]
 
+  // Prevent body scroll when mobile menu is open
+  useEffect(() => {
+    if (isMobileMenuOpen) {
+      document.body.style.overflow = 'hidden'
+    } else {
+      document.body.style.overflow = ''
+    }
+    
+    // Cleanup on unmount
+    return () => {
+      document.body.style.overflow = ''
+    }
+  }, [isMobileMenuOpen])
+
   const handleGetStarted = () => {
     router.push('/auth/sign-up')
   }
 
   const handleSignIn = () => {
     router.push('/auth/sign-in')
+  }
+  
+  const handleCloseMenu = () => {
+    setIsMobileMenuOpen(false)
   }
 
   return (
@@ -178,11 +196,20 @@ export function Navbar() {
           </div>
         </Container>
 
+        {/* Mobile menu backdrop */}
+        {isMobileMenuOpen && (
+          <div
+            className="fixed inset-0 bg-black/50 z-30 lg:hidden"
+            onClick={handleCloseMenu}
+            aria-hidden="true"
+          />
+        )}
+
         {/* Mobile menu */}
         {isMobileMenuOpen && (
           <div 
             id="mobile-menu"
-            className="lg:hidden bg-white border-t border-brand-border"
+            className="lg:hidden fixed inset-x-0 top-16 md:top-20 bg-white border-t border-brand-border z-40 max-h-[calc(100vh-4rem)] md:max-h-[calc(100vh-5rem)] overflow-y-auto"
           >
             <Container>
               <div className="py-4 space-y-4">
@@ -191,7 +218,7 @@ export function Navbar() {
                     key={item.name}
                     href={item.href}
                     className="block text-brand-muted hover:text-brand-text transition-colors font-medium py-2"
-                    onClick={() => setIsMobileMenuOpen(false)}
+                    onClick={handleCloseMenu}
                   >
                     {item.name}
                   </Link>
@@ -203,7 +230,7 @@ export function Navbar() {
                     className="w-full justify-center"
                     onClick={() => {
                       handleSignIn()
-                      setIsMobileMenuOpen(false)
+                      handleCloseMenu()
                     }}
                   >
                     {buttons.signIn}
@@ -214,7 +241,7 @@ export function Navbar() {
                     className="w-full justify-center"
                     onClick={() => {
                       handleGetStarted()
-                      setIsMobileMenuOpen(false)
+                      handleCloseMenu()
                     }}
                   >
                     {buttons.getStarted}

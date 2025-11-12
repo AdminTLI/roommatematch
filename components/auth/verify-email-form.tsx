@@ -218,22 +218,22 @@ export function VerifyEmailForm() {
   if (isVerified) {
     return (
       <Card className="w-full">
-        <CardHeader className="text-center">
+        <CardHeader className="text-center px-4 sm:px-6 pt-6 sm:pt-6">
           <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-green-100">
             <CheckCircle className="h-6 w-6 text-green-600" />
           </div>
-          <CardTitle className="text-2xl text-green-800">Email Verified!</CardTitle>
-          <CardDescription>
+          <CardTitle className="text-xl sm:text-2xl text-green-800">Email Verified!</CardTitle>
+          <CardDescription className="text-sm sm:text-base">
             Your account has been successfully verified
           </CardDescription>
         </CardHeader>
-        <CardContent className="space-y-4">
-          <p className="text-sm text-muted-foreground text-center">
+        <CardContent className="space-y-4 px-4 sm:px-6 pb-6 sm:pb-6">
+          <p className="text-xs sm:text-sm text-muted-foreground text-center">
             Redirecting you to complete your profile setup...
           </p>
           <Button 
             onClick={handleContinue} 
-            className="w-full"
+            className="w-full min-h-[44px] text-base"
           >
             Continue to Identity Verification
             <ArrowRight className="ml-2 h-4 w-4" />
@@ -245,16 +245,16 @@ export function VerifyEmailForm() {
 
   return (
     <Card className="w-full">
-      <CardHeader className="text-center">
+      <CardHeader className="text-center px-4 sm:px-6 pt-6 sm:pt-6">
         <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-blue-100">
           <Mail className="h-6 w-6 text-blue-600" />
         </div>
-        <CardTitle className="text-2xl">Verify your email</CardTitle>
-        <CardDescription>
+        <CardTitle className="text-xl sm:text-2xl">Verify your email</CardTitle>
+        <CardDescription className="text-sm sm:text-base">
           Enter the 6-digit code sent to <strong>{email}</strong>
         </CardDescription>
       </CardHeader>
-      <CardContent className="space-y-6">
+      <CardContent className="space-y-4 sm:space-y-6 px-4 sm:px-6 pb-6 sm:pb-6">
         {error && (
           <Alert variant="destructive">
             <AlertDescription>{error}</AlertDescription>
@@ -288,7 +288,7 @@ export function VerifyEmailForm() {
             <Button 
               variant="outline" 
               onClick={handleResendOTP}
-              className="w-full"
+              className="w-full min-h-[44px] text-base"
               disabled={isResending || isLoading}
             >
               {isResending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
@@ -297,7 +297,7 @@ export function VerifyEmailForm() {
             </Button>
 
             <div className="text-center">
-              <Link href="/auth/sign-in" className="text-sm text-primary hover:underline">
+              <Link href="/auth/sign-in" className="text-xs sm:text-sm text-primary hover:underline py-2">
                 Back to sign in
               </Link>
             </div>

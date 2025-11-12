@@ -58,16 +58,16 @@ export default function Footer() {
 
   return (
     <footer className="bg-[#0B1220] text-slate-300">
-      <Container className="py-16">
-        <div className="grid gap-10 md:grid-cols-4">
+      <Container className="py-12 sm:py-16">
+        <div className="grid gap-8 sm:gap-10 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
           {/* Brand */}
-          <div className="space-y-4">
-            <h3 className="text-white text-xl font-semibold">Domu Match</h3>
-            <p className="text-slate-400 max-w-prose">{t.brandDescription}</p>
+          <div className="space-y-4 sm:col-span-2 lg:col-span-1">
+            <h3 className="text-white text-lg sm:text-xl font-semibold">Domu Match</h3>
+            <p className="text-sm sm:text-base text-slate-400 max-w-prose">{t.brandDescription}</p>
             <div className="flex items-center gap-3">
-              <a aria-label="Twitter" className="rounded-full p-2 bg-white/5 hover:bg-white/10 focus-visible:ring-2 focus-visible:ring-brand-primary flex items-center justify-center"><Twitter size={18}/></a>
-              <a aria-label="LinkedIn" className="rounded-full p-2 bg-white/5 hover:bg-white/10 focus-visible:ring-2 focus-visible:ring-brand-primary flex items-center justify-center"><Linkedin size={18}/></a>
-              <a aria-label="Instagram" className="rounded-full p-2 bg-white/5 hover:bg-white/10 focus-visible:ring-2 focus-visible:ring-brand-primary flex items-center justify-center"><Instagram size={18}/></a>
+              <a aria-label="Twitter" className="rounded-full p-2 bg-white/5 hover:bg-white/10 focus-visible:ring-2 focus-visible:ring-brand-primary flex items-center justify-center min-w-[44px] min-h-[44px]"><Twitter size={18}/></a>
+              <a aria-label="LinkedIn" className="rounded-full p-2 bg-white/5 hover:bg-white/10 focus-visible:ring-2 focus-visible:ring-brand-primary flex items-center justify-center min-w-[44px] min-h-[44px]"><Linkedin size={18}/></a>
+              <a aria-label="Instagram" className="rounded-full p-2 bg-white/5 hover:bg-white/10 focus-visible:ring-2 focus-visible:ring-brand-primary flex items-center justify-center min-w-[44px] min-h-[44px]"><Instagram size={18}/></a>
             </div>
           </div>
 
@@ -103,12 +103,12 @@ export default function Footer() {
           </div>
         </div>
 
-        <div className="mt-12 border-t border-white/10 pt-6 flex flex-col md:flex-row items-center justify-between gap-4">
-          <p className="text-slate-500 text-sm">© {new Date().getFullYear()} Domu Match. {t.allRightsReserved}</p>
-          <div className="flex items-center gap-6 text-sm text-slate-400">
-            <Link href="/privacy" className="hover:text-white">{t.privacy}</Link>
-            <Link href="/terms" className="hover:text-white">{t.terms}</Link>
-            <a className="hover:text-white">{t.cookies}</a>
+        <div className="mt-8 sm:mt-12 border-t border-white/10 pt-6 flex flex-col sm:flex-row items-center justify-between gap-4">
+          <p className="text-slate-500 text-xs sm:text-sm text-center sm:text-left">© {new Date().getFullYear()} Domu Match. {t.allRightsReserved}</p>
+          <div className="flex items-center gap-4 sm:gap-6 text-xs sm:text-sm text-slate-400">
+            <Link href="/privacy" className="hover:text-white py-2">{t.privacy}</Link>
+            <Link href="/terms" className="hover:text-white py-2">{t.terms}</Link>
+            <a className="hover:text-white py-2">{t.cookies}</a>
           </div>
         </div>
       </Container>

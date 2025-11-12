@@ -62,24 +62,24 @@ export function SocialProof({ locale: localeProp }: SocialProofProps) {
         </div>
 
         {/* Stats Grid */}
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 mb-8 sm:mb-12">
           {text.stats.map((stat, index) => {
             const Icon = stat.icon
             return (
               <Card key={index} className="text-center border border-brand-border/50 bg-white/80 backdrop-blur-sm shadow-elev-1 hover:shadow-elev-2 transition-all duration-200">
-                <CardContent className="pt-6 pb-6">
-                  <div className="flex justify-center mb-4">
-                    <div className="h-12 w-12 bg-brand-primary/10 rounded-xl flex items-center justify-center">
-                      <Icon className="h-6 w-6 text-brand-primary" />
+                <CardContent className="pt-4 sm:pt-6 pb-4 sm:pb-6 px-3 sm:px-6">
+                  <div className="flex justify-center mb-3 sm:mb-4">
+                    <div className="h-10 w-10 sm:h-12 sm:w-12 bg-brand-primary/10 rounded-xl flex items-center justify-center">
+                      <Icon className="h-5 w-5 sm:h-6 sm:w-6 text-brand-primary" />
                     </div>
                   </div>
-                  <div className="text-3xl md:text-4xl font-bold text-brand-text mb-2">
+                  <div className="text-2xl sm:text-3xl md:text-4xl font-bold text-brand-text mb-1 sm:mb-2">
                     {stat.value}
                   </div>
-                  <div className="text-sm font-semibold text-brand-text mb-1">
+                  <div className="text-xs sm:text-sm font-semibold text-brand-text mb-1">
                     {stat.label}
                   </div>
-                  <div className="text-xs text-brand-muted">
+                  <div className="text-xs text-brand-muted leading-tight">
                     {stat.description}
                   </div>
                 </CardContent>
@@ -89,17 +89,17 @@ export function SocialProof({ locale: localeProp }: SocialProofProps) {
         </div>
 
         {/* University Logos */}
-        <div className="text-center pt-8 border-t border-brand-border/30">
-          <h3 className="text-base md:text-lg font-semibold text-brand-text mb-6">
+        <div className="text-center pt-6 sm:pt-8 border-t border-brand-border/30">
+          <h3 className="text-sm sm:text-base md:text-lg font-semibold text-brand-text mb-4 sm:mb-6">
             {locale === 'nl' ? 'Ontworpen voor Nederlandse universiteiten' : 'Designed for Dutch universities'}
           </h3>
-          <div className="flex flex-wrap justify-center items-center gap-6 md:gap-8">
+          <div className="flex flex-wrap justify-center items-center gap-4 sm:gap-6 md:gap-8">
             {text.universityLogos.map((uni, index) => (
-              <div key={index} className="flex items-center gap-2 md:gap-3">
-                <div className="w-10 h-10 bg-brand-primary/10 rounded-full flex items-center justify-center border border-brand-primary/20">
-                  <span className="text-sm font-bold text-brand-primary">{uni.short}</span>
+              <div key={index} className="flex items-center gap-2 sm:gap-3">
+                <div className="w-8 h-8 sm:w-10 sm:h-10 bg-brand-primary/10 rounded-full flex items-center justify-center border border-brand-primary/20">
+                  <span className="text-xs sm:text-sm font-bold text-brand-primary">{uni.short}</span>
                 </div>
-                <span className="text-sm font-medium text-brand-muted">
+                <span className="text-xs sm:text-sm font-medium text-brand-muted">
                   {uni.name}
                 </span>
               </div>

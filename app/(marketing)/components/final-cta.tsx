@@ -61,19 +61,19 @@ export function FinalCTA({ locale: localeProp }: FinalCTAProps) {
   const text = content[locale]
 
   return (
-    <section className="py-16 bg-white">
-      <div className="container mx-auto px-4">
-        <div className="text-center mb-16">
-          <h2 className="text-3xl lg:text-4xl font-bold text-gray-900 dark:text-white mb-4">
+    <section className="py-12 sm:py-16 bg-white">
+      <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="text-center mb-12 sm:mb-16">
+          <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-gray-900 dark:text-white mb-4">
             {text.title}
           </h2>
-          <p className="text-xl text-gray-600 dark:text-gray-300 max-w-3xl mx-auto">
+          <p className="text-base sm:text-lg lg:text-xl text-gray-600 dark:text-gray-300 max-w-3xl mx-auto">
             {text.subtitle}
           </p>
         </div>
 
         {/* Split CTA Cards */}
-        <div className="grid lg:grid-cols-2 gap-8 max-w-4xl mx-auto">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 sm:gap-8 max-w-4xl mx-auto">
           {/* Students CTA */}
           <Card className="border-2 border-primary/20 hover:border-primary/40 transition-all duration-300 hover:shadow-lg">
             <CardHeader className="text-center">
@@ -87,9 +87,9 @@ export function FinalCTA({ locale: localeProp }: FinalCTAProps) {
             </CardHeader>
             <CardContent className="text-center">
               <Link href={text.cta.student.href}>
-                <Button size="lg" className="w-full text-lg px-8 py-4">
+                <Button size="lg" className="w-full text-base sm:text-lg px-6 sm:px-8 py-3 sm:py-4 min-h-[44px]">
                   {text.cta.student.buttonText}
-                  <ArrowRight className="ml-2 h-5 w-5" />
+                  <ArrowRight className="ml-2 h-4 w-4 sm:h-5 sm:w-5" />
                 </Button>
               </Link>
             </CardContent>
@@ -108,13 +108,13 @@ export function FinalCTA({ locale: localeProp }: FinalCTAProps) {
             </CardHeader>
             <CardContent className="text-center space-y-3">
               <Link href={text.cta.university.href}>
-                <Button variant="outline" size="lg" className="w-full text-lg px-8 py-4">
+                <Button variant="outline" size="lg" className="w-full text-base sm:text-lg px-6 sm:px-8 py-3 sm:py-4 min-h-[44px]">
                   {text.cta.university.buttonText}
-                  <ArrowRight className="ml-2 h-5 w-5" />
+                  <ArrowRight className="ml-2 h-4 w-4 sm:h-5 sm:w-5" />
                 </Button>
               </Link>
               <Link href={text.cta.university.secondaryHref}>
-                <Button variant="ghost" size="sm" className="w-full">
+                <Button variant="ghost" size="sm" className="w-full min-h-[44px]">
                   <Mail className="mr-2 h-4 w-4" />
                   {text.cta.university.secondaryButtonText}
                 </Button>
@@ -124,8 +124,8 @@ export function FinalCTA({ locale: localeProp }: FinalCTAProps) {
         </div>
 
         {/* Bottom trust indicator */}
-        <div className="text-center mt-12">
-          <p className="text-sm text-gray-500 dark:text-gray-400">
+        <div className="text-center mt-8 sm:mt-12">
+          <p className="text-xs sm:text-sm text-gray-500 dark:text-gray-400">
             Designed for students at Dutch universities
           </p>
         </div>

@@ -96,9 +96,9 @@ export function Hero() {
         <div className="absolute bottom-0 right-0 h-96 w-96 rounded-full bg-gradient-to-tr from-accent/10 via-brand-primary/10 to-accent/5 blur-3xl opacity-50" />
       </div>
       <Container>
-        <div className="grid items-center gap-12 lg:gap-16 md:grid-cols-2">
+        <div className="grid items-center gap-8 sm:gap-12 lg:gap-16 md:grid-cols-2">
           {/* Left column - Content */}
-          <div className="relative z-10 space-y-8">
+          <div className="relative z-10 space-y-6 sm:space-y-8">
             {/* Badge */}
             <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-brand-primary/10 border border-brand-primary/20 text-sm font-medium text-brand-primary">
               <span className="text-xs">✨</span>
@@ -106,12 +106,12 @@ export function Hero() {
             </div>
             
             {/* Main Heading */}
-            <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold leading-tight tracking-tight text-brand-text">
+            <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-bold leading-tight tracking-tight text-brand-text">
               {t.title} <span className="text-brand-primary">{t.titleStrangers}</span> {t.titleTo} <span className="text-brand-primary">{t.titleRoommates}</span>
             </h1>
             
             {/* Subtitle */}
-            <p className="text-lg md:text-xl lg:text-2xl leading-relaxed text-brand-muted max-w-2xl">
+            <p className="text-base sm:text-lg md:text-xl lg:text-2xl leading-relaxed text-brand-muted max-w-2xl">
               {t.subtitle}
             </p>
             
@@ -135,32 +135,32 @@ export function Hero() {
             </div>
 
             {/* Trust indicators */}
-            <div className="flex flex-wrap gap-6 pt-4">
-              <div className="flex items-center gap-2 text-sm font-medium text-brand-muted">
-                <Check className="h-5 w-5 text-emerald-500 flex-shrink-0" />
+            <div className="flex flex-wrap gap-4 sm:gap-6 pt-4">
+              <div className="flex items-center gap-2 text-xs sm:text-sm font-medium text-brand-muted">
+                <Check className="h-4 w-4 sm:h-5 sm:w-5 text-emerald-500 flex-shrink-0" />
                 <span>{t.verified}</span>
               </div>
-              <div className="flex items-center gap-2 text-sm font-medium text-brand-muted">
-                <Check className="h-5 w-5 text-emerald-500 flex-shrink-0" />
+              <div className="flex items-center gap-2 text-xs sm:text-sm font-medium text-brand-muted">
+                <Check className="h-4 w-4 sm:h-5 sm:w-5 text-emerald-500 flex-shrink-0" />
                 <span>{t.free}</span>
               </div>
-              <div className="flex items-center gap-2 text-sm font-medium text-brand-muted">
-                <Check className="h-5 w-5 text-emerald-500 flex-shrink-0" />
+              <div className="flex items-center gap-2 text-xs sm:text-sm font-medium text-brand-muted">
+                <Check className="h-4 w-4 sm:h-5 sm:w-5 text-emerald-500 flex-shrink-0" />
                 <span>{t.scienceBacked}</span>
               </div>
-              <div className="flex items-center gap-2 text-sm font-medium text-brand-muted">
-                <Check className="h-5 w-5 text-emerald-500 flex-shrink-0" />
+              <div className="flex items-center gap-2 text-xs sm:text-sm font-medium text-brand-muted">
+                <Check className="h-4 w-4 sm:h-5 sm:w-5 text-emerald-500 flex-shrink-0" />
                 <span>{t.transparent}</span>
               </div>
             </div>
           </div>
 
           {/* Right column - Match Cards */}
-          <div className="relative z-10 grid gap-6 lg:gap-8">
+          <div className="relative z-10 grid gap-4 sm:gap-6 lg:gap-8 mt-8 md:mt-0">
             {mockMatches.map((match, index) => (
               <Card 
                 key={match.name}
-                className="rounded-2xl border-2 border-brand-border/50 bg-white shadow-elev-2 p-6 lg:p-8 transition-all duration-300 hover:shadow-elev-2 hover:-translate-y-1 hover:border-brand-primary/30"
+                className="rounded-2xl border-2 border-brand-border/50 bg-white shadow-elev-2 p-4 sm:p-6 lg:p-8 transition-all duration-300 hover:shadow-elev-2 hover:-translate-y-1 hover:border-brand-primary/30"
               >
                 <div className="flex items-start justify-between mb-6">
                   <span className="inline-flex items-center rounded-full bg-emerald-50 border border-emerald-200 text-emerald-700 px-4 py-1.5 text-base font-bold">

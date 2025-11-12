@@ -232,19 +232,19 @@ export function AdminDashboard({ admin }: AdminDashboardProps) {
   }
 
   return (
-    <div className="max-w-6xl mx-auto">
+    <div className="max-w-6xl mx-auto px-4 sm:px-6">
       {/* Header */}
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
+      <div className="mb-6 sm:mb-8">
+        <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white">
           Admin Dashboard
         </h1>
-        <p className="text-gray-600 dark:text-gray-300 mt-2">
+        <p className="text-sm sm:text-base text-gray-600 dark:text-gray-300 mt-2">
           Manage your university's roommate matching platform
         </p>
       </div>
 
       {/* Overview Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 mb-6 sm:mb-8">
         <Card>
           <CardContent className="pt-6">
             <div className="flex items-center gap-3">

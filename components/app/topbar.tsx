@@ -157,19 +157,20 @@ export function Topbar({ user }: TopbarProps) {
                     setShowResults(true)
                   }
                 }}
-                className="w-96 max-w-md pl-10 pr-10 py-2 bg-surface-1 border border-line rounded-xl text-body-sm focus:outline-none focus:ring-2 focus:ring-brand-600 focus:border-transparent"
+                className="w-64 sm:w-80 md:w-96 max-w-md pl-10 pr-10 py-2 bg-surface-1 border border-line rounded-xl text-body-sm focus:outline-none focus:ring-2 focus:ring-brand-600 focus:border-transparent min-h-[44px]"
               />
               {searchQuery && (
-                <button
-                  onClick={() => {
-                    setSearchQuery('')
-                    setShowResults(false)
-                    inputRef.current?.focus()
-                  }}
-                  className="absolute right-3 top-1/2 transform -translate-y-1/2 text-ink-400 hover:text-ink-600"
-                >
-                  <X className="w-4 h-4" />
-                </button>
+              <button
+                onClick={() => {
+                  setSearchQuery('')
+                  setShowResults(false)
+                  inputRef.current?.focus()
+                }}
+                className="absolute right-3 top-1/2 transform -translate-y-1/2 text-ink-400 hover:text-ink-600 min-w-[44px] min-h-[44px] flex items-center justify-center"
+                aria-label="Clear search"
+              >
+                <X className="w-4 h-4" />
+              </button>
               )}
             </div>
 
@@ -191,7 +192,7 @@ export function Topbar({ user }: TopbarProps) {
                         <button
                           key={`${result.type}-${result.id}`}
                           onClick={() => handleResultClick(result)}
-                          className="w-full p-3 hover:bg-gray-50 text-left transition-colors"
+                          className="w-full p-3 hover:bg-gray-50 text-left transition-colors min-h-[44px]"
                         >
                           {result.type === 'match' ? (
                             <div className="flex items-center gap-3">

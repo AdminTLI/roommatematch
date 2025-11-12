@@ -178,17 +178,17 @@ export function SafetySection() {
   return (
     <Section className="bg-slate-50">
       <Container>
-        <div className="text-center mb-16">
-          <h2 className="text-3xl md:text-4xl font-bold text-brand-text mb-4">
+        <div className="text-center mb-12 sm:mb-16">
+          <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-brand-text mb-3 sm:mb-4">
             {t.title}
           </h2>
-          <p className="text-lg text-brand-muted max-w-3xl mx-auto">
+          <p className="text-base sm:text-lg text-brand-muted max-w-3xl mx-auto">
             {t.subtitle}
           </p>
         </div>
 
         {/* Safety Stats */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-6 mb-16">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 sm:gap-6 mb-12 sm:mb-16">
           {t.safetyStats.map((stat, index) => (
             <Card key={index} className="text-center border-brand-border">
               <CardContent className="p-6">
@@ -204,7 +204,7 @@ export function SafetySection() {
         </div>
 
         {/* Safety Features */}
-        <div className="grid md:grid-cols-2 gap-8 mb-16">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 sm:gap-8 mb-12 sm:mb-16">
           {t.safetyFeatures.map((feature, index) => {
             const Icon = feature.icon
             return (
@@ -236,17 +236,17 @@ export function SafetySection() {
         </div>
 
         {/* Safety Guidelines */}
-        <div className="bg-white rounded-2xl border border-brand-border p-8 md:p-12">
-          <div className="text-center mb-8">
-            <h3 className="text-2xl font-bold text-brand-text mb-4">
+        <div className="bg-white rounded-2xl border border-brand-border p-6 sm:p-8 md:p-12">
+          <div className="text-center mb-6 sm:mb-8">
+            <h3 className="text-xl sm:text-2xl font-bold text-brand-text mb-3 sm:mb-4">
               {t.guidelinesTitle}
             </h3>
-            <p className="text-brand-muted">
+            <p className="text-sm sm:text-base text-brand-muted">
               {t.guidelinesSubtitle}
             </p>
           </div>
 
-          <div className="grid md:grid-cols-2 gap-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 sm:gap-8">
             <div>
               <h4 className="font-semibold text-brand-text mb-4 flex items-center gap-2">
                 <Lock className="h-5 w-5 text-brand-primary" />
@@ -280,18 +280,18 @@ export function SafetySection() {
         </div>
 
         {/* Contact Support */}
-        <div className="text-center mt-12">
-          <h3 className="text-2xl font-bold text-brand-text mb-4">
+        <div className="text-center mt-8 sm:mt-12">
+          <h3 className="text-xl sm:text-2xl font-bold text-brand-text mb-3 sm:mb-4">
             {t.needHelp}
           </h3>
-          <p className="text-brand-muted mb-6">
+          <p className="text-sm sm:text-base text-brand-muted mb-4 sm:mb-6">
             {t.needHelpSubtitle}
           </p>
-          <div className="flex flex-wrap justify-center gap-4">
-            <Button size="lg" className="bg-brand-primary hover:bg-brand-primary/90">
+          <div className="flex flex-col sm:flex-row justify-center gap-3 sm:gap-4">
+            <Button size="lg" className="bg-brand-primary hover:bg-brand-primary/90 min-h-[44px] w-full sm:w-auto">
               {t.contactSafety}
             </Button>
-            <Button variant="outline" size="lg">
+            <Button variant="outline" size="lg" className="min-h-[44px] w-full sm:w-auto">
               {t.viewSafetyCenter}
             </Button>
           </div>

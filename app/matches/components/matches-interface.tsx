@@ -209,25 +209,25 @@ export function MatchesInterface({ user }: MatchesInterfaceProps) {
   }
 
   return (
-    <div className="max-w-6xl mx-auto">
+    <div className="max-w-6xl mx-auto px-4 sm:px-6">
       {/* Header */}
-      <div className="mb-8">
-        <div className="flex items-center justify-between mb-4">
+      <div className="mb-6 sm:mb-8">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-4">
           <div>
-            <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
+            <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white">
               Your Matches
             </h1>
-            <p className="text-gray-600 dark:text-gray-300 mt-2">
+            <p className="text-sm sm:text-base text-gray-600 dark:text-gray-300 mt-2">
               From strangers to roommates - find your perfect match based on compatibility
             </p>
           </div>
-          <div className="flex items-center gap-4">
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 sm:gap-4">
             {lastUpdated && (
-              <div className="text-sm text-gray-500">
+              <div className="text-xs sm:text-sm text-gray-500 text-center sm:text-left">
                 Last updated: {lastUpdated.toLocaleTimeString()}
               </div>
             )}
-            <Button variant="outline" onClick={loadMatches}>
+            <Button variant="outline" onClick={loadMatches} className="min-h-[44px] w-full sm:w-auto">
               <RefreshCw className="h-4 w-4 mr-2" />
               Refresh
             </Button>
@@ -235,7 +235,7 @@ export function MatchesInterface({ user }: MatchesInterfaceProps) {
         </div>
 
         {/* Stats */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4 mb-6">
           <Card>
             <CardContent className="pt-6">
               <div className="flex items-center gap-3">
@@ -276,19 +276,26 @@ export function MatchesInterface({ user }: MatchesInterfaceProps) {
       </div>
 
       {/* Matches Tabs */}
-      <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-        <TabsList className="grid w-full grid-cols-3">
-          <TabsTrigger value="individuals" className="flex items-center gap-2">
-            <UserIcon className="h-4 w-4" />
-            Individual Matches ({individualMatches.length})
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4 sm:space-y-6">
+        <TabsList className="grid w-full grid-cols-3 h-auto">
+          <TabsTrigger value="individuals" className="flex items-center gap-1 sm:gap-2 min-h-[44px] text-xs sm:text-sm px-2 sm:px-4">
+            <UserIcon className="h-3 w-3 sm:h-4 sm:w-4" />
+            <span className="hidden sm:inline">Individual Matches</span>
+            <span className="sm:hidden">Individual</span>
+            <span className="hidden sm:inline">({individualMatches.length})</span>
+            <span className="sm:hidden">({individualMatches.length})</span>
           </TabsTrigger>
-          <TabsTrigger value="groups" className="flex items-center gap-2">
-            <Users className="h-4 w-4" />
-            Group Matches ({groupSuggestions.length})
+          <TabsTrigger value="groups" className="flex items-center gap-1 sm:gap-2 min-h-[44px] text-xs sm:text-sm px-2 sm:px-4">
+            <Users className="h-3 w-3 sm:h-4 sm:w-4" />
+            <span className="hidden sm:inline">Group Matches</span>
+            <span className="sm:hidden">Groups</span>
+            <span className="hidden sm:inline">({groupSuggestions.length})</span>
+            <span className="sm:hidden">({groupSuggestions.length})</span>
           </TabsTrigger>
-          <TabsTrigger value="debriefs" className="flex items-center gap-2">
-            <FileText className="h-4 w-4" />
-            Compatibility Stories
+          <TabsTrigger value="debriefs" className="flex items-center gap-1 sm:gap-2 min-h-[44px] text-xs sm:text-sm px-2 sm:px-4">
+            <FileText className="h-3 w-3 sm:h-4 sm:w-4" />
+            <span className="hidden sm:inline">Compatibility Stories</span>
+            <span className="sm:hidden">Stories</span>
           </TabsTrigger>
         </TabsList>
 
@@ -301,13 +308,13 @@ export function MatchesInterface({ user }: MatchesInterfaceProps) {
                 <CardDescription className="mb-4">
                   We're still finding compatible roommates for you. Check back later or adjust your preferences.
                 </CardDescription>
-                <Button variant="outline">
+                <Button variant="outline" className="min-h-[44px] w-full sm:w-auto">
                   Adjust Preferences
                 </Button>
               </CardContent>
             </Card>
           ) : (
-            <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
               {individualMatches.map((match) => (
                 <MatchCard
                   key={match.match_user_id}
@@ -348,13 +355,13 @@ export function MatchesInterface({ user }: MatchesInterfaceProps) {
                 <CardDescription className="mb-4">
                   We're working on finding compatible groups for you. Individual matches are available above.
                 </CardDescription>
-                <Button variant="outline" onClick={() => setActiveTab('individuals')}>
+                <Button variant="outline" onClick={() => setActiveTab('individuals')} className="min-h-[44px] w-full sm:w-auto">
                   View Individual Matches
                 </Button>
               </CardContent>
             </Card>
           ) : (
-            <div className="grid gap-6 md:grid-cols-2">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
               {groupSuggestions.map((group) => (
                 <GroupSuggestionCard
                   key={group.group_id}

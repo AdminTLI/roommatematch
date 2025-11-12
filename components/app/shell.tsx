@@ -143,7 +143,7 @@ export function AppShell({ children, user, showQuestionnairePrompt = false }: Ap
                     </div>
                     <Button
                       onClick={needsEmailVerification ? handleCompleteEmailVerification : handleCompletePersonaVerification}
-                      className="bg-amber-600 hover:bg-amber-700 text-white shrink-0"
+                      className="bg-amber-600 hover:bg-amber-700 text-white shrink-0 min-h-[44px] w-full sm:w-auto"
                       size="sm"
                     >
                       {needsEmailVerification ? (
@@ -191,15 +191,15 @@ export function AppShell({ children, user, showQuestionnairePrompt = false }: Ap
                 Answer a few questions to enable accurate matching. You can update answers later.
               </DialogDescription>
             </DialogHeader>
-            <div className="mt-6 flex gap-3">
+            <div className="mt-6 flex flex-col sm:flex-row gap-3">
               <button
-                className="bg-brand-600 text-white px-4 py-2 rounded-md"
+                className="bg-brand-600 text-white px-4 py-2 rounded-md min-h-[44px] w-full sm:w-auto"
                 onClick={() => { window.location.href = '/onboarding' }}
               >
                 Start now
               </button>
               <button
-                className="border px-4 py-2 rounded-md"
+                className="border px-4 py-2 rounded-md min-h-[44px] w-full sm:w-auto"
                 onClick={() => setShowQuestionnaire(false)}
               >
                 Later
