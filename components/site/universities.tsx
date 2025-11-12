@@ -204,9 +204,7 @@ export function Universities() {
                     className="grid gap-4"
                     style={{
                       gridTemplateColumns: `repeat(${Math.min(universities.length, 4)}, minmax(280px, 300px))`,
-                      maxWidth: '1200px',
-                      width: '100%',
-                      justifyContent: 'center'
+                      maxWidth: '1200px'
                     }}
                   >
                     {universities.map((university) => (
