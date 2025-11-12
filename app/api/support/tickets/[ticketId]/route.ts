@@ -9,9 +9,10 @@ import { safeLogger } from '@/lib/utils/logger'
  */
 export async function GET(
   request: Request,
-  { params }: { params: { ticketId: string } }
+  { params }: { params: Promise<{ ticketId: string }> }
 ) {
   try {
+    const { ticketId } = await params
     const supabase = await createClient()
     const { data: { user } } = await supabase.auth.getUser()
 
@@ -20,7 +21,7 @@ export async function GET(
     }
 
     // Get ticket
-    const ticket = await getTicket(params.ticketId, user.id)
+    const ticket = await getTicket(ticketId, user.id)
 
     if (!ticket) {
       return NextResponse.json(
@@ -30,7 +31,7 @@ export async function GET(
     }
 
     // Get messages
-    const messages = await getTicketMessages(params.ticketId, user.id)
+    const messages = await getTicketMessages(ticketId, user.id)
 
     return NextResponse.json({
       success: true,
@@ -54,9 +55,10 @@ export async function GET(
  */
 export async function POST(
   request: Request,
-  { params }: { params: { ticketId: string } }
+  { params }: { params: Promise<{ ticketId: string }> }
 ) {
   try {
+    const { ticketId } = await params
     const supabase = await createClient()
     const { data: { user } } = await supabase.auth.getUser()
 
@@ -65,7 +67,7 @@ export async function POST(
     }
 
     // Verify ticket exists and user has access
-    const ticket = await getTicket(params.ticketId, user.id)
+    const ticket = await getTicket(ticketId, user.id)
 
     if (!ticket) {
       return NextResponse.json(
@@ -87,7 +89,7 @@ export async function POST(
 
     // Add message
     const ticketMessage = await addTicketMessage(
-      params.ticketId,
+      ticketId,
       user.id,
       message,
       is_internal || false
@@ -119,9 +121,10 @@ export async function POST(
  */
 export async function PATCH(
   request: Request,
-  { params }: { params: { ticketId: string } }
+  { params }: { params: Promise<{ ticketId: string }> }
 ) {
   try {
+    const { ticketId } = await params
     const supabase = await createClient()
     const { data: { user } } = await supabase.auth.getUser()
 
@@ -153,7 +156,7 @@ export async function PATCH(
 
     // Update ticket status
     const updated = await updateTicketStatus(
-      params.ticketId,
+      ticketId,
       status,
       user.id,
       resolution

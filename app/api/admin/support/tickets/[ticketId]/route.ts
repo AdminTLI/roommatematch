@@ -9,9 +9,10 @@ import { safeLogger } from '@/lib/utils/logger'
  */
 export async function GET(
   request: Request,
-  { params }: { params: { ticketId: string } }
+  { params }: { params: Promise<{ ticketId: string }> }
 ) {
   try {
+    const { ticketId } = await params
     const supabase = await createClient()
     const { data: { user } } = await supabase.auth.getUser()
 
@@ -31,7 +32,7 @@ export async function GET(
     }
 
     // Get ticket (no user restriction for admin)
-    const ticket = await getTicket(params.ticketId)
+    const ticket = await getTicket(ticketId)
 
     if (!ticket) {
       return NextResponse.json(
@@ -41,7 +42,7 @@ export async function GET(
     }
 
     // Get messages (admin can see all messages including internal)
-    const messages = await getTicketMessages(params.ticketId, user.id)
+    const messages = await getTicketMessages(ticketId, user.id)
 
     // Get user information
     const { data: userData } = await supabase
@@ -75,9 +76,10 @@ export async function GET(
  */
 export async function POST(
   request: Request,
-  { params }: { params: { ticketId: string } }
+  { params }: { params: Promise<{ ticketId: string }> }
 ) {
   try {
+    const { ticketId } = await params
     const supabase = await createClient()
     const { data: { user } } = await supabase.auth.getUser()
 
@@ -109,7 +111,7 @@ export async function POST(
 
     // Add message (admin can send internal messages)
     const ticketMessage = await addTicketMessage(
-      params.ticketId,
+      ticketId,
       user.id,
       message,
       is_internal || false
@@ -141,9 +143,10 @@ export async function POST(
  */
 export async function PATCH(
   request: Request,
-  { params }: { params: { ticketId: string } }
+  { params }: { params: Promise<{ ticketId: string }> }
 ) {
   try {
+    const { ticketId } = await params
     const supabase = await createClient()
     const { data: { user } } = await supabase.auth.getUser()
 
@@ -175,7 +178,7 @@ export async function PATCH(
 
     // Update ticket status
     const updated = await updateTicketStatus(
-      params.ticketId,
+      ticketId,
       status,
       user.id,
       resolution

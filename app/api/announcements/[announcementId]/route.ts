@@ -9,9 +9,10 @@ import { safeLogger } from '@/lib/utils/logger'
  */
 export async function POST(
   request: Request,
-  { params }: { params: { announcementId: string } }
+  { params }: { params: Promise<{ announcementId: string }> }
 ) {
   try {
+    const { announcementId } = await params
     const supabase = await createClient()
     const { data: { user } } = await supabase.auth.getUser()
 
@@ -25,7 +26,7 @@ export async function POST(
 
     if (action === 'dismiss') {
       // Dismiss announcement
-      const dismissed = await dismissAnnouncement(params.announcementId, user.id)
+      const dismissed = await dismissAnnouncement(announcementId, user.id)
 
       if (!dismissed) {
         return NextResponse.json(
@@ -40,7 +41,7 @@ export async function POST(
       })
     } else if (action === 'primary' || action === 'secondary') {
       // Record action click
-      const recorded = await recordAnnouncementAction(params.announcementId, user.id, action)
+      const recorded = await recordAnnouncementAction(announcementId, user.id, action)
 
       if (!recorded) {
         return NextResponse.json(
@@ -55,7 +56,7 @@ export async function POST(
       })
     } else {
       // Record view
-      const viewed = await recordAnnouncementView(params.announcementId, user.id)
+      const viewed = await recordAnnouncementView(announcementId, user.id)
 
       if (!viewed) {
         return NextResponse.json(
