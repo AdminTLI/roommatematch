@@ -425,6 +425,9 @@ async function main(): Promise<void> {
     const allInstitutions = [...institutions.wo, ...institutions.wo_special, ...institutions.hbo];
     const onboardingInstitutions = allInstitutions; // All institutions in loadInstitutions are used in onboarding
     
+    // Load whitelist once for efficiency
+    const whitelist = loadCoverageWhitelist();
+    
     // Process each institution
     console.log('');
     console.log('📚 Processing institutions and upserting to database...');
@@ -555,7 +558,14 @@ async function main(): Promise<void> {
       if (programmes.premaster.length === 0) missingLevels.push('premaster');
       if (programmes.master.length === 0) missingLevels.push('master');
       
-      const status = total === 0 ? 'missing' : missingLevels.length === 0 ? 'complete' : 'incomplete';
+      // Apply whitelist: remove missing levels that are allowed for this institution
+      const allowedMissing = whitelist.get(institution.id);
+      const actualMissingLevels = allowedMissing
+        ? missingLevels.filter(level => !allowedMissing.has(level))
+        : missingLevels;
+      
+      // Status calculation: if all missing levels are whitelisted, treat as complete
+      const status = total === 0 ? 'missing' : actualMissingLevels.length === 0 ? 'complete' : 'incomplete';
       
       coverageReport.institutions.push({
         id: institution.id,
@@ -567,7 +577,7 @@ async function main(): Promise<void> {
           premaster: programmes.premaster.length,
           master: programmes.master.length
         },
-        missingLevels,
+        missingLevels: actualMissingLevels, // Use filtered missing levels
         status
       });
       
