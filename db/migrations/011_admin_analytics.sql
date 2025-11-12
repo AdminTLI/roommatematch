@@ -376,45 +376,40 @@ ALTER TABLE analytics_reports ENABLE ROW LEVEL SECURITY;
 CREATE POLICY "Admins can access analytics metrics" ON analytics_metrics
     FOR ALL USING (
         EXISTS (
-            SELECT 1 FROM admin_users 
-            WHERE admin_users.user_id = auth.uid() 
-            AND admin_users.role IN ('super_admin', 'university_admin', 'analytics_admin')
+            SELECT 1 FROM admins 
+            WHERE admins.user_id = auth.uid()
         )
     );
 
 CREATE POLICY "Admins can access analytics anomalies" ON analytics_anomalies
     FOR ALL USING (
         EXISTS (
-            SELECT 1 FROM admin_users 
-            WHERE admin_users.user_id = auth.uid() 
-            AND admin_users.role IN ('super_admin', 'university_admin', 'analytics_admin')
+            SELECT 1 FROM admins 
+            WHERE admins.user_id = auth.uid()
         )
     );
 
 CREATE POLICY "Admins can access user journey events" ON user_journey_events
     FOR ALL USING (
         EXISTS (
-            SELECT 1 FROM admin_users 
-            WHERE admin_users.user_id = auth.uid() 
-            AND admin_users.role IN ('super_admin', 'university_admin', 'analytics_admin')
+            SELECT 1 FROM admins 
+            WHERE admins.user_id = auth.uid()
         )
     );
 
 CREATE POLICY "Admins can access analytics funnels" ON analytics_funnels
     FOR ALL USING (
         EXISTS (
-            SELECT 1 FROM admin_users 
-            WHERE admin_users.user_id = auth.uid() 
-            AND admin_users.role IN ('super_admin', 'university_admin', 'analytics_admin')
+            SELECT 1 FROM admins 
+            WHERE admins.user_id = auth.uid()
         )
     );
 
 CREATE POLICY "Admins can manage satisfaction surveys" ON satisfaction_surveys
     FOR ALL USING (
         EXISTS (
-            SELECT 1 FROM admin_users 
-            WHERE admin_users.user_id = auth.uid() 
-            AND admin_users.role IN ('super_admin', 'university_admin', 'analytics_admin')
+            SELECT 1 FROM admins 
+            WHERE admins.user_id = auth.uid()
         )
     );
 
@@ -434,36 +429,32 @@ CREATE POLICY "Users can view their own survey responses" ON survey_responses
 CREATE POLICY "Admins can access housing market analytics" ON housing_market_analytics
     FOR ALL USING (
         EXISTS (
-            SELECT 1 FROM admin_users 
-            WHERE admin_users.user_id = auth.uid() 
-            AND admin_users.role IN ('super_admin', 'university_admin', 'housing_admin')
+            SELECT 1 FROM admins 
+            WHERE admins.user_id = auth.uid()
         )
     );
 
 CREATE POLICY "Admins can access conflict hotspots" ON conflict_hotspots
     FOR ALL USING (
         EXISTS (
-            SELECT 1 FROM admin_users 
-            WHERE admin_users.user_id = auth.uid() 
-            AND admin_users.role IN ('super_admin', 'university_admin', 'safety_admin')
+            SELECT 1 FROM admins 
+            WHERE admins.user_id = auth.uid()
         )
     );
 
 CREATE POLICY "Admins can manage dashboard configs" ON admin_dashboard_configs
     FOR ALL USING (
         EXISTS (
-            SELECT 1 FROM admin_users 
-            WHERE admin_users.user_id = auth.uid() 
-            AND admin_users.role IN ('super_admin', 'university_admin')
+            SELECT 1 FROM admins 
+            WHERE admins.user_id = auth.uid()
         )
     );
 
 CREATE POLICY "Admins can manage analytics reports" ON analytics_reports
     FOR ALL USING (
         EXISTS (
-            SELECT 1 FROM admin_users 
-            WHERE admin_users.user_id = auth.uid() 
-            AND admin_users.role IN ('super_admin', 'university_admin', 'analytics_admin')
+            SELECT 1 FROM admins 
+            WHERE admins.user_id = auth.uid()
         )
     );
 

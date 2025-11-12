@@ -4,6 +4,16 @@
   "installCommand": "npm install",
   "cleanUrls": true,
   "trailingSlash": false,
+  "crons": [
+    {
+      "path": "/api/cron/match",
+      "schedule": "0 0 * * *"
+    },
+    {
+      "path": "/api/cron/maintenance",
+      "schedule": "0 2 * * *"
+    }
+  ],
   "headers": [
     {
       "source": "/(.*)",
@@ -13,16 +23,6 @@
           "value": "public, max-age=0, must-revalidate"
         }
       ]
-    }
-  ],
-  "crons": [
-    {
-      "path": "/api/cron/match",
-      "schedule": "0 0 * * *"
-    },
-    {
-      "path": "/api/cron/maintenance",
-      "schedule": "0 2 * * *"
     }
   ]
 }
