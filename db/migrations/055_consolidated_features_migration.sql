@@ -1326,6 +1326,7 @@ COMMENT ON TABLE campus_ambassadors IS 'Campus ambassador program tracking';
 -- ============================================
 
 -- Table for announcements
+-- Check if table exists and add missing columns if needed
 CREATE TABLE IF NOT EXISTS announcements (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     
@@ -1367,6 +1368,169 @@ CREATE TABLE IF NOT EXISTS announcements (
     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
+
+-- Handle existing announcements table: add missing columns if table exists
+-- The old announcements table has: id, university_id, title, body, starts_at, ends_at, created_at, updated_at
+-- The new table needs: message (instead of body), start_date/end_date (instead of starts_at/ends_at),
+-- is_active, type, priority, display_type, position, dismissible, auto_dismiss_seconds,
+-- primary_action_label, primary_action_url, secondary_action_label, secondary_action_url,
+-- user_segments, filter_criteria, metadata, created_by
+DO $$
+BEGIN
+    -- Check if announcements table exists
+    IF EXISTS (
+        SELECT 1 
+        FROM information_schema.tables 
+        WHERE table_schema = 'public' 
+        AND table_name = 'announcements'
+    ) THEN
+        -- Rename old columns to new names if they exist
+        IF EXISTS (
+            SELECT 1 FROM information_schema.columns 
+            WHERE table_schema = 'public' AND table_name = 'announcements' AND column_name = 'body'
+        ) AND NOT EXISTS (
+            SELECT 1 FROM information_schema.columns 
+            WHERE table_schema = 'public' AND table_name = 'announcements' AND column_name = 'message'
+        ) THEN
+            ALTER TABLE announcements RENAME COLUMN body TO message;
+        END IF;
+        
+        IF EXISTS (
+            SELECT 1 FROM information_schema.columns 
+            WHERE table_schema = 'public' AND table_name = 'announcements' AND column_name = 'starts_at'
+        ) AND NOT EXISTS (
+            SELECT 1 FROM information_schema.columns 
+            WHERE table_schema = 'public' AND table_name = 'announcements' AND column_name = 'start_date'
+        ) THEN
+            ALTER TABLE announcements RENAME COLUMN starts_at TO start_date;
+        END IF;
+        
+        IF EXISTS (
+            SELECT 1 FROM information_schema.columns 
+            WHERE table_schema = 'public' AND table_name = 'announcements' AND column_name = 'ends_at'
+        ) AND NOT EXISTS (
+            SELECT 1 FROM information_schema.columns 
+            WHERE table_schema = 'public' AND table_name = 'announcements' AND column_name = 'end_date'
+        ) THEN
+            ALTER TABLE announcements RENAME COLUMN ends_at TO end_date;
+        END IF;
+        
+        -- Make university_id nullable (old table has NOT NULL)
+        IF EXISTS (
+            SELECT 1 FROM information_schema.columns 
+            WHERE table_schema = 'public' AND table_name = 'announcements' AND column_name = 'university_id'
+            AND is_nullable = 'NO'
+        ) THEN
+            ALTER TABLE announcements ALTER COLUMN university_id DROP NOT NULL;
+        END IF;
+        
+        -- Add new columns if they don't exist
+        IF NOT EXISTS (
+            SELECT 1 FROM information_schema.columns 
+            WHERE table_schema = 'public' AND table_name = 'announcements' AND column_name = 'is_active'
+        ) THEN
+            ALTER TABLE announcements ADD COLUMN is_active BOOLEAN DEFAULT TRUE;
+        END IF;
+        
+        IF NOT EXISTS (
+            SELECT 1 FROM information_schema.columns 
+            WHERE table_schema = 'public' AND table_name = 'announcements' AND column_name = 'type'
+        ) THEN
+            ALTER TABLE announcements ADD COLUMN type VARCHAR(20) DEFAULT 'info' CHECK (type IN ('info', 'warning', 'success', 'error', 'promotion'));
+        END IF;
+        
+        IF NOT EXISTS (
+            SELECT 1 FROM information_schema.columns 
+            WHERE table_schema = 'public' AND table_name = 'announcements' AND column_name = 'priority'
+        ) THEN
+            ALTER TABLE announcements ADD COLUMN priority INTEGER DEFAULT 0;
+        END IF;
+        
+        IF NOT EXISTS (
+            SELECT 1 FROM information_schema.columns 
+            WHERE table_schema = 'public' AND table_name = 'announcements' AND column_name = 'display_type'
+        ) THEN
+            ALTER TABLE announcements ADD COLUMN display_type VARCHAR(20) DEFAULT 'banner' CHECK (display_type IN ('banner', 'modal', 'toast', 'inline'));
+        END IF;
+        
+        IF NOT EXISTS (
+            SELECT 1 FROM information_schema.columns 
+            WHERE table_schema = 'public' AND table_name = 'announcements' AND column_name = 'position'
+        ) THEN
+            ALTER TABLE announcements ADD COLUMN position VARCHAR(20) DEFAULT 'top' CHECK (position IN ('top', 'bottom', 'center'));
+        END IF;
+        
+        IF NOT EXISTS (
+            SELECT 1 FROM information_schema.columns 
+            WHERE table_schema = 'public' AND table_name = 'announcements' AND column_name = 'dismissible'
+        ) THEN
+            ALTER TABLE announcements ADD COLUMN dismissible BOOLEAN DEFAULT TRUE;
+        END IF;
+        
+        IF NOT EXISTS (
+            SELECT 1 FROM information_schema.columns 
+            WHERE table_schema = 'public' AND table_name = 'announcements' AND column_name = 'auto_dismiss_seconds'
+        ) THEN
+            ALTER TABLE announcements ADD COLUMN auto_dismiss_seconds INTEGER;
+        END IF;
+        
+        IF NOT EXISTS (
+            SELECT 1 FROM information_schema.columns 
+            WHERE table_schema = 'public' AND table_name = 'announcements' AND column_name = 'primary_action_label'
+        ) THEN
+            ALTER TABLE announcements ADD COLUMN primary_action_label VARCHAR(50);
+        END IF;
+        
+        IF NOT EXISTS (
+            SELECT 1 FROM information_schema.columns 
+            WHERE table_schema = 'public' AND table_name = 'announcements' AND column_name = 'primary_action_url'
+        ) THEN
+            ALTER TABLE announcements ADD COLUMN primary_action_url VARCHAR(500);
+        END IF;
+        
+        IF NOT EXISTS (
+            SELECT 1 FROM information_schema.columns 
+            WHERE table_schema = 'public' AND table_name = 'announcements' AND column_name = 'secondary_action_label'
+        ) THEN
+            ALTER TABLE announcements ADD COLUMN secondary_action_label VARCHAR(50);
+        END IF;
+        
+        IF NOT EXISTS (
+            SELECT 1 FROM information_schema.columns 
+            WHERE table_schema = 'public' AND table_name = 'announcements' AND column_name = 'secondary_action_url'
+        ) THEN
+            ALTER TABLE announcements ADD COLUMN secondary_action_url VARCHAR(500);
+        END IF;
+        
+        IF NOT EXISTS (
+            SELECT 1 FROM information_schema.columns 
+            WHERE table_schema = 'public' AND table_name = 'announcements' AND column_name = 'user_segments'
+        ) THEN
+            ALTER TABLE announcements ADD COLUMN user_segments VARCHAR(50)[];
+        END IF;
+        
+        IF NOT EXISTS (
+            SELECT 1 FROM information_schema.columns 
+            WHERE table_schema = 'public' AND table_name = 'announcements' AND column_name = 'filter_criteria'
+        ) THEN
+            ALTER TABLE announcements ADD COLUMN filter_criteria JSONB;
+        END IF;
+        
+        IF NOT EXISTS (
+            SELECT 1 FROM information_schema.columns 
+            WHERE table_schema = 'public' AND table_name = 'announcements' AND column_name = 'metadata'
+        ) THEN
+            ALTER TABLE announcements ADD COLUMN metadata JSONB;
+        END IF;
+        
+        IF NOT EXISTS (
+            SELECT 1 FROM information_schema.columns 
+            WHERE table_schema = 'public' AND table_name = 'announcements' AND column_name = 'created_by'
+        ) THEN
+            ALTER TABLE announcements ADD COLUMN created_by UUID REFERENCES auth.users(id);
+        END IF;
+    END IF;
+END $$;
 
 -- Table for announcement views
 CREATE TABLE IF NOT EXISTS announcement_views (
