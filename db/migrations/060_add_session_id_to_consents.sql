@@ -13,13 +13,18 @@ CREATE INDEX idx_user_consents_session_id_hash ON user_consents(session_id_hash)
 -- Drop the old unique index
 DROP INDEX IF EXISTS idx_user_consents_unique_active;
 
--- Create new unique index that handles both authenticated and anonymous users
-CREATE UNIQUE INDEX idx_user_consents_unique_active 
-  ON user_consents(
-    COALESCE(user_id::text, '') || '|' || COALESCE(session_id_hash, ''),
-    consent_type
-  ) 
-  WHERE status = 'granted' AND withdrawn_at IS NULL;
+-- Create separate unique indexes for authenticated and anonymous users
+-- This avoids syntax issues with concatenation in index definitions
+
+-- Unique index for authenticated users (user_id is NOT NULL)
+CREATE UNIQUE INDEX idx_user_consents_unique_active_user 
+  ON user_consents(user_id, consent_type) 
+  WHERE status = 'granted' AND withdrawn_at IS NULL AND user_id IS NOT NULL;
+
+-- Unique index for anonymous users (user_id IS NULL, session_id_hash is NOT NULL)
+CREATE UNIQUE INDEX idx_user_consents_unique_active_anon 
+  ON user_consents(session_id_hash, consent_type) 
+  WHERE status = 'granted' AND withdrawn_at IS NULL AND user_id IS NULL AND session_id_hash IS NOT NULL;
 
 -- Update RLS policies to allow anonymous users to query by session_id_hash
 -- Drop existing policies

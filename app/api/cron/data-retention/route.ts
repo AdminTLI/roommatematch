@@ -150,22 +150,125 @@ export async function GET(request: Request) {
       if (!fetchError && deletionRequests && deletionRequests.length > 0) {
         safeLogger.info('[Cron] Found accounts ready for permanent deletion', { count: deletionRequests.length })
         
-        // Note: Actual deletion should be handled by admin or separate process
-        // This cron job just identifies accounts ready for deletion
+        // Use admin client for deletion operations
+        const adminClient = createAdminClient()
+        
         for (const request of deletionRequests) {
-          safeLogger.info('[Cron] Account ready for deletion', {
-            userId: request.user_id,
-            scheduledAt: request.deletion_scheduled_at,
-            requestId: request.id
-          })
+          if (!request.user_id) {
+            results.account_deletions.errors.push(`Request ${request.id}: Missing user_id`)
+            continue
+          }
+
+          try {
+            const targetUserId = request.user_id
+
+            // 1. Check verification document retention (4 weeks per Dutch law)
+            const { data: verifications } = await supabase
+              .from('verifications')
+              .select('created_at, updated_at')
+              .eq('user_id', targetUserId)
+              .order('updated_at', { ascending: false })
+              .limit(1)
+
+            const latestVerificationDate = verifications?.[0]?.updated_at 
+              ? new Date(verifications[0].updated_at)
+              : null
+
+            const fourWeeksAgo = new Date()
+            fourWeeksAgo.setDate(fourWeeksAgo.getDate() - 28) // 4 weeks
+
+            if (latestVerificationDate && latestVerificationDate > fourWeeksAgo) {
+              // Verification documents must be retained for 4 weeks
+              // Skip deletion and log retention requirement
+              safeLogger.info('[Cron] Preserving verification documents per Dutch law', {
+                userId: targetUserId,
+                requestId: request.id,
+                latestVerificationDate: latestVerificationDate.toISOString(),
+                retentionUntil: new Date(latestVerificationDate.getTime() + 28 * 24 * 60 * 60 * 1000).toISOString()
+              })
+              
+              // Update request to note retention requirement
+              await supabase
+                .from('dsar_requests')
+                .update({
+                  admin_notes: `Deletion delayed: Verification documents must be retained for 4 weeks per Dutch law. Retention until ${new Date(latestVerificationDate.getTime() + 28 * 24 * 60 * 60 * 1000).toISOString()}`
+                })
+                .eq('id', request.id)
+              
+              continue // Skip this deletion for now
+            }
+
+            // 2. Delete user data (cascade will handle most tables)
+            const { error: deleteError } = await supabase
+              .from('users')
+              .delete()
+              .eq('id', targetUserId)
+
+            if (deleteError) {
+              throw new Error(`Failed to delete user: ${deleteError.message}`)
+            }
+
+            // 3. Delete auth user
+            const { error: authDeleteError } = await adminClient.auth.admin.deleteUser(targetUserId)
+
+            if (authDeleteError) {
+              safeLogger.error('[Cron] Failed to delete auth user', { 
+                error: authDeleteError, 
+                userId: targetUserId,
+                requestId: request.id
+              })
+              // Continue even if auth deletion fails, as the user record is already deleted
+            }
+
+            // 4. Update DSAR request
+            await supabase
+              .from('dsar_requests')
+              .update({
+                status: 'completed',
+                deletion_completed_at: new Date().toISOString(),
+                admin_notes: 'Account permanently deleted by automated cron job. Verification documents retained per Dutch law (4 weeks) if applicable.'
+              })
+              .eq('id', request.id)
+
+            results.account_deletions.deleted++
+            safeLogger.info('[Cron] Account permanently deleted', {
+              requestId: request.id,
+              userId: targetUserId
+            })
+
+          } catch (error) {
+            const errorMessage = error instanceof Error ? error.message : 'Unknown error'
+            results.account_deletions.errors.push(`User ${request.user_id} (request ${request.id}): ${errorMessage}`)
+            safeLogger.error('[Cron] Failed to delete account', { 
+              error, 
+              userId: request.user_id,
+              requestId: request.id
+            })
+            // Continue with next account even if this one fails
+          }
         }
+
+        safeLogger.info('[Cron] Account deletion processing complete', {
+          deleted: results.account_deletions.deleted,
+          errors: results.account_deletions.errors.length
+        })
       }
     } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error'
+      results.account_deletions.errors.push(`Failed to process deletions: ${errorMessage}`)
       safeLogger.error('[Cron] Failed to process account deletions', { error })
     }
 
-    const successCount = Object.values(results).filter(r => !r.error).length
-    const failureCount = Object.values(results).filter(r => r.error).length
+    const successCount = Object.values(results).filter(r => {
+      if ('error' in r) return !r.error
+      if ('errors' in r) return r.errors.length === 0
+      return true
+    }).length
+    const failureCount = Object.values(results).filter(r => {
+      if ('error' in r) return !!r.error
+      if ('errors' in r) return r.errors.length > 0
+      return false
+    }).length
 
     safeLogger.info('[Cron] Data retention cleanup complete', {
       success: successCount,
