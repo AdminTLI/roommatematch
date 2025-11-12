@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createClient } from '@/lib/supabase/server'
+import { createClient, createAdminClient } from '@/lib/supabase/server'
 import { createDSARRequest, updateDSARRequestStatus } from '@/lib/privacy/dsar-tracker'
 import { checkRateLimit, getUserRateLimitKey } from '@/lib/rate-limit'
 import { safeLogger } from '@/lib/utils/logger'
@@ -91,11 +91,14 @@ export async function GET(req: NextRequest) {
         reports: {},
         notifications: {},
         preferences: {},
-        activity: {}
+        activity: {},
+        consents: {}
       }
 
       // 1. Account information (from auth.users)
-      const { data: authUser } = await supabase.auth.admin.getUserById(user.id)
+      // Use admin client for auth.admin operations (requires service-role key)
+      const adminClient = createAdminClient()
+      const { data: authUser } = await adminClient.auth.admin.getUserById(user.id)
       if (authUser?.user) {
         exportData.account = {
           id: authUser.user.id,
@@ -353,6 +356,31 @@ export async function GET(req: NextRequest) {
             updated_at: userVector.updated_at
             // Note: Vector data itself is not exported as it's not meaningful to users
           }
+        }
+      }
+
+      // 15. Consent records
+      const { data: consents } = await supabase
+        .from('user_consents')
+        .select('*')
+        .eq('user_id', user.id)
+        .order('created_at', { ascending: false })
+      
+      if (consents) {
+        exportData.consents = {
+          consents: consents.map(c => ({
+            id: c.id,
+            consent_type: c.consent_type,
+            status: c.status,
+            session_id_hash: c.session_id_hash, // Include hashed session ID for anonymous consents
+            ip_address: c.ip_address,
+            user_agent: c.user_agent,
+            consent_method: c.consent_method,
+            granted_at: c.granted_at,
+            withdrawn_at: c.withdrawn_at,
+            created_at: c.created_at,
+            updated_at: c.updated_at
+          }))
         }
       }
 

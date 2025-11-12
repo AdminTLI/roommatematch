@@ -7,10 +7,12 @@
 
 import { createClient } from '@/lib/supabase/server'
 import type { ConsentType, ConsentStatus } from './cookie-consent-client'
+import crypto from 'crypto'
 
 export interface ConsentRecord {
   id: string
   user_id?: string
+  session_id_hash?: string
   consent_type: ConsentType
   status: ConsentStatus
   ip_address?: string
@@ -20,6 +22,13 @@ export interface ConsentRecord {
   withdrawn_at?: string
   created_at: string
   updated_at: string
+}
+
+/**
+ * Hash a session ID using SHA-256 for privacy
+ */
+function hashSessionId(sessionId: string): string {
+  return crypto.createHash('sha256').update(sessionId).digest('hex')
 }
 
 /**
@@ -60,9 +69,21 @@ export async function getUserConsents(
         })
       }
     } else if (sessionId) {
-      // For anonymous users, we'd need to store session_id
-      // For now, we'll check localStorage on client side
-      // This function is mainly for server-side checks
+      // For anonymous users, query by hashed session_id
+      const sessionIdHash = hashSessionId(sessionId)
+      const { data } = await supabase
+        .from('user_consents')
+        .select('consent_type, status, withdrawn_at')
+        .eq('session_id_hash', sessionIdHash)
+        .is('user_id', null)
+        .eq('status', 'granted')
+        .is('withdrawn_at', null)
+      
+      if (data) {
+        data.forEach(record => {
+          consents[record.consent_type as ConsentType] = true
+        })
+      }
     }
   } catch (error) {
     console.error('Failed to get user consents', error)
@@ -81,9 +102,13 @@ export async function grantConsent(
     ip_address?: string
     user_agent?: string
     consent_method?: string
+    sessionId?: string
   }
 ): Promise<ConsentRecord> {
   const supabase = await createClient()
+
+  // Hash session ID if provided (for anonymous users)
+  const sessionIdHash = metadata?.sessionId ? hashSessionId(metadata.sessionId) : null
 
   // Withdraw any existing consent of this type first
   if (userId) {
@@ -96,6 +121,18 @@ export async function grantConsent(
       .eq('user_id', userId)
       .eq('consent_type', consentType)
       .eq('status', 'granted')
+  } else if (sessionIdHash) {
+    // For anonymous users, withdraw by session_id_hash
+    await supabase
+      .from('user_consents')
+      .update({
+        status: 'withdrawn',
+        withdrawn_at: new Date().toISOString()
+      })
+      .eq('session_id_hash', sessionIdHash)
+      .is('user_id', null)
+      .eq('consent_type', consentType)
+      .eq('status', 'granted')
   }
 
   // Create new consent record
@@ -103,6 +140,7 @@ export async function grantConsent(
     .from('user_consents')
     .insert({
       user_id: userId || null,
+      session_id_hash: sessionIdHash || null,
       consent_type: consentType,
       status: 'granted',
       ip_address: metadata?.ip_address,
@@ -125,7 +163,8 @@ export async function grantConsent(
  */
 export async function withdrawConsent(
   consentType: ConsentType,
-  userId?: string
+  userId?: string,
+  sessionId?: string
 ): Promise<void> {
   if (consentType === 'essential') {
     throw new Error('Cannot withdraw essential consent')
@@ -133,15 +172,26 @@ export async function withdrawConsent(
 
   const supabase = await createClient()
 
-  const { error } = await supabase
+  const sessionIdHash = sessionId ? hashSessionId(sessionId) : null
+
+  let query = supabase
     .from('user_consents')
     .update({
       status: 'withdrawn',
       withdrawn_at: new Date().toISOString()
     })
-    .eq('user_id', userId || null)
     .eq('consent_type', consentType)
     .eq('status', 'granted')
+
+  if (userId) {
+    query = query.eq('user_id', userId)
+  } else if (sessionIdHash) {
+    query = query.eq('session_id_hash', sessionIdHash).is('user_id', null)
+  } else {
+    throw new Error('Either userId or sessionId must be provided')
+  }
+
+  const { error } = await query
 
   if (error) {
     throw new Error(`Failed to withdraw consent: ${error.message}`)
@@ -158,6 +208,7 @@ export async function grantMultipleConsents(
     ip_address?: string
     user_agent?: string
     consent_method?: string
+    sessionId?: string
   }
 ): Promise<ConsentRecord[]> {
   const records: ConsentRecord[] = []
@@ -175,20 +226,31 @@ export async function grantMultipleConsents(
 /**
  * Withdraw all non-essential consents
  */
-export async function withdrawAllConsents(userId?: string): Promise<void> {
+export async function withdrawAllConsents(userId?: string, sessionId?: string): Promise<void> {
   const supabase = await createClient()
   // Non-essential consent types
   const nonEssentialTypes: ConsentType[] = ['analytics', 'error_tracking', 'session_replay', 'marketing']
 
-  const { error } = await supabase
+  const sessionIdHash = sessionId ? hashSessionId(sessionId) : null
+
+  let query = supabase
     .from('user_consents')
     .update({
       status: 'withdrawn',
       withdrawn_at: new Date().toISOString()
     })
-    .eq('user_id', userId || null)
     .in('consent_type', nonEssentialTypes)
     .eq('status', 'granted')
+
+  if (userId) {
+    query = query.eq('user_id', userId)
+  } else if (sessionIdHash) {
+    query = query.eq('session_id_hash', sessionIdHash).is('user_id', null)
+  } else {
+    throw new Error('Either userId or sessionId must be provided')
+  }
+
+  const { error } = await query
 
   if (error) {
     throw new Error(`Failed to withdraw consents: ${error.message}`)

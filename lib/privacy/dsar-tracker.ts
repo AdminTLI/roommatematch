@@ -220,21 +220,7 @@ export async function getOverdueRequests(): Promise<DSARRequest[]> {
   return (data || []) as DSARRequest[]
 }
 
-/**
- * Calculate days until SLA deadline
- */
-export function getDaysUntilDeadline(slaDeadline: string): number {
-  const deadline = new Date(slaDeadline)
-  const now = new Date()
-  const diffTime = deadline.getTime() - now.getTime()
-  const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24))
-  return diffDays
-}
-
-/**
- * Check if request is overdue
- */
-export function isRequestOverdue(slaDeadline: string): boolean {
-  return getDaysUntilDeadline(slaDeadline) < 0
-}
+// Utility functions moved to dsar-utils.ts for client-side use
+// Re-exported here for backward compatibility
+export { getDaysUntilDeadline, isRequestOverdue } from './dsar-utils'
 

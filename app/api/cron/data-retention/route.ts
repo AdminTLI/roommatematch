@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
+import { createAdminClient } from '@/lib/supabase/server'
 import { safeLogger } from '@/lib/utils/logger'
 
 /**
@@ -36,7 +37,8 @@ export async function GET(request: Request) {
       reports: { deleted: 0, error: null as string | null },
       app_events: { deleted: 0, error: null as string | null },
       inactive_accounts: { anonymized: 0, error: null as string | null },
-      match_suggestions: { expired: 0, error: null as string | null }
+      match_suggestions: { expired: 0, error: null as string | null },
+      account_deletions: { deleted: 0, errors: [] as string[] }
     }
 
     // 1. Purge expired verification documents (4 weeks per Dutch law)

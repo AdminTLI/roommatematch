@@ -18,7 +18,7 @@ import {
   Search,
   RefreshCw
 } from 'lucide-react'
-import { getDaysUntilDeadline, isRequestOverdue } from '@/lib/privacy/dsar-tracker'
+import { getDaysUntilDeadline, isRequestOverdue } from '@/lib/privacy/dsar-utils'
 
 interface DSARRequest {
   id: string

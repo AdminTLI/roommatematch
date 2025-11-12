@@ -24,6 +24,7 @@ export const ESSENTIAL_CONSENTS: ConsentType[] = ['essential']
  */
 export const CONSENT_STORAGE_KEY = 'domu_consent_preferences'
 export const CONSENT_VERSION = '1.0'
+export const SESSION_ID_STORAGE_KEY = 'domu_anonymous_session_id'
 
 export interface ClientConsentPreferences {
   version: string
@@ -99,5 +100,53 @@ export function shouldShowConsentBanner(): boolean {
 
   const preferences = getClientConsents()
   return preferences === null // Show banner if no preferences stored
+}
+
+/**
+ * Generate or retrieve anonymous session ID
+ * Session IDs are used to track consent for anonymous visitors
+ * Stored in localStorage to persist across page loads
+ */
+export function getOrCreateAnonymousSessionId(): string {
+  if (typeof window === 'undefined') {
+    // Server-side: return a placeholder (shouldn't be used server-side)
+    return ''
+  }
+
+  try {
+    // Check if session ID already exists
+    const existing = localStorage.getItem(SESSION_ID_STORAGE_KEY)
+    if (existing) {
+      return existing
+    }
+
+    // Generate new session ID: timestamp + random string
+    const sessionId = `anon_${Date.now()}_${Math.random().toString(36).substring(2, 15)}${Math.random().toString(36).substring(2, 15)}`
+    
+    // Store in localStorage
+    localStorage.setItem(SESSION_ID_STORAGE_KEY, sessionId)
+    
+    return sessionId
+  } catch (error) {
+    console.error('Failed to get or create anonymous session ID', error)
+    // Fallback: generate a temporary ID (won't persist)
+    return `anon_temp_${Date.now()}_${Math.random().toString(36).substring(2, 15)}`
+  }
+}
+
+/**
+ * Get existing anonymous session ID (returns null if not found)
+ */
+export function getAnonymousSessionId(): string | null {
+  if (typeof window === 'undefined') {
+    return null
+  }
+
+  try {
+    return localStorage.getItem(SESSION_ID_STORAGE_KEY)
+  } catch (error) {
+    console.error('Failed to get anonymous session ID', error)
+    return null
+  }
 }
 
