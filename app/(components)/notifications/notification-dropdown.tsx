@@ -172,19 +172,19 @@ export function NotificationDropdown({
 
   if (!isOpen) return null
 
-  const HeaderContent = () => (
-    <div className="flex items-center justify-between gap-4">
-      <div className="flex items-center gap-2 flex-1 min-w-0">
-        <Bell className="h-5 w-5 flex-shrink-0" />
-        <h2 className="text-lg font-semibold truncate">Notifications</h2>
+  const HeaderContent = ({ isMobile = false }: { isMobile?: boolean }) => (
+    <div className={`flex items-center justify-between ${isMobile ? 'gap-2' : 'gap-4'}`}>
+      <div className="flex items-center gap-1.5 sm:gap-2 flex-1 min-w-0">
+        <Bell className="h-4 w-4 sm:h-5 sm:w-5 flex-shrink-0" />
+        <h2 className="text-base sm:text-lg font-semibold whitespace-nowrap">Notifications</h2>
         {counts && counts.unread > 0 && (
-          <Badge variant="destructive" className="ml-2 flex-shrink-0 text-xs">
+          <Badge variant="destructive" className="ml-1 sm:ml-2 flex-shrink-0 text-xs">
             {counts.unread}
           </Badge>
         )}
       </div>
       
-      <div className="flex items-center gap-3 flex-shrink-0">
+      <div className="flex items-center gap-2 flex-shrink-0">
         <TooltipProvider>
           <Tooltip>
             <TooltipTrigger asChild>
@@ -229,25 +229,28 @@ export function NotificationDropdown({
           </Tooltip>
         </TooltipProvider>
         
-        <TooltipProvider>
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={onClose}
-                className="h-9 w-9 p-0 hover:bg-gray-100 ml-2"
-                title="Close notifications"
-              >
-                <X className="h-4 w-4" />
-                <span className="sr-only">Close</span>
-              </Button>
-            </TooltipTrigger>
-            <TooltipContent side="bottom">
-              <p>Close</p>
-            </TooltipContent>
-          </Tooltip>
-        </TooltipProvider>
+        {/* Only show X button on desktop - mobile Sheet has built-in close button */}
+        {!isMobile && (
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={onClose}
+                  className="h-9 w-9 p-0 hover:bg-gray-100"
+                  title="Close notifications"
+                >
+                  <X className="h-4 w-4" />
+                  <span className="sr-only">Close</span>
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent side="bottom">
+                <p>Close</p>
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
+        )}
       </div>
     </div>
   )
@@ -286,9 +289,9 @@ export function NotificationDropdown({
       {/* Mobile: Full-screen Sheet */}
       <Sheet open={isOpen} onOpenChange={onClose}>
         <SheetContent side="right" className="w-full sm:hidden p-4">
-          <SheetHeader className="mb-4 pr-16">
-            <SheetTitle className="pr-4">
-              <HeaderContent />
+          <SheetHeader className="mb-4 pr-12">
+            <SheetTitle className="pr-0">
+              <HeaderContent isMobile={true} />
             </SheetTitle>
           </SheetHeader>
           <NotificationList />
@@ -300,7 +303,7 @@ export function NotificationDropdown({
         <Card className="shadow-lg border">
           <CardHeader className="pb-3 px-4 pt-4">
             <CardTitle className="text-base">
-              <HeaderContent />
+              <HeaderContent isMobile={false} />
             </CardTitle>
           </CardHeader>
           <CardContent className="p-0">
