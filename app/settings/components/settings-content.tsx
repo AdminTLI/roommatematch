@@ -36,8 +36,8 @@ export function SettingsContent({ user, profile, academic, progressData }: Setti
   return (
     <div className="max-w-4xl mx-auto p-4 sm:p-6 pb-24">
       <div className="mb-6 sm:mb-8">
-        <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">Settings</h1>
-        <p className="text-sm sm:text-base text-gray-600 mt-2">
+        <h1 className="text-2xl sm:text-3xl font-bold text-text-primary">Settings</h1>
+        <p className="text-sm sm:text-base text-text-secondary mt-2">
           Manage your account settings, profile information, and questionnaire responses.
         </p>
       </div>
@@ -49,7 +49,7 @@ export function SettingsContent({ user, profile, academic, progressData }: Setti
           {/* Mobile: Dropdown Select (< 640px) */}
           <div className="block sm:hidden">
             <Select value={activeTab} onValueChange={setActiveTab}>
-              <SelectTrigger className="w-full bg-white dark:bg-card border border-gray-200 dark:border-border rounded-xl shadow-sm">
+              <SelectTrigger className="w-full bg-bg-surface border border-border-subtle rounded-xl shadow-sm">
                 <SelectValue>
                   <div className="flex items-center gap-2">
                     {activeTab === 'profile' && <User className="w-4 h-4" />}
@@ -96,13 +96,13 @@ export function SettingsContent({ user, profile, academic, progressData }: Setti
 
           {/* Tablet: Grid Layout (640px - 1024px) */}
           <div className="hidden sm:block lg:hidden">
-            <div className="grid grid-cols-2 gap-2 bg-white dark:bg-card border border-gray-200 dark:border-border p-1.5 rounded-2xl shadow-sm">
+            <div className="grid grid-cols-2 gap-2 bg-bg-surface border border-border-subtle p-1.5 rounded-2xl shadow-sm">
               <button
                 onClick={() => setActiveTab('profile')}
-                className={`flex items-center justify-center gap-2 px-4 py-3 rounded-xl text-sm font-medium transition-colors ${
+                className={`flex items-center justify-center gap-2 px-4 py-3 rounded-xl text-sm font-medium transition-colors min-h-[44px] ${
                   activeTab === 'profile'
-                    ? 'bg-blue-600 text-white shadow-sm'
-                    : 'text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-foreground hover:bg-gray-50 dark:hover:bg-gray-800 active:bg-gray-100 dark:active:bg-gray-700'
+                    ? 'bg-semantic-accent text-white shadow-sm'
+                    : 'text-text-secondary hover:text-text-primary hover:bg-bg-surface-alt active:bg-bg-surface-alt'
                 }`}
               >
                 <User className="w-4 h-4" />
@@ -110,10 +110,10 @@ export function SettingsContent({ user, profile, academic, progressData }: Setti
               </button>
               <button
                 onClick={() => setActiveTab('questionnaire')}
-                className={`flex items-center justify-center gap-2 px-4 py-3 rounded-xl text-sm font-medium transition-colors ${
+                className={`flex items-center justify-center gap-2 px-4 py-3 rounded-xl text-sm font-medium transition-colors min-h-[44px] ${
                   activeTab === 'questionnaire'
-                    ? 'bg-blue-600 text-white shadow-sm'
-                    : 'text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-foreground hover:bg-gray-50 dark:hover:bg-gray-800 active:bg-gray-100 dark:active:bg-gray-700'
+                    ? 'bg-semantic-accent text-white shadow-sm'
+                    : 'text-text-secondary hover:text-text-primary hover:bg-bg-surface-alt active:bg-bg-surface-alt'
                 }`}
               >
                 <FileText className="w-4 h-4" />
@@ -121,10 +121,10 @@ export function SettingsContent({ user, profile, academic, progressData }: Setti
               </button>
               <button
                 onClick={() => setActiveTab('account')}
-                className={`flex items-center justify-center gap-2 px-4 py-3 rounded-xl text-sm font-medium transition-colors ${
+                className={`flex items-center justify-center gap-2 px-4 py-3 rounded-xl text-sm font-medium transition-colors min-h-[44px] ${
                   activeTab === 'account'
-                    ? 'bg-blue-600 text-white shadow-sm'
-                    : 'text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-foreground hover:bg-gray-50 dark:hover:bg-gray-800 active:bg-gray-100 dark:active:bg-gray-700'
+                    ? 'bg-semantic-accent text-white shadow-sm'
+                    : 'text-text-secondary hover:text-text-primary hover:bg-bg-surface-alt active:bg-bg-surface-alt'
                 }`}
               >
                 <SettingsIcon className="w-4 h-4" />
@@ -132,10 +132,10 @@ export function SettingsContent({ user, profile, academic, progressData }: Setti
               </button>
               <button
                 onClick={() => setActiveTab('privacy')}
-                className={`flex items-center justify-center gap-2 px-4 py-3 rounded-xl text-sm font-medium transition-colors ${
+                className={`flex items-center justify-center gap-2 px-4 py-3 rounded-xl text-sm font-medium transition-colors min-h-[44px] ${
                   activeTab === 'privacy'
-                    ? 'bg-blue-600 text-white shadow-sm'
-                    : 'text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-foreground hover:bg-gray-50 dark:hover:bg-gray-800 active:bg-gray-100 dark:active:bg-gray-700'
+                    ? 'bg-semantic-accent text-white shadow-sm'
+                    : 'text-text-secondary hover:text-text-primary hover:bg-bg-surface-alt active:bg-bg-surface-alt'
                 }`}
               >
                 <Shield className="w-4 h-4" />
@@ -146,13 +146,13 @@ export function SettingsContent({ user, profile, academic, progressData }: Setti
 
           {/* Desktop: Horizontal Layout (>= 1024px) */}
           <div className="hidden lg:block">
-            <div className="flex gap-2 bg-white dark:bg-card border border-gray-200 dark:border-border p-1.5 rounded-2xl shadow-sm">
+            <div className="flex gap-2 bg-bg-surface border border-border-subtle p-1.5 rounded-2xl shadow-sm">
               <button
                 onClick={() => setActiveTab('profile')}
-                className={`flex items-center gap-2 px-5 py-3 rounded-xl text-base font-medium transition-colors ${
+                className={`flex items-center gap-2 px-5 py-3 rounded-xl text-base font-medium transition-colors min-h-[44px] ${
                   activeTab === 'profile'
-                    ? 'bg-blue-600 text-white shadow-sm'
-                    : 'text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-foreground hover:bg-gray-50 dark:hover:bg-gray-800 active:bg-gray-100 dark:active:bg-gray-700'
+                    ? 'bg-semantic-accent text-white shadow-sm'
+                    : 'text-text-secondary hover:text-text-primary hover:bg-bg-surface-alt active:bg-bg-surface-alt'
                 }`}
               >
                 <User className="w-5 h-5" />
@@ -160,10 +160,10 @@ export function SettingsContent({ user, profile, academic, progressData }: Setti
               </button>
               <button
                 onClick={() => setActiveTab('questionnaire')}
-                className={`flex items-center gap-2 px-5 py-3 rounded-xl text-base font-medium transition-colors ${
+                className={`flex items-center gap-2 px-5 py-3 rounded-xl text-base font-medium transition-colors min-h-[44px] ${
                   activeTab === 'questionnaire'
-                    ? 'bg-blue-600 text-white shadow-sm'
-                    : 'text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-foreground hover:bg-gray-50 dark:hover:bg-gray-800 active:bg-gray-100 dark:active:bg-gray-700'
+                    ? 'bg-semantic-accent text-white shadow-sm'
+                    : 'text-text-secondary hover:text-text-primary hover:bg-bg-surface-alt active:bg-bg-surface-alt'
                 }`}
               >
                 <FileText className="w-5 h-5" />
@@ -171,10 +171,10 @@ export function SettingsContent({ user, profile, academic, progressData }: Setti
               </button>
               <button
                 onClick={() => setActiveTab('account')}
-                className={`flex items-center gap-2 px-5 py-3 rounded-xl text-base font-medium transition-colors ${
+                className={`flex items-center gap-2 px-5 py-3 rounded-xl text-base font-medium transition-colors min-h-[44px] ${
                   activeTab === 'account'
-                    ? 'bg-blue-600 text-white shadow-sm'
-                    : 'text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-foreground hover:bg-gray-50 dark:hover:bg-gray-800 active:bg-gray-100 dark:active:bg-gray-700'
+                    ? 'bg-semantic-accent text-white shadow-sm'
+                    : 'text-text-secondary hover:text-text-primary hover:bg-bg-surface-alt active:bg-bg-surface-alt'
                 }`}
               >
                 <SettingsIcon className="w-5 h-5" />
@@ -182,10 +182,10 @@ export function SettingsContent({ user, profile, academic, progressData }: Setti
               </button>
               <button
                 onClick={() => setActiveTab('privacy')}
-                className={`flex items-center gap-2 px-5 py-3 rounded-xl text-base font-medium transition-colors ${
+                className={`flex items-center gap-2 px-5 py-3 rounded-xl text-base font-medium transition-colors min-h-[44px] ${
                   activeTab === 'privacy'
-                    ? 'bg-blue-600 text-white shadow-sm'
-                    : 'text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-foreground hover:bg-gray-50 dark:hover:bg-gray-800 active:bg-gray-100 dark:active:bg-gray-700'
+                    ? 'bg-semantic-accent text-white shadow-sm'
+                    : 'text-text-secondary hover:text-text-primary hover:bg-bg-surface-alt active:bg-bg-surface-alt'
                 }`}
               >
                 <Shield className="w-5 h-5" />

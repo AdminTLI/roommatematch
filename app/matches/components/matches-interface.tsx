@@ -197,10 +197,10 @@ export function MatchesInterface({ user }: MatchesInterfaceProps) {
     return (
       <div className="max-w-6xl mx-auto">
         <div className="animate-pulse space-y-6">
-          <div className="h-8 bg-gray-200 rounded w-1/4"></div>
+          <div className="h-8 bg-bg-surface-alt rounded w-1/4"></div>
           <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
             {[1, 2, 3].map((i) => (
-              <div key={i} className="h-96 bg-gray-200 rounded-lg"></div>
+              <div key={i} className="h-96 bg-bg-surface-alt rounded-lg"></div>
             ))}
           </div>
         </div>
@@ -214,16 +214,16 @@ export function MatchesInterface({ user }: MatchesInterfaceProps) {
       <div className="mb-6 sm:mb-8">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-4">
           <div>
-            <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white">
+            <h1 className="text-2xl sm:text-3xl font-bold text-text-primary">
               Your Matches
             </h1>
-            <p className="text-sm sm:text-base text-gray-600 dark:text-gray-300 mt-2">
+            <p className="text-sm sm:text-base text-text-secondary mt-2">
               From strangers to roommates - find your perfect match based on compatibility
             </p>
           </div>
           <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 sm:gap-4">
             {lastUpdated && (
-              <div className="text-xs sm:text-sm text-gray-500 text-center sm:text-left">
+              <div className="text-xs sm:text-sm text-text-muted text-center sm:text-left">
                 Last updated: {lastUpdated.toLocaleTimeString()}
               </div>
             )}
@@ -242,7 +242,7 @@ export function MatchesInterface({ user }: MatchesInterfaceProps) {
                 <UserIcon className="h-8 w-8 text-blue-500" />
                 <div>
                   <div className="text-2xl font-bold">{individualMatches.length}</div>
-                  <div className="text-sm text-gray-500">Individual Matches</div>
+                  <div className="text-sm text-text-muted">Individual Matches</div>
                 </div>
               </div>
             </CardContent>
@@ -250,10 +250,10 @@ export function MatchesInterface({ user }: MatchesInterfaceProps) {
           <Card>
             <CardContent className="pt-6">
               <div className="flex items-center gap-3">
-                <Users className="h-8 w-8 text-green-500" />
+                <Users className="h-8 w-8 text-semantic-success" />
                 <div>
                   <div className="text-2xl font-bold">{groupSuggestions.length}</div>
-                  <div className="text-sm text-gray-500">Group Suggestions</div>
+                  <div className="text-sm text-text-muted">Group Suggestions</div>
                 </div>
               </div>
             </CardContent>
@@ -261,13 +261,13 @@ export function MatchesInterface({ user }: MatchesInterfaceProps) {
           <Card>
             <CardContent className="pt-6">
               <div className="flex items-center gap-3">
-                <TrendingUp className="h-8 w-8 text-purple-500" />
+                <TrendingUp className="h-8 w-8 text-semantic-accent" />
                 <div>
                   <div className="text-2xl font-bold">
                     {individualMatches.length > 0 ? 
                       Math.round(Math.max(...individualMatches.map(m => m.compatibility)) * 100) : 0}%
                   </div>
-                  <div className="text-sm text-gray-500">Best Match</div>
+                  <div className="text-sm text-text-muted">Best Match</div>
                 </div>
               </div>
             </CardContent>
@@ -303,7 +303,7 @@ export function MatchesInterface({ user }: MatchesInterfaceProps) {
           {individualMatches.length === 0 ? (
             <Card className="text-center py-12">
               <CardContent>
-                <AlertCircle className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+                <AlertCircle className="h-12 w-12 text-text-muted mx-auto mb-4" />
                 <CardTitle className="text-xl mb-2">No individual matches found</CardTitle>
                 <CardDescription className="mb-4">
                   We're still finding compatible roommates for you. Check back later or adjust your preferences.
@@ -350,7 +350,7 @@ export function MatchesInterface({ user }: MatchesInterfaceProps) {
           {groupSuggestions.length === 0 ? (
             <Card className="text-center py-12">
               <CardContent>
-                <Users className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+                <Users className="h-12 w-12 text-text-muted mx-auto mb-4" />
                 <CardTitle className="text-xl mb-2">No group suggestions yet</CardTitle>
                 <CardDescription className="mb-4">
                   We're working on finding compatible groups for you. Individual matches are available above.

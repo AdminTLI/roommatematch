@@ -244,7 +244,7 @@ export function Sidebar({ user, onClose }: SidebarProps) {
   }, [user.id])
 
   return (
-    <div className="flex flex-col h-full w-full bg-white dark:bg-[#1E2433] border-r border-gray-200 dark:border-[#2D3548]">
+    <div className="flex flex-col h-full w-full bg-bg-surface dark:bg-bg-surface border-r border-border-subtle">
       {/* Branding Header */}
       <div className="px-4 lg:px-6 py-4">
         <Link href={isAdminRoute ? '/admin' : '/dashboard'} className="flex items-center gap-3">
@@ -252,10 +252,10 @@ export function Sidebar({ user, onClose }: SidebarProps) {
             <Users className="w-4 h-4 text-white" />
           </div>
           <div>
-            <h1 className="text-lg font-bold text-gray-900 dark:text-gray-100">
+            <h1 className="text-lg font-bold text-text-primary">
               {isAdminRoute ? 'Admin Panel' : 'Domu Match'}
             </h1>
-            <p className="text-xs text-gray-500 dark:text-gray-400">
+            <p className="text-xs text-text-muted">
               {isAdminRoute ? 'Manage the platform' : 'From strangers to roommates'}
             </p>
           </div>
@@ -283,8 +283,8 @@ export function Sidebar({ user, onClose }: SidebarProps) {
                       className={cn(
                         "w-full justify-start gap-3 h-11 px-3 transition-colors",
                         isActive 
-                          ? "bg-blue-50 text-blue-600 dark:bg-blue-900/20 dark:text-[#67E8F9] border-l-4 border-blue-600 rounded-l-none" 
-                          : "text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-[#2D3548]"
+                          ? "bg-semantic-accent-soft text-semantic-accent dark:bg-semantic-accent-soft dark:text-semantic-accent border-l-4 border-semantic-accent rounded-l-none" 
+                          : "text-text-secondary hover:bg-bg-surface-alt"
                       )}
                     >
                       <Icon className="w-5 h-5" />
@@ -321,8 +321,8 @@ export function Sidebar({ user, onClose }: SidebarProps) {
                   className={cn(
                     "w-full justify-start gap-3 h-11 px-3 transition-colors",
                     isActive 
-                      ? "bg-blue-50 text-blue-600 dark:bg-blue-900/20 dark:text-[#67E8F9] border-l-4 border-blue-600 rounded-l-none" 
-                      : "text-gray-600 dark:text-gray-300 hover:bg-gray-50 hover:text-gray-900 dark:hover:bg-[#2D3548] dark:hover:text-gray-100"
+                      ? "bg-semantic-accent-soft text-semantic-accent dark:bg-semantic-accent-soft dark:text-semantic-accent border-l-4 border-semantic-accent rounded-l-none" 
+                      : "text-text-secondary hover:bg-bg-surface-alt hover:text-text-primary"
                   )}
                 >
                   <Icon className="w-5 h-5" />
@@ -346,24 +346,24 @@ export function Sidebar({ user, onClose }: SidebarProps) {
             <Separator />
             
             {/* Quick Stats Card */}
-            <Card className="bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 border-blue-200 dark:border-blue-800">
+            <Card className="bg-semantic-accent-soft dark:bg-semantic-accent-soft border-semantic-accent/30 dark:border-semantic-accent/30">
               <CardContent className="p-3">
                 <div className="flex items-center gap-2 mb-2">
-                  <TrendingUp className="w-4 h-4 text-blue-600 dark:text-blue-400" />
-                  <span className="text-xs font-semibold text-blue-900 dark:text-blue-300">Quick Stats</span>
+                  <TrendingUp className="w-4 h-4 text-semantic-accent" />
+                  <span className="text-xs font-semibold text-semantic-accent">Quick Stats</span>
                 </div>
                 <div className="space-y-2">
                   <div className="flex items-center justify-between text-xs">
-                    <span className="text-gray-600 dark:text-gray-400">Matches</span>
-                    <span className="font-semibold text-gray-900 dark:text-gray-100">{totalMatchesCount}</span>
+                    <span className="text-text-secondary">Matches</span>
+                    <span className="font-semibold text-text-primary">{totalMatchesCount}</span>
                   </div>
                   <div className="flex items-center justify-between text-xs">
-                    <span className="text-gray-600 dark:text-gray-400">Unread</span>
-                    <span className="font-semibold text-gray-900 dark:text-gray-100">{unreadChatCount}</span>
+                    <span className="text-text-secondary">Unread</span>
+                    <span className="font-semibold text-text-primary">{unreadChatCount}</span>
                   </div>
                   <div className="flex items-center justify-between text-xs">
-                    <span className="text-gray-600 dark:text-gray-400">Profile</span>
-                    <span className="font-semibold text-gray-900 dark:text-gray-100">{profileCompletion}%</span>
+                    <span className="text-text-secondary">Profile</span>
+                    <span className="font-semibold text-text-primary">{profileCompletion}%</span>
                   </div>
                 </div>
               </CardContent>
@@ -371,34 +371,34 @@ export function Sidebar({ user, onClose }: SidebarProps) {
 
             {/* Progress Indicator */}
             {(profileCompletion < 100 || questionnaireProgress < 100) && (
-              <Card className="border-amber-200 dark:border-amber-800 bg-amber-50/50 dark:bg-amber-900/10">
-                <CardContent className="p-3">
-                  <div className="flex items-center gap-2 mb-2">
-                    <Sparkles className="w-4 h-4 text-amber-600 dark:text-amber-400" />
-                    <span className="text-xs font-semibold text-amber-900 dark:text-amber-300">Complete Your Profile</span>
-                  </div>
-                  <div className="space-y-2">
-                    <div>
-                      <div className="flex items-center justify-between text-xs mb-1">
-                        <span className="text-gray-600 dark:text-gray-400">Profile</span>
-                        <span className="font-medium text-gray-900 dark:text-gray-100">{profileCompletion}%</span>
-                      </div>
-                      <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-1.5">
-                        <div 
-                          className="bg-blue-600 h-1.5 rounded-full transition-all duration-300" 
-                          style={{ width: `${profileCompletion}%` }}
-                        />
-                      </div>
+            <Card className="border-semantic-warning/30 dark:border-semantic-warning/30 bg-semantic-warning/10 dark:bg-semantic-warning/10">
+              <CardContent className="p-3">
+                <div className="flex items-center gap-2 mb-2">
+                  <Sparkles className="w-4 h-4 text-semantic-warning" />
+                  <span className="text-xs font-semibold text-semantic-warning">Complete Your Profile</span>
+                </div>
+                <div className="space-y-2">
+                  <div>
+                    <div className="flex items-center justify-between text-xs mb-1">
+                      <span className="text-text-secondary">Profile</span>
+                      <span className="font-medium text-text-primary">{profileCompletion}%</span>
                     </div>
+                    <div className="w-full bg-bg-surface-alt rounded-full h-1.5">
+                      <div 
+                        className="bg-semantic-accent h-1.5 rounded-full transition-all duration-300" 
+                        style={{ width: `${profileCompletion}%` }}
+                      />
+                    </div>
+                  </div>
                     {questionnaireProgress < 100 && (
                       <div>
                         <div className="flex items-center justify-between text-xs mb-1">
-                          <span className="text-gray-600 dark:text-gray-400">Questionnaire</span>
-                          <span className="font-medium text-gray-900 dark:text-gray-100">{questionnaireProgress}%</span>
+                          <span className="text-text-secondary">Questionnaire</span>
+                          <span className="font-medium text-text-primary">{questionnaireProgress}%</span>
                         </div>
-                        <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-1.5">
+                        <div className="w-full bg-bg-surface-alt rounded-full h-1.5">
                           <div 
-                            className="bg-indigo-600 h-1.5 rounded-full transition-all duration-300" 
+                            className="bg-semantic-accent h-1.5 rounded-full transition-all duration-300" 
                             style={{ width: `${questionnaireProgress}%` }}
                           />
                         </div>
@@ -439,24 +439,24 @@ export function Sidebar({ user, onClose }: SidebarProps) {
             </div>
 
             {/* User Profile Card */}
-            <Card className="bg-gray-50 dark:bg-[#2D3548] border-gray-200 dark:border-[#2D3548]">
+            <Card className="bg-bg-surface-alt dark:bg-bg-surface-alt border-border-subtle">
               <CardContent className="p-3">
                 <Link href="/settings" onClick={onClose} className="flex items-center gap-2 hover:opacity-80 transition-opacity">
                   <Avatar className="h-8 w-8">
                     <AvatarImage src={user.avatar} />
-                    <AvatarFallback className="bg-blue-600 text-white text-xs">
+                    <AvatarFallback className="bg-semantic-accent text-white text-xs">
                       {user.name?.[0]?.toUpperCase() || user.email.charAt(0).toUpperCase()}
                     </AvatarFallback>
                   </Avatar>
                   <div className="flex-1 min-w-0">
-                    <p className="text-xs font-semibold text-gray-900 dark:text-gray-100 truncate">
+                    <p className="text-xs font-semibold text-text-primary truncate">
                       {user.name || 'User'}
                     </p>
-                    <p className="text-xs text-gray-500 dark:text-gray-400 truncate">
+                    <p className="text-xs text-text-muted truncate">
                       {user.email}
                     </p>
                   </div>
-                  <Settings className="w-3.5 h-3.5 text-gray-400" />
+                  <Settings className="w-3.5 h-3.5 text-text-muted" />
                 </Link>
               </CardContent>
             </Card>

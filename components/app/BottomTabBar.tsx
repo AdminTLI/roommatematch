@@ -83,8 +83,8 @@ export function BottomTabBar({ user }: BottomTabBarProps) {
 	}, [user.id])
 
 	return (
-		<nav className="fixed bottom-0 left-0 right-0 z-40 border-t border-line dark:border-gray-700 bg-surface-0/95 dark:bg-card/95 backdrop-blur supports-[backdrop-filter]:bg-surface-0/80 dark:supports-[backdrop-filter]:bg-card/80 md:hidden">
-			<ul className="safe-area-inset grid grid-cols-4 h-16 w-full">
+		<nav className="fixed bottom-0 left-0 right-0 z-40 border-t border-border-subtle bg-bg-surface/95 dark:bg-bg-surface/95 backdrop-blur supports-[backdrop-filter]:bg-bg-surface/80 dark:supports-[backdrop-filter]:bg-bg-surface/80 md:hidden pb-safe-bottom">
+			<ul className="pt-safe-top grid grid-cols-4 h-16 w-full">
 				{tabs.map((tab) => {
 					const isActive = pathname === tab.href || pathname.startsWith(tab.href + '/')
 					const Icon = tab.icon
@@ -95,15 +95,15 @@ export function BottomTabBar({ user }: BottomTabBarProps) {
 								className={cn(
 									'flex h-full w-full flex-col items-center justify-center gap-1 text-xs',
 									isActive
-										? 'text-brand-600 dark:text-blue-400'
-										: 'text-ink-500 dark:text-gray-400 hover:text-ink-700 dark:hover:text-gray-300',
+										? 'text-semantic-accent'
+										: 'text-text-muted hover:text-text-secondary',
 								)}
 								aria-current={isActive ? 'page' : undefined}
 							>
 								<div className="relative flex items-center justify-center">
 									<Icon className="h-5 w-5" />
 									{tab.badge && unreadChatCount > 0 && (
-										<span className="absolute -top-1 -right-2 min-w-[18px] h-[18px] rounded-full bg-red-600 text-white text-[10px] leading-[18px] px-1 text-center">
+										<span className="absolute -top-1 -right-2 min-w-[18px] h-[18px] rounded-full bg-semantic-danger text-white text-[10px] leading-[18px] px-1 text-center">
 											{unreadChatCount > 99 ? '99+' : unreadChatCount}
 										</span>
 									)}

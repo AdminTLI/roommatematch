@@ -17,6 +17,20 @@ const config: Config = {
     },
     extend: {
       colors: {
+        // Semantic color tokens
+        'bg-body': "hsl(var(--bg-body))",
+        'bg-surface': "hsl(var(--bg-surface))",
+        'bg-surface-alt': "hsl(var(--bg-surface-alt))",
+        'border-subtle': "hsl(var(--border-subtle))",
+        'text-primary': "hsl(var(--text-primary))",
+        'text-secondary': "hsl(var(--text-secondary))",
+        'text-muted': "hsl(var(--text-muted))",
+        'semantic-accent': "hsl(var(--accent))",
+        'semantic-accent-hover': "hsl(var(--accent-hover))",
+        'semantic-accent-soft': "hsl(var(--accent-soft))",
+        'semantic-danger': "hsl(var(--danger))",
+        'semantic-warning': "hsl(var(--warning))",
+        'semantic-success': "hsl(var(--success))",
         brand: {
           primary: '#4F46E5',        // Indigo 600
           primaryHover: '#4338CA',   // Indigo 700

@@ -173,7 +173,7 @@ export function MatchCard({
   }
 
   return (
-    <Card className="border-2 border-gray-100 hover:border-primary/20 transition-all duration-300 hover:shadow-lg p-3 md:p-6">
+    <Card className="border-2 border-border-subtle hover:border-semantic-accent/20 transition-all duration-300 hover:shadow-lg p-3 md:p-6">
       <CardHeader className="pb-4">
         <div className="flex flex-col sm:flex-row items-start justify-between gap-4">
           <div className="flex items-center gap-4">
@@ -188,8 +188,8 @@ export function MatchCard({
                   </Avatar>
                 ))}
                 {groupMembers.length > 3 && (
-                  <div className="w-12 h-12 rounded-full bg-gray-200 border-2 border-white flex items-center justify-center">
-                    <span className="text-xs font-semibold text-gray-600">
+                  <div className="w-12 h-12 rounded-full bg-bg-surface-alt border-2 border-bg-surface flex items-center justify-center">
+                    <span className="text-xs font-semibold text-text-secondary">
                       +{groupMembers.length - 3}
                     </span>
                   </div>
@@ -261,7 +261,7 @@ export function MatchCard({
             <div className="text-2xl font-bold text-primary">
               {formatCompatibilityScore(compatibility)}
             </div>
-            <div className="text-sm text-gray-500">
+            <div className="text-sm text-text-muted">
               {getCompatibilityLabel(compatibility)}
             </div>
           </div>
@@ -271,7 +271,7 @@ export function MatchCard({
       <CardContent className="space-y-6">
         {/* Compatibility Breakdown */}
         <div className="space-y-3">
-          <h4 className="font-semibold text-gray-900 dark:text-white">
+          <h4 className="font-semibold text-text-primary">
             Compatibility Breakdown
           </h4>
           
@@ -298,11 +298,11 @@ export function MatchCard({
                   <span className="text-sm font-medium capitalize">
                     {key}
                   </span>
-                  <span className="text-sm text-gray-600">
+                  <span className="text-sm text-text-secondary">
                     {formatCompatibilityScore(score)}
                   </span>
                 </div>
-                <div className="w-full bg-gray-200 rounded-full h-2">
+                <div className="w-full bg-bg-surface-alt rounded-full h-2">
                   <div 
                     className={`h-2 rounded-full transition-all duration-500 ${getCompatibilityColor(score)}`}
                     style={{ width: `${score * 100}%` }}
@@ -315,27 +315,27 @@ export function MatchCard({
 
         {/* Top Alignment & Watch Out */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <div className="bg-green-50 dark:bg-green-900/20 rounded-lg p-3">
+          <div className="bg-semantic-success/10 dark:bg-semantic-success/20 rounded-lg p-3">
             <div className="flex items-center gap-2 mb-2">
-              <CheckCircle className="h-4 w-4 text-green-600" />
-              <span className="text-sm font-semibold text-green-800 dark:text-green-200">
+              <CheckCircle className="h-4 w-4 text-semantic-success" />
+              <span className="text-sm font-semibold text-semantic-success">
                 Best match on
               </span>
             </div>
-            <div className="text-sm text-green-700 dark:text-green-300 capitalize">
+            <div className="text-sm text-semantic-success capitalize">
               {topAlignment}
             </div>
           </div>
 
           {watchOut && (
-            <div className="bg-yellow-50 dark:bg-yellow-900/20 rounded-lg p-3">
+            <div className="bg-semantic-warning/10 dark:bg-semantic-warning/20 rounded-lg p-3">
               <div className="flex items-center gap-2 mb-2">
-                <AlertTriangle className="h-4 w-4 text-yellow-600" />
-                <span className="text-sm font-semibold text-yellow-800 dark:text-yellow-200">
+                <AlertTriangle className="h-4 w-4 text-semantic-warning" />
+                <span className="text-sm font-semibold text-semantic-warning">
                   Watch out for
                 </span>
               </div>
-              <div className="text-sm text-yellow-700 dark:text-yellow-300">
+              <div className="text-sm text-semantic-warning">
                 {watchOut}
               </div>
             </div>
@@ -344,11 +344,11 @@ export function MatchCard({
 
         {/* House Rules Suggestion */}
         {houseRulesSuggestion && (
-          <div className="bg-blue-50 dark:bg-blue-900/20 rounded-lg p-3">
-            <h5 className="text-sm font-semibold text-blue-800 dark:text-blue-200 mb-2">
+          <div className="bg-semantic-accent-soft dark:bg-semantic-accent-soft rounded-lg p-3">
+            <h5 className="text-sm font-semibold text-semantic-accent mb-2">
               Suggested house rules
             </h5>
-            <p className="text-sm text-blue-700 dark:text-blue-300">
+            <p className="text-sm text-semantic-accent">
               {houseRulesSuggestion}
             </p>
           </div>
@@ -356,8 +356,8 @@ export function MatchCard({
 
         {/* Reputation Preview */}
         {!isGroup && (
-          <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-3">
-            <h5 className="text-sm font-semibold text-gray-800 dark:text-gray-200 mb-2">
+          <div className="bg-bg-surface-alt dark:bg-bg-surface-alt rounded-lg p-3">
+            <h5 className="text-sm font-semibold text-text-primary mb-2">
               Reputation
             </h5>
             <ReputationPreview userReputation={getDemoReputationSummary()} />

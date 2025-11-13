@@ -290,13 +290,19 @@ export function DashboardContent({ hasCompletedQuestionnaire = false, hasPartial
         const fullName = [profile.first_name?.trim(), profile.last_name?.trim()].filter(Boolean).join(' ') || 'User'
         const programDisplay = programMap.get(userId) || null
         
+        // Handle universities as either object or array (Supabase type inference issue)
+        const universityData = Array.isArray(profile.universities) 
+          ? profile.universities[0] 
+          : profile.universities
+        const universityName = universityData?.name || 'University'
+        
         return {
           id: userId,
           userId: userId,
           name: fullName,
           score: score, // Keep as decimal 0-1 for display
           program: programDisplay || '',
-          university: profile.universities?.name || 'University',
+          university: universityName,
           avatar: undefined
         }
       }).filter((m): m is NonNullable<typeof m> => m !== null) // Remove null entries
@@ -538,16 +544,16 @@ export function DashboardContent({ hasCompletedQuestionnaire = false, hasPartial
       case 'match_created':
       case 'match_accepted':
       case 'match_confirmed':
-        return 'bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-300'
+        return 'bg-semantic-success/20 text-semantic-success'
       case 'chat_message':
-        return 'bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-300'
+        return 'bg-semantic-accent-soft text-semantic-accent'
       case 'profile_updated':
       case 'questionnaire_completed':
-        return 'bg-purple-100 dark:bg-purple-900/30 text-purple-800 dark:text-purple-300'
+        return 'bg-semantic-accent-soft text-semantic-accent'
       case 'housing_update':
-        return 'bg-orange-100 dark:bg-orange-900/30 text-orange-800 dark:text-orange-300'
+        return 'bg-semantic-warning/20 text-semantic-warning'
       default:
-        return 'bg-gray-100 dark:bg-gray-800 text-gray-800 dark:text-gray-300'
+        return 'bg-bg-surface-alt text-text-secondary'
     }
   }
 
@@ -613,15 +619,15 @@ export function DashboardContent({ hasCompletedQuestionnaire = false, hasPartial
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5 }}
-          className="border rounded-lg p-4 bg-red-50 dark:bg-red-900/20 border-red-200 dark:border-red-800"
+          className="border rounded-lg p-4 bg-semantic-danger/10 border-semantic-danger/30"
         >
           <div className="flex items-start gap-3">
-            <AlertCircle className="h-5 w-5 mt-0.5 text-red-600 dark:text-red-400" />
+            <AlertCircle className="h-5 w-5 mt-0.5 text-semantic-danger" />
             <div className="flex-1">
-              <h3 className="font-semibold text-red-900 dark:text-red-200">
+              <h3 className="font-semibold text-semantic-danger">
                 Email Verification Required
               </h3>
-              <p className="text-sm mt-1 text-red-800 dark:text-red-300">
+              <p className="text-sm mt-1 text-semantic-danger">
                 Please verify your email address to submit the questionnaire and access all features.
               </p>
               <Button 
@@ -646,22 +652,22 @@ export function DashboardContent({ hasCompletedQuestionnaire = false, hasPartial
           transition={{ duration: 0.5 }}
           className={`border rounded-lg p-4 ${
             hasPartialProgress 
-              ? 'bg-blue-50 dark:bg-blue-900/20 border-blue-200 dark:border-blue-800' 
-              : 'bg-yellow-50 dark:bg-yellow-900/20 border-yellow-200 dark:border-yellow-800'
+              ? 'bg-semantic-accent-soft border-semantic-accent/30' 
+              : 'bg-semantic-warning/20 border-semantic-warning/30'
           }`}
         >
           <div className="flex items-start gap-3">
             <AlertCircle className={`h-5 w-5 mt-0.5 ${
-              hasPartialProgress ? 'text-blue-600 dark:text-blue-400' : 'text-yellow-600 dark:text-yellow-400'
+              hasPartialProgress ? 'text-semantic-accent' : 'text-semantic-warning'
             }`} />
             <div className="flex-1">
               <h3 className={`font-semibold ${
-                hasPartialProgress ? 'text-blue-900 dark:text-blue-200' : 'text-yellow-900 dark:text-yellow-200'
+                hasPartialProgress ? 'text-semantic-accent' : 'text-semantic-warning'
               }`}>
                 {hasPartialProgress ? 'Update Your Compatibility Profile' : 'Complete Your Compatibility Test'}
               </h3>
               <p className={`text-sm mt-1 ${
-                hasPartialProgress ? 'text-blue-800 dark:text-blue-300' : 'text-yellow-800 dark:text-yellow-300'
+                hasPartialProgress ? 'text-semantic-accent' : 'text-semantic-warning'
               }`}>
                 {hasPartialProgress 
                   ? `Your profile is missing some information. Update your questionnaire to ensure accurate matching.`
@@ -691,15 +697,15 @@ export function DashboardContent({ hasCompletedQuestionnaire = false, hasPartial
       >
         <motion.div variants={fadeInUp} className="flex items-center justify-between">
           <div>
-            <h1 className="text-lg lg:text-xl font-bold text-gray-900 dark:text-foreground">Welcome back{firstName ? ` ${firstName}` : ''}!</h1>
-            <p className="text-xs lg:text-sm text-gray-600 dark:text-muted-foreground mt-0.5">Here's what's happening with your matches today.</p>
+            <h1 className="text-lg lg:text-xl font-bold text-text-primary">Welcome back{firstName ? ` ${firstName}` : ''}!</h1>
+            <p className="text-xs lg:text-sm text-text-secondary mt-0.5">Here's what's happening with your matches today.</p>
           </div>
         </motion.div>
         
         {/* Summary Badges - Real Data */}
         <motion.div variants={fadeInUp} className="flex flex-wrap gap-1.5 sm:gap-2">
           {dashboardData.summary.newMatchesCount > 0 && (
-            <div className="inline-flex items-center gap-1.5 px-2 py-0.5 bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-300 text-xs font-medium rounded-full">
+            <div className="inline-flex items-center gap-1.5 px-2 py-0.5 bg-semantic-success/20 text-semantic-success text-xs font-medium rounded-full">
               <Star className="w-2.5 h-2.5" />
               {dashboardData.summary.newMatchesCount} new {dashboardData.summary.newMatchesCount === 1 ? 'match' : 'matches'}
             </div>
@@ -707,7 +713,7 @@ export function DashboardContent({ hasCompletedQuestionnaire = false, hasPartial
           {dashboardData.summary.unreadMessagesCount > 0 && (
             <button
               onClick={() => router.push('/chat')}
-              className="inline-flex items-center gap-1.5 px-2 py-0.5 bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-300 text-xs font-medium rounded-full hover:bg-blue-200 dark:hover:bg-blue-900/50 transition-colors cursor-pointer"
+              className="inline-flex items-center gap-1.5 px-2 py-0.5 bg-semantic-accent-soft text-semantic-accent text-xs font-medium rounded-full hover:bg-semantic-accent-soft/80 transition-colors cursor-pointer"
             >
               <MessageCircle className="w-2.5 h-2.5" />
               {dashboardData.summary.unreadMessagesCount} unread {dashboardData.summary.unreadMessagesCount === 1 ? 'message' : 'messages'}
@@ -717,7 +723,7 @@ export function DashboardContent({ hasCompletedQuestionnaire = false, hasPartial
           {profileCompletion < 100 && (
             <button
               onClick={() => router.push('/settings')}
-              className="inline-flex items-center gap-1.5 px-2 py-0.5 bg-purple-100 dark:bg-purple-900/30 text-purple-800 dark:text-purple-300 text-xs font-medium rounded-full hover:bg-purple-200 dark:hover:bg-purple-900/50 transition-colors cursor-pointer"
+              className="inline-flex items-center gap-1.5 px-2 py-0.5 bg-semantic-accent-soft text-semantic-accent text-xs font-medium rounded-full hover:bg-semantic-accent-soft/80 transition-colors cursor-pointer"
             >
               <TrendingUp className="w-2.5 h-2.5" />
               Profile {profileCompletion}% complete
@@ -725,13 +731,13 @@ export function DashboardContent({ hasCompletedQuestionnaire = false, hasPartial
           )}
           {/* Questionnaire Progress Badge */}
           {questionnaireProgress && !questionnaireProgress.isSubmitted && (
-            <div className="inline-flex items-center gap-1.5 px-2 py-0.5 bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-300 text-xs font-medium rounded-full">
+            <div className="inline-flex items-center gap-1.5 px-2 py-0.5 bg-semantic-accent-soft text-semantic-accent text-xs font-medium rounded-full">
               <FileText className="w-2.5 h-2.5" />
               Questionnaire {questionnaireProgress.completedSections}/{questionnaireProgress.totalSections} sections
             </div>
           )}
           {dashboardData.summary.newMatchesCount === 0 && dashboardData.summary.unreadMessagesCount === 0 && profileCompletion === 100 && (!questionnaireProgress || questionnaireProgress.isSubmitted) && (
-            <div className="inline-flex items-center gap-1.5 px-2 py-0.5 bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-300 text-xs font-medium rounded-full">
+            <div className="inline-flex items-center gap-1.5 px-2 py-0.5 bg-semantic-success/20 text-semantic-success text-xs font-medium rounded-full">
               <Star className="w-2.5 h-2.5" />
               All caught up!
             </div>
@@ -747,25 +753,25 @@ export function DashboardContent({ hasCompletedQuestionnaire = false, hasPartial
         className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2 sm:gap-2 flex-shrink-0"
       >
         <motion.div variants={fadeInUp}>
-          <div className="bg-white dark:bg-card p-3 sm:p-4 rounded-xl shadow-sm border border-gray-200 dark:border-border">
-            <div className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-foreground">
+          <div className="bg-bg-surface p-3 sm:p-4 rounded-xl shadow-sm border border-border-subtle">
+            <div className="text-xl sm:text-2xl font-bold text-text-primary">
               {avgCompatibility > 0 ? `${avgCompatibility}%` : '0%'}
             </div>
-            <div className="text-xs text-gray-600 dark:text-muted-foreground mt-0.5">Avg Compatibility</div>
+            <div className="text-xs text-text-secondary mt-0.5">Avg Compatibility</div>
           </div>
         </motion.div>
         
         <motion.div variants={fadeInUp}>
-          <div className="bg-white dark:bg-card p-3 sm:p-4 rounded-xl shadow-sm border border-gray-200 dark:border-border">
-            <div className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-foreground">{totalMatches}</div>
-            <div className="text-xs text-gray-600 dark:text-muted-foreground mt-0.5">Total Matches</div>
+          <div className="bg-bg-surface p-3 sm:p-4 rounded-xl shadow-sm border border-border-subtle">
+            <div className="text-xl sm:text-2xl font-bold text-text-primary">{totalMatches}</div>
+            <div className="text-xs text-text-secondary mt-0.5">Total Matches</div>
           </div>
         </motion.div>
         
         <motion.div variants={fadeInUp}>
-          <div className="bg-white dark:bg-card p-3 sm:p-4 rounded-xl shadow-sm border border-gray-200 dark:border-border">
-            <div className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-foreground">{dashboardData.kpis.activeChats}</div>
-            <div className="text-xs text-gray-600 dark:text-muted-foreground mt-0.5">Active Chats</div>
+          <div className="bg-bg-surface p-3 sm:p-4 rounded-xl shadow-sm border border-border-subtle">
+            <div className="text-xl sm:text-2xl font-bold text-text-primary">{dashboardData.kpis.activeChats}</div>
+            <div className="text-xs text-text-secondary mt-0.5">Active Chats</div>
           </div>
         </motion.div>
       </motion.div>
@@ -779,11 +785,11 @@ export function DashboardContent({ hasCompletedQuestionnaire = false, hasPartial
       >
         {/* Top Matches - Real Data */}
         <motion.div variants={fadeInUp} className="flex flex-col min-h-0">
-          <div className="bg-white dark:bg-card p-3 sm:p-4 rounded-xl shadow-sm border border-gray-200 dark:border-border flex flex-col h-full max-h-full">
+          <div className="bg-bg-surface p-3 sm:p-4 rounded-xl shadow-sm border border-border-subtle flex flex-col h-full max-h-full">
             <div className="flex items-center justify-between mb-2">
-              <h3 className="text-sm lg:text-base font-bold text-gray-900 dark:text-foreground">Your Top Matches</h3>
+              <h3 className="text-sm lg:text-base font-bold text-text-primary">Your Top Matches</h3>
               <button 
-                className="flex items-center justify-center w-8 h-8 text-gray-600 dark:text-muted-foreground hover:text-gray-700 dark:hover:text-foreground hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors" 
+                className="flex items-center justify-center w-8 h-8 text-text-muted hover:text-text-primary hover:bg-bg-surface-alt rounded-lg transition-colors" 
                 onClick={loadTopMatches}
                 disabled={isLoadingMatches}
                 title="Refresh matches"
@@ -798,19 +804,19 @@ export function DashboardContent({ hasCompletedQuestionnaire = false, hasPartial
             
             {isLoadingMatches ? (
               <div className="flex items-center justify-center py-8 flex-1">
-                <Loader2 className="w-6 h-6 animate-spin text-gray-400 dark:text-gray-500" />
+                <Loader2 className="w-6 h-6 animate-spin text-text-muted" />
               </div>
             ) : topMatches.length > 0 ? (
               <div className="flex flex-col flex-1 min-h-0">
                 <div className="space-y-2 overflow-y-auto flex-1 pr-2">
                   {topMatches.map((match) => (
-                    <div key={match.id} className="flex items-center gap-3 p-3 bg-white dark:bg-gray-800/50 border border-gray-200 dark:border-gray-700 rounded-lg hover:shadow-md dark:hover:shadow-lg transition-shadow">
-                      <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-500 rounded-full flex items-center justify-center text-white font-bold text-sm flex-shrink-0">
+                    <div key={match.id} className="flex items-center gap-3 p-3 bg-bg-surface-alt border border-border-subtle rounded-lg hover:shadow-md transition-shadow">
+                      <div className="w-10 h-10 bg-gradient-to-br from-semantic-accent to-semantic-accent-hover rounded-full flex items-center justify-center text-white font-bold text-sm flex-shrink-0">
                         {match.name[0].toUpperCase()}
                       </div>
                       <div className="flex-1 min-w-0">
-                        <h4 className="font-semibold text-sm text-gray-900 dark:text-foreground truncate">{match.name}</h4>
-                        <div className="text-xs text-gray-600 dark:text-muted-foreground mt-0.5">
+                        <h4 className="font-semibold text-sm text-text-primary truncate">{match.name}</h4>
+                        <div className="text-xs text-text-secondary mt-0.5">
                           {match.program && (
                             <div className="truncate">{match.program}</div>
                           )}
@@ -821,13 +827,13 @@ export function DashboardContent({ hasCompletedQuestionnaire = false, hasPartial
                       </div>
                       <div className="flex items-center gap-2 flex-shrink-0">
                         {match.score > 0 && (
-                          <div className="text-base font-bold text-blue-600 dark:text-blue-400">
+                          <div className="text-base font-bold text-semantic-accent">
                             {Math.round(match.score * 100)}%
                           </div>
                         )}
                         <button 
                           onClick={() => handleChatWithMatch(match.userId || match.id)}
-                          className="px-3 py-1.5 bg-blue-600 dark:bg-blue-500 text-white text-xs font-medium rounded-lg hover:bg-blue-700 dark:hover:bg-blue-600 transition-colors min-h-[44px] min-w-[60px]"
+                          className="px-3 py-1.5 bg-semantic-accent text-white text-xs font-medium rounded-lg hover:bg-semantic-accent-hover transition-colors min-h-[44px] min-w-[60px]"
                         >
                           Chat
                         </button>
@@ -835,9 +841,9 @@ export function DashboardContent({ hasCompletedQuestionnaire = false, hasPartial
                     </div>
                   ))}
                 </div>
-                <div className="pt-2 border-t border-gray-200 dark:border-gray-700 mt-2 flex-shrink-0">
+                <div className="pt-2 border-t border-border-subtle mt-2 flex-shrink-0">
                   <button 
-                    className="w-full flex items-center justify-center gap-1 text-xs text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 font-medium py-1.5" 
+                    className="w-full flex items-center justify-center gap-1 text-xs text-semantic-accent hover:text-semantic-accent-hover font-medium py-1.5" 
                     onClick={handleBrowseMatches}
                   >
                     View all
@@ -863,11 +869,11 @@ export function DashboardContent({ hasCompletedQuestionnaire = false, hasPartial
 
         {/* Recent Activity - Live Notifications */}
         <motion.div variants={fadeInUp} className="flex flex-col min-h-0">
-          <div className="bg-white dark:bg-card p-3 sm:p-4 rounded-xl shadow-sm border border-gray-200 dark:border-border flex flex-col h-full max-h-full">
+          <div className="bg-bg-surface p-3 sm:p-4 rounded-xl shadow-sm border border-border-subtle flex flex-col h-full max-h-full">
             <div className="flex items-center justify-between mb-2">
-              <h3 className="text-sm lg:text-base font-bold text-gray-900 dark:text-foreground">Recent Activity</h3>
+              <h3 className="text-sm lg:text-base font-bold text-text-primary">Recent Activity</h3>
               <button 
-                className="flex items-center justify-center w-8 h-8 text-gray-600 dark:text-muted-foreground hover:text-gray-700 dark:hover:text-foreground hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors" 
+                className="flex items-center justify-center w-8 h-8 text-text-muted hover:text-text-primary hover:bg-bg-surface-alt rounded-lg transition-colors" 
                 onClick={loadRecentActivity}
                 disabled={isLoadingActivity}
                 title="Refresh activity"
@@ -882,7 +888,7 @@ export function DashboardContent({ hasCompletedQuestionnaire = false, hasPartial
             
             {isLoadingActivity ? (
               <div className="flex items-center justify-center py-8 flex-1">
-                <Loader2 className="w-6 h-6 animate-spin text-gray-400 dark:text-gray-500" />
+                <Loader2 className="w-6 h-6 animate-spin text-text-muted" />
               </div>
             ) : recentActivity.length > 0 ? (
               <div className="flex flex-col flex-1 min-h-0">
@@ -893,36 +899,36 @@ export function DashboardContent({ hasCompletedQuestionnaire = false, hasPartial
                       onClick={() => handleActivityClick(activity)}
                       className={`w-full flex items-start gap-2 p-2 rounded-lg transition-colors text-left ${
                         activity.isRead 
-                          ? 'bg-gray-50 dark:bg-gray-800/50 hover:bg-gray-100 dark:hover:bg-gray-800' 
-                          : 'bg-blue-50 dark:bg-blue-900/20 hover:bg-blue-100 dark:hover:bg-blue-900/30 border border-blue-200 dark:border-blue-800'
+                          ? 'bg-bg-surface-alt hover:bg-bg-surface-alt/80' 
+                          : 'bg-semantic-accent-soft hover:bg-semantic-accent-soft/80 border border-semantic-accent/30'
                       }`}
                     >
                       <div className={`flex-shrink-0 w-6 h-6 rounded-full flex items-center justify-center ${
-                        activity.isRead ? 'bg-gray-200 dark:bg-gray-700' : getActivityColor(activity.type)
+                        activity.isRead ? 'bg-bg-surface-alt' : getActivityColor(activity.type)
                       }`}>
-                        <div className={activity.isRead ? 'text-gray-600 dark:text-gray-400' : ''}>
+                        <div className={activity.isRead ? 'text-text-muted' : ''}>
                           {getActivityIcon(activity.type)}
                         </div>
                       </div>
                       <div className="flex-1 min-w-0">
                         <p className={`font-medium text-xs ${
-                          activity.isRead ? 'text-gray-700 dark:text-gray-300' : 'text-gray-900 dark:text-foreground'
+                          activity.isRead ? 'text-text-secondary' : 'text-text-primary'
                         }`}>
                           {activity.title}
                         </p>
                         {activity.message && (
                           <p className={`text-xs mt-0.5 ${
-                            activity.isRead ? 'text-gray-500 dark:text-gray-400' : 'text-gray-600 dark:text-muted-foreground'
+                            activity.isRead ? 'text-text-muted' : 'text-text-secondary'
                           }`}>
                             {activity.message}
                           </p>
                         )}
-                        <p className="text-xs text-gray-400 dark:text-gray-500 mt-0.5">
+                        <p className="text-xs text-text-muted mt-0.5">
                           {activity.timeAgo}
                         </p>
                       </div>
                       {!activity.isRead && (
-                        <div className="flex-shrink-0 w-1.5 h-1.5 bg-blue-600 dark:bg-blue-400 rounded-full mt-1.5" />
+                        <div className="flex-shrink-0 w-1.5 h-1.5 bg-semantic-accent rounded-full mt-1.5" />
                       )}
                     </button>
                   ))}
