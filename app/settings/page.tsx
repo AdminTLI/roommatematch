@@ -226,6 +226,31 @@ export default async function SettingsPage() {
           const { createServiceClient } = await import('@/lib/supabase/service')
           const serviceSupabase = createServiceClient()
           
+          // Look up program UUID from CROHO code if program_id is a CROHO code (not a UUID)
+          let programUUID: string | undefined = undefined
+          if (program_id && typeof program_id === 'string' && program_id.trim() !== '' && !program_id.match(/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i)) {
+            // It's a CROHO code, not a UUID - look up the program UUID
+            console.log('[Settings] Looking up program UUID for CROHO code:', program_id)
+            const { data: programData } = await serviceSupabase
+              .from('programs')
+              .select('id')
+              .eq('croho_code', program_id)
+              .maybeSingle()
+            
+            if (programData?.id) {
+              programUUID = programData.id
+              console.log('[Settings] Found program UUID:', programUUID, 'for CROHO code:', program_id)
+            } else {
+              console.warn('[Settings] Program not found for CROHO code:', program_id)
+              // If program not found, set undecided_program to true
+              undecided_program = true
+              programUUID = undefined
+            }
+          } else if (program_id && typeof program_id === 'string' && program_id.match(/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i)) {
+            // It's already a UUID
+            programUUID = program_id
+          }
+          
           // Use upsertProfileAndAcademic to create the record
           const { upsertProfileAndAcademic } = await import('@/lib/onboarding/submission')
           
@@ -237,7 +262,7 @@ export default async function SettingsPage() {
             university_id: university_id,
             first_name: firstName,
             degree_level: degree_level,
-            program_id: program_id || undefined,
+            program_id: programUUID || undefined,
             program: undefined,
             campus: undefined,
             languages_daily: [],
@@ -251,7 +276,7 @@ export default async function SettingsPage() {
           
           console.log('[Settings] Successfully created user_academic record from intro section')
           
-          // Now fetch the created record to return it
+          // Now fetch the created record with joins
           const { data: createdAcademic } = await serviceSupabase
             .from('user_academic')
             .select(`
@@ -270,29 +295,71 @@ export default async function SettingsPage() {
             .eq('user_id', user.id)
             .maybeSingle()
           
+          // Fetch study year from view
+          const { data: studyYearData } = await serviceSupabase
+            .from('user_study_year_v')
+            .select('study_year')
+            .eq('user_id', user.id)
+            .maybeSingle()
+          
           if (createdAcademic) {
-            academic = createdAcademic
-            console.log('[Settings] Fetched created user_academic record:', academic)
+            // Add study_year to the academic object
+            academic = {
+              ...createdAcademic,
+              study_year: studyYearData?.study_year ?? null
+            }
+            console.log('[Settings] Fetched created user_academic record with joins:', academic)
           } else {
-            // Fallback: create academic object for display
+            // Fallback: create academic object for display with joined data
+            // Look up university name
+            const { data: universityData } = await serviceSupabase
+              .from('universities')
+              .select('id, name, slug')
+              .eq('id', university_id)
+              .maybeSingle()
+            
+            // Look up program name if we have program UUID
+            let programData: any = null
+            if (programUUID) {
+              const { data: progData } = await serviceSupabase
+                .from('programs')
+                .select('id, name, croho_code')
+                .eq('id', programUUID)
+                .maybeSingle()
+              programData = progData
+            }
+            
             academic = {
               user_id: user.id,
               university_id: university_id,
               degree_level: degree_level,
-              program_id: program_id || null,
+              program_id: programUUID || null,
               study_start_year: study_start_year,
               study_start_month: study_start_month,
               expected_graduation_year: expected_graduation_year || null,
               graduation_month: graduation_month,
               undecided_program: undecided_program,
+              study_year: studyYearData?.study_year ?? null,
+              universities: universityData ? { id: universityData.id, name: universityData.name, slug: universityData.slug } : null,
+              programs: programData ? { id: programData.id, name: programData.name, croho_code: programData.croho_code } : null,
               created_at: null,
               updated_at: null,
             } as any
-            console.log('[Settings] Created academic object for display (user_academic creation may have failed):', academic)
+            console.log('[Settings] Created academic object for display with joined data:', academic)
           }
         } catch (createError) {
           console.error('[Settings] Failed to create user_academic record:', createError)
           // Fallback: create academic object for display
+          const { createServiceClient } = await import('@/lib/supabase/service')
+          const serviceSupabase = createServiceClient()
+          
+          // Look up university name for display
+          const { data: universityData } = await serviceSupabase
+            .from('universities')
+            .select('id, name, slug')
+            .eq('id', university_id)
+            .maybeSingle()
+          
           academic = {
             user_id: user.id,
             university_id: university_id,
@@ -303,6 +370,7 @@ export default async function SettingsPage() {
             expected_graduation_year: expected_graduation_year || null,
             graduation_month: graduation_month,
             undecided_program: undecided_program,
+            universities: universityData ? { id: universityData.id, name: universityData.name, slug: universityData.slug } : null,
             created_at: null,
             updated_at: null,
           } as any
