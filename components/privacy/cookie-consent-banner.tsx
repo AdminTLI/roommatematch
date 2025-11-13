@@ -146,26 +146,26 @@ export function CookieConsentBanner({ locale = 'en' }: CookieConsentBannerProps)
   }
 
   return (
-    <div className="fixed bottom-0 left-0 right-0 z-50 p-4 bg-white border-t border-gray-200 shadow-lg">
+    <div className="fixed bottom-0 left-0 right-0 z-50 p-3 sm:p-4 md:p-6">
       <div className="container mx-auto max-w-4xl">
-        <Card className="border-gray-300">
-          <CardContent className="p-6">
-            <div className="flex items-start gap-4">
-              <Cookie className="h-6 w-6 text-gray-600 mt-1 flex-shrink-0" />
-              <div className="flex-1">
-                <h3 className="text-lg font-semibold text-gray-900 mb-2">
+        <Card className="border-gray-300 shadow-xl">
+          <CardContent className="p-4 sm:p-5 md:p-6">
+            <div className="flex flex-col sm:flex-row items-start gap-3 sm:gap-4">
+              <Cookie className="h-5 w-5 sm:h-6 sm:w-6 text-gray-600 mt-0.5 sm:mt-1 flex-shrink-0" />
+              <div className="flex-1 min-w-0">
+                <h3 className="text-base sm:text-lg font-semibold text-gray-900 mb-1.5 sm:mb-2">
                   {t.title}
                 </h3>
-                <p className="text-sm text-gray-600 mb-4">
+                <p className="text-xs sm:text-sm text-gray-600 mb-3 sm:mb-4">
                   {t.description}
                 </p>
-                <p className="text-xs text-gray-500 mb-4">
+                <p className="text-xs text-gray-500 mb-3 sm:mb-4">
                   {t.essential}
                 </p>
-                <div className="flex flex-wrap gap-3">
+                <div className="flex flex-col sm:flex-row flex-wrap gap-2 sm:gap-3">
                   <Button
                     onClick={handleAcceptAll}
-                    className="bg-brand-600 hover:bg-brand-700 text-white"
+                    className="bg-brand-600 hover:bg-brand-700 text-white w-full sm:w-auto"
                     size="sm"
                   >
                     {t.acceptAll}
@@ -174,6 +174,7 @@ export function CookieConsentBanner({ locale = 'en' }: CookieConsentBannerProps)
                     onClick={handleRejectAll}
                     variant="outline"
                     size="sm"
+                    className="w-full sm:w-auto"
                   >
                     {t.rejectAll}
                   </Button>
@@ -181,13 +182,13 @@ export function CookieConsentBanner({ locale = 'en' }: CookieConsentBannerProps)
                     onClick={handleCustomize}
                     variant="ghost"
                     size="sm"
-                    className="flex items-center gap-2"
+                    className="flex items-center gap-2 w-full sm:w-auto"
                   >
                     <Settings className="h-4 w-4" />
                     {t.customize}
                   </Button>
                 </div>
-                <p className="text-xs text-gray-500 mt-4">
+                <p className="text-xs text-gray-500 mt-3 sm:mt-4">
                   {t.learnMore}{' '}
                   <a 
                     href="/cookies" 

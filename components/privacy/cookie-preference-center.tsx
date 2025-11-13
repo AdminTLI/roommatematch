@@ -176,11 +176,11 @@ export function CookiePreferenceCenter({ locale = 'en', onClose }: CookiePrefere
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50">
-      <Card className="w-full max-w-2xl max-h-[90vh] overflow-y-auto">
-        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4">
+      <Card className="w-full max-w-2xl max-h-[90vh] flex flex-col">
+        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4 flex-shrink-0">
           <div className="flex items-center gap-3">
             <Cookie className="h-6 w-6 text-gray-600" />
-            <CardTitle className="text-2xl">
+            <CardTitle className="text-xl sm:text-2xl">
               {locale === 'nl' ? 'Cookie Voorkeuren' : 'Cookie Preferences'}
             </CardTitle>
           </div>
@@ -195,7 +195,7 @@ export function CookiePreferenceCenter({ locale = 'en', onClose }: CookiePrefere
             </Button>
           )}
         </CardHeader>
-        <CardContent className="space-y-6">
+        <CardContent className="space-y-6 overflow-y-auto flex-1 pr-1 [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-thumb]:bg-gray-300 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-track]:bg-transparent">
           <CardDescription>
             {locale === 'nl' 
               ? 'Beheer uw cookie voorkeuren. U kunt deze instellingen op elk moment wijzigen.'
@@ -266,7 +266,7 @@ export function CookiePreferenceCenter({ locale = 'en', onClose }: CookiePrefere
             />
           </div>
 
-          <div className="flex gap-3 pt-4 border-t">
+          <div className="flex flex-col sm:flex-row gap-3 pt-4 border-t flex-shrink-0">
             <Button
               onClick={handleSave}
               className="flex-1 bg-brand-600 hover:bg-brand-700 text-white"
@@ -277,6 +277,7 @@ export function CookiePreferenceCenter({ locale = 'en', onClose }: CookiePrefere
               <Button
                 variant="outline"
                 onClick={onClose}
+                className="w-full sm:w-auto"
               >
                 {locale === 'nl' ? 'Annuleren' : 'Cancel'}
               </Button>
