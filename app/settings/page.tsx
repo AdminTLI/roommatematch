@@ -41,7 +41,11 @@ export default async function SettingsPage() {
     .maybeSingle()
 
   // Fetch academic data with joins for readable names
-  let { data: academic } = await supabase
+  // Use service role client to bypass RLS for better reliability
+  const { createServiceClient } = await import('@/lib/supabase/service')
+  const serviceSupabase = createServiceClient()
+  
+  let { data: academic } = await serviceSupabase
     .from('user_academic')
     .select(`
       *,
@@ -62,12 +66,20 @@ export default async function SettingsPage() {
   // Fetch study year from view separately (Supabase doesn't support direct view joins)
   let studyYear: number | null = null
   if (academic) {
-    const { data: studyYearData } = await supabase
+    const { data: studyYearData } = await serviceSupabase
       .from('user_study_year_v')
       .select('study_year')
       .eq('user_id', user.id)
       .maybeSingle()
     studyYear = studyYearData?.study_year ?? null
+    
+    // Add study_year to academic object
+    if (academic) {
+      academic = {
+        ...academic,
+        study_year: studyYear
+      }
+    }
   }
 
   // If missing, try to derive from intro answers for display purposes
