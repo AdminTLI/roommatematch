@@ -172,10 +172,10 @@ export function NotificationDropdown({
 
   if (!isOpen) return null
 
-  // Add backdrop overlay for desktop dropdown
+  // Add backdrop overlay for desktop dropdown (only show on desktop)
   const Backdrop = () => (
     <div 
-      className="fixed inset-0 bg-black/20 backdrop-blur-sm z-40 sm:hidden"
+      className="hidden sm:block fixed inset-0 bg-black/20 backdrop-blur-sm z-40"
       onClick={onClose}
       aria-hidden="true"
     />
