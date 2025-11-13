@@ -139,10 +139,7 @@ export async function POST(request: Request) {
           if (institutionSlugAnswer?.value && institutionSlugAnswer.value !== 'other') {
             console.log('[Submit] Looking up university for slug:', institutionSlugAnswer.value)
             
-            // Use service role client to bypass RLS
-            const { createServiceClient } = await import('@/lib/supabase/service')
-            const serviceSupabase = createServiceClient()
-            
+            // Use service role client to bypass RLS (already created above)
             // Try exact match first
             let { data: university, error: universityError } = await serviceSupabase
               .from('universities')
@@ -323,10 +320,7 @@ export async function POST(request: Request) {
         })
         
         try {
-          // Use service role client for submission to bypass RLS
-          const { createServiceClient } = await import('@/lib/supabase/service')
-          const serviceSupabase = createServiceClient()
-          
+          // Use service role client for submission to bypass RLS (already created above)
           const result = await submitCompleteOnboarding(serviceSupabase, {
             user_id: userId,
             university_id: submissionData.university_id,
@@ -357,9 +351,7 @@ export async function POST(request: Request) {
           console.log('[Submit] Consolidated submission successful')
           
           // Verify user_academic was created/updated using service role client to bypass RLS
-          const { createServiceClient } = await import('@/lib/supabase/service')
-          const serviceSupabase = createServiceClient()
-          
+          // Reuse the same serviceSupabase instance that was created earlier
           const { data: verifyAcademic, error: verifyError } = await serviceSupabase
             .from('user_academic')
             .select('user_id, study_start_year, university_id, degree_level')
