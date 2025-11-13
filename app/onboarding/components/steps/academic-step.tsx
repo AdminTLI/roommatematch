@@ -522,7 +522,7 @@ export function AcademicStep({ data, onChange, user }: AcademicStepProps) {
             Academic Profile Summary
           </h4>
           <div className="text-sm text-green-700 dark:text-green-300 space-y-1">
-            <div><strong>Institution:</strong> {data.institution_slug}</div>
+            <div><strong>Institution:</strong> {universityName ? universityName.toUpperCase() : (data.institution_slug ? data.institution_slug.toUpperCase() : 'Not specified')}</div>
             <div><strong>Degree Level:</strong> {
               data.degree_level === 'bachelor' ? "Bachelor's" :
               data.degree_level === 'master' ? "Master's" :
