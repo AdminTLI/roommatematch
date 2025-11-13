@@ -207,12 +207,10 @@ export function Sidebar({ user, onClose }: SidebarProps) {
         const response = await fetch('/api/onboarding/progress')
         if (response.ok) {
           const data = await response.json()
-          const totalSections = data.totalSections || 9
-          // completedSections is now a number, not an array
-          const completedSections = typeof data.completedSections === 'number' 
-            ? data.completedSections 
-            : (data.completedSections?.length || 0)
-          setQuestionnaireProgress(Math.round((completedSections / totalSections) * 100))
+          // Use completionPercentage which is based on actual items answered
+          // This should show 100% if all questions are answered
+          const progress = data.completionPercentage ?? 0
+          setQuestionnaireProgress(progress)
         }
       } catch (error) {
         console.error('Error fetching questionnaire progress:', error)
