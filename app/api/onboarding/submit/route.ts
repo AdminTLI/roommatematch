@@ -260,6 +260,13 @@ export async function POST(request: Request) {
       if (submissionData && deduplicatedResponses.length > 0) {
         // Validate all required fields before submission
         // Ensure we have a valid university_id
+        // First check if university_id is in the intro section answers
+        const universityIdAnswer = introSection?.answers?.find((a: any) => a.itemId === 'university_id')
+        if (universityIdAnswer?.value && typeof universityIdAnswer.value === 'string' && universityIdAnswer.value.trim() !== '') {
+          submissionData.university_id = universityIdAnswer.value
+          console.log('[Submit] Found university_id in intro section answers:', submissionData.university_id)
+        }
+        
         if (!submissionData.university_id || submissionData.university_id === '' || submissionData.university_id === null) {
           // Check if we have institution_slug (might be "other")
           const institutionSlugAnswer = introSection?.answers?.find((a: any) => a.itemId === 'institution_slug')
@@ -270,9 +277,10 @@ export async function POST(request: Request) {
               title: 'Missing University Information'
             }, { status: 400 })
           } else {
-            console.error('[Submit] No university_id found and institution_slug lookup failed, cannot proceed with submission')
+            console.error('[Submit] No university_id found after lookup, cannot proceed with submission')
+            console.error('[Submit] Intro section answers:', introSection?.answers?.map((a: any) => ({ itemId: a.itemId, hasValue: !!a.value })))
             return NextResponse.json({ 
-              error: 'University information is required. Please complete the academic information section.',
+              error: 'University information is required. Please go back to the academic information section and ensure you have selected a valid university, then try submitting again.',
               title: 'Missing University Information'
             }, { status: 400 })
           }
@@ -296,6 +304,16 @@ export async function POST(request: Request) {
           }, { status: 400 })
         }
 
+        // Final validation: university_id MUST be present and valid before submission
+        if (!submissionData.university_id || typeof submissionData.university_id !== 'string' || submissionData.university_id.trim() === '') {
+          console.error('[Submit] FINAL VALIDATION FAILED: university_id is missing or invalid:', submissionData.university_id)
+          console.error('[Submit] Intro section answers:', introSection?.answers?.map((a: any) => ({ itemId: a.itemId, value: a.value })))
+          return NextResponse.json({ 
+            error: 'University information is incomplete. Please go back to the academic information section, ensure you have selected a valid university, and try submitting again. The university selection must be saved before you can submit.',
+            title: 'Missing University Information'
+          }, { status: 400 })
+        }
+
         console.log('[Submit] All validations passed, proceeding with submission:', {
           user_id: userId,
           university_id: submissionData.university_id,
@@ -305,7 +323,11 @@ export async function POST(request: Request) {
         })
         
         try {
-          const result = await submitCompleteOnboarding(supabase, {
+          // Use service role client for submission to bypass RLS
+          const { createServiceClient } = await import('@/lib/supabase/service')
+          const serviceSupabase = createServiceClient()
+          
+          const result = await submitCompleteOnboarding(serviceSupabase, {
             user_id: userId,
             university_id: submissionData.university_id,
             first_name: submissionData.first_name,
@@ -334,8 +356,11 @@ export async function POST(request: Request) {
 
           console.log('[Submit] Consolidated submission successful')
           
-          // Verify user_academic was created/updated
-          const { data: verifyAcademic, error: verifyError } = await supabase
+          // Verify user_academic was created/updated using service role client to bypass RLS
+          const { createServiceClient } = await import('@/lib/supabase/service')
+          const serviceSupabase = createServiceClient()
+          
+          const { data: verifyAcademic, error: verifyError } = await serviceSupabase
             .from('user_academic')
             .select('user_id, study_start_year, university_id, degree_level')
             .eq('user_id', userId)
@@ -346,9 +371,9 @@ export async function POST(request: Request) {
             // Attempt to backfill from submission data
             console.log('[Submit] Attempting to backfill user_academic from submission data...')
             try {
-              // Re-extract and upsert academic data
+              // Re-extract and upsert academic data using service role client
               const { upsertProfileAndAcademic } = await import('@/lib/onboarding/submission')
-              await upsertProfileAndAcademic(supabase, {
+              await upsertProfileAndAcademic(serviceSupabase, {
                 user_id: userId,
                 university_id: submissionData.university_id,
                 first_name: submissionData.first_name,
@@ -373,9 +398,9 @@ export async function POST(request: Request) {
             console.error('[Submit] CRITICAL: user_academic was not created after successful submission')
             console.error('[Submit] Attempting to backfill user_academic from submission data...')
             try {
-              // Re-extract and upsert academic data
+              // Re-extract and upsert academic data using service role client
               const { upsertProfileAndAcademic } = await import('@/lib/onboarding/submission')
-              await upsertProfileAndAcademic(supabase, {
+              await upsertProfileAndAcademic(serviceSupabase, {
                 user_id: userId,
                 university_id: submissionData.university_id,
                 first_name: submissionData.first_name,

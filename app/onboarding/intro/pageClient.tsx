@@ -113,8 +113,11 @@ function IntroClientContent() {
   const handleAcademicChange = (data: Record<string, any>) => {
     setAcademicData(data)
     
-    // Simple validation - check if required fields are present
-    const hasUniversity = data.institution_slug || data.institution_other
+    // Strict validation - check if required fields are present
+    // CRITICAL: university_id MUST be present (not just institution_slug) for submission to work
+    const hasUniversityId = data.university_id && typeof data.university_id === 'string' && data.university_id.trim() !== ''
+    const hasInstitutionSlug = data.institution_slug && data.institution_slug !== 'other'
+    const hasUniversity = hasUniversityId || (hasInstitutionSlug && !data.institution_other)
     const hasDegreeLevel = data.degree_level
     const hasProgram = data.program_id || data.undecided_program
     const hasGraduationYear = data.expected_graduation_year
