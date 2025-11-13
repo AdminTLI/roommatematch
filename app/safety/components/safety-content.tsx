@@ -35,8 +35,8 @@ export function SafetyContent({ universitySecurityPhone, universityName }: Safet
     <div className="space-y-8">
       {/* Header */}
       <div>
-        <h1 className="text-3xl font-bold text-gray-900">Safety & Security</h1>
-        <p className="text-lg text-gray-600 mt-1">Stay safe with our comprehensive safety features</p>
+        <h1 className="text-3xl font-bold text-gray-900 dark:text-foreground">Safety & Security</h1>
+        <p className="text-lg text-gray-600 dark:text-muted-foreground mt-1">Stay safe with our comprehensive safety features</p>
       </div>
 
       {/* Emergency Contacts */}
@@ -49,21 +49,21 @@ export function SafetyContent({ universitySecurityPhone, universityName }: Safet
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="p-4 bg-red-50 rounded-lg">
-              <h4 className="font-medium text-red-900">Emergency Services</h4>
-              <p className="text-sm text-red-700">112 (Police, Fire, Ambulance)</p>
+            <div className="p-4 bg-red-50 dark:bg-red-900/20 rounded-lg">
+              <h4 className="font-medium text-red-900 dark:text-red-200">Emergency Services</h4>
+              <p className="text-sm text-red-700 dark:text-red-300">112 (Police, Fire, Ambulance)</p>
             </div>
-            <div className="p-4 bg-blue-50 rounded-lg">
-              <h4 className="font-medium text-blue-900">University Security</h4>
+            <div className="p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
+              <h4 className="font-medium text-blue-900 dark:text-blue-200">University Security</h4>
               {universitySecurityPhone ? (
                 <>
-                  <p className="text-sm text-blue-700">{universitySecurityPhone}</p>
+                  <p className="text-sm text-blue-700 dark:text-blue-300">{universitySecurityPhone}</p>
                   {universityName && (
-                    <p className="text-xs text-blue-600 mt-1">{universityName}</p>
+                    <p className="text-xs text-blue-600 dark:text-blue-400 mt-1">{universityName}</p>
                   )}
                 </>
               ) : (
-                <p className="text-sm text-blue-700">
+                <p className="text-sm text-blue-700 dark:text-blue-300">
                   Contact your university's security office
                 </p>
               )}
@@ -82,7 +82,7 @@ export function SafetyContent({ universitySecurityPhone, universityName }: Safet
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <p className="text-sm text-gray-600 mb-4">All users are verified through university email and ID</p>
+            <p className="text-sm text-gray-600 dark:text-muted-foreground mb-4">All users are verified through university email and ID</p>
             <Badge variant="secondary">Active</Badge>
           </CardContent>
         </Card>
@@ -129,7 +129,7 @@ export function SafetyContent({ universitySecurityPhone, universityName }: Safet
           ].map((tip, index) => (
             <div key={index} className="flex items-start gap-3">
               <CheckCircle className="w-5 h-5 text-green-600 mt-0.5 flex-shrink-0" />
-              <p className="text-sm text-gray-600">{tip}</p>
+              <p className="text-sm text-gray-600 dark:text-muted-foreground">{tip}</p>
             </div>
           ))}
         </CardContent>
@@ -144,7 +144,7 @@ export function SafetyContent({ universitySecurityPhone, universityName }: Safet
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <p className="text-sm text-gray-600 mb-6">
+          <p className="text-sm text-gray-600 dark:text-muted-foreground mb-6">
             A comprehensive guide to help you navigate common situations and know what to do when things go wrong.
           </p>
           
@@ -157,8 +157,8 @@ export function SafetyContent({ universitySecurityPhone, universityName }: Safet
               </AccordionTrigger>
               <AccordionContent className="space-y-4 pt-2">
                 <div>
-                  <h4 className="font-medium text-gray-900 mb-2">Landlord Not Fixing Issues</h4>
-                  <ul className="text-sm text-gray-600 space-y-1 list-disc list-inside">
+                  <h4 className="font-medium text-gray-900 dark:text-foreground mb-2">Landlord Not Fixing Issues</h4>
+                  <ul className="text-sm text-gray-600 dark:text-muted-foreground space-y-1 list-disc list-inside">
                     <li>Document all issues with photos and written requests</li>
                     <li>Send formal written notice to landlord (keep copies)</li>
                     <li>Contact your local municipality's housing department (Woonbond)</li>

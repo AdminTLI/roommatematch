@@ -25,6 +25,7 @@ import {
   Video
 } from 'lucide-react'
 import { NotificationBell } from './notifications/notification-bell'
+import { ThemeToggle } from '@/components/ui/theme-toggle'
 import { useState } from 'react'
 
 interface AppHeaderProps {
@@ -130,6 +131,9 @@ export function AppHeader({ user }: AppHeaderProps) {
           <div className="hidden md:flex items-center space-x-4">
             <LanguageSwitcher variant="minimal" />
             
+            {/* Theme Toggle */}
+            <ThemeToggle />
+            
             {/* Notifications */}
             <NotificationBell userId={user.id} />
 
@@ -153,6 +157,7 @@ export function AppHeader({ user }: AppHeaderProps) {
           {/* Mobile menu button */}
           <div className="md:hidden flex items-center space-x-2">
             <LanguageSwitcher variant="minimal" />
+            <ThemeToggle size="sm" />
             <Button
               variant="ghost"
               size="sm"
@@ -207,6 +212,14 @@ export function AppHeader({ user }: AppHeaderProps) {
                   {item.name}
                 </Link>
               ))}
+
+              {/* Theme Toggle */}
+              <div className="flex items-center gap-3 py-2">
+                <ThemeToggle size="sm" />
+                <span className="font-medium text-gray-600 dark:text-gray-300">
+                  Theme
+                </span>
+              </div>
 
               {/* Notifications */}
               <div className="flex items-center gap-3 py-2">

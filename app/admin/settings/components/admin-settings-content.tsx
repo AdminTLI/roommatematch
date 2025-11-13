@@ -134,8 +134,8 @@ export function AdminSettingsContent() {
       {/* Header */}
       <div className="flex justify-between items-center">
         <div>
-          <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">Platform Settings</h1>
-          <p className="text-lg text-gray-600 mt-1">Configure platform-wide settings and preferences</p>
+          <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-foreground">Platform Settings</h1>
+          <p className="text-lg text-gray-600 dark:text-muted-foreground mt-1">Configure platform-wide settings and preferences</p>
         </div>
         <div className="flex items-center gap-2">
           {saveStatus === 'success' && (

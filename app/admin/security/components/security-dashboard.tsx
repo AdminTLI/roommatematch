@@ -82,7 +82,7 @@ export default function SecurityDashboard({ admin }: SecurityDashboardProps) {
       case 'critical': return 'text-red-600 bg-red-50 dark:bg-red-900/20'
       case 'high': return 'text-orange-600 bg-orange-50 dark:bg-orange-900/20'
       case 'medium': return 'text-yellow-600 bg-yellow-50 dark:bg-yellow-900/20'
-      default: return 'text-gray-600 bg-gray-50 dark:bg-gray-900/20'
+      default: return 'text-gray-600 dark:text-gray-400 bg-gray-50 dark:bg-gray-900/20'
     }
   }
 
@@ -229,7 +229,7 @@ export default function SecurityDashboard({ admin }: SecurityDashboardProps) {
                     {event.ip_address && <div>IP Address: {event.ip_address}</div>}
                     {event.details && Object.keys(event.details).length > 0 && (
                       <div className="mt-2">
-                        <pre className="text-xs bg-white dark:bg-gray-800 p-2 rounded">
+                        <pre className="text-xs bg-white dark:bg-gray-800 dark:text-gray-200 p-2 rounded">
                           {JSON.stringify(event.details, null, 2)}
                         </pre>
                       </div>

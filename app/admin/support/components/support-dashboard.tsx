@@ -200,15 +200,15 @@ export function SupportDashboard({ admin }: SupportDashboardProps) {
   const getStatusBadge = (status: SupportTicket['status']) => {
     switch (status) {
       case 'open':
-        return <Badge variant="outline" className="bg-yellow-50 text-yellow-700 border-yellow-200">Open</Badge>
+        return <Badge variant="outline" className="bg-yellow-50 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-300 border-yellow-200 dark:border-yellow-800">Open</Badge>
       case 'in_progress':
-        return <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200">In Progress</Badge>
+        return <Badge variant="outline" className="bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 border-blue-200 dark:border-blue-800">In Progress</Badge>
       case 'resolved':
-        return <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200">Resolved</Badge>
+        return <Badge variant="outline" className="bg-green-50 dark:bg-green-900/30 text-green-700 dark:text-green-300 border-green-200 dark:border-green-800">Resolved</Badge>
       case 'closed':
-        return <Badge variant="outline" className="bg-gray-50 text-gray-700 border-gray-200">Closed</Badge>
+        return <Badge variant="outline" className="bg-gray-50 dark:bg-gray-800 text-gray-700 dark:text-gray-300 border-gray-200 dark:border-gray-700">Closed</Badge>
       case 'cancelled':
-        return <Badge variant="outline" className="bg-red-50 text-red-700 border-red-200">Cancelled</Badge>
+        return <Badge variant="outline" className="bg-red-50 dark:bg-red-900/30 text-red-700 dark:text-red-300 border-red-200 dark:border-red-800">Cancelled</Badge>
       default:
         return <Badge variant="outline">{status}</Badge>
     }
@@ -222,9 +222,9 @@ export function SupportDashboard({ admin }: SupportDashboardProps) {
       case 'high':
         return <Badge variant="destructive" className="bg-orange-500">High</Badge>
       case 'medium':
-        return <Badge variant="outline" className="bg-yellow-50 text-yellow-700 border-yellow-200">Medium</Badge>
+        return <Badge variant="outline" className="bg-yellow-50 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-300 border-yellow-200 dark:border-yellow-800">Medium</Badge>
       case 'low':
-        return <Badge variant="outline" className="bg-gray-50 text-gray-700 border-gray-200">Low</Badge>
+        return <Badge variant="outline" className="bg-gray-50 dark:bg-gray-800 text-gray-700 dark:text-gray-300 border-gray-200 dark:border-gray-700">Low</Badge>
       default:
         return <Badge variant="outline">{priority}</Badge>
     }
@@ -232,7 +232,7 @@ export function SupportDashboard({ admin }: SupportDashboardProps) {
 
   // Get category badge
   const getCategoryBadge = (category: SupportTicket['category']) => {
-    return <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200">{category}</Badge>
+    return <Badge variant="outline" className="bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 border-blue-200 dark:border-blue-800">{category}</Badge>
   }
 
   // Filter tickets
@@ -276,8 +276,8 @@ export function SupportDashboard({ admin }: SupportDashboardProps) {
   return (
     <div className="max-w-7xl mx-auto p-4 sm:p-6 pb-24">
       <div className="mb-6 sm:mb-8">
-        <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">Support Dashboard</h1>
-        <p className="text-sm sm:text-base text-gray-600 mt-2">
+        <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-foreground">Support Dashboard</h1>
+        <p className="text-sm sm:text-base text-gray-600 dark:text-muted-foreground mt-2">
           Manage support tickets and help users resolve their issues.
         </p>
       </div>
@@ -288,7 +288,7 @@ export function SupportDashboard({ admin }: SupportDashboardProps) {
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-gray-600">Total Tickets</p>
+                <p className="text-sm text-gray-600 dark:text-muted-foreground">Total Tickets</p>
                 <p className="text-2xl font-bold">{stats.total}</p>
               </div>
               <MessageSquare className="w-8 h-8 text-gray-400" />
@@ -416,16 +416,16 @@ export function SupportDashboard({ admin }: SupportDashboardProps) {
                     <button
                       key={ticket.id}
                       onClick={() => handleSelectTicket(ticket)}
-                      className={`w-full text-left p-4 hover:bg-gray-50 transition-colors ${
-                        selectedTicket?.id === ticket.id ? 'bg-blue-50 border-l-4 border-blue-600' : ''
+                      className={`w-full text-left p-4 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors ${
+                        selectedTicket?.id === ticket.id ? 'bg-blue-50 dark:bg-blue-900/30 border-l-4 border-blue-600 dark:border-blue-400' : ''
                       }`}
                     >
                       <div className="flex items-start justify-between mb-2">
                         <div className="flex-1 min-w-0">
-                          <p className="text-sm font-medium text-gray-900 truncate">
+                          <p className="text-sm font-medium text-gray-900 dark:text-foreground truncate">
                             {ticket.subject}
                           </p>
-                          <p className="text-xs text-gray-500 mt-1">
+                          <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
                             #{ticket.ticket_number}
                           </p>
                         </div>
@@ -475,9 +475,9 @@ export function SupportDashboard({ admin }: SupportDashboardProps) {
               </CardHeader>
               <CardContent className="p-0">
                 {/* Description */}
-                <div className="border-t p-4 bg-gray-50">
-                  <p className="text-sm font-medium text-gray-900 mb-2">Description</p>
-                  <p className="text-sm text-gray-700 whitespace-pre-wrap">{selectedTicket.description}</p>
+                <div className="border-t dark:border-gray-700 p-4 bg-gray-50 dark:bg-gray-900">
+                  <p className="text-sm font-medium text-gray-900 dark:text-foreground mb-2">Description</p>
+                  <p className="text-sm text-gray-700 dark:text-gray-300 whitespace-pre-wrap">{selectedTicket.description}</p>
                 </div>
 
                 {/* Messages */}
@@ -492,8 +492,8 @@ export function SupportDashboard({ admin }: SupportDashboardProps) {
                           message.message_type === 'admin'
                             ? 'bg-blue-600 text-white'
                             : message.message_type === 'user'
-                            ? 'bg-gray-100 text-gray-900'
-                            : 'bg-yellow-50 text-yellow-900'
+                            ? 'bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-foreground'
+                            : 'bg-yellow-50 dark:bg-yellow-900/30 text-yellow-900 dark:text-yellow-300'
                         }`}
                       >
                         <p className="text-sm whitespace-pre-wrap">{message.message}</p>
@@ -507,12 +507,12 @@ export function SupportDashboard({ admin }: SupportDashboardProps) {
 
                 {/* Resolution */}
                 {selectedTicket.resolution && (
-                  <div className="border-t p-4 bg-green-50">
+                  <div className="border-t dark:border-gray-700 p-4 bg-green-50 dark:bg-green-900/20">
                     <div className="flex items-start gap-2">
-                      <CheckCircle className="w-5 h-5 text-green-600 mt-0.5" />
+                      <CheckCircle className="w-5 h-5 text-green-600 dark:text-green-400 mt-0.5" />
                       <div>
-                        <p className="text-sm font-medium text-green-900">Resolution</p>
-                        <p className="text-sm text-green-700 mt-1">{selectedTicket.resolution}</p>
+                        <p className="text-sm font-medium text-green-900 dark:text-green-200">Resolution</p>
+                        <p className="text-sm text-green-700 dark:text-green-300 mt-1">{selectedTicket.resolution}</p>
                       </div>
                     </div>
                   </div>
@@ -538,7 +538,7 @@ export function SupportDashboard({ admin }: SupportDashboardProps) {
                           disabled={updatingStatus || selectedTicket.status === 'resolved'}
                           size="sm"
                           variant="outline"
-                          className="bg-green-50 text-green-700 border-green-200 hover:bg-green-100"
+                          className="bg-green-50 dark:bg-green-900/30 text-green-700 dark:text-green-300 border-green-200 dark:border-green-800 hover:bg-green-100 dark:hover:bg-green-900/50"
                         >
                           Resolve
                         </Button>
@@ -547,7 +547,7 @@ export function SupportDashboard({ admin }: SupportDashboardProps) {
                           disabled={updatingStatus || selectedTicket.status === 'closed'}
                           size="sm"
                           variant="outline"
-                          className="bg-gray-50 text-gray-700 border-gray-200 hover:bg-gray-100"
+                          className="bg-gray-50 dark:bg-gray-800 text-gray-700 dark:text-gray-300 border-gray-200 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-700"
                         >
                           Close
                         </Button>

@@ -83,7 +83,7 @@ export function BottomTabBar({ user }: BottomTabBarProps) {
 	}, [user.id])
 
 	return (
-		<nav className="fixed bottom-0 left-0 right-0 z-40 border-t border-line bg-surface-0/95 backdrop-blur supports-[backdrop-filter]:bg-surface-0/80 md:hidden">
+		<nav className="fixed bottom-0 left-0 right-0 z-40 border-t border-line dark:border-gray-700 bg-surface-0/95 dark:bg-card/95 backdrop-blur supports-[backdrop-filter]:bg-surface-0/80 dark:supports-[backdrop-filter]:bg-card/80 md:hidden">
 			<ul className="safe-area-inset grid grid-cols-4 h-16 w-full">
 				{tabs.map((tab) => {
 					const isActive = pathname === tab.href || pathname.startsWith(tab.href + '/')
@@ -95,8 +95,8 @@ export function BottomTabBar({ user }: BottomTabBarProps) {
 								className={cn(
 									'flex h-full w-full flex-col items-center justify-center gap-1 text-xs',
 									isActive
-										? 'text-brand-600'
-										: 'text-ink-500 hover:text-ink-700',
+										? 'text-brand-600 dark:text-blue-400'
+										: 'text-ink-500 dark:text-gray-400 hover:text-ink-700 dark:hover:text-gray-300',
 								)}
 								aria-current={isActive ? 'page' : undefined}
 							>

@@ -163,7 +163,7 @@ export function Topbar({ user }: TopbarProps) {
         {/* Center - Search (centered, takes more space) */}
         <div className="flex-1 max-w-3xl relative" ref={searchRef}>
             <div className="relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-ink-400 dark:text-gray-400" />
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-ink-400 dark:text-gray-400 z-10" />
               <input
                 ref={inputRef}
                 type="text"
@@ -199,7 +199,7 @@ export function Topbar({ user }: TopbarProps) {
 
             {/* Search Results Dropdown */}
             {showResults && searchQuery.length >= 2 && (
-              <Card className="absolute top-full mt-2 w-full max-w-md max-h-96 overflow-y-auto shadow-lg border z-50">
+              <Card className="absolute top-full mt-2 left-0 right-0 sm:left-auto sm:right-auto sm:w-full sm:max-w-md max-h-[calc(100vh-12rem)] sm:max-h-96 overflow-y-auto shadow-lg border z-[100]">
                 <CardContent className="p-0">
                   {isSearching ? (
                     <div className="p-4 text-center text-gray-500 dark:text-gray-400">

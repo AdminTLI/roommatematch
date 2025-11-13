@@ -251,7 +251,7 @@ export function AdminDashboard({ admin }: AdminDashboardProps) {
               <Users className="h-8 w-8 text-blue-500" />
               <div>
                 <div className="text-2xl font-bold">{analytics?.totalUsers || 0}</div>
-                <div className="text-sm text-gray-500">Total Users</div>
+                <div className="text-sm text-gray-500 dark:text-gray-400">Total Users</div>
               </div>
             </div>
           </CardContent>
@@ -309,12 +309,12 @@ export function AdminDashboard({ admin }: AdminDashboardProps) {
           <CardContent>
             <div className="space-y-2">
               <div className="flex items-center justify-between">
-                <span className="text-sm text-gray-600">Coverage Percentage</span>
+                <span className="text-sm text-gray-600 dark:text-muted-foreground">Coverage Percentage</span>
                 <span className={`text-2xl font-bold ${analytics?.coveragePercentage && analytics.coveragePercentage < 90 ? 'text-red-600' : 'text-green-600'}`}>
                   {analytics?.coveragePercentage?.toFixed(1) || 0}%
                 </span>
               </div>
-              <div className="text-sm text-gray-500">
+              <div className="text-sm text-gray-500 dark:text-gray-400">
                 <div>Complete: {analytics?.completeInstitutions || 0}</div>
                 <div>Incomplete: {analytics?.incompleteInstitutions || 0}</div>
               </div>
@@ -340,7 +340,7 @@ export function AdminDashboard({ admin }: AdminDashboardProps) {
           <CardContent>
             <div className="space-y-2">
               <div className="flex items-center justify-between">
-                <span className="text-sm text-gray-600">Completeness</span>
+                <span className="text-sm text-gray-600 dark:text-muted-foreground">Completeness</span>
                 <span className={`text-2xl font-bold ${analytics?.studyMonthCompleteness && analytics.studyMonthCompleteness < 90 ? 'text-red-600' : 'text-green-600'}`}>
                   {(100 - (analytics?.studyMonthCompleteness || 0)).toFixed(1)}%
                 </span>
@@ -403,7 +403,7 @@ export function AdminDashboard({ admin }: AdminDashboardProps) {
                     <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
                     <div className="flex-1">
                       <p className="text-sm font-medium">{activity.description}</p>
-                      <p className="text-xs text-gray-500">
+                      <p className="text-xs text-gray-500 dark:text-gray-400">
                         {new Date(activity.timestamp).toLocaleString()}
                       </p>
                     </div>

@@ -2,6 +2,7 @@
 
 import { Button } from '@/components/ui/button'
 import { LanguageSwitcher } from './language-switcher'
+import { ThemeToggle } from '@/components/ui/theme-toggle'
 import Link from 'next/link'
 import Image from 'next/image'
 import { Users, Menu, X } from 'lucide-react'
@@ -64,6 +65,9 @@ export function MarketingHeader() {
           <div className="hidden md:flex items-center space-x-4">
             <LanguageSwitcher variant="minimal" />
             
+            {/* Theme Toggle */}
+            <ThemeToggle />
+            
             <Link href="/auth/sign-in">
               <Button variant="ghost" size="sm">
                 Sign in
@@ -80,6 +84,7 @@ export function MarketingHeader() {
           {/* Mobile menu button */}
           <div className="md:hidden flex items-center space-x-2">
             <LanguageSwitcher variant="minimal" />
+            <ThemeToggle size="sm" />
             <Button
               variant="ghost"
               size="sm"
@@ -114,6 +119,14 @@ export function MarketingHeader() {
                   {item.name}
                 </Link>
               ))}
+              
+              {/* Theme Toggle in Mobile Menu */}
+              <div className="flex items-center gap-3 py-2 pt-4 border-t border-gray-200 dark:border-gray-800">
+                <ThemeToggle size="sm" />
+                <span className="font-medium text-gray-600 dark:text-gray-300">
+                  Theme
+                </span>
+              </div>
               
               <div className="flex flex-col space-y-2 pt-4 border-t border-gray-200 dark:border-gray-800">
                 <Link href="/auth/sign-in" onClick={() => setIsMenuOpen(false)}>

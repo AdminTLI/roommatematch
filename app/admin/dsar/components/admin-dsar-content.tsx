@@ -314,7 +314,7 @@ export function AdminDSARContent() {
                 return (
                   <div
                     key={request.id}
-                    className="border border-gray-200 rounded-lg p-4 hover:bg-gray-50 transition-colors"
+                    className="border border-gray-200 dark:border-gray-700 rounded-lg p-4 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
                   >
                     <div className="flex items-start justify-between">
                       <div className="flex-1">

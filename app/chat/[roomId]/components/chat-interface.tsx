@@ -1416,9 +1416,9 @@ export function ChatInterface({ roomId, user }: ChatInterfaceProps) {
   }
 
   return (
-    <div className="flex flex-col h-[calc(100vh-8rem)] sm:h-[calc(100vh-6rem)] max-w-4xl mx-auto">
+    <div className="flex flex-col h-screen sm:h-[calc(100vh-6rem)] max-w-4xl mx-auto fixed inset-0 sm:relative sm:inset-auto pt-16 sm:pt-0">
       {/* Compact Chat Header */}
-      <div className="flex-shrink-0 border-b border-gray-200 bg-white px-4 py-3">
+      <div className="flex-shrink-0 border-b border-gray-200 dark:border-gray-700 bg-white dark:bg-card px-4 py-3">
         <div className="flex items-center justify-between gap-3">
           <div className="flex items-center gap-3 flex-1 min-w-0">
             <Button 
@@ -1443,8 +1443,8 @@ export function ChatInterface({ roomId, user }: ChatInterfaceProps) {
                     </div>
                   ) : (
                     <div className="relative">
-                      <div className="w-5 h-5 rounded-full border-2 border-gray-300 flex items-center justify-center bg-white">
-                        <div className="w-2.5 h-2.5 rounded-full bg-gray-300"></div>
+                      <div className="w-5 h-5 rounded-full border-2 border-gray-300 dark:border-gray-600 flex items-center justify-center bg-white dark:bg-gray-800">
+                        <div className="w-2.5 h-2.5 rounded-full bg-gray-300 dark:bg-gray-600"></div>
                       </div>
                     </div>
                   )}
@@ -1452,8 +1452,8 @@ export function ChatInterface({ roomId, user }: ChatInterfaceProps) {
               )}
               {isGroup && (
                 <div className="flex items-center gap-1 flex-shrink-0">
-                  <Users className="h-4 w-4 text-gray-500" />
-                  <span className="text-xs text-gray-500">
+                  <Users className="h-4 w-4 text-gray-500 dark:text-gray-400" />
+                  <span className="text-xs text-gray-500 dark:text-gray-400">
                     {members.length}
                   </span>
                 </div>
@@ -1508,7 +1508,7 @@ export function ChatInterface({ roomId, user }: ChatInterfaceProps) {
 
       {/* Blocked User Notice */}
       {isBlocked && blockedUserId && (
-        <div className="flex-shrink-0 px-4 py-2 bg-red-50 border-b border-red-200">
+        <div className="flex-shrink-0 px-4 py-2 bg-red-50 dark:bg-red-900/20 border-b border-red-200 dark:border-red-800">
           <Alert variant="destructive" className="py-2">
             <Ban className="h-4 w-4" />
             <AlertDescription className="text-sm">
@@ -1530,7 +1530,7 @@ export function ChatInterface({ roomId, user }: ChatInterfaceProps) {
 
       {/* Chat Members - Compact display for group chats */}
       {isGroup && members.length > 0 && (
-        <div className="flex-shrink-0 px-4 py-2 bg-gray-50 border-b border-gray-200">
+        <div className="flex-shrink-0 px-4 py-2 bg-gray-50 dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700">
           <div className="flex items-center gap-2 overflow-x-auto scrollbar-hide">
             {members.map((member) => (
               <div key={member.id} className="flex items-center gap-2 flex-shrink-0">
@@ -1545,7 +1545,7 @@ export function ChatInterface({ roomId, user }: ChatInterfaceProps) {
                     <div className="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 bg-green-500 rounded-full border border-white"></div>
                   )}
                 </div>
-                <span className="text-xs font-medium text-gray-700 whitespace-nowrap">{member.name}</span>
+                <span className="text-xs font-medium text-gray-700 dark:text-gray-300 whitespace-nowrap">{member.name}</span>
               </div>
             ))}
           </div>
@@ -1553,11 +1553,11 @@ export function ChatInterface({ roomId, user }: ChatInterfaceProps) {
       )}
 
       {/* Messages - Scrollable area */}
-      <div ref={messagesContainerRef} className="flex-1 overflow-y-auto bg-gray-50 px-4 py-4 pb-24">
+      <div ref={messagesContainerRef} className="flex-1 overflow-y-auto bg-gray-50 dark:bg-background px-4 py-4 pb-20">
         {messages.length === 0 ? (
           <div className="text-center py-12">
-            <MessageCircle className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-            <p className="text-gray-500">No messages yet. Start the conversation!</p>
+            <MessageCircle className="h-12 w-12 text-gray-400 dark:text-gray-500 mx-auto mb-4" />
+            <p className="text-gray-500 dark:text-gray-400">No messages yet. Start the conversation!</p>
           </div>
         ) : (
           <div className="space-y-3">
@@ -1570,8 +1570,8 @@ export function ChatInterface({ roomId, user }: ChatInterfaceProps) {
                   <div key={message.id}>
                     {showDateSeparator && (
                       <div className="flex justify-center my-4">
-                        <div className="bg-gray-200 px-3 py-1 rounded-full">
-                          <span className="text-xs text-gray-600 font-medium">
+                        <div className="bg-gray-200 dark:bg-gray-700 px-3 py-1 rounded-full">
+                          <span className="text-xs text-gray-600 dark:text-gray-300 font-medium">
                             {formatDate(message.created_at)}
                           </span>
                         </div>
@@ -1580,8 +1580,8 @@ export function ChatInterface({ roomId, user }: ChatInterfaceProps) {
                     
                     {message.is_system_message ? (
                       <div className="flex justify-center my-4">
-                        <div className="bg-blue-50 border border-blue-200 rounded-lg px-4 py-2">
-                          <p className="text-sm text-blue-700 text-center">
+                        <div className="bg-blue-50 dark:bg-blue-900/30 border border-blue-200 dark:border-blue-800 rounded-lg px-4 py-2">
+                          <p className="text-sm text-blue-700 dark:text-blue-300 text-center">
                             {message.content}
                           </p>
                         </div>
@@ -1601,19 +1601,19 @@ export function ChatInterface({ roomId, user }: ChatInterfaceProps) {
                         
                         <div className={`max-w-[75%] ${message.is_own ? 'order-first' : ''}`}>
                           {!message.is_own && (
-                            <div className="text-xs text-gray-500 mb-1">
+                            <div className="text-xs text-gray-500 dark:text-gray-400 mb-1">
                               {message.sender_name}
                             </div>
                           )}
                           <div className={`rounded-lg px-3 py-2 ${
                             message.is_own 
                               ? 'bg-primary text-primary-foreground' 
-                              : 'bg-white border border-gray-200'
+                              : 'bg-white dark:bg-card border border-gray-200 dark:border-gray-700'
                           }`}>
-                            <p className="text-sm break-words">{message.content}</p>
+                            <p className={`text-sm break-words ${message.is_own ? '' : 'text-gray-900 dark:text-foreground'}`}>{message.content}</p>
                           </div>
                           <div className="flex items-center gap-1 mt-1">
-                            <span className="text-xs text-gray-400">
+                            <span className="text-xs text-gray-400 dark:text-gray-500">
                               {formatTime(message.created_at)}
                             </span>
                             {message.is_own && getReadStatus(message)}
@@ -1650,14 +1650,14 @@ export function ChatInterface({ roomId, user }: ChatInterfaceProps) {
               return (
                 <div className="flex gap-2">
                   <div className="w-7 h-7 flex-shrink-0"></div>
-                  <div className="bg-white border border-gray-200 rounded-lg px-3 py-2">
+                  <div className="bg-white dark:bg-card border border-gray-200 dark:border-gray-700 rounded-lg px-3 py-2">
                     <div className="flex items-center gap-1">
                       <div className="flex gap-1">
-                        <div className="w-1 h-1 bg-gray-400 rounded-full animate-bounce"></div>
-                        <div className="w-1 h-1 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0.1s' }}></div>
-                        <div className="w-1 h-1 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
+                        <div className="w-1 h-1 bg-gray-400 dark:bg-gray-500 rounded-full animate-bounce"></div>
+                        <div className="w-1 h-1 bg-gray-400 dark:bg-gray-500 rounded-full animate-bounce" style={{ animationDelay: '0.1s' }}></div>
+                        <div className="w-1 h-1 bg-gray-400 dark:bg-gray-500 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
                       </div>
-                      <span className="text-xs text-gray-500 ml-2">
+                      <span className="text-xs text-gray-500 dark:text-gray-400 ml-2">
                         {typingText}
                       </span>
                     </div>
@@ -1672,7 +1672,7 @@ export function ChatInterface({ roomId, user }: ChatInterfaceProps) {
       </div>
 
       {/* Message Input - At bottom */}
-      <div className="flex-shrink-0 border-t border-gray-200 bg-white px-4 py-3 pb-safe-bottom">
+      <div className="flex-shrink-0 border-t border-gray-200 dark:border-gray-700 bg-white dark:bg-card px-4 py-3 pb-safe-bottom">
         <div className="flex gap-2 items-center">
           <Input
             value={newMessage}

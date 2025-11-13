@@ -406,8 +406,8 @@ export function ChatList({ user }: ChatListProps) {
     <div className="max-w-4xl mx-auto space-y-6 sm:space-y-8 pb-24">
       {/* Header */}
       <div className="text-center space-y-3 sm:space-y-4">
-        <h1 className="text-2xl sm:text-h1 font-bold text-gray-900">Messages</h1>
-        <p className="text-sm sm:text-body-lg text-gray-600 max-w-2xl mx-auto px-2">
+        <h1 className="text-2xl sm:text-h1 font-bold text-gray-900 dark:text-foreground">Messages</h1>
+        <p className="text-sm sm:text-body-lg text-gray-600 dark:text-muted-foreground max-w-2xl mx-auto px-2">
           Connect with your potential roommates and start meaningful conversations
         </p>
       </div>
@@ -421,7 +421,7 @@ export function ChatList({ user }: ChatListProps) {
             placeholder="Search conversations..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full pl-10 pr-4 py-2.5 sm:py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-600 focus:border-transparent text-sm sm:text-body min-h-[44px]"
+            className="w-full pl-10 pr-4 py-2.5 sm:py-3 border border-gray-300 dark:border-gray-700 rounded-lg focus:ring-2 focus:ring-primary-600 dark:focus:ring-primary-400 focus:border-transparent text-sm sm:text-body min-h-[44px] bg-white dark:bg-card text-gray-900 dark:text-foreground"
           />
         </div>
         <Button onClick={handleNewChat} className="flex items-center justify-center gap-2 min-h-[44px] px-4 sm:px-6">
@@ -434,12 +434,12 @@ export function ChatList({ user }: ChatListProps) {
       {recentlyMatchedChats.length > 0 && (
         <div className="space-y-3 sm:space-y-4">
           <div className="flex items-center gap-2">
-            <h2 className="text-lg sm:text-xl font-semibold text-gray-900">Recently Matched</h2>
+            <h2 className="text-lg sm:text-xl font-semibold text-gray-900 dark:text-foreground">Recently Matched</h2>
             <Badge variant="destructive" className="bg-red-600 text-white font-semibold text-xs">
               {recentlyMatchedChats.length}
             </Badge>
           </div>
-          <p className="text-xs sm:text-sm text-gray-600">
+          <p className="text-xs sm:text-sm text-gray-600 dark:text-muted-foreground">
             Start conversations with your new matches
           </p>
           
@@ -456,7 +456,7 @@ export function ChatList({ user }: ChatListProps) {
               return (
               <Link key={chat.id} href={chatUrl} className="block">
                 <Card 
-                  className="cursor-pointer transition-all duration-200 hover:shadow-lg border-blue-200 bg-blue-50"
+                  className="cursor-pointer transition-all duration-200 hover:shadow-lg border-blue-200 dark:border-blue-800 bg-blue-50 dark:bg-blue-900/20"
                 >
                 <CardContent className="p-4 sm:p-6">
                   <div className="flex items-center gap-3 sm:gap-4">
@@ -498,7 +498,7 @@ export function ChatList({ user }: ChatListProps) {
                     {/* Chat Info */}
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center justify-between mb-1.5 sm:mb-2 gap-2">
-                        <h3 className="text-base sm:text-lg font-semibold text-gray-900 truncate">
+                        <h3 className="text-base sm:text-lg font-semibold text-gray-900 dark:text-foreground truncate">
                           {chat.name}
                         </h3>
                         <div className="flex items-center gap-1.5 sm:gap-2 flex-shrink-0">
@@ -542,7 +542,7 @@ export function ChatList({ user }: ChatListProps) {
       {/* Active Conversations Section */}
       <div className="space-y-3 sm:space-y-4">
         <div className="flex items-center gap-2">
-          <h2 className="text-lg sm:text-xl font-semibold text-gray-900">Active Conversations</h2>
+          <h2 className="text-lg sm:text-xl font-semibold text-gray-900 dark:text-foreground">Active Conversations</h2>
           <Badge variant="secondary" className="text-xs">
             {activeConversations.length}
           </Badge>
@@ -552,10 +552,10 @@ export function ChatList({ user }: ChatListProps) {
           <Card>
             <CardContent className="p-8 sm:p-12 text-center">
               <MessageCircle className="h-10 w-10 sm:h-12 sm:w-12 text-gray-400 mx-auto mb-4" />
-              <h3 className="text-lg sm:text-h3 font-semibold text-gray-900 mb-2">
+              <h3 className="text-lg sm:text-h3 font-semibold text-gray-900 dark:text-foreground mb-2">
                 {searchQuery ? 'No conversations found' : 'No active conversations'}
               </h3>
-              <p className="text-sm sm:text-body text-gray-600 mb-6">
+              <p className="text-sm sm:text-body text-gray-600 dark:text-muted-foreground mb-6">
                 {searchQuery 
                   ? 'Try adjusting your search terms' 
                   : recentlyMatchedChats.length > 0 
@@ -624,7 +624,7 @@ export function ChatList({ user }: ChatListProps) {
                     {/* Chat Info */}
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center justify-between mb-1.5 sm:mb-2 gap-2">
-                        <h3 className="text-base sm:text-lg font-semibold text-gray-900 truncate">
+                        <h3 className="text-base sm:text-lg font-semibold text-gray-900 dark:text-foreground truncate">
                           {chat.name}
                         </h3>
                         <div className="flex items-center gap-1.5 sm:gap-2 flex-shrink-0">
@@ -648,8 +648,8 @@ export function ChatList({ user }: ChatListProps) {
                         <div className="flex items-center gap-2 sm:gap-3">
                           <p className={`text-xs sm:text-body-sm truncate flex-1 ${
                             !chat.lastMessage.isRead 
-                              ? 'font-semibold text-gray-900' 
-                              : 'text-gray-600'
+                              ? 'font-semibold text-gray-900 dark:text-foreground' 
+                              : 'text-gray-600 dark:text-muted-foreground'
                           }`}>
                             <span className="font-medium">{chat.lastMessage.sender}:</span> {chat.lastMessage.content}
                           </p>
@@ -699,8 +699,8 @@ export function ChatList({ user }: ChatListProps) {
             <div className="w-12 h-12 bg-primary-100 rounded-xl flex items-center justify-center mx-auto mb-4">
               <Users className="h-6 w-6 text-primary-600" />
             </div>
-            <h3 className="font-semibold text-gray-900 mb-2">Group Chats</h3>
-            <p className="text-body-sm text-gray-600">
+            <h3 className="font-semibold text-gray-900 dark:text-foreground mb-2">Group Chats</h3>
+            <p className="text-body-sm text-gray-600 dark:text-muted-foreground">
               Find study groups and roommates
             </p>
           </CardContent>
@@ -714,8 +714,8 @@ export function ChatList({ user }: ChatListProps) {
             <div className="w-12 h-12 bg-success-100 rounded-xl flex items-center justify-center mx-auto mb-4">
               <MessageCircle className="h-6 w-6 text-success-600" />
             </div>
-            <h3 className="font-semibold text-gray-900 mb-2">Direct Messages</h3>
-            <p className="text-body-sm text-gray-600">
+            <h3 className="font-semibold text-gray-900 dark:text-foreground mb-2">Direct Messages</h3>
+            <p className="text-body-sm text-gray-600 dark:text-muted-foreground">
               One-on-one conversations
             </p>
           </CardContent>

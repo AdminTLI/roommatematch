@@ -174,9 +174,9 @@ export function AdminContent() {
 
   const getStatusBadge = (status: 'online' | 'degraded' | 'offline') => {
     const variants = {
-      online: 'bg-green-100 text-green-800',
-      degraded: 'bg-yellow-100 text-yellow-800',
-      offline: 'bg-red-100 text-red-800'
+      online: 'bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-300',
+      degraded: 'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-800 dark:text-yellow-300',
+      offline: 'bg-red-100 dark:bg-red-900/30 text-red-800 dark:text-red-300'
     }
     return (
       <Badge variant="default" className={variants[status]}>
@@ -199,8 +199,8 @@ export function AdminContent() {
       {/* Header with refresh button */}
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
         <div className="min-w-0">
-          <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">Admin Dashboard</h1>
-          <p className="text-base sm:text-lg text-gray-600 mt-1">Monitor and manage the platform</p>
+          <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-foreground">Admin Dashboard</h1>
+          <p className="text-base sm:text-lg text-gray-600 dark:text-muted-foreground mt-1">Monitor and manage the platform</p>
         </div>
         <div className="w-full sm:w-auto">
           <Button 
@@ -220,7 +220,7 @@ export function AdminContent() {
         <CardContent className="p-4">
           <div className="-mx-2 overflow-x-auto">
             <div className="px-2 inline-flex items-center gap-2 whitespace-nowrap">
-              <span className="text-sm text-gray-600 mr-2">Time Period:</span>
+              <span className="text-sm text-gray-600 dark:text-muted-foreground mr-2">Time Period:</span>
               {(Object.keys(timePeriodLabels) as TimePeriod[]).map((period) => (
                 <Button
                   key={period}
@@ -246,11 +246,11 @@ export function AdminContent() {
                 <Users className="w-5 h-5 text-blue-600" />
               </div>
               <div>
-                <p className="text-sm text-gray-600">Total Users</p>
+                <p className="text-sm text-gray-600 dark:text-muted-foreground">Total Users</p>
                 {isLoading ? (
-                  <div className="h-8 w-16 bg-gray-200 rounded animate-pulse"></div>
+                  <div className="h-8 w-16 bg-gray-200 dark:bg-gray-700 rounded animate-pulse"></div>
                 ) : (
-                  <p className="text-2xl font-bold text-gray-900">{metrics.totalUsers.toLocaleString()}</p>
+                  <p className="text-2xl font-bold text-gray-900 dark:text-foreground">{metrics.totalUsers.toLocaleString()}</p>
                 )}
               </div>
             </div>
@@ -264,11 +264,11 @@ export function AdminContent() {
                 <TrendingUp className="w-5 h-5 text-green-600" />
               </div>
               <div>
-                <p className="text-sm text-gray-600">Active Matches</p>
+                <p className="text-sm text-gray-600 dark:text-muted-foreground">Active Matches</p>
                 {isLoading ? (
-                  <div className="h-8 w-16 bg-gray-200 rounded animate-pulse"></div>
+                  <div className="h-8 w-16 bg-gray-200 dark:bg-gray-700 rounded animate-pulse"></div>
                 ) : (
-                  <p className="text-2xl font-bold text-gray-900">{metrics.activeMatches.toLocaleString()}</p>
+                  <p className="text-2xl font-bold text-gray-900 dark:text-foreground">{metrics.activeMatches.toLocaleString()}</p>
                 )}
               </div>
             </div>
@@ -282,11 +282,11 @@ export function AdminContent() {
                 <Shield className="w-5 h-5 text-purple-600" />
               </div>
               <div>
-                <p className="text-sm text-gray-600">Verified Users</p>
+                <p className="text-sm text-gray-600 dark:text-muted-foreground">Verified Users</p>
                 {isLoading ? (
-                  <div className="h-8 w-16 bg-gray-200 rounded animate-pulse"></div>
+                  <div className="h-8 w-16 bg-gray-200 dark:bg-gray-700 rounded animate-pulse"></div>
                 ) : (
-                  <p className="text-2xl font-bold text-gray-900">{metrics.verifiedUsers.toLocaleString()}</p>
+                  <p className="text-2xl font-bold text-gray-900 dark:text-foreground">{metrics.verifiedUsers.toLocaleString()}</p>
                 )}
               </div>
             </div>
@@ -300,11 +300,11 @@ export function AdminContent() {
                 <AlertTriangle className="w-5 h-5 text-orange-600" />
               </div>
               <div>
-                <p className="text-sm text-gray-600">Pending Reports</p>
+                <p className="text-sm text-gray-600 dark:text-muted-foreground">Pending Reports</p>
                 {isLoading ? (
-                  <div className="h-8 w-16 bg-gray-200 rounded animate-pulse"></div>
+                  <div className="h-8 w-16 bg-gray-200 dark:bg-gray-700 rounded animate-pulse"></div>
                 ) : (
-                  <p className="text-2xl font-bold text-gray-900">{metrics.pendingReports.toLocaleString()}</p>
+                  <p className="text-2xl font-bold text-gray-900 dark:text-foreground">{metrics.pendingReports.toLocaleString()}</p>
                 )}
               </div>
             </div>
@@ -342,9 +342,9 @@ export function AdminContent() {
               <>
                 <div className="flex items-center justify-between">
                   <div>
-                    <span className="text-sm text-gray-600">Database</span>
+                    <span className="text-sm text-gray-600 dark:text-muted-foreground">Database</span>
                     {systemHealth.services.database.responseTime > 0 && (
-                      <span className="text-xs text-gray-500 ml-2">
+                      <span className="text-xs text-gray-500 dark:text-gray-400 ml-2">
                         ({systemHealth.services.database.responseTime}ms)
                       </span>
                     )}
@@ -353,9 +353,9 @@ export function AdminContent() {
                 </div>
                 <div className="flex items-center justify-between">
                   <div>
-                    <span className="text-sm text-gray-600">Authentication</span>
+                    <span className="text-sm text-gray-600 dark:text-muted-foreground">Authentication</span>
                     {systemHealth.services.authentication.responseTime > 0 && (
-                      <span className="text-xs text-gray-500 ml-2">
+                      <span className="text-xs text-gray-500 dark:text-gray-400 ml-2">
                         ({systemHealth.services.authentication.responseTime}ms)
                       </span>
                     )}
@@ -364,9 +364,9 @@ export function AdminContent() {
                 </div>
                 <div className="flex items-center justify-between">
                   <div>
-                    <span className="text-sm text-gray-600">Matching Engine</span>
+                    <span className="text-sm text-gray-600 dark:text-muted-foreground">Matching Engine</span>
                     {systemHealth.services.matchingEngine.responseTime > 0 && (
-                      <span className="text-xs text-gray-500 ml-2">
+                      <span className="text-xs text-gray-500 dark:text-gray-400 ml-2">
                         ({systemHealth.services.matchingEngine.responseTime}ms)
                       </span>
                     )}
@@ -375,21 +375,21 @@ export function AdminContent() {
                 </div>
                 <div className="flex items-center justify-between">
                   <div>
-                    <span className="text-sm text-gray-600">File Storage</span>
+                    <span className="text-sm text-gray-600 dark:text-muted-foreground">File Storage</span>
                     {systemHealth.services.fileStorage.responseTime > 0 && (
-                      <span className="text-xs text-gray-500 ml-2">
+                      <span className="text-xs text-gray-500 dark:text-gray-400 ml-2">
                         ({systemHealth.services.fileStorage.responseTime}ms)
                       </span>
                     )}
                   </div>
                   {getStatusBadge(systemHealth.services.fileStorage.status)}
                 </div>
-                <div className="text-xs text-gray-500 mt-4 pt-4 border-t">
+                <div className="text-xs text-gray-500 dark:text-gray-400 mt-4 pt-4 border-t dark:border-gray-700">
                   Last checked: {new Date(systemHealth.overall.lastCheck).toLocaleTimeString()}
                 </div>
               </>
             ) : (
-              <div className="text-sm text-gray-500">Unable to load system status</div>
+              <div className="text-sm text-gray-500 dark:text-gray-400">Unable to load system status</div>
             )}
           </CardContent>
         </Card>
@@ -423,13 +423,13 @@ export function AdminContent() {
                   return (
                     <div key={activity.id} className="flex items-center gap-3">
                       <div className={`w-2 h-2 ${iconColors[activity.icon] || 'bg-gray-500'} rounded-full`}></div>
-                      <span className="text-sm text-gray-600">{activity.description}</span>
+                      <span className="text-sm text-gray-600 dark:text-muted-foreground">{activity.description}</span>
                     </div>
                   )
                 })}
               </div>
             ) : (
-              <div className="text-sm text-gray-500">No recent activity</div>
+              <div className="text-sm text-gray-500 dark:text-gray-400">No recent activity</div>
             )}
           </CardContent>
         </Card>
