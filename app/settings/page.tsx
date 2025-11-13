@@ -175,55 +175,139 @@ export default async function SettingsPage() {
       }
       
       // Look up university_id from institution_slug if not present
+      // Use service role client to bypass RLS to avoid infinite recursion in admins policy
       if (!university_id && institution_slug && institution_slug !== 'other') {
         console.log('[Settings] Looking up university for slug:', institution_slug)
-        const { data: university, error: uniError } = await supabase
+        
+        try {
+          // Use service role client to bypass RLS
+          const { createServiceClient } = await import('@/lib/supabase/service')
+          const serviceSupabase = createServiceClient()
+          
+          // Try exact match first
+          let { data: university, error: uniError } = await serviceSupabase
           .from('universities')
-          .select('id, slug, name')
+            .select('id, slug, name')
           .eq('slug', institution_slug)
           .maybeSingle()
         
-        if (uniError) {
-          console.error('[Settings] Error looking up university:', uniError)
-        } else if (university) {
-          university_id = university.id
-          console.log('[Settings] Found university UUID:', university_id, 'for slug:', institution_slug, 'name:', university.name)
-        } else {
-          console.warn('[Settings] University not found for slug:', institution_slug)
-          // Try case-insensitive lookup as fallback
-          const { data: universities } = await supabase
-            .from('universities')
-            .select('id, slug, name')
-            .ilike('slug', institution_slug)
-            .limit(5)
-          
-          if (universities && universities.length > 0) {
-            console.log('[Settings] Found universities with similar slug:', universities.map(u => ({ slug: u.slug, name: u.name })))
-            // Use the first match
-            university_id = universities[0].id
-            console.log('[Settings] Using university:', university_id, 'for slug:', institution_slug)
+          if (uniError) {
+            console.error('[Settings] Error looking up university:', uniError)
+          } else if (university) {
+            university_id = university.id
+            console.log('[Settings] Found university UUID:', university_id, 'for slug:', institution_slug, 'name:', university.name)
           } else {
-            console.error('[Settings] No university found even with case-insensitive lookup for slug:', institution_slug)
+            console.warn('[Settings] University not found for slug:', institution_slug)
+            // Try case-insensitive lookup as fallback
+            const { data: universities } = await serviceSupabase
+              .from('universities')
+              .select('id, slug, name')
+              .ilike('slug', institution_slug)
+              .limit(5)
+            
+            if (universities && universities.length > 0) {
+              console.log('[Settings] Found universities with similar slug:', universities.map(u => ({ slug: u.slug, name: u.name })))
+              // Use the first match
+              university_id = universities[0].id
+              console.log('[Settings] Using university:', university_id, 'for slug:', institution_slug)
+            } else {
+              console.error('[Settings] No university found even with case-insensitive lookup for slug:', institution_slug)
+            }
           }
+        } catch (lookupError) {
+          console.error('[Settings] Failed to look up university:', lookupError)
         }
       }
       
       // Only create academic object if we have minimum required fields
       if (university_id && degree_level && study_start_year) {
-        academic = {
-          user_id: user.id,
-          university_id: university_id,
-          degree_level: degree_level,
-          program_id: program_id || null,
-          study_start_year: study_start_year,
-          study_start_month: study_start_month,
-          expected_graduation_year: expected_graduation_year || null,
-          graduation_month: graduation_month,
-          undecided_program: undecided_program,
-          created_at: null,
-          updated_at: null,
-        } as any
-        console.log('[Settings] Derived academic data from intro:', academic)
+        // Try to actually create the user_academic record if we have all required fields
+        try {
+          const { createServiceClient } = await import('@/lib/supabase/service')
+          const serviceSupabase = createServiceClient()
+          
+          // Use upsertProfileAndAcademic to create the record
+          const { upsertProfileAndAcademic } = await import('@/lib/onboarding/submission')
+          
+          // Get first name from user metadata or email
+          const firstName = user.user_metadata?.full_name?.split(' ')[0] || user.email?.split('@')[0] || 'User'
+          
+          await upsertProfileAndAcademic(serviceSupabase, {
+            user_id: user.id,
+            university_id: university_id,
+            first_name: firstName,
+            degree_level: degree_level,
+            program_id: program_id || undefined,
+            program: undefined,
+            campus: undefined,
+            languages_daily: [],
+            study_start_year: study_start_year,
+            study_start_month: study_start_month,
+            expected_graduation_year: expected_graduation_year || undefined,
+            graduation_month: graduation_month,
+            programme_duration_months: undefined,
+            undecided_program: undecided_program
+          })
+          
+          console.log('[Settings] Successfully created user_academic record from intro section')
+          
+          // Now fetch the created record to return it
+          const { data: createdAcademic } = await serviceSupabase
+            .from('user_academic')
+            .select(`
+              *,
+              universities!user_academic_university_id_fkey(
+                id,
+                name,
+                slug
+              ),
+              programs!user_academic_program_id_fkey(
+                id,
+                name,
+                croho_code
+              )
+            `)
+            .eq('user_id', user.id)
+            .maybeSingle()
+          
+          if (createdAcademic) {
+            academic = createdAcademic
+            console.log('[Settings] Fetched created user_academic record:', academic)
+          } else {
+            // Fallback: create academic object for display
+            academic = {
+              user_id: user.id,
+              university_id: university_id,
+              degree_level: degree_level,
+              program_id: program_id || null,
+              study_start_year: study_start_year,
+              study_start_month: study_start_month,
+              expected_graduation_year: expected_graduation_year || null,
+              graduation_month: graduation_month,
+              undecided_program: undecided_program,
+              created_at: null,
+              updated_at: null,
+            } as any
+            console.log('[Settings] Created academic object for display (user_academic creation may have failed):', academic)
+          }
+        } catch (createError) {
+          console.error('[Settings] Failed to create user_academic record:', createError)
+          // Fallback: create academic object for display
+          academic = {
+            user_id: user.id,
+            university_id: university_id,
+            degree_level: degree_level,
+            program_id: program_id || null,
+            study_start_year: study_start_year,
+            study_start_month: study_start_month,
+            expected_graduation_year: expected_graduation_year || null,
+            graduation_month: graduation_month,
+            undecided_program: undecided_program,
+            created_at: null,
+            updated_at: null,
+          } as any
+          console.log('[Settings] Created academic object for display (creation failed):', academic)
+        }
       } else {
         console.warn('[Settings] Cannot derive academic data - missing required fields:', {
           hasUniversityId: !!university_id,
