@@ -256,8 +256,10 @@ export function Topbar({ user }: TopbarProps) {
                 </CardContent>
               </Card>
             )}
-          </div>
+        </div>
 
+        {/* Right side - Actions, User */}
+        <div className="flex items-center gap-2 sm:gap-3 flex-shrink-0">
           {/* Notifications */}
           <NotificationBell userId={user.id} />
 
