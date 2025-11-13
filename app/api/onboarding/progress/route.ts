@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { checkQuestionnaireCompletion } from '@/lib/onboarding/validation'
+import { calculateSectionProgress } from '@/lib/onboarding/sections'
 import { safeLogger } from '@/lib/utils/logger'
 
 export async function GET() {
@@ -17,31 +18,21 @@ export async function GET() {
     // Use the completion helper for consistent logic
     const completionStatus = await checkQuestionnaireCompletion(user.id)
     
-    // Map response count to section progress (approximate)
-    const totalSections = 9
-    const completedSections = Math.min(Math.floor(completionStatus.responseCount / 4), totalSections)
+    // Use proper section progress calculation instead of naive approximation
+    const sectionProgress = calculateSectionProgress(completionStatus.missingKeys)
     
     // Determine next section based on completion status
-    const allSections = [
-      'intro',
-      'location-commute', 
-      'personality-values',
-      'sleep-circadian',
-      'noise-sensory',
-      'home-operations',
-      'social-hosting-language',
-      'communication-conflict',
-      'privacy-territoriality',
-      'reliability-logistics'
-    ]
-
+    // Find the first incomplete section
     const nextSection = completionStatus.isComplete ? null : 
-      allSections[Math.min(completedSections, allSections.length - 1)]
+      Object.keys(sectionProgress.sectionDetails).find(section => {
+        const details = sectionProgress.sectionDetails[section]
+        return details.completed < details.total
+      }) || null
 
     // Return only high-level progress - don't expose missingKeys (reveals questionnaire structure)
     return NextResponse.json({
-      completedSections: allSections.slice(0, completedSections),
-      totalSections,
+      completedSections: sectionProgress.completedSections,
+      totalSections: sectionProgress.totalSections,
       progressCount: completionStatus.responseCount,
       isFullySubmitted: completionStatus.isComplete,
       hasPartialProgress: completionStatus.responseCount > 0 && !completionStatus.isComplete,

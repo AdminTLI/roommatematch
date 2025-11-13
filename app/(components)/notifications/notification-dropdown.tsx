@@ -295,12 +295,9 @@ export function NotificationDropdown({
 
   return (
     <>
-      {/* Backdrop for desktop */}
-      {isOpen && <Backdrop />}
-      
       {/* Mobile: Full-screen Sheet */}
       <Sheet open={isOpen} onOpenChange={onClose}>
-        <SheetContent side="right" className="w-full sm:hidden p-4 z-50">
+        <SheetContent side="right" className="w-full sm:hidden p-4 z-[100]">
           <SheetHeader className="mb-4 pr-12">
             <SheetTitle className="pr-0">
               <HeaderContent isMobile={true} />
@@ -312,18 +309,22 @@ export function NotificationDropdown({
 
       {/* Desktop: Card Dropdown with portal-like positioning */}
       {isOpen && (
-        <div className="hidden sm:block fixed right-4 top-16 w-96 z-50">
-          <Card className="shadow-xl border-2 bg-white">
-            <CardHeader className="pb-3 px-4 pt-4 border-b">
-              <CardTitle className="text-base">
-                <HeaderContent isMobile={false} />
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="p-0">
-              <NotificationList />
-            </CardContent>
-          </Card>
-        </div>
+        <>
+          {/* Backdrop for desktop */}
+          <Backdrop />
+          <div className="hidden sm:block fixed right-4 top-16 w-96 z-[100]">
+            <Card className="shadow-xl border border-gray-200 bg-white rounded-xl">
+              <CardHeader className="pb-3 px-4 pt-4 border-b border-gray-200">
+                <CardTitle className="text-base">
+                  <HeaderContent isMobile={false} />
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="p-0">
+                <NotificationList />
+              </CardContent>
+            </Card>
+          </div>
+        </>
       )}
     </>
   )

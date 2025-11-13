@@ -208,7 +208,10 @@ export function Sidebar({ user, onClose }: SidebarProps) {
         if (response.ok) {
           const data = await response.json()
           const totalSections = data.totalSections || 9
-          const completedSections = data.completedSections?.length || 0
+          // completedSections is now a number, not an array
+          const completedSections = typeof data.completedSections === 'number' 
+            ? data.completedSections 
+            : (data.completedSections?.length || 0)
           setQuestionnaireProgress(Math.round((completedSections / totalSections) * 100))
         }
       } catch (error) {
