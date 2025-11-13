@@ -115,14 +115,14 @@ export function Topbar({ user }: TopbarProps) {
       transition={{ duration: 0.4 }}
       className="sticky top-0 z-40 bg-surface-0/95 backdrop-blur-sm border-b border-line"
     >
-      <div className="flex items-center justify-between px-4 lg:px-6 py-4">
-        {/* Left side - Mobile Menu & Logo */}
-        <div className="flex items-center gap-4">
-          {/* Mobile Menu Button (hidden on mobile since BottomTabBar provides navigation) */}
-          <div className="hidden lg:block">
+      <div className="flex items-center justify-between px-4 lg:px-6 py-4 gap-3">
+        {/* Left side - Logo & Mobile Menu */}
+        <div className="flex items-center gap-3 sm:gap-4 min-w-0 flex-shrink-0">
+          {/* Mobile Menu Button (only show on mobile/tablet, not on laptop) */}
+          <div className="lg:hidden">
             <Sheet>
               <SheetTrigger asChild>
-                <Button variant="ghost" size="sm" className="h-11 w-11 p-0">
+                <Button variant="ghost" size="sm" className="h-11 w-11 p-0 flex-shrink-0">
                   <Menu className="h-5 w-5" />
                   <span className="sr-only">Open navigation menu</span>
                 </Button>
@@ -133,12 +133,34 @@ export function Topbar({ user }: TopbarProps) {
             </Sheet>
           </div>
 
+          {/* Company Name/Logo - Show on mobile */}
+          <Link href="/matches" className="flex items-center gap-2 hover:opacity-80 transition-opacity flex-shrink-0 min-w-0">
+            <div className="relative h-7 w-7 sm:h-8 sm:w-8 flex-shrink-0">
+              <Image 
+                src="/images/logo.png" 
+                alt="Domu Match" 
+                fill
+                className="object-contain"
+                priority
+                sizes="32px"
+                onError={(e) => {
+                  const target = e.target as HTMLElement;
+                  const container = target.closest('.relative');
+                  if (container) {
+                    container.style.display = 'none';
+                  }
+                }}
+              />
+            </div>
+            <div className="hidden sm:block min-w-0">
+              <span className="text-lg sm:text-xl font-bold text-primary truncate">Domu Match</span>
+              <p className="text-xs text-gray-500 hidden lg:block">From strangers to roommates</p>
+            </div>
+          </Link>
         </div>
 
-        {/* Right side - Search, Actions, User */}
-        <div className="flex items-center gap-3">
-          {/* Search - Hidden on mobile */}
-          <div className="hidden md:block relative" ref={searchRef}>
+        {/* Center - Search (Show on all devices, extends to fill space) */}
+        <div className="flex-1 max-w-2xl relative" ref={searchRef}>
             <div className="relative">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-ink-400" />
               <input
@@ -157,7 +179,7 @@ export function Topbar({ user }: TopbarProps) {
                     setShowResults(true)
                   }
                 }}
-                className="w-64 sm:w-80 md:w-96 max-w-md pl-10 pr-10 py-2 bg-surface-1 border border-line rounded-xl text-body-sm focus:outline-none focus:ring-2 focus:ring-brand-600 focus:border-transparent min-h-[44px]"
+                className="w-full pl-10 pr-10 py-2 bg-surface-1 border border-line rounded-xl text-body-sm focus:outline-none focus:ring-2 focus:ring-brand-600 focus:border-transparent min-h-[44px]"
               />
               {searchQuery && (
               <button
