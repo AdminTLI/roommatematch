@@ -538,16 +538,16 @@ export function DashboardContent({ hasCompletedQuestionnaire = false, hasPartial
       case 'match_created':
       case 'match_accepted':
       case 'match_confirmed':
-        return 'bg-green-100 text-green-800'
+        return 'bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-300'
       case 'chat_message':
-        return 'bg-blue-100 text-blue-800'
+        return 'bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-300'
       case 'profile_updated':
       case 'questionnaire_completed':
-        return 'bg-purple-100 text-purple-800'
+        return 'bg-purple-100 dark:bg-purple-900/30 text-purple-800 dark:text-purple-300'
       case 'housing_update':
-        return 'bg-orange-100 text-orange-800'
+        return 'bg-orange-100 dark:bg-orange-900/30 text-orange-800 dark:text-orange-300'
       default:
-        return 'bg-gray-100 text-gray-800'
+        return 'bg-gray-100 dark:bg-gray-800 text-gray-800 dark:text-gray-300'
     }
   }
 
@@ -613,15 +613,15 @@ export function DashboardContent({ hasCompletedQuestionnaire = false, hasPartial
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5 }}
-          className="border rounded-lg p-4 bg-red-50 border-red-200"
+          className="border rounded-lg p-4 bg-red-50 dark:bg-red-900/20 border-red-200 dark:border-red-800"
         >
           <div className="flex items-start gap-3">
-            <AlertCircle className="h-5 w-5 mt-0.5 text-red-600" />
+            <AlertCircle className="h-5 w-5 mt-0.5 text-red-600 dark:text-red-400" />
             <div className="flex-1">
-              <h3 className="font-semibold text-red-900">
+              <h3 className="font-semibold text-red-900 dark:text-red-200">
                 Email Verification Required
               </h3>
-              <p className="text-sm mt-1 text-red-800">
+              <p className="text-sm mt-1 text-red-800 dark:text-red-300">
                 Please verify your email address to submit the questionnaire and access all features.
               </p>
               <Button 
@@ -646,22 +646,22 @@ export function DashboardContent({ hasCompletedQuestionnaire = false, hasPartial
           transition={{ duration: 0.5 }}
           className={`border rounded-lg p-4 ${
             hasPartialProgress 
-              ? 'bg-blue-50 border-blue-200' 
-              : 'bg-yellow-50 border-yellow-200'
+              ? 'bg-blue-50 dark:bg-blue-900/20 border-blue-200 dark:border-blue-800' 
+              : 'bg-yellow-50 dark:bg-yellow-900/20 border-yellow-200 dark:border-yellow-800'
           }`}
         >
           <div className="flex items-start gap-3">
             <AlertCircle className={`h-5 w-5 mt-0.5 ${
-              hasPartialProgress ? 'text-blue-600' : 'text-yellow-600'
+              hasPartialProgress ? 'text-blue-600 dark:text-blue-400' : 'text-yellow-600 dark:text-yellow-400'
             }`} />
             <div className="flex-1">
               <h3 className={`font-semibold ${
-                hasPartialProgress ? 'text-blue-900' : 'text-yellow-900'
+                hasPartialProgress ? 'text-blue-900 dark:text-blue-200' : 'text-yellow-900 dark:text-yellow-200'
               }`}>
                 {hasPartialProgress ? 'Update Your Compatibility Profile' : 'Complete Your Compatibility Test'}
               </h3>
               <p className={`text-sm mt-1 ${
-                hasPartialProgress ? 'text-blue-800' : 'text-yellow-800'
+                hasPartialProgress ? 'text-blue-800 dark:text-blue-300' : 'text-yellow-800 dark:text-yellow-300'
               }`}>
                 {hasPartialProgress 
                   ? `Your profile is missing some information. Update your questionnaire to ensure accurate matching.`
@@ -691,15 +691,15 @@ export function DashboardContent({ hasCompletedQuestionnaire = false, hasPartial
       >
         <motion.div variants={fadeInUp} className="flex items-center justify-between">
           <div>
-            <h1 className="text-lg lg:text-xl font-bold text-gray-900">Welcome back{firstName ? ` ${firstName}` : ''}!</h1>
-            <p className="text-xs lg:text-sm text-gray-600 mt-0.5">Here's what's happening with your matches today.</p>
+            <h1 className="text-lg lg:text-xl font-bold text-gray-900 dark:text-foreground">Welcome back{firstName ? ` ${firstName}` : ''}!</h1>
+            <p className="text-xs lg:text-sm text-gray-600 dark:text-muted-foreground mt-0.5">Here's what's happening with your matches today.</p>
           </div>
         </motion.div>
         
         {/* Summary Badges - Real Data */}
         <motion.div variants={fadeInUp} className="flex flex-wrap gap-1.5 sm:gap-2">
           {dashboardData.summary.newMatchesCount > 0 && (
-            <div className="inline-flex items-center gap-1.5 px-2 py-0.5 bg-green-100 text-green-800 text-xs font-medium rounded-full">
+            <div className="inline-flex items-center gap-1.5 px-2 py-0.5 bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-300 text-xs font-medium rounded-full">
               <Star className="w-2.5 h-2.5" />
               {dashboardData.summary.newMatchesCount} new {dashboardData.summary.newMatchesCount === 1 ? 'match' : 'matches'}
             </div>
@@ -707,7 +707,7 @@ export function DashboardContent({ hasCompletedQuestionnaire = false, hasPartial
           {dashboardData.summary.unreadMessagesCount > 0 && (
             <button
               onClick={() => router.push('/chat')}
-              className="inline-flex items-center gap-1.5 px-2 py-0.5 bg-blue-100 text-blue-800 text-xs font-medium rounded-full hover:bg-blue-200 transition-colors cursor-pointer"
+              className="inline-flex items-center gap-1.5 px-2 py-0.5 bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-300 text-xs font-medium rounded-full hover:bg-blue-200 dark:hover:bg-blue-900/50 transition-colors cursor-pointer"
             >
               <MessageCircle className="w-2.5 h-2.5" />
               {dashboardData.summary.unreadMessagesCount} unread {dashboardData.summary.unreadMessagesCount === 1 ? 'message' : 'messages'}
@@ -717,7 +717,7 @@ export function DashboardContent({ hasCompletedQuestionnaire = false, hasPartial
           {profileCompletion < 100 && (
             <button
               onClick={() => router.push('/settings')}
-              className="inline-flex items-center gap-1.5 px-2 py-0.5 bg-purple-100 text-purple-800 text-xs font-medium rounded-full hover:bg-purple-200 transition-colors cursor-pointer"
+              className="inline-flex items-center gap-1.5 px-2 py-0.5 bg-purple-100 dark:bg-purple-900/30 text-purple-800 dark:text-purple-300 text-xs font-medium rounded-full hover:bg-purple-200 dark:hover:bg-purple-900/50 transition-colors cursor-pointer"
             >
               <TrendingUp className="w-2.5 h-2.5" />
               Profile {profileCompletion}% complete
@@ -725,13 +725,13 @@ export function DashboardContent({ hasCompletedQuestionnaire = false, hasPartial
           )}
           {/* Questionnaire Progress Badge */}
           {questionnaireProgress && !questionnaireProgress.isSubmitted && (
-            <div className="inline-flex items-center gap-1.5 px-2 py-0.5 bg-blue-100 text-blue-800 text-xs font-medium rounded-full">
+            <div className="inline-flex items-center gap-1.5 px-2 py-0.5 bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-300 text-xs font-medium rounded-full">
               <FileText className="w-2.5 h-2.5" />
               Questionnaire {questionnaireProgress.completedSections}/{questionnaireProgress.totalSections} sections
             </div>
           )}
           {dashboardData.summary.newMatchesCount === 0 && dashboardData.summary.unreadMessagesCount === 0 && profileCompletion === 100 && (!questionnaireProgress || questionnaireProgress.isSubmitted) && (
-            <div className="inline-flex items-center gap-1.5 px-2 py-0.5 bg-green-100 text-green-800 text-xs font-medium rounded-full">
+            <div className="inline-flex items-center gap-1.5 px-2 py-0.5 bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-300 text-xs font-medium rounded-full">
               <Star className="w-2.5 h-2.5" />
               All caught up!
             </div>
@@ -747,25 +747,25 @@ export function DashboardContent({ hasCompletedQuestionnaire = false, hasPartial
         className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2 sm:gap-2 flex-shrink-0"
       >
         <motion.div variants={fadeInUp}>
-          <div className="bg-white p-3 sm:p-4 rounded-xl shadow-sm border border-gray-200">
-            <div className="text-xl sm:text-2xl font-bold text-gray-900">
+          <div className="bg-white dark:bg-card p-3 sm:p-4 rounded-xl shadow-sm border border-gray-200 dark:border-border">
+            <div className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-foreground">
               {avgCompatibility > 0 ? `${avgCompatibility}%` : '0%'}
             </div>
-            <div className="text-xs text-gray-600 mt-0.5">Avg Compatibility</div>
+            <div className="text-xs text-gray-600 dark:text-muted-foreground mt-0.5">Avg Compatibility</div>
           </div>
         </motion.div>
         
         <motion.div variants={fadeInUp}>
-          <div className="bg-white p-3 sm:p-4 rounded-xl shadow-sm border border-gray-200">
-            <div className="text-xl sm:text-2xl font-bold text-gray-900">{totalMatches}</div>
-            <div className="text-xs text-gray-600 mt-0.5">Total Matches</div>
+          <div className="bg-white dark:bg-card p-3 sm:p-4 rounded-xl shadow-sm border border-gray-200 dark:border-border">
+            <div className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-foreground">{totalMatches}</div>
+            <div className="text-xs text-gray-600 dark:text-muted-foreground mt-0.5">Total Matches</div>
           </div>
         </motion.div>
         
         <motion.div variants={fadeInUp}>
-          <div className="bg-white p-3 sm:p-4 rounded-xl shadow-sm border border-gray-200">
-            <div className="text-xl sm:text-2xl font-bold text-gray-900">{dashboardData.kpis.activeChats}</div>
-            <div className="text-xs text-gray-600 mt-0.5">Active Chats</div>
+          <div className="bg-white dark:bg-card p-3 sm:p-4 rounded-xl shadow-sm border border-gray-200 dark:border-border">
+            <div className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-foreground">{dashboardData.kpis.activeChats}</div>
+            <div className="text-xs text-gray-600 dark:text-muted-foreground mt-0.5">Active Chats</div>
           </div>
         </motion.div>
       </motion.div>
@@ -779,11 +779,11 @@ export function DashboardContent({ hasCompletedQuestionnaire = false, hasPartial
       >
         {/* Top Matches - Real Data */}
         <motion.div variants={fadeInUp} className="flex flex-col min-h-0">
-          <div className="bg-white p-3 sm:p-4 rounded-xl shadow-sm border border-gray-200 flex flex-col h-full max-h-full">
+          <div className="bg-white dark:bg-card p-3 sm:p-4 rounded-xl shadow-sm border border-gray-200 dark:border-border flex flex-col h-full max-h-full">
             <div className="flex items-center justify-between mb-2">
-              <h3 className="text-sm lg:text-base font-bold text-gray-900">Your Top Matches</h3>
+              <h3 className="text-sm lg:text-base font-bold text-gray-900 dark:text-foreground">Your Top Matches</h3>
               <button 
-                className="flex items-center justify-center w-8 h-8 text-gray-600 hover:text-gray-700 hover:bg-gray-100 rounded-lg transition-colors" 
+                className="flex items-center justify-center w-8 h-8 text-gray-600 dark:text-muted-foreground hover:text-gray-700 dark:hover:text-foreground hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors" 
                 onClick={loadTopMatches}
                 disabled={isLoadingMatches}
                 title="Refresh matches"
@@ -798,19 +798,19 @@ export function DashboardContent({ hasCompletedQuestionnaire = false, hasPartial
             
             {isLoadingMatches ? (
               <div className="flex items-center justify-center py-8 flex-1">
-                <Loader2 className="w-6 h-6 animate-spin text-gray-400" />
+                <Loader2 className="w-6 h-6 animate-spin text-gray-400 dark:text-gray-500" />
               </div>
             ) : topMatches.length > 0 ? (
               <div className="flex flex-col flex-1 min-h-0">
                 <div className="space-y-2 overflow-y-auto flex-1 pr-2">
                   {topMatches.map((match) => (
-                    <div key={match.id} className="flex items-center gap-3 p-3 bg-white border border-gray-200 rounded-lg hover:shadow-md transition-shadow">
+                    <div key={match.id} className="flex items-center gap-3 p-3 bg-white dark:bg-gray-800/50 border border-gray-200 dark:border-gray-700 rounded-lg hover:shadow-md dark:hover:shadow-lg transition-shadow">
                       <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-500 rounded-full flex items-center justify-center text-white font-bold text-sm flex-shrink-0">
                         {match.name[0].toUpperCase()}
                       </div>
                       <div className="flex-1 min-w-0">
-                        <h4 className="font-semibold text-sm text-gray-900 truncate">{match.name}</h4>
-                        <div className="text-xs text-gray-600 mt-0.5">
+                        <h4 className="font-semibold text-sm text-gray-900 dark:text-foreground truncate">{match.name}</h4>
+                        <div className="text-xs text-gray-600 dark:text-muted-foreground mt-0.5">
                           {match.program && (
                             <div className="truncate">{match.program}</div>
                           )}
@@ -821,13 +821,13 @@ export function DashboardContent({ hasCompletedQuestionnaire = false, hasPartial
                       </div>
                       <div className="flex items-center gap-2 flex-shrink-0">
                         {match.score > 0 && (
-                          <div className="text-base font-bold text-blue-600">
+                          <div className="text-base font-bold text-blue-600 dark:text-blue-400">
                             {Math.round(match.score * 100)}%
                           </div>
                         )}
                         <button 
                           onClick={() => handleChatWithMatch(match.userId || match.id)}
-                          className="px-3 py-1.5 bg-blue-600 text-white text-xs font-medium rounded-lg hover:bg-blue-700 transition-colors min-h-[44px] min-w-[60px]"
+                          className="px-3 py-1.5 bg-blue-600 dark:bg-blue-500 text-white text-xs font-medium rounded-lg hover:bg-blue-700 dark:hover:bg-blue-600 transition-colors min-h-[44px] min-w-[60px]"
                         >
                           Chat
                         </button>
@@ -835,9 +835,9 @@ export function DashboardContent({ hasCompletedQuestionnaire = false, hasPartial
                     </div>
                   ))}
                 </div>
-                <div className="pt-2 border-t border-gray-200 mt-2 flex-shrink-0">
+                <div className="pt-2 border-t border-gray-200 dark:border-gray-700 mt-2 flex-shrink-0">
                   <button 
-                    className="w-full flex items-center justify-center gap-1 text-xs text-blue-600 hover:text-blue-700 font-medium py-1.5" 
+                    className="w-full flex items-center justify-center gap-1 text-xs text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 font-medium py-1.5" 
                     onClick={handleBrowseMatches}
                   >
                     View all
@@ -863,11 +863,11 @@ export function DashboardContent({ hasCompletedQuestionnaire = false, hasPartial
 
         {/* Recent Activity - Live Notifications */}
         <motion.div variants={fadeInUp} className="flex flex-col min-h-0">
-          <div className="bg-white p-3 sm:p-4 rounded-xl shadow-sm border border-gray-200 flex flex-col h-full max-h-full">
+          <div className="bg-white dark:bg-card p-3 sm:p-4 rounded-xl shadow-sm border border-gray-200 dark:border-border flex flex-col h-full max-h-full">
             <div className="flex items-center justify-between mb-2">
-              <h3 className="text-sm lg:text-base font-bold text-gray-900">Recent Activity</h3>
+              <h3 className="text-sm lg:text-base font-bold text-gray-900 dark:text-foreground">Recent Activity</h3>
               <button 
-                className="flex items-center justify-center w-8 h-8 text-gray-600 hover:text-gray-700 hover:bg-gray-100 rounded-lg transition-colors" 
+                className="flex items-center justify-center w-8 h-8 text-gray-600 dark:text-muted-foreground hover:text-gray-700 dark:hover:text-foreground hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors" 
                 onClick={loadRecentActivity}
                 disabled={isLoadingActivity}
                 title="Refresh activity"
@@ -882,7 +882,7 @@ export function DashboardContent({ hasCompletedQuestionnaire = false, hasPartial
             
             {isLoadingActivity ? (
               <div className="flex items-center justify-center py-8 flex-1">
-                <Loader2 className="w-6 h-6 animate-spin text-gray-400" />
+                <Loader2 className="w-6 h-6 animate-spin text-gray-400 dark:text-gray-500" />
               </div>
             ) : recentActivity.length > 0 ? (
               <div className="flex flex-col flex-1 min-h-0">
@@ -893,44 +893,44 @@ export function DashboardContent({ hasCompletedQuestionnaire = false, hasPartial
                       onClick={() => handleActivityClick(activity)}
                       className={`w-full flex items-start gap-2 p-2 rounded-lg transition-colors text-left ${
                         activity.isRead 
-                          ? 'bg-gray-50 hover:bg-gray-100' 
-                          : 'bg-blue-50 hover:bg-blue-100 border border-blue-200'
+                          ? 'bg-gray-50 dark:bg-gray-800/50 hover:bg-gray-100 dark:hover:bg-gray-800' 
+                          : 'bg-blue-50 dark:bg-blue-900/20 hover:bg-blue-100 dark:hover:bg-blue-900/30 border border-blue-200 dark:border-blue-800'
                       }`}
                     >
                       <div className={`flex-shrink-0 w-6 h-6 rounded-full flex items-center justify-center ${
-                        activity.isRead ? 'bg-gray-200' : getActivityColor(activity.type)
+                        activity.isRead ? 'bg-gray-200 dark:bg-gray-700' : getActivityColor(activity.type)
                       }`}>
-                        <div className={activity.isRead ? 'text-gray-600' : ''}>
+                        <div className={activity.isRead ? 'text-gray-600 dark:text-gray-400' : ''}>
                           {getActivityIcon(activity.type)}
                         </div>
                       </div>
                       <div className="flex-1 min-w-0">
                         <p className={`font-medium text-xs ${
-                          activity.isRead ? 'text-gray-700' : 'text-gray-900'
+                          activity.isRead ? 'text-gray-700 dark:text-gray-300' : 'text-gray-900 dark:text-foreground'
                         }`}>
                           {activity.title}
                         </p>
                         {activity.message && (
                           <p className={`text-xs mt-0.5 ${
-                            activity.isRead ? 'text-gray-500' : 'text-gray-600'
+                            activity.isRead ? 'text-gray-500 dark:text-gray-400' : 'text-gray-600 dark:text-muted-foreground'
                           }`}>
                             {activity.message}
                           </p>
                         )}
-                        <p className="text-xs text-gray-400 mt-0.5">
+                        <p className="text-xs text-gray-400 dark:text-gray-500 mt-0.5">
                           {activity.timeAgo}
                         </p>
                       </div>
                       {!activity.isRead && (
-                        <div className="flex-shrink-0 w-1.5 h-1.5 bg-blue-600 rounded-full mt-1.5" />
+                        <div className="flex-shrink-0 w-1.5 h-1.5 bg-blue-600 dark:bg-blue-400 rounded-full mt-1.5" />
                       )}
                     </button>
                   ))}
                 </div>
                 {recentActivity.length > 3 && (
-                  <div className="pt-2 border-t border-gray-200 mt-2 flex-shrink-0 mb-4">
+                  <div className="pt-2 border-t border-gray-200 dark:border-gray-700 mt-2 flex-shrink-0 mb-4">
                     <button 
-                      className="w-full flex items-center justify-center gap-1 text-xs text-blue-600 hover:text-blue-700 font-medium py-2" 
+                      className="w-full flex items-center justify-center gap-1 text-xs text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 font-medium py-2" 
                       onClick={handleViewAllActivity}
                     >
                       View more

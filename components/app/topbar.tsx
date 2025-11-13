@@ -163,7 +163,7 @@ export function Topbar({ user }: TopbarProps) {
         {/* Center - Search (centered, takes more space) */}
         <div className="flex-1 max-w-3xl relative" ref={searchRef}>
             <div className="relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-ink-400" />
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-ink-400 dark:text-gray-400" />
               <input
                 ref={inputRef}
                 type="text"
@@ -180,7 +180,7 @@ export function Topbar({ user }: TopbarProps) {
                     setShowResults(true)
                   }
                 }}
-                className="w-full pl-10 pr-10 py-2.5 bg-gray-50 dark:bg-gray-800 border-0 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white dark:focus:bg-gray-700 min-h-[44px] transition-colors"
+                className="w-full pl-10 pr-10 py-2.5 bg-gray-50 dark:bg-gray-800 border-0 rounded-xl text-sm text-gray-900 dark:text-gray-100 placeholder:text-gray-400 dark:placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:bg-white dark:focus:bg-gray-700 min-h-[44px] transition-colors"
               />
               {searchQuery && (
               <button
@@ -189,7 +189,7 @@ export function Topbar({ user }: TopbarProps) {
                   setShowResults(false)
                   inputRef.current?.focus()
                 }}
-                className="absolute right-3 top-1/2 transform -translate-y-1/2 text-ink-400 hover:text-ink-600 min-w-[44px] min-h-[44px] flex items-center justify-center"
+                className="absolute right-3 top-1/2 transform -translate-y-1/2 text-ink-400 dark:text-gray-400 hover:text-ink-600 dark:hover:text-gray-300 min-w-[44px] min-h-[44px] flex items-center justify-center"
                 aria-label="Clear search"
               >
                 <X className="w-4 h-4" />
@@ -202,32 +202,32 @@ export function Topbar({ user }: TopbarProps) {
               <Card className="absolute top-full mt-2 w-full max-w-md max-h-96 overflow-y-auto shadow-lg border z-50">
                 <CardContent className="p-0">
                   {isSearching ? (
-                    <div className="p-4 text-center text-gray-500">
+                    <div className="p-4 text-center text-gray-500 dark:text-gray-400">
                       Searching...
                     </div>
                   ) : searchResults.length === 0 ? (
-                    <div className="p-4 text-center text-gray-500">
+                    <div className="p-4 text-center text-gray-500 dark:text-gray-400">
                       No results found
                     </div>
                   ) : (
-                    <div className="divide-y">
+                    <div className="divide-y divide-gray-200 dark:divide-gray-700">
                       {searchResults.map((result) => (
                         <button
                           key={`${result.type}-${result.id}`}
                           onClick={() => handleResultClick(result)}
-                          className="w-full p-3 hover:bg-gray-50 text-left transition-colors min-h-[44px]"
+                          className="w-full p-3 hover:bg-gray-50 dark:hover:bg-gray-800 text-left transition-colors min-h-[44px]"
                         >
                           {result.type === 'match' ? (
                             <div className="flex items-center gap-3">
-                              <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center flex-shrink-0">
-                                <User className="w-5 h-5 text-blue-600" />
+                              <div className="w-10 h-10 rounded-full bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center flex-shrink-0">
+                                <User className="w-5 h-5 text-blue-600 dark:text-blue-400" />
                               </div>
                               <div className="flex-1 min-w-0">
-                                <p className="font-semibold text-sm text-gray-900 truncate">
+                                <p className="font-semibold text-sm text-gray-900 dark:text-gray-100 truncate">
                                   {result.name}
                                 </p>
                                 {(result.program || result.university) && (
-                                  <p className="text-xs text-gray-500 truncate">
+                                  <p className="text-xs text-gray-500 dark:text-gray-400 truncate">
                                     {[result.program, result.university].filter(Boolean).join(' • ')}
                                   </p>
                                 )}
@@ -235,14 +235,14 @@ export function Topbar({ user }: TopbarProps) {
                             </div>
                           ) : (
                             <div className="flex items-start gap-3">
-                              <div className="w-10 h-10 rounded-full bg-green-100 flex items-center justify-center flex-shrink-0">
-                                <MessageCircle className="w-5 h-5 text-green-600" />
+                              <div className="w-10 h-10 rounded-full bg-green-100 dark:bg-green-900/30 flex items-center justify-center flex-shrink-0">
+                                <MessageCircle className="w-5 h-5 text-green-600 dark:text-green-400" />
                               </div>
                               <div className="flex-1 min-w-0">
-                                <p className="font-semibold text-sm text-gray-900">
+                                <p className="font-semibold text-sm text-gray-900 dark:text-gray-100">
                                   {result.senderName}
                                 </p>
-                                <p className="text-xs text-gray-600 truncate mt-1">
+                                <p className="text-xs text-gray-600 dark:text-gray-400 truncate mt-1">
                                   {result.content}
                                 </p>
                               </div>
@@ -258,12 +258,14 @@ export function Topbar({ user }: TopbarProps) {
         </div>
 
         {/* Right side - Actions, User */}
-        <div className="flex items-center gap-2 sm:gap-3 flex-shrink-0">
+        <div className="flex items-center gap-1.5 sm:gap-2 md:gap-3 flex-shrink-0">
           {/* Notifications */}
           <NotificationBell userId={user.id} />
 
-          {/* Theme Toggle */}
-          <ThemeToggle />
+          {/* Theme Toggle - Always visible on mobile */}
+          <div className="flex-shrink-0">
+            <ThemeToggle size="sm" />
+          </div>
 
           {/* User Dropdown */}
           <UserDropdown user={user} />

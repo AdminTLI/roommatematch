@@ -204,7 +204,7 @@ export function Universities() {
                     {universities.map((university) => (
                       <Card
                         key={university.id}
-                        className="rounded-xl border border-brand-border/50 bg-white/80 backdrop-blur-sm p-6 shadow-elev-1 hover:shadow-elev-2 transition-shadow duration-200 w-full sm:w-[calc(50%-0.5rem)] lg:w-[calc(33.333%-0.667rem)] xl:w-[calc(25%-0.75rem)] max-w-sm"
+                        className="rounded-xl border border-brand-border/50 dark:border-border/50 bg-white/80 dark:bg-card/80 backdrop-blur-sm p-6 shadow-elev-1 hover:shadow-elev-2 transition-shadow duration-200 w-full sm:w-[calc(50%-0.5rem)] lg:w-[calc(33.333%-0.667rem)] xl:w-[calc(25%-0.75rem)] max-w-sm"
                       >
                         <div className="flex flex-col h-full">
                           <h3 className="font-semibold text-brand-text text-lg mb-4 leading-tight text-center">

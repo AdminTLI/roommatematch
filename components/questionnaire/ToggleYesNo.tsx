@@ -23,7 +23,7 @@ export function ToggleYesNo({ id, label, helperText, checked, onChange }: Props)
             'flex-1 h-12 sm:h-11 rounded-xl border text-base sm:text-sm font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-indigo-500 px-4 sm:px-3',
             checked === true
               ? 'bg-indigo-600 text-white border-indigo-600'
-              : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50'
+              : 'bg-white dark:bg-card text-gray-700 dark:text-gray-300 border-gray-300 dark:border-border hover:bg-gray-50 dark:hover:bg-gray-800'
           )}
         >
           Yes
@@ -35,7 +35,7 @@ export function ToggleYesNo({ id, label, helperText, checked, onChange }: Props)
             'flex-1 h-12 sm:h-11 rounded-xl border text-base sm:text-sm font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-indigo-500 px-4 sm:px-3',
             checked === false
               ? 'bg-indigo-600 text-white border-indigo-600'
-              : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50'
+              : 'bg-white dark:bg-card text-gray-700 dark:text-gray-300 border-gray-300 dark:border-border hover:bg-gray-50 dark:hover:bg-gray-800'
           )}
         >
           No

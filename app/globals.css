@@ -37,31 +37,31 @@
   }
 
   .dark {
-    /* Backgrounds */
+    /* Backgrounds - improved contrast */
     --background: 222 47% 11%;  /* #121826 - very dark blue-gray */
-    --foreground: 210 40% 98%;
-    --card: 222 47% 11%;
+    --foreground: 210 40% 98%;   /* High contrast text */
+    --card: 222 47% 15%;         /* Slightly lighter than background for card differentiation */
     --card-foreground: 210 40% 98%;
-    --popover: 222 47% 11%;
+    --popover: 222 47% 15%;
     --popover-foreground: 210 40% 98%;
     
     /* Brand colors (desaturated for dark mode) */
     --primary: 217 91% 60%;     /* #818CF8 - lighter indigo */
     --primary-foreground: 222 47% 11%;
-    --secondary: 215 20% 20%;   /* #2D3548 - dark surface */
+    --secondary: 215 20% 25%;   /* Slightly lighter for better visibility */
     --secondary-foreground: 210 40% 98%;
-    --muted: 215 20% 20%;
-    --muted-foreground: 215 20% 65%;
-    --accent: 215 20% 20%;
+    --muted: 215 20% 25%;       /* Slightly lighter muted background */
+    --muted-foreground: 215 20% 75%;  /* Brighter muted text for better contrast */
+    --accent: 215 20% 25%;
     --accent-foreground: 210 40% 98%;
     
-    /* Destructive colors */
-    --destructive: 0 63% 31%;
+    /* Destructive colors - improved visibility */
+    --destructive: 0 72% 51%;    /* Slightly brighter red for better visibility */
     --destructive-foreground: 210 40% 98%;
     
-    /* Borders & inputs */
-    --border: 215 20% 20%;
-    --input: 215 20% 20%;
+    /* Borders & inputs - improved visibility */
+    --border: 215 20% 30%;      /* Lighter borders for better visibility */
+    --input: 215 20% 25%;       /* Slightly lighter input background */
     --ring: 217 91% 60%;
     
     /* Custom brand colors for dark mode */
@@ -160,10 +160,14 @@
     -webkit-tap-highlight-color: rgba(79, 70, 229, 0.1);
   }
 
-  /* Focus ring styles */
+  /* Focus ring styles - adapts to dark mode */
   *:focus-visible {
     outline: none;
     box-shadow: 0 0 0 2px #4F46E5, 0 0 0 4px rgba(79, 70, 229, 0.2);
+  }
+  
+  .dark *:focus-visible {
+    box-shadow: 0 0 0 2px #818CF8, 0 0 0 4px rgba(129, 140, 248, 0.3);
   }
 }
 

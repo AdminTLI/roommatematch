@@ -335,7 +335,7 @@ export function StudentMatchesInterface({ user }: StudentMatchesInterfaceProps) 
         {/* Mobile: Dropdown Select (< 640px) */}
         <div className="block sm:hidden mb-4">
           <Select value={activeTab} onValueChange={(value) => setActiveTab(value as TabType)}>
-            <SelectTrigger className="w-full bg-white border border-gray-200 rounded-xl shadow-sm">
+            <SelectTrigger className="w-full bg-white dark:bg-card border border-gray-200 dark:border-border rounded-xl shadow-sm">
               <SelectValue>
                 <div className="flex items-center gap-2">
                   {tabs.find(t => t.id === activeTab) && (
@@ -344,7 +344,7 @@ export function StudentMatchesInterface({ user }: StudentMatchesInterfaceProps) 
                         {tabs.find(t => t.id === activeTab)?.label}
                       </span>
                       {tabs.find(t => t.id === activeTab) && tabs.find(t => t.id === activeTab)!.count > 0 && (
-                        <span className="ml-2 px-2 py-0.5 rounded-full text-xs font-semibold bg-gray-200 text-gray-600">
+                        <span className="ml-2 px-2 py-0.5 rounded-full text-xs font-semibold bg-gray-200 dark:bg-gray-700 text-gray-600 dark:text-gray-300">
                           {tabs.find(t => t.id === activeTab)!.count}
                         </span>
                       )}
@@ -373,7 +373,7 @@ export function StudentMatchesInterface({ user }: StudentMatchesInterfaceProps) 
         {/* Desktop: Tabs with rounded corners fixed */}
         <div className="hidden sm:block">
           <div className="relative">
-            <div className="flex gap-1 bg-white border border-gray-200 p-1 rounded-2xl shadow-sm">
+            <div className="flex gap-1 bg-white dark:bg-card border border-gray-200 dark:border-border p-1 rounded-2xl shadow-sm">
               {tabs.map((tab, index) => (
                 <button
                   key={tab.id}

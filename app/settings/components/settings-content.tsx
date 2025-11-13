@@ -49,7 +49,7 @@ export function SettingsContent({ user, profile, academic, progressData }: Setti
           {/* Mobile: Dropdown Select (< 640px) */}
           <div className="block sm:hidden">
             <Select value={activeTab} onValueChange={setActiveTab}>
-              <SelectTrigger className="w-full bg-white border border-gray-200 rounded-xl shadow-sm">
+              <SelectTrigger className="w-full bg-white dark:bg-card border border-gray-200 dark:border-border rounded-xl shadow-sm">
                 <SelectValue>
                   <div className="flex items-center gap-2">
                     {activeTab === 'profile' && <User className="w-4 h-4" />}
@@ -96,13 +96,13 @@ export function SettingsContent({ user, profile, academic, progressData }: Setti
 
           {/* Tablet: Grid Layout (640px - 1024px) */}
           <div className="hidden sm:block lg:hidden">
-            <div className="grid grid-cols-2 gap-2 bg-white border border-gray-200 p-1.5 rounded-2xl shadow-sm">
+            <div className="grid grid-cols-2 gap-2 bg-white dark:bg-card border border-gray-200 dark:border-border p-1.5 rounded-2xl shadow-sm">
               <button
                 onClick={() => setActiveTab('profile')}
                 className={`flex items-center justify-center gap-2 px-4 py-3 rounded-xl text-sm font-medium transition-colors ${
                   activeTab === 'profile'
                     ? 'bg-blue-600 text-white shadow-sm'
-                    : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50 active:bg-gray-100'
+                    : 'text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-foreground hover:bg-gray-50 dark:hover:bg-gray-800 active:bg-gray-100 dark:active:bg-gray-700'
                 }`}
               >
                 <User className="w-4 h-4" />
@@ -113,7 +113,7 @@ export function SettingsContent({ user, profile, academic, progressData }: Setti
                 className={`flex items-center justify-center gap-2 px-4 py-3 rounded-xl text-sm font-medium transition-colors ${
                   activeTab === 'questionnaire'
                     ? 'bg-blue-600 text-white shadow-sm'
-                    : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50 active:bg-gray-100'
+                    : 'text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-foreground hover:bg-gray-50 dark:hover:bg-gray-800 active:bg-gray-100 dark:active:bg-gray-700'
                 }`}
               >
                 <FileText className="w-4 h-4" />
@@ -124,7 +124,7 @@ export function SettingsContent({ user, profile, academic, progressData }: Setti
                 className={`flex items-center justify-center gap-2 px-4 py-3 rounded-xl text-sm font-medium transition-colors ${
                   activeTab === 'account'
                     ? 'bg-blue-600 text-white shadow-sm'
-                    : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50 active:bg-gray-100'
+                    : 'text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-foreground hover:bg-gray-50 dark:hover:bg-gray-800 active:bg-gray-100 dark:active:bg-gray-700'
                 }`}
               >
                 <SettingsIcon className="w-4 h-4" />
@@ -135,7 +135,7 @@ export function SettingsContent({ user, profile, academic, progressData }: Setti
                 className={`flex items-center justify-center gap-2 px-4 py-3 rounded-xl text-sm font-medium transition-colors ${
                   activeTab === 'privacy'
                     ? 'bg-blue-600 text-white shadow-sm'
-                    : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50 active:bg-gray-100'
+                    : 'text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-foreground hover:bg-gray-50 dark:hover:bg-gray-800 active:bg-gray-100 dark:active:bg-gray-700'
                 }`}
               >
                 <Shield className="w-4 h-4" />
@@ -146,13 +146,13 @@ export function SettingsContent({ user, profile, academic, progressData }: Setti
 
           {/* Desktop: Horizontal Layout (>= 1024px) */}
           <div className="hidden lg:block">
-            <div className="flex gap-2 bg-white border border-gray-200 p-1.5 rounded-2xl shadow-sm">
+            <div className="flex gap-2 bg-white dark:bg-card border border-gray-200 dark:border-border p-1.5 rounded-2xl shadow-sm">
               <button
                 onClick={() => setActiveTab('profile')}
                 className={`flex items-center gap-2 px-5 py-3 rounded-xl text-base font-medium transition-colors ${
                   activeTab === 'profile'
                     ? 'bg-blue-600 text-white shadow-sm'
-                    : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50 active:bg-gray-100'
+                    : 'text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-foreground hover:bg-gray-50 dark:hover:bg-gray-800 active:bg-gray-100 dark:active:bg-gray-700'
                 }`}
               >
                 <User className="w-5 h-5" />
@@ -163,7 +163,7 @@ export function SettingsContent({ user, profile, academic, progressData }: Setti
                 className={`flex items-center gap-2 px-5 py-3 rounded-xl text-base font-medium transition-colors ${
                   activeTab === 'questionnaire'
                     ? 'bg-blue-600 text-white shadow-sm'
-                    : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50 active:bg-gray-100'
+                    : 'text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-foreground hover:bg-gray-50 dark:hover:bg-gray-800 active:bg-gray-100 dark:active:bg-gray-700'
                 }`}
               >
                 <FileText className="w-5 h-5" />
@@ -174,7 +174,7 @@ export function SettingsContent({ user, profile, academic, progressData }: Setti
                 className={`flex items-center gap-2 px-5 py-3 rounded-xl text-base font-medium transition-colors ${
                   activeTab === 'account'
                     ? 'bg-blue-600 text-white shadow-sm'
-                    : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50 active:bg-gray-100'
+                    : 'text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-foreground hover:bg-gray-50 dark:hover:bg-gray-800 active:bg-gray-100 dark:active:bg-gray-700'
                 }`}
               >
                 <SettingsIcon className="w-5 h-5" />
@@ -185,7 +185,7 @@ export function SettingsContent({ user, profile, academic, progressData }: Setti
                 className={`flex items-center gap-2 px-5 py-3 rounded-xl text-base font-medium transition-colors ${
                   activeTab === 'privacy'
                     ? 'bg-blue-600 text-white shadow-sm'
-                    : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50 active:bg-gray-100'
+                    : 'text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-foreground hover:bg-gray-50 dark:hover:bg-gray-800 active:bg-gray-100 dark:active:bg-gray-700'
                 }`}
               >
                 <Shield className="w-5 h-5" />
