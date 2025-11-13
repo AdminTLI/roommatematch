@@ -176,15 +176,35 @@ export default async function SettingsPage() {
       
       // Look up university_id from institution_slug if not present
       if (!university_id && institution_slug && institution_slug !== 'other') {
-        const { data: university } = await supabase
+        console.log('[Settings] Looking up university for slug:', institution_slug)
+        const { data: university, error: uniError } = await supabase
           .from('universities')
-          .select('id')
+          .select('id, slug, name')
           .eq('slug', institution_slug)
           .maybeSingle()
         
-        if (university) {
+        if (uniError) {
+          console.error('[Settings] Error looking up university:', uniError)
+        } else if (university) {
           university_id = university.id
-          console.log('[Settings] Found university UUID:', university_id, 'for slug:', institution_slug)
+          console.log('[Settings] Found university UUID:', university_id, 'for slug:', institution_slug, 'name:', university.name)
+        } else {
+          console.warn('[Settings] University not found for slug:', institution_slug)
+          // Try case-insensitive lookup as fallback
+          const { data: universities } = await supabase
+            .from('universities')
+            .select('id, slug, name')
+            .ilike('slug', institution_slug)
+            .limit(5)
+          
+          if (universities && universities.length > 0) {
+            console.log('[Settings] Found universities with similar slug:', universities.map(u => ({ slug: u.slug, name: u.name })))
+            // Use the first match
+            university_id = universities[0].id
+            console.log('[Settings] Using university:', university_id, 'for slug:', institution_slug)
+          } else {
+            console.error('[Settings] No university found even with case-insensitive lookup for slug:', institution_slug)
+          }
         }
       }
       
