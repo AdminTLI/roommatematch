@@ -66,8 +66,8 @@ export default function Footer() {
             <p className="text-sm sm:text-base text-slate-400 max-w-prose">{t.brandDescription}</p>
             <div className="flex items-center gap-3">
               <a aria-label="Twitter" className="rounded-full p-2 bg-white/5 hover:bg-white/10 focus-visible:ring-2 focus-visible:ring-brand-primary flex items-center justify-center min-w-[44px] min-h-[44px]"><Twitter size={18}/></a>
-              <a aria-label="LinkedIn" className="rounded-full p-2 bg-white/5 hover:bg-white/10 focus-visible:ring-2 focus-visible:ring-brand-primary flex items-center justify-center min-w-[44px] min-h-[44px]"><Linkedin size={18}/></a>
-              <a aria-label="Instagram" className="rounded-full p-2 bg-white/5 hover:bg-white/10 focus-visible:ring-2 focus-visible:ring-brand-primary flex items-center justify-center min-w-[44px] min-h-[44px]"><Instagram size={18}/></a>
+              <a aria-label="LinkedIn" href="https://www.linkedin.com/company/domu-match/?viewAsMember=true" target="_blank" rel="noopener noreferrer" className="rounded-full p-2 bg-white/5 hover:bg-white/10 focus-visible:ring-2 focus-visible:ring-brand-primary flex items-center justify-center min-w-[44px] min-h-[44px]"><Linkedin size={18}/></a>
+              <a aria-label="Instagram" href="https://www.instagram.com/domumatch" target="_blank" rel="noopener noreferrer" className="rounded-full p-2 bg-white/5 hover:bg-white/10 focus-visible:ring-2 focus-visible:ring-brand-primary flex items-center justify-center min-w-[44px] min-h-[44px]"><Instagram size={18}/></a>
             </div>
           </div>
 

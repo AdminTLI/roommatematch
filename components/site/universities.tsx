@@ -156,7 +156,7 @@ export function Universities() {
               onValueChange={(value) => setSelectedCity(value || null)}
               disabled={loadingCities}
             >
-              <SelectTrigger className="w-full [&>span]:flex-1 [&>span]:text-center">
+              <SelectTrigger className="w-full border-2 border-brand-primary focus:border-brand-primary focus:ring-2 focus:ring-brand-primary [&>span]:flex-1 [&>span]:text-center">
                 <SelectValue placeholder={t.selectCityPlaceholder} />
               </SelectTrigger>
               <SelectContent>
@@ -199,12 +199,12 @@ export function Universities() {
                   <p className="text-brand-muted">{t.noUniversities}</p>
                 </div>
               ) : (
-                <div className="w-full mt-8 px-4 sm:px-0">
-                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 max-w-7xl mx-auto">
+                <div className="w-full mt-8 px-4 sm:px-6 lg:px-8">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 max-w-7xl mx-auto justify-items-center">
                     {universities.map((university) => (
                       <Card
                         key={university.id}
-                        className="rounded-xl border border-brand-border/50 bg-white/80 backdrop-blur-sm p-6 shadow-elev-1 hover:shadow-elev-2 transition-shadow duration-200 w-full max-w-full"
+                        className="rounded-xl border border-brand-border/50 bg-white/80 backdrop-blur-sm p-6 shadow-elev-1 hover:shadow-elev-2 transition-shadow duration-200 w-full max-w-sm"
                       >
                         <div className="flex flex-col h-full">
                           <h3 className="font-semibold text-brand-text text-lg mb-2 leading-tight text-center">
