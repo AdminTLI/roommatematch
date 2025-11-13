@@ -22,6 +22,8 @@ import { UserDropdown } from './user-dropdown'
 import { Sidebar } from './sidebar'
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet'
 import { Card, CardContent } from '@/components/ui/card'
+import Image from 'next/image'
+import Link from 'next/link'
 
 interface TopbarProps {
   user: {
