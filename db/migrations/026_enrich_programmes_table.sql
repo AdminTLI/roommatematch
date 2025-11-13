@@ -29,3 +29,4 @@ COMMENT ON COLUMN programmes.enrichment_status IS 'Status of enrichment: pending
 COMMENT ON COLUMN programmes.enriched_at IS 'Timestamp when enrichment was last performed';
 
 
+

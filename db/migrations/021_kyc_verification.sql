@@ -106,3 +106,4 @@ GRANT SELECT ON verifications TO authenticated;
 GRANT SELECT ON verification_webhooks TO authenticated;
 
 
+

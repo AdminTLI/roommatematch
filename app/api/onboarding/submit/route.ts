@@ -111,8 +111,26 @@ export async function POST(request: Request) {
       const responsesToInsert = []
       
       if (introSection?.answers) {
-        submissionData = extractSubmissionDataFromIntro(introSection.answers, user)
-        console.log('[Submit] Extracted submission data:', submissionData)
+        try {
+          submissionData = extractSubmissionDataFromIntro(introSection.answers, user)
+          console.log('[Submit] Extracted submission data:', submissionData)
+          
+          // Validate critical fields after extraction
+          if (!submissionData.study_start_year || isNaN(submissionData.study_start_year)) {
+            console.error('[Submit] study_start_year is missing or invalid after extraction:', submissionData.study_start_year)
+            return NextResponse.json({ 
+              error: 'Unable to calculate study start year. Please ensure all academic information is complete, including expected graduation year, degree level, and institution.',
+              title: 'Invalid Academic Data'
+            }, { status: 400 })
+          }
+        } catch (extractError) {
+          console.error('[Submit] Failed to extract submission data:', extractError)
+          const errorMessage = extractError instanceof Error ? extractError.message : 'Unknown error'
+          return NextResponse.json({ 
+            error: `Failed to process academic information: ${errorMessage}. Please check your academic details and try again.`,
+            title: 'Academic Data Error'
+          }, { status: 400 })
+        }
         
         // Look up university_id from institution_slug if university_id is empty
         if (!submissionData.university_id || submissionData.university_id === '') {
@@ -221,8 +239,8 @@ export async function POST(request: Request) {
 
       // 5. Use consolidated submission helper
       if (submissionData && deduplicatedResponses.length > 0) {
+        // Validate all required fields before submission
         // Ensure we have a valid university_id
-        // Check if university_id is empty or missing
         if (!submissionData.university_id || submissionData.university_id === '' || submissionData.university_id === null) {
           // Check if we have institution_slug (might be "other")
           const institutionSlugAnswer = introSection?.answers?.find((a: any) => a.itemId === 'institution_slug')
@@ -240,35 +258,138 @@ export async function POST(request: Request) {
             }, { status: 400 })
           }
         }
-        
-        const result = await submitCompleteOnboarding(supabase, {
-          user_id: userId,
-          university_id: submissionData.university_id,
-          first_name: submissionData.first_name,
-          degree_level: submissionData.degree_level,
-          program_id: submissionData.program_id,
-          program: submissionData.program,
-          campus: submissionData.campus,
-          languages_daily: extractedLanguages,
-          study_start_year: submissionData.study_start_year,
-          study_start_month: submissionData.study_start_month,
-          expected_graduation_year: submissionData.expected_graduation_year,
-          graduation_month: submissionData.graduation_month,
-          programme_duration_months: submissionData.programme_duration_months,
-          undecided_program: submissionData.undecided_program,
-          responses: deduplicatedResponses
-        })
 
-        if (!result.success) {
-          console.error('[Submit] Consolidated submission failed:', result.error)
-          const mappedError = mapSubmissionError(result.error || 'Unknown error')
+        // Validate study_start_year is present and valid (required by database)
+        if (!submissionData.study_start_year || isNaN(submissionData.study_start_year)) {
+          console.error('[Submit] study_start_year is missing or invalid:', submissionData.study_start_year)
           return NextResponse.json({ 
-            error: mappedError.message,
-            title: mappedError.title
-          }, { status: 500 })
+            error: 'Study start year is required but could not be calculated. Please ensure all academic information is complete, including expected graduation year, degree level, and institution.',
+            title: 'Missing Academic Data'
+          }, { status: 400 })
         }
 
-        console.log('[Submit] Consolidated submission successful')
+        // Validate degree_level is present
+        if (!submissionData.degree_level || submissionData.degree_level.trim() === '') {
+          console.error('[Submit] degree_level is missing:', submissionData.degree_level)
+          return NextResponse.json({ 
+            error: 'Degree level is required. Please complete the academic information section.',
+            title: 'Missing Academic Data'
+          }, { status: 400 })
+        }
+
+        console.log('[Submit] All validations passed, proceeding with submission:', {
+          user_id: userId,
+          university_id: submissionData.university_id,
+          degree_level: submissionData.degree_level,
+          study_start_year: submissionData.study_start_year,
+          expected_graduation_year: submissionData.expected_graduation_year
+        })
+        
+        try {
+          const result = await submitCompleteOnboarding(supabase, {
+            user_id: userId,
+            university_id: submissionData.university_id,
+            first_name: submissionData.first_name,
+            degree_level: submissionData.degree_level,
+            program_id: submissionData.program_id,
+            program: submissionData.program,
+            campus: submissionData.campus,
+            languages_daily: extractedLanguages,
+            study_start_year: submissionData.study_start_year,
+            study_start_month: submissionData.study_start_month,
+            expected_graduation_year: submissionData.expected_graduation_year,
+            graduation_month: submissionData.graduation_month,
+            programme_duration_months: submissionData.programme_duration_months,
+            undecided_program: submissionData.undecided_program,
+            responses: deduplicatedResponses
+          })
+
+          if (!result.success) {
+            console.error('[Submit] Consolidated submission failed:', result.error)
+            const mappedError = mapSubmissionError(result.error || 'Unknown error')
+            return NextResponse.json({ 
+              error: mappedError.message,
+              title: mappedError.title
+            }, { status: 500 })
+          }
+
+          console.log('[Submit] Consolidated submission successful')
+          
+          // Verify user_academic was created/updated
+          const { data: verifyAcademic, error: verifyError } = await supabase
+            .from('user_academic')
+            .select('user_id, study_start_year, university_id, degree_level')
+            .eq('user_id', userId)
+            .maybeSingle()
+          
+          if (verifyError) {
+            console.error('[Submit] Failed to verify user_academic after submission:', verifyError)
+            // Attempt to backfill from submission data
+            console.log('[Submit] Attempting to backfill user_academic from submission data...')
+            try {
+              // Re-extract and upsert academic data
+              const { upsertProfileAndAcademic } = await import('@/lib/onboarding/submission')
+              await upsertProfileAndAcademic(supabase, {
+                user_id: userId,
+                university_id: submissionData.university_id,
+                first_name: submissionData.first_name,
+                degree_level: submissionData.degree_level,
+                program_id: submissionData.program_id,
+                program: submissionData.program,
+                campus: submissionData.campus,
+                languages_daily: extractedLanguages,
+                study_start_year: submissionData.study_start_year!,
+                study_start_month: submissionData.study_start_month,
+                expected_graduation_year: submissionData.expected_graduation_year,
+                graduation_month: submissionData.graduation_month,
+                programme_duration_months: submissionData.programme_duration_months,
+                undecided_program: submissionData.undecided_program
+              })
+              console.log('[Submit] Successfully backfilled user_academic')
+            } catch (backfillError) {
+              console.error('[Submit] Failed to backfill user_academic:', backfillError)
+              // Log but don't fail - submission was successful
+            }
+          } else if (!verifyAcademic) {
+            console.error('[Submit] CRITICAL: user_academic was not created after successful submission')
+            console.error('[Submit] Attempting to backfill user_academic from submission data...')
+            try {
+              // Re-extract and upsert academic data
+              const { upsertProfileAndAcademic } = await import('@/lib/onboarding/submission')
+              await upsertProfileAndAcademic(supabase, {
+                user_id: userId,
+                university_id: submissionData.university_id,
+                first_name: submissionData.first_name,
+                degree_level: submissionData.degree_level,
+                program_id: submissionData.program_id,
+                program: submissionData.program,
+                campus: submissionData.campus,
+                languages_daily: extractedLanguages,
+                study_start_year: submissionData.study_start_year!,
+                study_start_month: submissionData.study_start_month,
+                expected_graduation_year: submissionData.expected_graduation_year,
+                graduation_month: submissionData.graduation_month,
+                programme_duration_months: submissionData.programme_duration_months,
+                undecided_program: submissionData.undecided_program
+              })
+              console.log('[Submit] Successfully backfilled user_academic')
+            } catch (backfillError) {
+              console.error('[Submit] Failed to backfill user_academic:', backfillError)
+              // Log but don't fail - submission was successful, but academic data is missing
+              console.error('[Submit] User should have user_academic record but it was not created. Manual intervention may be required.')
+            }
+          } else {
+            console.log('[Submit] Verified user_academic was created/updated:', verifyAcademic)
+          }
+        } catch (submitError) {
+          console.error('[Submit] Error during submission:', submitError)
+          const errorMessage = submitError instanceof Error ? submitError.message : 'Unknown error'
+          const mappedError = mapSubmissionError(errorMessage)
+          return NextResponse.json({ 
+            error: mappedError.message || `Failed to submit questionnaire: ${errorMessage}`,
+            title: mappedError.title || 'Submission Error'
+          }, { status: 500 })
+        }
 
         // 5. Save snapshot to onboarding_submissions (only after successful submission)
         // Store both raw sections (for audit trail) and transformed responses (for analysis)

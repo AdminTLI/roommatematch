@@ -20,3 +20,4 @@ COMMENT ON COLUMN user_academic.study_start_month IS 'Month when studies started
 COMMENT ON COLUMN user_academic.graduation_month IS 'Expected month of graduation (1-12). Used for accurate academic year calculation. NULL defaults to June (6).';
 
 
+

@@ -103,40 +103,6 @@ export function extractSubmissionDataFromIntro(
     throw new Error('Graduation month must be between 1 and 12')
   }
 
-  // Calculate study_start_year using month-aware logic if months are provided
-  // Otherwise fall back to institution-type defaults
-  if (!study_start_year && expected_graduation_year && degree_level && institution_slug) {
-    const institutionType = getInstitutionType(institution_slug) as 'wo' | 'hbo'
-    
-    if (institutionType && study_start_month !== null && graduation_month !== null) {
-      // Use month-aware calculation
-      // Calculate academic year offsets
-      // Academic year starts in September (month 9)
-      const graduationAcademicYear = expected_graduation_year + (graduation_month >= 9 ? 1 : 0)
-      const startAcademicYear = graduationAcademicYear - (institutionType === 'wo' ? 3 : 4) + 1
-      
-      // Convert academic year back to calendar year
-      // If start month >= 9, the academic year started in the previous calendar year
-      study_start_year = startAcademicYear - (study_start_month >= 9 ? 1 : 0)
-    } else {
-      // Fallback to old calculation
-      let calculatedStartYear = expected_graduation_year - 3 // Default for bachelor
-      
-      if (degree_level === 'master' || degree_level === 'premaster') {
-        calculatedStartYear = expected_graduation_year - 1
-      } else if (degree_level === 'bachelor' && institutionType) {
-        const bachelorDuration = institutionType === 'hbo' ? 4 : 3
-        calculatedStartYear = expected_graduation_year - bachelorDuration
-      }
-      
-      // Clamp to DB constraints: >= 2015 AND <= EXTRACT(YEAR FROM now()) + 1
-      const currentYear = new Date().getFullYear()
-      const minYear = 2015
-      const maxYear = currentYear + 1
-      study_start_year = Math.max(minYear, Math.min(maxYear, calculatedStartYear))
-    }
-  }
-  
   // Ensure graduation_month defaults to June (6) if not provided (should not happen with validation)
   if (graduation_month === null && expected_graduation_year) {
     graduation_month = 6
@@ -146,6 +112,60 @@ export function extractSubmissionDataFromIntro(
   if (study_start_month === null && expected_graduation_year) {
     // Default to September (9) for most students
     study_start_month = 9
+  }
+
+  // Calculate study_start_year using month-aware logic if months are provided
+  // Otherwise fall back to institution-type defaults
+  // CRITICAL: study_start_year is REQUIRED (NOT NULL) in user_academic table
+  if (!study_start_year) {
+    if (expected_graduation_year && degree_level && institution_slug) {
+      const institutionType = getInstitutionType(institution_slug) as 'wo' | 'hbo'
+      
+      if (institutionType && study_start_month !== null && graduation_month !== null) {
+        // Use month-aware calculation
+        // Calculate academic year offsets
+        // Academic year starts in September (month 9)
+        const graduationAcademicYear = expected_graduation_year + (graduation_month >= 9 ? 1 : 0)
+        const startAcademicYear = graduationAcademicYear - (institutionType === 'wo' ? 3 : 4) + 1
+        
+        // Convert academic year back to calendar year
+        // If start month >= 9, the academic year started in the previous calendar year
+        study_start_year = startAcademicYear - (study_start_month >= 9 ? 1 : 0)
+      } else if (institutionType) {
+        // Fallback to old calculation when months are not provided
+        let calculatedStartYear = expected_graduation_year - 3 // Default for bachelor
+        
+        if (degree_level === 'master' || degree_level === 'premaster') {
+          calculatedStartYear = expected_graduation_year - 1
+        } else if (degree_level === 'bachelor') {
+          const bachelorDuration = institutionType === 'hbo' ? 4 : 3
+          calculatedStartYear = expected_graduation_year - bachelorDuration
+        }
+        
+        // Clamp to DB constraints: >= 2015 AND <= EXTRACT(YEAR FROM now()) + 1
+        const currentYear = new Date().getFullYear()
+        const minYear = 2015
+        const maxYear = currentYear + 1
+        study_start_year = Math.max(minYear, Math.min(maxYear, calculatedStartYear))
+      }
+    }
+    
+    // Final fallback: if still undefined, use current year minus 1 as a safe default
+    // This should rarely happen, but prevents database constraint violations
+    if (!study_start_year) {
+      const currentYear = new Date().getFullYear()
+      study_start_year = currentYear - 1
+      console.warn('[extractSubmissionDataFromIntro] study_start_year could not be calculated, using fallback:', study_start_year)
+    }
+  }
+  
+  // Validate study_start_year is within acceptable range
+  const currentYear = new Date().getFullYear()
+  const minYear = 2015
+  const maxYear = currentYear + 1
+  if (study_start_year < minYear || study_start_year > maxYear) {
+    console.warn('[extractSubmissionDataFromIntro] study_start_year out of range, clamping:', study_start_year)
+    study_start_year = Math.max(minYear, Math.min(maxYear, study_start_year))
   }
 
   // Calculate programme duration in months
@@ -164,6 +184,11 @@ export function extractSubmissionDataFromIntro(
   // Ensure university_id is set if we have institution_slug (will be looked up in submit route if not set)
   // Return empty string if not set (submit route will handle lookup)
   const finalUniversityId = university_id && university_id.trim() !== '' ? university_id : ''
+
+  // Final validation: study_start_year MUST be defined (required by database)
+  if (!study_start_year || isNaN(study_start_year)) {
+    throw new Error(`study_start_year is required but could not be calculated. Expected graduation year: ${expected_graduation_year}, Degree level: ${degree_level}, Institution: ${institution_slug}`)
+  }
 
   return {
     user_id: user.id,
@@ -308,6 +333,22 @@ export async function upsertProfileAndAcademic(
   }
 
   // 2. Upsert user_academic
+  // CRITICAL: Validate required fields before upserting
+  if (!data.study_start_year || isNaN(data.study_start_year)) {
+    console.error('[upsertProfileAndAcademic] study_start_year is missing or invalid:', data.study_start_year)
+    throw new Error(`study_start_year is required but is missing or invalid: ${data.study_start_year}. Cannot create user_academic record.`)
+  }
+
+  if (!data.university_id || data.university_id.trim() === '') {
+    console.error('[upsertProfileAndAcademic] university_id is missing:', data.university_id)
+    throw new Error(`university_id is required but is missing. Cannot create user_academic record.`)
+  }
+
+  if (!data.degree_level || data.degree_level.trim() === '') {
+    console.error('[upsertProfileAndAcademic] degree_level is missing:', data.degree_level)
+    throw new Error(`degree_level is required but is missing. Cannot create user_academic record.`)
+  }
+
   // Convert empty string or undefined to null for program_id to satisfy FK constraint
   const programIdForDb = (data.program_id && typeof data.program_id === 'string' && data.program_id.trim() !== '') 
     ? data.program_id 
@@ -325,6 +366,28 @@ export async function upsertProfileAndAcademic(
     programme_duration_months = Math.max(12, Math.min(120, monthsDiff))
   }
 
+  // Validate study_start_year is within database constraints
+  const currentYear = new Date().getFullYear()
+  const minYear = 2015
+  const maxYear = currentYear + 1
+  if (data.study_start_year < minYear || data.study_start_year > maxYear) {
+    console.warn('[upsertProfileAndAcademic] study_start_year out of range, clamping:', data.study_start_year)
+    data.study_start_year = Math.max(minYear, Math.min(maxYear, data.study_start_year))
+  }
+
+  console.log('[upsertProfileAndAcademic] Upserting user_academic with data:', {
+    user_id: data.user_id,
+    university_id: data.university_id,
+    degree_level: data.degree_level,
+    program_id: programIdForDb,
+    study_start_year: data.study_start_year,
+    study_start_month: data.study_start_month,
+    expected_graduation_year: data.expected_graduation_year,
+    graduation_month: data.graduation_month,
+    programme_duration_months: programme_duration_months,
+    undecided_program: data.undecided_program
+  })
+
   const { error: academicError } = await supabase
     .from('user_academic')
     .upsert({
@@ -337,7 +400,7 @@ export async function upsertProfileAndAcademic(
       expected_graduation_year: data.expected_graduation_year ?? null,
       graduation_month: data.graduation_month ?? null,
       programme_duration_months: programme_duration_months,
-      undecided_program: data.undecided_program,
+      undecided_program: data.undecided_program ?? false,
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString()
     }, {
@@ -345,7 +408,7 @@ export async function upsertProfileAndAcademic(
     })
 
   if (academicError) {
-    console.error('[Submit] Academic upsert failed:', {
+    console.error('[upsertProfileAndAcademic] Academic upsert failed:', {
       code: academicError.code,
       message: academicError.message,
       details: academicError.details,
@@ -356,12 +419,17 @@ export async function upsertProfileAndAcademic(
         degree_level: data.degree_level,
         program_id: data.program_id,
         study_start_year: data.study_start_year,
-        undecided_program: data.undecided_program
+        study_start_month: data.study_start_month,
+        expected_graduation_year: data.expected_graduation_year,
+        graduation_month: data.graduation_month,
+        undecided_program: data.undecided_program,
+        programme_duration_months: programme_duration_months
       }
     })
-    throw new Error(`Failed to upsert user_academic: ${academicError.message}`)
+    throw new Error(`Failed to upsert user_academic: ${academicError.message}. Please check server logs for details.`)
   }
 
+  console.log('[upsertProfileAndAcademic] Successfully upserted user_academic for user:', data.user_id)
   return profile
 }
 

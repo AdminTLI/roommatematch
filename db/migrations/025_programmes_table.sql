@@ -91,3 +91,4 @@ COMMENT ON COLUMN programmes.institution_slug IS 'Internal institution slug matc
 COMMENT ON COLUMN programmes.isat_code IS 'DUO ERKENDEOPLEIDINGSCODE (ISAT code) if available';
 
 
+

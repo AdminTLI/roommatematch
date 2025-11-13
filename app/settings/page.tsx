@@ -84,22 +84,98 @@ export default async function SettingsPage() {
     
     if (intro?.answers) {
       let institution_slug: string | undefined
+      let university_id: string | undefined
       let degree_level: string | undefined
       let program_id: string | undefined
       let study_start_year: number | undefined
+      let study_start_month: number | null = null
+      let expected_graduation_year: number | undefined
+      let graduation_month: number | null = null
+      let undecided_program: boolean = false
+      
+      // Extract all fields from intro section
       for (const a of intro.answers) {
         console.log('[Settings] Checking answer:', a)
-        // Note: intro saves as institution_slug, not university_id
-        if (a.itemId === 'institution_slug') institution_slug = a.value
-        if (a.itemId === 'degree_level') degree_level = a.value
-        if (a.itemId === 'program_id') program_id = a.value
-        if (a.itemId === 'expected_graduation_year') study_start_year = parseInt(a.value)
+        switch (a.itemId) {
+          case 'institution_slug':
+            institution_slug = a.value
+            break
+          case 'university_id':
+            // Only set if it's a valid UUID (not empty string)
+            if (a.value && typeof a.value === 'string' && a.value.trim() !== '') {
+              university_id = a.value
+            }
+            break
+          case 'degree_level':
+            degree_level = a.value
+            break
+          case 'program_id':
+            program_id = a.value
+            break
+          case 'study_start_year':
+            study_start_year = a.value ? parseInt(a.value) : undefined
+            break
+          case 'study_start_month':
+            study_start_month = a.value ? parseInt(a.value) : null
+            break
+          case 'expected_graduation_year':
+            expected_graduation_year = a.value ? parseInt(a.value) : undefined
+            break
+          case 'graduation_month':
+            graduation_month = a.value ? parseInt(a.value) : null
+            break
+          case 'undecided_program':
+            undecided_program = a.value === true
+            break
+        }
       }
       
-      console.log('[Settings] Extracted:', { institution_slug, degree_level, program_id, study_start_year })
+      console.log('[Settings] Extracted from intro:', { 
+        institution_slug, 
+        university_id, 
+        degree_level, 
+        program_id, 
+        study_start_year,
+        study_start_month,
+        expected_graduation_year,
+        graduation_month,
+        undecided_program
+      })
       
-      if (institution_slug) {
-        // Look up university UUID from slug
+      // Calculate study_start_year if not present but we have expected_graduation_year
+      if (!study_start_year && expected_graduation_year && degree_level && institution_slug) {
+        const { getInstitutionType } = await import('@/lib/getInstitutionType')
+        const institutionType = getInstitutionType(institution_slug) as 'wo' | 'hbo'
+        
+        if (institutionType) {
+          if (study_start_month !== null && graduation_month !== null) {
+            // Use month-aware calculation
+            const graduationAcademicYear = expected_graduation_year + (graduation_month >= 9 ? 1 : 0)
+            const startAcademicYear = graduationAcademicYear - (institutionType === 'wo' ? 3 : 4) + 1
+            study_start_year = startAcademicYear - (study_start_month >= 9 ? 1 : 0)
+          } else {
+            // Fallback calculation
+            let calculatedStartYear = expected_graduation_year - 3 // Default for bachelor
+            
+            if (degree_level === 'master' || degree_level === 'premaster') {
+              calculatedStartYear = expected_graduation_year - 1
+            } else if (degree_level === 'bachelor') {
+              const bachelorDuration = institutionType === 'hbo' ? 4 : 3
+              calculatedStartYear = expected_graduation_year - bachelorDuration
+            }
+            
+            // Clamp to DB constraints
+            const currentYear = new Date().getFullYear()
+            const minYear = 2015
+            const maxYear = currentYear + 1
+            study_start_year = Math.max(minYear, Math.min(maxYear, calculatedStartYear))
+          }
+          console.log('[Settings] Calculated study_start_year:', study_start_year)
+        }
+      }
+      
+      // Look up university_id from institution_slug if not present
+      if (!university_id && institution_slug && institution_slug !== 'other') {
         const { data: university } = await supabase
           .from('universities')
           .select('id')
@@ -107,20 +183,37 @@ export default async function SettingsPage() {
           .maybeSingle()
         
         if (university) {
-          console.log('[Settings] Found university UUID:', university.id, 'for slug:', institution_slug)
-          academic = {
-            user_id: user.id,
-            university_id: university.id,
-            degree_level: degree_level || null,
-            program_id: program_id || null,
-            undecided_program: null,
-            study_start_year: study_start_year || null,
-            created_at: null,
-            updated_at: null,
-          } as any
-          console.log('[Settings] Derived academic data:', academic)
+          university_id = university.id
+          console.log('[Settings] Found university UUID:', university_id, 'for slug:', institution_slug)
         }
       }
+      
+      // Only create academic object if we have minimum required fields
+      if (university_id && degree_level && study_start_year) {
+        academic = {
+          user_id: user.id,
+          university_id: university_id,
+          degree_level: degree_level,
+          program_id: program_id || null,
+          study_start_year: study_start_year,
+          study_start_month: study_start_month,
+          expected_graduation_year: expected_graduation_year || null,
+          graduation_month: graduation_month,
+          undecided_program: undecided_program,
+          created_at: null,
+          updated_at: null,
+        } as any
+        console.log('[Settings] Derived academic data from intro:', academic)
+      } else {
+        console.warn('[Settings] Cannot derive academic data - missing required fields:', {
+          hasUniversityId: !!university_id,
+          hasDegreeLevel: !!degree_level,
+          hasStudyStartYear: !!study_start_year,
+          institution_slug
+        })
+      }
+    } else {
+      console.warn('[Settings] Intro section exists but has no answers')
     }
   } else {
     console.log('[Settings] Found user_academic:', academic)
@@ -138,6 +231,29 @@ export default async function SettingsPage() {
     .select('submitted_at')
     .eq('user_id', user.id)
     .maybeSingle()
+  
+  // If user_academic is still missing but submission exists, attempt to diagnose
+  if (!academic && submission) {
+    console.warn('[Settings] user_academic is missing but submission exists - this indicates a data inconsistency')
+    console.warn('[Settings] User should have user_academic record after submission. Attempting to diagnose...')
+    
+    // Check if we can extract data from submission snapshot
+    const { data: submissionData } = await supabase
+      .from('onboarding_submissions')
+      .select('snapshot')
+      .eq('user_id', user.id)
+      .maybeSingle()
+    
+    if (submissionData?.snapshot?.raw_sections) {
+      const introSection = submissionData.snapshot.raw_sections.find((s: any) => s.section === 'intro')
+      if (introSection?.answers) {
+        console.log('[Settings] Found intro section in submission snapshot, attempting to extract academic data...')
+        // Use the same extraction logic as above, but this time try to actually create the record
+        // Note: We'll just log for now - actual backfill should be done via API endpoint
+        console.warn('[Settings] Academic data can be recovered from submission snapshot, but requires backfill')
+      }
+    }
+  }
 
   // Define the actual required sections (9 total, excluding 'intro')
   const requiredSections = [
