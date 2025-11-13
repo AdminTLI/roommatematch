@@ -74,7 +74,11 @@ export async function POST(request: Request) {
     }
 
     // Get user's academic data to find university_id
-    let { data: academicData, error: academicError } = await supabase
+    // Use service role client to bypass RLS to avoid infinite recursion in admins policy
+    const { createServiceClient } = await import('@/lib/supabase/service')
+    const serviceSupabase = createServiceClient()
+    
+    let { data: academicData, error: academicError } = await serviceSupabase
       .from('user_academic')
       .select('university_id, degree_level')
       .eq('user_id', user.id)
