@@ -133,14 +133,20 @@ export async function POST(request: Request) {
         }
         
         // Look up university_id from institution_slug if university_id is empty
+        // Use service role client to bypass RLS to avoid infinite recursion in admins policy
         if (!submissionData.university_id || submissionData.university_id === '') {
           const institutionSlugAnswer = introSection.answers.find((a: any) => a.itemId === 'institution_slug')
           if (institutionSlugAnswer?.value && institutionSlugAnswer.value !== 'other') {
             console.log('[Submit] Looking up university for slug:', institutionSlugAnswer.value)
             
-            const { data: university, error: universityError } = await supabase
+            // Use service role client to bypass RLS
+            const { createServiceClient } = await import('@/lib/supabase/service')
+            const serviceSupabase = createServiceClient()
+            
+            // Try exact match first
+            let { data: university, error: universityError } = await serviceSupabase
               .from('universities')
-              .select('id')
+              .select('id, slug, name')
               .eq('slug', institutionSlugAnswer.value)
               .maybeSingle()
             
@@ -149,12 +155,25 @@ export async function POST(request: Request) {
               // Don't fail submission if lookup fails - user might have selected "other"
             } else if (university) {
               submissionData.university_id = university.id
-              console.log('[Submit] Found university_id:', university.id)
+              console.log('[Submit] Found university_id:', university.id, 'for slug:', institutionSlugAnswer.value)
             } else {
-              console.warn('[Submit] University not found for slug:', institutionSlugAnswer.value)
-              // If university not found and not "other", this is an error
-              if (institutionSlugAnswer.value !== 'other') {
-                console.error('[Submit] University not found in database for slug:', institutionSlugAnswer.value)
+              // Try case-insensitive lookup as fallback
+              console.log('[Submit] Trying case-insensitive lookup for slug:', institutionSlugAnswer.value)
+              const { data: universities } = await serviceSupabase
+                .from('universities')
+                .select('id, slug, name')
+                .ilike('slug', institutionSlugAnswer.value)
+                .limit(1)
+              
+              if (universities && universities.length > 0) {
+                submissionData.university_id = universities[0].id
+                console.log('[Submit] Found university with case-insensitive lookup:', universities[0].id, 'for slug:', institutionSlugAnswer.value)
+              } else {
+                console.warn('[Submit] University not found for slug:', institutionSlugAnswer.value)
+                // If university not found and not "other", this is an error
+                if (institutionSlugAnswer.value !== 'other') {
+                  console.error('[Submit] University not found in database for slug:', institutionSlugAnswer.value)
+                }
               }
             }
           } else if (institutionSlugAnswer?.value === 'other') {
