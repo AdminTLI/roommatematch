@@ -312,14 +312,14 @@ export function NotificationDropdown({
         <>
           {/* Backdrop for desktop */}
           <Backdrop />
-          <div className="hidden sm:block fixed right-4 top-16 w-96 z-[100]">
-            <Card className="shadow-xl border border-gray-200 bg-white rounded-xl">
-              <CardHeader className="pb-3 px-4 pt-4 border-b border-gray-200">
+          <div className="hidden sm:block fixed right-4 top-[64px] w-96 z-[100] shadow-2xl">
+            <Card className="border border-gray-200 bg-white dark:bg-gray-800 rounded-xl overflow-hidden">
+              <CardHeader className="pb-3 px-4 pt-4 border-b border-gray-200 dark:border-gray-700">
                 <CardTitle className="text-base">
                   <HeaderContent isMobile={false} />
                 </CardTitle>
               </CardHeader>
-              <CardContent className="p-0">
+              <CardContent className="p-0 bg-white dark:bg-gray-800">
                 <NotificationList />
               </CardContent>
             </Card>

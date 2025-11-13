@@ -117,7 +117,7 @@ export function Topbar({ user }: TopbarProps) {
       transition={{ duration: 0.4 }}
       className="sticky top-0 z-40 bg-white/95 dark:bg-gray-900/95 backdrop-blur-sm"
     >
-      <div className="flex items-center justify-between px-4 lg:px-8 py-3 gap-4">
+      <div className="flex items-center px-4 lg:px-8 py-3 gap-4">
         {/* Left side - Mobile Menu only (no logo/text on desktop) */}
         <div className="flex items-center gap-3 min-w-0 flex-shrink-0">
           {/* Mobile Menu Button (only show on mobile/tablet, not on laptop) */}
@@ -161,7 +161,7 @@ export function Topbar({ user }: TopbarProps) {
         </div>
 
         {/* Center - Search (centered, takes more space) */}
-        <div className="flex-1 max-w-3xl mx-auto relative" ref={searchRef}>
+        <div className="flex-1 max-w-3xl relative" ref={searchRef}>
             <div className="relative">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-ink-400" />
               <input

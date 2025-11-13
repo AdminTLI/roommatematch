@@ -248,17 +248,17 @@ export function Sidebar({ user, onClose }: SidebarProps) {
   return (
     <div className="flex flex-col h-full w-full bg-white dark:bg-[#1E2433] border-r border-gray-200 dark:border-[#2D3548]">
       {/* Branding Header */}
-      <div className="px-4 lg:px-6 py-4 border-b border-gray-200 dark:border-[#2D3548]">
+      <div className="px-4 lg:px-6 py-4">
         <Link href={isAdminRoute ? '/admin' : '/dashboard'} className="flex items-center gap-3">
-          <div className="w-8 h-8 bg-gradient-to-br from-brand-500 to-accent-500 rounded-xl flex items-center justify-center">
+          <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-purple-500 rounded-xl flex items-center justify-center">
             <Users className="w-4 h-4 text-white" />
           </div>
           <div>
-            <h1 className="text-lg font-bold text-ink-900 dark:text-gray-100">
+            <h1 className="text-lg font-bold text-gray-900 dark:text-gray-100">
               {isAdminRoute ? 'Admin Panel' : 'Domu Match'}
             </h1>
-            <p className="text-xs text-ink-500 dark:text-gray-400">
-              {isAdminRoute ? 'Manage the platform' : 'Find your perfect match'}
+            <p className="text-xs text-gray-500 dark:text-gray-400">
+              {isAdminRoute ? 'Manage the platform' : 'From strangers to roommates'}
             </p>
           </div>
         </Link>
