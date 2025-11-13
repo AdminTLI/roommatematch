@@ -158,33 +158,56 @@ export function DashboardContent({ hasCompletedQuestionnaire = false, hasPartial
   }, [user?.id, supabase])
 
   const loadTopMatches = async () => {
-    if (!user?.id) return
+    if (!user?.id) {
+      console.log('[loadTopMatches] No user ID provided')
+      return
+    }
     
     setIsLoadingMatches(true)
     try {
+      console.log('[loadTopMatches] Fetching matches for user:', user.id)
+      
       // Fetch top matches directly from matches table (not dependent on chats)
-      // Get matches where user is a_user
+      // Get matches where user is a_user - don't filter by status, show all matches
       const { data: matchesAsA, error: matchesAError } = await supabase
         .from('matches')
-        .select('b_user, score')
+        .select('b_user, score, status, created_at')
         .eq('a_user', user.id)
         .order('score', { ascending: false })
         .limit(3)
 
-      // Get matches where user is b_user
+      // Get matches where user is b_user - don't filter by status, show all matches
       const { data: matchesAsB, error: matchesBError } = await supabase
         .from('matches')
-        .select('a_user, score')
+        .select('a_user, score, status, created_at')
         .eq('b_user', user.id)
         .order('score', { ascending: false })
         .limit(3)
 
+      if (matchesAError) {
+        console.error('[loadTopMatches] Error loading matches as A:', matchesAError)
+      }
+      if (matchesBError) {
+        console.error('[loadTopMatches] Error loading matches as B:', matchesBError)
+      }
+
       if (matchesAError || matchesBError) {
-        console.error('Error loading matches:', matchesAError || matchesBError)
+        console.error('[loadTopMatches] Failed to load matches:', {
+          matchesAError,
+          matchesBError,
+          userId: user.id
+        })
         setTopMatches([])
         setIsLoadingMatches(false)
         return
       }
+
+      console.log('[loadTopMatches] Raw matches data:', {
+        matchesAsA: matchesAsA?.length || 0,
+        matchesAsB: matchesAsB?.length || 0,
+        matchesAsAData: matchesAsA,
+        matchesAsBData: matchesAsB
+      })
 
       // Combine and deduplicate matches, keeping top 3 by score
       const allMatches = [

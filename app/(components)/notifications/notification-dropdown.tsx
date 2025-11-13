@@ -172,6 +172,15 @@ export function NotificationDropdown({
 
   if (!isOpen) return null
 
+  // Add backdrop overlay for desktop dropdown
+  const Backdrop = () => (
+    <div 
+      className="fixed inset-0 bg-black/20 backdrop-blur-sm z-40 sm:hidden"
+      onClick={onClose}
+      aria-hidden="true"
+    />
+  )
+
   const HeaderContent = ({ isMobile = false }: { isMobile?: boolean }) => (
     <div className={`flex items-center justify-between ${isMobile ? 'gap-2' : 'gap-4'}`}>
       <div className="flex items-center gap-1.5 sm:gap-2 flex-1 min-w-0">
@@ -286,9 +295,12 @@ export function NotificationDropdown({
 
   return (
     <>
+      {/* Backdrop for desktop */}
+      {isOpen && <Backdrop />}
+      
       {/* Mobile: Full-screen Sheet */}
       <Sheet open={isOpen} onOpenChange={onClose}>
-        <SheetContent side="right" className="w-full sm:hidden p-4">
+        <SheetContent side="right" className="w-full sm:hidden p-4 z-50">
           <SheetHeader className="mb-4 pr-12">
             <SheetTitle className="pr-0">
               <HeaderContent isMobile={true} />
@@ -298,19 +310,21 @@ export function NotificationDropdown({
         </SheetContent>
       </Sheet>
 
-      {/* Desktop: Card Dropdown */}
-      <div className="hidden sm:block absolute right-0 top-full mt-2 w-96 z-50">
-        <Card className="shadow-lg border">
-          <CardHeader className="pb-3 px-4 pt-4">
-            <CardTitle className="text-base">
-              <HeaderContent isMobile={false} />
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="p-0">
-            <NotificationList />
-          </CardContent>
-        </Card>
-      </div>
+      {/* Desktop: Card Dropdown with portal-like positioning */}
+      {isOpen && (
+        <div className="hidden sm:block fixed right-4 top-16 w-96 z-50">
+          <Card className="shadow-xl border-2 bg-white">
+            <CardHeader className="pb-3 px-4 pt-4 border-b">
+              <CardTitle className="text-base">
+                <HeaderContent isMobile={false} />
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="p-0">
+              <NotificationList />
+            </CardContent>
+          </Card>
+        </div>
+      )}
     </>
   )
 }
