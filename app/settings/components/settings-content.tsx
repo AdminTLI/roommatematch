@@ -3,6 +3,13 @@
 import { useState } from 'react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { 
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
 import { User, FileText, Shield, Settings as SettingsIcon } from 'lucide-react'
 import { ProfileSettings } from './profile-settings'
 import { QuestionnaireSettings } from './questionnaire-settings'
@@ -37,58 +44,154 @@ export function SettingsContent({ user, profile, academic, progressData }: Setti
 
 
       <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4 sm:space-y-6">
-        {/* Scrollable Tabs - Similar to Matches page */}
+        {/* Responsive Tabs */}
         <div className="mb-4 sm:mb-6">
-          <div className="relative">
-            <div className="flex gap-1.5 sm:gap-2 bg-white border border-gray-200 p-1 sm:p-1.5 rounded-2xl shadow-sm overflow-x-auto scrollbar-hide -mx-4 sm:mx-0 px-4 sm:px-0">
+          {/* Mobile: Dropdown Select (< 640px) */}
+          <div className="block sm:hidden">
+            <Select value={activeTab} onValueChange={setActiveTab}>
+              <SelectTrigger className="w-full bg-white border border-gray-200 rounded-xl shadow-sm">
+                <SelectValue>
+                  <div className="flex items-center gap-2">
+                    {activeTab === 'profile' && <User className="w-4 h-4" />}
+                    {activeTab === 'questionnaire' && <FileText className="w-4 h-4" />}
+                    {activeTab === 'account' && <SettingsIcon className="w-4 h-4" />}
+                    {activeTab === 'privacy' && <Shield className="w-4 h-4" />}
+                    <span className="font-medium">
+                      {activeTab === 'profile' && 'Profile'}
+                      {activeTab === 'questionnaire' && 'Questionnaire'}
+                      {activeTab === 'account' && 'Account'}
+                      {activeTab === 'privacy' && 'Privacy'}
+                    </span>
+                  </div>
+                </SelectValue>
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="profile">
+                  <div className="flex items-center gap-2">
+                    <User className="w-4 h-4" />
+                    <span>Profile</span>
+                  </div>
+                </SelectItem>
+                <SelectItem value="questionnaire">
+                  <div className="flex items-center gap-2">
+                    <FileText className="w-4 h-4" />
+                    <span>Questionnaire</span>
+                  </div>
+                </SelectItem>
+                <SelectItem value="account">
+                  <div className="flex items-center gap-2">
+                    <SettingsIcon className="w-4 h-4" />
+                    <span>Account</span>
+                  </div>
+                </SelectItem>
+                <SelectItem value="privacy">
+                  <div className="flex items-center gap-2">
+                    <Shield className="w-4 h-4" />
+                    <span>Privacy</span>
+                  </div>
+                </SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
+          {/* Tablet: Grid Layout (640px - 1024px) */}
+          <div className="hidden sm:block lg:hidden">
+            <div className="grid grid-cols-2 gap-2 bg-white border border-gray-200 p-1.5 rounded-2xl shadow-sm">
               <button
                 onClick={() => setActiveTab('profile')}
-                className={`flex items-center gap-2 flex-shrink-0 min-w-[100px] sm:min-w-[120px] px-4 sm:px-5 py-2.5 sm:py-3 rounded-xl text-sm sm:text-base font-medium transition-colors whitespace-nowrap touch-manipulation ${
+                className={`flex items-center justify-center gap-2 px-4 py-3 rounded-xl text-sm font-medium transition-colors ${
                   activeTab === 'profile'
                     ? 'bg-blue-600 text-white shadow-sm'
                     : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50 active:bg-gray-100'
                 }`}
               >
-                <User className="w-4 h-4 sm:w-5 sm:h-5" />
+                <User className="w-4 h-4" />
                 <span>Profile</span>
               </button>
               <button
                 onClick={() => setActiveTab('questionnaire')}
-                className={`flex items-center gap-2 flex-shrink-0 min-w-[100px] sm:min-w-[140px] px-4 sm:px-5 py-2.5 sm:py-3 rounded-xl text-sm sm:text-base font-medium transition-colors whitespace-nowrap touch-manipulation ${
+                className={`flex items-center justify-center gap-2 px-4 py-3 rounded-xl text-sm font-medium transition-colors ${
                   activeTab === 'questionnaire'
                     ? 'bg-blue-600 text-white shadow-sm'
                     : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50 active:bg-gray-100'
                 }`}
               >
-                <FileText className="w-4 h-4 sm:w-5 sm:h-5" />
-                <span className="hidden sm:inline">Questionnaire</span>
-                <span className="sm:hidden">Q&A</span>
+                <FileText className="w-4 h-4" />
+                <span>Questionnaire</span>
               </button>
               <button
                 onClick={() => setActiveTab('account')}
-                className={`flex items-center gap-2 flex-shrink-0 min-w-[100px] sm:min-w-[120px] px-4 sm:px-5 py-2.5 sm:py-3 rounded-xl text-sm sm:text-base font-medium transition-colors whitespace-nowrap touch-manipulation ${
+                className={`flex items-center justify-center gap-2 px-4 py-3 rounded-xl text-sm font-medium transition-colors ${
                   activeTab === 'account'
                     ? 'bg-blue-600 text-white shadow-sm'
                     : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50 active:bg-gray-100'
                 }`}
               >
-                <SettingsIcon className="w-4 h-4 sm:w-5 sm:h-5" />
+                <SettingsIcon className="w-4 h-4" />
                 <span>Account</span>
               </button>
               <button
                 onClick={() => setActiveTab('privacy')}
-                className={`flex items-center gap-2 flex-shrink-0 min-w-[100px] sm:min-w-[120px] px-4 sm:px-5 py-2.5 sm:py-3 rounded-xl text-sm sm:text-base font-medium transition-colors whitespace-nowrap touch-manipulation ${
+                className={`flex items-center justify-center gap-2 px-4 py-3 rounded-xl text-sm font-medium transition-colors ${
                   activeTab === 'privacy'
                     ? 'bg-blue-600 text-white shadow-sm'
                     : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50 active:bg-gray-100'
                 }`}
               >
-                <Shield className="w-4 h-4 sm:w-5 sm:h-5" />
+                <Shield className="w-4 h-4" />
                 <span>Privacy</span>
               </button>
             </div>
-            {/* Edge fade indicator */}
-            <div className="pointer-events-none absolute right-0 top-0 h-full w-10 bg-gradient-to-r from-transparent to-white hidden sm:block" />
+          </div>
+
+          {/* Desktop: Horizontal Layout (>= 1024px) */}
+          <div className="hidden lg:block">
+            <div className="flex gap-2 bg-white border border-gray-200 p-1.5 rounded-2xl shadow-sm">
+              <button
+                onClick={() => setActiveTab('profile')}
+                className={`flex items-center gap-2 px-5 py-3 rounded-xl text-base font-medium transition-colors ${
+                  activeTab === 'profile'
+                    ? 'bg-blue-600 text-white shadow-sm'
+                    : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50 active:bg-gray-100'
+                }`}
+              >
+                <User className="w-5 h-5" />
+                <span>Profile</span>
+              </button>
+              <button
+                onClick={() => setActiveTab('questionnaire')}
+                className={`flex items-center gap-2 px-5 py-3 rounded-xl text-base font-medium transition-colors ${
+                  activeTab === 'questionnaire'
+                    ? 'bg-blue-600 text-white shadow-sm'
+                    : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50 active:bg-gray-100'
+                }`}
+              >
+                <FileText className="w-5 h-5" />
+                <span>Questionnaire</span>
+              </button>
+              <button
+                onClick={() => setActiveTab('account')}
+                className={`flex items-center gap-2 px-5 py-3 rounded-xl text-base font-medium transition-colors ${
+                  activeTab === 'account'
+                    ? 'bg-blue-600 text-white shadow-sm'
+                    : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50 active:bg-gray-100'
+                }`}
+              >
+                <SettingsIcon className="w-5 h-5" />
+                <span>Account</span>
+              </button>
+              <button
+                onClick={() => setActiveTab('privacy')}
+                className={`flex items-center gap-2 px-5 py-3 rounded-xl text-base font-medium transition-colors ${
+                  activeTab === 'privacy'
+                    ? 'bg-blue-600 text-white shadow-sm'
+                    : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50 active:bg-gray-100'
+                }`}
+              >
+                <Shield className="w-5 h-5" />
+                <span>Privacy</span>
+              </button>
+            </div>
           </div>
         </div>
 

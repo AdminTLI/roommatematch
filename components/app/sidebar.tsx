@@ -3,6 +3,7 @@
 import { motion } from 'framer-motion'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
+import { Card, CardContent } from '@/components/ui/card'
 import { 
   Users, 
   MessageCircle, 
@@ -12,15 +13,20 @@ import {
   Calendar,
   Shield,
   BarChart3,
-  Video
+  Video,
+  Settings,
+  Search,
+  TrendingUp,
+  Sparkles
 } from 'lucide-react'
 import Link from 'next/link'
-import { usePathname } from 'next/navigation'
+import { usePathname, useRouter } from 'next/navigation'
 import { cn } from '@/lib/utils'
 import { useState, useEffect } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { isFeatureEnabled } from '@/lib/feature-flags'
 import { Separator } from '@/components/ui/separator'
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 
 interface SidebarProps {
   user: {
@@ -85,7 +91,11 @@ const getNavigation = (userEmail: string) => {
 
 export function Sidebar({ user, onClose }: SidebarProps) {
   const pathname = usePathname()
+  const router = useRouter()
   const [unreadChatCount, setUnreadChatCount] = useState(0)
+  const [totalMatchesCount, setTotalMatchesCount] = useState(0)
+  const [profileCompletion, setProfileCompletion] = useState(0)
+  const [questionnaireProgress, setQuestionnaireProgress] = useState(0)
   const isAdminRoute = pathname?.startsWith('/admin')
 
   useEffect(() => {
@@ -150,7 +160,66 @@ export function Sidebar({ user, onClose }: SidebarProps) {
       }
     }
 
+    // Fetch matches count
+    const fetchMatchesCount = async () => {
+      try {
+        const { count: matchesAsA } = await supabase
+          .from('matches')
+          .select('*', { count: 'exact', head: true })
+          .eq('a_user', user.id)
+        
+        const { count: matchesAsB } = await supabase
+          .from('matches')
+          .select('*', { count: 'exact', head: true })
+          .eq('b_user', user.id)
+        
+        setTotalMatchesCount((matchesAsA || 0) + (matchesAsB || 0))
+      } catch (error) {
+        console.error('Error fetching matches count:', error)
+      }
+    }
+
+    // Fetch profile completion
+    const fetchProfileCompletion = async () => {
+      try {
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('*')
+          .eq('user_id', user.id)
+          .maybeSingle()
+
+        if (profile) {
+          const requiredFields = ['first_name', 'last_name', 'phone', 'bio']
+          const filledFields = requiredFields.filter(field => {
+            const value = profile[field]
+            return value !== null && value !== undefined && value !== ''
+          })
+          setProfileCompletion(Math.round((filledFields.length / requiredFields.length) * 100))
+        }
+      } catch (error) {
+        console.error('Error fetching profile completion:', error)
+      }
+    }
+
+    // Fetch questionnaire progress
+    const fetchQuestionnaireProgress = async () => {
+      try {
+        const response = await fetch('/api/onboarding/progress')
+        if (response.ok) {
+          const data = await response.json()
+          const totalSections = data.totalSections || 9
+          const completedSections = data.completedSections?.length || 0
+          setQuestionnaireProgress(Math.round((completedSections / totalSections) * 100))
+        }
+      } catch (error) {
+        console.error('Error fetching questionnaire progress:', error)
+      }
+    }
+
     fetchUnreadCount()
+    fetchMatchesCount()
+    fetchProfileCompletion()
+    fetchQuestionnaireProgress()
 
     // Subscribe to real-time message updates
     const channel = supabase
@@ -176,7 +245,7 @@ export function Sidebar({ user, onClose }: SidebarProps) {
   return (
     <div className="flex flex-col h-full w-full bg-white dark:bg-[#1E2433] border-r border-gray-200 dark:border-[#2D3548]">
       {/* Branding Header */}
-      <div className="px-4 pt-4 pb-2 border-b border-gray-200 dark:border-[#2D3548]">
+      <div className="px-4 lg:px-6 py-4 border-b border-gray-200 dark:border-[#2D3548]">
         <Link href={isAdminRoute ? '/admin' : '/dashboard'} className="flex items-center gap-3">
           <div className="w-8 h-8 bg-gradient-to-br from-brand-500 to-accent-500 rounded-xl flex items-center justify-center">
             <Users className="w-4 h-4 text-white" />
@@ -192,7 +261,7 @@ export function Sidebar({ user, onClose }: SidebarProps) {
         </Link>
       </div>
       {/* Navigation - starts at top */}
-      <nav className="flex-1 p-4 space-y-4 overflow-y-auto">
+      <nav className="flex-1 p-4 space-y-4 overflow-y-auto flex flex-col">
         {/* Admin Section (only on admin routes) */}
         {isAdminRoute && (
           <div>
@@ -269,6 +338,129 @@ export function Sidebar({ user, onClose }: SidebarProps) {
         })}
           </div>
         </div>
+
+        {/* Enhanced Sidebar Features - Only show on non-admin routes */}
+        {!isAdminRoute && (
+          <div className="mt-auto pt-4 space-y-3">
+            <Separator />
+            
+            {/* Quick Stats Card */}
+            <Card className="bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 border-blue-200 dark:border-blue-800">
+              <CardContent className="p-3">
+                <div className="flex items-center gap-2 mb-2">
+                  <TrendingUp className="w-4 h-4 text-blue-600 dark:text-blue-400" />
+                  <span className="text-xs font-semibold text-blue-900 dark:text-blue-300">Quick Stats</span>
+                </div>
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between text-xs">
+                    <span className="text-gray-600 dark:text-gray-400">Matches</span>
+                    <span className="font-semibold text-gray-900 dark:text-gray-100">{totalMatchesCount}</span>
+                  </div>
+                  <div className="flex items-center justify-between text-xs">
+                    <span className="text-gray-600 dark:text-gray-400">Unread</span>
+                    <span className="font-semibold text-gray-900 dark:text-gray-100">{unreadChatCount}</span>
+                  </div>
+                  <div className="flex items-center justify-between text-xs">
+                    <span className="text-gray-600 dark:text-gray-400">Profile</span>
+                    <span className="font-semibold text-gray-900 dark:text-gray-100">{profileCompletion}%</span>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Progress Indicator */}
+            {(profileCompletion < 100 || questionnaireProgress < 100) && (
+              <Card className="border-amber-200 dark:border-amber-800 bg-amber-50/50 dark:bg-amber-900/10">
+                <CardContent className="p-3">
+                  <div className="flex items-center gap-2 mb-2">
+                    <Sparkles className="w-4 h-4 text-amber-600 dark:text-amber-400" />
+                    <span className="text-xs font-semibold text-amber-900 dark:text-amber-300">Complete Your Profile</span>
+                  </div>
+                  <div className="space-y-2">
+                    <div>
+                      <div className="flex items-center justify-between text-xs mb-1">
+                        <span className="text-gray-600 dark:text-gray-400">Profile</span>
+                        <span className="font-medium text-gray-900 dark:text-gray-100">{profileCompletion}%</span>
+                      </div>
+                      <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-1.5">
+                        <div 
+                          className="bg-blue-600 h-1.5 rounded-full transition-all duration-300" 
+                          style={{ width: `${profileCompletion}%` }}
+                        />
+                      </div>
+                    </div>
+                    {questionnaireProgress < 100 && (
+                      <div>
+                        <div className="flex items-center justify-between text-xs mb-1">
+                          <span className="text-gray-600 dark:text-gray-400">Questionnaire</span>
+                          <span className="font-medium text-gray-900 dark:text-gray-100">{questionnaireProgress}%</span>
+                        </div>
+                        <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-1.5">
+                          <div 
+                            className="bg-indigo-600 h-1.5 rounded-full transition-all duration-300" 
+                            style={{ width: `${questionnaireProgress}%` }}
+                          />
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+
+            {/* Quick Actions */}
+            <div className="space-y-1.5">
+              <span className="text-xs uppercase tracking-wide text-ink-500 block mb-1">Quick Actions</span>
+              <Button
+                variant="ghost"
+                size="sm"
+                className="w-full justify-start gap-2 h-9 text-xs"
+                onClick={() => {
+                  router.push('/matches')
+                  onClose?.()
+                }}
+              >
+                <Search className="w-3.5 h-3.5" />
+                <span>Find Matches</span>
+              </Button>
+              <Button
+                variant="ghost"
+                size="sm"
+                className="w-full justify-start gap-2 h-9 text-xs"
+                onClick={() => {
+                  router.push('/settings')
+                  onClose?.()
+                }}
+              >
+                <Settings className="w-3.5 h-3.5" />
+                <span>Settings</span>
+              </Button>
+            </div>
+
+            {/* User Profile Card */}
+            <Card className="bg-gray-50 dark:bg-[#2D3548] border-gray-200 dark:border-[#2D3548]">
+              <CardContent className="p-3">
+                <Link href="/settings" onClick={onClose} className="flex items-center gap-2 hover:opacity-80 transition-opacity">
+                  <Avatar className="h-8 w-8">
+                    <AvatarImage src={user.avatar} />
+                    <AvatarFallback className="bg-blue-600 text-white text-xs">
+                      {user.name?.[0]?.toUpperCase() || user.email.charAt(0).toUpperCase()}
+                    </AvatarFallback>
+                  </Avatar>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-xs font-semibold text-gray-900 dark:text-gray-100 truncate">
+                      {user.name || 'User'}
+                    </p>
+                    <p className="text-xs text-gray-500 dark:text-gray-400 truncate">
+                      {user.email}
+                    </p>
+                  </div>
+                  <Settings className="w-3.5 h-3.5 text-gray-400" />
+                </Link>
+              </CardContent>
+            </Card>
+          </div>
+        )}
       </nav>
     </div>
   )
