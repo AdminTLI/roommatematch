@@ -332,41 +332,78 @@ export function StudentMatchesInterface({ user }: StudentMatchesInterfaceProps) 
 
       {/* Tabs */}
       <div className="mb-4 sm:mb-6">
-        <div className="relative">
-          {/* Tabs container with edge fade and chevron hint when overflowing */}
-          <div className="flex gap-1.5 sm:gap-1 bg-white border border-gray-200 p-1 sm:p-1 rounded-2xl shadow-sm overflow-x-auto scrollbar-hide -mx-4 sm:mx-0 px-4 sm:px-0">
-          {tabs.map((tab) => (
-            <button
-              key={tab.id}
-              onClick={() => setActiveTab(tab.id)}
-              className={`flex-shrink-0 min-w-[88px] sm:flex-1 sm:min-w-0 px-3 sm:px-4 py-2.5 sm:py-2 rounded-xl text-sm sm:text-sm font-medium transition-colors whitespace-nowrap touch-manipulation ${
-                activeTab === tab.id
-                  ? 'bg-blue-600 text-white shadow-sm'
-                  : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50 active:bg-gray-100'
-              }`}
-            >
-              <span className="hidden sm:inline">{tab.label}</span>
-              <span className="sm:hidden">{tab.label.split(' ')[0]}</span>
-              {tab.count > 0 && (
-                <span className={`ml-1.5 sm:ml-2 px-2 sm:px-2 py-0.5 rounded-full text-xs font-semibold ${
-                  activeTab === tab.id
-                    ? 'bg-white/20 text-white'
-                    : 'bg-gray-200 text-gray-600'
-                }`}>
-                  {tab.count}
-                </span>
-              )}
-            </button>
-          ))}
-            {/* Enhanced edge fade + scroll indicator */}
-            <div className="pointer-events-none absolute right-0 top-0 h-full w-16 bg-gradient-to-r from-transparent via-white/80 to-white hidden sm:block" />
-            {/* Mobile scroll indicator - more prominent */}
-            <div className="pointer-events-none absolute right-0 top-1/2 -translate-y-1/2 flex items-center gap-1 bg-white/95 backdrop-blur-sm px-2 py-1 rounded-l-lg shadow-sm sm:hidden">
-              <div className="w-1 h-1 bg-blue-500 rounded-full animate-pulse"></div>
-              <span className="text-xs font-medium text-blue-600">→</span>
+        {/* Mobile: Dropdown Select (< 640px) */}
+        <div className="block sm:hidden mb-4">
+          <Select value={activeTab} onValueChange={(value) => setActiveTab(value as TabType)}>
+            <SelectTrigger className="w-full bg-white border border-gray-200 rounded-xl shadow-sm">
+              <SelectValue>
+                <div className="flex items-center gap-2">
+                  {tabs.find(t => t.id === activeTab) && (
+                    <>
+                      <span className="font-medium">
+                        {tabs.find(t => t.id === activeTab)?.label}
+                      </span>
+                      {tabs.find(t => t.id === activeTab) && tabs.find(t => t.id === activeTab)!.count > 0 && (
+                        <span className="ml-2 px-2 py-0.5 rounded-full text-xs font-semibold bg-gray-200 text-gray-600">
+                          {tabs.find(t => t.id === activeTab)!.count}
+                        </span>
+                      )}
+                    </>
+                  )}
+                </div>
+              </SelectValue>
+            </SelectTrigger>
+            <SelectContent>
+              {tabs.map((tab) => (
+                <SelectItem key={tab.id} value={tab.id}>
+                  <div className="flex items-center gap-2">
+                    <span>{tab.label}</span>
+                    {tab.count > 0 && (
+                      <span className="ml-2 px-2 py-0.5 rounded-full text-xs font-semibold bg-gray-200 text-gray-600">
+                        {tab.count}
+                      </span>
+                    )}
+                  </div>
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+
+        {/* Desktop: Tabs with rounded corners fixed */}
+        <div className="hidden sm:block">
+          <div className="relative">
+            <div className="flex gap-1 bg-white border border-gray-200 p-1 rounded-2xl shadow-sm">
+              {tabs.map((tab, index) => (
+                <button
+                  key={tab.id}
+                  onClick={() => setActiveTab(tab.id)}
+                  className={`flex-1 flex items-center justify-center gap-2 px-4 py-2 text-sm font-medium transition-colors whitespace-nowrap touch-manipulation ${
+                    index === 0 ? 'rounded-l-xl' : ''
+                  } ${
+                    index === tabs.length - 1 ? 'rounded-r-xl' : ''
+                  } ${
+                    activeTab === tab.id
+                      ? 'bg-blue-600 text-white shadow-sm'
+                      : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50 active:bg-gray-100'
+                  }`}
+                >
+                  <span>{tab.label}</span>
+                  {tab.count > 0 && (
+                    <span className={`px-2 py-0.5 rounded-full text-xs font-semibold ${
+                      activeTab === tab.id
+                        ? 'bg-white/20 text-white'
+                        : 'bg-gray-200 text-gray-600'
+                    }`}>
+                      {tab.count}
+                    </span>
+                  )}
+                </button>
+              ))}
             </div>
           </div>
         </div>
+        
         {/* Tab-specific description */}
         <div className="mt-3 sm:mt-4 text-center px-2">
           <p className="text-sm sm:text-sm text-gray-600 leading-relaxed">
