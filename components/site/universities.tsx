@@ -200,20 +200,22 @@ export function Universities() {
                 </div>
               ) : (
                 <div className="w-full mt-8 px-4 sm:px-6 lg:px-8">
-                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 max-w-7xl mx-auto justify-items-center">
+                  <div className="flex flex-wrap justify-center gap-4 max-w-7xl mx-auto">
                     {universities.map((university) => (
                       <Card
                         key={university.id}
-                        className="rounded-xl border border-brand-border/50 bg-white/80 backdrop-blur-sm p-6 shadow-elev-1 hover:shadow-elev-2 transition-shadow duration-200 w-full max-w-sm"
+                        className="rounded-xl border border-brand-border/50 bg-white/80 backdrop-blur-sm p-6 shadow-elev-1 hover:shadow-elev-2 transition-shadow duration-200 w-full sm:w-[calc(50%-0.5rem)] lg:w-[calc(33.333%-0.667rem)] xl:w-[calc(25%-0.75rem)] max-w-sm"
                       >
                         <div className="flex flex-col h-full">
-                          <h3 className="font-semibold text-brand-text text-lg mb-2 leading-tight text-center">
+                          <h3 className="font-semibold text-brand-text text-lg mb-4 leading-tight text-center">
                             {university.name}
                           </h3>
                           <div className="mt-auto pt-4 border-t border-brand-border/30 text-center">
-                            <p className="text-sm text-brand-muted">
-                              {formatUserCount(university.user_count)}
-                            </p>
+                            <div className="inline-flex items-center justify-center px-4 py-2 rounded-lg bg-brand-primary/10 border border-brand-primary/20">
+                              <p className="text-xl font-bold text-brand-primary">
+                                {formatUserCount(university.user_count)}
+                              </p>
+                            </div>
                           </div>
                         </div>
                       </Card>
