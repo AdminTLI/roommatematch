@@ -483,8 +483,50 @@ export default async function SettingsPage() {
     redirect('/auth/sign-in')
   }
 
-  // Add study year to academic data for display
-  const academicWithStudyYear = academic ? { ...academic, study_year: studyYear } : academic
+  // Ensure joined data is properly structured for display
+  let academicWithStudyYear = academic
+  
+  if (academicWithStudyYear) {
+    // Add study year if not already present
+    if (academicWithStudyYear.study_year === undefined || academicWithStudyYear.study_year === null) {
+      academicWithStudyYear = {
+        ...academicWithStudyYear,
+        study_year: studyYear
+      }
+    }
+    
+    // If universities join is missing, fetch it separately using service role client
+    if (!academicWithStudyYear.universities && academicWithStudyYear.university_id) {
+      const { data: universityData } = await serviceSupabase
+        .from('universities')
+        .select('id, name, slug')
+        .eq('id', academicWithStudyYear.university_id)
+        .maybeSingle()
+      
+      if (universityData) {
+        academicWithStudyYear = {
+          ...academicWithStudyYear,
+          universities: universityData
+        }
+      }
+    }
+    
+    // If programs join is missing, fetch it separately using service role client
+    if (!academicWithStudyYear.programs && academicWithStudyYear.program_id) {
+      const { data: programData } = await serviceSupabase
+        .from('programs')
+        .select('id, name, croho_code')
+        .eq('id', academicWithStudyYear.program_id)
+        .maybeSingle()
+      
+      if (programData) {
+        academicWithStudyYear = {
+          ...academicWithStudyYear,
+          programs: programData
+        }
+      }
+    }
+  }
 
   return (
     <AppShell user={userProfile}>
