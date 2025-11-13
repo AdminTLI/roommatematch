@@ -162,65 +162,62 @@ export function DashboardContent({ hasCompletedQuestionnaire = false, hasPartial
     
     setIsLoadingMatches(true)
     try {
-      // Fetch matches from chat_members table (same logic as chat page)
-      // Get chat memberships for this user
-      const { data: memberships, error: membershipsError } = await supabase
-        .from('chat_members')
-        .select('chat_id, user_id')
-        .eq('user_id', user.id)
-
-      if (membershipsError) {
-        console.error('Error loading chat memberships:', membershipsError)
-        setTopMatches([])
-        setIsLoadingMatches(false)
-        return
-      }
-
-      if (!memberships || memberships.length === 0) {
-        setTopMatches([])
-        setIsLoadingMatches(false)
-        return
-      }
-
-      const chatIds = memberships.map(m => m.chat_id)
-
-      // Fetch chats to get other participants
-      const { data: chatRooms, error: chatsError } = await supabase
-        .from('chats')
-        .select(`
-          id,
-          is_group,
-          chat_members!inner(user_id)
-        `)
-        .in('id', chatIds)
-        .eq('is_group', false) // Only individual chats for top matches
-        .order('created_at', { ascending: false })
+      // Fetch top matches directly from matches table (not dependent on chats)
+      // Get matches where user is a_user
+      const { data: matchesAsA, error: matchesAError } = await supabase
+        .from('matches')
+        .select('b_user, score')
+        .eq('a_user', user.id)
+        .order('score', { ascending: false })
         .limit(3)
 
-      if (chatsError) {
-        console.error('Error loading chats:', chatsError)
+      // Get matches where user is b_user
+      const { data: matchesAsB, error: matchesBError } = await supabase
+        .from('matches')
+        .select('a_user, score')
+        .eq('b_user', user.id)
+        .order('score', { ascending: false })
+        .limit(3)
+
+      if (matchesAError || matchesBError) {
+        console.error('Error loading matches:', matchesAError || matchesBError)
         setTopMatches([])
         setIsLoadingMatches(false)
         return
       }
 
-      // Get other user IDs from chat members
-      const otherUserIds = new Set<string>()
-      chatRooms?.forEach((room: any) => {
-        room.chat_members?.forEach((member: any) => {
-          if (member.user_id !== user.id) {
-            otherUserIds.add(member.user_id)
-          }
-        })
+      // Combine and deduplicate matches, keeping top 3 by score
+      const allMatches = [
+        ...(matchesAsA || []).map((m: any) => ({ userId: m.b_user, score: m.score || 0 })),
+        ...(matchesAsB || []).map((m: any) => ({ userId: m.a_user, score: m.score || 0 }))
+      ]
+
+      // Deduplicate by userId and keep highest score
+      const matchMap = new Map<string, number>()
+      allMatches.forEach((m: any) => {
+        const currentScore = matchMap.get(m.userId) || 0
+        if (m.score > currentScore) {
+          matchMap.set(m.userId, m.score)
+        }
       })
 
-      if (otherUserIds.size === 0) {
+      // Sort by score and take top 3
+      const topMatchEntries = Array.from(matchMap.entries())
+        .sort((a, b) => b[1] - a[1])
+        .slice(0, 3)
+
+      if (topMatchEntries.length === 0) {
         setTopMatches([])
         setIsLoadingMatches(false)
+        // Still fetch total count and avg compatibility
+        loadTotalMatchesCount()
+        loadAvgCompatibility()
         return
       }
 
-      // Fetch profiles for other users
+      const topUserIds = topMatchEntries.map(([userId]) => userId)
+
+      // Fetch profiles for matched users
       const { data: profiles, error: profilesError } = await supabase
         .from('profiles')
         .select(`
@@ -230,7 +227,7 @@ export function DashboardContent({ hasCompletedQuestionnaire = false, hasPartial
           university_id, 
           universities(name)
         `)
-        .in('user_id', Array.from(otherUserIds))
+        .in('user_id', topUserIds)
 
       if (profilesError) {
         console.error('Error loading profiles:', profilesError)
@@ -240,7 +237,6 @@ export function DashboardContent({ hasCompletedQuestionnaire = false, hasPartial
       }
 
       // Fetch program names separately from user_academic
-      const userIdsArray = Array.from(otherUserIds)
       const { data: academicData } = await supabase
         .from('user_academic')
         .select(`
@@ -248,7 +244,7 @@ export function DashboardContent({ hasCompletedQuestionnaire = false, hasPartial
           program_id,
           programs!user_academic_program_id_fkey(name)
         `)
-        .in('user_id', userIdsArray)
+        .in('user_id', topUserIds)
 
       // Create a map of user_id to program name
       const programMap = new Map<string, string>()
@@ -258,43 +254,31 @@ export function DashboardContent({ hasCompletedQuestionnaire = false, hasPartial
         }
       })
 
-      // Fetch match data for compatibility scores
-      const { data: matchesAsA } = await supabase
-        .from('matches')
-        .select('b_user, score')
-        .eq('a_user', user.id)
-        .in('b_user', userIdsArray)
-
-      const { data: matchesAsB } = await supabase
-        .from('matches')
-        .select('a_user, score')
-        .eq('b_user', user.id)
-        .in('a_user', userIdsArray)
-
       // Create a map of user_id to match score
-      const matchScoreMap = new Map<string, number>()
-      matchesAsA?.forEach((m: any) => matchScoreMap.set(m.b_user, m.score || 0))
-      matchesAsB?.forEach((m: any) => matchScoreMap.set(m.a_user, m.score || 0))
+      const matchScoreMap = new Map(topMatchEntries)
 
-      // Format matches
-      const formattedMatches = (profiles || []).slice(0, 3).map((profile: any) => {
+      // Format matches maintaining the order from topMatchEntries
+      const formattedMatches = topMatchEntries.map(([userId, score]) => {
+        const profile = profiles?.find((p: any) => p.user_id === userId)
+        if (!profile) {
+          return null
+        }
+
         const fullName = [profile.first_name?.trim(), profile.last_name?.trim()].filter(Boolean).join(' ') || 'User'
-        const score = matchScoreMap.get(profile.user_id) || 0
-        // Get program name from the program map
-        const programDisplay = programMap.get(profile.user_id) || null
+        const programDisplay = programMap.get(userId) || null
         
         return {
-          id: profile.user_id,
-          userId: profile.user_id,
+          id: userId,
+          userId: userId,
           name: fullName,
           score: score, // Keep as decimal 0-1 for display
           program: programDisplay || '',
           university: profile.universities?.name || 'University',
           avatar: undefined
         }
-      }).sort((a, b) => b.score - a.score) // Sort by score descending
+      }).filter((m): m is NonNullable<typeof m> => m !== null) // Remove null entries
 
-      console.log('loadTopMatches: Formatted', formattedMatches.length, 'matches')
+      console.log('loadTopMatches: Formatted', formattedMatches.length, 'matches from matches table')
 
       setTopMatches(formattedMatches)
 
