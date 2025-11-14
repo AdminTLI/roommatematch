@@ -83,43 +83,59 @@ export function ProgrammeSelect({
     setOpen(false)
   }
 
-  const renderProgrammeItem = (programme: Programme) => (
-    <div className="space-y-2">
-      <div className="flex items-start justify-between gap-2">
+  const renderProgrammeItem = (programme: Programme) => {
+    // Use SKDB-style display (clean name only) when SKDB data exists
+    // Fall back to DUO-style (with badges) when SKDB data is not available
+    const hasSkdbData = programme.sources?.skdb === true;
+    
+    if (hasSkdbData) {
+      // SKDB style: clean name only, no badges or extra info
+      return (
         <span className="font-medium text-gray-900 dark:text-gray-100 leading-tight">
           {programme.name}
         </span>
-        {programme.isVariant && (
-          <Badge variant="secondary" className="text-xs shrink-0">
-            Variant
-          </Badge>
+      );
+    }
+    
+    // DUO style: name with badges (fallback for programmes without SKDB enrichment)
+    return (
+      <div className="space-y-2">
+        <div className="flex items-start justify-between gap-2">
+          <span className="font-medium text-gray-900 dark:text-gray-100 leading-tight">
+            {programme.name}
+          </span>
+          {programme.isVariant && (
+            <Badge variant="secondary" className="text-xs shrink-0">
+              Variant
+            </Badge>
+          )}
+        </div>
+        
+        {programme.nameEn && programme.nameEn !== programme.name && (
+          <span className="text-sm text-gray-600 dark:text-gray-400 block">
+            {programme.nameEn}
+          </span>
         )}
+        
+        <div className="flex flex-wrap gap-1.5">
+          {programme.modes?.map(mode => (
+            <Badge 
+              key={mode} 
+              variant="outline" 
+              className="text-xs capitalize px-2 py-0.5"
+            >
+              {mode}
+            </Badge>
+          ))}
+          {programme.discipline && (
+            <Badge variant="outline" className="text-xs px-2 py-0.5">
+              {programme.discipline}
+            </Badge>
+          )}
+        </div>
       </div>
-      
-      {programme.nameEn && programme.nameEn !== programme.name && (
-        <span className="text-sm text-gray-600 dark:text-gray-400 block">
-          {programme.nameEn}
-        </span>
-      )}
-      
-      <div className="flex flex-wrap gap-1.5">
-        {programme.modes?.map(mode => (
-          <Badge 
-            key={mode} 
-            variant="outline" 
-            className="text-xs capitalize px-2 py-0.5"
-          >
-            {mode}
-          </Badge>
-        ))}
-        {programme.discipline && (
-          <Badge variant="outline" className="text-xs px-2 py-0.5">
-            {programme.discipline}
-          </Badge>
-        )}
-      </div>
-    </div>
-  )
+    );
+  }
 
   const getDisplayText = () => {
     if (selectedProgramme) {

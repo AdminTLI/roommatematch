@@ -146,43 +146,39 @@ export function ProgrammeSelect({
         } />
       </SelectTrigger>
       <SelectContent>
-        {programmes.map((prog) => (
-          <SelectItem key={prog.id} value={prog.id}>
-            <div className="flex flex-col gap-1">
-              <span>{prog.name}</span>
-              <div className="flex flex-wrap gap-1 mt-1">
-                {prog.modes && prog.modes.length > 0 && (
-                  prog.modes.map(mode => (
-                    <Badge key={mode} variant="secondary" className="text-xs">
-                      {mode}
-                    </Badge>
-                  ))
-                )}
-                {prog.languageCodes && prog.languageCodes.length > 0 && (
-                  prog.languageCodes.map(lang => (
-                    <Badge key={lang} variant="outline" className="text-xs">
-                      {lang.toUpperCase()}
-                    </Badge>
-                  ))
-                )}
-                {prog.ectsCredits && (
-                  <Badge variant="outline" className="text-xs">
-                    {prog.ectsCredits} ECTS
-                  </Badge>
-                )}
-                {(prog.durationYears || prog.durationMonths) && (
-                  <Badge variant="outline" className="text-xs">
-                    {prog.durationYears 
-                      ? `${prog.durationYears} ${prog.durationYears === 1 ? 'year' : 'years'}`
-                      : prog.durationMonths
-                      ? `${prog.durationMonths} ${prog.durationMonths === 1 ? 'month' : 'months'}`
-                      : ''}
-                  </Badge>
-                )}
-              </div>
-            </div>
-          </SelectItem>
-        ))}
+        {programmes.map((prog) => {
+          // Use SKDB-style display (clean name only) when SKDB data exists
+          // Fall back to DUO-style (with badges) when SKDB data is not available
+          const hasSkdbData = prog.sources?.skdb === true;
+          
+          return (
+            <SelectItem key={prog.id} value={prog.id}>
+              {hasSkdbData ? (
+                // SKDB style: clean name only, no badges
+                <span>{prog.name}</span>
+              ) : (
+                // DUO style: name with badges (fallback for programmes without SKDB enrichment)
+                <div className="flex flex-col gap-1">
+                  <span>{prog.name}</span>
+                  <div className="flex flex-wrap gap-1 mt-1">
+                    {prog.modes && prog.modes.length > 0 && (
+                      prog.modes.map(mode => (
+                        <Badge key={mode} variant="secondary" className="text-xs">
+                          {mode}
+                        </Badge>
+                      ))
+                    )}
+                    {prog.discipline && (
+                      <Badge variant="outline" className="text-xs">
+                        {prog.discipline}
+                      </Badge>
+                    )}
+                  </div>
+                </div>
+              )}
+            </SelectItem>
+          );
+        })}
         {programmes.length === 0 && !loading && (
           <SelectItem value="other">
             Programme not listed

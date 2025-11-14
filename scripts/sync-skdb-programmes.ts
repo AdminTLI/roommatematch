@@ -467,19 +467,47 @@ async function parseProgrammesFromCSV(): Promise<SkdbProgram[]> {
         continue;
       }
       
+      // Calculate duration from ECTS if not provided (fallback)
+      const degreeLevel = determineDegreeLevel({ ...record, niveau, sector });
+      let durationYears: number | undefined = undefined;
+      let durationMonths: number | undefined = undefined;
+      
+      if (record.durationYears || record.duration_years) {
+        durationYears = parseFloat((record.durationYears || record.duration_years).toString());
+      } else if (studielast) {
+        // Fallback: derive duration from ECTS credits
+        // Bachelor: typically 180 ECTS = 3 years, Master: 60-120 ECTS = 1-2 years
+        const ects = parseInt(studielast.toString());
+        
+        if (degreeLevel === 'bachelor') {
+          durationYears = Math.max(1, Math.min(6, Math.round((ects / 60) * 10) / 10)); // Clamp 1-6 years
+        } else if (degreeLevel === 'master') {
+          durationYears = Math.max(0.5, Math.min(3, Math.round((ects / 60) * 10) / 10)); // Clamp 0.5-3 years
+        } else if (degreeLevel === 'premaster') {
+          durationYears = Math.max(0.5, Math.min(1.5, Math.round((ects / 60) * 10) / 10)); // Clamp 0.5-1.5 years
+        }
+      }
+      
+      if (record.durationMonths || record.duration_months) {
+        durationMonths = parseInt((record.durationMonths || record.duration_months).toString());
+      } else if (durationYears) {
+        // Convert years to months as fallback
+        durationMonths = Math.round(durationYears * 12);
+      }
+      
       const program = SkdbProgramSchema.parse({
         institution: institutionName,
         name: programmeName,
         nameEn: programmeNameEn,
         crohoCode: crohoCode,
         rioCode: rioCode,
-        degreeLevel: determineDegreeLevel({ ...record, niveau, sector }),
+        degreeLevel,
         languageCodes: (record.languageCodes || record.languages || record.Talen || '').split(',').filter(Boolean),
         faculty: record.faculty || record.Faculteit,
         active: record.status !== 'ended' && record.active !== false && record.Actief !== false,
         ectsCredits: studielast ? parseInt(studielast.toString()) : undefined,
-        durationYears: record.durationYears ? parseFloat(record.durationYears.toString()) : record.duration_years ? parseFloat(record.duration_years.toString()) : undefined,
-        durationMonths: record.durationMonths ? parseInt(record.durationMonths.toString()) : record.duration_months ? parseInt(record.duration_months.toString()) : undefined,
+        durationYears,
+        durationMonths,
         admissionRequirements: toelatingsEisen
       });
       
@@ -534,19 +562,47 @@ async function parseProgrammesFromXLSX(): Promise<SkdbProgram[]> {
         continue;
       }
       
+      // Calculate duration from ECTS if not provided (fallback)
+      const degreeLevel = determineDegreeLevel({ ...record, niveau, sector });
+      let durationYears: number | undefined = undefined;
+      let durationMonths: number | undefined = undefined;
+      
+      if (record.durationYears || record.duration_years) {
+        durationYears = parseFloat((record.durationYears || record.duration_years).toString());
+      } else if (studielast) {
+        // Fallback: derive duration from ECTS credits
+        // Bachelor: typically 180 ECTS = 3 years, Master: 60-120 ECTS = 1-2 years
+        const ects = parseInt(studielast.toString());
+        
+        if (degreeLevel === 'bachelor') {
+          durationYears = Math.max(1, Math.min(6, Math.round((ects / 60) * 10) / 10)); // Clamp 1-6 years
+        } else if (degreeLevel === 'master') {
+          durationYears = Math.max(0.5, Math.min(3, Math.round((ects / 60) * 10) / 10)); // Clamp 0.5-3 years
+        } else if (degreeLevel === 'premaster') {
+          durationYears = Math.max(0.5, Math.min(1.5, Math.round((ects / 60) * 10) / 10)); // Clamp 0.5-1.5 years
+        }
+      }
+      
+      if (record.durationMonths || record.duration_months) {
+        durationMonths = parseInt((record.durationMonths || record.duration_months).toString());
+      } else if (durationYears) {
+        // Convert years to months as fallback
+        durationMonths = Math.round(durationYears * 12);
+      }
+      
       const program = SkdbProgramSchema.parse({
         institution: institutionName,
         name: programmeName,
         nameEn: programmeNameEn,
         crohoCode: crohoCode,
         rioCode: rioCode,
-        degreeLevel: determineDegreeLevel({ ...record, niveau, sector }),
+        degreeLevel,
         languageCodes: (record.languageCodes || record.languages || record.Talen || '').split(',').filter(Boolean),
         faculty: record.faculty || record.Faculteit,
         active: record.status !== 'ended' && record.active !== false && record.Actief !== false,
         ectsCredits: studielast ? parseInt(studielast.toString()) : undefined,
-        durationYears: record.durationYears ? parseFloat(record.durationYears.toString()) : record.duration_years ? parseFloat(record.duration_years.toString()) : undefined,
-        durationMonths: record.durationMonths ? parseInt(record.durationMonths.toString()) : record.duration_months ? parseInt(record.duration_months.toString()) : undefined,
+        durationYears,
+        durationMonths,
         admissionRequirements: toelatingsEisen
       });
       
@@ -663,10 +719,10 @@ async function upsertSkdbProgramme(
       metadata.skdb_name = skdbProgram.name;
     }
     
-    // Update sources: mark both DUO and SKDB
+    // Update sources: mark both DUO and SKDB (merge with existing to preserve DUO flag)
     const sources = existing.sources || {};
-    sources.duo = true;
-    sources.skdb = true;
+    sources.duo = sources.duo !== false; // Preserve existing DUO flag, default to true if not set
+    sources.skdb = true; // Always mark SKDB as true when enriching
     
     const updateData: any = {
       croho_code: skdbProgram.crohoCode || existing.croho_code,
@@ -674,11 +730,11 @@ async function upsertSkdbProgramme(
       faculty: skdbProgram.faculty || existing.faculty,
       active: skdbProgram.active !== undefined ? skdbProgram.active : existing.active,
       ects_credits: skdbProgram.ectsCredits || existing.ects_credits,
-      duration_years: skdbProgram.durationYears || existing.duration_years,
-      duration_months: skdbProgram.durationMonths || existing.duration_months,
+      duration_years: skdbProgram.durationYears !== undefined ? skdbProgram.durationYears : existing.duration_years,
+      duration_months: skdbProgram.durationMonths !== undefined ? skdbProgram.durationMonths : existing.duration_months,
       admission_requirements: skdbProgram.admissionRequirements || existing.admission_requirements,
       skdb_only: false, // Has DUO match
-      sources,
+      sources, // Ensure sources JSONB is properly merged
       metadata,
       enrichment_status: 'enriched'
       // Let database defaults handle skdb_updated_at and enriched_at via triggers
