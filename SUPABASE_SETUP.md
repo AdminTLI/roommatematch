@@ -239,15 +239,82 @@ The database includes these main feature areas:
 - **Reports**: User reports and safety
 - **Moderation**: Content and user moderation
 
+## Programme Data Sync
+
+After setting up the database, you need to sync programme data from DUO and SKDB:
+
+### Environment Variables
+
+Add these to your `.env.local` file:
+
+```bash
+# Supabase Configuration (required)
+NEXT_PUBLIC_SUPABASE_URL=https://your-project-id.supabase.co
+SUPABASE_SERVICE_ROLE_KEY=your_service_role_key_here
+
+# SKDB Configuration (for programme enrichment)
+SKDB_API_BASE=https://api.skdb.nl
+SKDB_API_KEY=your_skdb_api_key_here
+
+# OR use dump file (fallback)
+SKDB_DUMP_PATH=./data/studiekeuzedatabase_dump.csv
+```
+
+### Sync Process
+
+1. **Sync DUO Programmes (Baseline)**:
+   ```bash
+   pnpm tsx scripts/sync-duo-programmes.ts
+   ```
+   This fetches programme data from DUO's public CSV endpoints and establishes the baseline.
+
+2. **Sync SKDB Programmes (Enrichment)**:
+   ```bash
+   pnpm tsx scripts/sync-skdb-programmes.ts
+   ```
+   This enriches DUO programmes with SKDB data (ECTS, duration, admission requirements).
+
+3. **Or Run Both Together**:
+   ```bash
+   # Using orchestrator script
+   pnpm tsx scripts/sync-programmes.ts
+   
+   # Or using --with-skdb flag
+   pnpm tsx scripts/sync-duo-programmes.ts --with-skdb
+   ```
+
+### Fallback Strategy
+
+If SKDB API is unreachable:
+- The sync will fail gracefully
+- DUO programmes will still be available
+- You can use `SKDB_DUMP_PATH` to provide a CSV/XLSX dump file
+- SKDB enrichment can be run later when API is available
+
+### Coverage Reports
+
+After syncing, check coverage reports in `data/programmes/`:
+- `.coverage-report.json` - DUO coverage statistics
+- `.skdb-sync-report.json` - SKDB matching and enrichment statistics
+- `.combined-coverage-report.json` - Merged view of both sources
+
+### Data Licensing
+
+- **DUO Data**: Public data from Dutch Ministry of Education (no restrictions)
+- **SKDB Data**: Check SKDB license terms for usage and retention requirements
+- Always cite data sources appropriately
+
 ## Next Steps
 
 After successful setup:
 
-1. **Test the Application**: Try all major features
-2. **Configure Environment**: Set up environment variables
-3. **Deploy**: Push to production
-4. **Monitor**: Check Supabase logs for any issues
-5. **Backup**: Set up regular database backups
+1. **Sync Programme Data**: Run DUO and SKDB sync scripts (see above)
+2. **Test the Application**: Try all major features
+3. **Configure Environment**: Set up all environment variables
+4. **Deploy**: Push to production
+5. **Monitor**: Check Supabase logs for any issues
+6. **Backup**: Set up regular database backups
+7. **Schedule Syncs**: Set up cron jobs for regular programme data updates
 
 ## Support
 

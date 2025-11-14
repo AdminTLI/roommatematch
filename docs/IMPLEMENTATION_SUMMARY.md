@@ -290,6 +290,38 @@ This document summarizes the implementation of Medium, High, and Critical priori
 7. **Monitor**: Set up monitoring and alerting
 8. **Document**: Update documentation with new features
 
+## SKDB Programme Data Integration ✅
+
+- **Status**: Completed
+- **Components**:
+  - Database migration (`027_skdb_programme_fields.sql`) adding SKDB-specific fields
+  - SKDB sync script (`scripts/sync-skdb-programmes.ts`) with API and dump support
+  - Programme orchestrator (`scripts/sync-programmes.ts`) for combined DUO+SKDB sync
+  - Enhanced coverage monitoring with SKDB statistics
+  - Frontend updates to display enriched programme information
+  - Repository functions for SKDB-only programme handling
+- **Files Created/Modified**:
+  - `db/migrations/027_skdb_programme_fields.sql`
+  - `scripts/sync-skdb-programmes.ts`
+  - `scripts/sync-programmes.ts`
+  - `scripts/sync-duo-programmes.ts` (added `--with-skdb` flag)
+  - `lib/programmes/repo.ts` (enhanced enrichment functions)
+  - `types/programme.ts` (extended with SKDB fields)
+  - `components/ui/programme-select.tsx` (display SKDB fields)
+  - `docs/PROGRAMME_DATA.md` (updated with SKDB integration)
+  - `SUPABASE_SETUP.md` (added SKDB sync instructions)
+  - `env.example` (updated SKDB configuration)
+- **Features**:
+  - Dual-source approach: DUO (baseline) + SKDB (enrichment)
+  - Merge strategy preserving DUO identifiers as canonical
+  - SKDB-only programme ingestion with `skdb_only` flag
+  - Source tracking via `sources` JSONB field
+  - Coverage reports with SKDB statistics and discrepancy alerts
+  - Frontend display of ECTS, duration, languages, admission requirements
+- **Data Licensing**: 
+  - DUO data: Public (no restrictions)
+  - SKDB data: Check SKDB license terms for usage and retention requirements
+
 ## Notes
 
 - All implementations follow existing code patterns and conventions

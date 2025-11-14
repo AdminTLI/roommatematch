@@ -84,6 +84,7 @@ const DEFAULT_CSV_URL = process.env.DUO_ERKENNINGEN_CSV_URL ||
 // Parse command line arguments
 const exportJson = process.argv.includes('--export-json');
 const runEnrichment = process.argv.includes('--enrich');
+const withSkdb = process.argv.includes('--with-skdb');
 
 /**
  * Coverage report structure
@@ -103,6 +104,11 @@ interface CoverageReport {
     };
     missingLevels: DegreeLevel[];
     status: 'complete' | 'incomplete' | 'missing';
+    skdbStats?: {
+      enriched: number; // Programmes with SKDB data
+      duoOnly: number; // Programmes with only DUO data
+      skdbOnly: number; // SKDB-only programmes (no DUO match)
+    };
   }>;
   summary: {
     totalInstitutions: number;
@@ -112,6 +118,20 @@ interface CoverageReport {
     totalProgrammes: number;
   };
   failures: string[]; // Onboarding institutions that lack data
+  skdbSummary?: {
+    totalSkdbProgrammes: number;
+    enriched: number;
+    duoOnly: number;
+    skdbOnly: number;
+  };
+  discrepancies?: Array<{
+    type: 'skdb_only' | 'name_conflict';
+    skdbName: string;
+    skdbInstitution: string;
+    duoName?: string;
+    rioCode?: string;
+    crohoCode?: string;
+  }>;
 }
 
 /**
@@ -301,6 +321,89 @@ async function writeProgrammeFile(institutionId: string, programmes: ProgrammesB
   
   const outputPath = path.join(outputDir, `${institutionId}.json`);
   await fs.writeFile(outputPath, JSON.stringify(programmes, null, 2), 'utf8');
+}
+
+/**
+ * Enrich coverage report with SKDB statistics
+ */
+async function enrichCoverageReportWithSkdbStats(report: CoverageReport): Promise<void> {
+  try {
+    const { createAdminClient } = await import('@/lib/supabase/server');
+    const supabase = createAdminClient();
+    
+    // Load SKDB sync report if available
+    const skdbReportPath = path.join(process.cwd(), 'data', 'programmes', '.skdb-sync-report.json');
+    let skdbReport: any = null;
+    
+    if (existsSync(skdbReportPath)) {
+      try {
+        const content = readFileSync(skdbReportPath, 'utf-8');
+        skdbReport = JSON.parse(content);
+      } catch (error) {
+        console.warn('⚠️  Failed to load SKDB sync report:', error);
+      }
+    }
+    
+    // Get SKDB stats per institution from database
+    for (const inst of report.institutions) {
+      const { data: programmes, error } = await supabase
+        .from('programmes')
+        .select('sources, skdb_only')
+        .eq('institution_slug', inst.slug);
+      
+      if (error) {
+        console.warn(`⚠️  Failed to fetch SKDB stats for ${inst.slug}:`, error);
+        continue;
+      }
+      
+      let enriched = 0;
+      let duoOnly = 0;
+      let skdbOnly = 0;
+      
+      for (const prog of programmes || []) {
+        if (prog.skdb_only) {
+          skdbOnly++;
+        } else if (prog.sources?.skdb === true) {
+          enriched++;
+        } else {
+          duoOnly++;
+        }
+      }
+      
+      inst.skdbStats = {
+        enriched,
+        duoOnly,
+        skdbOnly
+      };
+    }
+    
+    // Add SKDB summary
+    if (skdbReport) {
+      report.skdbSummary = {
+        totalSkdbProgrammes: skdbReport.summary?.totalSkdbProgrammes || 0,
+        enriched: skdbReport.summary?.enriched || 0,
+        duoOnly: report.summary.totalProgrammes - (skdbReport.summary?.enriched || 0),
+        skdbOnly: skdbReport.summary?.skdbOnly || 0
+      };
+      
+      report.discrepancies = skdbReport.discrepancies || [];
+    }
+    
+    // Log SKDB stats
+    if (report.skdbSummary) {
+      console.log('');
+      console.log('📊 SKDB Enrichment Statistics:');
+      console.log(`   Total SKDB programmes: ${report.skdbSummary.totalSkdbProgrammes.toLocaleString()}`);
+      console.log(`   Enriched programmes: ${report.skdbSummary.enriched.toLocaleString()}`);
+      console.log(`   DUO-only programmes: ${report.skdbSummary.duoOnly.toLocaleString()}`);
+      console.log(`   SKDB-only programmes: ${report.skdbSummary.skdbOnly.toLocaleString()}`);
+      if (report.discrepancies && report.discrepancies.length > 0) {
+        console.log(`   Discrepancies: ${report.discrepancies.length}`);
+      }
+    }
+  } catch (error) {
+    console.warn('⚠️  Failed to enrich coverage report with SKDB stats:', error);
+  }
 }
 
 /**
@@ -609,6 +712,11 @@ async function main(): Promise<void> {
       console.log('✅ All onboarding institutions have complete programme data');
     }
     
+    // Enrich coverage report with SKDB stats if SKDB sync was run
+    if (withSkdb) {
+      await enrichCoverageReportWithSkdbStats(coverageReport);
+    }
+    
     // Write coverage report
     await writeCoverageReport(coverageReport);
     
@@ -642,6 +750,20 @@ async function main(): Promise<void> {
           console.error('❌ Enrichment failed:', error);
           // Don't fail the sync if enrichment fails
           console.warn('⚠️  Continuing despite enrichment failure');
+        }
+      }
+      
+      // Optionally run SKDB sync
+      if (withSkdb) {
+        console.log('');
+        console.log('🔗 Running SKDB sync...');
+        try {
+          const { syncSkdbProgrammes } = await import('./sync-skdb-programmes');
+          await syncSkdbProgrammes();
+        } catch (error) {
+          console.error('❌ SKDB sync failed:', error);
+          // Don't fail the sync if SKDB sync fails
+          console.warn('⚠️  Continuing despite SKDB sync failure');
         }
       }
     } else {

@@ -34,6 +34,13 @@ interface ProgrammeRow {
   active: boolean | null
   enrichment_status: 'pending' | 'enriched' | 'failed' | 'not_found' | null
   enriched_at: string | null
+  ects_credits: number | null
+  duration_years: number | null
+  duration_months: number | null
+  admission_requirements: string | null
+  skdb_only: boolean | null
+  sources: Record<string, any> | null
+  skdb_updated_at: string | null
   metadata: Record<string, any> | null
   created_at: string
   updated_at: string
@@ -63,7 +70,15 @@ function mapRowToProgramme(row: ProgrammeRow): Programme {
     languageCodes: row.language_codes && row.language_codes.length > 0 ? row.language_codes : undefined,
     faculty: row.faculty || undefined,
     active: row.active !== null ? row.active : undefined,
-    enrichmentStatus: row.enrichment_status || undefined
+    enrichmentStatus: row.enrichment_status || undefined,
+    ectsCredits: row.ects_credits || undefined,
+    durationYears: row.duration_years || undefined,
+    durationMonths: row.duration_months || undefined,
+    admissionRequirements: row.admission_requirements || undefined,
+    skdbOnly: row.skdb_only || undefined,
+    sources: row.sources ? (row.sources as { duo: boolean; skdb: boolean }) : undefined,
+    skdbUpdatedAt: row.skdb_updated_at || undefined,
+    metadata: row.metadata || undefined
   }
 }
 
@@ -324,13 +339,20 @@ export async function enrichProgramme(
     languageCodes?: string[]
     faculty?: string
     active?: boolean
+    ectsCredits?: number
+    durationYears?: number
+    durationMonths?: number
+    admissionRequirements?: string
+    sources?: { duo: boolean; skdb: boolean }
+    skdbOnly?: boolean
   }
 ): Promise<Programme | null> {
   const supabase = createAdminClient()
   
   const updateData: any = {
     enrichment_status: 'enriched',
-    enriched_at: new Date().toISOString()
+    enriched_at: new Date().toISOString(),
+    skdb_updated_at: new Date().toISOString()
   }
   
   if (enrichmentData.crohoCode !== undefined) {
@@ -344,6 +366,24 @@ export async function enrichProgramme(
   }
   if (enrichmentData.active !== undefined) {
     updateData.active = enrichmentData.active
+  }
+  if (enrichmentData.ectsCredits !== undefined) {
+    updateData.ects_credits = enrichmentData.ectsCredits || null
+  }
+  if (enrichmentData.durationYears !== undefined) {
+    updateData.duration_years = enrichmentData.durationYears || null
+  }
+  if (enrichmentData.durationMonths !== undefined) {
+    updateData.duration_months = enrichmentData.durationMonths || null
+  }
+  if (enrichmentData.admissionRequirements !== undefined) {
+    updateData.admission_requirements = enrichmentData.admissionRequirements || null
+  }
+  if (enrichmentData.sources !== undefined) {
+    updateData.sources = enrichmentData.sources
+  }
+  if (enrichmentData.skdbOnly !== undefined) {
+    updateData.skdb_only = enrichmentData.skdbOnly
   }
   
   const { data, error } = await supabase
@@ -364,6 +404,143 @@ export async function enrichProgramme(
   }
   
   return data ? mapRowToProgramme(data) : null
+}
+
+/**
+ * Upsert SKDB-only programme (no DUO match)
+ * 
+ * @param programmeData - SKDB programme data
+ * @param institutionSlug - Institution slug
+ * @returns Created programme or null if failed
+ */
+export async function upsertSkdbProgramme(
+  programmeData: {
+    name: string
+    nameEn?: string
+    crohoCode?: string
+    level: DegreeLevel
+    languageCodes?: string[]
+    faculty?: string
+    active?: boolean
+    ectsCredits?: number
+    durationYears?: number
+    durationMonths?: number
+    admissionRequirements?: string
+  },
+  institutionSlug: string
+): Promise<Programme | null> {
+  const supabase = createAdminClient()
+  
+  // Get BRIN code and sector
+  const { getInstitutionBrinCode } = await import('@/lib/duo/erkenningen')
+  const { loadInstitutions } = await import('@/lib/loadInstitutions')
+  const brinCode = getInstitutionBrinCode(institutionSlug)
+  const institutions = loadInstitutions()
+  const allInstitutions = [...institutions.wo, ...institutions.wo_special, ...institutions.hbo]
+  const institution = allInstitutions.find(inst => inst.id === institutionSlug)
+  const sector = institution?.sector || 'wo'
+  
+  const now = new Date().toISOString()
+  const sources = { duo: false, skdb: true }
+  
+  const insertData: any = {
+    institution_slug: institutionSlug,
+    brin_code: brinCode || null,
+    rio_code: null, // No DUO match
+    name: programmeData.name,
+    name_en: programmeData.nameEn || null,
+    level: programmeData.level,
+    sector,
+    modes: [],
+    is_variant: false,
+    croho_code: programmeData.crohoCode || null,
+    language_codes: programmeData.languageCodes || [],
+    faculty: programmeData.faculty || null,
+    active: programmeData.active !== undefined ? programmeData.active : true,
+    ects_credits: programmeData.ectsCredits || null,
+    duration_years: programmeData.durationYears || null,
+    duration_months: programmeData.durationMonths || null,
+    admission_requirements: programmeData.admissionRequirements || null,
+    skdb_only: true,
+    sources,
+    skdb_updated_at: now,
+    enrichment_status: 'enriched',
+    enriched_at: now,
+    metadata: {}
+  }
+  
+  const { data, error } = await supabase
+    .from('programmes')
+    .insert(insertData)
+    .select()
+    .single()
+  
+  if (error) {
+    console.error(`Error creating SKDB-only programme:`, error)
+    return null
+  }
+  
+  return data ? mapRowToProgramme(data) : null
+}
+
+/**
+ * Get programmes filtered by source
+ * 
+ * @param filters - Source filters
+ * @param useServerClient - Whether to use server-side client (default: true)
+ * @returns Array of matching programmes
+ */
+export async function getProgrammesBySource(
+  filters: {
+    hasDuo?: boolean
+    hasSkdb?: boolean
+    skdbOnly?: boolean
+    institutionSlug?: string
+    level?: DegreeLevel
+  },
+  useServerClient: boolean = true
+): Promise<Programme[]> {
+  const supabase = useServerClient ? createServerClient() : createClient()
+  
+  let query = supabase.from('programmes').select('*')
+  
+  if (filters.institutionSlug) {
+    query = query.eq('institution_slug', filters.institutionSlug)
+  }
+  
+  if (filters.level) {
+    query = query.eq('level', filters.level)
+  }
+  
+  if (filters.skdbOnly !== undefined) {
+    query = query.eq('skdb_only', filters.skdbOnly)
+  }
+  
+  const { data, error } = await query
+  
+  if (error) {
+    console.error('Error fetching programmes by source:', error)
+    return []
+  }
+  
+  // Filter by sources JSONB in memory (PostgreSQL JSONB queries can be complex)
+  let filtered = (data || []).map(mapRowToProgramme)
+  
+  if (filters.hasDuo !== undefined) {
+    filtered = filtered.filter(p => {
+      if (!p.sources) return !filters.hasDuo
+      return filters.hasDuo ? p.sources.duo === true : p.sources.duo !== true
+    })
+  }
+  
+  if (filters.hasSkdb !== undefined) {
+    filtered = filtered.filter(p => {
+      if (!p.sources) return !filters.hasSkdb
+      return filters.hasSkdb ? p.sources.skdb === true : p.sources.skdb !== true
+    })
+  }
+  
+  return filtered
 }
 
 /**

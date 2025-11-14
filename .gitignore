@@ -128,3 +128,9 @@ jspm_packages/
 
 # Generated programme data and reports
 data/programmes/
+
+# SKDB dump files (too large for git, use API or download separately)
+data/*.csv
+data/*.xlsx
+data/*.ods
+data/*.xls

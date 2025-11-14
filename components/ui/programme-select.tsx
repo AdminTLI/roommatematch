@@ -16,6 +16,11 @@ interface Programme {
     rioCode: string
     instCode: string
   }
+  languageCodes?: string[]
+  ectsCredits?: number
+  durationYears?: number
+  durationMonths?: number
+  admissionRequirements?: string
 }
 
 interface ProgrammeSelectProps {
@@ -143,17 +148,38 @@ export function ProgrammeSelect({
       <SelectContent>
         {programmes.map((prog) => (
           <SelectItem key={prog.id} value={prog.id}>
-            <div className="flex flex-col">
+            <div className="flex flex-col gap-1">
               <span>{prog.name}</span>
-              {prog.modes && prog.modes.length > 0 && (
-                <div className="flex gap-1 mt-1">
-                  {prog.modes.map(mode => (
+              <div className="flex flex-wrap gap-1 mt-1">
+                {prog.modes && prog.modes.length > 0 && (
+                  prog.modes.map(mode => (
                     <Badge key={mode} variant="secondary" className="text-xs">
                       {mode}
                     </Badge>
-                  ))}
-                </div>
-              )}
+                  ))
+                )}
+                {prog.languageCodes && prog.languageCodes.length > 0 && (
+                  prog.languageCodes.map(lang => (
+                    <Badge key={lang} variant="outline" className="text-xs">
+                      {lang.toUpperCase()}
+                    </Badge>
+                  ))
+                )}
+                {prog.ectsCredits && (
+                  <Badge variant="outline" className="text-xs">
+                    {prog.ectsCredits} ECTS
+                  </Badge>
+                )}
+                {(prog.durationYears || prog.durationMonths) && (
+                  <Badge variant="outline" className="text-xs">
+                    {prog.durationYears 
+                      ? `${prog.durationYears} ${prog.durationYears === 1 ? 'year' : 'years'}`
+                      : prog.durationMonths
+                      ? `${prog.durationMonths} ${prog.durationMonths === 1 ? 'month' : 'months'}`
+                      : ''}
+                  </Badge>
+                )}
+              </div>
             </div>
           </SelectItem>
         ))}

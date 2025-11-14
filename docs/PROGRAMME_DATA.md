@@ -2,14 +2,28 @@
 
 This document describes how programme data is sourced, imported, and integrated into the Domu Match platform for Dutch research universities (WO).
 
-## Data Source
+## Data Sources
 
-The platform uses the **Studiekeuzedatabase** as the authoritative source for all WO (research-university) programmes:
+The platform uses a **dual-source approach** combining DUO and Studiekeuzedatabase (SKDB) data:
 
-- **Primary Source**: REST OData API (when `SKDB_API_BASE` + `SKDB_API_KEY` are configured)
-- **Fallback Source**: Full database CSV/XLSX dump (when `SKDB_DUMP_PATH` is configured)
-- **Authority**: CROHO/RIO-backed through DUO (Dutch Ministry of Education)
-- **Coverage**: All 14 UNL (Association of Universities in the Netherlands) research universities
+- **DUO (Baseline)**: Primary source for programme identifiers (RIO codes, BRIN codes) and basic programme information
+  - Source: DUO's "Overzicht Erkenningen ho" dataset
+  - Update frequency: Daily
+  - Authority: Dutch Ministry of Education (DUO)
+  
+- **SKDB (Enrichment)**: Additional authoritative source for enriched programme metadata
+  - Primary: REST OData API (when `SKDB_API_BASE` + `SKDB_API_KEY` are configured)
+  - Fallback: Full database CSV/XLSX dump (when `SKDB_DUMP_PATH` is configured)
+  - Authority: Studiekeuzedatabase (CROHO-backed)
+  - Coverage: All 14 UNL (Association of Universities in the Netherlands) research universities
+
+### Merge Strategy
+
+- **DUO fields** (RIO code, BRIN, names): DUO values are canonical and preserved
+- **SKDB fields** (CROHO, ECTS, duration, admission): SKDB values enrich DUO data
+- **Name conflicts**: DUO names remain primary; SKDB variants stored in `metadata.skdb_name`
+- **Source tracking**: `sources` JSONB field tracks which sources contributed: `{ duo: boolean, skdb: boolean }`
+- **SKDB-only programmes**: Programmes found only in SKDB (no DUO match) are ingested with `skdb_only: true` flag
 
 ### Supported Programme Levels
 
@@ -24,8 +38,12 @@ The platform uses the **Studiekeuzedatabase** as the authoritative source for al
 Add these to your `.env` file:
 
 ```bash
+# DUO Configuration (required for baseline)
+# DUO data is fetched from public CSV endpoints (no API key needed)
+
+# SKDB Configuration (for enrichment)
 # API Mode (Primary)
-SKDB_API_BASE=https://api.studiekeuzedatabase.nl
+SKDB_API_BASE=https://api.skdb.nl
 SKDB_API_KEY=your_skdb_api_key_here
 
 # OR Dump Mode (Fallback)
@@ -44,21 +62,54 @@ pnpm db:push
 pnpm db:seed
 ```
 
-3. Import programmes:
+3. Sync programmes:
 ```bash
-pnpm import:programs
+# Sync DUO programmes (baseline)
+pnpm tsx scripts/sync-duo-programmes.ts
+
+# Sync SKDB programmes (enrichment) - requires SKDB_API_KEY or SKDB_DUMP_PATH
+pnpm tsx scripts/sync-skdb-programmes.ts
+
+# Or run both in sequence:
+pnpm tsx scripts/sync-programmes.ts
+
+# Or use the --with-skdb flag:
+pnpm tsx scripts/sync-duo-programmes.ts --with-skdb
 ```
 
-## Import Process
+## Sync Process
 
-The programme importer (`/scripts/import_programs.ts`) handles:
+### DUO Sync (`scripts/sync-duo-programmes.ts`)
 
-### 1. Data Fetching
-- **API Mode**: Fetches institutions and programmes via OData endpoints
-- **Dump Mode**: Parses CSV/XLSX files for offline imports
-- **WO Filtering**: Automatically filters to research universities only
+1. **Data Fetching**: Fetches HO Opleidingsoverzicht CSV (primary) or Erkenningen CSV (fallback)
+2. **Institution Mapping**: Matches by BRIN code or institution name
+3. **Programme Processing**: Normalizes DUO data and classifies by level (bachelor/master/premaster)
+4. **Database Upsert**: Upserts to `programmes` table with DUO identifiers as canonical
 
-### 2. Institution Mapping
+### SKDB Sync (`scripts/sync-skdb-programmes.ts`)
+
+1. **Data Fetching**:
+   - **API Mode**: Fetches via OData API (`/Institutions?$expand=Programmes` or `/Programmes`)
+   - **Dump Mode**: Parses CSV/XLSX files for offline imports
+2. **Institution Mapping**: Uses comprehensive synonym map to match SKDB institution names to slugs
+3. **Programme Matching**: Matches SKDB programmes to existing DUO programmes by:
+   - CROHO code (if available in both)
+   - RIO code (if SKDB provides it)
+   - Name + institution + level (fuzzy matching with Levenshtein distance)
+4. **Merge Strategy**:
+   - **Matched programmes**: Enriches existing DUO programmes with SKDB fields
+   - **SKDB-only programmes**: Creates new records with `skdb_only: true` flag
+5. **Database Upsert**: Updates or creates programmes with source tracking
+
+### Combined Sync (`scripts/sync-programmes.ts`)
+
+Orchestrates both syncs in sequence:
+1. Runs DUO sync first (establishes baseline)
+2. Runs SKDB sync (enriches with additional data)
+3. Generates combined coverage report
+
+### Institution Mapping
+
 Uses a comprehensive synonym map to match dataset institution names to our 14 UNL universities:
 
 ```typescript
@@ -68,33 +119,50 @@ Uses a comprehensive synonym map to match dataset institution names to our 14 UN
 'University of Amsterdam' → 'uva'
 ```
 
-### 3. Programme Processing
-- **Degree Level Detection**: Automatically determines bachelor/master/premaster from programme data
-- **Faculty Assignment**: Maps programmes to their respective faculties
-- **Language Codes**: Captures instruction languages
-- **Active Status**: Marks ended programmes as inactive
-
-### 4. Database Upsert
-- **Idempotent Operations**: Safe to run multiple times
-- **Conflict Resolution**: Uses `university_id,name,degree_level` as unique constraint
-- **Statistics Logging**: Reports import counts per university and degree level
-
 ## Database Schema
 
-### `programs` Table
+### `programmes` Table
+
+The `programmes` table stores combined DUO + SKDB data:
+
 ```sql
-CREATE TABLE programs (
-    id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-    university_id uuid NOT NULL REFERENCES universities(id),
-    croho_code text UNIQUE,
-    name text NOT NULL,
-    name_en text,
-    degree_level text NOT NULL CHECK (degree_level IN ('bachelor', 'master', 'premaster')),
-    language_codes text[] DEFAULT '{}',
-    faculty text,
-    active boolean DEFAULT true,
-    created_at timestamptz DEFAULT now(),
-    updated_at timestamptz DEFAULT now()
+CREATE TABLE programmes (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  institution_slug VARCHAR(100) NOT NULL,
+  brin_code VARCHAR(10),                    -- DUO institution code
+  rio_code VARCHAR(50) UNIQUE,              -- DUO programme identifier (canonical)
+  name TEXT NOT NULL,                       -- DUO name (canonical)
+  name_en TEXT,                             -- DUO English name
+  level programme_level NOT NULL,           -- bachelor, premaster, master
+  sector programme_sector NOT NULL,         -- hbo, wo, wo_special
+  modes TEXT[] DEFAULT '{}',
+  is_variant BOOLEAN DEFAULT false,
+  discipline TEXT,
+  sub_discipline TEXT,
+  city TEXT,
+  isat_code VARCHAR(50),
+  
+  -- SKDB enrichment fields
+  croho_code VARCHAR(50),                   -- CROHO code from SKDB
+  language_codes TEXT[] DEFAULT '{}',       -- Instruction languages
+  faculty TEXT,                             -- Faculty/department
+  active BOOLEAN DEFAULT true,
+  ects_credits INTEGER,                     -- ECTS credit points
+  duration_years DECIMAL(3,1),              -- Duration in years
+  duration_months INTEGER,                  -- Duration in months
+  admission_requirements TEXT,              -- Admission notes
+  
+  -- Source tracking
+  skdb_only BOOLEAN DEFAULT false,          -- True if no DUO match
+  sources JSONB DEFAULT '{}',               -- { duo: boolean, skdb: boolean }
+  skdb_updated_at TIMESTAMPTZ,              -- Last SKDB sync timestamp
+  
+  -- Metadata
+  enrichment_status VARCHAR(20) DEFAULT 'pending',
+  enriched_at TIMESTAMPTZ,
+  metadata JSONB DEFAULT '{}',              -- Can store skdb_name variant
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  updated_at TIMESTAMPTZ DEFAULT NOW()
 );
 ```
 
@@ -128,6 +196,8 @@ FROM user_academic;
 - **University Selection**: Typeahead dropdown with all 14 UNL universities
 - **Degree Level**: Radio selection for bachelor/master/premaster
 - **Programme Selection**: Dependent dropdown filtered by university + degree level
+  - Displays enriched programme information: languages, ECTS credits, duration
+  - Shows badges for study modes, languages, ECTS, and duration when available
 - **Study Start Year**: Dropdown with live "Year X" calculation
 - **Undecided Option**: Toggle for users who haven't chosen a specific programme
 
@@ -172,18 +242,38 @@ Academic affinity badges displayed on match cards:
 
 ### Manual Re-sync
 ```bash
-# Run import script
-pnpm import:programs
+# Sync DUO programmes (baseline)
+pnpm tsx scripts/sync-duo-programmes.ts
 
-# Or watch mode for development
-pnpm import:programs:watch
+# Sync SKDB programmes (enrichment)
+pnpm tsx scripts/sync-skdb-programmes.ts
+
+# Or run both in sequence
+pnpm tsx scripts/sync-programmes.ts
+
+# Or use the --with-skdb flag for combined sync
+pnpm tsx scripts/sync-duo-programmes.ts --with-skdb
 ```
+
+### Coverage Reports
+
+After syncing, coverage reports are generated:
+
+- **DUO Coverage**: `.coverage-report.json` - Shows programme counts per institution and missing levels
+- **SKDB Sync Report**: `.skdb-sync-report.json` - Shows SKDB matching statistics and discrepancies
+- **Combined Report**: `.combined-coverage-report.json` - Merged view of both sources
+
+Coverage reports include:
+- Programme counts by institution and level
+- SKDB enrichment statistics (enriched vs DUO-only vs SKDB-only)
+- Discrepancies (SKDB-only programmes, name conflicts)
+- Missing levels per institution
 
 ### Admin Panel Re-sync
 1. Navigate to Admin → Settings
 2. Click "Re-sync Programmes" button
 3. Monitor progress in admin logs
-4. Verify updated programme counts
+4. Verify updated programme counts and SKDB enrichment status
 
 ## Data Quality
 

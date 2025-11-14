@@ -67,6 +67,37 @@ export type Programme = {
   
   /** Enrichment status */
   enrichmentStatus?: 'pending' | 'enriched' | 'failed' | 'not_found';
+  
+  /** SKDB-specific enrichment fields */
+  /** ECTS credit points from Studiekeuzedatabase */
+  ectsCredits?: number;
+  
+  /** Official programme duration in years (e.g., 3.0, 1.5) */
+  durationYears?: number;
+  
+  /** Alternative programme duration in months */
+  durationMonths?: number;
+  
+  /** Admission requirements and notes from Studiekeuzedatabase */
+  admissionRequirements?: string;
+  
+  /** Flag indicating this programme exists only in SKDB (no DUO match) */
+  skdbOnly?: boolean;
+  
+  /** Source tracking: which data sources contributed to this programme */
+  sources?: {
+    duo: boolean;
+    skdb: boolean;
+  };
+  
+  /** Timestamp when programme was last synced from Studiekeuzedatabase */
+  skdbUpdatedAt?: string;
+  
+  /** Metadata object - can store SKDB name variants (metadata.skdb_name) when SKDB name differs from DUO name */
+  metadata?: {
+    skdb_name?: string;
+    [key: string]: any;
+  };
 };
 
 export type ProgrammesByLevel = {
