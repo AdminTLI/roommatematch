@@ -14,35 +14,35 @@
     --brand-border: #E2E8F0;
     
     /* Semantic color tokens - Light mode */
-    --bg-body: 0 0% 100%;
-    --bg-surface: 210 40% 98%;
-    --bg-surface-alt: 210 40% 96%;
+    --bg-body: 210 40% 96%;           /* App chrome background */
+    --bg-surface: 0 0% 100%;          /* Primary cards / surfaces */
+    --bg-surface-alt: 210 40% 98%;    /* Subtle alternate surfaces */
     --border-subtle: 214.3 31.8% 91.4%;
-    --text-primary: 222.2 84% 4.9%;
-    --text-secondary: 215.4 16.3% 46.9%;
-    --text-muted: 215.4 16.3% 46.9%;
-    --accent: 221.2 83.2% 53.3%;
-    --accent-hover: 221.2 83.2% 48%;
-    --accent-soft: 221.2 83.2% 95%;
+    --text-primary: 222.2 47.4% 11.2%;
+    --text-secondary: 215.4 16.3% 40%;
+    --text-muted: 215.4 16.3% 55%;
+    --accent: 221.2 83.2% 53.3%;      /* Brand accent (buttons, highlights) */
+    --accent-hover: 221.2 83.2% 47%;
+    --accent-soft: 221.2 83.2% 96%;   /* Soft accent background for pills/cards */
     --danger: 0 84.2% 60.2%;
     --warning: 38 92% 50%;
     --success: 142 76% 36%;
     
     /* shadcn/ui colors for compatibility */
-    --background: 0 0% 100%;
-    --foreground: 222.2 84% 4.9%;
+    --background: 210 40% 96%;        /* Match app chrome */
+    --foreground: 222.2 47.4% 11.2%;
     --card: 0 0% 100%;
-    --card-foreground: 222.2 84% 4.9%;
+    --card-foreground: 222.2 47.4% 11.2%;
     --popover: 0 0% 100%;
-    --popover-foreground: 222.2 84% 4.9%;
+    --popover-foreground: 222.2 47.4% 11.2%;
     --primary: 221.2 83.2% 53.3%;
     --primary-foreground: 210 40% 98%;
-    --secondary: 210 40% 96%;
-    --secondary-foreground: 222.2 84% 4.9%;
+    --secondary: 210 40% 98%;
+    --secondary-foreground: 222.2 47.4% 11.2%;
     --muted: 210 40% 96%;
-    --muted-foreground: 215.4 16.3% 46.9%;
-    --accent: 210 40% 96%;
-    --accent-foreground: 222.2 84% 4.9%;
+    --muted-foreground: 215.4 16.3% 45%;
+    /* Accent shares the brand accent so pills/toggles feel consistent */
+    --accent-foreground: 210 40% 98%;
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 210 40% 98%;
     --border: 214.3 31.8% 91.4%;
@@ -53,46 +53,45 @@
 
   .dark {
     /* Semantic color tokens - Dark mode */
-    --bg-body: 222 47% 11%;      /* #121826 - very dark blue-gray */
-    --bg-surface: 222 47% 15%;   /* Slightly lighter than background for card differentiation */
-    --bg-surface-alt: 215 20% 25%; /* Alternative surface for elevated elements */
-    --border-subtle: 215 20% 30%; /* Lighter borders for better visibility */
-    --text-primary: 210 40% 98%;  /* High contrast text */
+    --bg-body: 222 47% 11%;        /* Very dark blue-gray app chrome */
+    --bg-surface: 222 47% 16%;     /* Primary cards / surfaces */
+    --bg-surface-alt: 222 47% 20%; /* Slightly lifted surfaces */
+    --border-subtle: 222 32% 28%;
+    --text-primary: 210 40% 98%;   /* High contrast text */
     --text-secondary: 215 20% 75%; /* Secondary text with good contrast */
-    --text-muted: 215 20% 65%;    /* Muted text */
-    --accent: 217 91% 60%;        /* #818CF8 - lighter indigo */
-    --accent-hover: 217 91% 70%;  /* Even lighter indigo for hover */
-    --accent-soft: 217 91% 20%;   /* Soft accent background */
-    --danger: 0 72% 51%;          /* Slightly brighter red for better visibility */
-    --warning: 38 92% 55%;        /* Brighter warning color */
-    --success: 142 76% 45%;       /* Brighter success color */
+    --text-muted: 215 20% 65%;     /* Muted text */
+    --accent: 217 91% 64%;         /* Lighter indigo for dark mode */
+    --accent-hover: 217 91% 70%;   /* Even lighter indigo for hover */
+    --accent-soft: 217 91% 22%;    /* Soft accent background for pills */
+    --danger: 0 72% 51%;           /* Brighter red for visibility */
+    --warning: 38 92% 55%;         /* Brighter warning color */
+    --success: 142 76% 45%;        /* Brighter success color */
     
     /* Backgrounds - improved contrast */
-    --background: 222 47% 11%;  /* #121826 - very dark blue-gray */
-    --foreground: 210 40% 98%;   /* High contrast text */
-    --card: 222 47% 15%;         /* Slightly lighter than background for card differentiation */
+    --background: 222 47% 11%;     /* Match app chrome */
+    --foreground: 210 40% 98%;
+    --card: 222 47% 16%;           /* Cards slightly lifted from body */
     --card-foreground: 210 40% 98%;
-    --popover: 222 47% 15%;
+    --popover: 222 47% 16%;
     --popover-foreground: 210 40% 98%;
     
-    /* Brand colors (desaturated for dark mode) */
-    --primary: 217 91% 60%;     /* #818CF8 - lighter indigo */
+    /* Brand colors (tuned for dark mode) */
+    --primary: 217 91% 64%;        /* Lighter indigo */
     --primary-foreground: 222 47% 11%;
-    --secondary: 215 20% 25%;   /* Slightly lighter for better visibility */
+    --secondary: 222 37% 18%;
     --secondary-foreground: 210 40% 98%;
-    --muted: 215 20% 25%;       /* Slightly lighter muted background */
-    --muted-foreground: 215 20% 75%;  /* Brighter muted text for better contrast */
-    --accent: 215 20% 25%;
+    --muted: 222 37% 18%;
+    --muted-foreground: 215 20% 75%;
     --accent-foreground: 210 40% 98%;
     
     /* Destructive colors - improved visibility */
-    --destructive: 0 72% 51%;    /* Slightly brighter red for better visibility */
+    --destructive: 0 72% 51%;
     --destructive-foreground: 210 40% 98%;
     
     /* Borders & inputs - improved visibility */
-    --border: 215 20% 30%;      /* Lighter borders for better visibility */
-    --input: 215 20% 25%;       /* Slightly lighter input background */
-    --ring: 217 91% 60%;
+    --border: 222 37% 26%;
+    --input: 222 37% 18%;
+    --ring: 217 91% 64%;
     
     /* Custom brand colors for dark mode */
     --brand-primary: #818CF8;     /* Lighter indigo */

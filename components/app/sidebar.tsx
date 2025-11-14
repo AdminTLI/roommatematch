@@ -268,7 +268,7 @@ export function Sidebar({ user, onClose }: SidebarProps) {
           <div>
             <div className="flex items-center justify-between mb-2">
               <span className="text-xs uppercase tracking-wide text-ink-500">Admin</span>
-              <Link href="/dashboard" className="text-xs text-blue-600 hover:underline" onClick={onClose}>
+              <Link href="/dashboard" className="text-xs text-semantic-accent hover:text-semantic-accent-hover" onClick={onClose}>
                 Back to App
               </Link>
             </div>

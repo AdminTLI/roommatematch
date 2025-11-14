@@ -934,9 +934,9 @@ export function DashboardContent({ hasCompletedQuestionnaire = false, hasPartial
                   ))}
                 </div>
                 {recentActivity.length > 3 && (
-                  <div className="pt-2 border-t border-gray-200 dark:border-gray-700 mt-2 flex-shrink-0 mb-4">
+                  <div className="pt-2 border-t border-border-subtle mt-2 flex-shrink-0 mb-4">
                     <button 
-                      className="w-full flex items-center justify-center gap-1 text-xs text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 font-medium py-2" 
+                      className="w-full flex items-center justify-center gap-1 text-xs text-semantic-accent hover:text-semantic-accent-hover font-medium py-2" 
                       onClick={handleViewAllActivity}
                     >
                       View more
@@ -961,4 +961,3 @@ export function DashboardContent({ hasCompletedQuestionnaire = false, hasPartial
     </div>
   )
 }
-

@@ -16,3 +16,4 @@ COMMENT ON COLUMN chat_members.last_read_at IS 'Timestamp when user last read me
 
 
 
+
