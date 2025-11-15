@@ -22,8 +22,11 @@ export function ResearchCarousel({ locale: localeProp }: ResearchCarouselProps) 
   // Responsive card widths and gaps - wider cards (1.4x) for better text fit
   const getCardWidth = () => {
     if (typeof window === 'undefined') return { base: 532, center: 560, gap: 16, height: 420 }
+    if (window.innerWidth < 640) {
+      return { base: 300, center: 320, gap: 12, height: 400 } // Small mobile
+    }
     if (window.innerWidth < 768) {
-      return { base: 448, center: 476, gap: 16, height: 380 } // Mobile
+      return { base: 340, center: 360, gap: 16, height: 400 } // Mobile
     }
     return { base: 532, center: 560, gap: 24, height: 420 } // Desktop
   }
@@ -214,17 +217,17 @@ export function ResearchCarousel({ locale: localeProp }: ResearchCarouselProps) 
         </div>
 
         {/* Carousel Container */}
-        <div className="relative w-full overflow-visible py-12" style={{ minHeight: `${cardDimensions.height + 80}px` }}>
+        <div className="relative w-full overflow-visible py-8 sm:py-12" style={{ minHeight: `${cardDimensions.height + 60}px` }}>
           {/* Navigation Arrows */}
           <button
             onClick={() => {
               handlePrev()
               handleUserInteraction()
             }}
-            className="absolute left-0 top-1/2 -translate-y-1/2 z-10 bg-white rounded-full p-2 shadow-lg border border-brand-border hover:border-brand-primary transition-all duration-200 hover:bg-brand-primary/5"
+            className="absolute left-2 sm:left-4 md:left-0 top-1/2 -translate-y-1/2 z-10 bg-white rounded-full p-1.5 sm:p-2 shadow-lg border border-brand-border hover:border-brand-primary transition-all duration-200 hover:bg-brand-primary/5"
             aria-label={locale === 'nl' ? 'Vorige' : 'Previous'}
           >
-            <ChevronLeft className="h-6 w-6 text-brand-text" />
+            <ChevronLeft className="h-4 w-4 sm:h-5 sm:w-5 md:h-6 md:w-6 text-brand-text" />
           </button>
 
           <button
@@ -232,17 +235,17 @@ export function ResearchCarousel({ locale: localeProp }: ResearchCarouselProps) 
               handleNext()
               handleUserInteraction()
             }}
-            className="absolute right-0 top-1/2 -translate-y-1/2 z-10 bg-white rounded-full p-2 shadow-lg border border-brand-border hover:border-brand-primary transition-all duration-200 hover:bg-brand-primary/5"
+            className="absolute right-2 sm:right-4 md:right-0 top-1/2 -translate-y-1/2 z-10 bg-white rounded-full p-1.5 sm:p-2 shadow-lg border border-brand-border hover:border-brand-primary transition-all duration-200 hover:bg-brand-primary/5"
             aria-label={locale === 'nl' ? 'Volgende' : 'Next'}
           >
-            <ChevronRight className="h-6 w-6 text-brand-text" />
+            <ChevronRight className="h-4 w-4 sm:h-5 sm:w-5 md:h-6 md:w-6 text-brand-text" />
           </button>
 
           {/* Carousel */}
-          <div className="relative w-full overflow-visible px-12 sm:px-16 md:px-20" style={{ height: `${cardDimensions.height + 40}px`, paddingTop: '20px', paddingBottom: '20px' }}>
+          <div className="relative w-full overflow-visible px-4 sm:px-8 md:px-12 lg:px-20" style={{ height: `${cardDimensions.height + 40}px`, paddingTop: '20px', paddingBottom: '20px' }}>
             <div
               ref={carouselRef}
-              className="flex items-center gap-4 md:gap-6 transition-transform duration-1000 ease-in-out"
+              className="flex items-center gap-3 sm:gap-4 md:gap-6 transition-transform duration-1000 ease-in-out"
               style={{
                 transform: `translateX(calc(50% - ${currentIndex * (cardDimensions.base + cardDimensions.gap) + cardDimensions.base / 2}px - ${(cardDimensions.center - cardDimensions.base) / 2}px))`,
               }}
@@ -270,28 +273,28 @@ export function ResearchCarousel({ locale: localeProp }: ResearchCarouselProps) 
                         isCenter ? 'shadow-elev-2' : ''
                       }`}
                     >
-                      <CardContent className="p-5 flex flex-col h-full">
-                        <div className={`font-bold text-brand-primary mb-3 transition-all duration-1000 ${
-                          isCenter ? 'text-4xl md:text-5xl' : 'text-3xl md:text-4xl'
+                      <CardContent className="p-4 sm:p-5 flex flex-col h-full overflow-hidden">
+                        <div className={`font-bold text-brand-primary mb-2 sm:mb-3 transition-all duration-1000 ${
+                          isCenter ? 'text-2xl sm:text-3xl md:text-4xl lg:text-5xl' : 'text-xl sm:text-2xl md:text-3xl lg:text-4xl'
                         }`}>
                           {stat.statistic}
                         </div>
-                        <h3 className={`font-semibold text-brand-text mb-3 transition-all duration-1000 ${
-                          isCenter ? 'text-lg md:text-xl' : 'text-base md:text-lg'
+                        <h3 className={`font-semibold text-brand-text mb-2 sm:mb-3 transition-all duration-1000 line-clamp-2 ${
+                          isCenter ? 'text-sm sm:text-base md:text-lg lg:text-xl' : 'text-xs sm:text-sm md:text-base lg:text-lg'
                         }`}>
                           {stat.issue}
                         </h3>
-                        <p className={`text-brand-muted mb-4 leading-relaxed transition-all duration-1000 flex-grow ${
-                          isCenter ? 'text-sm md:text-base' : 'text-xs md:text-sm'
+                        <p className={`text-brand-muted mb-3 sm:mb-4 leading-relaxed transition-all duration-1000 flex-grow line-clamp-3 sm:line-clamp-none ${
+                          isCenter ? 'text-xs sm:text-sm md:text-base' : 'text-xs sm:text-xs md:text-sm'
                         }`}>
                           {stat.explanation}
                         </p>
-                        <p className="text-xs md:text-sm text-brand-muted italic mb-4 pb-4 border-b border-brand-border/30 flex-shrink-0">
+                        <p className="text-[10px] sm:text-xs md:text-sm text-brand-muted italic mb-3 sm:mb-4 pb-3 sm:pb-4 border-b border-brand-border/30 flex-shrink-0 line-clamp-2">
                           {stat.source}
                         </p>
                         <div className="pt-2 flex-shrink-0">
-                          <p className={`text-brand-muted leading-relaxed transition-all duration-1000 ${
-                            isCenter ? 'text-sm md:text-base' : 'text-xs md:text-sm'
+                          <p className={`text-brand-muted leading-relaxed transition-all duration-1000 line-clamp-3 sm:line-clamp-none ${
+                            isCenter ? 'text-xs sm:text-sm md:text-base' : 'text-[10px] sm:text-xs md:text-sm'
                           }`}>
                             {stat.solution}
                           </p>
@@ -305,7 +308,7 @@ export function ResearchCarousel({ locale: localeProp }: ResearchCarouselProps) 
           </div>
 
           {/* Pagination Dots */}
-          <div className="flex justify-center items-center gap-1.5 mt-6">
+          <div className="flex justify-center items-center gap-1 mt-6">
             {stats.map((_, index) => (
               <button
                 key={index}
@@ -315,8 +318,8 @@ export function ResearchCarousel({ locale: localeProp }: ResearchCarouselProps) 
                 }}
                 className={`rounded-full transition-all duration-300 ${
                   index === currentIndex
-                    ? 'w-1.5 h-0.5 bg-brand-primary'
-                    : 'w-0.5 h-0.5 bg-brand-border hover:bg-brand-primary/50'
+                    ? 'w-[3px] h-[2px] bg-brand-primary'
+                    : 'w-[2px] h-[2px] bg-brand-border hover:bg-brand-primary/50'
                 }`}
                 aria-label={`${locale === 'nl' ? 'Ga naar slide' : 'Go to slide'} ${index + 1}`}
               />

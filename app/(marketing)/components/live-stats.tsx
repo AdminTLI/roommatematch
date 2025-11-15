@@ -158,7 +158,7 @@ export function LiveStats({ locale: localeProp }: LiveStatsProps) {
         </div>
 
         {/* Stats Grid */}
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 sm:gap-6 justify-items-center">
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3 sm:gap-4 md:gap-6 justify-items-center items-start">
           {stats.map((stat) => {
             const Icon = stat.icon
             const isLoadingState = isLoading || error
@@ -166,29 +166,29 @@ export function LiveStats({ locale: localeProp }: LiveStatsProps) {
             return (
               <Card
                 key={stat.key}
-                className="text-center border border-brand-border/50 bg-white/80 backdrop-blur-sm shadow-elev-1 hover:shadow-elev-2 transition-all duration-200 rounded-2xl"
+                className="text-center border border-brand-border/50 bg-white/80 backdrop-blur-sm shadow-elev-1 hover:shadow-elev-2 transition-all duration-200 rounded-2xl w-full max-w-[180px] sm:max-w-[200px] md:max-w-none"
               >
-                <CardContent className="pt-4 sm:pt-6 pb-4 sm:pb-6 px-3 sm:px-6">
-                  <div className="flex justify-center mb-3 sm:mb-4">
-                    <div className="h-10 w-10 sm:h-12 sm:w-12 bg-brand-primary/10 rounded-xl flex items-center justify-center">
-                      <Icon className="h-5 w-5 sm:h-6 sm:w-6 text-brand-primary" />
+                <CardContent className="pt-3 sm:pt-4 md:pt-6 pb-3 sm:pb-4 md:pb-6 px-2 sm:px-3 md:px-6">
+                  <div className="flex justify-center mb-2 sm:mb-3 md:mb-4">
+                    <div className="h-8 w-8 sm:h-10 sm:w-10 md:h-12 md:w-12 bg-brand-primary/10 rounded-xl flex items-center justify-center">
+                      <Icon className="h-4 w-4 sm:h-5 sm:w-5 md:h-6 md:w-6 text-brand-primary" />
                     </div>
                   </div>
                   {isLoadingState ? (
                     <>
-                      <div className="h-8 sm:h-10 md:h-12 mb-2 bg-brand-primary/5 rounded animate-pulse" />
-                      <div className="h-4 mb-1 bg-brand-primary/5 rounded animate-pulse" />
-                      <div className="h-3 bg-brand-primary/5 rounded animate-pulse" />
+                      <div className="h-6 sm:h-8 md:h-10 lg:h-12 mb-2 bg-brand-primary/5 rounded animate-pulse" />
+                      <div className="h-3 sm:h-4 mb-1 bg-brand-primary/5 rounded animate-pulse" />
+                      <div className="h-2 sm:h-3 bg-brand-primary/5 rounded animate-pulse" />
                     </>
                   ) : (
                     <>
-                      <div className="text-3xl sm:text-4xl md:text-5xl font-bold text-brand-text mb-1 sm:mb-2">
+                      <div className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-brand-text mb-1 sm:mb-2 break-words">
                         {stat.value}
                       </div>
-                      <div className="text-xs sm:text-sm font-semibold text-brand-text mb-1">
+                      <div className="text-[10px] sm:text-xs md:text-sm font-semibold text-brand-text mb-1 leading-tight line-clamp-2">
                         {stat.label}
                       </div>
-                      <div className="text-xs text-brand-muted leading-tight">
+                      <div className="text-[9px] sm:text-xs text-brand-muted leading-tight line-clamp-2 sm:line-clamp-none">
                         {stat.description}
                       </div>
                     </>
