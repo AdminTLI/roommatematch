@@ -16,7 +16,27 @@ export function ResearchCarousel({ locale: localeProp }: ResearchCarouselProps) 
   const { locale: contextLocale } = useApp()
   const locale = localeProp || contextLocale
   const [currentIndex, setCurrentIndex] = useState(0)
-  const scrollContainerRef = useRef<HTMLDivElement>(null)
+  const [isAutoPlaying, setIsAutoPlaying] = useState(true)
+  const carouselRef = useRef<HTMLDivElement>(null)
+  const autoPlayTimerRef = useRef<NodeJS.Timeout | null>(null)
+  // Responsive card widths and gaps
+  const getCardWidth = () => {
+    if (typeof window === 'undefined') return { base: 280, center: 304, gap: 16 }
+    if (window.innerWidth < 768) {
+      return { base: 260, center: 280, gap: 16 } // Mobile (gap-4 = 16px)
+    }
+    return { base: 280, center: 304, gap: 24 } // Desktop (gap-6 = 24px)
+  }
+  
+  const [cardDimensions, setCardDimensions] = useState(getCardWidth())
+  
+  useEffect(() => {
+    const handleResize = () => {
+      setCardDimensions(getCardWidth())
+    }
+    window.addEventListener('resize', handleResize)
+    return () => window.removeEventListener('resize', handleResize)
+  }, [])
 
   const content = {
     en: {
@@ -106,41 +126,76 @@ export function ResearchCarousel({ locale: localeProp }: ResearchCarouselProps) 
   const text = content[locale]
   const stats = text.stats
 
-  const scrollToIndex = (index: number) => {
-    if (scrollContainerRef.current) {
-      const cardWidth = scrollContainerRef.current.scrollWidth / stats.length
-      scrollContainerRef.current.scrollTo({
-        left: index * cardWidth,
-        behavior: 'smooth',
-      })
-    }
+  const goToIndex = (index: number) => {
     setCurrentIndex(index)
+    setIsAutoPlaying(true)
   }
 
   const handlePrev = () => {
     const newIndex = currentIndex > 0 ? currentIndex - 1 : stats.length - 1
-    scrollToIndex(newIndex)
+    goToIndex(newIndex)
   }
 
   const handleNext = () => {
     const newIndex = currentIndex < stats.length - 1 ? currentIndex + 1 : 0
-    scrollToIndex(newIndex)
+    goToIndex(newIndex)
   }
 
-  // Handle scroll to update current index
+  // Auto-rotation every 5 seconds
   useEffect(() => {
-    const container = scrollContainerRef.current
-    if (!container) return
+    if (!isAutoPlaying) return
 
-    const handleScroll = () => {
-      const cardWidth = container.scrollWidth / stats.length
-      const newIndex = Math.round(container.scrollLeft / cardWidth)
-      setCurrentIndex(newIndex)
+    autoPlayTimerRef.current = setInterval(() => {
+      setCurrentIndex((prevIndex) => {
+        return prevIndex < stats.length - 1 ? prevIndex + 1 : 0
+      })
+    }, 5000)
+
+    return () => {
+      if (autoPlayTimerRef.current) {
+        clearInterval(autoPlayTimerRef.current)
+      }
     }
+  }, [isAutoPlaying, stats.length])
 
-    container.addEventListener('scroll', handleScroll)
-    return () => container.removeEventListener('scroll', handleScroll)
-  }, [stats.length])
+  // Pause auto-play on user interaction
+  const handleUserInteraction = () => {
+    setIsAutoPlaying(false)
+    if (autoPlayTimerRef.current) {
+      clearInterval(autoPlayTimerRef.current)
+    }
+    // Resume after 10 seconds of inactivity
+    setTimeout(() => {
+      setIsAutoPlaying(true)
+    }, 10000)
+  }
+
+  // Touch/swipe support
+  const [touchStart, setTouchStart] = useState(0)
+  const [touchEnd, setTouchEnd] = useState(0)
+
+  const handleTouchStart = (e: React.TouchEvent) => {
+    setTouchStart(e.targetTouches[0].clientX)
+    handleUserInteraction()
+  }
+
+  const handleTouchMove = (e: React.TouchEvent) => {
+    setTouchEnd(e.targetTouches[0].clientX)
+  }
+
+  const handleTouchEnd = () => {
+    if (!touchStart || !touchEnd) return
+    const distance = touchStart - touchEnd
+    const isLeftSwipe = distance > 50
+    const isRightSwipe = distance < -50
+
+    if (isLeftSwipe) {
+      handleNext()
+    }
+    if (isRightSwipe) {
+      handlePrev()
+    }
+  }
 
   return (
     <Section className="bg-white">
@@ -154,117 +209,116 @@ export function ResearchCarousel({ locale: localeProp }: ResearchCarouselProps) 
           </p>
         </div>
 
-        {/* Desktop Grid */}
-        <div className="hidden md:grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {stats.map((stat, index) => (
-            <Card
-              key={index}
-              className="border border-brand-border/50 bg-white/80 backdrop-blur-sm shadow-elev-1 hover:shadow-elev-2 transition-all duration-200 rounded-2xl"
-            >
-              <CardContent className="p-6">
-                <div className="text-4xl md:text-5xl font-bold text-brand-primary mb-3">
-                  {stat.statistic}
-                </div>
-                <h3 className="text-lg font-semibold text-brand-text mb-3">
-                  {stat.issue}
-                </h3>
-                <p className="text-sm text-brand-muted mb-4 leading-relaxed">
-                  {stat.explanation}
-                </p>
-                <p className="text-xs text-brand-muted italic mb-4 pb-4 border-b border-brand-border/30">
-                  {stat.source}
-                </p>
-                <div className="pt-2">
-                  <p className="text-sm font-medium text-brand-text mb-1">
-                    {locale === 'nl' ? 'Hoe Domu Match dit oplost:' : 'How Domu Match solves this:'}
-                  </p>
-                  <p className="text-sm text-brand-muted leading-relaxed">
-                    {stat.solution}
-                  </p>
-                </div>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
-
-        {/* Mobile Carousel */}
-        <div className="md:hidden relative">
-          <div
-            ref={scrollContainerRef}
-            className="flex overflow-x-auto snap-x snap-mandatory scrollbar-hide gap-4 pb-4"
+        {/* Carousel Container */}
+        <div className="relative w-full overflow-hidden py-8">
+          {/* Navigation Arrows */}
+          <button
+            onClick={() => {
+              handlePrev()
+              handleUserInteraction()
+            }}
+            className="absolute left-0 top-1/2 -translate-y-1/2 z-10 bg-white rounded-full p-2 shadow-lg border border-brand-border hover:border-brand-primary transition-all duration-200 hover:bg-brand-primary/5"
+            aria-label={locale === 'nl' ? 'Vorige' : 'Previous'}
           >
-            {stats.map((stat, index) => (
-              <Card
-                key={index}
-                className="flex-shrink-0 w-[85vw] max-w-sm border border-brand-border/50 bg-white/80 backdrop-blur-sm shadow-elev-1 rounded-2xl snap-center"
-              >
-                <CardContent className="p-6">
-                  <div className="text-4xl font-bold text-brand-primary mb-3">
-                    {stat.statistic}
+            <ChevronLeft className="h-6 w-6 text-brand-text" />
+          </button>
+
+          <button
+            onClick={() => {
+              handleNext()
+              handleUserInteraction()
+            }}
+            className="absolute right-0 top-1/2 -translate-y-1/2 z-10 bg-white rounded-full p-2 shadow-lg border border-brand-border hover:border-brand-primary transition-all duration-200 hover:bg-brand-primary/5"
+            aria-label={locale === 'nl' ? 'Volgende' : 'Next'}
+          >
+            <ChevronRight className="h-6 w-6 text-brand-text" />
+          </button>
+
+          {/* Carousel */}
+          <div className="relative w-full overflow-hidden px-8 sm:px-12 md:px-16">
+            <div
+              ref={carouselRef}
+              className="flex items-center gap-4 md:gap-6 transition-transform duration-500 ease-in-out"
+              style={{
+                transform: `translateX(calc(50% - ${currentIndex * (cardDimensions.base + cardDimensions.gap) + cardDimensions.base / 2}px - ${(cardDimensions.center - cardDimensions.base) / 2}px))`,
+              }}
+              onTouchStart={handleTouchStart}
+              onTouchMove={handleTouchMove}
+              onTouchEnd={handleTouchEnd}
+            >
+              {stats.map((stat, index) => {
+                const isCenter = index === currentIndex
+                const distance = Math.abs(index - currentIndex)
+                
+                return (
+                  <div
+                    key={index}
+                    className="flex-shrink-0 transition-all duration-500 ease-in-out"
+                    style={{
+                      width: isCenter ? `${cardDimensions.center}px` : `${cardDimensions.base}px`,
+                      opacity: distance > 1 ? 0.4 : distance === 1 ? 0.7 : 1,
+                      transform: isCenter ? 'scale(1.08)' : 'scale(0.92)',
+                    }}
+                  >
+                    <Card
+                      className={`border border-brand-border/50 bg-white/80 backdrop-blur-sm shadow-elev-1 rounded-2xl transition-all duration-500 ${
+                        isCenter ? 'shadow-elev-2' : ''
+                      }`}
+                    >
+                      <CardContent className="p-6">
+                        <div className={`font-bold text-brand-primary mb-3 transition-all duration-500 ${
+                          isCenter ? 'text-4xl md:text-5xl' : 'text-3xl md:text-4xl'
+                        }`}>
+                          {stat.statistic}
+                        </div>
+                        <h3 className={`font-semibold text-brand-text mb-3 transition-all duration-500 ${
+                          isCenter ? 'text-lg md:text-xl' : 'text-base md:text-lg'
+                        }`}>
+                          {stat.issue}
+                        </h3>
+                        <p className={`text-brand-muted mb-4 leading-relaxed transition-all duration-500 ${
+                          isCenter ? 'text-sm md:text-base' : 'text-xs md:text-sm'
+                        }`}>
+                          {stat.explanation}
+                        </p>
+                        <p className="text-xs text-brand-muted italic mb-4 pb-4 border-b border-brand-border/30">
+                          {stat.source}
+                        </p>
+                        <div className="pt-2">
+                          <p className={`text-brand-muted leading-relaxed transition-all duration-500 ${
+                            isCenter ? 'text-sm md:text-base' : 'text-xs md:text-sm'
+                          }`}>
+                            {stat.solution}
+                          </p>
+                        </div>
+                      </CardContent>
+                    </Card>
                   </div>
-                  <h3 className="text-lg font-semibold text-brand-text mb-3">
-                    {stat.issue}
-                  </h3>
-                  <p className="text-sm text-brand-muted mb-4 leading-relaxed">
-                    {stat.explanation}
-                  </p>
-                  <p className="text-xs text-brand-muted italic mb-4 pb-4 border-b border-brand-border/30">
-                    {stat.source}
-                  </p>
-                  <div className="pt-2">
-                    <p className="text-sm font-medium text-brand-text mb-1">
-                      {locale === 'nl' ? 'Hoe Domu Match dit oplost:' : 'How Domu Match solves this:'}
-                    </p>
-                    <p className="text-sm text-brand-muted leading-relaxed">
-                      {stat.solution}
-                    </p>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
+                )
+              })}
+            </div>
           </div>
 
-          {/* Navigation Arrows */}
-          <div className="flex justify-center items-center gap-4 mt-6">
-            <Button
-              variant="outline"
-              size="lg"
-              onClick={handlePrev}
-              className="border-2 border-brand-border hover:border-brand-primary text-brand-text hover:bg-brand-primary/5 transition-all duration-200"
-              aria-label={locale === 'nl' ? 'Vorige' : 'Previous'}
-            >
-              <ChevronLeft className="h-5 w-5" />
-            </Button>
-
-            {/* Dots */}
-            <div className="flex gap-2">
-              {stats.map((_, index) => (
-                <button
-                  key={index}
-                  onClick={() => scrollToIndex(index)}
-                  className={`h-2 rounded-full transition-all duration-200 ${
-                    index === currentIndex
-                      ? 'w-8 bg-brand-primary'
-                      : 'w-2 bg-brand-border hover:bg-brand-primary/50'
-                  }`}
-                  aria-label={`${locale === 'nl' ? 'Ga naar slide' : 'Go to slide'} ${index + 1}`}
-                />
-              ))}
-            </div>
-
-            <Button
-              variant="outline"
-              size="lg"
-              onClick={handleNext}
-              className="border-2 border-brand-border hover:border-brand-primary text-brand-text hover:bg-brand-primary/5 transition-all duration-200"
-              aria-label={locale === 'nl' ? 'Volgende' : 'Next'}
-            >
-              <ChevronRight className="h-5 w-5" />
-            </Button>
+          {/* Pagination Dots */}
+          <div className="flex justify-center items-center gap-2 mt-8">
+            {stats.map((_, index) => (
+              <button
+                key={index}
+                onClick={() => {
+                  goToIndex(index)
+                  handleUserInteraction()
+                }}
+                className={`rounded-full transition-all duration-300 ${
+                  index === currentIndex
+                    ? 'w-8 h-2 bg-brand-primary'
+                    : 'w-2 h-2 bg-brand-border hover:bg-brand-primary/50'
+                }`}
+                aria-label={`${locale === 'nl' ? 'Ga naar slide' : 'Go to slide'} ${index + 1}`}
+              />
+            ))}
           </div>
         </div>
       </Container>
     </Section>
   )
 }
-
