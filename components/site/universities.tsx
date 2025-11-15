@@ -25,7 +25,7 @@ interface University {
 
 const content = {
   en: {
-    title: "Find out how many compatible students are waiting for you",
+    title: "Find out how many compatible roommates are waiting for you",
     subtitle: "Select your city to see available universities and see how many students are already using Domu Match",
     selectCityPlaceholder: "Select a city",
     noUniversities: "No universities found in this city",
@@ -36,7 +36,7 @@ const content = {
     loading: "Loading...",
   },
   nl: {
-    title: "Ontdek hoeveel compatibele studenten op je wachten",
+    title: "Ontdek hoeveel compatibele huisgenoten op je wachten",
     subtitle: "Selecteer je stad om beschikbare universiteiten te zien en ontdek hoeveel studenten Domu Match al gebruiken",
     selectCityPlaceholder: "Selecteer een stad",
     noUniversities: "Geen universiteiten gevonden in deze stad",
@@ -143,7 +143,11 @@ export function Universities() {
       <Container>
         <div className="text-center">
           <h2 className="text-3xl md:text-4xl font-bold text-brand-text mb-4">
-            {t.title}
+            {locale === 'nl' ? (
+              <>Ontdek hoeveel <span className="text-brand-primary">compatibele huisgenoten</span> op je wachten</>
+            ) : (
+              <>Find out how many <span className="text-brand-primary">compatible roommates</span> are waiting for you</>
+            )}
           </h2>
           <p className="text-base md:text-lg leading-relaxed max-w-prose mx-auto text-brand-muted mb-8">
             {t.subtitle}

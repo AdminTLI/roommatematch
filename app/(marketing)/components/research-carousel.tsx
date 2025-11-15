@@ -2,11 +2,9 @@
 
 import { useState, useRef, useEffect } from 'react'
 import { Card, CardContent } from '@/components/ui/card'
-import { Button } from '@/components/ui/button'
 import { useApp } from '@/app/providers'
 import Container from '@/components/ui/primitives/container'
 import Section from '@/components/ui/primitives/section'
-import { ChevronLeft, ChevronRight } from 'lucide-react'
 
 interface ResearchCarouselProps {
   locale?: 'en' | 'nl'
@@ -218,29 +216,6 @@ export function ResearchCarousel({ locale: localeProp }: ResearchCarouselProps) 
 
         {/* Carousel Container */}
         <div className="relative w-full overflow-visible py-8 sm:py-12" style={{ minHeight: `${cardDimensions.height + 60}px` }}>
-          {/* Navigation Arrows */}
-          <button
-            onClick={() => {
-              handlePrev()
-              handleUserInteraction()
-            }}
-            className="absolute left-2 sm:left-4 md:left-0 top-1/2 -translate-y-1/2 z-10 bg-white rounded-full p-1.5 sm:p-2 shadow-lg border border-brand-border hover:border-brand-primary transition-all duration-200 hover:bg-brand-primary/5"
-            aria-label={locale === 'nl' ? 'Vorige' : 'Previous'}
-          >
-            <ChevronLeft className="h-4 w-4 sm:h-5 sm:w-5 md:h-6 md:w-6 text-brand-text" />
-          </button>
-
-          <button
-            onClick={() => {
-              handleNext()
-              handleUserInteraction()
-            }}
-            className="absolute right-2 sm:right-4 md:right-0 top-1/2 -translate-y-1/2 z-10 bg-white rounded-full p-1.5 sm:p-2 shadow-lg border border-brand-border hover:border-brand-primary transition-all duration-200 hover:bg-brand-primary/5"
-            aria-label={locale === 'nl' ? 'Volgende' : 'Next'}
-          >
-            <ChevronRight className="h-4 w-4 sm:h-5 sm:w-5 md:h-6 md:w-6 text-brand-text" />
-          </button>
-
           {/* Carousel */}
           <div className="relative w-full overflow-visible px-4 sm:px-8 md:px-12 lg:px-20" style={{ height: `${cardDimensions.height + 40}px`, paddingTop: '20px', paddingBottom: '20px' }}>
             <div
@@ -318,8 +293,8 @@ export function ResearchCarousel({ locale: localeProp }: ResearchCarouselProps) 
                 }}
                 className={`rounded-full transition-all duration-300 ${
                   index === currentIndex
-                    ? 'w-[3px] h-[2px] bg-brand-primary'
-                    : 'w-[2px] h-[2px] bg-brand-border hover:bg-brand-primary/50'
+                    ? 'w-[2px] h-[1px] bg-brand-primary'
+                    : 'w-[1px] h-[1px] bg-brand-border hover:bg-brand-primary/50'
                 }`}
                 aria-label={`${locale === 'nl' ? 'Ga naar slide' : 'Go to slide'} ${index + 1}`}
               />
