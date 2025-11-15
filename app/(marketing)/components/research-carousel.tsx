@@ -19,13 +19,13 @@ export function ResearchCarousel({ locale: localeProp }: ResearchCarouselProps) 
   const [isAutoPlaying, setIsAutoPlaying] = useState(true)
   const carouselRef = useRef<HTMLDivElement>(null)
   const autoPlayTimerRef = useRef<NodeJS.Timeout | null>(null)
-  // Responsive card widths and gaps - wider cards for better text fit
+  // Responsive card widths and gaps - wider cards (1.4x) for better text fit
   const getCardWidth = () => {
-    if (typeof window === 'undefined') return { base: 380, center: 400, gap: 16, height: 420 }
+    if (typeof window === 'undefined') return { base: 532, center: 560, gap: 16, height: 420 }
     if (window.innerWidth < 768) {
-      return { base: 320, center: 340, gap: 16, height: 380 } // Mobile
+      return { base: 448, center: 476, gap: 16, height: 380 } // Mobile
     }
-    return { base: 380, center: 400, gap: 24, height: 420 } // Desktop
+    return { base: 532, center: 560, gap: 24, height: 420 } // Desktop
   }
   
   const [cardDimensions, setCardDimensions] = useState(getCardWidth())
@@ -198,9 +198,9 @@ export function ResearchCarousel({ locale: localeProp }: ResearchCarouselProps) 
   }
 
   return (
-    <Section className="bg-white">
+    <Section className="bg-white py-8 md:py-12">
       <Container>
-        <div className="text-center mb-12">
+        <div className="text-center mb-8">
           <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-brand-text mb-4 leading-tight">
             {text.title}
           </h2>
@@ -210,7 +210,7 @@ export function ResearchCarousel({ locale: localeProp }: ResearchCarouselProps) 
         </div>
 
         {/* Carousel Container */}
-        <div className="relative w-full overflow-hidden py-8" style={{ minHeight: `${cardDimensions.height + 40}px` }}>
+        <div className="relative w-full overflow-visible py-12" style={{ minHeight: `${cardDimensions.height + 80}px` }}>
           {/* Navigation Arrows */}
           <button
             onClick={() => {
@@ -235,7 +235,7 @@ export function ResearchCarousel({ locale: localeProp }: ResearchCarouselProps) 
           </button>
 
           {/* Carousel */}
-          <div className="relative w-full overflow-hidden px-8 sm:px-12 md:px-16" style={{ height: `${cardDimensions.height + 20}px` }}>
+          <div className="relative w-full overflow-visible px-12 sm:px-16 md:px-20" style={{ height: `${cardDimensions.height + 40}px`, paddingTop: '20px', paddingBottom: '20px' }}>
             <div
               ref={carouselRef}
               className="flex items-center gap-4 md:gap-6 transition-transform duration-1000 ease-in-out"
@@ -267,27 +267,27 @@ export function ResearchCarousel({ locale: localeProp }: ResearchCarouselProps) 
                       }`}
                     >
                       <CardContent className="p-5 flex flex-col h-full">
-                        <div className={`font-bold text-brand-primary mb-2 transition-all duration-1000 ${
-                          isCenter ? 'text-3xl md:text-4xl' : 'text-2xl md:text-3xl'
+                        <div className={`font-bold text-brand-primary mb-3 transition-all duration-1000 ${
+                          isCenter ? 'text-4xl md:text-5xl' : 'text-3xl md:text-4xl'
                         }`}>
                           {stat.statistic}
                         </div>
-                        <h3 className={`font-semibold text-brand-text mb-2 transition-all duration-1000 ${
-                          isCenter ? 'text-base md:text-lg' : 'text-sm md:text-base'
+                        <h3 className={`font-semibold text-brand-text mb-3 transition-all duration-1000 ${
+                          isCenter ? 'text-lg md:text-xl' : 'text-base md:text-lg'
                         }`}>
                           {stat.issue}
                         </h3>
-                        <p className={`text-brand-muted mb-3 leading-relaxed transition-all duration-1000 flex-grow ${
-                          isCenter ? 'text-xs md:text-sm' : 'text-xs'
+                        <p className={`text-brand-muted mb-4 leading-relaxed transition-all duration-1000 flex-grow ${
+                          isCenter ? 'text-sm md:text-base' : 'text-xs md:text-sm'
                         }`}>
                           {stat.explanation}
                         </p>
-                        <p className="text-xs text-brand-muted italic mb-3 pb-3 border-b border-brand-border/30 flex-shrink-0">
+                        <p className="text-xs md:text-sm text-brand-muted italic mb-4 pb-4 border-b border-brand-border/30 flex-shrink-0">
                           {stat.source}
                         </p>
                         <div className="pt-2 flex-shrink-0">
                           <p className={`text-brand-muted leading-relaxed transition-all duration-1000 ${
-                            isCenter ? 'text-xs md:text-sm' : 'text-xs'
+                            isCenter ? 'text-sm md:text-base' : 'text-xs md:text-sm'
                           }`}>
                             {stat.solution}
                           </p>
@@ -301,7 +301,7 @@ export function ResearchCarousel({ locale: localeProp }: ResearchCarouselProps) 
           </div>
 
           {/* Pagination Dots */}
-          <div className="flex justify-center items-center gap-2 mt-8">
+          <div className="flex justify-center items-center gap-1.5 mt-6">
             {stats.map((_, index) => (
               <button
                 key={index}
@@ -311,8 +311,8 @@ export function ResearchCarousel({ locale: localeProp }: ResearchCarouselProps) 
                 }}
                 className={`rounded-full transition-all duration-300 ${
                   index === currentIndex
-                    ? 'w-4 h-1 bg-brand-primary'
-                    : 'w-1 h-1 bg-brand-border hover:bg-brand-primary/50'
+                    ? 'w-1.5 h-0.5 bg-brand-primary'
+                    : 'w-0.5 h-0.5 bg-brand-border hover:bg-brand-primary/50'
                 }`}
                 aria-label={`${locale === 'nl' ? 'Ga naar slide' : 'Go to slide'} ${index + 1}`}
               />
