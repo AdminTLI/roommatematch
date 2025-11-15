@@ -154,7 +154,7 @@ export function LiveStats({ locale: localeProp }: LiveStatsProps) {
         </div>
 
         {/* Stats Grid */}
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 sm:gap-6">
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 sm:gap-6 justify-items-center">
           {stats.map((stat) => {
             const Icon = stat.icon
             const isLoadingState = isLoading || error

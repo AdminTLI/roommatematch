@@ -1,6 +1,7 @@
 import Container from '@/components/ui/primitives/container'
 import Section from '@/components/ui/primitives/section'
 import Footer from '@/components/site/footer'
+import { Navbar } from '@/components/site/navbar'
 
 export const metadata = {
   title: 'About Us | Domu Match'
@@ -9,6 +10,7 @@ export const metadata = {
 export default function AboutPage() {
   return (
     <main>
+      <Navbar />
       <Section className="bg-white">
         <Container>
           <h1 className="text-4xl font-bold mb-6 text-brand-text">About Domu Match</h1>

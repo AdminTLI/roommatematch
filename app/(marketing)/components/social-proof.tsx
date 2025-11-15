@@ -20,7 +20,7 @@ export function SocialProof({ locale: localeProp }: SocialProofProps) {
       subtitle: "Our science-backed approach helps you find roommates as compatible as your best friends",
       stats: [
         { value: "40+", label: "Compatibility Factors", icon: Brain, description: "Science-backed algorithm" },
-        { value: "100%", label: "Verified Profiles", icon: Shield, description: "ID-verified community" },
+        { value: "100%", label: "Verified Profiles", icon: Shield, description: "Secure platform with verified students only" },
         { value: "100%", label: "Transparent Matching", icon: Eye, description: "See why you're compatible" },
         { value: "10 min", label: "Quick Setup", icon: Zap, description: "Get started fast" }
       ],
@@ -35,7 +35,7 @@ export function SocialProof({ locale: localeProp }: SocialProofProps) {
       subtitle: "Onze wetenschappelijk onderbouwde aanpak helpt je huisgenoten te vinden die zo compatibel zijn als je beste vrienden",
       stats: [
         { value: "40+", label: "Compatibiliteitsfactoren", icon: Brain, description: "Wetenschappelijk onderbouwd algoritme" },
-        { value: "100%", label: "Geverifieerde Profielen", icon: Shield, description: "ID-geverifieerde community" },
+        { value: "100%", label: "Geverifieerde Profielen", icon: Shield, description: "Veilig platform met alleen geverifieerde studenten" },
         { value: "100%", label: "Transparante Matching", icon: Eye, description: "Zie waarom je compatibel bent" },
         { value: "10 min", label: "Snelle Setup", icon: Zap, description: "Snel aan de slag" }
       ],
