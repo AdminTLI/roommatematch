@@ -37,7 +37,7 @@ const content = {
         icon: Brain,
         title: "Smart Matching Algorithm",
         subtitle: "Match on What Matters",
-        description: "We analyze 40+ compatibility factors—from quiet hours and cleanliness to study habits and weekend plans. Our algorithm catches conflicts before they start. No more gambles, no more surprises.",
+        description: "We analyze 40+ compatibility factors - from quiet hours and cleanliness to study habits and weekend plans. Our algorithm catches conflicts before they start. No more gambles, no more surprises.",
         details: [
           "40+ compatibility factors analyzed",
           "Cosine similarity matching algorithm",
@@ -132,7 +132,7 @@ const content = {
         icon: Brain,
         title: "Slim Matchingalgoritme",
         subtitle: "Match op Wat Ertoe Doet",
-        description: "We analyseren 40+ compatibiliteitsfactoren—van stilte uren en netheid tot studiegewoonten en weekendplannen. Ons algoritme vangt conflicten op voordat ze beginnen. Geen gokken meer, geen verrassingen meer.",
+        description: "We analyseren 40+ compatibiliteitsfactoren - van stilte uren en netheid tot studiegewoonten en weekendplannen. Ons algoritme vangt conflicten op voordat ze beginnen. Geen gokken meer, geen verrassingen meer.",
         details: [
           "40+ compatibiliteitsfactoren geanalyseerd",
           "Cosinusgelijkheid matchingalgoritme",

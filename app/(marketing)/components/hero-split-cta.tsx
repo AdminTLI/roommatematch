@@ -17,7 +17,7 @@ export function HeroSplitCTA({ locale = 'en' }: HeroSplitCTAProps) {
     en: {
       title: "From strangers to roommates",
       subtitle: "Campus-verified community, ID-checked accounts, and a scientific match that prevents conflicts.",
-      microcopy: "No listings, no spam—just people you'll actually live well with.",
+      microcopy: "No listings, no spam - just people you'll actually live well with.",
       primaryCta: "Start as a student",
       secondaryCta: "For universities",
       secondaryLink: "See how it works"
@@ -25,7 +25,7 @@ export function HeroSplitCTA({ locale = 'en' }: HeroSplitCTAProps) {
     nl: {
       title: "Van vreemden tot huisgenoten",
       subtitle: "Campus-geverifieerde community, ID-gecontroleerde accounts en een wetenschappelijke match die conflicten voorkomt.",
-      microcopy: "Geen advertenties, geen spam—alleen mensen waarmee je echt goed kunt samenwonen.",
+      microcopy: "Geen advertenties, geen spam - alleen mensen waarmee je echt goed kunt samenwonen.",
       primaryCta: "Start als student",
       secondaryCta: "Voor universiteiten",
       secondaryLink: "Bekijk hoe het werkt"

@@ -14,7 +14,7 @@ const content = {
       {
         icon: Brain,
         title: "Science-backed matching",
-        description: "Our algorithm analyzes 40+ compatibility factors to predict roommate success before conflicts start. No more guessing—find your perfect fit."
+        description: "Our algorithm analyzes 40+ compatibility factors to predict roommate success before conflicts start. No more guessing - find your perfect fit."
       },
       {
         icon: Shield,
@@ -40,7 +40,7 @@ const content = {
       {
         icon: Brain,
         title: "Wetenschappelijk onderbouwde matching",
-        description: "Ons algoritme analyseert 40+ compatibiliteitsfactoren om het succes van huisgenoten te voorspellen voordat conflicten beginnen. Geen gokken meer—vind je perfecte match."
+        description: "Ons algoritme analyseert 40+ compatibiliteitsfactoren om het succes van huisgenoten te voorspellen voordat conflicten beginnen. Geen gokken meer - vind je perfecte match."
       },
       {
         icon: Shield,

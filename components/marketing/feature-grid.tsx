@@ -19,7 +19,7 @@ const features = [
   {
     icon: Brain,
     title: "Real compatibility, not guesswork",
-    description: "Our AI analyzes 40+ lifestyle factors, study habits, and personality to find your perfect match—not just random roommates.",
+    description: "Our AI analyzes 40+ lifestyle factors, study habits, and personality to find your perfect match - not just random roommates.",
     highlight: "40+ factors",
     color: "brand"
   },

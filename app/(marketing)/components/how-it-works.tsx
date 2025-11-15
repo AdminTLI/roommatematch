@@ -44,7 +44,7 @@ export function HowItWorks({ locale = 'en' }: HowItWorksProps) {
           icon: MessageCircle,
           number: "03",
           title: "Chat and form a household", 
-          description: "Connect safely through our text-only chat system. No links, no spam—just real conversations.",
+          description: "Connect safely through our text-only chat system. No links, no spam - just real conversations.",
           details: [
             "Text-only messaging for safety",
             "Built-in spam and scam protection",
@@ -86,7 +86,7 @@ export function HowItWorks({ locale = 'en' }: HowItWorksProps) {
           icon: MessageCircle,
           number: "03",
           title: "Chat en vorm een huishouden",
-          description: "Verbind veilig via ons alleen-tekst chat systeem. Geen links, geen spam—alleen echte gesprekken.",
+          description: "Verbind veilig via ons alleen-tekst chat systeem. Geen links, geen spam - alleen echte gesprekken.",
           details: [
             "Alleen-tekst berichten voor veiligheid",
             "Ingebouwde spam en scam bescherming",

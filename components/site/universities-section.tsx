@@ -53,7 +53,7 @@ const content = {
       },
       {
         title: "Transparent Process",
-        description: "Students see exactly why they're matched with clear explanations. No black box—just transparent compatibility matching."
+        description: "Students see exactly why they're matched with clear explanations. No black box - just transparent compatibility matching."
       },
       {
         title: "Safe & Verified",
@@ -106,7 +106,7 @@ const content = {
       },
       {
         title: "Transparant Proces",
-        description: "Studenten zien precies waarom ze zijn gematcht met duidelijke uitleg. Geen black box—alleen transparante compatibiliteitsmatching."
+        description: "Studenten zien precies waarom ze zijn gematcht met duidelijke uitleg. Geen black box - alleen transparante compatibiliteitsmatching."
       },
       {
         title: "Veilig en Geverifieerd",

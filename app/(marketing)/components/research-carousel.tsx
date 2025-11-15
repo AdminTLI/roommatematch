@@ -19,13 +19,13 @@ export function ResearchCarousel({ locale: localeProp }: ResearchCarouselProps) 
   const [isAutoPlaying, setIsAutoPlaying] = useState(true)
   const carouselRef = useRef<HTMLDivElement>(null)
   const autoPlayTimerRef = useRef<NodeJS.Timeout | null>(null)
-  // Responsive card widths and gaps
+  // Responsive card widths and gaps - wider cards for better text fit
   const getCardWidth = () => {
-    if (typeof window === 'undefined') return { base: 280, center: 304, gap: 16 }
+    if (typeof window === 'undefined') return { base: 380, center: 400, gap: 16, height: 420 }
     if (window.innerWidth < 768) {
-      return { base: 260, center: 280, gap: 16 } // Mobile (gap-4 = 16px)
+      return { base: 320, center: 340, gap: 16, height: 380 } // Mobile
     }
-    return { base: 280, center: 304, gap: 24 } // Desktop (gap-6 = 24px)
+    return { base: 380, center: 400, gap: 24, height: 420 } // Desktop
   }
   
   const [cardDimensions, setCardDimensions] = useState(getCardWidth())
@@ -46,35 +46,35 @@ export function ResearchCarousel({ locale: localeProp }: ResearchCarouselProps) 
         {
           statistic: "47.9%",
           issue: "of students report frequent or occasional conflict with roommates",
-          explanation: "Nearly half of all students face roommate conflict—a widespread problem that impacts well-being and academic performance.",
+          explanation: "Nearly half of all students face roommate conflict - a widespread problem that impacts well-being and academic performance.",
           source: "Golding et al., 'Negative Roommate Relationships and the Health and Well-being of Undergraduate College Students'",
-          solution: "Domu Match's compatibility scoring analyzes 40+ lifestyle factors—study habits, cleanliness preferences, social needs—to prevent conflicts before they start. Our algorithm matches students with similar values and complementary personalities.",
+          solution: "Domu Match's compatibility scoring analyzes 40+ lifestyle factors - study habits, cleanliness preferences, social needs - to prevent conflicts before they start. Our algorithm matches students with similar values and complementary personalities.",
         },
         {
           statistic: "Compatibility compounds",
           issue: "Roommate assimilation effects increase over time",
           explanation: "The longer roommates live together, the stronger the peer effect on academic performance. Good matches deliver compounding benefits.",
           source: "Cao et al., 'Heterogeneous peer effects of college roommates on academic performance' (Nature, 2024)",
-          solution: "Our matching isn't just for week one—it's designed for long-term success. By aligning study habits, schedules, and academic goals upfront, we create matches that improve over time, not deteriorate.",
+          solution: "Our matching isn't just for week one - it's designed for long-term success. By aligning study habits, schedules, and academic goals upfront, we create matches that improve over time, not deteriorate.",
         },
         {
           statistic: "67.6%",
           issue: "of students have considered changing dormitories due to roommate conflict",
-          explanation: "When matches go wrong, students want to switch—creating disruption, cost, and stress for both students and housing departments.",
+          explanation: "When matches go wrong, students want to switch, creating disruption, cost, and stress for both students and housing departments.",
           source: "Deng (cited in Empirical Study of Dormitory Conflict)",
           solution: "Domu Match reduces churn by getting it right the first time. Our comprehensive compatibility model and transparent matching process help students make informed decisions, reducing the need for room changes.",
         },
         {
           statistic: "50.1% women, 44.1% men",
           issue: "report roommate conflict in first-year university students",
-          explanation: "Conflict affects almost half the cohort regardless of gender—emphasizing the unmet need for better matching solutions.",
+          explanation: "Conflict affects almost half the cohort regardless of gender, emphasizing the unmet need for better matching solutions.",
           source: "Burgos-Calvillo et al., 'Cultural Modes of Conflict Resolution, Roommate Satisfaction & School Belonging' (2024)",
           solution: "Our ID verification ensures all users are verified students, creating a safe environment. Combined with our compatibility algorithm, we address the root causes of conflict across all demographics.",
         },
         {
           statistic: "70%",
           issue: "of students are satisfied with their roommate",
-          explanation: "Having a satisfying roommate relationship clearly contributes to overall housing satisfaction—compatibility is a key driver.",
+          explanation: "Having a satisfying roommate relationship clearly contributes to overall housing satisfaction - compatibility is a key driver.",
           source: "InsideHigherEd article on SDSU survey (2024)",
           solution: "Domu Match's science-backed approach helps you find roommates as compatible as your best friends. Our transparent matching shows exactly why you're compatible, building trust from day one.",
         },
@@ -87,35 +87,35 @@ export function ResearchCarousel({ locale: localeProp }: ResearchCarouselProps) 
         {
           statistic: "47,9%",
           issue: "van de studenten meldt frequente of occasionele conflicten met huisgenoten",
-          explanation: "Bijna de helft van alle studenten krijgt te maken met huisgenootconflicten—een wijdverbreid probleem dat het welzijn en de academische prestaties beïnvloedt.",
+          explanation: "Bijna de helft van alle studenten krijgt te maken met huisgenootconflicten - een wijdverbreid probleem dat het welzijn en de academische prestaties beïnvloedt.",
           source: "Golding et al., 'Negative Roommate Relationships and the Health and Well-being of Undergraduate College Students'",
-          solution: "De compatibiliteitsscore van Domu Match analyseert 40+ levensstijlfactoren—studiegewoonten, netheidsvoorkeuren, sociale behoeften—om conflicten te voorkomen voordat ze beginnen. Ons algoritme matcht studenten met vergelijkbare waarden en complementaire persoonlijkheden.",
+          solution: "De compatibiliteitsscore van Domu Match analyseert 40+ levensstijlfactoren - studiegewoonten, netheidsvoorkeuren, sociale behoeften - om conflicten te voorkomen voordat ze beginnen. Ons algoritme matcht studenten met vergelijkbare waarden en complementaire persoonlijkheden.",
         },
         {
           statistic: "Compatibiliteit componeert",
           issue: "Huisgenootassimilatie-effecten nemen in de loop van de tijd toe",
           explanation: "Hoe langer huisgenoten samenwonen, hoe sterker het peereffect op academische prestaties. Goede matches leveren samengestelde voordelen op.",
           source: "Cao et al., 'Heterogeneous peer effects of college roommates on academic performance' (Nature, 2024)",
-          solution: "Onze matching is niet alleen voor week één—het is ontworpen voor langetermijnsucces. Door studiegewoonten, schema's en academische doelen van tevoren af te stemmen, creëren we matches die in de loop van de tijd verbeteren, niet verslechteren.",
+          solution: "Onze matching is niet alleen voor week één - het is ontworpen voor langetermijnsucces. Door studiegewoonten, schema's en academische doelen van tevoren af te stemmen, creëren we matches die in de loop van de tijd verbeteren, niet verslechteren.",
         },
         {
           statistic: "67,6%",
           issue: "van de studenten heeft overwogen om van studentenhuis te veranderen vanwege huisgenootconflicten",
-          explanation: "Wanneer matches misgaan, willen studenten wisselen—wat verstoring, kosten en stress veroorzaakt voor zowel studenten als huisvestingsafdelingen.",
+          explanation: "Wanneer matches misgaan, willen studenten wisselen, wat verstoring, kosten en stress veroorzaakt voor zowel studenten als huisvestingsafdelingen.",
           source: "Deng (geciteerd in Empirical Study of Dormitory Conflict)",
           solution: "Domu Match vermindert verloop door het vanaf het begin goed te doen. Ons uitgebreide compatibiliteitsmodel en transparante matchingproces helpen studenten weloverwogen beslissingen te nemen, waardoor de behoefte aan kamerwisselingen wordt verminderd.",
         },
         {
           statistic: "50,1% vrouwen, 44,1% mannen",
           issue: "meldt huisgenootconflicten bij eerstejaars universiteitsstudenten",
-          explanation: "Conflict treft bijna de helft van de cohort ongeacht geslacht—wat de onvervulde behoefte aan betere matchingoplossingen benadrukt.",
+          explanation: "Conflict treft bijna de helft van de cohort ongeacht geslacht, wat de onvervulde behoefte aan betere matchingoplossingen benadrukt.",
           source: "Burgos-Calvillo et al., 'Cultural Modes of Conflict Resolution, Roommate Satisfaction & School Belonging' (2024)",
           solution: "Onze ID-verificatie zorgt ervoor dat alle gebruikers geverifieerde studenten zijn, wat een veilige omgeving creëert. Gecombineerd met ons compatibiliteitsalgoritme pakken we de oorzaken van conflicten aan in alle demografieën.",
         },
         {
           statistic: "70%",
           issue: "van de studenten is tevreden met hun huisgenoot",
-          explanation: "Een bevredigende huisgenootrelatie draagt duidelijk bij aan de algehele huisvestingstevredenheid—compatibiliteit is een belangrijke drijvende kracht.",
+          explanation: "Een bevredigende huisgenootrelatie draagt duidelijk bij aan de algehele huisvestingstevredenheid - compatibiliteit is een belangrijke drijvende kracht.",
           source: "InsideHigherEd artikel over SDSU-enquête (2024)",
           solution: "De wetenschappelijk onderbouwde aanpak van Domu Match helpt je huisgenoten te vinden die zo compatibel zijn als je beste vrienden. Onze transparante matching laat precies zien waarom je compatibel bent, wat vertrouwen opbouwt vanaf dag één.",
         },
@@ -141,7 +141,7 @@ export function ResearchCarousel({ locale: localeProp }: ResearchCarouselProps) 
     goToIndex(newIndex)
   }
 
-  // Auto-rotation every 5 seconds
+  // Auto-rotation every 7 seconds
   useEffect(() => {
     if (!isAutoPlaying) return
 
@@ -149,7 +149,7 @@ export function ResearchCarousel({ locale: localeProp }: ResearchCarouselProps) 
       setCurrentIndex((prevIndex) => {
         return prevIndex < stats.length - 1 ? prevIndex + 1 : 0
       })
-    }, 5000)
+    }, 7000)
 
     return () => {
       if (autoPlayTimerRef.current) {
@@ -210,7 +210,7 @@ export function ResearchCarousel({ locale: localeProp }: ResearchCarouselProps) 
         </div>
 
         {/* Carousel Container */}
-        <div className="relative w-full overflow-hidden py-8">
+        <div className="relative w-full overflow-hidden py-8" style={{ minHeight: `${cardDimensions.height + 40}px` }}>
           {/* Navigation Arrows */}
           <button
             onClick={() => {
@@ -235,10 +235,10 @@ export function ResearchCarousel({ locale: localeProp }: ResearchCarouselProps) 
           </button>
 
           {/* Carousel */}
-          <div className="relative w-full overflow-hidden px-8 sm:px-12 md:px-16">
+          <div className="relative w-full overflow-hidden px-8 sm:px-12 md:px-16" style={{ height: `${cardDimensions.height + 20}px` }}>
             <div
               ref={carouselRef}
-              className="flex items-center gap-4 md:gap-6 transition-transform duration-500 ease-in-out"
+              className="flex items-center gap-4 md:gap-6 transition-transform duration-1000 ease-in-out"
               style={{
                 transform: `translateX(calc(50% - ${currentIndex * (cardDimensions.base + cardDimensions.gap) + cardDimensions.base / 2}px - ${(cardDimensions.center - cardDimensions.base) / 2}px))`,
               }}
@@ -253,40 +253,41 @@ export function ResearchCarousel({ locale: localeProp }: ResearchCarouselProps) 
                 return (
                   <div
                     key={index}
-                    className="flex-shrink-0 transition-all duration-500 ease-in-out"
+                    className="flex-shrink-0 transition-all duration-1000 ease-in-out"
                     style={{
                       width: isCenter ? `${cardDimensions.center}px` : `${cardDimensions.base}px`,
+                      height: `${cardDimensions.height}px`,
                       opacity: distance > 1 ? 0.4 : distance === 1 ? 0.7 : 1,
-                      transform: isCenter ? 'scale(1.08)' : 'scale(0.92)',
+                      transform: isCenter ? 'scale(1.05)' : 'scale(0.95)',
                     }}
                   >
                     <Card
-                      className={`border border-brand-border/50 bg-white/80 backdrop-blur-sm shadow-elev-1 rounded-2xl transition-all duration-500 ${
+                      className={`border border-brand-border/50 bg-white/80 backdrop-blur-sm shadow-elev-1 rounded-2xl transition-all duration-1000 h-full flex flex-col ${
                         isCenter ? 'shadow-elev-2' : ''
                       }`}
                     >
-                      <CardContent className="p-6">
-                        <div className={`font-bold text-brand-primary mb-3 transition-all duration-500 ${
-                          isCenter ? 'text-4xl md:text-5xl' : 'text-3xl md:text-4xl'
+                      <CardContent className="p-5 flex flex-col h-full">
+                        <div className={`font-bold text-brand-primary mb-2 transition-all duration-1000 ${
+                          isCenter ? 'text-3xl md:text-4xl' : 'text-2xl md:text-3xl'
                         }`}>
                           {stat.statistic}
                         </div>
-                        <h3 className={`font-semibold text-brand-text mb-3 transition-all duration-500 ${
-                          isCenter ? 'text-lg md:text-xl' : 'text-base md:text-lg'
+                        <h3 className={`font-semibold text-brand-text mb-2 transition-all duration-1000 ${
+                          isCenter ? 'text-base md:text-lg' : 'text-sm md:text-base'
                         }`}>
                           {stat.issue}
                         </h3>
-                        <p className={`text-brand-muted mb-4 leading-relaxed transition-all duration-500 ${
-                          isCenter ? 'text-sm md:text-base' : 'text-xs md:text-sm'
+                        <p className={`text-brand-muted mb-3 leading-relaxed transition-all duration-1000 flex-grow ${
+                          isCenter ? 'text-xs md:text-sm' : 'text-xs'
                         }`}>
                           {stat.explanation}
                         </p>
-                        <p className="text-xs text-brand-muted italic mb-4 pb-4 border-b border-brand-border/30">
+                        <p className="text-xs text-brand-muted italic mb-3 pb-3 border-b border-brand-border/30 flex-shrink-0">
                           {stat.source}
                         </p>
-                        <div className="pt-2">
-                          <p className={`text-brand-muted leading-relaxed transition-all duration-500 ${
-                            isCenter ? 'text-sm md:text-base' : 'text-xs md:text-sm'
+                        <div className="pt-2 flex-shrink-0">
+                          <p className={`text-brand-muted leading-relaxed transition-all duration-1000 ${
+                            isCenter ? 'text-xs md:text-sm' : 'text-xs'
                           }`}>
                             {stat.solution}
                           </p>
@@ -310,8 +311,8 @@ export function ResearchCarousel({ locale: localeProp }: ResearchCarouselProps) 
                 }}
                 className={`rounded-full transition-all duration-300 ${
                   index === currentIndex
-                    ? 'w-8 h-2 bg-brand-primary'
-                    : 'w-2 h-2 bg-brand-border hover:bg-brand-primary/50'
+                    ? 'w-4 h-1 bg-brand-primary'
+                    : 'w-1 h-1 bg-brand-border hover:bg-brand-primary/50'
                 }`}
                 aria-label={`${locale === 'nl' ? 'Ga naar slide' : 'Go to slide'} ${index + 1}`}
               />
