@@ -324,24 +324,56 @@ export function DashboardContent({ hasCompletedQuestionnaire = false, hasPartial
     try {
       console.log('loadTotalMatchesCount: Fetching match suggestions for user', user.id)
       const now = new Date().toISOString()
-      
-      // Count match suggestions where user is in member_ids
-      const { count, error } = await supabase
+
+      // Fetch active pair suggestions and count unique matched users,
+      // so repeated suggestions for the same pair don't inflate totals.
+      const { data: suggestions, error } = await supabase
         .from('match_suggestions')
-        .select('*', { count: 'exact', head: true })
+        .select('member_ids, fit_score')
         .eq('kind', 'pair')
         .contains('member_ids', [user.id])
         .neq('status', 'rejected')
         .gte('expires_at', now) // Only non-expired suggestions
 
       if (error) {
-        console.error('Error fetching match suggestions count:', error)
-        setTotalMatches(0)
+        console.error('Error fetching match suggestions for count:', error)
+      } else if (suggestions && suggestions.length > 0) {
+        const matchMap = new Map<string, number>()
+
+        suggestions.forEach((s: any) => {
+          const memberIds = s.member_ids as string[]
+          if (!memberIds || memberIds.length !== 2) return
+
+          const otherUserId = memberIds[0] === user.id ? memberIds[1] : memberIds[0]
+          const fitScore = Number(s.fit_score || 0)
+
+          const currentBest = matchMap.get(otherUserId) ?? 0
+          if (fitScore > currentBest) {
+            matchMap.set(otherUserId, fitScore)
+          }
+        })
+
+        const total = matchMap.size
+        console.log('loadTotalMatchesCount: Unique matched users from suggestions', total)
+        setTotalMatches(total)
         return
       }
 
-      const total = count || 0
-      console.log('loadTotalMatchesCount: Total match suggestions', total)
+      // Fallback: use legacy matches table if there are no suggestions
+      console.log('loadTotalMatchesCount: No active match_suggestions, falling back to matches table')
+
+      const { count: matchesAsA } = await supabase
+        .from('matches')
+        .select('*', { count: 'exact', head: true })
+        .eq('a_user', user.id)
+
+      const { count: matchesAsB } = await supabase
+        .from('matches')
+        .select('*', { count: 'exact', head: true })
+        .eq('b_user', user.id)
+
+      const total = (matchesAsA || 0) + (matchesAsB || 0)
+      console.log('loadTotalMatchesCount: Total matches from legacy table', total)
       setTotalMatches(total)
     } catch (error) {
       console.error('Failed to load total matches count:', error)
@@ -357,11 +389,11 @@ export function DashboardContent({ hasCompletedQuestionnaire = false, hasPartial
 
     try {
       console.log('loadAvgCompatibility: Fetching matches for user', user.id)
-      // Fetch ALL match suggestions (not just chat members)
+      // Fetch ALL active match suggestions (not just chat members)
       const now = new Date().toISOString()
       const { data: suggestions, error } = await supabase
         .from('match_suggestions')
-        .select('fit_score')
+        .select('fit_score, member_ids')
         .eq('kind', 'pair')
         .contains('member_ids', [user.id])
         .neq('status', 'rejected')
@@ -371,7 +403,23 @@ export function DashboardContent({ hasCompletedQuestionnaire = false, hasPartial
         console.error('Error fetching match suggestions for avg:', error)
       }
 
-      const allScores = (suggestions || []).map((s: any) => Number(s.fit_score || 0))
+      // Compute average based on unique matched users to avoid
+      // double-counting the same pair across multiple suggestions.
+      const scoreByUser = new Map<string, number>()
+      ;(suggestions || []).forEach((s: any) => {
+        const memberIds = s.member_ids as string[]
+        if (!memberIds || memberIds.length !== 2) return
+
+        const otherUserId = memberIds[0] === user.id ? memberIds[1] : memberIds[0]
+        const fitScore = Number(s.fit_score || 0)
+
+        const currentBest = scoreByUser.get(otherUserId) ?? 0
+        if (fitScore > currentBest) {
+          scoreByUser.set(otherUserId, fitScore)
+        }
+      })
+
+      const allScores = Array.from(scoreByUser.values())
 
       console.log('loadAvgCompatibility: Found', allScores.length, 'matches', 'scores:', allScores)
 

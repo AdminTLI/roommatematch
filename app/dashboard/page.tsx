@@ -156,33 +156,92 @@ async function fetchDashboardData(userId: string): Promise<DashboardData> {
   }
 
   try {
-    // Fetch match suggestions count - user is in member_ids array
+    // Fetch non-expired pair suggestions where user is a member.
+    // We deduplicate by other user ID so repeated suggestions
+    // for the same pair do not inflate the match count.
     const now = new Date().toISOString()
-    const { count } = await supabase
-      .from('match_suggestions')
-      .select('*', { count: 'exact', head: true })
-      .eq('kind', 'pair')
-      .contains('member_ids', [userId])
-      .neq('status', 'rejected')
-      .gte('expires_at', now) // Only non-expired suggestions
-    
-    totalMatchesCount = count || 0
-
-    // Get new match suggestions from last 7 days
     const sevenDaysAgo = new Date()
     sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7)
-    const { count: newCount } = await supabase
+
+    const { data: suggestions, error } = await supabase
       .from('match_suggestions')
-      .select('*', { count: 'exact', head: true })
+      .select('id, member_ids, fit_score, created_at, status, expires_at')
       .eq('kind', 'pair')
       .contains('member_ids', [userId])
       .neq('status', 'rejected')
-      .gte('created_at', sevenDaysAgo.toISOString())
-      .gte('expires_at', now) // Only non-expired suggestions
-    
-    newMatchesCount = newCount || 0
+      .gte('expires_at', now)
+
+    if (error) {
+      console.error('Error fetching match suggestions:', error)
+    } else if (suggestions && suggestions.length > 0) {
+      const matchMap = new Map<
+        string,
+        { firstCreatedAt: Date; bestFitScore: number }
+      >()
+
+      suggestions.forEach((s: any) => {
+        const memberIds = s.member_ids as string[]
+        if (!memberIds || memberIds.length !== 2) return
+
+        const otherUserId = memberIds[0] === userId ? memberIds[1] : memberIds[0]
+        const fitScore = Number(s.fit_score || 0)
+        const createdAt = new Date(s.created_at)
+
+        const existing = matchMap.get(otherUserId)
+        if (!existing) {
+          matchMap.set(otherUserId, {
+            firstCreatedAt: createdAt,
+            bestFitScore: fitScore
+          })
+        } else {
+          if (createdAt < existing.firstCreatedAt) {
+            existing.firstCreatedAt = createdAt
+          }
+          if (fitScore > existing.bestFitScore) {
+            existing.bestFitScore = fitScore
+          }
+        }
+      })
+
+      totalMatchesCount = matchMap.size
+      newMatchesCount = Array.from(matchMap.values()).filter(
+        (m) => m.firstCreatedAt >= sevenDaysAgo
+      ).length
+    } else {
+      // Fallback for legacy data: use matches table if there are no suggestions.
+      console.log('[Dashboard] No active match_suggestions, falling back to matches table')
+
+      const { count: matchesAsA } = await supabase
+        .from('matches')
+        .select('*', { count: 'exact', head: true })
+        .eq('a_user', userId)
+
+      const { count: matchesAsB } = await supabase
+        .from('matches')
+        .select('*', { count: 'exact', head: true })
+        .eq('b_user', userId)
+
+      totalMatchesCount = (matchesAsA || 0) + (matchesAsB || 0)
+
+      const sevenDaysAgoLegacy = new Date()
+      sevenDaysAgoLegacy.setDate(sevenDaysAgoLegacy.getDate() - 7)
+
+      const { count: newMatchesAsA } = await supabase
+        .from('matches')
+        .select('*', { count: 'exact', head: true })
+        .eq('a_user', userId)
+        .gte('created_at', sevenDaysAgoLegacy.toISOString())
+
+      const { count: newMatchesAsB } = await supabase
+        .from('matches')
+        .select('*', { count: 'exact', head: true })
+        .eq('b_user', userId)
+        .gte('created_at', sevenDaysAgoLegacy.toISOString())
+
+      newMatchesCount = (newMatchesAsA || 0) + (newMatchesAsB || 0)
+    }
   } catch (error) {
-    console.error('Error fetching match suggestions:', error)
+    console.error('Error fetching match counts:', error)
   }
 
   try {
@@ -252,7 +311,7 @@ async function fetchDashboardData(userId: string): Promise<DashboardData> {
       .neq('status', 'rejected')
       .gte('expires_at', now) // Only non-expired suggestions
       .order('fit_index', { ascending: false })
-      .limit(10) // Get more to deduplicate and find top 3
+      .limit(50) // Get enough records to deduplicate
 
     if (suggestions && suggestions.length > 0) {
       // Extract other user IDs and deduplicate by keeping highest fit_score
@@ -276,7 +335,7 @@ async function fetchDashboardData(userId: string): Promise<DashboardData> {
         .slice(0, 3)
 
       if (topEntries.length > 0) {
-        const topUserIds = topEntries.map(([userId]) => userId)
+        const topUserIds = topEntries.map(([otherUserId]) => otherUserId)
         
         // Fetch profiles for matched users
         const { data: profiles } = await supabase
@@ -321,6 +380,72 @@ async function fetchDashboardData(userId: string): Promise<DashboardData> {
             avatar: undefined
           }
         })
+      }
+
+      // Override total matches count with unique matched users
+      totalMatchesCount = matchMap.size
+    } else {
+      // Fallback to legacy matches table if no suggestions exist
+      console.log('[Dashboard] No match_suggestions for top matches, falling back to matches table')
+
+      const { data: matchesAsA } = await supabase
+        .from('matches')
+        .select(`
+          id, 
+          score, 
+          created_at, 
+          b_user,
+          profiles!matches_b_user_fkey(
+            first_name,
+            program,
+            university_id,
+            universities!profiles_university_id_fkey(name)
+          )
+        `)
+        .eq('a_user', userId)
+        .order('score', { ascending: false })
+        .limit(3)
+
+      const { data: matchesAsB } = await supabase
+        .from('matches')
+        .select(`
+          id, 
+          score, 
+          created_at, 
+          a_user,
+          profiles!matches_a_user_fkey(
+            first_name,
+            program,
+            university_id,
+            universities!profiles_university_id_fkey(name)
+          )
+        `)
+        .eq('b_user', userId)
+        .order('score', { ascending: false })
+        .limit(3)
+
+      const allMatches = [
+        ...(matchesAsA || []).map(match => ({
+          ...match,
+          otherUserId: match.b_user,
+          otherProfile: match.profiles
+        })),
+        ...(matchesAsB || []).map(match => ({
+          ...match,
+          otherUserId: match.a_user,
+          otherProfile: match.profiles
+        }))
+      ].sort((a, b) => (b.score || 0) - (a.score || 0)).slice(0, 3)
+
+      if (allMatches.length > 0) {
+        topMatches = allMatches.map(match => ({
+          id: match.id,
+          name: (match.otherProfile as any)?.first_name || 'User',
+          score: Math.round((match.score || 0) * 100),
+          program: (match.otherProfile as any)?.program || 'Program',
+          university: (match.otherProfile as any)?.universities?.name || 'University',
+          avatar: undefined
+        }))
       }
     }
   } catch (error) {
