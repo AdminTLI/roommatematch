@@ -132,9 +132,11 @@ export async function POST(request: NextRequest) {
 
             if (!chatId) {
               safeLogger.info('[Admin] Creating missing chat for already-confirmed pair')
+              // Use the first confirmed suggestion ID as match_id
+              const confirmedSuggestion = suggestions.find(s => s.status === 'confirmed') || suggestions[0]
               const { data: createdChat, error: chatErr } = await admin
                 .from('chats')
-                .insert({ is_group: false, created_by: userA })
+                .insert({ is_group: false, created_by: userA, match_id: confirmedSuggestion?.id || null })
                 .select('id')
                 .single()
 
@@ -248,9 +250,10 @@ export async function POST(request: NextRequest) {
 
           if (!chatId) {
             safeLogger.info('[Admin] Creating new chat for pair')
+            // Use the first suggestion ID as match_id
             const { data: createdChat, error: chatErr } = await admin
               .from('chats')
-              .insert({ is_group: false, created_by: userA, match_id: null })
+              .insert({ is_group: false, created_by: userA, match_id: firstSug.id })
               .select('id')
               .single()
 

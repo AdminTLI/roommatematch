@@ -114,24 +114,29 @@ export function NewChatModal({ isOpen, onClose, user, initialMode }: NewChatModa
         .select('user_id, first_name, last_name, program, university_id, universities(name)')
         .in('user_id', Array.from(otherUserIds))
 
-      // Fetch match data for compatibility scores
+      // Fetch match suggestion data for compatibility scores
       const userIdsArray = Array.from(otherUserIds)
-      const { data: matchesAsA } = await supabase
-        .from('matches')
-        .select('b_user, score')
-        .eq('a_user', user.id)
-        .in('b_user', userIdsArray)
-
-      const { data: matchesAsB } = await supabase
-        .from('matches')
-        .select('a_user, score')
-        .eq('b_user', user.id)
-        .in('a_user', userIdsArray)
+      const now = new Date().toISOString()
+      const { data: suggestions } = await supabase
+        .from('match_suggestions')
+        .select('member_ids, fit_score')
+        .eq('kind', 'pair')
+        .contains('member_ids', [user.id])
+        .neq('status', 'rejected')
+        .gte('expires_at', now) // Only non-expired suggestions
 
       // Create a map of user_id to match score
       const matchScoreMap = new Map<string, number>()
-      matchesAsA?.forEach((m: any) => matchScoreMap.set(m.b_user, m.score || 0))
-      matchesAsB?.forEach((m: any) => matchScoreMap.set(m.a_user, m.score || 0))
+      suggestions?.forEach((s: any) => {
+        const memberIds = s.member_ids as string[]
+        if (!memberIds || memberIds.length !== 2) return
+        
+        // Find the other user (not the current user)
+        const otherUserId = memberIds[0] === user.id ? memberIds[1] : memberIds[0]
+        if (userIdsArray.includes(otherUserId)) {
+          matchScoreMap.set(otherUserId, Number(s.fit_score || 0))
+        }
+      })
 
       // Format matches - ensure no user codes are displayed
       const formattedMatches = (profiles || []).map((profile: any) => {

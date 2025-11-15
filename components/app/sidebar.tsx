@@ -160,22 +160,21 @@ export function Sidebar({ user, onClose }: SidebarProps) {
       }
     }
 
-    // Fetch matches count
+    // Fetch match suggestions count
     const fetchMatchesCount = async () => {
       try {
-        const { count: matchesAsA } = await supabase
-          .from('matches')
+        const now = new Date().toISOString()
+        const { count } = await supabase
+          .from('match_suggestions')
           .select('*', { count: 'exact', head: true })
-          .eq('a_user', user.id)
+          .eq('kind', 'pair')
+          .contains('member_ids', [user.id])
+          .neq('status', 'rejected')
+          .gte('expires_at', now) // Only non-expired suggestions
         
-        const { count: matchesAsB } = await supabase
-          .from('matches')
-          .select('*', { count: 'exact', head: true })
-          .eq('b_user', user.id)
-        
-        setTotalMatchesCount((matchesAsA || 0) + (matchesAsB || 0))
+        setTotalMatchesCount(count || 0)
       } catch (error) {
-        console.error('Error fetching matches count:', error)
+        console.error('Error fetching match suggestions count:', error)
       }
     }
 

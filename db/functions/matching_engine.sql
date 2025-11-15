@@ -350,8 +350,9 @@ BEGIN
     (SELECT COUNT(DISTINCT chat_id) FROM public.messages 
      WHERE created_at > public.now() - INTERVAL '24 hours')::int,
     
-    (SELECT COUNT(*) FROM public.matches 
-     WHERE status = 'accepted' 
+    (SELECT COUNT(*) FROM public.match_suggestions 
+     WHERE kind = 'pair'
+     AND status IN ('accepted', 'confirmed')
      AND created_at > public.now() - INTERVAL '7 days')::int,
     
     (SELECT COUNT(*) FROM public.reports WHERE status = 'open')::int,

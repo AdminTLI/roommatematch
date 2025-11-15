@@ -190,35 +190,37 @@ export async function detectMatchingAnomalies(
     const periodStart = new Date(Date.now() - periodHours * 60 * 60 * 1000)
     const periodEnd = new Date()
 
-    // Get matching metrics
-    const { data: matches, error: matchesError } = await supabase
-      .from('matches')
-      .select('id, status, created_at, updated_at')
+    // Get matching metrics from match_suggestions
+    const now = new Date().toISOString()
+    const { data: suggestions, error: suggestionsError } = await supabase
+      .from('match_suggestions')
+      .select('id, status, created_at')
+      .eq('kind', 'pair')
       .gte('created_at', periodStart.toISOString())
       .lte('created_at', periodEnd.toISOString())
 
-    if (matchesError) {
-      safeLogger.error('Failed to fetch matches', { error: matchesError })
+    if (suggestionsError) {
+      safeLogger.error('Failed to fetch match suggestions', { error: suggestionsError })
       return []
     }
 
-    if (!matches || matches.length === 0) {
+    if (!suggestions || suggestions.length === 0) {
       return []
     }
 
-    const total = matches.length
-    const accepted = matches.filter(m => m.status === 'accepted').length
-    const rejected = matches.filter(m => m.status === 'rejected').length
+    const total = suggestions.length
+    const accepted = suggestions.filter(s => s.status === 'accepted' || s.status === 'confirmed').length
+    const rejected = suggestions.filter(s => s.status === 'rejected' || s.status === 'declined').length
     const matchRate = (accepted / total) * 100
     const rejectionRate = (rejected / total) * 100
 
-    // Calculate average processing time
-    const processingTimes = matches
-      .filter(m => m.updated_at && m.created_at)
-      .map(m => {
-        const created = new Date(m.created_at)
-        const updated = new Date(m.updated_at)
-        return (updated.getTime() - created.getTime()) / 1000 / 60 // minutes
+    // Calculate average processing time (using created_at as proxy since suggestions don't have updated_at)
+    // For suggestions, processing time is minimal since they're created and immediately available
+    const processingTimes = suggestions
+      .map(s => {
+        const created = new Date(s.created_at)
+        // Use current time as proxy for "processed" time
+        return (periodEnd.getTime() - created.getTime()) / 1000 / 60 // minutes
       })
       .filter(t => t > 0)
 
@@ -327,16 +329,17 @@ export async function detectJobProcessingAnomalies(
     const periodStart = new Date(Date.now() - periodHours * 60 * 60 * 1000)
     const periodEnd = new Date()
 
-    // Get job processing metrics (assuming we have a jobs table)
-    // For now, we'll check matching jobs
+    // Get job processing metrics (using match_suggestions as proxy)
+    // Note: This assumes match suggestions represent "jobs" - may need review
     const { data: jobs, error: jobsError } = await supabase
-      .from('matches')
-      .select('id, status, created_at, updated_at')
+      .from('match_suggestions')
+      .select('id, status, created_at')
+      .eq('kind', 'pair')
       .gte('created_at', periodStart.toISOString())
       .lte('created_at', periodEnd.toISOString())
 
     if (jobsError) {
-      safeLogger.error('Failed to fetch jobs', { error: jobsError })
+      safeLogger.error('Failed to fetch match suggestions for job metrics', { error: jobsError })
       return []
     }
 
@@ -345,16 +348,14 @@ export async function detectJobProcessingAnomalies(
     }
 
     const total = jobs.length
-    const failed = jobs.filter(j => j.status === 'failed' || j.status === 'error').length
+    const failed = jobs.filter(j => j.status === 'rejected' || j.status === 'declined' || j.status === 'expired').length
     const failureRate = (failed / total) * 100
 
-    // Calculate average processing time
+    // Calculate average processing time (using created_at as proxy)
     const processingTimes = jobs
-      .filter(j => j.updated_at && j.created_at)
       .map(j => {
         const created = new Date(j.created_at)
-        const updated = new Date(j.updated_at)
-        return (updated.getTime() - created.getTime()) / 1000 / 60 // minutes
+        return (periodEnd.getTime() - created.getTime()) / 1000 / 60 // minutes
       })
       .filter(t => t > 0)
 
@@ -362,10 +363,11 @@ export async function detectJobProcessingAnomalies(
       ? processingTimes.reduce((sum, t) => sum + t, 0) / processingTimes.length
       : 0
 
-    // Get queue size (pending jobs)
+    // Get queue size (pending suggestions)
     const { count: queueSize, error: queueError } = await supabase
-      .from('matches')
+      .from('match_suggestions')
       .select('id', { count: 'exact', head: true })
+      .eq('kind', 'pair')
       .eq('status', 'pending')
 
     if (queueError) {

@@ -291,12 +291,15 @@ export async function processOnboardingEmailSequence(
         })
         break
       case 'first_match':
-        // Get match count
+        // Get match suggestion count
+        const now = new Date().toISOString()
         const { count: matchCount } = await supabase
-          .from('matches')
+          .from('match_suggestions')
           .select('id', { count: 'exact', head: true })
-          .eq('user_id', userId)
+          .eq('kind', 'pair')
+          .contains('member_ids', [userId])
           .eq('status', 'pending')
+          .gte('expires_at', now)
 
         emailSent = await sendFirstMatchEmail(userId, user.email, userName, matchCount || 0)
         break

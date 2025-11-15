@@ -24,10 +24,10 @@ export async function GET() {
     console.log('[Marketing Stats] Starting stats calculation...')
     console.log('[Marketing Stats] Time window: last 12 months from', oneYearAgoISO)
 
-    // Helper to compute average score
-    const avg = (rows: { score: number | string | null }[]) => {
+    // Helper to compute average score from match_suggestions
+    const avg = (rows: { fit_score: number | string | null }[]) => {
       const nums = rows.map(r => {
-        const num = Number(r.score || 0)
+        const num = Number(r.fit_score || 0)
         if (Number.isNaN(num)) return null
         return num
       }).filter(n => n !== null) as number[]
@@ -37,7 +37,7 @@ export async function GET() {
         return 0
       }
       
-      // Scores are stored as DECIMAL(4,3) in range 0.000-1.000, convert to 0-100
+      // fit_score is stored as DECIMAL(4,3) in range 0.000-1.000, convert to 0-100
       const mean0to1 = nums.reduce((a, b) => a + b, 0) / nums.length
       const result = Math.round(mean0to1 * 100)
       console.log('[Marketing Stats] Score calculation:', {
@@ -82,88 +82,77 @@ export async function GET() {
     const userIds = users.map(u => u.id)
     console.log('[Marketing Stats] User IDs sample:', userIds.slice(0, 5))
 
-    // 2. Get all matches from last 12 months (for recent activity stats)
-    console.log('[Marketing Stats] Fetching matches from last 12 months...')
-    const { data: matchesRecent, error: matchesError } = await admin
-      .from('matches')
-      .select('id, a_user, b_user, created_at, score, status')
+    // 2. Get all match suggestions from last 12 months (for recent activity stats)
+    console.log('[Marketing Stats] Fetching match suggestions from last 12 months...')
+    const { data: suggestionsRecent, error: suggestionsError } = await admin
+      .from('match_suggestions')
+      .select('id, member_ids, created_at, fit_score, status, expires_at')
+      .eq('kind', 'pair')
+      .in('status', ['pending', 'accepted', 'confirmed'])
       .gte('created_at', oneYearAgoISO)
+      .gte('expires_at', oneYearAgoISO) // Filter out expired suggestions (expires_at must be in future)
 
-    if (matchesError) {
-      console.error('[Marketing Stats] Error fetching matches:', matchesError)
-      throw matchesError
+    if (suggestionsError) {
+      console.error('[Marketing Stats] Error fetching match suggestions:', suggestionsError)
+      throw suggestionsError
     }
 
-    console.log('[Marketing Stats] Found matches (last 12 months):', matchesRecent?.length || 0)
-    if (matchesRecent && matchesRecent.length > 0) {
-      console.log('[Marketing Stats] Sample match:', {
-        id: matchesRecent[0].id,
-        a_user: matchesRecent[0].a_user,
-        b_user: matchesRecent[0].b_user,
-        score: matchesRecent[0].score,
-        status: matchesRecent[0].status,
-        created_at: matchesRecent[0].created_at
+    console.log('[Marketing Stats] Found match suggestions (last 12 months):', suggestionsRecent?.length || 0)
+    if (suggestionsRecent && suggestionsRecent.length > 0) {
+      console.log('[Marketing Stats] Sample suggestion:', {
+        id: suggestionsRecent[0].id,
+        member_ids: suggestionsRecent[0].member_ids,
+        fit_score: suggestionsRecent[0].fit_score,
+        status: suggestionsRecent[0].status,
+        created_at: suggestionsRecent[0].created_at
       })
     }
 
-    const matches = matchesRecent || []
+    const suggestions = suggestionsRecent || []
 
     // 3. Compute match timing metrics
-    // Find first match for each user (regardless of when user signed up)
+    // Find first match suggestion for each user (regardless of when user signed up)
     console.log('[Marketing Stats] Computing match timing metrics...')
     const userFirstMatchMap = new Map<string, Date>()
     const userDelays: number[] = []
 
-    // Get ALL matches (not just last 12 months) to find first match for each user
-    // Query matches where either a_user or b_user is in our user list
-    console.log('[Marketing Stats] Fetching all matches to find first match per user...')
+    // Get ALL match suggestions (not just last 12 months) to find first match for each user
+    // Query suggestions where user is in member_ids array
+    console.log('[Marketing Stats] Fetching all match suggestions to find first match per user...')
     
-    // Split into two queries since Supabase .or() with .in() can be problematic
-    const { data: allMatchesA, error: allMatchesAError } = await admin
-      .from('matches')
-      .select('a_user, b_user, created_at')
-      .in('a_user', userIds)
+    // Query all pair suggestions where any user in our list is a member
+    // Use GIN index on member_ids for efficient querying
+    const { data: allSuggestions, error: allSuggestionsError } = await admin
+      .from('match_suggestions')
+      .select('id, member_ids, created_at, expires_at')
+      .eq('kind', 'pair')
+      .in('status', ['pending', 'accepted', 'confirmed'])
+      .gte('expires_at', oneYearAgoISO) // Only non-expired suggestions
 
-    const { data: allMatchesB, error: allMatchesBError } = await admin
-      .from('matches')
-      .select('a_user, b_user, created_at')
-      .in('b_user', userIds)
-
-    if (allMatchesAError || allMatchesBError) {
-      console.warn('[Marketing Stats] Error fetching all matches, using recent matches only:', allMatchesAError || allMatchesBError)
+    if (allSuggestionsError) {
+      console.warn('[Marketing Stats] Error fetching all suggestions, using recent suggestions only:', allSuggestionsError)
     }
 
-    // Combine and deduplicate
-    const allMatchesForTiming = new Map<string, { a_user: string; b_user: string; created_at: string }>()
-    ;[...(allMatchesA || []), ...(allMatchesB || [])].forEach(match => {
-      const key = `${match.a_user}:${match.b_user}`
-      if (!allMatchesForTiming.has(key)) {
-        allMatchesForTiming.set(key, match)
-      }
-    })
-    const allMatchesArray = Array.from(allMatchesForTiming.values())
-    
-    console.log('[Marketing Stats] Found all matches:', allMatchesArray.length)
+    console.log('[Marketing Stats] Found all match suggestions:', allSuggestions?.length || 0)
 
-    // Track first match for each user from all matches
-    allMatchesArray.forEach(match => {
-      const matchDate = new Date(match.created_at)
-      const aUser = match.a_user
-      const bUser = match.b_user
+    // Track first match for each user from all suggestions
+    ;(allSuggestions || suggestions).forEach(suggestion => {
+      const matchDate = new Date(suggestion.created_at)
+      const memberIds = suggestion.member_ids as string[]
+      
+      if (!memberIds || memberIds.length !== 2) {
+        return // Skip invalid pairs
+      }
 
-      // Track first match for each user
-      if (userIds.includes(aUser)) {
-        const existing = userFirstMatchMap.get(aUser)
-        if (!existing || matchDate < existing) {
-          userFirstMatchMap.set(aUser, matchDate)
+      // Track first match for each user in the pair
+      memberIds.forEach(userId => {
+        if (userIds.includes(userId)) {
+          const existing = userFirstMatchMap.get(userId)
+          if (!existing || matchDate < existing) {
+            userFirstMatchMap.set(userId, matchDate)
+          }
         }
-      }
-      if (userIds.includes(bUser)) {
-        const existing = userFirstMatchMap.get(bUser)
-        if (!existing || matchDate < existing) {
-          userFirstMatchMap.set(bUser, matchDate)
-        }
-      }
+      })
     })
 
     console.log('[Marketing Stats] Users with matches:', userFirstMatchMap.size)
@@ -213,73 +202,157 @@ export async function GET() {
 
     // 4. Compute average scores
     console.log('[Marketing Stats] Computing average scores...')
-    const matchesForScores = matches || []
-    console.log('[Marketing Stats] Total matches for score calculation:', matchesForScores.length)
+    const suggestionsForScores = suggestions || []
+    console.log('[Marketing Stats] Total suggestions for score calculation:', suggestionsForScores.length)
     
-    const avgScoreAllMatches = avg(matchesForScores)
-    console.log('[Marketing Stats] Average score (all matches):', avgScoreAllMatches)
+    const avgScoreAllMatches = avg(suggestionsForScores)
+    console.log('[Marketing Stats] Average score (all suggestions):', avgScoreAllMatches)
 
-    const confirmedMatches = matchesForScores.filter(m => m.status === 'accepted')
-    console.log('[Marketing Stats] Confirmed matches (accepted):', confirmedMatches.length)
-    const avgScoreConfirmedMatches = avg(confirmedMatches)
+    // For confirmed matches, check both match_suggestions with status='confirmed' and match_records with locked=true
+    const confirmedSuggestions = suggestionsForScores.filter(s => s.status === 'confirmed')
+    console.log('[Marketing Stats] Confirmed suggestions:', confirmedSuggestions.length)
+    
+    // Also check match_records for locked/confirmed matches
+    const { data: lockedRecords, error: recordsError } = await admin
+      .from('match_records')
+      .select('fit_score, user_ids, created_at')
+      .eq('kind', 'pair')
+      .eq('locked', true)
+      .gte('created_at', oneYearAgoISO)
+
+    if (recordsError) {
+      console.warn('[Marketing Stats] Error fetching match_records:', recordsError)
+    }
+
+    console.log('[Marketing Stats] Locked match records:', lockedRecords?.length || 0)
+    
+    // Combine confirmed suggestions and locked records for average
+    const allConfirmed = [
+      ...confirmedSuggestions,
+      ...(lockedRecords || []).map(r => ({ fit_score: r.fit_score }))
+    ]
+    
+    const avgScoreConfirmedMatches = avg(allConfirmed)
     console.log('[Marketing Stats] Average score (confirmed matches):', avgScoreConfirmedMatches)
 
     // 5. Compute matches to chat conversion
-    // Use match_id field in chats table to find chats associated with matches
+    // Don't rely on chats.match_id (it's null). Instead, match by user pairs
     console.log('[Marketing Stats] Computing chat conversion metrics...')
     
-    const matchIds = matches.map(m => m.id)
-    console.log('[Marketing Stats] Match IDs for chat lookup:', matchIds.length)
+    // Get confirmed suggestions and locked records for chat conversion
+    const confirmedForChat = [
+      ...suggestions.filter(s => s.status === 'confirmed').map(s => ({
+        id: s.id,
+        member_ids: s.member_ids,
+        created_at: s.created_at
+      })),
+      ...(lockedRecords || []).map(r => ({
+        id: (r as any).id || '',
+        member_ids: (r as any).user_ids || [],
+        created_at: (r as any).created_at
+      }))
+    ]
+    
+    console.log('[Marketing Stats] Confirmed matches for chat lookup:', confirmedForChat.length)
 
     let matchesWithChat24h = 0
 
-    if (matchIds.length === 0) {
-      console.log('[Marketing Stats] No matches found, skipping chat conversion calculation')
+    if (confirmedForChat.length === 0) {
+      console.log('[Marketing Stats] No confirmed matches found, skipping chat conversion calculation')
     } else {
-      // Get chats associated with matches (using match_id field)
-      const { data: chats, error: chatsError } = await admin
+      // Get all chat members to find 1:1 chats between matched users
+      const { data: allChatMembers, error: chatMembersError } = await admin
+        .from('chat_members')
+        .select('chat_id, user_id')
+
+      if (chatMembersError) {
+        console.error('[Marketing Stats] Error fetching chat members:', chatMembersError)
+        throw chatMembersError
+      }
+
+      // Get all 1:1 chats (non-group chats)
+      const { data: allChats, error: chatsError } = await admin
         .from('chats')
-        .select('id, match_id, first_message_at, created_at')
+        .select('id, is_group')
         .eq('is_group', false)
-        .in('match_id', matchIds)
 
       if (chatsError) {
         console.error('[Marketing Stats] Error fetching chats:', chatsError)
         throw chatsError
       }
 
-      console.log('[Marketing Stats] Found chats with match_id:', chats?.length || 0)
+      const chatIds = allChats?.map(c => c.id) || []
+      console.log('[Marketing Stats] Found 1:1 chats:', chatIds.length)
 
-      // Build map of match_id -> first_message_at
-      const matchToFirstMessage = new Map<string, Date>()
-      chats?.forEach(chat => {
-        if (chat.match_id && chat.first_message_at) {
-          matchToFirstMessage.set(chat.match_id, new Date(chat.first_message_at))
+      // Build map of chat_id -> [user1, user2] pairs
+      const chatPairs = new Map<string, { users: string[], chatId: string }>()
+      chatIds.forEach(chatId => {
+        const members = allChatMembers?.filter(cm => cm.chat_id === chatId) || []
+        if (members.length === 2) {
+          const userIds = members.map(m => m.user_id).sort()
+          const pairKey = `${userIds[0]}:${userIds[1]}`
+          chatPairs.set(pairKey, { users: userIds, chatId })
         }
       })
 
-      console.log('[Marketing Stats] Matches with first message:', matchToFirstMessage.size)
+      console.log('[Marketing Stats] Found chat pairs:', chatPairs.size)
 
-      // Count matches that had first message within 24h of match creation
-      const totalMatches = matches.length
+      // Get first message for each chat (batch query for efficiency)
+      const chatIdsList = Array.from(new Set(Array.from(chatPairs.values()).map(cp => cp.chatId)))
+      const { data: firstMessages, error: msgError } = chatIdsList.length > 0
+        ? await admin
+            .from('messages')
+            .select('chat_id, created_at')
+            .in('chat_id', chatIdsList)
+            .order('created_at', { ascending: true })
+        : { data: [], error: null }
 
-      matches.forEach(match => {
-        const firstMessageAt = matchToFirstMessage.get(match.id)
-        if (firstMessageAt) {
-          const matchDate = new Date(match.created_at)
-          const hoursDiff = (firstMessageAt.getTime() - matchDate.getTime()) / (1000 * 60 * 60)
-          if (hoursDiff >= 0 && hoursDiff <= 24) {
-            matchesWithChat24h++
+      if (msgError) {
+        console.warn('[Marketing Stats] Error fetching first messages:', msgError)
+      }
+
+      // Build map of chat_id -> first message timestamp
+      const chatToFirstMessage = new Map<string, Date>()
+      const messageMap = new Map<string, Date>()
+      firstMessages?.forEach(msg => {
+        const existing = messageMap.get(msg.chat_id)
+        if (!existing || new Date(msg.created_at) < existing) {
+          messageMap.set(msg.chat_id, new Date(msg.created_at))
+        }
+      })
+      messageMap.forEach((date, chatId) => {
+        chatToFirstMessage.set(chatId, date)
+      })
+
+      console.log('[Marketing Stats] Chats with first messages:', chatToFirstMessage.size)
+
+      // For each confirmed match, find corresponding chat and check first message timing
+      for (const match of confirmedForChat) {
+        const memberIds = match.member_ids as string[]
+        if (!memberIds || memberIds.length !== 2) continue
+
+        const [userA, userB] = memberIds.sort()
+        const pairKey = `${userA}:${userB}`
+        const chatPair = chatPairs.get(pairKey)
+
+        if (chatPair) {
+          const firstMessageAt = chatToFirstMessage.get(chatPair.chatId)
+          if (firstMessageAt) {
+            const matchDate = new Date(match.created_at)
+            const hoursDiff = (firstMessageAt.getTime() - matchDate.getTime()) / (1000 * 60 * 60)
+            if (hoursDiff >= 0 && hoursDiff <= 24) {
+              matchesWithChat24h++
+            }
           }
         }
-      })
+      }
 
       console.log('[Marketing Stats] Matches with first message within 24h:', matchesWithChat24h)
-      console.log('[Marketing Stats] Total matches:', totalMatches)
+      console.log('[Marketing Stats] Total confirmed matches:', confirmedForChat.length)
     }
 
-    const matchesToChatWithin24hPercent = matches.length > 0
-      ? Math.round((matchesWithChat24h / matches.length) * 100)
+    const matchesToChatWithin24hPercent = confirmedForChat.length > 0
+      ? Math.round((matchesWithChat24h / confirmedForChat.length) * 100)
       : 0
     console.log('[Marketing Stats] Chat conversion percentage:', matchesToChatWithin24hPercent)
 

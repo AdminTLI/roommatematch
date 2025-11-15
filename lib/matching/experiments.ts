@@ -305,15 +305,15 @@ export async function trackMatchQualityMetrics(
 
     const supabase = createClient(supabaseUrl, supabaseKey)
 
-    // Get match details
+    // Get match suggestion details
     const { data: match, error: matchError } = await supabase
-      .from('matches')
-      .select('created_at, updated_at')
+      .from('match_suggestions')
+      .select('created_at')
       .eq('id', matchId)
       .maybeSingle()
 
     if (matchError) {
-      safeLogger.error('Failed to fetch match', { error: matchError })
+      safeLogger.error('Failed to fetch match suggestion', { error: matchError })
       return false
     }
 

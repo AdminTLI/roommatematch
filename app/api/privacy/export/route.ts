@@ -171,24 +171,30 @@ export async function GET(req: NextRequest) {
         }
       }
 
-      // 6. Matches
-      const { data: matches } = await supabase
-        .from('matches')
+      // 6. Match Suggestions
+      const { data: suggestions } = await supabase
+        .from('match_suggestions')
         .select('*')
-        .or(`a_user.eq.${user.id},b_user.eq.${user.id}`)
+        .eq('kind', 'pair')
+        .contains('member_ids', [user.id])
         .order('created_at', { ascending: false })
       
-      if (matches) {
+      if (suggestions) {
         exportData.matches = {
-          matches: matches.map(m => ({
-            id: m.id,
-            other_user_id: m.a_user === user.id ? m.b_user : m.a_user,
-            score: m.score,
-            explanation: m.explanation,
-            status: m.status,
-            created_at: m.created_at,
-            updated_at: m.updated_at
-          }))
+          matches: suggestions.map(s => {
+            const memberIds = s.member_ids as string[]
+            const otherUserId = memberIds[0] === user.id ? memberIds[1] : memberIds[0]
+            return {
+              id: s.id,
+              other_user_id: otherUserId,
+              score: s.fit_score,
+              fit_index: s.fit_index,
+              explanation: s.section_scores || {},
+              status: s.status,
+              created_at: s.created_at,
+              expires_at: s.expires_at
+            }
+          })
         }
       }
 

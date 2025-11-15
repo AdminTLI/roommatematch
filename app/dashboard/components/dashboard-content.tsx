@@ -165,62 +165,55 @@ export function DashboardContent({ hasCompletedQuestionnaire = false, hasPartial
     
     setIsLoadingMatches(true)
     try {
-      console.log('[loadTopMatches] Fetching matches for user:', user.id)
+      console.log('[loadTopMatches] Fetching match suggestions for user:', user.id)
       
-      // Fetch top matches directly from matches table (not dependent on chats)
-      // Get matches where user is a_user - don't filter by status, show all matches
-      const { data: matchesAsA, error: matchesAError } = await supabase
-        .from('matches')
-        .select('b_user, score, status, created_at')
-        .eq('a_user', user.id)
-        .order('score', { ascending: false })
-        .limit(3)
+      // Fetch top match suggestions from match_suggestions table
+      // Get suggestions where user is in member_ids array
+      const now = new Date().toISOString()
+      const { data: suggestions, error: suggestionsError } = await supabase
+        .from('match_suggestions')
+        .select('id, member_ids, fit_score, fit_index, status, created_at, expires_at')
+        .eq('kind', 'pair')
+        .contains('member_ids', [user.id])
+        .neq('status', 'rejected')
+        .gte('expires_at', now) // Only non-expired suggestions
+        .order('fit_index', { ascending: false })
+        .limit(10) // Get more to deduplicate and find top 3
 
-      // Get matches where user is b_user - don't filter by status, show all matches
-      const { data: matchesAsB, error: matchesBError } = await supabase
-        .from('matches')
-        .select('a_user, score, status, created_at')
-        .eq('b_user', user.id)
-        .order('score', { ascending: false })
-        .limit(3)
-
-      if (matchesAError) {
-        console.error('[loadTopMatches] Error loading matches as A:', matchesAError)
-      }
-      if (matchesBError) {
-        console.error('[loadTopMatches] Error loading matches as B:', matchesBError)
-      }
-
-      if (matchesAError || matchesBError) {
-        console.error('[loadTopMatches] Failed to load matches:', {
-          matchesAError,
-          matchesBError,
-          userId: user.id
-        })
+      if (suggestionsError) {
+        console.error('[loadTopMatches] Error loading suggestions:', suggestionsError)
         setTopMatches([])
         setIsLoadingMatches(false)
         return
       }
 
-      console.log('[loadTopMatches] Raw matches data:', {
-        matchesAsA: matchesAsA?.length || 0,
-        matchesAsB: matchesAsB?.length || 0,
-        matchesAsAData: matchesAsA,
-        matchesAsBData: matchesAsB
+      console.log('[loadTopMatches] Raw suggestions data:', {
+        suggestionsCount: suggestions?.length || 0,
+        suggestionsData: suggestions
       })
 
-      // Combine and deduplicate matches, keeping top 3 by score
-      const allMatches = [
-        ...(matchesAsA || []).map((m: any) => ({ userId: m.b_user, score: m.score || 0 })),
-        ...(matchesAsB || []).map((m: any) => ({ userId: m.a_user, score: m.score || 0 }))
-      ]
+      if (!suggestions || suggestions.length === 0) {
+        setTopMatches([])
+        setIsLoadingMatches(false)
+        loadTotalMatchesCount()
+        loadAvgCompatibility()
+        return
+      }
 
-      // Deduplicate by userId and keep highest score
+      // Extract other user ID from each suggestion and map to score
+      // Deduplicate by otherUserId, keeping highest fit_score
       const matchMap = new Map<string, number>()
-      allMatches.forEach((m: any) => {
-        const currentScore = matchMap.get(m.userId) || 0
-        if (m.score > currentScore) {
-          matchMap.set(m.userId, m.score)
+      suggestions.forEach((s: any) => {
+        const memberIds = s.member_ids as string[]
+        if (!memberIds || memberIds.length !== 2) return
+        
+        // Find the other user (not the current user)
+        const otherUserId = memberIds[0] === user.id ? memberIds[1] : memberIds[0]
+        const fitScore = Number(s.fit_score || 0)
+        
+        const currentScore = matchMap.get(otherUserId) || 0
+        if (fitScore > currentScore) {
+          matchMap.set(otherUserId, fitScore)
         }
       })
 
@@ -307,7 +300,7 @@ export function DashboardContent({ hasCompletedQuestionnaire = false, hasPartial
         }
       }).filter((m): m is NonNullable<typeof m> => m !== null) // Remove null entries
 
-      console.log('loadTopMatches: Formatted', formattedMatches.length, 'matches from matches table')
+      console.log('loadTopMatches: Formatted', formattedMatches.length, 'matches from match_suggestions table')
 
       setTopMatches(formattedMatches)
 
@@ -329,28 +322,26 @@ export function DashboardContent({ hasCompletedQuestionnaire = false, hasPartial
     }
 
     try {
-      console.log('loadTotalMatchesCount: Fetching matches for user', user.id)
-      // Count matches where user is a_user
-      const { count: countAsA, error: errorA } = await supabase
-        .from('matches')
+      console.log('loadTotalMatchesCount: Fetching match suggestions for user', user.id)
+      const now = new Date().toISOString()
+      
+      // Count match suggestions where user is in member_ids
+      const { count, error } = await supabase
+        .from('match_suggestions')
         .select('*', { count: 'exact', head: true })
-        .eq('a_user', user.id)
+        .eq('kind', 'pair')
+        .contains('member_ids', [user.id])
+        .neq('status', 'rejected')
+        .gte('expires_at', now) // Only non-expired suggestions
 
-      // Count matches where user is b_user
-      const { count: countAsB, error: errorB } = await supabase
-        .from('matches')
-        .select('*', { count: 'exact', head: true })
-        .eq('b_user', user.id)
-
-      if (errorA) {
-        console.error('Error fetching matches as A:', errorA)
-      }
-      if (errorB) {
-        console.error('Error fetching matches as B:', errorB)
+      if (error) {
+        console.error('Error fetching match suggestions count:', error)
+        setTotalMatches(0)
+        return
       }
 
-      const total = (countAsA || 0) + (countAsB || 0)
-      console.log('loadTotalMatchesCount: Total matches', total, '(A:', countAsA, 'B:', countAsB, ')')
+      const total = count || 0
+      console.log('loadTotalMatchesCount: Total match suggestions', total)
       setTotalMatches(total)
     } catch (error) {
       console.error('Failed to load total matches count:', error)
@@ -366,28 +357,21 @@ export function DashboardContent({ hasCompletedQuestionnaire = false, hasPartial
 
     try {
       console.log('loadAvgCompatibility: Fetching matches for user', user.id)
-      // Fetch ALL matches (not just chat members)
-      const { data: matchesAsA, error: errorA } = await supabase
-        .from('matches')
-        .select('score')
-        .eq('a_user', user.id)
+      // Fetch ALL match suggestions (not just chat members)
+      const now = new Date().toISOString()
+      const { data: suggestions, error } = await supabase
+        .from('match_suggestions')
+        .select('fit_score')
+        .eq('kind', 'pair')
+        .contains('member_ids', [user.id])
+        .neq('status', 'rejected')
+        .gte('expires_at', now) // Only non-expired suggestions
 
-      const { data: matchesAsB, error: errorB } = await supabase
-        .from('matches')
-        .select('score')
-        .eq('b_user', user.id)
-
-      if (errorA) {
-        console.error('Error fetching matches as A for avg:', errorA)
-      }
-      if (errorB) {
-        console.error('Error fetching matches as B for avg:', errorB)
+      if (error) {
+        console.error('Error fetching match suggestions for avg:', error)
       }
 
-      const allScores = [
-        ...(matchesAsA || []).map((m: any) => m.score || 0),
-        ...(matchesAsB || []).map((m: any) => m.score || 0)
-      ]
+      const allScores = (suggestions || []).map((s: any) => Number(s.fit_score || 0))
 
       console.log('loadAvgCompatibility: Found', allScores.length, 'matches', 'scores:', allScores)
 
