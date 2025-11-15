@@ -19,8 +19,8 @@ export default function MarketingPage() {
       <Navbar />
       <Hero />
       <LiveStats locale={locale} />
-      <SocialProof locale={locale} />
       <Universities />
+      <SocialProof locale={locale} />
       <Features />
       <Testimonials />
       <MarketingFinalCTA locale={locale} />
