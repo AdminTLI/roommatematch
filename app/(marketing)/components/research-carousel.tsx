@@ -19,14 +19,17 @@ export function ResearchCarousel({ locale: localeProp }: ResearchCarouselProps) 
   const autoPlayTimerRef = useRef<NodeJS.Timeout | null>(null)
   // Responsive card widths and gaps - wider cards (1.4x) for better text fit
   const getCardWidth = () => {
-    if (typeof window === 'undefined') return { base: 532, center: 560, gap: 16, height: 420 }
+    if (typeof window === 'undefined') return { base: 480, center: 520, gap: 16, height: 400 }
     if (window.innerWidth < 640) {
-      return { base: 300, center: 320, gap: 12, height: 400 } // Small mobile
+      return { base: 280, center: 300, gap: 12, height: 380 } // Small mobile
     }
     if (window.innerWidth < 768) {
-      return { base: 340, center: 360, gap: 16, height: 400 } // Mobile
+      return { base: 320, center: 340, gap: 16, height: 380 } // Mobile
     }
-    return { base: 532, center: 560, gap: 24, height: 420 } // Desktop
+    if (window.innerWidth < 1024) {
+      return { base: 420, center: 460, gap: 20, height: 400 } // Tablet
+    }
+    return { base: 480, center: 520, gap: 24, height: 400 } // Desktop
   }
   
   const [cardDimensions, setCardDimensions] = useState(getCardWidth())
@@ -217,7 +220,7 @@ export function ResearchCarousel({ locale: localeProp }: ResearchCarouselProps) 
         {/* Carousel Container */}
         <div className="relative w-full overflow-visible py-8 sm:py-12" style={{ minHeight: `${cardDimensions.height + 60}px` }}>
           {/* Carousel */}
-          <div className="relative w-full overflow-visible px-4 sm:px-8 md:px-12 lg:px-20" style={{ height: `${cardDimensions.height + 40}px`, paddingTop: '20px', paddingBottom: '20px' }}>
+          <div className="relative w-full max-w-[1152px] mx-auto overflow-visible px-4 sm:px-6 md:px-8" style={{ height: `${cardDimensions.height + 40}px`, paddingTop: '20px', paddingBottom: '20px' }}>
             <div
               ref={carouselRef}
               className="flex items-center gap-3 sm:gap-4 md:gap-6 transition-transform duration-1000 ease-in-out"
@@ -248,27 +251,27 @@ export function ResearchCarousel({ locale: localeProp }: ResearchCarouselProps) 
                         isCenter ? 'shadow-elev-2' : ''
                       }`}
                     >
-                      <CardContent className="p-4 sm:p-5 flex flex-col h-full overflow-hidden">
-                        <div className={`font-bold text-brand-primary mb-2 sm:mb-3 transition-all duration-1000 ${
+                      <CardContent className="p-3 sm:p-4 md:p-5 flex flex-col h-full overflow-hidden">
+                        <div className={`font-bold text-brand-primary mb-1.5 sm:mb-2 md:mb-3 transition-all duration-1000 ${
                           isCenter ? 'text-2xl sm:text-3xl md:text-4xl lg:text-5xl' : 'text-xl sm:text-2xl md:text-3xl lg:text-4xl'
                         }`}>
                           {stat.statistic}
                         </div>
-                        <h3 className={`font-semibold text-brand-text mb-2 sm:mb-3 transition-all duration-1000 line-clamp-2 ${
+                        <h3 className={`font-semibold text-brand-text mb-1.5 sm:mb-2 md:mb-3 transition-all duration-1000 line-clamp-2 ${
                           isCenter ? 'text-sm sm:text-base md:text-lg lg:text-xl' : 'text-xs sm:text-sm md:text-base lg:text-lg'
                         }`}>
                           {stat.issue}
                         </h3>
-                        <p className={`text-brand-muted mb-3 sm:mb-4 leading-relaxed transition-all duration-1000 flex-grow line-clamp-3 sm:line-clamp-none ${
+                        <p className={`text-brand-muted mb-2 sm:mb-3 md:mb-4 leading-snug sm:leading-relaxed transition-all duration-1000 flex-grow line-clamp-3 sm:line-clamp-none ${
                           isCenter ? 'text-xs sm:text-sm md:text-base' : 'text-xs sm:text-xs md:text-sm'
                         }`}>
                           {stat.explanation}
                         </p>
-                        <p className="text-[10px] sm:text-xs md:text-sm text-brand-muted italic mb-3 sm:mb-4 pb-3 sm:pb-4 border-b border-brand-border/30 flex-shrink-0 line-clamp-2">
+                        <p className="text-[10px] sm:text-xs md:text-sm text-brand-muted italic mb-2 sm:mb-3 md:mb-4 pb-2 sm:pb-3 md:pb-4 border-b border-brand-border/30 flex-shrink-0 line-clamp-2">
                           {stat.source}
                         </p>
-                        <div className="pt-2 flex-shrink-0">
-                          <p className={`text-brand-muted leading-relaxed transition-all duration-1000 line-clamp-3 sm:line-clamp-none ${
+                        <div className="pt-1.5 sm:pt-2 flex-shrink-0">
+                          <p className={`text-brand-muted leading-snug sm:leading-relaxed transition-all duration-1000 line-clamp-3 sm:line-clamp-none ${
                             isCenter ? 'text-xs sm:text-sm md:text-base' : 'text-[10px] sm:text-xs md:text-sm'
                           }`}>
                             {stat.solution}
