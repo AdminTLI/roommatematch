@@ -70,7 +70,11 @@ export function Testimonials() {
       <Container>
         <div className="text-center mb-12">
           <h2 className="text-3xl md:text-4xl font-bold text-brand-text mb-4">
-            {t.title}
+            {locale === 'nl' ? (
+              <>Waarom <span className="text-brand-primary">Domu Match</span> werkt</>
+            ) : (
+              <>Why <span className="text-brand-primary">Domu Match</span> works</>
+            )}
           </h2>
           <p className="text-base md:text-lg leading-relaxed max-w-prose mx-auto text-brand-muted">
             {t.subtitle}

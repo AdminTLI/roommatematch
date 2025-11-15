@@ -54,7 +54,11 @@ export function SocialProof({ locale: localeProp }: SocialProofProps) {
       <Container>
         <div className="text-center mb-12">
           <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-brand-text mb-4 leading-tight">
-            {text.title}
+            {locale === 'nl' ? (
+              <>Gebouwd voor <span className="text-brand-primary">betere verbindingen</span></>
+            ) : (
+              <>Built for <span className="text-brand-primary">better connections</span></>
+            )}
           </h2>
           <p className="text-base md:text-lg lg:text-xl leading-relaxed max-w-3xl mx-auto text-brand-muted">
             {text.subtitle}

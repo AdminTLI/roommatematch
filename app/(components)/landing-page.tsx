@@ -126,7 +126,7 @@ export function LandingPage() {
           <div className="container mx-auto px-4">
             <div className="text-center mb-12">
               <h2 className="text-3xl font-bold mb-4">
-                Why Domu Match Works
+                Why <span className="text-purple-200">Domu Match</span> Works
               </h2>
               <p className="text-lg opacity-90 max-w-2xl mx-auto">
                 Our science-backed approach helps you find roommates as compatible as your best friends
@@ -150,7 +150,7 @@ export function LandingPage() {
         <section className="bg-gray-50 dark:bg-gray-800 py-16">
           <div className="container mx-auto px-4 text-center">
             <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-4">
-              Ready to go from strangers to roommates?
+              Ready to go from <span className="text-brand-primary">strangers to roommates</span>?
             </h2>
             <p className="text-lg text-gray-600 dark:text-gray-300 mb-8 max-w-2xl mx-auto">
               Get started today and discover who you're compatible with. Our science-backed matching helps you find roommates as compatible as your best friends.

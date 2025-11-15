@@ -40,7 +40,7 @@ export function ResearchCarousel({ locale: localeProp }: ResearchCarouselProps) 
 
   const content = {
     en: {
-      title: "The problem we're solving",
+      title: "problem",
       subtitle: "Research-backed insights on roommate compatibility and student housing satisfaction",
       stats: [
         {
@@ -81,7 +81,7 @@ export function ResearchCarousel({ locale: localeProp }: ResearchCarouselProps) 
       ],
     },
     nl: {
-      title: "Het probleem dat we oplossen",
+      title: "probleem",
       subtitle: "Onderzoek-ondersteunde inzichten over huisgenootcompatibiliteit en studentenhuisvestingstevredenheid",
       stats: [
         {
@@ -202,7 +202,11 @@ export function ResearchCarousel({ locale: localeProp }: ResearchCarouselProps) 
       <Container>
         <div className="text-center mb-8">
           <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-brand-text mb-4 leading-tight">
-            {text.title}
+            {locale === 'nl' ? (
+              <>Het <span className="text-brand-primary">probleem</span> dat we oplossen</>
+            ) : (
+              <>The <span className="text-brand-primary">problem</span> we're solving</>
+            )}
           </h2>
           <p className="text-base md:text-lg lg:text-xl leading-relaxed max-w-3xl mx-auto text-brand-muted">
             {text.subtitle}

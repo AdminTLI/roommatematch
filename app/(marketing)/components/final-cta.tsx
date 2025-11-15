@@ -65,7 +65,11 @@ export function FinalCTA({ locale: localeProp }: FinalCTAProps) {
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-12 sm:mb-16">
           <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-gray-900 dark:text-white mb-4">
-            {text.title}
+            {locale === 'nl' ? (
+              <>Klaar om van <span className="text-brand-primary">vreemden tot huisgenoten</span> te gaan?</>
+            ) : (
+              <>Ready to go from <span className="text-brand-primary">strangers to roommates</span>?</>
+            )}
           </h2>
           <p className="text-base sm:text-lg lg:text-xl text-gray-600 dark:text-gray-300 max-w-3xl mx-auto">
             {text.subtitle}
