@@ -267,9 +267,9 @@ export function ListingCard({
             <Calendar className="h-4 w-4 text-blue-600" />
             <span>{(() => {
               const dateStr = listing.moveInISO || listing.createdAt
-              if (!dateStr) return '—'
+              if (!dateStr) return '-'
               const date = new Date(dateStr)
-              return isNaN(date.getTime()) ? '—' : date.toLocaleDateString()
+              return isNaN(date.getTime()) ? '-' : date.toLocaleDateString()
             })()}</span>
           </div>
           

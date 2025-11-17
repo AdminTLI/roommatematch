@@ -246,8 +246,8 @@ Set up alerts for:
 ## Support Contacts
 
 - **Technical Issues**: Check logs and runbooks first
-- **Security Issues**: security@domumatch.nl
-- **User Support**: support@domumatch.nl
+- **Security Issues**: domumatch@gmail.com
+- **User Support**: domumatch@gmail.com
 - **Emergency**: Use on-call rotation
 
 **Last Updated**: December 2024

@@ -9,44 +9,32 @@ import { useApp } from '@/app/providers'
 
 const content = {
   en: {
-    title: "Ready to go from",
-    titleStrangers: "strangers",
-    titleTo: "to",
-    titleRoommates: "roommates",
-    titleQuestion: "?",
-    subtitle: "Get started today and discover who you're",
-    subtitleCompatible: "compatible",
-    subtitleWith: "with.",
-    subtitleOur: "Our",
-    subtitleScienceBacked: "science-backed matching",
-    subtitleHelps: "helps you find roommates as compatible as your",
-    subtitleBestFriends: "best friends",
-    getStarted: "Get started for free",
-    learnMore: "Learn more",
-    freeForStudents: "Free for students",
-    noCreditCard: "No credit card required",
-    verifiedStudents: "Verified students only",
-    startJourney: "Start your journey today"
+    title: "Join our",
+    titleHighlight: "community of builders",
+    subtitle:
+      "We’re still founder-led and pre-team. Every contributor shapes safer student housing, ships real work in weeks, and sets the tone for how we grow.",
+    primary: "See open tracks",
+    secondary: "Why volunteer with us",
+    points: [
+      "Work directly with the founder—no layers",
+      "Scope a project, ship it, and showcase it",
+      "First contributors get priority when paid roles open"
+    ],
+    visualTitle: "Build Domu Match with us"
   },
   nl: {
-    title: "Klaar om van",
-    titleStrangers: "vreemden",
-    titleTo: "tot",
-    titleRoommates: "huisgenoten",
-    titleQuestion: "te gaan?",
-    subtitle: "Begin vandaag en ontdek met wie je",
-    subtitleCompatible: "compatibel",
-    subtitleWith: "bent.",
-    subtitleOur: "Onze",
-    subtitleScienceBacked: "wetenschappelijk onderbouwde matching",
-    subtitleHelps: "helpt je huisgenoten te vinden die zo compatibel zijn als je",
-    subtitleBestFriends: "beste vrienden",
-    getStarted: "Begin gratis",
-    learnMore: "Meer informatie",
-    freeForStudents: "Gratis voor studenten",
-    noCreditCard: "Geen creditcard vereist",
-    verifiedStudents: "Alleen geverifieerde studenten",
-    startJourney: "Begin je reis vandaag"
+    title: "Word onderdeel van onze",
+    titleHighlight: "community van builders",
+    subtitle:
+      "We zijn nog founder-led en pre-team. Elke contributor helpt veiliger studentenhuisvesting op te bouwen en levert zichtbaar werk af.",
+    primary: "Bekijk de tracks",
+    secondary: "Waarom vrijwilligen",
+    points: [
+      "Werk direct met de founder—zonder lagen",
+      "Scope een project, ship het, laat het zien",
+      "Eerste contributors krijgen voorrang op betaalde rollen"
+    ],
+    visualTitle: "Bouw mee aan Domu Match"
   }
 }
 
@@ -55,12 +43,12 @@ export function FinalCTA() {
   const { locale } = useApp()
   const t = content[locale]
 
-  const handleGetStarted = () => {
-    router.push('/auth/sign-up')
+  const handlePrimary = () => {
+    router.push('/careers#roles')
   }
 
-  const handleLearnMore = () => {
-    router.push('/how-it-works')
+  const handleSecondary = () => {
+    router.push('/careers')
   }
 
   return (
@@ -68,61 +56,44 @@ export function FinalCTA() {
       <Container>
         <div className="grid items-center gap-12 md:grid-cols-2">
           {/* Left column - Content */}
-          <div className="space-y-8">
-            <div className="space-y-4">
-              <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-brand-text leading-tight">
-                {t.title} <span className="text-brand-primary">{t.titleStrangers}</span> {t.titleTo} <span className="text-brand-primary">{t.titleRoommates}</span>{t.titleQuestion}
-              </h2>
-              <p className="text-base md:text-lg lg:text-xl leading-relaxed text-brand-muted max-w-prose">
-                {t.subtitle} <span className="font-semibold text-brand-text">{t.subtitleCompatible}</span> {t.subtitleWith}{' '}
-                {t.subtitleOur} <span className="font-semibold text-brand-text">{t.subtitleScienceBacked}</span> {t.subtitleHelps} <span className="font-semibold text-brand-text">{t.subtitleBestFriends}</span>.
-              </p>
+            <div className="space-y-6">
+              <div className="space-y-4">
+                <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-brand-text leading-tight">
+                  {t.title} <span className="text-brand-primary">{t.titleHighlight}</span>
+                </h2>
+                <p className="text-base md:text-lg leading-relaxed text-brand-muted max-w-prose">
+                  {t.subtitle}
+                </p>
             </div>
             
             {/* CTA Buttons */}
-            <div className="flex flex-wrap items-center gap-4 pt-2">
-              <Button 
-                variant="primary"
-                size="lg"
-                onClick={handleGetStarted}
-                className="text-base px-8 py-6"
-              >
-                {t.getStarted}
-              </Button>
-              <Button 
-                variant="outline"
-                size="lg"
-                onClick={handleLearnMore}
-                className="text-base px-8 py-6"
-              >
-                {t.learnMore}
-              </Button>
+              <div className="flex flex-wrap items-center gap-4 pt-2">
+                <Button variant="primary" size="lg" onClick={handlePrimary}>
+                  {t.primary}
+                </Button>
+                <Button variant="outline" size="lg" onClick={handleSecondary}>
+                  {t.secondary}
+                </Button>
             </div>
 
             {/* Trust indicators */}
-            <ul className="flex flex-wrap gap-6 text-sm text-brand-muted pt-2">
-              <li className="flex items-center gap-2">
-                <Check className="h-5 w-5 text-green-500 flex-shrink-0" />
-                <span className="font-medium">{t.freeForStudents}</span>
-              </li>
-              <li className="flex items-center gap-2">
-                <Check className="h-5 w-5 text-green-500 flex-shrink-0" />
-                <span className="font-medium">{t.noCreditCard}</span>
-              </li>
-              <li className="flex items-center gap-2">
-                <Check className="h-5 w-5 text-green-500 flex-shrink-0" />
-                <span className="font-medium">{t.verifiedStudents}</span>
-              </li>
-            </ul>
+              <ul className="flex flex-col gap-3 text-sm text-brand-muted pt-2">
+                {t.points.map((point, idx) => (
+                  <li key={idx} className="flex items-start gap-2">
+                    <Check className="h-4 w-4 text-brand-primary flex-shrink-0 mt-0.5" />
+                    <span className="font-medium">{point}</span>
+                  </li>
+                ))}
+              </ul>
           </div>
 
           {/* Right column - Visual placeholder */}
           <div className="flex justify-center items-center">
-            <div className="w-full max-w-md h-72 bg-gradient-to-br from-brand-primary/5 to-brand-accent/5 rounded-2xl flex items-center justify-center border border-brand-border/20">
+              <div className="w-full max-w-md h-72 bg-gradient-to-br from-brand-primary/5 to-brand-accent/5 rounded-2xl flex items-center justify-center border border-brand-border/20">
               <div className="text-center space-y-4 p-8">
-                <div className="text-5xl mb-2">🎓</div>
-                <p className="text-brand-muted font-semibold text-lg">
-                  {t.startJourney}
+                  <div className="text-5xl mb-2">🤝</div>
+                  <p className="text-brand-muted font-semibold text-lg">
+                    {t.visualTitle}
                 </p>
               </div>
             </div>

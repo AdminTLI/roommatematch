@@ -43,7 +43,7 @@ This runbook outlines the procedures for detecting, responding to, and resolving
 
 ### Contact Information
 - **On-Call Engineer**: [To be configured]
-- **Security Team**: security@domumatch.nl
+- **Security Team**: domumatch@gmail.com
 - **Management**: [To be configured]
 - **Legal**: [To be configured] (for data breach incidents)
 

@@ -93,3 +93,5 @@ COMMENT ON COLUMN programmes.isat_code IS 'DUO ERKENDEOPLEIDINGSCODE (ISAT code)
 
 
 
+
+

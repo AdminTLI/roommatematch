@@ -176,8 +176,8 @@ Users can:
 ## Contact
 
 For questions about third-party processors:
-- **Email:** privacy@domumatch.nl
-- **DPO:** dpo@domumatch.nl
+- **Email:** domumatch@gmail.com
+- **DPO:** domumatch@gmail.com
 
 **Last Updated:** January 2025
 

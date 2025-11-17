@@ -349,7 +349,7 @@ A: Verify your Supabase credentials in `.env.local` and ensure the database is p
 
 1. Check the [Issues](https://github.com/YOUR_USERNAME/domu-match/issues) page
 2. Review the [Documentation](docs/)
-3. Contact support at support@domumatch.nl
+3. Contact support at domumatch@gmail.com
 
 ## 🤝 Contributing
 
@@ -377,9 +377,9 @@ This project is licensed under the MIT License - see the [LICENSE](./LICENSE) fi
 
 - **Documentation**: [docs.domumatch.nl](https://docs.domumatch.nl)
 - **Issues**: [GitHub Issues](https://github.com/YOUR_USERNAME/domu-match/issues)
-- **Email**: support@domumatch.nl
-- **Privacy**: privacy@domumatch.nl
-- **DPO**: dpo@domumatch.nl
+- **Email**: domumatch@gmail.com
+- **Privacy**: domumatch@gmail.com
+- **DPO**: domumatch@gmail.com
 
 ## 📋 GDPR Compliance Documentation
 

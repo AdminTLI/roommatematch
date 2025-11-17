@@ -20,3 +20,5 @@ UPDATE reports SET category = 'other' WHERE category IS NULL;
 
 
 
+
+

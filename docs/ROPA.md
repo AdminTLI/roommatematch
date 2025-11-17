@@ -10,8 +10,8 @@ This document provides a complete inventory of all personal data processing acti
 ## 1. Controller Information
 
 - **Name:** Domu Match
-- **Contact:** privacy@domumatch.nl
-- **Data Protection Officer:** dpo@domumatch.nl
+- **Contact:** domumatch@gmail.com
+- **Data Protection Officer:** domumatch@gmail.com
 - **Address:** [Business Address]
 
 ## 2. Processing Activities
@@ -206,7 +206,7 @@ This document provides a complete inventory of all personal data processing acti
 
 ### 4.2 DSAR Process
 
-- **Request Channel:** Privacy settings UI, email (privacy@domumatch.nl)
+- **Request Channel:** Privacy settings UI, email (domumatch@gmail.com)
 - **Tracking:** DSAR requests table with SLA deadlines
 - **Automation:** Automated reminders, admin dashboard
 - **Response Format:** JSON export, machine-readable

@@ -303,9 +303,9 @@ export function ListingDetail({
                       <Calendar className="h-4 w-4 text-gray-600" />
                       <span className="text-sm">Available: {(() => {
                         const dateStr = listing.moveInISO || listing.createdAt
-                        if (!dateStr) return '—'
+                        if (!dateStr) return '-'
                         const date = new Date(dateStr)
-                        return isNaN(date.getTime()) ? '—' : date.toLocaleDateString()
+                        return isNaN(date.getTime()) ? '-' : date.toLocaleDateString()
                       })()}</span>
                     </div>
                     <div className="flex items-center gap-2">

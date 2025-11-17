@@ -158,7 +158,7 @@ export function LiveStats({ locale: localeProp }: LiveStatsProps) {
         </div>
 
         {/* Stats Grid */}
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3 sm:gap-4 md:gap-6 justify-items-center items-start">
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3 sm:gap-4 md:gap-6 items-stretch">
           {stats.map((stat) => {
             const Icon = stat.icon
             const isLoadingState = isLoading || error
@@ -166,9 +166,9 @@ export function LiveStats({ locale: localeProp }: LiveStatsProps) {
             return (
               <Card
                 key={stat.key}
-                className="text-center border border-brand-border/50 bg-white/80 backdrop-blur-sm shadow-elev-1 hover:shadow-elev-2 transition-all duration-200 rounded-2xl w-full max-w-[180px] sm:max-w-[200px] md:max-w-none"
+                className="text-center border border-brand-border/50 bg-white/80 backdrop-blur-sm shadow-elev-1 hover:shadow-elev-2 transition-all duration-200 rounded-2xl w-full h-full flex flex-col"
               >
-                <CardContent className="pt-3 sm:pt-4 md:pt-6 pb-3 sm:pb-4 md:pb-6 px-2 sm:px-3 md:px-6">
+                <CardContent className="pt-3 sm:pt-4 md:pt-6 pb-3 sm:pb-4 md:pb-6 px-2 sm:px-3 md:px-6 flex flex-col h-full">
                   <div className="flex justify-center mb-2 sm:mb-3 md:mb-4">
                     <div className="h-8 w-8 sm:h-10 sm:w-10 md:h-12 md:w-12 bg-brand-primary/10 rounded-xl flex items-center justify-center">
                       <Icon className="h-4 w-4 sm:h-5 sm:w-5 md:h-6 md:w-6 text-brand-primary" />

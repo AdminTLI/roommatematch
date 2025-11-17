@@ -59,10 +59,10 @@ export function UniversitiesFooter() {
             <div className="flex items-center gap-2 text-gray-400">
               <Mail className="h-4 w-4" />
               <a 
-                href="mailto:universities@domumatch.nl" 
+                href="mailto:domumatch@gmail.com" 
                 className="hover:text-white transition-colors"
               >
-                universities@domumatch.nl
+                domumatch@gmail.com
               </a>
             </div>
           </div>

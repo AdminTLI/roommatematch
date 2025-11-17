@@ -15,13 +15,13 @@ const navigationContent = {
     { name: 'How it works', href: '/how-it-works' },
     { name: 'Features', href: '/features' },
     { name: 'Universities', href: '/universities' },
-    { name: 'Pricing', href: '/pricing' },
+    { name: 'About us', href: '/about' },
   ],
   nl: [
     { name: 'Hoe het werkt', href: '/how-it-works' },
     { name: 'Functies', href: '/features' },
     { name: 'Universiteiten', href: '/universities' },
-    { name: 'Prijzen', href: '/pricing' },
+    { name: 'Over ons', href: '/about' },
   ]
 }
 
