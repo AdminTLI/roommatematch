@@ -107,6 +107,7 @@ export default function HelpCenterPage() {
       </Section>
       <Footer />
     </main>
+    </>
   )
 }
 

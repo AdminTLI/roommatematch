@@ -228,6 +228,7 @@ export default function CareersPage() {
 
       <Footer />
     </main>
+    </>
   )
 }
 
