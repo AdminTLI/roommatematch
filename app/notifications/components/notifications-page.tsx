@@ -1,7 +1,8 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
+import { useQuery } from '@tanstack/react-query'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -12,6 +13,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { NotificationItem } from '@/app/(components)/notifications/notification-item'
 import { Notification, NotificationType, NotificationCounts } from '@/lib/notifications/types'
 import { createClient } from '@/lib/supabase/client'
+import { queryKeys, queryClient } from '@/app/providers'
+import { useRealtimeInvalidation } from '@/hooks/use-realtime-invalidation'
 import { 
   Bell, 
   Search, 
@@ -32,105 +35,83 @@ interface NotificationsPageProps {
 }
 
 export function NotificationsPage({ user }: NotificationsPageProps) {
-  const [notifications, setNotifications] = useState<Notification[]>([])
-  const [counts, setCounts] = useState<NotificationCounts | null>(null)
-  const [isLoading, setIsLoading] = useState(true)
   const [searchQuery, setSearchQuery] = useState('')
   const [selectedType, setSelectedType] = useState<NotificationType | 'all'>('all')
   const [selectedTab, setSelectedTab] = useState<'all' | 'unread'>('all')
   const [page, setPage] = useState(0)
-  const [hasMore, setHasMore] = useState(true)
   const router = useRouter()
   const supabase = createClient()
 
   const limit = 20
 
-  // Fetch notifications
-  const fetchNotifications = async (reset = false) => {
-    try {
-      if (reset) {
-        setIsLoading(true)
-        setPage(0)
-      }
+  // Fetch notifications with React Query
+  const fetchNotifications = useCallback(async () => {
+    const params = new URLSearchParams({
+      limit: limit.toString(),
+      offset: (page * limit).toString(),
+    })
 
-      const offset = reset ? 0 : page * limit
-      const params = new URLSearchParams({
-        limit: limit.toString(),
-        offset: offset.toString(),
-      })
-
-      if (selectedTab === 'unread') {
-        params.append('is_read', 'false')
-      }
-
-      if (selectedType !== 'all') {
-        params.append('type', selectedType)
-      }
-
-      const response = await fetch(`/api/notifications/my?${params}`)
-      if (response.ok) {
-        const data = await response.json()
-        
-        if (reset) {
-          setNotifications(data.notifications || [])
-        } else {
-          setNotifications(prev => [...prev, ...(data.notifications || [])])
-        }
-        
-        setHasMore(data.pagination?.has_more || false)
-      }
-    } catch (error) {
-      console.error('Failed to fetch notifications:', error)
-    } finally {
-      setIsLoading(false)
+    if (selectedTab === 'unread') {
+      params.append('is_read', 'false')
     }
-  }
 
-  // Fetch counts
-  const fetchCounts = async () => {
-    try {
-      const response = await fetch('/api/notifications/count')
-      if (response.ok) {
-        const data = await response.json()
-        setCounts(data)
-      }
-    } catch (error) {
-      console.error('Failed to fetch notification counts:', error)
+    if (selectedType !== 'all') {
+      params.append('type', selectedType)
     }
-  }
 
-  // Set up real-time subscription
-  useEffect(() => {
-    fetchNotifications(true)
-    fetchCounts()
-
-    // Subscribe to notifications changes
-    const channel = supabase
-      .channel('notifications-page')
-      .on(
-        'postgres_changes',
-        {
-          event: '*',
-          schema: 'public',
-          table: 'notifications',
-          filter: `user_id=eq.${user.id}`
-        },
-        () => {
-          fetchNotifications(true)
-          fetchCounts()
-        }
-      )
-      .subscribe()
-
-    return () => {
-      supabase.removeChannel(channel)
+    const response = await fetch(`/api/notifications/my?${params}`)
+    if (!response.ok) {
+      throw new Error('Failed to fetch notifications')
     }
-  }, [user.id])
+    
+    const data = await response.json()
+    return {
+      notifications: data.notifications || [],
+      hasMore: data.pagination?.has_more || false,
+    }
+  }, [page, selectedType, selectedTab])
+
+  const { data, isLoading, refetch } = useQuery({
+    queryKey: ['notifications', 'list', user.id, page, selectedType, selectedTab],
+    queryFn: fetchNotifications,
+    staleTime: 10_000, // 10 seconds for real-time data
+    enabled: !!user.id,
+  })
+
+  const notifications = data?.notifications || []
+  const hasMore = data?.hasMore || false
+
+  // Fetch counts with React Query
+  const fetchCounts = useCallback(async (): Promise<NotificationCounts> => {
+    const response = await fetch('/api/notifications/count')
+    if (!response.ok) {
+      throw new Error('Failed to fetch notification counts')
+    }
+    const data = await response.json()
+    return data
+  }, [])
+
+  const { data: counts } = useQuery({
+    queryKey: ['notifications', 'count', user.id],
+    queryFn: fetchCounts,
+    staleTime: 10_000, // 10 seconds for real-time data
+    enabled: !!user.id,
+  })
+
+  // Set up real-time invalidation for notifications
+  useRealtimeInvalidation({
+    table: 'notifications',
+    event: '*',
+    filter: `user_id=eq.${user.id}`,
+    queryKeys: ['notifications', user.id],
+    enabled: !!user.id,
+  })
 
   // Refetch when filters change
   useEffect(() => {
-    fetchNotifications(true)
-  }, [selectedType, selectedTab])
+    setPage(0)
+    refetch()
+  }, [selectedType, selectedTab, refetch])
 
   const handleMarkAsRead = async (notificationId: string) => {
     try {
@@ -146,18 +127,8 @@ export function NotificationsPage({ user }: NotificationsPageProps) {
       })
 
       if (response.ok) {
-        // Update local state
-        setNotifications(prev => 
-          prev.map(n => n.id === notificationId ? { ...n, is_read: true } : n)
-        )
-        
-        // Update counts
-        if (counts) {
-          setCounts(prev => prev ? {
-            ...prev,
-            unread: Math.max(0, prev.unread - 1)
-          } : null)
-        }
+        // Invalidate queries to refetch
+        queryClient.invalidateQueries({ queryKey: ['notifications', user.id] })
       }
     } catch (error) {
       console.error('Failed to mark notification as read:', error)
@@ -172,18 +143,8 @@ export function NotificationsPage({ user }: NotificationsPageProps) {
       })
 
       if (response.ok) {
-        // Update local state
-        setNotifications(prev => 
-          prev.map(n => ({ ...n, is_read: true }))
-        )
-        
-        // Update counts
-        if (counts) {
-          setCounts(prev => prev ? {
-            ...prev,
-            unread: 0
-          } : null)
-        }
+        // Invalidate queries to refetch
+        queryClient.invalidateQueries({ queryKey: ['notifications', user.id] })
       }
     } catch (error) {
       console.error('Failed to mark all notifications as read:', error)

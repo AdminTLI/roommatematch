@@ -78,24 +78,67 @@ export async function GET(request: NextRequest) {
       if (report.target_user_id) userIds.add(report.target_user_id)
     })
 
+    const userIdsArray = Array.from(userIds)
+    
+    // Fetch profiles
     const profilesMap = new Map()
-    if (userIds.size > 0) {
+    if (userIdsArray.length > 0) {
       const { data: profiles } = await admin
         .from('profiles')
-        .select('user_id, first_name, last_name, email')
-        .in('user_id', Array.from(userIds))
+        .select('user_id, first_name, last_name')
+        .in('user_id', userIdsArray)
       
       profiles?.forEach((profile: any) => {
         profilesMap.set(profile.user_id, profile)
       })
     }
 
-    // Enrich reports with profile data
-    const enrichedReports = reports?.map((report: any) => ({
-      ...report,
-      reporter: profilesMap.get(report.reporter_id) || { user_id: report.reporter_id },
-      target: profilesMap.get(report.target_user_id) || { user_id: report.target_user_id }
-    })) || []
+    // Fetch users for emails
+    const usersMap = new Map()
+    if (userIdsArray.length > 0) {
+      const { data: users } = await admin
+        .from('users')
+        .select('id, email')
+        .in('id', userIdsArray)
+      
+      users?.forEach((user: any) => {
+        usersMap.set(user.id, user)
+      })
+    }
+
+    // Enrich reports with profile data and emails
+    const enrichedReports = reports?.map((report: any) => {
+      const reporterProfile = profilesMap.get(report.reporter_id)
+      const targetProfile = profilesMap.get(report.target_user_id)
+      const reporterUser = usersMap.get(report.reporter_id)
+      const targetUser = usersMap.get(report.target_user_id)
+      
+      return {
+        ...report,
+        reporter: reporterProfile ? {
+          user_id: report.reporter_id,
+          first_name: reporterProfile.first_name,
+          last_name: reporterProfile.last_name,
+          email: reporterUser?.email || ''
+        } : {
+          user_id: report.reporter_id,
+          first_name: '',
+          last_name: '',
+          email: reporterUser?.email || ''
+        },
+        target: targetProfile ? {
+          user_id: report.target_user_id,
+          first_name: targetProfile.first_name,
+          last_name: targetProfile.last_name,
+          email: targetUser?.email || ''
+        } : {
+          user_id: report.target_user_id,
+          first_name: '',
+          last_name: '',
+          email: targetUser?.email || ''
+        }
+      }
+    }) || []
 
     return NextResponse.json({
       reports: enrichedReports,

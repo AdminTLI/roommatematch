@@ -16,7 +16,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog'
-import { AlertTriangle, CheckCircle, XCircle, Ban, MessageSquare, Eye } from 'lucide-react'
+import { AlertTriangle, CheckCircle, XCircle, Ban, MessageSquare, Eye, RefreshCw } from 'lucide-react'
 import { showSuccessToast, showErrorToast } from '@/lib/toast'
 
 interface Report {
@@ -289,11 +289,17 @@ export function AdminReportsContent() {
 
   return (
     <div className="p-6 space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold">Reports Queue</h1>
-        <p className="text-gray-600 dark:text-gray-400">
-          Review and triage abuse reports ({total} total)
-        </p>
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-2xl font-bold">Reports Queue</h1>
+          <p className="text-gray-600 dark:text-gray-400">
+            Review and triage abuse reports ({total} total)
+          </p>
+        </div>
+        <Button onClick={loadReports} variant="outline" disabled={isLoading}>
+          <RefreshCw className={`h-4 w-4 mr-2 ${isLoading ? 'animate-spin' : ''}`} />
+          Refresh
+        </Button>
       </div>
 
       {/* Filters */}
@@ -343,13 +349,25 @@ export function AdminReportsContent() {
           <CardDescription>All abuse reports submitted by users</CardDescription>
         </CardHeader>
         <CardContent>
-          <DataTable
-            columns={columns}
-            data={reports}
-            searchKey="id"
-            searchPlaceholder="Search by report ID..."
-            pageSize={20}
-          />
+          {reports.length === 0 ? (
+            <div className="text-center py-12">
+              <AlertTriangle className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+              <p className="text-lg font-medium text-gray-900 dark:text-gray-100 mb-2">No Reports Found</p>
+              <p className="text-gray-500 dark:text-gray-400">
+                {filters.status !== 'all' || filters.category !== 'all'
+                  ? 'No reports match your current filters. Try adjusting your filters.'
+                  : 'There are currently no reports in the system. Reports will appear here when users submit them.'}
+              </p>
+            </div>
+          ) : (
+            <DataTable
+              columns={columns}
+              data={reports}
+              searchKey="id"
+              searchPlaceholder="Search by report ID..."
+              pageSize={20}
+            />
+          )}
         </CardContent>
       </Card>
 

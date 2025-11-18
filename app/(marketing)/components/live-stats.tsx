@@ -157,16 +157,21 @@ export function LiveStats({ locale: localeProp }: LiveStatsProps) {
           </p>
         </div>
 
-        {/* Stats Grid */}
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3 sm:gap-4 md:gap-6 items-stretch">
-          {stats.map((stat) => {
+        {/* Stats Grid - Mobile: 2 cols, Tablet: 3 cols, Desktop: 5 cols with last centered */}
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3 sm:gap-4 md:gap-6 items-stretch justify-items-center lg:justify-items-stretch">
+          {stats.map((stat, index) => {
             const Icon = stat.icon
             const isLoadingState = isLoading || error
+            // Center last card on mobile/tablet when there are 5 cards (2-1-2 layout)
+            const isLastCard = index === stats.length - 1
+            const shouldCenterLast = stats.length === 5 && isLastCard
 
             return (
               <Card
                 key={stat.key}
-                className="text-center border border-brand-border/50 bg-white/80 backdrop-blur-sm shadow-elev-1 hover:shadow-elev-2 transition-all duration-200 rounded-2xl w-full h-full flex flex-col"
+                className={`text-center border border-brand-border/50 bg-white/80 backdrop-blur-sm shadow-elev-1 hover:shadow-elev-2 transition-all duration-200 rounded-2xl w-full h-full flex flex-col ${
+                  shouldCenterLast ? 'md:col-start-2 md:col-end-3 lg:col-start-auto lg:col-end-auto' : ''
+                }`}
               >
                 <CardContent className="pt-3 sm:pt-4 md:pt-6 pb-3 sm:pb-4 md:pb-6 px-2 sm:px-3 md:px-6 flex flex-col h-full">
                   <div className="flex justify-center mb-2 sm:mb-3 md:mb-4">

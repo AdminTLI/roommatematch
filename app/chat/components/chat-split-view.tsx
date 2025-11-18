@@ -51,12 +51,12 @@ export function ChatSplitView({ user }: ChatSplitViewProps) {
         />
       </div>
 
-      {/* Chat Interface - Right Side */}
+      {/* Chat Interface - Right Side - Full width on mobile */}
       <div 
         className={`
           flex-1 flex flex-col bg-bg-surface overflow-hidden
           ${showChatView ? 'flex' : 'hidden lg:flex'}
-          ${showChatView ? 'rounded-r-2xl' : 'lg:rounded-r-2xl lg:rounded-l-none'}
+          ${showChatView ? 'rounded-r-2xl w-full' : 'lg:rounded-r-2xl lg:rounded-l-none'}
           relative
         `}
       >

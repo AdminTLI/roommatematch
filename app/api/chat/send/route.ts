@@ -41,6 +41,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Verify user is a member of the chat (using regular client for RLS check)
+    // If chat has no members, it means it was closed by an admin
     const { data: membership, error: membershipError } = await supabase
       .from('chat_members')
       .select('id')
@@ -58,6 +59,23 @@ export async function POST(request: NextRequest) {
     }
 
     if (!membership) {
+      // Check if chat exists but has no members (was closed)
+      const { data: chatExists } = await supabase
+        .from('chats')
+        .select('id')
+        .eq('id', chat_id)
+        .maybeSingle()
+      
+      if (chatExists) {
+        safeLogger.warn('User attempted to send message to closed chat', {
+          userId: user.id,
+          chatId: chat_id
+        })
+        return NextResponse.json({ 
+          error: 'This chat has been closed. You can no longer send messages.' 
+        }, { status: 403 })
+      }
+      
       safeLogger.warn('User attempted to send message to chat they are not a member of', {
         userId: user.id,
         chatId: chat_id

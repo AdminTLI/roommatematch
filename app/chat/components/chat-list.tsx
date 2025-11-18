@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
+import { useQuery } from '@tanstack/react-query'
 import { Card, CardContent } from '@/components/ui/card'
 import { fetchWithCSRF } from '@/lib/utils/fetch-with-csrf'
 import { Button } from '@/components/ui/button'
@@ -22,6 +23,8 @@ import {
 } from 'lucide-react'
 import { NewChatModal } from './new-chat-modal'
 import { GroupInvitationCard } from './group-invitation-card'
+import { queryKeys, queryClient } from '@/app/providers'
+import { useRealtimeInvalidation } from '@/hooks/use-realtime-invalidation'
 
 interface ChatRoom {
   id: string
@@ -58,8 +61,6 @@ interface ChatListProps {
 }
 
 export function ChatList({ user, onChatSelect, selectedChatId }: ChatListProps) {
-  const [chats, setChats] = useState<ChatRoom[]>([])
-  const [isLoading, setIsLoading] = useState(true)
   const [searchQuery, setSearchQuery] = useState('')
   const [isNewChatModalOpen, setIsNewChatModalOpen] = useState(false)
   const [newChatMode, setNewChatMode] = useState<'individual' | 'group' | null>(null)
@@ -69,10 +70,8 @@ export function ChatList({ user, onChatSelect, selectedChatId }: ChatListProps) 
   const router = useRouter()
   const supabase = createClient()
 
-
-  const loadChats = useCallback(async () => {
-    setIsLoading(true)
-    
+  // Fetch chats with React Query
+  const fetchChats = useCallback(async (): Promise<ChatRoom[]> => {
     try {
       // First, get chat memberships for this user
       const { data: memberships, error: membershipsError } = await supabase
@@ -83,9 +82,7 @@ export function ChatList({ user, onChatSelect, selectedChatId }: ChatListProps) 
       if (membershipsError) throw membershipsError
 
       if (!memberships || memberships.length === 0) {
-        setChats([])
-        setIsLoading(false)
-        return
+        return []
       }
 
       const chatIds = memberships.map(m => m.chat_id)
@@ -315,15 +312,29 @@ export function ChatList({ user, onChatSelect, selectedChatId }: ChatListProps) 
         }
       })
 
-      setChats(transformedChats)
-      setIsLoading(false)
+      return transformedChats
     } catch (error) {
       // Use console.error here as this is client-side code
       console.error('Failed to load chats:', error)
-      setChats([])
-      setIsLoading(false)
+      return []
     }
   }, [user.id])
+
+  // Use React Query to fetch and cache chats
+  const { data: chats = [], isLoading, refetch } = useQuery({
+    queryKey: queryKeys.chats(user.id),
+    queryFn: fetchChats,
+    staleTime: 10_000, // 10 seconds for real-time data
+    enabled: !!user.id,
+  })
+
+  // Set up real-time invalidation for messages
+  useRealtimeInvalidation({
+    table: 'messages',
+    event: 'INSERT',
+    queryKeys: queryKeys.chats(user.id),
+    enabled: !!user.id,
+  })
 
   // Load pending invitations
   const loadInvitations = useCallback(async () => {
@@ -341,47 +352,10 @@ export function ChatList({ user, onChatSelect, selectedChatId }: ChatListProps) 
     }
   }, [])
 
-  // Load chats on mount and when user changes
+  // Load invitations on mount
   useEffect(() => {
-    loadChats()
     loadInvitations()
-  }, [loadChats, loadInvitations])
-
-  // Subscribe to realtime message updates to refresh chat list when messages are sent/received
-  // This ensures chats move from "Recently Matched" to "Active Conversations" immediately
-  useEffect(() => {
-    if (!user?.id) return
-
-    // Subscribe to new messages - RLS will filter to only chats the user is part of
-    const channel = supabase
-      .channel('chat-list-message-updates')
-      .on(
-        'postgres_changes',
-        {
-          event: 'INSERT',
-          schema: 'public',
-          table: 'messages'
-        },
-        (payload) => {
-          // When a new message is inserted, refresh the chat list
-          // This ensures chats move from "Recently Matched" to "Active Conversations" immediately
-          console.log('[ChatList] New message detected, refreshing chat list', payload)
-          // Debounce rapid updates (e.g., multiple messages in quick succession)
-          setTimeout(() => {
-            loadChats()
-          }, 500)
-        }
-      )
-      .subscribe((status) => {
-        if (status === 'SUBSCRIBED') {
-          console.log('[ChatList] Subscribed to message updates')
-        }
-      })
-
-    return () => {
-      supabase.removeChannel(channel)
-    }
-  }, [user?.id, loadChats, supabase])
+  }, [loadInvitations])
 
   const filteredChats = chats.filter(chat => {
     if (!searchQuery.trim()) return true
@@ -552,7 +526,7 @@ export function ChatList({ user, onChatSelect, selectedChatId }: ChatListProps) 
                   invitation={invitation}
                   onAccepted={(chatId) => {
                     loadInvitations()
-                    loadChats()
+                    queryClient.invalidateQueries({ queryKey: queryKeys.chats(user.id) })
                     if (onChatSelect) {
                       onChatSelect(chatId)
                     }
@@ -795,7 +769,7 @@ export function ChatList({ user, onChatSelect, selectedChatId }: ChatListProps) 
         initialMode={newChatMode || undefined}
         onChatCreated={(chatId) => {
           // Refresh chat list to show the new chat
-          loadChats()
+          queryClient.invalidateQueries({ queryKey: queryKeys.chats(user.id) })
           // Select the newly created chat
           if (onChatSelect) {
             onChatSelect(chatId)

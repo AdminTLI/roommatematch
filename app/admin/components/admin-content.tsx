@@ -128,8 +128,13 @@ export function AdminContent() {
     setIsLoading(true)
     try {
       const response = await fetch(`/api/admin/dashboard-metrics?period=${timePeriod}`)
-      if (!response.ok) throw new Error('Failed to load metrics')
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}))
+        console.error('Failed to load metrics:', response.status, errorData)
+        throw new Error(`Failed to load metrics: ${response.status}`)
+      }
       const data = await response.json()
+      console.log('[Admin] Dashboard metrics received:', data)
       setMetrics(data)
     } catch (error) {
       console.error('Failed to load metrics:', error)

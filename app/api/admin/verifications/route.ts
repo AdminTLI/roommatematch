@@ -12,7 +12,29 @@ export async function GET(request: NextRequest) {
     const admin = await createAdminClient()
     const { searchParams } = new URL(request.url)
     const status = searchParams.get('status')
+    const provider = searchParams.get('provider')
+    const search = searchParams.get('search') || ''
 
+    // First, fetch ALL verifications to calculate accurate statistics
+    const { data: allVerifications, error: statsError } = await admin
+      .from('verifications')
+      .select('status')
+      .limit(10000) // Get all for accurate stats
+
+    if (statsError) {
+      safeLogger.error('[Admin Verifications] Failed to fetch for stats', statsError)
+    }
+
+    // Calculate statistics from ALL verifications
+    const stats = {
+      total: allVerifications?.length || 0,
+      pending: allVerifications?.filter((v: any) => v.status === 'pending').length || 0,
+      approved: allVerifications?.filter((v: any) => v.status === 'approved').length || 0,
+      rejected: allVerifications?.filter((v: any) => v.status === 'rejected').length || 0,
+      expired: allVerifications?.filter((v: any) => v.status === 'expired').length || 0
+    }
+
+    // Build query with filters for the actual data
     let query = admin
       .from('verifications')
       .select(`
@@ -22,25 +44,35 @@ export async function GET(request: NextRequest) {
         provider_session_id,
         status,
         review_reason,
+        provider_data,
         created_at,
         updated_at
       `)
 
-    if (status) {
+    if (status && status !== 'all') {
       query = query.eq('status', status)
     }
 
-    const { data: verifications, error } = await query.order('created_at', { ascending: false }).limit(100)
+    if (provider && provider !== 'all') {
+      query = query.eq('provider', provider)
+    }
+
+    const { data: verifications, error } = await query
+      .order('created_at', { ascending: false })
+      .limit(500)
 
     if (error) {
       safeLogger.error('[Admin Verifications] Failed to fetch', error)
       return NextResponse.json({ error: 'Failed to fetch verifications' }, { status: 500 })
     }
 
-    // Fetch profile data separately
+    // Fetch profile and user data separately
     const userIds = verifications?.map((v: any) => v.user_id).filter(Boolean) || []
     const profilesMap = new Map()
+    const usersMap = new Map()
+    
     if (userIds.length > 0) {
+      // Fetch profiles
       const { data: profiles } = await admin
         .from('profiles')
         .select('user_id, first_name, last_name, email')
@@ -49,15 +81,72 @@ export async function GET(request: NextRequest) {
       profiles?.forEach((profile: any) => {
         profilesMap.set(profile.user_id, profile)
       })
+
+      // Fetch users for emails (fallback)
+      const { data: users } = await admin
+        .from('users')
+        .select('id, email')
+        .in('id', userIds)
+      
+      users?.forEach((user: any) => {
+        usersMap.set(user.id, user)
+      })
+
+      // Fetch university names for profiles
+      const profileUserIds = profiles?.map((p: any) => p.user_id) || []
+      if (profileUserIds.length > 0) {
+        const { data: academicData } = await admin
+          .from('user_academic')
+          .select('user_id, university_id')
+          .in('user_id', profileUserIds)
+        
+        const universityIds = academicData?.map((a: any) => a.university_id).filter(Boolean) || []
+        const universitiesMap = new Map()
+        
+        if (universityIds.length > 0) {
+          const { data: universities } = await admin
+            .from('universities')
+            .select('id, name')
+            .in('id', universityIds)
+          
+          universities?.forEach((uni: any) => {
+            universitiesMap.set(uni.id, uni.name)
+          })
+        }
+
+        // Add university names to profiles
+        academicData?.forEach((academic: any) => {
+          const profile = profilesMap.get(academic.user_id)
+          if (profile) {
+            profile.university_name = universitiesMap.get(academic.university_id)
+          }
+        })
+      }
     }
 
-    // Enrich verifications with profile data
-    const enrichedVerifications = verifications?.map((v: any) => ({
+    // Enrich verifications with profile and user data
+    let enrichedVerifications = verifications?.map((v: any) => ({
       ...v,
-      profile: profilesMap.get(v.user_id) || { user_id: v.user_id }
+      profile: profilesMap.get(v.user_id) || null,
+      user: usersMap.get(v.user_id) || null
     })) || []
 
-    return NextResponse.json({ verifications: enrichedVerifications || [] })
+    // Apply search filter (by user name or email)
+    if (search.trim()) {
+      const searchLower = search.toLowerCase().trim()
+      enrichedVerifications = enrichedVerifications.filter((v: any) => {
+        const name = v.profile 
+          ? `${v.profile.first_name || ''} ${v.profile.last_name || ''}`.trim().toLowerCase()
+          : ''
+        const email = (v.profile?.email || v.user?.email || '').toLowerCase()
+        return name.includes(searchLower) || email.includes(searchLower)
+      })
+    }
+
+    return NextResponse.json({ 
+      verifications: enrichedVerifications,
+      stats
+    })
   } catch (error) {
     safeLogger.error('[Admin Verifications] Error', error)
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
@@ -81,26 +170,47 @@ export async function POST(request: NextRequest) {
     if (action === 'override' && verificationId && newStatus) {
       const admin = await createAdminClient()
       
+      // Validate status
+      if (newStatus !== 'approved' && newStatus !== 'rejected') {
+        return NextResponse.json({ error: 'Invalid status' }, { status: 400 })
+      }
+
       // Update verification
       const { error: updateError } = await admin
         .from('verifications')
-        .update({ status: newStatus, updated_at: new Date().toISOString() })
+        .update({ 
+          status: newStatus, 
+          updated_at: new Date().toISOString(),
+          review_reason: `Manually ${newStatus} by admin`
+        })
         .eq('id', verificationId)
 
       if (updateError) {
+        safeLogger.error('[Admin Verifications] Failed to update verification', updateError)
         return NextResponse.json({ error: 'Failed to update verification' }, { status: 500 })
       }
 
-      // Update profile status
+      // Update profile verification status
       if (userId) {
         const profileStatus = newStatus === 'approved' ? 'verified' : 'failed'
-        await admin
+        const { error: profileError } = await admin
           .from('profiles')
-          .update({ verification_status: profileStatus })
+          .update({ 
+            verification_status: profileStatus,
+            updated_at: new Date().toISOString()
+          })
           .eq('user_id', userId)
+
+        if (profileError) {
+          safeLogger.warn('[Admin Verifications] Failed to update profile status', profileError)
+          // Don't fail the request - verification was updated successfully
+        }
       }
 
-      await logAdminAction(user!.id, 'override_verification', 'verification', verificationId, { newStatus })
+      await logAdminAction(user!.id, 'override_verification', 'verification', verificationId, { 
+        newStatus,
+        userId 
+      })
 
       return NextResponse.json({ success: true })
     }
@@ -111,4 +221,3 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
 }
-

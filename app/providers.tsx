@@ -2,15 +2,40 @@
 
 import { createContext, useContext, useEffect, useState, useMemo } from 'react'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
+import { ReactQueryDevtools } from '@tanstack/react-query-devtools'
 import { createClient } from '@/lib/supabase/client'
 import { initializeEventTracker } from '@/lib/events'
 import { DEFAULT_LOCALE, getDictionary, type Locale } from '@/lib/i18n'
 
-// Create a client
+// Query key factory for consistent keys
+export const queryKeys = {
+  // Real-time data (chats, notifications, matches)
+  chats: (userId?: string) => userId ? ['chats', userId] : ['chats'],
+  notifications: (userId?: string) => userId ? ['notifications', userId] : ['notifications'],
+  matches: {
+    top: (userId?: string) => userId ? ['matches', 'top', userId] : ['matches', 'top'],
+    count: (userId?: string) => userId ? ['matches', 'count', userId] : ['matches', 'count'],
+    compatibility: (userId?: string) => userId ? ['matches', 'compatibility', userId] : ['matches', 'compatibility'],
+    all: (userId?: string) => userId ? ['matches', userId] : ['matches'],
+  },
+  activity: (userId?: string) => userId ? ['activity', userId] : ['activity'],
+  
+  // Semi-static data (profile, housing)
+  profile: (userId?: string) => userId ? ['profile', userId] : ['profile'],
+  housingListings: (filters?: Record<string, any>) => filters ? ['housing-listings', filters] : ['housing-listings'],
+  
+  // Static data (universities, campuses)
+  universities: ['universities'],
+  campuses: ['campuses'],
+} as const
+
+// Create a client with granular stale times
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
-      staleTime: 60 * 1000, // 1 minute
+      // Default stale time (overridden per query for specific data types)
+      staleTime: 60 * 1000, // 1 minute default
+      refetchOnWindowFocus: true, // Refetch on window focus for real-time queries
       retry: (failureCount, error) => {
         // Don't retry on 4xx errors
         if (error && typeof error === 'object' && 'status' in error) {
@@ -22,8 +47,14 @@ const queryClient = new QueryClient({
         return failureCount < 3
       },
     },
+    mutations: {
+      retry: 1,
+    },
   },
 })
+
+// Export queryClient for cache invalidation
+export { queryClient }
 
 interface AppContextType {
   locale: Locale
@@ -87,6 +118,9 @@ export function Providers({ children }: { children: React.ReactNode }) {
       >
         {children}
       </AppContext.Provider>
+      {process.env.NODE_ENV === 'development' && (
+        <ReactQueryDevtools initialIsOpen={false} />
+      )}
     </QueryClientProvider>
   )
 }

@@ -1,12 +1,15 @@
 'use client'
 
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef, useCallback } from 'react'
+import { useQuery } from '@tanstack/react-query'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { NotificationDropdown } from './notification-dropdown'
 import { NotificationCounts } from '@/lib/notifications/types'
 import { createClient } from '@/lib/supabase/client'
 import { logger } from '@/lib/utils/logger'
+import { queryKeys } from '@/app/providers'
+import { useRealtimeInvalidation } from '@/hooks/use-realtime-invalidation'
 import { Bell } from 'lucide-react'
 
 interface NotificationBellProps {
@@ -15,51 +18,34 @@ interface NotificationBellProps {
 
 export function NotificationBell({ userId }: NotificationBellProps) {
   const [isOpen, setIsOpen] = useState(false)
-  const [counts, setCounts] = useState<NotificationCounts | null>(null)
-  const [isLoading, setIsLoading] = useState(true)
   const dropdownRef = useRef<HTMLDivElement>(null)
   const supabase = createClient()
 
-  // Fetch notification counts
-  const fetchCounts = async () => {
-    try {
-      const response = await fetch('/api/notifications/count')
-      if (response.ok) {
-        const data = await response.json()
-        setCounts(data)
-      }
-    } catch (error) {
-      logger.error('Failed to fetch notification counts:', error)
-    } finally {
-      setIsLoading(false)
+  // Fetch notification counts with React Query
+  const fetchCounts = useCallback(async (): Promise<NotificationCounts> => {
+    const response = await fetch('/api/notifications/count')
+    if (!response.ok) {
+      throw new Error('Failed to fetch notification counts')
     }
-  }
+    const data = await response.json()
+    return data
+  }, [])
 
-  // Set up real-time subscription for counts
-  useEffect(() => {
-    fetchCounts()
+  const { data: counts, isLoading, refetch: refetchCounts } = useQuery({
+    queryKey: ['notifications', 'count', userId],
+    queryFn: fetchCounts,
+    staleTime: 10_000, // 10 seconds for real-time data
+    enabled: !!userId,
+  })
 
-    // Subscribe to notifications changes for this user
-    const channel = supabase
-      .channel('notification-counts')
-      .on(
-        'postgres_changes',
-        {
-          event: '*',
-          schema: 'public',
-          table: 'notifications',
-          filter: `user_id=eq.${userId}`
-        },
-        () => {
-          fetchCounts()
-        }
-      )
-      .subscribe()
-
-    return () => {
-      supabase.removeChannel(channel)
-    }
-  }, [userId])
+  // Set up real-time invalidation for notification counts
+  useRealtimeInvalidation({
+    table: 'notifications',
+    event: '*',
+    filter: `user_id=eq.${userId}`,
+    queryKeys: ['notifications', 'count', userId],
+    enabled: !!userId,
+  })
 
   // Close dropdown when clicking outside
   useEffect(() => {
@@ -104,12 +90,8 @@ export function NotificationBell({ userId }: NotificationBellProps) {
       })
 
       if (response.ok) {
-        // Update local counts
-        setCounts(prev => prev ? {
-          ...prev,
-          unread: Math.max(0, prev.unread - 1),
-          total: prev.total
-        } : null)
+        // Invalidate query to refetch
+        refetchCounts()
       }
     } catch (error) {
       logger.error('Failed to mark notification as read:', error)
@@ -133,12 +115,8 @@ export function NotificationBell({ userId }: NotificationBellProps) {
       const result = await response.json().catch(() => ({}))
       logger.log('[NotificationBell] Mark all read success:', result)
       
-      // Update local counts
-      setCounts(prev => prev ? {
-        ...prev,
-        unread: 0,
-        total: prev.total
-      } : null)
+      // Invalidate query to refetch
+      refetchCounts()
     } catch (error) {
       logger.error('[NotificationBell] Failed to mark all notifications as read:', error)
       throw error // Re-throw so dropdown can handle it
@@ -174,7 +152,7 @@ export function NotificationBell({ userId }: NotificationBellProps) {
         onMarkAllAsRead={handleMarkAllAsRead}
         counts={counts}
         userId={userId}
-        refreshCounts={fetchCounts}
+        refreshCounts={refetchCounts}
       />
     </div>
   )

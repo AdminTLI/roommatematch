@@ -16,12 +16,15 @@ export async function GET(request: NextRequest) {
 
     const adminClient = createAdminClient()
 
-    // Get admin's university_id for filtering
+    // Get admin's university_id and role for filtering
     const { data: adminRecord } = await adminClient
       .from('admins')
-      .select('university_id')
+      .select('university_id, role')
       .eq('user_id', adminCheck.user!.id)
       .single()
+
+    // Super admins should see all data, not filtered by university
+    const shouldFilterByUniversity = adminRecord?.university_id && adminRecord.role !== 'super_admin'
 
     // Get start of today in UTC
     const now = new Date()
@@ -40,7 +43,7 @@ export async function GET(request: NextRequest) {
       .select('id', { count: 'exact', head: true })
       .gte('created_at', startOfTodayISO)
 
-    if (adminRecord?.university_id) {
+    if (shouldFilterByUniversity) {
       // Filter by university via profiles
       const { data: profiles } = await adminClient
         .from('profiles')
@@ -66,28 +69,61 @@ export async function GET(request: NextRequest) {
     const { count: newRegistrations } = await newRegistrationsQuery
 
     // 2. Successful matches created today (where both users accepted)
+    // Only count non-expired, unique pairs
+    const currentTimeISO = new Date().toISOString()
     let successfulMatchesQuery = adminClient
       .from('match_suggestions')
-      .select('id, member_ids, accepted_by, status, kind')
+      .select('id, member_ids, accepted_by, status, kind, expires_at')
       .gte('created_at', startOfTodayISO)
       .in('status', ['confirmed', 'accepted'])
+      .gte('expires_at', currentTimeISO) // Only non-expired matches
 
     const { data: matchesData } = await successfulMatchesQuery
 
+    // Get university user IDs if admin is university-specific (not super_admin)
+    let universityUserIds: Set<string> | null = null
+    if (shouldFilterByUniversity) {
+      const { data: universityProfiles } = await adminClient
+        .from('profiles')
+        .select('user_id')
+        .eq('university_id', adminRecord.university_id)
+
+      universityUserIds = new Set(universityProfiles?.map(p => p.user_id) || [])
+    }
+
+    // Deduplicate by member_ids to count unique pairs only
+    const uniquePairs = new Set<string>()
     let successfulMatches = 0
     if (matchesData) {
-      successfulMatches = matchesData.filter(match => {
-        // For confirmed status, both users have accepted
+      matchesData.forEach(match => {
+        // If university filtering is enabled, check if all members are from this university
+        if (universityUserIds && match.member_ids && Array.isArray(match.member_ids)) {
+          const allMembersFromUniversity = match.member_ids.every((id: string) => 
+            universityUserIds!.has(id)
+          )
+          if (!allMembersFromUniversity) {
+            return
+          }
+        }
+
+        // Check if both users accepted
+        let isAccepted = false
         if (match.status === 'confirmed') {
-          return true
-        }
-        // For accepted status, check if all members are in accepted_by array
-        if (match.status === 'accepted' && match.accepted_by && match.member_ids) {
+          isAccepted = true
+        } else if (match.status === 'accepted' && match.accepted_by && match.member_ids) {
           const acceptedSet = new Set(match.accepted_by)
-          return match.member_ids.every((id: string) => acceptedSet.has(id))
+          isAccepted = match.member_ids.every((id: string) => acceptedSet.has(id))
         }
-        return false
-      }).length
+
+        if (isAccepted && match.member_ids && Array.isArray(match.member_ids)) {
+          // Create a unique key for this pair (sorted to handle A-B and B-A as same pair)
+          const sortedIds = [...match.member_ids].sort().join('-')
+          if (!uniquePairs.has(sortedIds)) {
+            uniquePairs.add(sortedIds)
+            successfulMatches++
+          }
+        }
+      })
     }
 
     // 3. Safety reports submitted today

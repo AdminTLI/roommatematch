@@ -83,25 +83,25 @@ export function ApplyDialog({ cta = 'Apply now' }: { cta?: string }) {
       <DialogTrigger asChild>
         <Button size="lg">{cta}</Button>
       </DialogTrigger>
-      <DialogContent className="sm:max-w-lg">
-        <DialogHeader>
-          <DialogTitle>Apply to join the builder community</DialogTitle>
-          <DialogDescription>
+      <DialogContent className="sm:max-w-lg max-h-[90vh] overflow-y-auto">
+        <DialogHeader className="pb-2 sm:pb-4">
+          <DialogTitle className="text-lg sm:text-xl pr-6">Apply to join the builder community</DialogTitle>
+          <DialogDescription className="text-sm sm:text-base leading-relaxed">
             Choose your track and tell us about your skills and interests. This is a volunteer experience (unpaid) designed for mentorship, portfolio‑quality work, and real impact.
           </DialogDescription>
         </DialogHeader>
         <form
-          className="space-y-4"
+          className="space-y-4 sm:space-y-5"
           onSubmit={form.handleSubmit(onSubmit)}
         >
-          <div className="grid gap-4 sm:grid-cols-2">
+          <div className="grid gap-3 sm:gap-4 sm:grid-cols-2">
             <div className="space-y-2">
-              <Label>Track</Label>
+              <Label className="text-sm font-medium">Track</Label>
               <Select
                 value={form.watch('track')}
                 onValueChange={(v) => form.setValue('track', v as 'experienced' | 'student')}
               >
-                <SelectTrigger>
+                <SelectTrigger className="h-10 sm:h-11 text-sm">
                   <SelectValue placeholder="Select track" />
                 </SelectTrigger>
                 <SelectContent>
@@ -110,25 +110,25 @@ export function ApplyDialog({ cta = 'Apply now' }: { cta?: string }) {
                 </SelectContent>
               </Select>
               {form.formState.errors.track && (
-                <p className="text-sm text-destructive">{form.formState.errors.track.message}</p>
+                <p className="text-xs sm:text-sm text-destructive mt-1">{form.formState.errors.track.message}</p>
               )}
             </div>
             <div className="space-y-2">
-              <Label htmlFor="name">Name</Label>
-              <Input id="name" {...form.register('name')} placeholder="Your name" />
+              <Label htmlFor="name" className="text-sm font-medium">Name</Label>
+              <Input id="name" className="h-10 sm:h-11 text-sm" {...form.register('name')} placeholder="Your name" />
               {form.formState.errors.name && (
-                <p className="text-sm text-destructive">{form.formState.errors.name.message}</p>
+                <p className="text-xs sm:text-sm text-destructive mt-1">{form.formState.errors.name.message}</p>
               )}
             </div>
           </div>
 
           <div className="space-y-2">
-            <Label>Preferred impact area (optional)</Label>
+            <Label className="text-sm font-medium">Preferred impact area (optional)</Label>
             <Select
               value={form.watch('preferredArea')}
               onValueChange={(v) => form.setValue('preferredArea', v)}
             >
-              <SelectTrigger>
+              <SelectTrigger className="h-10 sm:h-11 text-sm">
                 <SelectValue placeholder="Choose an area" />
               </SelectTrigger>
               <SelectContent>
@@ -142,58 +142,58 @@ export function ApplyDialog({ cta = 'Apply now' }: { cta?: string }) {
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="email">Email</Label>
-            <Input id="email" type="email" {...form.register('email')} placeholder="you@example.com" />
+            <Label htmlFor="email" className="text-sm font-medium">Email</Label>
+            <Input id="email" type="email" className="h-10 sm:h-11 text-sm" {...form.register('email')} placeholder="you@example.com" />
             {form.formState.errors.email && (
-              <p className="text-sm text-destructive">{form.formState.errors.email.message}</p>
+              <p className="text-xs sm:text-sm text-destructive mt-1">{form.formState.errors.email.message}</p>
             )}
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="courseProgram">Current course/program (optional)</Label>
-            <Input id="courseProgram" {...form.register('courseProgram')} placeholder="e.g., BSc Marketing, MSc HCI, BA Sociology" />
+            <Label htmlFor="courseProgram" className="text-sm font-medium">Current course/program (optional)</Label>
+            <Input id="courseProgram" className="h-10 sm:h-11 text-sm" {...form.register('courseProgram')} placeholder="e.g., BSc Marketing, MSc HCI, BA Sociology" />
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="skills">Skills</Label>
-            <Textarea id="skills" {...form.register('skills')} placeholder="Tell us about your skills and strengths" rows={3} />
+            <Label htmlFor="skills" className="text-sm font-medium">Skills</Label>
+            <Textarea id="skills" className="text-sm min-h-[80px] resize-none" {...form.register('skills')} placeholder="Tell us about your skills and strengths" rows={3} />
             {form.formState.errors.skills && (
-              <p className="text-sm text-destructive">{form.formState.errors.skills.message}</p>
+              <p className="text-xs sm:text-sm text-destructive mt-1">{form.formState.errors.skills.message}</p>
             )}
           </div>
 
-          <div className="grid gap-4 sm:grid-cols-2">
+          <div className="grid gap-3 sm:gap-4 sm:grid-cols-2">
             <div className="space-y-2">
-              <Label htmlFor="tools">Tools (optional)</Label>
-              <Input id="tools" {...form.register('tools')} placeholder="Figma, Python, SQL, Next.js…" />
+              <Label htmlFor="tools" className="text-sm font-medium">Tools (optional)</Label>
+              <Input id="tools" className="h-10 sm:h-11 text-sm" {...form.register('tools')} placeholder="Figma, Python, SQL, Next.js…" />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="timeCommitment">Time commitment</Label>
-              <Input id="timeCommitment" {...form.register('timeCommitment')} placeholder="e.g., 3–5 hrs/week" />
+              <Label htmlFor="timeCommitment" className="text-sm font-medium">Time commitment</Label>
+              <Input id="timeCommitment" className="h-10 sm:h-11 text-sm" {...form.register('timeCommitment')} placeholder="e.g., 3–5 hrs/week" />
               {form.formState.errors.timeCommitment && (
-                <p className="text-sm text-destructive">{form.formState.errors.timeCommitment.message}</p>
+                <p className="text-xs sm:text-sm text-destructive mt-1">{form.formState.errors.timeCommitment.message}</p>
               )}
             </div>
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="exampleProject">Example project or impact</Label>
-            <Textarea id="exampleProject" {...form.register('exampleProject')} placeholder="What would you like to help with?" rows={3} />
+            <Label htmlFor="exampleProject" className="text-sm font-medium">Example project or impact</Label>
+            <Textarea id="exampleProject" className="text-sm min-h-[80px] resize-none" {...form.register('exampleProject')} placeholder="What would you like to help with?" rows={3} />
             {form.formState.errors.exampleProject && (
-              <p className="text-sm text-destructive">{form.formState.errors.exampleProject.message}</p>
+              <p className="text-xs sm:text-sm text-destructive mt-1">{form.formState.errors.exampleProject.message}</p>
             )}
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="notes">Notes (optional)</Label>
-            <Textarea id="notes" {...form.register('notes')} placeholder="Anything else we should know?" rows={3} />
+            <Label htmlFor="notes" className="text-sm font-medium">Notes (optional)</Label>
+            <Textarea id="notes" className="text-sm min-h-[80px] resize-none" {...form.register('notes')} placeholder="Anything else we should know?" rows={3} />
           </div>
 
-          <div className="pt-2 flex justify-end gap-3">
-            <Button type="button" variant="outline" onClick={() => setOpen(false)}>
+          <div className="pt-2 sm:pt-4 flex flex-col sm:flex-row justify-end gap-2 sm:gap-3 border-t border-border/40 mt-4 sm:mt-6">
+            <Button type="button" variant="outline" onClick={() => setOpen(false)} className="w-full sm:w-auto h-10 sm:h-11 order-2 sm:order-1">
               Cancel
             </Button>
-            <Button type="submit" disabled={submitting}>
+            <Button type="submit" disabled={submitting} className="w-full sm:w-auto h-10 sm:h-11 order-1 sm:order-2">
               {submitting ? 'Submitting…' : 'Submit'}
             </Button>
           </div>

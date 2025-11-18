@@ -2,7 +2,8 @@
 
 import { motion } from 'framer-motion'
 import { useRouter } from 'next/navigation'
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
+import { useQuery } from '@tanstack/react-query'
 import { 
   TrendingUp, 
   Users, 
@@ -26,6 +27,8 @@ import { EmptyState } from '@/components/ui/empty-state'
 import type { DashboardData } from '@/types/dashboard'
 import { createClient } from '@/lib/supabase/client'
 import { logger } from '@/lib/utils/logger'
+import { queryKeys } from '@/app/providers'
+import { useRealtimeInvalidation } from '@/hooks/use-realtime-invalidation'
 
 const fadeInUp = {
   initial: { opacity: 0, y: 20 },
@@ -65,106 +68,14 @@ interface DashboardContentProps {
 export function DashboardContent({ hasCompletedQuestionnaire = false, hasPartialProgress = false, progressCount = 0, profileCompletion = 0, questionnaireProgress, dashboardData, user, firstName = '' }: DashboardContentProps) {
   const router = useRouter()
   const supabase = createClient()
-  const [topMatches, setTopMatches] = useState(dashboardData.topMatches)
-  const [isLoadingMatches, setIsLoadingMatches] = useState(false)
-  const [recentActivity, setRecentActivity] = useState<any[]>([])
-  const [isLoadingActivity, setIsLoadingActivity] = useState(false)
-  const [avgCompatibility, setAvgCompatibility] = useState(dashboardData.kpis.avgCompatibility)
-  const [totalMatches, setTotalMatches] = useState(dashboardData.kpis.totalMatches)
 
-  // Fetch matches on mount and when user changes
-  useEffect(() => {
-    if (user?.id) {
-      loadTopMatches()
-      loadRecentActivity()
-      loadTotalMatchesCount()
-      loadAvgCompatibility()
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [user?.id])
-
-  // Set up real-time subscription for notifications and messages
-  useEffect(() => {
-    if (!user?.id) return
-
-    const channel = supabase
-      .channel('dashboard-activity')
-      .on(
-        'postgres_changes',
-        {
-          event: '*',
-          schema: 'public',
-          table: 'notifications',
-          filter: `user_id=eq.${user.id}`
-        },
-        () => {
-          loadRecentActivity()
-        }
-      )
-      .on(
-        'postgres_changes',
-        {
-          event: 'INSERT',
-          schema: 'public',
-          table: 'messages'
-        },
-        () => {
-          loadRecentActivity()
-        }
-      )
-      .subscribe()
-
-    return () => {
-      supabase.removeChannel(channel)
-    }
-  }, [user?.id, supabase])
-
-  // Set up real-time subscription for matches
-  useEffect(() => {
-    if (!user?.id) return
-
-    const channel = supabase
-      .channel('dashboard-matches')
-      .on(
-        'postgres_changes',
-        {
-          event: '*',
-          schema: 'public',
-          table: 'matches',
-          filter: `a_user=eq.${user.id}`
-        },
-        () => {
-          loadTopMatches()
-          loadTotalMatchesCount()
-        }
-      )
-      .on(
-        'postgres_changes',
-        {
-          event: '*',
-          schema: 'public',
-          table: 'matches',
-          filter: `b_user=eq.${user.id}`
-        },
-        () => {
-          loadTopMatches()
-          loadTotalMatchesCount()
-        }
-      )
-      .subscribe()
-
-    return () => {
-      supabase.removeChannel(channel)
-    }
-  }, [user?.id, supabase])
-
-  const loadTopMatches = async () => {
+  // Fetch top matches with React Query
+  const fetchTopMatches = useCallback(async () => {
     if (!user?.id) {
       logger.log('[loadTopMatches] No user ID provided')
-      return
+      return []
     }
     
-    setIsLoadingMatches(true)
     try {
       logger.log('[loadTopMatches] Fetching match suggestions for user:', user.id)
       
@@ -183,9 +94,7 @@ export function DashboardContent({ hasCompletedQuestionnaire = false, hasPartial
 
       if (suggestionsError) {
         logger.error('[loadTopMatches] Error loading suggestions:', suggestionsError)
-        setTopMatches([])
-        setIsLoadingMatches(false)
-        return
+        return []
       }
 
       logger.log('[loadTopMatches] Raw suggestions data:', {
@@ -194,11 +103,7 @@ export function DashboardContent({ hasCompletedQuestionnaire = false, hasPartial
       })
 
       if (!suggestions || suggestions.length === 0) {
-        setTopMatches([])
-        setIsLoadingMatches(false)
-        loadTotalMatchesCount()
-        loadAvgCompatibility()
-        return
+        return []
       }
 
       // Extract other user ID from each suggestion and map to score
@@ -224,12 +129,7 @@ export function DashboardContent({ hasCompletedQuestionnaire = false, hasPartial
         .slice(0, 3)
 
       if (topMatchEntries.length === 0) {
-        setTopMatches([])
-        setIsLoadingMatches(false)
-        // Still fetch total count and avg compatibility
-        loadTotalMatchesCount()
-        loadAvgCompatibility()
-        return
+        return []
       }
 
       const topUserIds = topMatchEntries.map(([userId]) => userId)
@@ -248,9 +148,7 @@ export function DashboardContent({ hasCompletedQuestionnaire = false, hasPartial
 
       if (profilesError) {
         logger.error('Error loading profiles:', profilesError)
-        setTopMatches([])
-        setIsLoadingMatches(false)
-        return
+        return []
       }
 
       // Fetch program names separately from user_academic
@@ -308,23 +206,26 @@ export function DashboardContent({ hasCompletedQuestionnaire = false, hasPartial
 
       logger.log('loadTopMatches: Formatted', formattedMatches.length, 'matches from match_suggestions table')
 
-      setTopMatches(formattedMatches)
-
-      // Always fetch total count and avg compatibility separately for accuracy
-      loadTotalMatchesCount()
-      loadAvgCompatibility()
+      return formattedMatches
     } catch (error) {
       logger.error('Failed to load matches:', error)
-      setTopMatches([])
-    } finally {
-      setIsLoadingMatches(false)
+      return []
     }
-  }
+  }, [user?.id, supabase])
 
-  const loadTotalMatchesCount = async () => {
+  const { data: topMatches = dashboardData.topMatches, isLoading: isLoadingMatches, refetch: refetchTopMatches } = useQuery({
+    queryKey: queryKeys.matches.top(user?.id),
+    queryFn: fetchTopMatches,
+    staleTime: 10_000, // 10 seconds for real-time data
+    enabled: !!user?.id,
+    initialData: dashboardData.topMatches,
+  })
+
+  // Fetch total matches count with React Query
+  const fetchTotalMatchesCount = useCallback(async (): Promise<number> => {
     if (!user?.id) {
       logger.log('loadTotalMatchesCount: No user ID')
-      return
+      return 0
     }
 
     try {
@@ -361,8 +262,7 @@ export function DashboardContent({ hasCompletedQuestionnaire = false, hasPartial
 
         const total = matchMap.size
         logger.log('loadTotalMatchesCount: Unique matched users from suggestions', total)
-        setTotalMatches(total)
-        return
+        return total
       }
 
       // Fallback: use legacy matches table if there are no suggestions
@@ -380,17 +280,26 @@ export function DashboardContent({ hasCompletedQuestionnaire = false, hasPartial
 
       const total = (matchesAsA || 0) + (matchesAsB || 0)
       logger.log('loadTotalMatchesCount: Total matches from legacy table', total)
-      setTotalMatches(total)
+      return total
     } catch (error) {
       logger.error('Failed to load total matches count:', error)
-      setTotalMatches(0)
+      return 0
     }
-  }
+  }, [user?.id, supabase])
 
-  const loadAvgCompatibility = async () => {
+  const { data: totalMatches = dashboardData.kpis.totalMatches } = useQuery({
+    queryKey: queryKeys.matches.count(user?.id),
+    queryFn: fetchTotalMatchesCount,
+    staleTime: 10_000, // 10 seconds for real-time data
+    enabled: !!user?.id,
+    initialData: dashboardData.kpis.totalMatches,
+  })
+
+  // Fetch average compatibility with React Query
+  const fetchAvgCompatibility = useCallback(async (): Promise<number> => {
     if (!user?.id) {
       logger.log('loadAvgCompatibility: No user ID')
-      return
+      return 0
     }
 
     try {
@@ -434,22 +343,31 @@ export function DashboardContent({ hasCompletedQuestionnaire = false, hasPartial
           (allScores.reduce((sum, score) => sum + score, 0) / allScores.length) * 100
         )
         logger.log('loadAvgCompatibility: Average calculated as', average)
-        setAvgCompatibility(average)
+        return average
       } else {
         logger.log('loadAvgCompatibility: No matches found, setting to 0')
-        setAvgCompatibility(0)
+        return 0
       }
     } catch (error) {
       logger.error('Failed to load average compatibility:', error)
-      setAvgCompatibility(0)
+      return 0
     }
-  }
+  }, [user?.id, supabase])
 
-  const loadRecentActivity = async () => {
-    if (!user?.id) return
+  const { data: avgCompatibility = dashboardData.kpis.avgCompatibility } = useQuery({
+    queryKey: queryKeys.matches.compatibility(user?.id),
+    queryFn: fetchAvgCompatibility,
+    staleTime: 10_000, // 10 seconds for real-time data
+    enabled: !!user?.id,
+    initialData: dashboardData.kpis.avgCompatibility,
+  })
 
-    setIsLoadingActivity(true)
+  // Fetch recent activity with React Query
+  const fetchRecentActivity = useCallback(async (): Promise<any[]> => {
+    if (!user?.id) return []
+
     try {
+
       // Fetch notifications
       const response = await fetch('/api/notifications/my?limit=10')
       const notificationsData = response.ok ? await response.json() : { notifications: [] }
@@ -539,13 +457,58 @@ export function DashboardContent({ hasCompletedQuestionnaire = false, hasPartial
         return 0
       })
       
-      setRecentActivity(allActivity.slice(0, 10))
+      return allActivity.slice(0, 10)
     } catch (error) {
       logger.error('Failed to load activity:', error)
-    } finally {
-      setIsLoadingActivity(false)
+      return []
     }
-  }
+  }, [user?.id, supabase])
+
+  const { data: recentActivity = [], isLoading: isLoadingActivity, refetch: refetchRecentActivity } = useQuery({
+    queryKey: queryKeys.activity(user?.id),
+    queryFn: fetchRecentActivity,
+    staleTime: 10_000, // 10 seconds for real-time data
+    enabled: !!user?.id,
+  })
+
+  // Set up real-time invalidation for notifications
+  useRealtimeInvalidation({
+    table: 'notifications',
+    event: '*',
+    filter: `user_id=eq.${user?.id}`,
+    queryKeys: queryKeys.activity(user?.id),
+    enabled: !!user?.id,
+  })
+
+  // Set up real-time invalidation for messages
+  useRealtimeInvalidation({
+    table: 'messages',
+    event: 'INSERT',
+    queryKeys: queryKeys.activity(user?.id),
+    enabled: !!user?.id,
+  })
+
+  // Set up real-time invalidation for match_suggestions (multiple query keys)
+  useRealtimeInvalidation({
+    table: 'match_suggestions',
+    event: '*',
+    queryKeys: queryKeys.matches.top(user?.id),
+    enabled: !!user?.id,
+  })
+
+  useRealtimeInvalidation({
+    table: 'match_suggestions',
+    event: '*',
+    queryKeys: queryKeys.matches.count(user?.id),
+    enabled: !!user?.id,
+  })
+
+  useRealtimeInvalidation({
+    table: 'match_suggestions',
+    event: '*',
+    queryKeys: queryKeys.matches.compatibility(user?.id),
+    enabled: !!user?.id,
+  })
 
   const formatTimeAgo = (dateString: string): string => {
     const date = new Date(dateString)
@@ -828,7 +791,7 @@ export function DashboardContent({ hasCompletedQuestionnaire = false, hasPartial
               <h3 className="text-sm lg:text-base font-bold text-text-primary">Your Top Matches</h3>
               <button 
                 className="flex items-center justify-center w-8 h-8 text-text-muted hover:text-text-primary hover:bg-bg-surface-alt rounded-lg transition-colors" 
-                onClick={loadTopMatches}
+                onClick={() => refetchTopMatches()}
                 disabled={isLoadingMatches}
                 title="Refresh matches"
               >
@@ -912,7 +875,7 @@ export function DashboardContent({ hasCompletedQuestionnaire = false, hasPartial
               <h3 className="text-sm lg:text-base font-bold text-text-primary">Recent Activity</h3>
               <button 
                 className="flex items-center justify-center w-8 h-8 text-text-muted hover:text-text-primary hover:bg-bg-surface-alt rounded-lg transition-colors" 
-                onClick={loadRecentActivity}
+                onClick={() => refetchRecentActivity()}
                 disabled={isLoadingActivity}
                 title="Refresh activity"
               >

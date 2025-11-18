@@ -1,7 +1,8 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
+import { useMutation, useQuery } from '@tanstack/react-query'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { toast } from 'sonner'
 import { SuggestionCard } from './suggestion-card'
@@ -9,6 +10,7 @@ import { Button } from '@/components/ui/button'
 import { MessageCircle, Users, X, Clock } from 'lucide-react'
 import { fetchWithCSRF } from '@/lib/utils/fetch-with-csrf'
 import type { MatchSuggestion } from '@/lib/matching/types'
+import { queryKeys, queryClient } from '@/app/providers'
 
 interface StudentMatchesInterfaceProps {
   user: {
@@ -35,7 +37,6 @@ export function StudentMatchesInterface({ user }: StudentMatchesInterfaceProps) 
   const [confirmedMatches, setConfirmedMatches] = useState<MatchWithStatus[]>([])
   const [historyMatches, setHistoryMatches] = useState<MatchWithStatus[]>([])
   const [isLoading, setIsLoading] = useState(true)
-  const [isResponding, setIsResponding] = useState(false)
   const [selectedMatches, setSelectedMatches] = useState<Set<string>>(new Set())
   const [isCreatingChat, setIsCreatingChat] = useState(false)
 
@@ -97,10 +98,9 @@ export function StudentMatchesInterface({ user }: StudentMatchesInterfaceProps) 
     }
   }
 
-  // Handle suggestion response
-  const handleRespond = async (suggestionId: string, action: 'accept' | 'decline') => {
-    try {
-      setIsResponding(true)
+  // React Query mutation for responding to match suggestions with optimistic updates
+  const respondMutation = useMutation({
+    mutationFn: async ({ suggestionId, action }: { suggestionId: string; action: 'accept' | 'decline' }) => {
       const response = await fetchWithCSRF('/api/match/suggestions/respond', {
         method: 'POST',
         headers: {
@@ -112,21 +112,49 @@ export function StudentMatchesInterface({ user }: StudentMatchesInterfaceProps) 
         }),
       })
 
-      if (response.ok) {
-        // Refresh suggestions after responding
-        await fetchSuggestions()
-      } else {
+      if (!response.ok) {
         const errorData = await response.json()
-        console.error('Failed to respond to suggestion:', errorData.error)
-        alert(`Failed to ${action} suggestion: ${errorData.error}`)
+        throw new Error(errorData.error || `Failed to ${action} suggestion`)
       }
+
+      return { suggestionId, action }
+    },
+    onMutate: async ({ suggestionId, action }) => {
+      // Cancel outgoing refetches
+      await queryClient.cancelQueries({ queryKey: queryKeys.matches.all(user.id) })
+
+      // Optimistically update UI - remove from suggested/pending, move to appropriate tab
+      setSuggestions(prev => prev.filter(s => s.id !== suggestionId))
+      setPendingSuggestions(prev => prev.filter(s => s.id !== suggestionId))
+
+      // Return context for rollback
+      return { suggestionId, action }
+    },
+    onSuccess: ({ suggestionId, action }) => {
+      // Invalidate matches queries to refetch
+      queryClient.invalidateQueries({ queryKey: queryKeys.matches.all(user.id) })
+      
+      // Refresh suggestions
+      fetchSuggestions(activeTab === 'history' || activeTab === 'confirmed')
+    },
+    onError: (error, { suggestionId }, context) => {
+      // Rollback optimistic update - refetch to restore state
+      fetchSuggestions(activeTab === 'history' || activeTab === 'confirmed')
+      const errorMessage = error instanceof Error ? error.message : `Failed to ${context?.action || 'respond to'} suggestion`
+      toast.error(errorMessage)
+    },
+  })
+
+  // Handle suggestion response
+  const handleRespond = async (suggestionId: string, action: 'accept' | 'decline') => {
+    try {
+      await respondMutation.mutateAsync({ suggestionId, action })
     } catch (error) {
-      console.error('Error responding to suggestion:', error)
-      alert(`Failed to ${action} suggestion`)
-    } finally {
-      setIsResponding(false)
+      // Error handling is done in onError
     }
   }
+
+  const isResponding = respondMutation.isPending
 
   // Refresh suggestions
   const handleRefresh = async () => {

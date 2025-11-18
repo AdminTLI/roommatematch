@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
+import { useMutation } from '@tanstack/react-query'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -27,6 +28,7 @@ import { createClient } from '@/lib/supabase/client'
 import { User } from '@supabase/supabase-js'
 import { showErrorToast, showSuccessToast } from '@/lib/toast'
 import { fetchWithCSRF } from '@/lib/utils/fetch-with-csrf'
+import { queryKeys, queryClient } from '@/app/providers'
 import { 
   Send, 
   ArrowLeft, 
@@ -83,7 +85,6 @@ export function ChatInterface({ roomId, user, onBack }: ChatInterfaceProps) {
   const [members, setMembers] = useState<ChatMember[]>([])
   const [newMessage, setNewMessage] = useState('')
   const [isLoading, setIsLoading] = useState(true)
-  const [isSending, setIsSending] = useState(false)
   const [error, setError] = useState('')
   const [typingUsers, setTypingUsers] = useState<string[]>([])
   const [profilesMap, setProfilesMap] = useState<Map<string, any>>(new Map())
@@ -872,11 +873,14 @@ export function ChatInterface({ roomId, user, onBack }: ChatInterfaceProps) {
           setConnectionStatus('connected')
           setError('') // Clear any connection error messages
         } else if (status === 'CHANNEL_ERROR') {
-          console.error('[Realtime] ❌ Channel subscription error:', err)
+          const errorMessage = err || 'Unknown error (no error details provided)'
+          console.error('[Realtime] ❌ Channel subscription error:', errorMessage)
           console.error('[Realtime] ❌ Error details:', {
-            error: err,
+            error: err || null,
+            errorMessage: errorMessage,
             channel: channelName,
-            roomId: roomId
+            roomId: roomId,
+            timestamp: new Date().toISOString()
           })
           // Attempt to resubscribe after a delay (prevent multiple simultaneous attempts)
           if (resubscribeTimeoutRef.current) {
@@ -1125,8 +1129,10 @@ export function ChatInterface({ roomId, user, onBack }: ChatInterfaceProps) {
 
   // Prevent body scrolling when chat is mounted
   useEffect(() => {
-    // Prevent body scroll
-    document.body.style.overflow = 'hidden'
+    // Prevent body scroll on mobile to avoid conflicts with chat scrolling
+    if (typeof window !== 'undefined' && window.innerWidth < 1024) {
+      document.body.style.overflow = 'hidden'
+    }
     
     return () => {
       // Restore body scroll when unmounting
@@ -1184,25 +1190,19 @@ export function ChatInterface({ roomId, user, onBack }: ChatInterfaceProps) {
     }
   }, [messages.length])
 
-  const sendMessage = async () => {
-    if (!newMessage.trim() || isSending) return
+  // React Query mutation for sending messages with optimistic updates
+  const sendMessageMutation = useMutation({
+    mutationFn: async (content: string) => {
+      // Check for links (safety feature)
+      if (containsLinks(content)) {
+        throw new Error('Links are not allowed in chat messages for safety reasons.')
+      }
 
-    // Check for links (safety feature)
-    if (containsLinks(newMessage)) {
-      setError('Links are not allowed in chat messages for safety reasons.')
-      return
-    }
-
-    setIsSending(true)
-    setError('')
-
-    try {
-      // Use the API endpoint for sending messages
       const response = await fetchWithCSRF('/api/chat/send', {
         method: 'POST',
         body: JSON.stringify({
           chat_id: roomId,
-          content: newMessage.trim()
+          content: content.trim()
         })
       })
 
@@ -1212,23 +1212,51 @@ export function ChatInterface({ roomId, user, onBack }: ChatInterfaceProps) {
       }
 
       const { message } = await response.json()
-      
-      // Get sender name from profilesMap (current user's profile should already be loaded)
+      return message
+    },
+    onMutate: async (content) => {
+      // Cancel outgoing refetches to avoid overwriting optimistic update
+      await queryClient.cancelQueries({ queryKey: queryKeys.chats(user.id) })
+
+      // Get sender name from profilesMap
       const profile = profilesMap.get(user.id)
       const senderName = profile 
         ? [profile.first_name?.trim(), profile.last_name?.trim()].filter(Boolean).join(' ') || 'User'
         : 'You'
-      
-      // Add the message to local state immediately for better UX
-      setMessages(prev => [...prev, {
-        id: message.id,
-        content: message.content,
-        sender_id: message.user_id,
+
+      // Optimistically update local messages
+      const optimisticMessage = {
+        id: `temp-${Date.now()}`,
+        content: content.trim(),
+        sender_id: user.id,
         sender_name: senderName,
-        created_at: message.created_at,
-        read_by: [user.id], // Initially only read by sender
+        created_at: new Date().toISOString(),
+        read_by: [user.id],
         is_own: true
-      }])
+      }
+
+      setMessages(prev => [...prev, optimisticMessage])
+      setNewMessage('')
+    },
+    onSuccess: async (message) => {
+      // Replace optimistic message with real message
+      setMessages(prev => {
+        const filtered = prev.filter(m => !m.id.startsWith('temp-'))
+        const profile = profilesMap.get(user.id)
+        const senderName = profile 
+          ? [profile.first_name?.trim(), profile.last_name?.trim()].filter(Boolean).join(' ') || 'User'
+          : 'You'
+        
+        return [...filtered, {
+          id: message.id,
+          content: message.content,
+          sender_id: message.user_id,
+          sender_name: senderName,
+          created_at: message.created_at,
+          read_by: [user.id],
+          is_own: true
+        }]
+      })
 
       // Broadcast the message to all subscribers via realtime channel
       const channel = messagesChannelRef.current
@@ -1257,24 +1285,34 @@ export function ChatInterface({ roomId, user, onBack }: ChatInterfaceProps) {
           }
         } catch (broadcastErr) {
           console.error('[Realtime] Error broadcasting message:', broadcastErr)
-          // Don't fail the send - message was already inserted
         }
-      } else {
-        console.warn('[Realtime] Channel not available for broadcasting')
       }
 
-            setNewMessage('')
-            showSuccessToast('Message sent', 'Your message has been delivered.')
-            
-          } catch (error) {
-            console.error('Failed to send message:', error)
-            const errorMessage = error instanceof Error ? error.message : 'Failed to send message. Please try again.'
-            setError(errorMessage)
-            showErrorToast('Failed to send message', errorMessage)
-          } finally {
-            setIsSending(false)
-          }
+      // Invalidate chats query to refresh chat list
+      queryClient.invalidateQueries({ queryKey: queryKeys.chats(user.id) })
+
+      showSuccessToast('Message sent', 'Your message has been delivered.')
+    },
+    onError: (error) => {
+      // Rollback optimistic update
+      setMessages(prev => prev.filter(m => !m.id.startsWith('temp-')))
+      const errorMessage = error instanceof Error ? error.message : 'Failed to send message. Please try again.'
+      setError(errorMessage)
+      showErrorToast('Failed to send message', errorMessage)
+    },
+  })
+
+  const sendMessage = async () => {
+    if (!newMessage.trim() || sendMessageMutation.isPending) return
+
+    try {
+      await sendMessageMutation.mutateAsync(newMessage.trim())
+    } catch (error) {
+      // Error handling is done in onError
+    }
   }
+
+  const isSending = sendMessageMutation.isPending
 
   const containsLinks = (text: string): boolean => {
     const urlRegex = /(https?:\/\/[^\s]+|www\.[^\s]+|[a-zA-Z0-9-]+\.[a-zA-Z]{2,})/i
@@ -1513,7 +1551,7 @@ export function ChatInterface({ roomId, user, onBack }: ChatInterfaceProps) {
     <div className="flex flex-col h-full w-full bg-bg-surface overflow-hidden">
       {/* Modern Chat Header */}
       <div className="flex-shrink-0 bg-bg-surface border-b border-border-subtle shadow-sm">
-        <div className="px-4 sm:px-6 lg:px-8 py-4">
+        <div className="px-3 sm:px-6 lg:px-8 py-3 sm:py-4">
           <div className="flex items-center justify-between gap-4">
             <div className="flex items-center gap-3 flex-1 min-w-0">
               <Button 
@@ -1738,8 +1776,8 @@ export function ChatInterface({ roomId, user, onBack }: ChatInterfaceProps) {
           {/* White corner overlay to prevent grey showing through rounded corners */}
           <div className="absolute bottom-0 right-0 w-16 h-16 bg-bg-surface rounded-tl-2xl pointer-events-none z-0"></div>
           
-          {/* Content overlay */}
-          <div className="relative z-20 max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-4 lg:py-6">
+          {/* Content overlay - Full width on mobile, constrained on desktop */}
+          <div className="relative z-20 w-full max-w-4xl mx-auto px-3 sm:px-6 lg:px-8 py-3 sm:py-4 lg:py-6">
             {isLoading ? (
             <div className="text-center py-16">
               <div className="space-y-3">
@@ -1872,9 +1910,9 @@ export function ChatInterface({ roomId, user, onBack }: ChatInterfaceProps) {
       {/* Message Input - At bottom */}
       {!(isGroup && isLocked) && (
       <div className="flex-shrink-0 bg-bg-surface border-t border-border-subtle shadow-sm rounded-br-2xl">
-        <div className="px-4 sm:px-6 lg:px-8 py-4">
-          <div className="max-w-4xl mx-auto">
-            <div className="flex gap-3 items-center">
+        <div className="px-3 sm:px-6 lg:px-8 py-3 sm:py-4">
+          <div className="w-full max-w-4xl mx-auto">
+            <div className="flex gap-2 sm:gap-3 items-end">
               <Input
                 value={newMessage}
                 onChange={(e) => {
@@ -1889,14 +1927,14 @@ export function ChatInterface({ roomId, user, onBack }: ChatInterfaceProps) {
                 }}
                 placeholder={isBlocked ? "You cannot send messages to a blocked user" : "Type your message..."}
                 disabled={isSending || isBlocked}
-                className="flex-1 h-12 text-sm bg-bg-surface-alt border-2 border-border-subtle rounded-xl focus:bg-bg-surface focus:border-semantic-accent focus:ring-2 focus:ring-semantic-accent/20 shadow-sm transition-all placeholder:text-text-muted"
+                className="flex-1 h-11 sm:h-12 text-sm sm:text-base bg-bg-surface-alt border-2 border-border-subtle rounded-xl focus:bg-bg-surface focus:border-semantic-accent focus:ring-2 focus:ring-semantic-accent/20 shadow-sm transition-all placeholder:text-text-muted"
               />
               <Button 
                 onClick={sendMessage}
                 disabled={!newMessage.trim() || isSending || isBlocked}
-                className="h-12 w-12 p-0 flex-shrink-0 rounded-xl bg-semantic-accent hover:bg-semantic-accent-hover border-2 border-semantic-accent/20 disabled:opacity-50 disabled:cursor-not-allowed shadow-md transition-all"
+                className="h-11 sm:h-12 w-11 sm:w-12 p-0 flex-shrink-0 rounded-xl bg-semantic-accent hover:bg-semantic-accent-hover border-2 border-semantic-accent/20 disabled:opacity-50 disabled:cursor-not-allowed shadow-md transition-all"
               >
-                <Send className="h-5 w-5 text-white" />
+                <Send className="h-4 w-4 sm:h-5 sm:w-5 text-white" />
               </Button>
             </div>
           </div>

@@ -11,12 +11,14 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
-import { ChevronLeft, ChevronRight, Download } from 'lucide-react'
+import { ChevronLeft, ChevronRight, Download, Info } from 'lucide-react'
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'
 
 interface Column<T> {
   header: string
   accessor: keyof T | ((row: T) => React.ReactNode)
   sortable?: boolean
+  tooltip?: string // Optional tooltip text for the column header
 }
 
 interface DataTableProps<T> {
@@ -92,7 +94,29 @@ export function DataTable<T extends Record<string, any>>({
           <TableHeader>
             <TableRow>
               {columns.map((column, idx) => (
-                <TableHead key={idx}>{column.header}</TableHead>
+                <TableHead key={idx}>
+                  <div className="flex items-center gap-1.5">
+                    <span>{column.header}</span>
+                    {column.tooltip && (
+                      <TooltipProvider>
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <button
+                              type="button"
+                              className="inline-flex items-center justify-center p-0.5 rounded-sm hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+                              aria-label={`Information about ${column.header} column`}
+                            >
+                              <Info className="h-4 w-4 min-w-[16px] min-h-[16px] text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300 cursor-help transition-colors" />
+                            </button>
+                          </TooltipTrigger>
+                          <TooltipContent>
+                            <p className="max-w-xs text-sm">{column.tooltip}</p>
+                          </TooltipContent>
+                        </Tooltip>
+                      </TooltipProvider>
+                    )}
+                  </div>
+                </TableHead>
               ))}
             </TableRow>
           </TableHeader>

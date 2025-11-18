@@ -125,8 +125,8 @@ export function AdminDashboard({ admin }: AdminDashboardProps) {
       const studyMonthsResponse = await fetch('/api/admin/metrics/study-months')
       const studyMonthsData = studyMonthsResponse.ok ? await studyMonthsResponse.json() : null
 
-      // Load reports
-      const { data: reportsData, error: reportsError } = await supabase
+      // Load reports - check both 'pending' and 'open' status values for compatibility
+      const { data: reportsDataPending, error: reportsErrorPending } = await supabase
         .from('reports')
         .select(`
           id,
@@ -140,7 +140,27 @@ export function AdminDashboard({ admin }: AdminDashboardProps) {
         .eq('status', 'pending')
         .order('created_at', { ascending: false })
 
-      if (reportsError) throw reportsError
+      const { data: reportsDataOpen, error: reportsErrorOpen } = await supabase
+        .from('reports')
+        .select(`
+          id,
+          reporter_name,
+          reported_user_name,
+          reason,
+          description,
+          status,
+          created_at
+        `)
+        .eq('status', 'open')
+        .order('created_at', { ascending: false })
+
+      if (reportsErrorPending || reportsErrorOpen) {
+        throw reportsErrorPending || reportsErrorOpen
+      }
+
+      // Combine both sets of reports
+      const reportsData = [...(reportsDataPending || []), ...(reportsDataOpen || [])]
+        .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
 
       // Transform analytics data
       const transformedAnalytics: AnalyticsData = {

@@ -4,6 +4,53 @@ import { createCSRFTokenCookie, validateCSRFToken } from '@/lib/csrf'
 import { checkRateLimit, getIPRateLimitKey } from '@/lib/rate-limit'
 import { isFeatureEnabled } from '@/lib/feature-flags'
 import { checkUserVerificationStatus, getVerificationRedirectUrl } from '@/lib/auth/verification-check'
+import type { User } from '@supabase/supabase-js'
+
+// In-memory cache for user lookups with TTL
+interface CachedUser {
+  user: User | null
+  expiresAt: number
+}
+
+const userCache = new Map<string, CachedUser>()
+const CACHE_TTL_MS = 60 * 1000 // 60 seconds
+
+// Admin check cache (for feature flags) - 30 seconds TTL
+interface CachedAdminCheck {
+  isAdmin: boolean
+  expiresAt: number
+}
+
+const adminCheckCache = new Map<string, CachedAdminCheck>()
+const ADMIN_CACHE_TTL_MS = 30 * 1000 // 30 seconds
+
+// Helper to get cache key from request
+function getCacheKey(req: NextRequest): string {
+  // Use session cookie or auth header as cache key
+  const sessionCookie = req.cookies.get('sb-access-token')?.value || 
+                       req.cookies.get('sb-refresh-token')?.value ||
+                       req.headers.get('authorization') ||
+                       'anonymous'
+  return sessionCookie
+}
+
+// Clean up expired cache entries periodically
+if (typeof global !== 'undefined') {
+  // Only run cleanup in Node.js environment
+  setInterval(() => {
+    const now = Date.now()
+    for (const [key, cached] of userCache.entries()) {
+      if (cached.expiresAt < now) {
+        userCache.delete(key)
+      }
+    }
+    for (const [key, cached] of adminCheckCache.entries()) {
+      if (cached.expiresAt < now) {
+        adminCheckCache.delete(key)
+      }
+    }
+  }, 60000) // Clean up every minute
+}
 
 export async function middleware(req: NextRequest) {
   // Allow public routes without checks
@@ -115,9 +162,26 @@ export async function middleware(req: NextRequest) {
     }
   )
 
-  const {
-    data: { user },
-  } = await supabase.auth.getUser()
+  // Get user with caching
+  const cacheKey = getCacheKey(req)
+  const cachedUser = userCache.get(cacheKey)
+  const now = Date.now()
+
+  let user: User | null = null
+
+  if (cachedUser && cachedUser.expiresAt > now) {
+    // Cache hit
+    user = cachedUser.user
+  } else {
+    // Cache miss - fetch user
+    const { data } = await supabase.auth.getUser()
+    user = data.user
+    // Cache the result
+    userCache.set(cacheKey, {
+      user,
+      expiresAt: now + CACHE_TTL_MS,
+    })
+  }
 
   // Set CSRF token cookie for authenticated users
   if (user) {
@@ -250,31 +314,38 @@ export async function middleware(req: NextRequest) {
   }
 
   // Feature flag gating for housing and move-in routes
-  if (user) {
-    if (pathname.startsWith('/housing') && !isFeatureEnabled('housing')) {
-      // Allow admins to access even if feature is disabled
-      const { data: adminRecord } = await supabase
-        .from('admins')
-        .select('id')
-        .eq('user_id', user.id)
-        .maybeSingle()
+  // Only check admin status for routes that need it
+  if (user && (pathname.startsWith('/housing') || pathname.startsWith('/move-in'))) {
+    // Check if feature is enabled
+    const featureKey = pathname.startsWith('/housing') ? 'housing' : 'move_in'
+    const isFeatureEnabledValue = isFeatureEnabled(featureKey)
 
-      if (!adminRecord) {
-        const url = req.nextUrl.clone()
-        url.pathname = '/dashboard'
-        return NextResponse.redirect(url)
+    if (!isFeatureEnabledValue) {
+      // Feature is disabled - check if user is admin (with caching)
+      const adminCacheKey = `${user.id}-${featureKey}`
+      const cachedAdmin = adminCheckCache.get(adminCacheKey)
+      let isAdmin = false
+
+      if (cachedAdmin && cachedAdmin.expiresAt > now) {
+        // Cache hit
+        isAdmin = cachedAdmin.isAdmin
+      } else {
+        // Cache miss - check admin status
+        const { data: adminRecord } = await supabase
+          .from('admins')
+          .select('id')
+          .eq('user_id', user.id)
+          .maybeSingle()
+
+        isAdmin = !!adminRecord
+        // Cache the result
+        adminCheckCache.set(adminCacheKey, {
+          isAdmin,
+          expiresAt: now + ADMIN_CACHE_TTL_MS,
+        })
       }
-    }
 
-    if (pathname.startsWith('/move-in') && !isFeatureEnabled('move_in')) {
-      // Allow admins to access even if feature is disabled
-      const { data: adminRecord } = await supabase
-        .from('admins')
-        .select('id')
-        .eq('user_id', user.id)
-        .maybeSingle()
-
-      if (!adminRecord) {
+      if (!isAdmin) {
         const url = req.nextUrl.clone()
         url.pathname = '/dashboard'
         return NextResponse.redirect(url)

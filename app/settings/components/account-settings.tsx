@@ -102,7 +102,7 @@ export function AccountSettings({ user }: AccountSettingsProps) {
             <Label className="text-sm font-medium">Email Address</Label>
             <div className="flex items-center gap-3">
               <Mail className="w-5 h-5 text-gray-400 flex-shrink-0" />
-              <Input value={user.email} disabled className="bg-gray-50 h-11" />
+              <Input value={user.email} disabled className="bg-gray-50 dark:bg-bg-surface-alt h-11 text-text-primary dark:text-text-primary" />
             </div>
             <p className="text-sm text-gray-500 ml-8">
               Contact support to change your email address.
@@ -114,7 +114,7 @@ export function AccountSettings({ user }: AccountSettingsProps) {
             <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
               <div className="flex items-center gap-3 flex-1">
                 <Key className="w-5 h-5 text-gray-400 flex-shrink-0" />
-                <Input type="password" value="••••••••" disabled className="bg-gray-50 h-11 flex-1" />
+                <Input type="password" value="••••••••" disabled className="bg-gray-50 dark:bg-bg-surface-alt h-11 flex-1 text-text-primary dark:text-text-primary" />
               </div>
               <Button variant="outline" onClick={handleChangePassword} className="w-full sm:w-auto min-w-[120px] h-11 text-base">
                 Change

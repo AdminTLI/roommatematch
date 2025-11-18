@@ -41,7 +41,7 @@ export function ResearchCarousel({ locale: localeProp }: ResearchCarouselProps) 
     if (window.innerWidth < 640) {
       containerPadding = 32
       gap = 12
-      minHeight = 750 // Increased by 100px from 650px
+      minHeight = 500 // Reduced from 750px for mobile - text fits naturally
       const availableWidth = Math.min(window.innerWidth - containerPadding, containerMaxWidth - containerPadding)
       const base = Math.floor((availableWidth - 20 - 2 * gap) / 3)
       const containerWidth = Math.min(window.innerWidth, containerMaxWidth)
@@ -50,7 +50,7 @@ export function ResearchCarousel({ locale: localeProp }: ResearchCarouselProps) 
     if (window.innerWidth < 768) {
       containerPadding = 48 // sm:px-6 = 24px each side
       gap = 16
-      minHeight = 780 // Increased by 100px from 680px
+      minHeight = 550 // Reduced from 780px for tablet
       const availableWidth = Math.min(window.innerWidth - containerPadding, containerMaxWidth - containerPadding)
       const base = Math.floor((availableWidth - 20 - 2 * gap) / 3)
       const containerWidth = Math.min(window.innerWidth, containerMaxWidth)
@@ -59,7 +59,7 @@ export function ResearchCarousel({ locale: localeProp }: ResearchCarouselProps) 
     if (window.innerWidth < 1024) {
       containerPadding = 64 // md:px-8 = 32px each side
       gap = 20
-      minHeight = 820 // Increased by 100px from 720px
+      minHeight = 650 // Reduced from 820px
       const availableWidth = Math.min(window.innerWidth - containerPadding, containerMaxWidth - containerPadding)
       const base = Math.floor((availableWidth - 30 - 2 * gap) / 3)
       const containerWidth = Math.min(window.innerWidth, containerMaxWidth)
@@ -295,7 +295,9 @@ export function ResearchCarousel({ locale: localeProp }: ResearchCarouselProps) 
                     className="flex-shrink-0 transition-all duration-1000 ease-in-out"
                     style={{
                       width: isCenter ? `${cardDimensions.center}px` : `${cardDimensions.base}px`,
-                      minHeight: '650px',
+                      minHeight: typeof window !== 'undefined' && window.innerWidth < 1024 
+                        ? 'auto' 
+                        : cardDimensions.minHeight + 'px',
                       opacity: shouldShow ? (distance === 1 ? 0.7 : 1) : 0,
                       visibility: shouldShow ? 'visible' : 'hidden',
                       transform: isCenter ? 'scale(1.05)' : 'scale(0.95)',
@@ -310,26 +312,26 @@ export function ResearchCarousel({ locale: localeProp }: ResearchCarouselProps) 
                     >
                       <CardContent className="p-3 sm:p-4 md:p-5 flex flex-col flex-1 min-h-0">
                         <div className={`font-bold text-brand-primary mb-1.5 sm:mb-2 md:mb-3 transition-all duration-1000 flex-shrink-0 ${
-                          isCenter ? 'text-2xl sm:text-3xl md:text-4xl lg:text-5xl' : 'text-xl sm:text-2xl md:text-3xl lg:text-4xl'
+                          isCenter ? 'text-xl sm:text-2xl md:text-3xl lg:text-4xl' : 'text-lg sm:text-xl md:text-2xl lg:text-3xl'
                         }`}>
                           {stat.statistic}
                         </div>
-                        <h3 className={`font-semibold text-brand-text mb-1.5 sm:mb-2 md:mb-3 transition-all duration-1000 flex-shrink-0 ${
-                          isCenter ? 'text-sm sm:text-base md:text-lg lg:text-xl' : 'text-xs sm:text-sm md:text-base lg:text-lg'
+                        <h3 className={`font-semibold text-brand-text mb-1.5 sm:mb-2 md:mb-3 transition-all duration-1000 flex-shrink-0 line-clamp-2 ${
+                          isCenter ? 'text-xs sm:text-sm md:text-base lg:text-lg' : 'text-[10px] sm:text-xs md:text-sm lg:text-base'
                         }`}>
                           {stat.issue}
                         </h3>
-                        <p className={`text-brand-muted mb-2 sm:mb-3 md:mb-4 leading-snug sm:leading-relaxed transition-all duration-1000 ${
-                          isCenter ? 'text-xs sm:text-sm md:text-base' : 'text-xs sm:text-xs md:text-sm'
+                        <p className={`text-brand-muted mb-2 sm:mb-3 md:mb-4 leading-snug sm:leading-relaxed transition-all duration-1000 line-clamp-3 sm:line-clamp-none ${
+                          isCenter ? 'text-[10px] sm:text-xs md:text-sm' : 'text-[9px] sm:text-[10px] md:text-xs'
                         }`}>
                           {stat.explanation}
                         </p>
-                        <p className="text-[10px] sm:text-xs md:text-sm text-brand-muted italic mb-2 sm:mb-3 md:mb-4 pb-2 sm:pb-3 md:pb-4 border-b border-brand-border/30 flex-shrink-0">
+                        <p className="text-[9px] sm:text-[10px] md:text-xs text-brand-muted italic mb-2 sm:mb-3 md:mb-4 pb-2 sm:pb-3 md:pb-4 border-b border-brand-border/30 flex-shrink-0 line-clamp-2 sm:line-clamp-none">
                           {stat.source}
                         </p>
-                        <div className="pt-1.5 sm:pt-2 flex-shrink-0">
-                          <p className={`text-brand-muted leading-snug sm:leading-relaxed transition-all duration-1000 ${
-                            isCenter ? 'text-xs sm:text-sm md:text-base' : 'text-[10px] sm:text-xs md:text-sm'
+                        <div className="pt-1.5 sm:pt-2 flex-shrink-0 flex-1">
+                          <p className={`text-brand-muted leading-snug sm:leading-relaxed transition-all duration-1000 line-clamp-4 sm:line-clamp-none ${
+                            isCenter ? 'text-[10px] sm:text-xs md:text-sm' : 'text-[9px] sm:text-[10px] md:text-xs'
                           }`}>
                             {stat.solution}
                           </p>

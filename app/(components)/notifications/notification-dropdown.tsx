@@ -1,8 +1,9 @@
 'use client'
 
-import { useState, useEffect, startTransition } from 'react'
+import { useState, useEffect, startTransition, useCallback } from 'react'
 import { createPortal } from 'react-dom'
 import { useRouter } from 'next/navigation'
+import { useQuery } from '@tanstack/react-query'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -13,6 +14,8 @@ import { NotificationItem } from './notification-item'
 import { Notification, NotificationCounts } from '@/lib/notifications/types'
 import { createClient } from '@/lib/supabase/client'
 import { logger } from '@/lib/utils/logger'
+import { queryKeys } from '@/app/providers'
+import { useRealtimeInvalidation } from '@/hooks/use-realtime-invalidation'
 import { 
   Bell, 
   Settings, 
@@ -58,8 +61,6 @@ export function NotificationDropdown({
   userId,
   refreshCounts
 }: NotificationDropdownProps) {
-  const [notifications, setNotifications] = useState<Notification[]>([])
-  const [isLoading, setIsLoading] = useState(true)
   const router = useRouter()
   const supabase = createClient()
   const isMobile = useIsMobile()
@@ -69,61 +70,38 @@ export function NotificationDropdown({
     setMounted(true)
   }, [])
 
-  // Fetch notifications
-  const fetchNotifications = async () => {
-    try {
-      setIsLoading(true)
-      const desiredLimit = Math.min(
-        Math.max(counts?.unread ?? 20, 20),
-        200
-      )
-      const response = await fetch(`/api/notifications/my?limit=${desiredLimit}`)
-      if (response.ok) {
-        const data = await response.json()
-        setNotifications(data.notifications || [])
-      }
-    } catch (error) {
-      logger.error('Failed to fetch notifications:', error)
-    } finally {
-      setIsLoading(false)
-    }
-  }
-
-  // Set up real-time subscription
-  useEffect(() => {
-    if (!isOpen || !userId) return
-
-    fetchNotifications()
-
-    const channel = supabase
-      .channel(`notifications-${userId}`)
-      .on(
-        'postgres_changes',
-        {
-          event: '*',
-          schema: 'public',
-          table: 'notifications',
-          filter: `user_id=eq.${userId}`
-        },
-        () => {
-          fetchNotifications()
-          refreshCounts()
-        }
-      )
-      .subscribe()
-
-    return () => {
-      supabase.removeChannel(channel)
-    }
-  }, [isOpen, userId, counts?.unread])
-
-  const markAsReadLocally = (id: string) => {
-    setNotifications(prev =>
-      prev.map(notification =>
-        notification.id === id ? { ...notification, is_read: true } : notification
-      )
+  // Fetch notifications with React Query
+  const fetchNotifications = useCallback(async (): Promise<Notification[]> => {
+    const desiredLimit = Math.min(
+      Math.max(counts?.unread ?? 20, 20),
+      200
     )
-  }
+    const response = await fetch(`/api/notifications/my?limit=${desiredLimit}`)
+    if (!response.ok) {
+      throw new Error('Failed to fetch notifications')
+    }
+    const data = await response.json()
+    return data.notifications || []
+  }, [counts?.unread])
+
+  const { data: notifications = [], isLoading } = useQuery({
+    queryKey: ['notifications', 'dropdown', userId, counts?.unread],
+    queryFn: fetchNotifications,
+    staleTime: 10_000, // 10 seconds for real-time data
+    enabled: isOpen && !!userId,
+  })
+
+  // Set up real-time invalidation for notifications
+  useRealtimeInvalidation({
+    table: 'notifications',
+    event: '*',
+    filter: `user_id=eq.${userId}`,
+    queryKeys: ['notifications', userId],
+    enabled: isOpen && !!userId,
+    onInvalidate: () => {
+      refreshCounts()
+    },
+  })
 
   const handleNotificationClick = async (notification: Notification) => {
     // Mark as read if not already read

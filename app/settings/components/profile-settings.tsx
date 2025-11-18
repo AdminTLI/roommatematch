@@ -119,7 +119,7 @@ export function ProfileSettings({ user, profile, academic }: ProfileSettingsProp
                 value={formData.firstName}
                 onChange={(e) => handleInputChange('firstName', e.target.value)}
                 placeholder="Enter your first name"
-                className="h-11"
+                className="h-11 text-text-primary dark:text-text-primary bg-bg-surface dark:bg-bg-surface border-border-subtle"
               />
             </div>
             <div className="space-y-3">
@@ -129,7 +129,7 @@ export function ProfileSettings({ user, profile, academic }: ProfileSettingsProp
                 value={formData.lastName}
                 onChange={(e) => handleInputChange('lastName', e.target.value)}
                 placeholder="Enter your last name"
-                className="h-11"
+                className="h-11 text-text-primary dark:text-text-primary bg-bg-surface dark:bg-bg-surface border-border-subtle"
               />
             </div>
           </div>
@@ -143,7 +143,7 @@ export function ProfileSettings({ user, profile, academic }: ProfileSettingsProp
                 value={formData.phone}
                 onChange={(e) => handleInputChange('phone', e.target.value)}
                 placeholder="Enter your phone number"
-                className="h-11"
+                className="h-11 text-text-primary dark:text-text-primary bg-bg-surface dark:bg-bg-surface border-border-subtle"
               />
             </div>
           </div>
@@ -156,7 +156,7 @@ export function ProfileSettings({ user, profile, academic }: ProfileSettingsProp
               onChange={(e) => handleInputChange('bio', e.target.value)}
               placeholder="Tell us about yourself..."
               rows={5}
-              className="resize-none"
+              className="resize-none text-text-primary dark:text-text-primary bg-bg-surface dark:bg-bg-surface border-border-subtle"
             />
           </div>
 

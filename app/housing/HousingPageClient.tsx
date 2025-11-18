@@ -5,8 +5,11 @@
 
 import { useState, useEffect, useCallback } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
+import { useQuery } from '@tanstack/react-query'
 import { Listing, FiltersState, ViewMode, Coords } from '@/types/housing'
 import { filtersToSearchParams, searchParamsToFilters, getDefaultFilters } from '@/lib/housing/url-sync'
+import { useDebounce } from '@/hooks/use-debounce'
+import { queryKeys } from '@/app/providers'
 import { Toolbar } from '@/components/housing/Toolbar'
 import { ListPane } from '@/components/housing/ListPane'
 import { MapPane } from '@/components/housing/MapPane'
@@ -35,13 +38,13 @@ export function HousingPageClient({
   const searchParams = useSearchParams()
   
   // State
-  const [listings, setListings] = useState<Listing[]>(initialListings)
   const [filters, setFilters] = useState<FiltersState>(initialFilters)
-  const [isLoading, setIsLoading] = useState(false)
-  const [error, setError] = useState<string | null>(null)
   const [hoveredId, setHoveredId] = useState<string | null>(null)
   const [savedListings, setSavedListings] = useState<Set<string>>(new Set())
   const [selectedCampusId, setSelectedCampusId] = useState<string | undefined>(userCampusId)
+
+  // Debounce filters to prevent rapid refetches
+  const debouncedFilters = useDebounce(filters, 300)
 
   // Update URL when filters change
   useEffect(() => {
@@ -53,32 +56,25 @@ export function HousingPageClient({
     window.history.replaceState({}, '', newUrl.toString())
   }, [filters])
 
-  // Fetch listings when filters change
-  useEffect(() => {
-    const fetchListings = async () => {
-      setIsLoading(true)
-      setError(null)
-      
-      try {
-        const params = filtersToSearchParams(filters)
-        const response = await fetch(`/api/housing/listings?${params.toString()}`)
-        
-        if (!response.ok) {
-          throw new Error('Failed to fetch listings')
-        }
-        
-        const data = await response.json()
-        setListings(data.items || []) // Ensure always array
-      } catch (err) {
-        console.error('Failed to fetch listings:', err)
-        setError(err instanceof Error ? err.message : 'Failed to load listings')
-      } finally {
-        setIsLoading(false)
-      }
+  // Fetch listings with React Query using debounced filters
+  const fetchListings = useCallback(async (): Promise<Listing[]> => {
+    const params = filtersToSearchParams(debouncedFilters)
+    const response = await fetch(`/api/housing/listings?${params.toString()}`)
+    
+    if (!response.ok) {
+      throw new Error('Failed to fetch listings')
     }
+    
+    const data = await response.json()
+    return data.items || [] // Ensure always array
+  }, [debouncedFilters])
 
-    fetchListings()
-  }, [filters])
+  const { data: listings = initialListings, isLoading, error } = useQuery({
+    queryKey: queryKeys.housingListings(debouncedFilters),
+    queryFn: fetchListings,
+    staleTime: 30_000, // 30 seconds for semi-static data
+    initialData: initialListings,
+  })
 
   // Handle filter changes
   const handleFiltersChange = useCallback((newFilters: FiltersState) => {
