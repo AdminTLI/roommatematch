@@ -2,10 +2,10 @@
 
 import { createContext, useContext, useEffect, useState, useMemo } from 'react'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
-import { ReactQueryDevtools } from '@tanstack/react-query-devtools'
 import { createClient } from '@/lib/supabase/client'
 import { initializeEventTracker } from '@/lib/events'
 import { DEFAULT_LOCALE, getDictionary, type Locale } from '@/lib/i18n'
+import { ReactQueryDevtools } from './(components)/devtools/react-query-devtools-wrapper'
 
 // Query key factory for consistent keys
 export const queryKeys = {
@@ -118,7 +118,7 @@ export function Providers({ children }: { children: React.ReactNode }) {
       >
         {children}
       </AppContext.Provider>
-      {process.env.NODE_ENV === 'development' && (
+      {process.env.NODE_ENV === 'development' && ReactQueryDevtools && (
         <ReactQueryDevtools initialIsOpen={false} />
       )}
     </QueryClientProvider>
