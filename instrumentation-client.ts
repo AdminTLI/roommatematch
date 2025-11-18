@@ -5,6 +5,9 @@
 import * as Sentry from '@sentry/nextjs'
 import { getClientConsents } from '@/lib/privacy/cookie-consent-client'
 
+const isClientSentryEnabled =
+  process.env.NODE_ENV === 'production' || process.env.NEXT_PUBLIC_ENABLE_CLIENT_SENTRY === 'true'
+
 /**
  * Check if user has consented to error tracking
  */
@@ -57,8 +60,8 @@ function hasPIIConsent(): boolean {
   return consents.error_tracking === true
 }
 
-// Only initialize Sentry if user has consented to error tracking
-if (hasErrorTrackingConsent()) {
+// Only initialize Sentry if allowed (prod or explicitly enabled) AND user consented
+if (isClientSentryEnabled && hasErrorTrackingConsent()) {
   const integrations: Sentry.Integration[] = []
 
   // Only add replay integration if user has consented
@@ -155,8 +158,15 @@ if (hasErrorTrackingConsent()) {
     sendDefaultPii: hasPIIConsent(),
   })
 } else {
-  // Sentry not initialized - user has not consented to error tracking
-  console.log('[Sentry] Error tracking disabled - user has not consented')
+  // Sentry not initialized - either disabled for this environment or no consent
+  // Only log in development to keep production console clean
+  if (process.env.NODE_ENV === 'development') {
+    if (!isClientSentryEnabled) {
+      console.info('[Sentry] Client instrumentation disabled in this environment')
+    } else {
+      console.log('[Sentry] Error tracking disabled - user has not consented')
+    }
+  }
 }
 
 export const onRouterTransitionStart = Sentry.captureRouterTransitionStart

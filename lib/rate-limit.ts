@@ -406,7 +406,14 @@ export const RATE_LIMITS = {
     windowMs: 5 * 60 * 1000, // 5 minutes
     maxRequests: 1,
     failClosed: true
-  }, getSharedStore())
+  }, getSharedStore()),
+
+  // Group creation (fail-closed to prevent spam)
+  group_creation: new RateLimiter({
+    windowMs: 24 * 60 * 60 * 1000, // 24 hours (1 day)
+    maxRequests: 3,
+    failClosed: true
+  }, getSharedStore)
 }
 
 // Utility functions

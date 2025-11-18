@@ -41,12 +41,18 @@ import {
   MoreVertical,
   Ban,
   Trash2,
-  CheckCircle
+  CheckCircle,
+  LogOut,
+  BarChart3
 } from 'lucide-react'
+import { GroupCompatibilityDisplay } from '../../components/group-compatibility-display'
+import { GroupFeedbackForm } from '../../components/group-feedback-form'
+import { LockedGroupChat } from '../../components/locked-group-chat'
 
 interface ChatInterfaceProps {
   roomId: string
   user: User
+  onBack?: () => void
 }
 
 interface ChatMember {
@@ -69,7 +75,7 @@ interface Message {
   is_system_message?: boolean
 }
 
-export function ChatInterface({ roomId, user }: ChatInterfaceProps) {
+export function ChatInterface({ roomId, user, onBack }: ChatInterfaceProps) {
   const router = useRouter()
   const supabase = createClient()
   
@@ -95,6 +101,12 @@ export function ChatInterface({ roomId, user }: ChatInterfaceProps) {
   const [readFailureCount, setReadFailureCount] = useState(0)
   const [readError, setReadError] = useState<string | null>(null)
   const [otherUserVerificationStatus, setOtherUserVerificationStatus] = useState<'verified' | 'unverified' | null>(null)
+  const [connectionStatus, setConnectionStatus] = useState<'connected' | 'disconnected' | 'connecting'>('connecting')
+  const [groupCompatibility, setGroupCompatibility] = useState<any>(null)
+  const [showCompatibility, setShowCompatibility] = useState(false)
+  const [showLeaveGroupDialog, setShowLeaveGroupDialog] = useState(false)
+  const [isLeavingGroup, setIsLeavingGroup] = useState(false)
+  const [isLocked, setIsLocked] = useState(false)
   
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const messagesContainerRef = useRef<HTMLDivElement>(null)
@@ -105,6 +117,7 @@ export function ChatInterface({ roomId, user }: ChatInterfaceProps) {
   const messagesChannelRef = useRef<any>(null)
   const resubscribeTimeoutRef = useRef<NodeJS.Timeout | null>(null)
   const readRetryIntervalRef = useRef<NodeJS.Timeout | null>(null)
+  const isUnmountingRef = useRef(false)
   const [onlineUsers, setOnlineUsers] = useState<Set<string>>(new Set())
   const [lastSeenMap, setLastSeenMap] = useState<Map<string, string>>(new Map())
 
@@ -383,15 +396,45 @@ export function ChatInterface({ roomId, user }: ChatInterfaceProps) {
       }
 
       // Load chat room details
-      const { data: roomData, error: roomError } = await supabase
+      // Try to load with lock columns first, fallback to basic query if columns don't exist
+      let roomData: any = null
+      let roomError: any = null
+      
+      // First try with lock columns (for new schema)
+      const { data: roomDataWithLock, error: roomErrorWithLock } = await supabase
         .from('chats')
         .select(`
           id,
           is_group,
+          is_locked,
+          lock_reason,
+          lock_expires_at,
           created_at
         `)
         .eq('id', roomId)
         .single()
+
+      // If error is about missing columns, try without them
+      if (roomErrorWithLock && roomErrorWithLock.message?.includes('does not exist')) {
+        const { data: roomDataBasic, error: roomErrorBasic } = await supabase
+          .from('chats')
+          .select(`
+            id,
+            is_group,
+            created_at
+          `)
+          .eq('id', roomId)
+          .single()
+        
+        if (roomErrorBasic) {
+          roomError = roomErrorBasic
+        } else {
+          roomData = roomDataBasic ? { ...roomDataBasic, is_locked: false, lock_reason: null, lock_expires_at: null } : null
+        }
+      } else {
+        roomData = roomDataWithLock
+        roomError = roomErrorWithLock
+      }
 
       if (roomError) {
         console.error('Failed to load chat room:', roomError)
@@ -532,6 +575,20 @@ export function ChatInterface({ roomId, user }: ChatInterfaceProps) {
 
       // Store chat type and other person's name for 1-on-1 chats
       setIsGroup(roomData.is_group || false)
+      setIsLocked(roomData.is_locked || false)
+      
+      // Load group compatibility if it's a group chat
+      if (roomData.is_group) {
+        try {
+          const compatResponse = await fetch(`/api/chat/groups?chatId=${roomId}&action=compatibility`)
+          if (compatResponse.ok) {
+            const data = await compatResponse.json()
+            setGroupCompatibility(data.compatibility)
+          }
+        } catch (err) {
+          console.warn('Failed to load group compatibility:', err)
+        }
+      }
       
       // For 1-on-1 chats, store the other person's name and check if blocked
       if (!roomData.is_group && transformedMembers.length === 1) {
@@ -812,6 +869,8 @@ export function ChatInterface({ roomId, user }: ChatInterfaceProps) {
           console.log('[Realtime] 📡 Listening for INSERT broadcast events')
           console.log('[Realtime] 🔍 Channel: ' + channelName)
           console.log('[Realtime] ✅ Ready to receive real-time messages via broadcast')
+          setConnectionStatus('connected')
+          setError('') // Clear any connection error messages
         } else if (status === 'CHANNEL_ERROR') {
           console.error('[Realtime] ❌ Channel subscription error:', err)
           console.error('[Realtime] ❌ Error details:', {
@@ -843,18 +902,29 @@ export function ChatInterface({ roomId, user }: ChatInterfaceProps) {
         } else if (status === 'CLOSED') {
           console.log('[Realtime] ℹ️ Channel closed')
           console.log('[Realtime] ℹ️ This is normal when component unmounts or connection is lost')
-          // Show disconnect message if not intentional
-          if (messagesChannelRef.current) {
+          
+          // Only attempt to resubscribe if:
+          // 1. We're not unmounting (component is still mounted)
+          // 2. The channel reference still exists (wasn't intentionally cleaned up)
+          // 3. We don't already have a resubscribe attempt pending
+          if (!isUnmountingRef.current && messagesChannelRef.current && !resubscribeTimeoutRef.current) {
+            setConnectionStatus('disconnected')
             setError('Connection lost. Attempting to reconnect...')
-            // Attempt to resubscribe after a delay
-            if (resubscribeTimeoutRef.current) {
-              clearTimeout(resubscribeTimeoutRef.current)
-            }
+            
+            // Use exponential backoff for reconnection attempts
+            const attemptDelay = Math.min(2000 * Math.pow(1.5, readFailureCount), 10000)
+            
             resubscribeTimeoutRef.current = setTimeout(() => {
-              console.log('[Realtime] 🔄 Attempting to resubscribe after disconnect...')
-              setupRealtimeSubscription()
+              if (!isUnmountingRef.current && messagesChannelRef.current) {
+                console.log('[Realtime] 🔄 Attempting to resubscribe after disconnect...')
+                setConnectionStatus('connecting')
+                setupRealtimeSubscription()
+              }
               resubscribeTimeoutRef.current = null
-            }, 2000)
+            }, attemptDelay)
+          } else if (isUnmountingRef.current) {
+            // Component is unmounting, don't resubscribe
+            console.log('[Realtime] ℹ️ Component unmounting, skipping resubscribe')
           }
         } else {
           console.warn('[Realtime] ⚠️ Unknown subscription status:', status)
@@ -1053,7 +1123,21 @@ export function ChatInterface({ roomId, user }: ChatInterfaceProps) {
     }
   }, [roomId, user.id, supabase])
 
+  // Prevent body scrolling when chat is mounted
   useEffect(() => {
+    // Prevent body scroll
+    document.body.style.overflow = 'hidden'
+    
+    return () => {
+      // Restore body scroll when unmounting
+      document.body.style.overflow = ''
+    }
+  }, [])
+
+  useEffect(() => {
+    // Reset unmounting flag
+    isUnmountingRef.current = false
+    
     // Set up realtime subscription immediately
     setupRealtimeSubscription()
     
@@ -1064,6 +1148,15 @@ export function ChatInterface({ roomId, user }: ChatInterfaceProps) {
     markAsRead()
     
     return () => {
+      // Mark as unmounting to prevent resubscription attempts
+      isUnmountingRef.current = true
+      
+      // Clear any pending resubscribe attempts
+      if (resubscribeTimeoutRef.current) {
+        clearTimeout(resubscribeTimeoutRef.current)
+        resubscribeTimeoutRef.current = null
+      }
+      
       if (typingTimeoutRef.current) {
         clearTimeout(typingTimeoutRef.current)
       }
@@ -1404,76 +1497,131 @@ export function ChatInterface({ roomId, user }: ChatInterfaceProps) {
     }
   }
 
-  if (isLoading) {
-    return (
-      <div className="max-w-4xl mx-auto">
-        <div className="animate-pulse space-y-4">
-          <div className="h-8 bg-bg-surface-alt rounded w-1/4"></div>
-          <div className="h-96 bg-bg-surface-alt rounded-lg"></div>
-        </div>
-      </div>
-    )
-  }
+  // Show UI immediately, load data in background for faster perceived performance
+  // if (isLoading) {
+  //   return (
+  //     <div className="max-w-4xl mx-auto">
+  //       <div className="animate-pulse space-y-4">
+  //         <div className="h-8 bg-bg-surface-alt rounded w-1/4"></div>
+  //         <div className="h-96 bg-bg-surface-alt rounded-lg"></div>
+  //       </div>
+  //     </div>
+  //   )
+  // }
 
-      return (
-    <div className="flex flex-col h-[100dvh] sm:h-[calc(100vh-6rem)] max-w-4xl mx-auto fixed inset-0 sm:relative sm:inset-auto pt-16 sm:pt-0">
-      {/* Compact Chat Header */}
-      <div className="flex-shrink-0 border-b border-border-subtle bg-bg-surface px-4 py-3 pt-safe-top">
-        <div className="flex items-center justify-between gap-3">
-          <div className="flex items-center gap-3 flex-1 min-w-0">
-            <Button 
-              variant="ghost" 
-              size="sm"
-              onClick={() => router.back()}
-              className="h-8 w-8 p-0 flex-shrink-0"
-            >
-              <ArrowLeft className="h-4 w-4" />
-            </Button>
-            <div className="flex items-center gap-2 flex-1 min-w-0">
-              <h1 className="text-lg font-semibold text-text-primary truncate whitespace-nowrap">
-                {isGroup ? 'Roommate Chat' : (otherPersonName || 'Chat')}
-              </h1>
-              {!isGroup && otherUserVerificationStatus && (
-                <div className="flex-shrink-0">
-                  {otherUserVerificationStatus === 'verified' ? (
-                    <div className="relative">
-                      <div className="w-5 h-5 rounded-full bg-semantic-accent flex items-center justify-center">
-                        <CheckCircle className="h-3.5 w-3.5 text-white fill-white" />
-                      </div>
-                    </div>
+  return (
+    <div className="flex flex-col h-full w-full bg-bg-surface overflow-hidden">
+      {/* Modern Chat Header */}
+      <div className="flex-shrink-0 bg-bg-surface border-b border-border-subtle shadow-sm">
+        <div className="px-4 sm:px-6 lg:px-8 py-4">
+          <div className="flex items-center justify-between gap-4">
+            <div className="flex items-center gap-3 flex-1 min-w-0">
+              <Button 
+                variant="ghost" 
+                size="sm"
+                onClick={() => {
+                  if (onBack) {
+                    onBack()
+                  } else {
+                    router.back()
+                  }
+                }}
+                className="h-10 w-10 p-0 flex-shrink-0 rounded-xl bg-bg-surface-alt hover:bg-bg-surface border border-border-subtle shadow-sm lg:hidden"
+              >
+                <ArrowLeft className="h-5 w-5" />
+              </Button>
+              <div className="flex items-center gap-3 flex-1 min-w-0">
+                <div className="flex items-center gap-3 flex-1 min-w-0">
+                  {isLoading ? (
+                    <div className="h-6 w-32 bg-bg-surface-alt rounded animate-pulse"></div>
                   ) : (
-                    <div className="relative">
-                      <div className="w-5 h-5 rounded-full border-2 border-border-subtle flex items-center justify-center bg-bg-surface-alt">
-                        <div className="w-2.5 h-2.5 rounded-full bg-border-subtle"></div>
-                      </div>
+                    <h1 className="text-lg sm:text-xl font-semibold text-text-primary truncate">
+                      {isGroup ? 'Roommate Chat' : (otherPersonName || 'Chat')}
+                    </h1>
+                  )}
+                  {!isGroup && otherUserVerificationStatus && (
+                    <div className="flex-shrink-0">
+                      {otherUserVerificationStatus === 'verified' ? (
+                        <div className="relative">
+                          <div className="w-8 h-8 rounded-xl bg-semantic-accent flex items-center justify-center border-2 border-semantic-accent/30 shadow-sm">
+                            <CheckCircle className="h-4 w-4 text-white fill-white" />
+                          </div>
+                        </div>
+                      ) : (
+                        <div className="relative">
+                          <div className="w-8 h-8 rounded-xl border-2 border-border-subtle flex items-center justify-center bg-bg-surface-alt">
+                            <div className="w-3 h-3 rounded-full bg-border-subtle"></div>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  )}
+                  {isGroup && (
+                    <div className="flex items-center gap-1.5 flex-shrink-0 px-2.5 py-1 rounded-lg bg-bg-surface-alt border border-border-subtle">
+                      <Users className="h-4 w-4 text-text-muted" />
+                      <span className="text-xs font-semibold text-text-muted">
+                        {members.length}
+                      </span>
                     </div>
                   )}
                 </div>
+              </div>
+            </div>
+            
+            <div className="flex items-center gap-2 flex-shrink-0">
+              {isGroup && groupCompatibility && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setShowCompatibility(!showCompatibility)}
+                  className="h-10 px-3 rounded-xl hover:bg-bg-surface-alt border border-border-subtle"
+                >
+                  <BarChart3 className="h-4 w-4 mr-2" />
+                  <span className="text-xs font-medium">Compatibility</span>
+                </Button>
               )}
               {isGroup && (
-                <div className="flex items-center gap-1 flex-shrink-0">
-                  <Users className="h-4 w-4 text-text-muted" />
-                  <span className="text-xs text-text-muted">
-                    {members.length}
-                  </span>
-                </div>
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="h-10 w-10 p-0 rounded-xl hover:bg-bg-surface-alt border border-border-subtle"
+                    >
+                      <MoreVertical className="h-5 w-5" />
+                      <span className="sr-only">Open menu</span>
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end">
+                    <DropdownMenuItem
+                      onClick={() => setShowCompatibility(!showCompatibility)}
+                    >
+                      <BarChart3 className="h-4 w-4 mr-2" />
+                      View Compatibility
+                    </DropdownMenuItem>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem
+                      onClick={() => setShowLeaveGroupDialog(true)}
+                      className="text-semantic-danger focus:text-semantic-danger focus:bg-semantic-danger/10"
+                    >
+                      <LogOut className="h-4 w-4 mr-2" />
+                      Leave Group
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
               )}
-            </div>
-          </div>
-          
-          <div className="flex items-center gap-2 flex-shrink-0">
-            {!isGroup && (
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className="h-8 w-8 p-0"
-                  >
-                    <MoreVertical className="h-4 w-4" />
-                    <span className="sr-only">Open menu</span>
-                  </Button>
-                </DropdownMenuTrigger>
+              {!isGroup && (
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="h-10 w-10 p-0 rounded-xl hover:bg-bg-surface-alt border border-border-subtle"
+                    >
+                      <MoreVertical className="h-5 w-5" />
+                      <span className="sr-only">Open menu</span>
+                    </Button>
+                  </DropdownMenuTrigger>
                 <DropdownMenuContent align="end">
                   <DropdownMenuItem
                     onClick={handleBlockUser}
@@ -1503,34 +1651,52 @@ export function ChatInterface({ roomId, user }: ChatInterfaceProps) {
               </DropdownMenu>
             )}
           </div>
+          </div>
         </div>
       </div>
 
       {/* Blocked User Notice */}
       {isBlocked && blockedUserId && (
-        <div className="flex-shrink-0 px-4 py-2 bg-semantic-danger/10 dark:bg-semantic-danger/20 border-b border-semantic-danger/30">
-          <Alert variant="destructive" className="py-2">
+        <div className="flex-shrink-0 py-2">
+          <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+          <Alert variant="destructive" className="py-2 bg-semantic-danger/10 dark:bg-semantic-danger/20 border border-semantic-danger/30 rounded-lg">
             <Ban className="h-4 w-4" />
             <AlertDescription className="text-sm">
               You have blocked this user. Messages from blocked users are hidden.
             </AlertDescription>
           </Alert>
+          </div>
         </div>
       )}
 
-      {/* Error Message */}
-      {error && (
-        <div className="flex-shrink-0 px-4 py-2">
-          <Alert variant="destructive">
-            <AlertTriangle className="h-4 w-4" />
-            <AlertDescription>{error}</AlertDescription>
-          </Alert>
+      {/* Connection Status / Error Message */}
+      {error && connectionStatus === 'disconnected' && (
+        <div className="flex-shrink-0 py-2">
+          <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+            <Alert variant="destructive" className="rounded-lg bg-semantic-danger/10 dark:bg-semantic-danger/20 border border-semantic-danger/30">
+              <AlertTriangle className="h-4 w-4" />
+              <AlertDescription>{error}</AlertDescription>
+            </Alert>
+          </div>
+        </div>
+      )}
+
+      {/* Group Compatibility Display */}
+      {isGroup && showCompatibility && groupCompatibility && (
+        <div className="flex-shrink-0 py-3 border-b border-border-subtle bg-bg-surface-alt">
+          <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+            <GroupCompatibilityDisplay 
+              compatibility={groupCompatibility}
+              compact={false}
+            />
+          </div>
         </div>
       )}
 
       {/* Chat Members - Compact display for group chats */}
       {isGroup && members.length > 0 && (
-        <div className="flex-shrink-0 px-4 py-2 bg-bg-surface-alt border-b border-border-subtle">
+        <div className="flex-shrink-0 py-2">
+          <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center gap-2 overflow-x-auto scrollbar-hide">
             {members.map((member) => (
               <div key={member.id} className="flex items-center gap-2 flex-shrink-0">
@@ -1549,18 +1715,48 @@ export function ChatInterface({ roomId, user }: ChatInterfaceProps) {
               </div>
             ))}
           </div>
+          </div>
         </div>
       )}
 
-      {/* Messages - Scrollable area */}
-      <div ref={messagesContainerRef} className="flex-1 overflow-y-auto bg-bg-body px-4 py-4 pb-20">
-        {messages.length === 0 ? (
-          <div className="text-center py-12">
-            <MessageCircle className="h-12 w-12 text-text-muted mx-auto mb-4" />
-            <p className="text-text-secondary">No messages yet. Start the conversation!</p>
+      {/* Messages - Scrollable area OR Locked Group Chat */}
+      {isGroup && isLocked ? (
+        <div className="flex-1 overflow-y-auto min-h-0 relative bg-bg-surface">
+          <div className="relative z-20 max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-4 lg:py-6">
+            <LockedGroupChat 
+              chatId={roomId}
+              userId={user.id}
+              onUnlock={() => {
+                setIsLocked(false)
+                loadChatData()
+              }}
+            />
           </div>
-        ) : (
-          <div className="space-y-3">
+        </div>
+      ) : (
+        <div ref={messagesContainerRef} className="flex-1 overflow-y-auto min-h-0 relative bg-bg-surface">
+          {/* White corner overlay to prevent grey showing through rounded corners */}
+          <div className="absolute bottom-0 right-0 w-16 h-16 bg-bg-surface rounded-tl-2xl pointer-events-none z-0"></div>
+          
+          {/* Content overlay */}
+          <div className="relative z-20 max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-4 lg:py-6">
+            {isLoading ? (
+            <div className="text-center py-16">
+              <div className="space-y-3">
+                <div className="h-4 bg-bg-surface-alt rounded w-3/4 mx-auto animate-pulse"></div>
+                <div className="h-4 bg-bg-surface-alt rounded w-1/2 mx-auto animate-pulse"></div>
+              </div>
+            </div>
+          ) : messages.length === 0 ? (
+            <div className="text-center py-16">
+              <div className="w-20 h-20 mx-auto mb-6 rounded-2xl bg-semantic-accent-soft flex items-center justify-center">
+                <MessageCircle className="h-10 w-10 text-semantic-accent" />
+              </div>
+              <h3 className="text-lg font-bold text-text-primary mb-2">No messages yet</h3>
+              <p className="text-text-secondary text-sm">Start the conversation with your match!</p>
+            </div>
+          ) : (
+            <div className="space-y-3">
             {messages
               .filter(message => !isBlocked || message.sender_id !== blockedUserId)
               .map((message, index) => {
@@ -1569,9 +1765,9 @@ export function ChatInterface({ roomId, user }: ChatInterfaceProps) {
                 return (
                   <div key={message.id}>
                     {showDateSeparator && (
-                      <div className="flex justify-center my-4">
-                        <div className="bg-bg-surface-alt px-3 py-1 rounded-full">
-                          <span className="text-xs text-text-secondary font-medium">
+                      <div className="flex justify-center my-6">
+                        <div className="bg-bg-surface border border-border-subtle px-4 py-1.5 rounded-full shadow-sm">
+                          <span className="text-xs text-text-secondary font-semibold">
                             {formatDate(message.created_at)}
                           </span>
                         </div>
@@ -1580,8 +1776,8 @@ export function ChatInterface({ roomId, user }: ChatInterfaceProps) {
                     
                     {message.is_system_message ? (
                       <div className="flex justify-center my-4">
-                        <div className="bg-semantic-accent-soft border border-semantic-accent/30 rounded-lg px-4 py-2">
-                          <p className="text-sm text-semantic-accent text-center">
+                        <div className="bg-semantic-accent-soft border border-semantic-accent/30 rounded-xl px-4 py-2.5 shadow-sm">
+                          <p className="text-sm text-semantic-accent text-center font-semibold">
                             {message.content}
                           </p>
                         </div>
@@ -1601,19 +1797,19 @@ export function ChatInterface({ roomId, user }: ChatInterfaceProps) {
                         
                         <div className={`max-w-[75%] ${message.is_own ? 'order-first' : ''}`}>
                           {!message.is_own && (
-                            <div className="text-xs text-text-muted mb-1">
+                            <div className="text-xs font-semibold text-text-muted mb-1.5 px-1">
                               {message.sender_name}
                             </div>
                           )}
-                          <div className={`rounded-lg px-3 py-2 ${
+                          <div className={`rounded-2xl px-4 py-2.5 shadow-sm ${
                             message.is_own 
-                              ? 'bg-semantic-accent text-white' 
+                              ? 'bg-semantic-accent text-white border-2 border-semantic-accent/20' 
                               : 'bg-bg-surface border border-border-subtle'
                           }`}>
-                            <p className={`text-sm break-words ${message.is_own ? 'text-white' : 'text-text-primary'}`}>{message.content}</p>
+                            <p className={`text-sm break-words leading-relaxed ${message.is_own ? 'text-white font-medium' : 'text-text-primary'}`}>{message.content}</p>
                           </div>
-                          <div className="flex items-center gap-1 mt-1">
-                            <span className="text-xs text-text-muted">
+                          <div className={`flex items-center gap-1.5 mt-1.5 ${message.is_own ? 'justify-end' : 'justify-start'}`}>
+                            <span className="text-[10px] text-text-muted font-medium">
                               {formatTime(message.created_at)}
                             </span>
                             {message.is_own && getReadStatus(message)}
@@ -1650,14 +1846,14 @@ export function ChatInterface({ roomId, user }: ChatInterfaceProps) {
               return (
                 <div className="flex gap-2">
                   <div className="w-7 h-7 flex-shrink-0"></div>
-                  <div className="bg-bg-surface border border-border-subtle rounded-lg px-3 py-2">
-                    <div className="flex items-center gap-1">
+                  <div className="bg-bg-surface border border-border-subtle rounded-2xl px-4 py-2.5 shadow-sm">
+                    <div className="flex items-center gap-2">
                       <div className="flex gap-1">
-                        <div className="w-1 h-1 bg-text-muted rounded-full animate-bounce"></div>
-                        <div className="w-1 h-1 bg-text-muted rounded-full animate-bounce" style={{ animationDelay: '0.1s' }}></div>
-                        <div className="w-1 h-1 bg-text-muted rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
+                        <div className="w-1.5 h-1.5 bg-text-muted rounded-full animate-bounce"></div>
+                        <div className="w-1.5 h-1.5 bg-text-muted rounded-full animate-bounce" style={{ animationDelay: '0.1s' }}></div>
+                        <div className="w-1.5 h-1.5 bg-text-muted rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
                       </div>
-                      <span className="text-xs text-text-muted ml-2">
+                      <span className="text-xs text-text-muted font-medium">
                         {typingText}
                       </span>
                     </div>
@@ -1668,37 +1864,45 @@ export function ChatInterface({ roomId, user }: ChatInterfaceProps) {
             
             <div ref={messagesEndRef} />
           </div>
-        )}
-      </div>
-
-      {/* Message Input - At bottom */}
-      <div className="flex-shrink-0 border-t border-border-subtle bg-bg-surface px-4 py-3 pb-safe-bottom">
-        <div className="flex gap-2 items-center">
-          <Input
-            value={newMessage}
-            onChange={(e) => {
-              setNewMessage(e.target.value)
-              handleTyping()
-            }}
-            onKeyPress={(e) => {
-              if (e.key === 'Enter' && !e.shiftKey) {
-                e.preventDefault()
-                sendMessage()
-              }
-            }}
-            placeholder={isBlocked ? "You cannot send messages to a blocked user" : "Type your message..."}
-            disabled={isSending || isBlocked}
-            className="flex-1 h-10 text-sm"
-          />
-          <Button 
-            onClick={sendMessage}
-            disabled={!newMessage.trim() || isSending || isBlocked}
-            className="h-10 w-10 p-0 flex-shrink-0"
-          >
-            <Send className="h-4 w-4" />
-          </Button>
+          )}
         </div>
       </div>
+      )}
+
+      {/* Message Input - At bottom */}
+      {!(isGroup && isLocked) && (
+      <div className="flex-shrink-0 bg-bg-surface border-t border-border-subtle shadow-sm rounded-br-2xl">
+        <div className="px-4 sm:px-6 lg:px-8 py-4">
+          <div className="max-w-4xl mx-auto">
+            <div className="flex gap-3 items-center">
+              <Input
+                value={newMessage}
+                onChange={(e) => {
+                  setNewMessage(e.target.value)
+                  handleTyping()
+                }}
+                onKeyPress={(e) => {
+                  if (e.key === 'Enter' && !e.shiftKey) {
+                    e.preventDefault()
+                    sendMessage()
+                  }
+                }}
+                placeholder={isBlocked ? "You cannot send messages to a blocked user" : "Type your message..."}
+                disabled={isSending || isBlocked}
+                className="flex-1 h-12 text-sm bg-bg-surface-alt border-2 border-border-subtle rounded-xl focus:bg-bg-surface focus:border-semantic-accent focus:ring-2 focus:ring-semantic-accent/20 shadow-sm transition-all placeholder:text-text-muted"
+              />
+              <Button 
+                onClick={sendMessage}
+                disabled={!newMessage.trim() || isSending || isBlocked}
+                className="h-12 w-12 p-0 flex-shrink-0 rounded-xl bg-semantic-accent hover:bg-semantic-accent-hover border-2 border-semantic-accent/20 disabled:opacity-50 disabled:cursor-not-allowed shadow-md transition-all"
+              >
+                <Send className="h-5 w-5 text-white" />
+              </Button>
+            </div>
+          </div>
+        </div>
+      </div>
+      )}
 
       {/* Report User Dialog */}
       <Dialog open={showReportDialog} onOpenChange={setShowReportDialog}>
@@ -1763,6 +1967,45 @@ export function ChatInterface({ roomId, user }: ChatInterfaceProps) {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* Leave Group Dialog */}
+      <GroupFeedbackForm
+        chatId={roomId}
+        feedbackType="left"
+        isOpen={showLeaveGroupDialog}
+        onClose={() => setShowLeaveGroupDialog(false)}
+        onSubmit={async () => {
+          setIsLeavingGroup(true)
+          try {
+            const response = await fetchWithCSRF('/api/chat/groups', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                chat_id: roomId,
+                feedback_type: 'left'
+              })
+            })
+
+            if (!response.ok) {
+              const error = await response.json()
+              throw new Error(error.error || 'Failed to leave group')
+            }
+
+            showSuccessToast('Left group', 'You have successfully left the group.')
+            if (onBack) {
+              onBack()
+            } else {
+              router.push('/chat')
+            }
+          } catch (error: any) {
+            console.error('Failed to leave group:', error)
+            showErrorToast('Failed to leave group', error.message || 'Please try again.')
+          } finally {
+            setIsLeavingGroup(false)
+            setShowLeaveGroupDialog(false)
+          }
+        }}
+      />
     </div>
   )
 }

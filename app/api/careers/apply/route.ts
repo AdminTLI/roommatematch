@@ -19,14 +19,21 @@ const ApplicationSchema = z.object({
 export async function POST(request: Request) {
   try {
     const body = await request.json().catch(() => null)
+    if (!body) {
+      console.error('[Careers Apply] Failed to parse request body')
+      return NextResponse.json({ error: 'Invalid request body' }, { status: 400 })
+    }
+    
     const parse = ApplicationSchema.safeParse(body)
     if (!parse.success) {
+      console.error('[Careers Apply] Validation failed:', parse.error.flatten())
       return NextResponse.json({ error: 'Invalid request', details: parse.error.flatten() }, { status: 400 })
     }
     const data = parse.data
 
     const supabase = createServiceClient()
-    const { error } = await supabase.from('career_applications').insert({
+
+    const { data: insertedData, error } = await supabase.from('career_applications').insert({
       track: data.track,
       name: data.name,
       email: data.email,
@@ -38,12 +45,27 @@ export async function POST(request: Request) {
       preferred_area: data.preferredArea || '',
       course_program: data.courseProgram || '',
       status: 'new',
-    })
+    }).select()
 
     if (error) {
-      console.error('Failed to insert career application', error)
-      return NextResponse.json({ error: 'Failed to save application' }, { status: 500 })
+      console.error('[Careers Apply] Database insert failed:', {
+        error: error.message,
+        code: error.code,
+        details: error.details,
+        hint: error.hint
+      })
+      return NextResponse.json({ 
+        error: 'Failed to save application',
+        details: process.env.NODE_ENV === 'development' ? {
+          message: error.message,
+          code: error.code,
+          details: error.details,
+          hint: error.hint
+        } : error.message
+      }, { status: 500 })
     }
+    
+    console.log('[Careers Apply] Successfully inserted application:', insertedData?.[0]?.id)
 
     const inbox = process.env.CAREERS_INBOX || process.env.SUPPORT_INBOX
     if (inbox) {
@@ -87,8 +109,22 @@ ${data.notes ? `Notes:\n${data.notes}\n` : ''}
 
     return NextResponse.json({ success: true })
   } catch (err) {
-    console.error('Application submit error', err)
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
+    console.error('[Careers Apply] Unexpected error:', err)
+    const errorMessage = err instanceof Error ? err.message : 'Unknown error'
+    const errorStack = err instanceof Error ? err.stack : undefined
+    console.error('[Careers Apply] Error stack:', errorStack)
+    
+    // Return detailed error in development
+    const errorDetails = process.env.NODE_ENV === 'development' ? {
+      message: errorMessage,
+      stack: errorStack,
+      type: err instanceof Error ? err.constructor.name : typeof err
+    } : undefined
+    
+    return NextResponse.json({ 
+      error: 'Internal server error',
+      details: errorDetails
+    }, { status: 500 })
   }
 }
 

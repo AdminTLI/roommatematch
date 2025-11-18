@@ -14,14 +14,17 @@ export default async function DashboardPage() {
   // Force refresh the user session to get latest auth state
   const { data: { user }, error: userError } = await supabase.auth.getUser()
   
-  console.log('[Dashboard] User auth data:', {
-    id: user?.id,
-    email: user?.email,
-    email_confirmed_at: user?.email_confirmed_at,
-    email_confirmed_at_type: typeof user?.email_confirmed_at,
-    user_metadata: user?.user_metadata,
-    userError
-  })
+  // Only log in development
+  if (process.env.NODE_ENV === 'development') {
+    console.log('[Dashboard] User auth data:', {
+      id: user?.id,
+      email: user?.email,
+      email_confirmed_at: user?.email_confirmed_at,
+      email_confirmed_at_type: typeof user?.email_confirmed_at,
+      user_metadata: user?.user_metadata,
+      userError
+    })
+  }
 
   // Redirect to sign-in if user is not authenticated
   if (!user) {

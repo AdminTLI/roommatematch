@@ -12,6 +12,7 @@ import { toast } from 'sonner'
 import { GROUPS } from '@/components/marketing/Careers/RoleCatalogCards'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Info, GraduationCap, MapPin } from 'lucide-react'
+import { fetchWithCSRF } from '@/lib/utils/fetch-with-csrf'
 
 const ApplicationSchema = z.object({
   track: z.enum(['experienced', 'student']),
@@ -56,18 +57,22 @@ export function ApplyForm() {
         : values.notes || ''
 
     try {
-      const res = await fetch('/api/careers/apply', {
+      const res = await fetchWithCSRF('/api/careers/apply', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ ...values, notes: notesWithRoles })
       })
       if (!res.ok) {
         const data = await res.json().catch(() => ({}))
-        throw new Error(data?.error || 'Failed to submit application')
+        const errorMessage = data?.error || 'Failed to submit application'
+        const errorDetails = data?.details
+        console.error('[ApplyForm] Submission failed:', { status: res.status, error: errorMessage, details: errorDetails })
+        throw new Error(errorMessage + (errorDetails ? `: ${JSON.stringify(errorDetails)}` : ''))
       }
-      toast.success('Thanks for applying. We’ll be in touch soon.')
+      toast.success('Thanks for applying. We will be in touch soon.')
       form.reset()
     } catch (err: any) {
+      console.error('[ApplyForm] Error:', err)
       toast.error(err?.message || 'Something went wrong')
     }
   }
@@ -85,13 +90,13 @@ export function ApplyForm() {
               <div className="space-y-2">
                 <Label>Track</Label>
                 <Select
-                  value={form.watch('track')}
+                  value={form.watch('track') || 'experienced'}
                   onValueChange={(v) => form.setValue('track', v as 'experienced' | 'student')}
                 >
-                <SelectTrigger className="h-10 text-sm">
+                  <SelectTrigger className="h-10 text-sm">
                     <SelectValue placeholder="Select track" />
                   </SelectTrigger>
-                  <SelectContent>
+                  <SelectContent sideOffset={4} className="z-50">
                     <SelectItem value="experienced">Experienced contributor</SelectItem>
                     <SelectItem value="student">Student volunteer</SelectItem>
                   </SelectContent>

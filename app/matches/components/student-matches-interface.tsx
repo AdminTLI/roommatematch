@@ -374,15 +374,11 @@ export function StudentMatchesInterface({ user }: StudentMatchesInterfaceProps) 
         <div className="hidden sm:block">
           <div className="relative">
             <div className="flex gap-1 bg-white dark:bg-card border border-gray-200 dark:border-border p-1 rounded-2xl shadow-sm">
-              {tabs.map((tab, index) => (
+              {tabs.map((tab) => (
                 <button
                   key={tab.id}
                   onClick={() => setActiveTab(tab.id)}
-                  className={`flex-1 flex items-center justify-center gap-2 px-4 py-2 text-sm font-medium transition-colors whitespace-nowrap touch-manipulation ${
-                    index === 0 ? 'rounded-l-xl' : ''
-                  } ${
-                    index === tabs.length - 1 ? 'rounded-r-xl' : ''
-                  } ${
+                  className={`flex-1 flex items-center justify-center gap-2 px-4 py-2 text-sm font-medium transition-colors whitespace-nowrap touch-manipulation rounded-xl ${
                     activeTab === tab.id
                       ? 'bg-blue-600 text-white shadow-sm'
                       : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50 active:bg-gray-100'

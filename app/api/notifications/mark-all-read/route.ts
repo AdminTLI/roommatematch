@@ -11,6 +11,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Mark all user's notifications as read
+    console.log('[mark-all-read] Marking all notifications as read for user:', user.id);
     const { data, error } = await supabase
       .from('notifications')
       .update({ 
@@ -22,10 +23,14 @@ export async function POST(request: NextRequest) {
       .select('id');
 
     if (error) {
-      console.error('Failed to mark all notifications as read:', error);
-      return NextResponse.json({ error: 'Failed to mark all notifications as read' }, { status: 500 });
+      console.error('[mark-all-read] Failed to mark all notifications as read:', error);
+      return NextResponse.json({ 
+        error: 'Failed to mark all notifications as read',
+        details: process.env.NODE_ENV === 'development' ? error.message : undefined
+      }, { status: 500 });
     }
 
+    console.log('[mark-all-read] Successfully marked', data?.length || 0, 'notifications as read');
     return NextResponse.json({ 
       success: true, 
       updated_count: data?.length || 0 

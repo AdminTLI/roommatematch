@@ -15,8 +15,6 @@ import {
   BarChart3,
   Video,
   Settings,
-  Search,
-  TrendingUp,
   Sparkles
 } from 'lucide-react'
 import Link from 'next/link'
@@ -278,12 +276,12 @@ export function Sidebar({ user, onClose }: SidebarProps) {
                 return (
                   <Link key={item.name} href={item.href} onClick={onClose}>
                     <Button
-                      variant={isActive ? "primary" : "ghost"}
+                      variant="ghost"
                       className={cn(
                         "w-full justify-start gap-3 h-11 px-3 transition-colors",
                         isActive 
-                          ? "bg-semantic-accent-soft text-semantic-accent dark:bg-semantic-accent-soft dark:text-semantic-accent border-l-4 border-semantic-accent rounded-l-none" 
-                          : "text-text-secondary hover:bg-bg-surface-alt"
+                          ? "bg-semantic-accent-soft text-semantic-accent dark:bg-semantic-accent-soft dark:text-semantic-accent border-l-4 border-semantic-accent rounded-l-none hover:bg-semantic-accent-soft/80 hover:text-semantic-accent" 
+                          : "text-text-secondary hover:bg-bg-surface-alt hover:text-text-primary"
                       )}
                     >
                       <Icon className="w-5 h-5" />
@@ -316,11 +314,11 @@ export function Sidebar({ user, onClose }: SidebarProps) {
             >
               <Link href={item.href} onClick={onClose}>
                 <Button
-                  variant={isActive ? "primary" : "ghost"}
+                  variant={isActive ? "ghost" : "ghost"}
                   className={cn(
                     "w-full justify-start gap-3 h-11 px-3 transition-colors",
                     isActive 
-                      ? "bg-semantic-accent-soft text-semantic-accent dark:bg-semantic-accent-soft dark:text-semantic-accent border-l-4 border-semantic-accent rounded-l-none" 
+                      ? "bg-semantic-accent-soft text-semantic-accent dark:bg-semantic-accent-soft dark:text-semantic-accent border-l-4 border-semantic-accent rounded-l-none hover:bg-semantic-accent-soft/80 hover:text-semantic-accent" 
                       : "text-text-secondary hover:bg-bg-surface-alt hover:text-text-primary"
                   )}
                 >
@@ -344,31 +342,7 @@ export function Sidebar({ user, onClose }: SidebarProps) {
           <div className="mt-auto pt-4 space-y-3">
             <Separator />
             
-            {/* Quick Stats Card */}
-            <Card className="bg-semantic-accent-soft dark:bg-semantic-accent-soft border-semantic-accent/30 dark:border-semantic-accent/30">
-              <CardContent className="p-3">
-                <div className="flex items-center gap-2 mb-2">
-                  <TrendingUp className="w-4 h-4 text-semantic-accent" />
-                  <span className="text-xs font-semibold text-semantic-accent">Quick Stats</span>
-                </div>
-                <div className="space-y-2">
-                  <div className="flex items-center justify-between text-xs">
-                    <span className="text-text-secondary">Matches</span>
-                    <span className="font-semibold text-text-primary">{totalMatchesCount}</span>
-                  </div>
-                  <div className="flex items-center justify-between text-xs">
-                    <span className="text-text-secondary">Unread</span>
-                    <span className="font-semibold text-text-primary">{unreadChatCount}</span>
-                  </div>
-                  <div className="flex items-center justify-between text-xs">
-                    <span className="text-text-secondary">Profile</span>
-                    <span className="font-semibold text-text-primary">{profileCompletion}%</span>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* Progress Indicator */}
+            {/* Complete Your Profile */}
             {(profileCompletion < 100 || questionnaireProgress < 100) && (
             <Card className="border-semantic-warning/30 dark:border-semantic-warning/30 bg-semantic-warning/10 dark:bg-semantic-warning/10">
               <CardContent className="p-3">
@@ -407,35 +381,6 @@ export function Sidebar({ user, onClose }: SidebarProps) {
                 </CardContent>
               </Card>
             )}
-
-            {/* Quick Actions */}
-            <div className="space-y-1.5">
-              <span className="text-xs uppercase tracking-wide text-ink-500 block mb-1">Quick Actions</span>
-              <Button
-                variant="ghost"
-                size="sm"
-                className="w-full justify-start gap-2 h-9 text-xs"
-                onClick={() => {
-                  router.push('/matches')
-                  onClose?.()
-                }}
-              >
-                <Search className="w-3.5 h-3.5" />
-                <span>Find Matches</span>
-              </Button>
-              <Button
-                variant="ghost"
-                size="sm"
-                className="w-full justify-start gap-2 h-9 text-xs"
-                onClick={() => {
-                  router.push('/settings')
-                  onClose?.()
-                }}
-              >
-                <Settings className="w-3.5 h-3.5" />
-                <span>Settings</span>
-              </Button>
-            </div>
 
             {/* User Profile Card */}
             <Card className="bg-bg-surface-alt dark:bg-bg-surface-alt border-border-subtle">

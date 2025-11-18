@@ -20,7 +20,7 @@ import { formatDistanceToNow } from 'date-fns'
 
 interface NotificationItemProps {
   notification: Notification
-  onMarkAsRead: (id: string) => void
+  onMarkAsRead: (id: string) => Promise<void>
   onNavigate: (notification: Notification) => void
 }
 
@@ -46,9 +46,9 @@ export function NotificationItem({
   const config = NOTIFICATION_CONFIG[notification.type]
   const IconComponent = iconMap[config.icon as keyof typeof iconMap] || MessageCircle
 
-  const handleClick = () => {
+  const handleClick = async () => {
     if (!notification.is_read) {
-      onMarkAsRead(notification.id)
+      await onMarkAsRead(notification.id)
     }
     onNavigate(notification)
   }

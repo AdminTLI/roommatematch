@@ -1,8 +1,9 @@
-import { ChatList } from './components/chat-list'
+import { ChatSplitView } from './components/chat-split-view'
 import { AppShell } from '@/components/app/shell'
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import { checkUserVerificationStatus, getVerificationRedirectUrl } from '@/lib/auth/verification-check'
+import { getUserProfile } from '@/lib/auth/user-profile'
 
 export default async function ChatPage() {
   const supabase = await createClient()
@@ -36,17 +37,22 @@ export default async function ChatPage() {
     redirect('/onboarding')
   }
 
+  // Get user profile with proper name
+  const userProfile = await getUserProfile(user.id)
+  if (!userProfile) {
+    redirect('/auth/sign-in')
+  }
+
   return (
     <AppShell 
-      user={{
-        id: user.id,
-        email: user.email || '',
-        name: user.user_metadata?.full_name || 'User',
-        avatar: user.user_metadata?.avatar_url
-      }}
+      user={userProfile}
       showQuestionnairePrompt={true}
     >
-      <ChatList user={user} />
+      <div className="w-full h-full -m-4 sm:-m-6 lg:-m-8 overflow-hidden">
+        <div className="h-full w-full bg-bg-surface rounded-2xl overflow-hidden shadow-lg relative">
+          <ChatSplitView user={user} />
+        </div>
+      </div>
     </AppShell>
   )
 }

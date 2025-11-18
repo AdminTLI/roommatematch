@@ -68,6 +68,10 @@ export async function createMatchNotification(
   matchId: string,
   chatId?: string
 ): Promise<void> {
+  if (userAId === userBId) {
+    console.warn('[createMatchNotification] Ignoring self-match notification for user', userAId)
+    return
+  }
   const supabase = await createAdminClient();
   
   // Get user names for personalized messages
@@ -105,25 +109,140 @@ export async function createMatchNotification(
       break;
   }
 
-  // Create notifications for both users
-  await createNotificationsForUsers(
-    [userAId, userBId],
-    type,
-    title,
-    messageA, // We'll update this per user below
-    metadata
-  );
+  // For match_created type, check if notifications already exist for this user pair
+  // This prevents duplicates even when the cron job runs multiple times with different suggestion IDs
+  if (type === 'match_created') {
+    // Ensure other_user_id is in metadata for duplicate detection
+    const metadataWithOtherUser = {
+      ...metadata,
+      other_user_id: userBId
+    }
+    const metadataWithOtherUserB = {
+      ...metadata,
+      other_user_id: userAId
+    }
+    
+    // Check for existing notifications by user pair (not just match_id)
+    // Check for user A's notification with user B
+    const { data: existingA } = await supabase
+      .from('notifications')
+      .select('id')
+      .eq('user_id', userAId)
+      .eq('type', type)
+      .eq('metadata->other_user_id', userBId)
+      .limit(1)
+    
+    // Check for user B's notification with user A
+    const { data: existingB } = await supabase
+      .from('notifications')
+      .select('id')
+      .eq('user_id', userBId)
+      .eq('type', type)
+      .eq('metadata->other_user_id', userAId)
+      .limit(1)
+    
+    const hasNotificationForA = existingA && existingA.length > 0
+    const hasNotificationForB = existingB && existingB.length > 0
+    
+    if (hasNotificationForA && hasNotificationForB) {
+      console.log('[createMatchNotification] Notifications already exist for user pair', userAId, userBId)
+      return
+    }
+    
+    // Only create notifications for users who don't have one yet
+    if (!hasNotificationForA && !hasNotificationForB) {
+      // Both need notifications - use insert with error handling for unique constraint
+      try {
+        const { error: insertError } = await supabase
+          .from('notifications')
+          .insert([
+            {
+              user_id: userAId,
+              type,
+              title,
+              message: messageA,
+              metadata: metadataWithOtherUser
+            },
+            {
+              user_id: userBId,
+              type,
+              title,
+              message: messageB,
+              metadata: metadataWithOtherUserB
+            }
+          ])
+        
+        if (insertError) {
+          // If unique constraint violation, notifications already exist - that's fine
+          if (insertError.code === '23505') {
+            console.log('[createMatchNotification] Notifications already exist (unique constraint)')
+            return
+          }
+          throw insertError
+        }
+      } catch (error: any) {
+        if (error?.code === '23505') {
+          console.log('[createMatchNotification] Notifications already exist (unique constraint)')
+          return
+        }
+        throw error
+      }
+    } else if (!hasNotificationForA) {
+      // Only user A needs notification
+      try {
+        await createNotification({
+          user_id: userAId,
+          type,
+          title,
+          message: messageA,
+          metadata: metadataWithOtherUser
+        })
+      } catch (error: any) {
+        if (error?.code === '23505' || error?.message?.includes('unique')) {
+          console.log('[createMatchNotification] Notification for user A already exists')
+          return
+        }
+        throw error
+      }
+    } else if (!hasNotificationForB) {
+      // Only user B needs notification
+      try {
+        await createNotification({
+          user_id: userBId,
+          type,
+          title,
+          message: messageB,
+          metadata: metadataWithOtherUserB
+        })
+      } catch (error: any) {
+        if (error?.code === '23505' || error?.message?.includes('unique')) {
+          console.log('[createMatchNotification] Notification for user B already exists')
+          return
+        }
+        throw error
+      }
+    }
+  } else {
+    // For other types (match_accepted, match_confirmed), create normally
+    await createNotificationsForUsers(
+      [userAId, userBId],
+      type,
+      title,
+      messageA, // We'll update this per user below
+      metadata
+    );
 
-  // Update the second user's message and ensure metadata includes chat_id
-  await supabase
-    .from('notifications')
-    .update({ 
-      message: messageB,
-      metadata: metadata // Ensure chat_id is included
-    })
-    .eq('user_id', userBId)
-    .eq('type', type)
-    .eq('metadata->match_id', matchId);
+    // Update the second user's message and ensure metadata includes chat_id
+    await supabase
+      .from('notifications')
+      .update({ 
+        message: messageB,
+        metadata: metadata // Ensure chat_id is included
+      })
+      .eq('user_id', userBId)
+      .eq('type', type)
+      .eq('metadata->match_id', matchId)
+  }
 }
 
 /**

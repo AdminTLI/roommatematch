@@ -46,41 +46,87 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Cannot chat with yourself' }, { status: 400 })
     }
 
-    // Verify users share a confirmed match
-    // Check both match_suggestions (status='confirmed') and match_records (locked=true)
+    // Verify users share a match (any status for individual chats)
+    // Check both match_suggestions (any status) and match_records (locked=true)
     const admin = await createAdminClient()
     
-    // Check for confirmed match suggestion
-    const { data: confirmedSuggestion } = await admin
+    // Check for any match suggestion (any status - pending, accepted, declined, confirmed)
+    // Query for matches where the user is involved, then filter in memory for the target user
+    // This is more reliable than .contains() which may not work correctly for array contains checks
+    const { data: allSuggestions, error: suggestionError } = await admin
       .from('match_suggestions')
-      .select('id')
-      .eq('status', 'confirmed')
-      .contains('member_ids', [user.id, targetUserId])
-      .maybeSingle()
+      .select('id, status, member_ids')
+      .eq('kind', 'pair')
+      .contains('member_ids', [user.id])
     
-    // Check for locked match record
-    const { data: lockedMatch } = await admin
-      .from('match_records')
-      .select('id')
-      .eq('locked', true)
-      .contains('user_ids', [user.id, targetUserId])
-      .maybeSingle()
+    if (suggestionError) {
+      safeLogger.warn('Error checking match suggestions', { error: suggestionError, userId: user.id, targetUserId })
+    }
+    
+    // Filter in memory to find matches with both users
+    const anySuggestion = allSuggestions?.find((s: any) => {
+      const memberIds = s.member_ids as string[]
+      return Array.isArray(memberIds) && 
+             memberIds.includes(user.id) && 
+             memberIds.includes(targetUserId) &&
+             memberIds.length === 2
+    })
+    
+    // Check for locked match record (gracefully handle if table doesn't exist)
+    // Query for matches where the user is involved, then filter in memory
+    let lockedMatch: any = null
+    try {
+      const { data: allLockedMatches, error: recordError } = await admin
+        .from('match_records')
+        .select('id, user_ids')
+        .eq('locked', true)
+        .contains('user_ids', [user.id])
+      
+      if (!recordError && allLockedMatches) {
+        // Filter in memory to find matches with both users
+        lockedMatch = allLockedMatches.find((m: any) => {
+          const userIds = m.user_ids as string[]
+          return Array.isArray(userIds) && 
+                 userIds.includes(user.id) && 
+                 userIds.includes(targetUserId)
+        })
+      } else if (recordError && recordError.code !== 'PGRST205' && recordError.code !== '42P01') {
+        // Only log if it's not a "table not found" error
+        safeLogger.warn('Error checking match records', { error: recordError, userId: user.id, targetUserId })
+      }
+    } catch (err: any) {
+      // Silently ignore if table doesn't exist
+      if (err?.code !== 'PGRST205' && err?.code !== '42P01') {
+        safeLogger.warn('Exception checking match records', { error: err, userId: user.id, targetUserId })
+      }
+    }
     
     // Allow admin override for testing/debugging
     const adminCheck = await requireAdmin(request)
     const isAdmin = adminCheck.ok
+    
+    // Debug logging
+    safeLogger.info('Chat creation match check', {
+      userId: user.id,
+      targetUserId,
+      hasSuggestion: !!anySuggestion,
+      suggestionStatus: anySuggestion?.status,
+      hasLockedMatch: !!lockedMatch,
+      isAdmin
+    })
     
     // Audit log admin override
     if (isAdmin) {
       safeLogger.warn('Admin override for chat creation', {
         adminUserId: user.id,
         targetUserId,
-        hasConfirmedMatch: !!confirmedSuggestion,
+        hasAnyMatch: !!anySuggestion,
         hasLockedMatch: !!lockedMatch
       })
     }
     
-    if (!confirmedSuggestion && !lockedMatch && !isAdmin) {
+    // For individual chats, allow any match status (not just confirmed)
+    if (!anySuggestion && !lockedMatch && !isAdmin) {
       return NextResponse.json(
         { error: 'You can only chat with people you\'ve matched with' },
         { status: 403 }

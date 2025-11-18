@@ -52,9 +52,11 @@ export async function middleware(req: NextRequest) {
       // CSRF validation for state-changing requests
       // Skip CSRF for verification endpoints that are called from Persona widget
       // These are authenticated via session cookie and Persona's own security
+      // Also skip CSRF for public forms that don't require authentication
       const skipCSRFRoutes = [
         '/api/verification/persona-complete',
-        '/api/verification/provider-webhook'
+        '/api/verification/provider-webhook',
+        '/api/careers/apply'
       ]
       // Normalize pathname (remove trailing slash) for consistent matching
       const normalizedPathname = pathname.replace(/\/$/, '')

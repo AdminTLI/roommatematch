@@ -5,7 +5,13 @@ const nextConfig = {
     serverActions: {
       allowedOrigins: ['localhost:3000', '*.vercel.app'],
     },
+    // Ensure the app works in older browsers (e.g. Safari < 14) by transpiling modern syntax
+    legacyBrowsers: true,
+    // Respect browserslist targets when compiling third-party code
+    browsersListForSwc: true,
   },
+  // Force SWC to transpile packages that ship modern syntax (Sentry client utilities)
+  transpilePackages: ['@sentry-internal/browser-utils'],
   eslint: {
     ignoreDuringBuilds: true,
   },
@@ -13,7 +19,11 @@ const nextConfig = {
     ignoreBuildErrors: true,
   },
   compiler: {
-    removeConsole: false,
+    // Remove console.log, console.info, console.debug in production
+    // Keep console.error and console.warn for error tracking
+    removeConsole: process.env.NODE_ENV === 'production' ? {
+      exclude: ['error', 'warn'],
+    } : false,
   },
   webpack: (config, { dev, isServer }) => {
     if (dev) {

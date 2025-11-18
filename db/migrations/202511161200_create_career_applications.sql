@@ -23,8 +23,9 @@ create index if not exists idx_career_applications_status on public.career_appli
 -- RLS
 alter table public.career_applications enable row level security;
 
--- Allow anonymous inserts for public form submissions (no reads)
-create policy if not exists career_applications_insert_anon
+drop policy if exists career_applications_insert_anon on public.career_applications;
+
+create policy career_applications_insert_anon
   on public.career_applications
   for insert
   to anon

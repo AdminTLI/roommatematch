@@ -13,7 +13,7 @@ const LOCK_TTL_SECONDS = 10 * 60
 
 export async function POST(request: NextRequest) {
   try {
-    const supabase = createClient()
+    const supabase = await createClient()
     const { data: { user }, error: authError } = await supabase.auth.getUser()
     
     if (authError || !user) {
@@ -209,7 +209,7 @@ export async function POST(request: NextRequest) {
   } catch (error) {
     // Ensure we release the lock even on error
     try {
-      const supabase = createClient()
+      const supabase = await createClient()
       const { data: { user } } = await supabase.auth.getUser()
       if (user) {
         const lock = getDistributedLock()

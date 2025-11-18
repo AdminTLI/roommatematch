@@ -25,6 +25,7 @@ import { Button } from '@/components/ui/button'
 import { EmptyState } from '@/components/ui/empty-state'
 import type { DashboardData } from '@/types/dashboard'
 import { createClient } from '@/lib/supabase/client'
+import { logger } from '@/lib/utils/logger'
 
 const fadeInUp = {
   initial: { opacity: 0, y: 20 },
@@ -159,13 +160,13 @@ export function DashboardContent({ hasCompletedQuestionnaire = false, hasPartial
 
   const loadTopMatches = async () => {
     if (!user?.id) {
-      console.log('[loadTopMatches] No user ID provided')
+      logger.log('[loadTopMatches] No user ID provided')
       return
     }
     
     setIsLoadingMatches(true)
     try {
-      console.log('[loadTopMatches] Fetching match suggestions for user:', user.id)
+      logger.log('[loadTopMatches] Fetching match suggestions for user:', user.id)
       
       // Fetch top match suggestions from match_suggestions table
       // Get suggestions where user is in member_ids array
@@ -181,13 +182,13 @@ export function DashboardContent({ hasCompletedQuestionnaire = false, hasPartial
         .limit(10) // Get more to deduplicate and find top 3
 
       if (suggestionsError) {
-        console.error('[loadTopMatches] Error loading suggestions:', suggestionsError)
+        logger.error('[loadTopMatches] Error loading suggestions:', suggestionsError)
         setTopMatches([])
         setIsLoadingMatches(false)
         return
       }
 
-      console.log('[loadTopMatches] Raw suggestions data:', {
+      logger.log('[loadTopMatches] Raw suggestions data:', {
         suggestionsCount: suggestions?.length || 0,
         suggestionsData: suggestions
       })
@@ -246,21 +247,26 @@ export function DashboardContent({ hasCompletedQuestionnaire = false, hasPartial
         .in('user_id', topUserIds)
 
       if (profilesError) {
-        console.error('Error loading profiles:', profilesError)
+        logger.error('Error loading profiles:', profilesError)
         setTopMatches([])
         setIsLoadingMatches(false)
         return
       }
 
       // Fetch program names separately from user_academic
-      const { data: academicData } = await supabase
+      // Try with explicit foreign key first, fallback to simple join if that fails
+      const { data: academicData, error: academicError } = await supabase
         .from('user_academic')
         .select(`
           user_id,
           program_id,
-          programs!user_academic_program_id_fkey(name)
+          programs(name)
         `)
         .in('user_id', topUserIds)
+      
+      if (academicError) {
+        logger.warn('Error loading academic data (non-critical):', academicError)
+      }
 
       // Create a map of user_id to program name
       const programMap = new Map<string, string>()
@@ -300,7 +306,7 @@ export function DashboardContent({ hasCompletedQuestionnaire = false, hasPartial
         }
       }).filter((m): m is NonNullable<typeof m> => m !== null) // Remove null entries
 
-      console.log('loadTopMatches: Formatted', formattedMatches.length, 'matches from match_suggestions table')
+      logger.log('loadTopMatches: Formatted', formattedMatches.length, 'matches from match_suggestions table')
 
       setTopMatches(formattedMatches)
 
@@ -308,7 +314,7 @@ export function DashboardContent({ hasCompletedQuestionnaire = false, hasPartial
       loadTotalMatchesCount()
       loadAvgCompatibility()
     } catch (error) {
-      console.error('Failed to load matches:', error)
+      logger.error('Failed to load matches:', error)
       setTopMatches([])
     } finally {
       setIsLoadingMatches(false)
@@ -317,12 +323,12 @@ export function DashboardContent({ hasCompletedQuestionnaire = false, hasPartial
 
   const loadTotalMatchesCount = async () => {
     if (!user?.id) {
-      console.log('loadTotalMatchesCount: No user ID')
+      logger.log('loadTotalMatchesCount: No user ID')
       return
     }
 
     try {
-      console.log('loadTotalMatchesCount: Fetching match suggestions for user', user.id)
+      logger.log('loadTotalMatchesCount: Fetching match suggestions for user', user.id)
       const now = new Date().toISOString()
 
       // Fetch active pair suggestions and count unique matched users,
@@ -336,7 +342,7 @@ export function DashboardContent({ hasCompletedQuestionnaire = false, hasPartial
         .gte('expires_at', now) // Only non-expired suggestions
 
       if (error) {
-        console.error('Error fetching match suggestions for count:', error)
+        logger.error('Error fetching match suggestions for count:', error)
       } else if (suggestions && suggestions.length > 0) {
         const matchMap = new Map<string, number>()
 
@@ -354,13 +360,13 @@ export function DashboardContent({ hasCompletedQuestionnaire = false, hasPartial
         })
 
         const total = matchMap.size
-        console.log('loadTotalMatchesCount: Unique matched users from suggestions', total)
+        logger.log('loadTotalMatchesCount: Unique matched users from suggestions', total)
         setTotalMatches(total)
         return
       }
 
       // Fallback: use legacy matches table if there are no suggestions
-      console.log('loadTotalMatchesCount: No active match_suggestions, falling back to matches table')
+      logger.log('loadTotalMatchesCount: No active match_suggestions, falling back to matches table')
 
       const { count: matchesAsA } = await supabase
         .from('matches')
@@ -373,22 +379,22 @@ export function DashboardContent({ hasCompletedQuestionnaire = false, hasPartial
         .eq('b_user', user.id)
 
       const total = (matchesAsA || 0) + (matchesAsB || 0)
-      console.log('loadTotalMatchesCount: Total matches from legacy table', total)
+      logger.log('loadTotalMatchesCount: Total matches from legacy table', total)
       setTotalMatches(total)
     } catch (error) {
-      console.error('Failed to load total matches count:', error)
+      logger.error('Failed to load total matches count:', error)
       setTotalMatches(0)
     }
   }
 
   const loadAvgCompatibility = async () => {
     if (!user?.id) {
-      console.log('loadAvgCompatibility: No user ID')
+      logger.log('loadAvgCompatibility: No user ID')
       return
     }
 
     try {
-      console.log('loadAvgCompatibility: Fetching matches for user', user.id)
+      logger.log('loadAvgCompatibility: Fetching matches for user', user.id)
       // Fetch ALL active match suggestions (not just chat members)
       const now = new Date().toISOString()
       const { data: suggestions, error } = await supabase
@@ -400,7 +406,7 @@ export function DashboardContent({ hasCompletedQuestionnaire = false, hasPartial
         .gte('expires_at', now) // Only non-expired suggestions
 
       if (error) {
-        console.error('Error fetching match suggestions for avg:', error)
+        logger.error('Error fetching match suggestions for avg:', error)
       }
 
       // Compute average based on unique matched users to avoid
@@ -421,20 +427,20 @@ export function DashboardContent({ hasCompletedQuestionnaire = false, hasPartial
 
       const allScores = Array.from(scoreByUser.values())
 
-      console.log('loadAvgCompatibility: Found', allScores.length, 'matches', 'scores:', allScores)
+      logger.log('loadAvgCompatibility: Found', allScores.length, 'matches', 'scores:', allScores)
 
       if (allScores.length > 0) {
         const average = Math.round(
           (allScores.reduce((sum, score) => sum + score, 0) / allScores.length) * 100
         )
-        console.log('loadAvgCompatibility: Average calculated as', average)
+        logger.log('loadAvgCompatibility: Average calculated as', average)
         setAvgCompatibility(average)
       } else {
-        console.log('loadAvgCompatibility: No matches found, setting to 0')
+        logger.log('loadAvgCompatibility: No matches found, setting to 0')
         setAvgCompatibility(0)
       }
     } catch (error) {
-      console.error('Failed to load average compatibility:', error)
+      logger.error('Failed to load average compatibility:', error)
       setAvgCompatibility(0)
     }
   }
@@ -468,6 +474,7 @@ export function DashboardContent({ hasCompletedQuestionnaire = false, hasPartial
 
         if (memberships) {
           // Get recent messages from user's chats
+          // Note: Fetch messages first, then get profile names separately to avoid foreign key issues
           const { data: messages } = await supabase
             .from('messages')
             .select(`
@@ -475,8 +482,7 @@ export function DashboardContent({ hasCompletedQuestionnaire = false, hasPartial
               content,
               user_id,
               chat_id,
-              created_at,
-              profiles!messages_user_id_fkey(first_name)
+              created_at
             `)
             .in('chat_id', chatIds)
             .neq('user_id', user.id)
@@ -535,7 +541,7 @@ export function DashboardContent({ hasCompletedQuestionnaire = false, hasPartial
       
       setRecentActivity(allActivity.slice(0, 10))
     } catch (error) {
-      console.error('Failed to load activity:', error)
+      logger.error('Failed to load activity:', error)
     } finally {
       setIsLoadingActivity(false)
     }

@@ -6,6 +6,7 @@ import { Badge } from '@/components/ui/badge'
 import { NotificationDropdown } from './notification-dropdown'
 import { NotificationCounts } from '@/lib/notifications/types'
 import { createClient } from '@/lib/supabase/client'
+import { logger } from '@/lib/utils/logger'
 import { Bell } from 'lucide-react'
 
 interface NotificationBellProps {
@@ -28,7 +29,7 @@ export function NotificationBell({ userId }: NotificationBellProps) {
         setCounts(data)
       }
     } catch (error) {
-      console.error('Failed to fetch notification counts:', error)
+      logger.error('Failed to fetch notification counts:', error)
     } finally {
       setIsLoading(false)
     }
@@ -63,17 +64,29 @@ export function NotificationBell({ userId }: NotificationBellProps) {
   // Close dropdown when clicking outside
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+      const target = event.target as Node
+      
+      // Check if click is inside the bell button container
+      const isInsideBell = dropdownRef.current?.contains(target)
+      
+      // Check if click is inside the dropdown (which is rendered via portal to document.body)
+      // The dropdown has a specific class or data attribute we can check
+      const dropdownElement = document.querySelector('[data-notification-dropdown]')
+      const isInsideDropdown = dropdownElement?.contains(target)
+      
+      // Only close if click is outside both the bell and the dropdown
+      if (!isInsideBell && !isInsideDropdown) {
         setIsOpen(false)
       }
     }
 
     if (isOpen) {
-      document.addEventListener('mousedown', handleClickOutside)
+      // Use a small delay to ensure the click event has fully propagated
+      document.addEventListener('mousedown', handleClickOutside, true)
     }
 
     return () => {
-      document.removeEventListener('mousedown', handleClickOutside)
+      document.removeEventListener('mousedown', handleClickOutside, true)
     }
   }, [isOpen])
 
@@ -92,38 +105,43 @@ export function NotificationBell({ userId }: NotificationBellProps) {
 
       if (response.ok) {
         // Update local counts
-        if (counts) {
-          setCounts(prev => prev ? {
-            ...prev,
-            unread: Math.max(0, prev.unread - 1),
-            total: prev.total
-          } : null)
-        }
+        setCounts(prev => prev ? {
+          ...prev,
+          unread: Math.max(0, prev.unread - 1),
+          total: prev.total
+        } : null)
       }
     } catch (error) {
-      console.error('Failed to mark notification as read:', error)
+      logger.error('Failed to mark notification as read:', error)
     }
   }
 
   const handleMarkAllAsRead = async () => {
     try {
+      logger.log('[NotificationBell] Marking all notifications as read...')
       const { fetchWithCSRF } = await import('@/lib/utils/fetch-with-csrf')
       const response = await fetchWithCSRF('/api/notifications/mark-all-read', {
         method: 'POST'
       })
 
-      if (response.ok) {
-        // Update local counts
-        if (counts) {
-          setCounts(prev => prev ? {
-            ...prev,
-            unread: 0,
-            total: prev.total
-          } : null)
-        }
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}))
+        logger.error('[NotificationBell] Mark all read failed:', response.status, errorData)
+        throw new Error(`Failed to mark all as read: ${response.status}`)
       }
+
+      const result = await response.json().catch(() => ({}))
+      logger.log('[NotificationBell] Mark all read success:', result)
+      
+      // Update local counts
+      setCounts(prev => prev ? {
+        ...prev,
+        unread: 0,
+        total: prev.total
+      } : null)
     } catch (error) {
-      console.error('Failed to mark all notifications as read:', error)
+      logger.error('[NotificationBell] Failed to mark all notifications as read:', error)
+      throw error // Re-throw so dropdown can handle it
     }
   }
 
@@ -154,6 +172,9 @@ export function NotificationBell({ userId }: NotificationBellProps) {
         onClose={() => setIsOpen(false)}
         onMarkAsRead={handleMarkAsRead}
         onMarkAllAsRead={handleMarkAllAsRead}
+        counts={counts}
+        userId={userId}
+        refreshCounts={fetchCounts}
       />
     </div>
   )

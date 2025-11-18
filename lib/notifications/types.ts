@@ -3,6 +3,7 @@ export type NotificationType =
   | 'match_accepted' 
   | 'match_confirmed'
   | 'chat_message'
+  | 'group_invitation'
   | 'profile_updated'
   | 'questionnaire_completed'
   | 'verification_status'
@@ -66,6 +67,11 @@ export const NOTIFICATION_CONFIG = {
     icon: 'MessageCircle',
     color: 'purple',
     priority: 'medium' as const,
+  },
+  group_invitation: {
+    icon: 'Users',
+    color: 'blue',
+    priority: 'high' as const,
   },
   profile_updated: {
     icon: 'User',

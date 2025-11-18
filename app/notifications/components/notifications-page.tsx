@@ -211,7 +211,13 @@ export function NotificationsPage({ user }: NotificationsPageProps) {
         break
       case 'chat_message':
         if (metadata.chat_id) {
-          router.push(`/chat/${metadata.chat_id}`)
+          router.push(`/chat`)
+        }
+        break
+      case 'group_invitation':
+        if (metadata.chat_id) {
+          // Navigate to chat page - the invitation will be shown there
+          router.push(`/chat`)
         }
         break
       case 'profile_updated':
