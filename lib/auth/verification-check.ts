@@ -8,8 +8,29 @@ export interface VerificationStatus {
   needsPersonaVerification: boolean
 }
 
+// In-memory cache for verification status with TTL
+interface CachedVerificationStatus {
+  status: VerificationStatus
+  expiresAt: number
+}
+
+const verificationCache = new Map<string, CachedVerificationStatus>()
+const VERIFICATION_CACHE_TTL_MS = 60 * 1000 // 60 seconds
+
+// Clean up expired cache entries periodically
+if (typeof global !== 'undefined') {
+  setInterval(() => {
+    const now = Date.now()
+    for (const [key, cached] of verificationCache.entries()) {
+      if (cached.expiresAt < now) {
+        verificationCache.delete(key)
+      }
+    }
+  }, 60000) // Clean up every minute
+}
+
 /**
- * Check user verification status (email and Persona)
+ * Check user verification status (email and Persona) with caching
  * @param user - The authenticated user from Supabase auth
  * @returns Verification status object
  */
@@ -36,7 +57,16 @@ export async function checkUserVerificationStatus(
     }
   }
 
-  // Check email verification status
+  // Check cache first
+  const cacheKey = user.id
+  const cached = verificationCache.get(cacheKey)
+  const now = Date.now()
+
+  if (cached && cached.expiresAt > now) {
+    return cached.status
+  }
+
+  // Check email verification status (from user object - no DB query needed)
   const emailVerified = Boolean(
     user.email_confirmed_at &&
     typeof user.email_confirmed_at === 'string' &&
@@ -45,38 +75,48 @@ export async function checkUserVerificationStatus(
   )
 
   // Check Persona verification status
-  // First check verifications table (source of truth), then fall back to profile
+  // OPTIMIZED: Fetch both verification and profile in parallel
   const supabase = await createClient()
   
-  // Check verifications table first
-  const { data: verification } = await supabase
-    .from('verifications')
-    .select('status')
-    .eq('user_id', user.id)
-    .order('created_at', { ascending: false })
-    .limit(1)
-    .maybeSingle()
-
-  // If verification is approved, user is verified
-  let personaVerified = verification?.status === 'approved'
-  
-  // If no verification record or not approved, check profile status
-  if (!personaVerified) {
-    const { data: profile } = await supabase
+  const [verificationResult, profileResult] = await Promise.all([
+    // Check verifications table first
+    supabase
+      .from('verifications')
+      .select('status')
+      .eq('user_id', user.id)
+      .order('created_at', { ascending: false })
+      .limit(1)
+      .maybeSingle(),
+    // Also fetch profile in parallel
+    supabase
       .from('profiles')
       .select('verification_status')
       .eq('user_id', user.id)
       .maybeSingle()
-    
-    personaVerified = profile?.verification_status === 'verified'
+  ])
+
+  // If verification is approved, user is verified
+  let personaVerified = verificationResult.data?.status === 'approved'
+  
+  // If no verification record or not approved, check profile status
+  if (!personaVerified) {
+    personaVerified = profileResult.data?.verification_status === 'verified'
   }
 
-  return {
+  const status: VerificationStatus = {
     emailVerified,
     personaVerified,
     needsEmailVerification: !emailVerified,
     needsPersonaVerification: emailVerified && !personaVerified,
   }
+
+  // Cache the result
+  verificationCache.set(cacheKey, {
+    status,
+    expiresAt: now + VERIFICATION_CACHE_TTL_MS,
+  })
+
+  return status
 }
 
 /**

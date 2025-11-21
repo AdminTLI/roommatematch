@@ -24,6 +24,10 @@ interface CachedAdminCheck {
 const adminCheckCache = new Map<string, CachedAdminCheck>()
 const ADMIN_CACHE_TTL_MS = 30 * 1000 // 30 seconds
 
+// CSRF token cache - only regenerate if missing or expired
+const csrfTokenCache = new Map<string, { token: string; expiresAt: number }>()
+const CSRF_CACHE_TTL_MS = 23 * 60 * 60 * 1000 // 23 hours (slightly less than 24h cookie)
+
 // Helper to get cache key from request
 function getCacheKey(req: NextRequest): string {
   // Use session cookie or auth header as cache key
@@ -47,6 +51,11 @@ if (typeof global !== 'undefined') {
     for (const [key, cached] of adminCheckCache.entries()) {
       if (cached.expiresAt < now) {
         adminCheckCache.delete(key)
+      }
+    }
+    for (const [key, cached] of csrfTokenCache.entries()) {
+      if (cached.expiresAt < now) {
+        csrfTokenCache.delete(key)
       }
     }
   }, 60000) // Clean up every minute
@@ -183,9 +192,39 @@ export async function middleware(req: NextRequest) {
     })
   }
 
-  // Set CSRF token cookie for authenticated users
+  // Set CSRF token cookie for authenticated users (only if missing or expired)
   if (user) {
-    const csrfCookie = await createCSRFTokenCookie()
+    const csrfCacheKey = cacheKey
+    const cachedCSRF = csrfTokenCache.get(csrfCacheKey)
+    const csrfExpires = now + CSRF_CACHE_TTL_MS
+
+    let csrfCookie
+    
+    if (cachedCSRF && cachedCSRF.expiresAt > now) {
+      // Reuse existing token
+      csrfCookie = {
+        httpOnlyCookie: {
+          name: 'csrf-token',
+          value: cachedCSRF.token,
+          options: {
+            httpOnly: true,
+            secure: process.env.NODE_ENV === 'production',
+            sameSite: 'strict' as const,
+            maxAge: 60 * 60 * 24 // 24 hours
+          }
+        },
+        exposedToken: cachedCSRF.token
+      }
+    } else {
+      // Generate new token
+      csrfCookie = await createCSRFTokenCookie()
+      // Cache the token
+      csrfTokenCache.set(csrfCacheKey, {
+        token: csrfCookie.exposedToken,
+        expiresAt: csrfExpires
+      })
+    }
+
     // Set httpOnly cookie for server-side validation
     res.cookies.set(csrfCookie.httpOnlyCookie.name, csrfCookie.httpOnlyCookie.value, csrfCookie.httpOnlyCookie.options)
     // Also set non-httpOnly cookie so client can read it for header
