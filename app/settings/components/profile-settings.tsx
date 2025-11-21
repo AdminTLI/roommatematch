@@ -168,7 +168,7 @@ export function ProfileSettings({ user, profile, academic }: ProfileSettingsProp
                 id="email"
                 value={formData.email}
                 disabled
-                className="bg-gray-50 h-11"
+                className="bg-gray-50 dark:bg-bg-surface-alt h-11 text-text-primary dark:text-text-primary"
               />
             </div>
             <p className="text-sm text-gray-500 ml-8">
@@ -200,7 +200,7 @@ export function ProfileSettings({ user, profile, academic }: ProfileSettingsProp
                   'Not specified'
                 } 
                 disabled 
-                className="bg-gray-50 h-11" 
+                className="bg-gray-50 dark:bg-bg-surface-alt h-11 text-text-primary dark:text-text-primary" 
               />
             </div>
             <div className="space-y-3">
@@ -212,7 +212,7 @@ export function ProfileSettings({ user, profile, academic }: ProfileSettingsProp
                     : 'Not specified'
                 } 
                 disabled 
-                className="bg-gray-50 h-11" 
+                className="bg-gray-50 dark:bg-bg-surface-alt h-11 text-text-primary dark:text-text-primary" 
               />
             </div>
             <div className="space-y-3">
@@ -226,7 +226,7 @@ export function ProfileSettings({ user, profile, academic }: ProfileSettingsProp
                       'Not specified'
                 } 
                 disabled 
-                className="bg-gray-50 h-11" 
+                className="bg-gray-50 dark:bg-bg-surface-alt h-11 text-text-primary dark:text-text-primary" 
               />
             </div>
             <div className="space-y-3">
@@ -234,7 +234,7 @@ export function ProfileSettings({ user, profile, academic }: ProfileSettingsProp
               <Input 
                 value={academic?.expected_graduation_year || 'Not specified'} 
                 disabled 
-                className="bg-gray-50 h-11" 
+                className="bg-gray-50 dark:bg-bg-surface-alt h-11 text-text-primary dark:text-text-primary" 
               />
             </div>
             <div className="space-y-3">
@@ -246,7 +246,7 @@ export function ProfileSettings({ user, profile, academic }: ProfileSettingsProp
                     : 'Not available'
                 } 
                 disabled 
-                className="bg-gray-50 h-11" 
+                className="bg-gray-50 dark:bg-bg-surface-alt h-11 text-text-primary dark:text-text-primary" 
               />
             </div>
             {academic?.study_start_month && (
@@ -259,7 +259,7 @@ export function ProfileSettings({ user, profile, academic }: ProfileSettingsProp
                     new Date(2000, academic.study_start_month - 1).toLocaleString('default', { month: 'long' })
                   } 
                   disabled 
-                  className="bg-gray-50 h-11" 
+                  className="bg-gray-50 dark:bg-bg-surface-alt h-11 text-text-primary dark:text-text-primary" 
                 />
               </div>
             )}
@@ -269,7 +269,7 @@ export function ProfileSettings({ user, profile, academic }: ProfileSettingsProp
                 <Input 
                   value={new Date(2000, academic.graduation_month - 1).toLocaleString('default', { month: 'long' })} 
                   disabled 
-                  className="bg-gray-50 h-11" 
+                  className="bg-gray-50 dark:bg-bg-surface-alt h-11 text-text-primary dark:text-text-primary" 
                 />
               </div>
             )}

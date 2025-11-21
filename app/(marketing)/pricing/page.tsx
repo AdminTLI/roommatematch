@@ -70,9 +70,9 @@ export default function PricingPage() {
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }}
       />
-      <main className="min-h-screen bg-white">
+      <main className="min-h-screen bg-white pt-16 md:pt-20">
         <Navbar />
-        <div className="pt-20">
+        <div>
           <PricingSection />
           <FAQ />
           <FinalCTA />

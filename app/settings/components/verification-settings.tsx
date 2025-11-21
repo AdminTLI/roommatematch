@@ -147,7 +147,7 @@ export function VerificationSettings({ userId }: VerificationSettingsProps) {
             <p className="text-sm text-gray-600 dark:text-gray-300">
               Your identity has been successfully verified.
             </p>
-            <div className="text-sm text-gray-500">
+            <div className="text-sm text-gray-500 dark:text-text-muted">
               <p>Provider: {verification.provider}</p>
               <p>Verified on: {new Date(verification.updatedAt).toLocaleDateString()}</p>
             </div>
@@ -160,7 +160,7 @@ export function VerificationSettings({ userId }: VerificationSettingsProps) {
               Your verification is being processed. This may take a few minutes.
             </p>
             {verification && (
-              <div className="text-sm text-gray-500">
+              <div className="text-sm text-gray-500 dark:text-text-muted">
                 <p>Started on: {new Date(verification.createdAt).toLocaleDateString()}</p>
               </div>
             )}

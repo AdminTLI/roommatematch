@@ -39,25 +39,9 @@ export function SuggestionCard({
   const [isResponding, setIsResponding] = useState(false)
   const [isOpeningChat, setIsOpeningChat] = useState(false)
   const [showBlockDialog, setShowBlockDialog] = useState(false)
+  const [showDeclineDialog, setShowDeclineDialog] = useState(false)
   const [isBlocking, setIsBlocking] = useState(false)
   const router = useRouter()
-  
-  const now = Date.now()
-  const expiresAt = new Date(suggestion.expiresAt).getTime()
-  const hoursLeft = Math.max(0, Math.ceil((expiresAt - now) / 3600000))
-  
-  // Convert hours to days and hours format
-  const formatExpirationTime = (hours: number): string => {
-    if (hours < 24) {
-      return `${hours} hour${hours !== 1 ? 's' : ''}`
-    }
-    const days = Math.floor(hours / 24)
-    const remainingHours = hours % 24
-    if (remainingHours === 0) {
-      return `${days} day${days !== 1 ? 's' : ''}`
-    }
-    return `${days} day${days !== 1 ? 's' : ''} ${remainingHours} hour${remainingHours !== 1 ? 's' : ''}`
-  }
   
   const handleRespond = async (action: 'accept' | 'decline') => {
     setIsResponding(true)
@@ -184,12 +168,6 @@ export function SuggestionCard({
             Declined
           </span>
         )
-      case 'expired':
-        return (
-          <span className="px-2 py-1 rounded-full bg-gray-100 text-gray-800 text-xs font-medium">
-            Expired
-          </span>
-        )
       default:
         return null
     }
@@ -197,11 +175,11 @@ export function SuggestionCard({
   
   return (
     <div 
-      className={`bg-white rounded-xl border p-3 sm:p-6 shadow-sm hover:shadow-md transition-all cursor-pointer ${
+      className={`bg-white dark:bg-card rounded-xl border p-3 sm:p-6 shadow-sm hover:shadow-md transition-all cursor-pointer ${
         isSelected 
-          ? 'border-blue-500 border-2 bg-blue-50' 
-          : 'border-gray-200'
-      } ${isSelectable ? 'hover:border-blue-300' : ''}`}
+          ? 'border-blue-500 border-2 bg-blue-50 dark:bg-blue-950/30' 
+          : 'border-gray-200 dark:border-border'
+      } ${isSelectable ? 'hover:border-blue-300 dark:hover:border-blue-600' : ''}`}
       onClick={isSelectable && suggestion.status === 'confirmed' ? onToggleSelection : undefined}
     >
       {/* Header - Compact layout */}
@@ -210,7 +188,7 @@ export function SuggestionCard({
           {/* Selection checkbox */}
           {isSelectable && suggestion.status === 'confirmed' && (
             <div 
-              className="flex-shrink-0 w-5 h-5 sm:w-6 sm:h-6 border-2 rounded border-gray-300 flex items-center justify-center cursor-pointer touch-manipulation"
+              className="flex-shrink-0 w-5 h-5 sm:w-6 sm:h-6 border-2 rounded border-gray-300 dark:border-border flex items-center justify-center cursor-pointer touch-manipulation"
               onClick={(e) => {
                 e.stopPropagation()
                 onToggleSelection?.()
@@ -229,16 +207,11 @@ export function SuggestionCard({
             <div className="text-xl sm:text-3xl font-bold text-blue-600">
               {suggestion.fitIndex}
             </div>
-            <div className="text-[10px] sm:text-xs text-gray-500 mt-0.5">Compatibility</div>
+            <div className="text-[10px] sm:text-xs text-text-muted mt-0.5">Compatibility</div>
           </div>
           <div className="flex-1 min-w-0">
             <div className="flex flex-wrap items-center gap-1.5 sm:gap-2 mb-1.5 sm:mb-2">
               {getStatusBadge()}
-              {suggestion.status === 'pending' && (
-                <span className="text-[10px] sm:text-xs text-gray-500 whitespace-nowrap">
-                  Expires in {formatExpirationTime(hoursLeft)}
-                </span>
-              )}
             </div>
           </div>
         </div>
@@ -246,18 +219,18 @@ export function SuggestionCard({
       
       {/* Section Scores - More compact */}
       {suggestion.sectionScores && (
-        <div className="mb-3 sm:mb-4 pb-3 sm:pb-4 border-b border-gray-100">
+        <div className="mb-3 sm:mb-4 pb-3 sm:pb-4 border-b border-gray-100 dark:border-border">
           <SectionScores scores={suggestion.sectionScores} />
         </div>
       )}
       
       {/* Match Explanation */}
-      {suggestion.reasons && suggestion.reasons.length > 0 && (
+      {(suggestion.personalizedExplanation || (suggestion.reasons && suggestion.reasons.length > 0)) && (
         <div className="mb-3 sm:mb-4">
-          <div className="text-xs sm:text-sm font-medium text-gray-600 mb-1.5 sm:mb-1">Why this match works:</div>
-          <div className="text-xs sm:text-sm text-gray-700 leading-relaxed sm:leading-relaxed">
-            {(() => {
-              // Generate human-like explanation from reasons and scores
+          <div className="text-xs sm:text-sm font-medium text-text-secondary mb-1.5 sm:mb-1">Why this match works:</div>
+          <div className="text-xs sm:text-sm text-text-primary leading-relaxed sm:leading-relaxed">
+            {suggestion.personalizedExplanation || (() => {
+              // Fallback to basic explanation if personalized one isn't available
               const reasons = suggestion.reasons || []
               const scores = suggestion.sectionScores || {}
               
@@ -310,28 +283,33 @@ export function SuggestionCard({
         </div>
       )}
       
-      {/* Actions */}
+      {/* Actions for pending/suggested matches */}
       {suggestion.status === 'pending' && (
-        <div className="flex flex-col sm:flex-row gap-2 sm:gap-3">
-          <button
-            onClick={() => handleRespond('decline')}
-            disabled={isResponding || isLoading}
-            className="flex-1 px-4 py-2.5 sm:py-2.5 rounded-lg border border-gray-300 text-gray-700 hover:bg-gray-50 active:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed transition-colors text-sm sm:text-base font-medium touch-manipulation min-h-[44px]"
-          >
-            {isResponding ? 'Declining...' : 'Decline'}
-          </button>
+        <div className="flex flex-col gap-2">
+          {/* Accept button on top */}
           <button
             onClick={() => handleRespond('accept')}
             disabled={isResponding || isLoading}
-            className="flex-1 px-4 py-2.5 sm:py-2.5 rounded-lg bg-blue-600 text-white hover:bg-blue-700 active:bg-blue-800 disabled:opacity-50 disabled:cursor-not-allowed transition-colors text-sm sm:text-base font-medium touch-manipulation min-h-[44px]"
+            className="w-full px-4 py-2.5 rounded-lg bg-blue-600 text-white hover:bg-blue-700 active:bg-blue-800 disabled:opacity-50 disabled:cursor-not-allowed transition-colors text-sm sm:text-base font-medium touch-manipulation min-h-[44px]"
           >
             {isResponding ? 'Accepting...' : 'Accept'}
+          </button>
+          {/* Decline button on bottom */}
+          <button
+            onClick={(e) => {
+              e.stopPropagation()
+              setShowDeclineDialog(true)
+            }}
+            disabled={isResponding || isLoading}
+            className="w-full px-4 py-2.5 rounded-lg border border-gray-300 dark:border-border text-text-primary hover:bg-gray-50 dark:hover:bg-bg-surface-alt active:bg-gray-100 dark:active:bg-bg-surface-alt disabled:opacity-50 disabled:cursor-not-allowed transition-colors text-sm sm:text-base font-medium touch-manipulation min-h-[44px]"
+          >
+            Decline
           </button>
         </div>
       )}
 
-      {/* Block button for pending/accepted matches */}
-      {(suggestion.status === 'pending' || suggestion.status === 'accepted') && (
+      {/* Block button for accepted matches (not for pending) */}
+      {suggestion.status === 'accepted' && (
         <div className="flex gap-2 mt-2">
           <button
             onClick={(e) => {
@@ -372,6 +350,43 @@ export function SuggestionCard({
         </div>
       )}
 
+      {/* Decline Confirmation Dialog */}
+      <Dialog open={showDeclineDialog} onOpenChange={setShowDeclineDialog}>
+        <DialogContent className="rounded-2xl bg-white dark:bg-white">
+          <DialogHeader>
+            <DialogTitle className="text-black dark:text-black text-h2-mobile sm:text-h2-desktop font-semibold mb-4">
+              Decline Match?
+            </DialogTitle>
+            <DialogDescription>
+              <p className="text-gray-900">
+                This match will be removed and you will never be able to match with this user again. This action cannot be undone.
+              </p>
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter className="gap-3 sm:gap-4">
+            <Button variant="outline" onClick={() => setShowDeclineDialog(false)}>
+              Cancel
+            </Button>
+            <Button 
+              variant="destructive" 
+              onClick={async () => {
+                try {
+                  await handleRespond('decline')
+                  // Close dialog after successful decline
+                  setShowDeclineDialog(false)
+                } catch (error) {
+                  // Dialog stays open on error so user can try again
+                  console.error('Failed to decline match:', error)
+                }
+              }}
+              disabled={isResponding || isLoading}
+            >
+              {isResponding ? 'Declining...' : 'Yes, Decline Match'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
       {/* Block User Confirmation Dialog */}
       <Dialog open={showBlockDialog} onOpenChange={setShowBlockDialog}>
         <DialogContent>
@@ -395,8 +410,8 @@ export function SuggestionCard({
       
       {/* Run Info (debug only) */}
       {process.env.NEXT_PUBLIC_DEBUG_MATCHES === 'true' && (
-        <div className="mt-4 pt-4 border-t border-gray-100">
-          <div className="text-xs text-gray-500">
+        <div className="mt-4 pt-4 border-t border-gray-100 dark:border-border">
+          <div className="text-xs text-text-muted">
             Run ID: {suggestion.runId}
           </div>
         </div>

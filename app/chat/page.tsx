@@ -48,11 +48,34 @@ export default async function ChatPage() {
       user={userProfile}
       showQuestionnairePrompt={true}
     >
-      <div className="w-full h-full -m-4 sm:-m-6 lg:-m-8 overflow-hidden">
-        <div className="h-full w-full bg-bg-surface rounded-2xl overflow-hidden shadow-lg relative">
+      <div 
+        data-chat-page
+        className="w-full h-full overflow-hidden"
+        style={{ 
+          height: '100%',
+          maxHeight: '100%',
+          display: 'flex',
+          flexDirection: 'column',
+          minHeight: 0,
+          width: '100%',
+          maxWidth: '100%'
+        }}
+      >
+        <div 
+          className="h-full w-full bg-bg-surface rounded-none sm:rounded-2xl overflow-hidden shadow-lg relative sm:shadow-lg flex flex-col"
+          style={{ 
+            height: '100%', 
+            maxHeight: '100%', 
+            minHeight: 0,
+            flex: '1 1 0%',
+            width: '100%',
+            maxWidth: '100%'
+          }}
+        >
           <ChatSplitView user={user} />
         </div>
       </div>
     </AppShell>
   )
 }
+

@@ -91,7 +91,7 @@ export function AppHeader({ user }: AppHeaderProps) {
       <nav className="container mx-auto px-4 py-4" role="navigation" aria-label="Main navigation">
         <div className="flex items-center justify-between">
           {/* Logo */}
-          <Link href="/matches" className="flex items-center space-x-2 hover:opacity-80 transition-opacity">
+          <Link href="/dashboard" className="flex items-center space-x-2 hover:opacity-80 transition-opacity">
             <div className="relative h-8 w-8 flex-shrink-0">
               <Image 
                 src="/images/logo.png" 

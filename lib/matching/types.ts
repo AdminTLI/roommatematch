@@ -8,6 +8,7 @@ export type MatchSuggestion = {
   fitIndex: number;                   // 0..100 (avg for groups)
   sectionScores?: Record<string, number>;
   reasons?: string[];                 // short, high-level "why"
+  personalizedExplanation?: string;   // deep, personalized explanation based on answers
   expiresAt: string;                  // ISO
   status: 'pending' | 'accepted' | 'declined' | 'expired' | 'confirmed';
   acceptedBy: string[];               // userIds who accepted

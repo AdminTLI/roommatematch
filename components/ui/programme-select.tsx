@@ -147,17 +147,16 @@ export function ProgrammeSelect({
       </SelectTrigger>
       <SelectContent>
         {programmes.map((prog) => {
-          // Use SKDB-style display (clean name only) when SKDB data exists
-          // Fall back to DUO-style (with badges) when SKDB data is not available
-          const hasSkdbData = prog.sources?.skdb === true;
+          // Display programme name with optional badges for additional info
+          const hasAdditionalInfo = prog.modes && prog.modes.length > 0;
           
           return (
             <SelectItem key={prog.id} value={prog.id}>
-              {hasSkdbData ? (
-                // SKDB style: clean name only, no badges
+              {!hasAdditionalInfo ? (
+                // Clean name only when no additional info
                 <span>{prog.name}</span>
               ) : (
-                // DUO style: name with badges (fallback for programmes without SKDB enrichment)
+                // Name with badges for additional information
                 <div className="flex flex-col gap-1">
                   <span>{prog.name}</span>
                   <div className="flex flex-wrap gap-1 mt-1">

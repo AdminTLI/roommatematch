@@ -339,9 +339,9 @@ export function DebriefSection({ user, onStartChat }: DebriefSectionProps) {
           <Card key={i} className="animate-pulse">
             <CardContent className="p-6">
               <div className="space-y-3">
-                <div className="h-4 bg-gray-200 rounded w-1/3"></div>
-                <div className="h-3 bg-gray-200 rounded w-2/3"></div>
-                <div className="h-20 bg-gray-200 rounded"></div>
+                <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-1/3"></div>
+                <div className="h-3 bg-gray-200 dark:bg-gray-700 rounded w-2/3"></div>
+                <div className="h-20 bg-gray-200 dark:bg-gray-700 rounded"></div>
               </div>
             </CardContent>
           </Card>
@@ -355,10 +355,10 @@ export function DebriefSection({ user, onStartChat }: DebriefSectionProps) {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-2xl font-semibold text-gray-900 dark:text-white">
+          <h2 className="text-2xl font-semibold text-text-primary">
             Compatibility Stories
           </h2>
-          <p className="text-gray-600 dark:text-gray-300">
+          <p className="text-text-secondary">
             Deep insights into your matches with conversation starters and relationship tracking
           </p>
         </div>
@@ -378,7 +378,7 @@ export function DebriefSection({ user, onStartChat }: DebriefSectionProps) {
               <FileText className="h-8 w-8 text-blue-500" />
               <div>
                 <div className="text-2xl font-bold">{debriefs.length}</div>
-                <div className="text-sm text-gray-500">Compatibility Stories</div>
+                <div className="text-sm text-text-muted">Compatibility Stories</div>
               </div>
             </div>
           </CardContent>
@@ -390,7 +390,7 @@ export function DebriefSection({ user, onStartChat }: DebriefSectionProps) {
               <Clock className="h-8 w-8 text-orange-500" />
               <div>
                 <div className="text-2xl font-bold">{pendingNudges.length}</div>
-                <div className="text-sm text-gray-500">Pending Nudges</div>
+                <div className="text-sm text-text-muted">Pending Nudges</div>
               </div>
             </div>
           </CardContent>
@@ -402,7 +402,7 @@ export function DebriefSection({ user, onStartChat }: DebriefSectionProps) {
               <TrendingUp className="h-8 w-8 text-green-500" />
               <div>
                 <div className="text-2xl font-bold">{healthScores.length}</div>
-                <div className="text-sm text-gray-500">Health Checks</div>
+                <div className="text-sm text-text-muted">Health Checks</div>
               </div>
             </div>
           </CardContent>
@@ -419,7 +419,7 @@ export function DebriefSection({ user, onStartChat }: DebriefSectionProps) {
                     : 0
                   }
                 </div>
-                <div className="text-sm text-gray-500">Avg. Satisfaction</div>
+                <div className="text-sm text-text-muted">Avg. Satisfaction</div>
               </div>
             </div>
           </CardContent>
@@ -462,11 +462,11 @@ export function DebriefSection({ user, onStartChat }: DebriefSectionProps) {
           ) : (
             <Card>
               <CardContent className="text-center py-12">
-                <AlertCircle className="mx-auto h-12 w-12 text-gray-400 mb-4" />
-                <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">
+                <AlertCircle className="mx-auto h-12 w-12 text-text-muted mb-4" />
+                <h3 className="text-xl font-semibold text-text-primary mb-2">
                   No compatibility stories yet
                 </h3>
-                <p className="text-gray-600 dark:text-gray-300 mb-4">
+                <p className="text-text-secondary mb-4">
                   Compatibility stories are generated when you accept matches. Start matching to see your personalized insights!
                 </p>
               </CardContent>

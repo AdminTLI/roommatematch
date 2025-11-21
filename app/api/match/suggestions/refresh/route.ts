@@ -170,14 +170,7 @@ export async function POST(request: NextRequest) {
         maxCohortSize: MAX_COHORT_SIZE
       })
       
-      // Expire old pending/accepted suggestions for this user before creating new ones
-      const expiredCount = await repo.expireOldSuggestionsForUser(user.id)
-      if (expiredCount > 0) {
-        safeLogger.debug('[Matching] Expired old suggestions', {
-          expiredCount
-        })
-      }
-      
+      // Matches don't expire - skip expiration logic
       // Generate new suggestions
       const result = await runMatchingAsSuggestions({
         repo,

@@ -2,12 +2,12 @@
 
 import { useState, useEffect, useRef, useCallback } from 'react'
 import { useQuery } from '@tanstack/react-query'
-import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { NotificationDropdown } from './notification-dropdown'
 import { NotificationCounts } from '@/lib/notifications/types'
 import { createClient } from '@/lib/supabase/client'
 import { logger } from '@/lib/utils/logger'
+import { cn } from '@/lib/utils'
 import { queryKeys } from '@/app/providers'
 import { useRealtimeInvalidation } from '@/hooks/use-realtime-invalidation'
 import { Bell } from 'lucide-react'
@@ -127,14 +127,25 @@ export function NotificationBell({ userId }: NotificationBellProps) {
 
   return (
     <div className="relative" ref={dropdownRef}>
-      <Button
-        variant="ghost"
-        size="sm"
-        className="relative"
+      <button
+        type="button"
         onClick={() => setIsOpen(!isOpen)}
         disabled={isLoading}
+        className={cn(
+          "min-w-[44px] min-h-[44px] sm:min-w-0 sm:min-h-0",
+          "relative inline-flex items-center justify-center",
+          "bg-transparent hover:bg-transparent active:bg-transparent",
+          "border-0 outline-none rounded-none",
+          "p-0 m-0",
+          "text-text-primary cursor-pointer",
+          "focus-visible:outline-none",
+          "disabled:opacity-60 disabled:pointer-events-none",
+          "transition-colors"
+        )}
+        style={{ backgroundColor: 'transparent' }}
+        aria-label="Notifications"
       >
-        <Bell className="h-5 w-5" />
+        <Bell className="h-5 w-5 text-text-primary" />
         {unreadCount > 0 && (
           <Badge 
             variant="destructive" 
@@ -143,7 +154,7 @@ export function NotificationBell({ userId }: NotificationBellProps) {
             {unreadCount > 99 ? '99+' : unreadCount}
           </Badge>
         )}
-      </Button>
+      </button>
 
       <NotificationDropdown
         isOpen={isOpen}

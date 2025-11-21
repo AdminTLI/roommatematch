@@ -166,12 +166,12 @@ export function AppShell({ children, user, showQuestionnairePrompt = false }: Ap
                 </AlertDescription>
               </Alert>
             )}
-            <main className="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8 pb-safe-bottom md:pb-6">
+            <main className="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8 pb-safe-bottom md:pb-6 chat-page-main">
               <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.4, ease: [0.2, 0.8, 0.2, 1] }}
-                className="max-w-7xl mx-auto"
+                className="max-w-7xl mx-auto h-full"
               >
                 {children}
               </motion.div>

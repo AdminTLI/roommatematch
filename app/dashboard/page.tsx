@@ -370,16 +370,51 @@ async function fetchDashboardData(userId: string): Promise<DashboardData> {
         })
 
         // Build top matches array
+        // Helper function to check if a string is a UUID
+        const isUUID = (str: string): boolean => {
+          if (!str || typeof str !== 'string') return false
+          if (/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(str)) return true
+          if (/[0-9a-f]{8}-?[0-9a-f]{4}-?[0-9a-f]{4}-?[0-9a-f]{4}-?[0-9a-f]{12}/i.test(str)) return true
+          return false
+        }
+        
+        // Remove UUIDs from strings
+        const removeUUIDs = (str: string): string => {
+          if (!str || typeof str !== 'string') return str
+          return str.replace(/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/gi, '').trim()
+        }
+        
         topMatches = topEntries.map(([otherUserId, matchData]) => {
           const profile = profiles?.find((p: any) => p.user_id === otherUserId)
           const programName = programMap.get(otherUserId)
           
+          // Clean name
+          let safeName = profile?.first_name || 'User'
+          safeName = removeUUIDs(safeName)
+          if (isUUID(safeName) || safeName === otherUserId || !safeName) {
+            safeName = 'User'
+          }
+          
+          // Clean program
+          let safeProgram = programName || profile?.program || ''
+          safeProgram = removeUUIDs(safeProgram)
+          if (isUUID(safeProgram) || safeProgram === otherUserId || !safeProgram) {
+            safeProgram = ''
+          }
+          
+          // Clean university
+          const universityName = (profile?.universities as any)?.name || ''
+          let safeUniversity = removeUUIDs(universityName)
+          if (isUUID(safeUniversity) || safeUniversity === otherUserId || !safeUniversity) {
+            safeUniversity = ''
+          }
+          
           return {
             id: matchData.id,
-            name: profile?.first_name || 'User',
-            score: Math.round(matchData.fit_score * 100),
-            program: programName || profile?.program || 'Program',
-            university: (profile?.universities as any)?.name || 'University',
+            name: safeName,
+            score: matchData.fit_score, // Keep as 0-1 range for consistency
+            program: safeProgram,
+            university: safeUniversity,
             avatar: undefined
           }
         })
@@ -441,14 +476,53 @@ async function fetchDashboardData(userId: string): Promise<DashboardData> {
       ].sort((a, b) => (b.score || 0) - (a.score || 0)).slice(0, 3)
 
       if (allMatches.length > 0) {
-        topMatches = allMatches.map(match => ({
-          id: match.id,
-          name: (match.otherProfile as any)?.first_name || 'User',
-          score: Math.round((match.score || 0) * 100),
-          program: (match.otherProfile as any)?.program || 'Program',
-          university: (match.otherProfile as any)?.universities?.name || 'University',
-          avatar: undefined
-        }))
+        // Helper function to check if a string is a UUID
+        const isUUID = (str: string): boolean => {
+          if (!str || typeof str !== 'string') return false
+          if (/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(str)) return true
+          if (/[0-9a-f]{8}-?[0-9a-f]{4}-?[0-9a-f]{4}-?[0-9a-f]{4}-?[0-9a-f]{12}/i.test(str)) return true
+          return false
+        }
+        
+        // Remove UUIDs from strings
+        const removeUUIDs = (str: string): string => {
+          if (!str || typeof str !== 'string') return str
+          return str.replace(/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/gi, '').trim()
+        }
+        
+        topMatches = allMatches.map(match => {
+          const otherUserId = (match as any).otherUserId
+          
+          // Clean name
+          let safeName = (match.otherProfile as any)?.first_name || 'User'
+          safeName = removeUUIDs(safeName)
+          if (isUUID(safeName) || safeName === otherUserId || !safeName) {
+            safeName = 'User'
+          }
+          
+          // Clean program
+          let safeProgram = (match.otherProfile as any)?.program || ''
+          safeProgram = removeUUIDs(safeProgram)
+          if (isUUID(safeProgram) || safeProgram === otherUserId || !safeProgram) {
+            safeProgram = ''
+          }
+          
+          // Clean university
+          let safeUniversity = (match.otherProfile as any)?.universities?.name || ''
+          safeUniversity = removeUUIDs(safeUniversity)
+          if (isUUID(safeUniversity) || safeUniversity === otherUserId || !safeUniversity) {
+            safeUniversity = ''
+          }
+          
+          return {
+            id: match.id,
+            name: safeName,
+            score: (match.score || 0), // Keep as 0-1 range for consistency
+            program: safeProgram,
+            university: safeUniversity,
+            avatar: undefined
+          }
+        })
       }
     }
   } catch (error) {

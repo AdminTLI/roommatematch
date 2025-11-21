@@ -1,6 +1,6 @@
 'use client'
 
-import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet'
+import { Sheet, SheetContent, SheetTrigger, SheetTitle } from '@/components/ui/sheet'
 import { Button } from '@/components/ui/button'
 import { Menu } from 'lucide-react'
 
@@ -22,7 +22,8 @@ export function CollapsibleSidebar({ sidebar }: CollapsibleSidebarProps) {
 							<span className="sr-only">Open navigation</span>
 						</Button>
 					</SheetTrigger>
-					<SheetContent side="left" className="w-64 p-0">
+					<SheetContent side="left" className="w-64 p-0" aria-describedby={undefined}>
+						<SheetTitle className="sr-only">Navigation menu</SheetTitle>
 						{sidebar}
 					</SheetContent>
 				</Sheet>

@@ -16,79 +16,7 @@ export function ResearchCarousel({ locale: localeProp }: ResearchCarouselProps) 
   const [currentIndex, setCurrentIndex] = useState(0)
   const [isAutoPlaying, setIsAutoPlaying] = useState(true)
   const carouselRef = useRef<HTMLDivElement>(null)
-  const containerRef = useRef<HTMLDivElement>(null)
   const autoPlayTimerRef = useRef<NodeJS.Timeout | null>(null)
-  // Responsive card widths and gaps - calculated to fit exactly 3 cards in container
-  // Default values for SSR to prevent hydration mismatch
-  const getDefaultCardWidth = () => {
-    // Default desktop values that match server render
-    const containerMaxWidth = 1152
-    const containerPadding = 64
-    const gap = 24
-    const minHeight = 850
-    const availableWidth = containerMaxWidth - containerPadding // 1088px available
-    const base = Math.floor((availableWidth - 40 - 2 * gap) / 3) // ~336px
-    return { base, center: base + 40, gap, minHeight, containerWidth: containerMaxWidth, containerPadding }
-  }
-  
-  const getCardWidth = () => {
-    if (typeof window === 'undefined') return getDefaultCardWidth()
-    const containerMaxWidth = 1152
-    let containerPadding = 32 // px-4 = 16px each side
-    let gap = 12
-    let minHeight = 800 // Further increased min-height to prevent text truncation
-    
-    if (window.innerWidth < 640) {
-      containerPadding = 32
-      gap = 12
-      minHeight = 500 // Reduced from 750px for mobile - text fits naturally
-      const availableWidth = Math.min(window.innerWidth - containerPadding, containerMaxWidth - containerPadding)
-      const base = Math.floor((availableWidth - 20 - 2 * gap) / 3)
-      const containerWidth = Math.min(window.innerWidth, containerMaxWidth)
-      return { base, center: base + 20, gap, minHeight, containerWidth, containerPadding }
-    }
-    if (window.innerWidth < 768) {
-      containerPadding = 48 // sm:px-6 = 24px each side
-      gap = 16
-      minHeight = 550 // Reduced from 780px for tablet
-      const availableWidth = Math.min(window.innerWidth - containerPadding, containerMaxWidth - containerPadding)
-      const base = Math.floor((availableWidth - 20 - 2 * gap) / 3)
-      const containerWidth = Math.min(window.innerWidth, containerMaxWidth)
-      return { base, center: base + 20, gap, minHeight, containerWidth, containerPadding }
-    }
-    if (window.innerWidth < 1024) {
-      containerPadding = 64 // md:px-8 = 32px each side
-      gap = 20
-      minHeight = 650 // Reduced from 820px
-      const availableWidth = Math.min(window.innerWidth - containerPadding, containerMaxWidth - containerPadding)
-      const base = Math.floor((availableWidth - 30 - 2 * gap) / 3)
-      const containerWidth = Math.min(window.innerWidth, containerMaxWidth)
-      return { base, center: base + 30, gap, minHeight, containerWidth, containerPadding }
-    }
-    // Desktop: max-w-[1152px] with md:px-8 (64px total padding)
-    containerPadding = 64
-    gap = 24
-    minHeight = 850 // Increased by 100px from 750px for desktop to show all text
-    const availableWidth = containerMaxWidth - containerPadding // 1088px available
-    const base = Math.floor((availableWidth - 40 - 2 * gap) / 3) // ~336px
-    return { base, center: base + 40, gap, minHeight, containerWidth: containerMaxWidth, containerPadding }
-  }
-  
-  // Initialize with default values to match SSR
-  const [cardDimensions, setCardDimensions] = useState(getDefaultCardWidth())
-  const [isMounted, setIsMounted] = useState(false)
-  
-  useEffect(() => {
-    // Set mounted flag and update dimensions after hydration
-    setIsMounted(true)
-    setCardDimensions(getCardWidth())
-    
-    const handleResize = () => {
-      setCardDimensions(getCardWidth())
-    }
-    window.addEventListener('resize', handleResize)
-    return () => window.removeEventListener('resize', handleResize)
-  }, [])
 
   const content = {
     en: {
@@ -178,21 +106,6 @@ export function ResearchCarousel({ locale: localeProp }: ResearchCarouselProps) 
   const text = content[locale]
   const stats = text.stats
 
-  const goToIndex = (index: number) => {
-    setCurrentIndex(index)
-    setIsAutoPlaying(true)
-  }
-
-  const handlePrev = () => {
-    const newIndex = currentIndex > 0 ? currentIndex - 1 : stats.length - 1
-    goToIndex(newIndex)
-  }
-
-  const handleNext = () => {
-    const newIndex = currentIndex < stats.length - 1 ? currentIndex + 1 : 0
-    goToIndex(newIndex)
-  }
-
   // Auto-rotation every 7 seconds
   useEffect(() => {
     if (!isAutoPlaying) return
@@ -216,7 +129,6 @@ export function ResearchCarousel({ locale: localeProp }: ResearchCarouselProps) 
     if (autoPlayTimerRef.current) {
       clearInterval(autoPlayTimerRef.current)
     }
-    // Resume after 10 seconds of inactivity
     setTimeout(() => {
       setIsAutoPlaying(true)
     }, 10000)
@@ -242,11 +154,16 @@ export function ResearchCarousel({ locale: localeProp }: ResearchCarouselProps) 
     const isRightSwipe = distance < -50
 
     if (isLeftSwipe) {
-      handleNext()
+      setCurrentIndex((prev) => (prev < stats.length - 1 ? prev + 1 : 0))
     }
     if (isRightSwipe) {
-      handlePrev()
+      setCurrentIndex((prev) => (prev > 0 ? prev - 1 : stats.length - 1))
     }
+  }
+
+  const goToIndex = (index: number) => {
+    setCurrentIndex(index)
+    handleUserInteraction()
   }
 
   return (
@@ -266,110 +183,74 @@ export function ResearchCarousel({ locale: localeProp }: ResearchCarouselProps) 
         </div>
 
         {/* Carousel Container */}
-        <div className="relative w-full overflow-hidden pt-8 sm:pt-12 pb-0">
-          {/* Carousel */}
+        <div className="relative w-full">
           <div 
-            ref={containerRef}
-            className="relative w-full max-w-[1152px] mx-auto px-4 sm:px-6 md:px-8" 
+            className="relative overflow-hidden px-2 sm:px-4 md:px-6 lg:px-8"
+            onTouchStart={handleTouchStart}
+            onTouchMove={handleTouchMove}
+            onTouchEnd={handleTouchEnd}
           >
-            <div className="relative overflow-hidden" style={{ width: '100%' }}>
+            <div className="flex items-center justify-center">
               <div
                 ref={carouselRef}
-                className="flex items-center gap-3 sm:gap-4 md:gap-6 transition-transform duration-1000 ease-in-out"
+                className="flex transition-transform duration-1000 ease-in-out"
                 style={{
-                  transform: `translateX(calc(50% - ${cardDimensions.center / 2}px - ${currentIndex * (cardDimensions.base + cardDimensions.gap)}px))`,
+                  transform: `translateX(calc(-${currentIndex * 100}% - ${currentIndex * 16}px))`,
                 }}
-                onTouchStart={handleTouchStart}
-                onTouchMove={handleTouchMove}
-                onTouchEnd={handleTouchEnd}
               >
-              {stats.map((stat, index) => {
-                const isCenter = index === currentIndex
-                const distance = Math.abs(index - currentIndex)
-                // Only show maximum 3 cards: left neighbor, center, right neighbor
-                const shouldShow = distance <= 1
-                
-                return (
+                {stats.map((stat, index) => (
                   <div
                     key={index}
-                    className="flex-shrink-0 transition-all duration-1000 ease-in-out"
+                    className="flex-shrink-0 w-[96%] sm:w-[90%] md:w-[85%] lg:w-[75%] xl:w-[65%]"
                     style={{
-                      width: isCenter ? `${cardDimensions.center}px` : `${cardDimensions.base}px`,
-                      minHeight: typeof window !== 'undefined' && window.innerWidth < 1024 
-                        ? 'auto' 
-                        : cardDimensions.minHeight + 'px',
-                      opacity: shouldShow ? (distance === 1 ? 0.7 : 1) : 0,
-                      visibility: shouldShow ? 'visible' : 'hidden',
-                      transform: isCenter ? 'scale(1.05)' : 'scale(0.95)',
-                      pointerEvents: shouldShow ? 'auto' : 'none',
+                      paddingRight: index < stats.length - 1 ? '1rem' : '0',
                     }}
                   >
-                    <Card
-                      className={`border border-brand-border/50 bg-white/80 backdrop-blur-sm shadow-elev-1 rounded-2xl transition-all duration-1000 flex flex-col ${
-                        isCenter ? 'shadow-elev-2' : ''
-                      }`}
-                      style={{ minHeight: '100%' }}
-                    >
-                      <CardContent className="p-3 sm:p-4 md:p-5 flex flex-col flex-1 min-h-0">
-                        <div className={`font-bold text-brand-primary mb-1.5 sm:mb-2 md:mb-3 transition-all duration-1000 flex-shrink-0 ${
-                          isCenter ? 'text-xl sm:text-2xl md:text-3xl lg:text-4xl' : 'text-lg sm:text-xl md:text-2xl lg:text-3xl'
-                        }`}>
+                    <Card className="border border-brand-border/50 bg-white rounded-2xl shadow-lg">
+                      <CardContent className="p-4 sm:p-5 md:p-6 lg:p-8 flex flex-col">
+                        <div className="font-bold text-brand-primary mb-3 text-2xl sm:text-3xl md:text-4xl">
                           {stat.statistic}
                         </div>
-                        <h3 className={`font-semibold text-brand-text mb-1.5 sm:mb-2 md:mb-3 transition-all duration-1000 flex-shrink-0 line-clamp-2 ${
-                          isCenter ? 'text-xs sm:text-sm md:text-base lg:text-lg' : 'text-[10px] sm:text-xs md:text-sm lg:text-base'
-                        }`}>
+                        <h3 className="font-semibold text-brand-text mb-3 text-sm sm:text-base md:text-lg">
                           {stat.issue}
                         </h3>
-                        <p className={`text-brand-muted mb-2 sm:mb-3 md:mb-4 leading-snug sm:leading-relaxed transition-all duration-1000 line-clamp-3 sm:line-clamp-none ${
-                          isCenter ? 'text-[10px] sm:text-xs md:text-sm' : 'text-[9px] sm:text-[10px] md:text-xs'
-                        }`}>
+                        <p className="text-brand-muted mb-4 leading-relaxed text-xs sm:text-sm md:text-base">
                           {stat.explanation}
                         </p>
-                        <p className="text-[9px] sm:text-[10px] md:text-xs text-brand-muted italic mb-2 sm:mb-3 md:mb-4 pb-2 sm:pb-3 md:pb-4 border-b border-brand-border/30 flex-shrink-0 line-clamp-2 sm:line-clamp-none">
+                        <p className="text-brand-muted italic mb-4 pb-4 border-b border-brand-border/30 text-[10px] sm:text-xs">
                           {stat.source}
                         </p>
-                        <div className="pt-1.5 sm:pt-2 flex-shrink-0 flex-1">
-                          <p className={`text-brand-muted leading-snug sm:leading-relaxed transition-all duration-1000 line-clamp-4 sm:line-clamp-none ${
-                            isCenter ? 'text-[10px] sm:text-xs md:text-sm' : 'text-[9px] sm:text-[10px] md:text-xs'
-                          }`}>
-                            {stat.solution}
-                          </p>
-                        </div>
+                        <p className="text-brand-muted leading-relaxed text-xs sm:text-sm md:text-base">
+                          {stat.solution}
+                        </p>
                       </CardContent>
                     </Card>
                   </div>
-                )
-              })}
-              </div>
-              
-              {/* Pagination Dots */}
-              <div className="flex justify-center items-center gap-2" style={{ marginTop: '12px' }}>
-                {stats.map((_, index) => (
-                  <button
-                    key={index}
-                    onClick={() => {
-                      goToIndex(index)
-                      handleUserInteraction()
-                    }}
-                    className={`rounded-full transition-all duration-300 ${
-                      index === currentIndex
-                        ? 'bg-brand-primary'
-                        : 'bg-brand-border hover:bg-brand-primary/50'
-                    }`}
-                    style={{
-                      width: '16px',
-                      height: '16px',
-                      minWidth: '16px',
-                      minHeight: '16px',
-                      flexShrink: 0,
-                      padding: 0,
-                    }}
-                    aria-label={`${locale === 'nl' ? 'Ga naar slide' : 'Go to slide'} ${index + 1}`}
-                  />
                 ))}
               </div>
             </div>
+          </div>
+
+          {/* Pagination Dots */}
+          <div className="flex justify-center items-center gap-2 mt-8 sm:mt-10 md:mt-12">
+            {stats.map((_, index) => (
+              <button
+                key={index}
+                onClick={() => goToIndex(index)}
+                className={`rounded-full transition-all duration-300 ${
+                  index === currentIndex
+                    ? 'bg-brand-primary'
+                    : 'bg-brand-border hover:bg-brand-primary/50'
+                }`}
+                style={{
+                  width: '12px',
+                  height: '12px',
+                  minWidth: '12px',
+                  minHeight: '12px',
+                }}
+                aria-label={`${locale === 'nl' ? 'Ga naar slide' : 'Go to slide'} ${index + 1}`}
+              />
+            ))}
           </div>
         </div>
       </Container>

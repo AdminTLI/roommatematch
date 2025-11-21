@@ -5,6 +5,7 @@ import type { MatchRecord } from '@/lib/matching/repo'
 import { createMatchNotification, createGroupMatchNotification } from '@/lib/notifications/create'
 import { safeLogger } from '@/lib/utils/logger'
 import { checkRateLimit, getUserRateLimitKey } from '@/lib/rate-limit'
+import { trackEvent, EVENT_TYPES } from '@/lib/events'
 
 export async function POST(request: NextRequest) {
   try {
@@ -58,22 +59,69 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 403 })
     }
     
-    // Check if suggestion is expired
-    if (suggestion.status === 'expired' || new Date(suggestion.expiresAt).getTime() < Date.now()) {
-      suggestion.status = 'expired'
-      await repo.updateSuggestion(suggestion)
-      return NextResponse.json({ error: 'Suggestion has expired' }, { status: 410 })
-    }
-    
+    // Allow declined suggestions to be re-opened if needed (matches don't expire)
+    // Only block if already declined by this user
     if (action === 'decline') {
       suggestion.status = 'declined'
       await repo.updateSuggestion(suggestion)
       
       // Add to blocklist
       const otherIds = suggestion.memberIds.filter(id => id !== user.id)
+      const admin = await createAdminClient()
+      
       for (const otherId of otherIds) {
         await repo.addToBlocklist(user.id, otherId)
+        
+        // Track blocklist addition event for analytics and admin dashboard
+        try {
+          await admin
+            .from('app_events')
+            .insert({
+              user_id: user.id,
+              name: EVENT_TYPES.MATCH_REJECTED,
+              props: {
+                suggestion_id: suggestion.id,
+                declined_by: user.id,
+                blocked_user_id: otherId,
+                match_score: suggestion.fitIndex,
+                match_fit_index: suggestion.fitIndex,
+                reason: 'user_declined_match',
+                blocklist_action: 'added'
+              },
+              created_at: new Date().toISOString()
+            })
+        } catch (error) {
+          safeLogger.warn('[Match Decline] Failed to track blocklist event', { error })
+        }
       }
+      
+      // Track overall decline event for admin analytics
+      try {
+        await admin
+          .from('app_events')
+          .insert({
+            user_id: user.id,
+            name: 'match_declined',
+            props: {
+              suggestion_id: suggestion.id,
+              match_score: suggestion.fitIndex,
+              match_fit_index: suggestion.fitIndex,
+              other_user_ids: otherIds,
+              blocklist_added: true,
+              total_blocked: otherIds.length
+            },
+            created_at: new Date().toISOString()
+          })
+      } catch (error) {
+        safeLogger.warn('[Match Decline] Failed to log decline event to app_events', { error })
+      }
+      
+      safeLogger.info('[Match Decline] Match declined and blocklist updated', {
+        suggestionId: suggestion.id,
+        userId: user.id,
+        otherUserIds: otherIds,
+        matchScore: suggestion.fitIndex
+      })
       
       return NextResponse.json({ ok: true, suggestion })
     }
@@ -94,7 +142,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Fetch all suggestions for this pair (across runs) and merge acceptance
-    // IMPORTANT: Include expired suggestions so we can merge acceptances even if one user refreshed
+    // Include all suggestions to merge acceptances across different runs
     const pairSugs = await repo.getSuggestionsForPair(user.id, otherId, true)
     safeLogger.debug(`[DEBUG] Accept action - Found ${pairSugs.length} suggestions for pair`, {
       statuses: pairSugs.map(s => s.status)

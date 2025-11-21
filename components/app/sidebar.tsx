@@ -99,63 +99,34 @@ export function Sidebar({ user, onClose }: SidebarProps) {
   useEffect(() => {
     const supabase = createClient()
 
-    // Fetch initial unread message count
+    // Debounce timer for unread count refetch - using object to ensure cleanup can access it
+    const timerRef: { current: NodeJS.Timeout | null } = { current: null }
+
+    // Fetch initial unread message count using optimized API endpoint
     const fetchUnreadCount = async () => {
       try {
-        // Get all chat rooms where user is a member
-        const { data: chatMembers, error: membersError } = await supabase
-          .from('chat_members')
-          .select('chat_id')
-          .eq('user_id', user.id)
-
-        if (membersError || !chatMembers) {
-          console.error('Error fetching chat members:', membersError)
-          return
-        }
-
-        if (chatMembers.length === 0) {
+        const response = await fetch('/api/chat/unread')
+        if (response.ok) {
+          const data = await response.json()
+          setUnreadChatCount(data.total_unread || 0)
+        } else {
+          // Fallback to 0 if API fails
           setUnreadChatCount(0)
-          return
         }
-
-        const chatIds = chatMembers.map(cm => cm.chat_id)
-
-        // Get last_read_at for each chat
-        const { data: memberships, error: membershipsError } = await supabase
-          .from('chat_members')
-          .select('chat_id, last_read_at')
-          .eq('user_id', user.id)
-          .in('chat_id', chatIds)
-
-        if (membershipsError) {
-          console.error('Error fetching chat memberships:', membershipsError)
-          return
-        }
-
-        // Count unread messages using last_read_at (same logic as unread API)
-        let totalUnread = 0
-        for (const membership of memberships || []) {
-          const lastReadAt = membership.last_read_at || new Date(0).toISOString()
-          
-          const { count, error: countError } = await supabase
-            .from('messages')
-            .select('*', { count: 'exact', head: true })
-            .eq('chat_id', membership.chat_id)
-            .neq('user_id', user.id)
-            .gt('created_at', lastReadAt)
-
-          if (countError) {
-            console.error('Error counting unread messages:', countError)
-            continue
-          }
-
-          totalUnread += count || 0
-        }
-
-        setUnreadChatCount(totalUnread)
       } catch (error) {
-        console.error('Error in fetchUnreadCount:', error)
+        console.error('Error fetching unread count:', error)
+        setUnreadChatCount(0)
       }
+    }
+
+    // Debounced version for real-time updates
+    const debouncedFetchUnreadCount = () => {
+      if (timerRef.current) {
+        clearTimeout(timerRef.current)
+      }
+      timerRef.current = setTimeout(() => {
+        fetchUnreadCount()
+      }, 500) // Wait 500ms after last event before refetching
     }
 
     // Fetch match suggestions count
@@ -230,12 +201,16 @@ export function Sidebar({ user, onClose }: SidebarProps) {
           table: 'messages',
         },
         () => {
-          fetchUnreadCount()
+          // Use debounced version to avoid excessive API calls
+          debouncedFetchUnreadCount()
         }
       )
       .subscribe()
 
     return () => {
+      if (timerRef.current) {
+        clearTimeout(timerRef.current)
+      }
       supabase.removeChannel(channel)
     }
   }, [user.id])

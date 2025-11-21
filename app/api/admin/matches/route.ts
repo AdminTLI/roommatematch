@@ -196,19 +196,17 @@ export async function GET(request: NextRequest) {
     let pending = 0
     let accepted = 0
     let declined = 0
-    let expired = 0
+    let expired = 0 // Kept for backwards compatibility - will always be 0 since matches don't expire
     let confirmed = 0
     let totalScore = 0
     let scoreCount = 0
     
     deduplicatedMatches.forEach(match => {
-      const isExpired = match.expires_at && new Date(match.expires_at) < new Date(now)
+      // Matches don't expire - removed expiration checks
       const status = match.status
       
-      // First check if expired (takes priority)
-      if (isExpired || status === 'expired') {
-        expired++
-      } else if (status === 'confirmed') {
+      // Count by status (matches no longer expire)
+      if (status === 'confirmed') {
         // Confirmed matches (all members accepted and confirmed)
         confirmed++
       } else if (status === 'accepted' && match.accepted_by && match.member_ids) {
@@ -227,8 +225,9 @@ export async function GET(request: NextRequest) {
         declined++
       }
       
-      // Calculate average score from active matches (not declined, not expired)
-      if (match.fit_score != null && status !== 'declined' && !isExpired && status !== 'expired') {
+      // Calculate average score from active matches (not declined)
+      // Matches don't expire anymore
+      if (match.fit_score != null && status !== 'declined') {
         totalScore += match.fit_score
         scoreCount++
       }

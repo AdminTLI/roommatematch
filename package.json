@@ -25,7 +25,7 @@
     "scan:demo": "tsx scripts/scan-demo-data.ts",
     "import:programs": "tsx scripts/import_programs.ts",
     "import:programs:watch": "tsx --watch scripts/import_programs.ts",
-    "sync:programmes": "tsx scripts/sync-duo-programmes.ts",
+    "sync:programmes": "tsx scripts/sync-skdb-programmes.ts",
     "enrich:programmes": "tsx scripts/enrich-programmes.ts",
     "infer:brin": "tsx scripts/infer-brin-map.ts",
     "qa:premasters": "tsx scripts/qa-premasters.ts",

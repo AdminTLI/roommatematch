@@ -701,6 +701,7 @@ export class SupabaseMatchRepo implements MatchRepo {
       fit_index: sug.fitIndex,
       section_scores: sug.sectionScores,
       reasons: sug.reasons,
+      personalized_explanation: sug.personalizedExplanation,
       expires_at: sug.expiresAt,
       status: sug.status,
       accepted_by: sug.acceptedBy,
@@ -735,6 +736,7 @@ export class SupabaseMatchRepo implements MatchRepo {
     // SECURITY: This method uses admin client but filters results by userId parameter
     // which is passed from authenticated API routes. Users can only see suggestions
     // that include their own userId in memberIds array.
+    // Matches don't expire - only filter by declined status if needed
     const supabase = await this.getSupabase()
     let query = supabase
       .from('match_suggestions')
@@ -742,11 +744,11 @@ export class SupabaseMatchRepo implements MatchRepo {
       .contains('member_ids', [userId])
       .order('created_at', { ascending: false }) // Order by created_at DESC to get latest first
 
+    // Note: includeExpired parameter kept for backwards compatibility but no longer filters
+    // Matches don't expire - only declined matches are hidden from active view
     if (!includeExpired) {
-      // Include confirmed matches even if expired, but exclude expired pending/accepted
-      // We'll filter in JavaScript to handle the OR logic properly
-      // For now, just exclude expired status
-      query = query.neq('status', 'expired')
+      // Exclude declined matches from active view (they go to history)
+      query = query.neq('status', 'declined')
     }
 
     const { data, error } = await query
@@ -763,22 +765,17 @@ export class SupabaseMatchRepo implements MatchRepo {
       fitIndex: record.fit_index,
       sectionScores: record.section_scores,
       reasons: record.reasons,
+      personalizedExplanation: record.personalized_explanation,
       expiresAt: record.expires_at,
       status: record.status,
       acceptedBy: record.accepted_by,
       createdAt: record.created_at
     }))
 
-    // Filter: include confirmed matches even if expired, but exclude expired pending/accepted
-    const now = new Date().toISOString()
-    const filtered = suggestions.filter(s => 
-      s.status === 'confirmed' || 
-      (s.status !== 'expired' && new Date(s.expiresAt) > new Date(now))
-    )
-
+    // Matches don't expire - no need to filter by expiration date
     // Dedupe by otherId: keep only the latest suggestion per counterpart
     const seenOtherIds = new Map<string, MatchSuggestion>()
-    for (const sug of filtered) {
+    for (const sug of suggestions) {
       const otherId = sug.memberIds.find(id => id !== userId)
       if (!otherId) continue
       
@@ -812,6 +809,7 @@ export class SupabaseMatchRepo implements MatchRepo {
       fitIndex: record.fit_index,
       sectionScores: record.section_scores,
       reasons: record.reasons,
+      personalizedExplanation: record.personalized_explanation,
       expiresAt: record.expires_at,
       status: record.status,
       acceptedBy: record.accepted_by,
@@ -840,6 +838,7 @@ export class SupabaseMatchRepo implements MatchRepo {
       fitIndex: data.fit_index,
       sectionScores: data.section_scores,
       reasons: data.reasons,
+      personalizedExplanation: data.personalized_explanation,
       expiresAt: data.expires_at,
       status: data.status,
       acceptedBy: data.accepted_by,
@@ -966,6 +965,7 @@ export class SupabaseMatchRepo implements MatchRepo {
       fitIndex: record.fit_index,
       sectionScores: record.section_scores,
       reasons: record.reasons,
+      personalizedExplanation: record.personalized_explanation,
       expiresAt: record.expires_at,
       status: record.status,
       acceptedBy: record.accepted_by || [],

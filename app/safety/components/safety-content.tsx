@@ -104,7 +104,7 @@ export function SafetyContent({ universitySecurityPhone, universityName }: Safet
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <p className="text-sm text-gray-600 mb-4">Optional background verification available</p>
+            <p className="text-sm text-gray-600 dark:text-muted-foreground mb-4">Optional background verification available</p>
             <Button size="sm">Learn More</Button>
           </CardContent>
         </Card>
@@ -117,7 +117,7 @@ export function SafetyContent({ universitySecurityPhone, universityName }: Safet
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <p className="text-sm text-gray-600 mb-4">Your personal information is secure and private</p>
+            <p className="text-sm text-gray-600 dark:text-muted-foreground mb-4">Your personal information is secure and private</p>
             <Badge variant="secondary">Protected</Badge>
           </CardContent>
         </Card>

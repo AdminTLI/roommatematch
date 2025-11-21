@@ -220,10 +220,10 @@ export function PrivacySettings({ user }: PrivacySettingsProps) {
       )}
 
       {/* Privacy Controls */}
-      <Card className="border-gray-200">
+      <Card className="border-gray-200 dark:border-border-subtle">
         <CardHeader className="pb-4">
           <CardTitle className="flex items-center gap-3 text-xl">
-            <Eye className="w-5 h-5 text-gray-600" />
+            <Eye className="w-5 h-5 text-gray-600 dark:text-text-secondary" />
             Privacy Controls
           </CardTitle>
           <CardDescription className="text-base mt-2">
@@ -232,10 +232,10 @@ export function PrivacySettings({ user }: PrivacySettingsProps) {
         </CardHeader>
         <CardContent className="space-y-6 pt-2">
           <div className="space-y-4 pt-2">
-            <div className="flex items-center justify-between py-3 border-b border-gray-100">
+            <div className="flex items-center justify-between py-3 border-b border-gray-100 dark:border-border-subtle">
               <div className="space-y-1 flex-1 pr-4">
                 <Label className="text-sm font-medium">Make Profile Visible</Label>
-                <p className="text-sm text-gray-600">Allow other users to see your profile in search results</p>
+                <p className="text-sm text-gray-600 dark:text-text-muted">Allow other users to see your profile in search results</p>
               </div>
               <Switch
                 checked={privacySettings.profileVisible}
@@ -243,10 +243,10 @@ export function PrivacySettings({ user }: PrivacySettingsProps) {
               />
             </div>
 
-            <div className="flex items-center justify-between py-3 border-b border-gray-100">
+            <div className="flex items-center justify-between py-3 border-b border-gray-100 dark:border-border-subtle">
               <div className="space-y-1 flex-1 pr-4">
                 <Label className="text-sm font-medium">Show in Matches</Label>
-                <p className="text-sm text-gray-600">Include your profile in roommate matching algorithm</p>
+                <p className="text-sm text-gray-600 dark:text-text-muted">Include your profile in roommate matching algorithm</p>
               </div>
               <Switch
                 checked={privacySettings.showInMatches}
@@ -254,10 +254,10 @@ export function PrivacySettings({ user }: PrivacySettingsProps) {
               />
             </div>
 
-            <div className="flex items-center justify-between py-3 border-b border-gray-100">
+            <div className="flex items-center justify-between py-3 border-b border-gray-100 dark:border-border-subtle">
               <div className="space-y-1 flex-1 pr-4">
                 <Label className="text-sm font-medium">Allow Messages</Label>
-                <p className="text-sm text-gray-600">Let other users send you messages</p>
+                <p className="text-sm text-gray-600 dark:text-text-muted">Let other users send you messages</p>
               </div>
               <Switch
                 checked={privacySettings.allowMessages}
@@ -268,7 +268,7 @@ export function PrivacySettings({ user }: PrivacySettingsProps) {
             <div className="flex items-center justify-between py-3">
               <div className="space-y-1 flex-1 pr-4">
                 <Label className="text-sm font-medium">Data Sharing</Label>
-                <p className="text-sm text-gray-600">Allow anonymized data to be used for research and improvements</p>
+                <p className="text-sm text-gray-600 dark:text-text-muted">Allow anonymized data to be used for research and improvements</p>
               </div>
               <Switch
                 checked={privacySettings.dataSharing}
@@ -277,7 +277,7 @@ export function PrivacySettings({ user }: PrivacySettingsProps) {
             </div>
           </div>
 
-          <div className="flex justify-end pt-4 border-t border-gray-100">
+          <div className="flex justify-end pt-4 border-t border-gray-100 dark:border-border-subtle">
             <Button 
               onClick={handleSavePrivacy}
               disabled={isLoading}
@@ -297,10 +297,10 @@ export function PrivacySettings({ user }: PrivacySettingsProps) {
       </Card>
 
       {/* Data Management */}
-      <Card className="border-gray-200">
+      <Card className="border-gray-200 dark:border-border-subtle">
         <CardHeader className="pb-4">
           <CardTitle className="flex items-center gap-3 text-xl">
-            <Download className="w-5 h-5 text-gray-600" />
+            <Download className="w-5 h-5 text-gray-600 dark:text-text-secondary" />
             Data Management
           </CardTitle>
           <CardDescription className="text-base mt-2">
@@ -309,19 +309,19 @@ export function PrivacySettings({ user }: PrivacySettingsProps) {
         </CardHeader>
         <CardContent className="space-y-6 pt-2">
           {getPendingExportRequest() && (
-            <Alert className="border-blue-200 bg-blue-50">
-              <Clock className="h-4 w-4 text-blue-600" />
-              <AlertDescription className="text-blue-800">
+            <Alert className="border-blue-200 dark:border-blue-800 bg-blue-50 dark:bg-blue-900/20">
+              <Clock className="h-4 w-4 text-blue-600 dark:text-blue-400" />
+              <AlertDescription className="text-blue-800 dark:text-blue-200">
                 <strong>Export in progress:</strong> Your data export request is being processed. 
                 Estimated completion: {getDaysUntilDeadline(getPendingExportRequest()!.sla_deadline)} days.
               </AlertDescription>
             </Alert>
           )}
           
-          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 p-6 border border-gray-200 rounded-lg bg-gray-50">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 p-6 border border-gray-200 dark:border-border-subtle rounded-lg bg-gray-50 dark:bg-bg-surface-alt">
             <div className="flex-1">
-              <h4 className="font-semibold text-base mb-2">Download Your Data</h4>
-              <p className="text-sm text-gray-600">
+              <h4 className="font-semibold text-base mb-2 dark:text-text-primary">Download Your Data</h4>
+              <p className="text-sm text-gray-600 dark:text-text-muted">
                 Get a copy of all your data in a portable JSON format (GDPR Article 15 - Right of Access).
                 You can request one export per 24 hours.
               </p>
@@ -349,9 +349,9 @@ export function PrivacySettings({ user }: PrivacySettingsProps) {
       </Card>
 
       {/* Account Deletion */}
-      <Card className="border-red-200">
+      <Card className="border-red-200 dark:border-red-800">
         <CardHeader className="pb-4">
-          <CardTitle className="flex items-center gap-3 text-xl text-red-600">
+          <CardTitle className="flex items-center gap-3 text-xl text-red-600 dark:text-red-400">
             <Trash2 className="w-5 h-5" />
             Danger Zone
           </CardTitle>
@@ -361,9 +361,9 @@ export function PrivacySettings({ user }: PrivacySettingsProps) {
         </CardHeader>
         <CardContent className="space-y-6 pt-2">
           {deletionScheduled && (
-            <Alert className="border-orange-200 bg-orange-50">
-              <Clock className="h-4 w-4 text-orange-600" />
-              <AlertDescription className="text-orange-800">
+            <Alert className="border-orange-200 dark:border-orange-800 bg-orange-50 dark:bg-orange-900/20">
+              <Clock className="h-4 w-4 text-orange-600 dark:text-orange-400" />
+              <AlertDescription className="text-orange-800 dark:text-orange-200">
                 <strong>Deletion scheduled:</strong> Your account is scheduled for deletion on{' '}
                 {new Date(deletionScheduled).toLocaleDateString()}. 
                 You can cancel this request by contacting support within 7 days.
@@ -394,7 +394,7 @@ export function PrivacySettings({ user }: PrivacySettingsProps) {
           ) : (
             <div className="space-y-4">
               <div>
-                <Label htmlFor="delete-confirm" className="text-base text-gray-700 font-medium mb-2 block">
+                <Label htmlFor="delete-confirm" className="text-base text-gray-700 dark:text-text-primary font-medium mb-2 block">
                   Are you absolutely sure? Type "DELETE" to confirm.
                 </Label>
                 <Input

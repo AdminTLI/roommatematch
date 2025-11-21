@@ -182,9 +182,6 @@ export function NotificationDropdown({
       await onMarkAllAsRead()
       logger.log('[NotificationDropdown] Mark all as read completed, refreshing...')
       
-      // Optimistically update UI
-      setNotifications(prev => prev.map(n => ({ ...n, is_read: true })))
-      
       // Refresh counts and notifications
       await Promise.all([
         refreshCounts(),
@@ -219,7 +216,7 @@ export function NotificationDropdown({
       </div>
       
       <div 
-        className="flex items-center gap-2 flex-shrink-0"
+        className="flex items-center justify-end gap-2 flex-shrink-0"
         onClick={(e) => {
           // Prevent button clicks from bubbling
           e.stopPropagation()
@@ -235,11 +232,11 @@ export function NotificationDropdown({
             handleMarkAllClick(e)
           }}
           disabled={unreadCount === 0}
-          className="h-9 w-9 p-0 hover:bg-gray-100 relative z-10"
+          className="h-9 w-9 p-0 m-0 flex items-center justify-center hover:bg-gray-100 dark:hover:bg-gray-700 relative z-10 min-w-[36px]"
           title="Mark all as read"
           type="button"
         >
-          <CheckCheck className="h-4 w-4" />
+          <CheckCheck className="h-4 w-4 flex-shrink-0" />
           <span className="sr-only">Mark all as read</span>
         </Button>
         
@@ -256,11 +253,11 @@ export function NotificationDropdown({
               window.location.href = '/notifications'
             }, 0)
           }}
-          className="h-9 w-9 p-0 hover:bg-gray-100 relative z-10"
+          className="h-9 w-9 p-0 m-0 flex items-center justify-center hover:bg-gray-100 dark:hover:bg-gray-700 relative z-10 min-w-[36px]"
           title="View all notifications"
           type="button"
         >
-          <Eye className="h-4 w-4" />
+          <Eye className="h-4 w-4 flex-shrink-0" />
           <span className="sr-only">View all notifications</span>
         </Button>
         
@@ -274,11 +271,11 @@ export function NotificationDropdown({
               e.stopPropagation()
               onClose()
             }}
-            className="h-9 w-9 p-0 hover:bg-gray-100 relative z-10"
+            className="h-9 w-9 p-0 m-0 flex items-center justify-center hover:bg-gray-100 dark:hover:bg-gray-700 relative z-10 min-w-[36px]"
             title="Close notifications"
             type="button"
           >
-            <X className="h-4 w-4" />
+            <X className="h-4 w-4 flex-shrink-0" />
             <span className="sr-only">Close</span>
           </Button>
         )}
@@ -301,18 +298,21 @@ export function NotificationDropdown({
           </p>
         </div>
       ) : (
-        <div className="space-y-1 p-2">
+        <div className="space-y-2 p-3 sm:p-4">
           {notifications.map((notification) => (
-            <NotificationItem
-              key={notification.id}
-              notification={notification}
-              onMarkAsRead={async (id) => {
-                await onMarkAsRead(id)
-                markAsReadLocally(id)
-                await refreshCounts()
-              }}
-              onNavigate={handleNotificationClick}
-            />
+            <div key={notification.id} className="flex justify-center">
+              <div className="w-full max-w-full">
+                <NotificationItem
+                  notification={notification}
+                  onMarkAsRead={async (id) => {
+                    await onMarkAsRead(id)
+                    markAsReadLocally(id)
+                    await refreshCounts()
+                  }}
+                  onNavigate={handleNotificationClick}
+                />
+              </div>
+            </div>
           ))}
           {counts && counts.unread > notifications.length && (
             <p className="text-xs text-gray-500 px-2 pb-2">

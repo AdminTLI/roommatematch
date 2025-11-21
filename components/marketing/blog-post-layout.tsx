@@ -1,3 +1,5 @@
+'use client'
+
 import Container from '@/components/ui/primitives/container'
 import Section from '@/components/ui/primitives/section'
 import Footer from '@/components/site/footer'
@@ -6,6 +8,7 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import Link from 'next/link'
 import { Calendar, Clock, ArrowRight } from 'lucide-react'
+import { useApp } from '@/app/providers'
 
 interface BlogPostLayoutProps {
   title: string
@@ -21,6 +24,23 @@ interface BlogPostLayoutProps {
   ctaText?: string
 }
 
+const layoutContent = {
+  en: {
+    back: 'Back to blog',
+    by: 'By',
+    related: 'Related Resources',
+    learnMore: 'Learn more',
+    ctaFallback: 'Get Started'
+  },
+  nl: {
+    back: 'Terug naar blog',
+    by: 'Door',
+    related: 'Gerelateerde bronnen',
+    learnMore: 'Meer lezen',
+    ctaFallback: 'Aan de slag'
+  }
+}
+
 export function BlogPostLayout({
   title,
   excerpt,
@@ -34,6 +54,14 @@ export function BlogPostLayout({
   ctaHref,
   ctaText,
 }: BlogPostLayoutProps) {
+  const { locale } = useApp()
+  const t = layoutContent[locale]
+  const dateFormatter = new Intl.DateTimeFormat(locale === 'nl' ? 'nl-NL' : 'en-US', {
+    month: 'long',
+    day: 'numeric',
+    year: 'numeric'
+  })
+
   return (
     <main className="min-h-screen bg-white">
       <Navbar />
@@ -48,7 +76,7 @@ export function BlogPostLayout({
                 className="inline-flex items-center text-sm text-brand-muted hover:text-brand-primary transition-colors mb-6"
               >
                 <ArrowRight className="h-4 w-4 mr-2 rotate-180" />
-                Back to blog
+                {t.back}
               </Link>
             </div>
             
@@ -63,18 +91,14 @@ export function BlogPostLayout({
             <div className="flex flex-wrap items-center gap-6 text-sm text-brand-muted">
               <div className="flex items-center gap-2">
                 <Calendar className="h-4 w-4" />
-                <span>{new Date(publishDate).toLocaleDateString('en-US', { 
-                  month: 'long', 
-                  day: 'numeric', 
-                  year: 'numeric' 
-                })}</span>
+                <span>{dateFormatter.format(new Date(publishDate))}</span>
               </div>
               <div className="flex items-center gap-2">
                 <Clock className="h-4 w-4" />
                 <span>{readTime}</span>
               </div>
               <div className="flex items-center gap-2">
-                <span>By {author}</span>
+                <span>{t.by} {author}</span>
               </div>
             </div>
           </div>
@@ -98,7 +122,7 @@ export function BlogPostLayout({
           <Container>
             <div className="max-w-4xl mx-auto">
               <h2 className="text-2xl md:text-3xl font-bold text-brand-text mb-8">
-                Related Resources
+                {t.related}
               </h2>
               <div className="grid md:grid-cols-2 gap-6">
                 {relatedLinks.map((link, index) => (
@@ -112,7 +136,7 @@ export function BlogPostLayout({
                       </p>
                       <Button asChild variant="ghost" size="sm">
                         <Link href={link.href}>
-                          Learn more
+                          {t.learnMore}
                           <ArrowRight className="ml-2 h-4 w-4" />
                         </Link>
                       </Button>
@@ -143,7 +167,7 @@ export function BlogPostLayout({
               {ctaHref && (
                 <Button asChild size="lg" variant="outline" className="border-white text-white hover:bg-white/10">
                   <Link href={ctaHref}>
-                    {ctaText || 'Get Started'}
+                    {ctaText || t.ctaFallback}
                     <ArrowRight className="ml-2 h-4 w-4" />
                   </Link>
                 </Button>

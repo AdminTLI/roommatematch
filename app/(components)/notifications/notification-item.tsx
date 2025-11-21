@@ -64,8 +64,8 @@ export function NotificationItem({
 
   return (
     <div 
-      className={`cursor-pointer transition-all duration-200 hover:bg-gray-50 active:bg-gray-100 touch-manipulation min-h-[44px] ${
-        !notification.is_read ? 'bg-white border-l-4 border-l-blue-500' : 'bg-white border-l-4 border-l-transparent'
+      className={`w-full cursor-pointer transition-all duration-200 hover:bg-gray-50 dark:hover:bg-gray-700 active:bg-gray-100 dark:active:bg-gray-600 touch-manipulation min-h-[44px] rounded-lg ${
+        !notification.is_read ? 'bg-white dark:bg-gray-800 border-l-4 border-l-blue-500' : 'bg-white dark:bg-gray-800 border-l-4 border-l-transparent'
       }`}
       onClick={handleClick}
     >

@@ -150,16 +150,16 @@ export function QuestionnaireSettings({ progressData }: QuestionnaireSettingsPro
           <div className="space-y-4">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-gray-600 mb-1">Progress</p>
+                <p className="text-sm font-medium text-gray-600 dark:text-text-secondary mb-1">Progress</p>
                 <div className="flex items-baseline gap-2">
-                  <span className="text-3xl font-bold text-gray-900">{completedSections.length}</span>
-                  <span className="text-lg text-gray-500">/ {totalSections}</span>
-                  <span className="text-sm text-gray-500">sections</span>
+                  <span className="text-3xl font-bold text-gray-900 dark:text-text-primary">{completedSections.length}</span>
+                  <span className="text-lg text-gray-500 dark:text-text-muted">/ {totalSections}</span>
+                  <span className="text-sm text-gray-500 dark:text-text-muted">sections</span>
                 </div>
               </div>
               <div>
                 {isFullySubmitted ? (
-                  <Badge variant="default" className="bg-green-100 text-green-800 border-green-200 px-3 py-1.5">
+                  <Badge variant="default" className="bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-300 border-green-200 dark:border-green-700 px-3 py-1.5">
                     <CheckCircle className="w-4 h-4 mr-1.5" />
                     Completed
                   </Badge>
@@ -175,15 +175,15 @@ export function QuestionnaireSettings({ progressData }: QuestionnaireSettingsPro
           </div>
 
           {/* Status Information */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-4 border-t border-gray-200">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-4 border-t border-gray-200 dark:border-border-subtle">
             <div className="space-y-1">
-              <p className="text-xs font-medium text-gray-500 uppercase tracking-wide">Last Updated</p>
-              <p className="text-sm font-semibold text-gray-900">{formatDate(lastUpdated)}</p>
+              <p className="text-xs font-medium text-gray-500 dark:text-text-muted uppercase tracking-wide">Last Updated</p>
+              <p className="text-sm font-semibold text-gray-900 dark:text-text-primary">{formatDate(lastUpdated)}</p>
             </div>
             {submittedAt && (
               <div className="space-y-1">
-                <p className="text-xs font-medium text-gray-500 uppercase tracking-wide">Submitted</p>
-                <p className="text-sm font-semibold text-gray-900">{formatDate(submittedAt)}</p>
+                <p className="text-xs font-medium text-gray-500 dark:text-text-muted uppercase tracking-wide">Submitted</p>
+                <p className="text-sm font-semibold text-gray-900 dark:text-text-primary">{formatDate(submittedAt)}</p>
               </div>
             )}
           </div>
@@ -205,13 +205,13 @@ export function QuestionnaireSettings({ progressData }: QuestionnaireSettingsPro
                 <button
                   key={section}
                   onClick={() => handleEditSection(section)}
-                  className="flex items-center justify-between gap-3 p-3 bg-green-50 border border-green-200 rounded-xl hover:bg-green-100 transition-colors text-left group"
+                  className="flex items-center justify-between gap-3 p-3 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-xl hover:bg-green-100 dark:hover:bg-green-900/30 transition-colors text-left group"
                 >
                   <div className="flex items-center gap-3 flex-1 min-w-0">
-                    <CheckCircle className="w-5 h-5 text-green-600 flex-shrink-0" />
-                    <span className="text-sm font-medium text-gray-900 truncate">{getSectionDisplayName(section)}</span>
+                    <CheckCircle className="w-5 h-5 text-green-600 dark:text-green-400 flex-shrink-0" />
+                    <span className="text-sm font-medium text-gray-900 dark:text-text-primary truncate">{getSectionDisplayName(section)}</span>
                   </div>
-                  <Edit className="w-4 h-4 text-gray-400 group-hover:text-gray-600 flex-shrink-0 opacity-0 group-hover:opacity-100 transition-opacity" />
+                  <Edit className="w-4 h-4 text-gray-400 dark:text-text-muted group-hover:text-gray-600 dark:group-hover:text-text-secondary flex-shrink-0 opacity-0 group-hover:opacity-100 transition-opacity" />
                 </button>
               ))}
             </div>
@@ -259,9 +259,9 @@ export function QuestionnaireSettings({ progressData }: QuestionnaireSettingsPro
             </Button>
           </div>
 
-          <div className="text-sm text-gray-500 space-y-1">
-            <p><strong>Edit My Answers:</strong> Modify your existing responses without losing progress.</p>
-            <p><strong>Retake Questionnaire:</strong> Start fresh with a new questionnaire (clears submission status).</p>
+          <div className="text-sm text-gray-500 dark:text-text-muted space-y-1">
+            <p><strong className="text-gray-700 dark:text-text-primary">Edit My Answers:</strong> Modify your existing responses without losing progress.</p>
+            <p><strong className="text-gray-700 dark:text-text-primary">Retake Questionnaire:</strong> Start fresh with a new questionnaire (clears submission status).</p>
           </div>
         </CardContent>
       </Card>

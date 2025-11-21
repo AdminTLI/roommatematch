@@ -3,9 +3,8 @@
 /**
  * SKDB Programme Sync Script
  * 
- * Syncs programme data from Studiekeuzedatabase (SKDB) and merges with existing DUO data.
- * Enriches DUO programmes with SKDB fields (ECTS, duration, admission requirements) and
- * creates SKDB-only programmes when no DUO match is found.
+ * Syncs programme data from Studiekeuzedatabase (SKDB) as the primary and only data source.
+ * Creates and updates programmes exclusively from SKDB data.
  * 
  * Usage:
  *   pnpm tsx scripts/sync-skdb-programmes.ts [--export-json]
@@ -151,14 +150,6 @@ interface SkdbSyncReport {
     skdbLevel: string;
     reason: string;
   }>;
-  discrepancies: Array<{
-    type: 'skdb_only' | 'name_conflict';
-    skdbName: string;
-    skdbInstitution: string;
-    duoName?: string;
-    rioCode?: string;
-    crohoCode?: string;
-  }>;
 }
 
 /**
@@ -257,29 +248,49 @@ function levenshteinDistance(str1: string, str2: string): number {
  * Determine degree level from programme data
  */
 function determineDegreeLevel(programmeData: any): 'bachelor' | 'master' | 'premaster' {
-  const name = programmeData.name?.toLowerCase() || '';
-  const description = programmeData.description?.toLowerCase() || '';
-  const level = programmeData.level?.toLowerCase() || '';
+  const name = (programmeData.name || '').toLowerCase();
+  const description = (programmeData.description || '').toLowerCase();
+  // Handle CSV format: niveau can be "Bachelor", "Master", or quoted strings
+  const niveau = (programmeData.niveau || programmeData.level || '').toString().toLowerCase().replace(/["']/g, '');
+  const titel = (programmeData.Titel || programmeData.titel || '').toLowerCase();
   
+  // Check for premaster/schakelprogramma first
   if (name.includes('pre-master') || name.includes('schakelprogramma') || 
-      name.includes('premaster') || name.includes('bridge')) {
+      name.includes('premaster') || name.includes('bridge') ||
+      name.includes('schakel')) {
     return 'premaster';
   }
   
-  if (level.includes('master') || name.includes('master') || 
-      description.includes('master')) {
+  // Check niveau field (from CSV) - this is the most reliable
+  if (niveau.includes('master')) {
     return 'master';
   }
   
-  if (level.includes('bachelor') || name.includes('bachelor') || 
-      description.includes('bachelor')) {
+  if (niveau.includes('bachelor')) {
     return 'bachelor';
   }
   
-  if (name.includes('master') || name.includes('msc') || name.includes('ma')) {
+  // Check Titel field (from CSV) - "Master of ..." or "Bachelor of ..."
+  if (titel.includes('master')) {
     return 'master';
   }
   
+  if (titel.includes('bachelor')) {
+    return 'bachelor';
+  }
+  
+  // Fallback: check name and description
+  if (name.includes('master') || description.includes('master') ||
+      name.includes('msc') || name.includes('ma ')) {
+    return 'master';
+  }
+  
+  if (name.includes('bachelor') || description.includes('bachelor') ||
+      name.includes('bsc') || name.includes('ba ')) {
+    return 'bachelor';
+  }
+  
+  // Default to bachelor if unclear
   return 'bachelor';
 }
 
@@ -621,13 +632,13 @@ async function parseProgrammesFromXLSX(): Promise<SkdbProgram[]> {
 }
 
 /**
- * Find matching DUO programme for SKDB programme
+ * Find existing SKDB programme by CROHO code or name
  */
-async function findMatchingDuoProgramme(
+async function findExistingSkdbProgramme(
   skdbProgram: SkdbProgram,
   institutionSlug: string
-): Promise<{ rioCode: string; matchType: 'croho' | 'rio' | 'name'; existingProgramme: any } | null> {
-  // Strategy 1: Match by CROHO code
+): Promise<{ id: string; matchType: 'croho' | 'name'; existingProgramme: any } | null> {
+  // Strategy 1: Match by CROHO code (primary identifier for SKDB)
   if (skdbProgram.crohoCode) {
     const { data, error } = await supabase
       .from('programmes')
@@ -636,24 +647,11 @@ async function findMatchingDuoProgramme(
       .maybeSingle();
     
     if (!error && data) {
-      return { rioCode: data.rio_code || data.id, matchType: 'croho', existingProgramme: data };
+      return { id: data.id, matchType: 'croho', existingProgramme: data };
     }
   }
   
-  // Strategy 2: Match by RIO code (if SKDB provides it)
-  if (skdbProgram.rioCode) {
-    const { data, error } = await supabase
-      .from('programmes')
-      .select('*')
-      .eq('rio_code', skdbProgram.rioCode)
-      .maybeSingle();
-    
-    if (!error && data) {
-      return { rioCode: data.rio_code || data.id, matchType: 'rio', existingProgramme: data };
-    }
-  }
-  
-  // Strategy 3: Match by name + institution + level (fuzzy)
+  // Strategy 2: Match by name + institution + level (fuzzy)
   const normalizedSkdbName = normalizeName(skdbProgram.name);
   
   const { data: candidates, error } = await supabase
@@ -669,7 +667,7 @@ async function findMatchingDuoProgramme(
   }
   
   // Find best match by Levenshtein distance
-  let bestMatch: { rioCode: string; distance: number; existingProgramme: any } | null = null;
+  let bestMatch: { id: string; distance: number; existingProgramme: any } | null = null;
   
   for (const candidate of candidates) {
     const normalizedCandidate = normalizeName(candidate.name);
@@ -679,7 +677,7 @@ async function findMatchingDuoProgramme(
     if (distance <= 3) {
       if (!bestMatch || distance < bestMatch.distance) {
         bestMatch = {
-          rioCode: candidate.rio_code || candidate.id,
+          id: candidate.id,
           distance,
           existingProgramme: candidate
         };
@@ -687,16 +685,16 @@ async function findMatchingDuoProgramme(
     }
   }
   
-  return bestMatch ? { rioCode: bestMatch.rioCode, matchType: 'name', existingProgramme: bestMatch.existingProgramme } : null;
+  return bestMatch ? { id: bestMatch.id, matchType: 'name', existingProgramme: bestMatch.existingProgramme } : null;
 }
 
 /**
- * Upsert SKDB programme data (merge with existing or create new)
+ * Upsert SKDB programme data (create new or update existing)
  */
 async function upsertSkdbProgramme(
   skdbProgram: SkdbProgram,
   institutionSlug: string,
-  match: { rioCode: string; matchType: string; existingProgramme: any } | null,
+  match: { id: string; matchType: string; existingProgramme: any } | null,
   report: SkdbSyncReport
 ): Promise<void> {
   // Use ISO timestamp - let database handle conversion
@@ -709,72 +707,83 @@ async function upsertSkdbProgramme(
   const institution = allInstitutions.find(inst => inst.id === institutionSlug);
   const sector = institution?.sector || 'wo';
   
+  const sources = { duo: false, skdb: true };
+  
   if (match) {
-    // Merge with existing DUO programme
+    // Update existing SKDB programme
     const existing = match.existingProgramme;
     const metadata = existing.metadata || {};
     
-    // Store SKDB name variant if it differs from DUO name
-    if (skdbProgram.name !== existing.name && skdbProgram.name !== existing.name_en) {
-      metadata.skdb_name = skdbProgram.name;
-    }
-    
-    // Update sources: mark both DUO and SKDB (merge with existing to preserve DUO flag)
-    const sources = existing.sources || {};
-    sources.duo = sources.duo !== false; // Preserve existing DUO flag, default to true if not set
-    sources.skdb = true; // Always mark SKDB as true when enriching
-    
     const updateData: any = {
+      name: skdbProgram.name, // Use SKDB name as primary
+      name_en: skdbProgram.nameEn || existing.name_en,
       croho_code: skdbProgram.crohoCode || existing.croho_code,
       language_codes: skdbProgram.languageCodes.length > 0 ? skdbProgram.languageCodes : existing.language_codes,
       faculty: skdbProgram.faculty || existing.faculty,
       active: skdbProgram.active !== undefined ? skdbProgram.active : existing.active,
-      ects_credits: skdbProgram.ectsCredits || existing.ects_credits,
+      ects_credits: skdbProgram.ectsCredits !== undefined ? skdbProgram.ectsCredits : existing.ects_credits,
       duration_years: skdbProgram.durationYears !== undefined ? skdbProgram.durationYears : existing.duration_years,
       duration_months: skdbProgram.durationMonths !== undefined ? skdbProgram.durationMonths : existing.duration_months,
       admission_requirements: skdbProgram.admissionRequirements || existing.admission_requirements,
-      skdb_only: false, // Has DUO match
-      sources, // Ensure sources JSONB is properly merged
+      skdb_only: true, // All programmes are SKDB-only now
+      sources,
       metadata,
-      enrichment_status: 'enriched'
-      // Let database defaults handle skdb_updated_at and enriched_at via triggers
-      // Note: We don't set these explicitly to avoid trigger conflicts
+      enrichment_status: 'enriched',
+      skdb_updated_at: now
     };
     
-    const { error } = await supabase
+    // First verify the programme still exists
+    const { data: existingCheck } = await supabase
       .from('programmes')
-      .update(updateData)
-      .eq('rio_code', match.rioCode);
+      .select('id')
+      .eq('id', match.id)
+      .maybeSingle();
     
-    if (error) {
-      console.error(`❌ Failed to update programme ${match.rioCode}:`, error);
-      report.summary.failed++;
-      if (report.byInstitution[institutionSlug]) {
-        report.byInstitution[institutionSlug].failed++;
-      }
+    if (!existingCheck) {
+      // Programme doesn't exist anymore, insert as new
+      console.warn(`⚠️  Matched programme ${match.id} no longer exists, inserting as new: ${skdbProgram.name}`);
+      match = null; // Force insert path
     } else {
-      report.summary.enriched++;
-      if (report.byInstitution[institutionSlug]) {
-        report.byInstitution[institutionSlug].enriched++;
+      // Programme exists, update it
+      const { data: updateResult, error } = await supabase
+        .from('programmes')
+        .update(updateData)
+        .eq('id', match.id)
+        .select('id');
+      
+      if (error) {
+        console.error(`❌ Failed to update programme ${match.id} (${skdbProgram.name}):`, error);
+        report.summary.failed++;
+        if (report.byInstitution[institutionSlug]) {
+          report.byInstitution[institutionSlug].failed++;
+        }
+        // If update failed, try to insert as new programme
+        match = null; // Force insert path
+      } else if (!updateResult || updateResult.length === 0) {
+        // Update succeeded but no rows were affected - this shouldn't happen if we verified existence
+        console.warn(`⚠️  Update succeeded but no rows affected for ${skdbProgram.name} (${match.id}), attempting insert...`);
+        match = null; // Force insert path
+      } else {
+        // Update succeeded and rows were affected
+        report.summary.enriched++;
+        if (report.byInstitution[institutionSlug]) {
+          report.byInstitution[institutionSlug].enriched++;
+        }
+        // Only log every 50th update to reduce noise
+        if (report.summary.enriched % 50 === 0) {
+          console.log(`✅ Updated ${report.summary.enriched} programmes so far...`);
+        }
+        return; // Successfully updated, exit early
       }
-      console.log(`✅ Enriched: ${skdbProgram.name} (${institutionSlug}) [${match.matchType}]`);
     }
-  } else {
-    // Create SKDB-only programme
-    const metadata: any = {};
-    if (skdbProgram.nameEn) {
-      metadata.skdb_name = skdbProgram.name;
-    }
-    
-    const sources = { duo: false, skdb: true };
-    
-    // Generate synthetic ID or use CROHO code
-    const syntheticId = skdbProgram.crohoCode || `skdb-${institutionSlug}-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
-    
+  }
+  
+  // Create new SKDB programme (either no match found, or update failed)
+  if (!match) {
     const insertData: any = {
       institution_slug: institutionSlug,
       brin_code: brinCode || null,
-      rio_code: null, // No DUO match
+      rio_code: null, // No DUO data
       name: skdbProgram.name,
       name_en: skdbProgram.nameEn || null,
       level: skdbProgram.degreeLevel,
@@ -791,9 +800,9 @@ async function upsertSkdbProgramme(
       admission_requirements: skdbProgram.admissionRequirements || null,
       skdb_only: true,
       sources,
-      metadata,
-      enrichment_status: 'enriched'
-      // Let database defaults handle skdb_updated_at and enriched_at via triggers
+      metadata: {},
+      enrichment_status: 'enriched',
+      skdb_updated_at: now
     };
     
     // Try to insert, handling conflicts
@@ -815,31 +824,71 @@ async function upsertSkdbProgramme(
           .eq('level', skdbProgram.degreeLevel);
         
         if (updateError) {
-          console.error(`❌ Failed to upsert SKDB-only programme ${skdbProgram.name}:`, updateError);
+          console.error(`❌ Failed to upsert SKDB programme ${skdbProgram.name}:`, updateError);
           report.summary.failed++;
           if (report.byInstitution[institutionSlug]) {
             report.byInstitution[institutionSlug].failed++;
           }
         } else {
-          report.summary.skdbOnly++;
-          if (report.byInstitution[institutionSlug]) {
-            report.byInstitution[institutionSlug].skdbOnly++;
+          // Verify the update actually affected rows
+          const { data: verifyData } = await supabase
+            .from('programmes')
+            .select('id')
+            .eq('institution_slug', institutionSlug)
+            .eq('name', skdbProgram.name)
+            .eq('level', skdbProgram.degreeLevel)
+            .maybeSingle();
+          
+          if (verifyData) {
+            report.summary.skdbOnly++;
+            if (report.byInstitution[institutionSlug]) {
+              report.byInstitution[institutionSlug].skdbOnly++;
+            }
+            // Only log every 50th creation to reduce noise
+            if (report.summary.skdbOnly % 50 === 0) {
+              console.log(`✅ Created ${report.summary.skdbOnly} new programmes so far...`);
+            }
+          } else {
+            console.error(`❌ Upsert succeeded but programme not found: ${skdbProgram.name}`);
+            report.summary.failed++;
+            if (report.byInstitution[institutionSlug]) {
+              report.byInstitution[institutionSlug].failed++;
+            }
           }
-          console.log(`✅ Created SKDB-only: ${skdbProgram.name} (${institutionSlug})`);
         }
       } else {
-        console.error(`❌ Failed to create SKDB-only programme ${skdbProgram.name}:`, error);
+        console.error(`❌ Failed to create SKDB programme ${skdbProgram.name}:`, error);
         report.summary.failed++;
         if (report.byInstitution[institutionSlug]) {
           report.byInstitution[institutionSlug].failed++;
         }
       }
     } else {
-      report.summary.skdbOnly++;
-      if (report.byInstitution[institutionSlug]) {
-        report.byInstitution[institutionSlug].skdbOnly++;
+      // Insert succeeded - verify it was actually created
+      const { data: verifyData } = await supabase
+        .from('programmes')
+        .select('id')
+        .eq('institution_slug', institutionSlug)
+        .eq('name', skdbProgram.name)
+        .eq('level', skdbProgram.degreeLevel)
+        .maybeSingle();
+      
+      if (verifyData) {
+        report.summary.skdbOnly++;
+        if (report.byInstitution[institutionSlug]) {
+          report.byInstitution[institutionSlug].skdbOnly++;
+        }
+        // Only log every 50th creation to reduce noise
+        if (report.summary.skdbOnly % 50 === 0) {
+          console.log(`✅ Created ${report.summary.skdbOnly} new programmes so far...`);
+        }
+      } else {
+        console.error(`❌ Insert succeeded but programme not found: ${skdbProgram.name}`);
+        report.summary.failed++;
+        if (report.byInstitution[institutionSlug]) {
+          report.byInstitution[institutionSlug].failed++;
+        }
       }
-      console.log(`✅ Created SKDB-only: ${skdbProgram.name} (${institutionSlug})`);
     }
   }
 }
@@ -918,8 +967,7 @@ async function main(): Promise<void> {
         notFound: 0
       },
       byInstitution: {},
-      unmatched: [],
-      discrepancies: []
+      unmatched: []
     };
     
     // Process each SKDB programme
@@ -943,36 +991,15 @@ async function main(): Promise<void> {
         report.byInstitution[institutionSlug] = { matched: 0, enriched: 0, skdbOnly: 0, failed: 0 };
       }
       
-      // Find matching DUO programme
-      const match = await findMatchingDuoProgramme(skdbProgram, institutionSlug);
+      // Find existing SKDB programme
+      const match = await findExistingSkdbProgramme(skdbProgram, institutionSlug);
       
       if (match) {
         report.summary.matched++;
         report.byInstitution[institutionSlug].matched++;
-        
-        // Check for name conflicts
-        if (match.existingProgramme.name !== skdbProgram.name && 
-            match.existingProgramme.name_en !== skdbProgram.name) {
-          report.discrepancies.push({
-            type: 'name_conflict',
-            skdbName: skdbProgram.name,
-            skdbInstitution: skdbProgram.institution,
-            duoName: match.existingProgramme.name,
-            rioCode: match.rioCode,
-            crohoCode: skdbProgram.crohoCode
-          });
-        }
-      } else {
-        // SKDB-only programme
-        report.discrepancies.push({
-          type: 'skdb_only',
-          skdbName: skdbProgram.name,
-          skdbInstitution: skdbProgram.institution,
-          crohoCode: skdbProgram.crohoCode
-        });
       }
       
-      // Upsert programme
+      // Upsert programme (all programmes are SKDB-only now)
       await upsertSkdbProgramme(skdbProgram, institutionSlug, match, report);
     }
     
@@ -994,11 +1021,6 @@ async function main(): Promise<void> {
       console.log(`   ${slug}: matched=${stats.matched}, enriched=${stats.enriched}, skdbOnly=${stats.skdbOnly}, failed=${stats.failed}`);
     }
     console.log('');
-    
-    if (report.discrepancies.length > 0) {
-      console.log(`⚠️  ${report.discrepancies.length} discrepancies found (SKDB-only or name conflicts). Check .skdb-sync-report.json for details.`);
-    }
-    
     console.log(`✅ SKDB sync completed!`);
     console.log('');
     

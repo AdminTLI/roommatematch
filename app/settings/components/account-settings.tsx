@@ -87,10 +87,10 @@ export function AccountSettings({ user }: AccountSettingsProps) {
       </div>
 
       {/* Security Settings */}
-      <Card className="border-gray-200">
+      <Card className="border-gray-200 dark:border-border-subtle">
         <CardHeader className="pb-4">
           <CardTitle className="flex items-center gap-3 text-xl">
-            <Shield className="w-5 h-5 text-gray-600" />
+            <Shield className="w-5 h-5 text-gray-600 dark:text-text-secondary" />
             Security
           </CardTitle>
           <CardDescription className="text-base mt-2">
@@ -101,19 +101,19 @@ export function AccountSettings({ user }: AccountSettingsProps) {
           <div className="space-y-3">
             <Label className="text-sm font-medium">Email Address</Label>
             <div className="flex items-center gap-3">
-              <Mail className="w-5 h-5 text-gray-400 flex-shrink-0" />
+              <Mail className="w-5 h-5 text-gray-400 dark:text-text-muted flex-shrink-0" />
               <Input value={user.email} disabled className="bg-gray-50 dark:bg-bg-surface-alt h-11 text-text-primary dark:text-text-primary" />
             </div>
-            <p className="text-sm text-gray-500 ml-8">
+            <p className="text-sm text-gray-500 dark:text-text-muted ml-8">
               Contact support to change your email address.
             </p>
           </div>
 
-          <div className="space-y-3 pt-2 border-t border-gray-100">
+          <div className="space-y-3 pt-2 border-t border-gray-100 dark:border-border-subtle">
             <Label className="text-sm font-medium">Password</Label>
             <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
               <div className="flex items-center gap-3 flex-1">
-                <Key className="w-5 h-5 text-gray-400 flex-shrink-0" />
+                <Key className="w-5 h-5 text-gray-400 dark:text-text-muted flex-shrink-0" />
                 <Input type="password" value="••••••••" disabled className="bg-gray-50 dark:bg-bg-surface-alt h-11 flex-1 text-text-primary dark:text-text-primary" />
               </div>
               <Button variant="outline" onClick={handleChangePassword} className="w-full sm:w-auto min-w-[120px] h-11 text-base">
@@ -125,10 +125,10 @@ export function AccountSettings({ user }: AccountSettingsProps) {
       </Card>
 
       {/* Notification Preferences */}
-      <Card className="border-gray-200">
+      <Card className="border-gray-200 dark:border-border-subtle">
         <CardHeader className="pb-4">
           <CardTitle className="flex items-center gap-3 text-xl">
-            <Bell className="w-5 h-5 text-gray-600" />
+            <Bell className="w-5 h-5 text-gray-600 dark:text-text-secondary" />
             Notification Preferences
           </CardTitle>
           <CardDescription className="text-base mt-2">
@@ -138,12 +138,12 @@ export function AccountSettings({ user }: AccountSettingsProps) {
         <CardContent className="space-y-8 pt-2">
           <div className="space-y-6">
             <div className="space-y-4 pt-2">
-              <h4 className="font-semibold text-base text-gray-900">Email Notifications</h4>
+              <h4 className="font-semibold text-base text-gray-900 dark:text-text-primary">Email Notifications</h4>
               
-              <div className="flex items-center justify-between py-3 border-b border-gray-100">
+              <div className="flex items-center justify-between py-3 border-b border-gray-100 dark:border-border-subtle">
                 <div className="space-y-1 flex-1 pr-4">
                   <Label className="text-sm font-medium">New Matches</Label>
-                  <p className="text-sm text-gray-600">Get notified when you have new compatible matches</p>
+                  <p className="text-sm text-gray-600 dark:text-text-muted">Get notified when you have new compatible matches</p>
                 </div>
                 <Switch
                   checked={notifications.emailMatches}
@@ -151,10 +151,10 @@ export function AccountSettings({ user }: AccountSettingsProps) {
                 />
               </div>
 
-              <div className="flex items-center justify-between py-3 border-b border-gray-100">
+              <div className="flex items-center justify-between py-3 border-b border-gray-100 dark:border-border-subtle">
                 <div className="space-y-1 flex-1 pr-4">
                   <Label className="text-sm font-medium">New Messages</Label>
-                  <p className="text-sm text-gray-600">Get notified when you receive new messages</p>
+                  <p className="text-sm text-gray-600 dark:text-text-muted">Get notified when you receive new messages</p>
                 </div>
                 <Switch
                   checked={notifications.emailMessages}
@@ -165,7 +165,7 @@ export function AccountSettings({ user }: AccountSettingsProps) {
               <div className="flex items-center justify-between py-3">
                 <div className="space-y-1 flex-1 pr-4">
                   <Label className="text-sm font-medium">Platform Updates</Label>
-                  <p className="text-sm text-gray-600">Get notified about new features and updates</p>
+                  <p className="text-sm text-gray-600 dark:text-text-muted">Get notified about new features and updates</p>
                 </div>
                 <Switch
                   checked={notifications.emailUpdates}
@@ -174,13 +174,13 @@ export function AccountSettings({ user }: AccountSettingsProps) {
               </div>
             </div>
 
-            <div className="space-y-4 pt-4 border-t border-gray-200">
-              <h4 className="font-semibold text-base text-gray-900">Push Notifications</h4>
+            <div className="space-y-4 pt-4 border-t border-gray-200 dark:border-border-subtle">
+              <h4 className="font-semibold text-base text-gray-900 dark:text-text-primary">Push Notifications</h4>
               
-              <div className="flex items-center justify-between py-3 border-b border-gray-100">
+              <div className="flex items-center justify-between py-3 border-b border-gray-100 dark:border-border-subtle">
                 <div className="space-y-1 flex-1 pr-4">
                   <Label className="text-sm font-medium">New Matches</Label>
-                  <p className="text-sm text-gray-600">Receive push notifications for new matches</p>
+                  <p className="text-sm text-gray-600 dark:text-text-muted">Receive push notifications for new matches</p>
                 </div>
                 <Switch
                   checked={notifications.pushMatches}
@@ -191,7 +191,7 @@ export function AccountSettings({ user }: AccountSettingsProps) {
               <div className="flex items-center justify-between py-3">
                 <div className="space-y-1 flex-1 pr-4">
                   <Label className="text-sm font-medium">New Messages</Label>
-                  <p className="text-sm text-gray-600">Receive push notifications for new messages</p>
+                  <p className="text-sm text-gray-600 dark:text-text-muted">Receive push notifications for new messages</p>
                 </div>
                 <Switch
                   checked={notifications.pushMessages}
@@ -201,7 +201,7 @@ export function AccountSettings({ user }: AccountSettingsProps) {
             </div>
           </div>
 
-          <div className="flex justify-end pt-4 border-t border-gray-100">
+          <div className="flex justify-end pt-4 border-t border-gray-100 dark:border-border-subtle">
             <Button 
               onClick={handleSaveNotifications}
               disabled={isLoading}

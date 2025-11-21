@@ -13,6 +13,7 @@ import { GROUPS } from '@/components/marketing/Careers/RoleCatalogCards'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Info, GraduationCap, MapPin } from 'lucide-react'
 import { fetchWithCSRF } from '@/lib/utils/fetch-with-csrf'
+import { useApp } from '@/app/providers'
 
 const ApplicationSchema = z.object({
   track: z.enum(['experienced', 'student']),
@@ -30,7 +31,96 @@ const ApplicationSchema = z.object({
 
 type ApplicationForm = z.infer<typeof ApplicationSchema>
 
+const content = {
+  en: {
+    title: 'Apply to join',
+    yourDetails: 'Your details',
+    track: 'Track',
+    selectTrack: 'Select track',
+    experiencedContributor: 'Experienced contributor',
+    studentVolunteer: 'Student volunteer',
+    trackHelp: 'Choose the option that best fits how you want to contribute.',
+    currentCourse: 'Current course/program (optional)',
+    coursePlaceholder: 'e.g., BSc Marketing, MSc HCI',
+    courseHelp: 'Helps us align a project with your studies.',
+    name: 'Name',
+    namePlaceholder: 'Your name',
+    email: 'Email',
+    emailPlaceholder: 'you@example.com',
+    preferredArea: 'Preferred impact area (optional)',
+    chooseArea: 'Choose an area',
+    areaHelp: "We'll try to align you with work in this area.",
+    skills: 'Skills',
+    skillsPlaceholder: 'Tell us about your skills and strengths',
+    skillsHelp: "Describe what you ship weekly and where you're most effective.",
+    availability: 'Availability',
+    tools: 'Tools (optional)',
+    toolsPlaceholder: 'Figma, Python, SQL, Next.js…',
+    toolsHelp: 'Optional',
+    timeCommitment: 'Time commitment',
+    timePlaceholder: 'e.g., 3–5 hrs/wk',
+    timeHelp: 'What can you realistically dedicate each week?',
+    interests: 'Interests',
+    exampleProject: 'Example project or impact',
+    examplePlaceholder: 'What would you like to help with?',
+    rolesInterested: "Roles you're interested in",
+    focusOutcome: 'Focus on meaningful outcomes',
+    typicallyCommitment: 'Commitment: typically 3–5 hrs/week',
+    notes: 'Notes (optional)',
+    notesPlaceholder: 'Anything else we should know?',
+    submit: 'Submit application',
+    submitNote: "Once submitted, expect a reply within 7 days. We'll schedule a 30‑min sync, scope a deliverable, and set up your Notion board before your first contribution.",
+    successMessage: 'Thanks for applying. We will be in touch soon.',
+    errorMessage: 'Something went wrong',
+    failedSubmit: 'Failed to submit application'
+  },
+  nl: {
+    title: 'Aanmelden om mee te doen',
+    yourDetails: 'Jouw gegevens',
+    track: 'Track',
+    selectTrack: 'Selecteer track',
+    experiencedContributor: 'Ervaren contributor',
+    studentVolunteer: 'Studentvrijwilliger',
+    trackHelp: 'Kies de optie die het beste past bij hoe je wilt bijdragen.',
+    currentCourse: 'Huidige cursus/programma (optioneel)',
+    coursePlaceholder: 'bijv. BSc Marketing, MSc HCI',
+    courseHelp: 'Helpt ons een project af te stemmen op je studies.',
+    name: 'Naam',
+    namePlaceholder: 'Je naam',
+    email: 'E-mail',
+    emailPlaceholder: 'je@voorbeeld.nl',
+    preferredArea: 'Gewenste impactgebied (optioneel)',
+    chooseArea: 'Kies een gebied',
+    areaHelp: 'We proberen je af te stemmen op werk in dit gebied.',
+    skills: 'Vaardigheden',
+    skillsPlaceholder: 'Vertel ons over je vaardigheden en sterke punten',
+    skillsHelp: 'Beschrijf wat je wekelijks levert en waar je het meest effectief bent.',
+    availability: 'Beschikbaarheid',
+    tools: 'Tools (optioneel)',
+    toolsPlaceholder: 'Figma, Python, SQL, Next.js…',
+    toolsHelp: 'Optioneel',
+    timeCommitment: 'Tijdsinzet',
+    timePlaceholder: 'bijv. 3–5 uur/week',
+    timeHelp: 'Wat kun je realistisch elke week besteden?',
+    interests: 'Interesses',
+    exampleProject: 'Voorbeeldproject of impact',
+    examplePlaceholder: 'Waar zou je graag mee willen helpen?',
+    rolesInterested: 'Rollen waarin je geïnteresseerd bent',
+    focusOutcome: 'Focus op betekenisvolle resultaten',
+    typicallyCommitment: 'Commitment: meestal 3–5 uur/week',
+    notes: 'Notities (optioneel)',
+    notesPlaceholder: 'Iets anders dat we moeten weten?',
+    submit: 'Aanmelding indienen',
+    submitNote: 'Na indiening kun je binnen 7 dagen een reactie verwachten. We plannen een 30 min sync, scopen een deliverable en stellen je Notion-board op voordat je eerste bijdrage.',
+    successMessage: 'Bedankt voor je aanmelding. We nemen binnenkort contact op.',
+    errorMessage: 'Er is iets misgegaan',
+    failedSubmit: 'Aanmelding indienen mislukt'
+  }
+}
+
 export function ApplyForm() {
+  const { locale } = useApp()
+  const t = content[locale]
   const form = useForm<ApplicationForm>({
     resolver: zodResolver(ApplicationSchema),
     defaultValues: {
@@ -64,16 +154,16 @@ export function ApplyForm() {
       })
       if (!res.ok) {
         const data = await res.json().catch(() => ({}))
-        const errorMessage = data?.error || 'Failed to submit application'
+        const errorMessage = data?.error || t.failedSubmit
         const errorDetails = data?.details
         console.error('[ApplyForm] Submission failed:', { status: res.status, error: errorMessage, details: errorDetails })
         throw new Error(errorMessage + (errorDetails ? `: ${JSON.stringify(errorDetails)}` : ''))
       }
-      toast.success('Thanks for applying. We will be in touch soon.')
+      toast.success(t.successMessage)
       form.reset()
     } catch (err: any) {
       console.error('[ApplyForm] Error:', err)
-      toast.error(err?.message || 'Something went wrong')
+      toast.error(err?.message || t.errorMessage)
     }
   }
 
@@ -81,53 +171,53 @@ export function ApplyForm() {
     <div className="mx-auto max-w-3xl">
       <Card className="rounded-2xl border border-muted/40 shadow-sm">
         <CardHeader className="pb-2">
-          <CardTitle className="text-xl">Apply to join</CardTitle>
+          <CardTitle className="text-xl">{t.title}</CardTitle>
         </CardHeader>
         <CardContent className="space-y-5">
           <form className="space-y-5 text-sm" onSubmit={form.handleSubmit(onSubmit)}>
-            <div className="text-sm font-medium">Your details</div>
+            <div className="text-sm font-medium">{t.yourDetails}</div>
             <div className="grid gap-4 sm:grid-cols-2">
               <div className="space-y-2">
-                <Label>Track</Label>
+                <Label>{t.track}</Label>
                 <Select
                   value={form.watch('track') || 'experienced'}
                   onValueChange={(v) => form.setValue('track', v as 'experienced' | 'student')}
                 >
                   <SelectTrigger className="h-10 text-sm">
-                    <SelectValue placeholder="Select track" />
+                    <SelectValue placeholder={t.selectTrack} />
                   </SelectTrigger>
                   <SelectContent sideOffset={4} className="z-50">
-                    <SelectItem value="experienced">Experienced contributor</SelectItem>
-                    <SelectItem value="student">Student volunteer</SelectItem>
+                    <SelectItem value="experienced">{t.experiencedContributor}</SelectItem>
+                    <SelectItem value="student">{t.studentVolunteer}</SelectItem>
                   </SelectContent>
                 </Select>
                 {form.formState.errors.track && (
                   <p className="text-sm text-destructive">{form.formState.errors.track.message}</p>
                 )}
                 <p className="text-xs text-muted-foreground flex items-center gap-2">
-                  <Info className="h-3.5 w-3.5" /> Choose the option that best fits how you want to contribute.
+                  <Info className="h-3.5 w-3.5" /> {t.trackHelp}
                 </p>
               </div>
               <div className="space-y-2">
-                <Label htmlFor="courseProgram">Current course/program (optional)</Label>
-                <Input id="courseProgram" className="h-10 text-sm" {...form.register('courseProgram')} placeholder="e.g., BSc Marketing, MSc HCI" />
+                <Label htmlFor="courseProgram">{t.currentCourse}</Label>
+                <Input id="courseProgram" className="h-10 text-sm" {...form.register('courseProgram')} placeholder={t.coursePlaceholder} />
                 <p className="text-xs text-muted-foreground flex items-center gap-2">
-                  <GraduationCap className="h-3.5 w-3.5" /> Helps us align a project with your studies.
+                  <GraduationCap className="h-3.5 w-3.5" /> {t.courseHelp}
                 </p>
               </div>
             </div>
 
             <div className="grid gap-4 sm:grid-cols-2">
               <div className="space-y-2">
-                <Label htmlFor="name">Name</Label>
-                <Input id="name" className="h-10 text-sm" {...form.register('name')} placeholder="Your name" />
+                <Label htmlFor="name">{t.name}</Label>
+                <Input id="name" className="h-10 text-sm" {...form.register('name')} placeholder={t.namePlaceholder} />
                 {form.formState.errors.name && (
                   <p className="text-sm text-destructive">{form.formState.errors.name.message}</p>
                 )}
               </div>
               <div className="space-y-2">
-                <Label htmlFor="email">Email</Label>
-                <Input id="email" type="email" className="h-10 text-sm" {...form.register('email')} placeholder="you@example.com" />
+                <Label htmlFor="email">{t.email}</Label>
+                <Input id="email" type="email" className="h-10 text-sm" {...form.register('email')} placeholder={t.emailPlaceholder} />
                 {form.formState.errors.email && (
                   <p className="text-sm text-destructive">{form.formState.errors.email.message}</p>
                 )}
@@ -135,13 +225,13 @@ export function ApplyForm() {
             </div>
 
             <div className="space-y-2">
-              <Label>Preferred impact area (optional)</Label>
+              <Label>{t.preferredArea}</Label>
               <Select
                 value={form.watch('preferredArea')}
                 onValueChange={(v) => form.setValue('preferredArea', v)}
               >
                 <SelectTrigger className="h-10 text-sm">
-                  <SelectValue placeholder="Choose an area" />
+                  <SelectValue placeholder={t.chooseArea} />
                 </SelectTrigger>
                 <SelectContent>
                   {GROUPS.map((g) => (
@@ -150,58 +240,58 @@ export function ApplyForm() {
                 </SelectContent>
               </Select>
               <p className="text-xs text-muted-foreground flex items-center gap-2">
-                <MapPin className="h-3.5 w-3.5" /> We’ll try to align you with work in this area.
+                <MapPin className="h-3.5 w-3.5" /> {t.areaHelp}
               </p>
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="skills">Skills</Label>
-              <Textarea id="skills" rows={3} className="text-sm" {...form.register('skills')} placeholder="Tell us about your skills and strengths" />
+              <Label htmlFor="skills">{t.skills}</Label>
+              <Textarea id="skills" rows={3} className="text-sm" {...form.register('skills')} placeholder={t.skillsPlaceholder} />
               {form.formState.errors.skills && (
                 <p className="text-sm text-destructive">{form.formState.errors.skills.message}</p>
               )}
               <p className="text-xs text-muted-foreground">
-                Describe what you ship weekly and where you’re most effective.
+                {t.skillsHelp}
               </p>
             </div>
 
-            <div className="text-sm font-medium">Availability</div>
+            <div className="text-sm font-medium">{t.availability}</div>
             <div className="grid gap-4 sm:grid-cols-2">
               <div className="space-y-2">
-                <Label htmlFor="tools">Tools (optional)</Label>
-                <Input id="tools" className="h-10 text-sm" {...form.register('tools')} placeholder="Figma, Python, SQL, Next.js…" />
-                <p className="text-xs text-muted-foreground">Optional</p>
+                <Label htmlFor="tools">{t.tools}</Label>
+                <Input id="tools" className="h-10 text-sm" {...form.register('tools')} placeholder={t.toolsPlaceholder} />
+                <p className="text-xs text-muted-foreground">{t.toolsHelp}</p>
               </div>
               <div className="space-y-2">
-                <Label htmlFor="timeCommitment">Time commitment</Label>
-                <Input id="timeCommitment" className="h-10 text-sm" {...form.register('timeCommitment')} placeholder="e.g., 3–5 hrs/wk" />
+                <Label htmlFor="timeCommitment">{t.timeCommitment}</Label>
+                <Input id="timeCommitment" className="h-10 text-sm" {...form.register('timeCommitment')} placeholder={t.timePlaceholder} />
                 {form.formState.errors.timeCommitment && (
                   <p className="text-sm text-destructive">{form.formState.errors.timeCommitment.message}</p>
                 )}
                 <p className="text-xs text-muted-foreground">
-                  What can you realistically dedicate each week?
+                  {t.timeHelp}
                 </p>
               </div>
             </div>
 
-            <div className="text-sm font-medium">Interests</div>
+            <div className="text-sm font-medium">{t.interests}</div>
             <div className="space-y-2">
-              <Label htmlFor="exampleProject">Example project or impact</Label>
-              <Textarea id="exampleProject" rows={3} className="text-sm" {...form.register('exampleProject')} placeholder="What would you like to help with?" />
+              <Label htmlFor="exampleProject">{t.exampleProject}</Label>
+              <Textarea id="exampleProject" rows={3} className="text-sm" {...form.register('exampleProject')} placeholder={t.examplePlaceholder} />
               {form.formState.errors.exampleProject && (
                 <p className="text-sm text-destructive">{form.formState.errors.exampleProject.message}</p>
               )}
             </div>
 
             <div className="space-y-3">
-              <Label>Roles you’re interested in</Label>
+              <Label>{t.rolesInterested}</Label>
               <div className="grid gap-4">
                 {GROUPS.map((g) => (
                   <div key={g.header} className="rounded-xl border border-muted/40 bg-white/90 p-4 shadow-sm">
                     <details>
                       <summary className="flex flex-col gap-1 cursor-pointer">
                         <span className="text-sm font-medium">{g.header}</span>
-                        <span className="text-xs text-muted-foreground">{g.sub || 'Focus on meaningful outcomes'} · Commitment: typically 3–5 hrs/week</span>
+                        <span className="text-xs text-muted-foreground">{g.sub || t.focusOutcome} · {t.typicallyCommitment}</span>
                       </summary>
                       <div className="mt-3 space-y-2">
                         {g.roles.map((r) => {
@@ -232,14 +322,14 @@ export function ApplyForm() {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="notes">Notes (optional)</Label>
-              <Textarea id="notes" rows={3} className="text-sm" {...form.register('notes')} placeholder="Anything else we should know?" />
+              <Label htmlFor="notes">{t.notes}</Label>
+              <Textarea id="notes" rows={3} className="text-sm" {...form.register('notes')} placeholder={t.notesPlaceholder} />
             </div>
 
             <div className="pt-2">
-              <Button type="submit" size="lg">Submit application</Button>
+              <Button type="submit" size="lg">{t.submit}</Button>
               <p className="mt-3 text-xs text-muted-foreground">
-                Once submitted, expect a reply within 7 days. We’ll schedule a 30‑min sync, scope a deliverable, and set up your Notion board before your first contribution.
+                {t.submitNote}
               </p>
             </div>
           </form>

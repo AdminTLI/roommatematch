@@ -4,26 +4,19 @@ This document describes how programme data is sourced, imported, and integrated 
 
 ## Data Sources
 
-The platform uses a **dual-source approach** combining DUO and Studiekeuzedatabase (SKDB) data:
+The platform uses **Studiekeuzedatabase (SKDB)** as the exclusive source for programme data:
 
-- **DUO (Baseline)**: Primary source for programme identifiers (RIO codes, BRIN codes) and basic programme information
-  - Source: DUO's "Overzicht Erkenningen ho" dataset
-  - Update frequency: Daily
-  - Authority: Dutch Ministry of Education (DUO)
-  
-- **SKDB (Enrichment)**: Additional authoritative source for enriched programme metadata
+- **SKDB (Primary Source)**: Authoritative source for all programme data
   - Primary: REST OData API (when `SKDB_API_BASE` + `SKDB_API_KEY` are configured)
   - Fallback: Full database CSV/XLSX dump (when `SKDB_DUMP_PATH` is configured)
   - Authority: Studiekeuzedatabase (CROHO-backed)
   - Coverage: All 14 UNL (Association of Universities in the Netherlands) research universities
 
-### Merge Strategy
+### Data Strategy
 
-- **DUO fields** (RIO code, BRIN, names): DUO values are canonical and preserved
-- **SKDB fields** (CROHO, ECTS, duration, admission): SKDB values enrich DUO data
-- **Name conflicts**: DUO names remain primary; SKDB variants stored in `metadata.skdb_name`
-- **Source tracking**: `sources` JSONB field tracks which sources contributed: `{ duo: boolean, skdb: boolean }`
-- **SKDB-only programmes**: Programmes found only in SKDB (no DUO match) are ingested with `skdb_only: true` flag
+- **SKDB fields** (CROHO, names, ECTS, duration, admission): SKDB values are canonical
+- **Source tracking**: `sources` JSONB field tracks data sources: `{ duo: false, skdb: true }`
+- **All programmes**: All programmes are sourced exclusively from SKDB with `skdb_only: true` flag
 
 ### Supported Programme Levels
 
@@ -38,10 +31,7 @@ The platform uses a **dual-source approach** combining DUO and Studiekeuzedataba
 Add these to your `.env` file:
 
 ```bash
-# DUO Configuration (required for baseline)
-# DUO data is fetched from public CSV endpoints (no API key needed)
-
-# SKDB Configuration (for enrichment)
+# SKDB Configuration (required)
 # API Mode (Primary)
 SKDB_API_BASE=https://api.skdb.nl
 SKDB_API_KEY=your_skdb_api_key_here
@@ -64,27 +54,14 @@ pnpm db:seed
 
 3. Sync programmes:
 ```bash
-# Sync DUO programmes (baseline)
-pnpm tsx scripts/sync-duo-programmes.ts
-
-# Sync SKDB programmes (enrichment) - requires SKDB_API_KEY or SKDB_DUMP_PATH
+# Sync SKDB programmes (requires SKDB_API_KEY or SKDB_DUMP_PATH)
 pnpm tsx scripts/sync-skdb-programmes.ts
 
-# Or run both in sequence:
-pnpm tsx scripts/sync-programmes.ts
-
-# Or use the --with-skdb flag:
-pnpm tsx scripts/sync-duo-programmes.ts --with-skdb
+# Or use the npm script:
+pnpm sync:programmes
 ```
 
 ## Sync Process
-
-### DUO Sync (`scripts/sync-duo-programmes.ts`)
-
-1. **Data Fetching**: Fetches HO Opleidingsoverzicht CSV (primary) or Erkenningen CSV (fallback)
-2. **Institution Mapping**: Matches by BRIN code or institution name
-3. **Programme Processing**: Normalizes DUO data and classifies by level (bachelor/master/premaster)
-4. **Database Upsert**: Upserts to `programmes` table with DUO identifiers as canonical
 
 ### SKDB Sync (`scripts/sync-skdb-programmes.ts`)
 
@@ -92,21 +69,13 @@ pnpm tsx scripts/sync-duo-programmes.ts --with-skdb
    - **API Mode**: Fetches via OData API (`/Institutions?$expand=Programmes` or `/Programmes`)
    - **Dump Mode**: Parses CSV/XLSX files for offline imports
 2. **Institution Mapping**: Uses comprehensive synonym map to match SKDB institution names to slugs
-3. **Programme Matching**: Matches SKDB programmes to existing DUO programmes by:
-   - CROHO code (if available in both)
-   - RIO code (if SKDB provides it)
+3. **Programme Matching**: Matches SKDB programmes to existing programmes by:
+   - CROHO code (primary identifier)
    - Name + institution + level (fuzzy matching with Levenshtein distance)
-4. **Merge Strategy**:
-   - **Matched programmes**: Enriches existing DUO programmes with SKDB fields
-   - **SKDB-only programmes**: Creates new records with `skdb_only: true` flag
-5. **Database Upsert**: Updates or creates programmes with source tracking
-
-### Combined Sync (`scripts/sync-programmes.ts`)
-
-Orchestrates both syncs in sequence:
-1. Runs DUO sync first (establishes baseline)
-2. Runs SKDB sync (enriches with additional data)
-3. Generates combined coverage report
+4. **Upsert Strategy**:
+   - **Matched programmes**: Updates existing programmes with latest SKDB data
+   - **New programmes**: Creates new records with `skdb_only: true` flag
+5. **Database Upsert**: Updates or creates programmes with SKDB source tracking
 
 ### Institution Mapping
 
@@ -123,16 +92,16 @@ Uses a comprehensive synonym map to match dataset institution names to our 14 UN
 
 ### `programmes` Table
 
-The `programmes` table stores combined DUO + SKDB data:
+The `programmes` table stores SKDB data:
 
 ```sql
 CREATE TABLE programmes (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   institution_slug VARCHAR(100) NOT NULL,
-  brin_code VARCHAR(10),                    -- DUO institution code
-  rio_code VARCHAR(50) UNIQUE,              -- DUO programme identifier (canonical)
-  name TEXT NOT NULL,                       -- DUO name (canonical)
-  name_en TEXT,                             -- DUO English name
+  brin_code VARCHAR(10),                    -- Institution code (if available)
+  rio_code VARCHAR(50),                     -- RIO code (if SKDB provides it, not required)
+  name TEXT NOT NULL,                       -- SKDB programme name (canonical)
+  name_en TEXT,                             -- SKDB English name
   level programme_level NOT NULL,           -- bachelor, premaster, master
   sector programme_sector NOT NULL,         -- hbo, wo, wo_special
   modes TEXT[] DEFAULT '{}',
@@ -153,8 +122,8 @@ CREATE TABLE programmes (
   admission_requirements TEXT,              -- Admission notes
   
   -- Source tracking
-  skdb_only BOOLEAN DEFAULT false,          -- True if no DUO match
-  sources JSONB DEFAULT '{}',               -- { duo: boolean, skdb: boolean }
+  skdb_only BOOLEAN DEFAULT true,            -- All programmes are SKDB-only
+  sources JSONB DEFAULT '{}',               -- { duo: false, skdb: true }
   skdb_updated_at TIMESTAMPTZ,              -- Last SKDB sync timestamp
   
   -- Metadata
@@ -242,31 +211,25 @@ Academic affinity badges displayed on match cards:
 
 ### Manual Re-sync
 ```bash
-# Sync DUO programmes (baseline)
-pnpm tsx scripts/sync-duo-programmes.ts
-
-# Sync SKDB programmes (enrichment)
+# Sync SKDB programmes (primary and only source)
 pnpm tsx scripts/sync-skdb-programmes.ts
 
-# Or run both in sequence
-pnpm tsx scripts/sync-programmes.ts
+# Or use the npm script
+pnpm sync:programmes
 
-# Or use the --with-skdb flag for combined sync
-pnpm tsx scripts/sync-duo-programmes.ts --with-skdb
+# Or use the orchestrator script
+pnpm tsx scripts/sync-programmes.ts
 ```
 
 ### Coverage Reports
 
 After syncing, coverage reports are generated:
 
-- **DUO Coverage**: `.coverage-report.json` - Shows programme counts per institution and missing levels
-- **SKDB Sync Report**: `.skdb-sync-report.json` - Shows SKDB matching statistics and discrepancies
-- **Combined Report**: `.combined-coverage-report.json` - Merged view of both sources
+- **SKDB Sync Report**: `.skdb-sync-report.json` - Shows SKDB sync statistics
 
 Coverage reports include:
 - Programme counts by institution and level
-- SKDB enrichment statistics (enriched vs DUO-only vs SKDB-only)
-- Discrepancies (SKDB-only programmes, name conflicts)
+- SKDB sync statistics (matched, updated, created, failed)
 - Missing levels per institution
 
 ### Admin Panel Re-sync

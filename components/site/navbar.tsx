@@ -6,7 +6,7 @@ import Image from 'next/image'
 import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import Container from '@/components/ui/primitives/container'
-import { Menu, X, ChevronRight } from 'lucide-react'
+import { Menu, X, ChevronRight, ArrowRight } from 'lucide-react'
 import { LanguageSwitcher } from '@/app/(marketing)/components/language-switcher'
 import { useApp } from '@/app/providers'
 
@@ -69,6 +69,10 @@ export function Navbar() {
     setIsMobileMenuOpen(false)
   }
 
+  const handleToggleMenu = () => {
+    setIsMobileMenuOpen(prev => !prev)
+  }
+
   return (
     <>
       {/* Skip link */}
@@ -79,7 +83,7 @@ export function Navbar() {
         Skip to main content
       </a>
 
-      <nav className="h-16 md:h-20 bg-white border-b border-brand-border sticky top-0 z-40">
+      <nav className="h-16 md:h-20 bg-white/95 dark:bg-gray-900/95 backdrop-blur-sm border-b border-brand-border fixed top-0 left-0 right-0 z-50 w-full">
         <Container className="h-full">
           <div className="flex items-center justify-between h-full py-0">
             {/* Logo */}
@@ -111,13 +115,13 @@ export function Navbar() {
               </Link>
             </div>
 
-            {/* Tablet Navigation */}
-            <div className="hidden md:flex lg:hidden items-center space-x-6 h-full">
+            {/* Tablet Navigation - show 2 items on tablet sizes */}
+            <div className="hidden md:flex lg:hidden items-center space-x-4 h-full">
               {navigation.slice(0, 2).map((item) => (
                 <Link
                   key={item.name}
                   href={item.href}
-                  className="text-brand-muted hover:text-brand-text transition-colors font-medium text-sm flex items-center h-full"
+                  className="text-brand-muted hover:text-brand-text transition-colors font-medium text-sm flex items-center h-full whitespace-nowrap"
                 >
                   {item.name}
                 </Link>
@@ -137,13 +141,14 @@ export function Navbar() {
               ))}
             </div>
 
-            {/* Tablet CTA */}
-            <div className="hidden md:flex lg:hidden items-center space-x-3">
+            {/* Tablet CTA - optimized for tablet sizes */}
+            <div className="hidden md:flex lg:hidden items-center space-x-2">
               <LanguageSwitcher variant="minimal" />
               <Button 
                 variant="outline" 
                 size="sm"
                 onClick={handleSignIn}
+                className="text-xs px-3"
               >
                 {buttons.signIn}
               </Button>
@@ -151,6 +156,7 @@ export function Navbar() {
                 variant="primary"
                 size="sm"
                 onClick={handleGetStarted}
+                className="text-xs px-3"
               >
                 {buttons.getStarted}
                 <ChevronRight className="ml-1 h-3 w-3" />
@@ -177,14 +183,16 @@ export function Navbar() {
               </Button>
             </div>
 
-            {/* Mobile menu button and language switcher */}
-            <div className="lg:hidden flex items-center space-x-2">
+            {/* Mobile menu button and language switcher - only show on mobile (< md) */}
+            <div className="md:hidden flex items-center space-x-2">
               <LanguageSwitcher variant="minimal" />
               <button
-                onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-                className="p-2 rounded-md hover:bg-brand-surface transition-colors focus-visible:ring-2 focus-visible:ring-brand-primary"
+                type="button"
+                onClick={handleToggleMenu}
+                className="p-2 rounded-md hover:bg-brand-surface transition-colors focus-visible:ring-2 focus-visible:ring-brand-primary relative z-[70]"
                 aria-expanded={isMobileMenuOpen}
                 aria-controls="mobile-menu"
+                aria-label="Toggle mobile menu"
               >
                 {isMobileMenuOpen ? (
                   <X className="h-6 w-6" />
@@ -195,64 +203,96 @@ export function Navbar() {
             </div>
           </div>
         </Container>
-
-        {/* Mobile menu backdrop */}
-        {isMobileMenuOpen && (
-          <div
-            className="fixed inset-0 bg-black/50 z-30 lg:hidden"
-            onClick={handleCloseMenu}
-            aria-hidden="true"
-          />
-        )}
-
-        {/* Mobile menu */}
-        {isMobileMenuOpen && (
-          <div 
-            id="mobile-menu"
-            className="lg:hidden fixed inset-x-0 top-16 md:top-20 bg-white border-t border-brand-border z-40 max-h-[calc(100vh-4rem)] md:max-h-[calc(100vh-5rem)] overflow-y-auto"
-          >
-            <Container>
-              <div className="py-4 space-y-4">
-                {navigation.map((item) => (
-                  <Link
-                    key={item.name}
-                    href={item.href}
-                    className="block text-brand-muted hover:text-brand-text transition-colors font-medium py-2"
-                    onClick={handleCloseMenu}
-                  >
-                    {item.name}
-                  </Link>
-                ))}
-                <div className="pt-4 border-t border-brand-border space-y-3">
-                  <Button 
-                    variant="outline" 
-                    size="lg"
-                    className="w-full justify-center"
-                    onClick={() => {
-                      handleSignIn()
-                      handleCloseMenu()
-                    }}
-                  >
-                    {buttons.signIn}
-                  </Button>
-                  <Button 
-                    variant="primary"
-                    size="lg"
-                    className="w-full justify-center"
-                    onClick={() => {
-                      handleGetStarted()
-                      handleCloseMenu()
-                    }}
-                  >
-                    {buttons.getStarted}
-                    <ChevronRight className="ml-1 h-4 w-4" />
-                  </Button>
-                </div>
-              </div>
-            </Container>
-          </div>
-        )}
       </nav>
+
+      {/* Mobile menu backdrop - outside nav to avoid stacking context issues */}
+      {isMobileMenuOpen && (
+        <div
+          className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[60] md:hidden animate-in fade-in duration-300"
+          onClick={handleCloseMenu}
+          aria-hidden="true"
+        />
+      )}
+
+      {/* Mobile menu - outside nav to avoid stacking context issues */}
+      {isMobileMenuOpen && (
+        <div 
+          id="mobile-menu"
+          className="md:hidden fixed inset-x-0 bg-white z-[70] shadow-2xl rounded-2xl animate-in slide-in-from-top duration-300"
+          style={{ 
+            top: '72px', 
+            maxHeight: 'calc(100vh - 72px - 1rem)', 
+            marginTop: '0.5rem',
+            marginBottom: '1rem',
+            marginLeft: '1rem',
+            marginRight: '1rem',
+            overflowY: 'auto',
+            WebkitOverflowScrolling: 'touch'
+          }}
+        >
+          {/* Menu Header */}
+          <div className="sticky top-0 bg-white border-b border-gray-200 px-4 py-4 flex items-center justify-between z-10 rounded-t-2xl">
+            <h2 className="text-xl font-bold text-brand-text">Domu Match</h2>
+            <button
+              type="button"
+              onClick={handleCloseMenu}
+              className="p-2 rounded-lg hover:bg-gray-100 transition-colors duration-200"
+              aria-label="Close menu"
+            >
+              <X className="h-6 w-6 text-gray-600" />
+            </button>
+          </div>
+
+          {/* Menu Content */}
+          <div className="px-4 py-6 space-y-1">
+            {/* Navigation Links */}
+            {navigation.map((item, index) => (
+              <Link
+                key={item.name}
+                href={item.href}
+                className="group flex items-center justify-between py-3.5 px-4 rounded-xl text-base font-semibold text-gray-900 hover:bg-gradient-to-r hover:from-brand-primary/5 hover:to-brand-primary/10 hover:text-brand-primary transition-all duration-200 active:scale-[0.98] border border-transparent hover:border-brand-primary/20"
+                onClick={handleCloseMenu}
+              >
+                <span className="flex items-center gap-2">
+                  <span className="w-1.5 h-1.5 rounded-full bg-brand-primary opacity-0 group-hover:opacity-100 transition-opacity duration-200" />
+                  {item.name}
+                </span>
+                <ArrowRight className="h-4 w-4 text-gray-400 group-hover:text-brand-primary group-hover:translate-x-1 transition-all duration-200" />
+              </Link>
+            ))}
+            
+            {/* Divider */}
+            <div className="my-6 border-t border-gray-100" />
+            
+            {/* Action Buttons */}
+            <div className="space-y-3">
+              <Button 
+                variant="outline" 
+                size="lg"
+                className="w-full justify-center h-12 text-base font-semibold border-2 border-gray-200 hover:bg-gray-50 hover:border-gray-300 transition-all duration-200"
+                onClick={() => {
+                  handleSignIn()
+                  handleCloseMenu()
+                }}
+              >
+                {buttons.signIn}
+              </Button>
+              <Button 
+                variant="primary"
+                size="lg"
+                className="w-full justify-center h-12 text-base font-semibold shadow-lg hover:shadow-xl transition-all duration-200 hover:scale-[1.02] active:scale-[0.98]"
+                onClick={() => {
+                  handleGetStarted()
+                  handleCloseMenu()
+                }}
+              >
+                {buttons.getStarted}
+                <ChevronRight className="ml-2 h-5 w-5" />
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
     </>
   )
 }

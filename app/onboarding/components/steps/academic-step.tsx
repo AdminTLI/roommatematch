@@ -368,7 +368,7 @@ export function AcademicStep({ data, onChange, user }: AcademicStepProps) {
             disabled={!data.institution_slug || !data.degree_level}
             placeholder="Select your programme"
           />
-          <p className="text-sm text-gray-500">
+          <p className="text-sm text-gray-500 dark:text-text-muted">
             {data.institution_slug && data.degree_level
               ? `Select your ${data.degree_level} programme`
               : "Select your university and degree level to see available programmes"
@@ -420,7 +420,7 @@ export function AcademicStep({ data, onChange, user }: AcademicStepProps) {
           </div>
         )}
         
-        <p className="text-sm text-gray-500">
+        <p className="text-sm text-gray-500 dark:text-text-muted">
           When do you expect to finish your studies? This helps match you with students at similar academic stages.
         </p>
       </div>
@@ -456,7 +456,7 @@ export function AcademicStep({ data, onChange, user }: AcademicStepProps) {
             Study start month is required for accurate academic year calculation.
           </p>
         )}
-        <p className="text-sm text-gray-500">
+        <p className="text-sm text-gray-500 dark:text-text-muted">
           When did or will you start your studies? This helps calculate your current academic year more accurately. Academic year typically starts in September (month 9).
         </p>
       </div>
@@ -492,7 +492,7 @@ export function AcademicStep({ data, onChange, user }: AcademicStepProps) {
             Graduation month is required for accurate academic year calculation.
           </p>
         )}
-        <p className="text-sm text-gray-500">
+        <p className="text-sm text-gray-500 dark:text-text-muted">
           In which month do you expect to graduate? This helps us calculate your academic stage accurately. Most students graduate in June (summer).
         </p>
       </div>

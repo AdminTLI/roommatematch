@@ -10,7 +10,6 @@ import { useApp } from '@/app/providers'
 import { SocialProof } from './components/social-proof'
 import { FinalCTA as MarketingFinalCTA } from './components/final-cta'
 import { LiveStats } from './components/live-stats'
-import { ResearchCarousel } from './components/research-carousel'
 
 export default function MarketingPage() {
   const { locale } = useApp()
@@ -98,10 +97,9 @@ export default function MarketingPage() {
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(homepageStructuredData) }}
       />
-      <main id="main-content" className="min-h-screen bg-white">
+      <main id="main-content" className="min-h-screen bg-white pt-16 md:pt-20">
         <Navbar />
         <Hero />
-        <ResearchCarousel locale={locale} />
         <LiveStats locale={locale} />
         <Universities />
         <SocialProof locale={locale} />

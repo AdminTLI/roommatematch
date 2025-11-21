@@ -262,25 +262,19 @@ SKDB_DUMP_PATH=./data/studiekeuzedatabase_dump.csv
 
 ### Sync Process
 
-1. **Sync DUO Programmes (Baseline)**:
-   ```bash
-   pnpm tsx scripts/sync-duo-programmes.ts
-   ```
-   This fetches programme data from DUO's public CSV endpoints and establishes the baseline.
-
-2. **Sync SKDB Programmes (Enrichment)**:
+1. **Sync SKDB Programmes (Primary and Only Source)**:
    ```bash
    pnpm tsx scripts/sync-skdb-programmes.ts
    ```
-   This enriches DUO programmes with SKDB data (ECTS, duration, admission requirements).
+   This fetches all programme data from SKDB API or dump file.
 
-3. **Or Run Both Together**:
+2. **Or Use the Orchestrator Script**:
    ```bash
    # Using orchestrator script
    pnpm tsx scripts/sync-programmes.ts
    
-   # Or using --with-skdb flag
-   pnpm tsx scripts/sync-duo-programmes.ts --with-skdb
+   # Or use the npm script
+   pnpm sync:programmes
    ```
 
 ### Fallback Strategy

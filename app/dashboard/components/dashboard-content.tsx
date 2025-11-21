@@ -2,8 +2,9 @@
 
 import { motion } from 'framer-motion'
 import { useRouter } from 'next/navigation'
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
 import { useQuery } from '@tanstack/react-query'
+import { createPortal } from 'react-dom'
 import { 
   TrendingUp, 
   Users, 
@@ -20,10 +21,17 @@ import {
   CheckCircle,
   UserPlus,
   Home,
-  RefreshCw
+  RefreshCw,
+  Search,
+  X,
+  User,
+  Building2,
+  Settings,
+  LayoutDashboard
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { EmptyState } from '@/components/ui/empty-state'
+import { Card, CardContent } from '@/components/ui/card'
 import type { DashboardData } from '@/types/dashboard'
 import { createClient } from '@/lib/supabase/client'
 import { logger } from '@/lib/utils/logger'
@@ -65,9 +73,39 @@ interface DashboardContentProps {
   firstName?: string
 }
 
+interface SearchResult {
+  id: string
+  type: 'match' | 'message' | 'user' | 'housing' | 'page'
+  name?: string
+  title?: string
+  program?: string
+  university?: string
+  chatId?: string
+  content?: string
+  highlightedContent?: string
+  senderName?: string
+  createdAt?: string
+  address?: string
+  city?: string
+  rent?: number
+  href?: string
+  icon?: string
+  isGroupChat?: boolean
+  otherParticipantsCount?: number
+}
+
 export function DashboardContent({ hasCompletedQuestionnaire = false, hasPartialProgress = false, progressCount = 0, profileCompletion = 0, questionnaireProgress, dashboardData, user, firstName = '' }: DashboardContentProps) {
   const router = useRouter()
   const supabase = createClient()
+
+  // Mobile search state
+  const [searchQuery, setSearchQuery] = useState('')
+  const [searchResults, setSearchResults] = useState<SearchResult[]>([])
+  const [isSearching, setIsSearching] = useState(false)
+  const [showResults, setShowResults] = useState(false)
+  const searchRef = useRef<HTMLDivElement>(null)
+  const inputRef = useRef<HTMLInputElement>(null)
+  const [dropdownPosition, setDropdownPosition] = useState<{ top: number; left: number; width: number } | null>(null)
 
   // Fetch top matches with React Query
   const fetchTopMatches = useCallback(async () => {
@@ -193,13 +231,62 @@ export function DashboardContent({ hasCompletedQuestionnaire = false, hasPartial
           : profile.universities
         const universityName = universityData?.name || 'University'
         
+        // Helper function to check if a string is a UUID
+        const isUUID = (str: string): boolean => {
+          if (!str || typeof str !== 'string') return false
+          // Check for full UUID format
+          if (/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(str)) return true
+          // Check for UUID-like patterns (without dashes or partial)
+          if (/[0-9a-f]{8}-?[0-9a-f]{4}-?[0-9a-f]{4}-?[0-9a-f]{4}-?[0-9a-f]{12}/i.test(str)) return true
+          return false
+        }
+        
+        // Remove any UUIDs from strings (even if embedded)
+        const removeUUIDs = (str: string): string => {
+          if (!str || typeof str !== 'string') return str
+          // Remove UUID patterns completely
+          return str.replace(/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/gi, '').trim()
+        }
+        
+        // Clean all fields to ensure no UUIDs are displayed
+        let safeName = removeUUIDs(fullName)
+        if (isUUID(safeName) || safeName === userId || safeName.includes(userId) || !safeName) {
+          safeName = 'User'
+        }
+        
+        let safeUniversity = removeUUIDs(universityName)
+        if (isUUID(safeUniversity) || safeUniversity === userId || safeUniversity.includes(userId) || !safeUniversity) {
+          safeUniversity = 'University'
+        }
+        
+        let safeProgram = removeUUIDs(programDisplay || '')
+        if (isUUID(safeProgram) || safeProgram === userId || safeProgram.includes(userId) || !safeProgram) {
+          safeProgram = ''
+        }
+        
+        // Normalize score to 0-1 range if needed
+        // fit_score should already be in 0-1 range, but handle edge cases
+        let normalizedScore = score
+        if (normalizedScore > 1.0) {
+          // If score is > 1.0, it might already be in 0-100 range (like 94 instead of 0.94)
+          if (normalizedScore > 100) {
+            // If > 100, cap at 100 and convert to 0-1 range
+            normalizedScore = 100 / 100
+          } else {
+            // If between 1 and 100, convert to 0-1 range
+            normalizedScore = normalizedScore / 100
+          }
+        }
+        // Ensure it's in valid range (0-1)
+        normalizedScore = Math.max(0, Math.min(normalizedScore, 1.0))
+        
         return {
           id: userId,
           userId: userId,
-          name: fullName,
-          score: score, // Keep as decimal 0-1 for display
-          program: programDisplay || '',
-          university: universityName,
+          name: safeName,
+          score: normalizedScore, // Keep as decimal 0-1 for calculations
+          program: safeProgram,
+          university: safeUniversity,
           avatar: undefined
         }
       }).filter((m): m is NonNullable<typeof m> => m !== null) // Remove null entries
@@ -335,12 +422,16 @@ export function DashboardContent({ hasCompletedQuestionnaire = false, hasPartial
       })
 
       const allScores = Array.from(scoreByUser.values())
+        .map(score => Math.min(score, 1.0)) // Cap each score at 1.0 (100%)
 
       logger.log('loadAvgCompatibility: Found', allScores.length, 'matches', 'scores:', allScores)
 
       if (allScores.length > 0) {
-        const average = Math.round(
-          (allScores.reduce((sum, score) => sum + score, 0) / allScores.length) * 100
+        const average = Math.min(
+          Math.round(
+            (allScores.reduce((sum, score) => sum + score, 0) / allScores.length) * 100
+          ),
+          100 // Cap the final result at 100%
         )
         logger.log('loadAvgCompatibility: Average calculated as', average)
         return average
@@ -509,6 +600,154 @@ export function DashboardContent({ hasCompletedQuestionnaire = false, hasPartial
     queryKeys: queryKeys.matches.compatibility(user?.id),
     enabled: !!user?.id,
   })
+
+  // Mobile search handlers
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      const target = event.target as Node
+      if (
+        searchRef.current && 
+        !searchRef.current.contains(target) &&
+        !(target instanceof Element && target.closest('[data-search-dropdown]'))
+      ) {
+        setShowResults(false)
+      }
+    }
+
+    if (showResults) {
+      document.addEventListener('mousedown', handleClickOutside)
+      return () => document.removeEventListener('mousedown', handleClickOutside)
+    }
+  }, [showResults])
+
+  // Update dropdown position when search input is focused or results change
+  useEffect(() => {
+    const updatePosition = () => {
+      if (showResults && inputRef.current) {
+        const rect = inputRef.current.getBoundingClientRect()
+        setDropdownPosition({
+          top: rect.bottom + window.scrollY + 8,
+          left: rect.left + window.scrollX,
+          width: rect.width
+        })
+      }
+    }
+
+    updatePosition()
+
+    if (showResults) {
+      window.addEventListener('scroll', updatePosition, true)
+      window.addEventListener('resize', updatePosition)
+      return () => {
+        window.removeEventListener('scroll', updatePosition, true)
+        window.removeEventListener('resize', updatePosition)
+      }
+    }
+  }, [showResults, searchResults])
+
+  const performSearch = useCallback(async (query: string) => {
+    setIsSearching(true)
+    try {
+      const response = await fetch(`/api/search?q=${encodeURIComponent(query)}`)
+      const data = await response.json()
+      
+      if (response.ok) {
+        // Prioritize: matches first, then messages, then users, then housing, then pages
+        const allResults = [
+          ...(data.matches || []).map((m: any) => ({ ...m, type: 'match' as const, priority: 1 })),
+          ...(data.messages || []).map((m: any) => ({ ...m, type: 'message' as const, priority: 2 })),
+          ...(data.users || []).map((u: any) => ({ ...u, type: 'user' as const, priority: 3 })),
+          ...(data.housing || []).map((h: any) => ({ ...h, type: 'housing' as const, priority: 4 })),
+          ...(data.pages || []).map((p: any) => ({ ...p, type: 'page' as const, priority: 5 }))
+        ]
+        
+        // Deduplicate by user ID - keep match type over user type (higher priority)
+        const seenIds = new Map<string, SearchResult & { priority: number }>()
+        allResults.forEach((result) => {
+          // For user/match types, deduplicate by ID
+          if (result.type === 'match' || result.type === 'user') {
+            const existing = seenIds.get(result.id)
+            if (!existing || result.priority < existing.priority) {
+              seenIds.set(result.id, result)
+            }
+          } else {
+            // For other types, use type-id as key
+            const key = `${result.type}-${result.id}`
+            if (!seenIds.has(key)) {
+              seenIds.set(key, result)
+            }
+          }
+        })
+        
+        // Sort by priority, then limit results
+        const sortedResults = Array.from(seenIds.values())
+          .sort((a, b) => (a.priority || 99) - (b.priority || 99))
+          .slice(0, 12)
+          .map(({ priority, ...rest }) => rest) // Remove priority before setting state
+        
+        setSearchResults(sortedResults)
+        setShowResults(sortedResults.length > 0)
+      } else {
+        console.error('Search API error:', data)
+        setSearchResults([])
+        setShowResults(false)
+      }
+    } catch (error) {
+      console.error('Search error:', error)
+      setSearchResults([])
+      setShowResults(false)
+    } finally {
+      setIsSearching(false)
+    }
+  }, [])
+
+  useEffect(() => {
+    const timeoutId = setTimeout(() => {
+      if (searchQuery.length >= 2) {
+        performSearch(searchQuery)
+      } else {
+        setSearchResults([])
+        setShowResults(false)
+      }
+    }, 300)
+
+    return () => clearTimeout(timeoutId)
+  }, [searchQuery, performSearch])
+
+  const handleResultClick = (result: SearchResult) => {
+    if (result.type === 'match' && result.chatId) {
+      router.push(`/chat/${result.chatId}`)
+    } else if (result.type === 'message' && result.chatId) {
+      router.push(`/chat/${result.chatId}`)
+    } else if (result.type === 'user') {
+      router.push(`/matches?user=${result.id}`)
+    } else if (result.type === 'housing') {
+      router.push(`/housing/${result.id}`)
+    } else if (result.type === 'page' && result.href) {
+      router.push(result.href)
+    }
+    setSearchQuery('')
+    setShowResults(false)
+  }
+
+  const getIconForResult = (result: SearchResult) => {
+    if (result.type === 'page' && result.icon) {
+      const iconMap: Record<string, any> = {
+        'Users': Users,
+        'MessageCircle': MessageCircle,
+        'Home': Home,
+        'LayoutDashboard': LayoutDashboard,
+        'User': User,
+        'Settings': Settings,
+        'Bell': Bell
+      }
+      return iconMap[result.icon] || Search
+    }
+    if (result.type === 'match' || result.type === 'user') return User
+    if (result.type === 'message') return MessageCircle
+    if (result.type === 'housing') return Building2
+    return Search
+  }
 
   const formatTimeAgo = (dateString: string): string => {
     const date = new Date(dateString)
@@ -689,6 +928,197 @@ export function DashboardContent({ hasCompletedQuestionnaire = false, hasPartial
         </motion.div>
       )}
 
+      {/* Mobile-only Searchbar */}
+      <div className="lg:hidden mb-2" ref={searchRef}>
+        <div className="relative">
+          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-text-muted z-10 pointer-events-none" />
+          <input
+            ref={inputRef}
+            type="text"
+            placeholder="Search matches, messages..."
+            value={searchQuery}
+            onChange={(e) => {
+              setSearchQuery(e.target.value)
+              if (e.target.value.length >= 2) {
+                setShowResults(true)
+              }
+            }}
+            onFocus={() => {
+              if (searchResults.length > 0) {
+                setShowResults(true)
+              }
+            }}
+            className="w-full pl-9 pr-9 py-2.5 h-[42px] bg-bg-surface-alt dark:bg-bg-surface-alt border-0 rounded-xl text-sm text-text-primary placeholder:text-text-muted focus:outline-none focus:ring-2 focus:ring-semantic-accent focus:bg-bg-surface dark:focus:bg-bg-surface transition-colors"
+          />
+          {searchQuery && (
+            <button
+              onClick={() => {
+                setSearchQuery('')
+                setShowResults(false)
+                inputRef.current?.focus()
+              }}
+              className="absolute right-2 top-1/2 transform -translate-y-1/2 text-text-muted hover:text-text-secondary min-w-[36px] min-h-[36px] flex items-center justify-center rounded-md hover:bg-bg-surface-alt dark:hover:bg-bg-surface-alt transition-colors"
+              aria-label="Clear search"
+            >
+              <X className="w-4 h-4" />
+            </button>
+          )}
+        </div>
+
+        {/* Search Results Dropdown - Using Portal to fix z-index */}
+        {showResults && searchQuery.length >= 2 && dropdownPosition && typeof window !== 'undefined' && createPortal(
+          <Card 
+            data-search-dropdown
+            className="fixed max-h-[calc(100vh-16rem)] overflow-y-auto shadow-lg border border-border-subtle bg-bg-surface dark:bg-bg-surface z-[9999] scrollbar-hide"
+            style={{
+              top: `${dropdownPosition.top}px`,
+              left: `${dropdownPosition.left}px`,
+              width: `${dropdownPosition.width}px`,
+              maxWidth: '90vw'
+            }}
+          >
+            <CardContent className="p-0">
+              {isSearching ? (
+                <div className="p-4 text-center text-text-muted">
+                  Searching...
+                </div>
+              ) : searchResults.length === 0 ? (
+                <div className="p-4 text-center text-text-muted">
+                  No results found
+                </div>
+              ) : (
+                <div className="divide-y divide-border-subtle">
+                  {searchResults.map((result) => {
+                    const Icon = getIconForResult(result)
+                    return (
+                      <button
+                        key={`${result.type}-${result.id}`}
+                        onClick={() => handleResultClick(result)}
+                        className="w-full p-3 hover:bg-bg-surface-alt dark:hover:bg-bg-surface-alt text-left transition-colors min-h-[44px]"
+                      >
+                        {result.type === 'match' || result.type === 'user' ? (
+                          <div className="flex items-center gap-3">
+                            <div className="w-10 h-10 rounded-full bg-semantic-accent-soft dark:bg-semantic-accent-soft flex items-center justify-center flex-shrink-0">
+                              <Icon className="w-5 h-5 text-semantic-accent" />
+                            </div>
+                            <div className="flex-1 min-w-0">
+                              {(() => {
+                                // Helper function to check if a string is a UUID
+                                const isUUID = (str: string): boolean => {
+                                  if (!str || typeof str !== 'string') return false
+                                  if (/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(str)) return true
+                                  if (/[0-9a-f]{8}-?[0-9a-f]{4}-?[0-9a-f]{4}-?[0-9a-f]{4}-?[0-9a-f]{12}/i.test(str)) return true
+                                  return false
+                                }
+                                
+                                // Remove UUIDs from strings
+                                const removeUUIDs = (str: string): string => {
+                                  if (!str || typeof str !== 'string') return str
+                                  return str.replace(/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/gi, '').trim()
+                                }
+                                
+                                // Clean name
+                                let safeName = removeUUIDs(result.name || '')
+                                if (isUUID(safeName) || safeName === result.id || !safeName) {
+                                  safeName = 'User'
+                                }
+                                
+                                // Clean program and university
+                                let safeProgram = removeUUIDs(result.program || '')
+                                if (isUUID(safeProgram) || safeProgram === result.id || !safeProgram) {
+                                  safeProgram = ''
+                                }
+                                
+                                let safeUniversity = removeUUIDs(result.university || '')
+                                if (isUUID(safeUniversity) || safeUniversity === result.id || !safeUniversity) {
+                                  safeUniversity = ''
+                                }
+                                
+                                return (
+                                  <>
+                                    <p className="font-semibold text-sm text-text-primary truncate">
+                                      {safeName}
+                                      {result.type === 'user' && (
+                                        <span className="ml-2 text-xs text-text-muted font-normal">(User)</span>
+                                      )}
+                                    </p>
+                                    {(safeProgram || safeUniversity) && (
+                                      <p className="text-xs text-text-muted truncate">
+                                        {[safeProgram, safeUniversity].filter(Boolean).join(' • ')}
+                                      </p>
+                                    )}
+                                  </>
+                                )
+                              })()}
+                            </div>
+                          </div>
+                        ) : result.type === 'message' ? (
+                          <div className="flex items-start gap-3">
+                            <div className="w-10 h-10 rounded-full bg-semantic-success/20 dark:bg-semantic-success/20 flex items-center justify-center flex-shrink-0">
+                              <Icon className="w-5 h-5 text-semantic-success" />
+                            </div>
+                            <div className="flex-1 min-w-0">
+                              <div className="flex items-center gap-2">
+                                <p className="font-semibold text-sm text-text-primary">
+                                  {result.senderName}
+                                </p>
+                                {result.isGroupChat && (
+                                  <span className="text-xs text-text-muted bg-bg-surface-alt dark:bg-bg-surface-alt px-1.5 py-0.5 rounded">
+                                    Group
+                                  </span>
+                                )}
+                              </div>
+                              <p className="text-xs text-text-secondary truncate mt-1">
+                                {result.content}
+                              </p>
+                              {result.createdAt && (
+                                <p className="text-xs text-text-muted mt-0.5">
+                                  {new Date(result.createdAt).toLocaleDateString()}
+                                </p>
+                              )}
+                            </div>
+                          </div>
+                        ) : result.type === 'housing' ? (
+                          <div className="flex items-center gap-3">
+                            <div className="w-10 h-10 rounded-full bg-semantic-warning/20 dark:bg-semantic-warning/20 flex items-center justify-center flex-shrink-0">
+                              <Icon className="w-5 h-5 text-semantic-warning" />
+                            </div>
+                            <div className="flex-1 min-w-0">
+                              <p className="font-semibold text-sm text-text-primary truncate">
+                                {result.title}
+                              </p>
+                              <p className="text-xs text-text-muted truncate">
+                                {[result.address, result.city].filter(Boolean).join(', ')}
+                                {result.rent && ` • €${result.rent}/mo`}
+                              </p>
+                            </div>
+                          </div>
+                        ) : result.type === 'page' ? (
+                          <div className="flex items-center gap-3">
+                            <div className="w-10 h-10 rounded-full bg-semantic-info/20 dark:bg-semantic-info/20 flex items-center justify-center flex-shrink-0">
+                              <Icon className="w-5 h-5 text-semantic-info" />
+                            </div>
+                            <div className="flex-1 min-w-0">
+                              <p className="font-semibold text-sm text-text-primary">
+                                {result.name}
+                              </p>
+                              <p className="text-xs text-text-muted">
+                                Navigate to page
+                              </p>
+                            </div>
+                          </div>
+                        ) : null}
+                      </button>
+                    )
+                  })}
+                </div>
+              )}
+            </CardContent>
+          </Card>,
+          document.body
+        )}
+      </div>
+
       {/* Header */}
       <motion.div
         initial="initial"
@@ -755,24 +1185,24 @@ export function DashboardContent({ hasCompletedQuestionnaire = false, hasPartial
       >
         <motion.div variants={fadeInUp}>
           <div className="bg-bg-surface p-3 sm:p-4 rounded-xl shadow-sm border border-border-subtle">
-            <div className="text-xl sm:text-2xl font-bold text-text-primary">
-              {avgCompatibility > 0 ? `${avgCompatibility}%` : '0%'}
+            <div className="text-xl sm:text-2xl font-bold text-text-primary text-center">
+              {avgCompatibility > 0 ? `${Math.min(avgCompatibility, 100)}%` : '0%'}
             </div>
-            <div className="text-xs text-text-secondary mt-0.5">Avg Compatibility</div>
+            <div className="text-xs text-text-secondary mt-0.5 text-center">Avg Compatibility</div>
           </div>
         </motion.div>
         
         <motion.div variants={fadeInUp}>
           <div className="bg-bg-surface p-3 sm:p-4 rounded-xl shadow-sm border border-border-subtle">
-            <div className="text-xl sm:text-2xl font-bold text-text-primary">{totalMatches}</div>
-            <div className="text-xs text-text-secondary mt-0.5">Total Matches</div>
+            <div className="text-xl sm:text-2xl font-bold text-text-primary text-center">{totalMatches}</div>
+            <div className="text-xs text-text-secondary mt-0.5 text-center">Total Matches</div>
           </div>
         </motion.div>
         
         <motion.div variants={fadeInUp}>
           <div className="bg-bg-surface p-3 sm:p-4 rounded-xl shadow-sm border border-border-subtle">
-            <div className="text-xl sm:text-2xl font-bold text-text-primary">{dashboardData.kpis.activeChats}</div>
-            <div className="text-xs text-text-secondary mt-0.5">Active Chats</div>
+            <div className="text-xl sm:text-2xl font-bold text-text-primary text-center">{dashboardData.kpis.activeChats}</div>
+            <div className="text-xs text-text-secondary mt-0.5 text-center">Active Chats</div>
           </div>
         </motion.div>
       </motion.div>
@@ -826,17 +1256,30 @@ export function DashboardContent({ hasCompletedQuestionnaire = false, hasPartial
                           )}
                         </div>
                       </div>
-                      <div className="flex items-center gap-2 flex-shrink-0">
+                      <div className="flex items-center gap-3 flex-shrink-0">
                         {match.score > 0 && (
-                          <div className="text-base font-bold text-semantic-accent">
-                            {Math.round(match.score * 100)}%
+                          <div className="text-xl font-bold text-semantic-accent">
+                            {(() => {
+                              // Handle both 0-1 range and 0-100 range scores
+                              let displayScore = match.score
+                              if (displayScore <= 1.0) {
+                                // Score is in 0-1 range, convert to 0-100
+                                displayScore = Math.round(displayScore * 100)
+                              } else {
+                                // Score is already in 0-100 range
+                                displayScore = Math.round(displayScore)
+                              }
+                              // Cap at 100
+                              return Math.min(displayScore, 100)
+                            })()}
                           </div>
                         )}
                         <button 
                           onClick={() => handleChatWithMatch(match.userId || match.id)}
-                          className="px-3 py-1.5 bg-semantic-accent text-white text-xs font-medium rounded-lg hover:bg-semantic-accent-hover transition-colors min-h-[44px] min-w-[60px]"
+                          className="w-10 h-10 flex items-center justify-center bg-semantic-accent text-white rounded-lg hover:bg-semantic-accent-hover transition-colors"
+                          aria-label="Chat with match"
                         >
-                          Chat
+                          <MessageCircle className="w-5 h-5" />
                         </button>
                       </div>
                     </div>

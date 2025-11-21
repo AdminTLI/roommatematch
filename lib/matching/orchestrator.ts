@@ -558,8 +558,10 @@ export async function runMatchingAsSuggestions({
     }
     
     // 4) Create suggestions (unique by pair key, using sorted memberIds for dedupe)
+    // Matches don't expire - set expiration far in the future for database compatibility
     const now = Date.now()
-    const expiresAt = new Date(now + expiryHours * 3600 * 1000).toISOString()
+    // Set expiration to 100 years from now (effectively never expires)
+    const expiresAt = new Date(now + 100 * 365 * 24 * 3600 * 1000).toISOString()
     const seen = new Set<string>()
     const suggestions: MatchSuggestion[] = []
     
@@ -587,6 +589,21 @@ export async function runMatchingAsSuggestions({
         // Generate proper UUID for suggestion ID
         const suggestionId = randomUUID()
         
+        // Generate personalized explanation
+        let personalizedExplanation: string | undefined
+        try {
+          const { generatePersonalizedExplanation } = await import('./personalized-explanation')
+          personalizedExplanation = generatePersonalizedExplanation({
+            studentA,
+            studentB,
+            sectionScores: cand.ps.sectionScores || {},
+            matchId: suggestionId
+          })
+        } catch (error) {
+          safeLogger.warn('[Suggestions] Failed to generate personalized explanation', { error })
+          // Continue without personalized explanation if generation fails
+        }
+        
         suggestions.push({
           id: suggestionId,
           runId,
@@ -595,6 +612,7 @@ export async function runMatchingAsSuggestions({
           fitIndex: cand.fitIndex,
           sectionScores: cand.ps.sectionScores,
           reasons,
+          personalizedExplanation,
           expiresAt,
           status: cand.status || 'pending',
           acceptedBy: cand.acceptedBy || [],

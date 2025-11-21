@@ -84,12 +84,11 @@ export function ProgrammeSelect({
   }
 
   const renderProgrammeItem = (programme: Programme) => {
-    // Use SKDB-style display (clean name only) when SKDB data exists
-    // Fall back to DUO-style (with badges) when SKDB data is not available
-    const hasSkdbData = programme.sources?.skdb === true;
+    // Display programme name with optional badges for additional info
+    const hasAdditionalInfo = programme.modes && programme.modes.length > 0;
     
-    if (hasSkdbData) {
-      // SKDB style: clean name only, no badges or extra info
+    if (!hasAdditionalInfo) {
+      // Clean name only when no additional info
       return (
         <span className="font-medium text-gray-900 dark:text-gray-100 leading-tight">
           {programme.name}
@@ -97,7 +96,7 @@ export function ProgrammeSelect({
       );
     }
     
-    // DUO style: name with badges (fallback for programmes without SKDB enrichment)
+    // Name with badges for additional information
     return (
       <div className="space-y-2">
         <div className="flex items-start justify-between gap-2">
@@ -207,7 +206,7 @@ export function ProgrammeSelect({
                   No programmes found for this institution and degree level.
                 </p>
                 <p className="text-xs text-gray-500 mt-1">
-                  Data temporarily unavailable. This institution may not have programmes in the DUO database, or they may not be available for the selected degree level.
+                  Data temporarily unavailable. This institution may not have programmes available for the selected degree level.
                 </p>
                 <div className="mt-3 p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-800">
                   <p className="text-xs text-blue-600 dark:text-blue-400 font-medium mb-2">

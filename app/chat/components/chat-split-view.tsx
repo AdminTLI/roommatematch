@@ -31,17 +31,21 @@ export function ChatSplitView({ user }: ChatSplitViewProps) {
   // Mobile: Show either list or chat, not both
   // Desktop: Show both side-by-side
   return (
-    <div className="flex h-full w-full overflow-hidden rounded-2xl">
+    <div 
+      className="flex h-full w-full min-h-0 overflow-hidden rounded-none sm:rounded-2xl bg-bg-surface"
+      style={{ height: '100%', maxHeight: '100%', minHeight: 0 }}
+    >
       {/* Chat List - Left Side */}
       <div 
         className={`
-          flex-shrink-0 bg-bg-surface border-r border-border-subtle
+          flex-shrink-0 bg-bg-surface
           ${showChatView ? 'hidden lg:flex' : 'flex'}
           w-full lg:w-80 xl:w-96
-          flex-col
-          ${showChatView ? '' : 'rounded-l-2xl lg:rounded-r-none'}
+          flex-col min-h-0
+          ${showChatView ? '' : 'sm:rounded-l-2xl lg:rounded-r-none'}
           overflow-hidden
           relative
+          border-r-0 lg:border-r lg:border-border-subtle
         `}
       >
         <ChatList 
@@ -54,11 +58,12 @@ export function ChatSplitView({ user }: ChatSplitViewProps) {
       {/* Chat Interface - Right Side - Full width on mobile */}
       <div 
         className={`
-          flex-1 flex flex-col bg-bg-surface overflow-hidden
+          flex-1 flex flex-col bg-bg-surface overflow-hidden min-h-0 w-full
           ${showChatView ? 'flex' : 'hidden lg:flex'}
-          ${showChatView ? 'rounded-r-2xl w-full' : 'lg:rounded-r-2xl lg:rounded-l-none'}
+          ${showChatView ? 'sm:rounded-r-2xl' : 'lg:rounded-r-2xl lg:rounded-l-none'}
           relative
         `}
+        style={{ height: '100%', maxHeight: '100%' }}
       >
         {selectedChatId ? (
           <ChatInterface 

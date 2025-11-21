@@ -486,13 +486,15 @@ export async function upsertSkdbProgramme(
 /**
  * Get programmes filtered by source
  * 
+ * Note: All programmes are now SKDB-only. DUO filter is deprecated and will always return empty results.
+ * 
  * @param filters - Source filters
  * @param useServerClient - Whether to use server-side client (default: true)
  * @returns Array of matching programmes
  */
 export async function getProgrammesBySource(
   filters: {
-    hasDuo?: boolean
+    hasDuo?: boolean // Deprecated: All programmes are SKDB-only, this will always return empty
     hasSkdb?: boolean
     skdbOnly?: boolean
     institutionSlug?: string
@@ -526,11 +528,13 @@ export async function getProgrammesBySource(
   // Filter by sources JSONB in memory (PostgreSQL JSONB queries can be complex)
   let filtered = (data || []).map(mapRowToProgramme)
   
+  // Deprecated: hasDuo filter - all programmes are SKDB-only now
   if (filters.hasDuo !== undefined) {
-    filtered = filtered.filter(p => {
-      if (!p.sources) return !filters.hasDuo
-      return filters.hasDuo ? p.sources.duo === true : p.sources.duo !== true
-    })
+    if (filters.hasDuo) {
+      // Requesting DUO programmes will always return empty (all are SKDB-only)
+      return []
+    }
+    // hasDuo=false means "not DUO", which is all programmes, so no filtering needed
   }
   
   if (filters.hasSkdb !== undefined) {

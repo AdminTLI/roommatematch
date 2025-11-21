@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useRef, useCallback } from 'react'
+import { useState, useEffect, useLayoutEffect, useRef, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import { useMutation } from '@tanstack/react-query'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
@@ -121,6 +121,8 @@ export function ChatInterface({ roomId, user, onBack }: ChatInterfaceProps) {
   const isUnmountingRef = useRef(false)
   const [onlineUsers, setOnlineUsers] = useState<Set<string>>(new Set())
   const [lastSeenMap, setLastSeenMap] = useState<Map<string, string>>(new Map())
+  const [lastReadAt, setLastReadAt] = useState<string | null>(null)
+  const firstUnreadMessageRef = useRef<HTMLDivElement>(null)
 
   // Mock data for demonstration
   const mockMessages: Message[] = [
@@ -363,14 +365,8 @@ export function ChatInterface({ roomId, user, onBack }: ChatInterfaceProps) {
     }
   }, [roomId, user?.id])
 
-  useEffect(() => {
-    console.log('[Realtime] Messages state updated, count:', messages.length)
-    console.log('[Realtime] Message IDs:', messages.map(m => m.id))
-    // Auto-scroll to bottom when messages change
-    setTimeout(() => {
-      scrollToBottom()
-    }, 100)
-  }, [messages])
+  // Note: Auto-scroll logic is now handled in the useEffect that checks for unread messages
+  // This prevents scrolling to bottom on every message change
 
   // Auto-scroll when typing indicators change
   useEffect(() => {
@@ -446,16 +442,21 @@ export function ChatInterface({ roomId, user, onBack }: ChatInterfaceProps) {
         throw new Error('Chat room not found')
       }
 
-      // Load chat members (without profile join)
+      // Load chat members (with last_read_at for scroll position)
       const { data: membersData, error: membersError } = await supabase
         .from('chat_members')
-        .select('user_id')
+        .select('user_id, last_read_at')
         .eq('chat_id', roomId)
 
       if (membersError) {
         console.error('Failed to load chat members:', membersError)
         throw new Error(`Failed to load chat members: ${membersError.message}`)
       }
+
+      // Get current user's last_read_at timestamp
+      const currentUserMembership = membersData?.find(m => m.user_id === user.id)
+      const userLastReadAt = currentUserMembership?.last_read_at || null
+      setLastReadAt(userLastReadAt)
 
       // Load messages (without profile join)
       const { data: messagesData, error: messagesError } = await supabase
@@ -646,6 +647,9 @@ export function ChatInterface({ roomId, user, onBack }: ChatInterfaceProps) {
 
       setMessages(transformedMessages)
       setMembers(transformedMembers)
+      
+      // Reset scroll flag when new messages are loaded
+      hasScrolledInitiallyRef.current = false
       
     } catch (error) {
       console.error('Failed to load chat data:', error)
@@ -1129,14 +1133,45 @@ export function ChatInterface({ roomId, user, onBack }: ChatInterfaceProps) {
 
   // Prevent body scrolling when chat is mounted
   useEffect(() => {
-    // Prevent body scroll on mobile to avoid conflicts with chat scrolling
-    if (typeof window !== 'undefined' && window.innerWidth < 1024) {
+    // Prevent body and html scrolling to avoid conflicts with chat scrolling
+    if (typeof window !== 'undefined') {
+      const originalBodyOverflow = document.body.style.overflow
+      const originalHtmlOverflow = document.documentElement.style.overflow
+      const originalBodyHeight = document.body.style.height
+      const originalHtmlHeight = document.documentElement.style.height
+      const originalBodyPosition = document.body.style.position
+      
+      // Prevent scrolling on html and body
+      document.documentElement.style.overflow = 'hidden'
+      document.documentElement.style.height = '100vh'
       document.body.style.overflow = 'hidden'
-    }
-    
-    return () => {
-      // Restore body scroll when unmounting
-      document.body.style.overflow = ''
+      document.body.style.height = '100vh'
+      document.body.style.position = 'fixed'
+      document.body.style.width = '100%'
+      
+      // Also prevent scroll on the main container
+      const mainContainer = document.querySelector('main')
+      if (mainContainer) {
+        const originalMainOverflow = (mainContainer as HTMLElement).style.overflow
+        ;(mainContainer as HTMLElement).style.overflow = 'hidden'
+        
+        return () => {
+          document.documentElement.style.overflow = originalHtmlOverflow
+          document.documentElement.style.height = originalHtmlHeight
+          document.body.style.overflow = originalBodyOverflow
+          document.body.style.height = originalBodyHeight
+          document.body.style.position = originalBodyPosition
+          ;(mainContainer as HTMLElement).style.overflow = originalMainOverflow
+        }
+      }
+      
+      return () => {
+        document.documentElement.style.overflow = originalHtmlOverflow
+        document.documentElement.style.height = originalHtmlHeight
+        document.body.style.overflow = originalBodyOverflow
+        document.body.style.height = originalBodyHeight
+        document.body.style.position = originalBodyPosition
+      }
     }
   }, [])
 
@@ -1175,20 +1210,134 @@ export function ChatInterface({ roomId, user, onBack }: ChatInterfaceProps) {
     }
   }, [roomId, loadChatData, setupRealtimeSubscription, markAsRead])
 
-  // Auto-scroll to bottom when messages change
+  // Track if we've done initial scroll
+  const hasScrolledInitiallyRef = useRef(false)
+  const scrollLockRef = useRef(false) // Lock to prevent scroll resets
+  const scrollTimeoutRef = useRef<NodeJS.Timeout | null>(null)
+
+  // Auto-scroll to first unread message or bottom when messages are loaded initially
   useEffect(() => {
-    if (messages.length > 0 && messagesContainerRef.current) {
-      // Small delay to ensure DOM is updated
-      setTimeout(() => {
-        if (messagesContainerRef.current) {
-          messagesContainerRef.current.scrollTo({
-            top: messagesContainerRef.current.scrollHeight,
-            behavior: 'smooth'
-          })
-        }
-      }, 100)
+    // Clear any pending scroll timeouts
+    if (scrollTimeoutRef.current) {
+      clearTimeout(scrollTimeoutRef.current)
+      scrollTimeoutRef.current = null
     }
-  }, [messages.length])
+
+    // Only run when loading is complete and we have messages
+    if (messages.length > 0 && !isLoading && !hasScrolledInitiallyRef.current) {
+      scrollLockRef.current = true // Lock scroll position
+      
+      const performScroll = () => {
+        const container = messagesContainerRef.current
+        if (!container || hasScrolledInitiallyRef.current) return false
+
+        // Wait for container to have content
+        const hasContent = container.scrollHeight > container.clientHeight
+        if (!hasContent) {
+          return false // Not ready yet
+        }
+
+        // First, try to scroll to first unread message if it exists and is in DOM
+        if (firstUnreadMessageRef.current && container.contains(firstUnreadMessageRef.current)) {
+          // Use requestAnimationFrame to ensure DOM is ready
+          requestAnimationFrame(() => {
+            if (firstUnreadMessageRef.current && container.contains(firstUnreadMessageRef.current)) {
+              firstUnreadMessageRef.current.scrollIntoView({ 
+                behavior: 'auto',
+                block: 'center'
+              })
+              hasScrolledInitiallyRef.current = true
+              // Keep lock for 1 second after scroll
+              setTimeout(() => {
+                scrollLockRef.current = false
+              }, 1000)
+            }
+          })
+          return true
+        }
+        
+        // No unread messages - scroll to bottom immediately
+        requestAnimationFrame(() => {
+          if (container) {
+            container.scrollTop = container.scrollHeight
+            hasScrolledInitiallyRef.current = true
+            // Keep lock for 1 second after scroll
+            setTimeout(() => {
+              scrollLockRef.current = false
+            }, 1000)
+          }
+        })
+        return true
+      }
+      
+      // Try immediately
+      if (!performScroll()) {
+        // If not ready, try multiple times with increasing delays
+        let attempts = 0
+        const tryScroll = () => {
+          attempts++
+          if (performScroll() || attempts > 20) {
+            return
+          }
+          scrollTimeoutRef.current = setTimeout(tryScroll, 50)
+        }
+        scrollTimeoutRef.current = setTimeout(tryScroll, 50)
+      }
+    }
+
+    return () => {
+      if (scrollTimeoutRef.current) {
+        clearTimeout(scrollTimeoutRef.current)
+        scrollTimeoutRef.current = null
+      }
+    }
+  }, [messages.length, isLoading, lastReadAt, user.id, isBlocked, blockedUserId])
+
+  // Aggressive scroll maintenance - prevent any scroll to top for 3 seconds after load
+  useEffect(() => {
+    if (messages.length > 0 && !isLoading && hasScrolledInitiallyRef.current) {
+      const container = messagesContainerRef.current
+      if (!container) return
+
+      // Check every 50ms and restore scroll if it was reset (only if lock is active)
+      const interval = setInterval(() => {
+        if (!scrollLockRef.current) {
+          clearInterval(interval)
+          return
+        }
+
+        const currentContainer = messagesContainerRef.current
+        if (!currentContainer) {
+          clearInterval(interval)
+          return
+        }
+
+        const isNearTop = currentContainer.scrollTop < 100
+        const hasContent = currentContainer.scrollHeight > currentContainer.clientHeight
+        
+        if (isNearTop && hasContent) {
+          // Scroll was reset, restore to bottom immediately
+          currentContainer.scrollTop = currentContainer.scrollHeight
+        }
+      }, 50)
+
+      // Stop after 3 seconds
+      const timeout = setTimeout(() => {
+        clearInterval(interval)
+        scrollLockRef.current = false
+      }, 3000)
+
+      return () => {
+        clearInterval(interval)
+        clearTimeout(timeout)
+      }
+    }
+  }, [messages.length, isLoading])
+
+  // Reset scroll flag when roomId changes
+  useEffect(() => {
+    hasScrolledInitiallyRef.current = false
+  }, [roomId])
 
   // React Query mutation for sending messages with optimistic updates
   const sendMessageMutation = useMutation({
@@ -1548,10 +1697,18 @@ export function ChatInterface({ roomId, user, onBack }: ChatInterfaceProps) {
   // }
 
   return (
-    <div className="flex flex-col h-full w-full bg-bg-surface overflow-hidden">
+    <div 
+      className="flex flex-col h-full min-h-0 w-full bg-bg-surface overflow-hidden" 
+      style={{ 
+        height: '100%', 
+        maxHeight: '100%',
+        minHeight: 0,
+        flex: '1 1 0%' // Ensure it takes available space but doesn't grow
+      }}
+    >
       {/* Modern Chat Header */}
       <div className="flex-shrink-0 bg-bg-surface border-b border-border-subtle shadow-sm">
-        <div className="px-3 sm:px-6 lg:px-8 py-3 sm:py-4">
+        <div className="px-1 sm:px-4 lg:px-8 py-3 sm:py-4">
           <div className="flex items-center justify-between gap-4">
             <div className="flex items-center gap-3 flex-1 min-w-0">
               <Button 
@@ -1696,7 +1853,7 @@ export function ChatInterface({ roomId, user, onBack }: ChatInterfaceProps) {
       {/* Blocked User Notice */}
       {isBlocked && blockedUserId && (
         <div className="flex-shrink-0 py-2">
-          <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="w-full lg:max-w-4xl lg:mx-auto px-1 sm:px-4 lg:px-8">
           <Alert variant="destructive" className="py-2 bg-semantic-danger/10 dark:bg-semantic-danger/20 border border-semantic-danger/30 rounded-lg">
             <Ban className="h-4 w-4" />
             <AlertDescription className="text-sm">
@@ -1710,7 +1867,7 @@ export function ChatInterface({ roomId, user, onBack }: ChatInterfaceProps) {
       {/* Connection Status / Error Message */}
       {error && connectionStatus === 'disconnected' && (
         <div className="flex-shrink-0 py-2">
-          <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="w-full lg:max-w-4xl lg:mx-auto px-1 sm:px-4 lg:px-8">
             <Alert variant="destructive" className="rounded-lg bg-semantic-danger/10 dark:bg-semantic-danger/20 border border-semantic-danger/30">
               <AlertTriangle className="h-4 w-4" />
               <AlertDescription>{error}</AlertDescription>
@@ -1722,7 +1879,7 @@ export function ChatInterface({ roomId, user, onBack }: ChatInterfaceProps) {
       {/* Group Compatibility Display */}
       {isGroup && showCompatibility && groupCompatibility && (
         <div className="flex-shrink-0 py-3 border-b border-border-subtle bg-bg-surface-alt">
-          <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="w-full lg:max-w-4xl lg:mx-auto px-1 sm:px-4 lg:px-8">
             <GroupCompatibilityDisplay 
               compatibility={groupCompatibility}
               compact={false}
@@ -1734,7 +1891,7 @@ export function ChatInterface({ roomId, user, onBack }: ChatInterfaceProps) {
       {/* Chat Members - Compact display for group chats */}
       {isGroup && members.length > 0 && (
         <div className="flex-shrink-0 py-2">
-          <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="w-full lg:max-w-4xl lg:mx-auto px-1 sm:px-4 lg:px-8">
           <div className="flex items-center gap-2 overflow-x-auto scrollbar-hide">
             {members.map((member) => (
               <div key={member.id} className="flex items-center gap-2 flex-shrink-0">
@@ -1760,7 +1917,7 @@ export function ChatInterface({ roomId, user, onBack }: ChatInterfaceProps) {
       {/* Messages - Scrollable area OR Locked Group Chat */}
       {isGroup && isLocked ? (
         <div className="flex-1 overflow-y-auto min-h-0 relative bg-bg-surface">
-          <div className="relative z-20 max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-4 lg:py-6">
+          <div className="relative z-20 w-full lg:max-w-4xl lg:mx-auto px-1 sm:px-4 lg:px-8 py-4 lg:py-6">
             <LockedGroupChat 
               chatId={roomId}
               userId={user.id}
@@ -1772,12 +1929,29 @@ export function ChatInterface({ roomId, user, onBack }: ChatInterfaceProps) {
           </div>
         </div>
       ) : (
-        <div ref={messagesContainerRef} className="flex-1 overflow-y-auto min-h-0 relative bg-bg-surface">
-          {/* White corner overlay to prevent grey showing through rounded corners */}
-          <div className="absolute bottom-0 right-0 w-16 h-16 bg-bg-surface rounded-tl-2xl pointer-events-none z-0"></div>
-          
+        <div 
+          ref={messagesContainerRef} 
+          className="flex-1 overflow-y-auto min-h-0 relative bg-bg-surface"
+          style={{
+            // Prevent scroll reset during initial load
+            scrollBehavior: hasScrolledInitiallyRef.current ? 'smooth' : 'auto',
+            // Ensure fixed height for proper scrolling
+            height: 0, // This forces flex-1 to work properly
+            flex: '1 1 0%'
+          }}
+          onScroll={(e) => {
+            // If scroll is locked and user scrolled to top, restore to bottom
+            if (scrollLockRef.current && hasScrolledInitiallyRef.current) {
+              const target = e.currentTarget
+              if (target.scrollTop < 100 && target.scrollHeight > target.clientHeight) {
+                // Prevent the scroll to top
+                target.scrollTop = target.scrollHeight
+              }
+            }
+          }}
+        >
           {/* Content overlay - Full width on mobile, constrained on desktop */}
-          <div className="relative z-20 w-full max-w-4xl mx-auto px-3 sm:px-6 lg:px-8 py-3 sm:py-4 lg:py-6">
+          <div className="relative z-20 w-full lg:max-w-4xl lg:mx-auto px-1 sm:px-4 lg:px-8 py-3 sm:py-4 lg:py-6">
             {isLoading ? (
             <div className="text-center py-16">
               <div className="space-y-3">
@@ -1800,8 +1974,40 @@ export function ChatInterface({ roomId, user, onBack }: ChatInterfaceProps) {
               .map((message, index) => {
                 const showDateSeparator = shouldShowDateSeparator(index)
                 
+                // Check if this is the first unread message
+                const isFirstUnread = (() => {
+                  if (message.is_system_message || message.is_own) return false
+                  
+                  const messageTime = new Date(message.created_at).getTime()
+                  const lastReadTime = lastReadAt ? new Date(lastReadAt).getTime() : 0
+                  const isUnread = !message.read_by.includes(user.id) || 
+                                 (lastReadAt && messageTime > lastReadTime) ||
+                                 (!lastReadAt && messageTime > 0)
+                  
+                  if (!isUnread) return false
+                  
+                  // Check if this is the first unread (all previous messages are read)
+                  const previousMessages = messages.slice(0, index).filter(m => 
+                    !isBlocked || m.sender_id !== blockedUserId
+                  )
+                  const hasPreviousUnread = previousMessages.some(m => {
+                    if (m.is_system_message || m.is_own) return false
+                    const mTime = new Date(m.created_at).getTime()
+                    const mLastReadTime = lastReadAt ? new Date(lastReadAt).getTime() : 0
+                    return !m.read_by.includes(user.id) || 
+                           (lastReadAt && mTime > mLastReadTime) ||
+                           (!lastReadAt && mTime > 0)
+                  })
+                  
+                  return !hasPreviousUnread
+                })()
+                
                 return (
-                  <div key={message.id}>
+                  <div 
+                    key={message.id} 
+                    ref={isFirstUnread ? firstUnreadMessageRef : null}
+                    data-message-id={message.id}
+                  >
                     {showDateSeparator && (
                       <div className="flex justify-center my-6">
                         <div className="bg-bg-surface border border-border-subtle px-4 py-1.5 rounded-full shadow-sm">
@@ -1833,7 +2039,7 @@ export function ChatInterface({ roomId, user, onBack }: ChatInterfaceProps) {
                           </Avatar>
                         )}
                         
-                        <div className={`max-w-[75%] ${message.is_own ? 'order-first' : ''}`}>
+                        <div className={`max-w-[85%] sm:max-w-[75%] ${message.is_own ? 'order-first' : ''}`}>
                           {!message.is_own && (
                             <div className="text-xs font-semibold text-text-muted mb-1.5 px-1">
                               {message.sender_name}
@@ -1909,9 +2115,14 @@ export function ChatInterface({ roomId, user, onBack }: ChatInterfaceProps) {
 
       {/* Message Input - At bottom */}
       {!(isGroup && isLocked) && (
-      <div className="flex-shrink-0 bg-bg-surface border-t border-border-subtle shadow-sm rounded-br-2xl">
-        <div className="px-3 sm:px-6 lg:px-8 py-3 sm:py-4">
-          <div className="w-full max-w-4xl mx-auto">
+      <div className="flex-shrink-0 bg-bg-surface border-t border-border-subtle shadow-sm sm:rounded-br-2xl">
+        <div 
+          className="px-1 sm:px-4 lg:px-8 pt-3 sm:pt-4" 
+          style={{ 
+            paddingBottom: 'calc(2rem + env(safe-area-inset-bottom, 0px))' // 32px base + safe area padding
+          }}
+        >
+          <div className="w-full lg:max-w-4xl lg:mx-auto">
             <div className="flex gap-2 sm:gap-3 items-end">
               <Input
                 value={newMessage}
@@ -1927,7 +2138,9 @@ export function ChatInterface({ roomId, user, onBack }: ChatInterfaceProps) {
                 }}
                 placeholder={isBlocked ? "You cannot send messages to a blocked user" : "Type your message..."}
                 disabled={isSending || isBlocked}
-                className="flex-1 h-11 sm:h-12 text-sm sm:text-base bg-bg-surface-alt border-2 border-border-subtle rounded-xl focus:bg-bg-surface focus:border-semantic-accent focus:ring-2 focus:ring-semantic-accent/20 shadow-sm transition-all placeholder:text-text-muted"
+                inputMode="text"
+                enterKeyHint="send"
+                className="flex-1 h-11 sm:h-12 text-base bg-bg-surface-alt border-2 border-border-subtle rounded-xl focus:bg-bg-surface focus:border-semantic-accent focus:ring-2 focus:ring-semantic-accent/20 shadow-sm transition-all placeholder:text-text-muted"
               />
               <Button 
                 onClick={sendMessage}

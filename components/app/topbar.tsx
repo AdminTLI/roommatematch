@@ -26,7 +26,7 @@ import { NotificationBell } from '@/app/(components)/notifications/notification-
 import { ThemeToggle } from '@/components/ui/theme-toggle'
 import { UserDropdown } from './user-dropdown'
 import { Sidebar } from './sidebar'
-import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet'
+import { Sheet, SheetContent, SheetTrigger, SheetTitle } from '@/components/ui/sheet'
 import { Card, CardContent } from '@/components/ui/card'
 import Image from 'next/image'
 import Link from 'next/link'
@@ -238,14 +238,15 @@ export function Topbar({ user }: TopbarProps) {
                   <span className="sr-only">Open navigation menu</span>
                 </Button>
               </SheetTrigger>
-              <SheetContent side="left" className="w-64 p-0">
+              <SheetContent side="left" className="w-64 p-0" aria-describedby={undefined}>
+                <SheetTitle className="sr-only">Navigation menu</SheetTitle>
                 <Sidebar user={user} />
               </SheetContent>
             </Sheet>
           </div>
 
           {/* Logo/Name - Only show on mobile, hidden on desktop since sidebar shows it */}
-          <Link href="/matches" className="lg:hidden flex items-center gap-2 hover:opacity-80 transition-opacity flex-shrink-0 min-w-0">
+          <Link href="/dashboard" className="lg:hidden flex items-center gap-2 hover:opacity-80 transition-opacity flex-shrink-0 min-w-0">
             <div className="relative h-7 w-7 flex-shrink-0">
               <Image 
                 src="/images/logo.png" 
@@ -269,8 +270,8 @@ export function Topbar({ user }: TopbarProps) {
           </Link>
         </div>
 
-        {/* Center - Search (centered, aligned with chat messages max-w-4xl) */}
-        <div className="flex-1 min-w-0 max-w-4xl relative mx-auto" ref={searchRef}>
+        {/* Center - Search (centered, aligned with chat messages max-w-4xl) - Hidden on mobile */}
+        <div className="hidden lg:flex flex-1 min-w-0 max-w-4xl relative mx-auto" ref={searchRef}>
             <div className="relative">
               <Search className="absolute left-3 sm:left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 sm:w-4 sm:h-4 text-text-muted z-10 pointer-events-none" />
               <input
@@ -343,21 +344,54 @@ export function Topbar({ user }: TopbarProps) {
                                   <Icon className="w-5 h-5 text-semantic-accent" />
                                 </div>
                                 <div className="flex-1 min-w-0">
-                                  <p className="font-semibold text-sm text-text-primary truncate">
-                                    {/* Ensure we never display the ID - only show name if it exists and is not an ID */}
-                                    {result.name && result.name !== result.id ? result.name : 'User'}
-                                    {result.type === 'user' && (
-                                      <span className="ml-2 text-xs text-text-muted font-normal">(User)</span>
-                                    )}
-                                  </p>
-                                  {/* Only show program/university if they exist and are not IDs */}
-                                  {(result.program || result.university) && 
-                                   result.program !== result.id && 
-                                   result.university !== result.id && (
-                                    <p className="text-xs text-text-muted truncate">
-                                      {[result.program, result.university].filter(Boolean).join(' • ')}
-                                    </p>
-                                  )}
+                                  {(() => {
+                                    // Helper function to check if a string is a UUID
+                                    const isUUID = (str: string): boolean => {
+                                      if (!str || typeof str !== 'string') return false
+                                      if (/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(str)) return true
+                                      if (/[0-9a-f]{8}-?[0-9a-f]{4}-?[0-9a-f]{4}-?[0-9a-f]{4}-?[0-9a-f]{12}/i.test(str)) return true
+                                      return false
+                                    }
+                                    
+                                    // Remove UUIDs from strings
+                                    const removeUUIDs = (str: string): string => {
+                                      if (!str || typeof str !== 'string') return str
+                                      return str.replace(/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/gi, '').trim()
+                                    }
+                                    
+                                    // Clean name
+                                    let safeName = removeUUIDs(result.name || '')
+                                    if (isUUID(safeName) || safeName === result.id || !safeName) {
+                                      safeName = 'User'
+                                    }
+                                    
+                                    // Clean program and university
+                                    let safeProgram = removeUUIDs(result.program || '')
+                                    if (isUUID(safeProgram) || safeProgram === result.id || !safeProgram) {
+                                      safeProgram = ''
+                                    }
+                                    
+                                    let safeUniversity = removeUUIDs(result.university || '')
+                                    if (isUUID(safeUniversity) || safeUniversity === result.id || !safeUniversity) {
+                                      safeUniversity = ''
+                                    }
+                                    
+                                    return (
+                                      <>
+                                        <p className="font-semibold text-sm text-text-primary truncate">
+                                          {safeName}
+                                          {result.type === 'user' && (
+                                            <span className="ml-2 text-xs text-text-muted font-normal">(User)</span>
+                                          )}
+                                        </p>
+                                        {(safeProgram || safeUniversity) && (
+                                          <p className="text-xs text-text-muted truncate">
+                                            {[safeProgram, safeUniversity].filter(Boolean).join(' • ')}
+                                          </p>
+                                        )}
+                                      </>
+                                    )
+                                  })()}
                                 </div>
                               </div>
                             ) : result.type === 'message' ? (

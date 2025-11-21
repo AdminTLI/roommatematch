@@ -1,7 +1,10 @@
+'use client'
+
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Sparkles, CircleDot } from 'lucide-react'
 import { Separator } from '@/components/ui/separator'
+import { useApp } from '@/app/providers'
 
 type Role = {
   title: string
@@ -22,7 +25,7 @@ type Group = {
   roles: Role[]
 }
 
-export const GROUPS: Group[] = [
+const GROUPS_EN: Group[] = [
   {
     header: 'Product & Operations',
     sub: 'Safety flows, onboarding, verification',
@@ -37,7 +40,7 @@ export const GROUPS: Group[] = [
     sub: 'Trustworthy features, data-informed matching',
     roles: [
       { title: 'Full‑stack / Next.js', impact: 'Ships user‑facing improvements to reliability and trust.', background: 'TS/React/Next.js', commitment: 'Issue‑scoped tasks', blurb: 'Ship small, meaningful improvements. Pick scoped issues, tidy up UX and safety flows, and get clean PRs merged.' },
-      { title: 'Matching researcher', impact: 'Improves match quality with statistics and experimentation.', background: 'Stats/ML', commitment: 'Research spikes', blurb: 'Help us measure what “good match” means. Define simple metrics, run a lightweight experiment, and share what moves the needle.' },
+      { title: 'Matching researcher', impact: 'Improves match quality with statistics and experimentation.', background: 'Stats/ML', commitment: 'Research spikes', blurb: 'Help us measure what "good match" means. Define simple metrics, run a lightweight experiment, and share what moves the needle.' },
       { title: 'Supabase / Infra engineer', impact: 'Keeps RLS/security and observability tight.', background: 'SQL/RLS; infra', commitment: 'Infra tickets', blurb: 'Keep the foundation safe and visible. Review RLS, add basic dashboards, and leave us with clearer guardrails.' },
     ],
   },
@@ -70,10 +73,76 @@ export const GROUPS: Group[] = [
   },
 ]
 
+const GROUPS_NL: Group[] = [
+  {
+    header: 'Product & Operations',
+    sub: 'Veiligheidsflows, onboarding, verificatie',
+    roles: [
+      { title: 'Productstrateeg / roadmap', impact: 'Richt onze inspanningen op hoogwaardige vertrouwensfuncties.', background: 'Product/ops; prioritering', commitment: '2–4 weken sprints', dualFriendly: true, blurb: 'Verander verspreide ideeën in een eenvoudig, gefocust plan. Je helpt beslissen wat het belangrijkst is voor vertrouwen en veiligheid en vormt een klein roadmapdeel dat we snel kunnen leveren.' },
+      { title: 'Onderzoeksanalist', impact: 'Zet interviews om in verbeteringen voor onboarding en matching.', studentFriendly: true, background: 'Psych, sociologie, HCD', commitment: 'Wekelijkse interviewblokken', blurb: 'Praat met studenten, vind de ruwe randen en laat ons zien waar ze vastlopen. Je zet interviews om in een kort, praktisch overzicht met duidelijke oplossingen.' },
+      { title: 'Onboarding/procescoördinator', impact: 'Zorgt ervoor dat studenten verificatie en profielen soepel voltooien.', background: 'Ops/CX; detailgericht', commitment: '3–5 uur/week', dualFriendly: true, blurb: 'Maak onboarding moeiteloos. Je stelt eenvoudige checklists en herinneringen op en documenteert een kleine playbook die we kunnen hergebruiken terwijl we groeien.' },
+    ],
+  },
+  {
+    header: 'Engineering & Data',
+    sub: 'Betrouwbare functies, datagestuurde matching',
+    roles: [
+      { title: 'Full‑stack / Next.js', impact: 'Levert gebruikersgerichte verbeteringen aan betrouwbaarheid en vertrouwen.', background: 'TS/React/Next.js', commitment: 'Issue-gescopeerde taken', blurb: 'Lever kleine, betekenisvolle verbeteringen. Kies gescopeerde issues, ruim UX en veiligheidsflows op, en krijg schone PRs gemerged.' },
+      { title: 'Matchingonderzoeker', impact: 'Verbetert matchkwaliteit met statistieken en experimenten.', background: 'Stats/ML', commitment: 'Onderzoeksspikes', blurb: 'Help ons meten wat "goede match" betekent. Definieer eenvoudige metrics, voer een lichtgewicht experiment uit en deel wat het verschil maakt.' },
+      { title: 'Supabase / Infra engineer', impact: 'Houdt RLS/beveiliging en observabiliteit strak.', background: 'SQL/RLS; infra', commitment: 'Infra tickets', blurb: 'Houd de basis veilig en zichtbaar. Review RLS, voeg basisdashboards toe en laat ons achter met duidelijkere guardrails.' },
+    ],
+  },
+  {
+    header: 'Design & Experience',
+    sub: 'Identiteit, UX-onderzoek, contentdesign',
+    roles: [
+      { title: 'Branddesigner', impact: 'Bouwt een betrouwbare identiteit over light/dark en marketing heen.', background: 'Brandsystemen; toegankelijkheid', commitment: 'Verkenningen', dualFriendly: true, blurb: 'Vorm een eenvoudige, zelfverzekerde identiteit. Verken kleur, type en basistokens zodat product en marketing als één voelen.' },
+      { title: 'UX-onderzoeker', impact: 'Vindt frictie en helpt verificatie/onboarding-uitval te verminderen.', studentFriendly: true, background: 'HCD, bruikbaarheid', commitment: 'Wekelijkse cadans', blurb: 'Luister naar studenten en verander empathie in actie. Map de rommelige delen en stel een korte lijst met fixes voor die we snel kunnen leveren.' },
+      { title: 'Contentdesigner', impact: 'Begeleidt gebruikers door veiligheids- en onboardingstappen met duidelijke copy.', background: 'Content/UX writing', commitment: 'Microcopy passes', dualFriendly: true, blurb: 'Laat het product duidelijk spreken. Pas microcopy aan zodat veiligheids- en onboardingstappen menselijk en gemakkelijk te volgen aanvoelen.' },
+    ],
+  },
+  {
+    header: 'Marketing & Community',
+    sub: 'Groei-experimenten, campusambassadeurs, ondersteuning',
+    roles: [
+      { title: 'Groeistrateeg', impact: 'Ontwerpt experimenten die gekwalificeerde studentenaanmeldingen stimuleren.', background: 'Groei-analytics', commitment: 'Experimentcycli', blurb: 'Verander nieuwsgierigheid in experimenten. Ontwerp een kleine test, voer deze uit en toon wat werkt om de juiste studenten te bereiken.' },
+      { title: 'Studentambassadeur', impact: 'Bouwt vertrouwen/bewustzijn op de campus op.', studentFriendly: true, background: 'Gemotiveerde studenten', commitment: '3–5 uur/week', blurb: 'Wees de vonk op de campus. Help studenten over Domu Match horen, plan eenvoudige activaties en verzamel eerlijke feedback.' },
+      { title: 'Communitymoderator', impact: 'Beantwoordt vragen snel en bouwt vertrouwen op.', background: 'Ondersteuning/community', commitment: 'Rotaties', dualFriendly: true, blurb: 'Houd het gesprek vriendelijk en duidelijk. Beantwoord vragen, zet een vriendelijke toon en documenteer een kleine ondersteuningscadans.' },
+    ],
+  },
+  {
+    header: 'Trust & Safety / Admissions',
+    sub: 'Anti‑fraude, beleid, partnerrelaties',
+    roles: [
+      { title: 'Verificatiespecialist', impact: 'Ontwerpt anti‑fraudeprocessen om gebruikers veilig te houden.', background: 'Risico, T&S, ops', commitment: 'Procesiteraties', blurb: 'Ontwerp eenvoudige, effectieve controles die mensen veilig houden. Documenteer een rechttoe-rechtaan verificatieflow en de tools die we nodig hebben.' },
+      { title: 'Beleidsonderzoeker', impact: 'Zorgt voor privacy- en huisvestingscompliance.', background: 'Beleid/privacy', commitment: 'Korte onderzoeksoverzichten', dualFriendly: true, blurb: 'Maak de regels gemakkelijk te volgen. Vat belangrijke privacy- en huisvestingsvereisten samen en beveel aan wat we vervolgens moeten doen.' },
+      { title: 'Partnerrelaties', impact: 'Verbindt met universiteiten en huisvestingspartners.', background: 'Partnerships/BD', commitment: 'Outreach sprints', dualFriendly: true, blurb: 'Open de eerste deuren. Bereid een korte partnerlijst voor, script eerste outreach en help ons enkele echte gesprekken te starten.' },
+    ],
+  },
+]
+
+const badgeLabels = {
+  en: {
+    experienced: 'Experienced',
+    studentFriendly: 'Student‑friendly'
+  },
+  nl: {
+    experienced: 'Ervaren',
+    studentFriendly: 'Studentvriendelijk'
+  }
+}
+
+// Export for use in other components (defaults to English)
+export const GROUPS = GROUPS_EN
+
 export function RoleCatalogCards() {
+  const { locale } = useApp()
+  const groups = locale === 'nl' ? GROUPS_NL : GROUPS_EN
+  const badges = badgeLabels[locale]
+
   return (
     <div className="mx-auto max-w-5xl space-y-6">
-      {GROUPS.map((group, gi) => (
+      {groups.map((group, gi) => (
         <Card key={gi} className="border-muted shadow-md">
           <CardHeader className="pb-3">
             <CardTitle className="text-lg sm:text-xl">
@@ -91,13 +160,13 @@ export function RoleCatalogCards() {
                 <div className="mt-1 flex items-center gap-2">
                   {r.dualFriendly ? (
                     <>
-                      <Badge variant="secondary">Experienced</Badge>
-                      <Badge>Student‑friendly</Badge>
+                      <Badge variant="secondary">{badges.experienced}</Badge>
+                      <Badge>{badges.studentFriendly}</Badge>
                     </>
                   ) : r.studentFriendly ? (
-                    <Badge>Student‑friendly</Badge>
+                    <Badge>{badges.studentFriendly}</Badge>
                   ) : (
-                    <Badge variant="secondary">Experienced</Badge>
+                    <Badge variant="secondary">{badges.experienced}</Badge>
                   )}
                 </div>
                 {/* Details as one coherent, human tone paragraph */}

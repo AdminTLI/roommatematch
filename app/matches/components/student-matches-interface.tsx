@@ -69,17 +69,15 @@ export function StudentMatchesInterface({ user }: StudentMatchesInterfaceProps) 
         const pending = allSuggestions.filter(s => s.status === 'accepted' && s.acceptedBy?.includes(user.id) && s.acceptedBy.length < s.memberIds.length)
         const confirmed = allSuggestions.filter(s => s.status === 'accepted' && s.acceptedBy?.length === s.memberIds.length)
         
-        // History: Show all matches that are not currently active (declined, expired, confirmed, or old pending/accepted)
+        // History: Show all matches that are not currently active (declined, confirmed)
+        // Matches don't expire - only declined and confirmed matches go to history
         // Sort chronologically (newest first)
         const history = allSuggestions
           .filter(s => {
-            // Include declined and expired
-            if (s.status === 'declined' || s.status === 'expired') return true
+            // Include declined matches
+            if (s.status === 'declined') return true
             // Include confirmed matches (they're in history once confirmed)
             if (s.status === 'accepted' && s.acceptedBy?.length === s.memberIds.length) return true
-            // Include old pending/accepted that are no longer active
-            const isOld = new Date(s.expiresAt) < new Date()
-            if (isOld && (s.status === 'pending' || s.status === 'accepted')) return true
             return false
           })
           .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
@@ -352,8 +350,8 @@ export function StudentMatchesInterface({ user }: StudentMatchesInterfaceProps) 
     <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-6 pb-24">
       {/* Header */}
       <div className="mb-5 sm:mb-8">
-        <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-2 sm:mb-2">Your Matches</h1>
-        <p className="text-sm sm:text-base text-gray-600 leading-relaxed">
+        <h1 className="text-2xl sm:text-3xl font-bold text-text-primary mb-2 sm:mb-2">Your Matches</h1>
+        <p className="text-sm sm:text-base text-text-secondary leading-relaxed">
           Review and respond to your roommate suggestions. Matches are based on compatibility scores and shared preferences.
         </p>
       </div>
@@ -363,35 +361,17 @@ export function StudentMatchesInterface({ user }: StudentMatchesInterfaceProps) 
         {/* Mobile: Dropdown Select (< 640px) */}
         <div className="block sm:hidden mb-4">
           <Select value={activeTab} onValueChange={(value) => setActiveTab(value as TabType)}>
-            <SelectTrigger className="w-full bg-white dark:bg-card border border-gray-200 dark:border-border rounded-xl shadow-sm">
+            <SelectTrigger className="w-full bg-white dark:bg-card border border-gray-200 dark:border-border rounded-xl shadow-sm relative [&>span:first-child]:absolute [&>span:first-child]:left-1/2 [&>span:first-child]:transform [&>span:first-child]:-translate-x-1/2 [&>span:first-child]:text-center">
               <SelectValue>
-                <div className="flex items-center gap-2">
-                  {tabs.find(t => t.id === activeTab) && (
-                    <>
-                      <span className="font-medium">
-                        {tabs.find(t => t.id === activeTab)?.label}
-                      </span>
-                      {tabs.find(t => t.id === activeTab) && tabs.find(t => t.id === activeTab)!.count > 0 && (
-                        <span className="ml-2 px-2 py-0.5 rounded-full text-xs font-semibold bg-gray-200 dark:bg-gray-700 text-gray-600 dark:text-gray-300">
-                          {tabs.find(t => t.id === activeTab)!.count}
-                        </span>
-                      )}
-                    </>
-                  )}
-                </div>
+                <span className="font-medium">
+                  {tabs.find(t => t.id === activeTab)?.label}
+                </span>
               </SelectValue>
             </SelectTrigger>
             <SelectContent>
               {tabs.map((tab) => (
-                <SelectItem key={tab.id} value={tab.id}>
-                  <div className="flex items-center gap-2">
-                    <span>{tab.label}</span>
-                    {tab.count > 0 && (
-                      <span className="ml-2 px-2 py-0.5 rounded-full text-xs font-semibold bg-gray-200 text-gray-600">
-                        {tab.count}
-                      </span>
-                    )}
-                  </div>
+                <SelectItem key={tab.id} value={tab.id} className="py-3 px-2 justify-center [&>span]:text-center">
+                  <span className="font-medium w-full text-center">{tab.label}</span>
                 </SelectItem>
               ))}
             </SelectContent>
@@ -406,22 +386,13 @@ export function StudentMatchesInterface({ user }: StudentMatchesInterfaceProps) 
                 <button
                   key={tab.id}
                   onClick={() => setActiveTab(tab.id)}
-                  className={`flex-1 flex items-center justify-center gap-2 px-4 py-2 text-sm font-medium transition-colors whitespace-nowrap touch-manipulation rounded-xl ${
+                  className={`flex-1 flex items-center justify-center px-4 py-2 text-sm font-medium transition-colors whitespace-nowrap touch-manipulation rounded-xl ${
                     activeTab === tab.id
                       ? 'bg-blue-600 text-white shadow-sm'
-                      : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50 active:bg-gray-100'
+                      : 'text-text-secondary hover:text-text-primary hover:bg-bg-surface-alt dark:hover:bg-bg-surface-alt active:bg-bg-surface-alt dark:active:bg-bg-surface-alt'
                   }`}
                 >
                   <span>{tab.label}</span>
-                  {tab.count > 0 && (
-                    <span className={`px-2 py-0.5 rounded-full text-xs font-semibold ${
-                      activeTab === tab.id
-                        ? 'bg-white/20 text-white'
-                        : 'bg-gray-200 text-gray-600'
-                    }`}>
-                      {tab.count}
-                    </span>
-                  )}
                 </button>
               ))}
             </div>
@@ -430,11 +401,11 @@ export function StudentMatchesInterface({ user }: StudentMatchesInterfaceProps) 
         
         {/* Tab-specific description */}
         <div className="mt-3 sm:mt-4 text-center px-2">
-          <p className="text-sm sm:text-sm text-gray-600 leading-relaxed">
-            {activeTab === 'suggested' && 'New matches waiting for your response'}
-            {activeTab === 'pending' && "Matches you've accepted, waiting for others to respond"}
-            {activeTab === 'confirmed' && 'Matches where everyone has accepted'}
-            {activeTab === 'history' && "Past matches you've declined or that have expired"}
+          <p className="text-sm sm:text-sm text-text-secondary leading-relaxed">
+            {activeTab === 'suggested' && `You have ${suggestions.length} suggested match${suggestions.length !== 1 ? 'es' : ''}`}
+            {activeTab === 'pending' && `You have ${pendingSuggestions.length} pending match${pendingSuggestions.length !== 1 ? 'es' : ''}`}
+            {activeTab === 'confirmed' && `You have ${confirmedMatches.length} confirmed match${confirmedMatches.length !== 1 ? 'es' : ''}`}
+            {activeTab === 'history' && `You have ${historyMatches.length} match${historyMatches.length !== 1 ? 'es' : ''} in history`}
           </p>
         </div>
       </div>
@@ -460,11 +431,11 @@ export function StudentMatchesInterface({ user }: StudentMatchesInterfaceProps) 
       {/* Content */}
       {isLoading ? (
         <div className="flex items-center justify-center py-12">
-          <div className="text-gray-500">Loading your matches...</div>
+          <div className="text-text-muted">Loading your matches...</div>
         </div>
       ) : filteredSuggestions.length === 0 ? (
         <div className="text-center py-12">
-          <div className="text-gray-500 mb-4">
+          <div className="text-text-muted mb-4">
             {activeTab === 'suggested' && 'No new suggestions available. Try refreshing to get new matches.'}
             {activeTab === 'pending' && 'No pending matches waiting for responses.'}
             {activeTab === 'confirmed' && 'No confirmed matches yet.'}
@@ -498,8 +469,8 @@ export function StudentMatchesInterface({ user }: StudentMatchesInterfaceProps) 
           {/* Action buttons for selected matches */}
           {activeTab === 'confirmed' && selectedMatches.size > 0 && (
             <div className="fixed bottom-6 left-1/2 transform -translate-x-1/2 z-50">
-              <div className="bg-white rounded-xl shadow-lg border border-gray-200 p-4 flex items-center gap-3">
-                <div className="text-sm font-medium text-gray-700">
+              <div className="bg-white dark:bg-card rounded-xl shadow-lg border border-gray-200 dark:border-border p-4 flex items-center gap-3">
+                <div className="text-sm font-medium text-text-secondary">
                   {selectedMatches.size} {selectedMatches.size === 1 ? 'match' : 'matches'} selected
                 </div>
                 <div className="flex gap-2">

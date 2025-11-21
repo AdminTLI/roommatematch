@@ -97,30 +97,30 @@ export function EmailVerification({ user }: EmailVerificationProps) {
   return (
     <div className="space-y-6">
       {/* Email Verification Card */}
-      <Card className={`border-2 ${needsEmailVerification ? 'border-amber-300 bg-amber-50/50' : 'border-gray-200 shadow-sm'}`}>
+      <Card className={`border-2 ${needsEmailVerification ? 'border-amber-300 dark:border-amber-600 bg-amber-50/50 dark:bg-amber-900/20' : 'border-gray-200 dark:border-border-subtle shadow-sm'}`}>
         <CardContent className="p-6 sm:p-8">
           <div className="space-y-6">
             <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
               <div className="flex items-center gap-4 flex-1">
                 <div className={`p-3 rounded-xl flex-shrink-0 ${
-                  isEmailVerified ? 'bg-green-100' : 'bg-amber-100'
+                  isEmailVerified ? 'bg-green-100 dark:bg-green-900/30' : 'bg-amber-100 dark:bg-amber-900/30'
                 }`}>
                   <Mail className={`w-6 h-6 ${
-                    isEmailVerified ? 'text-green-600' : 'text-amber-600'
+                    isEmailVerified ? 'text-green-600 dark:text-green-400' : 'text-amber-600 dark:text-amber-400'
                   }`} />
                 </div>
                 <div className="flex-1 min-w-0">
-                  <p className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-2">Email Address</p>
-                  <p className="text-base sm:text-lg font-semibold text-gray-900 break-all">{user.email}</p>
+                  <p className="text-xs font-medium text-gray-500 dark:text-text-muted uppercase tracking-wide mb-2">Email Address</p>
+                  <p className="text-base sm:text-lg font-semibold text-gray-900 dark:text-text-primary break-all">{user.email}</p>
                 </div>
               </div>
               {isEmailVerified ? (
-                <Badge className="bg-green-100 text-green-800 border-green-200 px-4 py-2 flex items-center gap-2 flex-shrink-0">
+                <Badge className="bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-300 border-green-200 dark:border-green-700 px-4 py-2 flex items-center gap-2 flex-shrink-0">
                   <CheckCircle className="w-4 h-4 flex-shrink-0" />
                   <span className="font-semibold text-sm whitespace-nowrap">Verified</span>
                 </Badge>
               ) : (
-                <Badge className="bg-amber-100 text-amber-800 border-amber-200 px-4 py-2 flex items-center gap-2 flex-shrink-0">
+                <Badge className="bg-amber-100 dark:bg-amber-900/30 text-amber-800 dark:text-amber-300 border-amber-200 dark:border-amber-700 px-4 py-2 flex items-center gap-2 flex-shrink-0">
                   <AlertCircle className="w-4 h-4 flex-shrink-0" />
                   <span className="font-semibold text-sm whitespace-nowrap">Not Verified</span>
                 </Badge>
@@ -195,30 +195,30 @@ export function EmailVerification({ user }: EmailVerificationProps) {
 
       {/* Persona Verification Card */}
       {isEmailVerified && (
-        <Card className={`border-2 ${needsPersonaVerification ? 'border-amber-300 bg-amber-50/50' : 'border-gray-200 shadow-sm'}`}>
+        <Card className={`border-2 ${needsPersonaVerification ? 'border-amber-300 dark:border-amber-600 bg-amber-50/50 dark:bg-amber-900/20' : 'border-gray-200 dark:border-border-subtle shadow-sm'}`}>
           <CardContent className="p-6 sm:p-8">
             <div className="space-y-6">
               <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
                 <div className="flex items-center gap-4 flex-1">
                   <div className={`p-3 rounded-xl flex-shrink-0 ${
-                    isPersonaVerified ? 'bg-green-100' : 'bg-amber-100'
+                    isPersonaVerified ? 'bg-green-100 dark:bg-green-900/30' : 'bg-amber-100 dark:bg-amber-900/30'
                   }`}>
                     <Shield className={`w-6 h-6 ${
-                      isPersonaVerified ? 'text-green-600' : 'text-amber-600'
+                      isPersonaVerified ? 'text-green-600 dark:text-green-400' : 'text-amber-600 dark:text-amber-400'
                     }`} />
                   </div>
                   <div className="flex-1 min-w-0">
-                    <p className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-2">Identity Verification</p>
-                    <p className="text-base sm:text-lg font-semibold text-gray-900">Persona Verification</p>
+                    <p className="text-xs font-medium text-gray-500 dark:text-text-muted uppercase tracking-wide mb-2">Identity Verification</p>
+                    <p className="text-base sm:text-lg font-semibold text-gray-900 dark:text-text-primary">Persona Verification</p>
                   </div>
                 </div>
                 {isPersonaVerified ? (
-                  <Badge className="bg-green-100 text-green-800 border-green-200 px-4 py-2 flex items-center gap-2 flex-shrink-0">
+                  <Badge className="bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-300 border-green-200 dark:border-green-700 px-4 py-2 flex items-center gap-2 flex-shrink-0">
                     <CheckCircle className="w-4 h-4 flex-shrink-0" />
                     <span className="font-semibold text-sm whitespace-nowrap">Verified</span>
                   </Badge>
                 ) : (
-                  <Badge className="bg-amber-100 text-amber-800 border-amber-200 px-4 py-2 flex items-center gap-2 flex-shrink-0">
+                  <Badge className="bg-amber-100 dark:bg-amber-900/30 text-amber-800 dark:text-amber-300 border-amber-200 dark:border-amber-700 px-4 py-2 flex items-center gap-2 flex-shrink-0">
                     <AlertCircle className="w-4 h-4 flex-shrink-0" />
                     <span className="font-semibold text-sm whitespace-nowrap">Not Verified</span>
                   </Badge>

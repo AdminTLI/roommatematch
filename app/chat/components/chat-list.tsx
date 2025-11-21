@@ -477,9 +477,9 @@ export function ChatList({ user, onChatSelect, selectedChatId }: ChatListProps) 
   }
 
   return (
-    <div className="h-full flex flex-col w-full bg-bg-surface overflow-hidden">
+    <div className="h-full flex flex-col w-full bg-bg-surface overflow-hidden min-h-0">
       {/* Header */}
-      <div className="flex-shrink-0 px-5 py-5 border-b border-border-subtle bg-bg-surface">
+      <div className="flex-shrink-0 px-2 sm:px-4 lg:px-5 py-5 border-b border-border-subtle bg-bg-surface">
         <div className="flex items-center justify-between mb-6">
           <div>
             <h1 className="text-xl sm:text-2xl font-semibold text-text-primary mb-0.5">Messages</h1>
@@ -507,12 +507,9 @@ export function ChatList({ user, onChatSelect, selectedChatId }: ChatListProps) 
 
       {/* Scrollable Chat List */}
       <div className="flex-1 overflow-y-auto bg-bg-surface relative mt-2">
-        {/* White corner overlay to prevent grey showing through rounded corners */}
-        <div className="absolute bottom-0 left-0 w-16 h-16 bg-bg-surface rounded-tr-2xl pointer-events-none z-10"></div>
-        
         {/* Pending Invitations Section */}
         {pendingInvitations.length > 0 && (
-          <div className="px-4 pt-4 pb-2">
+          <div className="px-2 sm:px-4 lg:px-4 pt-4 pb-2">
             <div className="flex items-center gap-2 mb-3">
               <h2 className="text-xs font-semibold text-text-primary uppercase tracking-wider">Pending Invitations</h2>
               <Badge variant="destructive" className="bg-semantic-accent text-white font-bold text-xs px-1.5 py-0.5 h-5">
@@ -542,7 +539,7 @@ export function ChatList({ user, onChatSelect, selectedChatId }: ChatListProps) 
 
         {/* Recently Matched Section */}
         {recentlyMatchedChats.length > 0 && (
-          <div className="px-4 pt-4 pb-2">
+          <div className="px-2 sm:px-4 lg:px-4 pt-4 pb-2">
             <div className="flex items-center gap-2 mb-3">
               <h2 className="text-xs font-semibold text-text-primary uppercase tracking-wider">Recently Matched</h2>
               <Badge variant="destructive" className="bg-semantic-danger text-white font-bold text-xs px-1.5 py-0.5 h-5">
@@ -632,7 +629,7 @@ export function ChatList({ user, onChatSelect, selectedChatId }: ChatListProps) 
         )}
 
         {/* Active Conversations Section */}
-        <div className="px-4 pt-2 pb-4">
+        <div className="px-2 sm:px-4 lg:px-4 pt-2 pb-4">
           <div className="flex items-center gap-2 mb-3">
             <h2 className="text-xs font-semibold text-text-primary uppercase tracking-wider">Active Conversations</h2>
             <Badge variant="secondary" className="text-xs font-bold px-1.5 py-0.5 h-5">
@@ -641,7 +638,7 @@ export function ChatList({ user, onChatSelect, selectedChatId }: ChatListProps) 
           </div>
           
           {activeConversations.length === 0 ? (
-            <div className="text-center py-12 px-4">
+            <div className="text-center py-12 px-2 sm:px-4 lg:px-4">
               <div className="w-16 h-16 mx-auto mb-4 rounded-xl bg-bg-surface-alt flex items-center justify-center">
                 <MessageCircle className="h-8 w-8 text-text-muted" />
               </div>

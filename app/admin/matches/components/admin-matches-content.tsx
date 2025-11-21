@@ -7,7 +7,8 @@ import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { RefreshCw, Users, User, Eye, Archive, Clock, Download, CheckCircle2, XCircle } from 'lucide-react'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { RefreshCw, Users, User, Eye, Archive, Clock, Download, CheckCircle2, XCircle, TrendingDown, Ban, Activity } from 'lucide-react'
 import { showSuccessToast, showErrorToast } from '@/lib/toast'
 import {
   Dialog,
@@ -61,10 +62,22 @@ export function AdminMatchesContent() {
     confirmed: number
     avgScore: number
   } | null>(null)
+  const [matchStats, setMatchStats] = useState<any>(null)
+  const [blocklist, setBlocklist] = useState<any[]>([])
+  const [activityLog, setActivityLog] = useState<any[]>([])
+  const [isLoadingStats, setIsLoadingStats] = useState(false)
+  const [activeTab, setActiveTab] = useState('matches')
 
   useEffect(() => {
     loadMatches()
-  }, [filters])
+    loadMatchStats()
+    if (activeTab === 'blocklist') {
+      loadBlocklist()
+    }
+    if (activeTab === 'activity') {
+      loadActivityLog()
+    }
+  }, [filters, activeTab])
 
   const loadMatches = async () => {
     setIsLoading(true)
@@ -150,6 +163,47 @@ export function AdminMatchesContent() {
   const handleViewDetails = (match: Match) => {
     setSelectedMatch(match)
     setShowDetailModal(true)
+  }
+
+  const loadMatchStats = async () => {
+    setIsLoadingStats(true)
+    try {
+      const response = await fetch('/api/admin/matches/stats?days=30')
+      if (response.ok) {
+        const data = await response.json()
+        setMatchStats(data)
+      }
+    } catch (error) {
+      console.error('Failed to load match stats:', error)
+    } finally {
+      setIsLoadingStats(false)
+    }
+  }
+
+  const loadBlocklist = async () => {
+    try {
+      const response = await fetch('/api/admin/blocklist?limit=100')
+      if (response.ok) {
+        const data = await response.json()
+        setBlocklist(data.blocklist || [])
+      }
+    } catch (error) {
+      console.error('Failed to load blocklist:', error)
+      showErrorToast('Failed to load blocklist')
+    }
+  }
+
+  const loadActivityLog = async () => {
+    try {
+      const response = await fetch('/api/admin/matches/activity?limit=100&days=7')
+      if (response.ok) {
+        const data = await response.json()
+        setActivityLog(data.activity || [])
+      }
+    } catch (error) {
+      console.error('Failed to load activity log:', error)
+      showErrorToast('Failed to load activity log')
+    }
   }
 
   const handleExport = async () => {
@@ -464,22 +518,270 @@ export function AdminMatchesContent() {
         </CardContent>
       </Card>
 
-      {/* Matches Table */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Matches</CardTitle>
-          <CardDescription>All match suggestions in the system</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <DataTable
-            columns={columns}
-            data={matches}
-            searchKey="id"
-            searchPlaceholder="Search by match ID..."
-            pageSize={20}
-          />
-        </CardContent>
-      </Card>
+      {/* Tabs for different views */}
+      <Tabs value={activeTab} onValueChange={setActiveTab}>
+        <TabsList className="grid w-full grid-cols-4">
+          <TabsTrigger value="matches">
+            <Users className="h-4 w-4 mr-2" />
+            Matches
+          </TabsTrigger>
+          <TabsTrigger value="stats">
+            <TrendingDown className="h-4 w-4 mr-2" />
+            Statistics
+          </TabsTrigger>
+          <TabsTrigger value="blocklist">
+            <Ban className="h-4 w-4 mr-2" />
+            Blocklist
+          </TabsTrigger>
+          <TabsTrigger value="activity">
+            <Activity className="h-4 w-4 mr-2" />
+            Activity Log
+          </TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="matches" className="space-y-6">
+          {/* Matches Table */}
+          <Card>
+            <CardHeader>
+              <CardTitle>Matches</CardTitle>
+              <CardDescription>All match suggestions in the system</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <DataTable
+                columns={columns}
+                data={matches}
+                searchKey="id"
+                searchPlaceholder="Search by match ID..."
+                pageSize={20}
+              />
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="stats" className="space-y-6">
+          {matchStats ? (
+            <>
+              {/* Decline Statistics */}
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                <Card>
+                  <CardContent className="p-4">
+                    <div className="text-sm text-text-muted">Total Declines</div>
+                    <div className="text-2xl font-bold text-red-600">{matchStats.summary.totalDeclines}</div>
+                  </CardContent>
+                </Card>
+                <Card>
+                  <CardContent className="p-4">
+                    <div className="text-sm text-text-muted">Blocklist Additions</div>
+                    <div className="text-2xl font-bold text-orange-600">{matchStats.summary.totalBlocklistAdditions}</div>
+                  </CardContent>
+                </Card>
+                <Card>
+                  <CardContent className="p-4">
+                    <div className="text-sm text-text-muted">Decline Rate</div>
+                    <div className="text-2xl font-bold">{matchStats.summary.declineRate}%</div>
+                  </CardContent>
+                </Card>
+                <Card>
+                  <CardContent className="p-4">
+                    <div className="text-sm text-text-muted">Avg Declined Score</div>
+                    <div className="text-2xl font-bold">{matchStats.summary.avgDeclinedScore}</div>
+                  </CardContent>
+                </Card>
+              </div>
+
+              {/* Decline Trend Chart */}
+              <Card>
+                <CardHeader>
+                  <CardTitle>Decline Trends</CardTitle>
+                  <CardDescription>Daily decline and blocklist growth over time</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  {matchStats.trends.declineByDay.length > 0 ? (
+                    <div className="space-y-4">
+                      <div>
+                        <h4 className="text-sm font-medium mb-2">Daily Declines</h4>
+                        <div className="space-y-1">
+                          {matchStats.trends.declineByDay.slice(-7).map((item: any) => (
+                            <div key={item.date} className="flex items-center gap-2">
+                              <span className="text-xs text-text-muted w-24">{new Date(item.date).toLocaleDateString()}</span>
+                              <div className="flex-1 bg-gray-200 dark:bg-gray-700 rounded-full h-4">
+                                <div 
+                                  className="bg-red-500 h-4 rounded-full" 
+                                  style={{ width: `${Math.min((item.count / Math.max(...matchStats.trends.declineByDay.map((d: any) => d.count))) * 100, 100)}%` }}
+                                />
+                              </div>
+                              <span className="text-xs font-medium w-8">{item.count}</span>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                      <div>
+                        <h4 className="text-sm font-medium mb-2">Blocklist Growth</h4>
+                        <div className="space-y-1">
+                          {matchStats.trends.blocklistByDay.slice(-7).map((item: any) => (
+                            <div key={item.date} className="flex items-center gap-2">
+                              <span className="text-xs text-text-muted w-24">{new Date(item.date).toLocaleDateString()}</span>
+                              <div className="flex-1 bg-gray-200 dark:bg-gray-700 rounded-full h-4">
+                                <div 
+                                  className="bg-orange-500 h-4 rounded-full" 
+                                  style={{ width: `${Math.min((item.count / Math.max(...matchStats.trends.blocklistByDay.map((d: any) => d.count || 1))) * 100, 100)}%` }}
+                                />
+                              </div>
+                              <span className="text-xs font-medium w-8">{item.count}</span>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+                  ) : (
+                    <p className="text-sm text-text-muted">No decline data available</p>
+                  )}
+                </CardContent>
+              </Card>
+
+              {/* Status Distribution Chart */}
+              <Card>
+                <CardHeader>
+                  <CardTitle>Match Status Distribution</CardTitle>
+                  <CardDescription>Daily status breakdown</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  {matchStats.trends.statusByDay.length > 0 ? (
+                    <div className="space-y-2">
+                      {matchStats.trends.statusByDay.slice(-7).map((item: any) => {
+                        const total = item.pending + item.accepted + item.declined + item.confirmed
+                        return (
+                          <div key={item.date} className="space-y-1">
+                            <div className="flex items-center justify-between text-xs">
+                              <span className="text-text-muted">{new Date(item.date).toLocaleDateString()}</span>
+                              <span className="font-medium">Total: {total}</span>
+                            </div>
+                            <div className="flex h-6 rounded overflow-hidden">
+                              <div className="bg-blue-500" style={{ width: `${(item.pending / total) * 100}%` }} title="Pending" />
+                              <div className="bg-yellow-500" style={{ width: `${(item.accepted / total) * 100}%` }} title="Accepted" />
+                              <div className="bg-red-500" style={{ width: `${(item.declined / total) * 100}%` }} title="Declined" />
+                              <div className="bg-green-500" style={{ width: `${(item.confirmed / total) * 100}%` }} title="Confirmed" />
+                            </div>
+                          </div>
+                        )
+                      })}
+                    </div>
+                  ) : (
+                    <p className="text-sm text-text-muted">No status data available</p>
+                  )}
+                </CardContent>
+              </Card>
+            </>
+          ) : (
+            <Card>
+              <CardContent className="p-6 text-center">
+                {isLoadingStats ? 'Loading statistics...' : 'No statistics available'}
+              </CardContent>
+            </Card>
+          )}
+        </TabsContent>
+
+        <TabsContent value="blocklist" className="space-y-6">
+          <Card>
+            <CardHeader>
+              <CardTitle>Blocklist</CardTitle>
+              <CardDescription>Users who have been blocked from matching</CardDescription>
+            </CardHeader>
+            <CardContent>
+              {blocklist.length > 0 ? (
+                <div className="space-y-2">
+                  <DataTable
+                    columns={[
+                      {
+                        header: 'User',
+                        accessor: (row: any) => (
+                          <div>
+                            <div className="font-medium">{row.userName}</div>
+                            <div className="text-xs text-text-muted">{row.userEmail}</div>
+                          </div>
+                        )
+                      },
+                      {
+                        header: 'Blocked User',
+                        accessor: (row: any) => (
+                          <div>
+                            <div className="font-medium">{row.blockedUserName}</div>
+                            <div className="text-xs text-text-muted">{row.blockedUserEmail}</div>
+                          </div>
+                        )
+                      },
+                      {
+                        header: 'Blocked Date',
+                        accessor: (row: any) => new Date(row.createdAt).toLocaleString()
+                      }
+                    ]}
+                    data={blocklist}
+                    searchKey="userName"
+                    searchPlaceholder="Search by user name..."
+                    pageSize={20}
+                  />
+                </div>
+              ) : (
+                <p className="text-sm text-text-muted text-center py-8">No blocklist entries found</p>
+              )}
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="activity" className="space-y-6">
+          <Card>
+            <CardHeader>
+              <CardTitle>Activity Log</CardTitle>
+              <CardDescription>Recent match actions (declines, accepts, confirms)</CardDescription>
+            </CardHeader>
+            <CardContent>
+              {activityLog.length > 0 ? (
+                <div className="space-y-2">
+                  {activityLog.map((activity) => {
+                    const actionColors: Record<string, string> = {
+                      decline: 'bg-red-100 text-red-800 dark:bg-red-900/20 dark:text-red-300',
+                      accept: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/20 dark:text-yellow-300',
+                      confirm: 'bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-300',
+                      create: 'bg-blue-100 text-blue-800 dark:bg-blue-900/20 dark:text-blue-300'
+                    }
+                    return (
+                      <div 
+                        key={activity.id} 
+                        className="p-3 border border-border rounded-lg hover:bg-bg-surface-alt transition-colors"
+                      >
+                        <div className="flex items-start justify-between">
+                          <div className="flex-1">
+                            <div className="flex items-center gap-2 mb-1">
+                              <Badge className={actionColors[activity.actionType] || 'bg-gray-100 text-gray-800'}>
+                                {activity.actionType}
+                              </Badge>
+                              <span className="text-sm font-medium">{activity.userName}</span>
+                              {activity.matchScore && (
+                                <span className="text-xs text-text-muted">(Score: {activity.matchScore})</span>
+                              )}
+                            </div>
+                            <p className="text-sm text-text-secondary">{activity.description}</p>
+                            {activity.blockedUserIds && activity.blockedUserIds.length > 0 && (
+                              <p className="text-xs text-text-muted mt-1">
+                                Blocked users: {activity.blockedUserIds.length}
+                              </p>
+                            )}
+                          </div>
+                          <span className="text-xs text-text-muted ml-4">
+                            {new Date(activity.timestamp).toLocaleString()}
+                          </span>
+                        </div>
+                      </div>
+                    )
+                  })}
+                </div>
+              ) : (
+                <p className="text-sm text-text-muted text-center py-8">No activity found</p>
+              )}
+            </CardContent>
+          </Card>
+        </TabsContent>
+      </Tabs>
 
       {/* Match Detail Modal */}
       <Dialog open={showDetailModal} onOpenChange={setShowDetailModal}>

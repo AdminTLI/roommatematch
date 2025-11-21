@@ -9,14 +9,17 @@ import { createClient } from '@/lib/supabase/client'
 import { 
   Users, 
   MessageSquare, 
-  TrendingUp, 
+  TrendingUp,
+  TrendingDown,
   AlertTriangle, 
   Shield,
   Settings,
   BarChart3,
   UserCheck,
   FileText,
-  Bell
+  Bell,
+  Ban,
+  Activity
 } from 'lucide-react'
 
 interface AdminDashboardProps {
@@ -125,6 +128,14 @@ export function AdminDashboard({ admin }: AdminDashboardProps) {
       const studyMonthsResponse = await fetch('/api/admin/metrics/study-months')
       const studyMonthsData = studyMonthsResponse.ok ? await studyMonthsResponse.json() : null
 
+      // Load match decline and blocklist statistics
+      const matchStatsResponse = await fetch('/api/admin/matches/stats?days=30')
+      const matchStatsData = matchStatsResponse.ok ? await matchStatsResponse.json() : null
+
+      // Load recent match activity
+      const activityResponse = await fetch('/api/admin/matches/activity?limit=10&days=1')
+      const activityData = activityResponse.ok ? await activityResponse.json() : null
+
       // Load reports - check both 'pending' and 'open' status values for compatibility
       const { data: reportsDataPending, error: reportsErrorPending } = await supabase
         .from('reports')
@@ -194,7 +205,19 @@ export function AdminDashboard({ admin }: AdminDashboardProps) {
             description: 'New report submitted for review',
             timestamp: new Date(Date.now() - 900000).toISOString()
           }
-        ]
+        ],
+        matchDeclines: matchStatsData?.summary ? {
+          totalDeclines: matchStatsData.summary.totalDeclines,
+          declineRate: matchStatsData.summary.declineRate,
+          totalBlocklistAdditions: matchStatsData.summary.totalBlocklistAdditions,
+          avgDeclinedScore: matchStatsData.summary.avgDeclinedScore
+        } : undefined,
+        recentMatchActivity: activityData?.activity?.slice(0, 5).map((a: any) => ({
+          id: a.id,
+          actionType: a.actionType,
+          description: a.description,
+          timestamp: a.timestamp
+        })) || []
       }
 
       setAnalytics(transformedAnalytics)
@@ -313,6 +336,59 @@ export function AdminDashboard({ admin }: AdminDashboardProps) {
           </CardContent>
         </Card>
       </div>
+
+      {/* Match Decline Statistics */}
+      {analytics?.matchDeclines && (
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 mb-6 sm:mb-8">
+          <Card>
+            <CardContent className="pt-6">
+              <div className="flex items-center gap-3">
+                <TrendingDown className="h-8 w-8 text-red-500" />
+                <div>
+                  <div className="text-2xl font-bold text-red-600">{analytics.matchDeclines.totalDeclines}</div>
+                  <div className="text-sm text-gray-500">Total Declines</div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+          
+          <Card>
+            <CardContent className="pt-6">
+              <div className="flex items-center gap-3">
+                <Ban className="h-8 w-8 text-orange-500" />
+                <div>
+                  <div className="text-2xl font-bold text-orange-600">{analytics.matchDeclines.totalBlocklistAdditions}</div>
+                  <div className="text-sm text-gray-500">Blocklist Additions</div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+          
+          <Card>
+            <CardContent className="pt-6">
+              <div className="flex items-center gap-3">
+                <Activity className="h-8 w-8 text-yellow-500" />
+                <div>
+                  <div className="text-2xl font-bold">{analytics.matchDeclines.declineRate}%</div>
+                  <div className="text-sm text-gray-500">Decline Rate</div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+          
+          <Card>
+            <CardContent className="pt-6">
+              <div className="flex items-center gap-3">
+                <BarChart3 className="h-8 w-8 text-purple-500" />
+                <div>
+                  <div className="text-2xl font-bold">{analytics.matchDeclines.avgDeclinedScore}</div>
+                  <div className="text-sm text-gray-500">Avg Declined Score</div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      )}
 
       {/* Data Quality Metrics */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
