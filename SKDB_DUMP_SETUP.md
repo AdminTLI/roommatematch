@@ -47,3 +47,4 @@ You have these SKDB dump files:
 
 The script automatically detects if `SKDB_DUMP_PATH` is set and uses it instead of the API. This is the fallback mode and works perfectly fine - you'll get all the same data.
 
+

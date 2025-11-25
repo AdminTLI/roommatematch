@@ -113,3 +113,4 @@ function generateCategoryExplanation(
   return `Your ${category} preferences align well - ${top.description.toLowerCase()}.`
 }
 
+

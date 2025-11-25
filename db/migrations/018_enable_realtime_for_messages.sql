@@ -15,3 +15,4 @@ ALTER TABLE messages REPLICA IDENTITY FULL;
 
 
 
+

@@ -52,6 +52,12 @@ interface Match {
     faculty_affinity: boolean
     study_year_gap?: number
   }
+  // New fields from compatibility algorithm v1.0
+  harmony_score?: number | null
+  context_score?: number | null
+  dimension_scores_json?: { [key: string]: number } | null
+  is_valid_match?: boolean
+  algorithm_version?: string
 }
 
 interface GroupSuggestion {
@@ -332,6 +338,10 @@ export function MatchesInterface({ user }: MatchesInterfaceProps) {
                     social: match.social_score,
                     academic: match.academic_bonus
                   }}
+                  harmonyScore={match.harmony_score}
+                  contextScore={match.context_score}
+                  dimensionScores={match.dimension_scores_json}
+                  isValidMatch={match.is_valid_match}
                   topAlignment={match.top_alignment as any}
                   watchOut={match.watch_out}
                   houseRulesSuggestion={match.house_rules_suggestion}

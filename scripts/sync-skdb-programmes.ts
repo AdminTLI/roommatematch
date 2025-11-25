@@ -193,7 +193,7 @@ function mapInstitutionToSlug(institutionName: string, slugMap: Map<string, stri
   }
   
   // Try normalized name matching
-  for (const [key, slug] of slugMap.entries()) {
+  for (const [key, slug] of Array.from(slugMap.entries())) {
     if (key.toLowerCase().includes(normalized) || normalized.includes(key.toLowerCase())) {
       return slug;
     }
@@ -544,7 +544,7 @@ async function parseProgrammesFromXLSX(): Promise<SkdbProgram[]> {
     throw new Error(`XLSX/ODS dump file not found: ${dumpPath}`);
   }
   
-  const ext = dumpPath.toLowerCase().split('.').pop();
+  const ext = dumpPath.toLowerCase().split('.').pop() || 'xlsx';
   console.log(`📊 Parsing programmes from ${ext.toUpperCase()} dump...`);
   
   const workbook = XLSX.readFile(dumpPath);
@@ -705,7 +705,9 @@ async function upsertSkdbProgramme(
   const institutions = loadInstitutions();
   const allInstitutions = [...institutions.wo, ...institutions.wo_special, ...institutions.hbo];
   const institution = allInstitutions.find(inst => inst.id === institutionSlug);
-  const sector = institution?.sector || 'wo';
+  // Map institution kind to sector
+  const sector = institution?.kind === 'hbo' ? 'hbo' : 
+                 institution?.kind === 'wo_special' ? 'wo_special' : 'wo';
   
   const sources = { duo: false, skdb: true };
   
@@ -725,11 +727,18 @@ async function upsertSkdbProgramme(
       duration_years: skdbProgram.durationYears !== undefined ? skdbProgram.durationYears : existing.duration_years,
       duration_months: skdbProgram.durationMonths !== undefined ? skdbProgram.durationMonths : existing.duration_months,
       admission_requirements: skdbProgram.admissionRequirements || existing.admission_requirements,
+      // Clear DUO-specific fields
+      modes: [], // SKDB doesn't have modes - clear any DUO modes
+      is_variant: false, // Clear variant flag from DUO
+      discipline: null, // Clear DUO discipline field (ECONOMIE, TECHNIEK, etc.)
+      sub_discipline: null, // Clear DUO sub-discipline field
+      sector, // Use sector from institution mapping, not DUO data
       skdb_only: true, // All programmes are SKDB-only now
       sources,
       metadata,
       enrichment_status: 'enriched',
-      skdb_updated_at: now
+      skdb_updated_at: now,
+      rio_code: null // Clear DUO rio_code
     };
     
     // First verify the programme still exists
@@ -764,16 +773,29 @@ async function upsertSkdbProgramme(
         console.warn(`⚠️  Update succeeded but no rows affected for ${skdbProgram.name} (${match.id}), attempting insert...`);
         match = null; // Force insert path
       } else {
-        // Update succeeded and rows were affected
-        report.summary.enriched++;
-        if (report.byInstitution[institutionSlug]) {
-          report.byInstitution[institutionSlug].enriched++;
+        // Update succeeded and rows were affected - verify it actually persisted
+        const { data: verifyData } = await supabase
+          .from('programmes')
+          .select('id')
+          .eq('id', match.id)
+          .maybeSingle();
+        
+        if (!verifyData) {
+          // Update said it succeeded but programme doesn't exist - insert it
+          console.warn(`⚠️  Update succeeded but programme ${match.id} not found, inserting as new: ${skdbProgram.name}`);
+          match = null; // Force insert path
+        } else {
+          // Update succeeded and programme exists
+          report.summary.enriched++;
+          if (report.byInstitution[institutionSlug]) {
+            report.byInstitution[institutionSlug].enriched++;
+          }
+          // Only log every 50th update to reduce noise
+          if (report.summary.enriched % 50 === 0) {
+            console.log(`✅ Updated ${report.summary.enriched} programmes so far...`);
+          }
+          return; // Successfully updated, exit early
         }
-        // Only log every 50th update to reduce noise
-        if (report.summary.enriched % 50 === 0) {
-          console.log(`✅ Updated ${report.summary.enriched} programmes so far...`);
-        }
-        return; // Successfully updated, exit early
       }
     }
   }
@@ -788,8 +810,10 @@ async function upsertSkdbProgramme(
       name_en: skdbProgram.nameEn || null,
       level: skdbProgram.degreeLevel,
       sector,
-      modes: [],
+      modes: [], // SKDB doesn't have modes
       is_variant: false,
+      discipline: null, // SKDB doesn't have discipline field
+      sub_discipline: null, // SKDB doesn't have sub-discipline field
       croho_code: skdbProgram.crohoCode || null,
       language_codes: skdbProgram.languageCodes,
       faculty: skdbProgram.faculty || null,
@@ -815,6 +839,11 @@ async function upsertSkdbProgramme(
       if (error.code === '23505') { // Unique violation
         const conflictData = { ...insertData };
         delete conflictData.rio_code; // Remove rio_code for update
+        // Ensure DUO fields are cleared
+        conflictData.modes = [];
+        conflictData.discipline = null;
+        conflictData.sub_discipline = null;
+        conflictData.is_variant = false;
         
         const { error: updateError } = await supabase
           .from('programmes')

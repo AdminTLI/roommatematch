@@ -78,3 +78,4 @@
 - [ ] Badge count updates correctly
 - [ ] No new duplicates created after cron runs
 
+

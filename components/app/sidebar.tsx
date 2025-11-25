@@ -14,8 +14,7 @@ import {
   Shield,
   BarChart3,
   Video,
-  Settings,
-  Sparkles
+  Settings
 } from 'lucide-react'
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
@@ -92,8 +91,6 @@ export function Sidebar({ user, onClose }: SidebarProps) {
   const router = useRouter()
   const [unreadChatCount, setUnreadChatCount] = useState(0)
   const [totalMatchesCount, setTotalMatchesCount] = useState(0)
-  const [profileCompletion, setProfileCompletion] = useState(0)
-  const [questionnaireProgress, setQuestionnaireProgress] = useState(0)
   const isAdminRoute = pathname?.startsWith('/admin')
 
   useEffect(() => {
@@ -147,48 +144,8 @@ export function Sidebar({ user, onClose }: SidebarProps) {
       }
     }
 
-    // Fetch profile completion
-    const fetchProfileCompletion = async () => {
-      try {
-        const { data: profile } = await supabase
-          .from('profiles')
-          .select('*')
-          .eq('user_id', user.id)
-          .maybeSingle()
-
-        if (profile) {
-          const requiredFields = ['first_name', 'last_name', 'phone', 'bio']
-          const filledFields = requiredFields.filter(field => {
-            const value = profile[field]
-            return value !== null && value !== undefined && value !== ''
-          })
-          setProfileCompletion(Math.round((filledFields.length / requiredFields.length) * 100))
-        }
-      } catch (error) {
-        console.error('Error fetching profile completion:', error)
-      }
-    }
-
-    // Fetch questionnaire progress
-    const fetchQuestionnaireProgress = async () => {
-      try {
-        const response = await fetch('/api/onboarding/progress')
-        if (response.ok) {
-          const data = await response.json()
-          // Use completionPercentage which is based on actual items answered
-          // This should show 100% if all questions are answered
-          const progress = data.completionPercentage ?? 0
-          setQuestionnaireProgress(progress)
-        }
-      } catch (error) {
-        console.error('Error fetching questionnaire progress:', error)
-      }
-    }
-
     fetchUnreadCount()
     fetchMatchesCount()
-    fetchProfileCompletion()
-    fetchQuestionnaireProgress()
 
     // Subscribe to real-time message updates
     const channel = supabase
@@ -317,46 +274,6 @@ export function Sidebar({ user, onClose }: SidebarProps) {
           <div className="mt-auto pt-4 space-y-3">
             <Separator />
             
-            {/* Complete Your Profile */}
-            {(profileCompletion < 100 || questionnaireProgress < 100) && (
-            <Card className="border-semantic-warning/30 dark:border-semantic-warning/30 bg-semantic-warning/10 dark:bg-semantic-warning/10">
-              <CardContent className="p-3">
-                <div className="flex items-center gap-2 mb-2">
-                  <Sparkles className="w-4 h-4 text-semantic-warning" />
-                  <span className="text-xs font-semibold text-semantic-warning">Complete Your Profile</span>
-                </div>
-                <div className="space-y-2">
-                  <div>
-                    <div className="flex items-center justify-between text-xs mb-1">
-                      <span className="text-text-secondary">Profile</span>
-                      <span className="font-medium text-text-primary">{profileCompletion}%</span>
-                    </div>
-                    <div className="w-full bg-bg-surface-alt rounded-full h-1.5">
-                      <div 
-                        className="bg-semantic-accent h-1.5 rounded-full transition-all duration-300" 
-                        style={{ width: `${profileCompletion}%` }}
-                      />
-                    </div>
-                  </div>
-                    {questionnaireProgress < 100 && (
-                      <div>
-                        <div className="flex items-center justify-between text-xs mb-1">
-                          <span className="text-text-secondary">Questionnaire</span>
-                          <span className="font-medium text-text-primary">{questionnaireProgress}%</span>
-                        </div>
-                        <div className="w-full bg-bg-surface-alt rounded-full h-1.5">
-                          <div 
-                            className="bg-semantic-accent h-1.5 rounded-full transition-all duration-300" 
-                            style={{ width: `${questionnaireProgress}%` }}
-                          />
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                </CardContent>
-              </Card>
-            )}
-
             {/* User Profile Card */}
             <Card className="bg-bg-surface-alt dark:bg-bg-surface-alt border-border-subtle">
               <CardContent className="p-3">

@@ -25,3 +25,4 @@ COMMENT ON COLUMN user_academic.graduation_month IS 'Expected month of graduatio
 
 
 
+

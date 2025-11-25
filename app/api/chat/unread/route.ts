@@ -65,10 +65,12 @@ export async function GET(request: NextRequest) {
     const lastReadMap = new Map(memberships.map(m => [m.chat_id, m.last_read_at || new Date(0).toISOString()]))
 
     // Fetch all unread messages for all chats in one query
+    // Only fetch messages NOT sent by the current user (exclude user's own messages)
     const { data: unreadMessages, error: messagesError } = await supabase
       .from('messages')
-      .select('chat_id, created_at')
+      .select('chat_id, created_at, user_id')
       .in('chat_id', chatIds)
+      .neq('user_id', user.id) // Exclude messages sent by the current user
 
     if (messagesError) {
       safeLogger.error('Failed to fetch unread messages', messagesError)
@@ -84,7 +86,13 @@ export async function GET(request: NextRequest) {
     })
 
     // Count unread messages (messages created after last_read_at)
+    // Only count messages from OTHER users (already filtered in query, but double-check for safety)
     unreadMessages?.forEach(msg => {
+      // Skip messages sent by the current user (shouldn't happen due to query filter, but safety check)
+      if (msg.user_id === user.id) {
+        return
+      }
+      
       const lastReadAt = lastReadMap.get(msg.chat_id) || new Date(0).toISOString()
       if (new Date(msg.created_at) > new Date(lastReadAt)) {
         unreadCountsMap.set(msg.chat_id, (unreadCountsMap.get(msg.chat_id) || 0) + 1)

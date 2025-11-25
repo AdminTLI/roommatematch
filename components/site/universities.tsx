@@ -59,6 +59,7 @@ export function Universities() {
   const [loading, setLoading] = useState(false)
   const [loadingCities, setLoadingCities] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const [selectOpen, setSelectOpen] = useState(false)
 
   // Fetch cities on mount
   useEffect(() => {
@@ -138,6 +139,7 @@ export function Universities() {
     return `${count} ${t.students}`
   }
 
+
   return (
     <Section>
       <Container>
@@ -158,12 +160,13 @@ export function Universities() {
             <Select
               value={selectedCity || ''}
               onValueChange={(value) => setSelectedCity(value || null)}
+              onOpenChange={setSelectOpen}
               disabled={loadingCities}
             >
               <SelectTrigger className="w-full border-2 border-brand-primary focus:border-brand-primary focus:ring-2 focus:ring-brand-primary [&>span]:flex-1 [&>span]:text-center">
                 <SelectValue placeholder={t.selectCityPlaceholder} />
               </SelectTrigger>
-              <SelectContent>
+              <SelectContent disableScrollLock>
                 {loadingCities ? (
                   <SelectItem value="loading" disabled className="justify-center [&>span:last-child]:text-center">
                     {t.loading}

@@ -142,3 +142,4 @@ export function describeBipolarValue(itemId: string, value: any): string {
   return `${item.bipolarLabels?.right || 'right-leaning'} (${percent}%)`
 }
 
+

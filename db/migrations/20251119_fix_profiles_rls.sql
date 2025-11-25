@@ -27,3 +27,4 @@ CREATE POLICY "Minimal public profiles visible to university members" ON profile
     AND can_view_minimal_profile(university_id)
   );
 
+

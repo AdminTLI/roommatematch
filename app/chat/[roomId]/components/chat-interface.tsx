@@ -50,6 +50,7 @@ import {
 import { GroupCompatibilityDisplay } from '../../components/group-compatibility-display'
 import { GroupFeedbackForm } from '../../components/group-feedback-form'
 import { LockedGroupChat } from '../../components/locked-group-chat'
+import { CompatibilityPanel } from '../../components/compatibility-panel'
 
 interface ChatInterfaceProps {
   roomId: string
@@ -108,6 +109,10 @@ export function ChatInterface({ roomId, user, onBack }: ChatInterfaceProps) {
   const [showLeaveGroupDialog, setShowLeaveGroupDialog] = useState(false)
   const [isLeavingGroup, setIsLeavingGroup] = useState(false)
   const [isLocked, setIsLocked] = useState(false)
+  const [showCompatibilityPanel, setShowCompatibilityPanel] = useState(false)
+  const [compatibilityData, setCompatibilityData] = useState<any>(null)
+  const [isLoadingCompatibility, setIsLoadingCompatibility] = useState(false)
+  const [compatibilityDataRoomId, setCompatibilityDataRoomId] = useState<string | null>(null)
   
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const messagesContainerRef = useRef<HTMLDivElement>(null)
@@ -119,6 +124,7 @@ export function ChatInterface({ roomId, user, onBack }: ChatInterfaceProps) {
   const resubscribeTimeoutRef = useRef<NodeJS.Timeout | null>(null)
   const readRetryIntervalRef = useRef<NodeJS.Timeout | null>(null)
   const isUnmountingRef = useRef(false)
+  const setupRealtimeSubscriptionRef = useRef<(() => void) | null>(null)
   const [onlineUsers, setOnlineUsers] = useState<Set<string>>(new Set())
   const [lastSeenMap, setLastSeenMap] = useState<Map<string, string>>(new Map())
   const [lastReadAt, setLastReadAt] = useState<string | null>(null)
@@ -364,6 +370,24 @@ export function ChatInterface({ roomId, user, onBack }: ChatInterfaceProps) {
       localStorage.setItem(`last_chat_room_${user.id}`, roomId)
     }
   }, [roomId, user?.id])
+
+  // Clear compatibility data when switching to a different chat
+  useEffect(() => {
+    console.log('[Compatibility] RoomId changed:', {
+      newRoomId: roomId,
+      dataRoomId: compatibilityDataRoomId,
+      isGroup,
+      willClear: compatibilityDataRoomId && compatibilityDataRoomId !== roomId
+    })
+    
+    // If roomId changes and we have compatibility data for a different room, clear it
+    if (compatibilityDataRoomId && compatibilityDataRoomId !== roomId) {
+      console.log('[Compatibility] Clearing old compatibility data')
+      setCompatibilityData(null)
+      setCompatibilityDataRoomId(null)
+      setShowCompatibilityPanel(false) // Also close the panel when switching chats
+    }
+  }, [roomId, compatibilityDataRoomId, isGroup])
 
   // Note: Auto-scroll logic is now handled in the useEffect that checks for unread messages
   // This prevents scrolling to bottom on every message change
@@ -644,6 +668,12 @@ export function ChatInterface({ roomId, user, onBack }: ChatInterfaceProps) {
         setIsBlocked(false)
         setOtherUserVerificationStatus(null)
       }
+      
+      // Load individual compatibility data if it's a 1-on-1 chat
+      if (!roomData.is_group && transformedMembers.length === 1) {
+        // Don't auto-load, only load when user clicks the button
+        // This keeps the initial load fast
+      }
 
       setMessages(transformedMessages)
       setMembers(transformedMembers)
@@ -662,6 +692,87 @@ export function ChatInterface({ roomId, user, onBack }: ChatInterfaceProps) {
       setIsLoading(false)
     }
   }, [user.id, roomId])
+
+  const fetchCompatibilityData = useCallback(async () => {
+    if (isGroup || isLoadingCompatibility) return
+    
+    setIsLoadingCompatibility(true)
+    try {
+      // Add cache-busting timestamp to ensure fresh data
+      const url = `/api/chat/compatibility?chatId=${roomId}&_t=${Date.now()}`
+      console.log('[Compatibility] Fetching compatibility data for roomId:', roomId, 'URL:', url)
+      
+      const response = await fetch(url, {
+        cache: 'no-store', // Prevent browser caching
+        headers: {
+          'Cache-Control': 'no-cache, no-store, must-revalidate',
+          'Pragma': 'no-cache',
+          'Expires': '0'
+        }
+      })
+      const responseData = await response.json()
+      
+      console.log('[Compatibility] Response for roomId:', roomId, 'Data:', {
+        compatibility_score: responseData.compatibility_score,
+        harmony_score: responseData.harmony_score,
+        context_score: responseData.context_score
+      })
+      
+      if (response.ok) {
+        setCompatibilityData(responseData)
+        setCompatibilityDataRoomId(roomId) // Track which roomId this data belongs to
+      } else {
+        console.error('Failed to fetch compatibility data:', {
+          status: response.status,
+          error: responseData.error,
+          details: responseData.details,
+          roomId
+        })
+        setCompatibilityData(null)
+        setCompatibilityDataRoomId(null)
+        // Show user-friendly error message
+        if (response.status === 404 && responseData.details) {
+          showErrorToast('Compatibility data not available', responseData.details)
+        } else {
+          showErrorToast('Failed to load compatibility data', responseData.details || responseData.error || 'Please try again later.')
+        }
+      }
+    } catch (error) {
+      console.error('Error fetching compatibility data:', error, 'roomId:', roomId)
+      setCompatibilityData(null)
+      setCompatibilityDataRoomId(null)
+      showErrorToast('Network error', 'Failed to fetch compatibility data. Please check your connection and try again.')
+    } finally {
+      setIsLoadingCompatibility(false)
+    }
+  }, [roomId, isGroup, isLoadingCompatibility])
+
+  const handleOpenCompatibility = useCallback(() => {
+    console.log('[Compatibility] Opening panel for roomId:', roomId, {
+      hasData: !!compatibilityData,
+      dataRoomId: compatibilityDataRoomId,
+      currentRoomId: roomId,
+      shouldFetch: !compatibilityData || compatibilityDataRoomId !== roomId
+    })
+    
+    setShowCompatibilityPanel(true)
+    // Always fetch fresh data - don't rely on cache to ensure we get the right data
+    // This ensures we always have the correct compatibility for the current chat
+    if (!isLoadingCompatibility) {
+      console.log('[Compatibility] Fetching fresh data for roomId:', roomId)
+      fetchCompatibilityData()
+    }
+  }, [roomId, isLoadingCompatibility, fetchCompatibilityData])
+
+  // Check if error is JWT-related
+  const isJWTError = useCallback((error: any): boolean => {
+    if (!error) return false
+    const errorStr = typeof error === 'string' ? error : JSON.stringify(error)
+    return errorStr.includes('JWT') || 
+           errorStr.includes('Token') || 
+           errorStr.includes('expired') ||
+           errorStr.includes('InvalidJWTToken')
+  }, [])
 
   const setupRealtimeSubscription = useCallback(() => {
     console.log('[Realtime] Setting up subscription for roomId:', roomId)
@@ -878,6 +989,9 @@ export function ChatInterface({ roomId, user, onBack }: ChatInterfaceProps) {
           setError('') // Clear any connection error messages
         } else if (status === 'CHANNEL_ERROR') {
           const errorMessage = err || 'Unknown error (no error details provided)'
+          const errorObj = err || {}
+          const errorStr = typeof errorObj === 'string' ? errorObj : JSON.stringify(errorObj)
+          
           console.error('[Realtime] ❌ Channel subscription error:', errorMessage)
           console.error('[Realtime] ❌ Error details:', {
             error: err || null,
@@ -886,6 +1000,40 @@ export function ChatInterface({ roomId, user, onBack }: ChatInterfaceProps) {
             roomId: roomId,
             timestamp: new Date().toISOString()
           })
+          
+          // Check if this is a JWT/token expiration error
+          if (isJWTError(err)) {
+            console.log('[Realtime] 🔐 JWT token error detected, refreshing session...')
+            setConnectionStatus('connecting')
+            setError('Refreshing connection...')
+            // Refresh session and resubscribe
+            ;(async () => {
+              try {
+                const { data: { session }, error: refreshError } = await supabase.auth.refreshSession()
+                
+                if (refreshError) {
+                  console.error('[Realtime] ❌ Failed to refresh session:', refreshError)
+                  setError('Session expired. Please refresh the page.')
+                  return
+                }
+                
+                if (session) {
+                  console.log('[Realtime] ✅ Session refreshed successfully')
+                  // Wait a bit for the new token to propagate, then resubscribe
+                  setTimeout(() => {
+                    if (setupRealtimeSubscriptionRef.current) {
+                      setupRealtimeSubscriptionRef.current()
+                    }
+                  }, 500)
+                }
+              } catch (refreshErr) {
+                console.error('[Realtime] ❌ Error refreshing session:', refreshErr)
+                setError('Failed to refresh connection. Please refresh the page.')
+              }
+            })()
+            return
+          }
+          
           // Attempt to resubscribe after a delay (prevent multiple simultaneous attempts)
           if (resubscribeTimeoutRef.current) {
             clearTimeout(resubscribeTimeoutRef.current)
@@ -1095,6 +1243,9 @@ export function ChatInterface({ roomId, user, onBack }: ChatInterfaceProps) {
     
     presenceChannelRef.current = presenceChannel
 
+    // Store reference for refresh function
+    setupRealtimeSubscriptionRef.current = setupRealtimeSubscription
+    
     return () => {
       console.log('[Realtime] Cleaning up subscriptions')
       if (resubscribeTimeoutRef.current) {
@@ -1129,7 +1280,7 @@ export function ChatInterface({ roomId, user, onBack }: ChatInterfaceProps) {
         })
       }
     }
-  }, [roomId, user.id, supabase])
+  }, [roomId, user.id, supabase, isJWTError])
 
   // Prevent body scrolling when chat is mounted
   useEffect(() => {
@@ -1174,6 +1325,39 @@ export function ChatInterface({ roomId, user, onBack }: ChatInterfaceProps) {
       }
     }
   }, [])
+
+  // Listen for auth state changes (token refresh)
+  useEffect(() => {
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((event, session) => {
+      console.log('[Realtime] 🔐 Auth state changed:', event, {
+        hasSession: !!session,
+        userId: session?.user?.id
+      })
+      
+      // When token is refreshed, re-establish Realtime subscriptions
+      if (event === 'TOKEN_REFRESHED' || event === 'SIGNED_IN') {
+        console.log('[Realtime] 🔄 Token refreshed, re-establishing subscriptions...')
+        if (!isUnmountingRef.current && messagesChannelRef.current) {
+          // Small delay to ensure token is fully propagated
+          setTimeout(() => {
+            if (setupRealtimeSubscriptionRef.current) {
+              setupRealtimeSubscriptionRef.current()
+            }
+          }, 500)
+        }
+      } else if (event === 'SIGNED_OUT') {
+        console.log('[Realtime] 👋 User signed out, cleaning up subscriptions')
+        setConnectionStatus('disconnected')
+        setError('You have been signed out. Please sign in again.')
+      }
+    })
+
+    return () => {
+      subscription.unsubscribe()
+    }
+  }, [supabase])
 
   useEffect(() => {
     // Reset unmounting flag
@@ -1696,6 +1880,18 @@ export function ChatInterface({ roomId, user, onBack }: ChatInterfaceProps) {
   //   )
   // }
 
+  // Show compatibility panel as full-screen overlay instead of chat
+  if (!isGroup && showCompatibilityPanel) {
+    return (
+      <CompatibilityPanel
+        open={showCompatibilityPanel}
+        onOpenChange={setShowCompatibilityPanel}
+        compatibility={compatibilityData}
+        isLoading={isLoadingCompatibility}
+      />
+    )
+  }
+
   return (
     <div 
       className="flex flex-col h-full min-h-0 w-full bg-bg-surface overflow-hidden" 
@@ -1775,6 +1971,20 @@ export function ChatInterface({ roomId, user, onBack }: ChatInterfaceProps) {
                   <span className="text-xs font-medium">Compatibility</span>
                 </Button>
               )}
+              {!isGroup && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={handleOpenCompatibility}
+                  disabled={isLoadingCompatibility}
+                  className="h-10 px-3 rounded-xl hover:bg-bg-surface-alt border border-border-subtle"
+                >
+                  <BarChart3 className="h-4 w-4 mr-2" />
+                  <span className="text-xs font-medium">
+                    {isLoadingCompatibility ? 'Loading...' : 'Compatibility'}
+                  </span>
+                </Button>
+              )}
               {isGroup && (
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
@@ -1818,6 +2028,14 @@ export function ChatInterface({ roomId, user, onBack }: ChatInterfaceProps) {
                     </Button>
                   </DropdownMenuTrigger>
                 <DropdownMenuContent align="end">
+                  <DropdownMenuItem
+                    onClick={handleOpenCompatibility}
+                    disabled={isLoadingCompatibility}
+                  >
+                    <BarChart3 className="h-4 w-4 mr-2" />
+                    {isLoadingCompatibility ? 'Loading...' : 'View Compatibility'}
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
                   <DropdownMenuItem
                     onClick={handleBlockUser}
                     disabled={isBlocking}
@@ -2257,6 +2475,7 @@ export function ChatInterface({ roomId, user, onBack }: ChatInterfaceProps) {
           }
         }}
       />
+
     </div>
   )
 }

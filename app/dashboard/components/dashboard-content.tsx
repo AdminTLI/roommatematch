@@ -107,18 +107,18 @@ export function DashboardContent({ hasCompletedQuestionnaire = false, hasPartial
   const inputRef = useRef<HTMLInputElement>(null)
   const [dropdownPosition, setDropdownPosition] = useState<{ top: number; left: number; width: number } | null>(null)
 
-  // Fetch top matches with React Query
-  const fetchTopMatches = useCallback(async () => {
+  // Fetch recent matches with React Query
+  const fetchRecentMatches = useCallback(async () => {
     if (!user?.id) {
-      logger.log('[loadTopMatches] No user ID provided')
+      logger.log('[loadRecentMatches] No user ID provided')
       return []
     }
     
     try {
-      logger.log('[loadTopMatches] Fetching match suggestions for user:', user.id)
+      logger.log('[loadRecentMatches] Fetching recent match suggestions for user:', user.id)
       
-      // Fetch top match suggestions from match_suggestions table
-      // Get suggestions where user is in member_ids array
+      // Fetch recent match suggestions from match_suggestions table
+      // Get suggestions where user is in member_ids array, ordered by most recent
       const now = new Date().toISOString()
       const { data: suggestions, error: suggestionsError } = await supabase
         .from('match_suggestions')
@@ -127,15 +127,15 @@ export function DashboardContent({ hasCompletedQuestionnaire = false, hasPartial
         .contains('member_ids', [user.id])
         .neq('status', 'rejected')
         .gte('expires_at', now) // Only non-expired suggestions
-        .order('fit_index', { ascending: false })
-        .limit(10) // Get more to deduplicate and find top 3
+        .order('created_at', { ascending: false }) // Most recent first
+        .limit(20) // Get more to deduplicate and find 3 most recent
 
       if (suggestionsError) {
-        logger.error('[loadTopMatches] Error loading suggestions:', suggestionsError)
+        logger.error('[loadRecentMatches] Error loading suggestions:', suggestionsError)
         return []
       }
 
-      logger.log('[loadTopMatches] Raw suggestions data:', {
+      logger.log('[loadRecentMatches] Raw suggestions data:', {
         suggestionsCount: suggestions?.length || 0,
         suggestionsData: suggestions
       })
@@ -144,33 +144,72 @@ export function DashboardContent({ hasCompletedQuestionnaire = false, hasPartial
         return []
       }
 
-      // Extract other user ID from each suggestion and map to score
-      // Deduplicate by otherUserId, keeping highest fit_score
-      const matchMap = new Map<string, number>()
+      // Extract other user ID from each suggestion and deduplicate by keeping most recent
+      // Map: otherUserId -> { suggestionId, created_at }
+      const matchMap = new Map<string, { suggestionId: string; created_at: string }>()
       suggestions.forEach((s: any) => {
         const memberIds = s.member_ids as string[]
         if (!memberIds || memberIds.length !== 2) return
         
         // Find the other user (not the current user)
         const otherUserId = memberIds[0] === user.id ? memberIds[1] : memberIds[0]
-        const fitScore = Number(s.fit_score || 0)
         
-        const currentScore = matchMap.get(otherUserId) || 0
-        if (fitScore > currentScore) {
-          matchMap.set(otherUserId, fitScore)
+        // Keep the most recent suggestion for each user
+        const existing = matchMap.get(otherUserId)
+        if (!existing || new Date(s.created_at) > new Date(existing.created_at)) {
+          matchMap.set(otherUserId, { suggestionId: s.id, created_at: s.created_at })
         }
       })
 
-      // Sort by score and take top 3
-      const topMatchEntries = Array.from(matchMap.entries())
-        .sort((a, b) => b[1] - a[1])
-        .slice(0, 3)
+      // Get the 3 most recent unique matches (sorted by created_at)
+      const recentMatches = Array.from(matchMap.entries())
+        .map(([userId, data]) => ({ userId, created_at: data.created_at }))
+        .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
+        .slice(0, 3) // Take 3 most recent
 
-      if (topMatchEntries.length === 0) {
+      if (recentMatches.length === 0) {
         return []
       }
 
-      const topUserIds = topMatchEntries.map(([userId]) => userId)
+      const recentUserIds = recentMatches.map(m => m.userId)
+
+      // Compute compatibility scores using the new algorithm for each matched user
+      const compatibilityScores = await Promise.all(
+        recentUserIds.map(async (otherUserId) => {
+          try {
+            const { data, error } = await supabase.rpc('compute_compatibility_score', {
+              user_a_id: user.id,
+              user_b_id: otherUserId
+            })
+            
+            if (error) {
+              logger.error(`Error computing compatibility score for ${otherUserId}:`, error)
+              return { userId: otherUserId, score: 0 }
+            }
+            
+            // The function returns a table (array), get the first row
+            const result = Array.isArray(data) && data.length > 0 ? data[0] : (data || {})
+            const compatibilityScore = Number(result.compatibility_score || 0)
+            
+            return { userId: otherUserId, score: compatibilityScore }
+          } catch (error) {
+            logger.error(`Error computing compatibility score for ${otherUserId}:`, error)
+            return { userId: otherUserId, score: 0 }
+          }
+        })
+      )
+
+      // Create a map of userId to score for easy lookup
+      const scoreMap = new Map(compatibilityScores.map(m => [m.userId, m.score]))
+
+      // Maintain the order from recentMatches (most recent first) and add scores
+      const recentMatchEntries = recentMatches.map(({ userId, created_at }) => ({
+        userId,
+        created_at,
+        score: scoreMap.get(userId) || 0
+      }))
+
+      const finalUserIds = recentMatchEntries.map(m => m.userId)
 
       // Fetch profiles for matched users
       const { data: profiles, error: profilesError } = await supabase
@@ -182,7 +221,7 @@ export function DashboardContent({ hasCompletedQuestionnaire = false, hasPartial
           university_id, 
           universities(name)
         `)
-        .in('user_id', topUserIds)
+        .in('user_id', finalUserIds)
 
       if (profilesError) {
         logger.error('Error loading profiles:', profilesError)
@@ -198,7 +237,7 @@ export function DashboardContent({ hasCompletedQuestionnaire = false, hasPartial
           program_id,
           programs(name)
         `)
-        .in('user_id', topUserIds)
+        .in('user_id', finalUserIds)
       
       if (academicError) {
         logger.warn('Error loading academic data (non-critical):', academicError)
@@ -213,10 +252,10 @@ export function DashboardContent({ hasCompletedQuestionnaire = false, hasPartial
       })
 
       // Create a map of user_id to match score
-      const matchScoreMap = new Map(topMatchEntries)
+      const matchScoreMap = new Map(recentMatchEntries.map(m => [m.userId, m.score]))
 
-      // Format matches maintaining the order from topMatchEntries
-      const formattedMatches = topMatchEntries.map(([userId, score]) => {
+      // Format matches maintaining the order from recentMatchEntries (most recent first)
+      const formattedMatches = recentMatchEntries.map(({ userId, score }) => {
         const profile = profiles?.find((p: any) => p.user_id === userId)
         if (!profile) {
           return null
@@ -291,19 +330,19 @@ export function DashboardContent({ hasCompletedQuestionnaire = false, hasPartial
         }
       }).filter((m): m is NonNullable<typeof m> => m !== null) // Remove null entries
 
-      logger.log('loadTopMatches: Formatted', formattedMatches.length, 'matches from match_suggestions table')
+      logger.log('loadRecentMatches: Formatted', formattedMatches.length, 'recent matches from match_suggestions table')
 
       return formattedMatches
     } catch (error) {
-      logger.error('Failed to load matches:', error)
+      logger.error('Failed to load recent matches:', error)
       return []
     }
   }, [user?.id, supabase])
 
-  const { data: topMatches = dashboardData.topMatches, isLoading: isLoadingMatches, refetch: refetchTopMatches } = useQuery({
+  const { data: recentMatches = dashboardData.topMatches, isLoading: isLoadingMatches, refetch: refetchRecentMatches } = useQuery({
     queryKey: queryKeys.matches.top(user?.id),
-    queryFn: fetchTopMatches,
-    staleTime: 10_000, // 10 seconds for real-time data
+    queryFn: fetchRecentMatches,
+    staleTime: 86_400_000, // 24 hours (once per day)
     enabled: !!user?.id,
     initialData: dashboardData.topMatches,
   })
@@ -405,24 +444,43 @@ export function DashboardContent({ hasCompletedQuestionnaire = false, hasPartial
         logger.error('Error fetching match suggestions for avg:', error)
       }
 
-      // Compute average based on unique matched users to avoid
-      // double-counting the same pair across multiple suggestions.
-      const scoreByUser = new Map<string, number>()
+      // Get unique matched users from suggestions
+      const uniqueUserIds = new Set<string>()
       ;(suggestions || []).forEach((s: any) => {
         const memberIds = s.member_ids as string[]
         if (!memberIds || memberIds.length !== 2) return
 
         const otherUserId = memberIds[0] === user.id ? memberIds[1] : memberIds[0]
-        const fitScore = Number(s.fit_score || 0)
-
-        const currentBest = scoreByUser.get(otherUserId) ?? 0
-        if (fitScore > currentBest) {
-          scoreByUser.set(otherUserId, fitScore)
-        }
+        uniqueUserIds.add(otherUserId)
       })
 
-      const allScores = Array.from(scoreByUser.values())
+      // Compute compatibility scores using the new algorithm for all matched users
+      const compatibilityScores = await Promise.all(
+        Array.from(uniqueUserIds).map(async (otherUserId) => {
+          try {
+            const { data, error } = await supabase.rpc('compute_compatibility_score', {
+              user_a_id: user.id,
+              user_b_id: otherUserId
+            })
+            
+            if (error) {
+              logger.error(`Error computing compatibility score for ${otherUserId}:`, error)
+              return 0
+            }
+            
+            // The function returns a table (array), get the first row
+            const result = Array.isArray(data) && data.length > 0 ? data[0] : (data || {})
+            return Number(result.compatibility_score || 0)
+          } catch (error) {
+            logger.error(`Error computing compatibility score for ${otherUserId}:`, error)
+            return 0
+          }
+        })
+      )
+
+      const allScores = compatibilityScores
         .map(score => Math.min(score, 1.0)) // Cap each score at 1.0 (100%)
+        .filter(score => score > 0) // Only include valid scores
 
       logger.log('loadAvgCompatibility: Found', allScores.length, 'matches', 'scores:', allScores)
 
@@ -1186,7 +1244,7 @@ export function DashboardContent({ hasCompletedQuestionnaire = false, hasPartial
         <motion.div variants={fadeInUp}>
           <div className="bg-bg-surface p-3 sm:p-4 rounded-xl shadow-sm border border-border-subtle">
             <div className="text-xl sm:text-2xl font-bold text-text-primary text-center">
-              {avgCompatibility > 0 ? `${Math.min(avgCompatibility, 100)}%` : '0%'}
+              {Math.min(Math.round(avgCompatibility || 0), 100)}
             </div>
             <div className="text-xs text-text-secondary mt-0.5 text-center">Avg Compatibility</div>
           </div>
@@ -1207,21 +1265,21 @@ export function DashboardContent({ hasCompletedQuestionnaire = false, hasPartial
         </motion.div>
       </motion.div>
 
-      {/* Main Content Grid - Top Matches and Recent Activity */}
+      {/* Main Content Grid - Recent Matches and Recent Activity */}
       <motion.div
         initial="initial"
         animate="animate"
         variants={staggerChildren}
         className="grid grid-cols-1 lg:grid-cols-2 gap-2 sm:gap-2 lg:gap-3 flex-1 min-h-0"
       >
-        {/* Top Matches - Real Data */}
+        {/* Recent Matches - Real Data */}
         <motion.div variants={fadeInUp} className="flex flex-col min-h-0">
           <div className="bg-bg-surface p-3 sm:p-4 rounded-xl shadow-sm border border-border-subtle flex flex-col h-full max-h-full">
             <div className="flex items-center justify-between mb-2">
-              <h3 className="text-sm lg:text-base font-bold text-text-primary">Your Top Matches</h3>
+              <h3 className="text-sm lg:text-base font-bold text-text-primary">Recent Matches</h3>
               <button 
                 className="flex items-center justify-center w-8 h-8 text-text-muted hover:text-text-primary hover:bg-bg-surface-alt rounded-lg transition-colors" 
-                onClick={() => refetchTopMatches()}
+                onClick={() => refetchRecentMatches()}
                 disabled={isLoadingMatches}
                 title="Refresh matches"
               >
@@ -1237,10 +1295,10 @@ export function DashboardContent({ hasCompletedQuestionnaire = false, hasPartial
               <div className="flex items-center justify-center py-8 flex-1">
                 <Loader2 className="w-6 h-6 animate-spin text-text-muted" />
               </div>
-            ) : topMatches.length > 0 ? (
+            ) : recentMatches.length > 0 ? (
               <div className="flex flex-col flex-1 min-h-0">
                 <div className="space-y-2 overflow-y-auto flex-1 pr-2">
-                  {topMatches.map((match) => (
+                  {recentMatches.map((match) => (
                     <div key={match.id} className="flex items-center gap-3 p-3 bg-bg-surface-alt border border-border-subtle rounded-lg hover:shadow-md transition-shadow">
                       <div className="w-10 h-10 bg-gradient-to-br from-semantic-accent to-semantic-accent-hover rounded-full flex items-center justify-center text-white font-bold text-sm flex-shrink-0">
                         {match.name[0].toUpperCase()}

@@ -1442,6 +1442,13 @@ CREATE POLICY "verification_documents_service_role" ON storage.objects
 -- ============================================
 -- 17. MATCHING ENGINE FUNCTIONS
 -- ============================================
+-- NOTE: The full production implementation is in migration 049_compatibility_algorithm_v1.sql
+-- This placeholder will be replaced when the migration is applied.
+-- The migration implements the production-ready 4-layer compatibility engine:
+-- 1. Dealbreaker Filter (hard constraints)
+-- 2. Harmony Score (core living compatibility, 8 dimensions)
+-- 3. Context Score (academic + lifestyle context)
+-- 4. Global Score (final compatibility with logging support)
 
 -- Function to compute user compatibility score
 CREATE OR REPLACE FUNCTION compute_compatibility_score(

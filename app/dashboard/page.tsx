@@ -137,6 +137,7 @@ async function fetchDashboardData(userId: string): Promise<DashboardData> {
   let toursScheduledCount = 0
   let topMatches: any[] = []
   let recentActivity: any[] = []
+  let avgCompatibility = 0
 
   try {
     // Fetch profile for completion calculation
@@ -177,38 +178,25 @@ async function fetchDashboardData(userId: string): Promise<DashboardData> {
     if (error) {
       console.error('Error fetching match suggestions:', error)
     } else if (suggestions && suggestions.length > 0) {
-      const matchMap = new Map<
-        string,
-        { firstCreatedAt: Date; bestFitScore: number }
-      >()
+      // Track unique matched users and their first creation date
+      const matchMap = new Map<string, Date>()
 
       suggestions.forEach((s: any) => {
         const memberIds = s.member_ids as string[]
         if (!memberIds || memberIds.length !== 2) return
 
         const otherUserId = memberIds[0] === userId ? memberIds[1] : memberIds[0]
-        const fitScore = Number(s.fit_score || 0)
         const createdAt = new Date(s.created_at)
 
         const existing = matchMap.get(otherUserId)
-        if (!existing) {
-          matchMap.set(otherUserId, {
-            firstCreatedAt: createdAt,
-            bestFitScore: fitScore
-          })
-        } else {
-          if (createdAt < existing.firstCreatedAt) {
-            existing.firstCreatedAt = createdAt
-          }
-          if (fitScore > existing.bestFitScore) {
-            existing.bestFitScore = fitScore
-          }
+        if (!existing || createdAt < existing) {
+          matchMap.set(otherUserId, createdAt)
         }
       })
 
       totalMatchesCount = matchMap.size
       newMatchesCount = Array.from(matchMap.values()).filter(
-        (m) => m.firstCreatedAt >= sevenDaysAgo
+        (createdAt) => createdAt >= sevenDaysAgo
       ).length
     } else {
       // Fallback for legacy data: use matches table if there are no suggestions.
@@ -298,7 +286,7 @@ async function fetchDashboardData(userId: string): Promise<DashboardData> {
   }
 
   try {
-    // Fetch top match suggestions
+    // Fetch recent match suggestions (ordered by created_at, most recent first)
     const now = new Date().toISOString()
     const { data: suggestions } = await supabase
       .from('match_suggestions')
@@ -313,78 +301,119 @@ async function fetchDashboardData(userId: string): Promise<DashboardData> {
       .contains('member_ids', [userId])
       .neq('status', 'rejected')
       .gte('expires_at', now) // Only non-expired suggestions
-      .order('fit_index', { ascending: false })
-      .limit(50) // Get enough records to deduplicate
+      .order('created_at', { ascending: false }) // Most recent first
+      .limit(20) // Get enough records to deduplicate and find 3 most recent
 
     if (suggestions && suggestions.length > 0) {
-      // Extract other user IDs and deduplicate by keeping highest fit_score
-      const matchMap = new Map<string, { id: string; fit_score: number }>()
+      // Extract other user IDs and deduplicate by keeping most recent
+      // Map: otherUserId -> { created_at }
+      const matchMap = new Map<string, string>() // Map userId -> created_at
       suggestions.forEach((s: any) => {
         const memberIds = s.member_ids as string[]
         if (!memberIds || memberIds.length !== 2) return
         
         const otherUserId = memberIds[0] === userId ? memberIds[1] : memberIds[0]
-        const fitScore = Number(s.fit_score || 0)
         
+        // Keep the most recent suggestion for each user
         const existing = matchMap.get(otherUserId)
-        if (!existing || fitScore > existing.fit_score) {
-          matchMap.set(otherUserId, { id: s.id, fit_score: fitScore })
+        if (!existing || new Date(s.created_at) > new Date(existing)) {
+          matchMap.set(otherUserId, s.created_at)
         }
       })
 
-      // Get top 3 by fit_score
-      const topEntries = Array.from(matchMap.entries())
-        .sort((a, b) => b[1].fit_score - a[1].fit_score)
-        .slice(0, 3)
+      // Get the 3 most recent unique matches (sorted by created_at)
+      const recentMatches = Array.from(matchMap.entries())
+        .map(([userId, created_at]) => ({ userId, created_at }))
+        .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
+        .slice(0, 3) // Take 3 most recent
 
-      if (topEntries.length > 0) {
-        const topUserIds = topEntries.map(([otherUserId]) => otherUserId)
+      if (recentMatches.length > 0) {
+        const recentUserIds = recentMatches.map(m => m.userId)
+
+        // Compute compatibility scores using the new algorithm for each matched user
+        const compatibilityScores = await Promise.all(
+          recentUserIds.map(async (otherUserId) => {
+            try {
+              const { data, error } = await supabase.rpc('compute_compatibility_score', {
+                user_a_id: userId,
+                user_b_id: otherUserId
+              })
+              
+              if (error) {
+                console.error(`Error computing compatibility score for ${otherUserId}:`, error)
+                return { userId: otherUserId, score: 0 }
+              }
+              
+              // The function returns a table (array), get the first row
+              const result = Array.isArray(data) && data.length > 0 ? data[0] : (data || {})
+              const compatibilityScore = Number(result.compatibility_score || 0)
+              
+              return { userId: otherUserId, score: compatibilityScore }
+            } catch (error) {
+              console.error(`Error computing compatibility score for ${otherUserId}:`, error)
+              return { userId: otherUserId, score: 0 }
+            }
+          })
+        )
+
+        // Create a map of userId to score for easy lookup
+        const scoreMap = new Map(compatibilityScores.map(m => [m.userId, m.score]))
+
+        // Maintain the order from recentMatches (most recent first) and add scores
+        const recentEntries = recentMatches.map(({ userId, created_at }) => ({
+          userId,
+          created_at,
+          score: scoreMap.get(userId) || 0
+        }))
+
+        if (recentEntries.length > 0) {
+          const finalUserIds = recentEntries.map(m => m.userId)
         
-        // Fetch profiles for matched users
-        const { data: profiles } = await supabase
-          .from('profiles')
-          .select(`
-            user_id,
-            first_name,
-            program,
-            university_id,
-            universities(name)
-          `)
-          .in('user_id', topUserIds)
+          // Fetch profiles for matched users
+          const { data: profiles } = await supabase
+            .from('profiles')
+            .select(`
+              user_id,
+              first_name,
+              program,
+              university_id,
+              universities(name)
+            `)
+            .in('user_id', finalUserIds)
 
-        // Fetch program names
-        const { data: academicData } = await supabase
-          .from('user_academic')
-          .select(`
-            user_id,
-            program_id,
-            programs!user_academic_program_id_fkey(name)
-          `)
-          .in('user_id', topUserIds)
+          // Fetch program names
+          const { data: academicData } = await supabase
+            .from('user_academic')
+            .select(`
+              user_id,
+              program_id,
+              programs!user_academic_program_id_fkey(name)
+            `)
+            .in('user_id', finalUserIds)
 
-        const programMap = new Map<string, string>()
-        academicData?.forEach((academic: any) => {
-          if (academic.programs?.name) {
-            programMap.set(academic.user_id, academic.programs.name)
+          const programMap = new Map<string, string>()
+          academicData?.forEach((academic: any) => {
+            if (academic.programs?.name) {
+              programMap.set(academic.user_id, academic.programs.name)
+            }
+          })
+
+          // Build recent matches array
+          // Helper function to check if a string is a UUID
+          const isUUID = (str: string): boolean => {
+            if (!str || typeof str !== 'string') return false
+            if (/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(str)) return true
+            if (/[0-9a-f]{8}-?[0-9a-f]{4}-?[0-9a-f]{4}-?[0-9a-f]{4}-?[0-9a-f]{12}/i.test(str)) return true
+            return false
           }
-        })
-
-        // Build top matches array
-        // Helper function to check if a string is a UUID
-        const isUUID = (str: string): boolean => {
-          if (!str || typeof str !== 'string') return false
-          if (/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(str)) return true
-          if (/[0-9a-f]{8}-?[0-9a-f]{4}-?[0-9a-f]{4}-?[0-9a-f]{4}-?[0-9a-f]{12}/i.test(str)) return true
-          return false
-        }
-        
-        // Remove UUIDs from strings
-        const removeUUIDs = (str: string): string => {
-          if (!str || typeof str !== 'string') return str
-          return str.replace(/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/gi, '').trim()
-        }
-        
-        topMatches = topEntries.map(([otherUserId, matchData]) => {
+          
+          // Remove UUIDs from strings
+          const removeUUIDs = (str: string): string => {
+            if (!str || typeof str !== 'string') return str
+            return str.replace(/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/gi, '').trim()
+          }
+          
+          topMatches = recentEntries.map(({ userId: otherUserId, score: compatibilityScore }) => {
           const profile = profiles?.find((p: any) => p.user_id === otherUserId)
           const programName = programMap.get(otherUserId)
           
@@ -410,18 +439,59 @@ async function fetchDashboardData(userId: string): Promise<DashboardData> {
           }
           
           return {
-            id: matchData.id,
+            id: otherUserId, // Use userId as id since we don't have suggestion id anymore
             name: safeName,
-            score: matchData.fit_score, // Keep as 0-1 range for consistency
+            score: compatibilityScore, // Use new algorithm's compatibility_score (0-1 range)
             program: safeProgram,
             university: safeUniversity,
             avatar: undefined
           }
-        })
-      }
+          })
+        }
 
-      // Override total matches count with unique matched users
-      totalMatchesCount = matchMap.size
+        // Override total matches count with unique matched users
+        totalMatchesCount = matchMap.size
+      
+          // Calculate average compatibility from ALL matches using new algorithm
+          // Compute compatibility scores for all matched users
+          const allCompatibilityScores = await Promise.all(
+            Array.from(matchMap.keys()).map(async (otherUserId) => {
+          try {
+            const { data, error } = await supabase.rpc('compute_compatibility_score', {
+              user_a_id: userId,
+              user_b_id: otherUserId
+            })
+            
+            if (error) {
+              console.error(`Error computing compatibility score for ${otherUserId}:`, error)
+              return 0
+            }
+            
+            // The function returns a table (array), get the first row
+            const result = Array.isArray(data) && data.length > 0 ? data[0] : (data || {})
+            return Number(result.compatibility_score || 0)
+          } catch (error) {
+            console.error(`Error computing compatibility score for ${otherUserId}:`, error)
+            return 0
+          }
+        })
+      )
+      
+      const allScores = allCompatibilityScores
+        .map(score => Math.min(score, 1.0)) // Cap each score at 1.0 (100%)
+        .filter(score => score > 0) // Only include valid scores
+      
+      if (allScores.length > 0) {
+        const avgCompatibilityFromAll = Math.min(
+          Math.round(
+            (allScores.reduce((sum, score) => sum + score, 0) / allScores.length) * 100
+          ),
+          100 // Cap the final result at 100%
+        )
+          // Store for use later (will override the topMatches-based calculation)
+          avgCompatibility = avgCompatibilityFromAll
+        }
+      }
     } else {
       // Fallback to legacy matches table if no suggestions exist
       console.log('[Dashboard] No match_suggestions for top matches, falling back to matches table')
@@ -558,9 +628,20 @@ async function fetchDashboardData(userId: string): Promise<DashboardData> {
   }
 
   // Calculate average compatibility
-  const avgCompatibility = topMatches.length > 0 
-    ? Math.round(topMatches.reduce((sum, m) => sum + m.score, 0) / topMatches.length)
-    : 0
+  // If not already calculated from all matches, fall back to topMatches (for legacy matches table case)
+  if (avgCompatibility === 0 && topMatches.length > 0) {
+    const topScores = topMatches
+      .map(m => Math.min(m.score, 1.0)) // Cap at 1.0
+      .filter(score => score > 0) // Only valid scores
+    if (topScores.length > 0) {
+      avgCompatibility = Math.min(
+        Math.round(
+          (topScores.reduce((sum, score) => sum + score, 0) / topScores.length) * 100
+        ),
+        100
+      )
+    }
+  }
 
   return {
     summary: {

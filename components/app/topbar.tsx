@@ -271,9 +271,9 @@ export function Topbar({ user }: TopbarProps) {
         </div>
 
         {/* Center - Search (centered, aligned with chat messages max-w-4xl) - Hidden on mobile */}
-        <div className="hidden lg:flex flex-1 min-w-0 max-w-4xl relative mx-auto" ref={searchRef}>
-            <div className="relative">
-              <Search className="absolute left-3 sm:left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 sm:w-4 sm:h-4 text-text-muted z-10 pointer-events-none" />
+        <div className="hidden md:flex flex-1 min-w-0 max-w-4xl relative mx-auto" ref={searchRef}>
+            <div className="relative w-full">
+              <Search className="absolute left-3 md:left-4 lg:left-5 top-1/2 transform -translate-y-1/2 w-4 h-4 md:w-5 md:h-5 lg:w-5 lg:h-5 text-text-muted z-10 pointer-events-none" />
               <input
                 ref={inputRef}
                 type="text"
@@ -290,7 +290,7 @@ export function Topbar({ user }: TopbarProps) {
                     setShowResults(true)
                   }
                 }}
-                className="w-full pl-9 sm:pl-10 pr-9 sm:pr-10 py-2.5 sm:py-2.5 h-[42px] sm:h-[44px] bg-bg-surface-alt dark:bg-bg-surface-alt border-0 rounded-xl text-sm sm:text-sm text-text-primary placeholder:text-text-muted focus:outline-none focus:ring-2 focus:ring-semantic-accent focus:bg-bg-surface dark:focus:bg-bg-surface transition-colors"
+                className="w-full pl-9 md:pl-11 lg:pl-12 pr-9 md:pr-11 lg:pr-12 py-2.5 md:py-3 lg:py-3.5 h-[44px] md:h-[52px] lg:h-[56px] bg-bg-surface-alt dark:bg-bg-surface-alt border border-border-subtle dark:border-border-subtle rounded-xl md:rounded-2xl text-sm md:text-base lg:text-base text-text-primary placeholder:text-text-muted focus:outline-none focus:ring-2 focus:ring-semantic-accent focus:border-semantic-accent focus:bg-bg-surface dark:focus:bg-bg-surface transition-colors"
               />
               {searchQuery && (
               <button
@@ -299,10 +299,10 @@ export function Topbar({ user }: TopbarProps) {
                   setShowResults(false)
                   inputRef.current?.focus()
                 }}
-                className="absolute right-2 sm:right-3 top-1/2 transform -translate-y-1/2 text-text-muted hover:text-text-secondary min-w-[36px] min-h-[36px] sm:min-w-[44px] sm:min-h-[44px] flex items-center justify-center rounded-md hover:bg-bg-surface-alt dark:hover:bg-bg-surface-alt transition-colors"
+                className="absolute right-2 md:right-3 lg:right-4 top-1/2 transform -translate-y-1/2 text-text-muted hover:text-text-secondary min-w-[36px] min-h-[36px] md:min-w-[44px] md:min-h-[44px] lg:min-w-[48px] lg:min-h-[48px] flex items-center justify-center rounded-md hover:bg-bg-surface-alt dark:hover:bg-bg-surface-alt transition-colors"
                 aria-label="Clear search"
               >
-                <X className="w-4 h-4 sm:w-4 sm:h-4" />
+                <X className="w-4 h-4 md:w-5 md:h-5 lg:w-5 lg:h-5" />
               </button>
               )}
             </div>

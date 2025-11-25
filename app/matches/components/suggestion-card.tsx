@@ -1,11 +1,19 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { SectionScores } from './section-scores'
 import { fetchWithCSRF } from '@/lib/utils/fetch-with-csrf'
-import { Clock, Ban } from 'lucide-react'
+import { Clock, Ban, Sparkles, Home, GraduationCap, Info, ChevronDown, ChevronUp, Droplets, Volume2, Moon, Coffee, BookOpen, Heart, XCircle } from 'lucide-react'
 import { Button } from '@/components/ui/button'
+import { Card, CardContent } from '@/components/ui/card'
+import { Alert, AlertDescription } from '@/components/ui/alert'
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from '@/components/ui/tooltip'
 import {
   Dialog,
   DialogContent,
@@ -27,6 +35,60 @@ interface SuggestionCardProps {
   onToggleSelection?: () => void
 }
 
+// Dimension labels, descriptions, and icons (same as compatibility panel)
+const dimensionConfig: { [key: string]: { label: string; description: string; icon: any } } = {
+  cleanliness: {
+    label: 'Cleanliness',
+    description: 'How well your cleanliness standards align (kitchen, bathroom, living areas)',
+    icon: Droplets
+  },
+  noise: {
+    label: 'Noise Tolerance',
+    description: 'Compatibility around noise sensitivity, parties, and music volume',
+    icon: Volume2
+  },
+  guests: {
+    label: 'Guest Frequency',
+    description: 'Alignment on how often friends or partners stay over',
+    icon: Clock
+  },
+  sleep: {
+    label: 'Sleep Schedule',
+    description: 'Sleep schedule compatibility (early bird vs night owl)',
+    icon: Moon
+  },
+  shared_spaces: {
+    label: 'Shared Spaces',
+    description: 'Preferences for using common areas vs private spaces',
+    icon: Home
+  },
+  substances: {
+    label: 'Substances',
+    description: 'Comfort levels around alcohol or other substances at home',
+    icon: Coffee
+  },
+  study_social: {
+    label: 'Study/Social Balance',
+    description: 'Balance between study time and social activities',
+    icon: BookOpen
+  },
+  home_vibe: {
+    label: 'Home Vibe',
+    description: 'Home atmosphere preference (quiet retreat vs social hub)',
+    icon: Heart
+  }
+}
+
+interface CompatibilityData {
+  compatibility_score: number
+  harmony_score?: number | null
+  context_score?: number | null
+  dimension_scores_json?: { [key: string]: number } | null
+  is_valid_match?: boolean
+  top_alignment?: string | null
+  watch_out?: string | null
+}
+
 export function SuggestionCard({ 
   suggestion, 
   onRespond, 
@@ -41,7 +103,41 @@ export function SuggestionCard({
   const [showBlockDialog, setShowBlockDialog] = useState(false)
   const [showDeclineDialog, setShowDeclineDialog] = useState(false)
   const [isBlocking, setIsBlocking] = useState(false)
+  const [showDimensions, setShowDimensions] = useState(false)
+  const [showDetails, setShowDetails] = useState(false)
+  const [compatibilityData, setCompatibilityData] = useState<CompatibilityData | null>(null)
+  const [isLoadingCompatibility, setIsLoadingCompatibility] = useState(true)
   const router = useRouter()
+  
+  // Fetch compatibility data when component mounts
+  useEffect(() => {
+    const fetchCompatibility = async () => {
+      const otherUserId = suggestion.memberIds.find(id => id !== currentUserId)
+      if (!otherUserId) {
+        setIsLoadingCompatibility(false)
+        return
+      }
+      
+      try {
+        setIsLoadingCompatibility(true)
+        const response = await fetch(`/api/chat/compatibility?otherUserId=${otherUserId}`)
+        if (response.ok) {
+          const data = await response.json()
+          setCompatibilityData(data)
+        } else {
+          // API call failed - we'll fall back to suggestion.fitIndex in the render
+          console.warn('Failed to fetch compatibility data:', response.status, response.statusText)
+        }
+      } catch (error) {
+        // Network or other error - we'll fall back to suggestion.fitIndex in the render
+        console.error('Failed to fetch compatibility data:', error)
+      } finally {
+        setIsLoadingCompatibility(false)
+      }
+    }
+    
+    fetchCompatibility()
+  }, [suggestion.memberIds, currentUserId])
   
   const handleRespond = async (action: 'accept' | 'decline') => {
     setIsResponding(true)
@@ -123,6 +219,50 @@ export function SuggestionCard({
     }
   }
   
+  const getScoreColor = (score: number) => {
+    if (score >= 0.8) return 'text-emerald-600 dark:text-emerald-400'
+    if (score >= 0.6) return 'text-blue-600 dark:text-blue-400'
+    if (score >= 0.4) return 'text-amber-600 dark:text-amber-400'
+    return 'text-red-600 dark:text-red-400'
+  }
+
+  const getScoreGradient = (score: number) => {
+    if (score >= 0.8) return 'from-emerald-500 to-emerald-600'
+    if (score >= 0.6) return 'from-blue-500 to-blue-600'
+    if (score >= 0.4) return 'from-amber-500 to-amber-600'
+    return 'from-red-500 to-red-600'
+  }
+
+  const formatTopAlignment = (alignment: string | null | undefined) => {
+    if (!alignment) return null
+    return alignment
+      .split('_')
+      .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+      .join(' ')
+  }
+
+  // Calculate match score - avoid showing incorrect values by only using compatibility data once loaded
+  // This prevents the flash of wrong percentage (e.g., 89% -> 72%)
+  const matchScore = (() => {
+    // If we have compatibility data (fresh from API), use it
+    if (compatibilityData?.compatibility_score !== null && compatibilityData?.compatibility_score !== undefined) {
+      return Math.round(compatibilityData.compatibility_score * 100)
+    }
+    // While loading, return null to show loading placeholder (prevents showing stale fitIndex)
+    if (isLoadingCompatibility) {
+      return null
+    }
+    // Loading complete but no data - fall back to fitIndex only after loading attempt is done
+    // This ensures we don't show fitIndex and then immediately replace it (which causes the flash)
+    return suggestion.fitIndex
+  })()
+  const harmonyScore = compatibilityData?.harmony_score !== null && compatibilityData?.harmony_score !== undefined
+    ? Math.round(compatibilityData.harmony_score * 100)
+    : null
+  const contextScore = compatibilityData?.context_score !== null && compatibilityData?.context_score !== undefined
+    ? Math.round(compatibilityData.context_score * 100)
+    : null
+
   const getStatusBadge = () => {
     // Check how many users still need to accept
     const acceptedCount = (suggestion.acceptedBy || []).length
@@ -175,60 +315,325 @@ export function SuggestionCard({
   
   return (
     <div 
-      className={`bg-white dark:bg-card rounded-xl border p-3 sm:p-6 shadow-sm hover:shadow-md transition-all cursor-pointer ${
+      className={`bg-white dark:bg-card rounded-xl border p-4 sm:p-6 shadow-sm hover:shadow-md transition-all ${
         isSelected 
           ? 'border-blue-500 border-2 bg-blue-50 dark:bg-blue-950/30' 
           : 'border-gray-200 dark:border-border'
       } ${isSelectable ? 'hover:border-blue-300 dark:hover:border-blue-600' : ''}`}
       onClick={isSelectable && suggestion.status === 'confirmed' ? onToggleSelection : undefined}
     >
-      {/* Header - Compact layout */}
-      <div className="flex items-start justify-between mb-3 sm:mb-4">
-        <div className="flex items-center gap-2.5 sm:gap-4 flex-1 min-w-0">
-          {/* Selection checkbox */}
-          {isSelectable && suggestion.status === 'confirmed' && (
-            <div 
-              className="flex-shrink-0 w-5 h-5 sm:w-6 sm:h-6 border-2 rounded border-gray-300 dark:border-border flex items-center justify-center cursor-pointer touch-manipulation"
-              onClick={(e) => {
-                e.stopPropagation()
-                onToggleSelection?.()
-              }}
-            >
-              {isSelected && (
-                <div className="w-3 h-3 sm:w-4 sm:h-4 bg-blue-600 rounded-sm flex items-center justify-center">
-                  <svg className="w-2 h-2 sm:w-3 sm:h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                  </svg>
+      {/* Status Badge at top */}
+      <div className="flex items-center justify-between mb-4 sm:mb-4">
+        <div className="flex items-center gap-2">
+          {getStatusBadge()}
+        </div>
+        {/* Selection checkbox */}
+        {isSelectable && suggestion.status === 'confirmed' && (
+          <div 
+            className="flex-shrink-0 w-5 h-5 sm:w-6 sm:h-6 border-2 rounded border-gray-300 dark:border-border flex items-center justify-center cursor-pointer touch-manipulation"
+            onClick={(e) => {
+              e.stopPropagation()
+              onToggleSelection?.()
+            }}
+          >
+            {isSelected && (
+              <div className="w-3 h-3 sm:w-4 sm:h-4 bg-blue-600 rounded-sm flex items-center justify-center">
+                <svg className="w-2 h-2 sm:w-3 sm:h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                </svg>
+              </div>
+            )}
+          </div>
+        )}
+      </div>
+
+      {/* Main Score Card - Hero Section */}
+      <Card className="border-0 shadow-md bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 dark:from-blue-950/30 dark:via-indigo-950/30 dark:to-purple-950/30 overflow-hidden mb-4 sm:mb-4">
+        <CardContent className="p-5 sm:p-6">
+          {isLoadingCompatibility ? (
+            <div className="flex flex-col sm:flex-row items-center sm:items-start gap-5 sm:gap-4">
+              {/* Loading placeholder */}
+              <div className="relative flex-shrink-0">
+                <div className="w-24 h-24 sm:w-24 sm:h-24 rounded-full bg-gray-200 dark:bg-gray-700 flex items-center justify-center shadow-lg animate-pulse">
+                  <span className="text-3xl sm:text-3xl font-bold text-transparent">
+                    --
+                  </span>
                 </div>
-              )}
+                <div className="absolute -top-1 -right-1">
+                  <Sparkles className="w-6 h-6 sm:w-5 sm:h-5 text-gray-300 dark:text-gray-600" />
+                </div>
+              </div>
+              
+              <div className="flex-1 text-center sm:text-left">
+                <h3 className="text-2xl sm:text-2xl font-bold text-gray-400 dark:text-gray-500 mb-2 sm:mb-1 animate-pulse">
+                  Loading...
+                </h3>
+              </div>
+            </div>
+          ) : (
+            <div className="flex flex-col sm:flex-row items-center sm:items-start gap-5 sm:gap-4">
+              {/* Large Score Circle */}
+              <div className="relative flex-shrink-0">
+                <div className={`w-24 h-24 sm:w-24 sm:h-24 rounded-full bg-gradient-to-br ${getScoreGradient(compatibilityData?.compatibility_score ?? (matchScore / 100))} flex items-center justify-center shadow-lg`}>
+                  <span className="text-3xl sm:text-3xl font-bold text-white">
+                    {matchScore}
+                  </span>
+                </div>
+                <div className="absolute -top-1 -right-1">
+                  <Sparkles className="w-6 h-6 sm:w-5 sm:h-5 text-yellow-400 fill-yellow-400" />
+                </div>
+              </div>
+              
+              {/* Score Info */}
+              <div className="flex-1 text-center sm:text-left">
+                <h3 className="text-2xl sm:text-2xl font-bold text-gray-900 dark:text-gray-100 mb-2 sm:mb-1">
+                  {matchScore}% Match
+                </h3>
+                {compatibilityData?.top_alignment && (
+                  <p className="text-sm sm:text-sm text-gray-600 dark:text-gray-400">
+                    <span className="font-semibold">Best match on:</span>{' '}
+                    <span className="capitalize">{formatTopAlignment(compatibilityData.top_alignment)}</span>
+                  </p>
+                )}
+              </div>
             </div>
           )}
-          <div className="text-center flex-shrink-0">
-            <div className="text-xl sm:text-3xl font-bold text-blue-600">
-              {suggestion.fitIndex}
+          
+          {/* View Details Button */}
+          <button
+            onClick={(e) => {
+              e.stopPropagation()
+              setShowDetails(!showDetails)
+            }}
+            className="mt-5 sm:mt-4 w-full px-5 py-3 sm:px-4 sm:py-2 text-sm font-medium text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 hover:bg-blue-50 dark:hover:bg-blue-950/20 rounded-lg transition-colors border border-blue-200 dark:border-blue-800 touch-manipulation min-h-[48px] sm:min-h-0"
+          >
+            {showDetails ? (
+              <span className="flex items-center justify-center gap-2">
+                Hide details
+                <ChevronUp className="w-5 h-5 sm:w-4 sm:h-4" />
+              </span>
+            ) : (
+              <span className="flex items-center justify-center gap-2">
+                View details
+                <ChevronDown className="w-5 h-5 sm:w-4 sm:h-4" />
+              </span>
+            )}
+          </button>
+        </CardContent>
+      </Card>
+
+      {/* Dealbreaker Warning */}
+      {compatibilityData?.is_valid_match === false && (
+        <Alert variant="destructive" className="border-2 border-red-300 dark:border-red-800 bg-red-50 dark:bg-red-950/40 mb-4 sm:mb-4">
+          <XCircle className="h-5 w-5 sm:h-4 sm:w-4 text-red-600 dark:text-red-400" />
+          <AlertDescription className="text-sm sm:text-xs font-medium">
+            <span className="font-bold text-red-900 dark:text-red-100 block mb-2 sm:mb-1">
+              Dealbreaker Conflicts Detected
+            </span>
+            <span className="text-red-700 dark:text-red-300 text-sm sm:text-xs leading-relaxed">
+              This match has dealbreaker conflicts and may not be suitable for rooming together.
+            </span>
+          </AlertDescription>
+        </Alert>
+      )}
+
+      {/* Expanded Details Section */}
+      {showDetails && (
+        <>
+          {/* Harmony & Context Score Cards - Side by Side */}
+          {(harmonyScore !== null || contextScore !== null) && (
+            <div className="grid grid-cols-2 gap-3 sm:gap-3 mb-4 sm:mb-4">
+          {harmonyScore !== null && (
+            <Card className="border-2 border-blue-200 dark:border-blue-800 bg-blue-50/50 dark:bg-blue-950/20">
+              <CardContent className="p-4 sm:p-4">
+                <div className="flex items-start justify-between mb-3 sm:mb-2">
+                  <div className="flex items-center gap-2">
+                    <div className="p-2 sm:p-1.5 rounded-lg bg-blue-100 dark:bg-blue-900/50">
+                      <Home className="w-5 h-5 sm:w-4 sm:h-4 text-blue-600 dark:text-blue-400" />
+                    </div>
+                    <div>
+                      <h4 className="text-sm sm:text-xs font-semibold text-gray-900 dark:text-gray-100">Harmony</h4>
+                      <p className="text-xs sm:text-[10px] text-gray-500 dark:text-gray-400">Day-to-day</p>
+                    </div>
+                  </div>
+                </div>
+                <div className="space-y-2 sm:space-y-1.5">
+                  <div className="flex items-baseline gap-1">
+                    <span className={`text-2xl sm:text-xl font-bold ${getScoreColor(compatibilityData?.harmony_score || 0)}`}>
+                      {harmonyScore}%
+                    </span>
+                  </div>
+                  <div className="relative h-2.5 sm:h-2 w-full overflow-hidden rounded-full bg-gray-200 dark:bg-gray-800">
+                    <div 
+                      className={`h-full rounded-full bg-gradient-to-r ${getScoreGradient(compatibilityData?.harmony_score || 0)} transition-all duration-500`}
+                      style={{ width: `${harmonyScore}%` }}
+                    />
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          )}
+          
+          {contextScore !== null && (
+            <Card className="border-2 border-purple-200 dark:border-purple-800 bg-purple-50/50 dark:bg-purple-950/20">
+              <CardContent className="p-4 sm:p-4">
+                <div className="flex items-start justify-between mb-3 sm:mb-2">
+                  <div className="flex items-center gap-2">
+                    <div className="p-2 sm:p-1.5 rounded-lg bg-purple-100 dark:bg-purple-900/50">
+                      <GraduationCap className="w-5 h-5 sm:w-4 sm:h-4 text-purple-600 dark:text-purple-400" />
+                    </div>
+                    <div>
+                      <h4 className="text-sm sm:text-xs font-semibold text-gray-900 dark:text-gray-100">Context</h4>
+                      <p className="text-xs sm:text-[10px] text-gray-500 dark:text-gray-400">Academic</p>
+                    </div>
+                  </div>
+                </div>
+                <div className="space-y-2 sm:space-y-1.5">
+                  <div className="flex items-baseline gap-1">
+                    <span className={`text-2xl sm:text-xl font-bold ${getScoreColor(compatibilityData?.context_score || 0)}`}>
+                      {contextScore}%
+                    </span>
+                  </div>
+                  <div className="relative h-2.5 sm:h-2 w-full overflow-hidden rounded-full bg-gray-200 dark:bg-gray-800">
+                    <div 
+                      className={`h-full rounded-full bg-gradient-to-r ${getScoreGradient(compatibilityData?.context_score || 0)} transition-all duration-500`}
+                      style={{ width: `${contextScore}%` }}
+                    />
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          )}
             </div>
-            <div className="text-[10px] sm:text-xs text-text-muted mt-0.5">Compatibility</div>
-          </div>
-          <div className="flex-1 min-w-0">
-            <div className="flex flex-wrap items-center gap-1.5 sm:gap-2 mb-1.5 sm:mb-2">
-              {getStatusBadge()}
+          )}
+
+          {/* Detailed Dimension Scores - Collapsible */}
+          {compatibilityData?.dimension_scores_json && typeof compatibilityData.dimension_scores_json === 'object' && Object.keys(compatibilityData.dimension_scores_json).length > 0 && (
+            <Card className="border-2 mb-4 sm:mb-4">
+          <CardContent className="p-0">
+            <button
+              onClick={() => setShowDimensions(!showDimensions)}
+              className="w-full flex items-center justify-between p-4 sm:p-4 hover:bg-gray-50 dark:hover:bg-gray-900/50 transition-colors touch-manipulation min-h-[56px] sm:min-h-0"
+            >
+              <div className="flex items-center gap-3 sm:gap-2">
+                <Sparkles className="w-5 h-5 sm:w-4 sm:h-4 text-indigo-600 dark:text-indigo-400" />
+                <h4 className="text-base sm:text-sm font-semibold text-gray-900 dark:text-gray-100">
+                  Detailed Dimension Scores
+                </h4>
+              </div>
+              {showDimensions ? (
+                <ChevronUp className="w-5 h-5 sm:w-4 sm:h-4 text-gray-400" />
+              ) : (
+                <ChevronDown className="w-5 h-5 sm:w-4 sm:h-4 text-gray-400" />
+              )}
+            </button>
+            
+            {showDimensions && (
+              <div className="px-4 sm:px-4 pb-4 sm:pb-4 pt-3 sm:pt-2 border-t">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-3">
+                  {Object.entries(compatibilityData.dimension_scores_json).map(([key, score]) => {
+                    const dimensionKey = key as string
+                    const dimensionScore = typeof score === 'number' ? score : 0
+                    const config = dimensionConfig[dimensionKey]
+                    const Icon = config?.icon || Info
+                    const label = config?.label || dimensionKey
+                    const description = config?.description || ''
+                    
+                    return (
+                      <div 
+                        key={dimensionKey} 
+                        className="p-4 sm:p-3 rounded-lg border border-gray-200 dark:border-gray-800 bg-gray-50/50 dark:bg-gray-900/20 hover:bg-gray-100 dark:hover:bg-gray-900/40 transition-colors"
+                      >
+                        <div className="flex items-start justify-between mb-2 sm:mb-1.5">
+                          <div className="flex items-center gap-2 sm:gap-1.5 flex-1 min-w-0">
+                            <Icon className="w-4 h-4 sm:w-3.5 sm:h-3.5 text-gray-500 dark:text-gray-400 flex-shrink-0" />
+                            <span className="text-sm sm:text-xs font-medium text-gray-900 dark:text-gray-100 truncate">
+                              {label}
+                            </span>
+                            {description && (
+                              <TooltipProvider>
+                                <Tooltip>
+                                  <TooltipTrigger asChild>
+                                    <Info className="w-4 h-4 sm:w-3 sm:h-3 text-gray-400 cursor-help flex-shrink-0" />
+                                  </TooltipTrigger>
+                                  <TooltipContent>
+                                    <p className="text-xs max-w-xs">{description}</p>
+                                  </TooltipContent>
+                                </Tooltip>
+                              </TooltipProvider>
+                            )}
+                          </div>
+                          <span className={`text-sm sm:text-xs font-bold ml-2 flex-shrink-0 ${getScoreColor(dimensionScore)}`}>
+                            {Math.round(dimensionScore * 100)}%
+                          </span>
+                        </div>
+                        <div className="relative h-2 sm:h-1.5 w-full overflow-hidden rounded-full bg-gray-200 dark:bg-gray-800">
+                          <div 
+                            className={`h-full rounded-full bg-gradient-to-r ${getScoreGradient(dimensionScore)} transition-all duration-500`}
+                            style={{ width: `${dimensionScore * 100}%` }}
+                          />
+                        </div>
+                      </div>
+                    )
+                  })}
+                </div>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+          )}
+          
+          {/* Score Breakdown - Compact Grid */}
+          {suggestion.sectionScores && (
+            <div className="mb-4 sm:mb-4">
+              <h4 className="text-sm sm:text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3 sm:mb-2">Score Breakdown</h4>
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 sm:gap-3">
+                {(() => {
+                  const orderMap: Record<string, number> = {
+                    academic: 1,
+                    personality: 2,
+                    social: 3,
+                    lifestyle: 4,
+                    schedule: 5
+                  }
+                  const sortedEntries = Object.entries(suggestion.sectionScores).sort((a, b) => {
+                    const orderA = orderMap[a[0].toLowerCase()] || 999
+                    const orderB = orderMap[b[0].toLowerCase()] || 999
+                    return orderA - orderB
+                  })
+                  return sortedEntries.map(([key, score]) => (
+                    <div 
+                      key={key} 
+                      className="p-3 sm:p-3 rounded-lg border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900/50"
+                    >
+                      <div className="flex items-center justify-between mb-2 sm:mb-1.5">
+                        <span className="text-sm sm:text-xs font-medium text-gray-700 dark:text-gray-300 capitalize">
+                          {key}
+                        </span>
+                        <span className={`text-sm sm:text-xs font-bold ${getScoreColor(score)}`}>
+                          {Math.round(score * 100)}%
+                        </span>
+                      </div>
+                      <div className="relative h-2 sm:h-1.5 w-full overflow-hidden rounded-full bg-gray-200 dark:bg-gray-800">
+                        <div 
+                          className={`h-full rounded-full bg-gradient-to-r ${getScoreGradient(score)} transition-all duration-500`}
+                          style={{ width: `${score * 100}%` }}
+                        />
+                      </div>
+                    </div>
+                  ))
+                })()}
+              </div>
             </div>
-          </div>
-        </div>
-      </div>
-      
-      {/* Section Scores - More compact */}
-      {suggestion.sectionScores && (
-        <div className="mb-3 sm:mb-4 pb-3 sm:pb-4 border-b border-gray-100 dark:border-border">
-          <SectionScores scores={suggestion.sectionScores} />
-        </div>
+          )}
+        </>
       )}
       
       {/* Match Explanation */}
       {(suggestion.personalizedExplanation || (suggestion.reasons && suggestion.reasons.length > 0)) && (
-        <div className="mb-3 sm:mb-4">
-          <div className="text-xs sm:text-sm font-medium text-text-secondary mb-1.5 sm:mb-1">Why this match works:</div>
-          <div className="text-xs sm:text-sm text-text-primary leading-relaxed sm:leading-relaxed">
+        <div className="mb-4 sm:mb-4">
+          <div className="text-sm sm:text-sm font-medium text-text-secondary mb-2 sm:mb-1">Why this match works:</div>
+          <div className="text-sm sm:text-sm text-text-primary leading-relaxed">
             {suggestion.personalizedExplanation || (() => {
               // Fallback to basic explanation if personalized one isn't available
               const reasons = suggestion.reasons || []

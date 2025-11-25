@@ -148,6 +148,16 @@
     position: relative;
   }
 
+  /* Prevent scroll lock on marketing page when Select dropdown is open */
+  body.marketing-page[data-scroll-locked] {
+    overflow: visible !important;
+    position: relative !important;
+  }
+  
+  html:has(body.marketing-page[data-scroll-locked]) {
+    overflow: visible !important;
+  }
+
   /* Responsive media defaults */
   img, video, canvas, svg {
     max-width: 100%;
