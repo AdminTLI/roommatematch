@@ -15,7 +15,6 @@ export default function CompletePage() {
       setCountdown((prev) => {
         if (prev <= 1) {
           clearInterval(countdownInterval)
-          router.push('/dashboard')
           return 0
         }
         return prev - 1
@@ -23,7 +22,14 @@ export default function CompletePage() {
     }, 1000)
     
     return () => clearInterval(countdownInterval)
-  }, [router])
+  }, [])
+  
+  // Navigate when countdown reaches 0
+  useEffect(() => {
+    if (countdown === 0) {
+      router.push('/dashboard')
+    }
+  }, [countdown, router])
   
   const handleManualRedirect = () => {
     router.push('/dashboard')

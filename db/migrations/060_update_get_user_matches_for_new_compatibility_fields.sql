@@ -103,3 +103,4 @@ GRANT EXECUTE ON FUNCTION get_user_matches(uuid, int, int, uuid[], text[], uuid[
 GRANT EXECUTE ON FUNCTION get_user_matches(uuid, int, int, uuid[], text[], uuid[], int[]) TO service_role;
 
 
+

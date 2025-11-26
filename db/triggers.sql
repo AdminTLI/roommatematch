@@ -3,6 +3,10 @@
 -- Function to enforce 30-day cooldown on questionnaire changes
 CREATE OR REPLACE FUNCTION enforce_questionnaire_cooldown()
 RETURNS TRIGGER AS $$
+DECLARE
+  jwt_role TEXT;
+  user_id_check UUID;
+  is_service_role BOOLEAN := false;
 BEGIN
   -- Check if questionnaire-related fields are being updated
   IF TG_TABLE_NAME = 'profiles' THEN
@@ -13,35 +17,91 @@ BEGIN
       OLD.campus IS DISTINCT FROM NEW.campus OR
       OLD.languages IS DISTINCT FROM NEW.languages
     ) THEN
-      -- Enforce cooldown
-      IF OLD.last_answers_changed_at IS NOT NULL AND 
+      -- Allow service role (used for onboarding submission) to bypass cooldown
+      -- Service role is used when submitting complete onboarding, which should always be allowed
+      -- Check if we're using service role by checking JWT claims or if auth.uid() is NULL (service role context)
+      BEGIN
+        -- Try to get role from JWT claims
+        jwt_role := current_setting('request.jwt.claims', true)::json->>'role';
+        IF jwt_role = 'service_role' THEN
+          is_service_role := true;
+        END IF;
+      EXCEPTION WHEN OTHERS THEN
+        -- If we can't read JWT claims, check if auth.uid() is NULL (service role context)
+        BEGIN
+          user_id_check := auth.uid();
+          IF user_id_check IS NULL THEN
+            is_service_role := true;
+          END IF;
+        EXCEPTION WHEN OTHERS THEN
+          -- If we can't determine, assume it's not service role (safer)
+          is_service_role := false;
+        END;
+      END;
+      
+      -- If service role, allow update without cooldown check
+      IF is_service_role THEN
+        NEW.last_answers_changed_at = NOW();
+      ELSIF OLD.last_answers_changed_at IS NOT NULL AND 
          (NOW() - OLD.last_answers_changed_at) < INTERVAL '30 days' THEN
+        -- Enforce cooldown for regular users
         RAISE EXCEPTION 'Questionnaire answers cannot be changed within 30 days. Last changed: %', OLD.last_answers_changed_at;
+      ELSE
+        -- First time or cooldown expired, allow update
+        NEW.last_answers_changed_at = NOW();
       END IF;
-      -- Update timestamp
-      NEW.last_answers_changed_at = NOW();
     END IF;
   ELSIF TG_TABLE_NAME = 'responses' THEN
     -- For responses table, check if value is changing
     IF OLD.value IS DISTINCT FROM NEW.value THEN
-      -- Get the user's last answers changed time
-      DECLARE
-        last_changed TIMESTAMP WITH TIME ZONE;
+      -- Reset service role check for responses table
+      is_service_role := false;
+      
       BEGIN
-        SELECT last_answers_changed_at INTO last_changed
-        FROM profiles
-        WHERE user_id = NEW.user_id;
-        
-        IF last_changed IS NOT NULL AND 
-           (NOW() - last_changed) < INTERVAL '30 days' THEN
-          RAISE EXCEPTION 'Questionnaire answers cannot be changed within 30 days. Last changed: %', last_changed;
+        -- Try to get role from JWT claims
+        jwt_role := current_setting('request.jwt.claims', true)::json->>'role';
+        IF jwt_role = 'service_role' THEN
+          is_service_role := true;
         END IF;
-        
-        -- Update the profile's last_answers_changed_at
+      EXCEPTION WHEN OTHERS THEN
+        -- If we can't read JWT claims, check if auth.uid() is NULL (service role context)
+        BEGIN
+          user_id_check := auth.uid();
+          IF user_id_check IS NULL THEN
+            is_service_role := true;
+          END IF;
+        EXCEPTION WHEN OTHERS THEN
+          -- If we can't determine, assume it's not service role (safer)
+          is_service_role := false;
+        END;
+      END;
+      
+      -- If service role, allow update without cooldown check
+      IF is_service_role THEN
+        -- Service role can always update (used for onboarding submissions)
         UPDATE profiles 
         SET last_answers_changed_at = NOW()
         WHERE user_id = NEW.user_id;
-      END;
+      ELSE
+        -- Get the user's last answers changed time
+        DECLARE
+          last_changed TIMESTAMP WITH TIME ZONE;
+        BEGIN
+          SELECT last_answers_changed_at INTO last_changed
+          FROM profiles
+          WHERE user_id = NEW.user_id;
+          
+          IF last_changed IS NOT NULL AND 
+             (NOW() - last_changed) < INTERVAL '30 days' THEN
+            RAISE EXCEPTION 'Questionnaire answers cannot be changed within 30 days. Last changed: %', last_changed;
+          END IF;
+          
+          -- Update the profile's last_answers_changed_at
+          UPDATE profiles 
+          SET last_answers_changed_at = NOW()
+          WHERE user_id = NEW.user_id;
+        END;
+      END IF;
     END IF;
   END IF;
   
@@ -453,20 +513,29 @@ CREATE TRIGGER handle_user_deletion_trigger
   EXECUTE FUNCTION handle_user_deletion();
 
 -- Function to auto-create user profile after auth user creation
-CREATE OR REPLACE FUNCTION handle_new_user()
+CREATE OR REPLACE FUNCTION public.handle_new_user()
 RETURNS TRIGGER AS $$
 BEGIN
-  INSERT INTO public.users (id, email, is_active)
-  VALUES (NEW.id, NEW.email, true);
+  INSERT INTO public.users (id, email, is_active, created_at, updated_at)
+  VALUES (
+    NEW.id,
+    NEW.email,
+    true,
+    CURRENT_TIMESTAMP,
+    CURRENT_TIMESTAMP
+  )
+  ON CONFLICT (id) DO NOTHING;
   
   RETURN NEW;
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER SET search_path = '';
 
 -- Apply trigger to auth.users
+DROP TRIGGER IF EXISTS on_auth_user_created ON auth.users;
 CREATE TRIGGER on_auth_user_created
   AFTER INSERT ON auth.users
-  FOR EACH ROW EXECUTE FUNCTION handle_new_user();
+  FOR EACH ROW
+  EXECUTE FUNCTION public.handle_new_user();
 
 -- =============================================
 -- NOTIFICATION AND CHAT TRIGGERS

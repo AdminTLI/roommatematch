@@ -1,11 +1,13 @@
 'use client'
 
-import { ReactNode } from 'react'
+import { ReactNode, useState } from 'react'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Progress } from '@/components/ui/progress'
 import { useOnboardingStore } from '@/store/onboarding'
 import { useRouter } from 'next/navigation'
+import { fetchWithCSRF } from '@/lib/utils/fetch-with-csrf'
+import type { SectionKey } from '@/types/questionnaire'
 
 interface Props {
   children: ReactNode
@@ -31,6 +33,58 @@ export function QuestionnaireLayout({
   const progress = Math.round(((stepIndex + 1) / totalSteps) * 100)
   const router = useRouter()
   const lastSavedAt = useOnboardingStore((s) => s.lastSavedAt)
+  const sections = useOnboardingStore((s) => s.sections)
+  const [isSavingAll, setIsSavingAll] = useState(false)
+
+  // Save all sections before navigating to dashboard
+  const handleSaveAndExit = async () => {
+    setIsSavingAll(true)
+    try {
+      // Get all sections that have answers
+      const allSections = Object.keys(sections) as SectionKey[]
+      const sectionsWithAnswers = allSections.filter(sectionKey => {
+        const sectionAnswers = sections[sectionKey]
+        return sectionAnswers && Object.keys(sectionAnswers).length > 0
+      })
+
+      // Save all sections that have answers
+      const savePromises = sectionsWithAnswers.map(async (sectionKey) => {
+        const sectionAnswers = sections[sectionKey]
+        const answersArray = Object.values(sectionAnswers)
+        
+        if (answersArray.length === 0) return Promise.resolve()
+        
+        try {
+          const res = await fetchWithCSRF('/api/onboarding/save', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ section: sectionKey, answers: answersArray }),
+          })
+          if (!res.ok) {
+            console.warn(`[Save & Exit] Failed to save section ${sectionKey}`)
+          }
+        } catch (error) {
+          console.error(`[Save & Exit] Error saving section ${sectionKey}:`, error)
+        }
+      })
+      
+      // Wait for all saves to complete
+      await Promise.all(savePromises)
+      console.log('[Save & Exit] All sections saved, navigating to dashboard...')
+      
+      // Small delay to ensure database has processed the saves
+      await new Promise(resolve => setTimeout(resolve, 200))
+      
+      // Navigate to dashboard
+      router.push('/dashboard')
+    } catch (error) {
+      console.error('[Save & Exit] Error saving sections:', error)
+      // Still navigate even if save fails - user can retry later
+      router.push('/dashboard')
+    } finally {
+      setIsSavingAll(false)
+    }
+  }
 
   return (
     <div className="min-h-screen flex flex-col">
@@ -39,10 +93,11 @@ export function QuestionnaireLayout({
           <div className="flex items-center justify-between mb-3 sm:mb-0">
             <div className="font-semibold text-sm sm:text-base">Domu Match</div>
             <button
-              className="text-xs sm:text-sm text-gray-600 hover:text-gray-900 underline"
-              onClick={() => router.push('/dashboard')}
+              className="text-xs sm:text-sm text-gray-600 hover:text-gray-900 underline disabled:opacity-50 disabled:cursor-not-allowed"
+              onClick={handleSaveAndExit}
+              disabled={isSavingAll}
             >
-              Save & exit
+              {isSavingAll ? 'Saving...' : 'Save & exit'}
             </button>
           </div>
           <div className="flex items-center gap-2 sm:gap-3">

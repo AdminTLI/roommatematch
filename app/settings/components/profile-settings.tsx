@@ -221,9 +221,7 @@ export function ProfileSettings({ user, profile, academic }: ProfileSettingsProp
                 value={
                   academic?.undecided_program 
                     ? 'Undecided'
-                    : academic?.programs?.name || 
-                      academic?.program_id || 
-                      'Not specified'
+                    : (academic?.programs?.name || profile?.program || 'Not specified')
                 } 
                 disabled 
                 className="bg-gray-50 dark:bg-bg-surface-alt h-11 text-text-primary dark:text-text-primary" 

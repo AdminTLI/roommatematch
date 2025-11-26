@@ -25,6 +25,19 @@ export interface SuggestionResult {
   created: number
   suggestions: MatchSuggestion[]
   message?: string
+  diagnostic?: {
+    totalPairs: number
+    dealBreakerBlocks: number
+    belowThreshold: number
+    passedDealBreakers: number
+    scoreStats: {
+      avg: number
+      max: number
+      min: number
+      count: number
+    }
+    dealBreakerReasons: Record<string, number>
+  }
 }
 
 export async function runMatching({
@@ -366,13 +379,15 @@ export async function runMatchingAsSuggestions({
   mode,
   groupSize = 2,
   cohort,
-  runId = `run_${Date.now()}`
+  runId = `run_${Date.now()}`,
+  currentUserId
 }: {
   repo: MatchRepo
   mode: 'pairs' | 'groups'
   groupSize?: number
   cohort: CohortFilter
   runId?: string
+  currentUserId?: string // Optional: to track pairs involving a specific user
 }): Promise<SuggestionResult> {
   try {
     const { topN, minFitIndex, expiryHours, maxSuggestionsPerUser } = matchModeConfig
@@ -398,9 +413,31 @@ export async function runMatchingAsSuggestions({
     
     safeLogger.debug(`[Suggestions] Found ${rawCandidates.length} candidates`)
     
+    // If currentUserId is provided, ensure they're included in the matching process
+    // (they may have been excluded from the cohort filter)
+    let candidatesToMatch = [...rawCandidates]
+    if (currentUserId && !candidatesToMatch.find(c => c.id === currentUserId)) {
+      safeLogger.info(`[Suggestions] Current user not in cohort, adding them for matching`, {
+        currentUserId: currentUserId.substring(0, 8) + '...'
+      })
+      // Fetch the current user's candidate data
+      const currentUserCandidate = await repo.getCandidateByUserId(currentUserId)
+      if (currentUserCandidate) {
+        candidatesToMatch.push(currentUserCandidate)
+        safeLogger.info(`[Suggestions] Added current user to matching pool`)
+      } else {
+        safeLogger.warn(`[Suggestions] Current user not eligible for matching`)
+      }
+    }
+    
     // Transform to student profiles
     // Include vector in answers so it's accessible via student.raw.vector
-    const students = rawCandidates.map(candidate => {
+    const students = candidatesToMatch.map(candidate => {
+      safeLogger.debug(`[Suggestions] Processing candidate`, {
+        id: candidate.id,
+        hasVector: !!candidate.vector,
+        vectorLength: candidate.vector?.length
+      })
       const answersWithVector = {
         ...candidate.answers,
         vector: candidate.vector // Include vector in answers for toEngineProfile access
@@ -415,22 +452,78 @@ export async function runMatchingAsSuggestions({
         graduationYear: candidate.graduationYear
       })
     })
+    
+    safeLogger.info(`[Suggestions] Total students in matching pool: ${students.length}`, {
+      rawCandidatesCount: rawCandidates.length,
+      studentsCount: students.length,
+      currentUserIncluded: currentUserId ? students.some(s => s.id === currentUserId) : false
+    })
 
     // 2) Precompute pair fits passing deal-breakers
     const pairFits: { key: string; aId: string; bId: string; fit: number; fitIndex: number; ps: any }[] = []
     
+    safeLogger.info(`[Suggestions] Starting pair matching`, {
+      studentCount: students.length,
+      minFitIndex
+    })
+    
+    // Diagnostic counters
+    let totalPairs = 0
+    let dealBreakerBlocks = 0
+    let belowThreshold = 0
+    const dealBreakerReasons: Record<string, number> = {}
+    const scoreDistribution: number[] = []
+    
     for (let i = 0; i < students.length; i++) {
       for (let j = i + 1; j < students.length; j++) {
+        totalPairs++
         const studentA = students[i]
         const studentB = students[j]
         
         // Check deal-breakers
         const dealBreakerResult = checkDealBreakers(studentA, studentB)
         
+        // Track pairs involving the current user for detailed logging
+        const involvesCurrentUser = currentUserId && (studentA.id === currentUserId || studentB.id === currentUserId)
+        
+        if (involvesCurrentUser) {
+          safeLogger.info(`[Matching] Pair involving current user`, {
+            canMatch: dealBreakerResult.canMatch,
+            conflicts: dealBreakerResult.conflicts || [],
+            otherUserId: studentA.id === currentUserId ? studentB.id.substring(0, 8) + '...' : studentA.id.substring(0, 8) + '...'
+          })
+        }
+        
         safeLogger.debug(`[DEBUG] Pair check`, {
           canMatch: dealBreakerResult.canMatch,
-          conflictCount: dealBreakerResult.conflicts?.length || 0
+          conflictCount: dealBreakerResult.conflicts?.length || 0,
+          studentAId: studentA.id.substring(0, 8) + '...',
+          studentBId: studentB.id.substring(0, 8) + '...',
+          involvesCurrentUser
         })
+        
+        // Log deal-breaker conflicts for debugging
+        if (!dealBreakerResult.canMatch && dealBreakerResult.conflicts?.length > 0) {
+          if (involvesCurrentUser) {
+            safeLogger.warn(`[Matching] Current user pair blocked by deal-breakers`, {
+              conflicts: dealBreakerResult.conflicts
+            })
+          }
+          safeLogger.debug(`[DEBUG] Deal-breaker conflicts`, {
+            conflicts: dealBreakerResult.conflicts,
+            studentAId: studentA.id.substring(0, 8) + '...',
+            studentBId: studentB.id.substring(0, 8) + '...'
+          })
+        }
+        
+        if (!dealBreakerResult.canMatch) {
+          dealBreakerBlocks++
+          // Track deal-breaker reasons
+          for (const conflict of dealBreakerResult.conflicts || []) {
+            dealBreakerReasons[conflict] = (dealBreakerReasons[conflict] || 0) + 1
+          }
+          continue
+        }
         
         if (dealBreakerResult.canMatch) {
           // Calculate compatibility score
@@ -469,12 +562,39 @@ export async function runMatchingAsSuggestions({
           const { score, explanation } = engine.computeCompatibilityScore(profileA, profileB)
           const fitIndex = Math.round(score * 100)
           
+          // Track score distribution
+          scoreDistribution.push(fitIndex)
+          
+          const involvesCurrentUser = currentUserId && (studentA.id === currentUserId || studentB.id === currentUserId)
+          
+          if (involvesCurrentUser) {
+            safeLogger.info(`[Matching] Current user pair score`, {
+              fitIndex,
+              rawScore: score,
+              minFitIndex,
+              passesThreshold: fitIndex >= minFitIndex,
+              otherUserId: studentA.id === currentUserId ? studentB.id.substring(0, 8) + '...' : studentA.id.substring(0, 8) + '...'
+            })
+          }
+          
           safeLogger.debug(`[DEBUG] Fit calculation`, {
             rawScore: score,
             fitIndex,
             minFitIndex,
-            passesThreshold: fitIndex >= minFitIndex
+            passesThreshold: fitIndex >= minFitIndex,
+            involvesCurrentUser
           })
+          
+          if (fitIndex < minFitIndex) {
+            belowThreshold++
+            if (involvesCurrentUser) {
+              safeLogger.warn(`[Matching] Current user pair below threshold`, {
+                fitIndex,
+                minFitIndex,
+                difference: minFitIndex - fitIndex
+              })
+            }
+          }
           // Observability: count missing dimensions
           const missingDims = [
             profileA.cleanlinessRoom === undefined || profileB.cleanlinessRoom === undefined,
@@ -530,12 +650,46 @@ export async function runMatchingAsSuggestions({
       const message = students.length === 1 
         ? `Only ${students.length} eligible candidate found. Need at least 2 candidates to create pair matches.`
         : 'No valid suggestions found above minimum fit threshold'
+      
+      // Calculate score statistics
+      const avgScore = scoreDistribution.length > 0 
+        ? Math.round(scoreDistribution.reduce((a, b) => a + b, 0) / scoreDistribution.length)
+        : 0
+      const maxScore = scoreDistribution.length > 0 ? Math.max(...scoreDistribution) : 0
+      const minScore = scoreDistribution.length > 0 ? Math.min(...scoreDistribution) : 0
+      
+      safeLogger.info(`[Suggestions] No matches found - Diagnostic`, {
+        students: students.length,
+        totalPairs,
+        dealBreakerBlocks,
+        belowThreshold,
+        passedDealBreakers: totalPairs - dealBreakerBlocks,
+        avgScore,
+        maxScore,
+        minScore,
+        minFitIndex,
+        dealBreakerReasons
+      })
+      
       safeLogger.debug(`[Suggestions] ${message}. Students: ${students.length}, Pair fits: ${pairFits.length}`)
       return { 
         runId, 
         created: 0, 
         suggestions: [], 
-        message
+        message,
+        diagnostic: {
+          totalPairs,
+          dealBreakerBlocks,
+          belowThreshold,
+          passedDealBreakers: totalPairs - dealBreakerBlocks,
+          scoreStats: {
+            avg: avgScore,
+            max: maxScore,
+            min: minScore,
+            count: scoreDistribution.length
+          },
+          dealBreakerReasons
+        }
       }
     }
     

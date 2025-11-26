@@ -62,6 +62,15 @@ export default async function SettingsPage() {
     `)
     .eq('user_id', user.id)
     .maybeSingle()
+  
+  // Log what we got from the join
+  if (academic) {
+    console.log('[Settings] Fetched user_academic:', {
+      program_id: academic.program_id,
+      program_name_from_join: academic.programs?.name,
+      has_programs_join: !!academic.programs
+    })
+  }
 
   // Fetch study year from view separately (Supabase doesn't support direct view joins)
   let studyYear: number | null = null
@@ -238,29 +247,100 @@ export default async function SettingsPage() {
           const { createServiceClient } = await import('@/lib/supabase/service')
           const serviceSupabase = createServiceClient()
           
-          // Look up program UUID from CROHO code if program_id is a CROHO code (not a UUID)
+          // Look up program UUID if program_id exists
+          // program_id could be:
+          // 1. A UUID (already correct)
+          // 2. A RIO code (from programmes table) - need to look up in programmes table first, then find in programs table
+          // 3. A CROHO code (from programs table) - look up directly in programs table
           let programUUID: string | undefined = undefined
-          if (program_id && typeof program_id === 'string' && program_id.trim() !== '' && !program_id.match(/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i)) {
-            // It's a CROHO code, not a UUID - look up the program UUID
-            console.log('[Settings] Looking up program UUID for CROHO code:', program_id)
-            const { data: programData } = await serviceSupabase
-              .from('programs')
-              .select('id')
-              .eq('croho_code', program_id)
-              .maybeSingle()
+          if (program_id && typeof program_id === 'string' && program_id.trim() !== '') {
+            const isUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(program_id)
             
-            if (programData?.id) {
-              programUUID = programData.id
-              console.log('[Settings] Found program UUID:', programUUID, 'for CROHO code:', program_id)
-            } else {
-              console.warn('[Settings] Program not found for CROHO code:', program_id)
-              // If program not found, set undecided_program to true
-              undecided_program = true
-              programUUID = undefined
+            if (isUUID) {
+              // Already a UUID, verify it exists
+              console.log('[Settings] program_id is already a UUID, verifying:', program_id)
+              const { data: programData } = await serviceSupabase
+                .from('programs')
+                .select('id')
+                .eq('id', program_id)
+                .maybeSingle()
+              
+              if (programData?.id) {
+                programUUID = program_id
+                console.log('[Settings] Program UUID verified:', programUUID)
+              } else {
+                console.warn('[Settings] Program UUID not found, will try RIO/CROHO lookup')
+                // Fall through to RIO/CROHO lookup
+              }
             }
-          } else if (program_id && typeof program_id === 'string' && program_id.match(/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i)) {
-            // It's already a UUID
-            programUUID = program_id
+            
+            // If not a UUID or UUID not found, try RIO code lookup in programmes table
+            if (!isUUID || !programUUID) {
+              console.log('[Settings] Looking up program - trying RIO code first:', program_id)
+              
+              // First, try to find in programmes table by RIO code
+              const { data: programme } = await serviceSupabase
+                .from('programmes')
+                .select('id, rio_code, croho_code, name, level, institution_slug')
+                .eq('rio_code', program_id)
+                .maybeSingle()
+              
+              if (programme && programme.croho_code) {
+                // Found in programmes table, now look up in programs table by CROHO code
+                console.log('[Settings] Found programme by RIO code, looking up in programs table by CROHO:', programme.croho_code)
+                const { data: programData } = await serviceSupabase
+                  .from('programs')
+                  .select('id')
+                  .eq('croho_code', programme.croho_code)
+                  .maybeSingle()
+                
+                if (programData?.id) {
+                  programUUID = programData.id
+                  console.log('[Settings] Found program UUID via programmes->programs lookup:', programUUID)
+                } else {
+                  console.warn('[Settings] Programme found but no matching program in programs table by CROHO code')
+                  // Try to find by name, university, and level as fallback
+                  if (university_id && programme.level) {
+                    const { data: programByName } = await serviceSupabase
+                      .from('programs')
+                      .select('id')
+                      .eq('university_id', university_id)
+                      .eq('degree_level', programme.level)
+                      .ilike('name', programme.name)
+                      .maybeSingle()
+                    
+                    if (programByName) {
+                      programUUID = programByName.id
+                      console.log('[Settings] Found program UUID via name/university/level match:', programUUID)
+                    } else {
+                      console.warn('[Settings] Could not find matching program, setting to undecided')
+                      undecided_program = true
+                      programUUID = undefined
+                    }
+                  } else {
+                    undecided_program = true
+                    programUUID = undefined
+                  }
+                }
+              } else {
+                // Not found in programmes table, try direct CROHO code lookup in programs table
+                console.log('[Settings] Not found in programmes table, trying CROHO code lookup in programs table')
+                const { data: programData } = await serviceSupabase
+                  .from('programs')
+                  .select('id')
+                  .eq('croho_code', program_id)
+                  .maybeSingle()
+                
+                if (programData?.id) {
+                  programUUID = programData.id
+                  console.log('[Settings] Found program UUID by CROHO code:', programUUID)
+                } else {
+                  console.warn('[Settings] Program not found by RIO or CROHO code, setting to undecided')
+                  undecided_program = true
+                  programUUID = undefined
+                }
+              }
+            }
           }
           
           // Use upsertProfileAndAcademic to create the record
@@ -513,6 +593,7 @@ export default async function SettingsPage() {
     
     // If programs join is missing, fetch it separately using service role client
     if (!academicWithStudyYear.programs && academicWithStudyYear.program_id) {
+      console.log('[Settings] Programs join missing, fetching program separately for program_id:', academicWithStudyYear.program_id)
       const { data: programData } = await serviceSupabase
         .from('programs')
         .select('id, name, croho_code')
@@ -520,11 +601,18 @@ export default async function SettingsPage() {
         .maybeSingle()
       
       if (programData) {
+        console.log('[Settings] Found program:', programData.name)
         academicWithStudyYear = {
           ...academicWithStudyYear,
           programs: programData
         }
+      } else {
+        console.warn('[Settings] Program not found for program_id:', academicWithStudyYear.program_id)
       }
+    } else if (academicWithStudyYear.programs) {
+      console.log('[Settings] Program name from join:', academicWithStudyYear.programs.name)
+    } else if (academicWithStudyYear.program_id) {
+      console.warn('[Settings] Has program_id but no programs join and fetch failed:', academicWithStudyYear.program_id)
     }
   }
 

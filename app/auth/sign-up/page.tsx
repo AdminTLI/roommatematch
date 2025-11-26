@@ -11,7 +11,7 @@ export default function SignUpPage() {
   return (
     <main className="min-h-screen bg-white">
       <Navbar />
-      <div className="flex min-h-[calc(100vh-4rem)] sm:min-h-[calc(100vh-5rem)] items-center justify-center px-4 sm:px-6 py-8 sm:py-12">
+      <div className="flex justify-center px-4 sm:px-6 pt-20 sm:pt-24 pb-8 sm:pb-12">
         <div className="w-full max-w-md">
           <SignUpForm />
         </div>

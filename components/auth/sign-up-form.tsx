@@ -12,8 +12,11 @@ import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Separator } from '@/components/ui/separator'
 import { Loader2, Mail, Lock, User } from 'lucide-react'
 import { createBrowserClient } from '@supabase/ssr'
+import { useApp } from '@/app/providers'
 
 export function SignUpForm() {
+  const { dictionary } = useApp()
+  const t = dictionary.auth.signUp
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
@@ -31,27 +34,27 @@ export function SignUpForm() {
 
   const validateForm = () => {
     if (!firstName.trim()) {
-      setError('First name is required.')
+      setError(t.errors.firstNameRequired)
       return false
     }
     if (!lastName.trim()) {
-      setError('Last name is required.')
+      setError(t.errors.lastNameRequired)
       return false
     }
     if (!email.trim()) {
-      setError('Email is required.')
+      setError(t.errors.emailRequired)
       return false
     }
     if (password.length < 8) {
-      setError('Password must be at least 8 characters long.')
+      setError(t.errors.passwordTooShort)
       return false
     }
     if (password !== confirmPassword) {
-      setError('Passwords do not match.')
+      setError(t.errors.passwordsDoNotMatch)
       return false
     }
     if (!acceptTerms) {
-      setError('You must accept the terms and conditions.')
+      setError(t.errors.termsRequired)
       return false
     }
     return true
@@ -94,7 +97,7 @@ export function SignUpForm() {
       // Navigate to verification page
       router.push('/auth/verify-email')
     } catch (err) {
-      setError('An unexpected error occurred. Please try again.')
+      setError(t.unexpectedError)
     } finally {
       setIsLoading(false)
     }
@@ -105,9 +108,9 @@ export function SignUpForm() {
   return (
     <Card className="w-full">
       <CardHeader className="text-center px-4 sm:px-6 pt-6 sm:pt-6">
-        <CardTitle className="text-xl sm:text-2xl">Create your account</CardTitle>
+        <CardTitle className="text-xl sm:text-2xl">{t.title}</CardTitle>
         <CardDescription className="text-sm sm:text-base">
-          Start your compatibility-based roommate search today
+          {t.subtitle}
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-4 sm:space-y-6 px-4 sm:px-6 pb-6 sm:pb-6">
@@ -120,13 +123,13 @@ export function SignUpForm() {
         <form onSubmit={handleEmailSignUp} className="space-y-4">
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="firstName" className="text-sm sm:text-base">First name</Label>
+              <Label htmlFor="firstName" className="text-sm sm:text-base">{t.firstName}</Label>
               <div className="relative">
                 <User className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                 <Input
                   id="firstName"
                   type="text"
-                  placeholder="First name"
+                  placeholder={t.firstNamePlaceholder}
                   value={firstName}
                   onChange={(e) => setFirstName(e.target.value)}
                   className="pl-10 min-h-[44px]"
@@ -135,13 +138,13 @@ export function SignUpForm() {
               </div>
             </div>
             <div className="space-y-2">
-              <Label htmlFor="lastName" className="text-sm sm:text-base">Last name</Label>
+              <Label htmlFor="lastName" className="text-sm sm:text-base">{t.lastName}</Label>
               <div className="relative">
                 <User className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                 <Input
                   id="lastName"
                   type="text"
-                  placeholder="Last name"
+                  placeholder={t.lastNamePlaceholder}
                   value={lastName}
                   onChange={(e) => setLastName(e.target.value)}
                   className="pl-10 min-h-[44px]"
@@ -152,13 +155,13 @@ export function SignUpForm() {
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="email" className="text-sm sm:text-base">Email</Label>
+            <Label htmlFor="email" className="text-sm sm:text-base">{t.email}</Label>
             <div className="relative">
               <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <Input
                 id="email"
                 type="email"
-                placeholder="Enter your email"
+                placeholder={t.emailPlaceholder}
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 className="pl-10 min-h-[44px]"
@@ -168,13 +171,13 @@ export function SignUpForm() {
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="password" className="text-sm sm:text-base">Password</Label>
+            <Label htmlFor="password" className="text-sm sm:text-base">{t.password}</Label>
             <div className="relative">
               <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <Input
                 id="password"
                 type="password"
-                placeholder="Create a password"
+                placeholder={t.passwordPlaceholder}
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 className="pl-10 min-h-[44px]"
@@ -182,18 +185,18 @@ export function SignUpForm() {
               />
             </div>
             <p className="text-xs text-muted-foreground">
-              Must be at least 8 characters long
+              {t.passwordHint}
             </p>
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="confirmPassword" className="text-sm sm:text-base">Confirm password</Label>
+            <Label htmlFor="confirmPassword" className="text-sm sm:text-base">{t.confirmPassword}</Label>
             <div className="relative">
               <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <Input
                 id="confirmPassword"
                 type="password"
-                placeholder="Confirm your password"
+                placeholder={t.confirmPasswordPlaceholder}
                 value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}
                 className="pl-10 min-h-[44px]"
@@ -210,29 +213,29 @@ export function SignUpForm() {
               className="mt-1"
             />
             <Label htmlFor="terms" className="text-xs sm:text-sm leading-relaxed cursor-pointer">
-              I agree to the{' '}
+              {t.agreeToTerms}{' '}
               <Link href="/terms" className="text-primary hover:underline">
-                Terms of Service
+                {t.termsOfService}
               </Link>{' '}
-              and{' '}
+              {t.and}{' '}
               <Link href="/privacy" className="text-primary hover:underline">
-                Privacy Policy
+                {t.privacyPolicy}
               </Link>
             </Label>
           </div>
 
           <Button type="submit" className="w-full min-h-[44px] text-base" disabled={isLoading}>
             {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-            Create account
+            {t.signUpButton}
           </Button>
         </form>
 
         {/* Removed alternative magic-link option for OTP-only flow */}
 
         <p className="text-center text-xs sm:text-sm text-muted-foreground">
-          Already have an account?{' '}
+          {t.haveAccount}{' '}
           <Link href="/auth/sign-in" className="text-primary hover:underline">
-            Sign in
+            {t.signInLink}
           </Link>
         </p>
       </CardContent>

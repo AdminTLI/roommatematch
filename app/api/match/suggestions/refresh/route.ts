@@ -171,21 +171,140 @@ export async function POST(request: NextRequest) {
       })
       
       // Matches don't expire - skip expiration logic
-      // Generate new suggestions
+      // Generate new suggestions with detailed logging
       const result = await runMatchingAsSuggestions({
         repo,
         mode: 'pairs',
         groupSize: 2,
         cohort,
-        runId: `refresh_${Date.now()}`
+        runId: `refresh_${Date.now()}`,
+        currentUserId: user.id // Pass current user ID for detailed logging
       })
+
+      // Filter suggestions to only include ones for the current user
+      const userSuggestions = result.suggestions.filter(s => 
+        s.memberIds && s.memberIds.includes(user.id)
+      )
 
       safeLogger.info('[Matching] Refresh completed', {
         created: result.created,
-        suggestionCount: result.suggestions.length
+        totalSuggestions: result.suggestions.length,
+        userSuggestions: userSuggestions.length,
+        message: result.message,
+        hasDiagnostic: !!result.diagnostic,
+        diagnosticKeys: result.diagnostic ? Object.keys(result.diagnostic) : []
       })
       
-      return NextResponse.json(result)
+      // If no suggestions found for this user, provide diagnostic information
+      if (userSuggestions.length === 0) {
+        safeLogger.debug('[Matching] No suggestions for user, gathering diagnostic info', {
+          resultDiagnostic: result.diagnostic,
+          resultDiagnosticType: typeof result.diagnostic,
+          resultKeys: Object.keys(result)
+        })
+        // Check how many candidates were found in the cohort
+        const allCandidates = await repo.loadCandidates({
+          ...cohort,
+          excludeUserIds: [user.id]
+        })
+        
+        // Check how many total eligible users exist (without filters)
+        const allEligibleUsers = await repo.loadCandidates({
+          onlyActive: true,
+          excludeUserIds: [user.id]
+        })
+        
+        // Check how many users exist with same degree level (without campus filter)
+        const sameDegreeLevel = await repo.loadCandidates({
+          degreeLevel: cohort.degreeLevel,
+          onlyActive: true,
+          excludeUserIds: [user.id]
+        })
+        
+        // Use result.diagnostic if available, otherwise create a basic one
+        // result.diagnostic exists when NO pairs passed (pairFits.length === 0)
+        // If it doesn't exist, it means pairs DID pass but none included this user
+        const matchingStats = result.diagnostic || (result.suggestions.length > 0 ? {
+          totalPairs: 'unknown',
+          dealBreakerBlocks: 'unknown',
+          belowThreshold: 'unknown',
+          passedDealBreakers: 'unknown',
+          scoreStats: { avg: 'unknown', max: 'unknown', min: 'unknown', count: 'unknown' },
+          dealBreakerReasons: {},
+          note: `Matching succeeded for other users (${result.suggestions.length} suggestions created), but none include you. This may indicate deal-breakers or low compatibility scores between you and other users.`
+        } : null)
+        
+        const diagnosticInfo = {
+          message: result.message || (result.suggestions.length > 0 
+            ? 'No suggestions found for you, but matching succeeded for other users'
+            : 'No suggestions found'),
+          cohortFilter: {
+            degreeLevel: cohort.degreeLevel,
+            campusCity: cohort.campusCity || null,
+            onlyActive: cohort.onlyActive,
+            excludeAlreadyMatched: cohort.excludeAlreadyMatched
+          },
+          candidateCounts: {
+            inCohort: allCandidates.length,
+            sameDegreeLevel: sameDegreeLevel.length,
+            totalEligible: allEligibleUsers.length
+          },
+          matchingStats: matchingStats,
+          possibleReasons: [] as string[]
+        }
+        
+        if (allCandidates.length === 0) {
+          if (sameDegreeLevel.length === 0) {
+            diagnosticInfo.possibleReasons.push('No other users with the same degree level found')
+          } else if (cohort.campusCity && sameDegreeLevel.length > 0) {
+            diagnosticInfo.possibleReasons.push(`No other users found in ${cohort.campusCity} with the same degree level`)
+            diagnosticInfo.possibleReasons.push(`There are ${sameDegreeLevel.length} users with the same degree level, but none in your city`)
+          }
+          
+          if (cohort.excludeAlreadyMatched && sameDegreeLevel.length > 0) {
+            diagnosticInfo.possibleReasons.push('All users with matching criteria may already be matched')
+          }
+        } else {
+          // Use detailed matching stats if available
+          if (diagnosticInfo.matchingStats) {
+            const stats = diagnosticInfo.matchingStats
+            if (stats.dealBreakerBlocks > 0) {
+              diagnosticInfo.possibleReasons.push(`${stats.dealBreakerBlocks} out of ${stats.totalPairs} pairs blocked by deal-breakers`)
+              if (Object.keys(stats.dealBreakerReasons || {}).length > 0) {
+                const topReason = Object.entries(stats.dealBreakerReasons || {})
+                  .sort((a, b) => b[1] - a[1])[0]
+                if (topReason) {
+                  diagnosticInfo.possibleReasons.push(`Most common issue: ${topReason[0]} (${topReason[1]} times)`)
+                }
+              }
+            }
+            if (stats.belowThreshold > 0) {
+              const avgScore = stats.scoreStats?.avg || 0
+              diagnosticInfo.possibleReasons.push(`${stats.belowThreshold} pairs passed deal-breakers but scored below 30% threshold (average: ${avgScore}%)`)
+            }
+            if (stats.passedDealBreakers === 0 && stats.dealBreakerBlocks === stats.totalPairs) {
+              diagnosticInfo.possibleReasons.push('All potential matches were blocked by deal-breakers. Consider adjusting your preferences.')
+            }
+          } else {
+            diagnosticInfo.possibleReasons.push('Candidates found but no matches passed deal-breaker checks or minimum score threshold (30%)')
+            diagnosticInfo.possibleReasons.push('Try adjusting your preferences or wait for more users to join')
+          }
+        }
+        
+        return NextResponse.json({
+          ...result,
+          suggestions: userSuggestions, // Only return suggestions for current user
+          created: userSuggestions.length, // Update count to reflect user's suggestions
+          diagnostic: diagnosticInfo
+        })
+      }
+      
+      // Return only suggestions for the current user
+      return NextResponse.json({
+        ...result,
+        suggestions: userSuggestions,
+        created: userSuggestions.length
+      })
     } finally {
       // Always release the distributed lock
       try {

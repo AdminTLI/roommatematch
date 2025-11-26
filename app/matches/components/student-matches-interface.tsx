@@ -162,6 +162,62 @@ export function StudentMatchesInterface({ user }: StudentMatchesInterfaceProps) 
       })
 
       if (response.ok) {
+        const data = await response.json()
+        
+        // Check for diagnostic information if no suggestions
+        if (data.diagnostic && data.suggestions?.length === 0) {
+          const diagnostic = data.diagnostic
+          const reasons = diagnostic.possibleReasons || []
+          const counts = diagnostic.candidateCounts || {}
+          const matchingStats = diagnostic.matchingStats || null
+          
+          // Show informative message with diagnostic details
+          let message = 'No matches found. '
+          if (reasons.length > 0) {
+            message += reasons[0]
+            if (reasons.length > 1) {
+              message += ` ${reasons[1]}`
+            }
+          } else {
+            message += 'Please check back later or try adjusting your preferences.'
+          }
+          
+          // Log detailed diagnostic info to console for debugging
+          console.log('[Matching] Detailed diagnostic info:', {
+            candidateCounts: {
+              totalEligible: counts.totalEligible,
+              sameDegreeLevel: counts.sameDegreeLevel,
+              inCohort: counts.inCohort
+            },
+            matchingStats: matchingStats,
+            fullDiagnostic: diagnostic,
+            reasons
+          })
+          
+          // Also log the raw response to see what we're getting
+          console.log('[Matching] Full API response:', data)
+          console.log('[Matching] Diagnostic from API:', data.diagnostic)
+          console.log('[Matching] MatchingStats from diagnostic:', data.diagnostic?.matchingStats)
+          
+          toast.info(message, {
+            duration: 10000,
+            description: matchingStats 
+              ? `${matchingStats.totalPairs} pairs checked, ${matchingStats.dealBreakerBlocks} blocked by deal-breakers, ${matchingStats.belowThreshold} below threshold`
+              : undefined
+          })
+        } else if (data.suggestions && data.suggestions.length > 0) {
+          // Only show success message if we actually have suggestions for this user
+          // The count should now be accurate (only includes user's suggestions)
+          toast.success(`Found ${data.suggestions.length} new suggestion${data.suggestions.length !== 1 ? 's' : ''}`, {
+            duration: 3000,
+          })
+        } else if (data.created !== undefined && data.created === 0) {
+          // If created is 0, no new suggestions were found
+          toast.info('No new suggestions found. Try again later or check your preferences.', {
+            duration: 5000,
+          })
+        }
+        
         await fetchSuggestions()
       } else {
         // Read the error response to show helpful message

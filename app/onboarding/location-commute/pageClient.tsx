@@ -1,6 +1,6 @@
 'use client'
 
-import { useMemo, Suspense } from 'react'
+import { useMemo, Suspense, useEffect, useState } from 'react'
 import { useSearchParams } from 'next/navigation'
 import locItems from '@/data/item-bank.location.v1.json'
 import type { Item } from '@/types/questionnaire'
@@ -33,6 +33,61 @@ function SectionClientContent() {
   const groupedInstitutions = toGroupedOptions()
   const campusOptions = loadCampuses()
 
+  // Initialize autosave hook first (before useEffect that uses hasLoaded)
+  const { isSaving, showToast, hasLoaded } = useAutosave(sectionKey)
+  
+  // Track if component is mounted to avoid hydration mismatch
+  const [isMounted, setIsMounted] = useState(false)
+  useEffect(() => {
+    setIsMounted(true)
+  }, [])
+
+  // Auto-populate university from intro section if not already set
+  // This runs after autosave has loaded to ensure we don't overwrite saved data
+  useEffect(() => {
+    const universityItemId = 'M9_Q0_University'
+    const universityValue = answers[universityItemId]?.value?.value
+    
+    // Only auto-populate if:
+    // 1. The field is empty
+    // 2. Autosave has finished loading (to avoid race conditions)
+    if (!universityValue && hasLoaded) {
+      // Load intro section to get institution_slug
+      fetch('/api/onboarding/load?section=intro')
+        .then(res => {
+          if (!res.ok) throw new Error('Failed to load intro section')
+          return res.json()
+        })
+        .then(data => {
+          if (data.answers && Array.isArray(data.answers)) {
+            // Find institution_slug from intro answers
+            const introData = data.answers.reduce((acc: any, answer: any) => {
+              acc[answer.itemId] = answer.value
+              return acc
+            }, {})
+            
+            const institutionSlug = introData.institution_slug || introData.university_slug
+            
+            // Double-check the value still hasn't been set (might have been set by autosave in the meantime)
+            const currentValue = answers[universityItemId]?.value?.value
+            if (!currentValue && institutionSlug && institutionSlug !== 'other') {
+              // Set the answer using the institution slug as the value
+              // (the GroupedSearchSelect uses the id from nl-institutions.v1.json which matches the slug)
+              setAnswer(sectionKey, {
+                itemId: universityItemId,
+                value: { kind: 'mcq', value: institutionSlug }
+              })
+              console.log('[Location-Commute] Auto-populated university from intro section:', institutionSlug)
+            }
+          }
+        })
+        .catch(err => {
+          // Silently fail - user can manually select
+          console.debug('[Location-Commute] Could not load intro section for auto-population:', err)
+        })
+    }
+  }, [answers, setAnswer, sectionKey, hasLoaded]) // Re-run when autosave finishes loading
+
   const nextDisabled = items.some((it) => !(answers[it.id]?.value))
 
   const saveSection = async () => {
@@ -47,8 +102,6 @@ function SectionClientContent() {
       console.error('Failed to save section', e)
     }
   }
-
-  const { isSaving, showToast } = useAutosave(sectionKey)
 
   return (
     <QuestionnaireLayout
@@ -66,7 +119,10 @@ function SectionClientContent() {
       <AutosaveToaster show={showToast} />
       <div className="flex items-center justify-between">
         <SectionIntro title="Location & Commute" purpose="Set your institution and campus to tune location pairing." />
-        <div className="text-sm text-gray-600">{answered}/{total} answered</div>
+        {/* Only render count after mount to avoid hydration mismatch */}
+        {isMounted && (
+          <div className="text-sm text-gray-600">{answered}/{total} answered</div>
+        )}
       </div>
 
       <div className="space-y-8 sm:space-y-6">

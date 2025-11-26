@@ -1,6 +1,6 @@
 'use client'
 
-import { useMemo, Suspense } from 'react'
+import { useMemo, Suspense, useState, useEffect } from 'react'
 import { useSearchParams } from 'next/navigation'
 import itemsJson from '@/data/item-bank.v1.json'
 import type { Item } from '@/types/questionnaire'
@@ -32,6 +32,13 @@ function SectionClientContent() {
   const isEditMode = searchParams.get('mode') === 'edit'
 
   const total = items.length
+  
+  // Track if component is mounted to avoid hydration mismatch
+  const [isMounted, setIsMounted] = useState(false)
+  useEffect(() => {
+    setIsMounted(true)
+  }, [])
+  
   const answered = countAnswered(sectionKey)
 
   const handleChange = (item: Item, value: any) => {
@@ -67,7 +74,10 @@ function SectionClientContent() {
       <AutosaveToaster show={showToast} />
       <div className="flex items-center justify-between">
         <SectionIntro title="Communication & Conflict" purpose="Feedback preferences and how we solve small issues fast." />
-        <div className="text-sm text-gray-600">{answered}/{total} answered</div>
+        {/* Only render count after mount to avoid hydration mismatch */}
+        {isMounted && (
+          <div className="text-sm text-gray-600">{answered}/{total} answered</div>
+        )}
       </div>
       <div className="space-y-8 sm:space-y-6">
         {items.map((item) => (

@@ -292,16 +292,127 @@ export async function upsertProfileAndAcademic(
   }
 
   // 1. Upsert profile
+  // Look up program name if we have a program_id (UUID)
+  let programName: string | null = null
+  if (data.program_id && typeof data.program_id === 'string' && data.program_id.trim() !== '') {
+    // Check if it's a UUID (program_id) or a string (program name)
+    const isUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(data.program_id)
+    
+    if (isUUID) {
+      // It's a UUID, look up the program name
+      try {
+        const { data: programData } = await supabase
+          .from('programs')
+          .select('name')
+          .eq('id', data.program_id)
+          .maybeSingle()
+        
+        if (programData?.name) {
+          programName = programData.name
+        } else {
+          // If not found in programs table, try programmes table
+          const { data: programmeData } = await supabase
+            .from('programmes')
+            .select('name')
+            .eq('id', data.program_id)
+            .maybeSingle()
+          
+          if (programmeData?.name) {
+            programName = programmeData.name
+          }
+        }
+      } catch (lookupError) {
+        console.warn('[upsertProfileAndAcademic] Failed to look up program name:', lookupError)
+        // Continue without program name
+      }
+    } else {
+      // It's already a program name string, use it directly
+      programName = data.program_id
+    }
+  } else if (data.program && typeof data.program === 'string' && data.program.trim() !== '') {
+    // Use the program name from data.program if available
+    programName = data.program
+  }
+
+  // Validate required fields before upsert
+  if (!data.user_id || typeof data.user_id !== 'string' || data.user_id.trim() === '') {
+    throw new Error('user_id is required but is missing or invalid')
+  }
+  
+  if (!data.university_id || typeof data.university_id !== 'string' || data.university_id.trim() === '') {
+    throw new Error('university_id is required but is missing or invalid')
+  }
+  
+  if (!data.first_name || typeof data.first_name !== 'string' || data.first_name.trim() === '') {
+    throw new Error('first_name is required but is missing or invalid')
+  }
+  
+  if (!data.degree_level || typeof data.degree_level !== 'string' || data.degree_level.trim() === '') {
+    throw new Error('degree_level is required but is missing or invalid')
+  }
+
+  // Verify university exists before attempting profile upsert
+  try {
+    const { data: university, error: uniError } = await supabase
+      .from('universities')
+      .select('id')
+      .eq('id', data.university_id)
+      .maybeSingle()
+    
+    if (uniError) {
+      console.error('[upsertProfileAndAcademic] Error checking university:', uniError)
+      throw new Error(`University validation failed: ${uniError.message}`)
+    }
+    
+    if (!university) {
+      throw new Error(`University with ID ${data.university_id} does not exist in the database`)
+    }
+  } catch (validationError) {
+    console.error('[upsertProfileAndAcademic] University validation error:', validationError)
+    throw validationError
+  }
+
+  // Map degree_level to profiles table enum values
+  // profiles.degree_level enum: ('bachelor', 'master', 'phd', 'exchange', 'other')
+  // user_academic.degree_level uses: ('bachelor', 'master', 'premaster')
+  // Map 'premaster' to 'master' for profiles table
+  let profileDegreeLevel: 'bachelor' | 'master' | 'phd' | 'exchange' | 'other' = 'other'
+  if (data.degree_level === 'bachelor') {
+    profileDegreeLevel = 'bachelor'
+  } else if (data.degree_level === 'master' || data.degree_level === 'premaster') {
+    profileDegreeLevel = 'master'
+  } else if (data.degree_level === 'phd') {
+    profileDegreeLevel = 'phd'
+  } else if (data.degree_level === 'exchange') {
+    profileDegreeLevel = 'exchange'
+  } else {
+    profileDegreeLevel = 'other'
+  }
+
+  // Truncate program name if it's too long (VARCHAR(255) limit)
+  const truncatedProgramName = programName && programName.length > 255 
+    ? programName.substring(0, 252) + '...' 
+    : programName
+
+  console.log('[upsertProfileAndAcademic] Upserting profile with data:', {
+    user_id: data.user_id,
+    university_id: data.university_id,
+    first_name: data.first_name,
+    degree_level: data.degree_level,
+    program: truncatedProgramName,
+    campus: data.campus,
+    languages_count: (data.languages_daily || []).length,
+    verification_status: verificationStatus
+  })
+
   const { data: profile, error: profileError } = await supabase
     .from('profiles')
     .upsert({
       user_id: data.user_id,
       university_id: data.university_id,
       first_name: data.first_name,
-      degree_level: data.degree_level,
-      program: (data.program_id && typeof data.program_id === 'string' && data.program_id.trim() !== '') 
-        ? data.program_id 
-        : null,
+      degree_level: profileDegreeLevel, // Use mapped enum value for profiles table
+      program: truncatedProgramName, // Use program name, not UUID
       campus: data.campus,
       languages: data.languages_daily || [],
       verification_status: verificationStatus,
@@ -313,23 +424,24 @@ export async function upsertProfileAndAcademic(
     .single()
 
   if (profileError) {
-    console.error('[Submit] Profile upsert failed:', {
+    console.error('[upsertProfileAndAcademic] Profile upsert failed:', {
       code: profileError.code,
       message: profileError.message,
       details: profileError.details,
       hint: profileError.hint,
-      data: {
+      attempted_data: {
         user_id: data.user_id,
         university_id: data.university_id,
         first_name: data.first_name,
         degree_level: data.degree_level,
-        program: data.program_id,
+        program: truncatedProgramName,
+        program_length: truncatedProgramName?.length,
         campus: data.campus,
         languages: data.languages_daily || [],
-        verification_status: 'unverified'
+        verification_status: verificationStatus
       }
     })
-    throw new Error(`Failed to upsert profile: ${profileError.message}`)
+    throw new Error(`Failed to upsert profile: ${profileError.message} (Code: ${profileError.code}, Details: ${profileError.details || 'none'}, Hint: ${profileError.hint || 'none'})`)
   }
 
   // 2. Upsert user_academic
@@ -350,9 +462,53 @@ export async function upsertProfileAndAcademic(
   }
 
   // Convert empty string or undefined to null for program_id to satisfy FK constraint
-  const programIdForDb = (data.program_id && typeof data.program_id === 'string' && data.program_id.trim() !== '') 
-    ? data.program_id 
-    : null
+  // Also validate that the program_id exists in the programs table if it's provided
+  let programIdForDb: string | null = null
+  let undecidedProgram = data.undecided_program ?? false
+  
+  if (data.program_id && typeof data.program_id === 'string' && data.program_id.trim() !== '') {
+    // Check if it's a valid UUID
+    const isUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(data.program_id)
+    
+    if (isUUID) {
+      // Verify the program exists in the programs table
+      try {
+        const { data: programExists, error: programCheckError } = await supabase
+          .from('programs')
+          .select('id')
+          .eq('id', data.program_id)
+          .maybeSingle()
+        
+        if (programCheckError) {
+          console.warn('[upsertProfileAndAcademic] Error checking program existence:', programCheckError)
+          programIdForDb = null
+          undecidedProgram = true
+        } else if (programExists) {
+          // Program exists, use it
+          programIdForDb = data.program_id
+          undecidedProgram = false
+        } else {
+          // Program doesn't exist, set to null
+          console.warn('[upsertProfileAndAcademic] Program ID does not exist in programs table:', data.program_id)
+          programIdForDb = null
+          undecidedProgram = true
+        }
+      } catch (checkError) {
+        console.error('[upsertProfileAndAcademic] Failed to verify program existence:', checkError)
+        programIdForDb = null
+        undecidedProgram = true
+      }
+    } else {
+      // Not a UUID, can't be a valid program_id
+      console.warn('[upsertProfileAndAcademic] program_id is not a valid UUID:', data.program_id)
+      programIdForDb = null
+      undecidedProgram = true
+    }
+  } else {
+    // No program_id provided
+    programIdForDb = null
+    undecidedProgram = data.undecided_program ?? true
+  }
   
   // Calculate programme duration if months are provided (trigger will also calculate, but we set it here for consistency)
   let programme_duration_months: number | null = null
@@ -380,12 +536,13 @@ export async function upsertProfileAndAcademic(
     university_id: data.university_id,
     degree_level: data.degree_level,
     program_id: programIdForDb,
+    original_program_id: data.program_id,
     study_start_year: data.study_start_year,
     study_start_month: data.study_start_month,
     expected_graduation_year: data.expected_graduation_year,
     graduation_month: data.graduation_month,
     programme_duration_months: programme_duration_months,
-    undecided_program: data.undecided_program
+    undecided_program: undecidedProgram
   })
 
   const { error: academicError } = await supabase
@@ -400,7 +557,7 @@ export async function upsertProfileAndAcademic(
       expected_graduation_year: data.expected_graduation_year ?? null,
       graduation_month: data.graduation_month ?? null,
       programme_duration_months: programme_duration_months,
-      undecided_program: data.undecided_program ?? false,
+      undecided_program: undecidedProgram,
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString()
     }, {
@@ -417,15 +574,22 @@ export async function upsertProfileAndAcademic(
         user_id: data.user_id,
         university_id: data.university_id,
         degree_level: data.degree_level,
-        program_id: data.program_id,
+        program_id: programIdForDb,
+        original_program_id: data.program_id,
         study_start_year: data.study_start_year,
         study_start_month: data.study_start_month,
         expected_graduation_year: data.expected_graduation_year,
         graduation_month: data.graduation_month,
-        undecided_program: data.undecided_program,
+        undecided_program: undecidedProgram,
         programme_duration_months: programme_duration_months
       }
     })
+    
+    // If it's a foreign key constraint violation on program_id, provide more context
+    if (academicError.code === '23503' && academicError.message.includes('program_id')) {
+      throw new Error(`Failed to upsert user_academic: The program ID "${programIdForDb}" does not exist in the programs table. This should have been caught by validation. ${academicError.message}`)
+    }
+    
     throw new Error(`Failed to upsert user_academic: ${academicError.message}. Please check server logs for details.`)
   }
 
@@ -511,23 +675,40 @@ export async function submitCompleteOnboarding(
   data: CompleteOnboardingData
 ): Promise<{ success: boolean; error?: string }> {
   try {
-    // 1. Upsert profile and academic data
-    await upsertProfileAndAcademic(supabase, {
+    console.log('[submitCompleteOnboarding] Starting submission with data:', {
       user_id: data.user_id,
       university_id: data.university_id,
       first_name: data.first_name,
       degree_level: data.degree_level,
       program_id: data.program_id,
-      program: data.program,
-      campus: data.campus,
-      languages_daily: data.languages_daily,
       study_start_year: data.study_start_year,
-      study_start_month: data.study_start_month,
-      expected_graduation_year: data.expected_graduation_year,
-      graduation_month: data.graduation_month,
-      programme_duration_months: data.programme_duration_months,
-      undecided_program: data.undecided_program
+      has_responses: data.responses.length > 0
     })
+    
+    // 1. Upsert profile and academic data
+    try {
+      await upsertProfileAndAcademic(supabase, {
+        user_id: data.user_id,
+        university_id: data.university_id,
+        first_name: data.first_name,
+        degree_level: data.degree_level,
+        program_id: data.program_id,
+        program: data.program,
+        campus: data.campus,
+        languages_daily: data.languages_daily,
+        study_start_year: data.study_start_year,
+        study_start_month: data.study_start_month,
+        expected_graduation_year: data.expected_graduation_year,
+        graduation_month: data.graduation_month,
+        programme_duration_months: data.programme_duration_months,
+        undecided_program: data.undecided_program
+      })
+      console.log('[submitCompleteOnboarding] Profile and academic data upserted successfully')
+    } catch (upsertError) {
+      console.error('[submitCompleteOnboarding] Failed to upsert profile and academic:', upsertError)
+      // Re-throw with more context
+      throw new Error(`Failed to upsert profile and academic: ${upsertError instanceof Error ? upsertError.message : String(upsertError)}`)
+    }
 
     // 2. Upsert questionnaire responses
     if (data.responses.length > 0) {
@@ -548,12 +729,22 @@ export async function submitCompleteOnboarding(
 
     // 3. Onboarding submission record is handled by the calling code with snapshot data
 
+    console.log('[submitCompleteOnboarding] Submission completed successfully')
     return { success: true }
   } catch (error) {
-    console.error('Complete onboarding submission failed:', error)
+    const errorMessage = error instanceof Error ? error.message : String(error)
+    console.error('[submitCompleteOnboarding] Complete onboarding submission failed:', {
+      error: errorMessage,
+      stack: error instanceof Error ? error.stack : undefined,
+      data: {
+        user_id: data.user_id,
+        university_id: data.university_id,
+        degree_level: data.degree_level
+      }
+    })
     return { 
       success: false, 
-      error: error instanceof Error ? error.message : 'Unknown error' 
+      error: errorMessage
     }
   }
 }

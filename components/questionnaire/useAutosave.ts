@@ -24,21 +24,48 @@ export function useAutosave(section: SectionKey) {
     let cancelled = false
     ;(async () => {
       try {
+        // First check if user has any onboarding progress
+        // Only load answers if user has actually started onboarding
+        const progressRes = await fetch('/api/onboarding/progress')
+        let shouldLoadAnswers = false
+        
+        if (progressRes.ok) {
+          const progress = await progressRes.json()
+          
+          // Only load if user has actual progress (hasPartialProgress or isFullySubmitted)
+          // This ensures new users start with a clean form
+          shouldLoadAnswers = progress.hasPartialProgress || progress.isFullySubmitted || !!progress.submittedAt
+        }
+        
+        // Load the specific section to check if it has answers
         const res = await fetch(`/api/onboarding/load?section=${section}`)
         if (!res.ok) throw new Error('Failed to load')
         const data = await res.json()
         const answers: Answer[] = Array.isArray(data.answers) ? data.answers : []
         
-        // Merge API answers with local store (API takes precedence if newer)
-        for (const a of answers) {
-          const existing = sectionAnswers[a.itemId]
-          if (!existing || !data.lastSavedAt || data.lastSavedAt > (existing as any).savedAt) {
-            setAnswer(section, a)
+        // Only load answers if:
+        // 1. User has progress (shouldLoadAnswers is true)
+        // 2. AND there are actual answers in the database for this section
+        // This prevents loading empty arrays or test data for new users
+        if (shouldLoadAnswers && answers.length > 0) {
+          // Merge API answers with local store (API takes precedence if newer)
+          for (const a of answers) {
+            // Validate answer has a valid value before loading
+            if (a && a.itemId && a.value) {
+              const existing = sectionAnswers[a.itemId]
+              if (!existing || !data.lastSavedAt || data.lastSavedAt > (existing as any).savedAt) {
+                setAnswer(section, a)
+              }
+            }
           }
+          if (data.lastSavedAt) setLastSavedAt(data.lastSavedAt)
+        } else if (!shouldLoadAnswers && answers.length === 0) {
+          // New user with no data - ensure store is clean by not loading anything
+          // The store will remain empty (initialized with empty sections)
         }
-        if (data.lastSavedAt) setLastSavedAt(data.lastSavedAt)
       } catch {
-        // Offline or first time; use localStorage data from persist middleware
+        // Offline or error - don't load anything to ensure clean start for new users
+        // Existing users with localStorage data can still use it, but new users won't
       } finally {
         if (!cancelled) setHasLoaded(true)
       }
@@ -46,7 +73,7 @@ export function useAutosave(section: SectionKey) {
     return () => {
       cancelled = true
     }
-  }, [section, setAnswer, setLastSavedAt])
+  }, [section, setAnswer, setLastSavedAt, sectionAnswers])
 
   const answersArray = useMemo(() => toArrayRecord(sectionAnswers), [sectionAnswers])
 
@@ -92,7 +119,7 @@ export function useAutosave(section: SectionKey) {
     return () => clearTimeout(t)
   }, [showToast])
 
-  return { isSaving, showToast }
+  return { isSaving, showToast, hasLoaded }
 }
 
 

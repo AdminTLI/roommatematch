@@ -383,9 +383,18 @@ function ReviewClientContent() {
       
       if (!response.ok) {
         console.error('Submit failed:', result.error)
+        console.error('Technical error details:', result.technicalError)
         // Show user-friendly error message with title
         const title = result.title || 'Submission Failed'
-        const message = result.error || 'Unknown error occurred'
+        let message = result.error || 'Unknown error occurred'
+        
+        // In development, also log the technical error to console for debugging
+        if (process.env.NODE_ENV === 'development' && result.technicalError) {
+          console.error('Full technical error:', result.technicalError)
+          // Append technical details to message in dev mode
+          message += `\n\n[DEV] Technical: ${result.technicalError}`
+        }
+        
         alert(`${title}\n\n${message}`)
         return
       }

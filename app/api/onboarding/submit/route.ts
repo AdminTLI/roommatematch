@@ -180,27 +180,124 @@ export async function POST(request: Request) {
           }
         }
         
-        // Look up program UUID from CROHO code if program_id exists
+        // Look up program UUID if program_id exists
+        // program_id could be:
+        // 1. A UUID (already correct)
+        // 2. A RIO code (from programmes table) - need to look up in programmes table first, then find in programs table
+        // 3. A CROHO code (from programs table) - look up directly in programs table
         if (submissionData.program_id) {
-          console.log('[Submit] Looking up program for CROHO code:', submissionData.program_id)
+          const isUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(submissionData.program_id)
           
-          const { data: program, error: programError } = await supabase
-            .from('programs')
-            .select('id')
-            .eq('croho_code', submissionData.program_id)
-            .single()
+          let programIdResolved = false
           
-          if (programError) {
-            console.error('[Submit] Program lookup failed:', programError)
-            // If program not found, set to null and mark as undecided to satisfy constraint
-            // Constraint: (program_id IS NOT NULL AND undecided_program = false) OR (program_id IS NULL AND undecided_program = true)
-            console.log('[Submit] Setting program_id to null and undecided_program to true since program not found in database')
-            submissionData.program_id = undefined
-            submissionData.undecided_program = true
-          } else if (program) {
-            submissionData.program_id = program.id
-            submissionData.undecided_program = false
-            console.log('[Submit] Found program UUID:', program.id)
+          if (isUUID) {
+            // Already a UUID, verify it exists in programs table
+            console.log('[Submit] program_id is already a UUID, verifying it exists:', submissionData.program_id)
+            const { data: program } = await serviceSupabase
+              .from('programs')
+              .select('id')
+              .eq('id', submissionData.program_id)
+              .maybeSingle()
+            
+            if (program) {
+              // UUID exists and is valid
+              submissionData.undecided_program = false
+              programIdResolved = true
+              console.log('[Submit] Program UUID verified:', submissionData.program_id)
+            } else {
+              console.warn('[Submit] Program UUID not found in programs table, will try RIO/CROHO lookup')
+              // Fall through to RIO/CROHO lookup - don't set programIdResolved
+            }
+          }
+          
+          // If not a UUID, or UUID was provided but doesn't exist, try RIO code lookup in programmes table
+          if (!programIdResolved) {
+            console.log('[Submit] Looking up program - trying RIO code first:', submissionData.program_id)
+            
+            // First, try to find in programmes table by RIO code
+            const { data: programme, error: programmeError } = await serviceSupabase
+              .from('programmes')
+              .select('id, rio_code, croho_code, name, level, institution_slug')
+              .eq('rio_code', submissionData.program_id)
+              .maybeSingle()
+            
+            if (programme && programme.croho_code) {
+              // Found in programmes table, now look up in programs table by CROHO code
+              console.log('[Submit] Found programme by RIO code, looking up in programs table by CROHO:', programme.croho_code)
+              const { data: program, error: programError } = await serviceSupabase
+                .from('programs')
+                .select('id')
+                .eq('croho_code', programme.croho_code)
+                .maybeSingle()
+              
+              if (program) {
+                submissionData.program_id = program.id
+                submissionData.undecided_program = false
+                console.log('[Submit] Found program UUID via programmes->programs lookup:', program.id)
+              } else {
+                console.warn('[Submit] Programme found but no matching program in programs table by CROHO code')
+                // Try to find by name, university, and level as fallback
+                if (submissionData.university_id && programme.level) {
+                  const { data: programByName } = await serviceSupabase
+                    .from('programs')
+                    .select('id')
+                    .eq('university_id', submissionData.university_id)
+                    .eq('degree_level', programme.level)
+                    .ilike('name', programme.name)
+                    .maybeSingle()
+                  
+                  if (programByName) {
+                    submissionData.program_id = programByName.id
+                    submissionData.undecided_program = false
+                    console.log('[Submit] Found program UUID via name/university/level match:', programByName.id)
+                  } else {
+                    console.warn('[Submit] Could not find matching program, setting to undecided')
+                    submissionData.program_id = undefined
+                    submissionData.undecided_program = true
+                  }
+                } else {
+                  submissionData.program_id = undefined
+                  submissionData.undecided_program = true
+                }
+              }
+            } else {
+              // Not found in programmes table, try direct CROHO code lookup in programs table
+              console.log('[Submit] Not found in programmes table, trying CROHO code lookup in programs table')
+              const { data: program, error: programError } = await serviceSupabase
+                .from('programs')
+                .select('id')
+                .eq('croho_code', submissionData.program_id)
+                .maybeSingle()
+              
+              if (program) {
+                submissionData.program_id = program.id
+                submissionData.undecided_program = false
+                console.log('[Submit] Found program UUID by CROHO code:', program.id)
+              } else {
+                console.warn('[Submit] Program not found by RIO or CROHO code, setting to undecided')
+                submissionData.program_id = undefined
+                submissionData.undecided_program = true
+              }
+            }
+          }
+          
+          // CRITICAL: Final validation - ensure program_id exists in programs table before proceeding
+          // This prevents foreign key constraint violations
+          if (submissionData.program_id && !submissionData.undecided_program) {
+            const { data: finalValidation } = await serviceSupabase
+              .from('programs')
+              .select('id')
+              .eq('id', submissionData.program_id)
+              .maybeSingle()
+            
+            if (!finalValidation) {
+              console.error('[Submit] CRITICAL: program_id validation failed after all conversion attempts:', submissionData.program_id)
+              console.error('[Submit] This program_id does not exist in programs table - setting to undecided to prevent FK violation')
+              submissionData.program_id = undefined
+              submissionData.undecided_program = true
+            } else {
+              console.log('[Submit] ✓ Final validation passed: program_id', submissionData.program_id, 'exists in programs table')
+            }
           }
         }
       }
@@ -342,9 +439,16 @@ export async function POST(request: Request) {
           if (!result.success) {
             console.error('[Submit] Consolidated submission failed:', result.error)
             const mappedError = mapSubmissionError(result.error || 'Unknown error')
+            
+            // In development, include the technical error for debugging
+            const errorMessage = process.env.NODE_ENV === 'development' 
+              ? `${mappedError.message}\n\nTechnical details: ${result.error}`
+              : mappedError.message
+            
             return NextResponse.json({ 
-              error: mappedError.message,
-              title: mappedError.title
+              error: errorMessage,
+              title: mappedError.title,
+              technicalError: process.env.NODE_ENV === 'development' ? result.error : undefined
             }, { status: 500 })
           }
 

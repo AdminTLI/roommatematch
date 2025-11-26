@@ -154,13 +154,86 @@ export async function POST(request: Request) {
         const { createServiceClient } = await import('@/lib/supabase/service')
         const serviceSupabase = createServiceClient()
         
+        // Convert program_id from RIO code to UUID if needed (same logic as submit route)
+        let programUUID: string | undefined = submissionData.program_id
+        if (submissionData.program_id && typeof submissionData.program_id === 'string' && submissionData.program_id.trim() !== '') {
+          const isUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(submissionData.program_id)
+          
+          if (!isUUID) {
+            // Not a UUID, try RIO code lookup in programmes table
+            console.log('[Onboarding Save] Looking up program - trying RIO code first:', submissionData.program_id)
+            
+            const { data: programme } = await serviceSupabase
+              .from('programmes')
+              .select('id, rio_code, croho_code, name, level, institution_slug')
+              .eq('rio_code', submissionData.program_id)
+              .maybeSingle()
+            
+            if (programme && programme.croho_code) {
+              // Found in programmes table, now look up in programs table by CROHO code
+              console.log('[Onboarding Save] Found programme by RIO code, looking up in programs table by CROHO:', programme.croho_code)
+              const { data: programData } = await serviceSupabase
+                .from('programs')
+                .select('id')
+                .eq('croho_code', programme.croho_code)
+                .maybeSingle()
+              
+              if (programData?.id) {
+                programUUID = programData.id
+                console.log('[Onboarding Save] Found program UUID via programmes->programs lookup:', programUUID)
+              } else {
+                console.warn('[Onboarding Save] Programme found but no matching program in programs table by CROHO code')
+                // Try to find by name, university, and level as fallback
+                if (finalUniversityId && programme.level) {
+                  const { data: programByName } = await serviceSupabase
+                    .from('programs')
+                    .select('id')
+                    .eq('university_id', finalUniversityId)
+                    .eq('degree_level', programme.level)
+                    .ilike('name', programme.name)
+                    .maybeSingle()
+                  
+                  if (programByName) {
+                    programUUID = programByName.id
+                    console.log('[Onboarding Save] Found program UUID via name/university/level match:', programUUID)
+                  } else {
+                    console.warn('[Onboarding Save] Could not find matching program, setting to undecided')
+                    programUUID = undefined
+                    submissionData.undecided_program = true
+                  }
+                } else {
+                  programUUID = undefined
+                  submissionData.undecided_program = true
+                }
+              }
+            } else {
+              // Not found in programmes table, try direct CROHO code lookup in programs table
+              console.log('[Onboarding Save] Not found in programmes table, trying CROHO code lookup in programs table')
+              const { data: programData } = await serviceSupabase
+                .from('programs')
+                .select('id')
+                .eq('croho_code', submissionData.program_id)
+                .maybeSingle()
+              
+              if (programData?.id) {
+                programUUID = programData.id
+                console.log('[Onboarding Save] Found program UUID by CROHO code:', programUUID)
+              } else {
+                console.warn('[Onboarding Save] Program not found by RIO or CROHO code, setting to undecided')
+                programUUID = undefined
+                submissionData.undecided_program = true
+              }
+            }
+          }
+        }
+        
         try {
           await upsertProfileAndAcademic(serviceSupabase, {
             user_id: user.id,
             university_id: finalUniversityId,
             first_name: submissionData.first_name,
             degree_level: submissionData.degree_level,
-            program_id: submissionData.program_id,
+            program_id: programUUID,
             program: submissionData.program,
             campus: submissionData.campus,
             languages_daily: [],

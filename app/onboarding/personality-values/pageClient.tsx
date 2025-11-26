@@ -66,7 +66,14 @@ function SectionClientContent() {
   }, [sectionKey, isEditMode])
 
   const total = items.length
-  const answered = countAnswered(sectionKey)
+  // Fix hydration error: use state that starts at 0 and updates after mount
+  const [answered, setAnswered] = useState(0)
+  
+  useEffect(() => {
+    // Update answered count after mount to avoid hydration mismatch
+    // Also updates when answers change (e.g., when user answers a question)
+    setAnswered(countAnswered(sectionKey))
+  }, [countAnswered, sectionKey, answers])
 
   const handleChange = (item: Item, value: any) => {
     setAnswer(sectionKey, { itemId: item.id, value })

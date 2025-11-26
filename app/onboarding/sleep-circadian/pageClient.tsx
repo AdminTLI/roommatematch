@@ -1,6 +1,6 @@
 'use client'
 
-import { useMemo, Suspense } from 'react'
+import { useMemo, Suspense, useState, useEffect } from 'react'
 import { useSearchParams } from 'next/navigation'
 import itemsJson from '@/data/item-bank.v1.json'
 import type { Item } from '@/types/questionnaire'
@@ -33,6 +33,12 @@ function SectionClientContent() {
 
   const total = items.length
   const answered = countAnswered(sectionKey)
+
+  // Track if component is mounted to avoid hydration mismatch
+  const [isMounted, setIsMounted] = useState(false)
+  useEffect(() => {
+    setIsMounted(true)
+  }, [])
 
   const handleChange = (item: Item, value: any) => {
     setAnswer(sectionKey, { itemId: item.id, value })
@@ -67,7 +73,10 @@ function SectionClientContent() {
       <AutosaveToaster show={showToast} />
       <div className="flex items-center justify-between">
         <SectionIntro title="Sleep & Circadian" purpose="Daily rhythms and quiet-hour expectations." />
-        <div className="text-sm text-gray-600">{answered}/{total} answered</div>
+        {/* Only render count after mount to avoid hydration mismatch */}
+        {isMounted && (
+          <div className="text-sm text-gray-600">{answered}/{total} answered</div>
+        )}
       </div>
       <div className="space-y-8 sm:space-y-6">
         {items.map((item) => (
