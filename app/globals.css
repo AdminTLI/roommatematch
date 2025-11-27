@@ -5,8 +5,8 @@
 @layer base {
   :root {
     /* Brand Colors - Clean student-friendly palette */
-    --brand-primary: #4F46E5;
-    --brand-primaryHover: #4338CA;
+    --brand-primary: #7a3bb6;
+    --brand-primaryHover: #6a32a0;
     --brand-accent: #06B6D4;
     --brand-surface: #F8FAFC;
     --brand-text: #0F172A;
@@ -21,9 +21,9 @@
     --text-primary: 222.2 47.4% 11.2%;
     --text-secondary: 215.4 16.3% 40%;
     --text-muted: 215.4 16.3% 55%;
-    --accent: 221.2 83.2% 53.3%;      /* Brand accent (buttons, highlights) */
-    --accent-hover: 221.2 83.2% 47%;
-    --accent-soft: 221.2 83.2% 96%;   /* Soft accent background for pills/cards */
+    --accent: 271 51% 47%;      /* Brand accent (buttons, highlights) */
+    --accent-hover: 271 51% 40%;
+    --accent-soft: 271 51% 96%;   /* Soft accent background for pills/cards */
     --danger: 0 84.2% 60.2%;
     --warning: 38 92% 50%;
     --success: 142 76% 36%;
@@ -35,7 +35,7 @@
     --card-foreground: 222.2 47.4% 11.2%;
     --popover: 0 0% 100%;
     --popover-foreground: 222.2 47.4% 11.2%;
-    --primary: 221.2 83.2% 53.3%;
+    --primary: 271 51% 47%;
     --primary-foreground: 210 40% 98%;
     --secondary: 210 40% 98%;
     --secondary-foreground: 222.2 47.4% 11.2%;
@@ -47,7 +47,7 @@
     --destructive-foreground: 210 40% 98%;
     --border: 214.3 31.8% 91.4%;
     --input: 214.3 31.8% 91.4%;
-    --ring: 221.2 83.2% 53.3%;
+    --ring: 271 51% 47%;
     --radius: 0.5rem;
   }
 
@@ -56,13 +56,13 @@
     --bg-body: 222 47% 11%;        /* Very dark blue-gray app chrome */
     --bg-surface: 222 47% 16%;     /* Primary cards / surfaces */
     --bg-surface-alt: 222 47% 20%; /* Slightly lifted surfaces */
-    --border-subtle: 222 32% 28%;
+    --border-subtle: 222 32% 30%;  /* Improved visibility for borders */
     --text-primary: 210 40% 98%;   /* High contrast text */
-    --text-secondary: 215 20% 75%; /* Secondary text with good contrast */
-    --text-muted: 215 20% 65%;     /* Muted text */
-    --accent: 217 91% 64%;         /* Lighter indigo for dark mode */
-    --accent-hover: 217 91% 70%;   /* Even lighter indigo for hover */
-    --accent-soft: 217 91% 22%;    /* Soft accent background for pills */
+    --text-secondary: 215 20% 78%; /* Secondary text with improved contrast */
+    --text-muted: 215 20% 70%;     /* Muted text with better readability */
+    --accent: 271 51% 60%;         /* Lighter purple for dark mode */
+    --accent-hover: 271 51% 65%;   /* Even lighter purple for hover */
+    --accent-soft: 271 51% 22%;    /* Soft accent background for pills */
     --danger: 0 72% 51%;           /* Brighter red for visibility */
     --warning: 38 92% 55%;         /* Brighter warning color */
     --success: 142 76% 45%;        /* Brighter success color */
@@ -76,12 +76,12 @@
     --popover-foreground: 210 40% 98%;
     
     /* Brand colors (tuned for dark mode) */
-    --primary: 217 91% 64%;        /* Lighter indigo */
+    --primary: 271 51% 60%;        /* Lighter purple */
     --primary-foreground: 222 47% 11%;
     --secondary: 222 37% 18%;
     --secondary-foreground: 210 40% 98%;
     --muted: 222 37% 18%;
-    --muted-foreground: 215 20% 75%;
+    --muted-foreground: 215 20% 78%; /* Improved contrast for muted text */
     --accent-foreground: 210 40% 98%;
     
     /* Destructive colors - improved visibility */
@@ -89,13 +89,13 @@
     --destructive-foreground: 210 40% 98%;
     
     /* Borders & inputs - improved visibility */
-    --border: 222 37% 26%;
+    --border: 222 37% 28%;         /* Slightly lighter for better visibility */
     --input: 222 37% 18%;
-    --ring: 217 91% 64%;
+    --ring: 271 51% 60%;
     
     /* Custom brand colors for dark mode */
-    --brand-primary: #818CF8;     /* Lighter indigo */
-    --brand-primaryHover: #A5B4FC; /* Even lighter indigo */
+    --brand-primary: #9d5dd1;     /* Lighter purple */
+    --brand-primaryHover: #a368d4; /* Even lighter purple */
     --brand-accent: #67E8F9;      /* Lighter cyan */
     --brand-surface: #1E2433;     /* Dark surface */
     --brand-text: #F8FAFC;        /* Light text */
@@ -196,17 +196,17 @@
   
   /* Better tap highlighting */
   * {
-    -webkit-tap-highlight-color: rgba(79, 70, 229, 0.1);
+    -webkit-tap-highlight-color: rgba(122, 59, 182, 0.1);
   }
 
   /* Focus ring styles - adapts to dark mode */
   *:focus-visible {
     outline: none;
-    box-shadow: 0 0 0 2px #4F46E5, 0 0 0 4px rgba(79, 70, 229, 0.2);
+    box-shadow: 0 0 0 2px #7a3bb6, 0 0 0 4px rgba(122, 59, 182, 0.2);
   }
   
   .dark *:focus-visible {
-    box-shadow: 0 0 0 2px #818CF8, 0 0 0 4px rgba(129, 140, 248, 0.3);
+    box-shadow: 0 0 0 2px #9d5dd1, 0 0 0 4px rgba(157, 93, 209, 0.3);
   }
 }
 
@@ -352,7 +352,7 @@ body:has([data-chat-page]) main > div {
   }
 
   .blog-content a {
-    color: #4F46E5;
+    color: #7a3bb6;
     text-decoration: none;
     font-weight: 500;
     border-bottom: 1px solid transparent;
@@ -360,11 +360,11 @@ body:has([data-chat-page]) main > div {
   }
 
   .blog-content a:hover {
-    border-bottom-color: #4F46E5;
+    border-bottom-color: #7a3bb6;
   }
 
   .blog-content blockquote {
-    border-left: 4px solid #4F46E5;
+    border-left: 4px solid #7a3bb6;
     padding-left: 1.5rem;
     margin: 2rem 0;
     font-style: italic;

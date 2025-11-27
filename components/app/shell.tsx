@@ -195,18 +195,20 @@ export function AppShell({ children, user, showQuestionnairePrompt = false }: Ap
               </DialogDescription>
             </DialogHeader>
             <div className="mt-6 flex flex-col sm:flex-row gap-3">
-              <button
-                className="bg-brand-600 text-white px-4 py-2 rounded-md min-h-[44px] w-full sm:w-auto"
+              <Button
+                variant="primary"
                 onClick={() => { window.location.href = '/onboarding' }}
+                className="w-full sm:w-auto"
               >
                 Start now
-              </button>
-              <button
-                className="border px-4 py-2 rounded-md min-h-[44px] w-full sm:w-auto"
+              </Button>
+              <Button
+                variant="outline"
                 onClick={() => setShowQuestionnaire(false)}
+                className="w-full sm:w-auto"
               >
                 Later
-              </button>
+              </Button>
             </div>
           </DialogContent>
         </Dialog>

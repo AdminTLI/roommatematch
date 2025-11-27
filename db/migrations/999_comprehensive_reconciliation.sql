@@ -386,25 +386,45 @@ GRANT ALL ON verifications TO authenticated;
 GRANT ALL ON onboarding_submissions TO authenticated;
 
 -- ============================================
--- 12. CREATE TRIGGERS FOR UPDATED_AT
+-- 12. ADD UPDATED_AT COLUMNS AND CREATE TRIGGERS
 -- ============================================
 
+-- Add updated_at columns to tables that don't have them
+ALTER TABLE match_suggestions ADD COLUMN IF NOT EXISTS updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW();
+ALTER TABLE match_runs ADD COLUMN IF NOT EXISTS updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW();
+ALTER TABLE match_records ADD COLUMN IF NOT EXISTS updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW();
+ALTER TABLE verifications ADD COLUMN IF NOT EXISTS updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW();
+
+-- Ensure update_updated_at_column function exists
+CREATE OR REPLACE FUNCTION update_updated_at_column()
+RETURNS TRIGGER AS $$
+BEGIN
+  NEW.updated_at = NOW();
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
 -- Add updated_at triggers to new tables
+-- Drop existing triggers first to avoid conflicts
+DROP TRIGGER IF EXISTS update_match_suggestions_updated_at ON match_suggestions;
 CREATE TRIGGER update_match_suggestions_updated_at
   BEFORE UPDATE ON match_suggestions
   FOR EACH ROW
   EXECUTE FUNCTION update_updated_at_column();
 
+DROP TRIGGER IF EXISTS update_match_runs_updated_at ON match_runs;
 CREATE TRIGGER update_match_runs_updated_at
   BEFORE UPDATE ON match_runs
   FOR EACH ROW
   EXECUTE FUNCTION update_updated_at_column();
 
+DROP TRIGGER IF EXISTS update_match_records_updated_at ON match_records;
 CREATE TRIGGER update_match_records_updated_at
   BEFORE UPDATE ON match_records
   FOR EACH ROW
   EXECUTE FUNCTION update_updated_at_column();
 
+DROP TRIGGER IF EXISTS update_verifications_updated_at ON verifications;
 CREATE TRIGGER update_verifications_updated_at
   BEFORE UPDATE ON verifications
   FOR EACH ROW
@@ -415,18 +435,21 @@ CREATE TRIGGER update_verifications_updated_at
 -- ============================================
 
 -- Migrate any existing onboarding_sections data to responses table
+-- Only process rows where answers is a JSONB object (not array, null, or other types)
 INSERT INTO responses (user_id, question_key, value)
 SELECT 
   os.user_id,
-  key,
-  value
+  kv.key,
+  kv.value
 FROM onboarding_sections os,
 LATERAL jsonb_each(os.answers) AS kv(key, value)
-WHERE NOT EXISTS (
-  SELECT 1 FROM responses r 
-  WHERE r.user_id = os.user_id 
-  AND r.question_key = kv.key
-)
+WHERE jsonb_typeof(os.answers) = 'object'  -- Only process JSONB objects
+  AND os.answers IS NOT NULL
+  AND NOT EXISTS (
+    SELECT 1 FROM responses r 
+    WHERE r.user_id = os.user_id 
+    AND r.question_key = kv.key
+  )
 ON CONFLICT (user_id, question_key) DO NOTHING;
 
 -- ============================================
@@ -444,21 +467,21 @@ ON CONFLICT (user_id, question_key) DO NOTHING;
 DO $$
 DECLARE
   missing_tables TEXT[] := ARRAY[]::TEXT[];
-  table_name TEXT;
+  tbl_name TEXT;
   required_tables TEXT[] := ARRAY[
     'match_suggestions', 'match_runs', 'match_records', 'match_blocklist',
     'verifications', 'onboarding_submissions', 'responses', 'user_vectors',
     'chats', 'chat_members', 'messages', 'message_reads'
   ];
 BEGIN
-  FOREACH table_name IN ARRAY required_tables
+  FOREACH tbl_name IN ARRAY required_tables
   LOOP
     IF NOT EXISTS (
-      SELECT 1 FROM information_schema.tables 
-      WHERE table_schema = 'public' 
-      AND table_name = table_name
+      SELECT 1 FROM information_schema.tables t
+      WHERE t.table_schema = 'public' 
+      AND t.table_name = tbl_name
     ) THEN
-      missing_tables := array_append(missing_tables, table_name);
+      missing_tables := array_append(missing_tables, tbl_name);
     END IF;
   END LOOP;
   
@@ -498,10 +521,32 @@ BEGIN
 END $$;
 
 -- ============================================
+-- 16. FIX EXISTING FUNCTIONS
+-- ============================================
+
+-- Fix set_app_event_retention function (replace public.now() with NOW())
+-- CREATE OR REPLACE will work whether the function exists or not
+CREATE OR REPLACE FUNCTION public.set_app_event_retention()
+RETURNS TRIGGER AS $$
+BEGIN
+  -- Set retention expiry to 90 days after event creation
+  IF NEW.retention_expires_at IS NULL THEN
+    NEW.retention_expires_at := NOW() + INTERVAL '90 days';
+  END IF;
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql SET search_path = '';
+
+-- ============================================
 -- MIGRATION COMPLETE
 -- ============================================
 
 -- Log completion
 INSERT INTO app_events (name, props) 
-VALUES ('migration_completed', '{"migration": "999_comprehensive_reconciliation", "timestamp": "' || NOW() || '"}')
-ON CONFLICT DO NOTHING;
+VALUES (
+  'migration_completed', 
+  jsonb_build_object(
+    'migration', '999_comprehensive_reconciliation',
+    'timestamp', NOW()::text
+  )
+);

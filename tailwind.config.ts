@@ -32,8 +32,8 @@ const config: Config = {
         'semantic-warning': "hsl(var(--warning))",
         'semantic-success': "hsl(var(--success))",
         brand: {
-          primary: '#4F46E5',        // Indigo 600
-          primaryHover: '#4338CA',   // Indigo 700
+          primary: '#7a3bb6',        // Purple
+          primaryHover: '#6a32a0',   // Darker purple
           accent: '#06B6D4',         // Cyan 500
           surface: '#F8FAFC',        // Section tint
           text: '#0F172A',           // Slate 900
@@ -62,8 +62,8 @@ const config: Config = {
         line: '#E5E7EB',
         dashboard: '#F6F7FB',
         // Scales used by badges and buttons
-        'brand-600': '#2563EB',
-        'brand-700': '#1D4ED8',
+        'brand-600': '#7a3bb6',
+        'brand-700': '#6a32a0',
         'accent-100': '#CFFAFE',
         'accent-200': '#A5F3FC',
         'accent-600': '#0891B2',

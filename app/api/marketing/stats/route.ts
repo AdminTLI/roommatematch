@@ -214,15 +214,35 @@ export async function GET() {
     safeLogger.debug('[Marketing Stats] Confirmed suggestions:', confirmedSuggestions.length)
     
     // Also check match_records for locked/confirmed matches
-    const { data: lockedRecords, error: recordsError } = await admin
-      .from('match_records')
-      .select('fit_score, user_ids, created_at')
-      .eq('kind', 'pair')
-      .eq('locked', true)
-      .gte('created_at', oneYearAgoISO)
+    // Note: match_records table may not exist in all environments (e.g., if migration hasn't run)
+    // If it doesn't exist, we'll gracefully fall back to using only match_suggestions
+    let lockedRecords: any[] | null = null
+    try {
+      const { data, error: recordsError } = await admin
+        .from('match_records')
+        .select('fit_score, user_ids, created_at')
+        .eq('kind', 'pair')
+        .eq('locked', true)
+        .gte('created_at', oneYearAgoISO)
 
-    if (recordsError) {
-      console.warn('[Marketing Stats] Error fetching match_records:', recordsError)
+      if (recordsError) {
+        // Check if it's a table-not-found error (PGRST205)
+        if (recordsError.code === 'PGRST205' || recordsError.message?.includes('Could not find the table')) {
+          safeLogger.debug('[Marketing Stats] match_records table not found, skipping locked records query')
+        } else {
+          console.warn('[Marketing Stats] Error fetching match_records:', recordsError)
+        }
+      } else {
+        lockedRecords = data
+      }
+    } catch (error) {
+      // Handle any unexpected errors gracefully
+      const errorMessage = error instanceof Error ? error.message : String(error)
+      if (errorMessage.includes('match_records') || errorMessage.includes('PGRST205')) {
+        safeLogger.debug('[Marketing Stats] match_records table not available, using match_suggestions only')
+      } else {
+        console.warn('[Marketing Stats] Unexpected error fetching match_records:', error)
+      }
     }
 
     safeLogger.debug('[Marketing Stats] Locked match records:', lockedRecords?.length || 0)

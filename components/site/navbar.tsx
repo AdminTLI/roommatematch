@@ -98,7 +98,7 @@ export function Navbar() {
                     src="/images/logo.png" 
                     alt="Domu Match" 
                     fill
-                    className="object-contain"
+                    className="object-contain rounded-lg"
                     priority
                     sizes="(max-width: 768px) 32px, 40px"
                     onError={(e) => {

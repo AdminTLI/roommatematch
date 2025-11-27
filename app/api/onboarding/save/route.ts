@@ -23,10 +23,16 @@ export async function POST(request: Request) {
   const rateLimitResult = await checkRateLimit('api', rateLimitKey)
   
   if (!rateLimitResult.allowed) {
+    const retryAfter = Math.ceil((rateLimitResult.resetTime - Date.now()) / 1000)
+    const retryAfterMinutes = Math.ceil(retryAfter / 60)
     return NextResponse.json(
       { 
-        error: 'Too many requests',
-        retryAfter: Math.ceil((rateLimitResult.resetTime - Date.now()) / 1000)
+        error: `Too many requests. Please wait ${retryAfterMinutes} minute(s) before trying again.`,
+        retryAfter,
+        title: 'Rate Limit Exceeded',
+        technicalError: process.env.NODE_ENV === 'development' 
+          ? `Rate limit exceeded. Reset time: ${new Date(rateLimitResult.resetTime).toISOString()}`
+          : undefined
       },
       { 
         status: 429,
@@ -34,7 +40,7 @@ export async function POST(request: Request) {
           'X-RateLimit-Limit': '100',
           'X-RateLimit-Remaining': '0',
           'X-RateLimit-Reset': new Date(rateLimitResult.resetTime).toISOString(),
-          'Retry-After': Math.ceil((rateLimitResult.resetTime - Date.now()) / 1000).toString()
+          'Retry-After': retryAfter.toString()
         }
       }
     )

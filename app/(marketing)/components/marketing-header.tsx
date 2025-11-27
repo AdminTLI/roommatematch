@@ -32,7 +32,7 @@ export function MarketingHeader() {
                 src="/images/logo.png" 
                 alt="Domu Match" 
                 fill
-                className="object-contain"
+                className="object-contain rounded-lg"
                 priority
                 sizes="32px"
                 onError={(e) => {

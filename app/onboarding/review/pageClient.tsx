@@ -339,54 +339,39 @@ function ReviewClientContent() {
 
   const submit = async () => {
     try {
-      // Before submitting, ensure all sections are saved to the database
-      // This is important because autosave has an 800ms debounce and might not have completed
-      console.log('[Review] Flushing all sections before submission...')
-      const allSections = Object.keys(sections) as Array<keyof typeof sections>
+      // The submit endpoint reads all sections from the database (onboarding_sections table)
+      // Autosave should have already saved all sections with its 800ms debounce
+      // We don't need to pre-save here as it causes rate limiting issues
+      // Instead, we'll rely on autosave and the submit endpoint's ability to read from DB
       
-      // Save all sections that have answers
-      const savePromises = allSections
-        .filter(sectionKey => {
-          const sectionAnswers = sections[sectionKey]
-          return sectionAnswers && Object.keys(sectionAnswers).length > 0
-        })
-        .map(async (sectionKey) => {
-          const sectionAnswers = sections[sectionKey]
-          const answersArray = Object.values(sectionAnswers)
-          
-          if (answersArray.length === 0) return Promise.resolve()
-          
-          try {
-            const res = await fetchWithCSRF('/api/onboarding/save', {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ section: sectionKey, answers: answersArray }),
-            })
-            if (!res.ok) {
-              console.warn(`[Review] Failed to save section ${sectionKey} before submission`)
-            }
-          } catch (error) {
-            console.error(`[Review] Error saving section ${sectionKey}:`, error)
-          }
-        })
+      console.log('[Review] Submitting questionnaire...')
       
-      // Wait for all saves to complete
-      await Promise.all(savePromises)
-      console.log('[Review] All sections saved, proceeding with submission...')
-      
-      // Small delay to ensure database has processed the saves
-      await new Promise(resolve => setTimeout(resolve, 200))
-      
-      // Now submit
+      // Submit directly - the API will read sections from database
       const response = await fetchWithCSRF('/api/onboarding/submit', { method: 'POST' })
       const result = await response.json()
       
       if (!response.ok) {
         console.error('Submit failed:', result.error)
-        console.error('Technical error details:', result.technicalError)
+        
+        // Only log technical error if it exists
+        if (result.technicalError) {
+          console.error('Technical error details:', result.technicalError)
+        }
+        
         // Show user-friendly error message with title
         const title = result.title || 'Submission Failed'
         let message = result.error || 'Unknown error occurred'
+        
+        // Handle rate limiting errors with better messaging
+        if (response.status === 429 || message.includes('Too many requests')) {
+          const retryAfter = result.retryAfter
+          if (retryAfter) {
+            const retryMinutes = Math.ceil(Number(retryAfter) / 60)
+            message += ` Please wait ${retryMinutes} minute(s) before trying again.`
+          } else {
+            message += ' Please wait a few minutes before trying again.'
+          }
+        }
         
         // In development, also log the technical error to console for debugging
         if (process.env.NODE_ENV === 'development' && result.technicalError) {

@@ -125,6 +125,11 @@ export function ChatInterface({ roomId, user, onBack }: ChatInterfaceProps) {
   const readRetryIntervalRef = useRef<NodeJS.Timeout | null>(null)
   const isUnmountingRef = useRef(false)
   const setupRealtimeSubscriptionRef = useRef<(() => void) | null>(null)
+  const messageChannelRetryAttempts = useRef(0)
+  const typingChannelRetryAttempts = useRef(0)
+  const presenceChannelRetryAttempts = useRef(0)
+  const typingChannelResubscribeTimeoutRef = useRef<NodeJS.Timeout | null>(null)
+  const presenceChannelResubscribeTimeoutRef = useRef<NodeJS.Timeout | null>(null)
   const [onlineUsers, setOnlineUsers] = useState<Set<string>>(new Set())
   const [lastSeenMap, setLastSeenMap] = useState<Map<string, string>>(new Map())
   const [lastReadAt, setLastReadAt] = useState<string | null>(null)
@@ -988,26 +993,12 @@ export function ChatInterface({ roomId, user, onBack }: ChatInterfaceProps) {
           console.log('[Realtime] ✅ Ready to receive real-time messages via broadcast')
           setConnectionStatus('connected')
           setError('') // Clear any connection error messages
+          messageChannelRetryAttempts.current = 0 // Reset retry attempts on success
         } else if (status === 'CHANNEL_ERROR') {
           const hasError = !!err
           const errorMessage = hasError
             ? (typeof err === 'string' ? err : (err as any).message || 'Channel error')
             : 'Unknown error (no error details provided)'
-          
-          if (hasError) {
-            console.error('[Realtime] ❌ Channel subscription error:', errorMessage)
-            console.error('[Realtime] ❌ Error details:', {
-              error: err,
-              channel: channelName,
-              roomId: roomId,
-              timestamp: new Date().toISOString()
-            })
-          } else {
-            console.warn('[Realtime] Channel reported CHANNEL_ERROR without details; will attempt resubscribe.', {
-              channel: channelName,
-              roomId: roomId
-            })
-          }
           
           // Check if this is a JWT/token expiration error
           if (isJWTError(err)) {
@@ -1042,27 +1033,89 @@ export function ChatInterface({ roomId, user, onBack }: ChatInterfaceProps) {
             return
           }
           
-          // Attempt to resubscribe after a delay (prevent multiple simultaneous attempts)
-          if (resubscribeTimeoutRef.current) {
-            clearTimeout(resubscribeTimeoutRef.current)
+          // For non-JWT errors, use exponential backoff retry
+          const maxRetries = 10
+          if (messageChannelRetryAttempts.current < maxRetries) {
+            if (hasError) {
+              console.warn('[Realtime] ⚠️ Channel subscription error - will retry:', errorMessage)
+              if (process.env.NODE_ENV === 'development') {
+                console.warn('[Realtime] ⚠️ Error details:', {
+                  error: err,
+                  channel: channelName,
+                  roomId: roomId,
+                  timestamp: new Date().toISOString()
+                })
+              }
+            } else {
+              console.warn('[Realtime] ⚠️ Channel reported CHANNEL_ERROR without details; will attempt resubscribe.', {
+                channel: channelName,
+                roomId: roomId
+              })
+            }
+            
+            // Update connection status
+            setConnectionStatus('connecting')
+            setError('Connection error. Reconnecting...')
+            
+            // Calculate exponential backoff delay
+            const delay = Math.min(2000 * Math.pow(1.5, messageChannelRetryAttempts.current), 30000)
+            messageChannelRetryAttempts.current++
+            
+            // Attempt to resubscribe after a delay (prevent multiple simultaneous attempts)
+            if (resubscribeTimeoutRef.current) {
+              clearTimeout(resubscribeTimeoutRef.current)
+            }
+            resubscribeTimeoutRef.current = setTimeout(() => {
+              console.log(`[Realtime] 🔄 Attempting to resubscribe after error (attempt ${messageChannelRetryAttempts.current}/${maxRetries})...`)
+              setupRealtimeSubscription()
+              resubscribeTimeoutRef.current = null
+            }, delay)
+          } else {
+            // Max retries reached - only log in development
+            if (process.env.NODE_ENV === 'development') {
+              console.warn('[Realtime] ⚠️ Max retry attempts reached after channel error. Connection failed.')
+            }
+            setConnectionStatus('disconnected')
+            setError('Unable to connect. Please refresh the page.')
+            messageChannelRetryAttempts.current = 0 // Reset for next attempt
           }
-          resubscribeTimeoutRef.current = setTimeout(() => {
-            console.log('[Realtime] 🔄 Attempting to resubscribe after error...')
-            setupRealtimeSubscription()
-            resubscribeTimeoutRef.current = null
-          }, 3000)
         } else if (status === 'TIMED_OUT') {
-          console.error('[Realtime] ❌ Channel subscription timed out')
-          console.error('[Realtime] ❌ This may indicate network issues or Supabase Realtime service problems')
-          // Attempt to resubscribe after a delay (prevent multiple simultaneous attempts)
-          if (resubscribeTimeoutRef.current) {
-            clearTimeout(resubscribeTimeoutRef.current)
+          const maxRetries = 10
+          if (messageChannelRetryAttempts.current < maxRetries) {
+            // Only log first few attempts to reduce noise
+            if (messageChannelRetryAttempts.current < 3 || process.env.NODE_ENV === 'development') {
+              console.warn('[Realtime] ⚠️ Channel subscription timed out - will retry')
+              if (process.env.NODE_ENV === 'development') {
+                console.warn('[Realtime] ⚠️ This may indicate network issues or Supabase Realtime service problems')
+              }
+            }
+            
+            // Update connection status and show user feedback
+            setConnectionStatus('connecting')
+            setError('Connection timeout. Reconnecting...')
+            
+            // Calculate exponential backoff delay (2s initial, 1.5x multiplier, max 30s)
+            const delay = Math.min(2000 * Math.pow(1.5, messageChannelRetryAttempts.current), 30000)
+            messageChannelRetryAttempts.current++
+            
+            // Attempt to resubscribe after a delay (prevent multiple simultaneous attempts)
+            if (resubscribeTimeoutRef.current) {
+              clearTimeout(resubscribeTimeoutRef.current)
+            }
+            resubscribeTimeoutRef.current = setTimeout(() => {
+              console.log(`[Realtime] 🔄 Attempting to resubscribe after timeout (attempt ${messageChannelRetryAttempts.current}/${maxRetries})...`)
+              setupRealtimeSubscription()
+              resubscribeTimeoutRef.current = null
+            }, delay)
+          } else {
+            // Max retries reached - only log in development
+            if (process.env.NODE_ENV === 'development') {
+              console.warn('[Realtime] ⚠️ Max retry attempts reached. Connection failed.')
+            }
+            setConnectionStatus('disconnected')
+            setError('Unable to connect. Please refresh the page.')
+            messageChannelRetryAttempts.current = 0 // Reset for next attempt
           }
-          resubscribeTimeoutRef.current = setTimeout(() => {
-            console.log('[Realtime] 🔄 Attempting to resubscribe after timeout...')
-            setupRealtimeSubscription()
-            resubscribeTimeoutRef.current = null
-          }, 3000)
         } else if (status === 'CLOSED') {
           console.log('[Realtime] ℹ️ Channel closed')
           console.log('[Realtime] ℹ️ This is normal when component unmounts or connection is lost')
@@ -1158,13 +1211,103 @@ export function ChatInterface({ roomId, user, onBack }: ChatInterfaceProps) {
           return id !== key && id !== user.id && idUserId !== user.id
         }))
       })
-      .subscribe(async (status) => {
+      .subscribe(async (status, err) => {
         if (status === 'SUBSCRIBED') {
           // Track our own presence when subscribed
           await typingChannel.track({
             typing: false,
             user_id: user.id
           })
+          typingChannelRetryAttempts.current = 0 // Reset retry attempts on success
+        } else if (status === 'TIMED_OUT' || status === 'CHANNEL_ERROR') {
+          const maxRetries = 10
+          if (typingChannelRetryAttempts.current < maxRetries) {
+            if (process.env.NODE_ENV === 'development') {
+              console.warn(`[Realtime] ⚠️ Typing channel ${status === 'TIMED_OUT' ? 'timed out' : 'error'} - will retry`)
+            }
+            
+            // Calculate exponential backoff delay
+            const delay = Math.min(2000 * Math.pow(1.5, typingChannelRetryAttempts.current), 30000)
+            typingChannelRetryAttempts.current++
+            
+            // Clean up existing timeout if any
+            if (typingChannelResubscribeTimeoutRef.current) {
+              clearTimeout(typingChannelResubscribeTimeoutRef.current)
+            }
+            
+            // Retry subscription
+            typingChannelResubscribeTimeoutRef.current = setTimeout(() => {
+              if (!isUnmountingRef.current && typingChannelRef.current) {
+                // Recreate typing channel
+                const newTypingChannel = supabase
+                  .channel(`typing:${roomId}`)
+                  .on('presence', { event: 'sync' }, () => {
+                    const state = newTypingChannel.presenceState()
+                    const typingUsers = Object.keys(state).filter(key => {
+                      const presence = state[key] as any
+                      const presenceUserId = presence?.[0]?.user_id || key
+                      if (presenceUserId === user.id || key === user.id) return false
+                      return presence && presence[0] && presence[0].typing === true
+                    })
+                    const filtered = typingUsers.filter(id => {
+                      const presence = state[id] as any
+                      const presenceUserId = presence?.[0]?.user_id || id
+                      return id !== user.id && presenceUserId !== user.id
+                    })
+                    setTypingUsers(filtered)
+                  })
+                  .on('presence', { event: 'join' }, ({ key, newPresences }) => {
+                    const newPresence = newPresences[0] as any
+                    const presenceUserId = newPresence?.user_id || key
+                    if (key !== user.id && presenceUserId !== user.id && newPresence?.typing) {
+                      setTypingUsers(prev => {
+                        const updated = [...prev.filter(id => {
+                          const presence = newTypingChannel.presenceState()[id] as any
+                          const idUserId = presence?.[0]?.user_id || id
+                          return id !== key && id !== user.id && idUserId !== user.id
+                        }), key]
+                        return updated.filter(id => {
+                          const presence = newTypingChannel.presenceState()[id] as any
+                          const idUserId = presence?.[0]?.user_id || id
+                          return id !== user.id && idUserId !== user.id
+                        })
+                      })
+                    }
+                  })
+                  .on('presence', { event: 'leave' }, ({ key }) => {
+                    setTypingUsers(prev => prev.filter(id => {
+                      const presence = newTypingChannel.presenceState()[id] as any
+                      const idUserId = presence?.[0]?.user_id || id
+                      return id !== key && id !== user.id && idUserId !== user.id
+                    }))
+                  })
+                  .subscribe(async (subscribeStatus) => {
+                    if (subscribeStatus === 'SUBSCRIBED') {
+                      await newTypingChannel.track({
+                        typing: false,
+                        user_id: user.id
+                      })
+                      typingChannelRetryAttempts.current = 0
+                    }
+                  })
+                
+                // Clean up old channel
+                if (typingChannelRef.current) {
+                  typingChannelRef.current.unsubscribe()
+                  supabase.removeChannel(typingChannelRef.current)
+                }
+                typingChannelRef.current = newTypingChannel
+              }
+              typingChannelResubscribeTimeoutRef.current = null
+            }, delay)
+          } else {
+            // Max retries reached - gracefully degrade by hiding typing indicators
+            if (process.env.NODE_ENV === 'development') {
+              console.warn('[Realtime] ⚠️ Typing channel max retries reached. Typing indicators disabled.')
+            }
+            setTypingUsers([])
+            typingChannelRetryAttempts.current = 0
+          }
         }
       })
     
@@ -1224,7 +1367,7 @@ export function ChatInterface({ roomId, user, onBack }: ChatInterfaceProps) {
           setLastSeenMap(prev => new Map(prev).set(presenceUserId, new Date().toISOString()))
         }
       })
-      .subscribe(async (status) => {
+      .subscribe(async (status, err) => {
         if (status === 'SUBSCRIBED') {
           // Track our own presence
           await presenceChannel.track({
@@ -1246,6 +1389,121 @@ export function ChatInterface({ roomId, user, onBack }: ChatInterfaceProps) {
           
           // Store interval ID for cleanup
           ;(presenceChannelRef.current as any).intervalId = presenceInterval
+          presenceChannelRetryAttempts.current = 0 // Reset retry attempts on success
+        } else if (status === 'TIMED_OUT' || status === 'CHANNEL_ERROR') {
+          const maxRetries = 10
+          if (presenceChannelRetryAttempts.current < maxRetries) {
+            if (process.env.NODE_ENV === 'development') {
+              console.warn(`[Realtime] ⚠️ Presence channel ${status === 'TIMED_OUT' ? 'timed out' : 'error'} - will retry`)
+            }
+            
+            // Calculate exponential backoff delay
+            const delay = Math.min(2000 * Math.pow(1.5, presenceChannelRetryAttempts.current), 30000)
+            presenceChannelRetryAttempts.current++
+            
+            // Clean up existing timeout if any
+            if (presenceChannelResubscribeTimeoutRef.current) {
+              clearTimeout(presenceChannelResubscribeTimeoutRef.current)
+            }
+            
+            // Retry subscription
+            presenceChannelResubscribeTimeoutRef.current = setTimeout(() => {
+              if (!isUnmountingRef.current && presenceChannelRef.current) {
+                // Recreate presence channel
+                const newPresenceChannel = supabase
+                  .channel(`presence:${roomId}`)
+                  .on('presence', { event: 'sync' }, () => {
+                    const state = newPresenceChannel.presenceState()
+                    const onlineSet = new Set<string>()
+                    const lastSeen = new Map<string, string>()
+                    
+                    Object.keys(state).forEach(key => {
+                      const presence = state[key] as any
+                      const presenceUserId = presence?.[0]?.user_id || key
+                      if (presenceUserId !== user.id) {
+                        const presenceData = presence?.[0]
+                        if (presenceData?.online) {
+                          onlineSet.add(presenceUserId)
+                        }
+                        if (presenceData?.last_seen) {
+                          lastSeen.set(presenceUserId, presenceData.last_seen)
+                        }
+                      }
+                    })
+                    
+                    setOnlineUsers(onlineSet)
+                    setLastSeenMap(lastSeen)
+                  })
+                  .on('presence', { event: 'join' }, ({ key, newPresences }) => {
+                    const newPresence = newPresences[0] as any
+                    const presenceUserId = newPresence?.user_id || key
+                    if (presenceUserId !== user.id) {
+                      setOnlineUsers(prev => {
+                        const updated = new Set(prev)
+                        updated.add(presenceUserId)
+                        return updated
+                      })
+                      if (newPresence?.last_seen) {
+                        setLastSeenMap(prev => new Map(prev).set(presenceUserId, newPresence.last_seen))
+                      }
+                    }
+                  })
+                  .on('presence', { event: 'leave' }, ({ key }) => {
+                    const state = newPresenceChannel.presenceState()
+                    const presence = state[key] as any
+                    const presenceUserId = presence?.[0]?.user_id || key
+                    if (presenceUserId !== user.id) {
+                      setOnlineUsers(prev => {
+                        const updated = new Set(prev)
+                        updated.delete(presenceUserId)
+                        return updated
+                      })
+                      setLastSeenMap(prev => new Map(prev).set(presenceUserId, new Date().toISOString()))
+                    }
+                  })
+                  .subscribe(async (subscribeStatus) => {
+                    if (subscribeStatus === 'SUBSCRIBED') {
+                      await newPresenceChannel.track({
+                        online: true,
+                        user_id: user.id,
+                        last_seen: new Date().toISOString()
+                      })
+                      
+                      const presenceInterval = setInterval(async () => {
+                        if (presenceChannelRef.current) {
+                          await presenceChannelRef.current.track({
+                            online: true,
+                            user_id: user.id,
+                            last_seen: new Date().toISOString()
+                          })
+                        }
+                      }, 30000)
+                      
+                      ;(presenceChannelRef.current as any).intervalId = presenceInterval
+                      presenceChannelRetryAttempts.current = 0
+                    }
+                  })
+                
+                // Clean up old channel and interval
+                if (presenceChannelRef.current) {
+                  const intervalId = (presenceChannelRef.current as any).intervalId
+                  if (intervalId) {
+                    clearInterval(intervalId)
+                  }
+                  presenceChannelRef.current.unsubscribe()
+                  supabase.removeChannel(presenceChannelRef.current)
+                }
+                presenceChannelRef.current = newPresenceChannel
+              }
+              presenceChannelResubscribeTimeoutRef.current = null
+            }, delay)
+          } else {
+            // Max retries reached - gracefully degrade by keeping stale status
+            if (process.env.NODE_ENV === 'development') {
+              console.warn('[Realtime] ⚠️ Presence channel max retries reached. Online status may be stale.')
+            }
+            presenceChannelRetryAttempts.current = 0
+          }
         }
       })
     
@@ -1259,6 +1517,14 @@ export function ChatInterface({ roomId, user, onBack }: ChatInterfaceProps) {
       if (resubscribeTimeoutRef.current) {
         clearTimeout(resubscribeTimeoutRef.current)
         resubscribeTimeoutRef.current = null
+      }
+      if (typingChannelResubscribeTimeoutRef.current) {
+        clearTimeout(typingChannelResubscribeTimeoutRef.current)
+        typingChannelResubscribeTimeoutRef.current = null
+      }
+      if (presenceChannelResubscribeTimeoutRef.current) {
+        clearTimeout(presenceChannelResubscribeTimeoutRef.current)
+        presenceChannelResubscribeTimeoutRef.current = null
       }
       if (messagesChannelRef.current) {
         messagesChannelRef.current.unsubscribe()
@@ -1287,6 +1553,10 @@ export function ChatInterface({ roomId, user, onBack }: ChatInterfaceProps) {
           presenceChannelRef.current = null
         })
       }
+      // Reset retry attempts
+      messageChannelRetryAttempts.current = 0
+      typingChannelRetryAttempts.current = 0
+      presenceChannelRetryAttempts.current = 0
     }
   }, [roomId, user.id, supabase, isJWTError])
 
@@ -2091,16 +2361,32 @@ export function ChatInterface({ roomId, user, onBack }: ChatInterfaceProps) {
       )}
 
       {/* Connection Status / Error Message */}
-      {error && connectionStatus === 'disconnected' && (
+      {(error && connectionStatus === 'disconnected') || connectionStatus === 'connecting' ? (
         <div className="flex-shrink-0 py-2">
           <div className="w-full lg:max-w-4xl lg:mx-auto px-1 sm:px-4 lg:px-8">
-            <Alert variant="destructive" className="rounded-lg bg-semantic-danger/10 dark:bg-semantic-danger/20 border border-semantic-danger/30">
-              <AlertTriangle className="h-4 w-4" />
-              <AlertDescription>{error}</AlertDescription>
+            <Alert 
+              variant={connectionStatus === 'disconnected' ? 'destructive' : 'default'} 
+              className={`rounded-lg ${
+                connectionStatus === 'disconnected' 
+                  ? 'bg-semantic-danger/10 dark:bg-semantic-danger/20 border border-semantic-danger/30'
+                  : 'bg-bg-surface-alt border border-border-subtle'
+              }`}
+            >
+              {connectionStatus === 'connecting' ? (
+                <>
+                  <Clock className="h-4 w-4 animate-spin" />
+                  <AlertDescription>Reconnecting to chat...</AlertDescription>
+                </>
+              ) : (
+                <>
+                  <AlertTriangle className="h-4 w-4" />
+                  <AlertDescription>{error}</AlertDescription>
+                </>
+              )}
             </Alert>
           </div>
         </div>
-      )}
+      ) : null}
 
       {/* Group Compatibility Display */}
       {isGroup && showCompatibility && groupCompatibility && (

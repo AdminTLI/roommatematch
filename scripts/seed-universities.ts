@@ -71,7 +71,7 @@ async function seedUniversities() {
       slug: inst.id,
       branding: {
         logo_url: `/logos/${inst.id}.png`,
-        primary_color: "#4F46E5", // Default brand color
+        primary_color: "#7a3bb6", // Default brand color
         welcome_message: `From strangers to roommates at ${inst.label}!`
       },
       eligibility_domains: [], // Empty for now
