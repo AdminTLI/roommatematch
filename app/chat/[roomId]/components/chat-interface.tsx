@@ -722,10 +722,11 @@ export function ChatInterface({ roomId, user, onBack }: ChatInterfaceProps) {
         setCompatibilityData(responseData)
         setCompatibilityDataRoomId(roomId) // Track which roomId this data belongs to
       } else {
-        console.error('Failed to fetch compatibility data:', {
+        console.error('[Compatibility] ❌ Failed to fetch compatibility data:', {
           status: response.status,
           error: responseData.error,
           details: responseData.details,
+          fullResponse: responseData,
           roomId
         })
         setCompatibilityData(null)
@@ -988,18 +989,25 @@ export function ChatInterface({ roomId, user, onBack }: ChatInterfaceProps) {
           setConnectionStatus('connected')
           setError('') // Clear any connection error messages
         } else if (status === 'CHANNEL_ERROR') {
-          const errorMessage = err || 'Unknown error (no error details provided)'
-          const errorObj = err || {}
-          const errorStr = typeof errorObj === 'string' ? errorObj : JSON.stringify(errorObj)
+          const hasError = !!err
+          const errorMessage = hasError
+            ? (typeof err === 'string' ? err : (err as any).message || 'Channel error')
+            : 'Unknown error (no error details provided)'
           
-          console.error('[Realtime] ❌ Channel subscription error:', errorMessage)
-          console.error('[Realtime] ❌ Error details:', {
-            error: err || null,
-            errorMessage: errorMessage,
-            channel: channelName,
-            roomId: roomId,
-            timestamp: new Date().toISOString()
-          })
+          if (hasError) {
+            console.error('[Realtime] ❌ Channel subscription error:', errorMessage)
+            console.error('[Realtime] ❌ Error details:', {
+              error: err,
+              channel: channelName,
+              roomId: roomId,
+              timestamp: new Date().toISOString()
+            })
+          } else {
+            console.warn('[Realtime] Channel reported CHANNEL_ERROR without details; will attempt resubscribe.', {
+              channel: channelName,
+              roomId: roomId
+            })
+          }
           
           // Check if this is a JWT/token expiration error
           if (isJWTError(err)) {

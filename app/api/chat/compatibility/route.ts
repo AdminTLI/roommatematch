@@ -117,24 +117,33 @@ export async function GET(request: NextRequest) {
     }
 
     // Check if both users have vectors (required for compatibility calculation)
-    const { data: userAVector } = await admin
+    const { data: userAVector, error: errorA } = await admin
       .from('user_vectors')
       .select('user_id')
       .eq('user_id', user.id)
       .maybeSingle()
     
-    const { data: userBVector } = await admin
+    const { data: userBVector, error: errorB } = await admin
       .from('user_vectors')
       .select('user_id')
       .eq('user_id', targetUserId)
       .maybeSingle()
+
+    // Debug logging
+    console.error('[Compatibility API] Vector check:', {
+      userA: { id: user.id, hasVector: !!userAVector, vectorData: userAVector, error: errorA },
+      userB: { id: targetUserId, hasVector: !!userBVector, vectorData: userBVector, error: errorB },
+      chatId
+    })
 
     if (!userAVector || !userBVector) {
       safeLogger.warn('Users missing vectors for compatibility calculation', {
         user_a_has_vector: !!userAVector,
         user_b_has_vector: !!userBVector,
         user_a_id: user.id,
-        user_b_id: targetUserId
+        user_b_id: targetUserId,
+        error_a: errorA,
+        error_b: errorB
       })
       return NextResponse.json(
         { 
