@@ -37,3 +37,4 @@ WHERE p.proname = 'handle_new_user'
   AND t.tgname = 'on_auth_user_created';
 
 
+

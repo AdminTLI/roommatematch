@@ -140,19 +140,22 @@ export function VerifyInterface({ user }: VerifyInterfaceProps) {
           
           // Update verification status in our database
           try {
-            // Get CSRF token from cookie
-            const getCSRFToken = () => {
-              const cookies = document.cookie.split(';')
-              for (const cookie of cookies) {
-                const [name, value] = cookie.trim().split('=')
-                if (name === 'csrf-token-header') {
-                  return decodeURIComponent(value)
-                }
+            // Fetch CSRF token from authenticated API endpoint
+            // This is more secure than reading from cookie (prevents XSS)
+            let csrfToken: string | null = null
+            try {
+              const tokenResponse = await fetch('/api/csrf-token', {
+                credentials: 'include',
+                cache: 'no-store'
+              })
+              if (tokenResponse.ok) {
+                const tokenData = await tokenResponse.json()
+                csrfToken = tokenData.token
               }
-              return null
+            } catch (error) {
+              console.error('[Verify] Failed to fetch CSRF token:', error)
             }
 
-            const csrfToken = getCSRFToken()
             const headers: HeadersInit = {
               'Content-Type': 'application/json',
             }

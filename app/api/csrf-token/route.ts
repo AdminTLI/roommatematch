@@ -14,22 +14,42 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
-  const csrfCookie = await createCSRFTokenCookie()
-  const response = NextResponse.json({ token: csrfCookie.exposedToken })
+  // Get existing CSRF token from httpOnly cookie (set by middleware)
+  // If not present, create a new one
+  const existingToken = request.cookies.get('csrf-token')?.value
   
-  // Set both cookies
-  response.cookies.set(
-    csrfCookie.httpOnlyCookie.name,
-    csrfCookie.httpOnlyCookie.value,
-    csrfCookie.httpOnlyCookie.options
-  )
-  response.cookies.set('csrf-token-header', csrfCookie.exposedToken, {
-    httpOnly: false,
-    secure: process.env.NODE_ENV === 'production',
-    sameSite: 'strict',
-    maxAge: 60 * 60 * 24
-  })
-
+  let signedToken: string
+  let csrfCookie
+  
+  if (existingToken) {
+    // Use existing signed token from cookie
+    // Client will send this in header, server validates it matches cookie
+    signedToken = existingToken
+  } else {
+    // Create new token if none exists
+    csrfCookie = await createCSRFTokenCookie()
+    // Return the full signed token (token.signature format)
+    signedToken = csrfCookie.exposedToken
+  }
+  
+  // Return full signed token in response body (client reads this, not cookie)
+  // Client sends this in x-csrf-token header
+  // Server validates header token matches httpOnly cookie token
+  // This is secure because:
+  // 1. Requires authentication to access this endpoint
+  // 2. httpOnly cookie cannot be read by XSS
+  // 3. Token is only exposed to authenticated users
+  const response = NextResponse.json({ token: signedToken })
+  
+  // Set httpOnly cookie if we created a new one
+  if (csrfCookie) {
+    response.cookies.set(
+      csrfCookie.httpOnlyCookie.name,
+      csrfCookie.httpOnlyCookie.value,
+      csrfCookie.httpOnlyCookie.options
+    )
+  }
+  
   return response
 }
 

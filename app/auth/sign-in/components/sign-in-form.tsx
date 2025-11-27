@@ -25,17 +25,6 @@ export function SignInForm() {
     setIsLoading(true)
     setError('')
 
-    // Demo bypass for demo credentials
-    if (email === 'demo@account.com' && password === 'Testing123') {
-      // Simulate successful login for demo
-      setError('Demo login successful! Redirecting...')
-      setTimeout(() => {
-        setIsLoading(false)
-        router.push('/matches')
-      }, 1500)
-      return
-    }
-
     try {
       const { error: signInError, data } = await supabase.auth.signInWithPassword({
         email,

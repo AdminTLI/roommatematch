@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createAdminClient } from '@/lib/supabase/server'
 import { safeLogger } from '@/lib/utils/logger'
+import { PersonaWebhookSchema, VeriffWebhookSchema, OnfidoWebhookSchema } from '@/lib/webhooks/schemas'
 import crypto from 'crypto'
 
 type KYCProvider = 'veriff' | 'persona' | 'onfido'
@@ -173,13 +174,47 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Invalid signature' }, { status: 401 })
     }
 
-    // Parse payload
-    const body = JSON.parse(rawBody)
-    const parsed = parseWebhookPayload(provider, body)
+    // Parse and validate payload
+    let body: any
+    try {
+      body = JSON.parse(rawBody)
+    } catch (parseError) {
+      safeLogger.warn('[Verification] Failed to parse webhook JSON', { provider, error: parseError })
+      return NextResponse.json({ error: 'Invalid JSON payload' }, { status: 400 })
+    }
+
+    // Validate payload structure based on provider
+    let validatedBody: any
+    try {
+      switch (provider) {
+        case 'persona':
+          validatedBody = PersonaWebhookSchema.parse(body)
+          break
+        case 'veriff':
+          validatedBody = VeriffWebhookSchema.parse(body)
+          break
+        case 'onfido':
+          validatedBody = OnfidoWebhookSchema.parse(body)
+          break
+        default:
+          safeLogger.warn('[Verification] Unknown provider', { provider })
+          return NextResponse.json({ error: 'Unknown provider' }, { status: 400 })
+      }
+    } catch (validationError) {
+      safeLogger.warn('[Verification] Webhook payload validation failed', { 
+        provider, 
+        error: validationError instanceof Error ? validationError.message : String(validationError),
+        payload: body
+      })
+      return NextResponse.json({ error: 'Invalid webhook payload format' }, { status: 400 })
+    }
+
+    // Parse validated payload
+    const parsed = parseWebhookPayload(provider, validatedBody)
 
     if (!parsed) {
-      safeLogger.warn('[Verification] Invalid webhook payload', { provider, body })
-      return NextResponse.json({ error: 'Invalid payload' }, { status: 400 })
+      safeLogger.warn('[Verification] Failed to parse webhook payload after validation', { provider, validatedBody })
+      return NextResponse.json({ error: 'Invalid payload structure' }, { status: 400 })
     }
 
     // Log webhook to audit table
@@ -188,8 +223,8 @@ export async function POST(request: NextRequest) {
       .from('verification_webhooks')
       .insert({
         provider,
-        event_type: body.type || body.event || 'unknown',
-        payload: body,
+        event_type: validatedBody.type || validatedBody.event || 'unknown',
+        payload: validatedBody,
         processed: false
       })
 

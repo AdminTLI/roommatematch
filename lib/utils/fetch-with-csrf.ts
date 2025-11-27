@@ -4,18 +4,26 @@
  */
 
 /**
- * Get CSRF token from cookie
+ * Get CSRF token from authenticated API endpoint
+ * This is more secure than reading from cookie (prevents XSS attacks)
  */
-function getCSRFToken(): string | null {
-  if (typeof document === 'undefined') return null
+async function getCSRFToken(): Promise<string | null> {
+  if (typeof window === 'undefined') return null
   
-  const cookies = document.cookie.split(';')
-  for (const cookie of cookies) {
-    const [name, value] = cookie.trim().split('=')
-    if (name === 'csrf-token-header') {
-      return decodeURIComponent(value)
+  try {
+    const response = await fetch('/api/csrf-token', {
+      credentials: 'include',
+      cache: 'no-store'
+    })
+    
+    if (response.ok) {
+      const data = await response.json()
+      return data.token || null
     }
+  } catch (error) {
+    console.error('[CSRF] Failed to fetch CSRF token:', error)
   }
+  
   return null
 }
 
@@ -26,7 +34,7 @@ export async function fetchWithCSRF(
   url: string,
   options: RequestInit = {}
 ): Promise<Response> {
-  const token = getCSRFToken()
+  const token = await getCSRFToken()
   
   const headers = new Headers(options.headers)
   

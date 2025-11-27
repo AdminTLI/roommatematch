@@ -77,3 +77,4 @@ WHERE tablename = 'users';
 -- SELECT 'Manual Insert Test' as check_type, 'Run manually with a test UUID' as note;
 
 
+

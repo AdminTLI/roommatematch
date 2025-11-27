@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
+import { sanitizeSearchInput, validateSearchInputLength } from '@/lib/utils/sanitize'
+import { safeLogger } from '@/lib/utils/logger'
 
 export async function GET(request: NextRequest) {
   try {
@@ -23,8 +25,12 @@ export async function GET(request: NextRequest) {
       })
     }
 
-    const queryLower = query.toLowerCase()
-    const searchPattern = `%${queryLower}%`
+    // Sanitize and validate search input to prevent injection
+    if (!validateSearchInputLength(query, 100)) {
+      return NextResponse.json({ error: 'Search query too long' }, { status: 400 })
+    }
+    const sanitizedQuery = sanitizeSearchInput(query)
+    const queryLower = sanitizedQuery.toLowerCase()
 
     // Get user's chats for context
     const { data: chatMembers } = await supabase
@@ -72,7 +78,7 @@ export async function GET(request: NextRequest) {
         matchedUserIds = [...new Set([...matchedUserIds, ...suggestionUserIds])]
       }
 
-      console.log('[Search] Found matched user IDs:', matchedUserIds.length, matchedUserIds)
+      safeLogger.debug('[Search] Found matched user IDs:', matchedUserIds.length, matchedUserIds)
     } catch (err) {
       console.error('Exception fetching matches:', err)
     }
@@ -102,7 +108,7 @@ export async function GET(request: NextRequest) {
     let matchedUsers: any[] = []
     try {
       if (allMatchedUserIds.length > 0) {
-        console.log('[Search] Searching profiles for matched users:', allMatchedUserIds.length, 'user IDs')
+        safeLogger.debug('[Search] Searching profiles for matched users:', allMatchedUserIds.length, 'user IDs')
         
         // First, get all profiles of matched users (without relation to avoid 500 errors)
         const { data: allMatchedProfiles, error: allProfilesError } = await supabase
@@ -113,7 +119,7 @@ export async function GET(request: NextRequest) {
         if (allProfilesError) {
           console.error('[Search] Error fetching all matched user profiles:', allProfilesError)
         } else {
-          console.log('[Search] Found', allMatchedProfiles?.length || 0, 'matched user profiles')
+          safeLogger.debug('[Search] Found', allMatchedProfiles?.length || 0, 'matched user profiles')
           
           // Filter profiles that match the search query
           const queryLower = query.toLowerCase()
@@ -129,7 +135,7 @@ export async function GET(request: NextRequest) {
                    program.includes(queryLower)
           })
 
-          console.log('[Search] Filtered to', matchingProfiles.length, 'profiles matching query:', query)
+          safeLogger.debug('[Search] Filtered to', matchingProfiles.length, 'profiles matching query:', query)
 
           if (matchingProfiles.length > 0) {
             // Fetch university names separately if needed
@@ -174,21 +180,29 @@ export async function GET(request: NextRequest) {
               chatId: chatIdMap.get(profile.user_id)
             }))
             
-            console.log('[Search] Returning', matchedUsers.length, 'matched users')
+            safeLogger.debug('[Search] Returning', matchedUsers.length, 'matched users')
           } else {
-            console.log('[Search] No profiles matched the search query')
+            safeLogger.debug('[Search] No profiles matched the search query')
           }
         }
       } else {
-        console.log('[Search] No matched user IDs found')
+        safeLogger.debug('[Search] No matched user IDs found')
       }
     } catch (err) {
-      console.error('Exception searching matches:', err)
+      safeLogger.error('[Search] Exception searching matches:', err)
     }
 
     // Search all users (not just matches) - for finding new people
     let allUsers: any[] = []
     try {
+      // SECURITY: Use sanitized query to prevent filter injection attacks
+      // sanitizeSearchInput() removes:
+      //   - Commas (which separate filters in PostgREST .or() clauses)
+      //   - PostgREST operators (.eq., .neq., .gt., etc.)
+      //   - Wildcards (% and _) are escaped
+      // This prevents attackers from injecting filters like: q=foo,university_id.eq.victim
+      // queryLower is the lowercased, sanitized query - safe for use in string interpolation
+      const searchPattern = `%${queryLower}%`
       const { data: allProfiles, error: allProfilesError } = await supabase
         .from('profiles')
         .select('user_id, first_name, last_name, program, university_id')
@@ -378,7 +392,7 @@ export async function GET(request: NextRequest) {
       pages: pages || []
     }
 
-    console.log('[Search API] Query:', query, 'Results:', {
+    safeLogger.debug('[Search API] Query:', query, 'Results:', {
       matches: response.matches.length,
       messages: response.messages.length,
       users: response.users.length,

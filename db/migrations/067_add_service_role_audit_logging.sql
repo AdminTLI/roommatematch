@@ -1,8 +1,7 @@
--- Migration: Allow service role to bypass 30-day questionnaire cooldown
--- This allows onboarding submissions to work even if the user recently updated their profile
--- Service role is used during complete onboarding submission, which should always be allowed
+-- Migration: Add audit logging for service role questionnaire cooldown bypasses
+-- This ensures all service role bypasses are logged for security auditing
 
--- Update the cooldown function to check for service role
+-- Update the cooldown function to log service role bypasses
 CREATE OR REPLACE FUNCTION enforce_questionnaire_cooldown()
 RETURNS TRIGGER AS $$
 BEGIN
@@ -18,6 +17,35 @@ BEGIN
       -- Allow service role (used for onboarding submission) to bypass cooldown
       -- Service role is used when submitting complete onboarding, which should always be allowed
       IF current_setting('request.jwt.claims', true)::json->>'role' = 'service_role' THEN
+        -- Log the bypass for audit purposes
+        -- Use the user being updated as admin_user_id (required field)
+        -- Note in metadata that this was done via service role
+        BEGIN
+          INSERT INTO admin_actions (admin_user_id, action, entity_type, entity_id, metadata)
+          VALUES (
+            NEW.user_id,
+            'questionnaire_cooldown_bypass',
+            'user',
+            NEW.user_id,
+            jsonb_build_object(
+              'reason', 'onboarding_submission',
+              'bypass_method', 'service_role',
+              'changed_fields', jsonb_build_object(
+                'degree_level', OLD.degree_level IS DISTINCT FROM NEW.degree_level,
+                'program', OLD.program IS DISTINCT FROM NEW.program,
+                'campus', OLD.campus IS DISTINCT FROM NEW.campus,
+                'languages', OLD.languages IS DISTINCT FROM NEW.languages
+              ),
+              'previous_last_changed', OLD.last_answers_changed_at,
+              'timestamp', NOW()
+            )
+          );
+        EXCEPTION WHEN OTHERS THEN
+          -- Log error but don't fail the update
+          -- This ensures the bypass still works even if audit logging fails
+          RAISE WARNING 'Failed to log service role bypass: %', SQLERRM;
+        END;
+        
         -- Service role can always update (used for onboarding submissions)
         NEW.last_answers_changed_at = NOW();
       ELSIF OLD.last_answers_changed_at IS NOT NULL AND 
@@ -34,6 +62,28 @@ BEGIN
     IF OLD.value IS DISTINCT FROM NEW.value THEN
       -- Allow service role (used for onboarding submission) to bypass cooldown
       IF current_setting('request.jwt.claims', true)::json->>'role' = 'service_role' THEN
+        -- Log the bypass for audit purposes
+        BEGIN
+          INSERT INTO admin_actions (admin_user_id, action, entity_type, entity_id, metadata)
+          VALUES (
+            NEW.user_id,
+            'questionnaire_cooldown_bypass',
+            'response',
+            NEW.id,
+            jsonb_build_object(
+              'reason', 'onboarding_submission',
+              'bypass_method', 'service_role',
+              'question_key', NEW.question_key,
+              'previous_value', OLD.value,
+              'new_value', NEW.value,
+              'timestamp', NOW()
+            )
+          );
+        EXCEPTION WHEN OTHERS THEN
+          -- Log error but don't fail the update
+          RAISE WARNING 'Failed to log service role bypass: %', SQLERRM;
+        END;
+        
         -- Service role can always update (used for onboarding submissions)
         UPDATE profiles 
         SET last_answers_changed_at = NOW()
@@ -64,6 +114,3 @@ BEGIN
   RETURN NEW;
 END;
 $$ LANGUAGE plpgsql;
-
-
-

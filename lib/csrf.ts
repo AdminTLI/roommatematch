@@ -4,7 +4,18 @@
  * Uses Web Crypto API for Edge runtime compatibility
  */
 
-const CSRF_SECRET = process.env.CSRF_SECRET || process.env.NEXT_PUBLIC_SUPABASE_URL || 'default-secret-change-in-production'
+// Require CSRF_SECRET in all environments - no fallback allowed
+// This prevents CSRF token forgery even in development or misconfigured environments
+let CSRF_SECRET: string = process.env.CSRF_SECRET || ''
+if (!CSRF_SECRET) {
+  throw new Error(
+    'CSRF_SECRET environment variable is required. ' +
+    'Generate a secure random string (e.g., openssl rand -hex 32). ' +
+    'Set it in your .env.local for development and environment variables for production. ' +
+    'Without this secret, CSRF tokens can be forged by attackers.'
+  )
+}
+
 const CSRF_TOKEN_COOKIE = 'csrf-token'
 const CSRF_HEADER = 'x-csrf-token'
 

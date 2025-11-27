@@ -10,9 +10,6 @@ import { safeLogger } from '@/lib/utils/logger'
  */
 export async function POST(req: NextRequest) {
   try {
-    const supabase = await createClient()
-    const { data: { user } } = await supabase.auth.getUser()
-
     const body = await req.json()
     const { consents, action, sessionId } = body
 
@@ -23,13 +20,10 @@ export async function POST(req: NextRequest) {
       )
     }
 
-    // For anonymous users, sessionId is required
-    if (!user && !sessionId) {
-      return NextResponse.json(
-        { error: 'Session ID required for anonymous users' },
-        { status: 400 }
-      )
-    }
+    // Try to resolve authenticated user, but don't hard-fail if this is an anonymous session.
+    // The banner explicitly sends a client-generated anonymous sessionId so we support both.
+    const supabase = await createClient()
+    const { data: { user } } = await supabase.auth.getUser()
 
     const metadata = {
       ip_address: req.headers.get('x-forwarded-for') || req.headers.get('x-real-ip') || undefined,

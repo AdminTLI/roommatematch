@@ -3,9 +3,10 @@ import { createAdminClient } from '@/lib/supabase/server'
 import { requireAdmin } from '@/lib/auth/admin'
 import { logAdminAction } from '@/lib/admin/audit'
 import { safeLogger } from '@/lib/utils/logger'
+import { sanitizeSearchInput, validateSearchInputLength } from '@/lib/utils/sanitize'
 
 export async function GET(request: NextRequest) {
-  const adminCheck = await requireAdmin(request, false)
+  const adminCheck = await requireAdmin(request)
   if (!adminCheck.ok) {
     return NextResponse.json(
       { error: adminCheck.error || 'Admin access required' },
@@ -45,7 +46,12 @@ export async function GET(request: NextRequest) {
       `)
 
     if (search) {
-      query = query.or(`first_name.ilike.%${search}%,last_name.ilike.%${search}%,users.email.ilike.%${search}%`)
+      // Sanitize and validate search input to prevent SQL injection
+      if (!validateSearchInputLength(search, 100)) {
+        return NextResponse.json({ error: 'Search query too long' }, { status: 400 })
+      }
+      const sanitizedSearch = sanitizeSearchInput(search)
+      query = query.or(`first_name.ilike.%${sanitizedSearch}%,last_name.ilike.%${sanitizedSearch}%,users.email.ilike.%${sanitizedSearch}%`)
     }
 
     if (verificationStatuses.length > 0) {
@@ -243,7 +249,7 @@ export async function GET(request: NextRequest) {
 }
 
 export async function POST(request: NextRequest) {
-  const adminCheck = await requireAdmin(request, false)
+  const adminCheck = await requireAdmin(request)
   if (!adminCheck.ok) {
     return NextResponse.json(
       { error: adminCheck.error || 'Admin access required' },

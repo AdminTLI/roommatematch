@@ -9,13 +9,33 @@ import { safeLogger } from '@/lib/utils/logger'
  */
 export async function GET(request: Request) {
   try {
-    // Verify cron secret for security
+    // Verify cron secret for security - REQUIRED in production
     const authHeader = request.headers.get('authorization')
     const cronSecret = process.env.CRON_SECRET || process.env.VERCEL_CRON_SECRET
 
+    // Require secret in production - fail fast if missing
+    if (process.env.NODE_ENV === 'production' || process.env.VERCEL_ENV) {
+      if (!cronSecret) {
+        safeLogger.error('[Cron] CRON_SECRET or VERCEL_CRON_SECRET is required in production')
+        return NextResponse.json(
+          { error: 'Cron secret not configured' },
+          { status: 500 }
+        )
+      }
+    }
+
+    // Verify authorization header matches secret
     if (cronSecret && authHeader !== `Bearer ${cronSecret}`) {
-      safeLogger.warn('[Cron] Unauthorized anomaly detection request attempt')
+      safeLogger.warn('[Cron] Unauthorized anomaly detection request attempt', {
+        hasHeader: !!authHeader,
+        hasSecret: !!cronSecret
+      })
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
+    
+    // If no secret configured in development, warn but allow (for local testing)
+    if (!cronSecret && (process.env.NODE_ENV !== 'production' && !process.env.VERCEL_ENV)) {
+      safeLogger.warn('[Cron] No cron secret configured - allowing request in development only')
     }
 
     safeLogger.info('[Cron] Starting anomaly detection')

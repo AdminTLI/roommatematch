@@ -161,15 +161,15 @@ export class RateLimiter {
           this.store = factoryResult
         } else {
           // Factory returned undefined - Redis not configured
-          // Log warning but fall back to in-memory store for graceful degradation
+          // Fail closed in production - Redis is required for multi-instance deployments
           if (process.env.NODE_ENV === 'production' || process.env.VERCEL_ENV) {
-            console.warn(
-              '[RateLimit] Upstash Redis not configured in production. ' +
-              'Falling back to in-memory store (not suitable for multi-instance deployments). ' +
-              'Set UPSTASH_REDIS_REST_URL and UPSTASH_REDIS_REST_TOKEN environment variables for production.'
+            throw new Error(
+              'Upstash Redis is required in production. ' +
+              'Set UPSTASH_REDIS_REST_URL and UPSTASH_REDIS_REST_TOKEN environment variables. ' +
+              'Rate limiting will not work without Redis in multi-instance deployments.'
             )
           }
-          // Use in-memory store as fallback
+          // Use in-memory store as fallback only in development
           this.store = new MemoryRateLimitStore()
         }
       } else {
@@ -412,6 +412,27 @@ export const RATE_LIMITS = {
   group_creation: new RateLimiter({
     windowMs: 24 * 60 * 60 * 1000, // 24 hours (1 day)
     maxRequests: 3,
+    failClosed: true
+  }, getSharedStore),
+
+  // Block user actions (fail-closed to prevent abuse)
+  block: new RateLimiter({
+    windowMs: 60 * 60 * 1000, // 1 hour
+    maxRequests: 10,
+    failClosed: true
+  }, getSharedStore),
+
+  // Report actions (fail-closed to prevent abuse) - reuse reports limiter
+  report: new RateLimiter({
+    windowMs: 60 * 60 * 1000, // 1 hour
+    maxRequests: 5,
+    failClosed: true
+  }, getSharedStore),
+
+  // Data export (DSAR) - fail-closed to prevent abuse
+  data_export: new RateLimiter({
+    windowMs: 24 * 60 * 60 * 1000, // 24 hours
+    maxRequests: 1,
     failClosed: true
   }, getSharedStore)
 }

@@ -21,10 +21,7 @@ export async function GET(req: NextRequest) {
 
     // Rate limiting: 1 export per 24 hours
     const rateLimitKey = getUserRateLimitKey('data_export', user.id)
-    const rateLimitResult = await checkRateLimit('data_export', rateLimitKey, {
-      maxRequests: 1,
-      windowMs: 24 * 60 * 60 * 1000 // 24 hours
-    })
+    const rateLimitResult = await checkRateLimit('data_export', rateLimitKey)
     
     if (!rateLimitResult.allowed) {
       const hoursRemaining = Math.ceil((rateLimitResult.resetTime - Date.now()) / (1000 * 60 * 60))

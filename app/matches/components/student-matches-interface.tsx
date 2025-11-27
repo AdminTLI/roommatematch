@@ -504,6 +504,11 @@ export function StudentMatchesInterface({ user }: StudentMatchesInterfaceProps) 
           >
             {isLoading ? 'Loading...' : 'Refresh Suggestions'}
           </button>
+          <p className="text-xs sm:text-sm text-text-secondary mt-3 leading-relaxed">
+            Suggestions are automatically generated once every 6 hours. To get fresh matches instantly, click the Refresh Suggestions button above. 
+
+            If you've recently completed or updated your questionnaire, our algorithm may need up to an hour to process your responses. To find your best potential roommates we'll need to analyze compatibility values, calculate match scores, and run our sophisticated matching algorithms.
+          </p>
         </div>
       ) : (
         <>
@@ -564,7 +569,7 @@ export function StudentMatchesInterface({ user }: StudentMatchesInterfaceProps) 
             </div>
           )}
 
-          <div className="flex justify-center">
+          <div className="flex flex-col items-center">
             <button
               onClick={handleRefresh}
               disabled={isLoading}
@@ -572,6 +577,11 @@ export function StudentMatchesInterface({ user }: StudentMatchesInterfaceProps) 
             >
               {isLoading ? 'Loading...' : 'Refresh Suggestions'}
             </button>
+            <p className="text-xs sm:text-sm text-text-secondary mt-3 text-center leading-relaxed">
+              Suggestions are automatically generated once every 6 hours. To get fresh matches instantly, click the Refresh Suggestions button above. 
+
+              If you've recently completed or updated your questionnaire, our algorithm may need up to an hour to process your responses. To find your best potential roommates we'll need to analyze compatibility values, calculate match scores, and run our sophisticated matching algorithms.
+            </p>
           </div>
         </>
       )}

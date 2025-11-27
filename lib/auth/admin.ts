@@ -1,12 +1,13 @@
 import { createClient, createAdminClient } from '@/lib/supabase/server'
 import { NextRequest, NextResponse } from 'next/server'
 import { safeLogger } from '@/lib/utils/logger'
+import { getUserRole, isSuperAdmin, type UserRole } from './roles'
 
 export interface AdminAuthResult {
   ok: boolean
   status: number
   user?: { id: string; email?: string }
-  adminRecord?: { role: string; university_id: string }
+  adminRecord?: { role: UserRole; university_id: string | null }
   error?: string
 }
 
@@ -39,15 +40,11 @@ export async function requireAdmin(request?: NextRequest, requireSecret?: boolea
     }
   }
 
-  // Check admin record in database using admin client to bypass RLS
-  const adminClient = createAdminClient()
-  const { data: adminRecord, error: adminError } = await adminClient
-    .from('admins')
-    .select('role, university_id')
-    .eq('user_id', user.id)
-    .maybeSingle()
-
-  if (adminError || !adminRecord) {
+  // Check user role from user_roles table
+  const userRole = await getUserRole(user.id)
+  
+  // Only admin and super_admin roles have admin access
+  if (userRole !== 'admin' && userRole !== 'super_admin') {
     return {
       ok: false,
       status: 403,
@@ -55,10 +52,22 @@ export async function requireAdmin(request?: NextRequest, requireSecret?: boolea
     }
   }
 
+  // Get admin record for university_id (may be null for super admins)
+  const adminClient = createAdminClient()
+  const { data: adminRecord } = await adminClient
+    .from('admins')
+    .select('university_id')
+    .eq('user_id', user.id)
+    .maybeSingle()
+
+  const universityId = adminRecord?.university_id || null
+
   // Validate shared secret from environment variable
   // This provides an additional layer of security for sensitive admin operations
-  // Default behavior: if request is provided and requireSecret is undefined, require secret (backward compatible)
-  const shouldRequireSecret = requireSecret !== undefined ? requireSecret : (request !== undefined)
+  // Default behavior: always require secret in production, optional in development
+  const shouldRequireSecret = requireSecret !== undefined 
+    ? requireSecret 
+    : (process.env.NODE_ENV === 'production')
   
   if (shouldRequireSecret && request) {
     // Strict enforcement: if secret is required, ADMIN_SHARED_SECRET must be set and provided
@@ -102,8 +111,8 @@ export async function requireAdmin(request?: NextRequest, requireSecret?: boolea
   // Audit log successful admin access
   safeLogger.info('[Admin] Admin access granted', {
     userId: user.id,
-    role: adminRecord.role,
-    universityId: adminRecord.university_id,
+    role: userRole,
+    universityId: universityId,
     path: request?.nextUrl?.pathname || 'unknown',
     method: request?.method || 'unknown'
   })
@@ -116,8 +125,8 @@ export async function requireAdmin(request?: NextRequest, requireSecret?: boolea
       email: user.email
     },
     adminRecord: {
-      role: adminRecord.role,
-      university_id: adminRecord.university_id
+      role: userRole,
+      university_id: universityId
     }
   }
 }
@@ -146,6 +155,32 @@ export async function requireAdminResponse(
   }
   
   return null
+}
+
+/**
+ * Verifies that the current user is a super admin
+ * 
+ * @param request - The Next.js request object (optional, for logging)
+ * @param requireSecret - Whether to require the x-admin-secret header. Defaults to false.
+ * @returns AdminAuthResult with authentication status
+ */
+export async function requireSuperAdmin(request?: NextRequest, requireSecret: boolean = false): Promise<AdminAuthResult> {
+  const result = await requireAdmin(request, requireSecret)
+  
+  if (!result.ok) {
+    return result
+  }
+
+  // Check if user is super admin
+  if (result.user && !(await isSuperAdmin(result.user.id))) {
+    return {
+      ok: false,
+      status: 403,
+      error: 'Super admin access required'
+    }
+  }
+
+  return result
 }
 
 /**

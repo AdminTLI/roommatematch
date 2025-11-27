@@ -4,6 +4,7 @@ import type { SectionKey } from '@/types/questionnaire'
 import { checkRateLimit, getUserRateLimitKey } from '@/lib/rate-limit'
 import { trackEvent, EVENT_TYPES } from '@/lib/events'
 import { extractSubmissionDataFromIntro, upsertProfileAndAcademic } from '@/lib/onboarding/submission'
+import { safeLogger } from '@/lib/utils/logger'
 
 type SaveBody = { section: SectionKey; answers: any[] }
 
@@ -93,7 +94,7 @@ export async function POST(request: Request) {
             } else {
               answersToSave.push({ itemId: 'university_id', value: resolvedUniversityId })
             }
-            console.log('[Onboarding Save] Resolved university_id:', resolvedUniversityId, 'for slug:', institutionSlug)
+            safeLogger.debug('[Onboarding Save] Resolved university_id:', resolvedUniversityId, 'for slug:', institutionSlug)
           } else {
             console.warn('[Onboarding Save] University not found for slug:', institutionSlug)
           }
@@ -161,7 +162,7 @@ export async function POST(request: Request) {
           
           if (!isUUID) {
             // Not a UUID, try RIO code lookup in programmes table
-            console.log('[Onboarding Save] Looking up program - trying RIO code first:', submissionData.program_id)
+            safeLogger.debug('[Onboarding Save] Looking up program - trying RIO code first:', submissionData.program_id)
             
             const { data: programme } = await serviceSupabase
               .from('programmes')
@@ -171,7 +172,7 @@ export async function POST(request: Request) {
             
             if (programme && programme.croho_code) {
               // Found in programmes table, now look up in programs table by CROHO code
-              console.log('[Onboarding Save] Found programme by RIO code, looking up in programs table by CROHO:', programme.croho_code)
+              safeLogger.debug('[Onboarding Save] Found programme by RIO code, looking up in programs table by CROHO:', programme.croho_code)
               const { data: programData } = await serviceSupabase
                 .from('programs')
                 .select('id')
@@ -180,7 +181,7 @@ export async function POST(request: Request) {
               
               if (programData?.id) {
                 programUUID = programData.id
-                console.log('[Onboarding Save] Found program UUID via programmes->programs lookup:', programUUID)
+                safeLogger.debug('[Onboarding Save] Found program UUID via programmes->programs lookup:', programUUID)
               } else {
                 console.warn('[Onboarding Save] Programme found but no matching program in programs table by CROHO code')
                 // Try to find by name, university, and level as fallback
@@ -195,7 +196,7 @@ export async function POST(request: Request) {
                   
                   if (programByName) {
                     programUUID = programByName.id
-                    console.log('[Onboarding Save] Found program UUID via name/university/level match:', programUUID)
+                    safeLogger.debug('[Onboarding Save] Found program UUID via name/university/level match:', programUUID)
                   } else {
                     console.warn('[Onboarding Save] Could not find matching program, setting to undecided')
                     programUUID = undefined
@@ -208,7 +209,7 @@ export async function POST(request: Request) {
               }
             } else {
               // Not found in programmes table, try direct CROHO code lookup in programs table
-              console.log('[Onboarding Save] Not found in programmes table, trying CROHO code lookup in programs table')
+              safeLogger.debug('[Onboarding Save] Not found in programmes table, trying CROHO code lookup in programs table')
               const { data: programData } = await serviceSupabase
                 .from('programs')
                 .select('id')
@@ -217,7 +218,7 @@ export async function POST(request: Request) {
               
               if (programData?.id) {
                 programUUID = programData.id
-                console.log('[Onboarding Save] Found program UUID by CROHO code:', programUUID)
+                safeLogger.debug('[Onboarding Save] Found program UUID by CROHO code:', programUUID)
               } else {
                 console.warn('[Onboarding Save] Program not found by RIO or CROHO code, setting to undecided')
                 programUUID = undefined
@@ -244,7 +245,7 @@ export async function POST(request: Request) {
             programme_duration_months: submissionData.programme_duration_months,
             undecided_program: submissionData.undecided_program
           })
-          console.log('[Onboarding Save] Successfully synced academic data to user_academic for user:', user.id)
+          safeLogger.debug('[Onboarding Save] Successfully synced academic data to user_academic for user:', user.id)
         } catch (upsertError) {
           console.error('[Onboarding Save] Failed to upsert academic data:', upsertError)
           // Don't fail the save if upsert fails - user can still save and submit later

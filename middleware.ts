@@ -4,6 +4,7 @@ import { createCSRFTokenCookie, validateCSRFToken } from '@/lib/csrf'
 import { checkRateLimit, getIPRateLimitKey } from '@/lib/rate-limit'
 import { isFeatureEnabled } from '@/lib/feature-flags'
 import { checkUserVerificationStatus, getVerificationRedirectUrl } from '@/lib/auth/verification-check'
+import { safeLogger } from '@/lib/utils/logger'
 import type { User } from '@supabase/supabase-js'
 
 // In-memory cache for user lookups with TTL
@@ -80,6 +81,32 @@ export async function middleware(req: NextRequest) {
 
   // Handle API routes with CSRF and rate limiting
   if (isApiRoute) {
+    // Rate limiting for auth endpoints (sign-in, sign-up)
+    if (pathname === '/api/auth/sign-in' || pathname === '/api/auth/sign-up' || 
+        pathname === '/auth/sign-in' || pathname === '/auth/sign-up') {
+      const clientIp = req.ip || req.headers.get('x-forwarded-for') || req.headers.get('x-real-ip') || 'unknown'
+      const rateLimitKey = getIPRateLimitKey('auth', clientIp)
+      const rateLimitResult = await checkRateLimit('auth', rateLimitKey)
+      
+      if (!rateLimitResult.allowed) {
+        return NextResponse.json(
+          {
+            error: 'Too many authentication attempts',
+            retryAfter: Math.ceil((rateLimitResult.resetTime - Date.now()) / 1000)
+          },
+          {
+            status: 429,
+            headers: {
+              'X-RateLimit-Limit': '10',
+              'X-RateLimit-Remaining': '0',
+              'X-RateLimit-Reset': new Date(rateLimitResult.resetTime).toISOString(),
+              'Retry-After': Math.ceil((rateLimitResult.resetTime - Date.now()) / 1000).toString()
+            }
+          }
+        )
+      }
+    }
+    
     // Skip CSRF for GET, HEAD, OPTIONS
     if (!['GET', 'HEAD', 'OPTIONS'].includes(method)) {
       // Rate limiting for POST/PUT/DELETE API routes
@@ -122,7 +149,7 @@ export async function middleware(req: NextRequest) {
 
       if (shouldSkipCSRF) {
         // Log when skipping CSRF for debugging
-        console.log('[Middleware] Skipping CSRF check for:', normalizedPathname)
+        safeLogger.debug('[Middleware] Skipping CSRF check for:', normalizedPathname)
       } else {
         const isValidCSRF = await validateCSRFToken(req)
         if (!isValidCSRF) {
@@ -130,7 +157,7 @@ export async function middleware(req: NextRequest) {
             normalizedPathname,
             skipRoutes: skipCSRFRoutes,
             hasHeader: !!req.headers.get('x-csrf-token'),
-            hasCookie: !!req.cookies.get('csrf-token-header')
+            hasCookie: !!req.cookies.get('csrf-token')
           })
           return NextResponse.json(
             { error: 'Invalid CSRF token' },
@@ -225,15 +252,10 @@ export async function middleware(req: NextRequest) {
       })
     }
 
-    // Set httpOnly cookie for server-side validation
+    // Set httpOnly cookie for server-side validation only
+    // Client should fetch token from /api/csrf-token endpoint (requires authentication)
+    // This prevents XSS attacks from reading the CSRF token
     res.cookies.set(csrfCookie.httpOnlyCookie.name, csrfCookie.httpOnlyCookie.value, csrfCookie.httpOnlyCookie.options)
-    // Also set non-httpOnly cookie so client can read it for header
-    res.cookies.set('csrf-token-header', csrfCookie.exposedToken, {
-      httpOnly: false,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'strict',
-      maxAge: 60 * 60 * 24
-    })
   }
 
   // Define protected routes that require full verification

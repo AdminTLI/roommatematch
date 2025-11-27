@@ -50,6 +50,9 @@ export function useRealtimeInvalidation({
   const isDevelopment = process.env.NODE_ENV === 'development'
 
   useEffect(() => {
+    // In development we see a lot of noisy CHANNEL_ERROR / CLOSED logs when
+    // components rapidly mount/unmount during Fast Refresh. Avoid opening a
+    // subscription at all when explicitly disabled.
     if (!enabled) {
       return
     }

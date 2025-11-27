@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
+import { safeLogger } from '@/lib/utils/logger';
 
 export async function POST(request: NextRequest) {
   try {
@@ -11,7 +12,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Mark all user's notifications as read
-    console.log('[mark-all-read] Marking all notifications as read for user:', user.id);
+    safeLogger.debug('[mark-all-read] Marking all notifications as read for user:', user.id);
     const { data, error } = await supabase
       .from('notifications')
       .update({ 
@@ -30,7 +31,7 @@ export async function POST(request: NextRequest) {
       }, { status: 500 });
     }
 
-    console.log('[mark-all-read] Successfully marked', data?.length || 0, 'notifications as read');
+    safeLogger.debug('[mark-all-read] Successfully marked', data?.length || 0, 'notifications as read');
     return NextResponse.json({ 
       success: true, 
       updated_count: data?.length || 0 

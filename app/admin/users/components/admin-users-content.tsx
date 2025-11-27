@@ -9,6 +9,7 @@ import { RefreshCw } from 'lucide-react'
 import { UserDetailDialog } from './user-detail-dialog'
 import { UserActionsDropdown } from './user-actions-dropdown'
 import { UserFilters } from './user-filters'
+import { UserRoleManagement } from './user-role-management'
 
 interface User {
   id: string
@@ -243,6 +244,9 @@ export function AdminUsersContent() {
           />
         </CardContent>
       </Card>
+
+      {/* Role Management Section - Only visible to Super Admins */}
+      <UserRoleManagement />
 
       {selectedUserId && (
         <UserDetailDialog

@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server'
 import { createAdminClient } from '@/lib/supabase/server'
+import { safeLogger } from '@/lib/utils/logger'
 
 export interface MarketingStatsResponse {
   matchedWithin24hPercent: number
@@ -21,8 +22,8 @@ export async function GET() {
     const oneYearAgo = new Date(now.getTime() - 365 * 24 * 60 * 60 * 1000)
     const oneYearAgoISO = oneYearAgo.toISOString()
 
-    console.log('[Marketing Stats] Starting stats calculation...')
-    console.log('[Marketing Stats] Time window: last 12 months from', oneYearAgoISO)
+    safeLogger.debug('[Marketing Stats] Starting stats calculation...')
+    safeLogger.debug('[Marketing Stats] Time window: last 12 months from', oneYearAgoISO)
 
     // Helper to compute average score from match_suggestions
     const avg = (rows: { fit_score: number | string | null }[]) => {
@@ -33,14 +34,14 @@ export async function GET() {
       }).filter(n => n !== null) as number[]
       
       if (nums.length === 0) {
-        console.log('[Marketing Stats] No valid scores found in avg calculation')
+        safeLogger.debug('[Marketing Stats] No valid scores found in avg calculation')
         return 0
       }
       
       // fit_score is stored as DECIMAL(4,3) in range 0.000-1.000, convert to 0-100
       const mean0to1 = nums.reduce((a, b) => a + b, 0) / nums.length
       const result = Math.round(mean0to1 * 100)
-      console.log('[Marketing Stats] Score calculation:', {
+      safeLogger.debug('[Marketing Stats] Score calculation:', {
         count: nums.length,
         sampleScores: nums.slice(0, 5),
         mean0to1,
@@ -50,7 +51,7 @@ export async function GET() {
     }
 
     // 1. Get ALL active users (no time restriction)
-    console.log('[Marketing Stats] Fetching all active users...')
+    safeLogger.debug('[Marketing Stats] Fetching all active users...')
     const { data: users, error: usersError } = await admin
       .from('users')
       .select('id, created_at')
@@ -61,10 +62,10 @@ export async function GET() {
       throw usersError
     }
 
-    console.log('[Marketing Stats] Found users:', users?.length || 0)
+    safeLogger.debug('[Marketing Stats] Found users:', users?.length || 0)
 
     if (!users || users.length === 0) {
-      console.log('[Marketing Stats] No active users found, returning default values')
+      safeLogger.debug('[Marketing Stats] No active users found, returning default values')
       return NextResponse.json({
         matchedWithin24hPercent: 0,
         matchedWithin48hPercent: 0,
@@ -80,10 +81,10 @@ export async function GET() {
     }
 
     const userIds = users.map(u => u.id)
-    console.log('[Marketing Stats] User IDs sample:', userIds.slice(0, 5))
+    safeLogger.debug('[Marketing Stats] User IDs sample:', userIds.slice(0, 5))
 
     // 2. Get all match suggestions from last 12 months (for recent activity stats)
-    console.log('[Marketing Stats] Fetching match suggestions from last 12 months...')
+    safeLogger.debug('[Marketing Stats] Fetching match suggestions from last 12 months...')
     const { data: suggestionsRecent, error: suggestionsError } = await admin
       .from('match_suggestions')
       .select('id, member_ids, created_at, fit_score, status, expires_at')
@@ -97,9 +98,9 @@ export async function GET() {
       throw suggestionsError
     }
 
-    console.log('[Marketing Stats] Found match suggestions (last 12 months):', suggestionsRecent?.length || 0)
+    safeLogger.debug('[Marketing Stats] Found match suggestions (last 12 months):', suggestionsRecent?.length || 0)
     if (suggestionsRecent && suggestionsRecent.length > 0) {
-      console.log('[Marketing Stats] Sample suggestion:', {
+      safeLogger.debug('[Marketing Stats] Sample suggestion:', {
         id: suggestionsRecent[0].id,
         member_ids: suggestionsRecent[0].member_ids,
         fit_score: suggestionsRecent[0].fit_score,
@@ -112,13 +113,13 @@ export async function GET() {
 
     // 3. Compute match timing metrics
     // Find first match suggestion for each user (regardless of when user signed up)
-    console.log('[Marketing Stats] Computing match timing metrics...')
+    safeLogger.debug('[Marketing Stats] Computing match timing metrics...')
     const userFirstMatchMap = new Map<string, Date>()
     const userDelays: number[] = []
 
     // Get ALL match suggestions (not just last 12 months) to find first match for each user
     // Query suggestions where user is in member_ids array
-    console.log('[Marketing Stats] Fetching all match suggestions to find first match per user...')
+    safeLogger.debug('[Marketing Stats] Fetching all match suggestions to find first match per user...')
     
     // Query all pair suggestions where any user in our list is a member
     // Use GIN index on member_ids for efficient querying
@@ -133,7 +134,7 @@ export async function GET() {
       console.warn('[Marketing Stats] Error fetching all suggestions, using recent suggestions only:', allSuggestionsError)
     }
 
-    console.log('[Marketing Stats] Found all match suggestions:', allSuggestions?.length || 0)
+    safeLogger.debug('[Marketing Stats] Found all match suggestions:', allSuggestions?.length || 0)
 
     // Track first match for each user from all suggestions
     ;(allSuggestions || suggestions).forEach(suggestion => {
@@ -155,7 +156,7 @@ export async function GET() {
       })
     })
 
-    console.log('[Marketing Stats] Users with matches:', userFirstMatchMap.size)
+    safeLogger.debug('[Marketing Stats] Users with matches:', userFirstMatchMap.size)
 
     // Compute delays for users with matches (only for users who got their first match in last 12 months)
     users.forEach(user => {
@@ -173,9 +174,9 @@ export async function GET() {
       }
     })
 
-    console.log('[Marketing Stats] Users with matches in last 12 months:', userDelays.length)
+    safeLogger.debug('[Marketing Stats] Users with matches in last 12 months:', userDelays.length)
     if (userDelays.length > 0) {
-      console.log('[Marketing Stats] Sample delays (hours):', userDelays.slice(0, 10))
+      safeLogger.debug('[Marketing Stats] Sample delays (hours):', userDelays.slice(0, 10))
     }
 
     // Count users matched within 24h/48h
@@ -201,16 +202,16 @@ export async function GET() {
     }
 
     // 4. Compute average scores
-    console.log('[Marketing Stats] Computing average scores...')
+    safeLogger.debug('[Marketing Stats] Computing average scores...')
     const suggestionsForScores = suggestions || []
-    console.log('[Marketing Stats] Total suggestions for score calculation:', suggestionsForScores.length)
+    safeLogger.debug('[Marketing Stats] Total suggestions for score calculation:', suggestionsForScores.length)
     
     const avgScoreAllMatches = avg(suggestionsForScores)
-    console.log('[Marketing Stats] Average score (all suggestions):', avgScoreAllMatches)
+    safeLogger.debug('[Marketing Stats] Average score (all suggestions):', avgScoreAllMatches)
 
     // For confirmed matches, check both match_suggestions with status='confirmed' and match_records with locked=true
     const confirmedSuggestions = suggestionsForScores.filter(s => s.status === 'confirmed')
-    console.log('[Marketing Stats] Confirmed suggestions:', confirmedSuggestions.length)
+    safeLogger.debug('[Marketing Stats] Confirmed suggestions:', confirmedSuggestions.length)
     
     // Also check match_records for locked/confirmed matches
     const { data: lockedRecords, error: recordsError } = await admin
@@ -224,7 +225,7 @@ export async function GET() {
       console.warn('[Marketing Stats] Error fetching match_records:', recordsError)
     }
 
-    console.log('[Marketing Stats] Locked match records:', lockedRecords?.length || 0)
+    safeLogger.debug('[Marketing Stats] Locked match records:', lockedRecords?.length || 0)
     
     // Combine confirmed suggestions and locked records for average
     const allConfirmed = [
@@ -233,11 +234,11 @@ export async function GET() {
     ]
     
     const avgScoreConfirmedMatches = avg(allConfirmed)
-    console.log('[Marketing Stats] Average score (confirmed matches):', avgScoreConfirmedMatches)
+    safeLogger.debug('[Marketing Stats] Average score (confirmed matches):', avgScoreConfirmedMatches)
 
     // 5. Compute matches to chat conversion
     // Don't rely on chats.match_id (it's null). Instead, match by user pairs
-    console.log('[Marketing Stats] Computing chat conversion metrics...')
+    safeLogger.debug('[Marketing Stats] Computing chat conversion metrics...')
     
     // Get confirmed suggestions and locked records for chat conversion
     const confirmedForChat = [
@@ -253,12 +254,12 @@ export async function GET() {
       }))
     ]
     
-    console.log('[Marketing Stats] Confirmed matches for chat lookup:', confirmedForChat.length)
+    safeLogger.debug('[Marketing Stats] Confirmed matches for chat lookup:', confirmedForChat.length)
 
     let matchesWithChat24h = 0
 
     if (confirmedForChat.length === 0) {
-      console.log('[Marketing Stats] No confirmed matches found, skipping chat conversion calculation')
+      safeLogger.debug('[Marketing Stats] No confirmed matches found, skipping chat conversion calculation')
     } else {
       // Get all chat members to find 1:1 chats between matched users
       const { data: allChatMembers, error: chatMembersError } = await admin
@@ -282,7 +283,7 @@ export async function GET() {
       }
 
       const chatIds = allChats?.map(c => c.id) || []
-      console.log('[Marketing Stats] Found 1:1 chats:', chatIds.length)
+      safeLogger.debug('[Marketing Stats] Found 1:1 chats:', chatIds.length)
 
       // Build map of chat_id -> [user1, user2] pairs
       const chatPairs = new Map<string, { users: string[], chatId: string }>()
@@ -295,7 +296,7 @@ export async function GET() {
         }
       })
 
-      console.log('[Marketing Stats] Found chat pairs:', chatPairs.size)
+      safeLogger.debug('[Marketing Stats] Found chat pairs:', chatPairs.size)
 
       // Get first message for each chat (batch query for efficiency)
       const chatIdsList = Array.from(new Set(Array.from(chatPairs.values()).map(cp => cp.chatId)))
@@ -324,7 +325,7 @@ export async function GET() {
         chatToFirstMessage.set(chatId, date)
       })
 
-      console.log('[Marketing Stats] Chats with first messages:', chatToFirstMessage.size)
+      safeLogger.debug('[Marketing Stats] Chats with first messages:', chatToFirstMessage.size)
 
       // For each confirmed match, find corresponding chat and check first message timing
       for (const match of confirmedForChat) {
@@ -347,17 +348,17 @@ export async function GET() {
         }
       }
 
-      console.log('[Marketing Stats] Matches with first message within 24h:', matchesWithChat24h)
-      console.log('[Marketing Stats] Total confirmed matches:', confirmedForChat.length)
+      safeLogger.debug('[Marketing Stats] Matches with first message within 24h:', matchesWithChat24h)
+      safeLogger.debug('[Marketing Stats] Total confirmed matches:', confirmedForChat.length)
     }
 
     const matchesToChatWithin24hPercent = confirmedForChat.length > 0
       ? Math.round((matchesWithChat24h / confirmedForChat.length) * 100)
       : 0
-    console.log('[Marketing Stats] Chat conversion percentage:', matchesToChatWithin24hPercent)
+    safeLogger.debug('[Marketing Stats] Chat conversion percentage:', matchesToChatWithin24hPercent)
 
     // 6. Compute verified users percentage
-    console.log('[Marketing Stats] Computing verified users percentage...')
+    safeLogger.debug('[Marketing Stats] Computing verified users percentage...')
     // Get total active users (not just last 12 months for verification stat)
     const { count: totalUsers, error: totalUsersError } = await admin
       .from('users')
@@ -369,7 +370,7 @@ export async function GET() {
       throw totalUsersError
     }
 
-    console.log('[Marketing Stats] Total active users:', totalUsers)
+    safeLogger.debug('[Marketing Stats] Total active users:', totalUsers)
 
     // Get verified profiles
     const { data: verifiedProfiles, error: verifiedProfilesError } = await admin
@@ -382,7 +383,7 @@ export async function GET() {
       throw verifiedProfilesError
     }
 
-    console.log('[Marketing Stats] Verified profiles:', verifiedProfiles?.length || 0)
+    safeLogger.debug('[Marketing Stats] Verified profiles:', verifiedProfiles?.length || 0)
 
     // Get users with email confirmed (using auth.admin.listUsers)
     let emailVerifiedUserIds = new Set<string>()
@@ -394,7 +395,7 @@ export async function GET() {
             emailVerifiedUserIds.add(u.id)
           }
         })
-        console.log('[Marketing Stats] Email verified users:', emailVerifiedUserIds.size)
+        safeLogger.debug('[Marketing Stats] Email verified users:', emailVerifiedUserIds.size)
       }
     } catch (authErr) {
       console.warn('[Marketing Stats] Could not fetch auth users, using profiles only:', authErr)
@@ -404,15 +405,15 @@ export async function GET() {
     verifiedProfiles?.forEach(p => verifiedSet.add(p.user_id))
     emailVerifiedUserIds.forEach(id => verifiedSet.add(id))
 
-    console.log('[Marketing Stats] Total verified users (profile + email):', verifiedSet.size)
+    safeLogger.debug('[Marketing Stats] Total verified users (profile + email):', verifiedSet.size)
 
     const verifiedUsersPercent = totalUsers && totalUsers > 0
       ? Math.round((verifiedSet.size / totalUsers) * 100)
       : 0
-    console.log('[Marketing Stats] Verified users percentage:', verifiedUsersPercent)
+    safeLogger.debug('[Marketing Stats] Verified users percentage:', verifiedUsersPercent)
 
     // 7. Compute universities and programmes count
-    console.log('[Marketing Stats] Computing universities and programmes count...')
+    safeLogger.debug('[Marketing Stats] Computing universities and programmes count...')
     const { data: academicData, error: academicError } = await admin
       .from('user_academic')
       .select('university_id, program_id')
@@ -423,7 +424,7 @@ export async function GET() {
       throw academicError
     }
 
-    console.log('[Marketing Stats] Academic records:', academicData?.length || 0)
+    safeLogger.debug('[Marketing Stats] Academic records:', academicData?.length || 0)
 
     const universitiesSet = new Set<string>()
     const programmesSet = new Set<string>()
@@ -439,8 +440,8 @@ export async function GET() {
 
     const universitiesCount = universitiesSet.size
     const programmesCount = programmesSet.size
-    console.log('[Marketing Stats] Universities count:', universitiesCount)
-    console.log('[Marketing Stats] Programmes count:', programmesCount)
+    safeLogger.debug('[Marketing Stats] Universities count:', universitiesCount)
+    safeLogger.debug('[Marketing Stats] Programmes count:', programmesCount)
 
     const response: MarketingStatsResponse = {
       matchedWithin24hPercent,
@@ -455,8 +456,8 @@ export async function GET() {
       generatedAt: new Date().toISOString(),
     }
 
-    console.log('[Marketing Stats] Final response:', JSON.stringify(response, null, 2))
-    console.log('[Marketing Stats] Stats calculation completed successfully')
+    safeLogger.debug('[Marketing Stats] Final response:', JSON.stringify(response, null, 2))
+    safeLogger.debug('[Marketing Stats] Stats calculation completed successfully')
 
     return NextResponse.json(response)
   } catch (error) {

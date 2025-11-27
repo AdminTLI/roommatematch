@@ -13,8 +13,8 @@ export const metadata: Metadata = {
   title: 'Domu Match - From strangers to roommates',
   description: 'From strangers to roommates. Connect with fellow students and find your ideal roommate match. Safe, verified, and designed for Dutch universities.',
   icons: {
-    icon: '/favicon.ico',
-    apple: '/favicon.ico',
+    icon: '/images/logo.png',
+    apple: '/images/logo.png',
   },
 }
 

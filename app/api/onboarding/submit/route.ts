@@ -14,11 +14,11 @@ export async function POST(request: Request) {
   const url = new URL(request.url)
   const isEditMode = url.searchParams.get('mode') === 'edit'
   
-  console.log('[Submit] User:', user?.id, 'isDemo:', !user, 'isEditMode:', isEditMode)
+  safeLogger.debug('[Submit] User:', user?.id, 'isDemo:', !user, 'isEditMode:', isEditMode)
   
   // Require authentication
   if (!user?.id) {
-    console.log('[Submit] No authenticated user')
+    safeLogger.debug('[Submit] No authenticated user')
     return NextResponse.json({ 
       error: 'Authentication required. Please log in and try again.' 
     }, { status: 401 })
@@ -31,14 +31,14 @@ export async function POST(request: Request) {
     const verificationStatus = await checkUserVerificationStatus(user)
     
     if (verificationStatus.needsEmailVerification) {
-      console.log('[Submit] User email not verified:', user.email)
+      safeLogger.debug('[Submit] User email not verified:', user.email)
       return NextResponse.json({ 
         error: 'Please verify your email before submitting the questionnaire. Check your email for a verification link or go to Settings to resend verification email.' 
       }, { status: 403 })
     }
 
     if (verificationStatus.needsPersonaVerification) {
-      console.log('[Submit] User Persona not verified:', user.email)
+      safeLogger.debug('[Submit] User Persona not verified:', user.email)
       return NextResponse.json({ 
         error: 'Please complete identity verification before submitting the questionnaire. Go to Settings to complete verification.' 
       }, { status: 403 })
@@ -54,10 +54,10 @@ export async function POST(request: Request) {
       .eq('id', userId)
       .maybeSingle()  // Use maybeSingle() instead of single() to avoid errors
 
-    console.log('[Submit] User existence check:', { exists: !!existingUser, checkError })
+    safeLogger.debug('[Submit] User existence check:', { exists: !!existingUser, checkError })
 
     if (!existingUser && !checkError) {
-      console.log('[Submit] User not found in users table, creating...')
+      safeLogger.debug('[Submit] User not found in users table, creating...')
       
       const { error: userCreateError } = await serviceSupabase
         .from('users')
@@ -72,9 +72,9 @@ export async function POST(request: Request) {
       if (userCreateError) {
         // Check if it's a duplicate key error (user was created by trigger in the meantime)
         if (userCreateError.code === '23505') {
-          console.log('[Submit] User already exists (created by trigger), continuing...')
+          safeLogger.debug('[Submit] User already exists (created by trigger), continuing...')
         } else {
-          console.error('[Submit] Failed to create user:', {
+          safeLogger.error('[Submit] Failed to create user:', {
             code: userCreateError.code,
             message: userCreateError.message,
             details: userCreateError.details,
@@ -85,12 +85,12 @@ export async function POST(request: Request) {
           }, { status: 500 })
         }
       } else {
-        console.log('[Submit] User created successfully')
+        safeLogger.debug('[Submit] User created successfully')
       }
     }
 
     // 1. Fetch all sections from onboarding_sections
-      console.log('[Submit] Fetching sections for user:', userId)
+      safeLogger.debug('[Submit] Fetching sections for user:', userId)
       const { data: sections, error: sectionsError } = await supabase
         .from('onboarding_sections')
         .select('section, answers, version, updated_at')
@@ -101,7 +101,7 @@ export async function POST(request: Request) {
         return NextResponse.json({ error: sectionsError.message }, { status: 500 })
       }
 
-      console.log('[Submit] Fetched sections:', sections?.length || 0)
+      safeLogger.debug('[Submit] Fetched sections:', sections?.length || 0)
 
       // 2. Find intro section for later processing
       const introSection = sections?.find((s: any) => s.section === 'intro')
@@ -113,7 +113,7 @@ export async function POST(request: Request) {
       if (introSection?.answers) {
         try {
           submissionData = extractSubmissionDataFromIntro(introSection.answers, user)
-          console.log('[Submit] Extracted submission data:', submissionData)
+          safeLogger.debug('[Submit] Extracted submission data:', submissionData)
           
           // Validate critical fields after extraction
           if (!submissionData.study_start_year || isNaN(submissionData.study_start_year)) {
@@ -137,7 +137,7 @@ export async function POST(request: Request) {
         if (!submissionData.university_id || submissionData.university_id === '') {
           const institutionSlugAnswer = introSection.answers.find((a: any) => a.itemId === 'institution_slug')
           if (institutionSlugAnswer?.value && institutionSlugAnswer.value !== 'other') {
-            console.log('[Submit] Looking up university for slug:', institutionSlugAnswer.value)
+            safeLogger.debug('[Submit] Looking up university for slug:', institutionSlugAnswer.value)
             
             // Use service role client to bypass RLS (already created above)
             // Try exact match first
@@ -152,10 +152,10 @@ export async function POST(request: Request) {
               // Don't fail submission if lookup fails - user might have selected "other"
             } else if (university) {
               submissionData.university_id = university.id
-              console.log('[Submit] Found university_id:', university.id, 'for slug:', institutionSlugAnswer.value)
+              safeLogger.debug('[Submit] Found university_id:', university.id, 'for slug:', institutionSlugAnswer.value)
             } else {
               // Try case-insensitive lookup as fallback
-              console.log('[Submit] Trying case-insensitive lookup for slug:', institutionSlugAnswer.value)
+              safeLogger.debug('[Submit] Trying case-insensitive lookup for slug:', institutionSlugAnswer.value)
               const { data: universities } = await serviceSupabase
                 .from('universities')
                 .select('id, slug, name')
@@ -164,7 +164,7 @@ export async function POST(request: Request) {
               
               if (universities && universities.length > 0) {
                 submissionData.university_id = universities[0].id
-                console.log('[Submit] Found university with case-insensitive lookup:', universities[0].id, 'for slug:', institutionSlugAnswer.value)
+                safeLogger.debug('[Submit] Found university with case-insensitive lookup:', universities[0].id, 'for slug:', institutionSlugAnswer.value)
               } else {
                 console.warn('[Submit] University not found for slug:', institutionSlugAnswer.value)
                 // If university not found and not "other", this is an error
@@ -192,7 +192,7 @@ export async function POST(request: Request) {
           
           if (isUUID) {
             // Already a UUID, verify it exists in programs table
-            console.log('[Submit] program_id is already a UUID, verifying it exists:', submissionData.program_id)
+            safeLogger.debug('[Submit] program_id is already a UUID, verifying it exists:', submissionData.program_id)
             const { data: program } = await serviceSupabase
               .from('programs')
               .select('id')
@@ -203,7 +203,7 @@ export async function POST(request: Request) {
               // UUID exists and is valid
               submissionData.undecided_program = false
               programIdResolved = true
-              console.log('[Submit] Program UUID verified:', submissionData.program_id)
+              safeLogger.debug('[Submit] Program UUID verified:', submissionData.program_id)
             } else {
               console.warn('[Submit] Program UUID not found in programs table, will try RIO/CROHO lookup')
               // Fall through to RIO/CROHO lookup - don't set programIdResolved
@@ -212,7 +212,7 @@ export async function POST(request: Request) {
           
           // If not a UUID, or UUID was provided but doesn't exist, try RIO code lookup in programmes table
           if (!programIdResolved) {
-            console.log('[Submit] Looking up program - trying RIO code first:', submissionData.program_id)
+            safeLogger.debug('[Submit] Looking up program - trying RIO code first:', submissionData.program_id)
             
             // First, try to find in programmes table by RIO code
             const { data: programme, error: programmeError } = await serviceSupabase
@@ -223,7 +223,7 @@ export async function POST(request: Request) {
             
             if (programme && programme.croho_code) {
               // Found in programmes table, now look up in programs table by CROHO code
-              console.log('[Submit] Found programme by RIO code, looking up in programs table by CROHO:', programme.croho_code)
+              safeLogger.debug('[Submit] Found programme by RIO code, looking up in programs table by CROHO:', programme.croho_code)
               const { data: program, error: programError } = await serviceSupabase
                 .from('programs')
                 .select('id')
@@ -233,7 +233,7 @@ export async function POST(request: Request) {
               if (program) {
                 submissionData.program_id = program.id
                 submissionData.undecided_program = false
-                console.log('[Submit] Found program UUID via programmes->programs lookup:', program.id)
+                safeLogger.debug('[Submit] Found program UUID via programmes->programs lookup:', program.id)
               } else {
                 console.warn('[Submit] Programme found but no matching program in programs table by CROHO code')
                 // Try to find by name, university, and level as fallback
@@ -249,7 +249,7 @@ export async function POST(request: Request) {
                   if (programByName) {
                     submissionData.program_id = programByName.id
                     submissionData.undecided_program = false
-                    console.log('[Submit] Found program UUID via name/university/level match:', programByName.id)
+                    safeLogger.debug('[Submit] Found program UUID via name/university/level match:', programByName.id)
                   } else {
                     console.warn('[Submit] Could not find matching program, setting to undecided')
                     submissionData.program_id = undefined
@@ -262,7 +262,7 @@ export async function POST(request: Request) {
               }
             } else {
               // Not found in programmes table, try direct CROHO code lookup in programs table
-              console.log('[Submit] Not found in programmes table, trying CROHO code lookup in programs table')
+              safeLogger.debug('[Submit] Not found in programmes table, trying CROHO code lookup in programs table')
               const { data: program, error: programError } = await serviceSupabase
                 .from('programs')
                 .select('id')
@@ -272,7 +272,7 @@ export async function POST(request: Request) {
               if (program) {
                 submissionData.program_id = program.id
                 submissionData.undecided_program = false
-                console.log('[Submit] Found program UUID by CROHO code:', program.id)
+                safeLogger.debug('[Submit] Found program UUID by CROHO code:', program.id)
               } else {
                 console.warn('[Submit] Program not found by RIO or CROHO code, setting to undecided')
                 submissionData.program_id = undefined
@@ -296,7 +296,7 @@ export async function POST(request: Request) {
               submissionData.program_id = undefined
               submissionData.undecided_program = true
             } else {
-              console.log('[Submit] ✓ Final validation passed: program_id', submissionData.program_id, 'exists in programs table')
+              safeLogger.debug('[Submit] ✓ Final validation passed: program_id', submissionData.program_id, 'exists in programs table')
             }
           }
         }
@@ -304,11 +304,11 @@ export async function POST(request: Request) {
       
       // Extract languages from all sections
       const extractedLanguages = extractLanguagesFromSections(sections ?? [])
-      console.log('[Submit] Extracted languages:', extractedLanguages)
+      safeLogger.debug('[Submit] Extracted languages:', extractedLanguages)
       
       // Transform all answers from all sections
       for (const section of sections ?? []) {
-        console.log(`[Submit] Processing section: ${section.section}, answers: ${section.answers?.length || 0}`)
+        safeLogger.debug(`[Submit] Processing section: ${section.section}, answers: ${section.answers?.length || 0}`)
         for (const answer of section.answers ?? []) {
           const transformed = transformAnswer(answer)
           if (transformed) {
@@ -322,7 +322,7 @@ export async function POST(request: Request) {
         }
       }
 
-      console.log(`[Submit] Prepared ${responsesToInsert.length} responses to insert`)
+      safeLogger.debug(`[Submit] Prepared ${responsesToInsert.length} responses to insert`)
 
       // Deduplicate responses by question_key (keep last value for each key)
       const responseMap = new Map<string, any>()
@@ -335,7 +335,7 @@ export async function POST(request: Request) {
         value
       }))
 
-      console.log(`[Submit] Deduplicated ${responsesToInsert.length} responses to ${deduplicatedResponses.length} unique keys`)
+      safeLogger.debug(`[Submit] Deduplicated ${responsesToInsert.length} responses to ${deduplicatedResponses.length} unique keys`)
 
       // 4. Validate we have data to submit
       if (!submissionData || deduplicatedResponses.length === 0) {
@@ -358,7 +358,7 @@ export async function POST(request: Request) {
         const universityIdAnswer = introSection?.answers?.find((a: any) => a.itemId === 'university_id')
         if (universityIdAnswer?.value && typeof universityIdAnswer.value === 'string' && universityIdAnswer.value.trim() !== '') {
           submissionData.university_id = universityIdAnswer.value
-          console.log('[Submit] Found university_id in intro section answers:', submissionData.university_id)
+          safeLogger.debug('[Submit] Found university_id in intro section answers:', submissionData.university_id)
         }
         
         if (!submissionData.university_id || submissionData.university_id === '' || submissionData.university_id === null) {
@@ -408,7 +408,7 @@ export async function POST(request: Request) {
           }, { status: 400 })
         }
 
-        console.log('[Submit] All validations passed, proceeding with submission:', {
+        safeLogger.debug('[Submit] All validations passed, proceeding with submission:', {
           user_id: userId,
           university_id: submissionData.university_id,
           degree_level: submissionData.degree_level,
@@ -452,7 +452,7 @@ export async function POST(request: Request) {
             }, { status: 500 })
           }
 
-          console.log('[Submit] Consolidated submission successful')
+          safeLogger.debug('[Submit] Consolidated submission successful')
           
           // Verify user_academic was created/updated using service role client to bypass RLS
           // Reuse the same serviceSupabase instance that was created earlier
@@ -465,7 +465,7 @@ export async function POST(request: Request) {
           if (verifyError) {
             console.error('[Submit] Failed to verify user_academic after submission:', verifyError)
             // Attempt to backfill from submission data
-            console.log('[Submit] Attempting to backfill user_academic from submission data...')
+            safeLogger.debug('[Submit] Attempting to backfill user_academic from submission data...')
             try {
               // Re-extract and upsert academic data using service role client
               const { upsertProfileAndAcademic } = await import('@/lib/onboarding/submission')
@@ -485,7 +485,7 @@ export async function POST(request: Request) {
                 programme_duration_months: submissionData.programme_duration_months,
                 undecided_program: submissionData.undecided_program
               })
-              console.log('[Submit] Successfully backfilled user_academic')
+              safeLogger.debug('[Submit] Successfully backfilled user_academic')
             } catch (backfillError) {
               console.error('[Submit] Failed to backfill user_academic:', backfillError)
               // Log but don't fail - submission was successful
@@ -512,14 +512,14 @@ export async function POST(request: Request) {
                 programme_duration_months: submissionData.programme_duration_months,
                 undecided_program: submissionData.undecided_program
               })
-              console.log('[Submit] Successfully backfilled user_academic')
+              safeLogger.debug('[Submit] Successfully backfilled user_academic')
             } catch (backfillError) {
               console.error('[Submit] Failed to backfill user_academic:', backfillError)
               // Log but don't fail - submission was successful, but academic data is missing
               console.error('[Submit] User should have user_academic record but it was not created. Manual intervention may be required.')
             }
           } else {
-            console.log('[Submit] Verified user_academic was created/updated:', verifyAcademic)
+            safeLogger.debug('[Submit] Verified user_academic was created/updated:', verifyAcademic)
           }
         } catch (submitError) {
           console.error('[Submit] Error during submission:', submitError)
@@ -534,7 +534,7 @@ export async function POST(request: Request) {
         // 5. Save snapshot to onboarding_submissions (only after successful submission)
         // Store both raw sections (for audit trail) and transformed responses (for analysis)
         // Normalized data avoids needing to recompute transformAnswer for historical analysis
-        console.log('[Submit] Saving to onboarding_submissions')
+        safeLogger.debug('[Submit] Saving to onboarding_submissions')
         const submissionPayload = {
           user_id: userId,
           snapshot: {
@@ -557,10 +557,10 @@ export async function POST(request: Request) {
           }, { status: 500 })
         }
 
-        console.log('[Submit] Saved to onboarding_submissions successfully')
+        safeLogger.debug('[Submit] Saved to onboarding_submissions successfully')
 
         // 6. Generate user vector from responses
-        console.log('[Submit] Generating user vector...')
+        safeLogger.debug('[Submit] Generating user vector...')
         let vectorGenerated = false
         try {
           const { error: vectorError } = await supabase.rpc('update_user_vector', {
@@ -575,7 +575,7 @@ export async function POST(request: Request) {
               error: vectorError.message
             })
           } else {
-            console.log('[Submit] User vector generated successfully')
+            safeLogger.debug('[Submit] User vector generated successfully')
             vectorGenerated = true
           }
         } catch (vectorErr) {
@@ -603,7 +603,7 @@ export async function POST(request: Request) {
         }
       }
 
-    console.log('[Submit] Submission complete')
+    safeLogger.debug('[Submit] Submission complete')
     return NextResponse.json({ ok: true })
     
   } catch (error) {

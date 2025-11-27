@@ -146,10 +146,10 @@ export function SettingsContent({ user, profile, academic, progressData }: Setti
 
           {/* Desktop: Horizontal Layout (>= 1024px) */}
           <div className="hidden lg:block">
-            <div className="flex gap-2 bg-bg-surface border border-border-subtle p-1.5 rounded-2xl shadow-sm">
+            <div className="flex gap-1 bg-bg-surface border border-border-subtle p-1.5 rounded-2xl shadow-sm">
               <button
                 onClick={() => setActiveTab('profile')}
-                className={`flex items-center gap-2 px-5 py-3 rounded-xl text-base font-medium transition-colors min-h-[44px] ${
+                className={`flex-1 flex items-center justify-center gap-2 px-4 py-3 rounded-xl text-base font-medium transition-colors min-h-[44px] ${
                   activeTab === 'profile'
                     ? 'bg-semantic-accent text-white shadow-sm'
                     : 'text-text-secondary hover:text-text-primary hover:bg-bg-surface-alt active:bg-bg-surface-alt'
@@ -160,7 +160,7 @@ export function SettingsContent({ user, profile, academic, progressData }: Setti
               </button>
               <button
                 onClick={() => setActiveTab('questionnaire')}
-                className={`flex items-center gap-2 px-5 py-3 rounded-xl text-base font-medium transition-colors min-h-[44px] ${
+                className={`flex-1 flex items-center justify-center gap-2 px-4 py-3 rounded-xl text-base font-medium transition-colors min-h-[44px] ${
                   activeTab === 'questionnaire'
                     ? 'bg-semantic-accent text-white shadow-sm'
                     : 'text-text-secondary hover:text-text-primary hover:bg-bg-surface-alt active:bg-bg-surface-alt'
@@ -171,7 +171,7 @@ export function SettingsContent({ user, profile, academic, progressData }: Setti
               </button>
               <button
                 onClick={() => setActiveTab('account')}
-                className={`flex items-center gap-2 px-5 py-3 rounded-xl text-base font-medium transition-colors min-h-[44px] ${
+                className={`flex-1 flex items-center justify-center gap-2 px-4 py-3 rounded-xl text-base font-medium transition-colors min-h-[44px] ${
                   activeTab === 'account'
                     ? 'bg-semantic-accent text-white shadow-sm'
                     : 'text-text-secondary hover:text-text-primary hover:bg-bg-surface-alt active:bg-bg-surface-alt'
@@ -182,7 +182,7 @@ export function SettingsContent({ user, profile, academic, progressData }: Setti
               </button>
               <button
                 onClick={() => setActiveTab('privacy')}
-                className={`flex items-center gap-2 px-5 py-3 rounded-xl text-base font-medium transition-colors min-h-[44px] ${
+                className={`flex-1 flex items-center justify-center gap-2 px-4 py-3 rounded-xl text-base font-medium transition-colors min-h-[44px] ${
                   activeTab === 'privacy'
                     ? 'bg-semantic-accent text-white shadow-sm'
                     : 'text-text-secondary hover:text-text-primary hover:bg-bg-surface-alt active:bg-bg-surface-alt'

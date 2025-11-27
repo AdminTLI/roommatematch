@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server'
 import { z } from 'zod'
 import { createServiceClient } from '@/lib/supabase/service'
 import { sendEmail } from '@/lib/email/workflows'
+import { safeLogger } from '@/lib/utils/logger'
 
 const ApplicationSchema = z.object({
   track: z.enum(['experienced', 'student']),
@@ -65,7 +66,7 @@ export async function POST(request: Request) {
       }, { status: 500 })
     }
     
-    console.log('[Careers Apply] Successfully inserted application:', insertedData?.[0]?.id)
+    safeLogger.debug('[Careers Apply] Successfully inserted application:', insertedData?.[0]?.id)
 
     const inbox = process.env.CAREERS_INBOX || process.env.SUPPORT_INBOX
     if (inbox) {

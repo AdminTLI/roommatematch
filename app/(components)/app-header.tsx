@@ -27,6 +27,7 @@ import {
 import { NotificationBell } from './notifications/notification-bell'
 import { ThemeToggle } from '@/components/ui/theme-toggle'
 import { useState } from 'react'
+import { useIsAdmin } from '@/lib/auth/roles-client'
 
 interface AppHeaderProps {
   user: {
@@ -43,6 +44,7 @@ export function AppHeader({ user }: AppHeaderProps) {
   const router = useRouter()
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const supabase = createClient()
+  const isAdmin = useIsAdmin()
 
   const handleSignOut = async () => {
     await supabase.auth.signOut()
@@ -51,12 +53,6 @@ export function AppHeader({ user }: AppHeaderProps) {
 
   // MVP hidden features - kept in code but hidden from UI
   const MVP_HIDDEN_ITEMS = ['Agreements', 'Reputation', 'Video Intros']
-  
-  // Super admin email - only this account can see Admin button
-  const SUPER_ADMIN_EMAIL = 'demo@account.com'
-  
-  // Check if current user is super admin
-  const isSuperAdmin = user.email.toLowerCase() === SUPER_ADMIN_EMAIL.toLowerCase()
   
   const allNavigationItems = [
     { name: 'Matches', href: '/matches', icon: Users },
@@ -78,8 +74,8 @@ export function AppHeader({ user }: AppHeaderProps) {
       return false
     }
     
-    // Filter out Admin unless user is super admin
-    if (item.name === 'Admin' && !isSuperAdmin) {
+    // Filter out Admin unless user is admin
+    if (item.name === 'Admin' && !isAdmin) {
       return false
     }
     

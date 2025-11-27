@@ -46,17 +46,6 @@ export async function checkUserVerificationStatus(
     }
   }
 
-  // Super admin demo account bypass - always verified
-  const DEMO_USER_EMAIL = 'demo@account.com'
-  if (user.email?.toLowerCase() === DEMO_USER_EMAIL.toLowerCase()) {
-    return {
-      emailVerified: true,
-      personaVerified: true,
-      needsEmailVerification: false,
-      needsPersonaVerification: false,
-    }
-  }
-
   // Check cache first
   const cacheKey = user.id
   const cached = verificationCache.get(cacheKey)

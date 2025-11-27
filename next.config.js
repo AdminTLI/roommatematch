@@ -3,7 +3,9 @@
 const nextConfig = {
   experimental: {
     serverActions: {
-      allowedOrigins: ['localhost:3000', '*.vercel.app'],
+      allowedOrigins: process.env.NODE_ENV === 'production' 
+        ? [process.env.NEXT_PUBLIC_APP_URL || process.env.VERCEL_URL].filter(Boolean)
+        : ['localhost:3000'],
     },
     // Ensure the app works in older browsers (e.g. Safari < 14) by transpiling modern syntax
     legacyBrowsers: true,
@@ -13,9 +15,13 @@ const nextConfig = {
   // Force SWC to transpile packages that ship modern syntax (Sentry client utilities)
   transpilePackages: ['@sentry-internal/browser-utils'],
   eslint: {
+    // TODO: Fix ESLint errors and remove this flag
+    // Run: npm run lint to identify errors, then fix them
     ignoreDuringBuilds: true,
   },
   typescript: {
+    // TODO: Fix TypeScript errors and remove this flag
+    // Run: npm run type-check to identify errors, then fix them
     ignoreBuildErrors: true,
   },
   compiler: {
@@ -65,6 +71,43 @@ const nextConfig = {
           {
             key: 'Referrer-Policy',
             value: 'strict-origin-when-cross-origin',
+          },
+          {
+            key: 'Strict-Transport-Security',
+            value: 'max-age=31536000; includeSubDomains; preload',
+          },
+          {
+            key: 'Permissions-Policy',
+            value: 'camera=(), microphone=(), geolocation=(), interest-cohort=()',
+          },
+          {
+            key: 'X-DNS-Prefetch-Control',
+            value: 'on',
+          },
+          {
+            key: 'Cross-Origin-Opener-Policy',
+            value: 'same-origin',
+          },
+          {
+            key: 'Cross-Origin-Embedder-Policy',
+            value: 'require-corp',
+          },
+          {
+            key: 'Content-Security-Policy',
+            value: [
+              "default-src 'self'",
+              "script-src 'self' 'unsafe-eval' 'unsafe-inline' https://*.persona.com https://*.vercel-insights.com https://*.sentry.io",
+              "style-src 'self' 'unsafe-inline'",
+              "img-src 'self' data: https: blob:",
+              "font-src 'self' data:",
+              "connect-src 'self' https://*.supabase.co https://*.persona.com https://*.sentry.io https://*.vercel-insights.com",
+              "frame-src https://*.persona.com",
+              "object-src 'none'",
+              "base-uri 'self'",
+              "form-action 'self'",
+              "frame-ancestors 'none'",
+              "upgrade-insecure-requests"
+            ].join('; '),
           },
         ],
       },

@@ -33,7 +33,7 @@ export async function GET(request: NextRequest) {
     if (chatId) {
       safeLogger.debug('Fetching compatibility for chatId', { chatId, currentUserId: user.id })
       
-      console.log('[API Compatibility] === START REQUEST ===', {
+      safeLogger.debug('[API Compatibility] === START REQUEST ===', {
         chatId,
         currentUserId: user.id,
         timestamp: new Date().toISOString()
@@ -44,7 +44,7 @@ export async function GET(request: NextRequest) {
         .select('user_id, chat_id')
         .eq('chat_id', chatId)
 
-      console.log('[API Compatibility] Query result:', {
+      safeLogger.debug('[API Compatibility] Query result:', {
         chatId,
         hasError: !!membersError,
         error: membersError,
@@ -92,7 +92,7 @@ export async function GET(request: NextRequest) {
 
       targetUserId = otherMember.user_id
       
-      console.log('[API Compatibility] Target user determined:', {
+      safeLogger.debug('[API Compatibility] Target user determined:', {
         chatId,
         currentUserId: user.id,
         targetUserId,
@@ -183,7 +183,7 @@ export async function GET(request: NextRequest) {
       })
       
       // Log to console for easier debugging
-      console.log('[API Compatibility] RPC result:', {
+      safeLogger.debug('[API Compatibility] RPC result:', {
         chatId,
         user_a_id: user.id,
         user_b_id: targetUserId,
@@ -319,7 +319,7 @@ export async function GET(request: NextRequest) {
       }
     }
     
-    console.log('[API Compatibility] Returning response:', {
+    safeLogger.debug('[API Compatibility] Returning response:', {
       chatId,
       targetUserId,
       compatibility_score: responseData.compatibility_score,
