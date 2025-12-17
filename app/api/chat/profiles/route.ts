@@ -36,8 +36,17 @@ export async function POST(request: NextRequest) {
 
     const { chatId, chatIds } = await request.json()
     
-    // Support both single chatId and array of chatIds for batch requests
-    const chatIdsToProcess = chatIds || (chatId ? [chatId] : [])
+    // Normalize input: support both single chatId and array of chatIds, ensuring strings
+    let chatIdsToProcess: string[] = []
+    if (Array.isArray(chatIds)) {
+      chatIdsToProcess = chatIds.map((id: any) => String(id)).filter((id) => id != null && id !== '')
+    } else if (typeof chatId === 'string') {
+      chatIdsToProcess = [chatId]
+    } else if (typeof chatId === 'number') {
+      chatIdsToProcess = [String(chatId)]
+    } else {
+      chatIdsToProcess = []
+    }
     
     if (!chatIdsToProcess || chatIdsToProcess.length === 0) {
       return NextResponse.json({ error: 'chatId or chatIds is required' }, { status: 400 })

@@ -151,46 +151,23 @@ export async function middleware(req: NextRequest) {
         // Log when skipping CSRF for debugging
         safeLogger.debug('[Middleware] Skipping CSRF check for:', normalizedPathname)
       } else {
-        // Check if user is authenticated before validating CSRF
-        // For unauthenticated requests, CSRF validation will fail anyway
-        const supabase = createServerClient(
-          process.env.NEXT_PUBLIC_SUPABASE_URL!,
-          process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-          {
-            cookies: {
-              getAll() {
-                return req.cookies.getAll()
-              },
-              setAll() {
-                // No-op in middleware validation phase
-              },
-            },
-          }
-        )
-        const { data: { user } } = await supabase.auth.getUser()
-        
-        // Only validate CSRF for authenticated users
-        // Unauthenticated users will be rejected by the route handler
-        if (user) {
-          const isValidCSRF = await validateCSRFToken(req)
-          if (!isValidCSRF) {
-            // Check if cookie exists but might need to be set
-            const csrfCookie = req.cookies.get('csrf-token')
-            const csrfHeader = req.headers.get('x-csrf-token')
-            
-            console.warn('[Middleware] CSRF validation failed for:', pathname, {
-              normalizedPathname,
-              skipRoutes: skipCSRFRoutes,
-              hasHeader: !!csrfHeader,
-              hasCookie: !!csrfCookie,
-              headerValue: csrfHeader ? csrfHeader.substring(0, 10) + '...' : null,
-              cookieValue: csrfCookie ? csrfCookie.substring(0, 10) + '...' : null
-            })
-            return NextResponse.json(
-              { error: 'Invalid CSRF token' },
-              { status: 403 }
-            )
-          }
+        // Validate CSRF token for state-changing requests
+        const isValidCSRF = await validateCSRFToken(req as any)
+        if (!isValidCSRF) {
+          const csrfHeader = req.headers.get('x-csrf-token')
+          const csrfCookie = req.cookies.get('csrf-token')
+          console.warn('[Middleware] CSRF validation failed for:', pathname, {
+            normalizedPathname,
+            skipRoutes: skipCSRFRoutes,
+            hasHeader: !!csrfHeader,
+            hasCookie: !!csrfCookie,
+            headerValue: csrfHeader ? csrfHeader.substring(0, 10) + '...' : null,
+            cookieValue: csrfCookie ? csrfCookie.substring(0, 10) + '...' : null
+          })
+          return NextResponse.json(
+            { error: 'Invalid CSRF token' },
+            { status: 403 }
+          )
         }
       }
     }
