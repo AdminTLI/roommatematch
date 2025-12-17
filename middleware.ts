@@ -329,7 +329,9 @@ export async function middleware(req: NextRequest) {
       .eq('user_id', user.id)
       .maybeSingle()
     
-    if (!adminRecord) {
+    // Allow admins via metadata fallback if explicit admin row is missing (production convenience)
+    const isMetadataAdmin = !!user?.user_metadata?.role && String(user.user_metadata.role).toLowerCase() === 'admin'
+    if (!adminRecord && !isMetadataAdmin) {
       // Not an admin - redirect to dashboard
       const url = req.nextUrl.clone()
       url.pathname = '/dashboard'
