@@ -62,68 +62,109 @@ export async function POST(request: NextRequest) {
     // Allow declined suggestions to be re-opened if needed (matches don't expire)
     // Only block if already declined by this user
     if (action === 'decline') {
-      suggestion.status = 'declined'
-      await repo.updateSuggestion(suggestion)
-      
-      // Add to blocklist
-      const otherIds = suggestion.memberIds.filter(id => id !== user.id)
-      const admin = await createAdminClient()
-      
-      for (const otherId of otherIds) {
-        await repo.addToBlocklist(user.id, otherId)
+      try {
+        suggestion.status = 'declined'
+        // Ensure acceptedBy is set (even if empty array) to avoid null issues
+        if (!suggestion.acceptedBy) {
+          suggestion.acceptedBy = []
+        }
         
-        // Track blocklist addition event for analytics and admin dashboard
+        safeLogger.debug('[Match Decline] Updating suggestion status', {
+          suggestionId: suggestion.id,
+          status: suggestion.status,
+          acceptedBy: suggestion.acceptedBy
+        })
+        
+        await repo.updateSuggestion(suggestion)
+        
+        // Add to blocklist
+        const otherIds = suggestion.memberIds.filter(id => id !== user.id)
+        const admin = await createAdminClient()
+        
+        safeLogger.debug('[Match Decline] Adding to blocklist', {
+          userId: user.id,
+          otherIds: otherIds
+        })
+        
+        for (const otherId of otherIds) {
+          try {
+            await repo.addToBlocklist(user.id, otherId)
+            safeLogger.debug('[Match Decline] Successfully added to blocklist', {
+              userId: user.id,
+              otherId: otherId
+            })
+          } catch (blocklistError) {
+            safeLogger.error('[Match Decline] Failed to add to blocklist', {
+              error: blocklistError,
+              userId: user.id,
+              otherId: otherId,
+              errorMessage: blocklistError instanceof Error ? blocklistError.message : String(blocklistError)
+            })
+            // Continue with other operations even if blocklist fails
+          }
+          
+          // Track blocklist addition event for analytics and admin dashboard
+          try {
+            await admin
+              .from('app_events')
+              .insert({
+                user_id: user.id,
+                name: EVENT_TYPES.MATCH_REJECTED,
+                props: {
+                  suggestion_id: suggestion.id,
+                  declined_by: user.id,
+                  blocked_user_id: otherId,
+                  match_score: suggestion.fitIndex,
+                  match_fit_index: suggestion.fitIndex,
+                  reason: 'user_declined_match',
+                  blocklist_action: 'added'
+                },
+                created_at: new Date().toISOString()
+              })
+          } catch (error) {
+            safeLogger.warn('[Match Decline] Failed to track blocklist event', { error })
+          }
+        }
+        
+        // Track overall decline event for admin analytics
         try {
           await admin
             .from('app_events')
             .insert({
               user_id: user.id,
-              name: EVENT_TYPES.MATCH_REJECTED,
+              name: 'match_declined',
               props: {
                 suggestion_id: suggestion.id,
-                declined_by: user.id,
-                blocked_user_id: otherId,
                 match_score: suggestion.fitIndex,
                 match_fit_index: suggestion.fitIndex,
-                reason: 'user_declined_match',
-                blocklist_action: 'added'
+                other_user_ids: otherIds,
+                blocklist_added: true,
+                total_blocked: otherIds.length
               },
               created_at: new Date().toISOString()
             })
         } catch (error) {
-          safeLogger.warn('[Match Decline] Failed to track blocklist event', { error })
+          safeLogger.warn('[Match Decline] Failed to log decline event to app_events', { error })
         }
+        
+        safeLogger.info('[Match Decline] Match declined and blocklist updated', {
+          suggestionId: suggestion.id,
+          userId: user.id,
+          otherUserIds: otherIds,
+          matchScore: suggestion.fitIndex
+        })
+        
+        return NextResponse.json({ ok: true, suggestion })
+      } catch (declineError) {
+        safeLogger.error('[Match Decline] Error during decline operation', {
+          error: declineError,
+          errorMessage: declineError instanceof Error ? declineError.message : String(declineError),
+          errorStack: declineError instanceof Error ? declineError.stack : undefined,
+          suggestionId: suggestion.id,
+          userId: user.id
+        })
+        throw declineError // Re-throw to be caught by outer try-catch
       }
-      
-      // Track overall decline event for admin analytics
-      try {
-        await admin
-          .from('app_events')
-          .insert({
-            user_id: user.id,
-            name: 'match_declined',
-            props: {
-              suggestion_id: suggestion.id,
-              match_score: suggestion.fitIndex,
-              match_fit_index: suggestion.fitIndex,
-              other_user_ids: otherIds,
-              blocklist_added: true,
-              total_blocked: otherIds.length
-            },
-            created_at: new Date().toISOString()
-          })
-      } catch (error) {
-        safeLogger.warn('[Match Decline] Failed to log decline event to app_events', { error })
-      }
-      
-      safeLogger.info('[Match Decline] Match declined and blocklist updated', {
-        suggestionId: suggestion.id,
-        userId: user.id,
-        otherUserIds: otherIds,
-        matchScore: suggestion.fitIndex
-      })
-      
-      return NextResponse.json({ ok: true, suggestion })
     }
     
     // Accept action with pair-wide merge
@@ -500,9 +541,22 @@ export async function POST(request: NextRequest) {
     }
     
   } catch (error) {
-    safeLogger.error('Error responding to suggestion', error)
+    const errorMessage = error instanceof Error ? error.message : String(error)
+    const errorStack = error instanceof Error ? error.stack : undefined
+    
+    safeLogger.error('Error responding to suggestion', {
+      error,
+      errorMessage,
+      errorStack,
+      errorType: typeof error,
+      errorString: String(error)
+    })
+    
     return NextResponse.json(
-      { error: 'Failed to respond to suggestion' },
+      { 
+        error: 'Failed to respond to suggestion',
+        details: process.env.NODE_ENV === 'development' ? errorMessage : undefined
+      },
       { status: 500 }
     )
   }

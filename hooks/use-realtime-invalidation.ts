@@ -126,17 +126,29 @@ export function useRealtimeInvalidation({
             channelRef.current = realtimeChannel
             retryAttemptsRef.current = 0 // Reset retry attempts on success
           } else if (status === 'TIMED_OUT' || status === 'CHANNEL_ERROR') {
+            // Check if error is due to table not being published for realtime
+            const errorMessage = typeof err === 'string' ? err : (err as any)?.message || 'Channel error'
+            const isTableNotPublished = errorMessage.includes('publication') || 
+                                 errorMessage.includes('replica') ||
+                                 errorMessage.includes('not found')
+            
+            // If table is not published, don't retry (this is expected)
+            if (isTableNotPublished && isDevelopment) {
+              console.warn(`[RealtimeInvalidation] Table "${table}" may not be published for realtime. This is expected if the table doesn't need realtime updates.`)
+              return // Don't retry for publication errors
+            }
+            
             const maxRetries = 10
             if (retryAttemptsRef.current < maxRetries && !isUnmountingRef.current) {
               if (isDevelopment) {
                 console.warn(`[RealtimeInvalidation] ⚠️ ${status === 'TIMED_OUT' ? 'Timeout' : 'Error'} for table "${table}" - will retry`)
               }
               
-              const errorMessage = status === 'TIMED_OUT' 
+              const finalErrorMessage = status === 'TIMED_OUT' 
                 ? 'Subscription timeout'
-                : (typeof err === 'string' ? err : (err as any)?.message || 'Channel error')
+                : errorMessage
               
-              onError?.(errorMessage, status)
+              onError?.(finalErrorMessage, status)
               
               // Calculate exponential backoff delay (2s initial, 1.5x multiplier, max 30s)
               const delay = Math.min(2000 * Math.pow(1.5, retryAttemptsRef.current), 30000)
@@ -159,7 +171,6 @@ export function useRealtimeInvalidation({
               }, delay)
             } else {
               // Max retries reached - silently fail and reset for next attempt
-              // This is expected behavior during connection issues and will auto-recover
               const errorMessage = status === 'TIMED_OUT' 
                 ? 'Subscription timeout - max retries reached'
                 : 'Channel error - max retries reached'

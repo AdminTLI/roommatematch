@@ -51,3 +51,12 @@ $$;
 GRANT EXECUTE ON FUNCTION public.normalize_bipolar_value(JSONB) TO authenticated;
 GRANT EXECUTE ON FUNCTION public.normalize_bipolar_value(JSONB) TO service_role;
 
+
+
+
+
+
+
+
+
+

@@ -9,6 +9,7 @@ import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Loader2, Mail, CheckCircle, ArrowRight, RefreshCw } from 'lucide-react'
 import { createBrowserClient } from '@supabase/ssr'
 import { OTPInput } from './otp-input'
+import { VerificationFeedback } from './verification-feedback'
 
 export function VerifyEmailForm() {
   const [otp, setOtp] = useState('')
@@ -244,7 +245,9 @@ export function VerifyEmailForm() {
   }
 
   return (
-    <Card className="w-full">
+    <>
+      <VerificationFeedback />
+      <Card className="w-full">
       <CardHeader className="text-center px-4 sm:px-6 pt-6 sm:pt-6">
         <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-blue-100">
           <Mail className="h-6 w-6 text-blue-600" />
@@ -305,5 +308,6 @@ export function VerifyEmailForm() {
         </div>
       </CardContent>
     </Card>
+    </>
   )
 }

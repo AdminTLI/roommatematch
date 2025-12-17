@@ -67,3 +67,12 @@ COMMIT;
 -- WHERE u.email = 'USER_EMAIL_HERE'; -- Replace with the email you used above
 
 
+
+
+
+
+
+
+
+
+

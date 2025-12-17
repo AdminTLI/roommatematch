@@ -27,16 +27,18 @@ import {
   User,
   Building2,
   Settings,
-  LayoutDashboard
+  LayoutDashboard,
+  Sparkles
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { EmptyState } from '@/components/ui/empty-state'
 import { Card, CardContent } from '@/components/ui/card'
-import type { DashboardData } from '@/types/dashboard'
+import type { DashboardData, Update } from '@/types/dashboard'
 import { createClient } from '@/lib/supabase/client'
 import { logger } from '@/lib/utils/logger'
 import { queryKeys } from '@/app/providers'
 import { useRealtimeInvalidation } from '@/hooks/use-realtime-invalidation'
+import { monitorQuery } from '@/lib/utils/query-monitor'
 
 const fadeInUp = {
   initial: { opacity: 0, y: 20 },
@@ -107,6 +109,19 @@ export function DashboardContent({ hasCompletedQuestionnaire = false, hasPartial
   const inputRef = useRef<HTMLInputElement>(null)
   const [dropdownPosition, setDropdownPosition] = useState<{ top: number; left: number; width: number } | null>(null)
 
+  // Helper function for formatting time ago (defined early for use in callbacks)
+  const formatTimeAgo = (dateString: string): string => {
+    const date = new Date(dateString)
+    const now = new Date()
+    const diffInSeconds = Math.floor((now.getTime() - date.getTime()) / 1000)
+
+    if (diffInSeconds < 60) return 'Just now'
+    if (diffInSeconds < 3600) return `${Math.floor(diffInSeconds / 60)}m ago`
+    if (diffInSeconds < 86400) return `${Math.floor(diffInSeconds / 3600)}h ago`
+    if (diffInSeconds < 604800) return `${Math.floor(diffInSeconds / 86400)}d ago`
+    return date.toLocaleDateString()
+  }
+
   // Fetch recent matches with React Query
   const fetchRecentMatches = useCallback(async () => {
     if (!user?.id) {
@@ -114,13 +129,14 @@ export function DashboardContent({ hasCompletedQuestionnaire = false, hasPartial
       return []
     }
     
-    try {
-      logger.log('[loadRecentMatches] Fetching recent match suggestions for user:', user.id)
-      
-      // Fetch recent match suggestions from match_suggestions table
-      // Get suggestions where user is in member_ids array, ordered by most recent
-      const now = new Date().toISOString()
-      const { data: suggestions, error: suggestionsError } = await supabase
+    return monitorQuery('fetchRecentMatches', async () => {
+      try {
+        logger.log('[loadRecentMatches] Fetching recent match suggestions for user:', user.id)
+        
+        // Fetch recent match suggestions from match_suggestions table
+        // Get suggestions where user is in member_ids array, ordered by most recent
+        const now = new Date().toISOString()
+        const { data: suggestions, error: suggestionsError } = await supabase
         .from('match_suggestions')
         .select('id, member_ids, fit_score, fit_index, status, created_at, expires_at')
         .eq('kind', 'pair')
@@ -210,6 +226,12 @@ export function DashboardContent({ hasCompletedQuestionnaire = false, hasPartial
       }))
 
       const finalUserIds = recentMatchEntries.map(m => m.userId)
+
+      // Add this check before querying profiles
+      if (finalUserIds.length === 0) {
+        logger.log('No user IDs to fetch profiles for')
+        return []
+      }
 
       // Fetch profiles for matched users
       const { data: profiles, error: profilesError } = await supabase
@@ -337,6 +359,7 @@ export function DashboardContent({ hasCompletedQuestionnaire = false, hasPartial
       logger.error('Failed to load recent matches:', error)
       return []
     }
+    })
   }, [user?.id, supabase])
 
   const { data: recentMatches = dashboardData.topMatches, isLoading: isLoadingMatches, refetch: refetchRecentMatches } = useQuery({
@@ -354,7 +377,8 @@ export function DashboardContent({ hasCompletedQuestionnaire = false, hasPartial
       return 0
     }
 
-    try {
+    return monitorQuery('fetchTotalMatchesCount', async () => {
+      try {
       logger.log('loadTotalMatchesCount: Fetching match suggestions for user', user.id)
       const now = new Date().toISOString()
 
@@ -411,6 +435,7 @@ export function DashboardContent({ hasCompletedQuestionnaire = false, hasPartial
       logger.error('Failed to load total matches count:', error)
       return 0
     }
+    })
   }, [user?.id, supabase])
 
   const { data: totalMatches = dashboardData.kpis.totalMatches } = useQuery({
@@ -428,7 +453,8 @@ export function DashboardContent({ hasCompletedQuestionnaire = false, hasPartial
       return 0
     }
 
-    try {
+    return monitorQuery('fetchAvgCompatibility', async () => {
+      try {
       logger.log('loadAvgCompatibility: Fetching matches for user', user.id)
       // Fetch ALL active match suggestions (not just chat members)
       const now = new Date().toISOString()
@@ -501,6 +527,7 @@ export function DashboardContent({ hasCompletedQuestionnaire = false, hasPartial
       logger.error('Failed to load average compatibility:', error)
       return 0
     }
+    })
   }, [user?.id, supabase])
 
   const { data: avgCompatibility = dashboardData.kpis.avgCompatibility } = useQuery({
@@ -514,8 +541,9 @@ export function DashboardContent({ hasCompletedQuestionnaire = false, hasPartial
   // Fetch recent activity with React Query
   const fetchRecentActivity = useCallback(async (): Promise<any[]> => {
     if (!user?.id) return []
-
-    try {
+    
+    return monitorQuery('fetchRecentActivity', async () => {
+      try {
 
       // Fetch notifications
       const response = await fetch('/api/notifications/my?limit=10')
@@ -611,6 +639,7 @@ export function DashboardContent({ hasCompletedQuestionnaire = false, hasPartial
       logger.error('Failed to load activity:', error)
       return []
     }
+    })
   }, [user?.id, supabase])
 
   const { data: recentActivity = [], isLoading: isLoadingActivity, refetch: refetchRecentActivity } = useQuery({
@@ -619,6 +648,84 @@ export function DashboardContent({ hasCompletedQuestionnaire = false, hasPartial
     staleTime: 10_000, // 10 seconds for real-time data
     enabled: !!user?.id,
   })
+
+  // Fetch updates with React Query
+  const fetchUpdates = useCallback(async (): Promise<Update[]> => {
+    return monitorQuery('fetchUpdates', async () => {
+      try {
+        logger.log('Fetching updates from database...')
+        const { data, error } = await supabase
+        .from('updates')
+        .select('*')
+        .order('release_date', { ascending: false, nullsFirst: false })
+        .limit(20) // Show up to 20 most recent updates
+
+      if (error) {
+        logger.error('Failed to load updates:', error)
+        console.error('Updates query error:', error)
+        return []
+      }
+
+      logger.log('Updates fetched:', data?.length || 0, 'items')
+      console.log('Updates data:', data)
+
+      if (!data || data.length === 0) {
+        logger.log('No updates found in database')
+        return []
+      }
+
+      const mappedUpdates = (data || []).map((update: any) => {
+        // Handle changes - could be JSONB array or string
+        let changesArray: string[] = []
+        if (Array.isArray(update.changes)) {
+          changesArray = update.changes
+        } else if (typeof update.changes === 'string') {
+          try {
+            const parsed = JSON.parse(update.changes)
+            changesArray = Array.isArray(parsed) ? parsed : []
+          } catch {
+            changesArray = []
+          }
+        }
+
+        return {
+          id: update.id,
+          version: update.version,
+          release_date: update.release_date,
+          changes: changesArray,
+          change_type: update.change_type || 'patch'
+        }
+      })
+
+      logger.log('Mapped updates:', mappedUpdates.length)
+      return mappedUpdates
+    } catch (error) {
+      logger.error('Failed to load updates:', error)
+      console.error('Updates fetch error:', error)
+      return []
+    }
+    })
+  }, [supabase])
+
+  const { data: updates = [], isLoading: isLoadingUpdates, refetch: refetchUpdates } = useQuery({
+    queryKey: queryKeys.updates,
+    queryFn: fetchUpdates,
+    staleTime: 3600_000, // 1 hour (updates don't change frequently)
+    retry: 1,
+    enabled: true, // Always enabled - updates are public to authenticated users
+  })
+
+  // Debug: Log updates data
+  useEffect(() => {
+    if (updates.length > 0) {
+      console.log('✅ Updates loaded:', updates.length, 'items', updates)
+    } else if (!isLoadingUpdates) {
+      console.warn('⚠️ No updates found. Check:')
+      console.warn('  1. Database has data: SELECT * FROM updates;')
+      console.warn('  2. RLS policy allows authenticated users')
+      console.warn('  3. User is authenticated:', !!user?.id)
+    }
+  }, [updates, isLoadingUpdates, user?.id])
 
   // Set up real-time invalidation for notifications
   useRealtimeInvalidation({
@@ -807,18 +914,6 @@ export function DashboardContent({ hasCompletedQuestionnaire = false, hasPartial
     return Search
   }
 
-  const formatTimeAgo = (dateString: string): string => {
-    const date = new Date(dateString)
-    const now = new Date()
-    const diffInSeconds = Math.floor((now.getTime() - date.getTime()) / 1000)
-
-    if (diffInSeconds < 60) return 'Just now'
-    if (diffInSeconds < 3600) return `${Math.floor(diffInSeconds / 60)}m ago`
-    if (diffInSeconds < 86400) return `${Math.floor(diffInSeconds / 3600)}h ago`
-    if (diffInSeconds < 604800) return `${Math.floor(diffInSeconds / 86400)}d ago`
-    return date.toLocaleDateString()
-  }
-
   const getActivityIcon = (type: string) => {
     switch (type) {
       case 'match_created':
@@ -910,7 +1005,7 @@ export function DashboardContent({ hasCompletedQuestionnaire = false, hasPartial
   }
 
   return (
-    <div className="space-y-2 lg:space-y-2 flex flex-col lg:h-[calc(100vh-14rem)] lg:overflow-hidden pb-24 md:pb-6">
+    <div className="space-y-2 lg:space-y-2 flex flex-col pb-24 md:pb-6">
       {/* Email verification warning */}
       {user && !user.email_confirmed_at && (
         <motion.div
@@ -1270,7 +1365,7 @@ export function DashboardContent({ hasCompletedQuestionnaire = false, hasPartial
         initial="initial"
         animate="animate"
         variants={staggerChildren}
-        className="grid grid-cols-1 lg:grid-cols-2 gap-2 sm:gap-2 lg:gap-3 flex-1 min-h-0"
+        className="grid grid-cols-1 lg:grid-cols-2 gap-2 sm:gap-2 lg:gap-3"
       >
         {/* Recent Matches - Real Data */}
         <motion.div variants={fadeInUp} className="flex flex-col min-h-0">
@@ -1453,6 +1548,100 @@ export function DashboardContent({ hasCompletedQuestionnaire = false, hasPartial
                   icon={Bell}
                   title="No recent activity"
                   description="Your activity feed will appear here once you start matching and chatting"
+                />
+              </div>
+            )}
+          </div>
+        </motion.div>
+      </motion.div>
+
+      {/* Updates Section - Full width below Recent Matches/Activity */}
+      <motion.div
+        initial="initial"
+        animate="animate"
+        variants={staggerChildren}
+        className="mt-2 sm:mt-2 lg:mt-3"
+      >
+        <motion.div variants={fadeInUp} className="flex flex-col">
+          <div className="bg-bg-surface p-3 sm:p-4 rounded-xl shadow-sm border border-border-subtle flex flex-col max-h-[250px] sm:max-h-[300px] lg:max-h-[350px]">
+            <div className="flex items-center justify-between mb-2 flex-shrink-0">
+              <h3 className="text-sm lg:text-base font-bold text-text-primary">Updates</h3>
+              <button 
+                className="flex items-center justify-center w-8 h-8 text-text-muted hover:text-text-primary hover:bg-bg-surface-alt rounded-lg transition-colors" 
+                onClick={() => refetchUpdates()}
+                disabled={isLoadingUpdates}
+                title="Refresh updates"
+              >
+                {isLoadingUpdates ? (
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                ) : (
+                  <RefreshCw className="w-4 h-4" />
+                )}
+              </button>
+            </div>
+            
+            {isLoadingUpdates ? (
+              <div className="flex items-center justify-center py-8 flex-1">
+                <Loader2 className="w-6 h-6 animate-spin text-text-muted" />
+              </div>
+            ) : updates.length > 0 ? (
+              <div className="flex flex-col flex-1 min-h-0 overflow-hidden">
+                <div className="space-y-2 sm:space-y-3 overflow-y-auto flex-1 pr-2" style={{ scrollbarWidth: 'thin' }}>
+                  {updates.map((update) => {
+                    const getChangeTypeColor = () => {
+                      switch (update.change_type) {
+                        case 'major':
+                          return 'text-semantic-danger border-semantic-danger/30 bg-semantic-danger/10'
+                        case 'minor':
+                          return 'text-semantic-accent border-semantic-accent/30 bg-semantic-accent-soft'
+                        case 'patch':
+                        default:
+                          return 'text-text-secondary border-border-subtle bg-bg-surface-alt'
+                      }
+                    }
+
+                    const formatDate = (dateString: string) => {
+                      const date = new Date(dateString)
+                      return date.toLocaleDateString('en-US', { 
+                        year: 'numeric', 
+                        month: 'short', 
+                        day: 'numeric' 
+                      })
+                    }
+
+                    return (
+                      <div
+                        key={update.id}
+                        className={`p-2 sm:p-3 rounded-lg border flex-shrink-0 ${getChangeTypeColor()}`}
+                      >
+                        <div className="flex items-center justify-between mb-1 gap-2">
+                          <h4 className="font-bold text-xs sm:text-sm truncate">{update.version}</h4>
+                          <span className="text-xs opacity-70 flex-shrink-0 whitespace-nowrap">{formatDate(update.release_date)}</span>
+                        </div>
+                        <ul className="mt-1.5 sm:mt-2 space-y-0.5 sm:space-y-1 text-xs">
+                          {update.changes.slice(0, 3).map((change, index) => (
+                            <li key={index} className="flex items-start gap-1.5 sm:gap-2">
+                              <span className="mt-0.5 flex-shrink-0">•</span>
+                              <span className="flex-1 break-words">{change}</span>
+                            </li>
+                          ))}
+                          {update.changes.length > 3 && (
+                            <li className="text-text-muted italic text-xs mt-0.5">
+                              +{update.changes.length - 3} more {update.changes.length - 3 === 1 ? 'change' : 'changes'}
+                            </li>
+                          )}
+                        </ul>
+                      </div>
+                    )
+                  })}
+                </div>
+              </div>
+            ) : (
+              <div className="flex items-center justify-center py-8">
+                <EmptyState
+                  icon={Sparkles}
+                  title="No updates yet"
+                  description="Platform updates and release notes will appear here"
                 />
               </div>
             )}

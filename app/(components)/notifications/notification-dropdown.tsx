@@ -107,8 +107,7 @@ export function NotificationDropdown({
     // Mark as read if not already read
     if (!notification.is_read) {
       await onMarkAsRead(notification.id)
-      markAsReadLocally(notification.id)
-      refreshCounts()
+      await refreshCounts()
     }
 
     // Navigate based on notification type and metadata
@@ -306,7 +305,6 @@ export function NotificationDropdown({
                   notification={notification}
                   onMarkAsRead={async (id) => {
                     await onMarkAsRead(id)
-                    markAsReadLocally(id)
                     await refreshCounts()
                   }}
                   onNavigate={handleNotificationClick}

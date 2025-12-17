@@ -2,6 +2,7 @@ import { createClient, createAdminClient } from '@/lib/supabase/server'
 import { NextRequest, NextResponse } from 'next/server'
 import { safeLogger } from '@/lib/utils/logger'
 import { getUserRole, isSuperAdmin, type UserRole } from './roles'
+import { sanitizeEmail, sanitizeUserId } from '@/lib/utils/sanitize-logs'
 
 export interface AdminAuthResult {
   ok: boolean
@@ -72,11 +73,11 @@ export async function requireAdmin(request?: NextRequest, requireSecret?: boolea
   if (shouldRequireSecret && request) {
     // Strict enforcement: if secret is required, ADMIN_SHARED_SECRET must be set and provided
     if (!process.env.ADMIN_SHARED_SECRET) {
-      safeLogger.error('[Admin] Admin shared secret not configured')
+      safeLogger.error('[Admin] CRITICAL: Admin shared secret not configured in production! Admin access temporarily unavailable.')
       return {
         ok: false,
-        status: 500,
-        error: 'Admin shared secret not configured'
+        status: 503, // Service Unavailable - better than 500 for missing configuration
+        error: 'Admin access temporarily unavailable. Please contact support if this problem persists.'
       }
     }
     
@@ -84,7 +85,7 @@ export async function requireAdmin(request?: NextRequest, requireSecret?: boolea
     const providedSecret = request.headers.get('x-admin-secret')
     if (!providedSecret) {
       safeLogger.warn('[Admin] Admin access attempted without secret', {
-        userId: user.id,
+        userId: sanitizeUserId(user.id),
         path: request.nextUrl?.pathname || 'unknown'
       })
       return {
@@ -97,7 +98,7 @@ export async function requireAdmin(request?: NextRequest, requireSecret?: boolea
     // Verify the provided secret matches
     if (providedSecret !== process.env.ADMIN_SHARED_SECRET) {
       safeLogger.warn('[Admin] Invalid admin secret provided', {
-        userId: user.id,
+        userId: sanitizeUserId(user.id),
         path: request.nextUrl?.pathname || 'unknown'
       })
       return {
@@ -108,9 +109,10 @@ export async function requireAdmin(request?: NextRequest, requireSecret?: boolea
     }
   }
 
-  // Audit log successful admin access
+  // Audit log successful admin access (sanitized)
   safeLogger.info('[Admin] Admin access granted', {
-    userId: user.id,
+    userId: sanitizeUserId(user.id),
+    email: sanitizeEmail(user.email),
     role: userRole,
     universityId: universityId,
     path: request?.nextUrl?.pathname || 'unknown',

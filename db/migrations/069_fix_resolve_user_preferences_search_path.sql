@@ -176,3 +176,12 @@ GRANT EXECUTE ON FUNCTION public.get_dimension_value(UUID, TEXT, JSONB) TO servi
 GRANT EXECUTE ON FUNCTION public.resolve_user_preferences(UUID) TO authenticated;
 GRANT EXECUTE ON FUNCTION public.resolve_user_preferences(UUID) TO service_role;
 
+
+
+
+
+
+
+
+
+

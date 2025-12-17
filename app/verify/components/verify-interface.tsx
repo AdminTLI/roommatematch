@@ -14,6 +14,7 @@ import {
   Clock,
   RefreshCw
 } from 'lucide-react'
+import { VerificationFeedback } from '@/components/auth/verification-feedback'
 
 // Declare Persona types for TypeScript
 declare global {
@@ -336,7 +337,9 @@ export function VerifyInterface({ user }: VerifyInterfaceProps) {
   }
 
   return (
-    <div className="max-w-4xl mx-auto">
+    <>
+      <VerificationFeedback />
+      <div className="max-w-4xl mx-auto">
       {/* Header */}
       <div className="mb-8 text-center">
         <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-4">
@@ -501,5 +504,6 @@ export function VerifyInterface({ user }: VerifyInterfaceProps) {
         </CardContent>
       </Card>
     </div>
+    </>
   )
 }

@@ -17,10 +17,12 @@ interface AcademicStepProps {
   data: Record<string, any>
   onChange: (data: Record<string, any>) => void
   user: User
+  errors?: Record<string, string>
+  onFieldBlur?: (field: string) => void
 }
 
 
-export function AcademicStep({ data, onChange, user }: AcademicStepProps) {
+export function AcademicStep({ data, onChange, user, errors = {}, onFieldBlur }: AcademicStepProps) {
   const currentYear = new Date().getFullYear()
   const graduationYears = Array.from({ length: 11 }, (_, i) => currentYear + i)
   const supabase = createClient()
@@ -217,6 +219,11 @@ export function AcademicStep({ data, onChange, user }: AcademicStepProps) {
             }}
           />
           <p className="text-sm text-gray-500">Choose your HBO or WO institution. Programs are loaded from our database.</p>
+          {(errors.institution_slug || errors.institution_other) && (
+            <p className="text-sm text-red-600 dark:text-red-400 mt-1">
+              {errors.institution_slug || errors.institution_other}
+            </p>
+          )}
         </div>
       ) : (
         <div className="space-y-2">
@@ -269,6 +276,11 @@ export function AcademicStep({ data, onChange, user }: AcademicStepProps) {
             }}
           />
           <p className="text-sm text-gray-500">Choose your HBO or WO institution. Programs are loaded from our database.</p>
+          {(errors.institution_slug || errors.institution_other) && (
+            <p className="text-sm text-red-600 dark:text-red-400 mt-1">
+              {errors.institution_slug || errors.institution_other}
+            </p>
+          )}
         </div>
       )}
 
@@ -340,6 +352,11 @@ export function AcademicStep({ data, onChange, user }: AcademicStepProps) {
             </div>
           </div>
         </RadioGroup>
+        {errors.degree_level && (
+          <p className="text-sm text-red-600 dark:text-red-400 mt-1">
+            {errors.degree_level}
+          </p>
+        )}
       </div>
 
       {/* Undecided Program Toggle */}
@@ -374,6 +391,11 @@ export function AcademicStep({ data, onChange, user }: AcademicStepProps) {
               : "Select your university and degree level to see available programmes"
             }
           </p>
+          {errors.program_id && (
+            <p className="text-sm text-red-600 dark:text-red-400 mt-1">
+              {errors.program_id}
+            </p>
+          )}
         </div>
       )}
 
@@ -423,6 +445,11 @@ export function AcademicStep({ data, onChange, user }: AcademicStepProps) {
         <p className="text-sm text-gray-500 dark:text-text-muted">
           When do you expect to finish your studies? This helps match you with students at similar academic stages.
         </p>
+        {errors.expected_graduation_year && (
+          <p className="text-sm text-red-600 dark:text-red-400 mt-1">
+            {errors.expected_graduation_year}
+          </p>
+        )}
       </div>
 
       {/* Study Start Month */}
@@ -451,8 +478,13 @@ export function AcademicStep({ data, onChange, user }: AcademicStepProps) {
             <SelectItem value="12">December</SelectItem>
           </SelectContent>
         </Select>
-        {!data.study_start_month && (
-          <p className="text-sm text-red-600 dark:text-red-400">
+        {errors.study_start_month && (
+          <p className="text-sm text-red-600 dark:text-red-400 mt-1">
+            {errors.study_start_month}
+          </p>
+        )}
+        {!data.study_start_month && !errors.study_start_month && (
+          <p className="text-sm text-amber-600 dark:text-amber-400">
             Study start month is required for accurate academic year calculation.
           </p>
         )}
@@ -487,8 +519,13 @@ export function AcademicStep({ data, onChange, user }: AcademicStepProps) {
             <SelectItem value="12">December</SelectItem>
           </SelectContent>
         </Select>
-        {!data.graduation_month && (
-          <p className="text-sm text-red-600 dark:text-red-400">
+        {errors.graduation_month && (
+          <p className="text-sm text-red-600 dark:text-red-400 mt-1">
+            {errors.graduation_month}
+          </p>
+        )}
+        {!data.graduation_month && !errors.graduation_month && (
+          <p className="text-sm text-amber-600 dark:text-amber-400">
             Graduation month is required for accurate academic year calculation.
           </p>
         )}

@@ -188,3 +188,12 @@ $$;
 GRANT EXECUTE ON FUNCTION public.debug_hard_constraints(UUID, UUID) TO authenticated;
 GRANT EXECUTE ON FUNCTION public.debug_hard_constraints(UUID, UUID) TO service_role;
 
+
+
+
+
+
+
+
+
+

@@ -7,6 +7,7 @@ import { Progress } from '@/components/ui/progress'
 import { useOnboardingStore } from '@/store/onboarding'
 import { useRouter } from 'next/navigation'
 import { fetchWithCSRF } from '@/lib/utils/fetch-with-csrf'
+import { showErrorToast, showSuccessToast } from '@/lib/toast'
 import type { SectionKey } from '@/types/questionnaire'
 
 interface Props {
@@ -47,40 +48,85 @@ export function QuestionnaireLayout({
         return sectionAnswers && Object.keys(sectionAnswers).length > 0
       })
 
-      // Save all sections that have answers
-      const savePromises = sectionsWithAnswers.map(async (sectionKey) => {
-        const sectionAnswers = sections[sectionKey]
-        const answersArray = Object.values(sectionAnswers)
-        
-        if (answersArray.length === 0) return Promise.resolve()
-        
-        try {
-          const res = await fetchWithCSRF('/api/onboarding/save', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ section: sectionKey, answers: answersArray }),
-          })
-          if (!res.ok) {
-            console.warn(`[Save & Exit] Failed to save section ${sectionKey}`)
+      if (sectionsWithAnswers.length === 0) {
+        // No sections to save, navigate directly
+        router.push('/dashboard')
+        return
+      }
+
+      // Save all sections that have answers and track results
+      const saveResults = await Promise.allSettled(
+        sectionsWithAnswers.map(async (sectionKey) => {
+          const sectionAnswers = sections[sectionKey]
+          const answersArray = Object.values(sectionAnswers)
+          
+          if (answersArray.length === 0) {
+            return { sectionKey, success: true }
           }
-        } catch (error) {
-          console.error(`[Save & Exit] Error saving section ${sectionKey}:`, error)
+          
+          try {
+            const res = await fetchWithCSRF('/api/onboarding/save', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ section: sectionKey, answers: answersArray }),
+            })
+            
+            if (!res.ok) {
+              const errorData = await res.json().catch(() => ({}))
+              throw new Error(errorData.error || `Failed to save ${sectionKey}`)
+            }
+            
+            return { sectionKey, success: true }
+          } catch (error) {
+            const errorMessage = error instanceof Error ? error.message : `Failed to save ${sectionKey}`
+            return { sectionKey, success: false, error: errorMessage }
+          }
+        })
+      )
+      
+      // Process results: extract failures
+      const failures: Array<{ section: string; error: string }> = []
+      saveResults.forEach((result, index) => {
+        if (result.status === 'rejected') {
+          failures.push({
+            section: sectionsWithAnswers[index],
+            error: result.reason?.message || 'Unknown error'
+          })
+        } else if (result.value && !result.value.success) {
+          failures.push({
+            section: result.value.sectionKey,
+            error: result.value.error || 'Save failed'
+          })
         }
       })
       
-      // Wait for all saves to complete
-      await Promise.all(savePromises)
-      console.log('[Save & Exit] All sections saved, navigating to dashboard...')
+      // If any saves failed, show error and stay on page
+      if (failures.length > 0) {
+        const failedSections = failures.map(f => f.section).join(', ')
+        showErrorToast(
+          'Failed to save some sections',
+          `Could not save: ${failedSections}. Please try again or contact support if the problem persists.`
+        )
+        setIsSavingAll(false)
+        return // Don't navigate - keep user on page
+      }
+      
+      // All saves succeeded
+      showSuccessToast('All sections saved', 'Your progress has been saved successfully.')
       
       // Small delay to ensure database has processed the saves
       await new Promise(resolve => setTimeout(resolve, 200))
       
-      // Navigate to dashboard
+      // Navigate to dashboard only after all saves succeeded
       router.push('/dashboard')
     } catch (error) {
-      console.error('[Save & Exit] Error saving sections:', error)
-      // Still navigate even if save fails - user can retry later
-      router.push('/dashboard')
+      // Unexpected error during save process
+      const errorMessage = error instanceof Error ? error.message : 'An unexpected error occurred'
+      showErrorToast(
+        'Failed to save progress',
+        `${errorMessage}. Please try again or contact support if the problem persists.`
+      )
+      // Don't navigate - keep user on page to retry
     } finally {
       setIsSavingAll(false)
     }

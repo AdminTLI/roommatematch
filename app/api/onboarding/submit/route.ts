@@ -5,6 +5,8 @@ import { transformAnswer } from '@/lib/question-key-mapping'
 import { safeLogger } from '@/lib/utils/logger'
 import { trackEvent, EVENT_TYPES } from '@/lib/events'
 import { checkUserVerificationStatus } from '@/lib/auth/verification-check'
+import { getUserFriendlyError } from '@/lib/errors/user-friendly-messages'
+import { sanitizeEmail, sanitizeUserId } from '@/lib/utils/sanitize-logs'
 
 export async function POST(request: Request) {
   const supabase = await createClient()
@@ -14,13 +16,13 @@ export async function POST(request: Request) {
   const url = new URL(request.url)
   const isEditMode = url.searchParams.get('mode') === 'edit'
   
-  safeLogger.debug('[Submit] User:', user?.id, 'isDemo:', !user, 'isEditMode:', isEditMode)
+  safeLogger.debug('[Submit] User:', sanitizeUserId(user?.id), 'isDemo:', !user, 'isEditMode:', isEditMode)
   
   // Require authentication
   if (!user?.id) {
     safeLogger.debug('[Submit] No authenticated user')
     return NextResponse.json({ 
-      error: 'Authentication required. Please log in and try again.' 
+      error: getUserFriendlyError('Authentication required')
     }, { status: 401 })
   }
   
@@ -31,14 +33,14 @@ export async function POST(request: Request) {
     const verificationStatus = await checkUserVerificationStatus(user)
     
     if (verificationStatus.needsEmailVerification) {
-      safeLogger.debug('[Submit] User email not verified:', user.email)
+      safeLogger.debug('[Submit] User email not verified:', sanitizeEmail(user.email))
       return NextResponse.json({ 
         error: 'Please verify your email before submitting the questionnaire. Check your email for a verification link or go to Settings to resend verification email.' 
       }, { status: 403 })
     }
 
     if (verificationStatus.needsPersonaVerification) {
-      safeLogger.debug('[Submit] User Persona not verified:', user.email)
+      safeLogger.debug('[Submit] User Persona not verified:', sanitizeEmail(user.email))
       return NextResponse.json({ 
         error: 'Please complete identity verification before submitting the questionnaire. Go to Settings to complete verification.' 
       }, { status: 403 })
@@ -423,7 +425,7 @@ export async function POST(request: Request) {
             university_id: submissionData.university_id,
             first_name: submissionData.first_name,
             degree_level: submissionData.degree_level,
-            program_id: submissionData.program_id,
+            program_id: submissionData.program_id ?? undefined,
             program: submissionData.program,
             campus: submissionData.campus,
             languages_daily: extractedLanguages,
@@ -474,7 +476,7 @@ export async function POST(request: Request) {
                 university_id: submissionData.university_id,
                 first_name: submissionData.first_name,
                 degree_level: submissionData.degree_level,
-                program_id: submissionData.program_id,
+                program_id: submissionData.program_id ?? undefined,
                 program: submissionData.program,
                 campus: submissionData.campus,
                 languages_daily: extractedLanguages,
@@ -501,7 +503,7 @@ export async function POST(request: Request) {
                 university_id: submissionData.university_id,
                 first_name: submissionData.first_name,
                 degree_level: submissionData.degree_level,
-                program_id: submissionData.program_id,
+                program_id: submissionData.program_id ?? undefined,
                 program: submissionData.program,
                 campus: submissionData.campus,
                 languages_daily: extractedLanguages,

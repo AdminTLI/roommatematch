@@ -40,13 +40,15 @@ export function SignInForm() {
       // CRITICAL: Check email verification directly from auth response first
       // Since Supabase has enable_confirmations = false, users can log in without email verification
       // We MUST enforce email verification at application level
-      console.log('[SignIn] User object after login:', {
-        id: data.user?.id,
-        email: data.user?.email,
-        email_confirmed_at: data.user?.email_confirmed_at,
-        email_confirmed_at_type: typeof data.user?.email_confirmed_at,
-        raw_user: data.user
-      })
+      // Note: Email is sanitized in logs for security
+      if (process.env.NODE_ENV === 'development') {
+        console.log('[SignIn] User object after login:', {
+          id: data.user?.id?.substring(0, 8) + '...',
+          email: data.user?.email ? `${data.user.email[0]}***@${data.user.email.split('@')[1]}` : '[no email]',
+          email_confirmed_at: data.user?.email_confirmed_at ? '[present]' : '[missing]',
+          email_confirmed_at_type: typeof data.user?.email_confirmed_at
+        })
+      }
 
       // STRICT check: email_confirmed_at must be a valid date string
       const emailVerified = Boolean(

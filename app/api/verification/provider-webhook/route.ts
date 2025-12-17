@@ -154,11 +154,15 @@ export async function POST(request: NextRequest) {
     const providerParam = request.nextUrl.searchParams.get('provider')
     const provider = (providerParam || process.env.KYC_PROVIDER || 'veriff') as KYCProvider
 
-    // Get webhook secret
+    // Get webhook secret - fail-closed: reject all requests if secret is missing
     const secretKey = process.env[`${provider.toUpperCase()}_WEBHOOK_SECRET`] || ''
     if (!secretKey) {
-      safeLogger.error('[Verification] Webhook secret missing', { provider })
-      return NextResponse.json({ error: 'Configuration error' }, { status: 500 })
+      safeLogger.error('[Verification] CRITICAL: Webhook secret missing for provider', { provider })
+      // Return 503 (Service Unavailable) instead of 500 to indicate configuration issue
+      // This ensures fail-closed behavior: no webhooks are processed without proper secret
+      return NextResponse.json({ 
+        error: 'Webhook verification service temporarily unavailable' 
+      }, { status: 503 })
     }
 
     // Get raw body for signature verification

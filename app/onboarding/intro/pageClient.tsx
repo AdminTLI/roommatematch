@@ -12,12 +12,15 @@ import { ErrorBoundary } from '@/components/ErrorBoundary'
 import { createClient } from '@/lib/supabase/client'
 import { SuspenseWrapper } from '@/components/questionnaire/SuspenseWrapper'
 import { fetchWithCSRF } from '@/lib/utils/fetch-with-csrf'
+import { showErrorToast } from '@/lib/toast'
 
 function IntroClientContent() {
   const [academicData, setAcademicData] = useState<Record<string, any>>({})
   const [isValid, setIsValid] = useState(false)
   const [isLoading, setIsLoading] = useState(true)
   const [isSaving, setIsSaving] = useState(false)
+  const [errors, setErrors] = useState<Record<string, string>>({})
+  const [touched, setTouched] = useState<Record<string, boolean>>({})
   const router = useRouter()
   const supabase = createClient()
   const searchParams = useSearchParams()
@@ -110,14 +113,73 @@ function IntroClientContent() {
     loadSavedData()
   }, [supabase, router, isEditMode])
 
+  // Validate a specific field
+  const validateField = (field: string, value: any, allData: Record<string, any>): string => {
+    switch (field) {
+      case 'institution_slug':
+      case 'institution_other':
+        if (!allData.institution_slug && !allData.institution_other) {
+          return 'University is required'
+        }
+        if (allData.institution_slug === 'other' && !allData.institution_other?.trim()) {
+          return 'Please specify your university'
+        }
+        return ''
+      case 'degree_level':
+        if (!value) return 'Degree level is required'
+        return ''
+      case 'program_id':
+      case 'undecided_program':
+        if (!allData.program_id && !allData.undecided_program) {
+          return 'Programme selection is required'
+        }
+        return ''
+      case 'expected_graduation_year':
+        if (!value) return 'Expected graduation year is required'
+        return ''
+      case 'study_start_month':
+        if (value === null || value === undefined) {
+          return 'Study start month is required'
+        }
+        return ''
+      case 'graduation_month':
+        if (value === null || value === undefined) {
+          return 'Graduation month is required'
+        }
+        return ''
+      default:
+        return ''
+    }
+  }
+
   const handleAcademicChange = (data: Record<string, any>) => {
     setAcademicData(data)
+    
+    // Update errors for all fields when data changes
+    const newErrors: Record<string, string> = {}
+    const fieldsToValidate = [
+      'institution_slug',
+      'degree_level',
+      'program_id',
+      'expected_graduation_year',
+      'study_start_month',
+      'graduation_month'
+    ]
+    
+    fieldsToValidate.forEach(field => {
+      const error = validateField(field, data[field], data)
+      if (error) {
+        newErrors[field] = error
+      }
+    })
+    
+    setErrors(newErrors)
     
     // Strict validation - check if required fields are present
     // CRITICAL: university_id MUST be present (not just institution_slug) for submission to work
     const hasUniversityId = data.university_id && typeof data.university_id === 'string' && data.university_id.trim() !== ''
     const hasInstitutionSlug = data.institution_slug && data.institution_slug !== 'other'
-    const hasUniversity = hasUniversityId || (hasInstitutionSlug && !data.institution_other)
+    const hasUniversity = hasUniversityId || (hasInstitutionSlug && !data.institution_other) || (data.institution_slug === 'other' && data.institution_other?.trim())
     const hasDegreeLevel = data.degree_level
     const hasProgram = data.program_id || data.undecided_program
     const hasGraduationYear = data.expected_graduation_year
@@ -128,8 +190,22 @@ function IntroClientContent() {
   }
 
   const handleNext = async () => {
+    // Mark all fields as touched when user tries to submit
+    const allFields = ['institution_slug', 'degree_level', 'program_id', 'expected_graduation_year', 'study_start_month', 'graduation_month']
+    setTouched(allFields.reduce((acc, field) => ({ ...acc, [field]: true }), {}))
+    
+    // Re-validate all fields
+    const newErrors: Record<string, string> = {}
+    allFields.forEach(field => {
+      const error = validateField(field, academicData[field], academicData)
+      if (error) {
+        newErrors[field] = error
+      }
+    })
+    setErrors(newErrors)
+    
     // Validate required fields before proceeding
-    if (!isValid) {
+    if (!isValid || Object.keys(newErrors).length > 0) {
       // Check which fields are missing
       const missing = []
       if (!academicData.institution_slug && !academicData.institution_other) missing.push('University')
@@ -139,7 +215,7 @@ function IntroClientContent() {
       if (!academicData.study_start_month) missing.push('Study Start Month')
       if (!academicData.graduation_month) missing.push('Graduation Month')
       
-      alert(`Please complete all required fields: ${missing.join(', ')}`)
+      showErrorToast('Validation Error', `Please complete all required fields: ${missing.join(', ')}`)
       return
     }
     
@@ -179,7 +255,7 @@ function IntroClientContent() {
         }
       } catch (error) {
         console.error('Failed to save academic data:', error)
-        alert(error instanceof Error ? error.message : 'Failed to save data. Please try again.')
+        showErrorToast('Save Failed', error instanceof Error ? error.message : 'Failed to save data. Please try again.')
         // Don't navigate if save fails - keep user on page to fix issues
       } finally {
         setIsSaving(false)
@@ -223,7 +299,11 @@ function IntroClientContent() {
         <AcademicStep 
           data={academicData} 
           onChange={handleAcademicChange} 
-          user={{} as any} 
+          user={{} as any}
+          errors={errors}
+          onFieldBlur={(field) => {
+            setTouched(prev => ({ ...prev, [field]: true }))
+          }}
         />
       </QuestionnaireLayout>
     </ErrorBoundary>

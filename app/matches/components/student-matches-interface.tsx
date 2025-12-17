@@ -5,7 +5,9 @@ import { useRouter } from 'next/navigation'
 import { useMutation, useQuery } from '@tanstack/react-query'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { toast } from 'sonner'
+import { showErrorToast } from '@/lib/toast'
 import { SuggestionCard } from './suggestion-card'
+import { EmptyMatchesState } from './empty-matches-state'
 import { Button } from '@/components/ui/button'
 import { MessageCircle, Users, X, Clock } from 'lucide-react'
 import { fetchWithCSRF } from '@/lib/utils/fetch-with-csrf'
@@ -39,16 +41,31 @@ export function StudentMatchesInterface({ user }: StudentMatchesInterfaceProps) 
   const [isLoading, setIsLoading] = useState(true)
   const [selectedMatches, setSelectedMatches] = useState<Set<string>>(new Set())
   const [isCreatingChat, setIsCreatingChat] = useState(false)
+  const [pagination, setPagination] = useState<{ limit: number; offset: number; total: number; has_more: boolean } | null>(null)
+  const [isLoadingMore, setIsLoadingMore] = useState(false)
 
   // Fetch suggestions
-  const fetchSuggestions = async (includeExpired = false) => {
+  const fetchSuggestions = async (includeExpired = false, loadMore = false) => {
     try {
-      setIsLoading(true)
-      const url = includeExpired ? '/api/match/suggestions/my?includeExpired=true' : '/api/match/suggestions/my'
+      if (loadMore) {
+        setIsLoadingMore(true)
+      } else {
+        setIsLoading(true)
+      }
+      
+      const limit = 20
+      const offset = loadMore && pagination ? pagination.offset + pagination.limit : 0
+      const url = includeExpired 
+        ? `/api/match/suggestions/my?includeExpired=true&limit=${limit}&offset=${offset}`
+        : `/api/match/suggestions/my?limit=${limit}&offset=${offset}`
+      
       const response = await fetch(url)
       if (response.ok) {
         const data = await response.json()
         const rawSuggestions = data.suggestions || []
+        const paginationData = data.pagination || { limit, offset, total: rawSuggestions.length, has_more: false }
+        
+        setPagination(paginationData)
         
         // Client-side dedupe guard: keep only latest suggestion per otherId
         const deduped = new Map<string, MatchSuggestion>()
@@ -65,7 +82,14 @@ export function StudentMatchesInterface({ user }: StudentMatchesInterfaceProps) 
         const allSuggestions = Array.from(deduped.values())
         
         // Categorize suggestions
-        const suggested = allSuggestions.filter(s => s.status === 'pending' && !s.acceptedBy?.includes(user.id))
+        // Defensive filtering: explicitly exclude declined and confirmed matches from suggested tab
+        const suggested = allSuggestions.filter(s => {
+          // Must be pending status (this already excludes declined and accepted)
+          if (s.status !== 'pending') return false
+          // User must not have already accepted
+          if (s.acceptedBy?.includes(user.id)) return false
+          return true
+        })
         const pending = allSuggestions.filter(s => s.status === 'accepted' && s.acceptedBy?.includes(user.id) && s.acceptedBy.length < s.memberIds.length)
         const confirmed = allSuggestions.filter(s => s.status === 'accepted' && s.acceptedBy?.length === s.memberIds.length)
         
@@ -82,10 +106,42 @@ export function StudentMatchesInterface({ user }: StudentMatchesInterfaceProps) 
           })
           .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
         
-        setSuggestions(suggested)
-        setPendingSuggestions(pending)
-        setConfirmedMatches(confirmed)
-        setHistoryMatches(history)
+        if (loadMore) {
+          // Append new suggestions to existing ones
+          setSuggestions(prev => {
+            const combined = [...prev, ...suggested]
+            // Re-dedupe in case of overlaps
+            const deduped = new Map<string, MatchWithStatus>()
+            for (const sug of combined) {
+              const otherId = sug.memberIds.find((id: string) => id !== user.id)
+              if (!otherId) continue
+              const existing = deduped.get(otherId)
+              if (!existing || new Date(sug.createdAt) > new Date(existing.createdAt)) {
+                deduped.set(otherId, sug)
+              }
+            }
+            return Array.from(deduped.values())
+          })
+          setPendingSuggestions(prev => {
+            const combined = [...prev, ...pending]
+            const deduped = new Map<string, MatchWithStatus>()
+            for (const sug of combined) {
+              const otherId = sug.memberIds.find((id: string) => id !== user.id)
+              if (!otherId) continue
+              const existing = deduped.get(otherId)
+              if (!existing || new Date(sug.createdAt) > new Date(existing.createdAt)) {
+                deduped.set(otherId, sug)
+              }
+            }
+            return Array.from(deduped.values())
+          })
+        } else {
+          // Replace all suggestions
+          setSuggestions(suggested)
+          setPendingSuggestions(pending)
+          setConfirmedMatches(confirmed)
+          setHistoryMatches(history)
+        }
       } else {
         console.error('Failed to fetch suggestions')
       }
@@ -93,6 +149,7 @@ export function StudentMatchesInterface({ user }: StudentMatchesInterfaceProps) 
       console.error('Error fetching suggestions:', error)
     } finally {
       setIsLoading(false)
+      setIsLoadingMore(false)
     }
   }
 
@@ -132,8 +189,12 @@ export function StudentMatchesInterface({ user }: StudentMatchesInterfaceProps) 
       // Invalidate matches queries to refetch
       queryClient.invalidateQueries({ queryKey: queryKeys.matches.all(user.id) })
       
-      // Refresh suggestions
-      fetchSuggestions(activeTab === 'history' || activeTab === 'confirmed')
+      // Refresh suggestions with a small delay to ensure database consistency
+      // This prevents race conditions where the API might return the declined match
+      // before the database update has fully propagated
+      setTimeout(() => {
+        fetchSuggestions(activeTab === 'history' || activeTab === 'confirmed')
+      }, 500)
     },
     onError: (error, { suggestionId }, context) => {
       // Rollback optimistic update - refetch to restore state
@@ -279,7 +340,7 @@ export function StudentMatchesInterface({ user }: StudentMatchesInterfaceProps) 
   // Handle individual chat creation
   const handleIndividualChat = async () => {
     if (selectedMatches.size !== 1) {
-      alert('Please select exactly one match for individual chat')
+      showErrorToast('Selection Required', 'Please select exactly one match for individual chat')
       return
     }
 
@@ -288,13 +349,13 @@ export function StudentMatchesInterface({ user }: StudentMatchesInterfaceProps) 
       const suggestionId = Array.from(selectedMatches)[0]
       const suggestion = suggestions.find(s => s.id === suggestionId)
       if (!suggestion) {
-        alert('Match not found')
+        showErrorToast('Error', 'Match not found')
         return
       }
 
       const otherUserId = suggestion.memberIds.find(id => id !== user.id)
       if (!otherUserId) {
-        alert('Could not find other user')
+        showErrorToast('Error', 'Could not find other user')
         return
       }
 
@@ -308,7 +369,7 @@ export function StudentMatchesInterface({ user }: StudentMatchesInterfaceProps) 
 
       if (!response.ok) {
         const error = await response.json()
-        alert(error.error || 'Failed to create chat')
+        showErrorToast('Failed to Create Chat', error.error || 'Failed to create chat')
         return
       }
 
@@ -317,7 +378,7 @@ export function StudentMatchesInterface({ user }: StudentMatchesInterfaceProps) 
       setSelectedMatches(new Set())
     } catch (error) {
       console.error('Error creating individual chat:', error)
-      alert('Failed to create chat. Please try again.')
+      showErrorToast('Failed to Create Chat', 'Failed to create chat. Please try again.')
     } finally {
       setIsCreatingChat(false)
     }
@@ -326,12 +387,12 @@ export function StudentMatchesInterface({ user }: StudentMatchesInterfaceProps) 
   // Handle group chat creation
   const handleGroupChat = async () => {
     if (selectedMatches.size < 2) {
-      alert('Please select at least 2 matches for group chat')
+      showErrorToast('Selection Required', 'Please select at least 2 matches for group chat')
       return
     }
 
     if (selectedMatches.size > 5) {
-      alert('Maximum 5 people allowed in a group chat')
+      showErrorToast('Limit Exceeded', 'Maximum 5 people allowed in a group chat')
       return
     }
 
@@ -346,7 +407,7 @@ export function StudentMatchesInterface({ user }: StudentMatchesInterfaceProps) 
         .filter((id): id is string => id !== undefined)
 
       if (otherUserIds.length === 0) {
-        alert('Could not find users to add to group')
+        showErrorToast('Error', 'Could not find users to add to group')
         return
       }
 
@@ -362,7 +423,7 @@ export function StudentMatchesInterface({ user }: StudentMatchesInterfaceProps) 
 
       if (!response.ok) {
         const error = await response.json()
-        alert(error.error || 'Failed to create group chat')
+        showErrorToast('Failed to Create Group Chat', error.error || 'Failed to create group chat')
         return
       }
 
@@ -371,7 +432,7 @@ export function StudentMatchesInterface({ user }: StudentMatchesInterfaceProps) 
       setSelectedMatches(new Set())
     } catch (error) {
       console.error('Error creating group chat:', error)
-      alert('Failed to create group chat. Please try again.')
+      showErrorToast('Failed to Create Group Chat', 'Failed to create group chat. Please try again.')
     } finally {
       setIsCreatingChat(false)
     }
@@ -490,26 +551,20 @@ export function StudentMatchesInterface({ user }: StudentMatchesInterfaceProps) 
           <div className="text-text-muted">Loading your matches...</div>
         </div>
       ) : filteredSuggestions.length === 0 ? (
-        <div className="text-center py-12">
-          <div className="text-text-muted mb-4">
-            {activeTab === 'suggested' && 'No new suggestions available. Try refreshing to get new matches.'}
-            {activeTab === 'pending' && 'No pending matches waiting for responses.'}
-            {activeTab === 'confirmed' && 'No confirmed matches yet.'}
-            {activeTab === 'history' && 'No match history available.'}
+        activeTab === 'suggested' ? (
+          <EmptyMatchesState
+            hasCompletedQuestionnaire={true}
+            onRefresh={handleRefresh}
+          />
+        ) : (
+          <div className="text-center py-12">
+            <div className="text-text-muted mb-4">
+              {activeTab === 'pending' && 'No pending matches waiting for responses.'}
+              {activeTab === 'confirmed' && 'No confirmed matches yet.'}
+              {activeTab === 'history' && 'No match history available.'}
+            </div>
           </div>
-          <button
-            onClick={handleRefresh}
-            disabled={isLoading}
-            className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-          >
-            {isLoading ? 'Loading...' : 'Refresh Suggestions'}
-          </button>
-          <p className="text-xs sm:text-sm text-text-secondary mt-3 leading-relaxed">
-            Suggestions are automatically generated once every 6 hours. To get fresh matches instantly, click the Refresh Suggestions button above. 
-
-            If you've recently completed or updated your questionnaire, our algorithm may need up to an hour to process your responses. To find your best potential roommates we'll need to analyze compatibility values, calculate match scores, and run our sophisticated matching algorithms.
-          </p>
-        </div>
+        )
       ) : (
         <>
           <div className="grid gap-4 sm:gap-6 mb-4 sm:mb-6">
@@ -527,6 +582,20 @@ export function StudentMatchesInterface({ user }: StudentMatchesInterfaceProps) 
             ))}
           </div>
 
+          {/* Load More button for suggested tab */}
+          {activeTab === 'suggested' && pagination?.has_more && (
+            <div className="flex justify-center mb-4 sm:mb-6">
+              <Button
+                onClick={() => fetchSuggestions(false, true)}
+                disabled={isLoadingMore}
+                variant="outline"
+                className="min-w-[120px]"
+              >
+                {isLoadingMore ? 'Loading...' : 'Load More'}
+              </Button>
+            </div>
+          )}
+
           {/* Action buttons for selected matches */}
           {activeTab === 'confirmed' && selectedMatches.size > 0 && (
             <div className="fixed bottom-6 left-1/2 transform -translate-x-1/2 z-50">
@@ -539,7 +608,7 @@ export function StudentMatchesInterface({ user }: StudentMatchesInterfaceProps) 
                     <Button
                       onClick={handleIndividualChat}
                       disabled={isCreatingChat}
-                      variant="default"
+                      variant="primary"
                       className="flex items-center gap-2"
                     >
                       <MessageCircle className="w-4 h-4" />
@@ -550,7 +619,7 @@ export function StudentMatchesInterface({ user }: StudentMatchesInterfaceProps) 
                     <Button
                       onClick={handleGroupChat}
                       disabled={isCreatingChat}
-                      variant="default"
+                      variant="primary"
                       className="flex items-center gap-2"
                     >
                       <Users className="w-4 h-4" />

@@ -297,3 +297,12 @@ GRANT EXECUTE ON FUNCTION public.get_study_social_dimension(UUID) TO service_rol
 GRANT EXECUTE ON FUNCTION public.get_home_vibe_dimension(UUID) TO authenticated;
 GRANT EXECUTE ON FUNCTION public.get_home_vibe_dimension(UUID) TO service_role;
 
+
+
+
+
+
+
+
+
+

@@ -732,23 +732,67 @@ export class SupabaseMatchRepo implements MatchRepo {
     safeLogger.debug(`[DEBUG] createSuggestions - Successfully created ${data?.length || 0} suggestions`)
   }
 
-  async listSuggestionsForUser(userId: string, includeExpired = false): Promise<MatchSuggestion[]> {
+  async listSuggestionsForUser(userId: string, includeExpired = false, limit?: number, offset?: number): Promise<MatchSuggestion[]> {
     // SECURITY: This method uses admin client but filters results by userId parameter
     // which is passed from authenticated API routes. Users can only see suggestions
     // that include their own userId in memberIds array.
-    // Matches don't expire - only filter by declined status if needed
+    // Use server-side deduplication function for efficiency
+    const supabase = await this.getSupabase()
+    
+    // Try to use the deduplication function if available, fallback to client-side dedupe
+    try {
+      const { data, error } = await supabase.rpc('get_deduplicated_suggestions', {
+        p_user_id: userId,
+        p_include_expired: includeExpired,
+        p_limit: limit || null,
+        p_offset: offset || 0
+      })
+
+      if (error) {
+        // If function doesn't exist or fails, fall back to client-side deduplication
+        safeLogger.warn('[MatchRepo] Deduplication function not available, using client-side dedupe', { error: error.message })
+        return this.listSuggestionsForUserFallback(userId, includeExpired, limit, offset)
+      }
+
+      // Map database records to MatchSuggestion format
+      return (data || []).map((record: any) => ({
+        id: record.id,
+        runId: record.run_id,
+        kind: record.kind,
+        memberIds: record.member_ids,
+        fitIndex: record.fit_index,
+        sectionScores: record.section_scores,
+        reasons: record.reasons,
+        personalizedExplanation: record.personalized_explanation,
+        expiresAt: record.expires_at,
+        status: record.status,
+        acceptedBy: record.accepted_by,
+        createdAt: record.created_at
+      }))
+    } catch (error) {
+      // Fallback to client-side deduplication if RPC fails
+      safeLogger.warn('[MatchRepo] Error calling deduplication function, using fallback', { error })
+      return this.listSuggestionsForUserFallback(userId, includeExpired, limit, offset)
+    }
+  }
+
+  // Fallback method for client-side deduplication (used if RPC function unavailable)
+  private async listSuggestionsForUserFallback(userId: string, includeExpired = false, limit?: number, offset?: number): Promise<MatchSuggestion[]> {
     const supabase = await this.getSupabase()
     let query = supabase
       .from('match_suggestions')
       .select('*')
       .contains('member_ids', [userId])
-      .order('created_at', { ascending: false }) // Order by created_at DESC to get latest first
+      .order('created_at', { ascending: false })
 
-    // Note: includeExpired parameter kept for backwards compatibility but no longer filters
-    // Matches don't expire - only declined matches are hidden from active view
     if (!includeExpired) {
-      // Exclude declined matches from active view (they go to history)
       query = query.neq('status', 'declined')
+    }
+
+    if (limit !== undefined && offset !== undefined) {
+      query = query.range(offset, offset + limit - 1)
+    } else if (limit !== undefined) {
+      query = query.limit(limit)
     }
 
     const { data, error } = await query
@@ -757,7 +801,7 @@ export class SupabaseMatchRepo implements MatchRepo {
       throw new Error(`Failed to list suggestions for user: ${error.message}`)
     }
 
-    const suggestions = (data || []).map((record: any) => ({
+    let suggestions = (data || []).map((record: any) => ({
       id: record.id,
       runId: record.run_id,
       kind: record.kind,
@@ -772,8 +816,24 @@ export class SupabaseMatchRepo implements MatchRepo {
       createdAt: record.created_at
     }))
 
-    // Matches don't expire - no need to filter by expiration date
-    // Dedupe by otherId: keep only the latest suggestion per counterpart
+    // Filter out confirmed matches when includeExpired is false
+    // (confirmed = status 'accepted' AND all members have accepted)
+    if (!includeExpired) {
+      suggestions = suggestions.filter(s => {
+        // Exclude declined matches (already filtered by query, but be defensive)
+        if (s.status === 'declined') return false
+        // Exclude confirmed matches (all members have accepted)
+        if (s.status === 'accepted' && 
+            s.acceptedBy && 
+            s.memberIds && 
+            s.acceptedBy.length === s.memberIds.length) {
+          return false
+        }
+        return true
+      })
+    }
+
+    // Client-side dedupe: keep only the latest suggestion per counterpart
     const seenOtherIds = new Map<string, MatchSuggestion>()
     for (const sug of suggestions) {
       const otherId = sug.memberIds.find(id => id !== userId)
@@ -787,6 +847,29 @@ export class SupabaseMatchRepo implements MatchRepo {
 
     // Return deduped suggestions, sorted by fitIndex descending
     return Array.from(seenOtherIds.values()).sort((a, b) => b.fitIndex - a.fitIndex)
+  }
+
+  async countSuggestionsForUser(userId: string, includeExpired = false): Promise<number> {
+    // Count suggestions for user using efficient COUNT query
+    // Note: This counts before deduplication, so actual count may be lower after dedupe
+    // But it's much more efficient than fetching all records
+    const supabase = await this.getSupabase()
+    let query = supabase
+      .from('match_suggestions')
+      .select('*', { count: 'exact', head: true })
+      .contains('member_ids', [userId])
+
+    if (!includeExpired) {
+      query = query.neq('status', 'declined')
+    }
+
+    const { count, error } = await query
+
+    if (error) {
+      throw new Error(`Failed to count suggestions for user: ${error.message}`)
+    }
+
+    return count || 0
   }
 
   async listSuggestionsByRun(runId: string): Promise<MatchSuggestion[]> {
@@ -848,17 +931,41 @@ export class SupabaseMatchRepo implements MatchRepo {
 
   async updateSuggestion(s: MatchSuggestion): Promise<void> {
     const supabase = await this.getSupabase()
+    
+    // Prepare update object - ensure acceptedBy is always an array (not null)
+    const updateData: any = {
+      status: s.status
+    }
+    
+    // Only include accepted_by if it's defined (use empty array if null/undefined)
+    updateData.accepted_by = s.acceptedBy || []
+    
+    safeLogger.debug('[UpdateSuggestion] Updating suggestion', {
+      id: s.id,
+      status: updateData.status,
+      accepted_by: updateData.accepted_by
+    })
+    
     const { error } = await supabase
       .from('match_suggestions')
-      .update({
-        status: s.status,
-        accepted_by: s.acceptedBy
-      })
+      .update(updateData)
       .eq('id', s.id)
 
     if (error) {
-      throw new Error(`Failed to update suggestion: ${error.message}`)
+      safeLogger.error('[UpdateSuggestion] Failed to update', {
+        error: error.message,
+        errorCode: error.code,
+        errorDetails: error.details,
+        suggestionId: s.id,
+        status: updateData.status,
+        acceptedBy: updateData.accepted_by
+      })
+      throw new Error(`Failed to update suggestion: ${error.message} (code: ${error.code})`)
     }
+    
+    safeLogger.debug('[UpdateSuggestion] Successfully updated suggestion', {
+      id: s.id
+    })
   }
 
   async expireOldSuggestionsForUser(userId: string): Promise<number> {
@@ -1007,15 +1114,31 @@ export class SupabaseMatchRepo implements MatchRepo {
     // authenticated API routes where userId matches the authenticated user.
     // The API route must verify userId === auth.uid() before calling this.
     const supabase = await this.getSupabase()
+    
+    // Use upsert with onConflict to handle unique constraint violations gracefully
+    // If the blocklist entry already exists, that's fine - we just want to ensure it exists
     const { error } = await supabase
       .from('match_blocklist')
-      .upsert({
-        user_id: userId,
-        blocked_user_id: otherId
-      })
+      .upsert(
+        {
+          user_id: userId,
+          blocked_user_id: otherId
+        },
+        {
+          onConflict: 'user_id,blocked_user_id'
+        }
+      )
 
     if (error) {
-      throw new Error(`Failed to add to blocklist: ${error.message}`)
+      // If it's a unique constraint violation, that's okay - the entry already exists
+      if (error.code === '23505' || error.message?.includes('duplicate') || error.message?.includes('unique')) {
+        safeLogger.debug('[Blocklist] Entry already exists, ignoring', {
+          userId,
+          otherId
+        })
+        return
+      }
+      throw new Error(`Failed to add to blocklist: ${error.message} (code: ${error.code})`)
     }
   }
 }

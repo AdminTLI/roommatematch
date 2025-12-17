@@ -2,14 +2,24 @@ import { createClient } from '@/lib/supabase/server'
 import { NextRequest, NextResponse } from 'next/server'
 import { safeLogger } from '@/lib/utils/logger'
 import { checkRateLimit, getUserRateLimitKey } from '@/lib/rate-limit'
+import { getUserFriendlyError } from '@/lib/errors/user-friendly-messages'
 
 export async function POST(request: NextRequest) {
   try {
     const supabase = await createClient()
-    const { data: { user } } = await supabase.auth.getUser()
+    const { data: { user }, error: authError } = await supabase.auth.getUser()
+
+    if (authError) {
+      safeLogger.error('Auth error in chat send', { error: authError })
+      return NextResponse.json({ 
+        error: getUserFriendlyError('Authentication failed')
+      }, { status: 401 })
+    }
 
     if (!user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+      return NextResponse.json({ 
+        error: getUserFriendlyError('Authentication required')
+      }, { status: 401 })
     }
 
     // Rate limiting: 30 messages per 5 minutes per user
@@ -34,10 +44,22 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    const { chat_id, content } = await request.json()
+    let body
+    try {
+      body = await request.json()
+    } catch (jsonError) {
+      safeLogger.error('Failed to parse request body', { error: jsonError })
+      return NextResponse.json({ 
+        error: getUserFriendlyError('Invalid request format')
+      }, { status: 400 })
+    }
+
+    const { chat_id, content } = body
 
     if (!chat_id || !content) {
-      return NextResponse.json({ error: 'Missing required fields' }, { status: 400 })
+      return NextResponse.json({ 
+        error: getUserFriendlyError('Please enter a message')
+      }, { status: 400 })
     }
 
     // Verify user is a member of the chat (using regular client for RLS check)
@@ -72,7 +94,7 @@ export async function POST(request: NextRequest) {
           chatId: chat_id
         })
         return NextResponse.json({ 
-          error: 'This chat has been closed. You can no longer send messages.' 
+          error: getUserFriendlyError('Chat has been closed')
         }, { status: 403 })
       }
       
@@ -80,7 +102,9 @@ export async function POST(request: NextRequest) {
         userId: user.id,
         chatId: chat_id
       })
-      return NextResponse.json({ error: 'Not a member of this chat' }, { status: 403 })
+      return NextResponse.json({ 
+        error: getUserFriendlyError('Failed to verify chat membership')
+      }, { status: 403 })
     }
 
     safeLogger.info('Inserting message', {
@@ -118,7 +142,7 @@ export async function POST(request: NextRequest) {
           membershipExists: !!membership
         })
         return NextResponse.json({ 
-          error: 'Permission denied: Unable to send message. Please refresh and try again.' 
+          error: getUserFriendlyError('Permission denied')
         }, { status: 403 })
       }
       
@@ -126,10 +150,28 @@ export async function POST(request: NextRequest) {
         error: insertError,
         code: insertError.code,
         message: insertError.message,
+        details: insertError.details,
+        hint: insertError.hint,
         userId: user.id,
         chatId: chat_id
       })
-      return NextResponse.json({ error: 'Failed to send message' }, { status: 500 })
+      
+      // In development, return the actual error message for debugging
+      const errorMessage = process.env.NODE_ENV === 'development'
+        ? insertError.message || 'Failed to send message'
+        : getUserFriendlyError('Failed to send message')
+      
+      return NextResponse.json({ 
+        error: errorMessage,
+        ...(process.env.NODE_ENV === 'development' && {
+          details: {
+            code: insertError.code,
+            message: insertError.message,
+            details: insertError.details,
+            hint: insertError.hint
+          }
+        })
+      }, { status: 500 })
     }
 
     if (!insertedMessage) {
@@ -137,7 +179,14 @@ export async function POST(request: NextRequest) {
         userId: user.id,
         chatId: chat_id
       })
-      return NextResponse.json({ error: 'Failed to send message' }, { status: 500 })
+
+      // #region agent log
+      fetch('http://127.0.0.1:7242/ingest/a9ae1253-eb67-47e3-8214-0f523bc4444c',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({sessionId:'debug-session',runId:'pre-fix1',hypothesisId:'H3',location:'app/api/chat/send/route.ts:177',message:'insertedMessage missing',data:{userId:user.id,chatId:chat_id},timestamp:Date.now()})}).catch(()=>{})
+      // #endregion
+
+      return NextResponse.json({ 
+        error: getUserFriendlyError('Failed to send message')
+      }, { status: 500 })
     }
 
     safeLogger.info('Message inserted successfully', {
@@ -167,7 +216,11 @@ export async function POST(request: NextRequest) {
     // Use message with profile if available, otherwise use the basic inserted message
     const message = messageWithProfile || insertedMessage
 
-    // Update chat's updated_at timestamp (using regular client - we've verified membership)
+    // Update chat's updated_at timestamp
+    // NOTE: Temporarily commented out due to trigger function issue with public.now()
+    // The trigger will automatically update this when the function is fixed
+    // TODO: Re-enable after fixing update_updated_at_column() function in database
+    /*
     const { error: updateError } = await supabase
       .from('chats')
       .update({ updated_at: new Date().toISOString() })
@@ -180,11 +233,41 @@ export async function POST(request: NextRequest) {
       })
       // Don't fail the request - message was sent successfully
     }
+    */
 
     return NextResponse.json({ message }, { status: 201 })
 
   } catch (error) {
-    safeLogger.error('Chat send error', error)
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error'
+    const errorStack = error instanceof Error ? error.stack : undefined
+    const errorName = error instanceof Error ? error.name : typeof error
+    
+    safeLogger.error('Chat send error', {
+      error,
+      errorMessage,
+      errorName,
+      errorStack,
+      errorString: String(error),
+      errorType: typeof error,
+      errorJSON: JSON.stringify(error, Object.getOwnPropertyNames(error))
+    })
+    
+    // Return detailed error in development, generic in production
+    // Don't use getUserFriendlyError here - we want to see the actual error in dev
+    const detailedError = process.env.NODE_ENV === 'development' 
+      ? errorMessage 
+      : getUserFriendlyError('Failed to send message')
+    
+    return NextResponse.json({ 
+      error: detailedError,
+      ...(process.env.NODE_ENV === 'development' && { 
+        details: {
+          name: errorName,
+          message: errorMessage,
+          stack: errorStack,
+          errorString: String(error)
+        }
+      })
+    }, { status: 500 })
   }
 }

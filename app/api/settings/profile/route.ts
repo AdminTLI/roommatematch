@@ -2,6 +2,8 @@ import { NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { syncProfileNameToAuth } from '@/lib/auth/user-profile'
 import { safeLogger } from '@/lib/utils/logger'
+import { profileUpdateSchema, getUserFriendlyError } from '@/lib/validation/profile-schema'
+import { getUserFriendlyError as getFriendlyError } from '@/lib/errors/user-friendly-messages'
 
 export async function POST(request: Request) {
   const supabase = await createClient()
@@ -21,14 +23,17 @@ export async function POST(request: Request) {
     const body = await request.json()
     safeLogger.debug('[Profile] Request body received')
     
-    const { firstName, lastName, phone, bio } = body
-
-    // Validate required fields
-    if (!firstName) {
+    // Validate input with Zod schema
+    const validationResult = profileUpdateSchema.safeParse(body)
+    
+    if (!validationResult.success) {
+      const firstError = validationResult.error.errors[0]
       return NextResponse.json({ 
-        error: 'First name is required' 
+        error: firstError.message || getFriendlyError('Validation failed')
       }, { status: 400 })
     }
+    
+    const { firstName, lastName, phone, bio } = validationResult.data
 
     // Check if user exists in users table using SERVICE ROLE (bypass RLS)
     const { createServiceClient } = await import('@/lib/supabase/service')

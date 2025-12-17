@@ -7,10 +7,6 @@ const nextConfig = {
         ? [process.env.NEXT_PUBLIC_APP_URL || process.env.VERCEL_URL].filter(Boolean)
         : ['localhost:3000'],
     },
-    // Ensure the app works in older browsers (e.g. Safari < 14) by transpiling modern syntax
-    legacyBrowsers: true,
-    // Respect browserslist targets when compiling third-party code
-    browsersListForSwc: true,
   },
   // Force SWC to transpile packages that ship modern syntax (Sentry client utilities)
   transpilePackages: ['@sentry-internal/browser-utils'],
@@ -33,9 +29,36 @@ const nextConfig = {
   },
   webpack: (config, { dev, isServer }) => {
     if (dev) {
+      // Use native file system events instead of aggressive polling to avoid chunk loading issues
+      // Native events are faster and more reliable for most development environments
+      // If you're using Docker, WSL, or network filesystems and need polling, set ENABLE_WEBPACK_POLLING=true
       config.watchOptions = {
-        poll: 1000,
+        poll: process.env.ENABLE_WEBPACK_POLLING === 'true' ? 1000 : false,
         aggregateTimeout: 300,
+        ignored: ['**/node_modules', '**/.git', '**/.next'],
+      }
+      
+      // Improve chunk loading reliability in development
+      if (!isServer) {
+        config.optimization = {
+          ...config.optimization,
+          splitChunks: {
+            ...config.optimization.splitChunks,
+            chunks: 'all',
+            cacheGroups: {
+              default: false,
+              vendors: false,
+              // Ensure Sentry and other large dependencies are properly chunked
+              vendor: {
+                name: 'vendor',
+                chunks: 'all',
+                test: /[\\/]node_modules[\\/]/,
+                priority: 20,
+                reuseExistingChunk: true,
+              },
+            },
+          },
+        }
       }
     }
 
@@ -90,17 +113,17 @@ const nextConfig = {
           },
           {
             key: 'Cross-Origin-Embedder-Policy',
-            value: 'require-corp',
+            value: 'unsafe-none',
           },
           {
             key: 'Content-Security-Policy',
             value: [
               "default-src 'self'",
-              "script-src 'self' 'unsafe-eval' 'unsafe-inline' https://*.persona.com https://*.vercel-insights.com https://*.sentry.io",
+              "script-src 'self' 'unsafe-eval' 'unsafe-inline' https://*.persona.com https://*.vercel-insights.com https://va.vercel-scripts.com https://*.sentry.io",
               "style-src 'self' 'unsafe-inline'",
               "img-src 'self' data: https: blob:",
               "font-src 'self' data:",
-              "connect-src 'self' https://*.supabase.co https://*.persona.com https://*.sentry.io https://*.vercel-insights.com",
+              "connect-src 'self' https://*.supabase.co wss://*.supabase.co ws://*.supabase.co https://*.persona.com https://*.sentry.io https://*.vercel-insights.com",
               "frame-src https://*.persona.com",
               "object-src 'none'",
               "base-uri 'self'",

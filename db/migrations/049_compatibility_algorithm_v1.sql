@@ -148,10 +148,39 @@ DECLARE
   v_contradiction_entry JSONB;
 BEGIN
   -- Collect all answers from onboarding_sections
+  -- Answers are stored as JSONB array: [{itemId: 'M4_Q1', value: 'high'}, ...]
+  -- We need to convert to flat object: {'M4_Q1': 'high', ...}
   FOR v_section_record IN
     SELECT answers FROM onboarding_sections WHERE user_id = p_user_id
   LOOP
-    v_all_answers := v_all_answers || v_section_record.answers;
+    -- Check if answers is an array (new format) or object (old format)
+    IF jsonb_typeof(v_section_record.answers) = 'array' THEN
+      -- New format: array of {itemId, value, dealBreaker} objects
+      -- Convert to flat object: {itemId: value}
+      FOR i IN 0..jsonb_array_length(v_section_record.answers) - 1 LOOP
+        DECLARE
+          answer_item JSONB := v_section_record.answers->i;
+          item_id TEXT;
+          item_value JSONB;
+        BEGIN
+          -- Extract itemId and value from answer object
+          item_id := answer_item->>'itemId';
+          -- Extract value - handle nested {value: X} structure
+          item_value := answer_item->'value';
+          IF item_value IS NOT NULL AND jsonb_typeof(item_value) = 'object' AND item_value ? 'value' THEN
+            item_value := item_value->'value';
+          END IF;
+          
+          -- Add to flat object if we have both itemId and value
+          IF item_id IS NOT NULL AND item_value IS NOT NULL THEN
+            v_all_answers := v_all_answers || jsonb_build_object(item_id, item_value);
+          END IF;
+        END;
+      END LOOP;
+    ELSE
+      -- Old format: already a flat object, merge directly
+      v_all_answers := v_all_answers || v_section_record.answers;
+    END IF;
   END LOOP;
   
   -- Start with all answers as resolved (will override contradictions)

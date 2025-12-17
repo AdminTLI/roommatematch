@@ -25,10 +25,17 @@ export class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoun
   componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
     console.error('ErrorBoundary caught an error:', error, errorInfo)
     
-    // Send to Sentry if available
+    // Handle chunk loading errors specifically
+    if (error.name === 'ChunkLoadError' || error.message?.includes('Loading chunk')) {
+      console.warn('Chunk loading error detected. This may require a page refresh.')
+      // Don't send chunk load errors to Sentry as they're often transient
+      return
+    }
+    
+    // Send to Sentry if available (async to avoid blocking)
     if (typeof window !== 'undefined' && process.env.NEXT_PUBLIC_SENTRY_DSN) {
-      try {
-        const { captureException } = require('@sentry/nextjs')
+      // Use dynamic import to avoid blocking chunk loading
+      import('@sentry/nextjs').then(({ captureException }) => {
         captureException(error, {
           contexts: {
             react: {
@@ -36,9 +43,9 @@ export class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoun
             }
           }
         })
-      } catch (e) {
-        // Sentry not available, skip
-      }
+      }).catch(() => {
+        // Sentry not available, skip silently
+      })
     }
   }
 
@@ -57,6 +64,8 @@ export class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoun
 }
 
 function DefaultErrorFallback({ error, resetError }: { error?: Error; resetError: () => void }) {
+  const isChunkError = error?.name === 'ChunkLoadError' || error?.message?.includes('Loading chunk')
+  
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900">
       <div className="max-w-md w-full bg-white dark:bg-gray-800 shadow-lg rounded-lg p-6">
@@ -68,15 +77,17 @@ function DefaultErrorFallback({ error, resetError }: { error?: Error; resetError
           </div>
           <div className="ml-3">
             <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100">
-              Something went wrong
+              {isChunkError ? 'Failed to load page resources' : 'Something went wrong'}
             </h3>
           </div>
         </div>
         <div className="mb-4">
           <p className="text-sm text-gray-600 dark:text-gray-400">
-            We encountered an unexpected error. Please try refreshing the page.
+            {isChunkError 
+              ? 'The page failed to load its resources. This usually happens after a code update. Please refresh the page.'
+              : 'We encountered an unexpected error. Please try refreshing the page.'}
           </p>
-          {error && (
+          {error && !isChunkError && (
             <details className="mt-2">
               <summary className="text-sm text-gray-500 cursor-pointer">Error details</summary>
               <pre className="mt-2 text-xs text-gray-500 bg-gray-100 dark:bg-gray-700 p-2 rounded overflow-auto">
@@ -86,15 +97,17 @@ function DefaultErrorFallback({ error, resetError }: { error?: Error; resetError
           )}
         </div>
         <div className="flex space-x-3">
-          <button
-            onClick={resetError}
-            className="flex-1 bg-indigo-600 text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500"
-          >
-            Try again
-          </button>
+          {!isChunkError && (
+            <button
+              onClick={resetError}
+              className="flex-1 bg-indigo-600 text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+            >
+              Try again
+            </button>
+          )}
           <button
             onClick={() => window.location.reload()}
-            className="flex-1 bg-gray-200 text-gray-900 px-4 py-2 rounded-md text-sm font-medium hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-500"
+            className={`${isChunkError ? 'w-full' : 'flex-1'} bg-indigo-600 text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500`}
           >
             Refresh page
           </button>

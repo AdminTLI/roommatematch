@@ -19,6 +19,7 @@ export const queryKeys = {
     all: (userId?: string) => userId ? ['matches', userId] : ['matches'],
   },
   activity: (userId?: string) => userId ? ['activity', userId] : ['activity'],
+  updates: ['updates'],
   
   // Semi-static data (profile, housing)
   profile: (userId?: string) => userId ? ['profile', userId] : ['profile'],
@@ -29,26 +30,28 @@ export const queryKeys = {
   campuses: ['campuses'],
 } as const
 
-// Create a client with granular stale times
+// Create a client with granular stale times and enhanced retry logic
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
       // Default stale time (overridden per query for specific data types)
-      staleTime: 60 * 1000, // 1 minute default
+      staleTime: 5 * 60 * 1000, // 5 minutes default (increased from 1 minute)
       refetchOnWindowFocus: true, // Refetch on window focus for real-time queries
-      retry: (failureCount, error) => {
-        // Don't retry on 4xx errors
-        if (error && typeof error === 'object' && 'status' in error) {
-          const status = (error as any).status
-          if (status >= 400 && status < 500) {
-            return false
-          }
+      retry: (failureCount, error: any) => {
+        // Don't retry on 4xx errors (client errors)
+        if (error?.status >= 400 && error?.status < 500) {
+          return false
         }
+        // Retry up to 3 times for server errors (5xx) or network errors
         return failureCount < 3
+      },
+      retryDelay: (attemptIndex) => {
+        // Exponential backoff: 1s, 2s, 4s (max 30s)
+        return Math.min(1000 * Math.pow(2, attemptIndex), 30000)
       },
     },
     mutations: {
-      retry: 1,
+      retry: 1, // Only retry mutations once
     },
   },
 })

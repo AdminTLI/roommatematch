@@ -27,3 +27,12 @@ ON onboarding_submissions(submitted_at);
 COMMENT ON COLUMN onboarding_submissions.snapshot IS 'JSONB snapshot containing raw_sections and transformed_responses for audit trail and analysis';
 COMMENT ON COLUMN onboarding_submissions.submitted_at IS 'Timestamp when the questionnaire was submitted (preferred over completed_at)';
 
+
+
+
+
+
+
+
+
+

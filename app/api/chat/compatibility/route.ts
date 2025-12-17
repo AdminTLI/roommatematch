@@ -328,6 +328,22 @@ export async function GET(request: NextRequest) {
       }
     }
     
+    // Enhanced logging to debug the 63%/71% issue
+    safeLogger.info('[API Compatibility] Compatibility calculation result:', {
+      chatId,
+      targetUserId,
+      compatibility_score: responseData.compatibility_score,
+      harmony_score: responseData.harmony_score,
+      context_score: responseData.context_score,
+      dimension_scores: responseData.dimension_scores_json,
+      calculation: {
+        harmony: responseData.harmony_score,
+        context: responseData.context_score,
+        global: `${0.75 * (responseData.harmony_score || 0)} + ${0.25 * (responseData.context_score || 0)} = ${responseData.compatibility_score}`
+      },
+      rawScore: score
+    })
+    
     safeLogger.debug('[API Compatibility] Returning response:', {
       chatId,
       targetUserId,

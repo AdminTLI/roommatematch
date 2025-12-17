@@ -108,3 +108,12 @@ GRANT EXECUTE ON FUNCTION public.normalize_mcq_value(JSONB, JSONB) TO service_ro
 GRANT EXECUTE ON FUNCTION public.normalize_likert_value(JSONB) TO authenticated;
 GRANT EXECUTE ON FUNCTION public.normalize_likert_value(JSONB) TO service_role;
 
+
+
+
+
+
+
+
+
+

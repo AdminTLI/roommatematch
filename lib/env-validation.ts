@@ -8,8 +8,14 @@
  * Throws an error if any are missing, preventing the app from starting insecurely
  */
 export function validateCriticalEnvVars(): void {
-  // Only validate in production or Vercel environments
-  if (process.env.NODE_ENV === 'production' || process.env.VERCEL_ENV) {
+  // Skip validation entirely in local development
+  if (process.env.NODE_ENV === 'development' || !process.env.NODE_ENV) {
+    return
+  }
+  
+  // Only validate in actual production environments
+  // This ensures we don't block local development or preview deployments
+  if (process.env.NODE_ENV === 'production') {
     const missing: string[] = []
     
     // Check for cron secret (either CRON_SECRET or VERCEL_CRON_SECRET)
@@ -70,5 +76,13 @@ export function validateCriticalEnvVars(): void {
  * This ensures the app fails fast if critical secrets are missing
  */
 validateCriticalEnvVars()
+
+
+
+
+
+
+
+
 
 

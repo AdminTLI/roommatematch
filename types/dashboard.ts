@@ -37,6 +37,14 @@ export interface RecentActivity {
   timeAgo: string
 }
 
+export interface Update {
+  id: string
+  version: string
+  release_date: string
+  changes: string[]
+  change_type: 'major' | 'minor' | 'patch'
+}
+
 export interface DashboardData {
   summary: DashboardSummary
   kpis: DashboardKPIs

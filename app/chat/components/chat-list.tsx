@@ -103,43 +103,100 @@ export function ChatList({ user, onChatSelect, selectedChatId }: ChatListProps) 
         .in('id', chatIds)
         .order('created_at', { ascending: false })
       
-      if (chatsError) throw chatsError
+      if (chatsError) {
+        console.error('[ChatList] Error fetching chats:', chatsError)
+        throw chatsError
+      }
+      
+      if (!chatRooms || chatRooms.length === 0) {
+        console.warn('[ChatList] No chat rooms found', {
+          chatIdsCount: chatIds.length,
+          chatIds: chatIds,
+          membershipsCount: memberships?.length || 0
+        })
+        return []
+      }
+      
+      console.log('[ChatList] Fetched chat rooms:', {
+        chatIdsCount: chatIds.length,
+        chatRoomsCount: chatRooms.length,
+        chatRooms: chatRooms.map((r: any) => ({ id: r.id, is_group: r.is_group, memberCount: r.chat_members?.length || 0 }))
+      })
 
-      // Optimize: Fetch all messages for all chats in a single query, then process in memory
-      // This reduces from O(n²) queries to O(1) query
-      // Reuse chatIds already defined above
-      let allMessagesMap = new Map<string, any[]>()
+      // Optimize: Fetch only latest message per chat using efficient query
+      // For "recently matched" check, we'll check if latest message is a system greeting
+      let latestMessagesMap = new Map<string, any>()
+      let allMessagesMap = new Map<string, any[]>() // Store all messages per chat for search
       
       if (chatIds.length > 0) {
-        const { data: allMessages } = await supabase
-          .from('messages')
-          .select('chat_id, content, created_at, user_id')
-          .in('chat_id', chatIds)
-          .order('created_at', { ascending: false })
-        
-        // Group messages by chat_id
-        if (allMessages) {
-          allMessages.forEach((msg: any) => {
-            const existing = allMessagesMap.get(msg.chat_id) || []
-            allMessagesMap.set(msg.chat_id, [...existing, msg])
-          })
+        // Fetch latest message per chat using a more efficient approach
+        // We'll fetch messages ordered by created_at DESC and group by chat_id, taking first
+        // Since Supabase doesn't support DISTINCT ON directly, we fetch with limit per chat
+        // For better performance, we fetch all messages but only keep the latest per chat
+        try {
+          const { data: allMessages, error: messagesError } = await supabase
+            .from('messages')
+            .select('chat_id, content, created_at, user_id')
+            .in('chat_id', chatIds)
+            .order('created_at', { ascending: false })
+            .limit(chatIds.length * 2) // Limit to reasonable number (2 messages per chat max)
+          
+          if (messagesError) {
+            console.warn('[ChatList] Error fetching messages (non-fatal):', messagesError)
+            // Continue without messages - chats should still be shown
+          }
+          
+          // Group by chat_id and keep only the latest (first) message per chat
+          // Also store all messages per chat for search functionality
+          if (allMessages && allMessages.length > 0) {
+            const seenChatIds = new Set<string>()
+            allMessages.forEach((msg: any) => {
+              const chatId = msg.chat_id
+              // Store latest message
+              if (!seenChatIds.has(chatId)) {
+                latestMessagesMap.set(chatId, msg)
+                seenChatIds.add(chatId)
+              }
+              // Store all messages for search (grouped by chat_id)
+              if (!allMessagesMap.has(chatId)) {
+                allMessagesMap.set(chatId, [])
+              }
+              allMessagesMap.get(chatId)!.push(msg)
+            })
+          }
+        } catch (messagesError) {
+          console.warn('[ChatList] Exception fetching messages (non-fatal):', messagesError)
+          // Continue without messages - chats should still be shown
         }
       }
 
       // Process chat rooms with messages from the map
+      // IMPORTANT: Always include all chat rooms, even if they have no messages
       const chatRoomsWithMessages = (chatRooms || []).map((room: any) => {
-        const messages = allMessagesMap.get(room.id) || []
-        // Get latest message (first one since we ordered descending)
-        const latestMessage = messages.length > 0 ? [messages[0]] : []
+        const latestMessage = latestMessagesMap.get(room.id)
+        const messages = latestMessage ? [latestMessage] : []
+        
+        // For "recently matched" check: if latest message exists and is NOT a system greeting,
+        // then the chat is active (has user messages)
+        // If there's no message at all, it's also "recently matched"
+        const systemGreeting = "You're matched! Start your conversation 👋"
+        const hasUserMessages = latestMessage ? latestMessage.content !== systemGreeting : false
         
         return {
           ...room,
-          messages: latestMessage,
-          allMessages: messages // Store all messages for recently matched check
+          messages: messages,
+          // Store flag instead of all messages for memory efficiency
+          hasUserMessages: hasUserMessages
         }
       })
       
       const finalChatRooms = chatRoomsWithMessages
+      
+      console.log('[ChatList] Processed chat rooms:', {
+        totalRooms: finalChatRooms.length,
+        roomsWithMessages: finalChatRooms.filter((r: any) => r.messages.length > 0).length,
+        roomsWithoutMessages: finalChatRooms.filter((r: any) => r.messages.length === 0).length
+      })
 
       // Fetch profiles for all chat rooms in a single batch request
       let profilesMap = new Map<string, any>()
@@ -195,19 +252,12 @@ export function ChatList({ user, onChatSelect, selectedChatId }: ChatListProps) 
       const unreadMap = new Map(unreadData.chat_counts.map((c: any) => [c.chat_id, c.unread_count]))
 
       // Transform database results to ChatRoom format
-      // Use allMessages already fetched above to determine if recently matched
+      // Use hasUserMessages flag to determine if recently matched
       const transformedChats: ChatRoom[] = (finalChatRooms || []).map((room: any) => {
         // Check if recently matched: A chat is "recently matched" if it has no user messages
         // A chat becomes "active" the moment ANY message is sent or received (not just system greetings)
-        const allMessages = room.allMessages || []
-        const systemGreeting = "You're matched! Start your conversation 👋"
-        
-        // Check if there are any user messages (messages that are NOT system greetings)
-        // If there are ANY user messages (sent or received), the chat is active
-        const hasUserMessages = allMessages.some((msg: any) => {
-          // Exclude system greeting messages
-          return msg.content !== systemGreeting && msg.user_id !== null
-        })
+        // Use the hasUserMessages flag set during message fetching (optimized to check only latest message)
+        const hasUserMessages = room.hasUserMessages || false
         
         // A chat is recently matched ONLY if it has no user messages (only system greetings or empty)
         // The moment a user sends or receives ANY message, it becomes active
@@ -271,6 +321,10 @@ export function ChatList({ user, onChatSelect, selectedChatId }: ChatListProps) 
           ? lastMessageDate.getTime()
           : (roomCreatedDate ? roomCreatedDate.getTime() : 0)
         
+        // Get all messages for this chat for search functionality
+        const chatMessages = allMessagesMap.get(room.id) || []
+        const allMessagesContent = chatMessages.map((msg: any) => msg.content)
+        
         return {
           id: room.id,
           name: room.is_group ? `Group Chat` : participantName,
@@ -308,14 +362,26 @@ export function ChatList({ user, onChatSelect, selectedChatId }: ChatListProps) 
           compatibilityScore,
           firstMessageAt: undefined,
           isRecentlyMatched,
-          allMessages: allMessages.map((msg: any) => msg.content) // Store all message content for search
+          allMessages: allMessagesContent // Store all message content for search
         }
       })
 
+      console.log('[ChatList] Successfully transformed chats:', {
+        totalChats: transformedChats.length,
+        recentlyMatched: transformedChats.filter(c => c.isRecentlyMatched).length,
+        activeConversations: transformedChats.filter(c => !c.isRecentlyMatched).length,
+        chatIds: transformedChats.map(c => c.id)
+      })
+      
       return transformedChats
     } catch (error) {
       // Use console.error here as this is client-side code
-      console.error('Failed to load chats:', error)
+      console.error('[ChatList] Failed to load chats:', error)
+      console.error('[ChatList] Error details:', {
+        errorMessage: error instanceof Error ? error.message : String(error),
+        errorStack: error instanceof Error ? error.stack : undefined,
+        userId: user.id
+      })
       return []
     }
   }, [user.id])

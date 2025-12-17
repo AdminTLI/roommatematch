@@ -13,6 +13,7 @@ import jsPDF from 'jspdf'
 import autoTable from 'jspdf-autotable'
 import { SuspenseWrapper } from '@/components/questionnaire/SuspenseWrapper'
 import { fetchWithCSRF } from '@/lib/utils/fetch-with-csrf'
+import { showErrorToast } from '@/lib/toast'
 
 const scaleAnchors = {
   agreement: ['Strongly disagree', 'Disagree', 'Neutral', 'Agree', 'Strongly agree'],
@@ -380,7 +381,7 @@ function ReviewClientContent() {
           message += `\n\n[DEV] Technical: ${result.technicalError}`
         }
         
-        alert(`${title}\n\n${message}`)
+        showErrorToast(title, message)
         return
       }
       
@@ -399,7 +400,7 @@ function ReviewClientContent() {
       }
     } catch (error) {
       console.error('Submit error:', error)
-      alert('Network error: Unable to submit questionnaire. Please check your internet connection and try again.')
+      showErrorToast('Network Error', 'Unable to submit questionnaire. Please check your internet connection and try again.')
     }
   }
 

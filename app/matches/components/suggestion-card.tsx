@@ -123,21 +123,62 @@ export function SuggestionCard({
         const response = await fetch(`/api/chat/compatibility?otherUserId=${otherUserId}`)
         if (response.ok) {
           const data = await response.json()
+          const apiScore = Math.round((data.compatibility_score || 0) * 100)
+          const fitIndexScore = suggestion.fitIndex
+          const scoreDiff = Math.abs(apiScore - fitIndexScore)
+          
+          console.log('[SuggestionCard] Compatibility data received:', {
+            suggestionId: suggestion.id,
+            otherUserId,
+            compatibility_score: data.compatibility_score,
+            apiScorePercent: apiScore,
+            fitIndexPercent: fitIndexScore,
+            scoreDifference: scoreDiff,
+            harmony_score: data.harmony_score,
+            context_score: data.context_score,
+            dimension_scores: data.dimension_scores_json,
+            usingApiScore: true
+          })
+          
+          // Warn if scores differ significantly
+          if (scoreDiff > 5) {
+            console.warn('[SuggestionCard] Score mismatch detected:', {
+              suggestionId: suggestion.id,
+              apiScore,
+              fitIndexScore,
+              difference: scoreDiff,
+              message: 'API score differs significantly from stored fitIndex'
+            })
+          }
+          
           setCompatibilityData(data)
         } else {
           // API call failed - we'll fall back to suggestion.fitIndex in the render
-          console.warn('Failed to fetch compatibility data:', response.status, response.statusText)
+          const errorText = await response.text().catch(() => 'Unknown error')
+          console.warn('[SuggestionCard] Failed to fetch compatibility data:', {
+            suggestionId: suggestion.id,
+            otherUserId,
+            status: response.status,
+            statusText: response.statusText,
+            error: errorText,
+            fallbackToFitIndex: suggestion.fitIndex
+          })
         }
       } catch (error) {
         // Network or other error - we'll fall back to suggestion.fitIndex in the render
-        console.error('Failed to fetch compatibility data:', error)
+        console.error('[SuggestionCard] Error fetching compatibility data:', {
+          suggestionId: suggestion.id,
+          otherUserId,
+          error: error instanceof Error ? error.message : String(error),
+          fallbackToFitIndex: suggestion.fitIndex
+        })
       } finally {
         setIsLoadingCompatibility(false)
       }
     }
     
     fetchCompatibility()
-  }, [suggestion.memberIds, currentUserId])
+  }, [suggestion.memberIds, currentUserId, suggestion.id, suggestion.fitIndex])
   
   const handleRespond = async (action: 'accept' | 'decline') => {
     setIsResponding(true)
@@ -246,7 +287,14 @@ export function SuggestionCard({
   const matchScore = (() => {
     // If we have compatibility data (fresh from API), use it
     if (compatibilityData?.compatibility_score !== null && compatibilityData?.compatibility_score !== undefined) {
-      return Math.round(compatibilityData.compatibility_score * 100)
+      const score = Math.round(compatibilityData.compatibility_score * 100)
+      console.log('[SuggestionCard] Using compatibility score from API:', {
+        suggestionId: suggestion.id,
+        compatibility_score: compatibilityData.compatibility_score,
+        roundedScore: score,
+        fitIndex: suggestion.fitIndex
+      })
+      return score
     }
     // While loading, return null to show loading placeholder (prevents showing stale fitIndex)
     if (isLoadingCompatibility) {
@@ -254,6 +302,11 @@ export function SuggestionCard({
     }
     // Loading complete but no data - fall back to fitIndex only after loading attempt is done
     // This ensures we don't show fitIndex and then immediately replace it (which causes the flash)
+    console.log('[SuggestionCard] Falling back to fitIndex:', {
+      suggestionId: suggestion.id,
+      fitIndex: suggestion.fitIndex,
+      hasCompatibilityData: !!compatibilityData
+    })
     return suggestion.fitIndex
   })()
   const harmonyScore = compatibilityData?.harmony_score !== null && compatibilityData?.harmony_score !== undefined
@@ -762,10 +815,8 @@ export function SuggestionCard({
             <DialogTitle className="text-black dark:text-black text-h2-mobile sm:text-h2-desktop font-semibold mb-4">
               Decline Match?
             </DialogTitle>
-            <DialogDescription>
-              <p className="text-gray-900">
-                This match will be removed and you will never be able to match with this user again. This action cannot be undone.
-              </p>
+            <DialogDescription className="text-gray-900">
+              This match will be removed and you will never be able to match with this user again. This action cannot be undone.
             </DialogDescription>
           </DialogHeader>
           <DialogFooter className="gap-3 sm:gap-4">

@@ -307,10 +307,32 @@ export async function middleware(req: NextRequest) {
         url.searchParams.set('email', user.email)
       }
       url.searchParams.set('auto', '1')
+      url.searchParams.set('reason', 'email_verification_required')
       // Preserve intended destination
       if (pathname !== '/verify') {
         url.searchParams.set('redirect', pathname)
       }
+      return NextResponse.redirect(url)
+    }
+  }
+
+  // Admin route protection - check before other protected routes
+  if (user && pathname.startsWith('/admin')) {
+    const { data: adminRecord } = await supabase
+      .from('admins')
+      .select('id')
+      .eq('user_id', user.id)
+      .maybeSingle()
+    
+    if (!adminRecord) {
+      // Not an admin - redirect to dashboard
+      const url = req.nextUrl.clone()
+      url.pathname = '/dashboard'
+      url.searchParams.set('reason', 'admin_access_denied')
+      safeLogger.warn('[Middleware] Non-admin user attempted to access admin route', {
+        userId: user.id,
+        path: pathname
+      })
       return NextResponse.redirect(url)
     }
   }
@@ -328,11 +350,17 @@ export async function middleware(req: NextRequest) {
       if (redirectUrl === '/auth/verify-email' && user.email) {
         url.searchParams.set('email', user.email)
         url.searchParams.set('auto', '1')
+        url.searchParams.set('reason', verificationStatus.needsEmailVerification 
+          ? 'email_verification_required' 
+          : 'verification_required')
       }
       
       // Preserve redirect path for after verification
       if (redirectUrl === '/verify') {
         url.searchParams.set('redirect', pathname)
+        url.searchParams.set('reason', verificationStatus.needsPersonaVerification 
+          ? 'persona_verification_required' 
+          : 'verification_required')
       }
       
       return NextResponse.redirect(url)
@@ -352,6 +380,7 @@ export async function middleware(req: NextRequest) {
         url.searchParams.set('email', user.email)
       }
       url.searchParams.set('auto', '1')
+      url.searchParams.set('reason', 'email_verification_required')
       return NextResponse.redirect(url)
     }
 

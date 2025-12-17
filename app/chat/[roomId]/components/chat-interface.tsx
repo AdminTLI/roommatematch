@@ -29,6 +29,7 @@ import { User } from '@supabase/supabase-js'
 import { showErrorToast, showSuccessToast } from '@/lib/toast'
 import { fetchWithCSRF } from '@/lib/utils/fetch-with-csrf'
 import { queryKeys, queryClient } from '@/app/providers'
+import { safeLogger } from '@/lib/utils/logger'
 import { 
   Send, 
   ArrowLeft, 
@@ -51,6 +52,8 @@ import { GroupCompatibilityDisplay } from '../../components/group-compatibility-
 import { GroupFeedbackForm } from '../../components/group-feedback-form'
 import { LockedGroupChat } from '../../components/locked-group-chat'
 import { CompatibilityPanel } from '../../components/compatibility-panel'
+import { MessageSkeleton } from '@/components/ui/message-skeleton'
+import { MessageSearch } from './message-search'
 
 interface ChatInterfaceProps {
   roomId: string
@@ -113,6 +116,10 @@ export function ChatInterface({ roomId, user, onBack }: ChatInterfaceProps) {
   const [compatibilityData, setCompatibilityData] = useState<any>(null)
   const [isLoadingCompatibility, setIsLoadingCompatibility] = useState(false)
   const [compatibilityDataRoomId, setCompatibilityDataRoomId] = useState<string | null>(null)
+  const [hasMoreMessages, setHasMoreMessages] = useState(false)
+  const [isLoadingMoreMessages, setIsLoadingMoreMessages] = useState(false)
+  const [oldestMessageTimestamp, setOldestMessageTimestamp] = useState<string | null>(null)
+  const [showSearch, setShowSearch] = useState(false)
   
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const messagesContainerRef = useRef<HTMLDivElement>(null)
@@ -122,6 +129,7 @@ export function ChatInterface({ roomId, user, onBack }: ChatInterfaceProps) {
   const presenceChannelRef = useRef<any>(null)
   const messagesChannelRef = useRef<any>(null)
   const resubscribeTimeoutRef = useRef<NodeJS.Timeout | null>(null)
+  const errorTimeoutRef = useRef<NodeJS.Timeout | null>(null)
   const readRetryIntervalRef = useRef<NodeJS.Timeout | null>(null)
   const isUnmountingRef = useRef(false)
   const setupRealtimeSubscriptionRef = useRef<(() => void) | null>(null)
@@ -304,7 +312,7 @@ export function ChatInterface({ roomId, user, onBack }: ChatInterfaceProps) {
         setReadError(null)
       }
     } catch (error) {
-      console.error('Failed to mark as read:', error)
+      safeLogger.error('[Chat] Failed to mark as read:', error)
       const errorMessage = error instanceof Error ? error.message : 'Network error while marking as read'
       
       if (!retry) {
@@ -378,7 +386,7 @@ export function ChatInterface({ roomId, user, onBack }: ChatInterfaceProps) {
 
   // Clear compatibility data when switching to a different chat
   useEffect(() => {
-    console.log('[Compatibility] RoomId changed:', {
+    safeLogger.debug('[Compatibility] RoomId changed:', {
       newRoomId: roomId,
       dataRoomId: compatibilityDataRoomId,
       isGroup,
@@ -387,7 +395,7 @@ export function ChatInterface({ roomId, user, onBack }: ChatInterfaceProps) {
     
     // If roomId changes and we have compatibility data for a different room, clear it
     if (compatibilityDataRoomId && compatibilityDataRoomId !== roomId) {
-      console.log('[Compatibility] Clearing old compatibility data')
+        safeLogger.debug('[Compatibility] Clearing old compatibility data')
       setCompatibilityData(null)
       setCompatibilityDataRoomId(null)
       setShowCompatibilityPanel(false) // Also close the panel when switching chats
@@ -463,7 +471,7 @@ export function ChatInterface({ roomId, user, onBack }: ChatInterfaceProps) {
       }
 
       if (roomError) {
-        console.error('Failed to load chat room:', roomError)
+        safeLogger.error('[Chat] Failed to load chat room:', roomError)
         throw new Error(`Failed to load chat room: ${roomError.message}`)
       }
 
@@ -478,7 +486,7 @@ export function ChatInterface({ roomId, user, onBack }: ChatInterfaceProps) {
         .eq('chat_id', roomId)
 
       if (membersError) {
-        console.error('Failed to load chat members:', membersError)
+        safeLogger.error('[Chat] Failed to load chat members:', membersError)
         throw new Error(`Failed to load chat members: ${membersError.message}`)
       }
 
@@ -487,7 +495,8 @@ export function ChatInterface({ roomId, user, onBack }: ChatInterfaceProps) {
       const userLastReadAt = currentUserMembership?.last_read_at || null
       setLastReadAt(userLastReadAt)
 
-      // Load messages (without profile join)
+      // Load messages (without profile join) - paginated: last 50 messages
+      const MESSAGE_LIMIT = 50
       const { data: messagesData, error: messagesError } = await supabase
         .from('messages')
         .select(`
@@ -497,15 +506,29 @@ export function ChatInterface({ roomId, user, onBack }: ChatInterfaceProps) {
           created_at
         `)
         .eq('chat_id', roomId)
-        .order('created_at', { ascending: true })
+        .order('created_at', { ascending: false })
+        .limit(MESSAGE_LIMIT)
 
       if (messagesError) {
-        console.error('Failed to load messages:', messagesError)
+        safeLogger.error('[Chat] Failed to load messages:', messagesError)
         throw new Error(`Failed to load messages: ${messagesError.message}`)
       }
 
+      // Reverse messages array to show newest at bottom (we fetched with descending order)
+      const reversedMessages = (messagesData || []).reverse()
+      
+      // Check if there are more messages to load
+      // If we got exactly MESSAGE_LIMIT messages, there might be more
+      const totalMessages = messagesData?.length || 0
+      setHasMoreMessages(totalMessages === MESSAGE_LIMIT)
+      
+      // Store the oldest message timestamp for pagination
+      if (reversedMessages.length > 0) {
+        setOldestMessageTimestamp(reversedMessages[0].created_at)
+      }
+
       // Load read receipts for all messages
-      const messageIds = (messagesData || []).map(m => m.id)
+      const messageIds = (reversedMessages || []).map(m => m.id)
       let readReceiptsMap = new Map<string, string[]>()
       if (messageIds.length > 0) {
         const { data: readsData, error: readsError } = await supabase
@@ -525,7 +548,7 @@ export function ChatInterface({ roomId, user, onBack }: ChatInterfaceProps) {
       // Collect all user IDs from members and messages
       const userIds = new Set<string>()
       membersData?.forEach(m => userIds.add(m.user_id))
-      messagesData?.forEach(m => userIds.add(m.user_id))
+      reversedMessages?.forEach(m => userIds.add(m.user_id))
 
       // Fetch profiles separately using API route (bypasses RLS)
       // Only send chatId - server will fetch members server-side
@@ -547,16 +570,16 @@ export function ChatInterface({ roomId, user, onBack }: ChatInterfaceProps) {
               setProfilesMap(profilesMap)
             }
           } else {
-            console.warn('Failed to fetch profiles via API:', await profilesResponse.text())
+            safeLogger.warn('[Chat] Failed to fetch profiles via API:', await profilesResponse.text())
           }
         } catch (err) {
-          console.warn('Failed to fetch profiles:', err)
+          safeLogger.warn('[Chat] Failed to fetch profiles:', err)
           // Don't throw - continue with empty profiles map
         }
       }
 
       // Transform messages data - handle missing profiles gracefully
-      const transformedMessages: Message[] = (messagesData || []).map(msg => {
+      const transformedMessages: Message[] = (reversedMessages || []).map(msg => {
         const profile = profilesMap.get(msg.user_id)
         const senderName = profile 
           ? [profile.first_name?.trim(), profile.last_name?.trim()].filter(Boolean).join(' ') || 'User'
@@ -617,7 +640,7 @@ export function ChatInterface({ roomId, user, onBack }: ChatInterfaceProps) {
             setGroupCompatibility(data.compatibility)
           }
         } catch (err) {
-          console.warn('Failed to load group compatibility:', err)
+          safeLogger.warn('[Chat] Failed to load group compatibility:', err)
         }
       }
       
@@ -638,33 +661,22 @@ export function ChatInterface({ roomId, user, onBack }: ChatInterfaceProps) {
           
           setIsBlocked(!!blockCheck)
         } catch (err) {
-          console.error('Failed to check block status:', err)
+          safeLogger.error('[Chat] Failed to check block status:', err)
           setIsBlocked(false)
         }
         
         // Check verification status for the other user
+        // Use profile.verification_status instead of querying verifications table directly
+        // This avoids RLS issues and is more efficient (profiles are already loaded)
         try {
-          const { data: verification } = await supabase
-            .from('verifications')
-            .select('status')
-            .eq('user_id', otherMember.id)
-            .order('created_at', { ascending: false })
-            .limit(1)
-            .maybeSingle()
-          
-          if (verification?.status === 'approved') {
+          const profile = profilesMap.get(otherMember.id)
+          if (profile?.verification_status === 'verified') {
             setOtherUserVerificationStatus('verified')
           } else {
-            // Also check profile verification_status as fallback
-            const profile = profilesMap.get(otherMember.id)
-            if (profile?.verification_status === 'verified') {
-              setOtherUserVerificationStatus('verified')
-            } else {
-              setOtherUserVerificationStatus('unverified')
-            }
+            setOtherUserVerificationStatus('unverified')
           }
         } catch (err) {
-          console.error('Failed to check verification status:', err)
+          safeLogger.error('[Chat] Failed to check verification status:', err)
           setOtherUserVerificationStatus('unverified')
         }
       } else {
@@ -687,7 +699,7 @@ export function ChatInterface({ roomId, user, onBack }: ChatInterfaceProps) {
       hasScrolledInitiallyRef.current = false
       
     } catch (error) {
-      console.error('Failed to load chat data:', error)
+      safeLogger.error('[Chat] Failed to load chat data:', error)
       const errorMessage = error instanceof Error ? error.message : 'Failed to load chat messages'
       setError(`Failed to load chat: ${errorMessage}`)
       // Don't fall back to mock data - show error instead
@@ -698,6 +710,163 @@ export function ChatInterface({ roomId, user, onBack }: ChatInterfaceProps) {
     }
   }, [user.id, roomId])
 
+  const loadOlderMessages = useCallback(async () => {
+    if (!oldestMessageTimestamp || isLoadingMoreMessages || !hasMoreMessages) return
+    
+    setIsLoadingMoreMessages(true)
+    try {
+      const MESSAGE_LIMIT = 50
+      const { data: olderMessages, error } = await supabase
+        .from('messages')
+        .select(`
+          id,
+          content,
+          user_id,
+          created_at
+        `)
+        .eq('chat_id', roomId)
+        .lt('created_at', oldestMessageTimestamp) // Get messages older than the oldest one we have
+        .order('created_at', { ascending: false })
+        .limit(MESSAGE_LIMIT)
+
+      if (error) {
+        safeLogger.error('[Chat] Failed to load older messages:', error)
+        return
+      }
+
+      if (!olderMessages || olderMessages.length === 0) {
+        setHasMoreMessages(false)
+        return
+      }
+
+      // Reverse to get chronological order (oldest first)
+      const reversedOlder = olderMessages.reverse()
+      
+      // Check if there are more messages
+      setHasMoreMessages(olderMessages.length === MESSAGE_LIMIT)
+      
+      // Update oldest message timestamp
+      if (reversedOlder.length > 0) {
+        setOldestMessageTimestamp(reversedOlder[0].created_at)
+      }
+
+      // Load read receipts for new messages
+      const messageIds = reversedOlder.map(m => m.id)
+      let readReceiptsMap = new Map<string, string[]>()
+      if (messageIds.length > 0) {
+        const { data: readsData } = await supabase
+          .from('message_reads')
+          .select('message_id, user_id')
+          .in('message_id', messageIds)
+
+        if (readsData) {
+          readsData.forEach((read: any) => {
+            const existing = readReceiptsMap.get(read.message_id) || []
+            readReceiptsMap.set(read.message_id, [...existing, read.user_id])
+          })
+        }
+      }
+
+      // Get profiles for new messages
+      const userIds = new Set<string>(reversedOlder.map(m => m.user_id))
+      const profilesToFetch = Array.from(userIds).filter(id => !profilesMap.has(id))
+      
+      if (profilesToFetch.length > 0) {
+        try {
+          const profilesResponse = await fetchWithCSRF('/api/chat/profiles', {
+            method: 'POST',
+            body: JSON.stringify({
+              chatId: roomId,
+              userIds: profilesToFetch
+            }),
+          })
+
+          if (profilesResponse.ok) {
+            const { profiles: profilesData } = await profilesResponse.json()
+            if (profilesData) {
+              profilesData.forEach((p: any) => profilesMap.set(p.user_id, p))
+              setProfilesMap(new Map(profilesMap))
+            }
+          }
+        } catch (err) {
+          safeLogger.warn('[Chat] Failed to fetch profiles for older messages:', err)
+        }
+      }
+
+      // Transform new messages
+      const transformedOlder: Message[] = reversedOlder.map(msg => {
+        const profile = profilesMap.get(msg.user_id)
+        const senderName = profile 
+          ? [profile.first_name?.trim(), profile.last_name?.trim()].filter(Boolean).join(' ') || 'User'
+          : 'Unknown User'
+        
+        const readBy = readReceiptsMap.get(msg.id) || []
+        const isSystemGreeting = msg.content === "You're matched! Start your conversation 👋"
+        
+        return {
+          id: msg.id,
+          content: msg.content,
+          sender_id: msg.user_id,
+          sender_name: senderName,
+          created_at: msg.created_at,
+          read_by: readBy,
+          is_own: msg.user_id === user.id,
+          is_system_message: isSystemGreeting
+        }
+      })
+
+      // Prepend older messages to existing messages
+      setMessages(prev => [...transformedOlder, ...prev])
+      
+      // Maintain scroll position (don't jump to top)
+      setTimeout(() => {
+        if (messagesContainerRef.current) {
+          const container = messagesContainerRef.current
+          const scrollHeightBefore = container.scrollHeight
+          // Scroll position will be maintained automatically since we prepended
+        }
+      }, 0)
+
+    } catch (error) {
+      safeLogger.error('[Chat] Failed to load older messages:', error)
+    } finally {
+      setIsLoadingMoreMessages(false)
+    }
+  }, [oldestMessageTimestamp, isLoadingMoreMessages, hasMoreMessages, roomId, user.id, supabase, profilesMap])
+
+  // Keyboard shortcuts
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      // Cmd/Ctrl + K: Open search
+      if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
+        e.preventDefault()
+        setShowSearch(true)
+      }
+      
+      // Esc: Close modals/dialogs
+      if (e.key === 'Escape') {
+        if (showReportDialog) {
+          setShowReportDialog(false)
+          setReportReason('')
+        }
+        if (showDeleteDialog) {
+          setShowDeleteDialog(false)
+        }
+        if (showCompatibilityPanel) {
+          setShowCompatibilityPanel(false)
+        }
+        if (showLeaveGroupDialog) {
+          setShowLeaveGroupDialog(false)
+        }
+      }
+    }
+
+    window.addEventListener('keydown', handleKeyDown)
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown)
+    }
+  }, [showReportDialog, showDeleteDialog, showCompatibilityPanel, showLeaveGroupDialog])
+
   const fetchCompatibilityData = useCallback(async () => {
     if (isGroup || isLoadingCompatibility) return
     
@@ -705,7 +874,7 @@ export function ChatInterface({ roomId, user, onBack }: ChatInterfaceProps) {
     try {
       // Add cache-busting timestamp to ensure fresh data
       const url = `/api/chat/compatibility?chatId=${roomId}&_t=${Date.now()}`
-      console.log('[Compatibility] Fetching compatibility data for roomId:', roomId, 'URL:', url)
+      safeLogger.debug('[Compatibility] Fetching compatibility data for roomId:', roomId, 'URL:', url)
       
       const response = await fetch(url, {
         cache: 'no-store', // Prevent browser caching
@@ -717,7 +886,7 @@ export function ChatInterface({ roomId, user, onBack }: ChatInterfaceProps) {
       })
       const responseData = await response.json()
       
-      console.log('[Compatibility] Response for roomId:', roomId, 'Data:', {
+      safeLogger.debug('[Compatibility] Response for roomId:', roomId, 'Data:', {
         compatibility_score: responseData.compatibility_score,
         harmony_score: responseData.harmony_score,
         context_score: responseData.context_score
@@ -727,7 +896,7 @@ export function ChatInterface({ roomId, user, onBack }: ChatInterfaceProps) {
         setCompatibilityData(responseData)
         setCompatibilityDataRoomId(roomId) // Track which roomId this data belongs to
       } else {
-        console.error('[Compatibility] ❌ Failed to fetch compatibility data:', {
+        safeLogger.error('[Compatibility] Failed to fetch compatibility data:', {
           status: response.status,
           error: responseData.error,
           details: responseData.details,
@@ -744,7 +913,7 @@ export function ChatInterface({ roomId, user, onBack }: ChatInterfaceProps) {
         }
       }
     } catch (error) {
-      console.error('Error fetching compatibility data:', error, 'roomId:', roomId)
+      safeLogger.error('[Compatibility] Error fetching compatibility data:', error, 'roomId:', roomId)
       setCompatibilityData(null)
       setCompatibilityDataRoomId(null)
       showErrorToast('Network error', 'Failed to fetch compatibility data. Please check your connection and try again.')
@@ -754,7 +923,7 @@ export function ChatInterface({ roomId, user, onBack }: ChatInterfaceProps) {
   }, [roomId, isGroup, isLoadingCompatibility])
 
   const handleOpenCompatibility = useCallback(() => {
-    console.log('[Compatibility] Opening panel for roomId:', roomId, {
+    safeLogger.debug('[Compatibility] Opening panel for roomId:', roomId, {
       hasData: !!compatibilityData,
       dataRoomId: compatibilityDataRoomId,
       currentRoomId: roomId,
@@ -765,7 +934,7 @@ export function ChatInterface({ roomId, user, onBack }: ChatInterfaceProps) {
     // Always fetch fresh data - don't rely on cache to ensure we get the right data
     // This ensures we always have the correct compatibility for the current chat
     if (!isLoadingCompatibility) {
-      console.log('[Compatibility] Fetching fresh data for roomId:', roomId)
+      safeLogger.debug('[Compatibility] Fetching fresh data for roomId:', roomId)
       fetchCompatibilityData()
     }
   }, [roomId, isLoadingCompatibility, fetchCompatibilityData])
@@ -781,11 +950,11 @@ export function ChatInterface({ roomId, user, onBack }: ChatInterfaceProps) {
   }, [])
 
   const setupRealtimeSubscription = useCallback(() => {
-    console.log('[Realtime] Setting up subscription for roomId:', roomId)
+    safeLogger.debug('[Realtime] Setting up subscription for roomId:', roomId)
     
     // Clean up existing subscription if any
     if (messagesChannelRef.current) {
-      console.log('[Realtime] Cleaning up existing messages channel')
+      safeLogger.debug('[Realtime] Cleaning up existing messages channel')
       messagesChannelRef.current.unsubscribe()
       supabase.removeChannel(messagesChannelRef.current)
       messagesChannelRef.current = null
@@ -793,7 +962,7 @@ export function ChatInterface({ roomId, user, onBack }: ChatInterfaceProps) {
 
     // Subscribe to new messages via broadcast channel
     const channelName = `room:${roomId}:messages`
-    console.log('[Realtime] Creating broadcast channel:', channelName)
+    safeLogger.debug('[Realtime] Creating broadcast channel:', channelName)
     
     const messagesChannel = supabase
       .channel(channelName, {
@@ -802,10 +971,11 @@ export function ChatInterface({ roomId, user, onBack }: ChatInterfaceProps) {
         }
       })
       .on('broadcast', { event: 'INSERT' }, async (payload) => {
-        console.log('[Realtime] ===== BROADCAST CALLBACK TRIGGERED =====')
-        console.log('[Realtime] Timestamp:', new Date().toISOString())
-        console.log('[Realtime] Event:', payload.event)
-        console.log('[Realtime] Full payload:', JSON.stringify(payload, null, 2))
+        safeLogger.debug('[Realtime] Broadcast callback triggered', {
+          timestamp: new Date().toISOString(),
+          event: payload.event,
+          payload: payload
+        })
         
         try {
           // Validate payload structure
@@ -993,6 +1163,11 @@ export function ChatInterface({ roomId, user, onBack }: ChatInterfaceProps) {
           console.log('[Realtime] ✅ Ready to receive real-time messages via broadcast')
           setConnectionStatus('connected')
           setError('') // Clear any connection error messages
+          // Clear any pending error timeout since we're connected
+          if (errorTimeoutRef.current) {
+            clearTimeout(errorTimeoutRef.current)
+            errorTimeoutRef.current = null
+          }
           messageChannelRetryAttempts.current = 0 // Reset retry attempts on success
         } else if (status === 'CHANNEL_ERROR') {
           const hasError = !!err
@@ -1120,21 +1295,41 @@ export function ChatInterface({ roomId, user, onBack }: ChatInterfaceProps) {
           console.log('[Realtime] ℹ️ Channel closed')
           console.log('[Realtime] ℹ️ This is normal when component unmounts or connection is lost')
           
+          // Clear any pending error timeout since channel is closing
+          if (errorTimeoutRef.current) {
+            clearTimeout(errorTimeoutRef.current)
+            errorTimeoutRef.current = null
+          }
+          
           // Only attempt to resubscribe if:
           // 1. We're not unmounting (component is still mounted)
           // 2. The channel reference still exists (wasn't intentionally cleaned up)
           // 3. We don't already have a resubscribe attempt pending
           if (!isUnmountingRef.current && messagesChannelRef.current && !resubscribeTimeoutRef.current) {
-            setConnectionStatus('disconnected')
-            setError('Connection lost. Attempting to reconnect...')
-            
-            // Use exponential backoff for reconnection attempts
+            // Don't show error immediately - wait to see if it reconnects quickly
+            // This prevents flickering during token refreshes and HMR
             const attemptDelay = Math.min(2000 * Math.pow(1.5, readFailureCount), 10000)
+            
+            // Set a delayed check - only show error if still disconnected after delay
+            // This prevents the flickering "Attempting to reconnect" popup
+            errorTimeoutRef.current = setTimeout(() => {
+              // Only show error if we're still disconnected and not unmounting
+              if (!isUnmountingRef.current && messagesChannelRef.current && connectionStatus !== 'connected') {
+                setConnectionStatus('disconnected')
+                setError('Connection lost. Attempting to reconnect...')
+              }
+              errorTimeoutRef.current = null
+            }, 3000) // Wait 3 seconds before showing error (gives time for quick reconnects)
             
             resubscribeTimeoutRef.current = setTimeout(() => {
               if (!isUnmountingRef.current && messagesChannelRef.current) {
                 console.log('[Realtime] 🔄 Attempting to resubscribe after disconnect...')
                 setConnectionStatus('connecting')
+                // Clear error timeout if we're reconnecting
+                if (errorTimeoutRef.current) {
+                  clearTimeout(errorTimeoutRef.current)
+                  errorTimeoutRef.current = null
+                }
                 setupRealtimeSubscription()
               }
               resubscribeTimeoutRef.current = null
@@ -1659,6 +1854,10 @@ export function ChatInterface({ roomId, user, onBack }: ChatInterfaceProps) {
         clearTimeout(resubscribeTimeoutRef.current)
         resubscribeTimeoutRef.current = null
       }
+      if (errorTimeoutRef.current) {
+        clearTimeout(errorTimeoutRef.current)
+        errorTimeoutRef.current = null
+      }
       
       if (typingTimeoutRef.current) {
         clearTimeout(typingTimeoutRef.current)
@@ -1818,8 +2017,32 @@ export function ChatInterface({ roomId, user, onBack }: ChatInterfaceProps) {
       })
 
       if (!response.ok) {
-        const errorData = await response.json()
-        throw new Error(errorData.error || 'Failed to send message')
+        let errorMessage = 'Failed to send message'
+        let errorDetails: any = null
+        try {
+          const errorData = await response.json()
+          errorMessage = errorData.error || errorMessage
+          errorDetails = errorData.details || null
+        } catch (parseError) {
+          // If response isn't JSON, try to get text
+          try {
+            const text = await response.text()
+            errorMessage = text || errorMessage
+          } catch {
+            errorMessage = `Server error: ${response.status} ${response.statusText}`
+          }
+        }
+        console.error('[Chat] Send message error:', {
+          status: response.status,
+          statusText: response.statusText,
+          errorMessage,
+          errorDetails
+        })
+        // Include details in error message for development
+        const fullErrorMessage = errorDetails 
+          ? `${errorMessage}\n\nDetails: ${JSON.stringify(errorDetails, null, 2)}`
+          : errorMessage
+        throw new Error(fullErrorMessage)
       }
 
       const { message } = await response.json()
@@ -2051,14 +2274,14 @@ export function ChatInterface({ roomId, user, onBack }: ChatInterfaceProps) {
 
   const handleReportUser = async () => {
     if (!reportReason.trim()) {
-      alert('Please select a reason for reporting.')
+      showErrorToast('Validation Error', 'Please select a reason for reporting.')
       return
     }
     setIsReporting(true)
     try {
       const otherUserId = members.find(m => m.id !== user.id)?.id
       if (!otherUserId) {
-        alert('Unable to identify user to report.')
+        showErrorToast('Error', 'Unable to identify user to report.')
         return
       }
       const response = await fetchWithCSRF('/api/chat/report', {
@@ -2096,7 +2319,7 @@ export function ChatInterface({ roomId, user, onBack }: ChatInterfaceProps) {
     try {
       const otherUserId = members.find(m => m.id !== user.id)?.id
       if (!otherUserId) {
-        alert('Unable to identify user to block.')
+        showErrorToast('Error', 'Unable to identify user to block.')
         return
       }
       
@@ -2465,11 +2688,12 @@ export function ChatInterface({ roomId, user, onBack }: ChatInterfaceProps) {
           {/* Content overlay - Full width on mobile, constrained on desktop */}
           <div className="relative z-20 w-full lg:max-w-4xl lg:mx-auto px-1 sm:px-4 lg:px-8 py-3 sm:py-4 lg:py-6">
             {isLoading ? (
-            <div className="text-center py-16">
-              <div className="space-y-3">
-                <div className="h-4 bg-bg-surface-alt rounded w-3/4 mx-auto animate-pulse"></div>
-                <div className="h-4 bg-bg-surface-alt rounded w-1/2 mx-auto animate-pulse"></div>
-              </div>
+            <div className="space-y-3">
+              <MessageSkeleton isOwn={false} />
+              <MessageSkeleton isOwn={true} />
+              <MessageSkeleton isOwn={false} />
+              <MessageSkeleton isOwn={true} />
+              <MessageSkeleton isOwn={false} />
             </div>
           ) : messages.length === 0 ? (
             <div className="text-center py-16">
@@ -2481,6 +2705,20 @@ export function ChatInterface({ roomId, user, onBack }: ChatInterfaceProps) {
             </div>
           ) : (
             <div className="space-y-3">
+            {/* Load Older Messages button */}
+            {hasMoreMessages && (
+              <div className="flex justify-center py-2">
+                <Button
+                  onClick={loadOlderMessages}
+                  disabled={isLoadingMoreMessages}
+                  variant="outline"
+                  size="sm"
+                  className="text-xs"
+                >
+                  {isLoadingMoreMessages ? 'Loading...' : 'Load Older Messages'}
+                </Button>
+              </div>
+            )}
             {messages
               .filter(message => !isBlocked || message.sender_id !== blockedUserId)
               .map((message, index) => {
@@ -2543,7 +2781,7 @@ export function ChatInterface({ roomId, user, onBack }: ChatInterfaceProps) {
                         className={`flex gap-2 ${message.is_own ? 'justify-end' : 'justify-start'}`}
                       >
                         {!message.is_own && (
-                          <Avatar className="w-7 h-7 flex-shrink-0">
+                          <Avatar className="w-8 h-8 sm:w-7 sm:h-7 flex-shrink-0">
                             <AvatarImage src={message.sender_avatar} />
                             <AvatarFallback className="text-xs">
                               {message.sender_name.charAt(0)}
@@ -2551,18 +2789,18 @@ export function ChatInterface({ roomId, user, onBack }: ChatInterfaceProps) {
                           </Avatar>
                         )}
                         
-                        <div className={`max-w-[85%] sm:max-w-[75%] ${message.is_own ? 'order-first' : ''}`}>
+                        <div className={`max-w-[85%] sm:max-w-[75%] md:max-w-[70%] ${message.is_own ? 'order-first' : ''}`}>
                           {!message.is_own && (
                             <div className="text-xs font-semibold text-text-muted mb-1.5 px-1">
                               {message.sender_name}
                             </div>
                           )}
-                          <div className={`rounded-2xl px-4 py-2.5 shadow-sm ${
+                          <div className={`rounded-2xl px-3 sm:px-4 py-2 sm:py-2.5 shadow-sm ${
                             message.is_own 
                               ? 'bg-semantic-accent text-white border-2 border-semantic-accent/20' 
                               : 'bg-bg-surface border border-border-subtle'
                           }`}>
-                            <p className={`text-sm break-words leading-relaxed ${message.is_own ? 'text-white font-medium' : 'text-text-primary'}`}>{message.content}</p>
+                            <p className={`text-sm sm:text-base break-words leading-relaxed ${message.is_own ? 'text-white font-medium' : 'text-text-primary'}`}>{message.content}</p>
                           </div>
                           <div className={`flex items-center gap-1.5 mt-1.5 ${message.is_own ? 'justify-end' : 'justify-start'}`}>
                             <span className="text-[10px] text-text-muted font-medium">
@@ -2652,12 +2890,12 @@ export function ChatInterface({ roomId, user, onBack }: ChatInterfaceProps) {
                 disabled={isSending || isBlocked}
                 inputMode="text"
                 enterKeyHint="send"
-                className="flex-1 h-11 sm:h-12 text-base bg-bg-surface-alt border-2 border-border-subtle rounded-xl focus:bg-bg-surface focus:border-semantic-accent focus:ring-2 focus:ring-semantic-accent/20 shadow-sm transition-all placeholder:text-text-muted"
+                className="flex-1 min-w-0 h-11 sm:h-12 text-sm sm:text-base bg-bg-surface-alt border-2 border-border-subtle rounded-xl focus:bg-bg-surface focus:border-semantic-accent focus:ring-2 focus:ring-semantic-accent/20 shadow-sm transition-all placeholder:text-text-muted"
               />
               <Button 
                 onClick={sendMessage}
                 disabled={!newMessage.trim() || isSending || isBlocked}
-                className="h-11 sm:h-12 w-11 sm:w-12 p-0 flex-shrink-0 rounded-xl bg-semantic-accent hover:bg-semantic-accent-hover border-2 border-semantic-accent/20 disabled:opacity-50 disabled:cursor-not-allowed shadow-md transition-all"
+                className="h-11 sm:h-12 w-11 sm:w-12 min-h-[44px] min-w-[44px] sm:min-h-0 sm:min-w-0 p-0 flex-shrink-0 rounded-xl bg-semantic-accent hover:bg-semantic-accent-hover border-2 border-semantic-accent/20 disabled:opacity-50 disabled:cursor-not-allowed shadow-md transition-all touch-manipulation"
               >
                 <Send className="h-4 w-4 sm:h-5 sm:w-5 text-white" />
               </Button>
@@ -2730,6 +2968,25 @@ export function ChatInterface({ roomId, user, onBack }: ChatInterfaceProps) {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* Message Search */}
+      <MessageSearch
+        messages={messages}
+        isOpen={showSearch}
+        onClose={() => setShowSearch(false)}
+        onMessageSelect={(messageId) => {
+          // Scroll to message
+          const messageElement = document.querySelector(`[data-message-id="${messageId}"]`)
+          if (messageElement) {
+            messageElement.scrollIntoView({ behavior: 'smooth', block: 'center' })
+            // Highlight the message briefly
+            messageElement.classList.add('ring-2', 'ring-semantic-accent', 'ring-offset-2')
+            setTimeout(() => {
+              messageElement.classList.remove('ring-2', 'ring-semantic-accent', 'ring-offset-2')
+            }, 2000)
+          }
+        }}
+      />
 
       {/* Leave Group Dialog */}
       <GroupFeedbackForm

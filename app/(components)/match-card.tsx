@@ -21,6 +21,7 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog'
 import { useApp } from '@/app/providers'
+import { showErrorToast, showSuccessToast } from '@/lib/toast'
 import { Users, MessageCircle, Heart, X, AlertTriangle, CheckCircle, Award, MoreVertical, UserX, Shield, Flag, User, Sparkles, Home, GraduationCap, Info, ChevronDown, ChevronUp, Droplets, Volume2, Moon, Coffee, BookOpen, XCircle } from 'lucide-react'
 import { ReputationPreview } from './reputation-profile'
 import { getDemoReputationSummary } from '@/lib/reputation/utils'
@@ -164,7 +165,7 @@ export function MatchCard({
       // Refresh or remove from list
     } catch (error) {
       console.error('Failed to unmatch:', error)
-      alert('Failed to unmatch. Please try again.')
+      showErrorToast('Failed to Unmatch', 'Failed to unmatch. Please try again.')
     } finally {
       setIsProcessing(false)
     }
@@ -184,7 +185,7 @@ export function MatchCard({
       // Refresh or remove from list
     } catch (error) {
       console.error('Failed to block:', error)
-      alert('Failed to block user. Please try again.')
+      showErrorToast('Failed to Block User', 'Failed to block user. Please try again.')
     } finally {
       setIsProcessing(false)
     }
@@ -192,7 +193,7 @@ export function MatchCard({
 
   const handleReport = async () => {
     if (!reportReason.trim()) {
-      alert('Please select a reason for reporting.')
+      showErrorToast('Validation Error', 'Please select a reason for reporting.')
       return
     }
     setIsProcessing(true)
@@ -206,10 +207,10 @@ export function MatchCard({
       })
       setShowReportDialog(false)
       setReportReason('')
-      alert('Thank you for your report. We will review it shortly.')
+      showSuccessToast('Report Submitted', 'Thank you for your report. We will review it shortly.')
     } catch (error) {
       console.error('Failed to report:', error)
-      alert('Failed to submit report. Please try again.')
+      showErrorToast('Failed to Submit Report', 'Failed to submit report. Please try again.')
     } finally {
       setIsProcessing(false)
     }
