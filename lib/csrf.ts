@@ -112,8 +112,9 @@ export function getCSRFTokenFromRequest(request: Request): string | null {
 /**
  * Validate CSRF token from request
  * Checks both cookie and header token match
+ * Supports both standard Request and NextRequest
  */
-export async function validateCSRFToken(request: Request): Promise<boolean> {
+export async function validateCSRFToken(request: Request | { cookies: { get: (name: string) => { value: string } | undefined }, headers: Headers, method: string }): Promise<boolean> {
   // Skip CSRF check for GET, HEAD, OPTIONS requests
   const method = request.method.toUpperCase()
   if (['GET', 'HEAD', 'OPTIONS'].includes(method)) {
@@ -121,20 +122,29 @@ export async function validateCSRFToken(request: Request): Promise<boolean> {
   }
 
   // Get token from header
-  const headerToken = getCSRFTokenFromRequest(request)
+  const headerToken = request.headers.get(CSRF_HEADER)
   if (!headerToken) {
     return false
   }
 
-  // Get token from cookie
-  const cookieHeader = request.headers.get('cookie') || ''
-  const cookies = cookieHeader.split(';').reduce((acc, cookie) => {
-    const [key, value] = cookie.trim().split('=')
-    if (key && value) acc[key] = value
-    return acc
-  }, {} as Record<string, string>)
+  // Get token from cookie - prefer NextRequest cookies API if available
+  let cookieToken: string | undefined
+  
+  // Check if this is a NextRequest with cookies API
+  if ('cookies' in request && typeof request.cookies.get === 'function') {
+    const cookie = request.cookies.get(CSRF_TOKEN_COOKIE)
+    cookieToken = cookie?.value
+  } else {
+    // Fallback to manual cookie parsing for standard Request
+    const cookieHeader = request.headers.get('cookie') || ''
+    const cookies = cookieHeader.split(';').reduce((acc, cookie) => {
+      const [key, value] = cookie.trim().split('=')
+      if (key && value) acc[key] = value
+      return acc
+    }, {} as Record<string, string>)
+    cookieToken = cookies[CSRF_TOKEN_COOKIE]
+  }
 
-  const cookieToken = cookies[CSRF_TOKEN_COOKIE]
   if (!cookieToken) {
     return false
   }

@@ -124,6 +124,7 @@ const nextConfig = {
               "img-src 'self' data: https: blob:",
               "font-src 'self' data:",
               "connect-src 'self' https://*.supabase.co wss://*.supabase.co ws://*.supabase.co https://*.persona.com https://*.sentry.io https://*.vercel-insights.com",
+              "worker-src 'self' blob:",
               "frame-src https://*.persona.com",
               "object-src 'none'",
               "base-uri 'self'",

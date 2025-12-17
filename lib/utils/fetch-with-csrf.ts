@@ -6,22 +6,43 @@
 /**
  * Get CSRF token from authenticated API endpoint
  * This is more secure than reading from cookie (prevents XSS attacks)
+ * Includes retry logic for transient failures
  */
-async function getCSRFToken(): Promise<string | null> {
+async function getCSRFToken(retries = 2): Promise<string | null> {
   if (typeof window === 'undefined') return null
   
-  try {
-    const response = await fetch('/api/csrf-token', {
-      credentials: 'include',
-      cache: 'no-store'
-    })
-    
-    if (response.ok) {
-      const data = await response.json()
-      return data.token || null
+  for (let attempt = 0; attempt <= retries; attempt++) {
+    try {
+      const response = await fetch('/api/csrf-token', {
+        credentials: 'include',
+        cache: 'no-store',
+        headers: {
+          'Cache-Control': 'no-cache'
+        }
+      })
+      
+      if (response.ok) {
+        const data = await response.json()
+        if (data.token) {
+          return data.token
+        }
+      } else if (response.status === 401) {
+        // User not authenticated - can't get CSRF token
+        return null
+      }
+      
+      // If not the last attempt, wait before retrying
+      if (attempt < retries) {
+        await new Promise(resolve => setTimeout(resolve, 100 * (attempt + 1)))
+      }
+    } catch (error) {
+      // If not the last attempt, wait before retrying
+      if (attempt < retries) {
+        await new Promise(resolve => setTimeout(resolve, 100 * (attempt + 1)))
+        continue
+      }
+      console.error('[CSRF] Failed to fetch CSRF token after retries:', error)
     }
-  } catch (error) {
-    console.error('[CSRF] Failed to fetch CSRF token:', error)
   }
   
   return null
