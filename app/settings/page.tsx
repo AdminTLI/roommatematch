@@ -34,11 +34,20 @@ export default async function SettingsPage() {
   }
 
   // Fetch user profile data
-  const { data: profile } = await supabase
-    .from('profiles')
-    .select('*')
-    .eq('user_id', user.id)
-    .maybeSingle()
+  let profile: any = null
+  try {
+    const { data } = await supabase
+      .from('profiles')
+      .select('*')
+      .eq('user_id', user.id)
+      .maybeSingle()
+    profile = data
+  } catch (err) {
+    // In production, a 404/READ error on profiles should not crash the page.
+    // Log for diagnostics and continue with null profile.
+    console.error('[Settings] Failed to fetch profile', err)
+    profile = null
+  }
 
   // Fetch academic data with joins for readable names
   // Use service role client to bypass RLS for better reliability
