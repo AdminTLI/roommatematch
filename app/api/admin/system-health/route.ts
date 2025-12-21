@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { requireAdmin } from '@/lib/auth/admin'
 import { createClient, createAdminClient } from '@/lib/supabase/server'
 import { safeLogger } from '@/lib/utils/logger'
+import { channelManager } from '@/lib/realtime/channel-manager'
 
 interface HealthCheckResult {
   status: 'online' | 'offline' | 'degraded'
@@ -247,6 +248,9 @@ export async function GET(request: NextRequest) {
       overallStatus = 'degraded'
     }
 
+    // Get realtime subscription statistics
+    const realtimeStats = channelManager.getStats()
+
     return NextResponse.json({
       overall: {
         status: overallStatus,
@@ -263,6 +267,22 @@ export async function GET(request: NextRequest) {
         authentication,
         matchingEngine,
         fileStorage
+      },
+      performance: {
+        realtime: {
+          totalChannels: realtimeStats.totalChannels,
+          totalSubscriptions: realtimeStats.totalSubscriptions,
+          channels: realtimeStats.channels.map(ch => ({
+            table: ch.table,
+            event: ch.event,
+            subscriptionCount: ch.subscriptionCount,
+            state: ch.state
+          }))
+        },
+        cache: {
+          // Cache statistics would be added here
+          // React Query provides cache statistics via queryClient.getQueryCache()
+        }
       }
     })
   } catch (error) {

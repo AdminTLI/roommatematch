@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { ChatList } from './chat-list'
 import { ChatInterface } from '../[roomId]/components/chat-interface'
 import { User } from '@supabase/supabase-js'
@@ -8,11 +8,23 @@ import { MessageCircle } from 'lucide-react'
 
 interface ChatSplitViewProps {
   user: User
+  initialChatId?: string | null
 }
 
-export function ChatSplitView({ user }: ChatSplitViewProps) {
-  const [selectedChatId, setSelectedChatId] = useState<string | null>(null)
+export function ChatSplitView({ user, initialChatId }: ChatSplitViewProps) {
+  const [selectedChatId, setSelectedChatId] = useState<string | null>(initialChatId || null)
   const [showChatView, setShowChatView] = useState(false) // For mobile: true = show chat, false = show list
+  
+  // Update selected chat when initialChatId changes (e.g., from URL parameter)
+  useEffect(() => {
+    if (initialChatId) {
+      setSelectedChatId(initialChatId)
+      // On mobile, switch to chat view when opening a specific chat
+      if (typeof window !== 'undefined' && window.innerWidth < 1024) {
+        setShowChatView(true)
+      }
+    }
+  }, [initialChatId])
 
   const handleChatSelect = (chatId: string) => {
     setSelectedChatId(chatId)

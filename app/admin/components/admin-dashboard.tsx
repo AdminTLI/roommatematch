@@ -132,11 +132,12 @@ export function AdminDashboard({ admin }: AdminDashboardProps) {
       const matchStatsResponse = await fetch('/api/admin/matches/stats?days=30')
       const matchStatsData = matchStatsResponse.ok ? await matchStatsResponse.json() : null
 
-      // Load recent match activity
-      const activityResponse = await fetch('/api/admin/matches/activity?limit=10&days=1')
+      // Load recent match activity (paginated, limit to 10 for performance)
+      const activityResponse = await fetch('/api/admin/matches/activity?limit=10&offset=0&days=1')
       const activityData = activityResponse.ok ? await activityResponse.json() : null
 
       // Load reports - check both 'pending' and 'open' status values for compatibility
+      // Limit to 20 most recent for performance
       const { data: reportsDataPending, error: reportsErrorPending } = await supabase
         .from('reports')
         .select(`
@@ -150,6 +151,7 @@ export function AdminDashboard({ admin }: AdminDashboardProps) {
         `)
         .eq('status', 'pending')
         .order('created_at', { ascending: false })
+        .limit(20)
 
       const { data: reportsDataOpen, error: reportsErrorOpen } = await supabase
         .from('reports')
@@ -164,6 +166,7 @@ export function AdminDashboard({ admin }: AdminDashboardProps) {
         `)
         .eq('status', 'open')
         .order('created_at', { ascending: false })
+        .limit(20)
 
       if (reportsErrorPending || reportsErrorOpen) {
         throw reportsErrorPending || reportsErrorOpen

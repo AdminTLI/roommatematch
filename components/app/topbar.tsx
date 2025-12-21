@@ -131,8 +131,35 @@ export function Topbar({ user }: TopbarProps) {
   const performSearch = async (query: string) => {
     setIsSearching(true)
     try {
+      console.log('[Topbar Search] Searching for:', query)
       const response = await fetch(`/api/search?q=${encodeURIComponent(query)}`)
       const data = await response.json()
+      
+      console.log('[Topbar Search] API response:', {
+        ok: response.ok,
+        status: response.status,
+        dataKeys: Object.keys(data),
+        matchesCount: data.matches?.length || 0,
+        messagesCount: data.messages?.length || 0,
+        usersCount: data.users?.length || 0,
+        housingCount: data.housing?.length || 0,
+        pagesCount: data.pages?.length || 0,
+        fullData: data
+      })
+      
+      // Log each category separately for debugging
+      if (data.matches && data.matches.length > 0) {
+        console.log('[Topbar Search] Matches:', data.matches)
+      }
+      if (data.users && data.users.length > 0) {
+        console.log('[Topbar Search] Users:', data.users)
+      }
+      if (data.messages && data.messages.length > 0) {
+        console.log('[Topbar Search] Messages:', data.messages)
+      }
+      if (data.error) {
+        console.error('[Topbar Search] API returned error:', data.error, data.details)
+      }
       
       if (response.ok) {
         // Prioritize: matches first, then messages, then users, then housing, then pages
@@ -143,6 +170,8 @@ export function Topbar({ user }: TopbarProps) {
           ...(data.housing || []).map((h: any) => ({ ...h, type: 'housing' as const, priority: 4 })),
           ...(data.pages || []).map((p: any) => ({ ...p, type: 'page' as const, priority: 5 }))
         ]
+        
+        console.log('[Topbar Search] All results before deduplication:', allResults.length)
         
         // Deduplicate by user ID - keep match type over user type (higher priority)
         const seenIds = new Map<string, SearchResult & { priority: number }>()
@@ -168,15 +197,16 @@ export function Topbar({ user }: TopbarProps) {
           .slice(0, 12)
           .map(({ priority, ...rest }) => rest) // Remove priority before setting state
         
+        console.log('[Topbar Search] Final results:', sortedResults.length, sortedResults)
         setSearchResults(sortedResults)
         setShowResults(sortedResults.length > 0)
       } else {
-        console.error('Search API error:', data)
+        console.error('[Topbar Search] API error:', data)
         setSearchResults([])
         setShowResults(false)
       }
     } catch (error) {
-      console.error('Search error:', error)
+      console.error('[Topbar Search] Search error:', error)
       setSearchResults([])
       setShowResults(false)
     } finally {
@@ -185,12 +215,24 @@ export function Topbar({ user }: TopbarProps) {
   }
 
   const handleResultClick = (result: SearchResult) => {
-    if (result.type === 'match' && result.chatId) {
-      router.push(`/chat/${result.chatId}`)
+    if (result.type === 'match') {
+      // Navigate to chat page with chatId query parameter to auto-open the chat
+      if (result.chatId) {
+        router.push(`/chat?chatId=${result.chatId}`)
+      } else {
+        router.push(`/matches?user=${result.id}`)
+      }
     } else if (result.type === 'message' && result.chatId) {
-      router.push(`/chat/${result.chatId}`)
+      // Navigate to chat page with chatId query parameter to auto-open the chat
+      router.push(`/chat?chatId=${result.chatId}`)
     } else if (result.type === 'user') {
-      router.push(`/matches?user=${result.id}`)
+      // For users, try to find their chatId or go to matches page
+      // Note: We might need to add chatId to user results in the search API
+      if (result.chatId) {
+        router.push(`/chat?chatId=${result.chatId}`)
+      } else {
+        router.push(`/matches?user=${result.id}`)
+      }
     } else if (result.type === 'housing') {
       router.push(`/housing/${result.id}`)
     } else if (result.type === 'page' && result.href) {

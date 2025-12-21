@@ -1,7 +1,13 @@
 -- Matching Engine RPC Functions
--- These functions implement the matching algorithm using pgvector and academic affinity
+-- ⚠️ WARNING: This file contains PLACEHOLDER functions with hardcoded values.
+-- DO NOT APPLY THIS FILE - it will overwrite the production implementation!
+-- The production implementation is in: db/migrations/049_compatibility_algorithm_v1.sql
+-- 
+-- If you see this file being applied, the compatibility scores will cluster at fixed values
+-- because similarity_score=0.8, schedule_overlap=0.7, cleanliness_align=0.6, etc.
 
 -- Function to compute user compatibility score
+-- ⚠️ PLACEHOLDER ONLY - DO NOT USE IN PRODUCTION
 CREATE OR REPLACE FUNCTION compute_compatibility_score(
   user_a_id uuid,
   user_b_id uuid

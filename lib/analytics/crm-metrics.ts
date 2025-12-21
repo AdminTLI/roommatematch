@@ -48,9 +48,9 @@ export async function calculateCRMMetrics(
     const periodEnd = new Date()
 
     // Get total users
-    // Get from user_profiles to filter by university
+    // Get from profiles to filter by university
     let totalUsersQuery = supabase
-      .from('user_profiles')
+      .from('profiles')
       .select('user_id', { count: 'exact', head: true })
 
     if (universityId) {
@@ -84,7 +84,7 @@ export async function calculateCRMMetrics(
     if (universityId && activeUserIds.size > 0) {
       // Get user profiles to filter by university
       const { data: userProfiles } = await supabase
-        .from('user_profiles')
+        .from('profiles')
         .select('user_id')
         .eq('university_id', universityId)
         .in('user_id', Array.from(activeUserIds))
@@ -96,21 +96,31 @@ export async function calculateCRMMetrics(
     const activeUsers = activeUserIds.size
 
     // Get new users (users who signed up in period)
-    // Get from user_profiles to filter by university
-    let newUsersQuery = supabase
-      .from('user_profiles')
-      .select('user_id', { count: 'exact', head: true })
+    // Query users table first, then filter by profiles.university_id
+    const { data: newUsersData, error: newUsersError } = await supabase
+      .from('users')
+      .select('id')
       .gte('created_at', periodStart.toISOString())
       .lte('created_at', periodEnd.toISOString())
+      .eq('is_active', true)
 
-    if (universityId) {
-      newUsersQuery = newUsersQuery.eq('university_id', universityId)
+    let newUserIds = (newUsersData || []).map(u => u.id)
+    
+    // Filter by university if provided
+    if (universityId && newUserIds.length > 0) {
+      const { data: profiles } = await supabase
+        .from('profiles')
+        .select('user_id')
+        .eq('university_id', universityId)
+        .in('user_id', newUserIds)
+      
+      newUserIds = (profiles || []).map(p => p.user_id)
     }
 
-    const { count: newUsers, error: newError } = await newUsersQuery
+    const newUsers = newUserIds.length
 
-    if (newError) {
-      safeLogger.error('Failed to count new users', { error: newError })
+    if (newUsersError) {
+      safeLogger.error('Failed to count new users', { error: newUsersError })
     }
 
     // Get churned users (users with no activity in last 90 days but had activity before)
@@ -143,7 +153,7 @@ export async function calculateCRMMetrics(
     // Filter by university if provided
     if (universityId && churnedUserIds.size > 0) {
       const { data: userProfiles } = await supabase
-        .from('user_profiles')
+        .from('profiles')
         .select('user_id')
         .eq('university_id', universityId)
         .in('user_id', Array.from(churnedUserIds))
@@ -174,7 +184,7 @@ export async function calculateCRMMetrics(
     if (universityId && engagedUserIds.size > 0) {
       // Get user profiles to filter by university
       const { data: userProfiles } = await supabase
-        .from('user_profiles')
+        .from('profiles')
         .select('user_id')
         .eq('university_id', universityId)
         .in('user_id', Array.from(engagedUserIds))
@@ -197,7 +207,7 @@ export async function calculateCRMMetrics(
     // Get users by lifecycle stage
     // Get user profiles and verifications
     let usersQuery = supabase
-      .from('user_profiles')
+      .from('profiles')
       .select('user_id, university_id, created_at, verification_status')
 
     if (universityId) {
@@ -253,38 +263,123 @@ export async function calculateCRMMetrics(
       }
     }
 
-    // Calculate engagement score (simplified)
-    const engagementScore = totalUsers && totalUsers > 0
-      ? (engagedUsers / totalUsers) * 100
-      : 0
-
-    // Calculate average session duration (simplified)
-    const { data: sessions, error: sessionsError } = await supabase
+    // Get all user journey events for the period
+    let eventsQuery = supabase
       .from('user_journey_events')
-      .select('session_id, event_timestamp, session_duration_seconds')
+      .select('user_id, session_id, event_timestamp, session_duration_seconds')
       .gte('event_timestamp', periodStart.toISOString())
       .lte('event_timestamp', periodEnd.toISOString())
-      .not('session_duration_seconds', 'is', null)
 
-    if (sessionsError) {
-      safeLogger.error('Failed to fetch sessions', { error: sessionsError })
+    if (universityId) {
+      // We'll filter by university after getting events
+      eventsQuery = eventsQuery.not('user_id', 'is', null)
     }
 
-    const averageSessionDuration = sessions && sessions.length > 0
-      ? sessions.reduce((sum, s) => sum + (s.session_duration_seconds || 0), 0) / sessions.length
-      : 0
+    const { data: allEvents, error: eventsError } = await eventsQuery
 
-    // Calculate average sessions per user
-    const sessionCounts = new Map<string, number>()
-    for (const session of sessions || []) {
-      if (session.session_id) {
-        sessionCounts.set(session.session_id, (sessionCounts.get(session.session_id) || 0) + 1)
+    if (eventsError) {
+      safeLogger.error('Failed to fetch user journey events', { error: eventsError })
+    }
+
+    // Filter by university if provided
+    let filteredEvents = allEvents || []
+    if (universityId && filteredEvents.length > 0) {
+      const userIds = new Set(filteredEvents.map(e => e.user_id).filter(Boolean))
+      if (userIds.size > 0) {
+        const { data: userProfiles } = await supabase
+          .from('profiles')
+          .select('user_id')
+          .eq('university_id', universityId)
+          .in('user_id', Array.from(userIds))
+
+        const universityUserIds = new Set((userProfiles || []).map(p => p.user_id))
+        filteredEvents = filteredEvents.filter(e => !e.user_id || universityUserIds.has(e.user_id))
       }
     }
 
-    const averageSessionsPerUser = totalUsers && totalUsers > 0
-      ? sessionCounts.size / totalUsers
+    // Calculate session durations from event timestamps
+    // Group events by session_id
+    const sessionsBySessionId = new Map<string, Array<{ event_timestamp: string; session_duration_seconds?: number }>>()
+    for (const event of filteredEvents) {
+      if (event.session_id) {
+        if (!sessionsBySessionId.has(event.session_id)) {
+          sessionsBySessionId.set(event.session_id, [])
+        }
+        sessionsBySessionId.get(event.session_id)!.push({
+          event_timestamp: event.event_timestamp,
+          session_duration_seconds: event.session_duration_seconds
+        })
+      }
+    }
+
+    // Calculate session durations
+    const sessionDurations: number[] = []
+    for (const [sessionId, events] of Array.from(sessionsBySessionId.entries())) {
+      if (events.length === 0) continue
+
+      // Sort events by timestamp
+      events.sort((a: { event_timestamp: string; session_duration_seconds?: number }, b: { event_timestamp: string; session_duration_seconds?: number }) => 
+        new Date(a.event_timestamp).getTime() - new Date(b.event_timestamp).getTime()
+      )
+
+      // Use stored duration if available, otherwise calculate from timestamps
+      let duration = events[0].session_duration_seconds
+      if (!duration || duration === 0) {
+        const firstEvent = new Date(events[0].event_timestamp)
+        const lastEvent = new Date(events[events.length - 1].event_timestamp)
+        duration = Math.round((lastEvent.getTime() - firstEvent.getTime()) / 1000)
+      }
+
+      // Only count sessions with meaningful duration (at least 5 seconds)
+      if (duration >= 5) {
+        sessionDurations.push(duration)
+      }
+    }
+
+    // Calculate average session duration in minutes
+    const averageSessionDuration = sessionDurations.length > 0
+      ? sessionDurations.reduce((sum, d) => sum + d, 0) / sessionDurations.length / 60 // Convert to minutes
       : 0
+
+    // Calculate average sessions per user
+    // Group sessions by user_id
+    const sessionsByUserId = new Map<string, Set<string>>()
+    for (const event of filteredEvents) {
+      if (event.user_id && event.session_id) {
+        if (!sessionsByUserId.has(event.user_id)) {
+          sessionsByUserId.set(event.user_id, new Set())
+        }
+        sessionsByUserId.get(event.user_id)!.add(event.session_id)
+      }
+    }
+
+    // Calculate total unique sessions
+    const totalSessions = sessionsByUserId.size > 0
+      ? Array.from(sessionsByUserId.values()).reduce((sum, sessions) => sum + sessions.size, 0)
+      : 0
+
+    // Get unique users who have sessions
+    const usersWithSessions = sessionsByUserId.size
+
+    // Average sessions per user (only for users who have sessions)
+    const averageSessionsPerUser = usersWithSessions > 0
+      ? totalSessions / usersWithSessions
+      : 0
+
+    // Calculate engagement score based on multiple factors
+    // Engagement = (active users / total users) * 100
+    // But also factor in session frequency and duration
+    const baseEngagementScore = totalUsers && totalUsers > 0
+      ? (activeUsers / totalUsers) * 100
+      : 0
+
+    // Boost engagement score based on session activity
+    // Users with multiple sessions or longer sessions are more engaged
+    const sessionActivityBoost = usersWithSessions > 0 && totalUsers && totalUsers > 0
+      ? (averageSessionsPerUser / 5) * 20 // Cap boost at 20 points for 5+ sessions per user
+      : 0
+
+    const engagementScore = Math.min(100, baseEngagementScore + sessionActivityBoost)
 
     return {
       totalUsers: totalUsers || 0,

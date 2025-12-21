@@ -3,7 +3,7 @@
 import { motion } from 'framer-motion'
 import { useRouter } from 'next/navigation'
 import { useState, useEffect, useCallback, useRef } from 'react'
-import { useQuery } from '@tanstack/react-query'
+import { useQuery, useQueries } from '@tanstack/react-query'
 import { createPortal } from 'react-dom'
 import { 
   TrendingUp, 
@@ -36,9 +36,10 @@ import { Card, CardContent } from '@/components/ui/card'
 import type { DashboardData, Update } from '@/types/dashboard'
 import { createClient } from '@/lib/supabase/client'
 import { logger } from '@/lib/utils/logger'
-import { queryKeys } from '@/app/providers'
+import { queryKeys, queryClient } from '@/app/providers'
 import { useRealtimeInvalidation } from '@/hooks/use-realtime-invalidation'
 import { monitorQuery } from '@/lib/utils/query-monitor'
+import { getCompatibilityCacheKey, getCompatibilityStaleTime } from '@/lib/cache/compatibility-cache'
 
 const fadeInUp = {
   initial: { opacity: 0, y: 20 },
@@ -75,39 +76,11 @@ interface DashboardContentProps {
   firstName?: string
 }
 
-interface SearchResult {
-  id: string
-  type: 'match' | 'message' | 'user' | 'housing' | 'page'
-  name?: string
-  title?: string
-  program?: string
-  university?: string
-  chatId?: string
-  content?: string
-  highlightedContent?: string
-  senderName?: string
-  createdAt?: string
-  address?: string
-  city?: string
-  rent?: number
-  href?: string
-  icon?: string
-  isGroupChat?: boolean
-  otherParticipantsCount?: number
-}
 
 export function DashboardContent({ hasCompletedQuestionnaire = false, hasPartialProgress = false, progressCount = 0, profileCompletion = 0, questionnaireProgress, dashboardData, user, firstName = '' }: DashboardContentProps) {
   const router = useRouter()
   const supabase = createClient()
 
-  // Mobile search state
-  const [searchQuery, setSearchQuery] = useState('')
-  const [searchResults, setSearchResults] = useState<SearchResult[]>([])
-  const [isSearching, setIsSearching] = useState(false)
-  const [showResults, setShowResults] = useState(false)
-  const searchRef = useRef<HTMLDivElement>(null)
-  const inputRef = useRef<HTMLInputElement>(null)
-  const [dropdownPosition, setDropdownPosition] = useState<{ top: number; left: number; width: number } | null>(null)
 
   // Helper function for formatting time ago (defined early for use in callbacks)
   const formatTimeAgo = (dateString: string): string => {
@@ -189,31 +162,118 @@ export function DashboardContent({ hasCompletedQuestionnaire = false, hasPartial
 
       const recentUserIds = recentMatches.map(m => m.userId)
 
-      // Compute compatibility scores using the new algorithm for each matched user
-      const compatibilityScores = await Promise.all(
-        recentUserIds.map(async (otherUserId) => {
-          try {
-            const { data, error } = await supabase.rpc('compute_compatibility_score', {
-              user_a_id: user.id,
-              user_b_id: otherUserId
-            })
-            
-            if (error) {
-              logger.error(`Error computing compatibility score for ${otherUserId}:`, error)
-              return { userId: otherUserId, score: 0 }
-            }
-            
-            // The function returns a table (array), get the first row
-            const result = Array.isArray(data) && data.length > 0 ? data[0] : (data || {})
-            const compatibilityScore = Number(result.compatibility_score || 0)
-            
-            return { userId: otherUserId, score: compatibilityScore }
-          } catch (error) {
-            logger.error(`Error computing compatibility score for ${otherUserId}:`, error)
-            return { userId: otherUserId, score: 0 }
+      // Compute compatibility scores using batch function when multiple users
+      // Falls back to individual calls with caching for single user
+      let compatibilityScores: Array<{ userId: string; score: number }>
+      
+      if (recentUserIds.length > 1) {
+        // Use batch function for multiple users (more efficient)
+        try {
+          const { data, error } = await supabase.rpc('compute_compatibility_scores_batch', {
+            user_a_id: user.id,
+            user_b_ids: recentUserIds
+          })
+          
+          if (error) {
+            logger.error('Error computing batch compatibility scores:', error)
+            // Fall back to individual calls
+            compatibilityScores = await Promise.all(
+              recentUserIds.map(async (otherUserId) => {
+                try {
+                  const cacheKey = getCompatibilityCacheKey(user.id, otherUserId)
+                  const result = await queryClient.fetchQuery({
+                    queryKey: cacheKey,
+                    queryFn: async () => {
+                      const { data, error } = await supabase.rpc('compute_compatibility_score', {
+                        user_a_id: user.id,
+                        user_b_id: otherUserId
+                      })
+                      if (error) throw error
+                      return Array.isArray(data) && data.length > 0 ? data[0] : (data || {})
+                    },
+                    staleTime: getCompatibilityStaleTime(),
+                  })
+                  const score = Number(result?.compatibility_score || 0)
+                  // Cache the result
+                  queryClient.setQueryData(cacheKey, result)
+                  return { userId: otherUserId, score }
+                } catch (error) {
+                  logger.error(`Error computing compatibility score for ${otherUserId}:`, error)
+                  return { userId: otherUserId, score: 0 }
+                }
+              })
+            )
+          } else {
+            // Process batch results and cache them
+            compatibilityScores = await Promise.all(
+              (data || []).map(async (result: any) => {
+                const otherUserId = result.user_b_id
+                const score = Number(result?.compatibility_score || 0)
+                
+                // Cache each result individually for future use
+                const cacheKey = getCompatibilityCacheKey(user.id, otherUserId)
+                queryClient.setQueryData(cacheKey, result, {
+                  updatedAt: Date.now(),
+                })
+                
+                return { userId: otherUserId, score }
+              })
+            )
           }
-        })
-      )
+        } catch (error) {
+          logger.error('Error in batch compatibility score computation:', error)
+          // Fall back to individual calls
+          compatibilityScores = await Promise.all(
+            recentUserIds.map(async (otherUserId) => {
+              try {
+                const cacheKey = getCompatibilityCacheKey(user.id, otherUserId)
+                const result = await queryClient.fetchQuery({
+                  queryKey: cacheKey,
+                  queryFn: async () => {
+                    const { data, error } = await supabase.rpc('compute_compatibility_score', {
+                      user_a_id: user.id,
+                      user_b_id: otherUserId
+                    })
+                    if (error) throw error
+                    return Array.isArray(data) && data.length > 0 ? data[0] : (data || {})
+                  },
+                  staleTime: getCompatibilityStaleTime(),
+                })
+                const score = Number(result?.compatibility_score || 0)
+                return { userId: otherUserId, score }
+              } catch (error) {
+                logger.error(`Error computing compatibility score for ${otherUserId}:`, error)
+                return { userId: otherUserId, score: 0 }
+              }
+            })
+          )
+        }
+      } else if (recentUserIds.length === 1) {
+        // Single user - use cached individual call
+        const otherUserId = recentUserIds[0]
+        try {
+          const cacheKey = getCompatibilityCacheKey(user.id, otherUserId)
+          const result = await queryClient.fetchQuery({
+            queryKey: cacheKey,
+            queryFn: async () => {
+              const { data, error } = await supabase.rpc('compute_compatibility_score', {
+                user_a_id: user.id,
+                user_b_id: otherUserId
+              })
+              if (error) throw error
+              return Array.isArray(data) && data.length > 0 ? data[0] : (data || {})
+            },
+            staleTime: getCompatibilityStaleTime(),
+          })
+          const score = Number(result?.compatibility_score || 0)
+          compatibilityScores = [{ userId: otherUserId, score }]
+        } catch (error) {
+          logger.error(`Error computing compatibility score for ${otherUserId}:`, error)
+          compatibilityScores = [{ userId: otherUserId, score: 0 }]
+        }
+      } else {
+        compatibilityScores = []
+      }
 
       // Create a map of userId to score for easy lookup
       const scoreMap = new Map(compatibilityScores.map(m => [m.userId, m.score]))
@@ -658,7 +718,7 @@ export function DashboardContent({ hasCompletedQuestionnaire = false, hasPartial
         .from('updates')
         .select('*')
         .order('release_date', { ascending: false, nullsFirst: false })
-        .limit(20) // Show up to 20 most recent updates
+        // No limit - show all updates
 
       if (error) {
         logger.error('Failed to load updates:', error)
@@ -766,153 +826,6 @@ export function DashboardContent({ hasCompletedQuestionnaire = false, hasPartial
     enabled: !!user?.id,
   })
 
-  // Mobile search handlers
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      const target = event.target as Node
-      if (
-        searchRef.current && 
-        !searchRef.current.contains(target) &&
-        !(target instanceof Element && target.closest('[data-search-dropdown]'))
-      ) {
-        setShowResults(false)
-      }
-    }
-
-    if (showResults) {
-      document.addEventListener('mousedown', handleClickOutside)
-      return () => document.removeEventListener('mousedown', handleClickOutside)
-    }
-  }, [showResults])
-
-  // Update dropdown position when search input is focused or results change
-  useEffect(() => {
-    const updatePosition = () => {
-      if (showResults && inputRef.current) {
-        const rect = inputRef.current.getBoundingClientRect()
-        setDropdownPosition({
-          top: rect.bottom + window.scrollY + 8,
-          left: rect.left + window.scrollX,
-          width: rect.width
-        })
-      }
-    }
-
-    updatePosition()
-
-    if (showResults) {
-      window.addEventListener('scroll', updatePosition, true)
-      window.addEventListener('resize', updatePosition)
-      return () => {
-        window.removeEventListener('scroll', updatePosition, true)
-        window.removeEventListener('resize', updatePosition)
-      }
-    }
-  }, [showResults, searchResults])
-
-  const performSearch = useCallback(async (query: string) => {
-    setIsSearching(true)
-    try {
-      const response = await fetch(`/api/search?q=${encodeURIComponent(query)}`)
-      const data = await response.json()
-      
-      if (response.ok) {
-        // Prioritize: matches first, then messages, then users, then housing, then pages
-        const allResults = [
-          ...(data.matches || []).map((m: any) => ({ ...m, type: 'match' as const, priority: 1 })),
-          ...(data.messages || []).map((m: any) => ({ ...m, type: 'message' as const, priority: 2 })),
-          ...(data.users || []).map((u: any) => ({ ...u, type: 'user' as const, priority: 3 })),
-          ...(data.housing || []).map((h: any) => ({ ...h, type: 'housing' as const, priority: 4 })),
-          ...(data.pages || []).map((p: any) => ({ ...p, type: 'page' as const, priority: 5 }))
-        ]
-        
-        // Deduplicate by user ID - keep match type over user type (higher priority)
-        const seenIds = new Map<string, SearchResult & { priority: number }>()
-        allResults.forEach((result) => {
-          // For user/match types, deduplicate by ID
-          if (result.type === 'match' || result.type === 'user') {
-            const existing = seenIds.get(result.id)
-            if (!existing || result.priority < existing.priority) {
-              seenIds.set(result.id, result)
-            }
-          } else {
-            // For other types, use type-id as key
-            const key = `${result.type}-${result.id}`
-            if (!seenIds.has(key)) {
-              seenIds.set(key, result)
-            }
-          }
-        })
-        
-        // Sort by priority, then limit results
-        const sortedResults = Array.from(seenIds.values())
-          .sort((a, b) => (a.priority || 99) - (b.priority || 99))
-          .slice(0, 12)
-          .map(({ priority, ...rest }) => rest) // Remove priority before setting state
-        
-        setSearchResults(sortedResults)
-        setShowResults(sortedResults.length > 0)
-      } else {
-        console.error('Search API error:', data)
-        setSearchResults([])
-        setShowResults(false)
-      }
-    } catch (error) {
-      console.error('Search error:', error)
-      setSearchResults([])
-      setShowResults(false)
-    } finally {
-      setIsSearching(false)
-    }
-  }, [])
-
-  useEffect(() => {
-    const timeoutId = setTimeout(() => {
-      if (searchQuery.length >= 2) {
-        performSearch(searchQuery)
-      } else {
-        setSearchResults([])
-        setShowResults(false)
-      }
-    }, 300)
-
-    return () => clearTimeout(timeoutId)
-  }, [searchQuery, performSearch])
-
-  const handleResultClick = (result: SearchResult) => {
-    if (result.type === 'match' && result.chatId) {
-      router.push(`/chat/${result.chatId}`)
-    } else if (result.type === 'message' && result.chatId) {
-      router.push(`/chat/${result.chatId}`)
-    } else if (result.type === 'user') {
-      router.push(`/matches?user=${result.id}`)
-    } else if (result.type === 'housing') {
-      router.push(`/housing/${result.id}`)
-    } else if (result.type === 'page' && result.href) {
-      router.push(result.href)
-    }
-    setSearchQuery('')
-    setShowResults(false)
-  }
-
-  const getIconForResult = (result: SearchResult) => {
-    if (result.type === 'page' && result.icon) {
-      const iconMap: Record<string, any> = {
-        'Users': Users,
-        'MessageCircle': MessageCircle,
-        'Home': Home,
-        'LayoutDashboard': LayoutDashboard,
-        'User': User,
-        'Settings': Settings,
-        'Bell': Bell
-      }
-      return iconMap[result.icon] || Search
-    }
-    if (result.type === 'match' || result.type === 'user') return User
-    if (result.type === 'message') return MessageCircle
-    if (result.type === 'housing') return Building2
-    return Search
-  }
 
   const getActivityIcon = (type: string) => {
     switch (type) {
@@ -1081,196 +994,6 @@ export function DashboardContent({ hasCompletedQuestionnaire = false, hasPartial
         </motion.div>
       )}
 
-      {/* Mobile-only Searchbar */}
-      <div className="lg:hidden mb-2" ref={searchRef}>
-        <div className="relative">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-text-muted z-10 pointer-events-none" />
-          <input
-            ref={inputRef}
-            type="text"
-            placeholder="Search matches, messages..."
-            value={searchQuery}
-            onChange={(e) => {
-              setSearchQuery(e.target.value)
-              if (e.target.value.length >= 2) {
-                setShowResults(true)
-              }
-            }}
-            onFocus={() => {
-              if (searchResults.length > 0) {
-                setShowResults(true)
-              }
-            }}
-            className="w-full pl-9 pr-9 py-2.5 h-[42px] bg-bg-surface-alt dark:bg-bg-surface-alt border-0 rounded-xl text-sm text-text-primary placeholder:text-text-muted focus:outline-none focus:ring-2 focus:ring-semantic-accent focus:bg-bg-surface dark:focus:bg-bg-surface transition-colors"
-          />
-          {searchQuery && (
-            <button
-              onClick={() => {
-                setSearchQuery('')
-                setShowResults(false)
-                inputRef.current?.focus()
-              }}
-              className="absolute right-2 top-1/2 transform -translate-y-1/2 text-text-muted hover:text-text-secondary min-w-[36px] min-h-[36px] flex items-center justify-center rounded-md hover:bg-bg-surface-alt dark:hover:bg-bg-surface-alt transition-colors"
-              aria-label="Clear search"
-            >
-              <X className="w-4 h-4" />
-            </button>
-          )}
-        </div>
-
-        {/* Search Results Dropdown - Using Portal to fix z-index */}
-        {showResults && searchQuery.length >= 2 && dropdownPosition && typeof window !== 'undefined' && createPortal(
-          <Card 
-            data-search-dropdown
-            className="fixed max-h-[calc(100vh-16rem)] overflow-y-auto shadow-lg border border-border-subtle bg-bg-surface dark:bg-bg-surface z-[9999] scrollbar-hide"
-            style={{
-              top: `${dropdownPosition.top}px`,
-              left: `${dropdownPosition.left}px`,
-              width: `${dropdownPosition.width}px`,
-              maxWidth: '90vw'
-            }}
-          >
-            <CardContent className="p-0">
-              {isSearching ? (
-                <div className="p-4 text-center text-text-muted">
-                  Searching...
-                </div>
-              ) : searchResults.length === 0 ? (
-                <div className="p-4 text-center text-text-muted">
-                  No results found
-                </div>
-              ) : (
-                <div className="divide-y divide-border-subtle">
-                  {searchResults.map((result) => {
-                    const Icon = getIconForResult(result)
-                    return (
-                      <button
-                        key={`${result.type}-${result.id}`}
-                        onClick={() => handleResultClick(result)}
-                        className="w-full p-3 hover:bg-bg-surface-alt dark:hover:bg-bg-surface-alt text-left transition-colors min-h-[44px]"
-                      >
-                        {result.type === 'match' || result.type === 'user' ? (
-                          <div className="flex items-center gap-3">
-                            <div className="w-10 h-10 rounded-full bg-semantic-accent-soft dark:bg-semantic-accent-soft flex items-center justify-center flex-shrink-0">
-                              <Icon className="w-5 h-5 text-semantic-accent" />
-                            </div>
-                            <div className="flex-1 min-w-0">
-                              {(() => {
-                                // Helper function to check if a string is a UUID
-                                const isUUID = (str: string): boolean => {
-                                  if (!str || typeof str !== 'string') return false
-                                  if (/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(str)) return true
-                                  if (/[0-9a-f]{8}-?[0-9a-f]{4}-?[0-9a-f]{4}-?[0-9a-f]{4}-?[0-9a-f]{12}/i.test(str)) return true
-                                  return false
-                                }
-                                
-                                // Remove UUIDs from strings
-                                const removeUUIDs = (str: string): string => {
-                                  if (!str || typeof str !== 'string') return str
-                                  return str.replace(/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/gi, '').trim()
-                                }
-                                
-                                // Clean name
-                                let safeName = removeUUIDs(result.name || '')
-                                if (isUUID(safeName) || safeName === result.id || !safeName) {
-                                  safeName = 'User'
-                                }
-                                
-                                // Clean program and university
-                                let safeProgram = removeUUIDs(result.program || '')
-                                if (isUUID(safeProgram) || safeProgram === result.id || !safeProgram) {
-                                  safeProgram = ''
-                                }
-                                
-                                let safeUniversity = removeUUIDs(result.university || '')
-                                if (isUUID(safeUniversity) || safeUniversity === result.id || !safeUniversity) {
-                                  safeUniversity = ''
-                                }
-                                
-                                return (
-                                  <>
-                                    <p className="font-semibold text-sm text-text-primary truncate">
-                                      {safeName}
-                                      {result.type === 'user' && (
-                                        <span className="ml-2 text-xs text-text-muted font-normal">(User)</span>
-                                      )}
-                                    </p>
-                                    {(safeProgram || safeUniversity) && (
-                                      <p className="text-xs text-text-muted truncate">
-                                        {[safeProgram, safeUniversity].filter(Boolean).join(' • ')}
-                                      </p>
-                                    )}
-                                  </>
-                                )
-                              })()}
-                            </div>
-                          </div>
-                        ) : result.type === 'message' ? (
-                          <div className="flex items-start gap-3">
-                            <div className="w-10 h-10 rounded-full bg-semantic-success/20 dark:bg-semantic-success/20 flex items-center justify-center flex-shrink-0">
-                              <Icon className="w-5 h-5 text-semantic-success" />
-                            </div>
-                            <div className="flex-1 min-w-0">
-                              <div className="flex items-center gap-2">
-                                <p className="font-semibold text-sm text-text-primary">
-                                  {result.senderName}
-                                </p>
-                                {result.isGroupChat && (
-                                  <span className="text-xs text-text-muted bg-bg-surface-alt dark:bg-bg-surface-alt px-1.5 py-0.5 rounded">
-                                    Group
-                                  </span>
-                                )}
-                              </div>
-                              <p className="text-xs text-text-secondary truncate mt-1">
-                                {result.content}
-                              </p>
-                              {result.createdAt && (
-                                <p className="text-xs text-text-muted mt-0.5">
-                                  {new Date(result.createdAt).toLocaleDateString()}
-                                </p>
-                              )}
-                            </div>
-                          </div>
-                        ) : result.type === 'housing' ? (
-                          <div className="flex items-center gap-3">
-                            <div className="w-10 h-10 rounded-full bg-semantic-warning/20 dark:bg-semantic-warning/20 flex items-center justify-center flex-shrink-0">
-                              <Icon className="w-5 h-5 text-semantic-warning" />
-                            </div>
-                            <div className="flex-1 min-w-0">
-                              <p className="font-semibold text-sm text-text-primary truncate">
-                                {result.title}
-                              </p>
-                              <p className="text-xs text-text-muted truncate">
-                                {[result.address, result.city].filter(Boolean).join(', ')}
-                                {result.rent && ` • €${result.rent}/mo`}
-                              </p>
-                            </div>
-                          </div>
-                        ) : result.type === 'page' ? (
-                          <div className="flex items-center gap-3">
-                            <div className="w-10 h-10 rounded-full bg-semantic-info/20 dark:bg-semantic-info/20 flex items-center justify-center flex-shrink-0">
-                              <Icon className="w-5 h-5 text-semantic-info" />
-                            </div>
-                            <div className="flex-1 min-w-0">
-                              <p className="font-semibold text-sm text-text-primary">
-                                {result.name}
-                              </p>
-                              <p className="text-xs text-text-muted">
-                                Navigate to page
-                              </p>
-                            </div>
-                          </div>
-                        ) : null}
-                      </button>
-                    )
-                  })}
-                </div>
-              )}
-            </CardContent>
-          </Card>,
-          document.body
-        )}
-      </div>
 
       {/* Header */}
       <motion.div
@@ -1619,17 +1342,12 @@ export function DashboardContent({ hasCompletedQuestionnaire = false, hasPartial
                           <span className="text-xs opacity-70 flex-shrink-0 whitespace-nowrap">{formatDate(update.release_date)}</span>
                         </div>
                         <ul className="mt-1.5 sm:mt-2 space-y-0.5 sm:space-y-1 text-xs">
-                          {update.changes.slice(0, 3).map((change, index) => (
+                          {update.changes.map((change, index) => (
                             <li key={index} className="flex items-start gap-1.5 sm:gap-2">
                               <span className="mt-0.5 flex-shrink-0">•</span>
                               <span className="flex-1 break-words">{change}</span>
                             </li>
                           ))}
-                          {update.changes.length > 3 && (
-                            <li className="text-text-muted italic text-xs mt-0.5">
-                              +{update.changes.length - 3} more {update.changes.length - 3 === 1 ? 'change' : 'changes'}
-                            </li>
-                          )}
                         </ul>
                       </div>
                     )

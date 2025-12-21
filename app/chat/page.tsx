@@ -5,7 +5,13 @@ import { redirect } from 'next/navigation'
 import { checkUserVerificationStatus, getVerificationRedirectUrl } from '@/lib/auth/verification-check'
 import { getUserProfile } from '@/lib/auth/user-profile'
 
-export default async function ChatPage() {
+interface ChatPageProps {
+  searchParams: Promise<{ chatId?: string }>
+}
+
+export default async function ChatPage({ searchParams }: ChatPageProps) {
+  const params = await searchParams
+  const initialChatId = params.chatId || null
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
 
@@ -72,7 +78,7 @@ export default async function ChatPage() {
             maxWidth: '100%'
           }}
         >
-          <ChatSplitView user={user} />
+          <ChatSplitView user={user} initialChatId={initialChatId} />
         </div>
       </div>
     </AppShell>

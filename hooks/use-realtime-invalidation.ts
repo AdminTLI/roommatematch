@@ -1,9 +1,11 @@
 'use client'
 
 import { useEffect, useRef } from 'react'
-import { RealtimeChannel } from '@supabase/supabase-js'
+import { usePathname } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { queryClient } from '@/app/providers'
+import { channelManager } from '@/lib/realtime/channel-manager'
+import type { ChannelSubscription } from '@/lib/realtime/channel-manager'
 
 export interface RealtimeInvalidationOptions {
   /** Table name to subscribe to */
@@ -48,12 +50,42 @@ export function useRealtimeInvalidation({
   onInvalidate,
   onError,
 }: RealtimeInvalidationOptions) {
-  const channelRef = useRef<RealtimeChannel | null>(null)
+  const subscriptionIdRef = useRef<string | null>(null)
+  const channelKeyRef = useRef<string | null>(null)
   const retryAttemptsRef = useRef(0)
   const retryTimeoutRef = useRef<NodeJS.Timeout | null>(null)
   const isUnmountingRef = useRef(false)
   const supabase = createClient()
   const isDevelopment = process.env.NODE_ENV === 'development'
+  const pathname = usePathname()
+
+  // Initialize channel manager with supabase client
+  useEffect(() => {
+    channelManager.initialize(supabase)
+  }, [supabase])
+
+  // Phase 4: Cleanup subscription on route change
+  useEffect(() => {
+    // Cleanup subscription when route changes
+    return () => {
+      if (subscriptionIdRef.current && channelKeyRef.current) {
+        if (isDevelopment) {
+          console.log('[RealtimeInvalidation] Cleaning up subscription on route change:', {
+            table,
+            channelKey: channelKeyRef.current,
+          })
+        }
+        channelManager.unsubscribe(channelKeyRef.current, subscriptionIdRef.current)
+        subscriptionIdRef.current = null
+        channelKeyRef.current = null
+      }
+      // Clear any pending retries
+      if (retryTimeoutRef.current) {
+        clearTimeout(retryTimeoutRef.current)
+        retryTimeoutRef.current = null
+      }
+    }
+  }, [pathname, table, isDevelopment])
 
   useEffect(() => {
     // In development we see a lot of noisy CHANNEL_ERROR / CLOSED logs when
@@ -66,64 +98,145 @@ export function useRealtimeInvalidation({
     isUnmountingRef.current = false
     retryAttemptsRef.current = 0
 
-    const setupSubscription = () => {
-      const channel = channelName || `realtime-invalidation-${table}-${Date.now()}`
+    // For notifications table, get user first to ensure user_id filter
+    const setupSubscription = async () => {
+      // Phase 3: Ensure authenticated user token is present before subscribing
+      let authenticatedUserId: string | null = null
+      try {
+        const { data: { user }, error: authError } = await supabase.auth.getUser()
+        
+        if (authError) {
+          if (isDevelopment) {
+            console.error('[RealtimeInvalidation] Auth error:', authError)
+          }
+          onError?.(`Authentication failed: ${authError.message}`, 'AUTH_ERROR')
+          return // Don't subscribe without valid auth
+        }
 
-      // Clean up existing channel if it exists
-      if (channelRef.current) {
-        supabase.removeChannel(channelRef.current)
-        channelRef.current = null
+        if (!user) {
+          if (isDevelopment) {
+            console.warn('[RealtimeInvalidation] No authenticated user - skipping subscription')
+          }
+          onError?.('No authenticated user', 'AUTH_REQUIRED')
+          return // Don't subscribe without authenticated user
+        }
+
+        authenticatedUserId = user.id
+
+        // Phase 3: Validate that filter matches authenticated user for user-scoped tables
+        if (table === 'notifications') {
+          // Extract user_id from filter if present
+          const filterUserIdMatch = filter?.match(/user_id=eq\.([a-f0-9-]+)/i)
+          if (filterUserIdMatch && filterUserIdMatch[1] !== authenticatedUserId) {
+            // Security: Filter user_id doesn't match authenticated user
+            const errorMsg = `Filter user_id (${filterUserIdMatch[1]}) does not match authenticated user (${authenticatedUserId})`
+            if (isDevelopment) {
+              console.error('[RealtimeInvalidation] Security violation:', errorMsg)
+            }
+            onError?.(errorMsg, 'FILTER_MISMATCH')
+            return // Don't subscribe with mismatched filter
+          }
+        }
+      } catch (error) {
+        // If we can't verify auth, don't subscribe
+        if (isDevelopment) {
+          console.error('[RealtimeInvalidation] Failed to verify authentication:', error)
+        }
+        onError?.(`Authentication verification failed: ${error instanceof Error ? error.message : 'Unknown error'}`, 'AUTH_VERIFICATION_FAILED')
+        return
       }
 
-      // Create new channel
-      const realtimeChannel = supabase
-        .channel(channel)
-        .on(
-          'postgres_changes',
-          {
-            event: event === '*' ? undefined : event,
-            schema: 'public',
-            table,
-            filter,
-          },
-          (payload) => {
-            if (isDevelopment) {
-              console.log('[RealtimeInvalidation] Event received:', {
-                table,
-                event: payload.eventType,
-                payload,
-                queryKeys,
-              })
-            }
+      // For notifications table, ensure user_id filter matches authenticated user
+      let effectiveFilter = filter
+      if (table === 'notifications' && authenticatedUserId) {
+        const userIdFilter = `user_id=eq.${authenticatedUserId}`
+        // If filter already has user_id, it should match (we validated above)
+        // Otherwise, add it
+        if (!filter || !filter.includes('user_id=eq.')) {
+          effectiveFilter = userIdFilter
+        } else {
+          // Filter already validated to match authenticated user
+          effectiveFilter = filter
+        }
+      }
 
-            // Call optional callback before invalidation
-            onInvalidate?.()
+      // Helper to redact PII from payloads for logging
+      const redactPayload = (payload: any) => {
+        if (!payload || !isDevelopment) return payload
+        const redacted = { ...payload }
+        // Redact sensitive fields that might contain user data
+        if (redacted.new) {
+          redacted.new = { ...redacted.new }
+          if (redacted.new.user_id) redacted.new.user_id = '[REDACTED]'
+          if (redacted.new.content) redacted.new.content = redacted.new.content.substring(0, 50) + '...'
+          if (redacted.new.message) redacted.new.message = redacted.new.message.substring(0, 50) + '...'
+          if (redacted.new.email) redacted.new.email = '[REDACTED]'
+        }
+        if (redacted.old) {
+          redacted.old = { ...redacted.old }
+          if (redacted.old.user_id) redacted.old.user_id = '[REDACTED]'
+          if (redacted.old.content) redacted.old.content = redacted.old.content.substring(0, 50) + '...'
+          if (redacted.old.message) redacted.old.message = redacted.old.message.substring(0, 50) + '...'
+          if (redacted.old.email) redacted.old.email = '[REDACTED]'
+        }
+        return redacted
+      }
 
-            // Invalidate React Query cache
-            queryClient.invalidateQueries({
-              queryKey: queryKeys,
+      // Create subscription object
+      const subscription: ChannelSubscription = {
+        table,
+        event,
+        schema: 'public',
+        filter: effectiveFilter,
+      }
+
+      const channelKey = channelManager.getChannelKey(subscription)
+      channelKeyRef.current = channelKey
+
+      // Unsubscribe from previous subscription if exists
+      if (subscriptionIdRef.current && channelKeyRef.current) {
+        channelManager.unsubscribe(channelKeyRef.current, subscriptionIdRef.current)
+        subscriptionIdRef.current = null
+      }
+
+      // Subscribe using channel manager (deduplicates automatically)
+      const subId = channelManager.subscribe(subscription, {
+        onEvent: (payload: any) => {
+          if (isDevelopment) {
+            console.log('[RealtimeInvalidation] Event received:', {
+              table,
+              event: payload.eventType,
+              payload: redactPayload(payload),
+              queryKeys,
             })
-
-            if (isDevelopment) {
-              console.log('[RealtimeInvalidation] Cache invalidated:', {
-                queryKeys,
-                table,
-                event: payload.eventType,
-              })
-            }
           }
-        )
-        .subscribe((status, err) => {
+
+          // Call optional callback before invalidation
+          onInvalidate?.()
+
+          // Invalidate React Query cache
+          queryClient.invalidateQueries({
+            queryKey: queryKeys,
+          })
+
+          if (isDevelopment) {
+            console.log('[RealtimeInvalidation] Cache invalidated:', {
+              queryKeys: queryKeys.map(k => typeof k === 'string' && k.length > 36 ? '[REDACTED]' : k),
+              table,
+              event: payload.eventType,
+            })
+          }
+        },
+        onStatusChange: (status, err) => {
           if (isDevelopment) {
             console.log('[RealtimeInvalidation] Subscription status:', {
-              channel,
+              channelKey,
               table,
               status,
             })
           }
 
           if (status === 'SUBSCRIBED') {
-            channelRef.current = realtimeChannel
             retryAttemptsRef.current = 0 // Reset retry attempts on success
           } else if (status === 'TIMED_OUT' || status === 'CHANNEL_ERROR') {
             // Check if error is due to table not being published for realtime
@@ -179,7 +292,10 @@ export function useRealtimeInvalidation({
               retryAttemptsRef.current = 0
             }
           }
-        })
+        },
+      })
+
+      subscriptionIdRef.current = subId
     }
 
     setupSubscription()
@@ -191,9 +307,10 @@ export function useRealtimeInvalidation({
         clearTimeout(retryTimeoutRef.current)
         retryTimeoutRef.current = null
       }
-      if (channelRef.current) {
-        supabase.removeChannel(channelRef.current)
-        channelRef.current = null
+      if (subscriptionIdRef.current && channelKeyRef.current) {
+        channelManager.unsubscribe(channelKeyRef.current, subscriptionIdRef.current)
+        subscriptionIdRef.current = null
+        channelKeyRef.current = null
       }
       retryAttemptsRef.current = 0
     }

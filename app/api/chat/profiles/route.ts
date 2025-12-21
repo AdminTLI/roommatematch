@@ -128,6 +128,16 @@ export async function POST(request: NextRequest) {
       .in('user_id', allowedUserIds.length > 0 ? allowedUserIds : [])
 
     if (profilesError) {
+      // If not found, return empty profiles gracefully
+      const isNotFound = (profilesError as any)?.status === 404 ||
+        (typeof (profilesError as any)?.message === 'string' && (profilesError as any).message.toLowerCase().includes('not found'))
+      if (isNotFound) {
+        safeLogger.warn('Profiles not found for given user IDs; returning empty list', {
+          userId: user.id,
+          requestedIds: allowedUserIds
+        })
+        return NextResponse.json({ profiles: [] })
+      }
       safeLogger.error('Failed to fetch profiles', profilesError)
       return NextResponse.json(
         { error: 'Failed to fetch profiles' },

@@ -5,6 +5,7 @@ import { checkRateLimit, getIPRateLimitKey } from '@/lib/rate-limit'
 import { isFeatureEnabled } from '@/lib/feature-flags'
 import { checkUserVerificationStatus, getVerificationRedirectUrl } from '@/lib/auth/verification-check'
 import { safeLogger } from '@/lib/utils/logger'
+import { createAdminClient } from '@/lib/supabase/server'
 import type { User } from '@supabase/supabase-js'
 
 // In-memory cache for user lookups with TTL
@@ -323,22 +324,56 @@ export async function middleware(req: NextRequest) {
 
   // Admin route protection - check before other protected routes
   if (user && pathname.startsWith('/admin')) {
-    const { data: adminRecord } = await supabase
-      .from('admins')
-      .select('id')
+    // Use admin client to bypass RLS for admin checks
+    const adminClient = createAdminClient()
+    
+    // Check user_roles table first (primary source of truth)
+    const { data: userRole, error: userRoleError } = await adminClient
+      .from('user_roles')
+      .select('role')
       .eq('user_id', user.id)
       .maybeSingle()
     
+    if (userRoleError) {
+      safeLogger.warn('[Middleware] Error checking user_roles', { error: userRoleError.message })
+    }
+    
+    const role = userRole?.role as string | undefined
+    const isAdminOrSuperAdmin = role === 'admin' || role === 'super_admin'
+    
+    // Fallback: Check admins table for backward compatibility (any admin role grants access)
+    const { data: adminRecord, error: adminError } = await adminClient
+      .from('admins')
+      .select('id, role')
+      .eq('user_id', user.id)
+      .maybeSingle()
+    
+    if (adminError) {
+      safeLogger.warn('[Middleware] Error checking admins table', { error: adminError.message })
+    }
+    
+    const isAdminFromAdminsTable = !!adminRecord
+    
     // Allow admins via metadata fallback if explicit admin row is missing (production convenience)
-    const isMetadataAdmin = !!user?.user_metadata?.role && String(user.user_metadata.role).toLowerCase() === 'admin'
-    if (!adminRecord && !isMetadataAdmin) {
+    const isMetadataAdmin = !!user?.user_metadata?.role && (
+      String(user.user_metadata.role).toLowerCase() === 'admin' || 
+      String(user.user_metadata.role).toLowerCase() === 'super_admin'
+    )
+    
+    if (!isAdminOrSuperAdmin && !isAdminFromAdminsTable && !isMetadataAdmin) {
       // Not an admin - redirect to dashboard
       const url = req.nextUrl.clone()
       url.pathname = '/dashboard'
       url.searchParams.set('reason', 'admin_access_denied')
       safeLogger.warn('[Middleware] Non-admin user attempted to access admin route', {
         userId: user.id,
-        path: pathname
+        path: pathname,
+        userRole: role || 'none',
+        hasAdminRecord: !!adminRecord,
+        adminRecordRole: adminRecord?.role || 'none',
+        metadataRole: user?.user_metadata?.role || 'none',
+        userRoleError: userRoleError?.message,
+        adminError: adminError?.message
       })
       return NextResponse.redirect(url)
     }

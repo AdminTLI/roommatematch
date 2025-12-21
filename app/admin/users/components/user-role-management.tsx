@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -34,16 +34,7 @@ export function UserRoleManagement() {
   const [success, setSuccess] = useState<string | null>(null)
   const isSuperAdmin = useIsSuperAdmin()
 
-  // Hide component if user is not super admin
-  if (!isSuperAdmin) {
-    return null
-  }
-
-  useEffect(() => {
-    loadUsers()
-  }, [])
-
-  const loadUsers = async (showRefreshing = false) => {
+  const loadUsers = useCallback(async (showRefreshing = false) => {
     if (showRefreshing) {
       setIsRefreshing(true)
     } else {
@@ -69,6 +60,17 @@ export function UserRoleManagement() {
       setIsLoading(false)
       setIsRefreshing(false)
     }
+  }, [])
+
+  useEffect(() => {
+    if (isSuperAdmin) {
+      loadUsers()
+    }
+  }, [isSuperAdmin, loadUsers])
+
+  // Hide component if user is not super admin
+  if (!isSuperAdmin) {
+    return null
   }
 
   const handleRoleChange = async (userId: string, newRole: 'user' | 'admin' | 'super_admin') => {
@@ -269,6 +271,7 @@ export function UserRoleManagement() {
     </Card>
   )
 }
+
 
 
 

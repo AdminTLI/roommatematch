@@ -1,6 +1,13 @@
 // Analytics and Event Tracking
 // This module handles app event logging for analytics and monitoring
 
+import {
+  parseUTMParamsFromURL,
+  classifyTrafficSource,
+  getReferrer,
+  type UTMParams,
+} from '@/lib/analytics/traffic-source-utils'
+
 export interface AppEvent {
   id?: string
   userId?: string
@@ -151,26 +158,62 @@ export class EventTracker {
     context: EventProps = {},
     userId?: string
   ): Promise<void> {
+    const url = typeof window !== 'undefined' ? window.location.href : undefined
+    const referrer = getReferrer()
+    
+    // Extract UTM parameters from URL if available
+    let utmParams: UTMParams = {}
+    if (url) {
+      utmParams = parseUTMParamsFromURL(url)
+    }
+    
+    // Classify traffic source
+    const trafficSource = classifyTrafficSource(
+      referrer,
+      utmParams.utm_source,
+      utmParams.utm_medium
+    )
+
     const props = {
       ...context,
       timestamp: new Date().toISOString(),
       user_agent: typeof window !== 'undefined' ? window.navigator.userAgent : undefined,
-      url: typeof window !== 'undefined' ? window.location.href : undefined
+      url,
+      referrer,
+      ...utmParams,
+      traffic_source: trafficSource,
     }
 
     await this.trackEvent(action, props, userId)
   }
 
   /**
-   * Track page view
+   * Track page view with UTM and traffic source attribution
    */
   async trackPageView(
     page: string,
     userId?: string,
     additionalProps: EventProps = {}
   ): Promise<void> {
+    const url = typeof window !== 'undefined' ? window.location.href : page
+    const referrer = getReferrer()
+    
+    // Extract UTM parameters from URL
+    const utmParams = parseUTMParamsFromURL(url)
+    
+    // Classify traffic source
+    const trafficSource = classifyTrafficSource(
+      referrer,
+      utmParams.utm_source,
+      utmParams.utm_medium
+    )
+
     await this.trackEvent(EVENT_TYPES.PAGE_LOAD, {
       page,
+      url,
+      referrer,
+      ...utmParams,
+      traffic_source: trafficSource,
       ...additionalProps
     }, userId)
   }

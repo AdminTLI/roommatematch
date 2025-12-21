@@ -6,6 +6,7 @@ import { createClient } from '@/lib/supabase/client'
 import { initializeEventTracker } from '@/lib/events'
 import { DEFAULT_LOCALE, getDictionary, type Locale } from '@/lib/i18n'
 import { ReactQueryDevtools } from './(components)/devtools/react-query-devtools-wrapper'
+import { SessionTrackerProvider } from '@/components/analytics/session-tracker-provider'
 
 // Query key factory for consistent keys
 export const queryKeys = {
@@ -28,6 +29,13 @@ export const queryKeys = {
   // Static data (universities, campuses)
   universities: ['universities'],
   campuses: ['campuses'],
+  timezones: ['timezones'],
+  
+  // Compatibility scores (cached for 5 minutes)
+  compatibility: (userAId?: string, userBId?: string) => 
+    userAId && userBId 
+      ? ['compatibility', userAId, userBId] 
+      : ['compatibility'],
 } as const
 
 // Create a client with granular stale times and enhanced retry logic
@@ -119,7 +127,9 @@ export function Providers({ children }: { children: React.ReactNode }) {
           dictionary,
         }}
       >
-        {children}
+        <SessionTrackerProvider>
+          {children}
+        </SessionTrackerProvider>
       </AppContext.Provider>
       {process.env.NODE_ENV === 'development' && ReactQueryDevtools && (
         <ReactQueryDevtools initialIsOpen={false} />

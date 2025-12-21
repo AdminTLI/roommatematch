@@ -5,6 +5,7 @@ import { ErrorBoundaryWrapper } from '@/components/ErrorBoundaryWrapper'
 import { Providers } from '@/app/providers'
 import { ConditionalAnalytics } from '@/components/privacy/conditional-analytics'
 import { CookieConsentBanner } from '@/components/privacy/cookie-consent-banner'
+import { GlobalRealtimeCleanupHandler } from '@/components/realtime/global-cleanup-handler'
 import './globals.css'
 
 const inter = Inter({ subsets: ['latin'] })
@@ -43,6 +44,7 @@ export default function RootLayout({
         <Toaster position="top-right" richColors />
         <ConditionalAnalytics />
         <CookieConsentBanner />
+        <GlobalRealtimeCleanupHandler />
       </body>
     </html>
   )

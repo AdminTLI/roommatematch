@@ -206,6 +206,9 @@ export function ChatList({ user, onChatSelect, selectedChatId }: ChatListProps) 
           
           const profilesResponse = await fetchWithCSRF('/api/chat/profiles', {
             method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
             body: JSON.stringify({
               chatIds: chatIds
             }),
@@ -234,22 +237,52 @@ export function ChatList({ user, onChatSelect, selectedChatId }: ChatListProps) 
               console.warn(`[ChatList] Profiles data is not an array:`, profilesData)
             }
           } else {
-            const errorText = await profilesResponse.text()
+            // Try to read error text, but handle potential errors
+            let errorText = ''
+            try {
+              errorText = await profilesResponse.text()
+            } catch (textError) {
+              errorText = `Failed to read error response: ${textError instanceof Error ? textError.message : String(textError)}`
+            }
             console.warn(`[ChatList] Failed to fetch profiles batch:`, {
               status: profilesResponse.status,
               statusText: profilesResponse.statusText,
               error: errorText
             })
+            // Continue without profiles - chats should still be shown with fallback names
           }
         } catch (err) {
-          console.error('[ChatList] Failed to fetch profiles:', err)
+          // Handle network errors and other fetch failures gracefully
+          const errorMessage = err instanceof Error ? err.message : String(err)
+          console.error('[ChatList] Failed to fetch profiles:', {
+            error: errorMessage,
+            errorType: err instanceof Error ? err.constructor.name : typeof err,
+            chatCount: finalChatRooms.length
+          })
+          // Continue without profiles - chats should still be shown with fallback names
         }
       }
 
       // Fetch unread counts (GET request doesn't need CSRF)
-      const unreadResponse = await fetch('/api/chat/unread')
-      const unreadData = unreadResponse.ok ? await unreadResponse.json() : { chat_counts: [] }
-      const unreadMap = new Map(unreadData.chat_counts.map((c: any) => [c.chat_id, c.unread_count]))
+      let unreadMap = new Map<string, number>()
+      try {
+        const unreadResponse = await fetch('/api/chat/unread', {
+          credentials: 'include',
+        })
+        if (unreadResponse.ok) {
+          const unreadData = await unreadResponse.json()
+          unreadMap = new Map((unreadData.chat_counts || []).map((c: any) => [c.chat_id, c.unread_count]))
+        } else {
+          console.warn('[ChatList] Failed to fetch unread counts:', {
+            status: unreadResponse.status,
+            statusText: unreadResponse.statusText
+          })
+          // Continue with empty unread map
+        }
+      } catch (err) {
+        console.warn('[ChatList] Error fetching unread counts (non-fatal):', err)
+        // Continue with empty unread map - chats will show 0 unread
+      }
 
       // Transform database results to ChatRoom format
       // Use hasUserMessages flag to determine if recently matched
@@ -376,12 +409,19 @@ export function ChatList({ user, onChatSelect, selectedChatId }: ChatListProps) 
       return transformedChats
     } catch (error) {
       // Use console.error here as this is client-side code
-      console.error('[ChatList] Failed to load chats:', error)
-      console.error('[ChatList] Error details:', {
-        errorMessage: error instanceof Error ? error.message : String(error),
-        errorStack: error instanceof Error ? error.stack : undefined,
-        userId: user.id
+      const errorMessage = error instanceof Error ? error.message : String(error)
+      const errorName = error instanceof Error ? error.name : typeof error
+      const isNetworkError = error instanceof TypeError && errorMessage === 'Failed to fetch'
+      
+      console.error('[ChatList] Failed to load chats:', {
+        error: errorMessage,
+        errorName,
+        isNetworkError,
+        userId: user.id,
+        stack: error instanceof Error ? error.stack : undefined
       })
+      
+      // Return empty array to prevent UI crash - user can retry by refreshing
       return []
     }
   }, [user.id])

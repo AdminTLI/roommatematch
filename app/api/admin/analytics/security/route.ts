@@ -18,15 +18,16 @@ export async function GET(request: NextRequest) {
     const fourteenDaysAgo = new Date(Date.now() - 14 * 24 * 60 * 60 * 1000)
 
     // Get security events from analytics_metrics
+    // Sum metric_value for each event type per day
     const { data: securityEvents } = await admin
       .from('analytics_metrics')
-      .select('metric_name, metric_value, period_start, filter_criteria')
+      .select('metric_name, metric_value, period_start, period_end, filter_criteria')
       .eq('metric_category', 'safety_incidents')
       .like('metric_name', 'security_event_%')
       .gte('period_start', fourteenDaysAgo.toISOString())
       .order('period_start', { ascending: true })
 
-    // Group by date and event type
+    // Group by date and event type, summing metric_value
     const dailyEvents = new Map<string, {
       date: string
       failed_login: number
@@ -38,6 +39,7 @@ export async function GET(request: NextRequest) {
     }>()
 
     securityEvents?.forEach(event => {
+      // Use period_start date for grouping (events are logged hourly, so we group by day)
       const date = new Date(event.period_start).toISOString().split('T')[0]
       const existing = dailyEvents.get(date) || {
         date,
@@ -49,6 +51,7 @@ export async function GET(request: NextRequest) {
         total: 0
       }
 
+      // Extract event type from metric_name (format: security_event_<type>)
       const eventType = event.metric_name.replace('security_event_', '') as
         | 'failed_login'
         | 'suspicious_activity'
@@ -56,11 +59,22 @@ export async function GET(request: NextRequest) {
         | 'verification_failure'
         | 'rate_limit_exceeded'
 
-      if (eventType in existing) {
-        existing[eventType] += event.metric_value || 0
-        existing.total += event.metric_value || 0
+      // Sum metric_value (each event logs with metric_value = 1, so we sum all events per day)
+      const value = Number(event.metric_value) || 0
+      
+      if (eventType === 'failed_login') {
+        existing.failed_login += value
+      } else if (eventType === 'suspicious_activity') {
+        existing.suspicious_activity += value
+      } else if (eventType === 'rls_violation') {
+        existing.rls_violation += value
+      } else if (eventType === 'verification_failure') {
+        existing.verification_failure += value
+      } else if (eventType === 'rate_limit_exceeded') {
+        existing.rate_limit_exceeded += value
       }
-
+      
+      existing.total += value
       dailyEvents.set(date, existing)
     })
 
