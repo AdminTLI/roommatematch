@@ -59,8 +59,8 @@ export async function POST(request: NextRequest) {
 
     // Extract version information
     const deployment = body.deployment
-    const commitMessage = deployment.meta?.githubCommitMessage || ''
-    const commitSha = deployment.meta?.githubCommitSha || deployment.url?.split('/').pop() || ''
+    let commitMessage = deployment.meta?.githubCommitMessage || ''
+    let commitShaRaw = deployment.meta?.githubCommitSha || deployment.url?.split('/').pop() || ''
     const branch = deployment.meta?.githubCommitRef || 'main'
     
     // Try to extract version from commit message or use auto-increment
@@ -71,41 +71,123 @@ export async function POST(request: NextRequest) {
       version = await getNextVersion(supabase)
     }
 
+    // If no commit message came through the webhook meta, try fetching from Vercel API (optional)
+    if ((!commitMessage || commitMessage.length < 5) && process.env.VERCEL_TOKEN && deployment.id) {
+      try {
+        const details = await fetchDeploymentDetails(deployment.id)
+        if (details?.meta?.githubCommitMessage) {
+          commitMessage = details.meta.githubCommitMessage
+          commitShaRaw = details.meta.githubCommitSha || commitShaRaw
+        }
+      } catch (error) {
+        safeLogger.warn('[Vercel Webhook] Failed to fetch deployment details for commit message', { error })
+      }
+    }
+
     // Extract changes from commit message or use default
     const changes = extractChangesFromCommit(commitMessage, deployment)
     
     // Determine change type
     const changeType = determineChangeType(commitMessage, changes)
 
-    // Check if this version already exists
-    const { data: existing } = await supabase
+    // Get today's date
+    const releaseDate = new Date().toISOString().split('T')[0] // Today's date
+    
+    // Check if an update for today already exists (group by day)
+    const { data: existingToday } = await supabase
+      .from('updates')
+      .select('id, changes, version, change_type')
+      .eq('release_date', releaseDate)
+      .maybeSingle()
+
+    // Prepare changes array
+    const commitSha = typeof commitShaRaw === 'string' ? commitShaRaw : String(commitShaRaw || '')
+
+    const newChanges = changes.length > 0 ? changes : [
+      commitMessage && commitMessage.length > 5 ? commitMessage : `Deployment ${deployment.id && typeof deployment.id === 'string' ? deployment.id.substring(0, 8) : 'unknown'}`,
+      `Branch: ${branch}`,
+      `Commit: ${commitSha.substring(0, 7)}`
+    ]
+
+    if (existingToday) {
+      // Append changes to existing update for today
+      let existingChanges: string[] = []
+      if (Array.isArray(existingToday.changes)) {
+        existingChanges = existingToday.changes
+      } else if (typeof existingToday.changes === 'string') {
+        try {
+          const parsed = JSON.parse(existingToday.changes)
+          existingChanges = Array.isArray(parsed) ? parsed : []
+        } catch {
+          existingChanges = []
+        }
+      }
+      
+      // Merge changes, avoiding duplicates
+      const mergedChanges = [...existingChanges]
+      for (const change of newChanges) {
+        if (!mergedChanges.includes(change)) {
+          mergedChanges.push(change)
+        }
+      }
+
+      // Update the existing entry with merged changes
+      const { error: updateError } = await supabase
+        .from('updates')
+        .update({
+          changes: mergedChanges,
+          // Keep the most significant change type (major > minor > patch)
+          change_type: getMostSignificantChangeType(existingToday.change_type || 'patch', changeType)
+        })
+        .eq('id', existingToday.id)
+
+      if (updateError) {
+        safeLogger.error('[Vercel Webhook] Failed to update existing update', { 
+          error: updateError,
+          updateId: existingToday.id
+        })
+        return NextResponse.json(
+          { error: 'Failed to update existing update entry' },
+          { status: 500 }
+        )
+      }
+
+      safeLogger.info('[Vercel Webhook] Updated existing update for today', {
+        version: existingToday.version,
+        changeType,
+        totalChangesCount: mergedChanges.length
+      })
+
+      return NextResponse.json({
+        success: true,
+        version: existingToday.version,
+        changeType,
+        changesCount: mergedChanges.length,
+        action: 'updated'
+      }, { status: 200 })
+    }
+
+    // Check if this specific version already exists (different day)
+    const { data: existingVersion } = await supabase
       .from('updates')
       .select('id')
       .eq('version', version)
       .maybeSingle()
 
-    if (existing) {
-      safeLogger.info('[Vercel Webhook] Version already exists', { version })
-      return NextResponse.json({ 
-        message: 'Version already exists',
-        version 
-      }, { status: 200 })
+    if (existingVersion) {
+      safeLogger.info('[Vercel Webhook] Version already exists on different day', { version })
+      // Generate a new version for today
+      version = await getNextVersion(supabase)
     }
 
-    // Create update entry
-    const releaseDate = new Date().toISOString().split('T')[0] // Today's date
-    
+    // Create new update entry for today
     const { error: insertError } = await supabase
       .from('updates')
       .insert({
         version,
         release_date: releaseDate,
         change_type: changeType,
-        changes: changes.length > 0 ? changes : [
-          `Deployment ${deployment.id?.substring(0, 8) || 'unknown'}`,
-          `Branch: ${branch}`,
-          `Commit: ${commitSha.substring(0, 7)}`
-        ]
+        changes: newChanges
       })
 
     if (insertError) {
@@ -232,6 +314,46 @@ function determineChangeType(message: string, changes: string[]): 'major' | 'min
 
   // Default to patch
   return 'patch'
+}
+
+/**
+ * Get the most significant change type (major > minor > patch)
+ */
+function getMostSignificantChangeType(type1: string, type2: string): 'major' | 'minor' | 'patch' {
+  if (type1 === 'major' || type2 === 'major') return 'major'
+  if (type1 === 'minor' || type2 === 'minor') return 'minor'
+  return 'patch'
+}
+
+/**
+ * Fetch deployment details from Vercel API to recover commit message/sha when meta is missing.
+ * This is best-effort and only runs when VERCEL_TOKEN is present.
+ */
+async function fetchDeploymentDetails(deploymentId: string): Promise<any | null> {
+  if (!process.env.VERCEL_TOKEN) return null
+
+  try {
+    const teamId = process.env.VERCEL_TEAM_ID
+    const url = teamId
+      ? `https://api.vercel.com/v13/deployments/${deploymentId}?teamId=${teamId}`
+      : `https://api.vercel.com/v13/deployments/${deploymentId}`
+
+    const resp = await fetch(url, {
+      headers: { Authorization: `Bearer ${process.env.VERCEL_TOKEN}` }
+    })
+
+    if (!resp.ok) {
+      const text = await resp.text()
+      safeLogger.warn('[Vercel Webhook] Failed to fetch deployment details', { status: resp.status, text })
+      return null
+    }
+
+    const data = await resp.json()
+    return data
+  } catch (error) {
+    safeLogger.warn('[Vercel Webhook] Error fetching deployment details', { error })
+    return null
+  }
 }
 
 /**

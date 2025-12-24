@@ -1,6 +1,63 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient, createAdminClient } from '@/lib/supabase/server'
 import { safeLogger } from '@/lib/utils/logger'
+import { normalizeDateInput } from '@/lib/auth/age-verification'
+
+async function fetchPersonaInquiryDob(inquiryId: string): Promise<string | undefined> {
+  const apiKey = process.env.PERSONA_API_KEY
+  const apiUrl = process.env.PERSONA_API_URL || 'https://withpersona.com/api/v1'
+  if (!apiKey) return undefined
+
+  try {
+    const response = await fetch(`${apiUrl}/inquiries/${inquiryId}`, {
+      headers: {
+        'Authorization': `Bearer ${apiKey}`,
+        'Content-Type': 'application/json'
+      }
+    })
+
+    if (!response.ok) {
+      const body = await response.text()
+      safeLogger.warn('[Verification] Persona inquiry fetch failed', { inquiryId, status: response.status, body })
+      return undefined
+    }
+
+    const data = await response.json()
+    const candidate =
+      data?.data?.attributes?.birthdate ||
+      data?.data?.attributes?.dob ||
+      data?.data?.attributes?.['date-of-birth'] ||
+      data?.data?.attributes?.payload?.data?.attributes?.birthdate ||
+      data?.data?.attributes?.payload?.data?.attributes?.dob
+
+    if (typeof candidate === 'string' && candidate.trim()) return candidate
+  } catch (error) {
+    safeLogger.error('[Verification] Persona inquiry fetch error', { inquiryId, error })
+  }
+
+  return undefined
+}
+
+async function getExpectedDob(admin: ReturnType<typeof createAdminClient>, userId: string) {
+  const { data: profile } = await admin
+    .from('profiles')
+    .select('date_of_birth')
+    .eq('user_id', userId)
+    .maybeSingle()
+
+  let authDob: string | null = null
+  try {
+    const { data: authUser } = await admin.auth.admin.getUserById(userId)
+    authDob = (authUser?.user?.user_metadata as Record<string, any> | undefined)?.date_of_birth ?? null
+  } catch (error) {
+    safeLogger.warn('[Verification] Unable to read auth metadata for DOB (client complete)', { userId, error })
+  }
+
+  return {
+    fromProfile: profile?.date_of_birth ?? null,
+    fromAuth: authDob
+  }
+}
 
 /**
  * Handle Persona Embedded Flow completion
@@ -43,6 +100,16 @@ export async function POST(request: NextRequest) {
     })
 
     const admin = createAdminClient()
+    const expected = await getExpectedDob(admin, user.id)
+    const expectedDob = expected.fromProfile || expected.fromAuth || null
+    const personaDob = await fetchPersonaInquiryDob(inquiryId)
+
+    const normalizedExpectedDob = normalizeDateInput(expectedDob)
+    const normalizedPersonaDob = normalizeDateInput(personaDob)
+    const dobMismatch =
+      normalizedExpectedDob &&
+      normalizedPersonaDob &&
+      normalizedExpectedDob !== normalizedPersonaDob
 
     // Map Persona status to our status
     let verificationStatus: 'pending' | 'approved' | 'rejected' | 'expired' = 'pending'
@@ -70,11 +137,14 @@ export async function POST(request: NextRequest) {
         .from('verifications')
         .update({
           provider_session_id: inquiryId,
-          status: verificationStatus,
+          status: dobMismatch ? 'rejected' : verificationStatus,
           updated_at: new Date().toISOString(),
           provider_data: {
             inquiry_id: inquiryId,
-            persona_status: personaStatus
+            persona_status: personaStatus,
+            persona_birthdate: normalizedPersonaDob || personaDob || null,
+            expected_birthdate: normalizedExpectedDob || expectedDob || null,
+            dob_match: dobMismatch ? false : true
           }
         })
         .eq('id', existingVerification.id)
@@ -94,10 +164,13 @@ export async function POST(request: NextRequest) {
           user_id: user.id,
           provider: 'persona',
           provider_session_id: inquiryId,
-          status: verificationStatus,
+          status: dobMismatch ? 'rejected' : verificationStatus,
           provider_data: {
             inquiry_id: inquiryId,
-            persona_status: personaStatus
+            persona_status: personaStatus,
+            persona_birthdate: normalizedPersonaDob || personaDob || null,
+            expected_birthdate: normalizedExpectedDob || expectedDob || null,
+            dob_match: dobMismatch ? false : true
           }
         })
 
@@ -111,7 +184,13 @@ export async function POST(request: NextRequest) {
     }
 
     // Update profile verification status if approved
-    if (verificationStatus === 'approved') {
+    if (dobMismatch) {
+      // Explicitly fail verification and profile if DOB does not match
+      await admin
+        .from('profiles')
+        .update({ verification_status: 'failed', updated_at: new Date().toISOString() })
+        .eq('user_id', user.id)
+    } else if (verificationStatus === 'approved') {
       // Check if profile exists
       const { data: existingProfile } = await admin
         .from('profiles')
@@ -148,12 +227,16 @@ export async function POST(request: NextRequest) {
     safeLogger.info('[Verification] Persona complete - success', {
       userId: user.id,
       inquiryId,
-      verificationStatus
+      verificationStatus: dobMismatch ? 'rejected' : verificationStatus,
+      dobMismatch,
+      personaDob: normalizedPersonaDob,
+      expectedDob: normalizedExpectedDob
     })
 
     return NextResponse.json({
       success: true,
-      status: verificationStatus
+      status: dobMismatch ? 'rejected' : verificationStatus,
+      dobMismatch
     })
   } catch (error) {
     safeLogger.error('[Verification] Persona complete error', error)

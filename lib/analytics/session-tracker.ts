@@ -147,12 +147,41 @@ export async function trackUserJourneyEvent(
     })
 
     if (!response.ok) {
-      const errorData = await response.json().catch(() => ({}))
-      safeLogger.error('Failed to track user journey event', { 
-        error: errorData.error || 'Unknown error',
+      let errorData: any = {}
+      let rawResponseText = ''
+      try {
+        rawResponseText = await response.text()
+        if (rawResponseText) {
+          errorData = JSON.parse(rawResponseText)
+        }
+      } catch (parseError) {
+        // If JSON parsing fails, use the raw text as error message
+        errorData = { 
+          error: 'Failed to parse error response', 
+          rawResponse: rawResponseText || 'No response body',
+          parseError: parseError instanceof Error ? parseError.message : String(parseError)
+        }
+      }
+      
+      // Log full error details - stringify to ensure all data is visible
+      const errorSummary = {
+        error: errorData.error || errorData.details || errorData.message || 'Unknown error',
+        details: errorData.details,
+        code: errorData.code,
+        hint: errorData.hint,
+        message: errorData.message,
         status: response.status,
-        eventName 
-      })
+        statusText: response.statusText,
+        eventName,
+        pageUrl: page
+      }
+      
+      // Log the full error data as a string so it's always visible
+      console.error('[Track Event Client] Full error response:', JSON.stringify(errorData, null, 2))
+      console.error('[Track Event Client] Error summary:', errorSummary)
+      console.error('[Track Event Client] Raw response text:', rawResponseText)
+      
+      safeLogger.error('Failed to track user journey event', errorSummary)
     } else {
       // Update session start time in localStorage
       localStorage.setItem(SESSION_START_KEY, new Date().toISOString())

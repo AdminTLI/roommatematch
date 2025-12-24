@@ -514,21 +514,30 @@ CREATE TRIGGER handle_user_deletion_trigger
 
 -- Function to auto-create user profile after auth user creation
 CREATE OR REPLACE FUNCTION public.handle_new_user()
-RETURNS TRIGGER AS $$
+RETURNS TRIGGER 
+LANGUAGE plpgsql 
+SECURITY DEFINER 
+SET search_path = ''
+AS $$
 BEGIN
   INSERT INTO public.users (id, email, is_active, created_at, updated_at)
   VALUES (
     NEW.id,
-    NEW.email,
+    COALESCE(NEW.email, ''),
     true,
-    CURRENT_TIMESTAMP,
-    CURRENT_TIMESTAMP
+    public.now(),
+    public.now()
   )
   ON CONFLICT (id) DO NOTHING;
   
   RETURN NEW;
+EXCEPTION
+  WHEN OTHERS THEN
+    -- Log the error but don't fail the auth user creation
+    RAISE WARNING 'Error in handle_new_user trigger: % (SQLSTATE: %)', SQLERRM, SQLSTATE;
+    RETURN NEW;
 END;
-$$ LANGUAGE plpgsql SECURITY DEFINER SET search_path = '';
+$$;
 
 -- Apply trigger to auth.users
 DROP TRIGGER IF EXISTS on_auth_user_created ON auth.users;

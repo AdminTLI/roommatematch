@@ -74,6 +74,7 @@ function parseWebhookPayload(provider: KYCProvider, body: any): {
   sessionId: string
   status: 'approved' | 'rejected' | 'pending' | 'expired'
   reason?: string
+  dob?: string
 } | null {
   try {
     switch (provider) {
@@ -115,7 +116,8 @@ function parseWebhookPayload(provider: KYCProvider, body: any): {
         return {
           sessionId: data.id,
           status: statusMap[data.attributes?.status] || 'pending',
-          reason: data.attributes?.reason
+          reason: data.attributes?.reason,
+          dob: extractPersonaDob(body)
         }
       }
 
@@ -145,6 +147,99 @@ function parseWebhookPayload(provider: KYCProvider, body: any): {
   } catch (error) {
     safeLogger.error('[Verification] Payload parsing error', error)
     return null
+  }
+}
+
+function normalizeDateString(value?: string | null): string | null {
+  if (!value) return null
+  const parsed = new Date(value)
+  if (Number.isNaN(parsed.getTime())) return null
+  const normalized = new Date(Date.UTC(parsed.getFullYear(), parsed.getMonth(), parsed.getDate()))
+  return normalized.toISOString().split('T')[0]
+}
+
+function extractPersonaDob(payload: any): string | undefined {
+  const candidates: Array<string | undefined> = [
+    payload?.data?.attributes?.birthdate,
+    payload?.data?.attributes?.birth_date,
+    payload?.data?.attributes?.dob,
+    payload?.data?.attributes?.['date-of-birth'],
+    payload?.data?.attributes?.['date_of_birth'],
+    payload?.data?.attributes?.payload?.data?.attributes?.birthdate,
+    payload?.data?.attributes?.payload?.data?.attributes?.dob,
+    payload?.data?.attributes?.payload?.data?.attributes?.['date-of-birth'],
+  ]
+
+  for (const value of candidates) {
+    if (typeof value === 'string' && value.trim()) {
+      return value
+    }
+  }
+
+  if (Array.isArray(payload?.included)) {
+    for (const item of payload.included) {
+      const possibleDob =
+        item?.attributes?.birthdate ||
+        item?.attributes?.dob ||
+        item?.attributes?.['date-of-birth'] ||
+        item?.attributes?.['date_of_birth']
+      if (typeof possibleDob === 'string' && possibleDob.trim()) {
+        return possibleDob
+      }
+    }
+  }
+
+  return undefined
+}
+
+async function fetchPersonaInquiryDob(sessionId: string): Promise<string | undefined> {
+  const apiKey = process.env.PERSONA_API_KEY
+  const apiUrl = process.env.PERSONA_API_URL || 'https://withpersona.com/api/v1'
+  if (!apiKey) {
+    safeLogger.warn('[Verification] Persona API key missing; cannot fetch DOB from inquiry')
+    return undefined
+  }
+
+  try {
+    const response = await fetch(`${apiUrl}/inquiries/${sessionId}`, {
+      headers: {
+        'Authorization': `Bearer ${apiKey}`,
+        'Content-Type': 'application/json'
+      }
+    })
+
+    if (!response.ok) {
+      const body = await response.text()
+      safeLogger.warn('[Verification] Failed to fetch Persona inquiry', { sessionId, status: response.status, body })
+      return undefined
+    }
+
+    const data = await response.json()
+    return extractPersonaDob(data)
+  } catch (error) {
+    safeLogger.error('[Verification] Persona inquiry fetch error', { sessionId, error })
+    return undefined
+  }
+}
+
+async function getExpectedDob(admin: ReturnType<typeof createAdminClient>, userId: string) {
+  const { data: profile } = await admin
+    .from('profiles')
+    .select('date_of_birth')
+    .eq('user_id', userId)
+    .maybeSingle()
+
+  let authDob: string | null = null
+  try {
+    const { data: authUser } = await admin.auth.admin.getUserById(userId)
+    authDob = (authUser?.user?.user_metadata as Record<string, any> | undefined)?.date_of_birth ?? null
+  } catch (error) {
+    safeLogger.warn('[Verification] Unable to read auth metadata for DOB', { userId, error })
+  }
+
+  return {
+    fromProfile: profile?.date_of_birth ?? null,
+    fromAuth: authDob
   }
 }
 
@@ -239,7 +334,7 @@ export async function POST(request: NextRequest) {
     // Find verification record
     const { data: verification, error: fetchError } = await admin
       .from('verifications')
-      .select('id, user_id, status')
+      .select('id, user_id, status, provider_data')
       .eq('provider_session_id', parsed.sessionId)
       .eq('provider', provider)
       .maybeSingle()
@@ -264,11 +359,33 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Verification not found' }, { status: 404 })
     }
 
+    let personaDob: string | undefined
+    let expectedDob: string | null = null
+
+    if (provider === 'persona') {
+      const expected = await getExpectedDob(admin, verification.user_id)
+      expectedDob = expected.fromProfile || expected.fromAuth || null
+
+      personaDob = parsed.dob || await fetchPersonaInquiryDob(parsed.sessionId)
+    }
+
+    const normalizedExpectedDob = normalizeDateString(expectedDob)
+    const normalizedPersonaDob = normalizeDateString(personaDob)
+    const dobMismatch = provider === 'persona' &&
+      normalizedExpectedDob &&
+      normalizedPersonaDob &&
+      normalizedExpectedDob !== normalizedPersonaDob
+
+    const finalStatus: 'approved' | 'rejected' | 'pending' | 'expired' = dobMismatch ? 'rejected' : parsed.status
+    const finalReason = dobMismatch
+      ? 'Date of birth does not match Persona verification.'
+      : parsed.reason
+
     // Prevent duplicate processing
-    if (verification.status === parsed.status) {
+    if (verification.status === finalStatus) {
       safeLogger.debug('[Verification] Status already set', {
         sessionId: parsed.sessionId,
-        status: parsed.status
+        status: finalStatus
       })
       
       await admin
@@ -283,11 +400,19 @@ export async function POST(request: NextRequest) {
     }
 
     // Update verification status
+    const providerDataUpdate = {
+      ...(verification.provider_data || {}),
+      persona_birthdate: normalizedPersonaDob || personaDob || null,
+      expected_birthdate: normalizedExpectedDob || expectedDob || null,
+      dob_match: dobMismatch ? false : true
+    }
+
     const { error: updateError } = await admin
       .from('verifications')
       .update({
-        status: parsed.status,
-        review_reason: parsed.reason,
+        status: finalStatus,
+        review_reason: finalReason,
+        provider_data: providerDataUpdate,
         updated_at: new Date().toISOString()
       })
       .eq('id', verification.id)
@@ -318,12 +443,27 @@ export async function POST(request: NextRequest) {
       .order('created_at', { ascending: false })
       .limit(1)
 
-    // Profile status will be updated via trigger (see migration)
+    if (provider === 'persona') {
+      if (dobMismatch) {
+        await admin
+          .from('profiles')
+          .update({ verification_status: 'failed', updated_at: new Date().toISOString() })
+          .eq('user_id', verification.user_id)
+      } else if (finalStatus === 'approved') {
+        await admin
+          .from('profiles')
+          .update({ verification_status: 'verified', updated_at: new Date().toISOString() })
+          .eq('user_id', verification.user_id)
+      }
+    }
 
     safeLogger.info('[Verification] Webhook processed successfully', {
       userId: verification.user_id,
       sessionId: parsed.sessionId,
-      status: parsed.status
+      status: finalStatus,
+      dobMismatch,
+      personaDob: normalizedPersonaDob,
+      expectedDob: normalizedExpectedDob
     })
 
     return NextResponse.json({ ok: true })

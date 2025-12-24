@@ -9,6 +9,7 @@ export interface OnboardingSubmissionData {
   university_id: string
   first_name: string
   degree_level: string
+  date_of_birth?: string
   program_id?: string | null | undefined
   program?: string
   campus?: string
@@ -36,6 +37,7 @@ export function extractSubmissionDataFromIntro(
   let undecided_program = false
   let expected_graduation_year: number | undefined
   let graduation_month: number | null = null
+  const date_of_birth = (user.user_metadata as Record<string, any> | undefined)?.date_of_birth
 
   for (const answer of answers) {
     switch (answer.itemId) {
@@ -194,6 +196,7 @@ export function extractSubmissionDataFromIntro(
     user_id: user.id,
     university_id: finalUniversityId,
     first_name: firstName,
+    date_of_birth: date_of_birth || undefined,
     degree_level,
     program_id,
     program,
@@ -399,6 +402,7 @@ export async function upsertProfileAndAcademic(
     university_id: data.university_id,
     first_name: data.first_name,
     degree_level: data.degree_level,
+    date_of_birth: data.date_of_birth,
     program: truncatedProgramName,
     campus: data.campus,
     languages_count: (data.languages_daily || []).length,
@@ -415,6 +419,7 @@ export async function upsertProfileAndAcademic(
       program: truncatedProgramName, // Use program name, not UUID
       campus: data.campus,
       languages: data.languages_daily || [],
+      date_of_birth: data.date_of_birth ?? null,
       verification_status: verificationStatus,
       updated_at: new Date().toISOString()
     }, {

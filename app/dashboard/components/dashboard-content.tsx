@@ -2,7 +2,7 @@
 
 import { motion } from 'framer-motion'
 import { useRouter } from 'next/navigation'
-import { useState, useEffect, useCallback, useRef } from 'react'
+import { useState, useEffect, useCallback, useRef, useMemo } from 'react'
 import { useQuery, useQueries } from '@tanstack/react-query'
 import { createPortal } from 'react-dom'
 import { 
@@ -516,33 +516,43 @@ export function DashboardContent({ hasCompletedQuestionnaire = false, hasPartial
     return monitorQuery('fetchAvgCompatibility', async () => {
       try {
       logger.log('loadAvgCompatibility: Fetching matches for user', user.id)
-      // Fetch ALL active match suggestions (not just chat members)
+      // Fetch active match suggestions (matching server-side logic: limit 20, then deduplicate)
       const now = new Date().toISOString()
       const { data: suggestions, error } = await supabase
         .from('match_suggestions')
-        .select('fit_score, member_ids')
+        .select('fit_score, member_ids, created_at')
         .eq('kind', 'pair')
         .contains('member_ids', [user.id])
         .neq('status', 'rejected')
         .gte('expires_at', now) // Only non-expired suggestions
+        .order('created_at', { ascending: false }) // Most recent first (matching server)
+        .limit(20) // Match server-side limit to ensure consistent calculation
 
       if (error) {
         logger.error('Error fetching match suggestions for avg:', error)
       }
 
-      // Get unique matched users from suggestions
-      const uniqueUserIds = new Set<string>()
+      // Deduplicate by keeping most recent suggestion for each user (matching server logic)
+      const matchMap = new Map<string, string>() // Map userId -> created_at
       ;(suggestions || []).forEach((s: any) => {
         const memberIds = s.member_ids as string[]
         if (!memberIds || memberIds.length !== 2) return
 
         const otherUserId = memberIds[0] === user.id ? memberIds[1] : memberIds[0]
-        uniqueUserIds.add(otherUserId)
+        
+        // Keep the most recent suggestion for each user (matching server logic)
+        const existing = matchMap.get(otherUserId)
+        if (!existing || new Date(s.created_at) > new Date(existing)) {
+          matchMap.set(otherUserId, s.created_at)
+        }
       })
+
+      // Get unique matched users from deduplicated map
+      const uniqueUserIds = Array.from(matchMap.keys())
 
       // Compute compatibility scores using the new algorithm for all matched users
       const compatibilityScores = await Promise.all(
-        Array.from(uniqueUserIds).map(async (otherUserId) => {
+        uniqueUserIds.map(async (otherUserId) => {
           try {
             const { data, error } = await supabase.rpc('compute_compatibility_score', {
               user_a_id: user.id,
@@ -593,9 +603,11 @@ export function DashboardContent({ hasCompletedQuestionnaire = false, hasPartial
   const { data: avgCompatibility = dashboardData.kpis.avgCompatibility } = useQuery({
     queryKey: queryKeys.matches.compatibility(user?.id),
     queryFn: fetchAvgCompatibility,
-    staleTime: 10_000, // 10 seconds for real-time data
+    staleTime: 5 * 60 * 1000, // 5 minutes - compatibility scores don't change frequently
     enabled: !!user?.id,
     initialData: dashboardData.kpis.avgCompatibility,
+    refetchOnMount: false, // Don't refetch immediately on mount since we have initialData
+    refetchOnWindowFocus: false, // Don't refetch on window focus to prevent visual jumps
   })
 
   // Fetch recent activity with React Query
@@ -775,6 +787,47 @@ export function DashboardContent({ hasCompletedQuestionnaire = false, hasPartial
     enabled: true, // Always enabled - updates are public to authenticated users
   })
 
+  // Group updates by day
+  const groupedUpdatesByDay = useMemo(() => {
+    const grouped = new Map<string, Update[]>()
+    
+    updates.forEach((update) => {
+      const dateKey = update.release_date // Use release_date as the key
+      if (!grouped.has(dateKey)) {
+        grouped.set(dateKey, [])
+      }
+      grouped.get(dateKey)!.push(update)
+    })
+    
+    // Convert to array and sort by date (newest first)
+    return Array.from(grouped.entries())
+      .map(([date, updates]) => ({
+        date,
+        updates: updates.sort((a, b) => {
+          // Sort by version or created_at if available
+          return b.version.localeCompare(a.version)
+        })
+      }))
+      .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
+  }, [updates])
+
+  // State for selected day tab
+  const [selectedDay, setSelectedDay] = useState<string | null>(null)
+
+  // Set default selected day to the most recent day
+  useEffect(() => {
+    if (groupedUpdatesByDay.length > 0 && !selectedDay) {
+      setSelectedDay(groupedUpdatesByDay[0].date)
+    }
+  }, [groupedUpdatesByDay, selectedDay])
+
+  // Get updates for selected day
+  const selectedDayUpdates = useMemo(() => {
+    if (!selectedDay) return []
+    const dayGroup = groupedUpdatesByDay.find(g => g.date === selectedDay)
+    return dayGroup?.updates || []
+  }, [selectedDay, groupedUpdatesByDay])
+
   // Debug: Log updates data
   useEffect(() => {
     if (updates.length > 0) {
@@ -824,6 +877,14 @@ export function DashboardContent({ hasCompletedQuestionnaire = false, hasPartial
     event: '*',
     queryKeys: queryKeys.matches.compatibility(user?.id),
     enabled: !!user?.id,
+  })
+
+  // Set up real-time invalidation for updates
+  useRealtimeInvalidation({
+    table: 'updates',
+    event: '*',
+    queryKeys: [...queryKeys.updates],
+    enabled: true, // Always enabled - updates are public
   })
 
 
@@ -1307,51 +1368,87 @@ export function DashboardContent({ hasCompletedQuestionnaire = false, hasPartial
               <div className="flex items-center justify-center py-8 flex-1">
                 <Loader2 className="w-6 h-6 animate-spin text-text-muted" />
               </div>
-            ) : updates.length > 0 ? (
+            ) : groupedUpdatesByDay.length > 0 ? (
               <div className="flex flex-col flex-1 min-h-0 overflow-hidden">
-                <div className="space-y-2 sm:space-y-3 overflow-y-auto flex-1 pr-2" style={{ scrollbarWidth: 'thin' }}>
-                  {updates.map((update) => {
-                    const getChangeTypeColor = () => {
-                      switch (update.change_type) {
-                        case 'major':
-                          return 'text-semantic-danger border-semantic-danger/30 bg-semantic-danger/10'
-                        case 'minor':
-                          return 'text-semantic-accent border-semantic-accent/30 bg-semantic-accent-soft'
-                        case 'patch':
-                        default:
-                          return 'text-text-secondary border-border-subtle bg-bg-surface-alt'
+                {/* Day Tabs */}
+                {groupedUpdatesByDay.length > 1 && (
+                  <div className="flex gap-1 mb-3 overflow-x-auto pb-2 flex-shrink-0" style={{ scrollbarWidth: 'thin' }}>
+                    {groupedUpdatesByDay.map(({ date }) => {
+                      const formatDate = (dateString: string) => {
+                        const date = new Date(dateString)
+                        const today = new Date()
+                        const yesterday = new Date(today)
+                        yesterday.setDate(yesterday.getDate() - 1)
+                        
+                        const dateObj = new Date(dateString)
+                        const isToday = dateObj.toDateString() === today.toDateString()
+                        const isYesterday = dateObj.toDateString() === yesterday.toDateString()
+                        
+                        if (isToday) return 'Today'
+                        if (isYesterday) return 'Yesterday'
+                        
+                        return date.toLocaleDateString('en-US', { 
+                          month: 'short', 
+                          day: 'numeric',
+                          year: dateObj.getFullYear() !== today.getFullYear() ? 'numeric' : undefined
+                        })
                       }
-                    }
+                      
+                      const isSelected = selectedDay === date
+                      
+                      return (
+                        <button
+                          key={date}
+                          onClick={() => setSelectedDay(date)}
+                          className={`px-3 py-1.5 rounded-lg text-xs font-medium whitespace-nowrap transition-colors flex-shrink-0 ${
+                            isSelected
+                              ? 'bg-bg-surface-alt text-text-primary border border-border-subtle'
+                              : 'bg-bg-surface text-text-secondary hover:bg-bg-surface-alt border border-transparent'
+                          }`}
+                        >
+                          {formatDate(date)}
+                        </button>
+                      )
+                    })}
+                  </div>
+                )}
+                
+                {/* Updates for Selected Day */}
+                <div className="space-y-2 sm:space-y-3 overflow-y-auto flex-1 pr-2" style={{ scrollbarWidth: 'thin' }}>
+                  {selectedDayUpdates.length > 0 ? (
+                    selectedDayUpdates.map((update) => {
+                      // Always use grey color regardless of change_type - consistent styling
+                      const updateColor = 'text-text-secondary border-border-subtle bg-bg-surface-alt'
 
-                    const formatDate = (dateString: string) => {
-                      const date = new Date(dateString)
-                      return date.toLocaleDateString('en-US', { 
-                        year: 'numeric', 
-                        month: 'short', 
-                        day: 'numeric' 
-                      })
-                    }
-
-                    return (
-                      <div
-                        key={update.id}
-                        className={`p-2 sm:p-3 rounded-lg border flex-shrink-0 ${getChangeTypeColor()}`}
-                      >
-                        <div className="flex items-center justify-between mb-1 gap-2">
-                          <h4 className="font-bold text-xs sm:text-sm truncate">{update.version}</h4>
-                          <span className="text-xs opacity-70 flex-shrink-0 whitespace-nowrap">{formatDate(update.release_date)}</span>
+                      return (
+                        <div
+                          key={update.id}
+                          className={`p-2 sm:p-3 rounded-lg border flex-shrink-0 ${updateColor}`}
+                        >
+                          <div className="flex items-center justify-between mb-1 gap-2">
+                            <h4 className="font-bold text-xs sm:text-sm truncate">{update.version}</h4>
+                            <span className="text-xs text-text-muted flex-shrink-0 whitespace-nowrap">{formatTimeAgo(update.release_date + 'T00:00:00')}</span>
+                          </div>
+                          <ul className="mt-1.5 sm:mt-2 space-y-0.5 sm:space-y-1 text-xs text-text-secondary">
+                            {update.changes.map((change, index) => (
+                              <li key={index} className="flex items-start gap-1.5 sm:gap-2">
+                                <span className="mt-0.5 flex-shrink-0 text-text-secondary">•</span>
+                                <span className="flex-1 break-words text-text-secondary">{change}</span>
+                              </li>
+                            ))}
+                          </ul>
                         </div>
-                        <ul className="mt-1.5 sm:mt-2 space-y-0.5 sm:space-y-1 text-xs">
-                          {update.changes.map((change, index) => (
-                            <li key={index} className="flex items-start gap-1.5 sm:gap-2">
-                              <span className="mt-0.5 flex-shrink-0">•</span>
-                              <span className="flex-1 break-words">{change}</span>
-                            </li>
-                          ))}
-                        </ul>
-                      </div>
-                    )
-                  })}
+                      )
+                    })
+                  ) : (
+                    <div className="flex items-center justify-center py-8">
+                      <EmptyState
+                        icon={Sparkles}
+                        title="No updates for this day"
+                        description="Select another day to view updates"
+                      />
+                    </div>
+                  )}
                 </div>
               </div>
             ) : (

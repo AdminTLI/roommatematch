@@ -5,6 +5,8 @@ import { NextRequest, NextResponse } from 'next/server'
 export async function GET(request: NextRequest) {
   const requestUrl = new URL(request.url)
   const code = requestUrl.searchParams.get('code')
+  const type = requestUrl.searchParams.get('type')
+  const redirectTo = requestUrl.searchParams.get('redirect')
 
   if (code) {
     const cookieStore = await cookies()
@@ -30,9 +32,21 @@ export async function GET(request: NextRequest) {
         },
       }
     )
-    await supabase.auth.exchangeCodeForSession(code)
+    
+    const { error } = await supabase.auth.exchangeCodeForSession(code)
+    
+    if (error) {
+      console.error('Error exchanging code for session:', error)
+      // Redirect to sign-in with error
+      return NextResponse.redirect(`${requestUrl.origin}/auth/sign-in?error=${encodeURIComponent(error.message)}`)
+    }
+
+    // Handle password reset flow
+    if (type === 'recovery' || redirectTo?.includes('reset-password')) {
+      return NextResponse.redirect(redirectTo || `${requestUrl.origin}/auth/reset-password/confirm`)
+    }
   }
 
-  // URL to redirect to after sign up process completes
+  // Default redirect after sign up process completes
   return NextResponse.redirect(`${requestUrl.origin}/dashboard`)
 }

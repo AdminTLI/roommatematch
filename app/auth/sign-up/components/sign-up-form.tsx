@@ -6,6 +6,15 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Alert, AlertDescription } from '@/components/ui/alert'
+import { Checkbox } from '@/components/ui/checkbox'
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle
+} from '@/components/ui/dialog'
 import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
 import { Loader2, Mail, Lock, Eye, EyeOff, CheckCircle, Calendar } from 'lucide-react'
@@ -16,12 +25,15 @@ export function SignUpForm() {
   const [password, setPassword] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
   const [dateOfBirth, setDateOfBirth] = useState('')
+  const [acceptTerms, setAcceptTerms] = useState(false)
+  const [confirmAge, setConfirmAge] = useState(false)
   const [showPassword, setShowPassword] = useState(false)
   const [showConfirmPassword, setShowConfirmPassword] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState('')
   const [success, setSuccess] = useState('')
   const [ageError, setAgeError] = useState('')
+  const [showUnderageModal, setShowUnderageModal] = useState(false)
 
   const router = useRouter()
   const supabase = createClient()
@@ -50,6 +62,18 @@ export function SignUpForm() {
     setSuccess('')
     setAgeError('')
 
+    if (!email.trim()) {
+      setError('Email is required')
+      setIsLoading(false)
+      return
+    }
+
+    if (!password) {
+      setError('Password is required')
+      setIsLoading(false)
+      return
+    }
+
     // Validate age
     if (!dateOfBirth) {
       setAgeError('Date of birth is required')
@@ -60,6 +84,21 @@ export function SignUpForm() {
     const ageValidation = validateDateOfBirth(dateOfBirth)
     if (!ageValidation.valid) {
       setAgeError(ageValidation.error || getAgeVerificationError(ageValidation.age))
+      if (ageValidation.reason === 'underage') {
+        setShowUnderageModal(true)
+      }
+      setIsLoading(false)
+      return
+    }
+
+    if (!confirmAge) {
+      setError('Please confirm you are at least 17 years old.')
+      setIsLoading(false)
+      return
+    }
+
+    if (!acceptTerms) {
+      setError('You must agree to the terms and conditions.')
       setIsLoading(false)
       return
     }
@@ -98,6 +137,8 @@ export function SignUpForm() {
         setPassword('')
         setConfirmPassword('')
         setDateOfBirth('')
+        setAcceptTerms(false)
+        setConfirmAge(false)
       }
     } catch (err) {
       setError('An unexpected error occurred')
@@ -257,12 +298,71 @@ export function SignUpForm() {
                 You must be at least 17 years old to use this platform
               </p>
             </div>
+
+            <div className="space-y-3 rounded-lg border border-gray-100 p-4">
+              <div className="flex items-start space-x-3">
+                <Checkbox
+                  id="confirmAge"
+                  checked={confirmAge}
+                  onCheckedChange={(checked) => {
+                    setConfirmAge(!!checked)
+                    setError('')
+                  }}
+                  aria-describedby={!confirmAge && error ? 'age-confirm-error' : undefined}
+                />
+                <div className="space-y-1">
+                  <Label htmlFor="confirmAge" className="text-sm font-medium">
+                    I confirm that I am at least 17 years old.
+                  </Label>
+                  {!confirmAge && error?.toLowerCase().includes('17') && (
+                    <p id="age-confirm-error" className="text-xs text-red-600">
+                      Please confirm you meet the minimum age requirement.
+                    </p>
+                  )}
+                </div>
+              </div>
+
+              <div className="flex items-start space-x-3">
+                <Checkbox
+                  id="acceptTerms"
+                  checked={acceptTerms}
+                  onCheckedChange={(checked) => {
+                    setAcceptTerms(!!checked)
+                    setError('')
+                  }}
+                  aria-describedby={!acceptTerms && error ? 'terms-error' : undefined}
+                />
+                <div className="space-y-1">
+                  <Label htmlFor="acceptTerms" className="text-sm font-medium">
+                    I agree to the Terms of Service and Privacy Policy.
+                  </Label>
+                  <p className="text-xs text-gray-500">
+                    Please review our <a href="/terms" className="text-primary hover:text-primary/80 transition-colors">Terms of Service</a> and{' '}
+                    <a href="/privacy" className="text-primary hover:text-primary/80 transition-colors">Privacy Policy</a>.
+                  </p>
+                  {!acceptTerms && error?.toLowerCase().includes('terms') && (
+                    <p id="terms-error" className="text-xs text-red-600">
+                      You must accept the terms and conditions.
+                    </p>
+                  )}
+                </div>
+              </div>
+            </div>
           </div>
 
           <Button 
             type="submit" 
             className="w-full" 
-            disabled={isLoading || !email || !passwordValidation.isValid || password !== confirmPassword || !dateOfBirth || !!ageError}
+            disabled={
+              isLoading ||
+              !email ||
+              !passwordValidation.isValid ||
+              password !== confirmPassword ||
+              !dateOfBirth ||
+              !!ageError ||
+              !confirmAge ||
+              !acceptTerms
+            }
           >
             {isLoading ? (
               <>
@@ -275,19 +375,28 @@ export function SignUpForm() {
           </Button>
         </form>
 
-        <div className="mt-6 text-center">
-          <p className="text-xs text-gray-500">
-            By creating an account, you agree to our{' '}
-            <a href="/terms" className="text-primary hover:text-primary/80 transition-colors">
-              Terms of Service
-            </a>{' '}
-            and{' '}
-            <a href="/privacy" className="text-primary hover:text-primary/80 transition-colors">
-              Privacy Policy
-            </a>
-          </p>
-        </div>
       </CardContent>
+
+      <Dialog open={showUnderageModal} onOpenChange={(open) => {
+        setShowUnderageModal(open)
+        if (!open) {
+          router.push('/')
+        }
+      }}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Minimum age requirement</DialogTitle>
+            <DialogDescription>
+              You must be at least 17 years old to create an account. Please come back when you meet the minimum age requirement.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button type="button" onClick={() => setShowUnderageModal(false)}>
+              Go to homepage
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </Card>
   )
 }

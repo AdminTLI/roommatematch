@@ -26,14 +26,33 @@ export function parseUTMParams(searchParams: URLSearchParams): UTMParams {
 
 /**
  * Parse UTM parameters from a URL string
+ * Handles both absolute and relative URLs
  */
 export function parseUTMParamsFromURL(url: string): UTMParams {
+  if (!url || typeof url !== 'string') {
+    return {}
+  }
+  
   try {
-    const urlObj = new URL(url)
+    // Try to parse as absolute URL first
+    let urlObj: URL
+    try {
+      urlObj = new URL(url)
+    } catch {
+      // If that fails, try to construct absolute URL (for relative URLs)
+      if (typeof window !== 'undefined') {
+        urlObj = new URL(url, window.location.origin)
+      } else {
+        // Server-side: can't construct absolute URL, extract query string manually
+        const queryString = url.includes('?') ? url.split('?')[1].split('#')[0] : ''
+        const searchParams = new URLSearchParams(queryString)
+        return parseUTMParams(searchParams)
+      }
+    }
     return parseUTMParams(urlObj.searchParams)
   } catch {
-    // If URL parsing fails, try to extract query string manually
-    const queryString = url.includes('?') ? url.split('?')[1] : ''
+    // Fallback: extract query string manually
+    const queryString = url.includes('?') ? url.split('?')[1].split('#')[0] : ''
     const searchParams = new URLSearchParams(queryString)
     return parseUTMParams(searchParams)
   }
@@ -47,22 +66,29 @@ export function classifyTrafficSource(
   utmSource?: string | null,
   utmMedium?: string | null
 ): TrafficSource {
+  // Ensure UTM parameters are strings if they exist
+  const utmSourceStr = utmSource && typeof utmSource === 'string' ? utmSource : null
+  const utmMediumStr = utmMedium && typeof utmMedium === 'string' ? utmMedium : null
+  
   // If UTM source exists, it's paid traffic
-  if (utmSource || utmMedium) {
+  if (utmSourceStr || utmMediumStr) {
     // Check if it's email
-    if (utmMedium?.toLowerCase().includes('email') || utmSource?.toLowerCase().includes('email')) {
+    if (utmMediumStr?.toLowerCase().includes('email') || utmSourceStr?.toLowerCase().includes('email')) {
       return 'email'
     }
     // Otherwise it's paid
     return 'paid'
   }
 
+  // Ensure referrer is a string
+  const referrerStr = referrer && typeof referrer === 'string' ? referrer : null
+  
   // No referrer means direct traffic
-  if (!referrer || referrer.trim() === '') {
+  if (!referrerStr || referrerStr.trim() === '') {
     return 'direct'
   }
 
-  const referrerLower = referrer.toLowerCase()
+  const referrerLower = referrerStr.toLowerCase()
 
   // Check for search engines (organic)
   const searchEngines = [

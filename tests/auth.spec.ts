@@ -70,7 +70,9 @@ test.describe('Sign Up', () => {
     await expect(page.getByLabel('Email address')).toBeVisible()
     await expect(page.getByLabel('Password')).toBeVisible()
     await expect(page.getByLabel('Confirm password')).toBeVisible()
-    await expect(page.getByRole('checkbox')).toBeVisible()
+    await expect(page.getByLabel('Date of Birth')).toBeVisible()
+    await expect(page.getByText('I confirm that I am at least 17 years old.')).toBeVisible()
+    await expect(page.getByText('I agree to the Terms of Service and Privacy Policy.')).toBeVisible()
     await expect(page.getByRole('button', { name: 'Create Account' })).toBeVisible()
   })
 
@@ -79,14 +81,17 @@ test.describe('Sign Up', () => {
     
     await expect(page.getByText('Email is required')).toBeVisible()
     await expect(page.getByText('Password is required')).toBeVisible()
-    await expect(page.getByText('You must agree to the terms and conditions')).toBeVisible()
+    await expect(page.getByText('Date of birth is required')).toBeVisible()
+    await expect(page.getByText('Please confirm you are at least 17 years old.')).toBeVisible()
   })
 
   test('should validate password confirmation', async ({ page }) => {
     await page.getByLabel('Email address').fill('test@student.uva.nl')
     await page.getByLabel('Password').fill('password123')
     await page.getByLabel('Confirm password').fill('differentpassword')
-    await page.getByRole('checkbox').check()
+    await page.getByLabel('Date of Birth').fill('2000-01-01')
+    await page.getByLabel('I confirm that I am at least 17 years old.').check()
+    await page.getByLabel('I agree to the Terms of Service and Privacy Policy.').check()
     await page.getByRole('button', { name: 'Create Account' }).click()
 
     await expect(page.getByText('Passwords do not match')).toBeVisible()
@@ -96,10 +101,25 @@ test.describe('Sign Up', () => {
     await page.getByLabel('Email address').fill('test@student.uva.nl')
     await page.getByLabel('Password').fill('123')
     await page.getByLabel('Confirm password').fill('123')
-    await page.getByRole('checkbox').check()
+    await page.getByLabel('Date of Birth').fill('2000-01-01')
+    await page.getByLabel('I confirm that I am at least 17 years old.').check()
+    await page.getByLabel('I agree to the Terms of Service and Privacy Policy.').check()
     await page.getByRole('button', { name: 'Create Account' }).click()
 
     await expect(page.getByText('Password must be at least 8 characters')).toBeVisible()
+  })
+
+  test('should block underage sign up and redirect notice', async ({ page }) => {
+    await page.getByLabel('Email address').fill('test@student.uva.nl')
+    await page.getByLabel('Password').fill('StrongPass123')
+    await page.getByLabel('Confirm password').fill('StrongPass123')
+    await page.getByLabel('Date of Birth').fill('2015-01-01')
+    await page.getByLabel('I confirm that I am at least 17 years old.').check()
+    await page.getByLabel('I agree to the Terms of Service and Privacy Policy.').check()
+    await page.getByRole('button', { name: 'Create Account' }).click()
+
+    await expect(page.getByText('Minimum age requirement')).toBeVisible()
+    await expect(page.getByText('You must be at least 17 years old to create an account.')).toBeVisible()
   })
 
   test('should navigate to sign in page', async ({ page }) => {

@@ -1,114 +1,117 @@
 /**
- * Age Verification
- * 
- * Handles age verification for GDPR compliance (minimum age: 17)
+ * Shared helpers for age verification on both client and server.
  */
 
 export const MINIMUM_AGE = 17
+const DEFAULT_MIN_AGE = MINIMUM_AGE
+
+export type AgeValidationReason = 'missing' | 'invalid' | 'future' | 'underage'
+
+export type AgeValidationResult = {
+  valid: boolean
+  age?: number | null
+  error?: string
+  reason?: AgeValidationReason
+}
 
 /**
- * Calculate age from date of birth
+ * Normalize a date input into YYYY-MM-DD (no time component).
  */
-export function calculateAge(dateOfBirth: Date): number {
+export function normalizeDateInput(value?: string | null): string | null {
+  if (!value) return null
+  const parsed = new Date(value)
+  if (Number.isNaN(parsed.getTime())) return null
+  // Force UTC to avoid TZ off-by-one issues when stringifying
+  const iso = new Date(Date.UTC(parsed.getFullYear(), parsed.getMonth(), parsed.getDate()))
+  return iso.toISOString().split('T')[0]
+}
+
+/**
+ * Calculate age in full years from a date string.
+ */
+export function calculateAge(dateOfBirth: string | Date): number | null {
+  const normalized = typeof dateOfBirth === 'string' ? normalizeDateInput(dateOfBirth) : normalizeDateInput(dateOfBirth?.toISOString())
+  if (!normalized) return null
+
+  const [year, month, day] = normalized.split('-').map(Number)
   const today = new Date()
-  let age = today.getFullYear() - dateOfBirth.getFullYear()
-  const monthDiff = today.getMonth() - dateOfBirth.getMonth()
-  
-  if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < dateOfBirth.getDate())) {
-    age--
+  let age = today.getFullYear() - year
+
+  const currentMonth = today.getMonth() + 1
+  const currentDay = today.getDate()
+
+  if (currentMonth < month || (currentMonth === month && currentDay < day)) {
+    age -= 1
   }
-  
+
   return age
+}
+
+/**
+ * Default error message for age verification failures.
+ */
+export function getAgeVerificationError(age?: number | null, minAge: number = DEFAULT_MIN_AGE): string {
+  if (age !== undefined && age !== null && age < minAge) {
+    return `You must be at least ${minAge} years old to use this platform.`
+  }
+  return 'Please enter a valid date of birth.'
+}
+
+/**
+ * Validate a date of birth against formatting and minimum age requirements.
+ */
+export function validateDateOfBirth(
+  value: string,
+  minAge: number = DEFAULT_MIN_AGE
+): AgeValidationResult {
+  if (!value) {
+    return { valid: false, error: 'Date of birth is required', reason: 'missing' }
+  }
+
+  const normalized = normalizeDateInput(value)
+  if (!normalized) {
+    return { valid: false, error: 'Enter a valid date of birth', reason: 'invalid' }
+  }
+
+  const dobDate = new Date(normalized)
+  const today = new Date()
+  if (dobDate > today) {
+    return { valid: false, error: 'Date of birth cannot be in the future', reason: 'future' }
+  }
+
+  const age = calculateAge(normalized)
+  if (age === null) {
+    return { valid: false, error: 'Enter a valid date of birth', reason: 'invalid' }
+  }
+
+  if (age < minAge) {
+    return { valid: false, age, error: getAgeVerificationError(age, minAge), reason: 'underage' }
+  }
+
+  return { valid: true, age }
 }
 
 /**
  * Check if user meets minimum age requirement
  */
-export function meetsMinimumAge(dateOfBirth: Date | string | null | undefined): boolean {
+export function meetsMinimumAge(dateOfBirth: Date | string | null | undefined, minAge: number = DEFAULT_MIN_AGE): boolean {
   if (!dateOfBirth) {
     return false
   }
 
-  const birthDate = typeof dateOfBirth === 'string' ? new Date(dateOfBirth) : dateOfBirth
-  
-  if (isNaN(birthDate.getTime())) {
-    return false
-  }
-
-  const age = calculateAge(birthDate)
-  return age >= MINIMUM_AGE
-}
-
-/**
- * Validate date of birth format and age
- */
-export function validateDateOfBirth(dateOfBirth: string): {
-  valid: boolean
-  age?: number
-  error?: string
-} {
-  const date = new Date(dateOfBirth)
-  
-  if (isNaN(date.getTime())) {
-    return {
-      valid: false,
-      error: 'Invalid date format'
-    }
-  }
-
-  // Check if date is in the future
-  if (date > new Date()) {
-    return {
-      valid: false,
-      error: 'Date of birth cannot be in the future'
-    }
-  }
-
-  // Check if date is too far in the past (reasonable limit: 120 years)
-  const oneHundredTwentyYearsAgo = new Date()
-  oneHundredTwentyYearsAgo.setFullYear(oneHundredTwentyYearsAgo.getFullYear() - 120)
-  
-  if (date < oneHundredTwentyYearsAgo) {
-    return {
-      valid: false,
-      error: 'Date of birth is not valid'
-    }
-  }
-
-  const age = calculateAge(date)
-  
-  if (age < MINIMUM_AGE) {
-    return {
-      valid: false,
-      age,
-      error: `You must be at least ${MINIMUM_AGE} years old to use this platform`
-    }
-  }
-
-  return {
-    valid: true,
-    age
-  }
+  const age = calculateAge(dateOfBirth)
+  if (age === null) return false
+  return age >= minAge
 }
 
 /**
  * Format date of birth for display (YYYY-MM-DD)
  */
 export function formatDateOfBirth(date: Date | string): string {
-  const d = typeof date === 'string' ? new Date(date) : date
-  const year = d.getFullYear()
-  const month = String(d.getMonth() + 1).padStart(2, '0')
-  const day = String(d.getDate()).padStart(2, '0')
-  return `${year}-${month}-${day}`
-}
-
-/**
- * Get age verification error message
- */
-export function getAgeVerificationError(age?: number): string {
-  if (age !== undefined && age < MINIMUM_AGE) {
-    return `You must be at least ${MINIMUM_AGE} years old to use this platform. You are currently ${age} years old.`
+  const normalized = normalizeDateInput(typeof date === 'string' ? date : date.toISOString())
+  if (!normalized) {
+    return ''
   }
-  return `You must be at least ${MINIMUM_AGE} years old to use this platform.`
+  return normalized
 }
 

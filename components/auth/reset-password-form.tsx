@@ -26,16 +26,30 @@ export function ResetPasswordForm() {
     setError('')
 
     try {
-      const { error } = await supabase.auth.resetPasswordForEmail(email, {
-        redirectTo: `${window.location.origin}/auth/reset-password/confirm`,
+      const redirectTo = `${window.location.origin}/auth/callback?redirect=/auth/reset-password/confirm`
+      
+      console.log('Attempting to send password reset email:', {
+        email,
+        redirectTo,
+        supabaseUrl: process.env.NEXT_PUBLIC_SUPABASE_URL,
       })
 
+      const { data, error } = await supabase.auth.resetPasswordForEmail(email, {
+        redirectTo,
+      })
+
+      console.log('Password reset response:', { data, error })
+
       if (error) {
-        setError(error.message)
+        console.error('Password reset error:', error)
+        setError(error.message || 'Failed to send reset email. Please check your email address and try again.')
       } else {
+        // Even if no error, log the response to help debug
+        console.log('Password reset email sent successfully (no error returned)')
         setSuccess(true)
       }
     } catch (err) {
+      console.error('Unexpected error during password reset:', err)
       setError('An unexpected error occurred. Please try again.')
     } finally {
       setIsLoading(false)
