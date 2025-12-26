@@ -96,7 +96,13 @@ export async function GET(request: NextRequest) {
 
     if (isPasswordReset) {
       // Always redirect to the confirm page for password reset
-      const confirmUrl = `${requestUrl.origin}/auth/reset-password/confirm`
+      // Use redirectTo if it's set and points to reset-password, otherwise use default
+      let confirmUrl: string
+      if (redirectTo && redirectTo.includes('reset-password')) {
+        confirmUrl = redirectTo.startsWith('http') ? redirectTo : `${requestUrl.origin}${redirectTo}`
+      } else {
+        confirmUrl = `${requestUrl.origin}/auth/reset-password/confirm`
+      }
       console.log('[Auth Callback] Password reset detected, redirecting to:', confirmUrl, {
         detectedBy: type === 'recovery' || type === 'reset' ? 'type parameter' : 
                     redirectTo?.includes('reset-password') ? 'redirectTo parameter' : 

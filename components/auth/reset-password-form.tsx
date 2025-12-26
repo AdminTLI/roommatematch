@@ -26,10 +26,9 @@ export function ResetPasswordForm() {
     setError('')
 
     try {
-      // Point directly to reset password confirm page
-      // The confirm page will handle the code exchange if code is in URL
-      // This bypasses the callback route which might not be detecting password reset correctly
-      const redirectTo = `${window.location.origin}/auth/reset-password/confirm`
+      // Use callback route - Supabase's verify endpoint will redirect here with a code
+      // The callback route will detect password reset and redirect to confirm page
+      const redirectTo = `${window.location.origin}/auth/callback?redirect=${encodeURIComponent('/auth/reset-password/confirm')}`
       
       console.log('Attempting to send password reset email:', {
         email,
