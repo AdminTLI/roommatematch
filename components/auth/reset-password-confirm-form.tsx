@@ -27,12 +27,38 @@ export function ResetPasswordConfirmForm() {
   )
 
   useEffect(() => {
-    // Check if user has a valid recovery session
+    // Check if there's a code in the URL (from password reset email)
+    const urlParams = new URLSearchParams(window.location.search)
+    const code = urlParams.get('code')
+    const type = urlParams.get('type')
+    
     const checkSession = async () => {
+      // If there's a code parameter, exchange it for a session first
+      if (code) {
+        console.log('[Reset Password] Found code in URL, exchanging for session...', { code: code.substring(0, 10) + '...', type })
+        const { data, error } = await supabase.auth.exchangeCodeForSession(code)
+        
+        if (error) {
+          console.error('[Reset Password] Error exchanging code:', error)
+          setError('Invalid or expired reset link. Please request a new password reset.')
+          setTimeout(() => {
+            router.push('/auth/reset-password')
+          }, 3000)
+          return
+        }
+        
+        console.log('[Reset Password] Code exchanged successfully, session created')
+        // Clear the code from URL
+        window.history.replaceState({}, '', window.location.pathname)
+      }
+      
+      // Check if user has a valid recovery session
       const { data: { session } } = await supabase.auth.getSession()
       if (session) {
+        console.log('[Reset Password] Valid session found')
         setIsValidSession(true)
       } else {
+        console.log('[Reset Password] No valid session found')
         setError('Invalid or expired reset link. Please request a new password reset.')
         setTimeout(() => {
           router.push('/auth/reset-password')
