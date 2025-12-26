@@ -33,7 +33,7 @@ export async function GET(request: NextRequest) {
       }
     )
     
-    const { error } = await supabase.auth.exchangeCodeForSession(code)
+    const { data, error } = await supabase.auth.exchangeCodeForSession(code)
     
     if (error) {
       console.error('Error exchanging code for session:', error)
@@ -41,9 +41,42 @@ export async function GET(request: NextRequest) {
       return NextResponse.redirect(`${requestUrl.origin}/auth/sign-in?error=${encodeURIComponent(error.message)}`)
     }
 
-    // Handle password reset flow
-    if (type === 'recovery' || redirectTo?.includes('reset-password')) {
-      return NextResponse.redirect(redirectTo || `${requestUrl.origin}/auth/reset-password/confirm`)
+    // Get session after exchange to check for recovery state
+    const { data: { session } } = await supabase.auth.getSession()
+    
+    // Log all parameters for debugging
+    console.log('[Auth Callback] Parameters:', {
+      type,
+      redirectTo,
+      hasCode: !!code,
+      hasSession: !!session,
+      url: requestUrl.toString()
+    })
+
+    // Check if this is a password reset flow
+    // Supabase automatically adds type=recovery to password reset email links
+    // Also check redirectTo as fallback in case type parameter is missing
+    // Additionally, check if the URL contains recovery-related parameters
+    const isPasswordReset = 
+      type === 'recovery' || 
+      redirectTo?.includes('reset-password') ||
+      requestUrl.searchParams.toString().includes('recovery') ||
+      requestUrl.searchParams.toString().includes('reset')
+
+    if (isPasswordReset) {
+      // Always redirect to the confirm page for password reset
+      const confirmUrl = `${requestUrl.origin}/auth/reset-password/confirm`
+      console.log('[Auth Callback] Password reset detected, redirecting to:', confirmUrl, {
+        detectedBy: type === 'recovery' ? 'type parameter' : redirectTo?.includes('reset-password') ? 'redirectTo parameter' : 'URL search params'
+      })
+      return NextResponse.redirect(confirmUrl)
+    }
+
+    // If there's a redirect parameter, use it (for other flows like email verification)
+    if (redirectTo) {
+      const redirectUrl = redirectTo.startsWith('http') ? redirectTo : `${requestUrl.origin}${redirectTo}`
+      console.log('Redirecting to:', redirectUrl)
+      return NextResponse.redirect(redirectUrl)
     }
   }
 

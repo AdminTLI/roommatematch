@@ -32,7 +32,15 @@ export function SignInForm() {
       })
 
       if (signInError) {
-        setError(signInError.message)
+        // For authentication errors (wrong password/email), show user-friendly message
+        if (signInError.message.toLowerCase().includes('invalid') || 
+            signInError.message.toLowerCase().includes('credentials') ||
+            signInError.message.toLowerCase().includes('password')) {
+          setError('Incorrect email or password')
+        } else {
+          // For other errors, show the error message
+          setError(signInError.message)
+        }
         setIsLoading(false)
         return
       }

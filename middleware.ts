@@ -70,6 +70,7 @@ export async function middleware(req: NextRequest) {
     '/auth/sign-up',
     '/auth/callback',
     '/auth/verify-email',
+    '/auth/reset-password',
     '/api/public',
     '/favicon.ico',
     '/robots.txt',
@@ -289,6 +290,7 @@ export async function middleware(req: NextRequest) {
     '/auth/sign-up',
     '/auth/sign-in',
     '/auth/callback',
+    '/auth/reset-password', // Password reset pages (both initial and confirm)
     '/verify', // Persona verification page (will check email verification internally)
   ]
 
@@ -298,6 +300,7 @@ export async function middleware(req: NextRequest) {
 
   // CRITICAL: For authenticated users, ALWAYS check email verification first
   // This applies to ALL routes except auth pages and email verification page itself
+  // Skip email verification check for password reset pages (users need to reset password even if email not verified)
   if (user && pathname !== '/auth/verify-email' && !pathname.startsWith('/auth/')) {
     // Check email verification FIRST before anything else
     const emailVerified = Boolean(

@@ -63,8 +63,15 @@ export function SignInForm() {
           return
         }
         
-        // For other errors, show the error message
-        setError(error.message)
+        // For authentication errors (wrong password/email), show user-friendly message
+        if (error.message.toLowerCase().includes('invalid') || 
+            error.message.toLowerCase().includes('credentials') ||
+            error.message.toLowerCase().includes('password')) {
+          setError('Incorrect email or password')
+        } else {
+          // For other errors, show the error message
+          setError(error.message)
+        }
       } else {
         // Sign-in successful - check verification status as backup
         const { data: { user } } = await supabase.auth.getUser()
