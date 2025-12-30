@@ -46,6 +46,9 @@ export function VerifyInterface({ user }: VerifyInterfaceProps) {
   const supabase = createClient()
   const personaClientRef = useRef<any>(null)
   const scriptLoadedRef = useRef(false)
+  const shouldAutoOpenRef = useRef(true) // Track if we should auto-open when ready
+  const statusFetchedRef = useRef(false) // Track if status has been fetched
+  const statusRef = useRef<VerificationStatus>('unverified') // Track latest status in ref
   
   const [status, setStatus] = useState<VerificationStatus>('unverified')
   const [isLoading, setIsLoading] = useState(true)
@@ -60,19 +63,58 @@ export function VerifyInterface({ user }: VerifyInterfaceProps) {
 
     const script = document.createElement('script')
     script.src = 'https://cdn.withpersona.com/dist/persona-v5.1.2.js'
+    // Note: Integrity check may fail in some environments, but script will still load
+    // If integrity fails, browser will still execute the script but log a warning
     script.integrity = 'sha384-nuMfOsYXMwp5L13VJicJkSs8tObai/UtHEOg3f7tQuFWU5j6LAewJbjbF5ZkfoDo'
     script.crossOrigin = 'anonymous'
     script.async = true
     
+    let loadTimeout: NodeJS.Timeout | null = null
+    
     script.onload = () => {
+      if (loadTimeout) {
+        clearTimeout(loadTimeout)
+        loadTimeout = null
+      }
       scriptLoadedRef.current = true
-      initializePersona()
+      // Wait a bit for Persona to be fully available, then initialize
+      // Retry mechanism in case Persona isn't immediately available
+      let retries = 0
+      const maxRetries = 15 // Increased retries
+      const checkPersona = () => {
+        if (window.Persona && window.Persona.Client) {
+          initializePersona()
+        } else if (retries < maxRetries) {
+          retries++
+          setTimeout(checkPersona, 100)
+        } else {
+          console.error('[Verify] Persona not available after script load')
+          setError('Persona verification service not available. Please refresh the page.')
+          setIsLoading(false)
+        }
+      }
+      // Start checking immediately, but also after a small delay
+      checkPersona()
     }
     
-    script.onerror = () => {
+    script.onerror = (error) => {
+      if (loadTimeout) {
+        clearTimeout(loadTimeout)
+        loadTimeout = null
+      }
+      console.error('[Verify] Script load error:', error)
       setError('Failed to load verification service. Please refresh the page.')
       setIsLoading(false)
     }
+    
+    // Set a timeout in case script never loads or errors
+    loadTimeout = setTimeout(() => {
+      if (!scriptLoadedRef.current) {
+        console.error('[Verify] Script load timeout')
+        setError('Verification service is taking too long to load. Please refresh the page.')
+        setIsLoading(false)
+      }
+    }, 10000) // 10 second timeout
     
     document.head.appendChild(script)
     
@@ -82,12 +124,37 @@ export function VerifyInterface({ user }: VerifyInterfaceProps) {
       if (existingScript) {
         existingScript.remove()
       }
+      if (loadTimeout) {
+        clearTimeout(loadTimeout)
+      }
     }
   }, [])
 
+  // Update status ref whenever status changes
+  useEffect(() => {
+    statusRef.current = status
+  }, [status])
+
   // Fetch verification status on mount
   useEffect(() => {
-    fetchStatus()
+    fetchStatus().then(() => {
+      statusFetchedRef.current = true
+      // If Persona is already ready, try to auto-open now
+      if (personaClientRef.current && shouldAutoOpenRef.current) {
+        const currentStatus = statusRef.current
+        if (currentStatus === 'unverified' || currentStatus === 'failed') {
+          setIsStarting(true)
+          setIsPersonaActive(true)
+          try {
+            personaClientRef.current.open()
+          } catch (err) {
+            console.error('Failed to auto-open Persona:', err)
+            setIsStarting(false)
+            setIsPersonaActive(false)
+          }
+        }
+      }
+    })
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
@@ -125,12 +192,48 @@ export function VerifyInterface({ user }: VerifyInterfaceProps) {
         onReady: () => {
           // Auto-open Persona widget when ready (embedded flow)
           setIsLoading(false)
-          // Auto-open immediately when ready, but only if user is unverified
-          // This matches the Persona embedded flow pattern: onReady: () => client.open()
-          if (status === 'unverified' || status === 'failed') {
-            setIsStarting(true)
-            setIsPersonaActive(true)
-            client.open()
+          // Store client reference immediately
+          personaClientRef.current = client
+          
+          // Auto-open immediately when ready, but only if:
+          // 1. We should auto-open (user hasn't manually started)
+          // 2. Status has been fetched OR we'll wait for it
+          // 3. User is unverified or failed
+          const tryAutoOpen = () => {
+            const currentStatus = statusRef.current
+            if (shouldAutoOpenRef.current && (currentStatus === 'unverified' || currentStatus === 'failed')) {
+              setIsStarting(true)
+              setIsPersonaActive(true)
+              try {
+                client.open()
+              } catch (err) {
+                console.error('Failed to open Persona on ready:', err)
+                setIsStarting(false)
+                setIsPersonaActive(false)
+                setError('Failed to start verification. Please try again.')
+              }
+            } else if (currentStatus === 'verified' || currentStatus === 'pending') {
+              // Status is verified or pending, don't auto-open
+              shouldAutoOpenRef.current = false
+            }
+          }
+          
+          // If status hasn't been fetched yet, wait a bit and try again
+          if (!statusFetchedRef.current) {
+            // Wait up to 2 seconds for status to be fetched
+            let attempts = 0
+            const maxAttempts = 20
+            const checkStatus = () => {
+              if (statusFetchedRef.current || attempts >= maxAttempts) {
+                tryAutoOpen()
+              } else {
+                attempts++
+                setTimeout(checkStatus, 100)
+              }
+            }
+            checkStatus()
+          } else {
+            tryAutoOpen()
           }
         },
         onComplete: async ({ inquiryId, status: personaStatus }) => {
@@ -232,8 +335,7 @@ export function VerifyInterface({ user }: VerifyInterfaceProps) {
         }
       })
       
-      // Store client reference
-      personaClientRef.current = client
+      // Client reference is stored in onReady callback
     } catch (err) {
       console.error('Failed to initialize Persona:', err)
       setError('Failed to initialize verification service. Please refresh the page.')
@@ -251,10 +353,17 @@ export function VerifyInterface({ user }: VerifyInterfaceProps) {
       })
       if (response.ok) {
         const data = await response.json()
-        setStatus(data.status)
+        const newStatus = data.status
+        setStatus(newStatus)
+        statusFetchedRef.current = true
+        
+        // Update shouldAutoOpen based on status
+        if (newStatus === 'verified' || newStatus === 'pending') {
+          shouldAutoOpenRef.current = false
+        }
         
         // Redirect to onboarding if verified
-        if (data.status === 'verified') {
+        if (newStatus === 'verified') {
           setTimeout(() => {
             router.push('/onboarding/intro')
           }, 2000)
@@ -263,6 +372,8 @@ export function VerifyInterface({ user }: VerifyInterfaceProps) {
         // Profile doesn't exist yet - user is unverified
         console.log('[Verification] Status endpoint returned 404, treating as unverified')
         setStatus('unverified')
+        statusFetchedRef.current = true
+        // Keep shouldAutoOpen as true for unverified users
       } else if (response.status === 401) {
         // Unauthorized - session might have expired
         console.warn('[Verification] Status check unauthorized, redirecting to sign in')
@@ -270,10 +381,12 @@ export function VerifyInterface({ user }: VerifyInterfaceProps) {
       } else {
         console.error('[Verification] Status check failed:', response.status, response.statusText)
         // Don't set error for status check failures - just log it
+        statusFetchedRef.current = true
       }
     } catch (error) {
       console.error('[Verification] Failed to fetch verification status:', error)
       // Don't set error for status check failures - just log it
+      statusFetchedRef.current = true
     } finally {
       setIsLoading(false)
     }
@@ -283,6 +396,7 @@ export function VerifyInterface({ user }: VerifyInterfaceProps) {
     setIsStarting(true)
     setIsPersonaActive(true)
     setError(null)
+    shouldAutoOpenRef.current = false // User manually started, don't auto-open again
 
     if (!personaClientRef.current) {
       setError('Verification service not ready. Please wait a moment and try again.')
