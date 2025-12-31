@@ -33,8 +33,9 @@ const content = {
       { title: 'The Problem Identified', description: "We recognized that nearly half of all students face roommate conflicts that impact well-being and academic performance. Random assignment wasn't working.", date: '2025 August' },
       { title: 'Research Phase', description: 'We analyzed peer-reviewed studies on compatibility, peer effects, and student housing satisfaction from Nature and other leading sources.', date: '2025 September' },
       { title: 'Algorithm Development', description: 'We built a science-driven algorithm that analyzes 40+ lifestyle and academic factors, informed by social compatibility research.', date: '2025 October' },
-      { title: 'Launch', description: 'We launched Domu Match with transparent, explainable matching backed by verification and safety measures.', date: '2025 November' },
-      { title: 'Growing Impact', description: "We're now helping students across multiple universities find better matches and making science-backed matching the standard.", date: 'Present' }
+      { title: 'First Version Complete', description: 'The first version of Domu Match was completely built and underwent comprehensive debugging and error testing processes to ensure reliability and quality.', date: '2025 November' },
+      { title: 'Beta Testing Phase', description: 'We are currently in the beta testing phase, gathering feedback and refining the platform to ensure the best possible experience for students.', date: '2026 January' },
+      { title: 'Full Launch Planned', description: 'We plan to fully launch the platform in February/March 2026 for the first users to use, making science-backed matching accessible to students across the Netherlands.', date: 'February/March 2026' }
     ],
     vision: {
       heading: "Where We're Headed",
@@ -138,8 +139,9 @@ const content = {
       { title: 'Probleem gesignaleerd', description: 'We zagen dat bijna de helft van de studenten conflicten heeft die welzijn en studie raken. Willekeurige toewijzing werkte niet.', date: '2025 augustus' },
       { title: 'Onderzoeksfase', description: 'We doken in peer-reviewed studies over compatibiliteit, peereffecten en woontevredenheid.', date: '2025 september' },
       { title: 'Algoritmeontwikkeling', description: 'We bouwden een algoritme dat meer dan 40 factoren weegt, geïnspireerd op sociale wetenschappen en best practices.', date: '2025 oktober' },
-      { title: 'Lancering', description: 'We lanceerden Domu Match met uitlegbare matching plus verificatie en veiligheidslagen.', date: '2025 november' },
-      { title: 'Groeiende impact', description: 'We helpen inmiddels studenten van meerdere universiteiten en maken wetenschappelijke matching tot de standaard.', date: 'Nu' }
+      { title: 'Eerste versie voltooid', description: 'De eerste versie van Domu Match werd volledig gebouwd en onderging uitgebreide debugging- en fouttestprocessen om betrouwbaarheid en kwaliteit te waarborgen.', date: '2025 november' },
+      { title: 'Bètatestfase', description: 'We bevinden ons momenteel in de bètatestfase, verzamelen feedback en verfijnen het platform om de best mogelijke ervaring voor studenten te garanderen.', date: '2026 januari' },
+      { title: 'Volledige lancering gepland', description: 'We plannen de volledige lancering van het platform in februari/maart 2026 voor de eerste gebruikers, waardoor wetenschappelijk onderbouwde matching toegankelijk wordt voor studenten in heel Nederland.', date: 'Februari/Maart 2026' }
     ],
     vision: {
       heading: 'Waar we naartoe werken',
