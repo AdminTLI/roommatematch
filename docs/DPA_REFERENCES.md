@@ -142,8 +142,8 @@ All DPA documentation is stored:
 ## Contact
 
 For DPA-related questions:
-- **DPO:** domumatch@gmail.com
-- **Legal:** domumatch@gmail.com
+- **DPO:** info@domumatch.com
+- **Legal:** info@domumatch.com
 
 **Last Updated:** January 2025  
 **Next Review:** January 2026

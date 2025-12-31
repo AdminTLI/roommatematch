@@ -120,7 +120,7 @@ const content = {
     contact: {
       title: "Contact Us",
       description: "If you have questions about our use of cookies, please contact us:",
-      email: "Email: domumatch@gmail.com"
+      email: "Email: info@domumatch.com"
     }
   },
   nl: {
@@ -235,7 +235,7 @@ const content = {
     contact: {
       title: "Neem Contact met Ons Op",
       description: "Als u vragen heeft over ons gebruik van cookies, neem dan contact met ons op:",
-      email: "E-mail: domumatch@gmail.com"
+      email: "E-mail: info@domumatch.com"
     }
   }
 }

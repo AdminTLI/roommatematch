@@ -39,9 +39,17 @@ const buttonContent = {
 export function Navbar() {
   const router = useRouter()
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
+  const [mounted, setMounted] = useState(false)
   const { locale } = useApp()
-  const navigation = navigationContent[locale]
-  const buttons = buttonContent[locale]
+  
+  // Only access locale-dependent content after mount to prevent hydration mismatch
+  const navigation = mounted ? navigationContent[locale] : navigationContent['en']
+  const buttons = mounted ? buttonContent[locale] : buttonContent['en']
+
+  // Set mounted state after hydration
+  useEffect(() => {
+    setMounted(true)
+  }, [])
 
   // Prevent body scroll when mobile menu is open
   useEffect(() => {
@@ -87,117 +95,87 @@ export function Navbar() {
         <Container className="h-full">
           <div className="flex items-center justify-between h-full py-0">
             {/* Logo */}
-            <div className="flex items-center">
-              <Link 
-                href="/"
-                className="flex items-center space-x-2 hover:opacity-80 transition-opacity"
-              >
-                {/* Logo Image - will show if file exists, otherwise fallback to text */}
-                <div className="relative h-8 w-8 md:h-10 md:w-10 flex-shrink-0 hidden sm:block">
-                  <Image 
-                    src="/images/logo.png" 
-                    alt="Domu Match" 
-                    fill
-                    className="object-contain rounded-lg"
-                    priority
-                    sizes="(max-width: 768px) 32px, 40px"
-                    onError={(e) => {
-                      // Hide image container if logo fails to load
-                      const target = e.target as HTMLElement;
-                      const container = target.closest('.relative');
-                      if (container) {
-                        container.style.display = 'none';
-                      }
-                    }}
-                  />
-                </div>
-                <span className="text-2xl font-bold text-brand-text">Domu Match</span>
-              </Link>
-            </div>
+            <Link 
+              href="/"
+              className="flex items-center space-x-2.5 hover:opacity-80 transition-opacity flex-shrink-0 h-full"
+            >
+              {/* Logo Image - will show if file exists, otherwise fallback to text */}
+              <div className="relative h-8 w-8 md:h-10 md:w-10 flex-shrink-0 hidden sm:block">
+                <Image 
+                  src="/images/logo.png" 
+                  alt="Domu Match" 
+                  fill
+                  className="object-contain rounded-lg"
+                  priority
+                  sizes="(max-width: 768px) 32px, 40px"
+                  onError={(e) => {
+                    // Hide image container if logo fails to load
+                    const target = e.target as HTMLElement;
+                    const container = target.closest('.relative');
+                    if (container) {
+                      container.style.display = 'none';
+                    }
+                  }}
+                />
+              </div>
+              <span className="text-xl sm:text-2xl font-bold text-brand-text leading-none">Domu Match</span>
+            </Link>
 
-            {/* Tablet Navigation - show 2 items on tablet sizes */}
-            <div className="hidden md:flex lg:hidden items-center space-x-4 h-full">
-              {navigation.slice(0, 2).map((item) => (
-                <Link
-                  key={item.name}
-                  href={item.href}
-                  className="text-brand-muted hover:text-brand-text transition-colors font-medium text-sm flex items-center h-full whitespace-nowrap"
-                >
-                  {item.name}
-                </Link>
-              ))}
-            </div>
-
-            {/* Desktop Navigation */}
-            <div className="hidden lg:flex items-center space-x-8 h-full">
+            {/* Desktop Navigation - Full links for laptops (lg+) */}
+            <div className="hidden lg:flex items-center gap-8 h-full">
               {navigation.map((item) => (
                 <Link
-                  key={item.name}
+                  key={item.href}
                   href={item.href}
-                  className="text-brand-muted hover:text-brand-text transition-colors font-medium flex items-center h-full"
+                  className="text-brand-muted hover:text-brand-text transition-colors font-medium leading-tight flex items-center h-full py-0 whitespace-nowrap"
+                  suppressHydrationWarning
                 >
                   {item.name}
                 </Link>
               ))}
             </div>
 
-            {/* Tablet CTA - optimized for tablet sizes */}
-            <div className="hidden md:flex lg:hidden items-center space-x-2">
-              <LanguageSwitcher variant="minimal" />
-              <Button 
-                variant="outline" 
-                size="sm"
-                onClick={handleSignIn}
-                className="text-xs px-3"
-              >
-                {buttons.signIn}
-              </Button>
-              <Button 
-                variant="primary"
-                size="sm"
-                onClick={handleGetStarted}
-                className="text-xs px-3"
-              >
-                {buttons.getStarted}
-                <ChevronRight className="ml-1 h-3 w-3" />
-              </Button>
-            </div>
-
-            {/* Desktop CTA */}
-            <div className="hidden lg:flex items-center space-x-4">
-              <LanguageSwitcher variant="minimal" />
+            {/* Desktop CTA - Full buttons for laptops (lg+) */}
+            <div className="hidden lg:flex items-center gap-4 h-full">
+              <div className="flex items-center h-full">
+                <LanguageSwitcher variant="minimal" />
+              </div>
               <Button 
                 variant="outline" 
                 size="lg"
                 onClick={handleSignIn}
+                className="h-10"
               >
-                {buttons.signIn}
+                <span suppressHydrationWarning>{buttons.signIn}</span>
               </Button>
               <Button 
                 variant="primary"
                 size="lg"
                 onClick={handleGetStarted}
+                className="h-10"
               >
-                {buttons.getStarted}
+                <span suppressHydrationWarning>{buttons.getStarted}</span>
                 <ChevronRight className="ml-1 h-4 w-4" />
               </Button>
             </div>
 
-            {/* Mobile menu button and language switcher - only show on mobile (< md) */}
-            <div className="md:hidden flex items-center space-x-2">
-              <LanguageSwitcher variant="minimal" />
+            {/* Mobile menu button and language switcher - show on mobile and tablet (< lg) */}
+            <div className="lg:hidden flex items-center gap-3 h-full">
+              <div className="flex items-center h-full">
+                <LanguageSwitcher variant="minimal" />
+              </div>
               <button
                 type="button"
                 onClick={handleToggleMenu}
-                className="p-2 rounded-md hover:bg-brand-surface transition-colors focus-visible:ring-2 focus-visible:ring-brand-primary relative z-[70]"
+                className="p-2 rounded-md hover:bg-brand-surface transition-colors focus-visible:ring-2 focus-visible:ring-brand-primary relative z-[70] flex items-center justify-center h-10 w-10"
                 aria-expanded={isMobileMenuOpen}
                 aria-controls="mobile-menu"
                 aria-label="Toggle mobile menu"
               >
                 {isMobileMenuOpen ? (
-                  <X className="h-6 w-6" />
+                  <X className="h-5 w-5" />
                 ) : (
-                  <Menu className="h-6 w-6" />
+                  <Menu className="h-5 w-5" />
                 )}
               </button>
             </div>
@@ -208,7 +186,7 @@ export function Navbar() {
       {/* Mobile menu backdrop - outside nav to avoid stacking context issues */}
       {isMobileMenuOpen && (
         <div
-          className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[60] md:hidden animate-in fade-in duration-300"
+          className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[60] lg:hidden animate-in fade-in duration-300"
           onClick={handleCloseMenu}
           aria-hidden="true"
         />
@@ -218,7 +196,7 @@ export function Navbar() {
       {isMobileMenuOpen && (
         <div 
           id="mobile-menu"
-          className="md:hidden fixed inset-x-0 bg-white z-[70] shadow-2xl rounded-2xl animate-in slide-in-from-top duration-300"
+          className="lg:hidden fixed inset-x-0 bg-white z-[70] shadow-2xl rounded-2xl animate-in slide-in-from-top duration-300"
           style={{ 
             top: '72px', 
             maxHeight: 'calc(100vh - 72px - 1rem)', 
@@ -248,14 +226,14 @@ export function Navbar() {
             {/* Navigation Links */}
             {navigation.map((item, index) => (
               <Link
-                key={item.name}
+                key={item.href}
                 href={item.href}
                 className="group flex items-center justify-between py-3.5 px-4 rounded-xl text-base font-semibold text-gray-900 hover:bg-gradient-to-r hover:from-brand-primary/5 hover:to-brand-primary/10 hover:text-brand-primary transition-all duration-200 active:scale-[0.98] border border-transparent hover:border-brand-primary/20"
                 onClick={handleCloseMenu}
               >
                 <span className="flex items-center gap-2">
                   <span className="w-1.5 h-1.5 rounded-full bg-brand-primary opacity-0 group-hover:opacity-100 transition-opacity duration-200" />
-                  {item.name}
+                  <span suppressHydrationWarning>{item.name}</span>
                 </span>
                 <ArrowRight className="h-4 w-4 text-gray-400 group-hover:text-brand-primary group-hover:translate-x-1 transition-all duration-200" />
               </Link>
@@ -275,7 +253,7 @@ export function Navbar() {
                   handleCloseMenu()
                 }}
               >
-                {buttons.signIn}
+                <span suppressHydrationWarning>{buttons.signIn}</span>
               </Button>
               <Button 
                 variant="primary"
@@ -286,7 +264,7 @@ export function Navbar() {
                   handleCloseMenu()
                 }}
               >
-                {buttons.getStarted}
+                <span suppressHydrationWarning>{buttons.getStarted}</span>
                 <ChevronRight className="ml-2 h-5 w-5" />
               </Button>
             </div>

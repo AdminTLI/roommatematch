@@ -12,7 +12,7 @@ const content = {
     emailPlaceholder: 'Email',
     messagePlaceholder: 'How can we help?',
     submit: 'Send',
-    email: 'domumatch@gmail.com'
+    email: 'info@domumatch.com'
   },
   nl: {
     title: 'Contact',
@@ -21,7 +21,7 @@ const content = {
     emailPlaceholder: 'E-mailadres',
     messagePlaceholder: 'Hoe kunnen we helpen?',
     submit: 'Versturen',
-    email: 'domumatch@gmail.com'
+    email: 'info@domumatch.com'
   }
 }
 

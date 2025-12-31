@@ -13,3 +13,5 @@ CREATE POLICY "Users can insert their own journey events" ON user_journey_events
 -- Keep the admin policy for reading all events
 -- (The existing "Admins can access user journey events" policy already handles SELECT)
 
+
+

@@ -11,3 +11,5 @@ ALTER TABLE user_journey_events
 ADD CONSTRAINT user_journey_events_traffic_source_check 
 CHECK (traffic_source IS NULL OR traffic_source IN ('organic', 'direct', 'referral', 'social', 'email', 'paid'));
 
+
+

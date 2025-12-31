@@ -11,6 +11,7 @@ const content = {
   en: {
     title: "Housing done right",
     subtitle: "Our algorithm cuts incompatibility-driven disputes, dropouts, and staff escalations. Intelligent matching means fewer complaints, happier students, better retention.",
+    contactButton: "Contact Us",
     startPilot: "Start Free Pilot",
     scheduleDemo: "Schedule Demo",
     transformTitle: "Ready to transform your housing experience?",
@@ -64,6 +65,7 @@ const content = {
   nl: {
     title: "Huisvesting goed gedaan",
     subtitle: "Ons algoritme vermindert geschillen door incompatibiliteit, uitval en escalaties door personeel. Intelligente matching betekent minder klachten, gelukkigere studenten, betere retentie.",
+    contactButton: "Neem Contact Op",
     startPilot: "Start Gratis Pilot",
     scheduleDemo: "Plan Demo",
     transformTitle: "Klaar om je huisvestingservaring te transformeren?",
@@ -131,12 +133,15 @@ export function UniversitiesSection() {
           <p className="text-xl text-brand-muted max-w-3xl mx-auto mb-8">
             {t.subtitle}
           </p>
-          <div className="flex flex-wrap justify-center gap-4">
-            <Button size="lg" className="bg-brand-primary hover:bg-brand-primary/90">
-              {t.startPilot}
-            </Button>
-            <Button variant="outline" size="lg">
-              {t.scheduleDemo}
+          <div className="flex justify-center">
+            <Button 
+              size="lg" 
+              className="bg-brand-primary hover:bg-brand-primary/90"
+              asChild
+            >
+              <a href="mailto:info@domumatch.com">
+                {t.contactButton}
+              </a>
             </Button>
           </div>
         </div>
@@ -211,24 +216,6 @@ export function UniversitiesSection() {
                 </p>
               </div>
             ))}
-          </div>
-        </div>
-
-        {/* CTA Section */}
-        <div className="text-center mt-16">
-          <h2 className="text-3xl font-bold text-brand-text mb-4">
-            {t.transformTitle}
-          </h2>
-          <p className="text-lg text-brand-muted mb-8 max-w-2xl mx-auto">
-            {t.transformSubtitle}
-          </p>
-          <div className="flex flex-wrap justify-center gap-4">
-            <Button size="lg" className="bg-brand-primary hover:bg-brand-primary/90">
-              {t.startPilot}
-            </Button>
-            <Button variant="outline" size="lg">
-              {t.viewPricing}
-            </Button>
           </div>
         </div>
       </Container>

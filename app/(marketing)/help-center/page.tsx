@@ -1,6 +1,8 @@
 import Footer from '@/components/site/footer'
+import { Navbar } from '@/components/site/navbar'
 import { HelpCenterContent } from './help-center-content'
 import { Metadata } from 'next'
+import { helpContent } from './help-content'
 
 export const metadata: Metadata = {
   title: 'Help Center | Domu Match - Support & FAQ',
@@ -41,25 +43,23 @@ export const metadata: Metadata = {
   },
 }
 
-const faqs = [
-  { q: 'Getting started', a: 'Create an account, verify your identity, and complete the compatibility quiz.' },
-  { q: 'Account & verification', a: 'We verify with government ID + selfie and university email for safety.' },
-  { q: 'Matching & scores', a: 'Scores are based on 40+ factors. We show why you matched for transparency.' },
-  { q: 'Safety & reporting', a: 'Report any concern from a profile or chat. Our team reviews every report.' }
-]
-
 export default function HelpCenterPage() {
+  // Get all FAQs for structured data
+  const sections = helpContent.en
+  const allFaqs = sections.flatMap(section => section.faqs)
+  const topFaqs = allFaqs.slice(0, 10) // Limit to top 10 for structured data
+
   const structuredData = {
     '@context': 'https://schema.org',
     '@graph': [
       {
         '@type': 'FAQPage',
-        mainEntity: faqs.map((faq) => ({
+        mainEntity: topFaqs.map((faq) => ({
           '@type': 'Question',
-          name: faq.q,
+          name: faq.title,
           acceptedAnswer: {
             '@type': 'Answer',
-            text: faq.a,
+            text: faq.content.substring(0, 500), // Limit content length for structured data
           },
         })),
       },
@@ -90,9 +90,10 @@ export default function HelpCenterPage() {
         dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }}
       />
       <main>
+        <Navbar />
         <HelpCenterContent />
-      <Footer />
-    </main>
+        <Footer />
+      </main>
     </>
   )
 }

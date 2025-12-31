@@ -245,14 +245,6 @@ export function AdminFeatures() {
           <p className="text-brand-muted mb-6 max-w-2xl mx-auto">
             {t.supportSubtitle}
           </p>
-          <div className="flex flex-wrap justify-center gap-4">
-            <Button size="lg" className="bg-brand-primary hover:bg-brand-primary/90">
-              {t.contactSupport}
-            </Button>
-            <Button variant="outline" size="lg">
-              {t.viewDocumentation}
-            </Button>
-          </div>
         </div>
       </Container>
     </Section>

@@ -72,3 +72,5 @@ FROM compute_compatibility_score('USER_A_ID', 'USER_B_ID');
 
 
 
+
+

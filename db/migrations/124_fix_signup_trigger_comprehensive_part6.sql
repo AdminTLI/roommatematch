@@ -35,3 +35,5 @@ SELECT
     AND cmd = 'INSERT'
   ) THEN 'YES' ELSE 'NO' END;
 
+
+

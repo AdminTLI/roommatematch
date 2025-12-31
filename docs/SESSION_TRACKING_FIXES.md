@@ -89,3 +89,5 @@ LIMIT 10;
 - Anonymous users can still be tracked (with `user_id = NULL`)
 - All tracking respects user privacy and GDPR requirements
 
+
+

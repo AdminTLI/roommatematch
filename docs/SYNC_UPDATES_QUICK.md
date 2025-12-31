@@ -116,3 +116,5 @@ for (const day of days) {
 - Hard refresh the dashboard page (Cmd+Shift+R or Ctrl+Shift+R)
 - Check the database: `SELECT * FROM updates ORDER BY release_date DESC;`
 
+
+

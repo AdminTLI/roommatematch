@@ -145,8 +145,8 @@ This document outlines compliance with DUO (Dutch Ministry of Education) data li
 ## Contact
 
 For questions about DUO data usage:
-- **Technical:** domumatch@gmail.com
-- **Legal:** domumatch@gmail.com
+- **Technical:** info@domumatch.com
+- **Legal:** info@domumatch.com
 - **DUO Contact:** [DUO contact information]
 
 ## References

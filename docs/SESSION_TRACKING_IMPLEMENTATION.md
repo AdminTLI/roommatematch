@@ -182,3 +182,5 @@ initializeSessionTracking(userId?: string): void
 - Metrics are calculated server-side for accuracy
 - The system is designed to be privacy-friendly and GDPR-compliant
 
+
+

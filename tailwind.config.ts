@@ -106,6 +106,12 @@ const config: Config = {
           DEFAULT: "hsl(var(--card))",
           foreground: "hsl(var(--card-foreground))",
         },
+        // Rent Calculator specific colors
+        rent: {
+          navy: '#0A0E1A',
+          orange: '#FF921C',
+          pink: '#F472B6',
+        },
       },
       boxShadow: {
         'elev-1': '0 1px 2px rgba(15,23,42,.06),0 1px 1px rgba(15,23,42,.04)',
@@ -149,6 +155,10 @@ const config: Config = {
         "slide-in": "slide-in 0.3s ease-out",
         "scale-in": "scale-in 0.2s ease-out",
         "bounce-gentle": "bounce-gentle 0.6s ease-out",
+        "slide-out-left": "slide-out-left 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
+        "slide-in-right": "slide-in-right 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
+        "slide-out-right": "slide-out-right 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
+        "slide-in-left": "slide-in-left 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
       },
       keyframes: {
         "accordion-down": {
@@ -174,6 +184,22 @@ const config: Config = {
         "bounce-gentle": {
           "0%, 100%": { transform: "translateY(0)" },
           "50%": { transform: "translateY(-5px)" },
+        },
+        "slide-out-left": {
+          "0%": { transform: "translateX(0)", opacity: "1" },
+          "100%": { transform: "translateX(-100%)", opacity: "0" },
+        },
+        "slide-in-right": {
+          "0%": { transform: "translateX(100%)", opacity: "0" },
+          "100%": { transform: "translateX(0)", opacity: "1" },
+        },
+        "slide-out-right": {
+          "0%": { transform: "translateX(0)", opacity: "1" },
+          "100%": { transform: "translateX(100%)", opacity: "0" },
+        },
+        "slide-in-left": {
+          "0%": { transform: "translateX(-100%)", opacity: "0" },
+          "100%": { transform: "translateX(0)", opacity: "1" },
         },
       },
     },

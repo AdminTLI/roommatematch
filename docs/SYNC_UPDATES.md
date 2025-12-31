@@ -152,3 +152,5 @@ See `docs/VERCEL_WEBHOOK_SETUP.md` for detailed instructions.
 - Check database: `SELECT * FROM updates ORDER BY release_date DESC;`
 - Hard refresh the dashboard page (Cmd+Shift+R)
 
+
+

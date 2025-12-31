@@ -121,7 +121,7 @@ const content = {
         rights: [
           {
             title: "Right of Access (Article 15)",
-            description: "You have the right to access and review your personal information. Request a data export through Privacy Settings → Download Your Data, or contact domumatch@gmail.com. We will provide your data within 30 days."
+            description: "You have the right to access and review your personal information. Request a data export through Privacy Settings → Download Your Data, or contact info@domumatch.com. We will provide your data within 30 days."
           },
           {
             title: "Right to Rectification (Article 16)",
@@ -137,18 +137,18 @@ const content = {
           },
           {
             title: "Right to Restrict Processing (Article 18)",
-            description: "You can request restriction of processing by contacting domumatch@gmail.com. We will restrict processing while your request is being reviewed."
+            description: "You can request restriction of processing by contacting info@domumatch.com. We will restrict processing while your request is being reviewed."
           },
           {
             title: "Right to Object (Article 21)",
-            description: "You can object to certain processing activities, such as automated decision-making (matching algorithm). Contact domumatch@gmail.com to exercise this right."
+            description: "You can object to certain processing activities, such as automated decision-making (matching algorithm). Contact info@domumatch.com to exercise this right."
           },
           {
             title: "Right to Withdraw Consent (Article 7)",
             description: "You can withdraw consent for non-essential cookies and tracking at any time through the Cookie Preference Center (accessible from the cookie banner or settings)."
           }
         ],
-        dsarInstructions: "To exercise your rights, you can: (1) Use the Privacy Settings page in your account, (2) Email domumatch@gmail.com with your request, or (3) Contact our Data Protection Officer at domumatch@gmail.com. All requests are processed within 30 days as required by GDPR."
+        dsarInstructions: "To exercise your rights, you can: (1) Use the Privacy Settings page in your account, (2) Email info@domumatch.com with your request, or (3) Contact our Data Protection Officer at info@domumatch.com. All requests are processed within 30 days as required by GDPR."
       },
       cookies: {
         title: "6. Cookies and Tracking Technologies",
@@ -202,7 +202,7 @@ const content = {
           "Application logs: Retained for 90 days, then deleted",
           "Analytics data: Retained in anonymized form for up to 2 years"
         ],
-        deletion: "You can request deletion of your account and data at any time through your Privacy Settings or by contacting domumatch@gmail.com. We will process your request within 30 days (GDPR requirement), subject to legal retention requirements (e.g., verification documents: 4 weeks per Dutch law)."
+        deletion: "You can request deletion of your account and data at any time through your Privacy Settings or by contacting info@domumatch.com. We will process your request within 30 days (GDPR requirement), subject to legal retention requirements (e.g., verification documents: 4 weeks per Dutch law)."
       },
       children: {
         title: "9. Children's Privacy",
@@ -247,14 +247,14 @@ const content = {
             dpa: "Standard Contractual Clauses (SCCs)"
           }
         ],
-        note: "For detailed information about our processors, DPAs, and transfer mechanisms, see our Third-Party Processors documentation. You can request information about processors by contacting domumatch@gmail.com."
+        note: "For detailed information about our processors, DPAs, and transfer mechanisms, see our Third-Party Processors documentation. You can request information about processors by contacting info@domumatch.com."
       },
       contact: {
         title: "12. Contact Us",
         description: "If you have any questions, concerns, or requests regarding this Privacy Policy or our data practices, please contact us:",
-        email: "Email: domumatch@gmail.com",
-        dpo: "Data Protection Officer: domumatch@gmail.com",
-        dsar: "DSAR Requests: Use Privacy Settings in your account or email domumatch@gmail.com",
+        email: "Email: info@domumatch.com",
+        dpo: "Data Protection Officer: info@domumatch.com",
+        dsar: "DSAR Requests: Use Privacy Settings in your account or email info@domumatch.com",
         note: "For Data Subject Access Requests (DSAR), you can also use the Privacy Settings page in your account to request data export or account deletion."
       }
     }
@@ -373,7 +373,7 @@ const content = {
         rights: [
           {
             title: "Recht van toegang (Artikel 15)",
-            description: "U heeft het recht om toegang te krijgen tot en uw persoonlijke informatie te bekijken. Vraag een gegevensexport aan via Privacy Instellingen → Uw gegevens downloaden, of neem contact op met domumatch@gmail.com. We zullen uw gegevens binnen 30 dagen verstrekken."
+            description: "U heeft het recht om toegang te krijgen tot en uw persoonlijke informatie te bekijken. Vraag een gegevensexport aan via Privacy Instellingen → Uw gegevens downloaden, of neem contact op met info@domumatch.com. We zullen uw gegevens binnen 30 dagen verstrekken."
           },
           {
             title: "Recht op rectificatie (Artikel 16)",
@@ -389,18 +389,18 @@ const content = {
           },
           {
             title: "Recht op beperking van verwerking (Artikel 18)",
-            description: "U kunt beperking van verwerking aanvragen door contact op te nemen met domumatch@gmail.com. We zullen de verwerking beperken terwijl uw verzoek wordt beoordeeld."
+            description: "U kunt beperking van verwerking aanvragen door contact op te nemen met info@domumatch.com. We zullen de verwerking beperken terwijl uw verzoek wordt beoordeeld."
           },
           {
             title: "Recht van bezwaar (Artikel 21)",
-            description: "U kunt bezwaar maken tegen bepaalde verwerkingsactiviteiten, zoals geautomatiseerde besluitvorming (matchingalgoritme). Neem contact op met domumatch@gmail.com om dit recht uit te oefenen."
+            description: "U kunt bezwaar maken tegen bepaalde verwerkingsactiviteiten, zoals geautomatiseerde besluitvorming (matchingalgoritme). Neem contact op met info@domumatch.com om dit recht uit te oefenen."
           },
           {
             title: "Recht om toestemming in te trekken (Artikel 7)",
             description: "U kunt toestemming voor niet-essentiële cookies en tracking op elk moment intrekken via het Cookie Voorkeurencentrum (toegankelijk via de cookiebanner of instellingen)."
           }
         ],
-        dsarInstructions: "Om uw rechten uit te oefenen, kunt u: (1) De pagina Privacy Instellingen in uw account gebruiken, (2) E-mailen naar domumatch@gmail.com met uw verzoek, of (3) Contact opnemen met onze Functionaris voor gegevensbescherming op domumatch@gmail.com. Alle verzoeken worden binnen 30 dagen verwerkt zoals vereist door de AVG."
+        dsarInstructions: "Om uw rechten uit te oefenen, kunt u: (1) De pagina Privacy Instellingen in uw account gebruiken, (2) E-mailen naar info@domumatch.com met uw verzoek, of (3) Contact opnemen met onze Functionaris voor gegevensbescherming op info@domumatch.com. Alle verzoeken worden binnen 30 dagen verwerkt zoals vereist door de AVG."
       },
       cookies: {
         title: "6. Cookies en trackingtechnologieën",
@@ -454,7 +454,7 @@ const content = {
           "Applicatielogs: Bewaard voor 90 dagen, daarna verwijderd",
           "Analytische gegevens: Bewaard in geanonimiseerde vorm tot 2 jaar"
         ],
-        deletion: "U kunt op elk moment verwijdering van uw account en gegevens aanvragen via uw Privacy Instellingen of door contact op te nemen met domumatch@gmail.com. We zullen uw verzoek binnen 30 dagen verwerken (AVG vereiste), onder voorbehoud van wettelijke bewaarvereisten (bijv. verificatiedocumenten: 4 weken volgens Nederlandse wet)."
+        deletion: "U kunt op elk moment verwijdering van uw account en gegevens aanvragen via uw Privacy Instellingen of door contact op te nemen met info@domumatch.com. We zullen uw verzoek binnen 30 dagen verwerken (AVG vereiste), onder voorbehoud van wettelijke bewaarvereisten (bijv. verificatiedocumenten: 4 weken volgens Nederlandse wet)."
       },
       children: {
         title: "9. Privacy van kinderen",
@@ -525,14 +525,14 @@ const content = {
             dpa: "Standaard contractuele bepalingen (SCC's)"
           }
         ],
-        note: "Voor gedetailleerde informatie over onze verwerkers, DPA's en overdrachtsmechanismen, zie onze documentatie over verwerkers van derden. U kunt informatie over verwerkers aanvragen door contact op te nemen met domumatch@gmail.com."
+        note: "Voor gedetailleerde informatie over onze verwerkers, DPA's en overdrachtsmechanismen, zie onze documentatie over verwerkers van derden. U kunt informatie over verwerkers aanvragen door contact op te nemen met info@domumatch.com."
       },
       contact: {
         title: "12. Neem contact met ons op",
         description: "Als u vragen, zorgen of verzoeken heeft met betrekking tot dit Privacybeleid of onze gegevenspraktijken, neem dan contact met ons op:",
-        email: "E-mail: domumatch@gmail.com",
-        dpo: "Functionaris voor gegevensbescherming: domumatch@gmail.com",
-        dsar: "DSAR Verzoeken: Gebruik Privacy Instellingen in uw account of e-mail domumatch@gmail.com",
+        email: "E-mail: info@domumatch.com",
+        dpo: "Functionaris voor gegevensbescherming: info@domumatch.com",
+        dsar: "DSAR Verzoeken: Gebruik Privacy Instellingen in uw account of e-mail info@domumatch.com",
         note: "Voor verzoeken tot toegang tot persoonsgegevens (DSAR) kunt u ook de pagina Privacy Instellingen in uw account gebruiken om gegevensexport of accountverwijdering aan te vragen."
       }
     }

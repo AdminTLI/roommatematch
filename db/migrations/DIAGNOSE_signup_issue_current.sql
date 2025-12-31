@@ -86,3 +86,5 @@ LEFT JOIN public.users u ON u.id = au.id
 ORDER BY au.created_at DESC
 LIMIT 10;
 
+
+

@@ -36,3 +36,5 @@ SELECT
   public.get_home_vibe_dimension((SELECT id FROM auth.users WHERE id NOT IN ('2763f0a1-91fd-482c-81ed-f830327b2c2c'::uuid, '39288c03-775f-4c7f-a27c-6dd5ddc6e5db'::uuid) LIMIT 1)) as home_vibe;
 
 
+
+

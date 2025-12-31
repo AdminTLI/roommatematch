@@ -186,3 +186,5 @@ GRANT EXECUTE ON FUNCTION public.resolve_user_preferences(UUID) TO service_role;
 
 
 
+
+

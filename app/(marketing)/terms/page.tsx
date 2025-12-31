@@ -159,7 +159,7 @@ const content = {
       contact: {
         title: "15. Contact Information",
         description: "If you have any questions about these Terms of Service, please contact us:",
-        email: "Email: domumatch@gmail.com",
+        email: "Email: info@domumatch.com",
         address: "Address: [Your Business Address]"
       }
     }
@@ -316,7 +316,7 @@ const content = {
       contact: {
         title: "15. Contactgegevens",
         description: "Als u vragen heeft over deze Servicevoorwaarden, neem dan contact met ons op:",
-        email: "E-mail: domumatch@gmail.com",
+        email: "E-mail: info@domumatch.com",
         address: "Adres: [Uw bedrijfsadres]"
       }
     }

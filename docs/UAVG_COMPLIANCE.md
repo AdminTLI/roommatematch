@@ -160,8 +160,8 @@ Domu Match does not operate a whistleblower system. User reports are handled as 
 - Update privacy policy with DPO details
 
 **Current Contact:**
-- Privacy: domumatch@gmail.com
-- DPO: domumatch@gmail.com (to be confirmed)
+- Privacy: info@domumatch.com
+- DPO: info@domumatch.com (to be confirmed)
 
 ## 7. Representative in Netherlands
 
