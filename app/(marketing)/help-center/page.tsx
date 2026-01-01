@@ -3,6 +3,7 @@ import { Navbar } from '@/components/site/navbar'
 import { HelpCenterContent } from './help-center-content'
 import { Metadata } from 'next'
 import { helpContent } from './help-content'
+import { Suspense } from 'react'
 
 export const metadata: Metadata = {
   title: 'Help Center | Domu Match - Support & FAQ',
@@ -91,7 +92,9 @@ export default function HelpCenterPage() {
       />
       <main>
         <Navbar />
-        <HelpCenterContent />
+        <Suspense fallback={<div className="min-h-screen bg-gray-50" />}>
+          <HelpCenterContent />
+        </Suspense>
         <Footer />
       </main>
     </>

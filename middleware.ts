@@ -71,6 +71,7 @@ export async function middleware(req: NextRequest) {
     '/auth/callback',
     '/auth/verify-email',
     '/auth/reset-password',
+    '/rent-calculator',
     '/api/public',
     '/favicon.ico',
     '/robots.txt',
@@ -139,12 +140,14 @@ export async function middleware(req: NextRequest) {
       // These are authenticated via session cookie and Persona's own security
       // Also skip CSRF for public forms that don't require authentication
       // Skip CSRF for analytics tracking endpoint (read-only tracking, not state-changing)
+      // Skip CSRF for resend-verification since users may not be fully authenticated yet
       const skipCSRFRoutes = [
         '/api/verification/persona-complete',
         '/api/verification/provider-webhook',
         '/api/careers/apply',
         '/api/analytics/track-event',
-        '/api/admin/sync-updates' // Admin endpoint for syncing deployment updates
+        '/api/admin/sync-updates', // Admin endpoint for syncing deployment updates
+        '/api/auth/resend-verification' // Resend verification email (users may not be authenticated)
       ]
       // Normalize pathname (remove trailing slash) for consistent matching
       const normalizedPathname = pathname.replace(/\/$/, '')

@@ -100,6 +100,8 @@ export function SignUpForm() {
     setIsLoading(true)
 
     try {
+      console.log('[SignUp] Attempting to sign up user with email:', email)
+      
       // Sign up user
       const { data, error } = await supabase.auth.signUp({
         email,
@@ -114,22 +116,65 @@ export function SignUpForm() {
         },
       })
 
+      console.log('[SignUp] Signup response:', { 
+        data: data ? { user: data.user ? { id: data.user.id, email: data.user.email } : null, session: !!data.session } : null,
+        error 
+      })
+
       if (error) {
+        console.error('[SignUp] Signup error:', error)
         setError(error.message)
         setIsLoading(false)
         return
       }
 
+      // Check if user was created
+      if (!data.user) {
+        console.error('[SignUp] No user returned from signup')
+        setError('Failed to create account. Please try again.')
+        setIsLoading(false)
+        return
+      }
+
+      console.log('[SignUp] User created successfully:', {
+        userId: data.user.id,
+        email: data.user.email,
+        emailConfirmed: data.user.email_confirmed_at
+      })
+
       // Store email for OTP verification
       sessionStorage.setItem('verification-email', email)
       
-      // signUp() automatically sends OTP with type 'signup' when enable_confirmations = true
-      // No need to call signInWithOtp here - it would send a different OTP type
+      // signUp() should automatically send OTP with type 'signup' when enable_confirmations = true
+      // However, Supabase signUp() may return success even if email sending fails
+      // So we'll manually trigger email send via API route as a backup
+      // This ensures the email is actually sent even if Supabase's automatic sending fails
+      console.log('[SignUp] Manually triggering verification email send as backup')
+      try {
+        const resendResponse = await fetch('/api/auth/resend-verification', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ email }),
+        })
+        const resendResult = await resendResponse.json()
+        if (resendResponse.ok) {
+          console.log('[SignUp] Backup email send successful')
+        } else {
+          console.warn('[SignUp] Backup email send failed:', resendResult.error)
+          // Don't block navigation - auto-resend on verify-email page will try again
+        }
+      } catch (resendErr) {
+        console.error('[SignUp] Error sending backup email:', resendErr)
+        // Don't block navigation - auto-resend on verify-email page will try again
+      }
       
-      // Navigate to verification page
-      router.push('/auth/verify-email')
+      // Navigate to verification page with auto-resend flag (as additional backup)
+      router.push(`/auth/verify-email?email=${encodeURIComponent(email)}&auto=1`)
     } catch (err) {
-      setError(t.unexpectedError)
+      console.error('[SignUp] Unexpected error:', err)
+      setError(t.unexpectedError || 'An unexpected error occurred. Please try again.')
     } finally {
       setIsLoading(false)
     }

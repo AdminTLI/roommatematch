@@ -101,7 +101,7 @@ const nextConfig = {
           },
           {
             key: 'Permissions-Policy',
-            value: 'camera=(), microphone=(), geolocation=(), interest-cohort=()',
+            value: 'camera=*, microphone=*, geolocation=(), interest-cohort=()',
           },
           {
             key: 'X-DNS-Prefetch-Control',
@@ -119,13 +119,13 @@ const nextConfig = {
             key: 'Content-Security-Policy',
             value: [
               "default-src 'self'",
-              "script-src 'self' 'unsafe-eval' 'unsafe-inline' https://*.persona.com https://*.vercel-insights.com https://va.vercel-scripts.com https://*.sentry.io",
+              "script-src 'self' 'unsafe-eval' 'unsafe-inline' https://*.persona.com https://cdn.withpersona.com https://*.vercel-insights.com https://va.vercel-scripts.com https://*.sentry.io",
               "style-src 'self' 'unsafe-inline'",
               "img-src 'self' data: https: blob:",
               "font-src 'self' data:",
-              "connect-src 'self' https://*.supabase.co wss://*.supabase.co ws://*.supabase.co https://*.persona.com https://*.sentry.io https://*.vercel-insights.com",
+              "connect-src 'self' https://*.supabase.co wss://*.supabase.co ws://*.supabase.co https://*.persona.com https://cdn.withpersona.com https://*.sentry.io https://*.vercel-insights.com",
               "worker-src 'self' blob:",
-              "frame-src https://*.persona.com",
+              "frame-src https://*.persona.com https://cdn.withpersona.com https://inquiry.withpersona.com",
               "object-src 'none'",
               "base-uri 'self'",
               "form-action 'self'",

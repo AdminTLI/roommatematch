@@ -73,14 +73,33 @@ export function VerifyEmailForm() {
   useEffect(() => {
     const params = new URLSearchParams(window.location.search)
     const shouldAuto = params.get('auto') === '1'
+    
     if (shouldAuto && email) {
-      // Use resend() for email confirmation (not signInWithOtp which triggers recovery)
-      supabase.auth.resend({
-        type: 'signup',
-        email: email
-      }).catch(() => {})
+      console.log('[AutoResend] Auto-resending verification email to:', email)
+      
+      // Use API route for reliable OTP email delivery
+      fetch('/api/auth/resend-verification', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email }),
+      })
+      .then(async (response) => {
+        const result = await response.json()
+        if (response.ok) {
+          console.log('[AutoResend] Successfully sent verification email')
+        } else {
+          console.error('[AutoResend] Failed to send verification email:', result.error)
+        }
+      })
+      .catch((err) => {
+        console.error('[AutoResend] Failed to auto-resend:', err)
+      })
+    } else if (shouldAuto && !email) {
+      console.warn('[AutoResend] Auto-resend requested but email not yet resolved')
     }
-  }, [email, supabase])
+  }, [email, searchParams])
 
   const handleOTPComplete = async (otpCode: string) => {
     if (!email) {
@@ -182,31 +201,46 @@ export function VerifyEmailForm() {
       return
     }
 
+    // Validate email format
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+    if (!emailRegex.test(email)) {
+      setError('Invalid email address. Please check your email and try again.')
+      return
+    }
+
     setIsResending(true)
     setError('')
+    setResendSuccess(false)
 
     try {
-      // Use resend() for email confirmation (not signInWithOtp which triggers recovery flow)
-      // This creates a confirmation_token, not a recovery_token
-      const { error } = await supabase.auth.resend({
-        type: 'signup',
-        email: email
+      console.log('[ResendOTP] Attempting to resend verification code to:', email)
+      
+      // Use server-side API route which uses Admin API for more reliable email sending
+      // This ensures we get OTP codes (not magic links) and works even if user isn't authenticated
+      const response = await fetch('/api/auth/resend-verification', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email }),
       })
 
-      if (error) {
-        // Provide more user-friendly error messages
-        if (error.message.includes('rate limit') || error.message.includes('Too many requests')) {
-          setError('Too many requests. Please wait a few minutes before requesting another code.')
-        } else {
-          setError(error.message || 'Failed to resend verification code. Please try again.')
-        }
-      } else {
-        setResendSuccess(true)
-        setTimeout(() => setResendSuccess(false), 5000)
+      const result = await response.json()
+      console.log('[ResendOTP] API response:', result)
+
+      if (!response.ok) {
+        // API returned an error
+        setError(result.error || 'Failed to resend verification code. Please try again.')
+        return
       }
+
+      // Success
+      console.log('[ResendOTP] Successfully sent verification email via API')
+      setResendSuccess(true)
+      setTimeout(() => setResendSuccess(false), 5000)
     } catch (err) {
+      console.error('[ResendOTP] Unexpected error:', err)
       setError('An unexpected error occurred. Please try again.')
-      console.error('Resend OTP error:', err)
     } finally {
       setIsResending(false)
     }
@@ -267,8 +301,11 @@ export function VerifyEmailForm() {
         {resendSuccess && (
           <Alert>
             <CheckCircle className="h-4 w-4" />
-            <AlertDescription>
-              New verification code sent successfully!
+            <AlertDescription className="space-y-1">
+              <p className="font-medium">New verification code sent successfully!</p>
+              <p className="text-xs text-muted-foreground">
+                Please check your inbox and spam folder. If you don't receive the email within a few minutes, please try again or contact support.
+              </p>
             </AlertDescription>
           </Alert>
         )}
