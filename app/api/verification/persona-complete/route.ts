@@ -150,9 +150,22 @@ export async function POST(request: NextRequest) {
         .eq('id', existingVerification.id)
 
       if (updateError) {
-        safeLogger.error('[Verification] Failed to update verification record', updateError)
+        safeLogger.error('[Verification] Failed to update verification record', {
+          error: updateError,
+          errorMessage: updateError.message,
+          errorCode: updateError.code,
+          errorDetails: updateError.details,
+          errorHint: updateError.hint,
+          userId: user.id,
+          inquiryId,
+          verificationStatus
+        })
         return NextResponse.json(
-          { error: 'Failed to update verification record' },
+          { 
+            error: 'Failed to update verification record',
+            details: updateError.message,
+            code: updateError.code
+          },
           { status: 500 }
         )
       }
@@ -175,9 +188,23 @@ export async function POST(request: NextRequest) {
         })
 
       if (insertError) {
-        safeLogger.error('[Verification] Failed to create verification record', insertError)
+        safeLogger.error('[Verification] Failed to create verification record', {
+          error: insertError,
+          errorMessage: insertError.message,
+          errorCode: insertError.code,
+          errorDetails: insertError.details,
+          errorHint: insertError.hint,
+          userId: user.id,
+          inquiryId,
+          verificationStatus,
+          dobMismatch
+        })
         return NextResponse.json(
-          { error: 'Failed to create verification record' },
+          { 
+            error: 'Failed to create verification record',
+            details: insertError.message,
+            code: insertError.code
+          },
           { status: 500 }
         )
       }
