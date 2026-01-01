@@ -395,6 +395,7 @@ export function VerifyInterface({ user }: VerifyInterfaceProps) {
 
   const fetchStatus = async () => {
     try {
+      console.log('[Verify] Fetching verification status...')
       const response = await fetch('/api/verification/status', {
         cache: 'no-store',
         headers: {
@@ -404,6 +405,7 @@ export function VerifyInterface({ user }: VerifyInterfaceProps) {
       if (response.ok) {
         const data = await response.json()
         const newStatus = data.status
+        console.log('[Verify] Status fetched:', { newStatus, fullData: data })
         setStatus(newStatus)
         statusFetchedRef.current = true
         
@@ -414,8 +416,22 @@ export function VerifyInterface({ user }: VerifyInterfaceProps) {
         
         // Redirect to onboarding if verified
         if (newStatus === 'verified') {
+          console.log('[Verify] Status is verified, scheduling redirect...')
           setTimeout(() => {
-            router.push('/onboarding/intro')
+            console.log('[Verify] Executing automatic redirect to onboarding...')
+            try {
+              router.push('/onboarding/intro')
+              // Fallback after delay
+              setTimeout(() => {
+                if (window.location.pathname === '/verify') {
+                  console.warn('[Verify] Automatic redirect may have failed, using window.location')
+                  window.location.href = '/onboarding/intro'
+                }
+              }, 1000)
+            } catch (error) {
+              console.error('[Verify] Automatic redirect error:', error)
+              window.location.href = '/onboarding/intro'
+            }
           }, 2000)
         }
       } else if (response.status === 404) {
@@ -559,7 +575,35 @@ export function VerifyInterface({ user }: VerifyInterfaceProps) {
                   Your identity has been verified. Redirecting you to complete your profile...
                 </p>
               </div>
-              <Button onClick={() => router.push('/onboarding/intro')} className="w-full">
+              <Button 
+                onClick={async () => {
+                  console.log('[Verify] Continue button clicked, navigating to onboarding...')
+                  // Force refresh status first to ensure we have latest
+                  await fetchStatus()
+                  
+                  // Small delay to ensure status is updated
+                  await new Promise(resolve => setTimeout(resolve, 100))
+                  
+                  try {
+                    console.log('[Verify] Attempting navigation with router.push...')
+                    // Try router.push first
+                    router.push('/onboarding/intro')
+                    // Also use window.location as a fallback after a short delay
+                    // This ensures navigation happens even if router.push fails silently
+                    setTimeout(() => {
+                      if (window.location.pathname === '/verify') {
+                        console.warn('[Verify] Router.push may have failed, using window.location as fallback')
+                        window.location.href = '/onboarding/intro'
+                      }
+                    }, 500)
+                  } catch (error) {
+                    console.error('[Verify] Navigation error:', error)
+                    // Fallback to window.location if router.push throws
+                    window.location.href = '/onboarding/intro'
+                  }
+                }} 
+                className="w-full"
+              >
                 Continue to Profile Setup
               </Button>
             </div>
