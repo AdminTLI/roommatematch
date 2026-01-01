@@ -207,6 +207,12 @@ export async function POST(request: NextRequest) {
           },
           { status: 500 }
         )
+      } else {
+        safeLogger.info('[Verification] Successfully created verification record', {
+          userId: user.id,
+          inquiryId,
+          verificationStatus: dobMismatch ? 'rejected' : verificationStatus
+        })
       }
     }
 

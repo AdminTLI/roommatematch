@@ -299,17 +299,26 @@ export function VerifyInterface({ user }: VerifyInterfaceProps) {
               const data = await response.json()
               console.warn('[Verification] Persona complete success:', data)
               
-              // Refresh status immediately
+              // Force a fresh status check immediately after completion
+              // Add a small delay to ensure database write has completed
+              await new Promise(resolve => setTimeout(resolve, 500))
               await fetchStatus()
               
               // Check the updated status and redirect if verified
               // Also handle case where Persona says they're already verified
               const currentStatus = statusRef.current
+              console.warn('[Verification] Status after completion:', {
+                personaStatus,
+                apiStatus: data.status,
+                currentStatus,
+                willRedirect: personaStatus === 'approved' || personaStatus === 'completed' || data.status === 'approved' || currentStatus === 'verified'
+              })
+              
               if (personaStatus === 'approved' || personaStatus === 'completed' || data.status === 'approved' || currentStatus === 'verified') {
                 // Give a moment for status to update, then redirect
                 setTimeout(() => {
                   router.push('/onboarding/intro')
-                }, 1500)
+                }, 1000)
               } else if (currentStatus === 'pending') {
                 // If status is pending, the existing polling effect will handle it
                 // Just ensure we're in pending state
@@ -322,6 +331,7 @@ export function VerifyInterface({ user }: VerifyInterfaceProps) {
                   pollCount++
                   await fetchStatus()
                   const latestStatus = statusRef.current
+                  console.warn('[Verification] Polling status:', { pollCount, latestStatus })
                   if (latestStatus === 'verified' || pollCount >= maxPolls) {
                     clearInterval(pollInterval)
                     if (latestStatus === 'verified') {

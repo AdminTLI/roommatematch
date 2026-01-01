@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createClient } from '@/lib/supabase/server'
+import { createClient, createAdminClient } from '@/lib/supabase/server'
 import { safeLogger } from '@/lib/utils/logger'
 
 export async function GET(request: NextRequest) {
@@ -11,14 +11,27 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
+    // Use admin client to bypass RLS and ensure we can read the verification record
+    // This is safe because we're only reading the user's own verification
+    const admin = createAdminClient()
+    
     // Get latest verification record first (source of truth)
-    const { data: verification } = await supabase
+    const { data: verification, error: verificationError } = await admin
       .from('verifications')
       .select('id, provider, status, review_reason, created_at, updated_at')
       .eq('user_id', user.id)
       .order('created_at', { ascending: false })
       .limit(1)
       .maybeSingle()
+
+    if (verificationError) {
+      safeLogger.warn('[Verification] Status check - error reading verification record', {
+        userId: user.id,
+        error: verificationError,
+        errorMessage: verificationError.message,
+        errorCode: verificationError.code
+      })
+    }
 
     // Get user profile verification status
     // Profile may not exist yet during verification flow
