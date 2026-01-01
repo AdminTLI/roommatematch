@@ -304,27 +304,25 @@ export function VerifyInterface({ user }: VerifyInterfaceProps) {
               await new Promise(resolve => setTimeout(resolve, 500))
               await fetchStatus()
               
-              // Check the updated status and redirect if verified
-              // Also handle case where Persona says they're already verified
+              // Check the updated status - don't auto-redirect to avoid loops
+              // Let the user click the Continue button instead
               const currentStatus = statusRef.current
               console.warn('[Verification] Status after completion:', {
                 personaStatus,
                 apiStatus: data.status,
                 currentStatus,
-                willRedirect: personaStatus === 'approved' || personaStatus === 'completed' || data.status === 'approved' || currentStatus === 'verified'
+                userCanContinue: personaStatus === 'approved' || personaStatus === 'completed' || data.status === 'approved' || currentStatus === 'verified'
               })
               
-              if (personaStatus === 'approved' || personaStatus === 'completed' || data.status === 'approved' || currentStatus === 'verified') {
-                // Give a moment for status to update, then redirect
-                setTimeout(() => {
-                  router.push('/onboarding/intro')
-                }, 1000)
+              // Update status based on response
+              if (personaStatus === 'approved' || personaStatus === 'completed' || data.status === 'approved') {
+                // Status will be updated by fetchStatus, but ensure it's set to verified
+                setStatus('verified')
               } else if (currentStatus === 'pending') {
                 // If status is pending, the existing polling effect will handle it
-                // Just ensure we're in pending state
                 setStatus('pending')
               } else {
-                // Status might not have updated yet, poll a few times
+                // Status might not have updated yet, poll a few times to update UI
                 let pollCount = 0
                 const maxPolls = 5
                 const pollInterval = setInterval(async () => {
@@ -334,9 +332,7 @@ export function VerifyInterface({ user }: VerifyInterfaceProps) {
                   console.warn('[Verification] Polling status:', { pollCount, latestStatus })
                   if (latestStatus === 'verified' || pollCount >= maxPolls) {
                     clearInterval(pollInterval)
-                    if (latestStatus === 'verified') {
-                      router.push('/onboarding/intro')
-                    }
+                    // Don't auto-redirect - let user click button
                   }
                 }, 2000)
               }
@@ -396,10 +392,13 @@ export function VerifyInterface({ user }: VerifyInterfaceProps) {
   const fetchStatus = async () => {
     try {
       console.log('[Verify] Fetching verification status...')
-      const response = await fetch('/api/verification/status', {
+      // Add cache-busting timestamp to bypass any caching
+      const timestamp = Date.now()
+      const response = await fetch(`/api/verification/status?t=${timestamp}`, {
         cache: 'no-store',
         headers: {
-          'Cache-Control': 'no-cache'
+          'Cache-Control': 'no-cache',
+          'Pragma': 'no-cache'
         }
       })
       if (response.ok) {
@@ -414,25 +413,10 @@ export function VerifyInterface({ user }: VerifyInterfaceProps) {
           shouldAutoOpenRef.current = false
         }
         
-        // Redirect to onboarding if verified
+        // Don't automatically redirect - let user click the button
+        // Automatic redirects can cause loops with middleware cache
         if (newStatus === 'verified') {
-          console.log('[Verify] Status is verified, scheduling redirect...')
-          setTimeout(() => {
-            console.log('[Verify] Executing automatic redirect to onboarding...')
-            try {
-              router.push('/onboarding/intro')
-              // Fallback after delay
-              setTimeout(() => {
-                if (window.location.pathname === '/verify') {
-                  console.warn('[Verify] Automatic redirect may have failed, using window.location')
-                  window.location.href = '/onboarding/intro'
-                }
-              }, 1000)
-            } catch (error) {
-              console.error('[Verify] Automatic redirect error:', error)
-              window.location.href = '/onboarding/intro'
-            }
-          }, 2000)
+          console.log('[Verify] Status is verified - user can click Continue button')
         }
       } else if (response.status === 404) {
         // Profile doesn't exist yet - user is unverified
@@ -576,31 +560,11 @@ export function VerifyInterface({ user }: VerifyInterfaceProps) {
                 </p>
               </div>
               <Button 
-                onClick={async () => {
+                onClick={() => {
                   console.log('[Verify] Continue button clicked, navigating to onboarding...')
-                  // Force refresh status first to ensure we have latest
-                  await fetchStatus()
-                  
-                  // Small delay to ensure status is updated
-                  await new Promise(resolve => setTimeout(resolve, 100))
-                  
-                  try {
-                    console.log('[Verify] Attempting navigation with router.push...')
-                    // Try router.push first
-                    router.push('/onboarding/intro')
-                    // Also use window.location as a fallback after a short delay
-                    // This ensures navigation happens even if router.push fails silently
-                    setTimeout(() => {
-                      if (window.location.pathname === '/verify') {
-                        console.warn('[Verify] Router.push may have failed, using window.location as fallback')
-                        window.location.href = '/onboarding/intro'
-                      }
-                    }, 500)
-                  } catch (error) {
-                    console.error('[Verify] Navigation error:', error)
-                    // Fallback to window.location if router.push throws
-                    window.location.href = '/onboarding/intro'
-                  }
+                  // Use window.location.href immediately to bypass Next.js router
+                  // This avoids any caching or redirect loop issues
+                  window.location.href = '/onboarding/intro'
                 }} 
                 className="w-full"
               >
