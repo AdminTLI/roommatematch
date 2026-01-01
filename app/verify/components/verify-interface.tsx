@@ -297,14 +297,37 @@ export function VerifyInterface({ user }: VerifyInterfaceProps) {
 
             if (response.ok) {
               const data = await response.json()
-              console.log('[Verification] Persona complete success:', data)
+              console.warn('[Verification] Persona complete success:', data)
               
-              // Refresh status and redirect to onboarding if approved
+              // Refresh status immediately
               await fetchStatus()
               
-              if (personaStatus === 'approved' || personaStatus === 'completed') {
+              // Check the updated status and redirect if verified
+              // Also handle case where Persona says they're already verified
+              const currentStatus = statusRef.current
+              if (personaStatus === 'approved' || personaStatus === 'completed' || data.status === 'approved' || currentStatus === 'verified') {
+                // Give a moment for status to update, then redirect
                 setTimeout(() => {
                   router.push('/onboarding/intro')
+                }, 1500)
+              } else if (currentStatus === 'pending') {
+                // If status is pending, the existing polling effect will handle it
+                // Just ensure we're in pending state
+                setStatus('pending')
+              } else {
+                // Status might not have updated yet, poll a few times
+                let pollCount = 0
+                const maxPolls = 5
+                const pollInterval = setInterval(async () => {
+                  pollCount++
+                  await fetchStatus()
+                  const latestStatus = statusRef.current
+                  if (latestStatus === 'verified' || pollCount >= maxPolls) {
+                    clearInterval(pollInterval)
+                    if (latestStatus === 'verified') {
+                      router.push('/onboarding/intro')
+                    }
+                  }
                 }, 2000)
               }
             } else {

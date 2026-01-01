@@ -76,7 +76,7 @@ export default async function VerifyPage() {
   // If no profile exists yet, that's fine - verification happens before profile creation
 
   return (
-    <AppShell user={userProfile}>
+    <AppShell user={userProfile} hideVerificationBanner={true}>
       <VerifyInterface user={user} />
     </AppShell>
   )
