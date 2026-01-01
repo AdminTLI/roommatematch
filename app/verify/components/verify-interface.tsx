@@ -437,7 +437,17 @@ export function VerifyInterface({ user }: VerifyInterfaceProps) {
         // Don't automatically redirect - let user click the button
         // Automatic redirects can cause loops with middleware cache
         if (newStatus === 'verified') {
-          console.log('[Verify] Status is verified - user can click Continue button')
+          console.log('[Verify] Status is verified - user can click Continue button', {
+            newStatus,
+            currentStatus: status,
+            statusRef: statusRef.current
+          })
+        } else {
+          console.log('[Verify] Status is not verified:', {
+            newStatus,
+            currentStatus: status,
+            statusRef: statusRef.current
+          })
         }
       } else if (response.status === 404) {
         // Profile doesn't exist yet - user is unverified
@@ -575,6 +585,12 @@ export function VerifyInterface({ user }: VerifyInterfaceProps) {
 
         <CardContent className="space-y-6">
           {/* Verified State */}
+          {(() => {
+            if (status === 'verified') {
+              console.log('[Verify] Rendering verified state, status:', status, 'statusRef:', statusRef.current)
+            }
+            return null
+          })()}
           {status === 'verified' && (
             <div className="text-center space-y-4">
               <div className="mx-auto w-16 h-16 bg-green-100 dark:bg-green-900/20 rounded-full flex items-center justify-center">
@@ -585,17 +601,33 @@ export function VerifyInterface({ user }: VerifyInterfaceProps) {
                   Verification Complete!
                 </h3>
                 <p className="text-gray-600 dark:text-gray-300">
-                  Your identity has been verified. Redirecting you to complete your profile...
+                  Your identity has been verified. Click the button below to continue to your profile setup.
                 </p>
               </div>
               <Button 
-                onClick={() => {
-                  console.log('[Verify] Continue button clicked, navigating to onboarding...')
+                onClick={(e) => {
+                  e.preventDefault()
+                  e.stopPropagation()
+                  console.log('[Verify] Continue button clicked, navigating to onboarding...', {
+                    currentPath: window.location.pathname,
+                    status: status,
+                    statusRef: statusRef.current
+                  })
+                  
                   // Use window.location.href immediately to bypass Next.js router
                   // This avoids any caching or redirect loop issues
-                  window.location.href = '/onboarding/intro'
+                  try {
+                    console.log('[Verify] Setting window.location.href...')
+                    window.location.href = '/onboarding/intro'
+                    console.log('[Verify] window.location.href set, navigation should happen')
+                  } catch (error) {
+                    console.error('[Verify] Error setting window.location.href:', error)
+                    // Fallback: try router.push
+                    router.push('/onboarding/intro')
+                  }
                 }} 
                 className="w-full"
+                type="button"
               >
                 Continue to Profile Setup
               </Button>
