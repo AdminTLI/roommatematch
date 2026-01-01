@@ -179,8 +179,8 @@ export function VerifyInterface({ user }: VerifyInterfaceProps) {
     const templateId = process.env.NEXT_PUBLIC_PERSONA_TEMPLATE_ID || 'itmpl_8XHCzE9HWCT7fFm2qwUie3fNicGw'
     const environmentId = process.env.NEXT_PUBLIC_PERSONA_ENVIRONMENT_ID || 'env_xx8qopwH2mtfVV7ZHYxXFnjW1YDA'
 
-    // Debug logging to help identify environment issues
-    console.log('[Verify] Persona initialization:', {
+    // Debug logging to help identify environment issues (using warn so it shows in production)
+    console.warn('[Verify] Persona initialization:', {
       templateId,
       environmentId,
       hasEnvVar: !!process.env.NEXT_PUBLIC_PERSONA_ENVIRONMENT_ID,
@@ -195,8 +195,8 @@ export function VerifyInterface({ user }: VerifyInterfaceProps) {
     }
 
     try {
-      // Log the actual values being passed to Persona
-      console.log('[Verify] Creating Persona client with:', {
+      // Log the actual values being passed to Persona (using warn so it shows in production)
+      console.warn('[Verify] Creating Persona client with:', {
         templateId,
         environmentId,
         environmentIdLength: environmentId?.length,
