@@ -49,6 +49,7 @@ export function VerifyInterface({ user }: VerifyInterfaceProps) {
   const shouldAutoOpenRef = useRef(true) // Track if we should auto-open when ready
   const statusFetchedRef = useRef(false) // Track if status has been fetched
   const statusRef = useRef<VerificationStatus>('unverified') // Track latest status in ref
+  const hasOpenedPersonaRef = useRef(false) // Track if Persona has been opened to prevent multiple opens
   
   const [status, setStatus] = useState<VerificationStatus>('unverified')
   const [isLoading, setIsLoading] = useState(true)
@@ -139,21 +140,8 @@ export function VerifyInterface({ user }: VerifyInterfaceProps) {
   useEffect(() => {
     fetchStatus().then(() => {
       statusFetchedRef.current = true
-      // If Persona is already ready, try to auto-open now
-      if (personaClientRef.current && shouldAutoOpenRef.current) {
-        const currentStatus = statusRef.current
-        if (currentStatus === 'unverified' || currentStatus === 'failed') {
-          setIsStarting(true)
-          setIsPersonaActive(true)
-          try {
-            personaClientRef.current.open()
-          } catch (err) {
-            console.error('Failed to auto-open Persona:', err)
-            setIsStarting(false)
-            setIsPersonaActive(false)
-          }
-        }
-      }
+      // Don't auto-open here - let onReady handle it to avoid double-opening
+      // This prevents rate limiting from Persona
     })
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
@@ -216,17 +204,27 @@ export function VerifyInterface({ user }: VerifyInterfaceProps) {
           // 1. We should auto-open (user hasn't manually started)
           // 2. Status has been fetched OR we'll wait for it
           // 3. User is unverified or failed
+          // 4. Persona hasn't been opened yet (prevent multiple opens)
           const tryAutoOpen = () => {
             const currentStatus = statusRef.current
+            
+            // Prevent multiple opens that could cause rate limiting
+            if (hasOpenedPersonaRef.current) {
+              console.log('[Verify] Persona already opened, skipping auto-open')
+              return
+            }
+            
             if (shouldAutoOpenRef.current && (currentStatus === 'unverified' || currentStatus === 'failed')) {
               setIsStarting(true)
               setIsPersonaActive(true)
+              hasOpenedPersonaRef.current = true
               try {
                 client.open()
               } catch (err) {
                 console.error('Failed to open Persona on ready:', err)
                 setIsStarting(false)
                 setIsPersonaActive(false)
+                hasOpenedPersonaRef.current = false // Reset on error so user can retry
                 setError('Failed to start verification. Please try again.')
               }
             } else if (currentStatus === 'verified' || currentStatus === 'pending') {
@@ -258,6 +256,8 @@ export function VerifyInterface({ user }: VerifyInterfaceProps) {
           
           setIsStarting(false)
           setIsPersonaActive(false)
+          // Reset flag on completion so user can retry if verification fails
+          hasOpenedPersonaRef.current = false
           
           // Update verification status in our database
           try {
@@ -372,12 +372,33 @@ export function VerifyInterface({ user }: VerifyInterfaceProps) {
           setIsStarting(false)
           setIsPersonaActive(false)
           setError(null)
+          // Don't reset hasOpenedPersonaRef on cancel - user can retry manually
         },
         onError: (error) => {
           console.error('Persona verification error:', error)
-          setError('Verification failed. Please try again.')
+          
+          // Provide more specific error messages based on error type
+          let errorMessage = 'Verification failed. Please try again.'
+          
+          if (error?.status === 429 || error?.code === 'rate_limit_exceeded') {
+            errorMessage = 'Too many verification attempts. Please wait a few minutes and try again.'
+          } else if (error?.status === 400 || error?.code === 'invalid_config') {
+            errorMessage = 'Verification service configuration error. Please contact support if this persists.'
+            console.error('[Verify] Persona config error - check environment variables:', {
+              templateId: process.env.NEXT_PUBLIC_PERSONA_TEMPLATE_ID,
+              environmentId: process.env.NEXT_PUBLIC_PERSONA_ENVIRONMENT_ID,
+              hasEnvVar: !!process.env.NEXT_PUBLIC_PERSONA_ENVIRONMENT_ID
+            })
+          } else if (error?.message) {
+            // Use Persona's error message if available
+            errorMessage = `Verification error: ${error.message}. Please try again.`
+          }
+          
+          setError(errorMessage)
           setIsStarting(false)
           setIsPersonaActive(false)
+          // Reset flag on error so user can retry
+          hasOpenedPersonaRef.current = false
         }
       })
       
@@ -443,6 +464,12 @@ export function VerifyInterface({ user }: VerifyInterfaceProps) {
   }
 
   const startVerification = () => {
+    // Prevent multiple opens
+    if (hasOpenedPersonaRef.current && isPersonaActive) {
+      console.log('[Verify] Persona already active, ignoring start request')
+      return
+    }
+    
     setIsStarting(true)
     setIsPersonaActive(true)
     setError(null)
@@ -456,12 +483,14 @@ export function VerifyInterface({ user }: VerifyInterfaceProps) {
     }
 
     try {
+      hasOpenedPersonaRef.current = true
       personaClientRef.current.open()
     } catch (err) {
       console.error('Failed to open Persona verification:', err)
       setError('Failed to start verification. Please try again.')
       setIsStarting(false)
       setIsPersonaActive(false)
+      hasOpenedPersonaRef.current = false // Reset on error
     }
   }
 
