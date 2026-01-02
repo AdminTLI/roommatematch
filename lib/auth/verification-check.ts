@@ -1,4 +1,4 @@
-import { createClient } from '@/lib/supabase/server'
+import { createClient, createAdminClient } from '@/lib/supabase/server'
 import type { User } from '@supabase/supabase-js'
 
 export interface VerificationStatus {
@@ -27,6 +27,15 @@ if (typeof global !== 'undefined') {
       }
     }
   }, 60000) // Clean up every minute
+}
+
+/**
+ * Clear verification cache for a specific user
+ * Use this when verification status changes to ensure fresh data
+ * @param userId - The user ID to clear cache for
+ */
+export function clearVerificationCache(userId: string): void {
+  verificationCache.delete(userId)
 }
 
 /**
@@ -64,19 +73,20 @@ export async function checkUserVerificationStatus(
   )
 
   // Check Persona verification status
-  // OPTIMIZED: Fetch both verification and profile in parallel
+  // Use admin client to bypass RLS and ensure we get fresh data (consistent with /api/verification/status)
+  const admin = createAdminClient()
   const supabase = await createClient()
   
   const [verificationResult, profileResult] = await Promise.all([
-    // Check verifications table first
-    supabase
+    // Check verifications table first using admin client for reliable access
+    admin
       .from('verifications')
       .select('status')
       .eq('user_id', user.id)
       .order('created_at', { ascending: false })
       .limit(1)
       .maybeSingle(),
-    // Also fetch profile in parallel
+    // Also fetch profile in parallel (can use regular client for profiles)
     supabase
       .from('profiles')
       .select('verification_status')

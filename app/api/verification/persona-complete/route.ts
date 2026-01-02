@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createClient, createAdminClient } from '@/lib/supabase/server'
 import { safeLogger } from '@/lib/utils/logger'
 import { normalizeDateInput } from '@/lib/auth/age-verification'
+import { clearVerificationCache } from '@/lib/auth/verification-check'
 
 async function fetchPersonaInquiryDob(inquiryId: string): Promise<string | undefined> {
   const apiKey = process.env.PERSONA_API_KEY
@@ -265,6 +266,10 @@ export async function POST(request: NextRequest) {
       personaDob: normalizedPersonaDob,
       expectedDob: normalizedExpectedDob
     })
+
+    // Clear verification cache to ensure fresh data on next check
+    // This prevents stale cache from causing redirect loops after verification completes
+    clearVerificationCache(user.id)
 
     return NextResponse.json({
       success: true,

@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createAdminClient } from '@/lib/supabase/server'
 import { safeLogger } from '@/lib/utils/logger'
 import { PersonaWebhookSchema, VeriffWebhookSchema, OnfidoWebhookSchema } from '@/lib/webhooks/schemas'
+import { clearVerificationCache } from '@/lib/auth/verification-check'
 import crypto from 'crypto'
 
 type KYCProvider = 'veriff' | 'persona' | 'onfido'
@@ -465,6 +466,10 @@ export async function POST(request: NextRequest) {
       personaDob: normalizedPersonaDob,
       expectedDob: normalizedExpectedDob
     })
+
+    // Clear verification cache to ensure fresh data on next check
+    // This prevents stale cache from causing redirect loops after verification status changes
+    clearVerificationCache(verification.user_id)
 
     return NextResponse.json({ ok: true })
   } catch (error) {
