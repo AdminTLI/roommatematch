@@ -286,10 +286,19 @@ export function StudentMatchesInterface({ user }: StudentMatchesInterfaceProps) 
         const errorMessage = errorData.error || 'Failed to refresh suggestions'
         const retryAfter = errorData.retryAfter
         
-        console.error('Failed to refresh suggestions:', errorMessage)
+        console.error('Failed to refresh suggestions:', errorMessage, {
+          status: response.status,
+          errorData
+        })
         
-        // Show error toast with retry information
-        if (retryAfter && retryAfter > 0) {
+        // Handle CSRF token errors with a user-friendly message
+        if (response.status === 403 && (errorMessage.includes('CSRF') || errorMessage.includes('Invalid CSRF token'))) {
+          toast.error('Session expired', {
+            description: 'Please refresh the page and try again.',
+            duration: 7000,
+          })
+        } else if (retryAfter && retryAfter > 0) {
+          // Show error toast with retry information
           const minutes = Math.ceil(retryAfter / 60)
           toast.error(errorMessage, {
             description: `Please try again in ${minutes} minute${minutes !== 1 ? 's' : ''}.`,

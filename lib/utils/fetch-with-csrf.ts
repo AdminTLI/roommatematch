@@ -79,18 +79,33 @@ async function getCSRFToken(retries = 2): Promise<string | null> {
 
 /**
  * Fetch with CSRF token automatically included
+ * Handles CSRF token failures gracefully with retry logic
  */
 export async function fetchWithCSRF(
   url: string,
   options: RequestInit = {}
 ): Promise<Response> {
+  const isStateChanging = options.method && ['POST', 'PUT', 'PATCH', 'DELETE'].includes(options.method.toUpperCase())
+  
   try {
-    const token = await getCSRFToken()
+    let token: string | null = null
+    
+    // Only fetch CSRF token for state-changing requests
+    if (isStateChanging) {
+      token = await getCSRFToken()
+      
+      // If we couldn't get a token, try one more time after a short delay
+      // This handles cases where the cookie might not be set yet
+      if (!token) {
+        await new Promise(resolve => setTimeout(resolve, 100))
+        token = await getCSRFToken()
+      }
+    }
     
     const headers = new Headers(options.headers)
     
     // Only add CSRF token for state-changing requests
-    if (token && options.method && ['POST', 'PUT', 'PATCH', 'DELETE'].includes(options.method.toUpperCase())) {
+    if (token && isStateChanging) {
       headers.set('x-csrf-token', token)
     }
 
@@ -99,6 +114,20 @@ export async function fetchWithCSRF(
       headers,
       credentials: 'include', // Include cookies
     })
+    
+    // Handle CSRF token errors with a helpful message
+    if (response.status === 403) {
+      try {
+        const errorData = await response.clone().json()
+        if (errorData.error === 'Invalid CSRF token' || errorData.error?.includes('CSRF')) {
+          console.warn('[fetchWithCSRF] CSRF token validation failed, this might be a temporary issue')
+          // Return the response as-is - let the caller handle the error
+          // The error message will be displayed to the user
+        }
+      } catch {
+        // If we can't parse the error response, just return it
+      }
+    }
     
     return response
   } catch (error) {
