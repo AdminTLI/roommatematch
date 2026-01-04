@@ -5,7 +5,6 @@ import { useSearchParams } from 'next/navigation'
 import itemsJson from '@/data/item-bank.v1.json'
 import type { Item } from '@/types/questionnaire'
 import { QuestionnaireLayout } from '@/components/questionnaire/QuestionnaireLayout'
-import { SectionIntro } from '@/components/questionnaire/SectionIntro'
 import { QuestionRow } from '@/components/questionnaire/QuestionRow'
 import { LikertScale } from '@/components/questionnaire/LikertScale'
 import { BipolarScale } from '@/components/questionnaire/BipolarScale'
@@ -72,13 +71,14 @@ function SectionClientContent() {
       nextDisabled={nextDisabled}
     >
       <AutosaveToaster show={showToast} />
-      <div className="flex items-center justify-between">
-        <SectionIntro title="Communication & Conflict" purpose="Feedback preferences and how we solve small issues fast." />
-        {/* Only render count after mount to avoid hydration mismatch */}
-        {isMounted && (
-          <div className="text-sm text-gray-600">{answered}/{total} answered</div>
-        )}
-      </div>
+      {/* Progress counter - only render after mount to avoid hydration mismatch */}
+      {isMounted && (
+        <div className="flex justify-end mb-4">
+          <div className="inline-flex items-center px-3 py-1.5 rounded-lg bg-indigo-50 border border-indigo-200 text-sm font-medium text-indigo-700">
+            {answered}/{total} answered
+          </div>
+        </div>
+      )}
       <div className="space-y-8 sm:space-y-6">
         {items.map((item) => (
           <QuestionRow

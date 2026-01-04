@@ -5,7 +5,6 @@ import { useSearchParams } from 'next/navigation'
 import locItems from '@/data/item-bank.location.v1.json'
 import type { Item } from '@/types/questionnaire'
 import { QuestionnaireLayout } from '@/components/questionnaire/QuestionnaireLayout'
-import { SectionIntro } from '@/components/questionnaire/SectionIntro'
 import { QuestionRow } from '@/components/questionnaire/QuestionRow'
 import { useOnboardingStore } from '@/store/onboarding'
 import { GroupedSearchSelect } from '@/components/questionnaire/GroupedSearchSelect'
@@ -117,14 +116,14 @@ function SectionClientContent() {
       nextDisabled={nextDisabled}
     >
       <AutosaveToaster show={showToast} />
-      <div className="flex items-center justify-between">
-        <SectionIntro title="Location & Commute" purpose="Set your institution and campus to tune location pairing." />
-        {/* Only render count after mount to avoid hydration mismatch */}
-        {isMounted && (
-          <div className="text-sm text-gray-600">{answered}/{total} answered</div>
-        )}
-      </div>
-
+      {/* Progress counter - only render after mount to avoid hydration mismatch */}
+      {isMounted && (
+        <div className="flex justify-end mb-4">
+          <div className="inline-flex items-center px-3 py-1.5 rounded-lg bg-indigo-50 border border-indigo-200 text-sm font-medium text-indigo-700">
+            {answered}/{total} answered
+          </div>
+        </div>
+      )}
       <div className="space-y-8 sm:space-y-6">
         {items.map((item) => (
           <QuestionRow key={item.id} label={item.label}>
