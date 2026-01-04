@@ -68,7 +68,8 @@ SET search_path = ''
 AS $$
 BEGIN
   -- Insert default 'user' role for new users
-  INSERT INTO user_roles (user_id, role)
+  -- Use fully qualified table name since search_path is empty
+  INSERT INTO public.user_roles (user_id, role)
   VALUES (NEW.id, 'user')
   ON CONFLICT (user_id) DO NOTHING;
   
