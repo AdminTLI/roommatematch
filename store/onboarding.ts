@@ -25,6 +25,7 @@ export interface OnboardingState {
   setLastSavedAt: (iso: string | undefined) => void
   computeProgress: () => number
   countAnsweredInSection: (section: SectionKey) => number
+  clearSections: () => void
 }
 
 const sectionKeys: SectionKey[] = [
@@ -77,6 +78,7 @@ export const useOnboardingStore = create<OnboardingState>()(
           }
         }),
       setLastSavedAt: (iso) => set(() => ({ lastSavedAt: iso })),
+      clearSections: () => set(() => ({ sections: createEmptySections(), lastSavedAt: undefined })),
       countAnsweredInSection: (section) => {
         const answers = get().sections[section]
         return Object.values(answers).filter((a) => a && a.value != null).length

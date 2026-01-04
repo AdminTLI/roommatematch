@@ -13,6 +13,7 @@ export function useAutosave(section: SectionKey) {
   const sectionAnswers = useOnboardingStore((s) => s.sections[section])
   const setAnswer = useOnboardingStore((s) => s.setAnswer)
   const setLastSavedAt = useOnboardingStore((s) => s.setLastSavedAt)
+  const clearSections = useOnboardingStore((s) => s.clearSections)
   const [isSaving, setIsSaving] = useState(false)
   const [showToast, setShowToast] = useState(false)
   const [hasLoaded, setHasLoaded] = useState(false)
@@ -24,17 +25,15 @@ export function useAutosave(section: SectionKey) {
     let cancelled = false
     ;(async () => {
       try {
-        // First check if user has any onboarding progress
-        // Only load answers if user has actually started onboarding
+        // First check overall progress to see if user has any onboarding data
         const progressRes = await fetch('/api/onboarding/progress')
-        let shouldLoadAnswers = false
+        let hasAnyProgress = false
         
         if (progressRes.ok) {
           const progress = await progressRes.json()
-          
-          // Only load if user has actual progress (hasPartialProgress or isFullySubmitted)
-          // This ensures new users start with a clean form
-          shouldLoadAnswers = progress.hasPartialProgress || progress.isFullySubmitted || !!progress.submittedAt
+          // Check if user has any progress (submitted or has partial progress)
+          // We check completionPercentage > 0 to catch users with data in onboarding_sections
+          hasAnyProgress = progress.isFullySubmitted || progress.hasPartialProgress || progress.completionPercentage > 0 || !!progress.submittedAt
         }
         
         // Load the specific section to check if it has answers
@@ -42,12 +41,18 @@ export function useAutosave(section: SectionKey) {
         if (!res.ok) throw new Error('Failed to load')
         const data = await res.json()
         const answers: Answer[] = Array.isArray(data.answers) ? data.answers : []
+        const hasSectionAnswers = answers.length > 0 && answers.some(a => a && a.itemId && a.value)
         
-        // Only load answers if:
-        // 1. User has progress (shouldLoadAnswers is true)
-        // 2. AND there are actual answers in the database for this section
-        // This prevents loading empty arrays or test data for new users
-        if (shouldLoadAnswers && answers.length > 0) {
+        // If user has no progress at all (no answers in database), clear localStorage
+        // to prevent pre-filled answers from previous users or sessions
+        if (!hasAnyProgress && !hasSectionAnswers) {
+          clearSections()
+          // Clear localStorage explicitly to ensure clean state for new users
+          if (typeof window !== 'undefined') {
+            localStorage.removeItem('onboarding-storage')
+          }
+        } else if (hasSectionAnswers) {
+          // User has answers in database - load them into the store
           // Merge API answers with local store (API takes precedence if newer)
           for (const a of answers) {
             // Validate answer has a valid value before loading
@@ -59,9 +64,6 @@ export function useAutosave(section: SectionKey) {
             }
           }
           if (data.lastSavedAt) setLastSavedAt(data.lastSavedAt)
-        } else if (!shouldLoadAnswers && answers.length === 0) {
-          // New user with no data - ensure store is clean by not loading anything
-          // The store will remain empty (initialized with empty sections)
         }
       } catch {
         // Offline or error - don't load anything to ensure clean start for new users
@@ -73,7 +75,7 @@ export function useAutosave(section: SectionKey) {
     return () => {
       cancelled = true
     }
-  }, [section, setAnswer, setLastSavedAt, sectionAnswers])
+  }, [section, setAnswer, setLastSavedAt, sectionAnswers, clearSections])
 
   const answersArray = useMemo(() => toArrayRecord(sectionAnswers), [sectionAnswers])
 

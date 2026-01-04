@@ -190,7 +190,7 @@ export async function createCSRFTokenCookie(): Promise<{
       options: {
         httpOnly: true,
         secure: process.env.NODE_ENV === 'production',
-        sameSite: 'strict',
+        sameSite: 'lax', // Changed from 'strict' to 'lax' for better compatibility with form submissions
         maxAge: 60 * 60 * 24 // 24 hours
       }
     },
