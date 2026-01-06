@@ -51,7 +51,23 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    const { suggestionId, action } = await request.json()
+    let suggestionId: string
+    let action: 'accept' | 'decline'
+    
+    try {
+      const body = await request.json()
+      suggestionId = body.suggestionId
+      action = body.action
+    } catch (parseError) {
+      safeLogger.error('[Match Respond] Failed to parse request body', {
+        error: parseError,
+        userId: user.id
+      })
+      return NextResponse.json(
+        { error: 'Invalid request body. Expected JSON with suggestionId and action.' },
+        { status: 400 }
+      )
+    }
     
     if (!suggestionId || !action || !['accept', 'decline'].includes(action)) {
       return NextResponse.json(
@@ -60,8 +76,34 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    const repo = await getMatchRepo()
-    const suggestion = await repo.getSuggestionById(suggestionId)
+    let repo
+    try {
+      repo = await getMatchRepo()
+    } catch (repoError) {
+      safeLogger.error('[Match Respond] Failed to get match repo', {
+        error: repoError,
+        userId: user.id
+      })
+      return NextResponse.json(
+        { error: 'Failed to initialize match repository', details: process.env.NODE_ENV === 'development' ? String(repoError) : undefined },
+        { status: 500 }
+      )
+    }
+
+    let suggestion
+    try {
+      suggestion = await repo.getSuggestionById(suggestionId)
+    } catch (fetchError) {
+      safeLogger.error('[Match Respond] Failed to fetch suggestion', {
+        error: fetchError,
+        suggestionId,
+        userId: user.id
+      })
+      return NextResponse.json(
+        { error: 'Failed to fetch suggestion', details: process.env.NODE_ENV === 'development' ? String(fetchError) : undefined },
+        { status: 500 }
+      )
+    }
     
     if (!suggestion) {
       safeLogger.warn('[Match Respond] Suggestion not found', {
@@ -101,7 +143,19 @@ export async function POST(request: NextRequest) {
           acceptedBy: suggestion.acceptedBy
         })
         
-        await repo.updateSuggestion(suggestion)
+        try {
+          await repo.updateSuggestion(suggestion)
+        } catch (updateError) {
+          safeLogger.error('[Match Decline] Failed to update suggestion', {
+            error: updateError,
+            errorMessage: updateError instanceof Error ? updateError.message : String(updateError),
+            errorStack: updateError instanceof Error ? updateError.stack : undefined,
+            suggestionId: suggestion.id,
+            userId: user.id,
+            suggestionStatus: suggestion.status
+          })
+          throw new Error(`Failed to update suggestion: ${updateError instanceof Error ? updateError.message : String(updateError)}`)
+        }
         
         // Add to blocklist
         const otherIds = suggestion.memberIds.filter(id => id !== user.id)
@@ -570,18 +624,24 @@ export async function POST(request: NextRequest) {
     const errorMessage = error instanceof Error ? error.message : String(error)
     const errorStack = error instanceof Error ? error.stack : undefined
     
+    // Log full error details for debugging
     safeLogger.error('Error responding to suggestion', {
       error,
       errorMessage,
       errorStack,
       errorType: typeof error,
-      errorString: String(error)
+      errorString: String(error),
+      errorName: error instanceof Error ? error.name : undefined
     })
+    
+    // Return more detailed error in development, generic in production
+    const isDevelopment = process.env.NODE_ENV === 'development'
     
     return NextResponse.json(
       { 
         error: 'Failed to respond to suggestion',
-        details: process.env.NODE_ENV === 'development' ? errorMessage : undefined
+        details: isDevelopment ? errorMessage : 'An unexpected error occurred. Please try again.',
+        ...(isDevelopment && errorStack ? { stack: errorStack } : {})
       },
       { status: 500 }
     )

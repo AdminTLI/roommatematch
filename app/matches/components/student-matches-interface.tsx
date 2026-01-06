@@ -351,15 +351,28 @@ export function StudentMatchesInterface({ user }: StudentMatchesInterfaceProps) 
         let errorData
         try {
           errorData = await response.json()
-        } catch {
-          errorData = { error: `Failed to ${action} suggestion (${response.status})` }
+        } catch (parseError) {
+          // If we can't parse the error response, create a basic error
+          const statusText = response.statusText || 'Unknown error'
+          errorData = { 
+            error: `Failed to ${action} suggestion (${response.status}: ${statusText})`,
+            details: `Server returned status ${response.status}`
+          }
         }
+        
         console.error('[Match Respond] API error:', {
           status: response.status,
           statusText: response.statusText,
-          errorData
+          errorData,
+          url: response.url
         })
-        throw new Error(errorData.error || `Failed to ${action} suggestion`)
+        
+        // Build a more informative error message
+        const errorMessage = errorData.error || `Failed to ${action} suggestion`
+        const errorDetails = errorData.details ? ` - ${errorData.details}` : ''
+        const retryAfter = errorData.retryAfter ? ` Please try again in ${Math.ceil(errorData.retryAfter / 60)} minutes.` : ''
+        
+        throw new Error(`${errorMessage}${errorDetails}${retryAfter}`)
       }
 
       const result = await response.json()
