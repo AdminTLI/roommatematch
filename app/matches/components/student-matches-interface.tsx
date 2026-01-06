@@ -184,9 +184,11 @@ export function StudentMatchesInterface({ user }: StudentMatchesInterfaceProps) 
       // Cancel outgoing refetches
       await queryClient.cancelQueries({ queryKey: queryKeys.matches.all(user.id) })
 
-      // Optimistically update UI - remove from suggested/pending, move to appropriate tab
+      // Optimistically update UI - remove from all lists
       setSuggestions(prev => prev.filter(s => s.id !== suggestionId))
       setPendingSuggestions(prev => prev.filter(s => s.id !== suggestionId))
+      setConfirmedMatches(prev => prev.filter(s => s.id !== suggestionId))
+      // For declined matches, we'll add them to history after the API confirms
 
       // Return context for rollback
       return { suggestionId, action }
@@ -195,12 +197,21 @@ export function StudentMatchesInterface({ user }: StudentMatchesInterfaceProps) 
       // Invalidate matches queries to refetch
       queryClient.invalidateQueries({ queryKey: queryKeys.matches.all(user.id) })
       
-      // Refresh suggestions with a small delay to ensure database consistency
+      // For declined matches, refresh after a delay to ensure database consistency
       // This prevents race conditions where the API might return the declined match
       // before the database update has fully propagated
-      setTimeout(() => {
-        fetchSuggestions(activeTab === 'history' || activeTab === 'confirmed')
-      }, 500)
+      if (action === 'decline') {
+        // If on history tab, refresh to show the declined match there
+        // If on other tabs, refresh to ensure it's removed (with longer delay to ensure DB update)
+        setTimeout(() => {
+          fetchSuggestions(activeTab === 'history')
+        }, 1000)
+      } else {
+        // For accept actions, refresh normally
+        setTimeout(() => {
+          fetchSuggestions(activeTab === 'history' || activeTab === 'confirmed')
+        }, 500)
+      }
     },
     onError: (error, { suggestionId }, context) => {
       // Rollback optimistic update - refetch to restore state

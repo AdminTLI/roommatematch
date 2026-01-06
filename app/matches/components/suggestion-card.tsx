@@ -817,17 +817,21 @@ export function SuggestionCard({
 
       {/* Decline Confirmation Dialog */}
       <Dialog open={showDeclineDialog} onOpenChange={setShowDeclineDialog}>
-        <DialogContent className="rounded-2xl bg-white dark:bg-white">
+        <DialogContent className="rounded-2xl bg-white dark:bg-card">
           <DialogHeader>
-            <DialogTitle className="text-black dark:text-black text-h2-mobile sm:text-h2-desktop font-semibold mb-4">
+            <DialogTitle className="text-black dark:text-text-primary text-h2-mobile sm:text-h2-desktop font-semibold mb-4">
               Decline Match?
             </DialogTitle>
-            <DialogDescription className="text-gray-900">
+            <DialogDescription className="text-gray-900 dark:text-text-secondary">
               This match will be removed and you will never be able to match with this user again. This action cannot be undone.
             </DialogDescription>
           </DialogHeader>
           <DialogFooter className="gap-3 sm:gap-4">
-            <Button variant="outline" onClick={() => setShowDeclineDialog(false)}>
+            <Button 
+              variant="outline" 
+              onClick={() => setShowDeclineDialog(false)}
+              className="text-text-primary dark:text-text-primary border-border-subtle dark:border-border hover:bg-bg-surface-alt dark:hover:bg-bg-surface-alt"
+            >
               Cancel
             </Button>
             <Button 
@@ -837,9 +841,13 @@ export function SuggestionCard({
                   await handleRespond('decline')
                   // Close dialog after successful decline
                   setShowDeclineDialog(false)
+                  // Show success message
+                  showSuccessToast('Match declined', 'This match has been removed.')
                 } catch (error) {
                   // Dialog stays open on error so user can try again
                   console.error('Failed to decline match:', error)
+                  const errorMessage = error instanceof Error ? error.message : 'Failed to decline match. Please try again.'
+                  showErrorToast('Failed to decline match', errorMessage)
                 }
               }}
               disabled={isResponding || isLoading}

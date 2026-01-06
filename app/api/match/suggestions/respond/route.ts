@@ -16,6 +16,18 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
+    // Check email verification
+    if (!user.email_confirmed_at) {
+      safeLogger.warn('[Match Respond] Email verification required', {
+        userId: user.id,
+        email: user.email
+      })
+      return NextResponse.json({ 
+        error: 'Email verification required',
+        requiresVerification: true 
+      }, { status: 403 })
+    }
+
     // Rate limiting: 10 requests per hour per user
     const rateLimitKey = getUserRateLimitKey('matching', user.id)
     const rateLimitResult = await checkRateLimit('matching', rateLimitKey)
@@ -51,12 +63,25 @@ export async function POST(request: NextRequest) {
     const suggestion = await repo.getSuggestionById(suggestionId)
     
     if (!suggestion) {
+      safeLogger.warn('[Match Respond] Suggestion not found', {
+        suggestionId,
+        userId: user.id
+      })
       return NextResponse.json({ error: 'Suggestion not found' }, { status: 404 })
     }
     
     // Check if user is part of this suggestion
     if (!suggestion.memberIds.includes(user.id)) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 403 })
+      safeLogger.warn('[Match Respond] User not authorized - not in memberIds', {
+        suggestionId,
+        userId: user.id,
+        memberIds: suggestion.memberIds,
+        suggestionStatus: suggestion.status
+      })
+      return NextResponse.json({ 
+        error: 'Unauthorized: You are not part of this match suggestion',
+        details: 'The suggestion may have been updated or you may not have access to it.'
+      }, { status: 403 })
     }
     
     // Allow declined suggestions to be re-opened if needed (matches don't expire)
