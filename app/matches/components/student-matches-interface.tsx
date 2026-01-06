@@ -91,7 +91,12 @@ export function StudentMatchesInterface({ user }: StudentMatchesInterfaceProps) 
           return true
         })
         const pending = allSuggestions.filter(s => s.status === 'accepted' && s.acceptedBy?.includes(user.id) && s.acceptedBy.length < s.memberIds.length)
-        const confirmed = allSuggestions.filter(s => s.status === 'accepted' && s.acceptedBy?.length === s.memberIds.length)
+        // Confirmed: Must have status 'confirmed' AND current user must be in acceptedBy AND all members must have accepted
+        const confirmed = allSuggestions.filter(s => 
+          s.status === 'confirmed' && 
+          s.acceptedBy?.includes(user.id) && 
+          s.acceptedBy.length === s.memberIds.length
+        )
         
         // History: Show all matches that are not currently active (declined, confirmed)
         // Matches don't expire - only declined and confirmed matches go to history
@@ -101,7 +106,8 @@ export function StudentMatchesInterface({ user }: StudentMatchesInterfaceProps) 
             // Include declined matches
             if (s.status === 'declined') return true
             // Include confirmed matches (they're in history once confirmed)
-            if (s.status === 'accepted' && s.acceptedBy?.length === s.memberIds.length) return true
+            // Must verify current user is in acceptedBy to avoid showing matches where user hasn't accepted
+            if (s.status === 'confirmed' && s.acceptedBy?.includes(user.id) && s.acceptedBy.length === s.memberIds.length) return true
             return false
           })
           .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
@@ -284,11 +290,15 @@ export function StudentMatchesInterface({ user }: StudentMatchesInterfaceProps) 
         // Read the error response to show helpful message
         const errorData = await response.json().catch(() => ({ error: 'Failed to refresh suggestions' }))
         const errorMessage = errorData.error || 'Failed to refresh suggestions'
+        const errorDetails = errorData.details || ''
         const retryAfter = errorData.retryAfter
+        const requiresOnboarding = errorData.requiresOnboarding
         
         console.error('Failed to refresh suggestions:', errorMessage, {
           status: response.status,
-          errorData
+          errorData,
+          missingFields: errorData.missingFields,
+          details: errorData.details
         })
         
         // Handle CSRF token errors with a user-friendly message
@@ -296,6 +306,12 @@ export function StudentMatchesInterface({ user }: StudentMatchesInterfaceProps) 
           toast.error('Session expired', {
             description: 'Please refresh the page and try again.',
             duration: 7000,
+          })
+        } else if (response.status === 404 && requiresOnboarding) {
+          // Handle profile/onboarding incomplete errors
+          toast.error(errorMessage, {
+            description: errorDetails || 'Please complete your profile and questionnaire to get matches.',
+            duration: 8000,
           })
         } else if (retryAfter && retryAfter > 0) {
           // Show error toast with retry information
@@ -306,6 +322,7 @@ export function StudentMatchesInterface({ user }: StudentMatchesInterfaceProps) 
           })
         } else {
           toast.error(errorMessage, {
+            description: errorDetails || undefined,
             duration: 5000,
           })
         }

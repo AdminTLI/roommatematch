@@ -4,7 +4,7 @@ export function AuthFooter() {
       <div className="container mx-auto px-4">
         <div className="flex flex-col md:flex-row items-center justify-between gap-4">
           <div className="text-sm text-gray-600 dark:text-gray-400">
-            © 2024 Domu Match. All rights reserved.
+            © 2026 Domu Match. All rights reserved.
           </div>
           
           <div className="flex items-center gap-6">

@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import { SectionScores } from './section-scores'
 import { fetchWithCSRF } from '@/lib/utils/fetch-with-csrf'
@@ -109,7 +109,10 @@ export function SuggestionCard({
   const [isLoadingCompatibility, setIsLoadingCompatibility] = useState(true)
   const router = useRouter()
   
-  // Fetch compatibility data when component mounts
+  // Track if we've already logged a warning for this suggestion to prevent spam
+  const loggedWarningRef = useRef<string | null>(null)
+  
+  // Fetch compatibility data when component mounts or suggestion/user changes
   useEffect(() => {
     const fetchCompatibility = async () => {
       const otherUserId = suggestion.memberIds.find(id => id !== currentUserId)
@@ -140,8 +143,8 @@ export function SuggestionCard({
             usingApiScore: true
           })
           
-          // Warn if scores differ significantly
-          if (scoreDiff > 5) {
+          // Warn if scores differ significantly (only log once per suggestion ID)
+          if (scoreDiff > 5 && loggedWarningRef.current !== suggestion.id) {
             console.warn('[SuggestionCard] Score mismatch detected:', {
               suggestionId: suggestion.id,
               apiScore,
@@ -149,6 +152,7 @@ export function SuggestionCard({
               difference: scoreDiff,
               message: 'API score differs significantly from stored fitIndex'
             })
+            loggedWarningRef.current = suggestion.id
           }
           
           setCompatibilityData(data)
@@ -178,7 +182,10 @@ export function SuggestionCard({
     }
     
     fetchCompatibility()
-  }, [suggestion.memberIds, currentUserId, suggestion.id, suggestion.fitIndex])
+    // Only re-fetch when suggestion ID or current user changes
+    // Removed suggestion.fitIndex to prevent unnecessary refetches
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [suggestion.id, currentUserId])
   
   const handleRespond = async (action: 'accept' | 'decline') => {
     setIsResponding(true)

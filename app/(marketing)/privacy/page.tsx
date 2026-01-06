@@ -6,542 +6,11 @@ import Container from '@/components/ui/primitives/container'
 import Section from '@/components/ui/primitives/section'
 import { useApp } from '@/app/providers'
 
-const content = {
-  en: {
-    title: "Privacy Policy",
-    lastUpdated: "Last updated",
-    introduction: "At Domu Match, we take your privacy seriously. This Privacy Policy explains how we collect, use, disclose, and safeguard your information when you use our roommate matching platform.",
-    sections: {
-      informationWeCollect: {
-        title: "1. Information We Collect",
-        description: "We collect information you provide directly to us, such as when you create an account, complete your profile, or communicate with us.",
-        types: {
-          account: {
-            title: "Account Information",
-            items: [
-              "University email address",
-              "Password (hashed and encrypted)",
-              "Account creation date"
-            ]
-          },
-          profile: {
-            title: "Profile Information",
-            items: [
-              "Name and contact details",
-              "University and program of study",
-              "Study year and academic preferences",
-              "Lifestyle preferences (cleanliness, quiet hours, social activities)",
-              "Personality traits and compatibility factors",
-              "Profile photos (optional)"
-            ]
-          },
-          verification: {
-            title: "Verification Documents",
-            items: [
-              "Government-issued ID (for identity verification)",
-              "Selfie photo (for facial recognition matching)",
-              "University email verification"
-            ]
-          },
-          communication: {
-            title: "Communication Data",
-            items: [
-              "Chat messages with potential roommates",
-              "Support requests and inquiries",
-              "Feedback and survey responses"
-            ]
-          },
-          usage: {
-            title: "Usage Data",
-            items: [
-              "Platform usage patterns and interactions",
-              "Matching preferences and selections",
-              "Device information and IP address",
-              "Cookies and tracking technologies"
-            ]
-          }
-        }
-      },
-      howWeUse: {
-        title: "2. How We Use Your Information",
-        description: "We use the information we collect to provide, maintain, and improve our services:",
-        uses: [
-          "Provide and improve our roommate matching services",
-          "Verify your identity and ensure platform safety",
-          "Communicate with you about potential matches and platform updates",
-          "Analyze usage patterns to improve our matching algorithm",
-          "Prevent fraud, abuse, and security threats",
-          "Comply with legal obligations and enforce our terms",
-          "Send you important notifications and updates",
-          "Personalize your experience and recommendations"
-        ]
-      },
-      informationSharing: {
-        title: "3. Information Sharing and Disclosure",
-        description: "We do not sell your personal information. We may share your information in the following circumstances:",
-        sharing: [
-          {
-            title: "With Your University",
-            description: "We may share information with your university housing department for verification purposes and to provide support services."
-          },
-          {
-            title: "With Potential Matches",
-            description: "We share your profile information (excluding sensitive data like ID documents) with compatible students to facilitate roommate matching."
-          },
-          {
-            title: "With Service Providers",
-            description: "We may share information with third-party service providers who assist in platform operations. All processors have signed Data Processing Agreements (DPAs) and comply with GDPR requirements. See our Third-Party Processors section below for details."
-          },
-          {
-            title: "For Legal Compliance",
-            description: "We may disclose information when required by law, court order, or governmental authority, or to protect our rights and safety."
-          },
-          {
-            title: "With Your Consent",
-            description: "We may share information with your explicit consent or at your direction."
-          }
-        ]
-      },
-      dataSecurity: {
-        title: "4. Data Security",
-        description: "We implement appropriate technical and organizational security measures to protect your personal information:",
-        measures: [
-          "Encryption of data in transit and at rest",
-          "Secure authentication and access controls",
-          "Regular security audits and vulnerability assessments",
-          "Employee training on data protection",
-          "Limited access to personal data on a need-to-know basis",
-          "Regular backups and disaster recovery procedures"
-        ],
-        note: "While we strive to protect your information, no method of transmission over the Internet or electronic storage is 100% secure. We cannot guarantee absolute security."
-      },
-      yourRights: {
-        title: "5. Your Rights and Choices (GDPR Articles 15-20)",
-        description: "You have the following rights regarding your personal information:",
-        rights: [
-          {
-            title: "Right of Access (Article 15)",
-            description: "You have the right to access and review your personal information. Request a data export through Privacy Settings → Download Your Data, or contact info@domumatch.com. We will provide your data within 30 days."
-          },
-          {
-            title: "Right to Rectification (Article 16)",
-            description: "You can update or correct your profile information at any time through your account settings."
-          },
-          {
-            title: "Right to Erasure (Article 17)",
-            description: "You can request deletion of your account and associated data through Privacy Settings → Delete Account. Your account will be deleted after a 7-day grace period, subject to legal retention requirements (e.g., verification documents: 4 weeks per Dutch law)."
-          },
-          {
-            title: "Right to Data Portability (Article 20)",
-            description: "You can request a copy of your data in JSON format through Privacy Settings → Download Your Data. Data is provided in a structured, machine-readable format."
-          },
-          {
-            title: "Right to Restrict Processing (Article 18)",
-            description: "You can request restriction of processing by contacting info@domumatch.com. We will restrict processing while your request is being reviewed."
-          },
-          {
-            title: "Right to Object (Article 21)",
-            description: "You can object to certain processing activities, such as automated decision-making (matching algorithm). Contact info@domumatch.com to exercise this right."
-          },
-          {
-            title: "Right to Withdraw Consent (Article 7)",
-            description: "You can withdraw consent for non-essential cookies and tracking at any time through the Cookie Preference Center (accessible from the cookie banner or settings)."
-          }
-        ],
-        dsarInstructions: "To exercise your rights, you can: (1) Use the Privacy Settings page in your account, (2) Email info@domumatch.com with your request, or (3) Contact our Data Protection Officer at info@domumatch.com. All requests are processed within 30 days as required by GDPR."
-      },
-      cookies: {
-        title: "6. Cookies and Tracking Technologies",
-        description: "We use cookies and similar tracking technologies to collect and store information about your use of our platform:",
-        types: [
-          {
-            title: "Essential Cookies",
-            description: "Required for the platform to function properly, such as authentication and session management."
-          },
-          {
-            title: "Analytics Cookies",
-            description: "Help us understand how users interact with our platform to improve our services."
-          },
-          {
-            title: "Preference Cookies",
-            description: "Remember your preferences and settings for a personalized experience."
-          }
-        ],
-        management: "You can manage your cookie preferences through your browser settings. Note that disabling certain cookies may affect platform functionality."
-      },
-      gdpr: {
-        title: "7. GDPR Compliance",
-        description: "If you are located in the European Economic Area (EEA), you have additional rights under the General Data Protection Regulation (GDPR):",
-        rights: [
-          "Right to be informed about data processing",
-          "Right of access to your personal data",
-          "Right to rectification of inaccurate data",
-          "Right to erasure ('right to be forgotten')",
-          "Right to restrict processing",
-          "Right to data portability",
-          "Right to object to processing",
-          "Rights related to automated decision-making"
-        ],
-        legalBasis: "We process your personal data based on the following legal bases:",
-        bases: [
-          "Consent: When you provide explicit consent for data processing",
-          "Contract: To perform our contract with you (providing matching services)",
-          "Legal obligation: To comply with legal requirements",
-          "Legitimate interests: To improve our services and ensure platform safety"
-        ]
-      },
-      dataRetention: {
-        title: "8. Data Retention",
-        description: "We retain your personal information for as long as necessary to fulfill the purposes outlined in this Privacy Policy, in compliance with GDPR and Dutch law:",
-        periods: [
-          "Account data: Retained while your account is active, anonymized after 2 years of inactivity",
-          "Verification documents: Retained for 4 weeks after verification (Dutch law requirement - UAVG), then deleted",
-          "Chat messages: Retained for 1 year after last message in chat, then deleted",
-          "Match suggestions: Retained for 90 days after expiry, then deleted",
-          "Reports: Retained for 1 year after resolution, then deleted",
-          "Application logs: Retained for 90 days, then deleted",
-          "Analytics data: Retained in anonymized form for up to 2 years"
-        ],
-        deletion: "You can request deletion of your account and data at any time through your Privacy Settings or by contacting info@domumatch.com. We will process your request within 30 days (GDPR requirement), subject to legal retention requirements (e.g., verification documents: 4 weeks per Dutch law)."
-      },
-      children: {
-        title: "9. Children's Privacy",
-        description: "Our platform is intended for students aged 17 and older. We do not knowingly collect personal information from children under 17. If you believe we have collected information from a child under 17, please contact us immediately."
-      },
-      changes: {
-        title: "10. Changes to This Privacy Policy",
-        description: "We may update this Privacy Policy from time to time. We will notify you of any material changes by posting the new Privacy Policy on this page and updating the 'Last updated' date. We encourage you to review this Privacy Policy periodically."
-      },
-      thirdPartyProcessors: {
-        title: "11. Third-Party Processors",
-        description: "We use the following third-party service providers to operate our platform. All processors have signed Data Processing Agreements (DPAs) and comply with GDPR requirements:",
-        processors: [
-          {
-            name: "Supabase",
-            purpose: "Database, authentication, hosting, storage",
-            location: "EU (primary), US (backup)",
-            dpa: "Standard Contractual Clauses (SCCs)"
-          },
-          {
-            name: "Sentry",
-            purpose: "Error tracking, session replay (with your consent)",
-            location: "US, EU",
-            dpa: "Standard Contractual Clauses (SCCs)"
-          },
-          {
-            name: "Vercel",
-            purpose: "Hosting, analytics (with your consent)",
-            location: "US, EU",
-            dpa: "Standard Contractual Clauses (SCCs)"
-          },
-          {
-            name: "Persona/Veriff/Onfido",
-            purpose: "Identity verification (KYC)",
-            location: "US, EU",
-            dpa: "Signed DPAs"
-          },
-          {
-            name: "Email Providers",
-            purpose: "Transactional emails, notifications",
-            location: "US, EU",
-            dpa: "Standard Contractual Clauses (SCCs)"
-          }
-        ],
-        note: "For detailed information about our processors, DPAs, and transfer mechanisms, see our Third-Party Processors documentation. You can request information about processors by contacting info@domumatch.com."
-      },
-      contact: {
-        title: "12. Contact Us",
-        description: "If you have any questions, concerns, or requests regarding this Privacy Policy or our data practices, please contact us:",
-        email: "Email: info@domumatch.com",
-        dpo: "Data Protection Officer: info@domumatch.com",
-        dsar: "DSAR Requests: Use Privacy Settings in your account or email info@domumatch.com",
-        note: "For Data Subject Access Requests (DSAR), you can also use the Privacy Settings page in your account to request data export or account deletion."
-      }
-    }
-  },
-  nl: {
-    title: "Privacybeleid",
-    lastUpdated: "Laatst bijgewerkt",
-    introduction: "Bij Domu Match nemen we uw privacy serieus. Dit Privacybeleid legt uit hoe we uw informatie verzamelen, gebruiken, delen en beschermen wanneer u ons huisgenoot matchingplatform gebruikt.",
-    sections: {
-      informationWeCollect: {
-        title: "1. Informatie die we verzamelen",
-        description: "We verzamelen informatie die u rechtstreeks aan ons verstrekt, bijvoorbeeld wanneer u een account aanmaakt, uw profiel voltooit of met ons communiceert.",
-        types: {
-          account: {
-            title: "Accountinformatie",
-            items: [
-              "Universiteits-e-mailadres",
-              "Wachtwoord (gehasht en versleuteld)",
-              "Datum van accountaanmaak"
-            ]
-          },
-          profile: {
-            title: "Profielinformatie",
-            items: [
-              "Naam en contactgegevens",
-              "Universiteit en studieprogramma",
-              "Studiejaar en academische voorkeuren",
-              "Levensstijlvoorkeuren (netheid, stilte uren, sociale activiteiten)",
-              "Persoonlijkheidskenmerken en compatibiliteitsfactoren",
-              "Profielfoto's (optioneel)"
-            ]
-          },
-          verification: {
-            title: "Verificatiedocumenten",
-            items: [
-              "Door de overheid uitgegeven ID (voor identiteitsverificatie)",
-              "Selfiefoto (voor gezichtsherkenning)",
-              "Universiteits-e-mailverificatie"
-            ]
-          },
-          communication: {
-            title: "Communicatiegegevens",
-            items: [
-              "Chatberichten met potentiële huisgenoten",
-              "Ondersteuningsverzoeken en vragen",
-              "Feedback en enquêtereacties"
-            ]
-          },
-          usage: {
-            title: "Gebruiksgegevens",
-            items: [
-              "Platformgebruikspatronen en interacties",
-              "Matchingvoorkeuren en selecties",
-              "Apparaatinformatie en IP-adres",
-              "Cookies en trackingtechnologieën"
-            ]
-          }
-        }
-      },
-      howWeUse: {
-        title: "2. Hoe we uw informatie gebruiken",
-        description: "We gebruiken de verzamelde informatie om onze diensten te verlenen, te onderhouden en te verbeteren:",
-        uses: [
-          "Onze huisgenoot matchingdiensten verlenen en verbeteren",
-          "Uw identiteit verifiëren en platforms veiligheid waarborgen",
-          "Met u communiceren over potentiële matches en platformupdates",
-          "Gebruikspatronen analyseren om ons matchingalgoritme te verbeteren",
-          "Fraude, misbruik en beveiligingsbedreigingen voorkomen",
-          "Voldoen aan wettelijke verplichtingen en onze voorwaarden handhaven",
-          "Belangrijke meldingen en updates verzenden",
-          "Uw ervaring en aanbevelingen personaliseren"
-        ]
-      },
-      informationSharing: {
-        title: "3. Informatiedeling en openbaarmaking",
-        description: "We verkopen uw persoonlijke informatie niet. We kunnen uw informatie delen in de volgende omstandigheden:",
-        sharing: [
-          {
-            title: "Met uw universiteit",
-            description: "We kunnen informatie delen met uw universiteitshuisvestingsafdeling voor verificatiedoeleinden en om ondersteuningsdiensten te verlenen."
-          },
-          {
-            title: "Met potentiële matches",
-            description: "We delen uw profielinformatie (exclusief gevoelige gegevens zoals ID-documenten) met compatibele studenten om huisgenootmatching te vergemakkelijken."
-          },
-          {
-            title: "Met dienstverleners",
-            description: "We kunnen informatie delen met externe dienstverleners die helpen bij platformoperaties, zoals cloudhosting, e-maildiensten en analyses."
-          },
-          {
-            title: "Voor wettelijke naleving",
-            description: "We kunnen informatie openbaar maken wanneer dit wordt vereist door de wet, gerechtelijk bevel of overheidsautoriteit, of om onze rechten en veiligheid te beschermen."
-          },
-          {
-            title: "Met uw toestemming",
-            description: "We kunnen informatie delen met uw uitdrukkelijke toestemming of op uw aanwijzing."
-          }
-        ]
-      },
-      dataSecurity: {
-        title: "4. Gegevensbeveiliging",
-        description: "We implementeren passende technische en organisatorische beveiligingsmaatregelen om uw persoonlijke informatie te beschermen:",
-        measures: [
-          "Versleuteling van gegevens tijdens overdracht en in rust",
-          "Veilige authenticatie en toegangscontroles",
-          "Regelmatige beveiligingsaudits en kwetsbaarheidsbeoordelingen",
-          "Medewerkertraining over gegevensbescherming",
-          "Beperkte toegang tot persoonlijke gegevens op basis van need-to-know",
-          "Regelmatige back-ups en disaster recovery procedures"
-        ],
-        note: "Hoewel we ernaar streven uw informatie te beschermen, is geen enkele methode van overdracht via internet of elektronische opslag 100% veilig. We kunnen absolute veiligheid niet garanderen."
-      },
-      yourRights: {
-        title: "5. Uw rechten en keuzes (AVG Artikelen 15-20)",
-        description: "U heeft de volgende rechten met betrekking tot uw persoonlijke informatie:",
-        rights: [
-          {
-            title: "Recht van toegang (Artikel 15)",
-            description: "U heeft het recht om toegang te krijgen tot en uw persoonlijke informatie te bekijken. Vraag een gegevensexport aan via Privacy Instellingen → Uw gegevens downloaden, of neem contact op met info@domumatch.com. We zullen uw gegevens binnen 30 dagen verstrekken."
-          },
-          {
-            title: "Recht op rectificatie (Artikel 16)",
-            description: "U kunt uw profielinformatie op elk moment bijwerken of corrigeren via uw accountinstellingen."
-          },
-          {
-            title: "Recht op gegevenswissing (Artikel 17)",
-            description: "U kunt verwijdering van uw account en bijbehorende gegevens aanvragen via Privacy Instellingen → Account verwijderen. Uw account wordt verwijderd na een respijtperiode van 7 dagen, onder voorbehoud van wettelijke bewaarvereisten (bijv. verificatiedocumenten: 4 weken volgens Nederlandse wet)."
-          },
-          {
-            title: "Recht op gegevensportabiliteit (Artikel 20)",
-            description: "U kunt een kopie van uw gegevens aanvragen in JSON-formaat via Privacy Instellingen → Uw gegevens downloaden. Gegevens worden verstrekt in een gestructureerd, machineleesbaar formaat."
-          },
-          {
-            title: "Recht op beperking van verwerking (Artikel 18)",
-            description: "U kunt beperking van verwerking aanvragen door contact op te nemen met info@domumatch.com. We zullen de verwerking beperken terwijl uw verzoek wordt beoordeeld."
-          },
-          {
-            title: "Recht van bezwaar (Artikel 21)",
-            description: "U kunt bezwaar maken tegen bepaalde verwerkingsactiviteiten, zoals geautomatiseerde besluitvorming (matchingalgoritme). Neem contact op met info@domumatch.com om dit recht uit te oefenen."
-          },
-          {
-            title: "Recht om toestemming in te trekken (Artikel 7)",
-            description: "U kunt toestemming voor niet-essentiële cookies en tracking op elk moment intrekken via het Cookie Voorkeurencentrum (toegankelijk via de cookiebanner of instellingen)."
-          }
-        ],
-        dsarInstructions: "Om uw rechten uit te oefenen, kunt u: (1) De pagina Privacy Instellingen in uw account gebruiken, (2) E-mailen naar info@domumatch.com met uw verzoek, of (3) Contact opnemen met onze Functionaris voor gegevensbescherming op info@domumatch.com. Alle verzoeken worden binnen 30 dagen verwerkt zoals vereist door de AVG."
-      },
-      cookies: {
-        title: "6. Cookies en trackingtechnologieën",
-        description: "We gebruiken cookies en vergelijkbare trackingtechnologieën om informatie over uw gebruik van ons platform te verzamelen en op te slaan:",
-        types: [
-          {
-            title: "Essentiële cookies",
-            description: "Vereist voor het correct functioneren van het platform, zoals authenticatie en sessiebeheer."
-          },
-          {
-            title: "Analytische cookies",
-            description: "Helpen ons begrijpen hoe gebruikers met ons platform interacteren om onze diensten te verbeteren."
-          },
-          {
-            title: "Voorkeurscookies",
-            description: "Onthouden uw voorkeuren en instellingen voor een gepersonaliseerde ervaring."
-          }
-        ],
-        management: "U kunt uw cookievoorkeuren beheren via uw browserinstellingen. Houd er rekening mee dat het uitschakelen van bepaalde cookies de platformfunctionaliteit kan beïnvloeden."
-      },
-      gdpr: {
-        title: "7. AVG-naleving",
-        description: "Als u zich in de Europese Economische Ruimte (EER) bevindt, heeft u aanvullende rechten onder de Algemene Verordening Gegevensbescherming (AVG):",
-        rights: [
-          "Recht op informatie over gegevensverwerking",
-          "Recht van toegang tot uw persoonlijke gegevens",
-          "Recht op rectificatie van onjuiste gegevens",
-          "Recht op gegevenswissing ('recht om vergeten te worden')",
-          "Recht op beperking van verwerking",
-          "Recht op gegevensportabiliteit",
-          "Recht van bezwaar tegen verwerking",
-          "Rechten met betrekking tot geautomatiseerde besluitvorming"
-        ],
-        legalBasis: "We verwerken uw persoonlijke gegevens op basis van de volgende wettelijke grondslagen:",
-        bases: [
-          "Toestemming: Wanneer u uitdrukkelijke toestemming verleent voor gegevensverwerking",
-          "Contract: Om ons contract met u uit te voeren (verlenen van matchingdiensten)",
-          "Wettelijke verplichting: Om te voldoen aan wettelijke vereisten",
-          "Gerechtvaardigde belangen: Om onze diensten te verbeteren en platforms veiligheid te waarborgen"
-        ]
-      },
-      dataRetention: {
-        title: "8. Gegevensbewaring",
-        description: "We bewaren uw persoonlijke informatie zolang als nodig is om de doeleinden uiteengezet in dit Privacybeleid te vervullen, in overeenstemming met de AVG en Nederlandse wet:",
-        periods: [
-          "Accountgegevens: Bewaard zolang uw account actief is, geanonimiseerd na 2 jaar inactiviteit",
-          "Verificatiedocumenten: Bewaard voor 4 weken na verificatie (Nederlandse wet vereiste - UAVG), daarna verwijderd",
-          "Chatberichten: Bewaard voor 1 jaar na laatste bericht in chat, daarna verwijderd",
-          "Match suggesties: Bewaard voor 90 dagen na vervaldatum, daarna verwijderd",
-          "Rapporten: Bewaard voor 1 jaar na afhandeling, daarna verwijderd",
-          "Applicatielogs: Bewaard voor 90 dagen, daarna verwijderd",
-          "Analytische gegevens: Bewaard in geanonimiseerde vorm tot 2 jaar"
-        ],
-        deletion: "U kunt op elk moment verwijdering van uw account en gegevens aanvragen via uw Privacy Instellingen of door contact op te nemen met info@domumatch.com. We zullen uw verzoek binnen 30 dagen verwerken (AVG vereiste), onder voorbehoud van wettelijke bewaarvereisten (bijv. verificatiedocumenten: 4 weken volgens Nederlandse wet)."
-      },
-      children: {
-        title: "9. Privacy van kinderen",
-        description: "Ons platform is bedoeld voor studenten van 17 jaar en ouder. We verzamelen niet opzettelijk persoonlijke informatie van kinderen onder de 17. Als u denkt dat we informatie hebben verzameld van een kind onder de 17, neem dan onmiddellijk contact met ons op."
-      },
-      changes: {
-        title: "10. Wijzigingen in dit Privacybeleid",
-        description: "We kunnen dit Privacybeleid van tijd tot tijd bijwerken. We zullen u op de hoogte stellen van belangrijke wijzigingen door het nieuwe Privacybeleid op deze pagina te plaatsen en de datum 'Laatst bijgewerkt' bij te werken. We moedigen u aan dit Privacybeleid periodiek te bekijken."
-      },
-      informationSharing: {
-        title: "3. Informatiedeling en openbaarmaking",
-        description: "We verkopen uw persoonlijke informatie niet. We kunnen uw informatie delen in de volgende omstandigheden:",
-        sharing: [
-          {
-            title: "Met uw universiteit",
-            description: "We kunnen informatie delen met uw universiteitshuisvestingsafdeling voor verificatiedoeleinden en om ondersteuningsdiensten te verlenen."
-          },
-          {
-            title: "Met potentiële matches",
-            description: "We delen uw profielinformatie (exclusief gevoelige gegevens zoals ID-documenten) met compatibele studenten om huisgenootmatching te vergemakkelijken."
-          },
-          {
-            title: "Met dienstverleners",
-            description: "We kunnen informatie delen met externe dienstverleners die helpen bij platformoperaties. Alle verwerkers hebben ondertekende gegevensverwerkingsovereenkomsten (DPA's) en voldoen aan AVG-vereisten. Zie onze sectie Verwerkers van derden hieronder voor details."
-          },
-          {
-            title: "Voor wettelijke naleving",
-            description: "We kunnen informatie openbaar maken wanneer dit wordt vereist door de wet, gerechtelijk bevel of overheidsautoriteit, of om onze rechten en veiligheid te beschermen."
-          },
-          {
-            title: "Met uw toestemming",
-            description: "We kunnen informatie delen met uw uitdrukkelijke toestemming of op uw aanwijzing."
-          }
-        ]
-      },
-      thirdPartyProcessors: {
-        title: "11. Verwerkers van derden",
-        description: "We gebruiken de volgende externe dienstverleners om ons platform te exploiteren. Alle verwerkers hebben ondertekende gegevensverwerkingsovereenkomsten (DPA's) en voldoen aan AVG-vereisten:",
-        processors: [
-          {
-            name: "Supabase",
-            purpose: "Database, authenticatie, hosting, opslag",
-            location: "EU (primair), VS (backup)",
-            dpa: "Standaard contractuele bepalingen (SCC's)"
-          },
-          {
-            name: "Sentry",
-            purpose: "Foutopsporing, sessieherhaling (met uw toestemming)",
-            location: "VS, EU",
-            dpa: "Standaard contractuele bepalingen (SCC's)"
-          },
-          {
-            name: "Vercel",
-            purpose: "Hosting, analyses (met uw toestemming)",
-            location: "VS, EU",
-            dpa: "Standaard contractuele bepalingen (SCC's)"
-          },
-          {
-            name: "Persona/Veriff/Onfido",
-            purpose: "Identiteitsverificatie (KYC)",
-            location: "VS, EU",
-            dpa: "Ondertekende DPA's"
-          },
-          {
-            name: "E-mailproviders",
-            purpose: "Transactionele e-mails, meldingen",
-            location: "VS, EU",
-            dpa: "Standaard contractuele bepalingen (SCC's)"
-          }
-        ],
-        note: "Voor gedetailleerde informatie over onze verwerkers, DPA's en overdrachtsmechanismen, zie onze documentatie over verwerkers van derden. U kunt informatie over verwerkers aanvragen door contact op te nemen met info@domumatch.com."
-      },
-      contact: {
-        title: "12. Neem contact met ons op",
-        description: "Als u vragen, zorgen of verzoeken heeft met betrekking tot dit Privacybeleid of onze gegevenspraktijken, neem dan contact met ons op:",
-        email: "E-mail: info@domumatch.com",
-        dpo: "Functionaris voor gegevensbescherming: info@domumatch.com",
-        dsar: "DSAR Verzoeken: Gebruik Privacy Instellingen in uw account of e-mail info@domumatch.com",
-        note: "Voor verzoeken tot toegang tot persoonsgegevens (DSAR) kunt u ook de pagina Privacy Instellingen in uw account gebruiken om gegevensexport of accountverwijdering aan te vragen."
-      }
-    }
-  }
-}
-
 export default function PrivacyPage() {
   const { locale } = useApp()
-  const t = content[locale]
+  const lastUpdated = new Date().toLocaleDateString(
+    locale === 'nl' ? 'nl-NL' : 'en-US',
+  )
 
   return (
     <main className="min-h-screen bg-white">
@@ -550,212 +19,757 @@ export default function PrivacyPage() {
         <Section className="bg-white">
           <Container>
             <div className="max-w-4xl mx-auto">
-              <h1 className="text-4xl font-bold text-brand-text mb-4">{t.title}</h1>
+              <h1 className="text-4xl font-bold text-brand-text mb-4">
+                Privacy Policy
+              </h1>
               <p className="text-brand-muted mb-8">
-                {t.lastUpdated}: {new Date().toLocaleDateString(locale === 'nl' ? 'nl-NL' : 'en-US')}
-              </p>
-              
-              <p className="text-brand-muted mb-12 leading-relaxed">
-                {t.introduction}
+                Last updated: {lastUpdated}
               </p>
 
-              {/* Information We Collect */}
+              <p className="text-brand-muted mb-8 leading-relaxed">
+                Domu Match is designed for university students (typically 17+)
+                who want to find compatible roommates. This Privacy Policy
+                explains in clear language how we use your data and your rights
+                under the GDPR, the Dutch GDPR Implementation Act (UAVG), and
+                the EU AI Act transparency rules.
+              </p>
+
+              {/* Privacy at a Glance */}
               <section className="mb-12">
-                <h2 className="text-2xl font-semibold text-brand-text mt-8 mb-4">{t.sections.informationWeCollect.title}</h2>
-                <p className="text-brand-muted mb-6">{t.sections.informationWeCollect.description}</p>
-                
-                <div className="space-y-6">
-                  <div>
-                    <h3 className="text-xl font-semibold text-brand-text mb-3">{t.sections.informationWeCollect.types.account.title}</h3>
-                    <ul className="list-disc pl-6 space-y-2 text-brand-muted">
-                      {t.sections.informationWeCollect.types.account.items.map((item, index) => (
-                        <li key={index}>{item}</li>
-                      ))}
-                    </ul>
-                  </div>
-
-                  <div>
-                    <h3 className="text-xl font-semibold text-brand-text mb-3">{t.sections.informationWeCollect.types.profile.title}</h3>
-                    <ul className="list-disc pl-6 space-y-2 text-brand-muted">
-                      {t.sections.informationWeCollect.types.profile.items.map((item, index) => (
-                        <li key={index}>{item}</li>
-                      ))}
-                    </ul>
-                  </div>
-
-                  <div>
-                    <h3 className="text-xl font-semibold text-brand-text mb-3">{t.sections.informationWeCollect.types.verification.title}</h3>
-                    <ul className="list-disc pl-6 space-y-2 text-brand-muted">
-                      {t.sections.informationWeCollect.types.verification.items.map((item, index) => (
-                        <li key={index}>{item}</li>
-                      ))}
-                    </ul>
-                  </div>
-
-                  <div>
-                    <h3 className="text-xl font-semibold text-brand-text mb-3">{t.sections.informationWeCollect.types.communication.title}</h3>
-                    <ul className="list-disc pl-6 space-y-2 text-brand-muted">
-                      {t.sections.informationWeCollect.types.communication.items.map((item, index) => (
-                        <li key={index}>{item}</li>
-                      ))}
-                    </ul>
-                  </div>
-
-                  <div>
-                    <h3 className="text-xl font-semibold text-brand-text mb-3">{t.sections.informationWeCollect.types.usage.title}</h3>
-                    <ul className="list-disc pl-6 space-y-2 text-brand-muted">
-                      {t.sections.informationWeCollect.types.usage.items.map((item, index) => (
-                        <li key={index}>{item}</li>
-                      ))}
-                    </ul>
-                  </div>
+                <h2 className="text-2xl font-semibold text-brand-text mb-4">
+                  Privacy at a Glance
+                </h2>
+                <div className="overflow-x-auto rounded-lg border border-gray-200">
+                  <table className="min-w-full text-left text-sm">
+                    <thead className="bg-gray-50">
+                      <tr>
+                        <th className="px-4 py-3 font-semibold text-gray-700">
+                          Topic
+                        </th>
+                        <th className="px-4 py-3 font-semibold text-gray-700">
+                          Short answer
+                        </th>
+                        <th className="px-4 py-3 font-semibold text-gray-700">
+                          Read more
+                        </th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-gray-200">
+                      <tr>
+                        <td className="px-4 py-3 align-top">
+                          Who is responsible?
+                        </td>
+                        <td className="px-4 py-3 align-top">
+                          Domu Match B.V. is the controller responsible for
+                          your personal data.
+                        </td>
+                        <td className="px-4 py-3 align-top">
+                          See “Who We Are and Scope”.
+                        </td>
+                      </tr>
+                      <tr>
+                        <td className="px-4 py-3 align-top">
+                          What data do we collect?
+                        </td>
+                        <td className="px-4 py-3 align-top">
+                          Account details, ID verification status, answers to a
+                          200-question lifestyle questionnaire, academic
+                          context, and in-app messages.
+                        </td>
+                        <td className="px-4 py-3 align-top">
+                          See “Data We Collect”.
+                        </td>
+                      </tr>
+                      <tr>
+                        <td className="px-4 py-3 align-top">
+                          Why do we collect it?
+                        </td>
+                        <td className="px-4 py-3 align-top">
+                          To match you with potential roommates, keep the
+                          platform safe, and provide anonymized “Student
+                          Success” analytics to universities.
+                        </td>
+                        <td className="px-4 py-3 align-top">
+                          See “Purposes and Legal Bases”.
+                        </td>
+                      </tr>
+                      <tr>
+                        <td className="px-4 py-3 align-top">
+                          Legal basis (GDPR)
+                        </td>
+                        <td className="px-4 py-3 align-top">
+                          Contract (to run the service), your consent (for deep
+                          lifestyle data), and our legitimate interest (for
+                          security and reporting).
+                        </td>
+                        <td className="px-4 py-3 align-top">
+                          See “Purposes and Legal Bases (Art. 6 GDPR)”.
+                        </td>
+                      </tr>
+                      <tr>
+                        <td className="px-4 py-3 align-top">
+                          How does matching work?
+                        </td>
+                        <td className="px-4 py-3 align-top">
+                          The algorithm combines a Harmony score (≈75%,
+                          lifestyle) and a Context score (≈25%, academic and
+                          practical info) to suggest, not decide, matches.
+                        </td>
+                        <td className="px-4 py-3 align-top">
+                          See “Automated Decision-Making and Profiling”.
+                        </td>
+                      </tr>
+                      <tr>
+                        <td className="px-4 py-3 align-top">
+                          Do we store your ID?
+                        </td>
+                        <td className="px-4 py-3 align-top">
+                          ID checks are done by Persona. Domu Match does not
+                          store your raw ID images or biometric templates. We
+                          receive only a verification result and limited ID
+                          data.
+                        </td>
+                        <td className="px-4 py-3 align-top">
+                          See “ID Verification with Persona”.
+                        </td>
+                      </tr>
+                      <tr>
+                        <td className="px-4 py-3 align-top">
+                          Who else sees your data?
+                        </td>
+                        <td className="px-4 py-3 align-top">
+                          Persona (ID checks), EU cloud hosting providers, and
+                          Pilot Universities (only anonymized and aggregated
+                          data).
+                        </td>
+                        <td className="px-4 py-3 align-top">
+                          See “Third-Party Disclosures”.
+                        </td>
+                      </tr>
+                      <tr>
+                        <td className="px-4 py-3 align-top">
+                          How long do we keep it?
+                        </td>
+                        <td className="px-4 py-3 align-top">
+                          While your account is active. If your account is
+                          inactive for 1 year, we delete or anonymize your
+                          personal data.
+                        </td>
+                        <td className="px-4 py-3 align-top">
+                          See “Data Retention (Storage Limitation)”.
+                        </td>
+                      </tr>
+                      <tr>
+                        <td className="px-4 py-3 align-top">
+                          What are your rights?
+                        </td>
+                        <td className="px-4 py-3 align-top">
+                          You can access, correct, delete, and download your
+                          data, withdraw consent for the questionnaire, and
+                          object to certain uses.
+                        </td>
+                        <td className="px-4 py-3 align-top">
+                          See “Your Rights as a Student”.
+                        </td>
+                      </tr>
+                      <tr>
+                        <td className="px-4 py-3 align-top">
+                          How do we protect your data?
+                        </td>
+                        <td className="px-4 py-3 align-top">
+                          Encryption in transit (TLS) and at rest, access
+                          controls, and compliance with 2026 Cybersecurity Act
+                          (Cbw) principles.
+                        </td>
+                        <td className="px-4 py-3 align-top">
+                          See “Security Measures”.
+                        </td>
+                      </tr>
+                    </tbody>
+                  </table>
                 </div>
               </section>
 
-              {/* How We Use */}
+              {/* Who We Are and Scope */}
               <section className="mb-12">
-                <h2 className="text-2xl font-semibold text-brand-text mt-8 mb-4">{t.sections.howWeUse.title}</h2>
-                <p className="text-brand-muted mb-4">{t.sections.howWeUse.description}</p>
-                <ul className="list-disc pl-6 space-y-2 text-brand-muted">
-                  {t.sections.howWeUse.uses.map((use, index) => (
-                    <li key={index}>{use}</li>
-                  ))}
+                <h2 className="text-2xl font-semibold text-brand-text mb-4">
+                  Who We Are and Scope
+                </h2>
+                <h3 className="text-xl font-semibold text-brand-text mb-2">
+                  Controller
+                </h3>
+                <p className="text-brand-muted mb-4">
+                  The controller responsible for your personal data is Domu
+                  Match B.V., registered in the Netherlands. You will find our
+                  contact details in the “Contact and Complaints” section.
+                </p>
+                <h3 className="text-xl font-semibold text-brand-text mb-2">
+                  Who this policy is for
+                </h3>
+                <p className="text-brand-muted mb-4">
+                  This policy applies to students and young people (typically
+                  17+) using Domu Match to find roommates, visitors to our
+                  website or app, and students connected through participating
+                  Pilot Universities.
+                </p>
+              </section>
+
+              {/* Data We Collect */}
+              <section className="mb-12">
+                <h2 className="text-2xl font-semibold text-brand-text mb-4">
+                  Data We Collect
+                </h2>
+                <h3 className="text-xl font-semibold text-brand-text mb-2">
+                  Account and profile data
+                </h3>
+                <p className="text-brand-muted mb-2">
+                  We collect basic account and profile details, such as:
+                </p>
+                <ul className="list-disc pl-6 text-brand-muted mb-4 space-y-1">
+                  <li>Name, email address, and hashed password.</li>
+                  <li>
+                    University name, study programme, year of study, and
+                    general schedule.
+                  </li>
+                  <li>
+                    Housing preferences (location, budget, room type, move-in
+                    date).
+                  </li>
+                  <li>Optional profile picture.</li>
+                </ul>
+
+                <h3 className="text-xl font-semibold text-brand-text mb-2">
+                  Lifestyle and behavioural data (Harmony questionnaire)
+                </h3>
+                <p className="text-brand-muted mb-2">
+                  To improve roommate matching, we offer a 200-question
+                  lifestyle questionnaire (8 blocks of 25 questions). It covers
+                  for example:
+                </p>
+                <ul className="list-disc pl-6 text-brand-muted mb-4 space-y-1">
+                  <li>Daily rhythms (wake-up time, sleep time, noise level).</li>
+                  <li>
+                    Tidiness and use of shared spaces (cleaning habits,
+                    organisation).
+                  </li>
+                  <li>
+                    Social habits (visitors, parties, shared meals, introvert /
+                    extrovert preferences).
+                  </li>
+                  <li>
+                    Study vs. social balance (how you like to spend weekdays and
+                    weekends).
+                  </li>
+                </ul>
+                <p className="text-brand-muted mb-4">
+                  Some answers may indirectly reveal sensitive data (for
+                  example, about your health, religion, or sexual orientation).
+                  You are never forced to share this: you can skip such
+                  questions or answer in a neutral way. We only process this
+                  deep lifestyle data with your explicit consent.
+                </p>
+
+                <h3 className="text-xl font-semibold text-brand-text mb-2">
+                  ID Verification with Persona
+                </h3>
+                <p className="text-brand-muted mb-2">
+                  To reduce fraud and impersonation, we use Persona as our ID
+                  verification provider:
+                </p>
+                <ul className="list-disc pl-6 text-brand-muted mb-4 space-y-1">
+                  <li>
+                    During verification, Persona processes images or scans of
+                    your government ID and, where needed, a selfie or video for
+                    biometric comparison.
+                  </li>
+                  <li>
+                    Domu Match does not store your raw ID images or biometric
+                    templates.
+                  </li>
+                  <li>
+                    We receive only a verification status (for example:
+                    verified / not verified) and limited ID data (such as full
+                    name, date of birth, issuing country) needed to link the
+                    verification to your account.
+                  </li>
+                </ul>
+
+                <h3 className="text-xl font-semibold text-brand-text mb-2">
+                  Communication and chat
+                </h3>
+                <p className="text-brand-muted mb-2">
+                  When you use our internal chat, we process:
+                </p>
+                <ul className="list-disc pl-6 text-brand-muted mb-4 space-y-1">
+                  <li>Messages you send and receive.</li>
+                  <li>Message metadata such as timestamps and read status.</li>
+                </ul>
+                <p className="text-brand-muted mb-4">
+                  By default, your real identity (full name and contact
+                  details) is concealed from other users. You control when and
+                  whether to mutually reveal your identity or share contact
+                  details.
+                </p>
+
+                <h3 className="text-xl font-semibold text-brand-text mb-2">
+                  Usage and technical data
+                </h3>
+                <p className="text-brand-muted mb-2">
+                  We collect device and technical data to run and secure the
+                  platform, such as:
+                </p>
+                <ul className="list-disc pl-6 text-brand-muted mb-4 space-y-1">
+                  <li>Device type, operating system, browser type.</li>
+                  <li>IP address, timestamps, pages and screens viewed.</li>
+                  <li>
+                    Actions such as starting the questionnaire, sending
+                    messages, or updating your profile.
+                  </li>
                 </ul>
               </section>
 
-              {/* Information Sharing */}
+              {/* Purposes and Legal Bases */}
               <section className="mb-12">
-                <h2 className="text-2xl font-semibold text-brand-text mt-8 mb-4">{t.sections.informationSharing.title}</h2>
-                <p className="text-brand-muted mb-6">{t.sections.informationSharing.description}</p>
-                <div className="space-y-4">
-                  {t.sections.informationSharing.sharing.map((share, index) => (
-                    <div key={index}>
-                      <h3 className="text-xl font-semibold text-brand-text mb-2">{share.title}</h3>
-                      <p className="text-brand-muted">{share.description}</p>
-                    </div>
-                  ))}
+                <h2 className="text-2xl font-semibold text-brand-text mb-4">
+                  Purposes and Legal Bases (Art. 6 GDPR)
+                </h2>
+                <p className="text-brand-muted mb-4">
+                  We must have a clear legal basis for each way we use your
+                  data. Below is an overview of what we do and why we are
+                  allowed to do it.
+                </p>
+                <div className="overflow-x-auto rounded-lg border border-gray-200 mb-6">
+                  <table className="min-w-full text-left text-sm">
+                    <thead className="bg-gray-50">
+                      <tr>
+                        <th className="px-4 py-3 font-semibold text-gray-700">
+                          Purpose
+                        </th>
+                        <th className="px-4 py-3 font-semibold text-gray-700">
+                          Examples
+                        </th>
+                        <th className="px-4 py-3 font-semibold text-gray-700">
+                          Legal basis
+                        </th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-gray-200">
+                      <tr>
+                        <td className="px-4 py-3 align-top">
+                          Run your account and provide matching
+                        </td>
+                        <td className="px-4 py-3 align-top">
+                          Creating your account, suggesting compatible
+                          roommates, enabling chat.
+                        </td>
+                        <td className="px-4 py-3 align-top">
+                          Contractual necessity (Art. 6(1)(b) GDPR).
+                        </td>
+                      </tr>
+                      <tr>
+                        <td className="px-4 py-3 align-top">
+                          Deep lifestyle/profiling data
+                        </td>
+                        <td className="px-4 py-3 align-top">
+                          Using your 200-question lifestyle answers to compute
+                          Harmony scores.
+                        </td>
+                        <td className="px-4 py-3 align-top">
+                          Your explicit consent (Art. 6(1)(a), and Art. 9(2)(a)
+                          for any special-category aspects).
+                        </td>
+                      </tr>
+                      <tr>
+                        <td className="px-4 py-3 align-top">
+                          Platform security and reporting
+                        </td>
+                        <td className="px-4 py-3 align-top">
+                          ID verification, fraud prevention, abuse reporting,
+                          logs.
+                        </td>
+                        <td className="px-4 py-3 align-top">
+                          Legitimate interest (Art. 6(1)(f)) and, where
+                          applicable, legal obligations.
+                        </td>
+                      </tr>
+                      <tr>
+                        <td className="px-4 py-3 align-top">
+                          Student Success analytics for universities
+                        </td>
+                        <td className="px-4 py-3 align-top">
+                          Sharing anonymized statistics about housing and
+                          matching outcomes with Pilot Universities.
+                        </td>
+                        <td className="px-4 py-3 align-top">
+                          Anonymized data is no longer personal data; any
+                          necessary pre-anonymization steps rely on legitimate
+                          interest with safeguards.
+                        </td>
+                      </tr>
+                    </tbody>
+                  </table>
                 </div>
+                <p className="text-brand-muted mb-4">
+                  For the lifestyle questionnaire, you can always withdraw your
+                  consent. We will then stop using your lifestyle responses for
+                  new matches and delete or properly anonymize them (unless we
+                  must keep a small amount for legal reasons).
+                </p>
               </section>
 
-              {/* Data Security */}
+              {/* Data Minimization and Purpose Limitation */}
               <section className="mb-12">
-                <h2 className="text-2xl font-semibold text-brand-text mt-8 mb-4">{t.sections.dataSecurity.title}</h2>
-                <p className="text-brand-muted mb-4">{t.sections.dataSecurity.description}</p>
-                <ul className="list-disc pl-6 space-y-2 text-brand-muted mb-4">
-                  {t.sections.dataSecurity.measures.map((measure, index) => (
-                    <li key={index}>{measure}</li>
-                  ))}
+                <h2 className="text-2xl font-semibold text-brand-text mb-4">
+                  Data Minimization and Purpose Limitation
+                </h2>
+                <p className="text-brand-muted mb-4">
+                  We carefully design our questions and data fields so that we
+                  only ask for what we truly need. Our main purposes are:
+                </p>
+                <ul className="list-disc pl-6 text-brand-muted mb-4 space-y-1">
+                  <li>Roommate matching and related communication.</li>
+                  <li>
+                    Platform safety, fraud prevention, and responding to
+                    reports.
+                  </li>
+                  <li>
+                    Anonymized, high-level “Student Success” analytics for
+                    universities.
+                  </li>
                 </ul>
-                <p className="text-brand-muted italic">{t.sections.dataSecurity.note}</p>
+                <p className="text-brand-muted mb-4">
+                  We do not use your personal data for unrelated advertising,
+                  and we do not sell your personal data to commercial third
+                  parties. If we ever want to use your data for a new purpose
+                  that is not compatible with these, we will tell you first and
+                  ask for consent where required.
+                </p>
               </section>
 
-              {/* Your Rights */}
+              {/* Automated Decision-Making and Profiling */}
               <section className="mb-12">
-                <h2 className="text-2xl font-semibold text-brand-text mt-8 mb-4">{t.sections.yourRights.title}</h2>
-                <p className="text-brand-muted mb-6">{t.sections.yourRights.description}</p>
-                <div className="space-y-4">
-                  {t.sections.yourRights.rights.map((right, index) => (
-                    <div key={index}>
-                      <h3 className="text-xl font-semibold text-brand-text mb-2">{right.title}</h3>
-                      <p className="text-brand-muted">{right.description}</p>
-                    </div>
-                  ))}
-                </div>
-                {t.sections.yourRights.dsarInstructions && (
-                  <div className="mt-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
-                    <p className="text-sm text-blue-900">
-                      <strong>How to Exercise Your Rights:</strong> {t.sections.yourRights.dsarInstructions}
-                    </p>
-                  </div>
-                )}
-              </section>
-
-              {/* Cookies */}
-              <section className="mb-12">
-                <h2 className="text-2xl font-semibold text-brand-text mt-8 mb-4">{t.sections.cookies.title}</h2>
-                <p className="text-brand-muted mb-6">{t.sections.cookies.description}</p>
-                <div className="space-y-4 mb-4">
-                  {t.sections.cookies.types.map((type, index) => (
-                    <div key={index}>
-                      <h3 className="text-xl font-semibold text-brand-text mb-2">{type.title}</h3>
-                      <p className="text-brand-muted">{type.description}</p>
-                    </div>
-                  ))}
-                </div>
-                <p className="text-brand-muted">{t.sections.cookies.management}</p>
-              </section>
-
-              {/* GDPR */}
-              <section className="mb-12">
-                <h2 className="text-2xl font-semibold text-brand-text mt-8 mb-4">{t.sections.gdpr.title}</h2>
-                <p className="text-brand-muted mb-4">{t.sections.gdpr.description}</p>
-                <ul className="list-disc pl-6 space-y-2 text-brand-muted mb-6">
-                  {t.sections.gdpr.rights.map((right, index) => (
-                    <li key={index}>{right}</li>
-                  ))}
+                <h2 className="text-2xl font-semibold text-brand-text mb-4">
+                  Automated Decision-Making and Profiling (Art. 22 GDPR)
+                </h2>
+                <h3 className="text-xl font-semibold text-brand-text mb-2">
+                  How the matching algorithm works
+                </h3>
+                <p className="text-brand-muted mb-3">
+                  Domu Match uses automated processing to suggest potential
+                  roommates:
+                </p>
+                <ul className="list-disc pl-6 text-brand-muted mb-4 space-y-1">
+                  <li>
+                    <span className="font-semibold">Harmony score (≈75%)</span>{' '}
+                    – based mostly on your lifestyle answers (daily rhythms,
+                    tidiness, social habits, routines).
+                  </li>
+                  <li>
+                    <span className="font-semibold">Context score (≈25%)</span>{' '}
+                    – based on your academic and practical context (programme,
+                    year, schedule, budget).
+                  </li>
+                  <li>
+                    These two scores are combined into an overall compatibility
+                    score which we use to rank profiles you might be interested
+                    in.
+                  </li>
                 </ul>
-                <p className="text-brand-muted mb-4">{t.sections.gdpr.legalBasis}</p>
-                <ul className="list-disc pl-6 space-y-2 text-brand-muted">
-                  {t.sections.gdpr.bases.map((basis, index) => (
-                    <li key={index}>{basis}</li>
-                  ))}
+
+                <h3 className="text-xl font-semibold text-brand-text mb-2">
+                  No solely automated legal or similarly significant decisions
+                </h3>
+                <p className="text-brand-muted mb-4">
+                  Our system only suggests possible roommates. It does not
+                  decide where you may live, your academic results, or any
+                  legal or financial outcome. You always choose who to contact,
+                  who to chat with, and who to live with. This means you are
+                  not subject to decisions with legal or similarly significant
+                  effects made solely by our algorithm.
+                </p>
+
+                <h3 className="text-xl font-semibold text-brand-text mb-2">
+                  EU AI Act transparency
+                </h3>
+                <p className="text-brand-muted mb-4">
+                  In line with the EU AI Act transparency rules, we clearly
+                  inform you that we use automated systems for matching,
+                  explain the main factors (Harmony ≈ 75%, Context ≈ 25%), and
+                  regularly review the system to reduce unfair bias. You can
+                  contact us if you think the system treats you unfairly.
+                </p>
+              </section>
+
+              {/* Third-Party Disclosures */}
+              <section className="mb-12">
+                <h2 className="text-2xl font-semibold text-brand-text mb-4">
+                  Third-Party Disclosures
+                </h2>
+                <h3 className="text-xl font-semibold text-brand-text mb-2">
+                  Persona (ID verification)
+                </h3>
+                <p className="text-brand-muted mb-3">
+                  We use Persona to perform identity checks:
+                </p>
+                <ul className="list-disc pl-6 text-brand-muted mb-4 space-y-1">
+                  <li>
+                    Persona may process your government ID and selfie/video and
+                    create biometric templates to confirm that the ID belongs to
+                    you.
+                  </li>
+                  <li>
+                    Domu Match does not store these raw images or biometric
+                    templates. We only receive the verification outcome and
+                    limited ID data linked to your account.
+                  </li>
                 </ul>
+
+                <h3 className="text-xl font-semibold text-brand-text mb-2">
+                  Cloud hosting providers
+                </h3>
+                <p className="text-brand-muted mb-3">
+                  We host Domu Match using reputable cloud providers with
+                  servers in the EU (for example, AWS, Azure, or Google Cloud
+                  EU regions). These providers act as processors under data
+                  processing agreements and may only use your data to run the
+                  infrastructure, not for their own marketing.
+                </p>
+
+                <h3 className="text-xl font-semibold text-brand-text mb-2">
+                  Pilot Universities (anonymized analytics)
+                </h3>
+                <p className="text-brand-muted mb-3">
+                  We may share anonymized and aggregated data with Pilot
+                  Universities to understand how housing and roommate matching
+                  relate to student success. Universities cannot identify you
+                  from these datasets. If a specific research project needs
+                  more detailed data, we will apply strict safeguards and, if
+                  necessary, ask for your consent.
+                </p>
               </section>
 
               {/* Data Retention */}
               <section className="mb-12">
-                <h2 className="text-2xl font-semibold text-brand-text mt-8 mb-4">{t.sections.dataRetention.title}</h2>
-                <p className="text-brand-muted mb-4">{t.sections.dataRetention.description}</p>
-                <ul className="list-disc pl-6 space-y-2 text-brand-muted mb-4">
-                  {t.sections.dataRetention.periods.map((period, index) => (
-                    <li key={index}>{period}</li>
-                  ))}
+                <h2 className="text-2xl font-semibold text-brand-text mb-4">
+                  Data Retention (Storage Limitation)
+                </h2>
+                <p className="text-brand-muted mb-4">
+                  We keep your data only as long as we reasonably need it for
+                  the purposes described above or as required by law.
+                </p>
+                <ul className="list-disc pl-6 text-brand-muted mb-4 space-y-1">
+                  <li>
+                    We keep most of your personal data while your Domu Match
+                    account is active.
+                  </li>
+                  <li>
+                    If your account is inactive for 1 year, we delete or
+                    irreversibly anonymize your personal data, following Dutch
+                    Data Protection Authority guidance.
+                  </li>
+                  <li>
+                    Lifestyle questionnaire data is kept and used only while you
+                    keep your consent and your account is active; if you
+                    withdraw consent or delete your account, we delete or
+                    anonymize it within a reasonable period.
+                  </li>
+                  <li>
+                    Certain logs or security-related records may be kept for a
+                    bit longer where necessary to investigate incidents or meet
+                    legal requirements.
+                  </li>
                 </ul>
-                <p className="text-brand-muted">{t.sections.dataRetention.deletion}</p>
               </section>
 
-              {/* Children */}
+              {/* Your Rights */}
               <section className="mb-12">
-                <h2 className="text-2xl font-semibold text-brand-text mt-8 mb-4">{t.sections.children.title}</h2>
-                <p className="text-brand-muted">{t.sections.children.description}</p>
+                <h2 className="text-2xl font-semibold text-brand-text mb-4">
+                  Your Rights as a Student
+                </h2>
+                <p className="text-brand-muted mb-4">
+                  Under the GDPR and UAVG, you have several important rights.
+                  You can usually exercise them through your account settings or
+                  by contacting us.
+                </p>
+                <ul className="list-disc pl-6 text-brand-muted mb-4 space-y-1">
+                  <li>
+                    <span className="font-semibold">
+                      Right of access and information:
+                    </span>{' '}
+                    you can ask what data we hold about you and receive a copy.
+                  </li>
+                  <li>
+                    <span className="font-semibold">
+                      Right to rectification:
+                    </span>{' '}
+                    you can correct inaccurate or incomplete data.
+                  </li>
+                  <li>
+                    <span className="font-semibold">
+                      Right to erasure (“right to be forgotten”):
+                    </span>{' '}
+                    you can request deletion of your account and personal data,
+                    subject to limited legal exceptions.
+                  </li>
+                  <li>
+                    <span className="font-semibold">
+                      Right to withdraw consent:
+                    </span>{' '}
+                    you can withdraw your consent for the lifestyle
+                    questionnaire at any time, and we will stop using those
+                    data for new matches.
+                  </li>
+                  <li>
+                    <span className="font-semibold">
+                      Right to data portability:
+                    </span>{' '}
+                    you can download your questionnaire results and other key
+                    data in a portable format, where technically feasible.
+                  </li>
+                  <li>
+                    <span className="font-semibold">
+                      Right to object and to restriction:
+                    </span>{' '}
+                    you can object to certain processing based on legitimate
+                    interest and ask us to temporarily restrict processing
+                    while we review your request.
+                  </li>
+                </ul>
+                <p className="text-brand-muted mb-4">
+                  We may ask you to verify your identity before we handle your
+                  request. We aim to respond within one month, as required by
+                  law.
+                </p>
               </section>
 
-              {/* Changes */}
+              {/* Security Measures */}
               <section className="mb-12">
-                <h2 className="text-2xl font-semibold text-brand-text mt-8 mb-4">{t.sections.changes.title}</h2>
-                <p className="text-brand-muted">{t.sections.changes.description}</p>
+                <h2 className="text-2xl font-semibold text-brand-text mb-4">
+                  Security Measures
+                </h2>
+                <p className="text-brand-muted mb-4">
+                  We use technical and organizational measures to protect your
+                  data, including:
+                </p>
+                <ul className="list-disc pl-6 text-brand-muted mb-4 space-y-1">
+                  <li>
+                    Encryption in transit (TLS/HTTPS) and encryption at rest for
+                    our databases and storage.
+                  </li>
+                  <li>
+                    Strict access controls: only authorized staff with a real
+                    need can access personal data.
+                  </li>
+                  <li>
+                    Regular updates, monitoring, and incident response
+                    procedures.
+                  </li>
+                </ul>
+                <p className="text-brand-muted mb-4">
+                  We design Domu Match in line with the principles of the 2026
+                  Cybersecurity Act (Cbw), focusing on digital resilience and
+                  security by design and by default. No system is perfectly
+                  secure, but we work hard to minimize risks.
+                </p>
               </section>
 
-              {/* Third-Party Processors */}
-              {t.sections.thirdPartyProcessors && (
-                <section className="mb-12">
-                  <h2 className="text-2xl font-semibold text-brand-text mt-8 mb-4">{t.sections.thirdPartyProcessors.title}</h2>
-                  <p className="text-brand-muted mb-6">{t.sections.thirdPartyProcessors.description}</p>
-                  <div className="space-y-4">
-                    {t.sections.thirdPartyProcessors.processors.map((processor: any, index: number) => (
-                      <div key={index} className="border-l-4 border-brand-600 pl-4 py-2">
-                        <h3 className="font-semibold text-brand-text mb-1">{processor.name}</h3>
-                        <p className="text-sm text-brand-muted mb-1">{processor.purpose}</p>
-                        <p className="text-xs text-brand-muted">
-                          <strong>Location:</strong> {processor.location} | <strong>DPA:</strong> {processor.dpa}
-                        </p>
-                      </div>
-                    ))}
+              {/* Contact and Complaints */}
+              <section className="mb-12">
+                <h2 className="text-2xl font-semibold text-brand-text mb-4">
+                  Contact and Complaints
+                </h2>
+                <p className="text-brand-muted mb-3">
+                  If you have questions or want to exercise your rights, you
+                  can contact our privacy contact / Data Protection Officer
+                  (DPO):
+                </p>
+                <ul className="list-disc pl-6 text-brand-muted mb-4 space-y-1">
+                  <li>Name: DPO Domu Match</li>
+                  <li>Email: privacy@domumatch.example</li>
+                  <li>
+                    Postal address: Domu Match B.V., [Street and number], [ZIP
+                    code] [City], The Netherlands
+                  </li>
+                </ul>
+                <p className="text-brand-muted mb-3">
+                  You also have the right to lodge a complaint with your local
+                  data protection authority. In the Netherlands, this is the
+                  Autoriteit Persoonsgegevens (Dutch Data Protection Authority)
+                  at{' '}
+                  <a
+                    href="https://autoriteitpersoonsgegevens.nl"
+                    className="text-brand-600 underline"
+                  >
+                    https://autoriteitpersoonsgegevens.nl
+                  </a>
+                  .
+                </p>
+              </section>
+
+              {/* Definitions */}
+              <section className="mb-16">
+                <h2 className="text-2xl font-semibold text-brand-text mb-4">
+                  Definitions
+                </h2>
+                <dl className="space-y-4 text-brand-muted">
+                  <div>
+                    <dt className="font-semibold text-brand-text">
+                      Personal data
+                    </dt>
+                    <dd>
+                      Any information that relates to an identified or
+                      identifiable person (for example, your name, email, user
+                      ID, or a combination of lifestyle answers that can be
+                      linked to you).
+                    </dd>
                   </div>
-                  {t.sections.thirdPartyProcessors.note && (
-                    <p className="text-brand-muted mt-4 text-sm italic">{t.sections.thirdPartyProcessors.note}</p>
-                  )}
-                </section>
-              )}
-
-              {/* Contact */}
-              <section className="mb-12">
-                <h2 className="text-2xl font-semibold text-brand-text mt-8 mb-4">{t.sections.contact.title}</h2>
-                <p className="text-brand-muted mb-4">{t.sections.contact.description}</p>
-                <p className="text-brand-muted mb-2">{t.sections.contact.email}</p>
-                {t.sections.contact.dpo && <p className="text-brand-muted mb-2">{t.sections.contact.dpo}</p>}
-                {t.sections.contact.dsar && <p className="text-brand-muted mb-2">{t.sections.contact.dsar}</p>}
-                {t.sections.contact.note && <p className="text-brand-muted text-sm italic mt-4">{t.sections.contact.note}</p>}
+                  <div>
+                    <dt className="font-semibold text-brand-text">
+                      Special category data
+                    </dt>
+                    <dd>
+                      Particularly sensitive data such as health information,
+                      data about racial or ethnic origin, religious or
+                      philosophical beliefs, or sexual orientation. These
+                      require extra protection and usually explicit consent.
+                    </dd>
+                  </div>
+                  <div>
+                    <dt className="font-semibold text-brand-text">
+                      Biometric data
+                    </dt>
+                    <dd>
+                      Personal data resulting from technical processing of
+                      physical or behavioural characteristics (like facial
+                      images) that allow or confirm unique identification. For
+                      Domu Match, Persona may create biometric templates during
+                      ID verification, but Domu Match itself does not store
+                      those templates or raw ID images.
+                    </dd>
+                  </div>
+                  <div>
+                    <dt className="font-semibold text-brand-text">Profiling</dt>
+                    <dd>
+                      Any automated processing of personal data to evaluate
+                      personal aspects, such as behaviour, preferences, or
+                      interests. For Domu Match, profiling mainly means using
+                      your lifestyle and context data to calculate Harmony and
+                      Context scores for roommate matching.
+                    </dd>
+                  </div>
+                  <div>
+                    <dt className="font-semibold text-brand-text">
+                      Automated decision-making
+                    </dt>
+                    <dd>
+                      Decisions made only by machines, without human
+                      involvement, that produce legal or similarly significant
+                      effects. Domu Match does not make this type of decision
+                      about you; our system only suggests possible matches, and
+                      you stay in control.
+                    </dd>
+                  </div>
+                </dl>
               </section>
             </div>
           </Container>
@@ -765,3 +779,4 @@ export default function PrivacyPage() {
     </main>
   )
 }
+

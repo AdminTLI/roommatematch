@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createClient } from '@/lib/supabase/server'
+import { createClient, createAdminClient } from '@/lib/supabase/server'
 import { getMatchRepo } from '@/lib/matching/repo.factory'
 import { runMatchingAsSuggestions } from '@/lib/matching/orchestrator'
 import { checkRateLimit, getUserRateLimitKey } from '@/lib/rate-limit'
@@ -104,10 +104,121 @@ export async function POST(request: NextRequest) {
       // Efficiently fetch the current user's profile
       let currentUser = await repo.getCandidateByUserId(user.id)
       if (!currentUser) {
-        safeLogger.warn('[Matching] User not eligible for matching')
+        // Check what's missing to provide helpful error message
+        // Use admin client to access all data
+        const adminClient = createAdminClient()
+        const { data: profile } = await adminClient
+          .from('profiles')
+          .select('user_id, degree_level, campus')
+          .eq('user_id', user.id)
+          .maybeSingle()
+        
+        const { data: academic } = await adminClient
+          .from('user_academic')
+          .select('user_id, degree_level, program_id, undecided_program')
+          .eq('user_id', user.id)
+          .maybeSingle()
+        
+        const { data: submission } = await adminClient
+          .from('onboarding_submissions')
+          .select('id')
+          .eq('user_id', user.id)
+          .maybeSingle()
+        
+        // Fetch responses to check what's actually missing
+        const { data: responses } = await adminClient
+          .from('responses')
+          .select('question_key, value')
+          .eq('user_id', user.id)
+        
+        // Build answers object from responses
+        let answers: Record<string, any> = (responses || []).reduce((acc: Record<string, any>, r: any) => {
+          acc[r.question_key] = r.value
+          return acc
+        }, {})
+        
+        // If responses are missing, try reading from onboarding_sections and transforming
+        if (!responses || responses.length === 0) {
+          const { data: sections } = await adminClient
+            .from('onboarding_sections')
+            .select('section, answers')
+            .eq('user_id', user.id)
+          
+          if (sections && sections.length > 0) {
+            // Transform answers from onboarding_sections format to responses format
+            const { transformAnswer } = await import('@/lib/question-key-mapping')
+            for (const section of sections) {
+              if (section.answers && Array.isArray(section.answers)) {
+                for (const answer of section.answers) {
+                  const transformed = transformAnswer(answer)
+                  if (transformed) {
+                    answers[transformed.question_key] = transformed.value
+                  }
+                }
+              }
+            }
+          }
+        }
+        
+        // Enrich with profile/academic data
+        if (academic) {
+          if (!answers.degree_level) answers.degree_level = academic.degree_level
+          if (!answers.program) {
+            if (academic.undecided_program) {
+              answers.program = 'undecided'
+            } else if (academic.program_id) {
+              answers.program = academic.program_id
+            }
+          }
+        }
+        if (profile && !answers.campus) {
+          answers.campus = profile.campus || null
+        }
+        
+        // Get missing fields
+        const { getMissingFields } = await import('@/lib/matching/completeness')
+        const missingFields = getMissingFields(answers)
+        
+        let errorMessage = 'Your profile is not set up for matching.'
+        let details = ''
+        
+        if (!profile) {
+          errorMessage = 'Profile not found. Please complete your profile setup.'
+          details = 'You need to create a profile before you can get matches.'
+        } else if (!academic) {
+          errorMessage = 'Academic information missing. Please complete your academic details.'
+          details = 'You need to provide your university, degree level, and program information.'
+        } else if (!submission) {
+          errorMessage = 'Questionnaire not completed. Please finish the onboarding questionnaire.'
+          details = 'You need to complete all required questions in the questionnaire to get matches.'
+        } else if (missingFields.length > 0) {
+          errorMessage = 'Questionnaire incomplete. Please complete all required questions.'
+          details = `Missing required fields: ${missingFields.slice(0, 5).join(', ')}${missingFields.length > 5 ? ` and ${missingFields.length - 5} more` : ''}. Please complete your onboarding.`
+          safeLogger.warn('[Matching] User not eligible - missing fields', {
+            userId: user.id,
+            missingFields,
+            missingCount: missingFields.length,
+            totalResponses: responses?.length || 0
+          })
+        } else {
+          errorMessage = 'Questionnaire incomplete. Please complete all required questions.'
+          details = 'Some required questions in your questionnaire are missing. Please complete your onboarding.'
+        }
+        
+        safeLogger.warn('[Matching] User not eligible for matching', {
+          userId: user.id,
+          hasProfile: !!profile,
+          hasAcademic: !!academic,
+          hasSubmission: !!submission,
+          missingFields: missingFields.length > 0 ? missingFields : undefined,
+          responseCount: responses?.length || 0
+        })
+        
         return NextResponse.json({ 
-          error: 'User profile not found or not eligible for matching',
-          details: 'Check server logs for missing required fields'
+          error: errorMessage,
+          details,
+          requiresOnboarding: true,
+          missingFields: missingFields.length > 0 ? missingFields : undefined
         }, { status: 404 })
       }
       
@@ -138,9 +249,11 @@ export async function POST(request: NextRequest) {
       
       // Ensure currentUser is still valid after vector generation
       if (!currentUser) {
+        safeLogger.warn('[Matching] User not eligible after vector generation')
         return NextResponse.json({ 
-          error: 'User profile not found or not eligible for matching',
-          details: 'Check server logs for missing required fields'
+          error: 'Your profile is not set up for matching',
+          details: 'Please complete your onboarding questionnaire to get matches.',
+          requiresOnboarding: true
         }, { status: 404 })
       }
       

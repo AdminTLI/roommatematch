@@ -8,6 +8,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Loader2, Check, User, Mail, GraduationCap, Phone } from 'lucide-react'
 import { Textarea } from '@/components/ui/textarea'
+import { InterestsSelector } from '@/components/settings/interests-selector'
 import { trackProfileUpdate } from '@/lib/notifications/activity-tracker'
 import { fetchWithCSRF } from '@/lib/utils/fetch-with-csrf'
 
@@ -28,20 +29,41 @@ export function ProfileSettings({ user, profile, academic }: ProfileSettingsProp
     email: user.email || '',
     phone: profile?.phone || '',
     bio: profile?.bio || '',
+    interests: (profile?.interests && Array.isArray(profile.interests)) ? profile.interests : [],
     university: academic?.university_id || '',
     degreeLevel: academic?.degree_level || '',
     program: academic?.program_id || '',
     graduationYear: academic?.study_start_year || ''
   })
+  const [interestsError, setInterestsError] = useState<string | null>(null)
 
   const handleInputChange = (field: string, value: string) => {
     setFormData(prev => ({ ...prev, [field]: value }))
   }
 
+  const handleInterestsChange = (interests: string[]) => {
+    setFormData(prev => ({ ...prev, interests }))
+    setInterestsError(null)
+  }
+
   const handleSave = async () => {
     setIsLoading(true)
     setError(null)
+    setInterestsError(null)
     setIsSuccess(false)
+
+    // Validate interests before submitting
+    if (formData.interests.length < 3) {
+      setInterestsError('Please select at least 3 interests')
+      setIsLoading(false)
+      return
+    }
+
+    if (formData.interests.length > 10) {
+      setInterestsError('Maximum 10 interests allowed')
+      setIsLoading(false)
+      return
+    }
 
     try {
       const response = await fetchWithCSRF('/api/settings/profile', {
@@ -53,12 +75,17 @@ export function ProfileSettings({ user, profile, academic }: ProfileSettingsProp
           firstName: formData.firstName,
           lastName: formData.lastName,
           phone: formData.phone,
-          bio: formData.bio
+          bio: formData.bio,
+          interests: formData.interests
         })
       })
 
       if (!response.ok) {
         const errorData = await response.json()
+        // Check if error is related to interests
+        if (errorData.error?.includes('interests')) {
+          setInterestsError(errorData.error)
+        }
         throw new Error(errorData.error || 'Failed to update profile')
       }
 
@@ -68,6 +95,10 @@ export function ProfileSettings({ user, profile, academic }: ProfileSettingsProp
       if (formData.lastName !== (profile?.last_name || '')) changes.push('last name')
       if (formData.phone !== (profile?.phone || '')) changes.push('phone')
       if (formData.bio !== (profile?.bio || '')) changes.push('bio')
+      const existingInterests = (profile?.interests && Array.isArray(profile.interests)) ? profile.interests : []
+      if (JSON.stringify(formData.interests.sort()) !== JSON.stringify(existingInterests.sort())) {
+        changes.push('interests')
+      }
       
       if (changes.length > 0) {
         await trackProfileUpdate(user.id, changes)
@@ -159,6 +190,14 @@ export function ProfileSettings({ user, profile, academic }: ProfileSettingsProp
               className="resize-none text-text-primary dark:text-text-primary bg-bg-surface dark:bg-bg-surface border-border-subtle"
             />
           </div>
+
+          <InterestsSelector
+            value={formData.interests}
+            onChange={handleInterestsChange}
+            min={3}
+            max={10}
+            error={interestsError || undefined}
+          />
 
           <div className="space-y-3 pt-2 border-t border-gray-100">
             <Label htmlFor="email" className="text-sm font-medium">Email Address</Label>

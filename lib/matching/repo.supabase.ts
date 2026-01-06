@@ -68,10 +68,48 @@ export class SupabaseMatchRepo implements MatchRepo {
     }
 
     // Build answers object from responses
-    const answers = data.responses?.reduce((acc: Record<string, any>, r: any) => {
+    let answers: Record<string, any> = data.responses?.reduce((acc: Record<string, any>, r: any) => {
       acc[r.question_key] = r.value
       return acc
     }, {}) || {}
+    
+    // If responses are missing or incomplete, also check onboarding_sections as fallback
+    // This handles cases where users have saved but not yet submitted, or where submission
+    // didn't properly write to responses table
+    if (!data.responses || data.responses.length === 0) {
+      safeLogger.debug('[getCandidateByUserId] No responses found, checking onboarding_sections', { userId })
+      const { data: sections } = await supabase
+        .from('onboarding_sections')
+        .select('section, answers')
+        .eq('user_id', userId)
+      
+      if (sections && sections.length > 0) {
+        safeLogger.debug('[getCandidateByUserId] Found onboarding_sections', { 
+          sectionCount: sections.length,
+          sections: sections.map(s => s.section)
+        })
+        // Transform answers from onboarding_sections format to responses format
+        const { transformAnswer } = await import('@/lib/question-key-mapping')
+        let transformedCount = 0
+        for (const section of sections) {
+          if (section.answers && Array.isArray(section.answers)) {
+            for (const answer of section.answers) {
+              const transformed = transformAnswer(answer)
+              if (transformed) {
+                answers[transformed.question_key] = transformed.value
+                transformedCount++
+              }
+            }
+          }
+        }
+        safeLogger.debug('[getCandidateByUserId] Transformed answers from onboarding_sections', {
+          transformedCount,
+          answerKeys: Object.keys(answers).length
+        })
+      } else {
+        safeLogger.debug('[getCandidateByUserId] No onboarding_sections found either', { userId })
+      }
+    }
 
     // Normalize answers: enrich with data from profiles/user_academic where applicable
     // Some required fields may be stored in profile tables rather than responses

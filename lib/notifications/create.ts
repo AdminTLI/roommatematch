@@ -74,7 +74,41 @@ export async function createMatchNotification(
   }
   const supabase = await createAdminClient();
   
-  // Get user names for personalized messages
+  // STRICT RULE: Only show names if BOTH users have explicitly accepted (status = 'confirmed')
+  // Only match_confirmed should always show names (since it only happens when both accepted)
+  let bothUsersAccepted = false;
+  if (type === 'match_created' || type === 'match_accepted') {
+    // Check match_suggestions table to see if both users have accepted
+    const { data: suggestion } = await supabase
+      .from('match_suggestions')
+      .select('status, accepted_by, member_ids')
+      .eq('id', matchId)
+      .single();
+    
+    if (suggestion) {
+      // STRICT: Only show names if status is 'confirmed' AND both users are in accepted_by
+      // Default to false (don't show names) unless we're absolutely certain
+      const acceptedBy = suggestion.accepted_by || [];
+      const memberIds = suggestion.member_ids || [];
+      
+      // Only show names if:
+      // 1. Status is 'confirmed' (both users accepted)
+      // 2. Both member IDs are in accepted_by array
+      // 3. At least 2 users have accepted
+      if (suggestion.status === 'confirmed' && 
+          memberIds.length === 2 && 
+          acceptedBy.length >= 2 &&
+          memberIds.every((id: string) => acceptedBy.includes(id))) {
+        bothUsersAccepted = true;
+      }
+      // Otherwise, default to false (don't show names)
+    }
+  } else if (type === 'match_confirmed') {
+    // match_confirmed only happens when both users accepted, so always true
+    bothUsersAccepted = true;
+  }
+  
+  // Get user names for personalized messages (only if both users accepted)
   const { data: profiles } = await supabase
     .from('profiles')
     .select('user_id, first_name')
@@ -91,18 +125,33 @@ export async function createMatchNotification(
   switch (type) {
     case 'match_created':
       title = 'New Match Found!';
-      messageA = `You have a new match with ${userBName}! Check out their profile.`;
-      messageB = `You have a new match with ${userAName}! Check out their profile.`;
+      if (bothUsersAccepted) {
+        // Both users accepted - show names
+        messageA = `You have a new match with ${userBName}! Check out their profile.`;
+        messageB = `You have a new match with ${userAName}! Check out their profile.`;
+      } else {
+        // Not both accepted yet - use generic message without names
+        messageA = 'You have matched with someone! Check out your matches to see who.';
+        messageB = 'You have matched with someone! Check out your matches to see who.';
+      }
       metadata = { match_id: matchId, chat_id: chatId };
       break;
     case 'match_accepted':
       title = 'Match Accepted!';
-      messageA = `${userBName} accepted your match request!`;
-      messageB = `${userAName} accepted your match request!`;
+      if (bothUsersAccepted) {
+        // Both users accepted - show names
+        messageA = `${userBName} accepted your match request!`;
+        messageB = `${userAName} accepted your match request!`;
+      } else {
+        // Only one user accepted - use generic message without names
+        messageA = 'Someone accepted your match request!';
+        messageB = 'Someone accepted your match request!';
+      }
       metadata = { match_id: matchId };
       break;
     case 'match_confirmed':
       title = 'Match Confirmed!';
+      // match_confirmed always means both users accepted, so always show names
       messageA = `It's official! You and ${userBName} are now matched.`;
       messageB = `It's official! You and ${userAName} are now matched.`;
       metadata = { match_id: matchId, chat_id: chatId };

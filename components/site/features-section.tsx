@@ -51,11 +51,10 @@ const content = {
         icon: Shield,
         title: "Verified & Safe Platform",
         subtitle: "Verified. Trusted. Yours.",
-        description: "Every student on Domu Match has passed government ID + selfie verification. No catfish, no fake profiles, no surprises. Universities back it. You can focus on compatibility, not safety.",
+        description: "Every student on Domu Match has passed government ID + selfie verification. No catfish, no fake profiles, no surprises. You can focus on compatibility, not safety.",
         details: [
           "Government ID verification",
           "Selfie matching technology",
-          "University email confirmation",
           "100% verified profiles",
           "Safety incident tracking"
         ],
@@ -65,11 +64,11 @@ const content = {
         icon: Eye,
         title: "Explainable AI",
         subtitle: "You'll Understand Why",
-        description: "When we match you with someone, we show exactly why. Shared study style, compatible quiet hours, both into hiking. Real reasons, not a mystery. Choose from data, not vibes.",
+        description: "When we match you with someone, we show exactly why. Shared study style, compatible quiet hours, similar lifestyle preferences. Real reasons, not a mystery. Choose from data, not vibes.",
         details: [
           "Transparent compatibility scores",
           "Detailed matching explanations",
-          "Shared interests breakdown",
+          "See each other's interests",
           "Academic connection highlights",
           "Lifestyle compatibility details"
         ],
@@ -146,11 +145,10 @@ const content = {
         icon: Shield,
         title: "Geverifieerd en Veilig Platform",
         subtitle: "Geverifieerd. Vertrouwd. Van Jou.",
-        description: "Elke student op Domu Match heeft overheids-ID + selfie-verificatie doorstaan. Geen catfish, geen nep-profielen, geen verrassingen. Universiteiten steunen het. Je kunt je focussen op compatibiliteit, niet op veiligheid.",
+        description: "Elke student op Domu Match heeft overheids-ID + selfie-verificatie doorstaan. Geen catfish, geen nep-profielen, geen verrassingen. Je kunt je focussen op compatibiliteit, niet op veiligheid.",
         details: [
           "Overheids-ID verificatie",
           "Selfie matching technologie",
-          "Universiteits-e-mailbevestiging",
           "100% geverifieerde profielen",
           "Veiligheidsincident tracking"
         ],
@@ -160,11 +158,11 @@ const content = {
         icon: Eye,
         title: "Uitlegbare AI",
         subtitle: "Je Zult Begrijpen Waarom",
-        description: "Wanneer we je met iemand matchen, tonen we precies waarom. Gedeelde studiestijl, compatibele stilte uren, beide houden van wandelen. Echte redenen, geen mysterie. Kies vanuit data, niet vanuit gevoel.",
+        description: "Wanneer we je met iemand matchen, tonen we precies waarom. Gedeelde studiestijl, compatibele stilte uren, vergelijkbare levensstijlvoorkeuren. Echte redenen, geen mysterie. Kies vanuit data, niet vanuit gevoel.",
         details: [
           "Transparante compatibiliteitsscores",
           "Gedetailleerde matchinguitleg",
-          "Gedeelde interesses uitsplitsing",
+          "Zie elkaars interesses",
           "Academische connectie highlights",
           "Levensstijl compatibiliteitsdetails"
         ],

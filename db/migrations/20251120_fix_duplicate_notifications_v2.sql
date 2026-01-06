@@ -97,6 +97,10 @@ DECLARE
   user_b_name TEXT;
   existing_notification_a UUID;
   existing_notification_b UUID;
+  both_users_accepted BOOLEAN := false;
+  suggestion_status TEXT;
+  suggestion_accepted_by UUID[];
+  suggestion_member_ids UUID[];
 BEGIN
   -- Prevent self-matches
   IF NEW.a_user = NEW.b_user THEN
@@ -106,11 +110,44 @@ BEGIN
   -- Create chat for the match
   chat_id := create_chat_for_match(NEW.id, NEW.a_user, NEW.b_user);
   
-  -- Get user names for notifications
-  SELECT p1.first_name, p2.first_name
-  INTO user_a_name, user_b_name
-  FROM profiles p1, profiles p2
-  WHERE p1.user_id = NEW.a_user AND p2.user_id = NEW.b_user;
+  -- STRICT RULE: Only show names if BOTH users have explicitly accepted
+  -- Check if both users have accepted by looking at match_suggestions table
+  -- Find the corresponding suggestion where member_ids contains both a_user and b_user
+  SELECT status, accepted_by, member_ids
+  INTO suggestion_status, suggestion_accepted_by, suggestion_member_ids
+  FROM match_suggestions
+  WHERE kind = 'pair'
+    AND (member_ids @> ARRAY[NEW.a_user] AND member_ids @> ARRAY[NEW.b_user])
+    AND array_length(member_ids, 1) = 2
+    AND status = 'confirmed'  -- ONLY check confirmed suggestions
+  ORDER BY created_at DESC
+  LIMIT 1;
+  
+  -- Check if both users have accepted - STRICT: Only if status is 'confirmed'
+  -- Default to false (don't show names) unless we're absolutely certain
+  IF suggestion_status = 'confirmed' THEN
+    -- Double-check that both users are in accepted_by array
+    IF suggestion_accepted_by IS NOT NULL AND suggestion_member_ids IS NOT NULL THEN
+      -- Verify both member_ids are in accepted_by array
+      both_users_accepted := (
+        array_length(suggestion_member_ids, 1) = 2 AND
+        suggestion_member_ids[1] = ANY(suggestion_accepted_by) AND
+        suggestion_member_ids[2] = ANY(suggestion_accepted_by) AND
+        array_length(suggestion_accepted_by, 1) >= 2  -- At least 2 users accepted
+      );
+    END IF;
+  END IF;
+  
+  -- If we couldn't find a confirmed suggestion, default to NOT showing names
+  -- This is the safe default - only show names when we're certain both accepted
+  
+  -- Get user names for notifications (only if both users accepted)
+  IF both_users_accepted THEN
+    SELECT p1.first_name, p2.first_name
+    INTO user_a_name, user_b_name
+    FROM profiles p1, profiles p2
+    WHERE p1.user_id = NEW.a_user AND p2.user_id = NEW.b_user;
+  END IF;
   
   -- Check if notification already exists for user A with user B
   SELECT id INTO existing_notification_a
@@ -122,13 +159,24 @@ BEGIN
   
   -- Only create notification for user A if it doesn't exist
   IF existing_notification_a IS NULL THEN
-    PERFORM create_notification(
-      NEW.a_user,
-      'match_created',
-      'New Match Found!',
-      'You have a new match with ' || COALESCE(user_b_name, 'a potential roommate') || '! Check out their profile.',
-      jsonb_build_object('match_id', NEW.id, 'chat_id', chat_id, 'other_user_id', NEW.b_user)
-    );
+    IF both_users_accepted THEN
+      PERFORM create_notification(
+        NEW.a_user,
+        'match_created',
+        'New Match Found!',
+        'You have a new match with ' || COALESCE(user_b_name, 'someone') || '! Check out their profile.',
+        jsonb_build_object('match_id', NEW.id, 'chat_id', chat_id, 'other_user_id', NEW.b_user)
+      );
+    ELSE
+      -- Not both accepted yet - use anonymous message
+      PERFORM create_notification(
+        NEW.a_user,
+        'match_created',
+        'New Match Found!',
+        'You have matched with someone! Check out your matches to see who.',
+        jsonb_build_object('match_id', NEW.id, 'chat_id', chat_id, 'other_user_id', NEW.b_user)
+      );
+    END IF;
   END IF;
   
   -- Check if notification already exists for user B with user A
@@ -141,13 +189,24 @@ BEGIN
   
   -- Only create notification for user B if it doesn't exist
   IF existing_notification_b IS NULL THEN
-    PERFORM create_notification(
-      NEW.b_user,
-      'match_created', 
-      'New Match Found!',
-      'You have a new match with ' || COALESCE(user_a_name, 'a potential roommate') || '! Check out their profile.',
-      jsonb_build_object('match_id', NEW.id, 'chat_id', chat_id, 'other_user_id', NEW.a_user)
-    );
+    IF both_users_accepted THEN
+      PERFORM create_notification(
+        NEW.b_user,
+        'match_created', 
+        'New Match Found!',
+        'You have a new match with ' || COALESCE(user_a_name, 'someone') || '! Check out their profile.',
+        jsonb_build_object('match_id', NEW.id, 'chat_id', chat_id, 'other_user_id', NEW.a_user)
+      );
+    ELSE
+      -- Not both accepted yet - use anonymous message
+      PERFORM create_notification(
+        NEW.b_user,
+        'match_created', 
+        'New Match Found!',
+        'You have matched with someone! Check out your matches to see who.',
+        jsonb_build_object('match_id', NEW.id, 'chat_id', chat_id, 'other_user_id', NEW.a_user)
+      );
+    END IF;
   END IF;
   
   RETURN NEW;

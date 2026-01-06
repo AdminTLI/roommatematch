@@ -110,12 +110,14 @@ END;
 $$ LANGUAGE plpgsql;
 
 -- Apply cooldown trigger to profiles
+DROP TRIGGER IF EXISTS enforce_questionnaire_cooldown_profiles ON profiles;
 CREATE TRIGGER enforce_questionnaire_cooldown_profiles
   BEFORE UPDATE ON profiles
   FOR EACH ROW
   EXECUTE FUNCTION enforce_questionnaire_cooldown();
 
 -- Apply cooldown trigger to responses
+DROP TRIGGER IF EXISTS enforce_questionnaire_cooldown_responses ON responses;
 CREATE TRIGGER enforce_questionnaire_cooldown_responses
   BEFORE UPDATE ON responses
   FOR EACH ROW
@@ -146,6 +148,7 @@ END;
 $$ LANGUAGE plpgsql;
 
 -- Apply sanitization trigger to profiles
+DROP TRIGGER IF EXISTS sanitize_profile_text_trigger ON profiles;
 CREATE TRIGGER sanitize_profile_text_trigger
   BEFORE INSERT OR UPDATE ON profiles
   FOR EACH ROW
@@ -175,6 +178,7 @@ END;
 $$ LANGUAGE plpgsql;
 
 -- Apply link blocking trigger to messages
+DROP TRIGGER IF EXISTS block_links_on_message_trigger ON messages;
 CREATE TRIGGER block_links_on_message_trigger
   BEFORE INSERT ON messages
   FOR EACH ROW
@@ -507,6 +511,7 @@ END;
 $$ LANGUAGE plpgsql;
 
 -- Apply deletion trigger to users
+DROP TRIGGER IF EXISTS handle_user_deletion_trigger ON users;
 CREATE TRIGGER handle_user_deletion_trigger
   BEFORE DELETE ON users
   FOR EACH ROW
@@ -639,6 +644,7 @@ END;
 $$ LANGUAGE plpgsql;
 
 -- Create trigger for first message
+DROP TRIGGER IF EXISTS trigger_update_first_message ON messages;
 CREATE TRIGGER trigger_update_first_message
   AFTER INSERT ON messages
   FOR EACH ROW
@@ -651,38 +657,96 @@ DECLARE
   chat_id UUID;
   user_a_name TEXT;
   user_b_name TEXT;
+  both_users_accepted BOOLEAN := false;
+  suggestion_status TEXT;
+  suggestion_accepted_by UUID[];
+  suggestion_member_ids UUID[];
 BEGIN
   -- Create chat for the match
   chat_id := create_chat_for_match(NEW.id, NEW.a_user, NEW.b_user);
   
-  -- Get user names for notifications
-  SELECT p1.first_name, p2.first_name
-  INTO user_a_name, user_b_name
-  FROM profiles p1, profiles p2
-  WHERE p1.user_id = NEW.a_user AND p2.user_id = NEW.b_user;
+  -- STRICT RULE: Only show names if BOTH users have explicitly accepted
+  -- Check if both users have accepted by looking at match_suggestions table
+  -- Find the corresponding suggestion where member_ids contains both a_user and b_user
+  SELECT status, accepted_by, member_ids
+  INTO suggestion_status, suggestion_accepted_by, suggestion_member_ids
+  FROM match_suggestions
+  WHERE kind = 'pair'
+    AND (member_ids @> ARRAY[NEW.a_user] AND member_ids @> ARRAY[NEW.b_user])
+    AND array_length(member_ids, 1) = 2
+    AND status = 'confirmed'  -- ONLY check confirmed suggestions
+  ORDER BY created_at DESC
+  LIMIT 1;
+  
+  -- Check if both users have accepted - STRICT: Only if status is 'confirmed'
+  -- Default to false (don't show names) unless we're absolutely certain
+  IF suggestion_status = 'confirmed' THEN
+    -- Double-check that both users are in accepted_by array
+    IF suggestion_accepted_by IS NOT NULL AND suggestion_member_ids IS NOT NULL THEN
+      -- Verify both member_ids are in accepted_by array
+      both_users_accepted := (
+        array_length(suggestion_member_ids, 1) = 2 AND
+        suggestion_member_ids[1] = ANY(suggestion_accepted_by) AND
+        suggestion_member_ids[2] = ANY(suggestion_accepted_by) AND
+        array_length(suggestion_accepted_by, 1) >= 2  -- At least 2 users accepted
+      );
+    END IF;
+  END IF;
+  
+  -- If we couldn't find a confirmed suggestion, default to NOT showing names
+  -- This is the safe default - only show names when we're certain both accepted
+  
+  -- Get user names for notifications (only if both users accepted)
+  IF both_users_accepted THEN
+    SELECT p1.first_name, p2.first_name
+    INTO user_a_name, user_b_name
+    FROM profiles p1, profiles p2
+    WHERE p1.user_id = NEW.a_user AND p2.user_id = NEW.b_user;
+  END IF;
   
   -- Create notifications for both users
-  PERFORM create_notification(
-    NEW.a_user,
-    'match_created',
-    'New Match Found!',
-    'You have a new match with ' || COALESCE(user_b_name, 'a potential roommate') || '! Check out their profile.',
-    jsonb_build_object('match_id', NEW.id, 'chat_id', chat_id, 'other_user_id', NEW.b_user)
-  );
-  
-  PERFORM create_notification(
-    NEW.b_user,
-    'match_created', 
-    'New Match Found!',
-    'You have a new match with ' || COALESCE(user_a_name, 'a potential roommate') || '! Check out their profile.',
-    jsonb_build_object('match_id', NEW.id, 'chat_id', chat_id, 'other_user_id', NEW.a_user)
-  );
+  -- Only show names if both users have accepted, otherwise use "someone"
+  IF both_users_accepted THEN
+    PERFORM create_notification(
+      NEW.a_user,
+      'match_created',
+      'New Match Found!',
+      'You have a new match with ' || COALESCE(user_b_name, 'someone') || '! Check out their profile.',
+      jsonb_build_object('match_id', NEW.id, 'chat_id', chat_id, 'other_user_id', NEW.b_user)
+    );
+    
+    PERFORM create_notification(
+      NEW.b_user,
+      'match_created', 
+      'New Match Found!',
+      'You have a new match with ' || COALESCE(user_a_name, 'someone') || '! Check out their profile.',
+      jsonb_build_object('match_id', NEW.id, 'chat_id', chat_id, 'other_user_id', NEW.a_user)
+    );
+  ELSE
+    -- Not both accepted yet - use anonymous message
+    PERFORM create_notification(
+      NEW.a_user,
+      'match_created',
+      'New Match Found!',
+      'You have matched with someone! Check out your matches to see who.',
+      jsonb_build_object('match_id', NEW.id, 'chat_id', chat_id, 'other_user_id', NEW.b_user)
+    );
+    
+    PERFORM create_notification(
+      NEW.b_user,
+      'match_created', 
+      'New Match Found!',
+      'You have matched with someone! Check out your matches to see who.',
+      jsonb_build_object('match_id', NEW.id, 'chat_id', chat_id, 'other_user_id', NEW.a_user)
+    );
+  END IF;
   
   RETURN NEW;
 END;
 $$ LANGUAGE plpgsql;
 
 -- Create trigger for automatic chat creation when match is created
+DROP TRIGGER IF EXISTS trigger_create_chat_on_match_insert ON matches;
 CREATE TRIGGER trigger_create_chat_on_match_insert
   AFTER INSERT ON matches
   FOR EACH ROW
@@ -710,6 +774,7 @@ BEGIN
   -- Handle different status changes
   IF NEW.status = 'accepted' THEN
     -- Notify the other user that their match was accepted
+    -- IMPORTANT: Only one user has accepted so far, so don't show names - use "someone"
     other_user_id := CASE 
       WHEN NEW.a_user = OLD.a_user THEN NEW.b_user 
       ELSE NEW.a_user 
@@ -719,7 +784,7 @@ BEGIN
       other_user_id,
       'match_accepted',
       'Match Accepted!',
-      COALESCE(user_a_name, 'Someone') || ' accepted your match request!',
+      'Someone accepted your match request!',
       jsonb_build_object('match_id', NEW.id, 'other_user_id', NEW.a_user)
     );
     
@@ -747,6 +812,7 @@ END;
 $$ LANGUAGE plpgsql;
 
 -- Create trigger for match status changes
+DROP TRIGGER IF EXISTS trigger_notify_match_status_change ON matches;
 CREATE TRIGGER trigger_notify_match_status_change
   AFTER UPDATE ON matches
   FOR EACH ROW
@@ -797,6 +863,7 @@ END;
 $$ LANGUAGE plpgsql;
 
 -- Create trigger for group suggestion confirmation
+DROP TRIGGER IF EXISTS trigger_create_chat_on_group_confirmed ON group_suggestions;
 CREATE TRIGGER trigger_create_chat_on_group_confirmed
   AFTER UPDATE ON group_suggestions
   FOR EACH ROW

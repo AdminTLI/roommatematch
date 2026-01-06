@@ -27,13 +27,12 @@ import {
   User,
   Building2,
   Settings,
-  LayoutDashboard,
-  Sparkles
+  LayoutDashboard
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { EmptyState } from '@/components/ui/empty-state'
 import { Card, CardContent } from '@/components/ui/card'
-import type { DashboardData, Update } from '@/types/dashboard'
+import type { DashboardData } from '@/types/dashboard'
 import { createClient } from '@/lib/supabase/client'
 import { logger } from '@/lib/utils/logger'
 import { queryKeys, queryClient } from '@/app/providers'
@@ -685,8 +684,79 @@ export function DashboardContent({ hasCompletedQuestionnaire = false, hasPartial
       }
       
       // Combine notifications and chat messages, sort by time
-      const allActivity = [...notifications.map((notif: any) => {
+      // For match_created and match_accepted notifications, verify both users accepted before showing names
+      const processedNotifications = await Promise.all(notifications.map(async (notif: any) => {
         const timeAgo = formatTimeAgo(notif.created_at)
+        
+        // Safety check: For match_created and match_accepted notifications, verify both users accepted
+        if (notif.type === 'match_created' || notif.type === 'match_accepted') {
+          let bothUsersAccepted = false
+          
+          // First, check if message contains a name that needs sanitization
+          let hasName = false
+          let genericMessage = ''
+          
+          if (notif.type === 'match_created' && notif.message && notif.message.includes('match with')) {
+            // Check if message contains a name - if it has text between "with" and "!" that's not generic, it's a name
+            const matchWithPattern = /match with ([^!]+)!/i
+            const match = notif.message.match(matchWithPattern)
+            if (match) {
+              const namePart = match[1].toLowerCase().trim()
+              hasName = !namePart.includes('someone') && 
+                       !namePart.includes('a potential roommate') &&
+                       !namePart.includes('user') &&
+                       namePart.length > 0
+            }
+            genericMessage = 'You have matched with someone! Check out your matches to see who.'
+          } else if (notif.type === 'match_accepted' && notif.message && notif.message.includes('accepted your match request')) {
+            // Check if message contains a name (not just "Someone")
+            hasName = !notif.message.includes('Someone') && 
+                     !notif.message.includes('someone') &&
+                     !notif.message.includes('Someone accepted your match request')
+            genericMessage = 'Someone accepted your match request!'
+          }
+          
+          // Only verify if we detected a name (optimization)
+          if (hasName && notif.metadata?.match_id) {
+            try {
+              // First try match_suggestions table (new system)
+              const { data: suggestion } = await supabase
+                .from('match_suggestions')
+                .select('status, accepted_by, member_ids')
+                .eq('id', notif.metadata.match_id)
+                .single()
+              
+              if (suggestion) {
+                const acceptedBy = suggestion.accepted_by || []
+                const memberIds = suggestion.member_ids || []
+                bothUsersAccepted = suggestion.status === 'confirmed' || 
+                  (memberIds.length === 2 && memberIds.every((id: string) => acceptedBy.includes(id)))
+              } else {
+                // If not found in match_suggestions, try old matches table
+                const { data: match } = await supabase
+                  .from('matches')
+                  .select('status, a_user, b_user')
+                  .eq('id', notif.metadata.match_id)
+                  .single()
+                
+                if (match) {
+                  // In old matches table, status 'confirmed' means both accepted
+                  bothUsersAccepted = match.status === 'confirmed'
+                }
+              }
+            } catch (error) {
+              // If we can't verify, assume not both accepted (safer for privacy)
+              logger.warn('Failed to verify match acceptance status, assuming not both accepted', error)
+              bothUsersAccepted = false
+            }
+          }
+          
+          // If name detected AND (both users haven't accepted OR we couldn't verify), sanitize
+          if (hasName && !bothUsersAccepted) {
+            notif.message = genericMessage
+          }
+        }
+        
         return {
           id: notif.id,
           type: notif.type,
@@ -696,7 +766,9 @@ export function DashboardContent({ hasCompletedQuestionnaire = false, hasPartial
           isRead: notif.is_read,
           metadata: notif.metadata || {}
         }
-      }), ...chatMessages]
+      }))
+      
+      const allActivity = [...processedNotifications, ...chatMessages]
       
       // Sort by created_at (newest first) - approximate sort by timeAgo
       allActivity.sort((a, b) => {
@@ -721,124 +793,6 @@ export function DashboardContent({ hasCompletedQuestionnaire = false, hasPartial
     enabled: !!user?.id,
   })
 
-  // Fetch updates with React Query
-  const fetchUpdates = useCallback(async (): Promise<Update[]> => {
-    return monitorQuery('fetchUpdates', async () => {
-      try {
-        logger.log('Fetching updates from database...')
-        const { data, error } = await supabase
-        .from('updates')
-        .select('*')
-        .order('release_date', { ascending: false, nullsFirst: false })
-        // No limit - show all updates
-
-      if (error) {
-        logger.error('Failed to load updates:', error)
-        console.error('Updates query error:', error)
-        return []
-      }
-
-      logger.log('Updates fetched:', data?.length || 0, 'items')
-      console.log('Updates data:', data)
-
-      if (!data || data.length === 0) {
-        logger.log('No updates found in database')
-        return []
-      }
-
-      const mappedUpdates = (data || []).map((update: any) => {
-        // Handle changes - could be JSONB array or string
-        let changesArray: string[] = []
-        if (Array.isArray(update.changes)) {
-          changesArray = update.changes
-        } else if (typeof update.changes === 'string') {
-          try {
-            const parsed = JSON.parse(update.changes)
-            changesArray = Array.isArray(parsed) ? parsed : []
-          } catch {
-            changesArray = []
-          }
-        }
-
-        return {
-          id: update.id,
-          version: update.version,
-          release_date: update.release_date,
-          changes: changesArray,
-          change_type: update.change_type || 'patch'
-        }
-      })
-
-      logger.log('Mapped updates:', mappedUpdates.length)
-      return mappedUpdates
-    } catch (error) {
-      logger.error('Failed to load updates:', error)
-      console.error('Updates fetch error:', error)
-      return []
-    }
-    })
-  }, [supabase])
-
-  const { data: updates = [], isLoading: isLoadingUpdates, refetch: refetchUpdates } = useQuery({
-    queryKey: queryKeys.updates,
-    queryFn: fetchUpdates,
-    staleTime: 3600_000, // 1 hour (updates don't change frequently)
-    retry: 1,
-    enabled: true, // Always enabled - updates are public to authenticated users
-  })
-
-  // Group updates by day
-  const groupedUpdatesByDay = useMemo(() => {
-    const grouped = new Map<string, Update[]>()
-    
-    updates.forEach((update) => {
-      const dateKey = update.release_date // Use release_date as the key
-      if (!grouped.has(dateKey)) {
-        grouped.set(dateKey, [])
-      }
-      grouped.get(dateKey)!.push(update)
-    })
-    
-    // Convert to array and sort by date (newest first)
-    return Array.from(grouped.entries())
-      .map(([date, updates]) => ({
-        date,
-        updates: updates.sort((a, b) => {
-          // Sort by version or created_at if available
-          return b.version.localeCompare(a.version)
-        })
-      }))
-      .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
-  }, [updates])
-
-  // State for selected day tab
-  const [selectedDay, setSelectedDay] = useState<string | null>(null)
-
-  // Set default selected day to the most recent day
-  useEffect(() => {
-    if (groupedUpdatesByDay.length > 0 && !selectedDay) {
-      setSelectedDay(groupedUpdatesByDay[0].date)
-    }
-  }, [groupedUpdatesByDay, selectedDay])
-
-  // Get updates for selected day
-  const selectedDayUpdates = useMemo(() => {
-    if (!selectedDay) return []
-    const dayGroup = groupedUpdatesByDay.find(g => g.date === selectedDay)
-    return dayGroup?.updates || []
-  }, [selectedDay, groupedUpdatesByDay])
-
-  // Debug: Log updates data
-  useEffect(() => {
-    if (updates.length > 0) {
-      console.log('✅ Updates loaded:', updates.length, 'items', updates)
-    } else if (!isLoadingUpdates) {
-      console.warn('⚠️ No updates found. Check:')
-      console.warn('  1. Database has data: SELECT * FROM updates;')
-      console.warn('  2. RLS policy allows authenticated users')
-      console.warn('  3. User is authenticated:', !!user?.id)
-    }
-  }, [updates, isLoadingUpdates, user?.id])
 
   // Set up real-time invalidation for notifications
   useRealtimeInvalidation({
@@ -878,15 +832,6 @@ export function DashboardContent({ hasCompletedQuestionnaire = false, hasPartial
     queryKeys: queryKeys.matches.compatibility(user?.id),
     enabled: !!user?.id,
   })
-
-  // Set up real-time invalidation for updates
-  useRealtimeInvalidation({
-    table: 'updates',
-    event: '*',
-    queryKeys: [...queryKeys.updates],
-    enabled: true, // Always enabled - updates are public
-  })
-
 
   const getActivityIcon = (type: string) => {
     switch (type) {
@@ -1339,130 +1284,6 @@ export function DashboardContent({ hasCompletedQuestionnaire = false, hasPartial
         </motion.div>
       </motion.div>
 
-      {/* Updates Section - Full width below Recent Matches/Activity */}
-      <motion.div
-        initial="initial"
-        animate="animate"
-        variants={staggerChildren}
-        className="mt-2 sm:mt-2 lg:mt-3"
-      >
-        <motion.div variants={fadeInUp} className="flex flex-col">
-          <div className="bg-bg-surface p-3 sm:p-4 rounded-xl shadow-sm border border-border-subtle flex flex-col max-h-[250px] sm:max-h-[300px] lg:max-h-[350px]">
-            <div className="flex items-center justify-between mb-2 flex-shrink-0">
-              <h3 className="text-sm lg:text-base font-bold text-text-primary">Updates</h3>
-              <button 
-                className="flex items-center justify-center w-8 h-8 text-text-muted hover:text-text-primary hover:bg-bg-surface-alt rounded-lg transition-colors" 
-                onClick={() => refetchUpdates()}
-                disabled={isLoadingUpdates}
-                title="Refresh updates"
-              >
-                {isLoadingUpdates ? (
-                  <Loader2 className="w-4 h-4 animate-spin" />
-                ) : (
-                  <RefreshCw className="w-4 h-4" />
-                )}
-              </button>
-            </div>
-            
-            {isLoadingUpdates ? (
-              <div className="flex items-center justify-center py-8 flex-1">
-                <Loader2 className="w-6 h-6 animate-spin text-text-muted" />
-              </div>
-            ) : groupedUpdatesByDay.length > 0 ? (
-              <div className="flex flex-col flex-1 min-h-0 overflow-hidden">
-                {/* Day Tabs */}
-                {groupedUpdatesByDay.length > 1 && (
-                  <div className="flex gap-1 mb-3 overflow-x-auto pb-2 flex-shrink-0" style={{ scrollbarWidth: 'thin' }}>
-                    {groupedUpdatesByDay.map(({ date }) => {
-                      const formatDate = (dateString: string) => {
-                        const date = new Date(dateString)
-                        const today = new Date()
-                        const yesterday = new Date(today)
-                        yesterday.setDate(yesterday.getDate() - 1)
-                        
-                        const dateObj = new Date(dateString)
-                        const isToday = dateObj.toDateString() === today.toDateString()
-                        const isYesterday = dateObj.toDateString() === yesterday.toDateString()
-                        
-                        if (isToday) return 'Today'
-                        if (isYesterday) return 'Yesterday'
-                        
-                        return date.toLocaleDateString('en-US', { 
-                          month: 'short', 
-                          day: 'numeric',
-                          year: dateObj.getFullYear() !== today.getFullYear() ? 'numeric' : undefined
-                        })
-                      }
-                      
-                      const isSelected = selectedDay === date
-                      
-                      return (
-                        <button
-                          key={date}
-                          onClick={() => setSelectedDay(date)}
-                          className={`px-3 py-1.5 rounded-lg text-xs font-medium whitespace-nowrap transition-colors flex-shrink-0 ${
-                            isSelected
-                              ? 'bg-bg-surface-alt text-text-primary border border-border-subtle'
-                              : 'bg-bg-surface text-text-secondary hover:bg-bg-surface-alt border border-transparent'
-                          }`}
-                        >
-                          {formatDate(date)}
-                        </button>
-                      )
-                    })}
-                  </div>
-                )}
-                
-                {/* Updates for Selected Day */}
-                <div className="space-y-2 sm:space-y-3 overflow-y-auto flex-1 pr-2" style={{ scrollbarWidth: 'thin' }}>
-                  {selectedDayUpdates.length > 0 ? (
-                    selectedDayUpdates.map((update) => {
-                      // Always use grey color regardless of change_type - consistent styling
-                      const updateColor = 'text-text-secondary border-border-subtle bg-bg-surface-alt'
-
-                      return (
-                        <div
-                          key={update.id}
-                          className={`p-2 sm:p-3 rounded-lg border flex-shrink-0 ${updateColor}`}
-                        >
-                          <div className="flex items-center justify-between mb-1 gap-2">
-                            <h4 className="font-bold text-xs sm:text-sm truncate">{update.version}</h4>
-                            <span className="text-xs text-text-muted flex-shrink-0 whitespace-nowrap">{formatTimeAgo(update.release_date + 'T00:00:00')}</span>
-                          </div>
-                          <ul className="mt-1.5 sm:mt-2 space-y-0.5 sm:space-y-1 text-xs text-text-secondary">
-                            {update.changes.map((change, index) => (
-                              <li key={index} className="flex items-start gap-1.5 sm:gap-2">
-                                <span className="mt-0.5 flex-shrink-0 text-text-secondary">•</span>
-                                <span className="flex-1 break-words text-text-secondary">{change}</span>
-                              </li>
-                            ))}
-                          </ul>
-                        </div>
-                      )
-                    })
-                  ) : (
-                    <div className="flex items-center justify-center py-8">
-                      <EmptyState
-                        icon={Sparkles}
-                        title="No updates for this day"
-                        description="Select another day to view updates"
-                      />
-                    </div>
-                  )}
-                </div>
-              </div>
-            ) : (
-              <div className="flex items-center justify-center py-8">
-                <EmptyState
-                  icon={Sparkles}
-                  title="No updates yet"
-                  description="Platform updates and release notes will appear here"
-                />
-              </div>
-            )}
-          </div>
-        </motion.div>
-      </motion.div>
 
     </div>
   )

@@ -9,6 +9,22 @@ function toArrayRecord(record: Record<string, Answer>): Answer[] {
   return Object.values(record)
 }
 
+// Deep comparison of answers arrays to detect actual changes
+function answersEqual(a1: Answer[], a2: Answer[]): boolean {
+  if (a1.length !== a2.length) return false
+  const sorted1 = [...a1].sort((x, y) => (x.itemId || '').localeCompare(y.itemId || ''))
+  const sorted2 = [...a2].sort((x, y) => (x.itemId || '').localeCompare(y.itemId || ''))
+  
+  for (let i = 0; i < sorted1.length; i++) {
+    const ans1 = sorted1[i]
+    const ans2 = sorted2[i]
+    if (ans1.itemId !== ans2.itemId) return false
+    if (JSON.stringify(ans1.value) !== JSON.stringify(ans2.value)) return false
+    if (ans1.dealBreaker !== ans2.dealBreaker) return false
+  }
+  return true
+}
+
 export function useAutosave(section: SectionKey) {
   const sectionAnswers = useOnboardingStore((s) => s.sections[section])
   const setAnswer = useOnboardingStore((s) => s.setAnswer)
@@ -19,6 +35,9 @@ export function useAutosave(section: SectionKey) {
   const [hasLoaded, setHasLoaded] = useState(false)
   const pendingRef = useRef(false)
   const timerRef = useRef<NodeJS.Timeout | null>(null)
+  const lastSavedAnswersRef = useRef<Answer[]>([])
+  const isInitialLoadRef = useRef(true)
+  const retryTimeoutRef = useRef<NodeJS.Timeout | null>(null)
 
   // Load existing answers on mount
   useEffect(() => {
@@ -64,12 +83,20 @@ export function useAutosave(section: SectionKey) {
             }
           }
           if (data.lastSavedAt) setLastSavedAt(data.lastSavedAt)
+          // Store loaded answers as the last saved state
+          lastSavedAnswersRef.current = answers
         }
       } catch {
         // Offline or error - don't load anything to ensure clean start for new users
         // Existing users with localStorage data can still use it, but new users won't
       } finally {
-        if (!cancelled) setHasLoaded(true)
+        if (!cancelled) {
+          setHasLoaded(true)
+          // Wait a bit after load to prevent saves from initial render
+          setTimeout(() => {
+            isInitialLoadRef.current = false
+          }, 1000)
+        }
       }
     })()
     return () => {
@@ -79,21 +106,70 @@ export function useAutosave(section: SectionKey) {
 
   const answersArray = useMemo(() => toArrayRecord(sectionAnswers), [sectionAnswers])
 
-  const flush = useCallback(async () => {
+  const flush = useCallback(async (retryAfter?: number) => {
+    // Cancel any pending retry
+    if (retryTimeoutRef.current) {
+      clearTimeout(retryTimeoutRef.current)
+      retryTimeoutRef.current = null
+    }
+
+    // Capture current answers at the start
+    const currentAnswers = [...answersArray]
+
+    // Check if answers actually changed
+    if (answersEqual(currentAnswers, lastSavedAnswersRef.current)) {
+      pendingRef.current = false
+      return
+    }
+
+    // If we're still in initial load phase, skip save
+    if (isInitialLoadRef.current) {
+      pendingRef.current = false
+      return
+    }
+
     pendingRef.current = false
+    
+    // If retryAfter is provided (from 429 error), wait before retrying
+    if (retryAfter && retryAfter > 0) {
+      const waitMs = Math.min(retryAfter * 1000, 60000) // Cap at 60 seconds
+      retryTimeoutRef.current = setTimeout(() => {
+        flush()
+      }, waitMs)
+      return
+    }
+
     setIsSaving(true)
     try {
       const res = await fetchWithCSRF('/api/onboarding/save', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ section, answers: answersArray }),
+        body: JSON.stringify({ section, answers: currentAnswers }),
       })
+      
+      if (res.status === 429) {
+        // Handle rate limit - get retry-after header
+        const retryAfterHeader = res.headers.get('Retry-After')
+        const retryAfterSeconds = retryAfterHeader ? parseInt(retryAfterHeader, 10) : 60
+        // Retry after the specified time
+        setIsSaving(false)
+        flush(retryAfterSeconds)
+        return
+      }
+      
       if (!res.ok) throw new Error('Save failed')
       const data = await res.json()
       if (data.lastSavedAt) setLastSavedAt(data.lastSavedAt)
+      // Update last saved answers to the answers we just saved
+      lastSavedAnswersRef.current = currentAnswers
       setShowToast(true)
-    } catch {
+      
+      // After save completes, check if answers changed during the save
+      // If they did, schedule another save (we'll use the latest answersArray from closure)
+      // This will be checked on the next render via the useEffect
+    } catch (error) {
       // Ignore transient errors; guard will catch unsaved
+      // On error, don't update lastSavedAnswersRef so we can retry
     } finally {
       setIsSaving(false)
     }
@@ -101,14 +177,29 @@ export function useAutosave(section: SectionKey) {
 
   // Debounce saves on changes
   useEffect(() => {
-    if (!hasLoaded) return
+    if (!hasLoaded || isInitialLoadRef.current) return
+    
+    // Check if answers actually changed
+    if (answersEqual(answersArray, lastSavedAnswersRef.current)) {
+      return
+    }
+    
+    // Don't queue a new save if one is already in progress
+    if (isSaving) {
+      // Wait for current save to complete, then schedule next
+      return
+    }
+    
+    // Cancel any pending flush
     if (timerRef.current) clearTimeout(timerRef.current)
+    
     pendingRef.current = true
     timerRef.current = setTimeout(flush, 800)
+    
     return () => {
       if (timerRef.current) clearTimeout(timerRef.current)
     }
-  }, [answersArray, flush, hasLoaded])
+  }, [answersArray, flush, hasLoaded, isSaving])
 
   // Removed beforeunload handler to prevent browser popup
   // Zustand persist middleware already saves to localStorage immediately
@@ -120,6 +211,14 @@ export function useAutosave(section: SectionKey) {
     const t = setTimeout(() => setShowToast(false), 1600)
     return () => clearTimeout(t)
   }, [showToast])
+
+  // Cleanup on unmount
+  useEffect(() => {
+    return () => {
+      if (timerRef.current) clearTimeout(timerRef.current)
+      if (retryTimeoutRef.current) clearTimeout(retryTimeoutRef.current)
+    }
+  }, [])
 
   return { isSaving, showToast, hasLoaded }
 }

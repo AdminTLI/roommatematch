@@ -1,15 +1,16 @@
 import { Metadata } from 'next'
 
 export const metadata: Metadata = {
-  title: 'Terms of Service | Domu Match - User Agreement',
-  description: 'Read Domu Match terms of service. Understand the rules, guidelines, and user agreement for using our roommate matching platform in the Netherlands.',
+  title: 'Terms and Conditions | Domu Match',
+  description: 'Domu Match Terms and Conditions for student users. Learn about eligibility, verification, matching disclaimers, WWS calculator disclaimer, prohibited conduct, liability limits, dispute resolution, and change notice.',
   keywords: [
-    'Domu Match terms of service',
+    'Domu Match terms and conditions',
     'user agreement',
     'roommate platform terms',
     'student housing terms',
-    'terms and conditions',
-    'platform usage terms',
+    'DSA notice',
+    'eligibility 17+ students',
+    'WWS calculator disclaimer',
   ],
   openGraph: {
     title: 'Terms of Service | Domu Match',

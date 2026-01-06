@@ -22,9 +22,9 @@ const content = {
     helpCenter: "Help center",
     safety: "Safety",
     privacyPolicy: "Privacy policy",
-    termsOfService: "Terms of service",
+    termsOfService: "Terms & Conditions",
     privacy: "Privacy",
-    terms: "Terms",
+    terms: "Terms & Conditions",
     cookies: "Cookies",
     allRightsReserved: "All rights reserved."
   },
@@ -44,9 +44,9 @@ const content = {
     helpCenter: "Helpcentrum",
     safety: "Veiligheid",
     privacyPolicy: "Privacybeleid",
-    termsOfService: "Servicevoorwaarden",
+    termsOfService: "Algemene voorwaarden",
     privacy: "Privacy",
-    terms: "Voorwaarden",
+    terms: "Algemene voorwaarden",
     cookies: "Cookies",
     allRightsReserved: "Alle rechten voorbehouden."
   }
@@ -104,7 +104,7 @@ export default function Footer() {
         </div>
 
         <div className="mt-8 sm:mt-12 border-t border-white/10 pt-6 flex flex-col sm:flex-row items-center justify-between gap-4">
-          <p className="text-slate-500 text-xs sm:text-sm text-center sm:text-left">© {new Date().getFullYear()} Domu Match. {t.allRightsReserved}</p>
+          <p className="text-slate-500 text-xs sm:text-sm text-center sm:text-left">© 2026 Domu Match. {t.allRightsReserved}</p>
           <div className="flex items-center gap-4 sm:gap-6 text-xs sm:text-sm text-slate-400">
             <Link href="/privacy" className="hover:text-white py-2">{t.privacy}</Link>
             <Link href="/terms" className="hover:text-white py-2">{t.terms}</Link>

@@ -46,12 +46,14 @@ import {
   Trash2,
   CheckCircle,
   LogOut,
-  BarChart3
+  BarChart3,
+  Info
 } from 'lucide-react'
 import { GroupCompatibilityDisplay } from '../../components/group-compatibility-display'
 import { GroupFeedbackForm } from '../../components/group-feedback-form'
 import { LockedGroupChat } from '../../components/locked-group-chat'
 import { CompatibilityPanel } from '../../components/compatibility-panel'
+import { UserInfoPanel } from '../../components/user-info-panel'
 import { MessageSkeleton } from '@/components/ui/message-skeleton'
 import { MessageSearch } from './message-search'
 
@@ -116,6 +118,11 @@ export function ChatInterface({ roomId, user, onBack }: ChatInterfaceProps) {
   const [compatibilityData, setCompatibilityData] = useState<any>(null)
   const [isLoadingCompatibility, setIsLoadingCompatibility] = useState(false)
   const [compatibilityDataRoomId, setCompatibilityDataRoomId] = useState<string | null>(null)
+  const [showUserInfoPanel, setShowUserInfoPanel] = useState(false)
+  const [userInfoData, setUserInfoData] = useState<any>(null)
+  const [isLoadingUserInfo, setIsLoadingUserInfo] = useState(false)
+  const [userInfoError, setUserInfoError] = useState<string | null>(null)
+  const [hasMatch, setHasMatch] = useState(false)
   const [hasMoreMessages, setHasMoreMessages] = useState(false)
   const [isLoadingMoreMessages, setIsLoadingMoreMessages] = useState(false)
   const [oldestMessageTimestamp, setOldestMessageTimestamp] = useState<string | null>(null)
@@ -400,7 +407,14 @@ export function ChatInterface({ roomId, user, onBack }: ChatInterfaceProps) {
       setCompatibilityDataRoomId(null)
       setShowCompatibilityPanel(false) // Also close the panel when switching chats
     }
-  }, [roomId, compatibilityDataRoomId, isGroup])
+    
+    // Clear user info when switching chats
+    if (showUserInfoPanel) {
+      setShowUserInfoPanel(false)
+      setUserInfoData(null)
+      setUserInfoError(null)
+    }
+  }, [roomId, compatibilityDataRoomId, isGroup, showUserInfoPanel])
 
   // Note: Auto-scroll logic is now handled in the useEffect that checks for unread messages
   // This prevents scrolling to bottom on every message change
@@ -855,6 +869,9 @@ export function ChatInterface({ roomId, user, onBack }: ChatInterfaceProps) {
         if (showCompatibilityPanel) {
           setShowCompatibilityPanel(false)
         }
+        if (showUserInfoPanel) {
+          setShowUserInfoPanel(false)
+        }
         if (showLeaveGroupDialog) {
           setShowLeaveGroupDialog(false)
         }
@@ -865,7 +882,7 @@ export function ChatInterface({ roomId, user, onBack }: ChatInterfaceProps) {
     return () => {
       window.removeEventListener('keydown', handleKeyDown)
     }
-  }, [showReportDialog, showDeleteDialog, showCompatibilityPanel, showLeaveGroupDialog])
+  }, [showReportDialog, showDeleteDialog, showCompatibilityPanel, showUserInfoPanel, showLeaveGroupDialog])
 
   const fetchCompatibilityData = useCallback(async () => {
     if (isGroup || isLoadingCompatibility) return
@@ -938,6 +955,77 @@ export function ChatInterface({ roomId, user, onBack }: ChatInterfaceProps) {
       fetchCompatibilityData()
     }
   }, [roomId, isLoadingCompatibility, fetchCompatibilityData])
+
+  const fetchUserInfo = useCallback(async () => {
+    if (isGroup || isLoadingUserInfo) return
+    
+    setIsLoadingUserInfo(true)
+    setUserInfoError(null)
+    try {
+      const response = await fetch(`/api/chat/user-info?chatId=${roomId}`, {
+        cache: 'no-store',
+        headers: {
+          'Cache-Control': 'no-cache, no-store, must-revalidate',
+          'Pragma': 'no-cache',
+          'Expires': '0'
+        }
+      })
+      const responseData = await response.json()
+      
+      if (response.ok) {
+        setUserInfoData(responseData)
+        setHasMatch(true)
+        setUserInfoError(null)
+      } else {
+        if (response.status === 403) {
+          setHasMatch(false)
+          setUserInfoError('You can only view info for matched users.')
+        } else if (response.status === 404) {
+          setUserInfoError('User profile not found.')
+        } else {
+          setUserInfoError(responseData.details || responseData.error || 'Unable to load user information.')
+        }
+        setUserInfoData(null)
+      }
+    } catch (error) {
+      safeLogger.error('[UserInfo] Error fetching user info:', error, 'roomId:', roomId)
+      setUserInfoData(null)
+      setUserInfoError('Network error. Please check your connection and try again.')
+    } finally {
+      setIsLoadingUserInfo(false)
+    }
+  }, [roomId, isGroup, isLoadingUserInfo])
+
+  const handleOpenUserInfo = useCallback(() => {
+    setShowUserInfoPanel(true)
+    if (!isLoadingUserInfo) {
+      fetchUserInfo()
+    }
+  }, [isLoadingUserInfo, fetchUserInfo])
+
+  // Check if users are matched when chat loads (for individual chats)
+  useEffect(() => {
+    if (!isGroup && roomId && members.length === 1) {
+      // Check match status by trying to fetch user info (will return 403 if not matched)
+      const checkMatch = async () => {
+        try {
+          const response = await fetch(`/api/chat/user-info?chatId=${roomId}`, {
+            cache: 'no-store'
+          })
+          if (response.ok) {
+            setHasMatch(true)
+          } else if (response.status === 403) {
+            setHasMatch(false)
+          }
+        } catch {
+          setHasMatch(false)
+        }
+      }
+      checkMatch()
+    } else {
+      setHasMatch(false)
+    }
+  }, [roomId, isGroup, members.length])
 
   // Check if error is JWT-related
   const isJWTError = useCallback((error: any): boolean => {
@@ -2393,6 +2481,18 @@ export function ChatInterface({ roomId, user, onBack }: ChatInterfaceProps) {
     )
   }
 
+  if (!isGroup && showUserInfoPanel) {
+    return (
+      <UserInfoPanel
+        open={showUserInfoPanel}
+        onOpenChange={setShowUserInfoPanel}
+        userInfo={userInfoData}
+        isLoading={isLoadingUserInfo}
+        error={userInfoError}
+      />
+    )
+  }
+
   return (
     <div 
       className="flex flex-col h-full min-h-0 w-full bg-bg-surface overflow-hidden" 
@@ -2473,18 +2573,34 @@ export function ChatInterface({ roomId, user, onBack }: ChatInterfaceProps) {
                 </Button>
               )}
               {!isGroup && (
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={handleOpenCompatibility}
-                  disabled={isLoadingCompatibility}
-                  className="h-10 px-3 rounded-xl hover:bg-bg-surface-alt border border-border-subtle"
-                >
-                  <BarChart3 className="h-4 w-4 mr-2" />
-                  <span className="text-xs font-medium">
-                    {isLoadingCompatibility ? 'Loading...' : 'Compatibility'}
-                  </span>
-                </Button>
+                <>
+                  {hasMatch && (
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={handleOpenUserInfo}
+                      disabled={isLoadingUserInfo}
+                      className="h-10 px-3 rounded-xl hover:bg-bg-surface-alt border border-border-subtle"
+                    >
+                      <Info className="h-4 w-4 mr-2" />
+                      <span className="text-xs font-medium">
+                        {isLoadingUserInfo ? 'Loading...' : 'Info'}
+                      </span>
+                    </Button>
+                  )}
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={handleOpenCompatibility}
+                    disabled={isLoadingCompatibility}
+                    className="h-10 px-3 rounded-xl hover:bg-bg-surface-alt border border-border-subtle"
+                  >
+                    <BarChart3 className="h-4 w-4 mr-2" />
+                    <span className="text-xs font-medium">
+                      {isLoadingCompatibility ? 'Loading...' : 'Compatibility'}
+                    </span>
+                  </Button>
+                </>
               )}
               {isGroup && (
                 <DropdownMenu>
@@ -2529,6 +2645,18 @@ export function ChatInterface({ roomId, user, onBack }: ChatInterfaceProps) {
                     </Button>
                   </DropdownMenuTrigger>
                 <DropdownMenuContent align="end">
+                  {hasMatch && (
+                    <>
+                      <DropdownMenuItem
+                        onClick={handleOpenUserInfo}
+                        disabled={isLoadingUserInfo}
+                      >
+                        <Info className="h-4 w-4 mr-2" />
+                        {isLoadingUserInfo ? 'Loading...' : 'View Info'}
+                      </DropdownMenuItem>
+                      <DropdownMenuSeparator />
+                    </>
+                  )}
                   <DropdownMenuItem
                     onClick={handleOpenCompatibility}
                     disabled={isLoadingCompatibility}

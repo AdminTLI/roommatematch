@@ -40,7 +40,7 @@ export function MarketingFooter() {
       title: 'Legal',
       links: [
         { name: 'Privacy Policy', href: '/privacy' },
-        { name: 'Terms of Service', href: '/terms' },
+        { name: 'Terms & Conditions', href: '/terms' },
         { name: 'Cookie Policy', href: '/cookies' },
         { name: 'Accessibility', href: '/accessibility' }
       ]
@@ -103,7 +103,7 @@ export function MarketingFooter() {
         <div className="border-t border-gray-800 mt-12 pt-8">
           <div className="flex flex-col md:flex-row justify-between items-center gap-4">
             <div className="text-gray-400 text-sm">
-              © 2024 Domu Match. All rights reserved.
+              © 2026 Domu Match. All rights reserved.
             </div>
             
             <div className="flex items-center gap-6 text-sm text-gray-400">
@@ -111,7 +111,7 @@ export function MarketingFooter() {
                 Privacy
               </Link>
               <Link href="/terms" className="hover:text-white transition-colors">
-                Terms
+                Terms & Conditions
               </Link>
               <Link href="/accessibility" className="hover:text-white transition-colors">
                 Accessibility

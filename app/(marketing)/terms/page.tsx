@@ -6,326 +6,417 @@ import Container from '@/components/ui/primitives/container'
 import Section from '@/components/ui/primitives/section'
 import { useApp } from '@/app/providers'
 
-const content = {
+type SectionItem = {
+  id: string
+  title: string
+  description?: string
+  quote?: string
+  bullets?: string[]
+  note?: string
+}
+
+const LAST_UPDATED = '6 January 2026'
+
+const content: Record<
+  'en' | 'nl',
+  {
+    title: string
+    lastUpdatedLabel: string
+    lastUpdatedValue: string
+    preamble: string
+    languageNote: string
+    sections: SectionItem[]
+  }
+> = {
   en: {
-    title: "Terms of Service",
-    lastUpdated: "Last updated",
-    introduction: "By accessing and using Domu Match, you accept and agree to be bound by the terms and conditions of this agreement. If you do not agree to these terms, please do not use our platform.",
-    sections: {
-      acceptance: {
-        title: "1. Acceptance of Terms",
-        description: "By accessing and using Domu Match, you accept and agree to be bound by the terms and provision of this agreement. If you do not agree to abide by the above, please do not use this service.",
-        modifications: "We reserve the right to modify these terms at any time. We will notify users of any material changes by posting the new terms on this page and updating the 'Last updated' date. Your continued use of the service after such modifications constitutes acceptance of the updated terms."
-      },
-      useLicense: {
-        title: "2. Use License",
-        description: "Permission is granted to use Domu Match for personal, non-commercial purposes only. This is the grant of a license, not a transfer of title, and under this license you may not:",
-        restrictions: [
-          "Modify or copy the materials",
-          "Use the materials for any commercial purpose or for any public display",
-          "Attempt to reverse engineer, decompile, or disassemble any software",
-          "Remove any copyright or other proprietary notations from the materials",
-          "Transfer the materials to another person or 'mirror' the materials on any other server"
+    title: 'Terms and Conditions',
+    lastUpdatedLabel: 'Last updated',
+    lastUpdatedValue: LAST_UPDATED,
+    preamble:
+      'These Terms of Service (including our Acceptable Use Policy and Rules of Engagement) govern your use of Domu Match. By creating an account or using the platform you agree to them. If you do not agree, do not use Domu Match.',
+    languageNote:
+      'English is the primary language. If a Dutch translation is provided, the Dutch version will prevail in case of conflict.',
+    sections: [
+      {
+        id: 'tldr',
+        title: '0. TL;DR (not legally binding)',
+        description:
+          'This is a friendly summary of what matters most. It is not legally binding; the detailed sections below are.',
+        bullets: [
+          'Domu Match helps students (17+) find compatible roommates and understand their rent, using Harmony (lifestyle) and Context (academic) scores plus a WWS calculator.',
+          'You must be at least 17, be (and remain) a student, and complete mandatory Persona ID verification. No fake, ghost, or AI-generated profiles.',
+          'The matching algorithm weighs Harmony (~75%) and Context (~25%) to suggest matches, but you always make the final “Active Choice” about who you chat with or live with.',
+          'You are responsible for what you post (profiles, photos, chat). No discrimination, harassment, scams, or use of Domu Match for non-student-housing or commercial purposes.',
+          'The WWS calculator is for information and empowerment only and is not legal advice or a decision of the Huurcommissie.',
+          'Domu Match cannot guarantee offline behaviour or your physical safety. Roommate disputes and housing contracts are mainly between you, your roommates, and your landlord.',
         ],
-        termination: "This license shall automatically terminate if you violate any of these restrictions and may be terminated by Domu Match at any time. Upon terminating your viewing of these materials or upon the termination of this license, you must destroy any downloaded materials in your possession."
       },
-      userAccounts: {
-        title: "3. User Accounts and Responsibilities",
-        description: "To use our service, you must create an account and provide accurate and complete information. You are responsible for:",
-        responsibilities: [
-          "Providing accurate and complete information during registration",
-          "Maintaining the security and confidentiality of your password",
-          "Accepting responsibility for all activities that occur under your account",
-          "Being at least 17 years old or having parental consent",
-          "Completing identity verification as required",
-          "Keeping your profile information up to date",
-          "Complying with all applicable laws and regulations"
+      {
+        id: 'service-scope',
+        title: '1. About Domu Match & Service Scope',
+        description:
+          'Domu Match is a science-backed roommate matching platform for students operated from the Netherlands.',
+        bullets: [
+          'Purpose: help students find lifestyle-compatible roommates using Harmony and Context scores and other inputs.',
+          'Status: Domu Match is not a landlord, rental agency, housing provider, or law firm.',
+          'Revenue: Students use Domu Match for free; the platform is funded via university or institutional licence fees.',
+          'Informational tools: WWS rent calculator and document templates are provided for guidance only (see Section 6).',
         ],
-        accountSecurity: "You must immediately notify us of any unauthorized use of your account or any other breach of security. We are not liable for any loss or damage arising from your failure to comply with this section.",
-        accountTermination: "We reserve the right to suspend or terminate your account at any time, with or without cause or notice, for any reason, including but not limited to violation of these terms."
       },
-      prohibitedUses: {
-        title: "4. Prohibited Uses",
-        description: "You may not use our service for any unlawful purpose or in any way that violates these terms. Prohibited uses include but are not limited to:",
-        prohibited: [
-          "Using the service for any unlawful purpose or to solicit others to perform unlawful acts",
-          "Violating any international, federal, provincial, state, or local regulations, rules, laws, or ordinances",
-          "Infringing upon or violating our intellectual property rights or the intellectual property rights of others",
-          "Harassing, abusing, insulting, harming, defaming, slandering, disparaging, intimidating, or discriminating against any user",
-          "Submitting false or misleading information",
-          "Uploading or transmitting viruses, malware, or any other malicious code",
-          "Collecting or storing personal data about other users without their consent",
-          "Using automated systems to access the service without authorization",
-          "Interfering with or disrupting the service or servers",
-          "Attempting to gain unauthorized access to the service or other accounts"
-        ]
-      },
-      contentStandards: {
-        title: "5. Content Standards",
-        description: "All content submitted to our platform must comply with applicable laws and regulations. You agree that your content will:",
-        standards: [
-          "Be accurate and truthful",
-          "Not violate any laws or regulations",
-          "Not infringe upon the rights of others",
-          "Not contain false, misleading, or deceptive information",
-          "Not contain hate speech, harassment, or discrimination",
-          "Not contain explicit, pornographic, or offensive material",
-          "Not contain spam, unsolicited communications, or advertising",
-          "Not impersonate any person or entity"
+      {
+        id: 'eligibility',
+        title: '2. Eligibility (17+ students only)',
+        description: 'Domu Match is exclusively for students.',
+        bullets: [
+          'You must be at least 17 years old.',
+          'You must be a current student (e.g., university, hogeschool, MBO, or other recognised institution). Proof may be requested.',
+          'Using Domu Match outside the Netherlands: you remain responsible for compliance with local law.',
         ],
-        contentRemoval: "We reserve the right to remove any content that violates these standards or our terms of service. We are not obligated to review all content but may do so at our discretion."
       },
-      intellectualProperty: {
-        title: "6. Intellectual Property Rights",
-        description: "The service and its original content, features, and functionality are owned by Domu Match and are protected by international copyright, trademark, patent, trade secret, and other intellectual property laws.",
-        userContent: "By submitting content to our platform, you grant us a non-exclusive, worldwide, royalty-free license to use, reproduce, modify, adapt, publish, translate, and distribute such content for the purpose of operating and promoting the service.",
-        userRights: "You retain all rights to your content and may request deletion of your content at any time. We will remove your content within a reasonable time after your request."
-      },
-      privacy: {
-        title: "7. Privacy Policy",
-        description: "Your privacy is important to us. Please review our Privacy Policy, which also governs your use of the service, to understand our practices regarding the collection and use of your personal information."
-      },
-      matching: {
-        title: "8. Roommate Matching Service",
-        description: "Our platform provides a roommate matching service that connects compatible students. You understand and agree that:",
-        terms: [
-          "We do not guarantee matches or compatibility",
-          "We are not responsible for the actions or conduct of other users",
-          "You are solely responsible for your interactions with other users",
-          "We are not a party to any agreements or arrangements between users",
-          "We do not verify the accuracy of user-provided information",
-          "You should exercise caution and use your own judgment when interacting with other users"
+      {
+        id: 'account',
+        title: '3. Account Registration & Accuracy',
+        bullets: [
+          'Provide accurate, current information and keep it updated.',
+          'Do not share your account or credentials; you are responsible for all activity on your account.',
+          'Notify us promptly if you suspect unauthorised access.',
         ],
-        disclaimer: "We provide the matching service as-is and make no warranties or representations regarding the accuracy, reliability, or suitability of matches."
       },
-      liability: {
-        title: "9. Limitation of Liability",
-        description: "To the fullest extent permitted by law, Domu Match shall not be liable for any indirect, incidental, special, consequential, or punitive damages, or any loss of profits or revenues, whether incurred directly or indirectly, or any loss of data, use, goodwill, or other intangible losses, resulting from:",
-        exclusions: [
-          "Your use or inability to use the service",
-          "Any conduct or content of third parties on the service",
-          "Any unauthorized access to or use of our servers and/or any personal information stored therein",
-          "Any interruption or cessation of transmission to or from the service",
-          "Any bugs, viruses, trojan horses, or the like that may be transmitted to or through the service",
-          "Any errors or omissions in any content or for any loss or damage incurred as a result of the use of any content"
+      {
+        id: 'verification',
+        title: '4. Mandatory Identity & Student Verification (Persona)',
+        description: 'Safety depends on trusted identities.',
+        bullets: [
+          'ID verification is mandatory. Domu Match uses a third-party provider (currently Persona) to review documents and perform liveness checks.',
+          'Domu Match does not store raw ID documents or biometric templates; we receive verification results/attributes only. Persona may store raw documents as our processor.',
+          'Verification may include government ID, selfie/video checks, and proof of student status. Refusing or failing verification may limit features or lead to suspension/termination.',
+          'Data is processed under the GDPR and our Privacy Policy. Core purpose: confirm age (17+), identity, and student status, and link verification to your account.',
+          'No ghost or AI-generated profiles: you may not use AI faces, avatars, or borrowed identities to pass verification or create deceptive accounts.',
         ],
-        maximumLiability: "To the fullest extent permitted by law, our total liability for any claims arising out of or relating to the use of the service shall not exceed the amount you paid us, if any, in the 12 months preceding the claim."
       },
-      disclaimer: {
-        title: "10. Disclaimer",
-        description: "The information on this service is provided on an 'as is' basis. To the fullest extent permitted by law, we exclude all representations, warranties, conditions, and terms, express or implied, including but not limited to:",
-        exclusions: [
-          "Warranties of merchantability, fitness for a particular purpose, or non-infringement",
-          "Warranties regarding the accuracy, reliability, or availability of the service",
-          "Warranties regarding the quality, suitability, or compatibility of matches",
-          "Warranties regarding the security or safety of the service"
+      {
+        id: 'matching',
+        title: '5. Matching Algorithm, Parameters & No Guarantee',
+        bullets: [
+          'Inputs: questionnaire responses, lifestyle/preferences, Harmony and Context scores, recency of activity, location/budget filters, and safety signals (e.g., repeated reports).',
+          'Weighting: Harmony (lifestyle) is weighted around 75% and Context (academic and practical context) around 25% in the matching logic, subject to iterative improvements.',
+          'User control: where available, you can adjust preferences/filters; the interface explains how these affect recommendations.',
+          'No perfect match: scores and recommendations are guidance only. Human judgment and your own due diligence remain essential.',
+          'No responsibility for roommate behaviour: Domu Match is not a party to any tenancy, sublease, or co-living agreement and is not liable for conflicts between users.',
+          'Active choice: recommendations are suggestions only. You always decide whom to contact, meet, or live with; no automated system binds you to a contract.',
         ],
-        userResponsibility: "You acknowledge that you use the service at your own risk and are solely responsible for your decisions and actions."
       },
-      indemnification: {
-        title: "11. Indemnification",
-        description: "You agree to indemnify, defend, and hold harmless Domu Match, its affiliates, officers, directors, employees, agents, and licensors from and against any claims, liabilities, damages, losses, costs, or expenses, including reasonable attorney's fees, arising out of or relating to:",
-        claims: [
-          "Your use or misuse of the service",
-          "Your violation of these terms",
-          "Your violation of any rights of another",
-          "Your content or conduct on the service"
-        ]
-      },
-      termination: {
-        title: "12. Termination",
-        description: "We may terminate or suspend your account and bar access to the service immediately, without prior notice or liability, for any reason whatsoever, including but not limited to:",
-        reasons: [
-          "Violation of these terms",
-          "Fraudulent, abusive, or illegal activity",
-          "Failure to pay fees, if applicable",
-          "Request by law enforcement or government agencies",
-          "Discontinuation or modification of the service"
+      {
+        id: 'ugc',
+        title: '6. User-Generated Content (profiles, photos & chat)',
+        description:
+          'You are responsible for the content you provide on Domu Match, including profiles, photos, room descriptions, and chat messages.',
+        bullets: [
+          'Ensure your content is lawful, honest, and does not infringe the rights of others (e.g., privacy, copyright, portrait rights).',
+          'Profile photos should reasonably represent you; do not use AI-generated faces or heavily edited images that mislead others about your identity.',
+          'You may not upload pornographic, sexually explicit, or sexually exploitative images, or images containing hate symbols or extremist content.',
+          'Chat must remain respectful and relevant to student housing. No threats, bullying, hate speech, spam, phishing links, or pressure to share excessive personal or financial data.',
+          'We may use automated tools and human review to detect certain high-risk patterns (e.g., spam, obvious illegal content) in line with the DSA and privacy laws.',
         ],
-        userTermination: "You may terminate your account at any time by contacting us or using the account deletion feature in your account settings.",
-        effect: "Upon termination, your right to use the service will immediately cease. All provisions of these terms that by their nature should survive termination shall survive termination."
       },
-      disputeResolution: {
-        title: "13. Dispute Resolution",
-        description: "If you have any dispute with us, you agree to first contact us and attempt to resolve the dispute informally. If we are unable to resolve the dispute within 60 days, you agree to resolve the dispute through binding arbitration in accordance with the rules of the Netherlands Arbitration Institute.",
-        governingLaw: "These terms shall be governed by and construed in accordance with the laws of the Netherlands, without regard to its conflict of law provisions.",
-        jurisdiction: "Any disputes arising out of or relating to these terms shall be subject to the exclusive jurisdiction of the courts of the Netherlands."
+      {
+        id: 'wws',
+        title: '7. WWS Calculator & Legal Templates (Informational Only)',
+        description: 'These tools are informational and educational only.',
+        quote:
+          'Domu Match is not a law firm or a rental agency. Users must verify all calculations with the Huurcommissie.',
+        bullets: [
+          'Rules can change; outcomes depend on your specific facts. Do not rely solely on our tools.',
+          'Always validate rent points, amounts, and contract terms with the Huurcommissie or qualified counsel before acting.',
+          'The WWS calculator is not a formal decision or advice from the Huurcommissie or any authority and does not replace independent legal advice.',
+        ],
       },
-      changes: {
-        title: "14. Changes to Terms",
-        description: "We reserve the right to modify or replace these terms at any time. If a revision is material, we will provide at least 30 days' notice prior to any new terms taking effect. What constitutes a material change will be determined at our sole discretion.",
-        continuedUse: "By continuing to access or use our service after those revisions become effective, you agree to be bound by the revised terms. If you do not agree to the new terms, please stop using the service."
+      {
+        id: 'acceptable-use',
+        title: '8. Acceptable Use & Prohibited Conduct',
+        bullets: [
+          'No fake profiles, impersonation, or misrepresenting age/student status; no use of another person’s documents.',
+          'No scraping, harvesting, automated access, or commercial use of student data; do not build competitive datasets or models from platform data.',
+          'No harassment, stalking, discrimination, hate speech, threats, or abusive conduct on or off platform when connected to Domu Match.',
+          'No discrimination based on protected characteristics such as gender, sex, sexual orientation, gender identity or expression, race, ethnic origin, nationality, religion or belief, disability, or age, in line with Dutch non-discrimination law.',
+          'No illegal content, malware, fraud, or attempts to bypass security, probe systems, or disrupt service integrity.',
+          'No scams or misleading schemes (including fake housing offers, deposit scams, or using Domu Match primarily as a dating, escort, or MLM/marketing platform).',
+          'Personal, non-commercial use only. Do not market, advertise, or solicit on Domu Match without written consent.',
+        ],
       },
-      contact: {
-        title: "15. Contact Information",
-        description: "If you have any questions about these Terms of Service, please contact us:",
-        email: "Email: info@domumatch.com",
-        address: "Address: [Your Business Address]"
-      }
-    }
+      {
+        id: 'fees',
+        title: '9. Pricing & Payment',
+        bullets: [
+          'Students: access is free.',
+          'Universities/partners: platform funded via institutional licensing (separate agreements may apply).',
+        ],
+      },
+      {
+        id: 'liability',
+        title: '10. Limitation of Liability',
+        bullets: [
+          'Mandatory rights: Nothing limits liability where this is not allowed under Dutch/EU law (e.g., death/personal injury by intent or gross negligence, fraud, or non-excludable consumer rights).',
+          'Roommate and housing risks: Domu Match is not liable for personal injury, property damage, financial loss, or disputes arising from roommate matches, meetings, or housing/lease arrangements, except where liability cannot be limited by law.',
+          'Third parties: We do not control roommates, landlords, universities, or other third parties and are not responsible for their actions or properties.',
+          'Service continuity: We do not guarantee uninterrupted or error-free service. Maintenance/security downtime may occur.',
+          'Cap: If liability arises despite the above, total aggregate liability is capped at €100 or the amount (if any) received from your institution specifically for your use in the past 12 months, whichever is higher, unless mandatory law requires more.',
+        ],
+      },
+      {
+        id: 'termination',
+        title: '11. Suspension & Termination',
+        bullets: [
+          'We may suspend, restrict, or terminate accounts for safety risks, policy breaches, false identity/student status, failed/refused verification, fraud, or legal/authority requirements.',
+          'Content may be removed or restricted if reasonably believed illegal or violating these Terms.',
+          'Where required and feasible, we will notify you of significant enforcement actions and provide an appeal route.',
+        ],
+      },
+      {
+        id: 'founder-liability',
+        title: '12. Founder Liability & Company Structure',
+        bullets: [
+          'Domu Match may operate as a VOF, BV, or other Dutch legal form; we will disclose the current legal form and registration details in our imprint/legal information.',
+          'Domu Match provides a digital platform and tools only. Roommate relationships, rental contracts, and in-house disputes are primarily between you, your roommates, and your landlord.',
+          'The personal liability of founders, shareholders, and directors is limited in accordance with the applicable legal form and mandatory Dutch law.',
+          'Nothing in these Terms excludes liability that cannot be limited under Dutch/EU law, including where caused by intentional misconduct or gross negligence by Domu Match.',
+        ],
+      },
+      {
+        id: 'changes',
+        title: '13. Changes to These Terms',
+        bullets: [
+          'Significant changes: at least 15 days’ advance notice (e.g., email or in-app), unless shorter notice is required by law or for urgent legal/safety reasons.',
+          'If you disagree with updates, stop using Domu Match and request account deletion. Continued use after the effective date means acceptance.',
+        ],
+      },
+      {
+        id: 'law',
+        title: '14. Governing Law & Disputes',
+        bullets: [
+          'Dutch law governs, subject to any mandatory consumer protections in your EU/EEA country of residence.',
+          'Disputes go to the competent courts of the Netherlands. Consumers in the EU/EEA may bring claims in their home forum where mandatory law allows.',
+          'Please contact us first at info@domumatch.com to try informal resolution.',
+        ],
+      },
+      {
+        id: 'dsa',
+        title: '15. DSA Notice & Reporting',
+        bullets: [
+          'Report illegal content or abuse via in-app tools (where available) or email info@domumatch.com with details, links, or screenshots.',
+          'We review notices diligently and act in line with the EU Digital Services Act and Dutch law, including acknowledging certain notices, assessing them within a reasonable time, and taking proportionate action.',
+          'Actions may include no action, content removal or restriction, feature limitations, temporary suspension, or account termination. Where required, we provide a brief statement of reasons and an appeal route.',
+        ],
+      },
+      {
+        id: 'contact',
+        title: '16. Contact & Legal Inquiries',
+        bullets: [
+          'Support and DSA notices: info@domumatch.com',
+          'Address: Breda, The Netherlands (no KVK number available yet).',
+          'Legal and AI/DSA inquiries: legal@domumatch.com (or another designated legal contact address).',
+          'If a Dutch translation is provided, it prevails if there is a conflict with this English text.',
+        ],
+      },
+    ],
   },
   nl: {
-    title: "Servicevoorwaarden",
-    lastUpdated: "Laatst bijgewerkt",
-    introduction: "Door toegang te krijgen tot en Domu Match te gebruiken, accepteert en gaat u akkoord met de voorwaarden van deze overeenkomst. Als u niet akkoord gaat met deze voorwaarden, gebruik dan ons platform niet.",
-    sections: {
-      acceptance: {
-        title: "1. Acceptatie van voorwaarden",
-        description: "Door toegang te krijgen tot en Domu Match te gebruiken, accepteert en gaat u akkoord met de voorwaarden en bepalingen van deze overeenkomst. Als u niet akkoord gaat met het bovenstaande, gebruik dan deze dienst niet.",
-        modifications: "We behouden ons het recht voor om deze voorwaarden te allen tijde te wijzigen. We zullen gebruikers op de hoogte stellen van belangrijke wijzigingen door de nieuwe voorwaarden op deze pagina te plaatsen en de datum 'Laatst bijgewerkt' bij te werken. Uw voortgezet gebruik van de dienst na dergelijke wijzigingen betekent acceptatie van de bijgewerkte voorwaarden."
-      },
-      useLicense: {
-        title: "2. Gebruikerslicentie",
-        description: "Toestemming wordt verleend om Domu Match alleen voor persoonlijke, niet-commerciële doeleinden te gebruiken. Dit is de verlening van een licentie, geen overdracht van eigendom, en onder deze licentie mag u niet:",
-        restrictions: [
-          "Materialen wijzigen of kopiëren",
-          "Materialen gebruiken voor commerciële doeleinden of voor openbare weergave",
-          "Pogingen doen om software te reverse engineeren, decompileren of disassembleren",
-          "Auteursrechten of andere eigendomsnotaties uit de materialen verwijderen",
-          "Materialen overdragen aan een andere persoon of materialen 'spiegelen' op een andere server"
+    title: 'Algemene Voorwaarden',
+    lastUpdatedLabel: 'Laatst bijgewerkt',
+    lastUpdatedValue: LAST_UPDATED,
+    preamble:
+      'Deze Algemene Voorwaarden (inclusief ons Acceptable Use-beleid en huisregels) gelden voor je gebruik van Domu Match. Door een account aan te maken of het platform te gebruiken, ga je hiermee akkoord. Gebruik het platform niet als je het hiermee oneens bent.',
+    languageNote:
+      'Engels is primair. Als er een Nederlandse vertaling beschikbaar is, gaat de Nederlandse tekst voor bij verschil.',
+    sections: [
+      {
+        id: 'tldr',
+        title: '0. Samenvatting (niet juridisch bindend)',
+        description:
+          'Dit is een vriendelijke samenvatting van de belangrijkste punten. Alleen de uitgebreide tekst hieronder is juridisch bindend.',
+        bullets: [
+          'Domu Match helpt studenten (17+) compatibele huisgenoten te vinden en hun huur beter te begrijpen via Harmony- (lifestyle) en Context-scores (studiecontext) en een WWS-calculator.',
+          'Je moet minimaal 17 jaar zijn, student zijn (en blijven) en verplichte Persona-ID-verificatie doorlopen. Geen nep-, ghost- of AI-gegenereerde profielen.',
+          'De matchinglogica weegt Harmony (~75%) en Context (~25%) voor suggesties, maar jij maakt altijd zelf de uiteindelijke keuze met wie je chat of gaat samenwonen.',
+          'Je bent zelf verantwoordelijk voor wat je plaatst (profiel, foto’s, chat). Geen discriminatie, intimidatie, scams of gebruik voor niet-studentenhuisvesting of commerciële doeleinden.',
+          'De WWS-calculator is bedoeld ter informatie/empowerment en is geen juridisch advies of besluit van de Huurcommissie.',
+          'Domu Match kan offline gedrag of je fysieke veiligheid niet garanderen. Conflicten en contracten zijn in de eerste plaats tussen jou, je huisgenoten en je verhuurder.',
         ],
-        termination: "Deze licentie wordt automatisch beëindigd als u een van deze beperkingen overtreedt en kan door Domu Match te allen tijde worden beëindigd. Bij het beëindigen van uw weergave van deze materialen of bij beëindiging van deze licentie, moet u alle gedownloade materialen in uw bezit vernietigen."
       },
-      userAccounts: {
-        title: "3. Gebruikersaccounts en verantwoordelijkheden",
-        description: "Om onze dienst te gebruiken, moet u een account aanmaken en accurate en volledige informatie verstrekken. U bent verantwoordelijk voor:",
-        responsibilities: [
-          "Accurate en volledige informatie verstrekken tijdens registratie",
-          "De veiligheid en vertrouwelijkheid van uw wachtwoord behouden",
-          "Verantwoordelijkheid accepteren voor alle activiteiten die onder uw account plaatsvinden",
-          "Ten minste 18 jaar oud zijn of toestemming van ouders hebben",
-          "Identiteitsverificatie voltooien zoals vereist",
-          "Uw profielinformatie up-to-date houden",
-          "Voldoen aan alle toepasselijke wetten en regelgeving"
+      {
+        id: 'service-scope',
+        title: '1. Over Domu Match & dienst',
+        description:
+          'Domu Match is een wetenschappelijk onderbouwd matchingplatform voor studenten vanuit Nederland.',
+        bullets: [
+          'Doel: studenten helpen compatibele huisgenoten te vinden via Harmony- en Context-scores en andere input.',
+          'Status: Domu Match is geen verhuurder, makelaar, woningaanbieder of advocatenkantoor.',
+          'Verdienmodel: studenten gebruiken het gratis; financiering loopt via licenties met onderwijsinstellingen.',
+          'Informatieve tools: WWS-calculator en templates zijn puur ter informatie (zie paragraaf 6).',
         ],
-        accountSecurity: "U moet ons onmiddellijk op de hoogte stellen van elk ongeautoriseerd gebruik van uw account of andere beveiligingsinbreuk. We zijn niet aansprakelijk voor verlies of schade voortvloeiend uit uw niet-naleving van deze sectie.",
-        accountTermination: "We behouden ons het recht voor om uw account te allen tijde op te schorten of te beëindigen, met of zonder reden of kennisgeving, om welke reden dan ook, inclusief maar niet beperkt tot schending van deze voorwaarden."
       },
-      prohibitedUses: {
-        title: "4. Verboden gebruik",
-        description: "U mag onze dienst niet gebruiken voor enig onwettig doel of op een manier die deze voorwaarden schendt. Verboden gebruik omvat maar is niet beperkt tot:",
-        prohibited: [
-          "De dienst gebruiken voor onwettige doeleinden of om anderen aan te zetten tot onwettige handelingen",
-          "Schending van internationale, federale, provinciale, staat of lokale regelgeving, regels, wetten of verordeningen",
-          "Inbreuk maken op of schenden van onze intellectuele eigendomsrechten of de intellectuele eigendomsrechten van anderen",
-          "Lastigvallen, misbruiken, beledigen, schaden, lasteren, discrimineren of intimideren van gebruikers",
-          "Valse of misleidende informatie indienen",
-          "Virussen, malware of andere schadelijke code uploaden of verzenden",
-          "Persoonlijke gegevens over andere gebruikers verzamelen of opslaan zonder hun toestemming",
-          "Geautomatiseerde systemen gebruiken om zonder autorisatie toegang te krijgen tot de dienst",
-          "De dienst of servers verstoren of verstoren",
-          "Pogingen doen om ongeautoriseerde toegang te krijgen tot de dienst of andere accounts"
-        ]
-      },
-      contentStandards: {
-        title: "5. Inhoudsnormen",
-        description: "Alle inhoud die aan ons platform wordt ingediend, moet voldoen aan toepasselijke wetten en regelgeving. U gaat akkoord dat uw inhoud zal:",
-        standards: [
-          "Accuraat en waarheidsgetrouw zijn",
-          "Geen wetten of regelgeving schenden",
-          "Geen inbreuk maken op de rechten van anderen",
-          "Geen valse, misleidende of bedrieglijke informatie bevatten",
-          "Geen haatdragende taal, intimidatie of discriminatie bevatten",
-          "Geen expliciet, pornografisch of aanstootgevend materiaal bevatten",
-          "Geen spam, ongevraagde communicatie of reclame bevatten",
-          "Geen persoon of entiteit imiteren"
+      {
+        id: 'eligibility',
+        title: '2. Toegang (alleen studenten 17+)',
+        description: 'Domu Match is uitsluitend voor studenten.',
+        bullets: [
+          'Je bent minimaal 17 jaar.',
+          'Je bent een actuele student (bijv. universiteit, hogeschool, MBO of andere erkende instelling). Bewijs kan worden gevraagd.',
+          'Gebruik buiten Nederland: je blijft zelf verantwoordelijk voor lokaal recht.',
         ],
-        contentRemoval: "We behouden ons het recht voor om inhoud te verwijderen die deze normen of onze servicevoorwaarden schendt. We zijn niet verplicht om alle inhoud te beoordelen, maar kunnen dit naar eigen goeddunken doen."
       },
-      intellectualProperty: {
-        title: "6. Intellectuele eigendomsrechten",
-        description: "De dienst en zijn oorspronkelijke inhoud, functies en functionaliteit zijn eigendom van Domu Match en worden beschermd door internationale auteursrecht-, handelsmerk-, octrooi-, handelsgeheim- en andere intellectuele eigendomswetten.",
-        userContent: "Door inhoud aan ons platform in te dienen, verleent u ons een niet-exclusieve, wereldwijde, royalty-vrije licentie om dergelijke inhoud te gebruiken, te reproduceren, te wijzigen, aan te passen, te publiceren, te vertalen en te distribueren voor het doel van het exploiteren en promoten van de dienst.",
-        userRights: "U behoudt alle rechten op uw inhoud en kunt op elk moment verwijdering van uw inhoud aanvragen. We zullen uw inhoud binnen een redelijke tijd na uw verzoek verwijderen."
-      },
-      privacy: {
-        title: "7. Privacybeleid",
-        description: "Uw privacy is belangrijk voor ons. Bekijk ons Privacybeleid, dat ook uw gebruik van de dienst regelt, om onze praktijken met betrekking tot het verzamelen en gebruiken van uw persoonlijke informatie te begrijpen."
-      },
-      matching: {
-        title: "8. Huisgenoot matchingdienst",
-        description: "Ons platform biedt een huisgenoot matchingdienst die compatibele studenten verbindt. U begrijpt en gaat akkoord dat:",
-        terms: [
-          "We geen matches of compatibiliteit garanderen",
-          "We niet verantwoordelijk zijn voor de acties of het gedrag van andere gebruikers",
-          "U uitsluitend verantwoordelijk bent voor uw interacties met andere gebruikers",
-          "We geen partij zijn bij overeenkomsten of regelingen tussen gebruikers",
-          "We de nauwkeurigheid van gebruikersinformatie niet verifiëren",
-          "U voorzichtigheid moet betrachten en uw eigen oordeel moet gebruiken bij interacties met andere gebruikers"
+      {
+        id: 'account',
+        title: '3. Account & juistheid',
+        bullets: [
+          'Geef juiste en actuele gegevens door en houd ze bij.',
+          'Deel je account of inloggegevens niet; jij bent verantwoordelijk voor gebruik van je account.',
+          'Meld direct bij vermoeden van ongeautoriseerde toegang.',
         ],
-        disclaimer: "We bieden de matchingdienst aan zoals-ie-is en geven geen garanties of verklaringen met betrekking tot de nauwkeurigheid, betrouwbaarheid of geschiktheid van matches."
       },
-      liability: {
-        title: "9. Aansprakelijkheidsbeperking",
-        description: "Voor zover toegestaan door de wet, is Domu Match niet aansprakelijk voor indirecte, incidentele, speciale, gevolgschade of strafschade, of verlies van winst of omzet, direct of indirect, of verlies van gegevens, gebruik, goodwill of andere immateriële verliezen, voortvloeiend uit:",
-        exclusions: [
-          "Uw gebruik of onvermogen om de dienst te gebruiken",
-          "Elk gedrag of inhoud van derden op de dienst",
-          "Elke ongeautoriseerde toegang tot of gebruik van onze servers en/of daarin opgeslagen persoonlijke informatie",
-          "Elke onderbreking of stopzetting van transmissie naar of van de dienst",
-          "Bugs, virussen, trojans of dergelijke die mogelijk worden verzonden naar of via de dienst",
-          "Fouten of weglatingen in inhoud of verlies of schade als gevolg van het gebruik van inhoud"
+      {
+        id: 'verification',
+        title: '4. Verplichte ID- & studentverificatie (Persona)',
+        description: 'Veiligheid vraagt betrouwbare identiteit.',
+        bullets: [
+          'ID-verificatie is verplicht. Domu Match gebruikt een derde partij (nu Persona) voor documentcontrole en liveness-checks.',
+          'Domu Match bewaart geen ruwe ID-documenten of biometrische templates; we ontvangen alleen verificatieresultaten/attributen. Persona kan ruwe documenten bewaren als onze verwerker.',
+          'Verificatie kan overheids-ID, selfie/video en bewijs van studentstatus omvatten. Weigering of mislukking kan functies beperken of leiden tot opschorting/beëindiging.',
+          'Gegevens worden verwerkt onder de AVG en ons Privacybeleid. Doel: leeftijd (17+), identiteit en studentstatus bevestigen en de verificatie koppelen aan je account.',
+          'Geen ghost- of AI-profielen: je mag geen AI-gezichten, avatars of geleende identiteiten gebruiken om verificatie te doorstaan of misleidende accounts aan te maken.',
         ],
-        maximumLiability: "Voor zover toegestaan door de wet, bedraagt onze totale aansprakelijkheid voor claims voortvloeiend uit of gerelateerd aan het gebruik van de dienst niet meer dan het bedrag dat u ons heeft betaald, indien van toepassing, in de 12 maanden voorafgaand aan de claim."
       },
-      disclaimer: {
-        title: "10. Disclaimer",
-        description: "De informatie op deze dienst wordt verstrekt op een 'zoals-ie-is' basis. Voor zover toegestaan door de wet, sluiten we alle verklaringen, garanties, voorwaarden en termen uit, uitdrukkelijk of impliciet, inclusief maar niet beperkt tot:",
-        exclusions: [
-          "Garanties van verkoopbaarheid, geschiktheid voor een bepaald doel of niet-inbreuk",
-          "Garanties met betrekking tot de nauwkeurigheid, betrouwbaarheid of beschikbaarheid van de dienst",
-          "Garanties met betrekking tot de kwaliteit, geschiktheid of compatibiliteit van matches",
-          "Garanties met betrekking tot de veiligheid van de dienst"
+      {
+        id: 'matching',
+        title: '5. Matchingparameters & geen garantie',
+        bullets: [
+          'Input: vragenlijsten, voorkeuren, Harmony-/Context-scores, activiteit-recency, locatie/budgetfilters en veiligheidsignalen (bijv. herhaalde meldingen).',
+          'Weging: Harmony (lifestyle) weegt ongeveer 75% en Context (studie/praktische context) ongeveer 25% in de matchinglogica, met mogelijke aanpassingen naarmate de dienst verbetert.',
+          'Gebruikerscontrole: waar beschikbaar kun je voorkeuren/filters aanpassen; de interface legt de invloed op aanbevelingen uit.',
+          'Geen perfecte match: scores/aanbevelingen zijn hulpmiddel. Eigen beoordeling blijft essentieel.',
+          'Geen aansprakelijkheid voor gedrag van huisgenoten; Domu Match is geen partij bij huur- of samenwoonafspraken.',
+          'Actieve keuze: aanbevelingen zijn suggesties; je beslist altijd zelf met wie je contact legt, afspreekt of gaat samenwonen. Er is geen geautomatiseerde bindende beslissing.',
         ],
-        userResponsibility: "U erkent dat u de dienst op eigen risico gebruikt en uitsluitend verantwoordelijk bent voor uw beslissingen en acties."
       },
-      indemnification: {
-        title: "11. Vrijwaring",
-        description: "U gaat akkoord om Domu Match, zijn gelieerde ondernemingen, functionarissen, directeuren, werknemers, agenten en licentiegevers vrij te houden van claims, aansprakelijkheden, schade, verliezen, kosten of uitgaven, inclusief redelijke advocaatkosten, voortvloeiend uit of gerelateerd aan:",
-        claims: [
-          "Uw gebruik of misbruik van de dienst",
-          "Uw schending van deze voorwaarden",
-          "Uw schending van rechten van anderen",
-          "Uw inhoud of gedrag op de dienst"
-        ]
-      },
-      termination: {
-        title: "12. Beëindiging",
-        description: "We kunnen uw account te allen tijde onmiddellijk beëindigen of opschorten en toegang tot de dienst blokkeren, zonder voorafgaande kennisgeving of aansprakelijkheid, om welke reden dan ook, inclusief maar niet beperkt tot:",
-        reasons: [
-          "Schending van deze voorwaarden",
-          "Frauduleuze, misbruikende of illegale activiteit",
-          "Niet-betaling van kosten, indien van toepassing",
-          "Verzoek van wetshandhavings- of overheidsinstanties",
-          "Stopzetting of wijziging van de dienst"
+      {
+        id: 'ugc',
+        title: '6. Door gebruikers gegenereerde content (profiel, foto’s & chat)',
+        description:
+          'Je bent zelf verantwoordelijk voor de inhoud die je op Domu Match plaatst, zoals profielinformatie, foto’s, kamerteksten en chatberichten.',
+        bullets: [
+          'Zorg dat je content rechtmatig, eerlijk en niet-misleidend is en de rechten van anderen (privacy, auteursrecht, portretrecht) respecteert.',
+          'Profielfoto’s moeten jou redelijk weergeven; gebruik geen AI-gegenereerde gezichten of zwaar bewerkte beelden die anderen misleiden over je identiteit.',
+          'Je mag geen pornografische, seksueel expliciete of uitbuitende beelden uploaden en geen afbeeldingen met haatsymbolen of extremistische content.',
+          'Chat dient respectvol en relevant te blijven voor studentenhuisvesting. Geen bedreigingen, pesten, haatzaaien, spam, phishing-links of druk om overmatige persoonlijke/financiële gegevens te delen.',
+          'We kunnen geautomatiseerde tools en menselijke beoordeling inzetten om bepaalde risicopatronen (bijv. spam, evidente illegale content) te detecteren, in lijn met de DSA en privacywetgeving.',
         ],
-        userTermination: "U kunt uw account op elk moment beëindigen door contact met ons op te nemen of de accountverwijderingsfunctie in uw accountinstellingen te gebruiken.",
-        effect: "Bij beëindiging stopt uw recht om de dienst te gebruiken onmiddellijk. Alle bepalingen van deze voorwaarden die naar hun aard beëindiging moeten overleven, blijven van kracht."
       },
-      disputeResolution: {
-        title: "13. Geschillenbeslechting",
-        description: "Als u een geschil met ons heeft, gaat u akkoord om eerst contact met ons op te nemen en te proberen het geschil informeel op te lossen. Als we het geschil niet binnen 60 dagen kunnen oplossen, gaat u akkoord om het geschil op te lossen door middel van bindende arbitrage in overeenstemming met de regels van het Nederlands Arbitrage Instituut.",
-        governingLaw: "Deze voorwaarden worden beheerst door en geïnterpreteerd in overeenstemming met de wetten van Nederland, zonder rekening te houden met conflictregels.",
-        jurisdiction: "Alle geschillen voortvloeiend uit of gerelateerd aan deze voorwaarden vallen onder de exclusieve jurisdictie van de rechtbanken van Nederland."
+      {
+        id: 'wws',
+        title: '7. WWS-calculator & templates (informatief)',
+        description: 'Deze tools zijn puur informatief.',
+        quote:
+          'Domu Match is not a law firm or a rental agency. Users must verify all calculations with the Huurcommissie.',
+        bullets: [
+          'Regels kunnen wijzigen; uitkomsten hangen af van jouw situatie. Vertrouw niet alleen op onze tools.',
+          'Controleer huurpunten, bedragen en contractvoorwaarden altijd bij de Huurcommissie of een deskundige.',
+          'De WWS-calculator is geen formeel besluit of advies van de Huurcommissie of een andere autoriteit en vervangt geen onafhankelijk juridisch advies.',
+        ],
       },
-      changes: {
-        title: "14. Wijzigingen in voorwaarden",
-        description: "We behouden ons het recht voor om deze voorwaarden te allen tijde te wijzigen of te vervangen. Als een revisie materieel is, geven we ten minste 30 dagen van tevoren kennis voordat nieuwe voorwaarden van kracht worden. Wat een materiële wijziging vormt, wordt naar eigen goeddunken bepaald.",
-        continuedUse: "Door toegang te blijven krijgen tot of onze dienst te blijven gebruiken na dat die revisies van kracht worden, gaat u akkoord met de bijgewerkte voorwaarden. Als u niet akkoord gaat met de nieuwe voorwaarden, stop dan met het gebruik van de dienst."
+      {
+        id: 'acceptable-use',
+        title: '8. Toegestaan gebruik & verboden gedrag',
+        bullets: [
+          'Geen nep-profielen, geen valse leeftijd/studentstatus, geen gebruik van andermans documenten.',
+          'Geen scrapen, data-harvesting, geautomatiseerde toegang of commercieel gebruik van studentdata; geen datasets/modellen bouwen uit platformdata.',
+          'Geen intimidatie, stalking, discriminatie, haatzaaien, bedreigingen of misbruik op of buiten het platform in verband met Domu Match.',
+          'Geen discriminatie op grond van beschermde kenmerken zoals geslacht, genderidentiteit/-expressie, seksuele oriëntatie, ras, etniciteit, nationaliteit, religie/levensovertuiging, handicap of leeftijd, in lijn met Nederlandse discriminatiewetgeving.',
+          'Geen illegale content, malware, fraude of pogingen om beveiliging te omzeilen, systemen te testen of de dienst te verstoren.',
+          'Geen scams of misleidende constructies (zoals valse woningaanbiedingen, borgscams of gebruik van Domu Match primair als dating-, escort- of MLM/marketingplatform).',
+          'Alleen persoonlijk, niet-commercieel gebruik. Geen marketing of acquisitie zonder schriftelijke toestemming.',
+        ],
       },
-      contact: {
-        title: "15. Contactgegevens",
-        description: "Als u vragen heeft over deze Servicevoorwaarden, neem dan contact met ons op:",
-        email: "E-mail: info@domumatch.com",
-        address: "Adres: [Uw bedrijfsadres]"
-      }
-    }
-  }
+      {
+        id: 'fees',
+        title: '9. Prijzen & betaling',
+        bullets: [
+          'Studenten: gebruik is gratis.',
+          'Onderwijsinstellingen/partners: financiering via institutionele licenties (afzonderlijke afspraken).',
+        ],
+      },
+      {
+        id: 'liability',
+        title: '10. Aansprakelijkheidsbeperking',
+        bullets: [
+          'Verplichte rechten: niets beperkt aansprakelijkheid waar dat wettelijk niet mag (bijv. overlijden/letsel door opzet of grove schuld, fraude, of niet-uitsluitbare consumentenrechten).',
+          'Risico’s bij matches en wonen: Domu Match is niet aansprakelijk voor letsel, schade, financiële schade of geschillen door matches, ontmoetingen of woon-/huurovereenkomsten, behalve waar beperking niet is toegestaan.',
+          'Derden: gedrag van huisgenoten, verhuurders, instellingen of anderen sturen wij niet; wij zijn niet verantwoordelijk voor hun handelingen of panden.',
+          'Dienstcontinuïteit: geen garantie op ononderbroken of foutloze dienst; onderhoud/veiligheidsdowntime kan voorkomen.',
+          'Plafond: totale aansprakelijkheid maximaal €100 of het bedrag (indien van toepassing) dat van jouw instelling is ontvangen voor jouw gebruik in de laatste 12 maanden, het hoogste van beide, tenzij dwingend recht anders vereist.',
+        ],
+      },
+      {
+        id: 'termination',
+        title: '11. Opschorting & beëindiging',
+        bullets: [
+          'We kunnen accounts beperken/opschorten/beëindigen bij veiligheidsrisico’s, beleidschending, valse identiteit/studentstatus, mislukte/weigering van verificatie, fraude of wettelijke/autoritaire vereisten.',
+          'Content kan worden verwijderd/beperkt bij vermoeden van illegaliteit of schending van deze voorwaarden.',
+          'Waar vereist en haalbaar informeren wij bij belangrijke maatregelen en bieden we een bezwaar/beroepmogelijkheid.',
+        ],
+      },
+      {
+        id: 'founder-liability',
+        title: '12. Aansprakelijkheid oprichters & rechtsvorm',
+        bullets: [
+          'Domu Match kan opereren als VOF, BV of andere Nederlandse rechtsvorm; de actuele rechtsvorm en registratiedetails worden vermeld in onze imprint/juridische informatie.',
+          'Domu Match biedt een digitaal platform en tools. Relaties tussen huisgenoten, huurovereenkomsten en interne conflicten zijn in de eerste plaats zaken tussen jou, je huisgenoten en je verhuurder.',
+          'De persoonlijke aansprakelijkheid van oprichters, aandeelhouders en bestuurders is beperkt volgens de toepasselijke rechtsvorm en dwingend Nederlands recht.',
+          'Niets in deze voorwaarden sluit aansprakelijkheid uit die volgens Nederlands/EU‑recht niet mag worden beperkt, waaronder bij opzet of grove schuld van Domu Match.',
+        ],
+      },
+      {
+        id: 'changes',
+        title: '13. Wijzigingen',
+        bullets: [
+          'Belangrijke wijzigingen: minimaal 15 dagen vooraf aankondigen (bijv. e-mail of in-app), tenzij korter wettelijk of om dringende veiligheids-/juridische redenen nodig is.',
+          'Ben je het niet eens, stop met gebruik en vraag verwijdering. Doorgaan na ingangsdatum betekent acceptatie.',
+        ],
+      },
+      {
+        id: 'law',
+        title: '14. Recht en geschillen',
+        bullets: [
+          'Nederlands recht geldt, met inachtneming van dwingende consumentenbescherming in jouw EU/EER-land.',
+          'Geschillen naar de bevoegde Nederlandse rechter; EU/EER-consumenten kunnen in hun eigen forum procederen waar dwingend recht dat toestaat.',
+          'Neem eerst contact op via info@domumatch.com voor een informele oplossing.',
+        ],
+      },
+      {
+        id: 'dsa',
+        title: '15. DSA-meldingen & rapportage',
+        bullets: [
+          'Meld illegale content/misbruik via in-app tools (indien beschikbaar) of e-mail info@domumatch.com met details/links/screenshots.',
+          'We beoordelen meldingen zorgvuldig en handelen volgens de EU Digital Services Act en Nederlands recht, inclusief het bevestigen van bepaalde meldingen, een redelijke beoordelingstermijn en proportionele maatregelen.',
+          'Maatregelen kunnen zijn: geen actie, verwijdering/beperking van content, functielimieten, tijdelijke opschorting of beëindiging van accounts. Waar vereist geven we een korte motivering en een bezwaar-/beroepsmogelijkheid.',
+        ],
+      },
+      {
+        id: 'contact',
+        title: '16. Contact & juridische vragen',
+        bullets: [
+          'Support en DSA-meldingen: info@domumatch.com',
+          'Adres: Breda, Nederland (geen KVK-nummer beschikbaar).',
+          'Juridische en AI/DSA-vragen: legal@domumatch.com (of een ander aangewezen juridisch contactadres).',
+          'Als er een Nederlandse vertaling is, gaat die voor bij verschillen met de Engelse tekst.',
+        ],
+      },
+    ],
+  },
 }
 
 export default function TermsPage() {
   const { locale } = useApp()
-  const t = content[locale]
+  const t = content[locale] ?? content.en
 
   return (
     <main className="min-h-screen bg-white">
@@ -334,166 +425,38 @@ export default function TermsPage() {
         <Section className="bg-white">
           <Container>
             <div className="max-w-4xl mx-auto">
-              <h1 className="text-4xl font-bold text-brand-text mb-4">{t.title}</h1>
-              <p className="text-brand-muted mb-8">
-                {t.lastUpdated}: {new Date().toLocaleDateString(locale === 'nl' ? 'nl-NL' : 'en-US')}
+              <h1 className="text-4xl font-bold text-brand-text mb-3">{t.title}</h1>
+              <p className="text-brand-muted mb-2">
+                {t.lastUpdatedLabel}: {t.lastUpdatedValue}
               </p>
-              
-              <p className="text-brand-muted mb-12 leading-relaxed">
-                {t.introduction}
+              <p className="text-brand-muted mb-4">{t.languageNote}</p>
+              <p className="text-brand-muted mb-10 leading-relaxed">
+                {t.preamble}
               </p>
 
-              {/* Acceptance */}
-              <section className="mb-12">
-                <h2 className="text-2xl font-semibold text-brand-text mt-8 mb-4">{t.sections.acceptance.title}</h2>
-                <p className="text-brand-muted mb-4">{t.sections.acceptance.description}</p>
-                <p className="text-brand-muted">{t.sections.acceptance.modifications}</p>
-              </section>
-
-              {/* Use License */}
-              <section className="mb-12">
-                <h2 className="text-2xl font-semibold text-brand-text mt-8 mb-4">{t.sections.useLicense.title}</h2>
-                <p className="text-brand-muted mb-4">{t.sections.useLicense.description}</p>
-                <ul className="list-disc pl-6 space-y-2 text-brand-muted mb-4">
-                  {t.sections.useLicense.restrictions.map((restriction, index) => (
-                    <li key={index}>{restriction}</li>
-                  ))}
-                </ul>
-                <p className="text-brand-muted">{t.sections.useLicense.termination}</p>
-              </section>
-
-              {/* User Accounts */}
-              <section className="mb-12">
-                <h2 className="text-2xl font-semibold text-brand-text mt-8 mb-4">{t.sections.userAccounts.title}</h2>
-                <p className="text-brand-muted mb-4">{t.sections.userAccounts.description}</p>
-                <ul className="list-disc pl-6 space-y-2 text-brand-muted mb-4">
-                  {t.sections.userAccounts.responsibilities.map((responsibility, index) => (
-                    <li key={index}>{responsibility}</li>
-                  ))}
-                </ul>
-                <p className="text-brand-muted mb-4">{t.sections.userAccounts.accountSecurity}</p>
-                <p className="text-brand-muted">{t.sections.userAccounts.accountTermination}</p>
-              </section>
-
-              {/* Prohibited Uses */}
-              <section className="mb-12">
-                <h2 className="text-2xl font-semibold text-brand-text mt-8 mb-4">{t.sections.prohibitedUses.title}</h2>
-                <p className="text-brand-muted mb-4">{t.sections.prohibitedUses.description}</p>
-                <ul className="list-disc pl-6 space-y-2 text-brand-muted">
-                  {t.sections.prohibitedUses.prohibited.map((item, index) => (
-                    <li key={index}>{item}</li>
-                  ))}
-                </ul>
-              </section>
-
-              {/* Content Standards */}
-              <section className="mb-12">
-                <h2 className="text-2xl font-semibold text-brand-text mt-8 mb-4">{t.sections.contentStandards.title}</h2>
-                <p className="text-brand-muted mb-4">{t.sections.contentStandards.description}</p>
-                <ul className="list-disc pl-6 space-y-2 text-brand-muted mb-4">
-                  {t.sections.contentStandards.standards.map((standard, index) => (
-                    <li key={index}>{standard}</li>
-                  ))}
-                </ul>
-                <p className="text-brand-muted">{t.sections.contentStandards.contentRemoval}</p>
-              </section>
-
-              {/* Intellectual Property */}
-              <section className="mb-12">
-                <h2 className="text-2xl font-semibold text-brand-text mt-8 mb-4">{t.sections.intellectualProperty.title}</h2>
-                <p className="text-brand-muted mb-4">{t.sections.intellectualProperty.description}</p>
-                <p className="text-brand-muted mb-4">{t.sections.intellectualProperty.userContent}</p>
-                <p className="text-brand-muted">{t.sections.intellectualProperty.userRights}</p>
-              </section>
-
-              {/* Privacy */}
-              <section className="mb-12">
-                <h2 className="text-2xl font-semibold text-brand-text mt-8 mb-4">{t.sections.privacy.title}</h2>
-                <p className="text-brand-muted">{t.sections.privacy.description}</p>
-              </section>
-
-              {/* Matching */}
-              <section className="mb-12">
-                <h2 className="text-2xl font-semibold text-brand-text mt-8 mb-4">{t.sections.matching.title}</h2>
-                <p className="text-brand-muted mb-4">{t.sections.matching.description}</p>
-                <ul className="list-disc pl-6 space-y-2 text-brand-muted mb-4">
-                  {t.sections.matching.terms.map((term, index) => (
-                    <li key={index}>{term}</li>
-                  ))}
-                </ul>
-                <p className="text-brand-muted">{t.sections.matching.disclaimer}</p>
-              </section>
-
-              {/* Liability */}
-              <section className="mb-12">
-                <h2 className="text-2xl font-semibold text-brand-text mt-8 mb-4">{t.sections.liability.title}</h2>
-                <p className="text-brand-muted mb-4">{t.sections.liability.description}</p>
-                <ul className="list-disc pl-6 space-y-2 text-brand-muted mb-4">
-                  {t.sections.liability.exclusions.map((exclusion, index) => (
-                    <li key={index}>{exclusion}</li>
-                  ))}
-                </ul>
-                <p className="text-brand-muted">{t.sections.liability.maximumLiability}</p>
-              </section>
-
-              {/* Disclaimer */}
-              <section className="mb-12">
-                <h2 className="text-2xl font-semibold text-brand-text mt-8 mb-4">{t.sections.disclaimer.title}</h2>
-                <p className="text-brand-muted mb-4">{t.sections.disclaimer.description}</p>
-                <ul className="list-disc pl-6 space-y-2 text-brand-muted mb-4">
-                  {t.sections.disclaimer.exclusions.map((exclusion, index) => (
-                    <li key={index}>{exclusion}</li>
-                  ))}
-                </ul>
-                <p className="text-brand-muted">{t.sections.disclaimer.userResponsibility}</p>
-              </section>
-
-              {/* Indemnification */}
-              <section className="mb-12">
-                <h2 className="text-2xl font-semibold text-brand-text mt-8 mb-4">{t.sections.indemnification.title}</h2>
-                <p className="text-brand-muted mb-4">{t.sections.indemnification.description}</p>
-                <ul className="list-disc pl-6 space-y-2 text-brand-muted">
-                  {t.sections.indemnification.claims.map((claim, index) => (
-                    <li key={index}>{claim}</li>
-                  ))}
-                </ul>
-              </section>
-
-              {/* Termination */}
-              <section className="mb-12">
-                <h2 className="text-2xl font-semibold text-brand-text mt-8 mb-4">{t.sections.termination.title}</h2>
-                <p className="text-brand-muted mb-4">{t.sections.termination.description}</p>
-                <ul className="list-disc pl-6 space-y-2 text-brand-muted mb-4">
-                  {t.sections.termination.reasons.map((reason, index) => (
-                    <li key={index}>{reason}</li>
-                  ))}
-                </ul>
-                <p className="text-brand-muted mb-4">{t.sections.termination.userTermination}</p>
-                <p className="text-brand-muted">{t.sections.termination.effect}</p>
-              </section>
-
-              {/* Dispute Resolution */}
-              <section className="mb-12">
-                <h2 className="text-2xl font-semibold text-brand-text mt-8 mb-4">{t.sections.disputeResolution.title}</h2>
-                <p className="text-brand-muted mb-4">{t.sections.disputeResolution.description}</p>
-                <p className="text-brand-muted mb-4">{t.sections.disputeResolution.governingLaw}</p>
-                <p className="text-brand-muted">{t.sections.disputeResolution.jurisdiction}</p>
-              </section>
-
-              {/* Changes */}
-              <section className="mb-12">
-                <h2 className="text-2xl font-semibold text-brand-text mt-8 mb-4">{t.sections.changes.title}</h2>
-                <p className="text-brand-muted mb-4">{t.sections.changes.description}</p>
-                <p className="text-brand-muted">{t.sections.changes.continuedUse}</p>
-              </section>
-
-              {/* Contact */}
-              <section className="mb-12">
-                <h2 className="text-2xl font-semibold text-brand-text mt-8 mb-4">{t.sections.contact.title}</h2>
-                <p className="text-brand-muted mb-4">{t.sections.contact.description}</p>
-                <p className="text-brand-muted mb-2">{t.sections.contact.email}</p>
-                <p className="text-brand-muted">{t.sections.contact.address}</p>
-              </section>
+              {t.sections.map((section) => (
+                <section key={section.id} className="mb-10">
+                  <h2 className="text-2xl font-semibold text-brand-text mt-6 mb-3">{section.title}</h2>
+                  {section.description && (
+                    <p className="text-brand-muted mb-3">{section.description}</p>
+                  )}
+                  {section.quote && (
+                    <div className="border-l-4 border-brand-primary bg-slate-50 px-4 py-3 mb-3 text-brand-text">
+                      {section.quote}
+                    </div>
+                  )}
+                  {section.bullets && (
+                    <ul className="list-disc pl-6 space-y-2 text-brand-muted">
+                      {section.bullets.map((item, index) => (
+                        <li key={index}>{item}</li>
+                      ))}
+                    </ul>
+                  )}
+                  {section.note && (
+                    <p className="text-brand-muted mt-3">{section.note}</p>
+                  )}
+                </section>
+              ))}
             </div>
           </Container>
         </Section>

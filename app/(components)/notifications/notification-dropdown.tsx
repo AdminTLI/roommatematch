@@ -81,8 +81,85 @@ export function NotificationDropdown({
       throw new Error('Failed to fetch notifications')
     }
     const data = await response.json()
-    return data.notifications || []
-  }, [counts?.unread])
+    const notifications = data.notifications || []
+    
+    // Process notifications to check acceptance status for match_created and match_accepted types
+    const processedNotifications = await Promise.all(notifications.map(async (notif: Notification) => {
+      // Safety check: For match_created and match_accepted notifications, verify both users accepted
+      if (notif.type === 'match_created' || notif.type === 'match_accepted') {
+        let bothUsersAccepted = false
+        
+        // First, check if message contains a name that needs sanitization
+        let hasName = false
+        let genericMessage = ''
+        
+        if (notif.type === 'match_created' && notif.message && notif.message.includes('match with')) {
+          // Check if message contains a name - if it has text between "with" and "!" that's not generic, it's a name
+          const matchWithPattern = /match with ([^!]+)!/i
+          const match = notif.message.match(matchWithPattern)
+          if (match) {
+            const namePart = match[1].toLowerCase().trim()
+            hasName = !namePart.includes('someone') && 
+                     !namePart.includes('a potential roommate') &&
+                     !namePart.includes('user') &&
+                     namePart.length > 0
+          }
+          genericMessage = 'You have matched with someone! Check out your matches to see who.'
+        } else if (notif.type === 'match_accepted' && notif.message && notif.message.includes('accepted your match request')) {
+          // Check if message contains a name (not just "Someone")
+          hasName = !notif.message.includes('Someone') && 
+                   !notif.message.includes('someone') &&
+                   !notif.message.includes('Someone accepted your match request')
+          genericMessage = 'Someone accepted your match request!'
+        }
+        
+        // Only verify if we detected a name (optimization)
+        if (hasName && notif.metadata?.match_id) {
+          try {
+            // First try match_suggestions table (new system)
+            const { data: suggestion } = await supabase
+              .from('match_suggestions')
+              .select('status, accepted_by, member_ids')
+              .eq('id', notif.metadata.match_id)
+              .single()
+            
+            if (suggestion) {
+              const acceptedBy = suggestion.accepted_by || []
+              const memberIds = suggestion.member_ids || []
+              bothUsersAccepted = suggestion.status === 'confirmed' || 
+                (memberIds.length === 2 && memberIds.every((id: string) => acceptedBy.includes(id)))
+            } else {
+              // If not found in match_suggestions, try old matches table
+              const { data: match } = await supabase
+                .from('matches')
+                .select('status, a_user, b_user')
+                .eq('id', notif.metadata.match_id)
+                .single()
+              
+              if (match) {
+                // In old matches table, status 'confirmed' means both accepted
+                bothUsersAccepted = match.status === 'confirmed'
+              }
+            }
+          } catch (error) {
+            // If we can't verify, assume not both accepted (safer for privacy)
+            logger.warn('Failed to verify match acceptance status, assuming not both accepted', error)
+            bothUsersAccepted = false
+          }
+        }
+        
+        // If name detected AND (both users haven't accepted OR we couldn't verify), sanitize
+        // Also sanitize if no match_id but name detected (fallback for edge cases)
+        if (hasName && (!bothUsersAccepted || !notif.metadata?.match_id)) {
+          notif.message = genericMessage
+        }
+      }
+      
+      return notif
+    }))
+    
+    return processedNotifications
+  }, [counts?.unread, supabase])
 
   const { data: notifications = [], isLoading } = useQuery({
     queryKey: ['notifications', 'dropdown', userId, counts?.unread],
