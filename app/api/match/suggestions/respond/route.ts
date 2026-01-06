@@ -28,7 +28,7 @@ export async function POST(request: NextRequest) {
       }, { status: 403 })
     }
 
-    // Rate limiting: 10 requests per hour per user
+    // Rate limiting: 20 requests per hour per user
     const rateLimitKey = getUserRateLimitKey('matching', user.id)
     const rateLimitResult = await checkRateLimit('matching', rateLimitKey)
     
@@ -36,12 +36,13 @@ export async function POST(request: NextRequest) {
       return NextResponse.json(
         { 
           error: 'Too many requests',
-          retryAfter: Math.ceil((rateLimitResult.resetTime - Date.now()) / 1000)
+          retryAfter: Math.ceil((rateLimitResult.resetTime - Date.now()) / 1000),
+          details: `Rate limit exceeded. Please wait ${Math.ceil((rateLimitResult.resetTime - Date.now()) / 60000)} minutes before trying again.`
         },
         { 
           status: 429,
           headers: {
-            'X-RateLimit-Limit': '10',
+            'X-RateLimit-Limit': '20',
             'X-RateLimit-Remaining': '0',
             'X-RateLimit-Reset': new Date(rateLimitResult.resetTime).toISOString(),
             'Retry-After': Math.ceil((rateLimitResult.resetTime - Date.now()) / 1000).toString()

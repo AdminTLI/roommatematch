@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import { useMutation, useQuery } from '@tanstack/react-query'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
@@ -43,8 +43,74 @@ export function StudentMatchesInterface({ user }: StudentMatchesInterfaceProps) 
   const [isCreatingChat, setIsCreatingChat] = useState(false)
   const [pagination, setPagination] = useState<{ limit: number; offset: number; total: number; has_more: boolean } | null>(null)
   const [isLoadingMore, setIsLoadingMore] = useState(false)
+  
   // Track locally processed suggestions to filter them out even if API returns stale data
-  const [processedSuggestions, setProcessedSuggestions] = useState<Map<string, 'declined' | 'accepted' | 'confirmed'>>(new Map())
+  // Use localStorage to persist across page navigations
+  const STORAGE_KEY = `processed_suggestions_${user.id}`
+  
+  // Load processed suggestions from localStorage on mount
+  const [processedSuggestions, setProcessedSuggestions] = useState<Map<string, 'declined' | 'accepted' | 'confirmed'>>(() => {
+    if (typeof window === 'undefined') return new Map()
+    try {
+      const stored = localStorage.getItem(STORAGE_KEY)
+      if (stored) {
+        const data = JSON.parse(stored)
+        // Only keep entries from last 24 hours to prevent localStorage bloat
+        const oneDayAgo = Date.now() - 24 * 60 * 60 * 1000
+        const filtered = new Map<string, 'declined' | 'accepted' | 'confirmed'>()
+        for (const [id, { status, timestamp }] of Object.entries(data)) {
+          if (timestamp > oneDayAgo) {
+            filtered.set(id, status as 'declined' | 'accepted' | 'confirmed')
+          }
+        }
+        return filtered
+      }
+    } catch (error) {
+      console.error('[Matches] Failed to load processed suggestions from localStorage:', error)
+    }
+    return new Map()
+  })
+  
+  // Persist processed suggestions to localStorage whenever it changes
+  // Use a ref to track previous state and only update when there's an actual change
+  const prevProcessedRef = useRef<string>('')
+  useEffect(() => {
+    if (typeof window === 'undefined') return
+    try {
+      // Load existing data to preserve timestamps for entries that haven't changed
+      const existingData: Record<string, { status: string; timestamp: number }> = {}
+      try {
+        const stored = localStorage.getItem(STORAGE_KEY)
+        if (stored) {
+          const parsed = JSON.parse(stored)
+          Object.assign(existingData, parsed)
+        }
+      } catch {
+        // Ignore parse errors
+      }
+      
+      // Update or add entries for current processed suggestions
+      const data: Record<string, { status: string; timestamp: number }> = {}
+      for (const [id, status] of processedSuggestions.entries()) {
+        // Preserve existing timestamp if status hasn't changed, otherwise use current time
+        const existing = existingData[id]
+        if (existing && existing.status === status) {
+          data[id] = existing
+        } else {
+          data[id] = { status, timestamp: Date.now() }
+        }
+      }
+      
+      // Only update localStorage if data actually changed
+      const dataString = JSON.stringify(data)
+      if (dataString !== prevProcessedRef.current) {
+        localStorage.setItem(STORAGE_KEY, dataString)
+        prevProcessedRef.current = dataString
+      }
+    } catch (error) {
+      console.error('[Matches] Failed to save processed suggestions to localStorage:', error)
+    }
+  }, [processedSuggestions, STORAGE_KEY])
 
   // Fetch suggestions
   const fetchSuggestions = async (includeExpired = false, loadMore = false) => {
@@ -332,18 +398,29 @@ export function StudentMatchesInterface({ user }: StudentMatchesInterfaceProps) 
     onSuccess: ({ suggestionId, action }) => {
       console.log('[Match Respond] onSuccess:', { suggestionId, action, activeTab })
       
-      // Invalidate matches queries to refetch
-      queryClient.invalidateQueries({ queryKey: queryKeys.matches.all(user.id) })
-      
-      // Wait longer before refetching to ensure database update has propagated
-      // For declined/accepted matches, we need to ensure they're properly filtered out
-      const delay = action === 'decline' ? 1500 : 1000
-      
-      setTimeout(() => {
-        console.log('[Match Respond] Refetching after delay:', { suggestionId, action, activeTab })
-        // Always refetch, but the filtering logic should exclude declined/accepted matches from suggested tab
-        fetchSuggestions(activeTab === 'history' || activeTab === 'confirmed')
-      }, delay)
+      // Don't immediately refetch - the optimistic update already removed it from UI
+      // Only refetch if we're on a tab that needs to show the updated match (history/confirmed)
+      // This reduces API calls and prevents rate limiting issues
+      if (activeTab === 'history' || activeTab === 'confirmed' || activeTab === 'pending') {
+        // Invalidate matches queries but don't refetch immediately
+        queryClient.invalidateQueries({ queryKey: queryKeys.matches.all(user.id) })
+        
+        // Wait longer before refetching to ensure database update has propagated
+        // For declined/accepted matches, we need to ensure they're properly filtered out
+        const delay = action === 'decline' ? 2000 : 1500
+        
+        setTimeout(() => {
+          console.log('[Match Respond] Refetching after delay:', { suggestionId, action, activeTab })
+          // Only refetch if still on a tab that needs the data
+          if (activeTab === 'history' || activeTab === 'confirmed' || activeTab === 'pending') {
+            fetchSuggestions(activeTab === 'history' || activeTab === 'confirmed')
+          }
+        }, delay)
+      } else {
+        // For suggested tab, we don't need to refetch - the match is already removed optimistically
+        // and the localStorage cache will prevent it from showing if API returns stale data
+        console.log('[Match Respond] Skipping refetch for suggested tab - using optimistic update and localStorage cache')
+      }
     },
     onError: (error, { suggestionId }, context) => {
       console.error('[Match Respond] Error:', { error, suggestionId, context })

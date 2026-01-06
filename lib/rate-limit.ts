@@ -374,9 +374,10 @@ export const RATE_LIMITS = {
   }, getSharedStore),
 
   // Matching requests (fail-closed to prevent DoS)
+  // Increased to 20 per hour to allow for normal usage (accept/decline actions)
   matching: new RateLimiter({
     windowMs: 60 * 60 * 1000, // 1 hour
-    maxRequests: 5,
+    maxRequests: 20,
     failClosed: true
   }, getSharedStore),
 
