@@ -43,6 +43,8 @@ export function StudentMatchesInterface({ user }: StudentMatchesInterfaceProps) 
   const [isCreatingChat, setIsCreatingChat] = useState(false)
   const [pagination, setPagination] = useState<{ limit: number; offset: number; total: number; has_more: boolean } | null>(null)
   const [isLoadingMore, setIsLoadingMore] = useState(false)
+  // Track locally processed suggestions to filter them out even if API returns stale data
+  const [processedSuggestions, setProcessedSuggestions] = useState<Map<string, 'declined' | 'accepted' | 'confirmed'>>(new Map())
 
   // Fetch suggestions
   const fetchSuggestions = async (includeExpired = false, loadMore = false) => {
@@ -83,11 +85,39 @@ export function StudentMatchesInterface({ user }: StudentMatchesInterfaceProps) 
         
         // Categorize suggestions
         // Defensive filtering: explicitly exclude declined and confirmed matches from suggested tab
+        // Also exclude accepted matches (they should be in pending tab, not suggested)
+        // Also check local processedSuggestions cache to filter out matches that were declined/accepted
+        // even if API returns stale data
         const suggested = allSuggestions.filter(s => {
-          // Must be pending status (this already excludes declined and accepted)
-          if (s.status !== 'pending') return false
-          // User must not have already accepted
-          if (s.acceptedBy?.includes(user.id)) return false
+          // Check local cache first - if we've processed this suggestion, exclude it from suggested
+          const processedStatus = processedSuggestions.get(s.id)
+          if (processedStatus === 'declined' || processedStatus === 'accepted' || processedStatus === 'confirmed') {
+            console.log('[Filter] Excluding from suggested - locally processed:', {
+              id: s.id,
+              processedStatus,
+              apiStatus: s.status
+            })
+            return false
+          }
+          
+          // Must be pending status (this excludes declined, accepted, and confirmed)
+          if (s.status !== 'pending') {
+            console.log('[Filter] Excluding from suggested - wrong status:', {
+              id: s.id,
+              status: s.status,
+              acceptedBy: s.acceptedBy
+            })
+            return false
+          }
+          // User must not have already accepted (accepted matches go to pending tab)
+          if (s.acceptedBy?.includes(user.id)) {
+            console.log('[Filter] Excluding from suggested - user already accepted:', {
+              id: s.id,
+              status: s.status,
+              acceptedBy: s.acceptedBy
+            })
+            return false
+          }
           return true
         })
         const pending = allSuggestions.filter(s => s.status === 'accepted' && s.acceptedBy?.includes(user.id) && s.acceptedBy.length < s.memberIds.length)
@@ -121,6 +151,25 @@ export function StudentMatchesInterface({ user }: StudentMatchesInterfaceProps) 
             for (const sug of combined) {
               const otherId = sug.memberIds.find((id: string) => id !== user.id)
               if (!otherId) continue
+              // Additional defensive check: never include declined/accepted/confirmed in suggested
+              // Also check local cache
+              const processedStatus = processedSuggestions.get(sug.id)
+              if (processedStatus === 'declined' || processedStatus === 'accepted' || processedStatus === 'confirmed') {
+                console.log('[Filter] Skipping locally processed match in loadMore:', {
+                  id: sug.id,
+                  processedStatus,
+                  apiStatus: sug.status
+                })
+                continue
+              }
+              if (sug.status !== 'pending' || sug.acceptedBy?.includes(user.id)) {
+                console.log('[Filter] Skipping non-pending match in loadMore:', {
+                  id: sug.id,
+                  status: sug.status,
+                  acceptedBy: sug.acceptedBy
+                })
+                continue
+              }
               const existing = deduped.get(otherId)
               if (!existing || new Date(sug.createdAt) > new Date(existing.createdAt)) {
                 deduped.set(otherId, sug)
@@ -142,11 +191,70 @@ export function StudentMatchesInterface({ user }: StudentMatchesInterfaceProps) 
             return Array.from(deduped.values())
           })
         } else {
-          // Replace all suggestions
-          setSuggestions(suggested)
+          // Replace all suggestions with additional defensive filtering
+          // Ensure no declined/accepted/confirmed matches slip through
+          const finalSuggested = suggested.filter(s => {
+            // Check local cache
+            const processedStatus = processedSuggestions.get(s.id)
+            if (processedStatus === 'declined' || processedStatus === 'accepted' || processedStatus === 'confirmed') {
+              console.warn('[Filter] Removed locally processed match from suggested tab:', {
+                id: s.id,
+                processedStatus,
+                apiStatus: s.status
+              })
+              return false
+            }
+            const isValid = s.status === 'pending' && !s.acceptedBy?.includes(user.id)
+            if (!isValid) {
+              console.warn('[Filter] Removed invalid match from suggested tab:', {
+                id: s.id,
+                status: s.status,
+                acceptedBy: s.acceptedBy
+              })
+            }
+            return isValid
+          })
+          
+          setSuggestions(finalSuggested)
           setPendingSuggestions(pending)
           setConfirmedMatches(confirmed)
           setHistoryMatches(history)
+          
+          // Clean up processedSuggestions cache - remove entries that match API status
+          // This ensures we don't permanently hide matches that should be visible
+          setProcessedSuggestions(prev => {
+            const next = new Map(prev)
+            let removedCount = 0
+            for (const sug of allSuggestions) {
+              const cachedStatus = next.get(sug.id)
+              // If API status matches cached status, we can remove from cache (API has caught up)
+              if (cachedStatus === 'declined' && sug.status === 'declined') {
+                next.delete(sug.id)
+                removedCount++
+              } else if (cachedStatus === 'accepted' && sug.status === 'accepted') {
+                next.delete(sug.id)
+                removedCount++
+              } else if (cachedStatus === 'confirmed' && sug.status === 'confirmed') {
+                next.delete(sug.id)
+                removedCount++
+              }
+            }
+            if (removedCount > 0) {
+              console.log('[Filter] Cleaned up processedSuggestions cache:', {
+                removedCount,
+                remainingCacheSize: next.size
+              })
+            }
+            return next
+          })
+          
+          console.log('[Filter] Final counts:', {
+            suggested: finalSuggested.length,
+            pending: pending.length,
+            confirmed: confirmed.length,
+            history: history.length,
+            total: allSuggestions.length
+          })
         }
       } else {
         console.error('Failed to fetch suggestions')
@@ -174,46 +282,71 @@ export function StudentMatchesInterface({ user }: StudentMatchesInterfaceProps) 
       })
 
       if (!response.ok) {
-        const errorData = await response.json()
+        let errorData
+        try {
+          errorData = await response.json()
+        } catch {
+          errorData = { error: `Failed to ${action} suggestion (${response.status})` }
+        }
+        console.error('[Match Respond] API error:', {
+          status: response.status,
+          statusText: response.statusText,
+          errorData
+        })
         throw new Error(errorData.error || `Failed to ${action} suggestion`)
       }
 
-      return { suggestionId, action }
+      const result = await response.json()
+      console.log('[Match Respond] Success:', { suggestionId, action, result })
+      return { suggestionId, action, result }
     },
     onMutate: async ({ suggestionId, action }) => {
       // Cancel outgoing refetches
       await queryClient.cancelQueries({ queryKey: queryKeys.matches.all(user.id) })
 
-      // Optimistically update UI - remove from all lists
-      setSuggestions(prev => prev.filter(s => s.id !== suggestionId))
+      // Track this suggestion as processed locally
+      const processedStatus = action === 'decline' ? 'declined' : action === 'accept' ? 'accepted' : 'confirmed'
+      setProcessedSuggestions(prev => {
+        const next = new Map(prev)
+        next.set(suggestionId, processedStatus)
+        return next
+      })
+
+      // Optimistically update UI - remove from all lists immediately
+      setSuggestions(prev => {
+        const filtered = prev.filter(s => s.id !== suggestionId)
+        console.log('[Match Respond] Optimistic update - removed from suggestions:', {
+          suggestionId,
+          beforeCount: prev.length,
+          afterCount: filtered.length
+        })
+        return filtered
+      })
       setPendingSuggestions(prev => prev.filter(s => s.id !== suggestionId))
       setConfirmedMatches(prev => prev.filter(s => s.id !== suggestionId))
-      // For declined matches, we'll add them to history after the API confirms
+      // For declined/accepted matches, we'll add them to appropriate tabs after the API confirms
 
       // Return context for rollback
       return { suggestionId, action }
     },
     onSuccess: ({ suggestionId, action }) => {
+      console.log('[Match Respond] onSuccess:', { suggestionId, action, activeTab })
+      
       // Invalidate matches queries to refetch
       queryClient.invalidateQueries({ queryKey: queryKeys.matches.all(user.id) })
       
-      // For declined matches, refresh after a delay to ensure database consistency
-      // This prevents race conditions where the API might return the declined match
-      // before the database update has fully propagated
-      if (action === 'decline') {
-        // If on history tab, refresh to show the declined match there
-        // If on other tabs, refresh to ensure it's removed (with longer delay to ensure DB update)
-        setTimeout(() => {
-          fetchSuggestions(activeTab === 'history')
-        }, 1000)
-      } else {
-        // For accept actions, refresh normally
-        setTimeout(() => {
-          fetchSuggestions(activeTab === 'history' || activeTab === 'confirmed')
-        }, 500)
-      }
+      // Wait longer before refetching to ensure database update has propagated
+      // For declined/accepted matches, we need to ensure they're properly filtered out
+      const delay = action === 'decline' ? 1500 : 1000
+      
+      setTimeout(() => {
+        console.log('[Match Respond] Refetching after delay:', { suggestionId, action, activeTab })
+        // Always refetch, but the filtering logic should exclude declined/accepted matches from suggested tab
+        fetchSuggestions(activeTab === 'history' || activeTab === 'confirmed')
+      }, delay)
     },
     onError: (error, { suggestionId }, context) => {
+      console.error('[Match Respond] Error:', { error, suggestionId, context })
       // Rollback optimistic update - refetch to restore state
       fetchSuggestions(activeTab === 'history' || activeTab === 'confirmed')
       const errorMessage = error instanceof Error ? error.message : `Failed to ${context?.action || 'respond to'} suggestion`
