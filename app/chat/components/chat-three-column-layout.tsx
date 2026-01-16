@@ -49,7 +49,7 @@ export function ChatThreeColumnLayout({ user, initialChatId }: ChatThreeColumnLa
   // Desktop: Show all three columns simultaneously
   return (
     <div
-      className="flex flex-row h-full w-full min-h-0 overflow-hidden"
+      className="flex flex-row h-full w-full min-h-0 overflow-hidden gap-2"
       style={{ 
         height: '100%', 
         maxHeight: '100%', 
@@ -63,13 +63,13 @@ export function ChatThreeColumnLayout({ user, initialChatId }: ChatThreeColumnLa
       {/* Left Sidebar - Chat List */}
       <div
         className={`
-          flex-shrink-0 bg-chat-bg-secondary
+          flex-shrink-0 bg-white dark:bg-gray-900
           ${showChatView ? 'hidden lg:flex' : 'flex'}
           w-full lg:w-80
           flex-col min-h-0
           overflow-hidden
           relative
-          border-r border-chat-border
+          rounded-lg border border-gray-200 dark:border-gray-800 shadow-sm
         `}
       >
         <ChatList
@@ -84,7 +84,7 @@ export function ChatThreeColumnLayout({ user, initialChatId }: ChatThreeColumnLa
         className={`
           flex-1 flex flex-col bg-chat-bg-primary overflow-hidden min-h-0 w-full
           ${showChatView ? 'flex' : 'hidden lg:flex'}
-          relative rounded-lg border border-gray-200 dark:border-gray-800
+          relative rounded-lg border border-gray-200 dark:border-gray-800 shadow-sm
         `}
         style={{ 
           height: '100%', 
@@ -128,7 +128,7 @@ export function ChatThreeColumnLayout({ user, initialChatId }: ChatThreeColumnLa
             w-full lg:w-96
             flex-col min-h-0
             overflow-hidden
-            border-l border-chat-border
+            rounded-lg border border-gray-200 dark:border-gray-800 shadow-sm
             transition-all duration-300 ease-in-out
             bg-gradient-to-br from-purple-950 via-indigo-950 to-blue-950 dark:from-purple-950 dark:via-indigo-950 dark:to-blue-950
           `}

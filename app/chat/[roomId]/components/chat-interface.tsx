@@ -365,6 +365,8 @@ export function ChatInterface({ roomId, user, onBack, onToggleRightPane, rightPa
         setReadFailureCount(0)
         setReadRetryQueue([])
         setReadError(null)
+        // Invalidate chat queries to refresh unread counts immediately
+        queryClient.invalidateQueries({ queryKey: queryKeys.chats(user.id) })
       }
     } catch (error) {
       safeLogger.error('[Chat] Failed to mark as read:', error)

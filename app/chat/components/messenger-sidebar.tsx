@@ -15,11 +15,12 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger
 } from '@/components/ui/dropdown-menu'
-import { Settings, MoreVertical, Plus } from 'lucide-react'
+import { Settings, MoreVertical, Plus, Archive, ArchiveRestore, Bell, BellOff, CheckCheck, RotateCcw, Eye, EyeOff, MessageSquare } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 import { fetchWithCSRF } from '@/lib/utils/fetch-with-csrf'
-import { queryKeys } from '@/app/providers'
+import { queryKeys, queryClient } from '@/app/providers'
 import { cn } from '@/lib/utils'
+import { showSuccessToast, showErrorToast } from '@/lib/toast'
 
 interface ChatRoom {
   id: string
@@ -90,11 +91,208 @@ export function MessengerSidebar({ user, onChatSelect, selectedChatId, onNewChat
   const router = useRouter()
   const supabase = createClient()
   const [isMounted, setIsMounted] = useState(false)
+  const [showArchived, setShowArchived] = useState(false)
+  const [showMuted, setShowMuted] = useState(false)
+  const [archivedChats, setArchivedChats] = useState<string[]>([])
+  const [mutedChats, setMutedChats] = useState<string[]>([])
+  const [isMarkingAllRead, setIsMarkingAllRead] = useState(false)
+  const [isClearingReadReceipts, setIsClearingReadReceipts] = useState(false)
 
   // Ensure component only renders DropdownMenu after hydration to avoid ID mismatch
   useEffect(() => {
     setIsMounted(true)
   }, [])
+
+  // Load archived chats from localStorage and listen for changes
+  useEffect(() => {
+    const loadArchived = () => {
+      try {
+        const archived = JSON.parse(localStorage.getItem('archived_chats') || '[]')
+        setArchivedChats(archived)
+      } catch {
+        setArchivedChats([])
+      }
+    }
+
+    // Load initially
+    loadArchived()
+
+    // Listen for storage changes (when archiving from other tabs/components)
+    const handleStorageChange = (e: StorageEvent) => {
+      if (e.key === 'archived_chats') {
+        loadArchived()
+      }
+    }
+
+    // Listen for custom events (when archiving from same tab)
+    const handleArchiveChange = () => {
+      loadArchived()
+    }
+
+    window.addEventListener('storage', handleStorageChange)
+    window.addEventListener('archivedChatsChanged', handleArchiveChange)
+
+    return () => {
+      window.removeEventListener('storage', handleStorageChange)
+      window.removeEventListener('archivedChatsChanged', handleArchiveChange)
+    }
+  }, [])
+
+  // Load muted chats from localStorage
+  useEffect(() => {
+    const loadMuted = () => {
+      try {
+        const muted = JSON.parse(localStorage.getItem('muted_chats') || '[]')
+        setMutedChats(muted)
+      } catch {
+        setMutedChats([])
+      }
+    }
+
+    loadMuted()
+
+    // Listen for storage changes
+    const handleStorageChange = (e: StorageEvent) => {
+      if (e.key === 'muted_chats') {
+        loadMuted()
+      }
+    }
+
+    const handleMuteChange = () => {
+      loadMuted()
+    }
+
+    window.addEventListener('storage', handleStorageChange)
+    window.addEventListener('mutedChatsChanged', handleMuteChange)
+
+    return () => {
+      window.removeEventListener('storage', handleStorageChange)
+      window.removeEventListener('mutedChatsChanged', handleMuteChange)
+    }
+  }, [])
+
+  // Handle view archived chats
+  const handleViewArchived = () => {
+    setShowArchived(true)
+    setShowMuted(false)
+  }
+
+  // Handle view muted chats
+  const handleViewMuted = () => {
+    setShowMuted(true)
+    setShowArchived(false)
+  }
+
+  // Handle mark all chats as read
+  const handleMarkAllAsRead = async () => {
+    setIsMarkingAllRead(true)
+    try {
+      // Use API endpoint to mark all chats as read
+      // This is more reliable than direct database access
+      const response = await fetchWithCSRF('/api/chat/mark-all-read', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' }
+      })
+
+      if (response.ok) {
+        // Invalidate chat queries to refresh UI
+        queryClient.invalidateQueries({ queryKey: queryKeys.chats(user.id) })
+        showSuccessToast('All chats marked as read', 'All messages have been marked as read.')
+      } else {
+        const errorData = await response.json()
+        throw new Error(errorData.error || 'Failed to mark all as read')
+      }
+    } catch (error: any) {
+      console.error('Failed to mark all as read:', error)
+      showErrorToast('Failed to mark all as read', error.message || 'Please try again.')
+    } finally {
+      setIsMarkingAllRead(false)
+    }
+  }
+
+  // Handle clear all read receipts
+  const handleClearAllReadReceipts = async () => {
+    setIsClearingReadReceipts(true)
+    try {
+      // Use API endpoint to clear all read receipts
+      const response = await fetchWithCSRF('/api/chat/clear-all-read-receipts', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' }
+      })
+
+      if (response.ok) {
+        // Invalidate chat queries to refresh UI
+        queryClient.invalidateQueries({ queryKey: queryKeys.chats(user.id) })
+        showSuccessToast('Read receipts cleared', 'All read receipts have been removed. All chats will appear as unread.')
+      } else {
+        const errorData = await response.json()
+        throw new Error(errorData.error || 'Failed to clear read receipts')
+      }
+    } catch (error: any) {
+      console.error('Failed to clear read receipts:', error)
+      showErrorToast('Failed to clear read receipts', error.message || 'Please try again.')
+    } finally {
+      setIsClearingReadReceipts(false)
+    }
+  }
+
+  // Handle mute all notifications
+  const handleMuteAllNotifications = () => {
+    try {
+      // Get all chat IDs
+      const allChatIds = chats.map(chat => chat.id)
+      const muted = JSON.parse(localStorage.getItem('muted_chats') || '[]')
+      
+      // Add all chats that aren't already muted
+      const newMuted = [...new Set([...muted, ...allChatIds])]
+      localStorage.setItem('muted_chats', JSON.stringify(newMuted))
+      setMutedChats(newMuted)
+      
+      // Dispatch event
+      window.dispatchEvent(new CustomEvent('mutedChatsChanged'))
+      
+      showSuccessToast('All chats muted', 'Notifications for all chats have been muted.')
+    } catch (error: any) {
+      console.error('Failed to mute all:', error)
+      showErrorToast('Failed to mute all chats', error.message || 'Please try again.')
+    }
+  }
+
+  // Handle unmute all notifications
+  const handleUnmuteAllNotifications = () => {
+    try {
+      localStorage.setItem('muted_chats', JSON.stringify([]))
+      setMutedChats([])
+      
+      // Dispatch event
+      window.dispatchEvent(new CustomEvent('mutedChatsChanged'))
+      
+      showSuccessToast('All chats unmuted', 'Notifications for all chats have been enabled.')
+    } catch (error: any) {
+      console.error('Failed to unmute all:', error)
+      showErrorToast('Failed to unmute all chats', error.message || 'Please try again.')
+    }
+  }
+
+  // Handle unarchive chat
+  const handleUnarchive = (chatId: string) => {
+    try {
+      const archived = JSON.parse(localStorage.getItem('archived_chats') || '[]')
+      const updated = archived.filter((id: string) => id !== chatId)
+      localStorage.setItem('archived_chats', JSON.stringify(updated))
+      setArchivedChats(updated)
+      
+      // Dispatch custom event to notify other components
+      window.dispatchEvent(new CustomEvent('archivedChatsChanged'))
+      
+      // If we're viewing archived chats and this was the last one, go back
+      if (showArchived && updated.length === 0) {
+        setShowArchived(false)
+      }
+    } catch (error) {
+      console.error('Failed to unarchive:', error)
+    }
+  }
 
   // Reuse chat fetching logic from ChatList
   const fetchChats = useCallback(async (): Promise<ChatRoom[]> => {
@@ -119,22 +317,93 @@ export function MessengerSidebar({ user, onChatSelect, selectedChatId, onNewChat
       if (!chatRooms) return []
 
       // Fetch latest messages
-      const { data: allMessages } = await supabase
-        .from('messages')
-        .select('chat_id, content, created_at, user_id')
-        .in('chat_id', chatIds)
-        .order('created_at', { ascending: false })
-        .limit(chatIds.length * 2)
-
+      const systemGreeting = "You're matched! Start your conversation 👋"
       const latestMessagesMap = new Map<string, any>()
-      if (allMessages) {
-        const seenChatIds = new Set<string>()
-        allMessages.forEach((msg: any) => {
-          if (!seenChatIds.has(msg.chat_id)) {
-            latestMessagesMap.set(msg.chat_id, msg)
-            seenChatIds.add(msg.chat_id)
+      const allMessagesMap = new Map<string, any[]>() // Store all messages per chat for active chat detection
+      
+      if (chatIds.length > 0) {
+        // First, fetch latest messages for display
+        const { data: allMessages } = await supabase
+          .from('messages')
+          .select('chat_id, content, created_at, user_id')
+          .in('chat_id', chatIds)
+          .order('created_at', { ascending: false })
+          .limit(chatIds.length * 10) // Increased limit to get more messages per chat
+
+        if (allMessages) {
+          const seenChatIds = new Set<string>()
+          allMessages.forEach((msg: any) => {
+            const chatId = msg.chat_id
+            // Store latest message
+            if (!seenChatIds.has(chatId)) {
+              latestMessagesMap.set(chatId, msg)
+              seenChatIds.add(chatId)
+            }
+            // Store all messages for active chat detection
+            if (!allMessagesMap.has(chatId)) {
+              allMessagesMap.set(chatId, [])
+            }
+            allMessagesMap.get(chatId)!.push(msg)
+          })
+        }
+
+        // Second, use a more reliable method: check for ANY non-system messages per chat
+        // This ensures we catch all chats with user messages, even if the limit above missed them
+        try {
+          const { data: nonSystemMessages } = await supabase
+            .from('messages')
+            .select('chat_id')
+            .in('chat_id', chatIds)
+            .neq('content', systemGreeting) // Get any message that is NOT the system greeting
+            .limit(1000) // High limit to ensure we check all chats
+
+          let chatsWithUserMessages: Set<string> = new Set<string>()
+          
+          if (nonSystemMessages && Array.isArray(nonSystemMessages) && nonSystemMessages.length > 0) {
+            try {
+              // Create a set of chat IDs that have non-system messages
+              const chatIds = nonSystemMessages
+                .map((msg: any) => msg?.chat_id)
+                .filter((id: any): id is string => typeof id === 'string' && id.length > 0)
+              
+              if (chatIds.length > 0) {
+                chatsWithUserMessages = new Set(chatIds)
+                
+                // Update allMessagesMap to mark chats with user messages
+                chatsWithUserMessages.forEach((chatId) => {
+                  // If we don't have messages in allMessagesMap for this chat, add an empty array
+                  // so that hasUserMessages will be true
+                  if (!allMessagesMap.has(chatId)) {
+                    allMessagesMap.set(chatId, [])
+                  }
+                })
+              }
+            } catch (setError) {
+              // If Set creation fails, just use empty set
+              chatsWithUserMessages = new Set<string>()
+            }
           }
-        })
+          
+          // Store the set for later use (always ensure it's a Set)
+          (allMessagesMap as any).chatsWithUserMessages = chatsWithUserMessages instanceof Set 
+            ? chatsWithUserMessages 
+            : new Set<string>()
+        } catch (nonSystemError) {
+          // Initialize empty set on error - use console.error if console.warn fails
+          try {
+            if (typeof console !== 'undefined' && typeof console.warn === 'function') {
+              console.warn('[MessengerSidebar] Exception checking for non-system messages (non-fatal):', nonSystemError)
+            } else {
+              console.error('[MessengerSidebar] Exception checking for non-system messages (non-fatal):', nonSystemError)
+            }
+          } catch {
+            // Fallback if console methods fail
+            console.error('[MessengerSidebar] Error in non-system messages check:', nonSystemError)
+          }
+          // Initialize empty set on error
+          (allMessagesMap as any).chatsWithUserMessages = new Set<string>()
+          // Continue - we'll rely on the messages we already fetched
+        }
       }
 
       // Fetch profiles
@@ -209,10 +478,19 @@ export function MessengerSidebar({ user, onChatSelect, selectedChatId, onNewChat
       }
 
       // Transform to ChatRoom format
+      // Ensure chatsWithUserMessages is always a Set
+      const chatsWithUserMessagesRaw = (allMessagesMap as any).chatsWithUserMessages
+      const chatsWithUserMessages = chatsWithUserMessagesRaw instanceof Set 
+        ? chatsWithUserMessagesRaw 
+        : new Set<string>()
+      
       const transformedChats: ChatRoom[] = chatRooms.map((room: any) => {
         const latestMessage = latestMessagesMap.get(room.id)
-        const systemGreeting = "You're matched! Start your conversation 👋"
-        const hasUserMessages = latestMessage ? latestMessage.content !== systemGreeting : false
+        // Get all messages for this chat to check if there are any user messages
+        const allChatMessages = allMessagesMap.get(room.id) || []
+        // Use the reliable check from the non-system messages query first, then fall back to checking fetched messages
+        const hasUserMessages = chatsWithUserMessages.has(room.id) || 
+                                allChatMessages.some((msg: any) => msg.content !== systemGreeting)
         const isRecentlyMatched = !hasUserMessages
 
         const otherParticipant = room.chat_members?.find((p: any) => p.user_id !== user.id)
@@ -286,7 +564,14 @@ export function MessengerSidebar({ user, onChatSelect, selectedChatId, onNewChat
 
       return transformedChats
     } catch (error) {
-      console.error('Failed to load chats:', error)
+      // Safely log error - handle case where console methods might not be available
+      try {
+        if (typeof console !== 'undefined' && typeof console.error === 'function') {
+          console.error('Failed to load chats:', error)
+        }
+      } catch {
+        // Fallback if console methods fail
+      }
       return []
     }
   }, [user.id])
@@ -297,7 +582,7 @@ export function MessengerSidebar({ user, onChatSelect, selectedChatId, onNewChat
     staleTime: 10_000
   })
 
-  // Extract online users
+  // Extract online users from chats (legacy - for "Online Now" carousel)
   const onlineUsers = useMemo(() => {
     const onlineUsersMap = new Map<string, { id: string; name: string; avatar?: string }>()
     chats.forEach(chat => {
@@ -316,12 +601,74 @@ export function MessengerSidebar({ user, onChatSelect, selectedChatId, onNewChat
     return Array.from(onlineUsersMap.values())
   }, [chats, user.id])
 
-  // Separate chats
-  const recentlyMatchedChats = chats
+  // Fetch online users (active in last 15 minutes)
+  const { data: onlineUsersData = { users: [] }, isLoading: isLoadingOnlineUsers } = useQuery({
+    queryKey: ['online-users', user.id],
+    queryFn: async () => {
+      const response = await fetch('/api/chat/online-users', { credentials: 'include' })
+      if (!response.ok) {
+        throw new Error('Failed to fetch online users')
+      }
+      return response.json()
+    },
+    staleTime: 30_000, // Refresh every 30 seconds
+    refetchInterval: 30_000,
+    enabled: !showArchived && !showMuted
+  })
+
+  const onlineUsersList = onlineUsersData.users || []
+
+  // Handle clicking on an online user avatar
+  const handleOnlineUserClick = useCallback(async (userId: string) => {
+    try {
+      // First, check if we already have a chat with this user
+      const existingChat = chats.find(chat =>
+        chat.type === 'individual' && chat.participants.some(p => p.id === userId)
+      )
+
+      if (existingChat) {
+        onChatSelect(existingChat.id)
+        return
+      }
+
+      // Otherwise, get or create a chat
+      const response = await fetchWithCSRF('/api/chat/get-or-create', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ other_user_id: userId })
+      })
+
+      if (response.ok) {
+        const { chat_id } = await response.json()
+        // Invalidate chats to refresh the list
+        queryClient.invalidateQueries({ queryKey: queryKeys.chats(user.id) })
+        onChatSelect(chat_id)
+      } else {
+        const errorData = await response.json()
+        showErrorToast('Failed to open chat', errorData.error || 'Please try again.')
+      }
+    } catch (error: any) {
+      console.error('Failed to open chat with user:', error)
+      showErrorToast('Failed to open chat', error.message || 'Please try again.')
+    }
+  }, [chats, user.id, onChatSelect])
+
+  // Separate chats - filter based on view mode
+  let filteredChats = chats
+  if (showArchived) {
+    filteredChats = chats.filter(chat => archivedChats.includes(chat.id))
+  } else if (showMuted) {
+    filteredChats = chats.filter(chat => mutedChats.includes(chat.id))
+  } else {
+    // Show active chats (not archived, optionally filter muted)
+    filteredChats = chats.filter(chat => !archivedChats.includes(chat.id))
+  }
+
+  const recentlyMatchedChats = filteredChats
     .filter(chat => chat.isRecentlyMatched)
     .sort((a, b) => (b.mostRecentMessageTime || 0) - (a.mostRecentMessageTime || 0))
 
-  const activeConversations = chats
+  const activeConversations = filteredChats
     .filter(chat => !chat.isRecentlyMatched)
     .sort((a, b) => (b.mostRecentMessageTime || 0) - (a.mostRecentMessageTime || 0))
 
@@ -353,13 +700,66 @@ export function MessengerSidebar({ user, onChatSelect, selectedChatId, onNewChat
                 <MoreVertical className="w-4 h-4" />
               </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              <DropdownMenuLabel>{userName}</DropdownMenuLabel>
+            <DropdownMenuContent align="end" className="w-56">
+              <DropdownMenuLabel>Chat Options</DropdownMenuLabel>
               <DropdownMenuSeparator />
-              <DropdownMenuItem onClick={() => router.push('/settings')}>
-                <Settings className="mr-2 h-4 w-4" />
-                Settings
+
+              {/* Archive */}
+              <DropdownMenuItem onClick={handleViewArchived}>
+                <Archive className="mr-2 h-4 w-4" />
+                Archived Chats
+                {archivedChats.length > 0 && (
+                  <span className="ml-auto text-xs text-gray-500">({archivedChats.length})</span>
+                )}
               </DropdownMenuItem>
+
+              {/* Muted Chats */}
+              <DropdownMenuItem onClick={handleViewMuted}>
+                <BellOff className="mr-2 h-4 w-4" />
+                Muted Chats
+                {mutedChats.length > 0 && (
+                  <span className="ml-auto text-xs text-gray-500">({mutedChats.length})</span>
+                )}
+              </DropdownMenuItem>
+
+              {(showArchived || showMuted) && (
+                <DropdownMenuItem onClick={() => {
+                  setShowArchived(false)
+                  setShowMuted(false)
+                }}>
+                  <ArchiveRestore className="mr-2 h-4 w-4" />
+                  Back to Active Chats
+                </DropdownMenuItem>
+              )}
+
+              <DropdownMenuSeparator />
+
+              {/* Mark all as read */}
+              <DropdownMenuItem onClick={handleMarkAllAsRead} disabled={isMarkingAllRead}>
+                <CheckCheck className="mr-2 h-4 w-4" />
+                {isMarkingAllRead ? 'Marking...' : 'Mark All as Read'}
+              </DropdownMenuItem>
+
+              {/* Clear read receipts */}
+              <DropdownMenuItem onClick={handleClearAllReadReceipts} disabled={isClearingReadReceipts}>
+                <RotateCcw className="mr-2 h-4 w-4" />
+                {isClearingReadReceipts ? 'Clearing...' : 'Clear All Read Receipts'}
+              </DropdownMenuItem>
+
+              <DropdownMenuSeparator />
+
+              {/* Mute/Unmute all notifications */}
+              {mutedChats.length === chats.length && chats.length > 0 ? (
+                <DropdownMenuItem onClick={handleUnmuteAllNotifications}>
+                  <Bell className="mr-2 h-4 w-4" />
+                  Unmute All Chats
+                </DropdownMenuItem>
+              ) : (
+                <DropdownMenuItem onClick={handleMuteAllNotifications}>
+                  <BellOff className="mr-2 h-4 w-4" />
+                  Mute All Chats
+                </DropdownMenuItem>
+              )}
             </DropdownMenuContent>
           </DropdownMenu>
         ) : (
@@ -371,6 +771,48 @@ export function MessengerSidebar({ user, onChatSelect, selectedChatId, onNewChat
 
       {/* Scrollable Content */}
       <div className="flex-1 overflow-y-auto min-h-0 scrollbar-visible">
+        {/* View Header (when viewing archived or muted) */}
+        {(showArchived || showMuted) && (
+          <div className="px-4 py-3 border-b border-gray-200 dark:border-gray-800 bg-gray-50 dark:bg-gray-800/50">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                {showArchived ? (
+                  <>
+                    <Archive className="w-4 h-4 text-gray-600 dark:text-gray-400" />
+                    <h2 className="text-sm font-semibold text-gray-900 dark:text-gray-100">
+                      Archived Chats
+                    </h2>
+                    <Badge variant="secondary" className="text-xs">
+                      {archivedChats.length}
+                    </Badge>
+                  </>
+                ) : (
+                  <>
+                    <BellOff className="w-4 h-4 text-gray-600 dark:text-gray-400" />
+                    <h2 className="text-sm font-semibold text-gray-900 dark:text-gray-100">
+                      Muted Chats
+                    </h2>
+                    <Badge variant="secondary" className="text-xs">
+                      {mutedChats.length}
+                    </Badge>
+                  </>
+                )}
+              </div>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => {
+                  setShowArchived(false)
+                  setShowMuted(false)
+                }}
+                className="h-7 text-xs"
+              >
+                Back
+              </Button>
+            </div>
+          </div>
+        )}
+
         {/* Online Now Carousel */}
         {onlineUsers.length > 0 && (
           <div className="px-4 py-4 border-b border-gray-200 dark:border-gray-800">
@@ -409,16 +851,56 @@ export function MessengerSidebar({ user, onChatSelect, selectedChatId, onNewChat
           </div>
         )}
 
-        {/* Recently Matched Section */}
-        {recentlyMatchedChats.length > 0 && (
+        {/* Online Section - Only show when not viewing archived/muted */}
+        {!showArchived && !showMuted && (
           <div className="px-4 py-4">
             <div className="flex items-center justify-between mb-3">
               <h2 className="text-xs font-bold text-gray-600 dark:text-gray-400 uppercase tracking-wider">
-                Recently Matched
+                Online ({onlineUsersList.length})
               </h2>
-              <Badge variant="secondary" className="text-xs">
-                {recentlyMatchedChats.length}
-              </Badge>
+            </div>
+            <div className="flex flex-wrap gap-3">
+              {onlineUsersList.length > 0 ? (
+                onlineUsersList.map((onlineUser: { id: string; firstName: string; avatar?: string }) => (
+                  <div
+                    key={onlineUser.id}
+                    onClick={() => handleOnlineUserClick(onlineUser.id)}
+                    className="flex flex-col items-center gap-2 cursor-pointer hover:opacity-80 transition-opacity flex-shrink-0"
+                  >
+                    <Avatar className="w-12 h-12">
+                      <AvatarImage src={onlineUser.avatar} />
+                      <AvatarFallback className="bg-purple-600 text-white">
+                        {onlineUser.firstName.charAt(0).toUpperCase()}
+                      </AvatarFallback>
+                    </Avatar>
+                    <p className="text-xs text-gray-900 dark:text-gray-100 font-medium max-w-[60px] truncate text-center">
+                      {onlineUser.firstName}
+                    </p>
+                  </div>
+                ))
+              ) : (
+                <div className="flex flex-col items-center gap-2 flex-shrink-0 opacity-50">
+                  <Avatar className="w-12 h-12">
+                    <AvatarFallback className="bg-gray-300 dark:bg-gray-700 text-gray-500 dark:text-gray-400">
+                      <span className="text-base">💤</span>
+                    </AvatarFallback>
+                  </Avatar>
+                  <p className="text-xs text-gray-500 dark:text-gray-400 text-center max-w-[60px] truncate">
+                    All Offline
+                  </p>
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+
+        {/* Recently Matched Section - Only show when not viewing archived/muted */}
+        {!showArchived && !showMuted && recentlyMatchedChats.length > 0 && (
+          <div className="px-4 py-4">
+            <div className="flex items-center justify-between mb-3">
+              <h2 className="text-xs font-bold text-gray-600 dark:text-gray-400 uppercase tracking-wider">
+                Recently Matched ({recentlyMatchedChats.length})
+              </h2>
             </div>
             <div className="space-y-2">
               {recentlyMatchedChats.map((chat) => {
@@ -458,60 +940,132 @@ export function MessengerSidebar({ user, onChatSelect, selectedChatId, onNewChat
         <div className="px-4 py-4">
           <div className="flex items-center justify-between mb-3">
             <h2 className="text-xs font-bold text-gray-600 dark:text-gray-400 uppercase tracking-wider">
-              Active Chats
+              {showArchived 
+                ? `Archived Chats (${archivedChats.length})` 
+                : showMuted 
+                ? `Muted Chats (${mutedChats.length})` 
+                : `Active Chats (${activeConversations.length})`}
             </h2>
-            <Badge variant="secondary" className="text-xs">
-              {activeConversations.length}
-            </Badge>
+            {!showArchived && !showMuted && (() => {
+              const totalUnread = activeConversations.reduce((sum, chat) => sum + (chat.unreadCount || 0), 0)
+              return totalUnread > 0 ? (
+                <Badge variant="secondary" className="text-xs">
+                  {totalUnread > 99 ? '99+' : totalUnread}
+                </Badge>
+              ) : null
+            })()}
           </div>
           {activeConversations.length === 0 ? (
             <div className="text-center py-8">
-              <p className="text-sm text-gray-500 dark:text-gray-400">No active conversations</p>
+              <p className="text-sm text-gray-500 dark:text-gray-400">
+                {showArchived 
+                  ? 'No archived conversations' 
+                  : showMuted 
+                  ? 'No muted conversations' 
+                  : 'No active conversations'}
+              </p>
+              {(showArchived && archivedChats.length === 0) && (
+                <p className="text-xs text-gray-400 dark:text-gray-500 mt-2">
+                  Archived chats will appear here
+                </p>
+              )}
+              {(showMuted && mutedChats.length === 0) && (
+                <p className="text-xs text-gray-400 dark:text-gray-500 mt-2">
+                  Muted chats will appear here
+                </p>
+              )}
             </div>
           ) : (
             <div className="space-y-2">
               {activeConversations.map((chat) => {
                 const otherParticipant = chat.participants.find(p => p.id !== user.id) || chat.participants[0]
                 const isSelected = selectedChatId === chat.id
+                const isArchived = archivedChats.includes(chat.id)
 
                 return (
                   <div
                     key={chat.id}
-                    onClick={() => onChatSelect(chat.id)}
                     className={cn(
-                      'flex items-center gap-3 p-3 rounded-lg cursor-pointer transition-colors',
+                      'flex items-center gap-3 p-3 rounded-lg transition-colors group',
                       isSelected
                         ? 'bg-purple-100 dark:bg-purple-900/30'
                         : 'hover:bg-gray-100 dark:hover:bg-gray-800'
                     )}
                   >
-                    <Avatar className="w-10 h-10 flex-shrink-0">
-                      <AvatarImage src={otherParticipant?.avatar} />
-                      <AvatarFallback className="bg-purple-600 text-white">
-                        {otherParticipant?.name?.charAt(0) || chat.name.charAt(0)}
-                      </AvatarFallback>
-                    </Avatar>
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center justify-between gap-2 mb-1">
-                        <p className="text-sm font-semibold text-gray-900 dark:text-gray-100 truncate">
-                          {chat.name}
-                        </p>
+                    <div
+                      onClick={() => onChatSelect(chat.id)}
+                      className="flex items-center gap-3 flex-1 min-w-0 cursor-pointer"
+                    >
+                      <Avatar className="w-10 h-10 flex-shrink-0">
+                        <AvatarImage src={otherParticipant?.avatar} />
+                        <AvatarFallback className="bg-purple-600 text-white">
+                          {otherParticipant?.name?.charAt(0) || chat.name.charAt(0)}
+                        </AvatarFallback>
+                      </Avatar>
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center justify-between gap-2 mb-1">
+                          <div className="flex items-center gap-2 flex-1 min-w-0">
+                            <p className="text-sm font-semibold text-gray-900 dark:text-gray-100 truncate">
+                              {chat.name}
+                            </p>
+                            {isArchived && (
+                              <Archive className="w-3 h-3 text-gray-400 flex-shrink-0" />
+                            )}
+                          </div>
+                          {chat.lastMessage && (
+                            <span className="text-[10px] text-gray-500 dark:text-gray-400 flex-shrink-0">
+                              {formatMessageTime(chat.lastMessage.created_at || chat.lastMessage.timestamp)}
+                            </span>
+                          )}
+                        </div>
                         {chat.lastMessage && (
-                          <span className="text-[10px] text-gray-500 dark:text-gray-400 flex-shrink-0">
-                            {formatMessageTime(chat.lastMessage.created_at || chat.lastMessage.timestamp)}
-                          </span>
+                          <p className="text-xs text-gray-600 dark:text-gray-400 truncate">
+                            {chat.lastMessage.content}
+                          </p>
                         )}
                       </div>
-                      {chat.lastMessage && (
-                        <p className="text-xs text-gray-600 dark:text-gray-400 truncate">
-                          {chat.lastMessage.content}
-                        </p>
+                      {chat.unreadCount > 0 && !isArchived && (
+                        <Badge className="bg-purple-600 text-white text-xs min-w-[20px] h-5 flex items-center justify-center rounded-full">
+                          {chat.unreadCount > 99 ? '99+' : chat.unreadCount}
+                        </Badge>
                       )}
                     </div>
-                    {chat.unreadCount > 0 && (
-                      <Badge className="bg-purple-600 text-white text-xs min-w-[20px] h-5 flex items-center justify-center rounded-full">
-                        {chat.unreadCount > 99 ? '99+' : chat.unreadCount}
-                      </Badge>
+                    {(showArchived || showMuted) && (
+                      <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                        {showArchived && (
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={(e) => {
+                              e.stopPropagation()
+                              handleUnarchive(chat.id)
+                            }}
+                            className="h-7 w-7 p-0"
+                            title="Unarchive"
+                          >
+                            <ArchiveRestore className="w-4 h-4" />
+                          </Button>
+                        )}
+                        {showMuted && (
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={(e) => {
+                              e.stopPropagation()
+                              const muted = JSON.parse(localStorage.getItem('muted_chats') || '[]')
+                              const updated = muted.filter((id: string) => id !== chat.id)
+                              localStorage.setItem('muted_chats', JSON.stringify(updated))
+                              setMutedChats(updated)
+                              window.dispatchEvent(new CustomEvent('mutedChatsChanged'))
+                              showSuccessToast('Chat unmuted', 'Notifications for this chat have been enabled.')
+                            }}
+                            className="h-7 w-7 p-0"
+                            title="Unmute"
+                          >
+                            <Bell className="w-4 h-4" />
+                          </Button>
+                        )}
+                      </div>
                     )}
                   </div>
                 )

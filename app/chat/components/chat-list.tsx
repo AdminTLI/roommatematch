@@ -173,23 +173,21 @@ export function ChatList({ user, onChatSelect, selectedChatId }: ChatListProps) 
         chatRooms: chatRooms.map((r: any) => ({ id: r.id, is_group: r.is_group, memberCount: r.chat_members?.length || 0 }))
       })
 
-      // Optimize: Fetch only latest message per chat using efficient query
-      // For "recently matched" check, we'll check if latest message is a system greeting
+      // Optimize: Fetch latest messages per chat using efficient query
+      // For "recently matched" check, we'll check if any message is not a system greeting
       let latestMessagesMap = new Map<string, any>()
-      let allMessagesMap = new Map<string, any[]>() // Store all messages per chat for search
+      let allMessagesMap = new Map<string, any[]>() // Store all messages per chat for search and active chat detection
+      const systemGreeting = "You're matched! Start your conversation 👋"
 
       if (chatIds.length > 0) {
-        // Fetch latest message per chat using a more efficient approach
-        // We'll fetch messages ordered by created_at DESC and group by chat_id, taking first
-        // Since Supabase doesn't support DISTINCT ON directly, we fetch with limit per chat
-        // For better performance, we fetch all messages but only keep the latest per chat
+        // First, fetch latest message per chat for display
         try {
           const { data: allMessages, error: messagesError } = await supabase
             .from('messages')
             .select('chat_id, content, created_at, user_id')
             .in('chat_id', chatIds)
             .order('created_at', { ascending: false })
-            .limit(chatIds.length * 2) // Limit to reasonable number (2 messages per chat max)
+            .limit(chatIds.length * 10) // Increased limit to get more messages per chat
 
           if (messagesError) {
             console.warn('[ChatList] Error fetching messages (non-fatal):', messagesError)
@@ -218,19 +216,57 @@ export function ChatList({ user, onChatSelect, selectedChatId }: ChatListProps) 
           console.warn('[ChatList] Exception fetching messages (non-fatal):', messagesError)
           // Continue without messages - chats should still be shown
         }
+
+        // Second, use a more reliable method: check for ANY non-system messages per chat
+        // This ensures we catch all chats with user messages, even if the limit above missed them
+        try {
+          const { data: nonSystemMessages, error: nonSystemError } = await supabase
+            .from('messages')
+            .select('chat_id')
+            .in('chat_id', chatIds)
+            .neq('content', systemGreeting) // Get any message that is NOT the system greeting
+            .limit(1000) // High limit to ensure we check all chats
+
+          if (!nonSystemError && nonSystemMessages) {
+            // Create a set of chat IDs that have non-system messages
+            const chatsWithUserMessages = new Set(nonSystemMessages.map((msg: any) => msg.chat_id))
+            
+            // Update allMessagesMap to mark chats with user messages
+            // This ensures we have the correct hasUserMessages flag even if the first query missed messages
+            chatsWithUserMessages.forEach((chatId) => {
+              // If we don't have messages in allMessagesMap for this chat, add an empty array
+              // so that hasUserMessages will be true
+              if (!allMessagesMap.has(chatId)) {
+                allMessagesMap.set(chatId, [])
+              }
+            })
+            
+            // Store the set for later use
+            (allMessagesMap as any).chatsWithUserMessages = chatsWithUserMessages
+          }
+        } catch (nonSystemError) {
+          console.warn('[ChatList] Exception checking for non-system messages (non-fatal):', nonSystemError)
+          // Continue - we'll rely on the messages we already fetched
+        }
       }
 
       // Process chat rooms with messages from the map
       // IMPORTANT: Always include all chat rooms, even if they have no messages
+      const chatsWithUserMessages = (allMessagesMap as any).chatsWithUserMessages || new Set<string>()
+      
       const chatRoomsWithMessages = (chatRooms || []).map((room: any) => {
         const latestMessage = latestMessagesMap.get(room.id)
         const messages = latestMessage ? [latestMessage] : []
+        
+        // Get all messages for this chat to check if there are any user messages
+        const allChatMessages = allMessagesMap.get(room.id) || []
 
-        // For "recently matched" check: if latest message exists and is NOT a system greeting,
+        // For "recently matched" check: if ANY message exists and is NOT a system greeting,
         // then the chat is active (has user messages)
-        // If there's no message at all, it's also "recently matched"
-        const systemGreeting = "You're matched! Start your conversation 👋"
-        const hasUserMessages = latestMessage ? latestMessage.content !== systemGreeting : false
+        // If there's no message at all, or only system greetings, it's "recently matched"
+        // Use the reliable check from the non-system messages query first, then fall back to checking fetched messages
+        const hasUserMessages = chatsWithUserMessages.has(room.id) || 
+                                allChatMessages.some((msg: any) => msg.content !== systemGreeting)
 
         return {
           ...room,
@@ -373,11 +409,12 @@ export function ChatList({ user, onChatSelect, selectedChatId }: ChatListProps) 
       const transformedChats: ChatRoom[] = (finalChatRooms || []).map((room: any) => {
         // Check if recently matched: A chat is "recently matched" if it has no user messages
         // A chat becomes "active" the moment ANY message is sent or received (not just system greetings)
-        // Use the hasUserMessages flag set during message fetching (optimized to check only latest message)
+        // Use the hasUserMessages flag set during message fetching (checks all messages, not just latest)
         const hasUserMessages = room.hasUserMessages || false
 
         // A chat is recently matched ONLY if it has no user messages (only system greetings or empty)
         // The moment a user sends or receives ANY message, it becomes active
+        // If there are ANY messages that are not the system greeting, the chat is active
         const isRecentlyMatched = !hasUserMessages;
 
         // Compatibility score not available without matches table - set to undefined

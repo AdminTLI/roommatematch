@@ -130,10 +130,10 @@ const dimensionConfig: { [key: string]: { label: string; description: string; ic
 }
 
 const getScoreColor = (score: number) => {
-  if (score >= 0.8) return 'text-emerald-400'
-  if (score >= 0.6) return 'text-blue-400'
-  if (score >= 0.4) return 'text-yellow-400'
-  return 'text-red-400'
+  if (score >= 0.8) return 'text-emerald-600 dark:text-emerald-400'
+  if (score >= 0.6) return 'text-blue-600 dark:text-blue-400'
+  if (score >= 0.4) return 'text-yellow-600 dark:text-yellow-400'
+  return 'text-red-600 dark:text-red-400'
 }
 
 const getScoreBarColor = (score: number) => {
@@ -217,16 +217,16 @@ export function ProfileCompatibilityPane({ chatId, userId, isOpen, onClose }: Pr
     : null
 
   return (
-    <div data-profile-compatibility-pane className="flex flex-col h-full w-full overflow-hidden">
+    <div data-profile-compatibility-pane className="flex flex-col h-full w-full overflow-hidden bg-white dark:bg-gray-900">
       {/* Header */}
-      <div className="flex-shrink-0 px-6 py-4 border-b border-white/10 flex items-center justify-between">
-        <h2 className="text-lg font-bold text-white">Profile & Compatibility</h2>
+      <div className="flex-shrink-0 px-6 py-4 border-b border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 flex items-center justify-between">
+        <h2 className="text-lg font-bold text-gray-900 dark:text-white">Profile & Compatibility</h2>
         {onClose && (
           <Button
             variant="ghost"
             size="sm"
             onClick={onClose}
-            className="h-8 w-8 p-0 rounded-full text-white/70 hover:bg-white/10 hover:text-white"
+            className="h-8 w-8 p-0 rounded-full text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-gray-900 dark:hover:text-white"
           >
             <X className="h-4 w-4" />
             <span className="sr-only">Close profile panel</span>
@@ -235,23 +235,23 @@ export function ProfileCompatibilityPane({ chatId, userId, isOpen, onClose }: Pr
       </div>
 
       {/* Scrollable Content */}
-      <div className="flex-1 overflow-y-auto min-h-0 scrollbar-visible">
+      <div className="flex-1 overflow-y-auto min-h-0 scrollbar-visible bg-white dark:bg-gray-900">
         <div className="px-6 py-6 space-y-6">
           {isLoading ? (
             <div className="space-y-6">
-              <div className="h-32 bg-white/5 rounded-lg animate-pulse"></div>
+              <div className="h-32 bg-gray-200 dark:bg-gray-800 rounded-lg animate-pulse"></div>
               <div className="space-y-4">
                 {[1, 2, 3].map((i) => (
                   <div key={i} className="space-y-2">
-                    <div className="h-4 bg-white/5 rounded animate-pulse w-3/4"></div>
-                    <div className="h-2 bg-white/5 rounded animate-pulse"></div>
+                    <div className="h-4 bg-gray-200 dark:bg-gray-800 rounded animate-pulse w-3/4"></div>
+                    <div className="h-2 bg-gray-200 dark:bg-gray-800 rounded animate-pulse"></div>
                   </div>
                 ))}
               </div>
             </div>
           ) : error ? (
             <div className="text-center py-12">
-              <p className="text-sm text-white/70">{error}</p>
+              <p className="text-sm text-gray-600 dark:text-gray-400">{error}</p>
             </div>
           ) : (
             <>
@@ -269,8 +269,8 @@ export function ProfileCompatibilityPane({ chatId, userId, isOpen, onClose }: Pr
                     </div>
                   </div>
                   <div className="text-center">
-                    <h3 className="text-2xl font-bold text-white mb-1">MATCH SCORE</h3>
-                    <p className="text-lg text-white/80">{getCompatibilityLabel(compatibility!.compatibility_score)} Match</p>
+                    <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-1">MATCH SCORE</h3>
+                    <p className="text-lg text-gray-700 dark:text-gray-300">{getCompatibilityLabel(compatibility!.compatibility_score)} Match</p>
                   </div>
                 </div>
               )}
@@ -280,12 +280,12 @@ export function ProfileCompatibilityPane({ chatId, userId, isOpen, onClose }: Pr
                (compatibility?.harmony_score !== null && compatibility?.harmony_score !== undefined) ? (
                 <div className="grid grid-cols-2 gap-4">
                   {compatibility?.context_score !== null && compatibility?.context_score !== undefined && (
-                    <div className="bg-white/5 rounded-lg p-4 border border-white/10">
-                      <div className="text-xs font-semibold text-white/70 uppercase tracking-wider mb-2">Context Score</div>
+                    <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-4 border border-gray-200 dark:border-gray-700">
+                      <div className="text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wider mb-2">Context Score</div>
                       <div className={`text-2xl font-bold ${getScoreColor(compatibility.context_score)}`}>
                         {Math.round(compatibility.context_score * 100)}%
                       </div>
-                      <div className="relative h-1.5 w-full overflow-hidden rounded-full bg-white/10 mt-2">
+                      <div className="relative h-1.5 w-full overflow-hidden rounded-full bg-gray-200 dark:bg-gray-700 mt-2">
                         <div 
                           className={`h-full rounded-full ${getScoreBarColor(compatibility.context_score)} transition-all duration-500`}
                           style={{ width: `${compatibility.context_score * 100}%` }}
@@ -294,12 +294,12 @@ export function ProfileCompatibilityPane({ chatId, userId, isOpen, onClose }: Pr
                     </div>
                   )}
                   {compatibility?.harmony_score !== null && compatibility?.harmony_score !== undefined && (
-                    <div className="bg-white/5 rounded-lg p-4 border border-white/10">
-                      <div className="text-xs font-semibold text-white/70 uppercase tracking-wider mb-2">Harmony Score</div>
+                    <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-4 border border-gray-200 dark:border-gray-700">
+                      <div className="text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wider mb-2">Harmony Score</div>
                       <div className={`text-2xl font-bold ${getScoreColor(compatibility.harmony_score)}`}>
                         {Math.round(compatibility.harmony_score * 100)}%
                       </div>
-                      <div className="relative h-1.5 w-full overflow-hidden rounded-full bg-white/10 mt-2">
+                      <div className="relative h-1.5 w-full overflow-hidden rounded-full bg-gray-200 dark:bg-gray-700 mt-2">
                         <div 
                           className={`h-full rounded-full ${getScoreBarColor(compatibility.harmony_score)} transition-all duration-500`}
                           style={{ width: `${compatibility.harmony_score * 100}%` }}
@@ -312,26 +312,26 @@ export function ProfileCompatibilityPane({ chatId, userId, isOpen, onClose }: Pr
 
               {/* Detailed Dimension Scores - Collapsible */}
               {compatibility?.dimension_scores_json && typeof compatibility.dimension_scores_json === 'object' && Object.keys(compatibility.dimension_scores_json).length > 0 && (
-                <div className="border border-white/20 rounded-xl overflow-hidden bg-white/5">
+                <div className="border border-gray-200 dark:border-gray-700 rounded-xl overflow-hidden bg-gray-50 dark:bg-gray-800">
                   <button
                     onClick={() => setShowDimensions(!showDimensions)}
-                    className="w-full flex items-center justify-between p-4 hover:bg-white/10 transition-colors"
+                    className="w-full flex items-center justify-between p-4 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
                   >
                     <div className="flex items-center gap-2">
-                      <Sparkles className="w-4 h-4 text-indigo-400" />
-                      <h4 className="text-sm font-semibold text-white">
+                      <Sparkles className="w-4 h-4 text-indigo-500 dark:text-indigo-400" />
+                      <h4 className="text-sm font-semibold text-gray-900 dark:text-white">
                         Detailed Dimension Scores
                       </h4>
                     </div>
                     {showDimensions ? (
-                      <ChevronUp className="w-4 h-4 text-white/60" />
+                      <ChevronUp className="w-4 h-4 text-gray-500 dark:text-gray-400" />
                     ) : (
-                      <ChevronDown className="w-4 h-4 text-white/60" />
+                      <ChevronDown className="w-4 h-4 text-gray-500 dark:text-gray-400" />
                     )}
                   </button>
                   
                   {showDimensions && (
-                    <div className="px-4 pb-4 pt-2 border-t border-white/10">
+                    <div className="px-4 pb-4 pt-2 border-t border-gray-200 dark:border-gray-700">
                       <div className="grid grid-cols-1 gap-3">
                         {Object.entries(compatibility.dimension_scores_json).map(([key, score]) => {
                           const dimensionKey = key as string
@@ -344,22 +344,22 @@ export function ProfileCompatibilityPane({ chatId, userId, isOpen, onClose }: Pr
                           return (
                             <div 
                               key={dimensionKey} 
-                              className="p-3 rounded-lg border border-white/10 bg-white/5 hover:bg-white/10 transition-colors"
+                              className="p-3 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
                             >
                               <div className="flex items-start justify-between mb-1.5">
                                 <div className="flex items-center gap-1.5 flex-1 min-w-0">
-                                  <Icon className="w-3.5 h-3.5 text-white/60 flex-shrink-0" />
-                                  <span className="text-xs font-medium text-white truncate">
+                                  <Icon className="w-3.5 h-3.5 text-gray-500 dark:text-gray-400 flex-shrink-0" />
+                                  <span className="text-xs font-medium text-gray-900 dark:text-white truncate">
                                     {label}
                                   </span>
                                   {description && (
                                     <TooltipProvider>
                                       <Tooltip>
                                         <TooltipTrigger asChild>
-                                          <Info className="w-3 h-3 text-white/40 cursor-help flex-shrink-0" />
+                                          <Info className="w-3 h-3 text-gray-400 dark:text-gray-500 cursor-help flex-shrink-0" />
                                         </TooltipTrigger>
-                                        <TooltipContent className="bg-slate-800 border-slate-700 max-w-xs">
-                                          <p className="text-xs text-slate-200">{description}</p>
+                                        <TooltipContent className="bg-gray-800 dark:bg-gray-700 border-gray-700 dark:border-gray-600 max-w-xs">
+                                          <p className="text-xs text-gray-200 dark:text-gray-300">{description}</p>
                                         </TooltipContent>
                                       </Tooltip>
                                     </TooltipProvider>
@@ -369,7 +369,7 @@ export function ProfileCompatibilityPane({ chatId, userId, isOpen, onClose }: Pr
                                   {Math.round(dimensionScore * 100)}%
                                 </span>
                               </div>
-                              <div className="relative h-1.5 w-full overflow-hidden rounded-full bg-white/10">
+                              <div className="relative h-1.5 w-full overflow-hidden rounded-full bg-gray-200 dark:bg-gray-700">
                                 <div 
                                   className={`h-full rounded-full ${getScoreBarColor(dimensionScore)} transition-all duration-500`}
                                   style={{ width: `${dimensionScore * 100}%` }}
@@ -386,13 +386,13 @@ export function ProfileCompatibilityPane({ chatId, userId, isOpen, onClose }: Pr
 
               {/* Bio - Always show */}
               <div>
-                <h3 className="text-sm font-bold text-white/90 uppercase tracking-wider mb-3">BIO</h3>
+                <h3 className="text-sm font-bold text-gray-900 dark:text-white uppercase tracking-wider mb-3">BIO</h3>
                 {userInfo?.bio && userInfo.bio.trim() ? (
-                  <p className="text-sm text-white/80 leading-relaxed whitespace-pre-wrap">
+                  <p className="text-sm text-gray-700 dark:text-gray-300 leading-relaxed whitespace-pre-wrap">
                     {userInfo.bio}
                   </p>
                 ) : (
-                  <p className="text-xs text-white/60 italic">
+                  <p className="text-xs text-gray-500 dark:text-gray-400 italic">
                     No bio available
                   </p>
                 )}
@@ -400,21 +400,21 @@ export function ProfileCompatibilityPane({ chatId, userId, isOpen, onClose }: Pr
 
               {/* Interests - Always show */}
               <div>
-                <h3 className="text-sm font-bold text-white/90 uppercase tracking-wider mb-3">INTERESTS</h3>
+                <h3 className="text-sm font-bold text-gray-900 dark:text-white uppercase tracking-wider mb-3">INTERESTS</h3>
                 {userInfo?.interests && userInfo.interests.length > 0 ? (
                   <div className="flex flex-wrap gap-2">
                     {userInfo.interests.map((interest, index) => (
                       <Badge
                         key={index}
                         variant="secondary"
-                        className="px-3 py-1.5 text-xs bg-white/10 text-white border-white/20 hover:bg-white/20"
+                        className="px-3 py-1.5 text-xs bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-gray-100 border-gray-200 dark:border-gray-700 hover:bg-gray-200 dark:hover:bg-gray-700"
                       >
                         {interest}
                       </Badge>
                     ))}
                   </div>
                 ) : (
-                  <p className="text-xs text-white/60 italic">
+                  <p className="text-xs text-gray-500 dark:text-gray-400 italic">
                     No interests listed
                   </p>
                 )}
@@ -422,7 +422,7 @@ export function ProfileCompatibilityPane({ chatId, userId, isOpen, onClose }: Pr
 
               {/* Housing Status - Always show */}
               <div>
-                <h3 className="text-sm font-bold text-white/90 uppercase tracking-wider mb-3">HOUSING STATUS</h3>
+                <h3 className="text-sm font-bold text-gray-900 dark:text-white uppercase tracking-wider mb-3">HOUSING STATUS</h3>
                 {userInfo?.housing_status && userInfo.housing_status.length > 0 ? (
                   <StatusBadgeList
                     statusKeys={userInfo.housing_status}
@@ -430,7 +430,7 @@ export function ProfileCompatibilityPane({ chatId, userId, isOpen, onClose }: Pr
                     className="flex-wrap"
                   />
                 ) : (
-                  <p className="text-xs text-white/60 italic">
+                  <p className="text-xs text-gray-500 dark:text-gray-400 italic">
                     No housing status selected
                   </p>
                 )}
@@ -438,34 +438,34 @@ export function ProfileCompatibilityPane({ chatId, userId, isOpen, onClose }: Pr
 
               {/* University Details - Always show */}
               <div>
-                <h3 className="text-sm font-bold text-white/90 uppercase tracking-wider mb-3">UNIVERSITY</h3>
+                <h3 className="text-sm font-bold text-gray-900 dark:text-white uppercase tracking-wider mb-3">UNIVERSITY</h3>
                 <div className="space-y-2 text-sm">
                   {userInfo?.university_name ? (
                     <div>
-                      <span className="text-white/70 font-medium">University: </span>
-                      <span className="text-white">{userInfo.university_name}</span>
+                      <span className="text-gray-600 dark:text-gray-400 font-medium">University: </span>
+                      <span className="text-gray-900 dark:text-white">{userInfo.university_name}</span>
                     </div>
                   ) : null}
                   {userInfo?.programme_name ? (
                     <div>
-                      <span className="text-white/70 font-medium">Programme: </span>
-                      <span className="text-white">{userInfo.programme_name}</span>
+                      <span className="text-gray-600 dark:text-gray-400 font-medium">Programme: </span>
+                      <span className="text-gray-900 dark:text-white">{userInfo.programme_name}</span>
                     </div>
                   ) : null}
                   {userInfo?.study_year !== null && userInfo?.study_year !== undefined ? (
                     <div>
-                      <span className="text-white/70 font-medium">Year: </span>
-                      <span className="text-white">{userInfo.study_year}</span>
+                      <span className="text-gray-600 dark:text-gray-400 font-medium">Year: </span>
+                      <span className="text-gray-900 dark:text-white">{userInfo.study_year}</span>
                     </div>
                   ) : null}
                   {userInfo?.degree_level ? (
                     <div>
-                      <span className="text-white/70 font-medium">Degree Level: </span>
-                      <span className="text-white">{userInfo.degree_level}</span>
+                      <span className="text-gray-600 dark:text-gray-400 font-medium">Degree Level: </span>
+                      <span className="text-gray-900 dark:text-white">{userInfo.degree_level}</span>
                     </div>
                   ) : null}
                   {(!userInfo?.university_name && !userInfo?.programme_name && userInfo?.study_year === null && !userInfo?.degree_level) && (
-                    <p className="text-xs text-white/60 italic">
+                    <p className="text-xs text-gray-500 dark:text-gray-400 italic">
                       No university information available
                     </p>
                   )}

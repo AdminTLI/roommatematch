@@ -249,7 +249,7 @@ export function DashboardContent({ hasCompletedQuestionnaire = false, hasPartial
 
         // Compute compatibility scores using batch function when multiple users
         // Falls back to individual calls with caching for single user
-        let compatibilityScores: Array<{ userId: string; score: number; harmonyScore: number; contextScore: number }>
+        let compatibilityScores: Array<{ userId: string; score: number; harmonyScore: number; contextScore: number; dimensionScores: { [key: string]: number } | null }>
 
         if (recentUserIds.length > 1) {
           // Use batch function for multiple users (more efficient)
@@ -285,12 +285,31 @@ export function DashboardContent({ hasCompletedQuestionnaire = false, hasPartial
                     const contextScore = result?.context_score != null && result?.context_score !== undefined
                       ? Number(result.context_score)
                       : 0
+                    // Extract dimension_scores_json - handle JSONB from PostgreSQL
+                    let dimensionScores: { [key: string]: number } | null = null
+                    if (result?.dimension_scores_json) {
+                      if (typeof result.dimension_scores_json === 'object' && result.dimension_scores_json !== null) {
+                        const keys = Object.keys(result.dimension_scores_json)
+                        if (keys.length > 0) {
+                          dimensionScores = result.dimension_scores_json as { [key: string]: number }
+                        }
+                      } else if (typeof result.dimension_scores_json === 'string') {
+                        try {
+                          const parsed = JSON.parse(result.dimension_scores_json)
+                          if (parsed && typeof parsed === 'object' && Object.keys(parsed).length > 0) {
+                            dimensionScores = parsed as { [key: string]: number }
+                          }
+                        } catch (e) {
+                          // Ignore parse errors
+                        }
+                      }
+                    }
                     // Cache the result
                     queryClient.setQueryData(cacheKey, result)
-                    return { userId: otherUserId, score, harmonyScore, contextScore }
+                    return { userId: otherUserId, score, harmonyScore, contextScore, dimensionScores }
                   } catch (error) {
                     logger.error(`Error computing compatibility score for ${otherUserId}:`, error)
-                    return { userId: otherUserId, score: 0 }
+                    return { userId: otherUserId, score: 0, harmonyScore: 0, contextScore: 0, dimensionScores: null }
                   }
                 })
               )
@@ -309,12 +328,37 @@ export function DashboardContent({ hasCompletedQuestionnaire = false, hasPartial
                   // Extract harmony_score and context_score - PostgreSQL returns snake_case
                   const harmonyScore = extractScore(result?.harmony_score, 0)
                   const contextScore = extractScore(result?.context_score, 0)
+                  // Extract dimension_scores_json - handle JSONB from PostgreSQL
+                  let dimensionScores: { [key: string]: number } | null = null
+                  if (result?.dimension_scores_json) {
+                    if (typeof result.dimension_scores_json === 'object' && result.dimension_scores_json !== null) {
+                      // Check if it's not an empty object
+                      const keys = Object.keys(result.dimension_scores_json)
+                      if (keys.length > 0) {
+                        dimensionScores = result.dimension_scores_json as { [key: string]: number }
+                      }
+                    } else if (typeof result.dimension_scores_json === 'string') {
+                      // If it's a string, try to parse it
+                      try {
+                        const parsed = JSON.parse(result.dimension_scores_json)
+                        if (parsed && typeof parsed === 'object' && Object.keys(parsed).length > 0) {
+                          dimensionScores = parsed as { [key: string]: number }
+                        }
+                      } catch (e) {
+                        // Ignore parse errors
+                      }
+                    }
+                  }
                   
                   if (process.env.NODE_ENV === 'development') {
                     logger.log(`[Dashboard] Batch result for ${otherUserId}:`, {
                       score,
                       harmonyScore,
                       contextScore,
+                      dimensionScores,
+                      rawDimensionScores: result?.dimension_scores_json,
+                      dimensionScoresType: typeof result?.dimension_scores_json,
+                      dimensionScoresKeys: dimensionScores ? Object.keys(dimensionScores) : null,
                       rawHarmony: result?.harmony_score,
                       rawContext: result?.context_score,
                       harmonyType: typeof result?.harmony_score,
@@ -329,7 +373,7 @@ export function DashboardContent({ hasCompletedQuestionnaire = false, hasPartial
                     updatedAt: Date.now(),
                   })
 
-                  return { userId: otherUserId, score, harmonyScore, contextScore }
+                  return { userId: otherUserId, score, harmonyScore, contextScore, dimensionScores }
                 })
               )
             }
@@ -365,12 +409,35 @@ export function DashboardContent({ hasCompletedQuestionnaire = false, hasPartial
                   const score = extractScore(result?.compatibility_score, 0)
                   const harmonyScore = extractScore(result?.harmony_score, 0)
                   const contextScore = extractScore(result?.context_score, 0)
+                  // Extract dimension_scores_json - handle JSONB from PostgreSQL
+                  let dimensionScores: { [key: string]: number } | null = null
+                  if (result?.dimension_scores_json) {
+                    if (typeof result.dimension_scores_json === 'object' && result.dimension_scores_json !== null) {
+                      const keys = Object.keys(result.dimension_scores_json)
+                      if (keys.length > 0) {
+                        dimensionScores = result.dimension_scores_json as { [key: string]: number }
+                      }
+                    } else if (typeof result.dimension_scores_json === 'string') {
+                      try {
+                        const parsed = JSON.parse(result.dimension_scores_json)
+                        if (parsed && typeof parsed === 'object' && Object.keys(parsed).length > 0) {
+                          dimensionScores = parsed as { [key: string]: number }
+                        }
+                      } catch (e) {
+                        // Ignore parse errors
+                      }
+                    }
+                  }
                   
                   if (process.env.NODE_ENV === 'development') {
                     logger.log(`[Dashboard] Individual result for ${otherUserId}:`, {
                       score,
                       harmonyScore,
                       contextScore,
+                      dimensionScores,
+                      rawDimensionScores: result?.dimension_scores_json,
+                      dimensionScoresType: typeof result?.dimension_scores_json,
+                      dimensionScoresKeys: dimensionScores ? Object.keys(dimensionScores) : null,
                       rawHarmony: result?.harmony_score,
                       rawContext: result?.context_score,
                       harmonyType: typeof result?.harmony_score,
@@ -380,10 +447,10 @@ export function DashboardContent({ hasCompletedQuestionnaire = false, hasPartial
                     })
                   }
                   
-                  return { userId: otherUserId, score, harmonyScore, contextScore }
+                  return { userId: otherUserId, score, harmonyScore, contextScore, dimensionScores }
                 } catch (error) {
                   logger.error(`Error computing compatibility score for ${otherUserId}:`, error)
-                  return { userId: otherUserId, score: 0 }
+                  return { userId: otherUserId, score: 0, harmonyScore: 0, contextScore: 0, dimensionScores: null }
                 }
               })
             )
@@ -408,22 +475,45 @@ export function DashboardContent({ hasCompletedQuestionnaire = false, hasPartial
             const score = extractScore(result?.compatibility_score, 0)
             const harmonyScore = extractScore(result?.harmony_score, 0)
             const contextScore = extractScore(result?.context_score, 0)
+            // Extract dimension_scores_json - handle JSONB from PostgreSQL
+            let dimensionScores: { [key: string]: number } | null = null
+            if (result?.dimension_scores_json) {
+              if (typeof result.dimension_scores_json === 'object' && result.dimension_scores_json !== null) {
+                const keys = Object.keys(result.dimension_scores_json)
+                if (keys.length > 0) {
+                  dimensionScores = result.dimension_scores_json as { [key: string]: number }
+                }
+              } else if (typeof result.dimension_scores_json === 'string') {
+                try {
+                  const parsed = JSON.parse(result.dimension_scores_json)
+                  if (parsed && typeof parsed === 'object' && Object.keys(parsed).length > 0) {
+                    dimensionScores = parsed as { [key: string]: number }
+                  }
+                } catch (e) {
+                  // Ignore parse errors
+                }
+              }
+            }
             
             if (process.env.NODE_ENV === 'development') {
               logger.log(`[Dashboard] Single user result for ${otherUserId}:`, {
                 score,
                 harmonyScore,
                 contextScore,
+                dimensionScores,
+                rawDimensionScores: result?.dimension_scores_json,
+                dimensionScoresType: typeof result?.dimension_scores_json,
+                dimensionScoresKeys: dimensionScores ? Object.keys(dimensionScores) : null,
                 rawHarmony: result?.harmony_score,
                 rawContext: result?.context_score,
                 resultKeys: Object.keys(result || {})
               })
             }
             
-            compatibilityScores = [{ userId: otherUserId, score, harmonyScore, contextScore }]
+            compatibilityScores = [{ userId: otherUserId, score, harmonyScore, contextScore, dimensionScores }]
           } catch (error) {
             logger.error(`Error computing compatibility score for ${otherUserId}:`, error)
-            compatibilityScores = [{ userId: otherUserId, score: 0 }]
+            compatibilityScores = [{ userId: otherUserId, score: 0, harmonyScore: 0, contextScore: 0, dimensionScores: null }]
           }
         } else {
           compatibilityScores = []
@@ -433,6 +523,7 @@ export function DashboardContent({ hasCompletedQuestionnaire = false, hasPartial
         const scoreMap = new Map(compatibilityScores.map(m => [m.userId, m.score]))
         const harmonyScoreMap = new Map(compatibilityScores.map(m => [m.userId, m.harmonyScore]))
         const contextScoreMap = new Map(compatibilityScores.map(m => [m.userId, m.contextScore]))
+        const dimensionScoresMap = new Map(compatibilityScores.map(m => [m.userId, m.dimensionScores]))
 
         // Maintain the order from recentMatches (most recent first) and add scores
         const recentMatchEntries = recentMatches.map(({ userId, created_at }) => ({
@@ -440,7 +531,8 @@ export function DashboardContent({ hasCompletedQuestionnaire = false, hasPartial
           created_at,
           score: scoreMap.get(userId) || 0,
           harmonyScore: harmonyScoreMap.get(userId),
-          contextScore: contextScoreMap.get(userId)
+          contextScore: contextScoreMap.get(userId),
+          dimensionScores: dimensionScoresMap.get(userId) || null
         }))
 
         const finalUserIds = recentMatchEntries.map(m => m.userId)
@@ -495,7 +587,7 @@ export function DashboardContent({ hasCompletedQuestionnaire = false, hasPartial
         const matchScoreMap = new Map(recentMatchEntries.map(m => [m.userId, m.score]))
 
         // Format matches maintaining the order from recentMatchEntries (most recent first)
-        const formattedMatches = recentMatchEntries.map(({ userId, score, harmonyScore, contextScore }) => {
+        const formattedMatches = recentMatchEntries.map(({ userId, score, harmonyScore, contextScore, dimensionScores }) => {
           const profile = profiles?.find((p: any) => p.user_id === userId)
           if (!profile) {
             return null
@@ -566,6 +658,7 @@ export function DashboardContent({ hasCompletedQuestionnaire = false, hasPartial
             score: normalizedScore, // Keep as decimal 0-1 for calculations
             harmonyScore: extractScore(harmonyScore, 0), // Extract with helper to ensure it's a number
             contextScore: extractScore(contextScore, 0), // Extract with helper to ensure it's a number
+            dimensionScores: dimensionScores || null,
             program: safeProgram,
             university: safeUniversity,
             avatar: undefined
@@ -582,12 +675,14 @@ export function DashboardContent({ hasCompletedQuestionnaire = false, hasPartial
     })
   }, [user?.id, supabase])
 
-  const { data: recentMatches = dashboardData.topMatches, isLoading: isLoadingMatches, refetch: refetchRecentMatches } = useQuery({
+  const { data: recentMatches = [], isLoading: isLoadingMatches, refetch: refetchRecentMatches } = useQuery({
     queryKey: queryKeys.matches.top(user?.id),
     queryFn: fetchRecentMatches,
-    staleTime: 86_400_000, // 24 hours (once per day)
+    staleTime: 10_000, // 10 seconds - refresh more frequently to sync with localStorage changes
     enabled: !!user?.id,
-    initialData: dashboardData.topMatches,
+    // Don't use initialData or placeholderData - let client-side query fetch with proper localStorage filtering
+    // Server-side data doesn't have access to localStorage, so it can't filter processed suggestions
+    // Start with empty array and let the query populate with correctly filtered matches
   })
 
   // Fetch total matches count with React Query
@@ -1115,45 +1210,63 @@ export function DashboardContent({ hasCompletedQuestionnaire = false, hasPartial
         className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 auto-rows-fr"
       >
         {recentMatches.length > 0 && (
-          recentMatches.map((match: any) => (
-            <motion.div key={match.id} variants={fadeInUp} className="h-full">
-              <DiscoveryCard
-                profile={{
-                  id: match.userId || match.id,
-                  name: match.name,
-                  program: match.program,
-                  university: match.university,
-                  matchPercentage: Math.round((match.score || 0) * 100) > 100 ? Math.round(match.score || 0) : Math.round((match.score || 0) * 100),
-                  harmonyScore: match.harmonyScore,
-                  contextScore: match.contextScore,
-                  avatar: match.avatar
-                }}
-              />
-            </motion.div>
-          ))
+          recentMatches.map((match: any) => {
+            if (process.env.NODE_ENV === 'development') {
+              console.log('[Dashboard] Rendering match card:', {
+                matchId: match.id,
+                userId: match.userId,
+                name: match.name,
+                harmonyScore: match.harmonyScore,
+                contextScore: match.contextScore,
+                dimensionScores: match.dimensionScores,
+                dimensionScoresType: typeof match.dimensionScores,
+                dimensionScoresKeys: match.dimensionScores ? Object.keys(match.dimensionScores) : null,
+                allMatchKeys: Object.keys(match)
+              })
+            }
+            return (
+              <motion.div key={match.id} variants={fadeInUp} className="h-full">
+                <DiscoveryCard
+                  profile={{
+                    id: match.userId || match.id,
+                    name: match.name,
+                    program: match.program,
+                    university: match.university,
+                    matchPercentage: Math.round((match.score || 0) * 100) > 100 ? Math.round(match.score || 0) : Math.round((match.score || 0) * 100),
+                    harmonyScore: match.harmonyScore,
+                    contextScore: match.contextScore,
+                    dimensionScores: match.dimensionScores || null,
+                    avatar: match.avatar
+                  }}
+                />
+              </motion.div>
+            )
+          })
         )}
 
-        {/* Empty State Card - Shows when no matches */}
-        {recentMatches.length === 0 && !isLoadingMatches && (
+        {/* Empty State Card - Shows when no matches (after loading completes) */}
+        {!isLoadingMatches && recentMatches.length === 0 && (
           <motion.div
             variants={fadeInUp}
-            className="group relative flex flex-col items-center justify-center p-8 rounded-3xl bg-white/20 dark:bg-white/[0.02] border border-white/10 border-dashed backdrop-blur-xl transition-all duration-300 hover:bg-white/30 dark:hover:bg-white/[0.04] cursor-pointer h-full"
+            whileHover={{ y: -4, scale: 1.01 }}
+            transition={{ duration: 0.2 }}
+            className="group relative flex flex-col items-center justify-center p-8 rounded-2xl bg-slate-800 border border-slate-700 shadow-xl transition-all duration-300 hover:border-violet-500/50 cursor-pointer h-full"
             onClick={() => router.push('/settings')}
           >
-            <div className="w-16 h-16 rounded-2xl bg-purple-500/10 dark:bg-purple-500/20 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-500">
-              <TrendingUp className="w-8 h-8 text-purple-600 dark:text-purple-400" />
+            <div className="w-20 h-20 rounded-2xl bg-violet-500/10 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-500">
+              <TrendingUp className="w-10 h-10 text-violet-400" />
             </div>
-            <div className="text-center">
-              <h3 className="text-xl font-bold text-zinc-900 dark:text-white mb-2">No suggested matches yet</h3>
-              <p className="text-zinc-500 dark:text-zinc-400 text-sm max-w-[200px] mb-4">Complete your profile to discover potential roommates. New suggestions will appear here as they become available.</p>
+            <div className="text-center max-w-[280px]">
+              <h3 className="text-2xl font-bold text-white mb-3">No suggested matches yet</h3>
+              <p className="text-slate-400 text-sm mb-6 leading-relaxed">Complete your profile to discover potential roommates. New suggestions will appear here as they become available.</p>
               <Button 
-                variant="outline" 
+                variant="default" 
                 size="sm"
                 onClick={(e) => {
                   e.stopPropagation()
                   router.push('/settings')
                 }}
-                className="mt-2"
+                className="bg-violet-600 hover:bg-violet-500 text-white"
               >
                 Update Profile
               </Button>
@@ -1165,15 +1278,17 @@ export function DashboardContent({ hasCompletedQuestionnaire = false, hasPartial
         {recentMatches.length > 0 && recentMatches.length < 3 && (
           <motion.div
             variants={fadeInUp}
-            className="group relative flex flex-col items-center justify-center p-8 rounded-3xl bg-white/20 dark:bg-white/[0.02] border border-zinc-200 dark:border-white/10 border-dashed backdrop-blur-xl transition-all duration-300 hover:bg-white/30 dark:hover:bg-white/[0.04] cursor-pointer h-full"
+            whileHover={{ y: -4, scale: 1.01 }}
+            transition={{ duration: 0.2 }}
+            className="group relative flex flex-col items-center justify-center p-8 rounded-2xl bg-slate-800 border border-slate-700 shadow-xl transition-all duration-300 hover:border-violet-500/50 cursor-pointer h-full"
             onClick={() => router.push('/settings')}
           >
-            <div className="w-16 h-16 rounded-2xl bg-purple-500/10 dark:bg-purple-500/20 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-500">
-              <Zap className="w-8 h-8 text-purple-600 dark:text-purple-400" />
+            <div className="w-20 h-20 rounded-2xl bg-violet-500/10 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-500">
+              <Zap className="w-10 h-10 text-violet-400" />
             </div>
-            <div className="text-center">
-              <h3 className="text-xl font-bold text-zinc-900 dark:text-white">Find More</h3>
-              <p className="text-zinc-500 dark:text-zinc-400 text-sm mt-2 max-w-[180px]">Refine your preferences to see more people.</p>
+            <div className="text-center max-w-[280px]">
+              <h3 className="text-2xl font-bold text-white mb-3">Find More</h3>
+              <p className="text-slate-400 text-sm">Refine your preferences to see more people.</p>
             </div>
           </motion.div>
         )}

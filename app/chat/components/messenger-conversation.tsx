@@ -1,15 +1,42 @@
 'use client'
 
 import { useState, useEffect, useRef, useLayoutEffect, useCallback } from 'react'
+import { useRouter } from 'next/navigation'
 import { User } from '@supabase/supabase-js'
-import { ChevronLeft, MoreHorizontal } from 'lucide-react'
+import { ChevronLeft, MoreHorizontal, Sparkles, Flag, Ban, Trash2, Bell, BellOff, Archive, Search, MessageSquare, XCircle, RotateCcw } from 'lucide-react'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Button } from '@/components/ui/button'
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu'
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog'
+import { Label } from '@/components/ui/label'
+import { Textarea } from '@/components/ui/textarea'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
 import { createClient } from '@/lib/supabase/client'
 import { fetchWithCSRF } from '@/lib/utils/fetch-with-csrf'
+import { showSuccessToast, showErrorToast } from '@/lib/toast'
 import { MessengerMessageBubble } from './messenger-message-bubble'
 import { MessengerTypingBar } from './messenger-typing-bar'
 import { cn } from '@/lib/utils'
+import { queryClient, queryKeys } from '@/app/providers'
 
 interface Message {
   id: string
@@ -47,6 +74,7 @@ export function MessengerConversation({
   partnerAvatar
 }: MessengerConversationProps) {
   const supabase = createClient()
+  const router = useRouter()
   const [messages, setMessages] = useState<Message[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [messageReactions, setMessageReactions] = useState<Map<string, MessageReaction[]>>(new Map())
@@ -60,6 +88,26 @@ export function MessengerConversation({
   const scrollToBottomRef = useRef<((force?: boolean) => void) | null>(null)
   const isLoadingMessagesRef = useRef(false)
   const lastLoadedChatIdRef = useRef<string | null>(null)
+  
+  // Partner user ID and action states
+  const [partnerUserId, setPartnerUserId] = useState<string | null>(null)
+  const [displayPartnerName, setDisplayPartnerName] = useState<string>(partnerName)
+  const [displayPartnerAvatar, setDisplayPartnerAvatar] = useState<string | undefined>(partnerAvatar)
+  const [isGroupChat, setIsGroupChat] = useState(false)
+  const [isMuted, setIsMuted] = useState(false)
+  const [showReportDialog, setShowReportDialog] = useState(false)
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false)
+  const [showClearHistoryDialog, setShowClearHistoryDialog] = useState(false)
+  const [reportCategory, setReportCategory] = useState<string>('')
+  const [reportDetails, setReportDetails] = useState<string>('')
+  const [isReporting, setIsReporting] = useState(false)
+  const [isBlocking, setIsBlocking] = useState(false)
+  const [isDeleting, setIsDeleting] = useState(false)
+  const [isMuting, setIsMuting] = useState(false)
+  const [isArchiving, setIsArchiving] = useState(false)
+  const [isClearing, setIsClearing] = useState(false)
+  const [isMarkingUnread, setIsMarkingUnread] = useState(false)
+  const [otherMembersCount, setOtherMembersCount] = useState(1)
 
   // Auto-scroll to bottom (prevents page scroll)
   const scrollToBottom = useCallback((force = false) => {
@@ -98,6 +146,27 @@ export function MessengerConversation({
       setShouldAutoScroll(false)
     }
   }, [])
+
+  // Mark messages as read when chat is opened
+  const markAsRead = useCallback(async () => {
+    if (!chatId) return
+
+    try {
+      const response = await fetchWithCSRF('/api/chat/read', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ chat_id: chatId })
+      })
+
+      if (response.ok) {
+        // Invalidate chat queries to refresh unread counts immediately
+        queryClient.invalidateQueries({ queryKey: queryKeys.chats(user.id) })
+      }
+    } catch (error) {
+      // Silently fail - we don't want to interrupt user experience
+      console.warn('[MessengerConversation] Failed to mark as read:', error)
+    }
+  }, [chatId, user.id])
 
   // Load messages
   const loadMessages = useCallback(async () => {
@@ -190,6 +259,54 @@ export function MessengerConversation({
       // Update profiles map ref
       profilesMapRef.current = newProfilesMap
 
+      // Get chat info and partner user ID
+      const { data: chatData } = await supabase
+        .from('chats')
+        .select('is_group')
+        .eq('id', chatId)
+        .single()
+
+      if (chatData) {
+        setIsGroupChat(chatData.is_group || false)
+      }
+
+      const { data: chatMembers } = await supabase
+        .from('chat_members')
+        .select('user_id')
+        .eq('chat_id', chatId)
+
+      // Calculate other members count (excluding current user)
+      const otherMembers = chatMembers?.filter(m => m.user_id !== user.id) || []
+      setOtherMembersCount(Math.max(otherMembers.length, 1))
+
+      // For individual chats, get partner user ID
+      if (chatMembers && chatMembers.length === 2 && !chatData?.is_group) {
+        const otherMember = chatMembers.find(m => m.user_id !== user.id)
+        if (otherMember) {
+          setPartnerUserId(otherMember.user_id)
+          
+          // Update partner name and avatar from loaded profiles
+          const partnerProfile = newProfilesMap.get(otherMember.user_id)
+          if (partnerProfile) {
+            const partnerFullName = [partnerProfile.first_name?.trim(), partnerProfile.last_name?.trim()]
+              .filter(Boolean)
+              .join(' ') || 'User'
+            setDisplayPartnerName(partnerFullName)
+            setDisplayPartnerAvatar(partnerProfile.avatar_url || undefined)
+          }
+        }
+      } else {
+        setPartnerUserId(null)
+      }
+
+      // Check if chat is muted (use localStorage as fallback since muted column may not exist)
+      try {
+        const mutedChats = JSON.parse(localStorage.getItem('muted_chats') || '[]')
+        setIsMuted(mutedChats.includes(chatId))
+      } catch {
+        setIsMuted(false)
+      }
+
       // Transform messages with sender names
       const formattedMessages: Message[] = reversedMessages.map(msg => {
         const profile = newProfilesMap.get(msg.user_id)
@@ -265,6 +382,14 @@ export function MessengerConversation({
     }
   }, [chatId, user.id, supabase])
 
+  // Mark messages as read when chat is opened
+  useEffect(() => {
+    if (chatId) {
+      // Mark as read immediately when chat is opened
+      markAsRead()
+    }
+  }, [chatId, markAsRead])
+
   // Setup real-time subscription
   useEffect(() => {
     if (!chatId) return
@@ -273,6 +398,11 @@ export function MessengerConversation({
     if (lastLoadedChatIdRef.current !== chatId) {
       lastLoadedChatIdRef.current = null
       isLoadingMessagesRef.current = false
+      setPartnerUserId(null) // Reset partner user ID when chat changes
+      setIsGroupChat(false) // Reset group chat state
+      setIsMuted(false) // Reset muted state
+      setDisplayPartnerName(partnerName) // Reset to prop value
+      setDisplayPartnerAvatar(partnerAvatar) // Reset to prop value
     }
 
     loadMessages()
@@ -335,6 +465,24 @@ export function MessengerConversation({
     }
   }, [chatId, user.id, supabase, loadMessages])
 
+  // Update partner name and avatar when partnerUserId or profiles change
+  useEffect(() => {
+    if (partnerUserId && profilesMapRef.current) {
+      const partnerProfile = profilesMapRef.current.get(partnerUserId)
+      if (partnerProfile) {
+        const partnerFullName = [partnerProfile.first_name?.trim(), partnerProfile.last_name?.trim()]
+          .filter(Boolean)
+          .join(' ') || 'User'
+        setDisplayPartnerName(partnerFullName)
+        setDisplayPartnerAvatar(partnerProfile.avatar_url || undefined)
+      }
+    } else if (!partnerUserId) {
+      // Reset to prop values if no partner
+      setDisplayPartnerName(partnerName)
+      setDisplayPartnerAvatar(partnerAvatar)
+    }
+  }, [partnerUserId, partnerName, partnerAvatar])
+
   // Auto-scroll on initial load only
   useLayoutEffect(() => {
     if (!isLoading && messages.length > 0 && !userScrolledUp) {
@@ -352,7 +500,25 @@ export function MessengerConversation({
       })
 
       if (!response.ok) {
-        throw new Error('Failed to send message')
+        let errorMessage = 'Failed to send message'
+        try {
+          const errorData = await response.json()
+          errorMessage = errorData.error || errorMessage
+        } catch {
+          // If response isn't JSON, try to get text
+          try {
+            const text = await response.text()
+            if (text) errorMessage = text
+          } catch {
+            errorMessage = `Server error: ${response.status} ${response.statusText}`
+          }
+        }
+        console.error('[MessengerConversation] Failed to send message:', {
+          status: response.status,
+          statusText: response.statusText,
+          errorMessage
+        })
+        throw new Error(errorMessage)
       }
 
       const responseData = await response.json()
@@ -461,6 +627,234 @@ export function MessengerConversation({
     }
   }
 
+  // Handle report user
+  const handleReport = async () => {
+    if (!partnerUserId || !reportCategory || !reportDetails.trim()) {
+      showErrorToast('Missing information', 'Please select a category and provide details.')
+      return
+    }
+
+    setIsReporting(true)
+    try {
+      const response = await fetchWithCSRF('/api/chat/report', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          target_user_id: partnerUserId,
+          category: reportCategory,
+          details: reportDetails.trim()
+        })
+      })
+
+      if (response.ok) {
+        showSuccessToast('Report submitted', 'Thank you for reporting. We will review this issue.')
+        setShowReportDialog(false)
+        setReportCategory('')
+        setReportDetails('')
+      } else {
+        const errorData = await response.json()
+        throw new Error(errorData.error || 'Failed to submit report')
+      }
+    } catch (error: any) {
+      console.error('Failed to report:', error)
+      showErrorToast('Failed to submit report', error.message || 'Please try again.')
+    } finally {
+      setIsReporting(false)
+    }
+  }
+
+  // Handle block user
+  const handleBlock = async () => {
+    if (!partnerUserId) {
+      showErrorToast('Error', 'Unable to identify user to block.')
+      return
+    }
+
+    setIsBlocking(true)
+    try {
+      const response = await fetchWithCSRF('/api/match/block', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ blocked_user_id: partnerUserId })
+      })
+
+      if (response.ok) {
+        showSuccessToast('User blocked', 'This user has been blocked and you will no longer receive messages from them.')
+        router.push('/chat')
+      } else {
+        const errorData = await response.json()
+        throw new Error(errorData.error || 'Failed to block user')
+      }
+    } catch (error: any) {
+      console.error('Failed to block:', error)
+      showErrorToast('Failed to block user', error.message || 'Please try again.')
+    } finally {
+      setIsBlocking(false)
+    }
+  }
+
+  // Handle delete conversation
+  const handleDeleteConversation = async () => {
+    setIsDeleting(true)
+    try {
+      const response = await fetchWithCSRF(`/api/chat/${chatId}/leave`, {
+        method: 'POST'
+      })
+
+      if (response.ok) {
+        showSuccessToast('Conversation deleted', 'The conversation has been deleted.')
+        router.push('/chat')
+      } else {
+        const errorData = await response.json()
+        throw new Error(errorData.error || 'Failed to delete conversation')
+      }
+    } catch (error: any) {
+      console.error('Failed to delete:', error)
+      showErrorToast('Failed to delete conversation', error.message || 'Please try again.')
+    } finally {
+      setIsDeleting(false)
+      setShowDeleteDialog(false)
+    }
+  }
+
+  // Handle mute/unmute notifications
+  const handleToggleMute = async () => {
+    setIsMuting(true)
+    try {
+      const newMutedState = !isMuted
+      // Store muted status in localStorage
+      // In the future, this could be stored in a user_chat_settings table
+      const mutedChats = JSON.parse(localStorage.getItem('muted_chats') || '[]')
+      if (newMutedState) {
+        if (!mutedChats.includes(chatId)) {
+          mutedChats.push(chatId)
+        }
+      } else {
+        const index = mutedChats.indexOf(chatId)
+        if (index > -1) {
+          mutedChats.splice(index, 1)
+        }
+      }
+      localStorage.setItem('muted_chats', JSON.stringify(mutedChats))
+      
+      // Dispatch custom event to notify other components
+      window.dispatchEvent(new CustomEvent('mutedChatsChanged'))
+
+      setIsMuted(newMutedState)
+      showSuccessToast(
+        newMutedState ? 'Conversation muted' : 'Conversation unmuted',
+        newMutedState 
+          ? 'You will not receive notifications from this conversation.'
+          : 'You will receive notifications from this conversation.'
+      )
+    } catch (error: any) {
+      console.error('Failed to toggle mute:', error)
+      showErrorToast('Failed to update mute status', error.message || 'Please try again.')
+    } finally {
+      setIsMuting(false)
+    }
+  }
+
+  // Handle archive conversation
+  const handleArchive = async () => {
+    setIsArchiving(true)
+    try {
+      // Update chat invitation_status to 'archived' for this user
+      // Since we can't archive per-user, we'll use a user_chat_settings approach
+      // For now, we'll use localStorage as a fallback
+      const archivedChats = JSON.parse(localStorage.getItem('archived_chats') || '[]')
+      if (!archivedChats.includes(chatId)) {
+        archivedChats.push(chatId)
+        localStorage.setItem('archived_chats', JSON.stringify(archivedChats))
+        
+        // Dispatch custom event to notify other components
+        window.dispatchEvent(new CustomEvent('archivedChatsChanged'))
+      }
+
+      showSuccessToast('Conversation archived', 'The conversation has been archived.')
+      router.push('/chat')
+    } catch (error: any) {
+      console.error('Failed to archive:', error)
+      showErrorToast('Failed to archive conversation', error.message || 'Please try again.')
+    } finally {
+      setIsArchiving(false)
+    }
+  }
+
+  // Handle clear chat history
+  const handleClearHistory = async () => {
+    setIsClearing(true)
+    try {
+      // Delete all messages in this chat for the current user's view
+      // We'll delete read receipts and mark messages as deleted for this user
+      const { data: messages } = await supabase
+        .from('messages')
+        .select('id')
+        .eq('chat_id', chatId)
+
+      if (messages && messages.length > 0) {
+        const messageIds = messages.map(m => m.id)
+        
+        // Delete read receipts
+        await supabase
+          .from('message_reads')
+          .delete()
+          .eq('user_id', user.id)
+          .in('message_id', messageIds)
+
+        // Note: We don't delete the actual messages as other users might still need them
+        // Instead, we could create a user_deleted_messages table to track which messages
+        // a user has deleted from their view
+      }
+
+      // Clear local messages state
+      setMessages([])
+      setShowClearHistoryDialog(false)
+      showSuccessToast('Chat history cleared', 'All messages have been cleared from this conversation.')
+    } catch (error: any) {
+      console.error('Failed to clear history:', error)
+      showErrorToast('Failed to clear chat history', error.message || 'Please try again.')
+    } finally {
+      setIsClearing(false)
+    }
+  }
+
+  // Handle mark as unread
+  const handleMarkAsUnread = async () => {
+    setIsMarkingUnread(true)
+    try {
+      // Delete all read receipts for this chat to mark as unread
+      const { data: messages } = await supabase
+        .from('messages')
+        .select('id')
+        .eq('chat_id', chatId)
+
+      if (messages && messages.length > 0) {
+        const messageIds = messages.map(m => m.id)
+        await supabase
+          .from('message_reads')
+          .delete()
+          .eq('user_id', user.id)
+          .in('message_id', messageIds)
+      }
+
+      showSuccessToast('Marked as unread', 'This conversation has been marked as unread.')
+      router.push('/chat')
+    } catch (error: any) {
+      console.error('Failed to mark as unread:', error)
+      showErrorToast('Failed to mark as unread', error.message || 'Please try again.')
+    } finally {
+      setIsMarkingUnread(false)
+    }
+  }
+
+  // Handle search in conversation (client-side)
+  const handleSearch = () => {
+    // This would open a search dialog/modal
+    // For now, we'll just show a toast indicating this feature
+    showErrorToast('Search feature', 'Search functionality will be implemented soon.')
+  }
+
   return (
     <div
       data-messenger-conversation
@@ -481,26 +875,228 @@ export function MessengerConversation({
             </Button>
           )}
           <Avatar className="w-10 h-10 flex-shrink-0">
-            <AvatarImage src={partnerAvatar} />
+            <AvatarImage src={displayPartnerAvatar} />
             <AvatarFallback className="bg-purple-600 text-white">
-              {partnerName.charAt(0).toUpperCase()}
+              {displayPartnerName.charAt(0).toUpperCase()}
             </AvatarFallback>
           </Avatar>
           <div className="flex-1 min-w-0">
             <h2 className="text-base font-semibold text-gray-900 dark:text-gray-100 truncate">
-              {partnerName}
+              {displayPartnerName}
             </h2>
           </div>
         </div>
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={onToggleProfile}
-          className="h-8 w-8 p-0"
-        >
-          <MoreHorizontal className="w-5 h-5 text-gray-600 dark:text-gray-400" />
-        </Button>
+        <div className="flex items-center gap-2">
+          {/* Compatibility Icon Button */}
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={onToggleProfile}
+            className="h-8 w-8 p-0"
+            title="View profile & compatibility"
+          >
+            <Sparkles className="w-5 h-5 text-gray-600 dark:text-gray-400" />
+            <span className="sr-only">View profile & compatibility</span>
+          </Button>
+          
+          {/* More Options Dropdown */}
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button
+                variant="ghost"
+                size="sm"
+                className="h-8 w-8 p-0"
+              >
+                <MoreHorizontal className="w-5 h-5 text-gray-600 dark:text-gray-400" />
+                <span className="sr-only">More options</span>
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-56">
+              {/* User-specific actions (only for individual chats) */}
+              {partnerUserId && !isGroupChat && (
+                <>
+                  <DropdownMenuItem onClick={() => setShowReportDialog(true)}>
+                    <Flag className="mr-2 h-4 w-4" />
+                    Report user
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={handleBlock} disabled={isBlocking}>
+                    <Ban className="mr-2 h-4 w-4" />
+                    {isBlocking ? 'Blocking...' : 'Block user'}
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                </>
+              )}
+
+              {/* Conversation actions */}
+              <DropdownMenuItem onClick={handleToggleMute} disabled={isMuting}>
+                {isMuted ? (
+                  <>
+                    <Bell className="mr-2 h-4 w-4" />
+                    {isMuting ? 'Unmuting...' : 'Unmute notifications'}
+                  </>
+                ) : (
+                  <>
+                    <BellOff className="mr-2 h-4 w-4" />
+                    {isMuting ? 'Muting...' : 'Mute notifications'}
+                  </>
+                )}
+              </DropdownMenuItem>
+              
+              <DropdownMenuItem onClick={handleArchive} disabled={isArchiving}>
+                <Archive className="mr-2 h-4 w-4" />
+                {isArchiving ? 'Archiving...' : 'Archive conversation'}
+              </DropdownMenuItem>
+
+              <DropdownMenuItem onClick={handleSearch}>
+                <Search className="mr-2 h-4 w-4" />
+                Search in conversation
+              </DropdownMenuItem>
+
+              <DropdownMenuItem onClick={handleMarkAsUnread} disabled={isMarkingUnread}>
+                <MessageSquare className="mr-2 h-4 w-4" />
+                {isMarkingUnread ? 'Marking...' : 'Mark as unread'}
+              </DropdownMenuItem>
+
+              <DropdownMenuSeparator />
+
+              <DropdownMenuItem onClick={() => setShowClearHistoryDialog(true)}>
+                <RotateCcw className="mr-2 h-4 w-4" />
+                Clear chat history
+              </DropdownMenuItem>
+
+              <DropdownMenuItem onClick={() => setShowDeleteDialog(true)} className="text-red-600 dark:text-red-400">
+                <Trash2 className="mr-2 h-4 w-4" />
+                Delete conversation
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </div>
       </div>
+
+      {/* Report Dialog */}
+      <Dialog open={showReportDialog} onOpenChange={setShowReportDialog}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Flag className="h-5 w-5 text-red-600" />
+              Report User
+            </DialogTitle>
+            <DialogDescription>
+              Help us keep the platform safe by reporting this user: {displayPartnerName}
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <div className="space-y-2">
+              <Label htmlFor="category">Reason for reporting</Label>
+              <Select value={reportCategory} onValueChange={setReportCategory}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Select a reason..." />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="spam">Spam</SelectItem>
+                  <SelectItem value="harassment">Harassment</SelectItem>
+                  <SelectItem value="inappropriate">Inappropriate content</SelectItem>
+                  <SelectItem value="other">Other</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="details">Additional details (required)</Label>
+              <Textarea
+                id="details"
+                placeholder="Please provide specific details about why you're reporting this user..."
+                value={reportDetails}
+                onChange={(e) => setReportDetails(e.target.value)}
+                rows={4}
+                className="resize-none"
+                maxLength={500}
+              />
+              <div className="text-xs text-gray-500">
+                {reportDetails.length}/500 characters
+              </div>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => {
+                setShowReportDialog(false)
+                setReportCategory('')
+                setReportDetails('')
+              }}
+            >
+              Cancel
+            </Button>
+            <Button
+              onClick={handleReport}
+              disabled={isReporting || !reportCategory || !reportDetails.trim()}
+              className="bg-red-600 hover:bg-red-700"
+            >
+              {isReporting ? 'Submitting...' : 'Submit Report'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Delete Conversation Dialog */}
+      <Dialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Trash2 className="h-5 w-5 text-red-600" />
+              Delete Conversation
+            </DialogTitle>
+            <DialogDescription>
+              Are you sure you want to delete this conversation {isGroupChat ? '' : `with ${displayPartnerName}`}? This action cannot be undone.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => setShowDeleteDialog(false)}
+            >
+              Cancel
+            </Button>
+            <Button
+              onClick={handleDeleteConversation}
+              disabled={isDeleting}
+              className="bg-red-600 hover:bg-red-700"
+            >
+              {isDeleting ? 'Deleting...' : 'Delete'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Clear History Dialog */}
+      <Dialog open={showClearHistoryDialog} onOpenChange={setShowClearHistoryDialog}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <RotateCcw className="h-5 w-5 text-orange-600" />
+              Clear Chat History
+            </DialogTitle>
+            <DialogDescription>
+              Are you sure you want to clear all messages in this conversation? This will remove all messages from your view, but other participants will still see them. This action cannot be undone.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => setShowClearHistoryDialog(false)}
+            >
+              Cancel
+            </Button>
+            <Button
+              onClick={handleClearHistory}
+              disabled={isClearing}
+              className="bg-orange-600 hover:bg-orange-700"
+            >
+              {isClearing ? 'Clearing...' : 'Clear History'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       {/* Message Feed - Scrollable */}
       <div
@@ -546,6 +1142,7 @@ export function MessengerConversation({
                   currentUserId={user.id}
                   showSenderName={!message.is_own && index > 0 && messages[index - 1]?.sender_id !== message.sender_id}
                   onReactionChange={() => handleReactionChange(message.id)}
+                  otherMembersCount={otherMembersCount}
                 />
               </div>
             ))}

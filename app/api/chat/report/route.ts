@@ -125,7 +125,7 @@ export async function POST(request: NextRequest) {
 
         await createNotificationsForUsers(
           adminUserIds,
-          'admin_alert',
+          'system_announcement',
           'New User Report',
           `${reporterName} reported ${targetName} for ${categoryLabels[category] || category}.${autoBlocked ? ' User auto-blocked due to repeated reports.' : ''}`,
           {
@@ -134,7 +134,8 @@ export async function POST(request: NextRequest) {
             target_user_id: target_user_id,
             category,
             auto_blocked: autoBlocked,
-            link: `/admin/reports`
+            link: `/admin/reports`,
+            type: 'user_report'
           }
         )
 

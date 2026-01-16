@@ -35,6 +35,7 @@ interface MessengerMessageBubbleProps {
   currentUserId: string
   showSenderName?: boolean
   onReactionChange?: () => void
+  otherMembersCount?: number
 }
 
 export function MessengerMessageBubble({
@@ -50,7 +51,8 @@ export function MessengerMessageBubble({
   reactions = [],
   currentUserId,
   showSenderName = true,
-  onReactionChange
+  onReactionChange,
+  otherMembersCount = 1
 }: MessengerMessageBubbleProps) {
   const [showReactionPicker, setShowReactionPicker] = useState(false)
   const [isReacting, setIsReacting] = useState(false)
@@ -133,13 +135,39 @@ export function MessengerMessageBubble({
   }
 
   const getReadStatus = () => {
-    if (!isOwn || readBy.length === 0) return null
-    // Simplified: if readBy includes someone other than sender, show double check
+    if (!isOwn) return null
+    
+    // Filter out the current user (sender) from readBy array
     const otherReaders = readBy.filter(id => id !== currentUserId)
-    if (otherReaders.length > 0) {
+    
+    // If all other members have read the message, show blue double check (read)
+    if (otherReaders.length === otherMembersCount && otherMembersCount > 0) {
       return <CheckCheck className="w-3 h-3 text-blue-400" />
     }
-    return <Check className="w-3 h-3 text-gray-400" />
+    
+    // Check if message was just sent (within last 2 seconds)
+    const messageTime = new Date(createdAt).getTime()
+    const now = Date.now()
+    const timeSinceSent = now - messageTime
+    const isJustSent = timeSinceSent < 2000 // 2 seconds
+    
+    // If message was just sent (within 2 seconds), show single tick
+    if (isJustSent && otherReaders.length === 0) {
+      return <Check className="w-3 h-3 text-gray-400 dark:text-gray-500" />
+    }
+    
+    // If some but not all other members have read, show gray double check (delivered/partially read)
+    if (otherReaders.length > 0 && otherReaders.length < otherMembersCount) {
+      return <CheckCheck className="w-3 h-3 text-gray-400 dark:text-gray-500" />
+    }
+    
+    // If no other members have read yet but message is older than 2 seconds, show double gray check (delivered but not read)
+    if (otherReaders.length === 0) {
+      return <CheckCheck className="w-3 h-3 text-gray-400 dark:text-gray-500" />
+    }
+    
+    // Fallback: single check for sent state
+    return <Check className="w-3 h-3 text-gray-400 dark:text-gray-500" />
   }
 
   if (isSystem) {

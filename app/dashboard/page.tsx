@@ -7,6 +7,7 @@ import { checkQuestionnaireCompletion, questionSchemas } from '@/lib/onboarding/
 import { calculateSectionProgress } from '@/lib/onboarding/sections'
 import { getUserProfile } from '@/lib/auth/user-profile'
 import { checkUserVerificationStatus, getVerificationRedirectUrl } from '@/lib/auth/verification-check'
+import matchModeConfig from '@/config/match-mode.json'
 
 export default async function DashboardPage() {
   const supabase = await createClient()
@@ -291,7 +292,9 @@ async function fetchDashboardData(userId: string): Promise<DashboardData> {
     // Only show pending suggestions (not yet responded to)
     // IMPORTANT: We must filter out matches where the user has already accepted
     // These should appear in the "pending" tab (waiting for other user), not on the dashboard
+    // Also filter by minFitIndex to match the API endpoint behavior (config/match-mode.json)
     const now = new Date().toISOString()
+    const minFitIndex = matchModeConfig.minFitIndex || 0
     const { data: suggestions, error: suggestionsError } = await supabase
       .from('match_suggestions')
       .select(`
@@ -308,6 +311,7 @@ async function fetchDashboardData(userId: string): Promise<DashboardData> {
       .contains('member_ids', [userId])
       .eq('status', 'pending') // Only show pending suggestions (not yet responded to)
       .gte('expires_at', now) // Only non-expired suggestions
+      .gte('fit_index', minFitIndex) // Filter by minFitIndex to match API endpoint behavior
       .order('created_at', { ascending: false }) // Most recent first
       .limit(20) // Get enough records to deduplicate and find 3 most recent
 
@@ -403,10 +407,30 @@ async function fetchDashboardData(userId: string): Promise<DashboardData> {
                 ? Number(result.context_score)
                 : 0
               
-              return { userId: otherUserId, score: compatibilityScore, harmonyScore, contextScore }
+              // Extract dimension_scores_json - handle JSONB from PostgreSQL
+              let dimensionScores: { [key: string]: number } | null = null
+              if (result?.dimension_scores_json) {
+                if (typeof result.dimension_scores_json === 'object' && result.dimension_scores_json !== null) {
+                  const keys = Object.keys(result.dimension_scores_json)
+                  if (keys.length > 0) {
+                    dimensionScores = result.dimension_scores_json as { [key: string]: number }
+                  }
+                } else if (typeof result.dimension_scores_json === 'string') {
+                  try {
+                    const parsed = JSON.parse(result.dimension_scores_json)
+                    if (parsed && typeof parsed === 'object' && Object.keys(parsed).length > 0) {
+                      dimensionScores = parsed as { [key: string]: number }
+                    }
+                  } catch (e) {
+                    // Ignore parse errors
+                  }
+                }
+              }
+              
+              return { userId: otherUserId, score: compatibilityScore, harmonyScore, contextScore, dimensionScores }
             } catch (error) {
               console.error(`Error computing compatibility score for ${otherUserId}:`, error)
-              return { userId: otherUserId, score: 0 }
+              return { userId: otherUserId, score: 0, harmonyScore: 0, contextScore: 0, dimensionScores: null }
             }
           })
         )
@@ -415,6 +439,7 @@ async function fetchDashboardData(userId: string): Promise<DashboardData> {
         const scoreMap = new Map(compatibilityScores.map(m => [m.userId, m.score]))
         const harmonyScoreMap = new Map(compatibilityScores.map(m => [m.userId, (m as any).harmonyScore]))
         const contextScoreMap = new Map(compatibilityScores.map(m => [m.userId, (m as any).contextScore]))
+        const dimensionScoresMap = new Map(compatibilityScores.map(m => [m.userId, (m as any).dimensionScores]))
 
         // Maintain the order from recentMatches (most recent first) and add scores
         const recentEntries = recentMatches.map(({ userId, created_at }) => ({
@@ -422,7 +447,8 @@ async function fetchDashboardData(userId: string): Promise<DashboardData> {
           created_at,
           score: scoreMap.get(userId) || 0,
           harmonyScore: harmonyScoreMap.get(userId),
-          contextScore: contextScoreMap.get(userId)
+          contextScore: contextScoreMap.get(userId),
+          dimensionScores: dimensionScoresMap.get(userId) || null
         }))
 
         if (recentEntries.length > 0) {
@@ -472,7 +498,7 @@ async function fetchDashboardData(userId: string): Promise<DashboardData> {
             return str.replace(/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/gi, '').trim()
           }
           
-          topMatches = recentEntries.map(({ userId: otherUserId, score: compatibilityScore, harmonyScore, contextScore }) => {
+          topMatches = recentEntries.map(({ userId: otherUserId, score: compatibilityScore, harmonyScore, contextScore, dimensionScores }) => {
           const profile = profiles?.find((p: any) => p.user_id === otherUserId)
           const programName = programMap.get(otherUserId)
           
@@ -499,10 +525,12 @@ async function fetchDashboardData(userId: string): Promise<DashboardData> {
           
           return {
             id: otherUserId, // Use userId as id since we don't have suggestion id anymore
+            userId: otherUserId, // Also include as userId for client-side compatibility
             name: safeName,
             score: compatibilityScore, // Use new algorithm's compatibility_score (0-1 range)
             harmonyScore: harmonyScore != null && harmonyScore !== undefined ? Number(harmonyScore) : 0,
             contextScore: contextScore != null && contextScore !== undefined ? Number(contextScore) : 0,
+            dimensionScores: dimensionScores || null,
             program: safeProgram,
             university: safeUniversity,
             avatar: undefined
