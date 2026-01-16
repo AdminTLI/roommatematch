@@ -66,6 +66,7 @@ export async function GET(request: Request) {
       anomalies: { success: false, error: null as string | null },
       emails: { success: false, error: null as string | null },
       dsar: { success: false, error: null as string | null },
+      matchConsistency: { success: false, error: null as string | null, issues: { total: 0, critical: 0 } },
       dataRetention: {
         verifications: { deleted: 0, error: null as string | null },
         messages: { deleted: 0, error: null as string | null },
@@ -323,6 +324,136 @@ export async function GET(request: Request) {
     } catch (error) {
       results.dsar.error = error instanceof Error ? error.message : 'Unknown error'
       safeLogger.error('[Cron] DSAR automation failed', { error })
+    }
+
+    // 5.5. Match Consistency Check
+    try {
+      safeLogger.info('[Cron] Starting match consistency check')
+      const admin = await createAdminClient()
+
+      // Check for inconsistencies
+      const { data: issues, error: checkError } = await admin.rpc('check_match_suggestions_consistency')
+
+      if (checkError) {
+        throw checkError
+      }
+
+      // Process issues
+      const issueSummary: Record<string, { count: number; details: any }> = {}
+      let totalIssues = 0
+      let criticalIssues = 0
+
+      if (issues && issues.length > 0) {
+        for (const issue of issues) {
+          const count = Number(issue.issue_count || 0)
+          issueSummary[issue.issue_type] = {
+            count,
+            details: issue.issue_details
+          }
+          totalIssues += count
+
+          // Critical issues that should be fixed immediately
+          if (issue.issue_type === 'confirmed_not_all_accepted' || 
+              issue.issue_type === 'all_accepted_not_confirmed') {
+            criticalIssues += count
+          }
+        }
+      }
+
+      results.matchConsistency.issues = { total: totalIssues, critical: criticalIssues }
+
+      // Fix issues if any found
+      let fixResults: any[] = []
+      if (totalIssues > 0) {
+        safeLogger.info('[Cron] Fixing consistency issues')
+        const { data: fixes, error: fixError } = await admin.rpc('fix_match_suggestions_consistency')
+
+        if (fixError) {
+          safeLogger.error('[Cron] Failed to fix consistency issues', { error: fixError })
+        } else if (fixes) {
+          fixResults = fixes
+          const totalFixed = fixes.reduce((sum: number, f: any) => sum + Number(f.fixed_count || 0), 0)
+          safeLogger.info('[Cron] Fixed consistency issues', { totalFixed, fixes: fixes.length })
+        }
+      }
+
+      // Send alerts if critical issues found
+      if (criticalIssues > 0) {
+        const alertMessage = `Found ${criticalIssues} critical match consistency issue(s):\n\n` +
+          Object.entries(issueSummary)
+            .filter(([type]) => type === 'confirmed_not_all_accepted' || type === 'all_accepted_not_confirmed')
+            .map(([type, { count, details }]) => {
+              const typeLabel = type === 'confirmed_not_all_accepted' 
+                ? 'Confirmed matches where not all members accepted'
+                : 'All members accepted but status not confirmed'
+              return `- ${typeLabel}: ${count} issue(s)`
+            })
+            .join('\n') +
+          (fixResults.length > 0 
+            ? `\n\nAutomatically fixed ${fixResults.reduce((sum, f) => sum + Number(f.fixed_count || 0), 0)} issue(s).`
+            : '\n\nAttempted to fix issues automatically.')
+        
+        await sendAlert(
+          'data-integrity',
+          'Critical Match Consistency Issues Detected',
+          alertMessage,
+          criticalIssues > 10 ? 'high' : 'medium',
+          {
+            totalIssues,
+            criticalIssues,
+            issueSummary,
+            fixResults
+          }
+        )
+      }
+
+      // Verify triggers are active
+      const { data: triggers, error: triggerError } = await admin
+        .from('pg_trigger')
+        .select('tgname')
+        .in('tgname', [
+          'trigger_auto_confirm_match_insert',
+          'trigger_auto_confirm_match_update',
+          'trigger_validate_accepted_by_members',
+          'trigger_validate_confirmed_status',
+          'trigger_validate_declined_status',
+          'trigger_validate_no_duplicate_members'
+        ])
+
+      if (triggerError) {
+        safeLogger.warn('[Cron] Could not verify triggers', { error: triggerError })
+      } else {
+        const triggerNames = (triggers || []).map((t: any) => t.tgname)
+        const expectedTriggers = [
+          'trigger_auto_confirm_match_insert',
+          'trigger_auto_confirm_match_update',
+          'trigger_validate_accepted_by_members',
+          'trigger_validate_confirmed_status'
+        ]
+        const missingTriggers = expectedTriggers.filter(name => !triggerNames.includes(name))
+        
+        if (missingTriggers.length > 0) {
+          safeLogger.error('[Cron] Missing critical triggers', { missingTriggers })
+          await sendAlert(
+            'system-health',
+            'Missing Match System Triggers',
+            `The following critical triggers are missing: ${missingTriggers.join(', ')}. ` +
+            `This may lead to data consistency issues. Please check migrations 119 and 128.`,
+            'high',
+            { missingTriggers, activeTriggers: triggerNames }
+          )
+        }
+      }
+
+      results.matchConsistency.success = true
+      safeLogger.info('[Cron] Match consistency check complete', {
+        totalIssues,
+        criticalIssues,
+        issueTypes: Object.keys(issueSummary)
+      })
+    } catch (error) {
+      results.matchConsistency.error = error instanceof Error ? error.message : 'Unknown error'
+      safeLogger.error('[Cron] Match consistency check failed', { error })
     }
 
     // 6. Data Retention Cleanup (GDPR-compliant data purging)
@@ -610,16 +741,22 @@ export async function GET(request: Request) {
       safeLogger.error('[Cron] Data retention cleanup failed', { error })
     }
 
-    const successCount = Object.values(results).filter(r => {
-      if ('success' in r) return r.success
-      return true
-    }).length
-    const failureCount = Object.values(results).filter(r => {
-      if ('success' in r) return !r.success
-      if ('error' in r) return !!r.error
-      if ('errors' in r) return r.errors.length > 0
-      return false
-    }).length
+    const successCount = [
+      results.coverage,
+      results.metrics,
+      results.anomalies,
+      results.emails,
+      results.dsar,
+      results.matchConsistency
+    ].filter(r => r.success).length
+    const failureCount = [
+      results.coverage,
+      results.metrics,
+      results.anomalies,
+      results.emails,
+      results.dsar,
+      results.matchConsistency
+    ].filter(r => !r.success).length
 
     safeLogger.info('[Cron] Maintenance tasks complete', {
       success: successCount,
@@ -636,6 +773,9 @@ export async function GET(request: Request) {
         anomalies: results.anomalies.success ? 'success' : `error: ${results.anomalies.error}`,
         emails: results.emails.success ? 'success' : `error: ${results.emails.error}`,
         dsar: results.dsar.success ? 'success' : `error: ${results.dsar.error}`,
+        matchConsistency: results.matchConsistency.success 
+          ? `success (${results.matchConsistency.issues.total} issues, ${results.matchConsistency.issues.critical} critical)`
+          : `error: ${results.matchConsistency.error}`,
         dataRetention: results.dataRetention
       },
       timestamp: new Date().toISOString()
