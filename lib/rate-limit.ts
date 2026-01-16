@@ -388,6 +388,13 @@ export const RATE_LIMITS = {
     failClosed: true
   }, getSharedStore),
 
+  // Chat online users (fail-closed to prevent enumeration)
+  chat_online_users: new RateLimiter({
+    windowMs: 60 * 1000, // 1 minute
+    maxRequests: 30,
+    failClosed: true
+  }, getSharedStore),
+
   // PDF generation (fail-closed to prevent abuse)
   pdf_generation: new RateLimiter({
     windowMs: 60 * 60 * 1000, // 1 hour

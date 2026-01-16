@@ -328,8 +328,8 @@ export function NotificationDropdown({
       }}
     >
       <div className="flex items-center gap-1.5 sm:gap-2 flex-1 min-w-0">
-        <Bell className="h-4 w-4 sm:h-5 sm:w-5 flex-shrink-0 text-gray-900 dark:text-gray-100" />
-        <h2 className="text-base sm:text-lg font-semibold whitespace-nowrap text-gray-900 dark:text-gray-100">Notifications</h2>
+        <Bell className="h-4 w-4 sm:h-5 sm:w-5 flex-shrink-0 text-text-primary" />
+        <h2 className="text-base sm:text-lg font-semibold whitespace-nowrap text-text-primary">Notifications</h2>
         {unreadCount > 0 && (
           <Badge variant="destructive" className="ml-1 sm:ml-2 flex-shrink-0 text-xs">
             {unreadCount}
@@ -354,7 +354,7 @@ export function NotificationDropdown({
             handleMarkAllClick(e)
           }}
           disabled={unreadCount === 0}
-          className="h-9 w-9 p-0 m-0 flex items-center justify-center hover:bg-white/10 dark:hover:bg-white/10 rounded-lg backdrop-blur-sm relative z-10 min-w-[36px] transition-all"
+          className="h-9 w-9 p-0 min-w-[36px]"
           title="Mark all as read"
           type="button"
         >
@@ -375,7 +375,7 @@ export function NotificationDropdown({
               window.location.href = '/notifications'
             }, 0)
           }}
-          className="h-9 w-9 p-0 m-0 flex items-center justify-center hover:bg-white/10 dark:hover:bg-white/10 rounded-lg backdrop-blur-sm relative z-10 min-w-[36px] transition-all"
+          className="h-9 w-9 p-0 min-w-[36px]"
           title="View all notifications"
           type="button"
         >
@@ -393,7 +393,7 @@ export function NotificationDropdown({
               e.stopPropagation()
               onClose()
             }}
-            className="h-9 w-9 p-0 m-0 flex items-center justify-center hover:bg-white/10 dark:hover:bg-white/10 rounded-lg backdrop-blur-sm relative z-10 min-w-[36px] transition-all"
+            className="h-9 w-9 p-0 min-w-[36px]"
             title="Close notifications"
             type="button"
           >
@@ -414,23 +414,23 @@ export function NotificationDropdown({
     return (
       <div className="flex flex-col h-[calc(100vh-160px)] sm:h-[400px] md:h-96">
         {/* Professional Tabs */}
-        <div className="flex-shrink-0 px-3 sm:px-4 pt-3 pb-3">
+        <div className="flex-shrink-0 px-4 pt-4 pb-3">
           <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as 'all' | 'unread')}>
-            <TabsList className="grid w-full grid-cols-2 bg-white/10 dark:bg-white/5 backdrop-blur-sm border border-white/10 dark:border-white/5 rounded-lg p-1 h-10">
+            <TabsList className="grid w-full grid-cols-2">
               <TabsTrigger 
                 value="all" 
-                className="rounded-md text-xs sm:text-sm font-semibold transition-all duration-200 data-[state=active]:bg-white/90 dark:data-[state=active]:bg-white/15 data-[state=active]:shadow-md data-[state=active]:text-gray-900 dark:data-[state=active]:text-white data-[state=inactive]:text-gray-500 dark:data-[state=inactive]:text-gray-400 hover:data-[state=inactive]:text-gray-700 dark:hover:data-[state=inactive]:text-gray-300"
+                className="text-xs sm:text-sm"
               >
                 All
                 {notifications.length > 0 && (
-                  <Badge variant="secondary" className="ml-1.5 h-4 min-w-[16px] px-1.5 text-[10px] font-medium bg-white/30 dark:bg-white/15 text-gray-700 dark:text-gray-300 border-0">
+                  <Badge variant="secondary" className="ml-1.5 h-4 min-w-[16px] px-1.5 text-[10px] font-medium border-0">
                     {notifications.length}
                   </Badge>
                 )}
               </TabsTrigger>
               <TabsTrigger 
                 value="unread" 
-                className="rounded-md text-xs sm:text-sm font-semibold transition-all duration-200 data-[state=active]:bg-white/90 dark:data-[state=active]:bg-white/15 data-[state=active]:shadow-md data-[state=active]:text-gray-900 dark:data-[state=active]:text-white data-[state=inactive]:text-gray-500 dark:data-[state=inactive]:text-gray-400 hover:data-[state=inactive]:text-gray-700 dark:hover:data-[state=inactive]:text-gray-300"
+                className="text-xs sm:text-sm"
               >
                 Unread
                 {unreadCount > 0 && (
@@ -446,16 +446,16 @@ export function NotificationDropdown({
         {/* Notification List */}
         <div className="flex-1 overflow-y-auto">
           {isLoading ? (
-            <div className="p-4 text-center text-gray-500 dark:text-gray-400">
+            <div className="p-4 text-center text-text-secondary">
               Loading notifications...
             </div>
           ) : filteredNotifications.length === 0 ? (
             <div className="p-8 text-center">
-              <Bell className="h-12 w-12 text-gray-300 dark:text-gray-600 mx-auto mb-3" />
-              <p className="text-gray-500 dark:text-gray-400 text-sm">
+              <Bell className="h-12 w-12 text-text-muted mx-auto mb-3" />
+              <p className="text-text-secondary text-sm">
                 {activeTab === 'unread' ? 'No unread notifications' : 'No notifications yet'}
               </p>
-              <p className="text-gray-400 dark:text-gray-500 text-xs mt-1">
+              <p className="text-text-muted text-xs mt-1">
                 {activeTab === 'unread' 
                   ? 'All caught up! New notifications will appear here.'
                   : "We'll notify you about matches, messages, and updates"
@@ -463,7 +463,7 @@ export function NotificationDropdown({
               </p>
             </div>
           ) : (
-            <div className="space-y-2 p-3 sm:p-4">
+            <div className="space-y-2 p-4">
               {filteredNotifications.map((notification) => (
                 <div key={notification.id} className="flex justify-center">
                   <div className="w-full max-w-full">
@@ -479,7 +479,7 @@ export function NotificationDropdown({
                 </div>
               ))}
               {activeTab === 'unread' && counts && counts.unread > filteredNotifications.length && (
-                <p className="text-xs text-gray-500 dark:text-gray-400 px-2 pb-2">
+                <p className="text-xs text-text-muted px-2 pb-2">
                   Showing the first {filteredNotifications.length} of {counts.unread} unread notifications. 
                   Tap "View all notifications" to open the full list.
                 </p>
@@ -498,7 +498,7 @@ export function NotificationDropdown({
         <SheetContent 
           data-notification-dropdown
           side="right" 
-          className="w-full p-4 z-[100] bg-white/95 dark:bg-gray-900/95 backdrop-blur-xl border-l border-gray-200/50 dark:border-white/10"
+          className="w-full p-4 z-[100]"
           onClick={(e) => {
             // Prevent clicks inside sheet from closing it
             e.stopPropagation()
@@ -532,9 +532,9 @@ export function NotificationDropdown({
 
   return createPortal(
     <>
-      {/* Backdrop for desktop - no blur, just overlay */}
+      {/* Backdrop for desktop */}
       <div 
-        className="fixed inset-0 bg-black/20 dark:bg-black/40 z-[1000]" 
+        className="fixed inset-0 bg-background/80 backdrop-blur-sm z-[1000]" 
         onClick={(e) => {
           // Only close if clicking directly on backdrop, not on child elements
           if (e.target === e.currentTarget) {
@@ -546,16 +546,16 @@ export function NotificationDropdown({
       {/* Dropdown content */}
       <div 
         data-notification-dropdown
-        className="fixed w-96 z-[1001] shadow-2xl"
+        className="fixed w-96 z-[1001]"
         style={dropdownPosition ? { top: `${dropdownPosition.top}px`, left: `${dropdownPosition.left}px` } : { display: 'none' }}
         onClick={(e) => {
           // Prevent clicks inside dropdown from closing it
           e.stopPropagation()
         }}
       >
-        <Card className="border border-gray-200/50 dark:border-white/10 bg-white/95 dark:bg-gray-900/95 backdrop-blur-xl rounded-xl overflow-hidden">
+        <Card className="shadow-elev-2 overflow-hidden">
           <CardHeader 
-            className="pb-3 px-4 pt-4 border-b border-gray-200/30 dark:border-white/10"
+            className="pb-4 px-6 pt-6 border-b border-border-subtle"
             onClick={(e) => {
               // Prevent header clicks from closing dropdown
               e.stopPropagation()
