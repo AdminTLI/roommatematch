@@ -1244,8 +1244,8 @@ export function DashboardContent({ hasCompletedQuestionnaire = false, hasPartial
           })
         )}
 
-        {/* Empty State Card - Shows when no matches (after loading completes) */}
-        {!isLoadingMatches && recentMatches.length === 0 && (
+        {/* Empty State Card - Shows when no matches */}
+        {recentMatches.length === 0 && (
           <motion.div
             variants={fadeInUp}
             whileHover={{ y: -4, scale: 1.01 }}
