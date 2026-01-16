@@ -11,6 +11,10 @@ interface UserInfoData {
   last_name: string | null
   bio: string | null
   interests: string[]
+  university_name: string | null
+  programme_name: string | null
+  degree_level: string | null
+  study_year: number | null
 }
 
 interface UserInfoPanelProps {
@@ -93,6 +97,43 @@ export function UserInfoPanel({
                   </div>
                 </CardContent>
               </Card>
+
+              {/* University Information Section */}
+              {(userInfo.university_name || userInfo.programme_name || userInfo.degree_level || userInfo.study_year !== null) && (
+                <Card className="border border-gray-200 dark:border-gray-700">
+                  <CardContent className="p-6">
+                    <h3 className="text-lg font-semibold text-text-primary mb-4">University Information</h3>
+                    <div className="space-y-2">
+                      {userInfo.university_name && (
+                        <div>
+                          <span className="text-sm font-medium text-text-secondary">University: </span>
+                          <span className="text-base text-text-primary">{userInfo.university_name}</span>
+                        </div>
+                      )}
+                      {userInfo.programme_name && (
+                        <div>
+                          <span className="text-sm font-medium text-text-secondary">Programme: </span>
+                          <span className="text-base text-text-primary">{userInfo.programme_name}</span>
+                        </div>
+                      )}
+                      {userInfo.degree_level && (
+                        <div>
+                          <span className="text-sm font-medium text-text-secondary">Degree Level: </span>
+                          <span className="text-base text-text-primary">
+                            {userInfo.degree_level.charAt(0).toUpperCase() + userInfo.degree_level.slice(1).replace('_', '-')}
+                          </span>
+                        </div>
+                      )}
+                      {userInfo.study_year !== null && (
+                        <div>
+                          <span className="text-sm font-medium text-text-secondary">Current Year: </span>
+                          <span className="text-base text-text-primary">Year {userInfo.study_year}</span>
+                        </div>
+                      )}
+                    </div>
+                  </CardContent>
+                </Card>
+              )}
 
               {/* Bio Section */}
               <Card className="border border-gray-200 dark:border-gray-700">

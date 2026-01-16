@@ -147,6 +147,13 @@ export async function trackUserJourneyEvent(
     })
 
     if (!response.ok) {
+      // Handle 429 rate limit errors gracefully - don't log as errors since rate limiting is expected
+      if (response.status === 429) {
+        // Rate limited - silently skip tracking for this event
+        // Don't log anything to avoid console spam
+        return
+      }
+      
       let errorData: any = {}
       let rawResponseText = ''
       try {
@@ -176,11 +183,7 @@ export async function trackUserJourneyEvent(
         pageUrl: page
       }
       
-      // Log the full error data as a string so it's always visible
-      console.error('[Track Event Client] Full error response:', JSON.stringify(errorData, null, 2))
-      console.error('[Track Event Client] Error summary:', errorSummary)
-      console.error('[Track Event Client] Raw response text:', rawResponseText)
-      
+      // Only log non-rate-limit errors
       safeLogger.error('Failed to track user journey event', errorSummary)
     } else {
       // Update session start time in localStorage
@@ -249,16 +252,28 @@ export async function trackUserAction(
   )
 }
 
+// Track if session tracking has been initialized to prevent duplicate initialization
+let sessionTrackingInitialized = false
+
 /**
  * Initialize session tracking on page load
+ * Note: This does NOT track the initial page view - that's handled by SessionTrackerProvider
+ * to avoid duplicate tracking
  */
 export function initializeSessionTracking(userId?: string): void {
   if (typeof window === 'undefined') {
     return
   }
 
-  // Track initial page view
-  trackPageView(window.location.pathname, userId)
+  // Prevent duplicate initialization (especially important in React Strict Mode)
+  if (sessionTrackingInitialized) {
+    return
+  }
+  sessionTrackingInitialized = true
+
+  // Don't track initial page view here - SessionTrackerProvider handles it
+  // This prevents duplicate tracking when both initializeSessionTracking and 
+  // the pathname effect fire
 
   // Track page visibility changes (to detect when user leaves)
   document.addEventListener('visibilitychange', () => {

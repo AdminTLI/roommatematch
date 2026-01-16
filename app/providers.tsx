@@ -2,6 +2,7 @@
 
 import { createContext, useContext, useEffect, useState, useMemo } from 'react'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
+import { ThemeProvider } from 'next-themes'
 import { createClient } from '@/lib/supabase/client'
 import { initializeEventTracker } from '@/lib/events'
 import { DEFAULT_LOCALE, getDictionary, type Locale } from '@/lib/i18n'
@@ -21,20 +22,20 @@ export const queryKeys = {
   },
   activity: (userId?: string) => userId ? ['activity', userId] : ['activity'],
   updates: ['updates'],
-  
+
   // Semi-static data (profile, housing)
   profile: (userId?: string) => userId ? ['profile', userId] : ['profile'],
   housingListings: (filters?: Record<string, any>) => filters ? ['housing-listings', filters] : ['housing-listings'],
-  
+
   // Static data (universities, campuses)
   universities: ['universities'],
   campuses: ['campuses'],
   timezones: ['timezones'],
-  
+
   // Compatibility scores (cached for 5 minutes)
-  compatibility: (userAId?: string, userBId?: string) => 
-    userAId && userBId 
-      ? ['compatibility', userAId, userBId] 
+  compatibility: (userAId?: string, userBId?: string) =>
+    userAId && userBId
+      ? ['compatibility', userAId, userBId]
       : ['compatibility'],
 } as const
 
@@ -120,17 +121,19 @@ export function Providers({ children }: { children: React.ReactNode }) {
 
   return (
     <QueryClientProvider client={queryClient}>
-      <AppContext.Provider
-        value={{
-          locale,
-          setLocale: handleSetLocale,
-          dictionary,
-        }}
-      >
-        <SessionTrackerProvider>
-          {children}
-        </SessionTrackerProvider>
-      </AppContext.Provider>
+      <ThemeProvider attribute="class" defaultTheme="dark" enableSystem={true}>
+        <AppContext.Provider
+          value={{
+            locale,
+            setLocale: handleSetLocale,
+            dictionary,
+          }}
+        >
+          <SessionTrackerProvider>
+            {children}
+          </SessionTrackerProvider>
+        </AppContext.Provider>
+      </ThemeProvider>
       {process.env.NODE_ENV === 'development' && ReactQueryDevtools && (
         <ReactQueryDevtools initialIsOpen={false} />
       )}

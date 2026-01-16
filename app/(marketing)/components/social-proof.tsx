@@ -24,11 +24,7 @@ export function SocialProof({ locale: localeProp }: SocialProofProps) {
         { value: "100%", label: "Transparent Matching", icon: Eye, description: "See why you're compatible" },
         { value: "10 min", label: "Quick Setup", icon: Zap, description: "Get started fast" }
       ],
-      universityLogos: [
-        { name: "University of Amsterdam", short: "UvA" },
-        { name: "TU Delft", short: "TUD" },
-        { name: "Erasmus University", short: "EUR" }
-      ]
+
     },
     nl: {
       title: "Gebouwd voor betere verbindingen",
@@ -39,11 +35,7 @@ export function SocialProof({ locale: localeProp }: SocialProofProps) {
         { value: "100%", label: "Transparante Matching", icon: Eye, description: "Zie waarom je compatibel bent" },
         { value: "10 min", label: "Snelle Setup", icon: Zap, description: "Snel aan de slag" }
       ],
-      universityLogos: [
-        { name: "Universiteit van Amsterdam", short: "UvA" },
-        { name: "TU Delft", short: "TUD" },
-        { name: "Erasmus Universiteit", short: "EUR" }
-      ]
+
     }
   }
 
@@ -92,24 +84,7 @@ export function SocialProof({ locale: localeProp }: SocialProofProps) {
           })}
         </div>
 
-        {/* University Logos */}
-        <div className="text-center pt-6 sm:pt-8 border-t border-brand-border/30">
-          <h3 className="text-sm sm:text-base md:text-lg font-semibold text-brand-text mb-4 sm:mb-6">
-            {locale === 'nl' ? 'Ontworpen voor Nederlandse universiteiten' : 'Designed for Dutch universities'}
-          </h3>
-          <div className="flex flex-wrap justify-center items-center gap-4 sm:gap-6 md:gap-8">
-            {text.universityLogos.map((uni, index) => (
-              <div key={index} className="flex items-center gap-2 sm:gap-3">
-                <div className="w-8 h-8 sm:w-10 sm:h-10 bg-brand-primary/10 rounded-full flex items-center justify-center border border-brand-primary/20">
-                  <span className="text-xs sm:text-sm font-bold text-brand-primary">{uni.short}</span>
-                </div>
-                <span className="text-xs sm:text-sm font-medium text-brand-muted">
-                  {uni.name}
-                </span>
-              </div>
-            ))}
-          </div>
-        </div>
+
       </Container>
     </Section>
   )

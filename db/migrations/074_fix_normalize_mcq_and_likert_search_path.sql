@@ -120,3 +120,5 @@ GRANT EXECUTE ON FUNCTION public.normalize_likert_value(JSONB) TO service_role;
 
 
 
+
+

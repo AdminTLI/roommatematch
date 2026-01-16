@@ -26,20 +26,102 @@ export function SignInForm() {
     setError('')
 
     try {
-      const { error: signInError, data } = await supabase.auth.signInWithPassword({
-        email,
-        password
-      })
+      // Trim email and password to remove any accidental whitespace
+      const trimmedEmail = email.trim()
+      const trimmedPassword = password.trim()
+
+      // Validate that we have non-empty values after trimming
+      if (!trimmedEmail || !trimmedPassword) {
+        setError('Please enter both email and password')
+        setIsLoading(false)
+        return
+      }
+
+      // Validate email format
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+      if (!emailRegex.test(trimmedEmail)) {
+        setError('Please enter a valid email address')
+        setIsLoading(false)
+        return
+      }
+
+      // Log the attempt (sanitized) for debugging
+      if (process.env.NODE_ENV === 'development') {
+        console.log('[SignIn] Attempting login with email:', trimmedEmail.substring(0, 3) + '***@' + trimmedEmail.split('@')[1])
+        console.log('[SignIn] Email length:', trimmedEmail.length, 'Password length:', trimmedPassword.length)
+      }
+
+      let signInError, data
+      try {
+        const result = await supabase.auth.signInWithPassword({
+          email: trimmedEmail,
+          password: trimmedPassword
+        })
+        signInError = result.error
+        data = result.data
+      } catch (authException) {
+        console.error('[SignIn] Exception during signInWithPassword:', authException)
+        setError('An error occurred during authentication. Please try again.')
+        setIsLoading(false)
+        return
+      }
 
       if (signInError) {
+        // Log the full error for debugging - including all properties
+        console.error('[SignIn] Sign-in error (full object):', signInError)
+        console.error('[SignIn] Sign-in error details:', {
+          message: signInError.message,
+          status: signInError.status,
+          name: signInError.name,
+          statusCode: (signInError as any).statusCode,
+          // Check for Supabase-specific error properties
+          error: (signInError as any).error,
+          errorDescription: (signInError as any).error_description,
+        })
+        // Only log response data if it contains meaningful information
+        if (data && Object.keys(data).length > 0) {
+          console.error('[SignIn] Response data:', data)
+        }
+
+        // Check for specific error types
+        const errorMsgLower = signInError.message.toLowerCase()
+        
+        // Email not confirmed
+        if (errorMsgLower.includes('email not confirmed') || 
+            errorMsgLower.includes('email_not_confirmed') ||
+            errorMsgLower.includes('email confirmation')) {
+          sessionStorage.setItem('verification-email', trimmedEmail)
+          window.location.href = `/auth/verify-email?email=${encodeURIComponent(trimmedEmail)}&auto=1`
+          return
+        }
+        
+        // Rate limiting / too many requests
+        if (errorMsgLower.includes('too many') || 
+            errorMsgLower.includes('rate limit') ||
+            errorMsgLower.includes('429')) {
+          setError('Too many login attempts. Please try again later.')
+          setIsLoading(false)
+          return
+        }
+        
+        // Account disabled or locked
+        if (errorMsgLower.includes('disabled') || 
+            errorMsgLower.includes('locked') ||
+            errorMsgLower.includes('suspended')) {
+          setError('Your account has been disabled. Please contact support.')
+          setIsLoading(false)
+          return
+        }
+        
         // For authentication errors (wrong password/email), show user-friendly message
-        if (signInError.message.toLowerCase().includes('invalid') || 
-            signInError.message.toLowerCase().includes('credentials') ||
-            signInError.message.toLowerCase().includes('password')) {
+        if (errorMsgLower.includes('invalid') || 
+            errorMsgLower.includes('credentials') ||
+            errorMsgLower.includes('password') ||
+            errorMsgLower.includes('email')) {
           setError('Incorrect email or password')
         } else {
           // For other errors, show the error message
-          setError(signInError.message)
+          setError(signInError.message || 'An error occurred during sign in. Please try again.')
         }
         setIsLoading(false)
         return
@@ -72,9 +154,9 @@ export function SignInForm() {
       if (!emailVerified) {
         // Email not verified - CRITICAL: redirect to email verification IMMEDIATELY
         console.log('[SignIn] Email not verified, redirecting to email verification')
-        sessionStorage.setItem('verification-email', email)
+        sessionStorage.setItem('verification-email', trimmedEmail)
         // Use window.location.href for immediate redirect (no client-side navigation delay)
-        window.location.href = `/auth/verify-email?email=${encodeURIComponent(email)}&auto=1`
+        window.location.href = `/auth/verify-email?email=${encodeURIComponent(trimmedEmail)}&auto=1`
         return
       }
 
@@ -102,8 +184,8 @@ export function SignInForm() {
 
         if (!emailStillVerified) {
           console.log('[SignIn] Email verification lost after refresh, redirecting to email verification')
-          sessionStorage.setItem('verification-email', email)
-          window.location.href = `/auth/verify-email?email=${encodeURIComponent(email)}&auto=1`
+          sessionStorage.setItem('verification-email', trimmedEmail)
+          window.location.href = `/auth/verify-email?email=${encodeURIComponent(trimmedEmail)}&auto=1`
           return
         }
 
@@ -124,8 +206,8 @@ export function SignInForm() {
           // QUADRUPLE CHECK: Make sure email is still verified (defense in depth)
           if (verificationStatus.needsEmailVerification || !verificationStatus.emailVerified) {
             console.log('[SignIn] API reports email not verified, redirecting to email verification')
-            sessionStorage.setItem('verification-email', email)
-            window.location.href = `/auth/verify-email?email=${encodeURIComponent(email)}&auto=1`
+            sessionStorage.setItem('verification-email', trimmedEmail)
+            window.location.href = `/auth/verify-email?email=${encodeURIComponent(trimmedEmail)}&auto=1`
             return
           }
           
@@ -141,18 +223,18 @@ export function SignInForm() {
         } else {
           // If API fails, don't assume - redirect to email verification to be safe
           console.warn('[SignIn] Verification status API failed, redirecting to email verification for safety')
-          sessionStorage.setItem('verification-email', email)
-          window.location.href = `/auth/verify-email?email=${encodeURIComponent(email)}&auto=1`
+          sessionStorage.setItem('verification-email', trimmedEmail)
+          window.location.href = `/auth/verify-email?email=${encodeURIComponent(trimmedEmail)}&auto=1`
         }
       } catch (verificationError) {
         console.error('[SignIn] Failed to check verification status:', verificationError)
         // If API fails, don't assume - redirect to email verification to be safe
-        sessionStorage.setItem('verification-email', email)
-        window.location.href = `/auth/verify-email?email=${encodeURIComponent(email)}&auto=1`
+        sessionStorage.setItem('verification-email', trimmedEmail)
+        window.location.href = `/auth/verify-email?email=${encodeURIComponent(trimmedEmail)}&auto=1`
       }
     } catch (err) {
-      setError('An unexpected error occurred')
-    } finally {
+      console.error('[SignIn] Unexpected error during sign-in:', err)
+      setError(err instanceof Error ? err.message : 'An unexpected error occurred. Please try again.')
       setIsLoading(false)
     }
   }

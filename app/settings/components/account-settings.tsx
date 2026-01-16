@@ -7,12 +7,12 @@ import { Label } from '@/components/ui/label'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Switch } from '@/components/ui/switch'
-import { 
-  Key, 
-  Bell, 
-  Mail, 
-  Shield, 
-  Loader2, 
+import {
+  Key,
+  Bell,
+  Mail,
+  Shield,
+  Loader2,
   Check,
   AlertCircle
 } from 'lucide-react'
@@ -26,7 +26,7 @@ export function AccountSettings({ user }: AccountSettingsProps) {
   const [isLoading, setIsLoading] = useState(false)
   const [isSuccess, setIsSuccess] = useState(false)
   const [error, setError] = useState<string | null>(null)
-  
+
   const [notifications, setNotifications] = useState({
     emailMatches: true,
     emailMessages: true,
@@ -47,7 +47,7 @@ export function AccountSettings({ user }: AccountSettingsProps) {
     try {
       // In a real app, this would save to a user preferences table
       await new Promise(resolve => setTimeout(resolve, 1000)) // Simulate API call
-      
+
       setIsSuccess(true)
       setTimeout(() => setIsSuccess(false), 3000)
     } catch (err) {
@@ -63,162 +63,127 @@ export function AccountSettings({ user }: AccountSettingsProps) {
   }
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-10">
       {error && (
-        <Alert variant="destructive" className="mb-2">
+        <Alert variant="destructive" className="bg-red-500/10 border-red-500/20 text-red-600 dark:text-red-400">
           <AlertCircle className="h-4 w-4" />
           <AlertDescription>{error}</AlertDescription>
         </Alert>
       )}
 
       {isSuccess && (
-        <Alert className="border-green-200 bg-green-50 mb-2">
-          <Check className="h-4 w-4 text-green-600" />
-          <AlertDescription className="text-green-800">
+        <Alert className="bg-emerald-500/10 border-emerald-500/20 text-emerald-600 dark:text-emerald-400">
+          <Check className="h-4 w-4" />
+          <AlertDescription>
             Settings saved successfully!
           </AlertDescription>
         </Alert>
       )}
 
-      {/* Email Verification Section - Always visible */}
-      <div>
-        <h3 className="text-xl font-semibold mb-6">Email Verification</h3>
+      {/* Email Verification Group - Always visible */}
+      <div className="space-y-4">
+        <h3 className="text-sm font-medium text-zinc-600 dark:text-zinc-400 uppercase tracking-wider px-1">Verification</h3>
         <EmailVerification user={user} />
       </div>
 
-      {/* Security Settings */}
-      <Card className="border-gray-200 dark:border-border-subtle">
-        <CardHeader className="pb-4">
-          <CardTitle className="flex items-center gap-3 text-xl">
-            <Shield className="w-5 h-5 text-gray-600 dark:text-text-secondary" />
-            Security
-          </CardTitle>
-          <CardDescription className="text-base mt-2">
-            Manage your account security settings.
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-6 pt-2">
-          <div className="space-y-3">
-            <Label className="text-sm font-medium">Email Address</Label>
-            <div className="flex items-center gap-3">
-              <Mail className="w-5 h-5 text-gray-400 dark:text-text-muted flex-shrink-0" />
-              <Input value={user.email} disabled className="bg-gray-50 dark:bg-bg-surface-alt h-11 text-text-primary dark:text-text-primary" />
+      {/* Security Group */}
+      <div className="space-y-4">
+        <h3 className="text-sm font-medium text-zinc-600 dark:text-zinc-400 uppercase tracking-wider px-1">Security</h3>
+        <div className="bg-white/80 dark:bg-zinc-900/40 border border-zinc-200 dark:border-white/10 rounded-2xl overflow-hidden divide-y divide-zinc-200 dark:divide-white/5 backdrop-blur-xl">
+          {/* Email Address */}
+          <div className="p-4 flex flex-col sm:flex-row sm:items-center gap-4 bg-zinc-50 dark:bg-zinc-900/60">
+            <div className="flex items-center gap-3 sm:w-1/3">
+              <Mail className="w-4 h-4 text-zinc-400 dark:text-zinc-500" />
+              <Label className="text-zinc-600 dark:text-zinc-400 font-medium">Email Address</Label>
             </div>
-            <p className="text-sm text-gray-500 dark:text-text-muted ml-8">
-              Contact support to change your email address.
-            </p>
+            <div className="flex-1 text-sm text-zinc-600 dark:text-zinc-400 px-0 sm:px-3">
+              {user.email}
+              <p className="text-[10px] text-zinc-500 dark:text-zinc-500 mt-1 uppercase tracking-tighter font-semibold">Contact support to change</p>
+            </div>
           </div>
 
-          <div className="space-y-3 pt-2 border-t border-gray-100 dark:border-border-subtle">
-            <Label className="text-sm font-medium">Password</Label>
-            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
-              <div className="flex items-center gap-3 flex-1">
-                <Key className="w-5 h-5 text-gray-400 dark:text-text-muted flex-shrink-0" />
-                <Input type="password" value="••••••••" disabled className="bg-gray-50 dark:bg-bg-surface-alt h-11 flex-1 text-text-primary dark:text-text-primary" />
-              </div>
-              <Button variant="outline" onClick={handleChangePassword} className="w-full sm:w-auto min-w-[120px] h-11 text-base">
+          {/* Password */}
+          <div className="p-4 flex flex-col sm:flex-row sm:items-center gap-4">
+            <div className="flex items-center gap-3 sm:w-1/3">
+              <Key className="w-4 h-4 text-zinc-500 dark:text-zinc-400" />
+              <Label className="text-zinc-900 dark:text-zinc-100 font-medium">Password</Label>
+            </div>
+            <div className="flex-1 flex items-center justify-between gap-4">
+              <span className="text-sm text-zinc-600 dark:text-zinc-400 px-0 sm:px-3 tracking-widest">••••••••</span>
+              <Button
+                variant="ghost"
+                onClick={handleChangePassword}
+                className="text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 hover:bg-zinc-100 dark:hover:bg-white/5 h-8 px-3 text-xs font-medium"
+              >
                 Change
               </Button>
             </div>
           </div>
-        </CardContent>
-      </Card>
+        </div>
+      </div>
 
-      {/* Notification Preferences */}
-      <Card className="border-gray-200 dark:border-border-subtle">
-        <CardHeader className="pb-4">
-          <CardTitle className="flex items-center gap-3 text-xl">
-            <Bell className="w-5 h-5 text-gray-600 dark:text-text-secondary" />
-            Notification Preferences
-          </CardTitle>
-          <CardDescription className="text-base mt-2">
-            Choose how you want to be notified about matches and messages.
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-8 pt-2">
-          <div className="space-y-6">
-            <div className="space-y-4 pt-2">
-              <h4 className="font-semibold text-base text-gray-900 dark:text-text-primary">Email Notifications</h4>
-              
-              <div className="flex items-center justify-between py-3 border-b border-gray-100 dark:border-border-subtle">
-                <div className="space-y-1 flex-1 pr-4">
-                  <Label className="text-sm font-medium">New Matches</Label>
-                  <p className="text-sm text-gray-600 dark:text-text-muted">Get notified when you have new compatible matches</p>
-                </div>
-                <Switch
-                  checked={notifications.emailMatches}
-                  onCheckedChange={(checked) => handleNotificationChange('emailMatches', checked)}
-                />
+      {/* Notifications Group */}
+      <div className="space-y-4">
+        <h3 className="text-sm font-medium text-zinc-600 dark:text-zinc-400 uppercase tracking-wider px-1">Email Notifications</h3>
+        <div className="bg-white/80 dark:bg-zinc-900/40 border border-zinc-200 dark:border-white/10 rounded-2xl overflow-hidden divide-y divide-zinc-200 dark:divide-white/5 px-4 backdrop-blur-xl">
+          {[
+            { id: 'emailMatches', label: 'New Matches', desc: 'Get notified when you have new compatible matches' },
+            { id: 'emailMessages', label: 'New Messages', desc: 'Get notified when you receive new messages' },
+            { id: 'emailUpdates', label: 'Platform Updates', desc: 'Get notified about new features and updates' },
+          ].map((item) => (
+            <div key={item.id} className="py-4 flex items-center justify-between gap-4">
+              <div className="flex-1 min-w-0">
+                <Label className="text-zinc-900 dark:text-zinc-100 block mb-0.5 font-medium">{item.label}</Label>
+                <p className="text-xs text-zinc-600 dark:text-zinc-400 truncate">{item.desc}</p>
               </div>
-
-              <div className="flex items-center justify-between py-3 border-b border-gray-100 dark:border-border-subtle">
-                <div className="space-y-1 flex-1 pr-4">
-                  <Label className="text-sm font-medium">New Messages</Label>
-                  <p className="text-sm text-gray-600 dark:text-text-muted">Get notified when you receive new messages</p>
-                </div>
-                <Switch
-                  checked={notifications.emailMessages}
-                  onCheckedChange={(checked) => handleNotificationChange('emailMessages', checked)}
-                />
-              </div>
-
-              <div className="flex items-center justify-between py-3">
-                <div className="space-y-1 flex-1 pr-4">
-                  <Label className="text-sm font-medium">Platform Updates</Label>
-                  <p className="text-sm text-gray-600 dark:text-text-muted">Get notified about new features and updates</p>
-                </div>
-                <Switch
-                  checked={notifications.emailUpdates}
-                  onCheckedChange={(checked) => handleNotificationChange('emailUpdates', checked)}
-                />
-              </div>
+              <Switch
+                checked={notifications[item.id as keyof typeof notifications]}
+                onCheckedChange={(checked) => handleNotificationChange(item.id, checked)}
+                className="data-[state=checked]:bg-blue-500"
+              />
             </div>
+          ))}
+        </div>
+      </div>
 
-            <div className="space-y-4 pt-4 border-t border-gray-200 dark:border-border-subtle">
-              <h4 className="font-semibold text-base text-gray-900 dark:text-text-primary">Push Notifications</h4>
-              
-              <div className="flex items-center justify-between py-3 border-b border-gray-100 dark:border-border-subtle">
-                <div className="space-y-1 flex-1 pr-4">
-                  <Label className="text-sm font-medium">New Matches</Label>
-                  <p className="text-sm text-gray-600 dark:text-text-muted">Receive push notifications for new matches</p>
-                </div>
-                <Switch
-                  checked={notifications.pushMatches}
-                  onCheckedChange={(checked) => handleNotificationChange('pushMatches', checked)}
-                />
+      <div className="space-y-4">
+        <h3 className="text-sm font-medium text-zinc-600 dark:text-zinc-400 uppercase tracking-wider px-1">Push Notifications</h3>
+        <div className="bg-white/80 dark:bg-zinc-900/40 border border-zinc-200 dark:border-white/10 rounded-2xl overflow-hidden divide-y divide-zinc-200 dark:divide-white/5 px-4 backdrop-blur-xl">
+          {[
+            { id: 'pushMatches', label: 'New Matches', desc: 'Receive push notifications for new matches' },
+            { id: 'pushMessages', label: 'New Messages', desc: 'Receive push notifications for new messages' },
+          ].map((item) => (
+            <div key={item.id} className="py-4 flex items-center justify-between gap-4">
+              <div className="flex-1 min-w-0">
+                <Label className="text-zinc-900 dark:text-zinc-100 block mb-0.5 font-medium">{item.label}</Label>
+                <p className="text-xs text-zinc-600 dark:text-zinc-400 truncate">{item.desc}</p>
               </div>
-
-              <div className="flex items-center justify-between py-3">
-                <div className="space-y-1 flex-1 pr-4">
-                  <Label className="text-sm font-medium">New Messages</Label>
-                  <p className="text-sm text-gray-600 dark:text-text-muted">Receive push notifications for new messages</p>
-                </div>
-                <Switch
-                  checked={notifications.pushMessages}
-                  onCheckedChange={(checked) => handleNotificationChange('pushMessages', checked)}
-                />
-              </div>
+              <Switch
+                checked={notifications[item.id as keyof typeof notifications]}
+                onCheckedChange={(checked) => handleNotificationChange(item.id, checked)}
+                className="data-[state=checked]:bg-blue-500"
+              />
             </div>
-          </div>
+          ))}
+        </div>
+      </div>
 
-          <div className="flex justify-end pt-4 border-t border-gray-100 dark:border-border-subtle">
-            <Button 
-              onClick={handleSaveNotifications}
-              disabled={isLoading}
-              className="w-full sm:w-auto min-w-[160px] h-11 text-base"
-            >
-              {isLoading ? (
-                <>
-                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                  Saving...
-                </>
-              ) : (
-                'Save Preferences'
-              )}
-            </Button>
-          </div>
-        </CardContent>
-      </Card>
+      <div className="flex justify-end pt-6">
+        <Button
+          onClick={handleSaveNotifications}
+          disabled={isLoading}
+          className="w-full sm:w-auto min-w-[160px] h-11 text-base bg-blue-500 hover:bg-blue-600 text-white rounded-xl shadow-lg shadow-blue-500/20"
+        >
+          {isLoading ? (
+            <>
+              <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+              Saving...
+            </>
+          ) : (
+            'Save Preferences'
+          )}
+        </Button>
+      </div>
     </div>
   )
 }

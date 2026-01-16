@@ -28,7 +28,7 @@ export class SupabaseMatchRepo implements MatchRepo {
 
   async getCandidateByUserId(userId: string): Promise<Candidate | null> {
     const supabase = await this.getSupabase()
-    
+
     const { data, error } = await supabase
       .from('users')
       .select(`
@@ -72,7 +72,7 @@ export class SupabaseMatchRepo implements MatchRepo {
       acc[r.question_key] = r.value
       return acc
     }, {}) || {}
-    
+
     // If responses are missing or incomplete, also check onboarding_sections as fallback
     // This handles cases where users have saved but not yet submitted, or where submission
     // didn't properly write to responses table
@@ -82,9 +82,9 @@ export class SupabaseMatchRepo implements MatchRepo {
         .from('onboarding_sections')
         .select('section, answers')
         .eq('user_id', userId)
-      
+
       if (sections && sections.length > 0) {
-        safeLogger.debug('[getCandidateByUserId] Found onboarding_sections', { 
+        safeLogger.debug('[getCandidateByUserId] Found onboarding_sections', {
           sectionCount: sections.length,
           sections: sections.map(s => s.section)
         })
@@ -175,7 +175,7 @@ export class SupabaseMatchRepo implements MatchRepo {
     // Transform to Candidate format
     const academicData = Array.isArray(data.user_academic) ? data.user_academic[0] : data.user_academic
     const profileData = Array.isArray(data.profiles) ? data.profiles[0] : data.profiles
-    
+
     return {
       id: data.id,
       email: data.email,
@@ -192,7 +192,7 @@ export class SupabaseMatchRepo implements MatchRepo {
 
   async loadCandidates(filter: CohortFilter): Promise<Candidate[]> {
     const supabase = await this.getSupabase()
-    
+
     // Debug logging for filter analysis
     safeLogger.debug('[DEBUG] loadCandidates - Filter input', {
       campusCity: filter.campusCity,
@@ -204,7 +204,7 @@ export class SupabaseMatchRepo implements MatchRepo {
       excludeUserIds: filter.excludeUserIds,
       limit: filter.limit
     })
-    
+
     // Build query for users with their onboarding data
     // Note: Using LEFT joins instead of INNER to handle cases where users might not have profiles/academic yet
     // We'll filter out invalid users later in the transformation step
@@ -244,30 +244,30 @@ export class SupabaseMatchRepo implements MatchRepo {
       query = query.eq('profiles.campus', filter.campusCity)
       safeLogger.debug('[DEBUG] loadCandidates - Applied campusCity filter')
     }
-    
+
     if (filter.institutionId) {
       query = query.eq('user_academic.university_id', filter.institutionId)
       safeLogger.debug('[DEBUG] loadCandidates - Applied institutionId filter')
     }
-    
+
     if (filter.degreeLevel) {
       query = query.eq('user_academic.degree_level', filter.degreeLevel)
       safeLogger.debug('[DEBUG] loadCandidates - Applied degreeLevel filter')
     }
-    
+
     if (filter.programmeId) {
       query = query.eq('user_academic.program_id', filter.programmeId)
       safeLogger.debug('[DEBUG] loadCandidates - Applied programmeId filter')
     }
-    
+
     if (filter.graduationYearFrom) {
       query = query.gte('user_academic.study_start_year', filter.graduationYearFrom)
     }
-    
+
     if (filter.graduationYearTo) {
       query = query.lte('user_academic.study_start_year', filter.graduationYearTo)
     }
-    
+
     if (filter.onlyActive) {
       query = query.eq('profiles.verification_status', 'verified')
       safeLogger.debug('[DEBUG] loadCandidates - Applied onlyActive filter (verified only)')
@@ -298,7 +298,7 @@ export class SupabaseMatchRepo implements MatchRepo {
       })
       throw new Error(`Failed to load candidates: ${error.message}`)
     }
-    
+
     safeLogger.debug('[DEBUG] loadCandidates - Raw query results', {
       count: data?.length || 0
     })
@@ -317,7 +317,7 @@ export class SupabaseMatchRepo implements MatchRepo {
         .from('user_academic')
         .select('user_id, university_id, degree_level, program_id, undecided_program, study_start_year, study_start_month, expected_graduation_year, graduation_month')
         .in('user_id', usersMissingAcademic)
-      
+
       if (!academicError && academicData) {
         academicData.forEach((a: any) => academicDataMap.set(a.user_id, a))
         safeLogger.debug(`[DEBUG] loadCandidates - Fetched ${academicData.length} academic records`)
@@ -333,7 +333,7 @@ export class SupabaseMatchRepo implements MatchRepo {
         .from('profiles')
         .select('user_id, first_name, university_id, degree_level, campus, verification_status')
         .in('user_id', usersMissingProfile)
-      
+
       if (!profileError && profileData) {
         profileData.forEach((p: any) => profileDataMap.set(p.user_id, p))
         safeLogger.debug(`[DEBUG] loadCandidates - Fetched ${profileData.length} profile records`)
@@ -351,7 +351,7 @@ export class SupabaseMatchRepo implements MatchRepo {
         .from('user_vectors')
         .select('user_id, vector')
         .in('user_id', usersMissingVector)
-      
+
       if (!vectorError && vectorData) {
         vectorData.forEach((v: any) => vectorDataMap.set(v.user_id, v.vector))
         safeLogger.debug(`[DEBUG] loadCandidates - Fetched ${vectorData.length} vector records`)
@@ -458,39 +458,39 @@ export class SupabaseMatchRepo implements MatchRepo {
           createdAt: new Date().toISOString()
         }
       })
-    
+
     safeLogger.debug('[DEBUG] loadCandidates - After transformation', {
       transformedCount: transformedCandidates.length
     })
-    
+
     // First pass: filter by eligibility
     const eligibleCandidates = transformedCandidates.filter(candidate => {
-        // Filter out users without complete responses
-        const eligible = isEligibleForMatching(candidate.answers)
-        if (!eligible) {
-          const { getMissingFields } = require('./completeness')
-          const missing = getMissingFields(candidate.answers)
-          safeLogger.debug('[DEBUG] loadCandidates - Candidate not eligible', {
-            missingFieldsCount: missing.length,
-            missingFields: missing,
-            hasVector: !!candidate.vector
-          })
-          return false
-        }
-        return true
-      })
-    
+      // Filter out users without complete responses
+      const eligible = isEligibleForMatching(candidate.answers)
+      if (!eligible) {
+        const { getMissingFields } = require('./completeness')
+        const missing = getMissingFields(candidate.answers)
+        safeLogger.debug('[DEBUG] loadCandidates - Candidate not eligible', {
+          missingFieldsCount: missing.length,
+          missingFields: missing,
+          hasVector: !!candidate.vector
+        })
+        return false
+      }
+      return true
+    })
+
     // Auto-generate missing vectors for eligible candidates
     const candidatesMissingVectors = eligibleCandidates.filter(c => !c.vector)
     if (candidatesMissingVectors.length > 0) {
       safeLogger.debug(`[DEBUG] loadCandidates - Auto-generating ${candidatesMissingVectors.length} missing vectors...`)
       const supabase = await this.getSupabase()
-      
+
       // Generate vectors in parallel
       const vectorPromises = candidatesMissingVectors.map(async (candidate) => {
         try {
-          const { error } = await supabase.rpc('compute_user_vector_and_store', { 
-            p_user_id: candidate.id 
+          const { error } = await supabase.rpc('compute_user_vector_and_store', {
+            p_user_id: candidate.id
           })
           if (error) {
             safeLogger.error(`[DEBUG] Failed to generate vector`, error)
@@ -502,20 +502,20 @@ export class SupabaseMatchRepo implements MatchRepo {
           return null
         }
       })
-      
+
       const generatedUserIds = (await Promise.all(vectorPromises)).filter(id => id !== null)
       safeLogger.debug(`[DEBUG] Generated ${generatedUserIds.length} vectors successfully`)
-      
+
       // Refetch vectors for users we just generated
       if (generatedUserIds.length > 0) {
         const { data: newVectors, error: vectorError } = await supabase
           .from('user_vectors')
           .select('user_id, vector')
           .in('user_id', generatedUserIds)
-        
+
         if (!vectorError && newVectors) {
           const vectorMap = new Map(newVectors.map(v => [v.user_id, v.vector]))
-          
+
           // Update candidates with newly generated vectors
           eligibleCandidates.forEach(candidate => {
             if (vectorMap.has(candidate.id)) {
@@ -525,21 +525,112 @@ export class SupabaseMatchRepo implements MatchRepo {
         }
       }
     }
-    
-    // Final filter: only return candidates with vectors
-    const finalCandidates = eligibleCandidates.filter(candidate => {
-        if (!candidate.vector) {
-          safeLogger.debug('[DEBUG] loadCandidates - Candidate still missing vector after generation')
-          return false
+
+    // Filter: only return candidates with vectors
+    const candidatesWithVectors = eligibleCandidates.filter(candidate => {
+      if (!candidate.vector) {
+        safeLogger.debug('[DEBUG] loadCandidates - Candidate still missing vector after generation')
+        return false
+      }
+      return true
+    })
+
+    // Filter: exclude already-matched users if requested
+    let finalCandidates = candidatesWithVectors
+    if (filter.excludeAlreadyMatched) {
+      safeLogger.debug('[DEBUG] loadCandidates - Excluding already-matched users')
+      
+      // Get list of user IDs that are already matched
+      // A user is considered "matched" if they have:
+      // 1. A locked match_record (confirmed match from old system), OR
+      // 2. A confirmed match_suggestion (confirmed match from new system)
+      const candidateIds = candidatesWithVectors.map(c => c.id)
+      
+      if (candidateIds.length > 0) {
+        try {
+          // Check for locked match_records
+          const { data: lockedMatches, error: lockedError } = await supabase
+            .from('match_records')
+            .select('user_ids')
+            .eq('locked', true)
+            .limit(1000) // Reasonable limit
+          
+          const matchedUserIdsFromRecords = new Set<string>()
+          if (!lockedError && lockedMatches) {
+            lockedMatches.forEach((match: any) => {
+              if (match.user_ids && Array.isArray(match.user_ids)) {
+                match.user_ids.forEach((userId: string) => matchedUserIdsFromRecords.add(userId))
+              }
+            })
+          }
+          
+          // Check for confirmed match_suggestions
+          // We need to check if any candidate ID is in any confirmed suggestion's member_ids
+          // This is tricky with Supabase, so we'll fetch all confirmed pair suggestions
+          // and filter in code (there shouldn't be too many)
+          const { data: confirmedSuggestions, error: confirmedError } = await supabase
+            .from('match_suggestions')
+            .select('member_ids, accepted_by')
+            .eq('status', 'confirmed')
+            .eq('kind', 'pair')
+            .limit(1000) // Reasonable limit
+          
+          const matchedUserIdsFromSuggestions = new Set<string>()
+          if (!confirmedError && confirmedSuggestions) {
+            const candidateIdsSet = new Set(candidateIds)
+            confirmedSuggestions.forEach((suggestion: any) => {
+              if (suggestion.member_ids && Array.isArray(suggestion.member_ids)) {
+                // Only mark as matched if all members have accepted
+                if (suggestion.accepted_by && 
+                    Array.isArray(suggestion.accepted_by) &&
+                    suggestion.accepted_by.length === suggestion.member_ids.length) {
+                  // Only include users that are in our candidate list
+                  suggestion.member_ids.forEach((userId: string) => {
+                    if (candidateIdsSet.has(userId)) {
+                      matchedUserIdsFromSuggestions.add(userId)
+                    }
+                  })
+                }
+              }
+            })
+          }
+          
+          // Combine both sets (only for users in our candidate list)
+          const candidateIdsSet = new Set(candidateIds)
+          const allMatchedUserIds = new Set<string>()
+          matchedUserIdsFromRecords.forEach(id => {
+            if (candidateIdsSet.has(id)) allMatchedUserIds.add(id)
+          })
+          matchedUserIdsFromSuggestions.forEach(id => {
+            if (candidateIdsSet.has(id)) allMatchedUserIds.add(id)
+          })
+          
+          // Filter out matched users
+          const beforeCount = finalCandidates.length
+          finalCandidates = finalCandidates.filter(candidate => !allMatchedUserIds.has(candidate.id))
+          const excludedCount = beforeCount - finalCandidates.length
+          
+          safeLogger.debug('[DEBUG] loadCandidates - Excluded already-matched users', {
+            matchedFromRecords: matchedUserIdsFromRecords.size,
+            matchedFromSuggestions: matchedUserIdsFromSuggestions.size,
+            totalMatched: allMatchedUserIds.size,
+            excluded: excludedCount,
+            remaining: finalCandidates.length
+          })
+        } catch (excludeError) {
+          safeLogger.error('[DEBUG] loadCandidates - Error excluding already-matched users', {
+            error: excludeError
+          })
+          // Continue without exclusion if error occurs (fail gracefully)
         }
-        return true
-      })
-    
+      }
+    }
+
     safeLogger.debug('[DEBUG] loadCandidates - Final eligible candidates', {
       eligibleCount: finalCandidates.length,
       filteredOut: transformedCandidates.length - finalCandidates.length
     })
-    
+
     return finalCandidates
   }
 
@@ -694,7 +785,7 @@ export class SupabaseMatchRepo implements MatchRepo {
     const supabase = await this.getSupabase()
     const { error } = await supabase
       .from('profiles')
-      .update({ 
+      .update({
         // Add a field to track if user is matched
         // This could be a JSONB field with match info
         updated_at: new Date().toISOString()
@@ -707,20 +798,51 @@ export class SupabaseMatchRepo implements MatchRepo {
   }
 
   async isUserMatched(userId: string): Promise<boolean> {
-    // Check if user is already in a locked match
+    // Check if user is already in a locked match or has a confirmed match_suggestion
     const supabase = await this.getSupabase()
-    const { data, error } = await supabase
+    
+    // Check for locked match_records
+    const { data: lockedMatches, error: lockedError } = await supabase
       .from('match_records')
       .select('id')
       .contains('user_ids', [userId])
       .eq('locked', true)
       .limit(1)
 
-    if (error) {
-      throw new Error(`Failed to check if user is matched: ${error.message}`)
+    if (lockedError) {
+      throw new Error(`Failed to check if user is matched (locked matches): ${lockedError.message}`)
     }
 
-    return (data || []).length > 0
+    if (lockedMatches && lockedMatches.length > 0) {
+      return true
+    }
+
+    // Check for confirmed match_suggestions where all members have accepted
+    const { data: confirmedSuggestions, error: confirmedError } = await supabase
+      .from('match_suggestions')
+      .select('id, member_ids, accepted_by')
+      .eq('status', 'confirmed')
+      .eq('kind', 'pair')
+      .contains('member_ids', [userId])
+      .limit(1)
+
+    if (confirmedError) {
+      throw new Error(`Failed to check if user is matched (confirmed suggestions): ${confirmedError.message}`)
+    }
+
+    if (confirmedSuggestions && confirmedSuggestions.length > 0) {
+      // Verify that all members have accepted
+      const suggestion = confirmedSuggestions[0]
+      if (suggestion.accepted_by && 
+          Array.isArray(suggestion.accepted_by) &&
+          suggestion.member_ids &&
+          Array.isArray(suggestion.member_ids) &&
+          suggestion.accepted_by.length === suggestion.member_ids.length) {
+        return true
+      }
+    }
+
+    return false
   }
 
   // Suggestions (student flow)
@@ -776,7 +898,7 @@ export class SupabaseMatchRepo implements MatchRepo {
     // that include their own userId in memberIds array.
     // Use server-side deduplication function for efficiency
     const supabase = await this.getSupabase()
-    
+
     // Try to use the deduplication function if available, fallback to client-side dedupe
     try {
       const { data, error } = await supabase.rpc('get_deduplicated_suggestions', {
@@ -855,31 +977,52 @@ export class SupabaseMatchRepo implements MatchRepo {
     }))
 
     // Filter out confirmed matches when includeExpired is false
-    // (confirmed = status 'accepted' AND all members have accepted)
+    // Note: Confirmed matches should have status = 'confirmed'
+    // Matches with status = 'accepted' where all members accepted are also considered confirmed
     if (!includeExpired) {
       suggestions = suggestions.filter(s => {
+        // Always include confirmed matches (status = 'confirmed')
+        if (s.status === 'confirmed') return true
         // Exclude declined matches (already filtered by query, but be defensive)
         if (s.status === 'declined') return false
-        // Exclude confirmed matches (all members have accepted)
-        if (s.status === 'accepted' && 
-            s.acceptedBy && 
-            s.memberIds && 
-            s.acceptedBy.length === s.memberIds.length) {
+        // Exclude accepted matches where all members have accepted (these are confirmed but not yet marked as 'confirmed')
+        if (s.status === 'accepted' &&
+          s.acceptedBy &&
+          s.memberIds &&
+          s.acceptedBy.length === s.memberIds.length) {
           return false
         }
         return true
       })
     }
 
-    // Client-side dedupe: keep only the latest suggestion per counterpart
+    // Client-side dedupe: keep only the best suggestion per counterpart
+    // Prefer confirmed suggestions over newer non-confirmed ones
     const seenOtherIds = new Map<string, MatchSuggestion>()
     for (const sug of suggestions) {
       const otherId = sug.memberIds.find(id => id !== userId)
       if (!otherId) continue
-      
+
       const existing = seenOtherIds.get(otherId)
-      if (!existing || new Date(sug.createdAt) > new Date(existing.createdAt)) {
+      if (!existing) {
         seenOtherIds.set(otherId, sug)
+      } else {
+        // Prefer confirmed over non-confirmed
+        const isCurrentConfirmed = sug.status === 'confirmed'
+        const isExistingConfirmed = existing.status === 'confirmed'
+        
+        if (isCurrentConfirmed && !isExistingConfirmed) {
+          // Current is confirmed, existing is not - prefer current
+          seenOtherIds.set(otherId, sug)
+        } else if (!isCurrentConfirmed && isExistingConfirmed) {
+          // Existing is confirmed, current is not - keep existing
+          // Do nothing
+        } else {
+          // Both same status - prefer latest
+          if (new Date(sug.createdAt) > new Date(existing.createdAt)) {
+            seenOtherIds.set(otherId, sug)
+          }
+        }
       }
     }
 
@@ -969,21 +1112,21 @@ export class SupabaseMatchRepo implements MatchRepo {
 
   async updateSuggestion(s: MatchSuggestion): Promise<void> {
     const supabase = await this.getSupabase()
-    
+
     // Prepare update object - ensure acceptedBy is always an array (not null)
     const updateData: any = {
       status: s.status
     }
-    
+
     // Only include accepted_by if it's defined (use empty array if null/undefined)
     updateData.accepted_by = s.acceptedBy || []
-    
+
     safeLogger.debug('[UpdateSuggestion] Updating suggestion', {
       id: s.id,
       status: updateData.status,
       accepted_by: updateData.accepted_by
     })
-    
+
     const { error } = await supabase
       .from('match_suggestions')
       .update(updateData)
@@ -1000,7 +1143,7 @@ export class SupabaseMatchRepo implements MatchRepo {
       })
       throw new Error(`Failed to update suggestion: ${error.message} (code: ${error.code})`)
     }
-    
+
     safeLogger.debug('[UpdateSuggestion] Successfully updated suggestion', {
       id: s.id
     })
@@ -1039,7 +1182,7 @@ export class SupabaseMatchRepo implements MatchRepo {
   async expireAllOldSuggestions(): Promise<number> {
     const supabase = await this.getSupabase()
     const nowIso = new Date().toISOString()
-    
+
     // Use set-based SQL UPDATE to expire all suggestions that are pending/accepted and past expiry
     // This is much more efficient than fetching and updating individually
     const { data, error } = await supabase
@@ -1063,7 +1206,7 @@ export class SupabaseMatchRepo implements MatchRepo {
     }
 
     const supabase = await this.getSupabase()
-    
+
     // Fetch all pair suggestions, then filter in JavaScript to find pairs with both users
     // This is more reliable than complex Supabase array queries
     let query = supabase
@@ -1082,12 +1225,12 @@ export class SupabaseMatchRepo implements MatchRepo {
     // Filter to only suggestions that contain BOTH users
     const filtered = (data || []).filter((record: any) => {
       const memberIds = record.member_ids as string[]
-      return memberIds && 
-             Array.isArray(memberIds) && 
-             memberIds.includes(userAId) && 
-             memberIds.includes(userBId)
+      return memberIds &&
+        Array.isArray(memberIds) &&
+        memberIds.includes(userAId) &&
+        memberIds.includes(userBId)
     })
-    
+
     safeLogger.debug(`[DEBUG] getSuggestionsForPair - Found ${filtered.length} suggestions for pair out of ${data?.length || 0} total pair suggestions`, {
       includeExpired,
       totalPairSuggestions: data?.length || 0,
@@ -1152,7 +1295,7 @@ export class SupabaseMatchRepo implements MatchRepo {
     // authenticated API routes where userId matches the authenticated user.
     // The API route must verify userId === auth.uid() before calling this.
     const supabase = await this.getSupabase()
-    
+
     // Use upsert with onConflict to handle unique constraint violations gracefully
     // If the blocklist entry already exists, that's fine - we just want to ensure it exists
     const { error } = await supabase
@@ -1178,5 +1321,23 @@ export class SupabaseMatchRepo implements MatchRepo {
       }
       throw new Error(`Failed to add to blocklist: ${error.message} (code: ${error.code})`)
     }
+  }
+
+  // Optimization V2
+  async findBestMatchesV2(userId: string, limit = 20): Promise<any[]> {
+    const supabase = await this.getSupabase()
+    const { data, error } = await supabase.rpc('find_best_matches_v2', {
+      p_user_id: userId,
+      p_limit: limit,
+      p_candidates_limit: 200,
+      p_min_score: 0.6
+    })
+
+    if (error) {
+      safeLogger.error('[MatchRepo] findBestMatchesV2 failed', error)
+      return []
+    }
+
+    return data || []
   }
 }

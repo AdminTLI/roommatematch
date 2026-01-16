@@ -87,3 +87,5 @@ After updating the template:
 If you want to make it more maintainable, you can check if Supabase has a variable for the project URL. Otherwise, hardcode it as shown above.
 
 
+
+

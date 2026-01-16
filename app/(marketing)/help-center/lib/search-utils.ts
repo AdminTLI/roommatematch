@@ -294,3 +294,5 @@ export function getSearchSuggestions(query: string): string[] {
   return filtered.length > 0 ? filtered.slice(0, 5) : suggestions.slice(0, 5)
 }
 
+
+

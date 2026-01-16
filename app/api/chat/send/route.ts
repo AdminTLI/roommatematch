@@ -1,8 +1,10 @@
-import { createClient } from '@/lib/supabase/server'
+import { createClient, createAdminClient } from '@/lib/supabase/server'
 import { NextRequest, NextResponse } from 'next/server'
 import { safeLogger } from '@/lib/utils/logger'
 import { checkRateLimit, getUserRateLimitKey } from '@/lib/rate-limit'
 import { getUserFriendlyError } from '@/lib/errors/user-friendly-messages'
+import { filterContent, getViolationErrorMessage } from '@/lib/utils/content-filter'
+import { createNotificationsForUsers } from '@/lib/notifications/create'
 
 export async function POST(request: NextRequest) {
   try {
@@ -62,6 +64,38 @@ export async function POST(request: NextRequest) {
       }, { status: 400 })
     }
 
+    // Content validation - check for prohibited content
+    const trimmedContent = content.trim()
+    const contentCheck = filterContent(trimmedContent)
+    
+    // Reject messages with links, emails, or phone numbers
+    if (contentCheck.hasLinks || contentCheck.hasEmail || contentCheck.hasPhone) {
+      const errorMessage = getViolationErrorMessage(contentCheck.violations.filter(v => 
+        v === 'links' || v === 'email' || v === 'phone'
+      ))
+      
+      safeLogger.warn('Message rejected due to prohibited content', {
+        userId: user.id,
+        chatId: chat_id,
+        violations: contentCheck.violations,
+        hasLinks: contentCheck.hasLinks,
+        hasEmail: contentCheck.hasEmail,
+        hasPhone: contentCheck.hasPhone
+      })
+      
+      return NextResponse.json({ 
+        error: errorMessage || getUserFriendlyError('Your message contains prohibited content')
+      }, { status: 400 })
+    }
+    
+    // Track if message should be flagged for suspicious content
+    const shouldFlag = contentCheck.suspicious.flagged
+    const flaggedReasons: string[] = []
+    
+    if (shouldFlag) {
+      flaggedReasons.push(contentCheck.suspicious.reason)
+    }
+
     // Verify user is a member of the chat (using regular client for RLS check)
     // If chat has no members, it means it was closed by an admin
     const { data: membership, error: membershipError } = await supabase
@@ -118,14 +152,24 @@ export async function POST(request: NextRequest) {
     // When inserts bypass RLS (admin client), Realtime cannot properly evaluate permissions
     // Insert with profile join - if profile doesn't exist, the insert will still succeed
     // but we'll fetch the message separately to avoid relying on the join
+    const insertData: any = {
+      chat_id,
+      user_id: user.id,
+      content: trimmedContent
+    }
+    
+    // Add flagging fields if message is suspicious
+    if (shouldFlag) {
+      insertData.is_flagged = true
+      insertData.auto_flagged = true
+      insertData.flagged_reason = flaggedReasons
+      insertData.flagged_at = new Date().toISOString()
+    }
+    
     const { data: insertedMessage, error: insertError } = await supabase
       .from('messages')
-      .insert({
-        chat_id,
-        user_id: user.id,
-        content: content.trim()
-      })
-      .select('id, content, created_at, user_id')
+      .insert(insertData)
+      .select('id, content, created_at, user_id, is_flagged, auto_flagged, flagged_reason')
       .single()
 
     if (insertError) {
@@ -192,8 +236,77 @@ export async function POST(request: NextRequest) {
     safeLogger.info('Message inserted successfully', {
       messageId: insertedMessage.id,
       userId: user.id,
-      chatId: chat_id
+      chatId: chat_id,
+      isFlagged: shouldFlag
     })
+    
+    // Notify admins if message was auto-flagged
+    if (shouldFlag && insertedMessage.is_flagged) {
+      try {
+        const admin = await createAdminClient()
+        const { data: admins } = await admin
+          .from('admins')
+          .select('user_id')
+        
+        if (admins && admins.length > 0) {
+          const adminUserIds = admins.map(a => a.user_id)
+          
+          // Get sender profile for notification
+          const { data: senderProfile } = await admin
+            .from('profiles')
+            .select('first_name, last_name')
+            .eq('user_id', user.id)
+            .maybeSingle()
+          
+          const senderName = senderProfile
+            ? [senderProfile.first_name, senderProfile.last_name].filter(Boolean).join(' ') || 'User'
+            : 'User'
+          
+          // Truncate message preview for notification
+          const messagePreview = trimmedContent.length > 100 
+            ? trimmedContent.substring(0, 100) + '...'
+            : trimmedContent
+          
+          const reasonLabels: Record<string, string> = {
+            profanity: 'Profanity',
+            spam: 'Spam',
+            suspicious_content: 'Suspicious Content',
+            excessive_caps: 'Excessive Capitalization',
+            repetitive_content: 'Repetitive Content'
+          }
+          
+          const reasonLabel = reasonLabels[contentCheck.suspicious.reason] || contentCheck.suspicious.reason
+          
+          await createNotificationsForUsers(
+            adminUserIds,
+            'admin_alert',
+            'Suspicious Message Flagged',
+            `Message from ${senderName} flagged for ${reasonLabel}: "${messagePreview}"`,
+            {
+              message_id: insertedMessage.id,
+              chat_id: chat_id,
+              sender_id: user.id,
+              sender_name: senderName,
+              flagged_reason: flaggedReasons,
+              auto_flagged: true,
+              link: `/admin/reports?type=flagged&message_id=${insertedMessage.id}`
+            }
+          )
+          
+          safeLogger.info('Notified admins about flagged message', {
+            messageId: insertedMessage.id,
+            adminCount: adminUserIds.length,
+            reason: contentCheck.suspicious.reason
+          })
+        }
+      } catch (notifyError) {
+        // Don't fail the message send if notification fails
+        safeLogger.error('Failed to notify admins about flagged message', {
+          error: notifyError,
+          messageId: insertedMessage.id
+        })
+      }
+    }
 
     // Fetch the message with profile data if available (using LEFT join via optional select)
     // This ensures we only fetch once and don't have a fallback path that could cause issues

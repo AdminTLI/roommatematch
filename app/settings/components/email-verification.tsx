@@ -48,7 +48,7 @@ export function EmailVerification({ user }: EmailVerificationProps) {
 
   // More explicit check - only verified if we have a valid ISO timestamp
   const isEmailVerified = Boolean(
-    user.email_confirmed_at && 
+    user.email_confirmed_at &&
     typeof user.email_confirmed_at === 'string' &&
     user.email_confirmed_at.length > 0 &&
     !isNaN(Date.parse(user.email_confirmed_at))
@@ -96,158 +96,142 @@ export function EmailVerification({ user }: EmailVerificationProps) {
 
   return (
     <div className="space-y-6">
-      {/* Email Verification Card */}
-      <Card className={`border-2 ${needsEmailVerification ? 'border-amber-300 dark:border-amber-600 bg-amber-50/50 dark:bg-amber-900/20' : 'border-gray-200 dark:border-border-subtle shadow-sm'}`}>
-        <CardContent className="p-6 sm:p-8">
+      {/* Email Verification Row */}
+      <div className={`bg-white/80 dark:bg-zinc-900/40 border border-zinc-200 dark:border-white/10 rounded-2xl p-6 transition-all duration-300 backdrop-blur-xl ${needsEmailVerification ? 'border-amber-500/30 bg-amber-50/80 dark:bg-amber-500/5 shadow-[0_0_20px_rgba(245,158,11,0.05)]' : ''
+        }`}>
+        <div className="space-y-6">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+            <div className="flex items-center gap-4 flex-1">
+              <div className={`p-3 rounded-xl flex-shrink-0 ${isEmailVerified ? 'bg-emerald-500/10' : 'bg-amber-500/10'
+                }`}>
+                <Mail className={`w-6 h-6 ${isEmailVerified ? 'text-emerald-600 dark:text-emerald-500' : 'text-amber-600 dark:text-amber-500'
+                  }`} />
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="text-[10px] font-bold text-zinc-500 dark:text-zinc-400 uppercase tracking-widest mb-1">Email Registration</p>
+                <p className="text-base font-semibold text-zinc-900 dark:text-white break-all">{user.email}</p>
+              </div>
+            </div>
+            {isEmailVerified ? (
+              <Badge className="bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20 px-3 py-1 rounded-full text-[10px] uppercase font-bold tracking-wider">
+                <CheckCircle className="w-3 h-3 mr-1.5" />
+                Verified
+              </Badge>
+            ) : (
+              <Badge className="bg-amber-500/10 text-amber-600 dark:text-amber-500 border-amber-500/20 px-3 py-1 rounded-full text-[10px] uppercase font-bold tracking-wider">
+                <AlertCircle className="w-3 h-3 mr-1.5" />
+                Required
+              </Badge>
+            )}
+          </div>
+
+          {needsEmailVerification && (
+            <div className="pt-6 border-t border-zinc-200 dark:border-white/5 space-y-4">
+              <div className="bg-zinc-50 dark:bg-white/5 rounded-xl p-4 border border-zinc-200 dark:border-white/5">
+                <p className="text-xs text-zinc-600 dark:text-zinc-400 leading-relaxed">
+                  You must verify your email address to access all features of the platform. We've sent a verification link to your inbox.
+                </p>
+              </div>
+              <div className="flex flex-col sm:flex-row gap-3">
+                <Button
+                  onClick={handleCompleteEmailVerification}
+                  className="bg-blue-500 hover:bg-blue-600 text-white h-11 px-6 rounded-xl font-semibold shadow-lg shadow-blue-500/20"
+                >
+                  Verify Now
+                  <ArrowRight className="ml-2 h-4 w-4" />
+                </Button>
+                <Button
+                  onClick={handleResendVerification}
+                  disabled={isResending}
+                  variant="ghost"
+                  className="text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white hover:bg-zinc-100 dark:hover:bg-white/5 h-11 px-6 rounded-xl"
+                >
+                  {isResending ? 'Sending...' : 'Resend Link'}
+                </Button>
+              </div>
+              {message && (
+                <div className={`p-3 rounded-xl text-xs font-medium border ${message.includes('sent')
+                    ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20'
+                    : 'bg-red-500/10 text-red-600 dark:text-red-400 border-red-500/20'
+                  }`}>
+                  {message}
+                </div>
+              )}
+            </div>
+          )}
+
+          {!needsEmailVerification && !isEmailVerified && (
+            <div className="pt-4 border-t border-zinc-200 dark:border-white/5">
+              <Button
+                onClick={handleResendVerification}
+                disabled={isResending}
+                variant="ghost"
+                className="text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white hover:bg-zinc-100 dark:hover:bg-white/5 h-10 px-4 rounded-lg text-sm"
+              >
+                {isResending ? 'Sending Link...' : 'Resend Verification Email'}
+              </Button>
+
+              {message && (
+                <div className={`mt-4 p-3 rounded-xl text-xs font-medium border ${message.includes('sent')
+                    ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20'
+                    : 'bg-red-500/10 text-red-600 dark:text-red-400 border-red-500/20'
+                  }`}>
+                  {message}
+                </div>
+              )}
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* Identity Verification Row */}
+      {isEmailVerified && (
+        <div className={`bg-white/80 dark:bg-zinc-900/40 border border-zinc-200 dark:border-white/10 rounded-2xl p-6 transition-all duration-300 backdrop-blur-xl ${needsPersonaVerification ? 'border-amber-500/30 bg-amber-50/80 dark:bg-amber-500/5 shadow-[0_0_20px_rgba(245,158,11,0.05)]' : ''
+          }`}>
           <div className="space-y-6">
             <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
               <div className="flex items-center gap-4 flex-1">
-                <div className={`p-3 rounded-xl flex-shrink-0 ${
-                  isEmailVerified ? 'bg-green-100 dark:bg-green-900/30' : 'bg-amber-100 dark:bg-amber-900/30'
-                }`}>
-                  <Mail className={`w-6 h-6 ${
-                    isEmailVerified ? 'text-green-600 dark:text-green-400' : 'text-amber-600 dark:text-amber-400'
-                  }`} />
+                <div className={`p-3 rounded-xl flex-shrink-0 ${isPersonaVerified ? 'bg-emerald-500/10' : 'bg-amber-500/10'
+                  }`}>
+                  <Shield className={`w-6 h-6 ${isPersonaVerified ? 'text-emerald-600 dark:text-emerald-500' : 'text-amber-600 dark:text-amber-500'
+                    }`} />
                 </div>
                 <div className="flex-1 min-w-0">
-                  <p className="text-xs font-medium text-gray-500 dark:text-text-muted uppercase tracking-wide mb-2">Email Address</p>
-                  <p className="text-base sm:text-lg font-semibold text-gray-900 dark:text-text-primary break-all">{user.email}</p>
+                  <p className="text-[10px] font-bold text-zinc-500 dark:text-zinc-400 uppercase tracking-widest mb-1">Identity Security</p>
+                  <p className="text-base font-semibold text-zinc-900 dark:text-white">Persona Verification</p>
                 </div>
               </div>
-              {isEmailVerified ? (
-                <Badge className="bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-300 border-green-200 dark:border-green-700 px-4 py-2 flex items-center gap-2 flex-shrink-0">
-                  <CheckCircle className="w-4 h-4 flex-shrink-0" />
-                  <span className="font-semibold text-sm whitespace-nowrap">Verified</span>
+              {isPersonaVerified ? (
+                <Badge className="bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20 px-3 py-1 rounded-full text-[10px] uppercase font-bold tracking-wider">
+                  <CheckCircle className="w-3 h-3 mr-1.5" />
+                  Verified
                 </Badge>
               ) : (
-                <Badge className="bg-amber-100 dark:bg-amber-900/30 text-amber-800 dark:text-amber-300 border-amber-200 dark:border-amber-700 px-4 py-2 flex items-center gap-2 flex-shrink-0">
-                  <AlertCircle className="w-4 h-4 flex-shrink-0" />
-                  <span className="font-semibold text-sm whitespace-nowrap">Not Verified</span>
+                <Badge className="bg-amber-500/10 text-amber-600 dark:text-amber-500 border-amber-500/20 px-3 py-1 rounded-full text-[10px] uppercase font-bold tracking-wider">
+                  <AlertCircle className="w-3 h-3 mr-1.5" />
+                  Required
                 </Badge>
               )}
             </div>
-            
-            {needsEmailVerification && (
-              <Alert variant="destructive" className="border-amber-300 bg-amber-50">
-                <AlertCircle className="h-4 w-4 text-amber-600" />
-                <AlertDescription className="text-amber-900">
-                  <div className="space-y-3">
-                    <p className="font-semibold">Email verification required</p>
-                    <p className="text-sm">
-                      You must verify your email address to access all features of the platform.
-                    </p>
-                    <div className="flex flex-col sm:flex-row gap-3">
-                      <Button 
-                        onClick={handleCompleteEmailVerification}
-                        className="bg-amber-600 hover:bg-amber-700 text-white h-11 text-base min-w-[200px]"
-                      >
-                        Complete Email Verification
-                        <ArrowRight className="ml-2 h-4 w-4" />
-                      </Button>
-                      <Button 
-                        onClick={handleResendVerification}
-                        disabled={isResending}
-                        variant="outline"
-                        className="border-amber-300 text-amber-700 hover:bg-amber-100 h-11 text-base min-w-[200px]"
-                      >
-                        {isResending ? 'Sending...' : 'Resend Verification Email'}
-                      </Button>
-                    </div>
-                    {message && (
-                      <div className={`p-3 rounded-lg text-sm mt-2 ${
-                        message.includes('sent') 
-                          ? 'bg-green-50 text-green-700 border border-green-200' 
-                          : 'bg-red-50 text-red-700 border border-red-200'
-                      }`}>
-                        {message}
-                      </div>
-                    )}
-                  </div>
-                </AlertDescription>
-              </Alert>
-            )}
 
-            {!needsEmailVerification && !isEmailVerified && (
-              <div className="pt-4 border-t border-gray-200 space-y-4">
-                <Button 
-                  onClick={handleResendVerification}
-                  disabled={isResending}
-                  variant="outline"
-                  className="w-full sm:w-auto min-w-[200px] h-11 text-base"
+            {needsPersonaVerification && (
+              <div className="pt-6 border-t border-zinc-200 dark:border-white/5 space-y-4">
+                <div className="bg-zinc-50 dark:bg-white/5 rounded-xl p-4 border border-zinc-200 dark:border-white/5">
+                  <p className="text-xs text-zinc-600 dark:text-zinc-400 leading-relaxed">
+                    Identity verification is required to build trust and security within the community. This process only takes 2 minutes.
+                  </p>
+                </div>
+                <Button
+                  onClick={handleCompletePersonaVerification}
+                  className="bg-blue-500 hover:bg-blue-600 text-white h-11 px-8 rounded-xl font-semibold shadow-lg shadow-blue-500/20 w-full sm:w-auto"
                 >
-                  {isResending ? 'Sending...' : 'Resend Verification Email'}
+                  Start Verification
+                  <ArrowRight className="ml-2 h-4 w-4" />
                 </Button>
-
-                {message && (
-                  <div className={`p-3 rounded-lg text-sm ${
-                    message.includes('sent') 
-                      ? 'bg-green-50 text-green-700 border border-green-200' 
-                      : 'bg-red-50 text-red-700 border border-red-200'
-                  }`}>
-                    {message}
-                  </div>
-                )}
               </div>
             )}
           </div>
-        </CardContent>
-      </Card>
-
-      {/* Persona Verification Card */}
-      {isEmailVerified && (
-        <Card className={`border-2 ${needsPersonaVerification ? 'border-amber-300 dark:border-amber-600 bg-amber-50/50 dark:bg-amber-900/20' : 'border-gray-200 dark:border-border-subtle shadow-sm'}`}>
-          <CardContent className="p-6 sm:p-8">
-            <div className="space-y-6">
-              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-                <div className="flex items-center gap-4 flex-1">
-                  <div className={`p-3 rounded-xl flex-shrink-0 ${
-                    isPersonaVerified ? 'bg-green-100 dark:bg-green-900/30' : 'bg-amber-100 dark:bg-amber-900/30'
-                  }`}>
-                    <Shield className={`w-6 h-6 ${
-                      isPersonaVerified ? 'text-green-600 dark:text-green-400' : 'text-amber-600 dark:text-amber-400'
-                    }`} />
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-xs font-medium text-gray-500 dark:text-text-muted uppercase tracking-wide mb-2">Identity Verification</p>
-                    <p className="text-base sm:text-lg font-semibold text-gray-900 dark:text-text-primary">Persona Verification</p>
-                  </div>
-                </div>
-                {isPersonaVerified ? (
-                  <Badge className="bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-300 border-green-200 dark:border-green-700 px-4 py-2 flex items-center gap-2 flex-shrink-0">
-                    <CheckCircle className="w-4 h-4 flex-shrink-0" />
-                    <span className="font-semibold text-sm whitespace-nowrap">Verified</span>
-                  </Badge>
-                ) : (
-                  <Badge className="bg-amber-100 dark:bg-amber-900/30 text-amber-800 dark:text-amber-300 border-amber-200 dark:border-amber-700 px-4 py-2 flex items-center gap-2 flex-shrink-0">
-                    <AlertCircle className="w-4 h-4 flex-shrink-0" />
-                    <span className="font-semibold text-sm whitespace-nowrap">Not Verified</span>
-                  </Badge>
-                )}
-              </div>
-              
-              {needsPersonaVerification && (
-                <Alert variant="destructive" className="border-amber-300 bg-amber-50">
-                  <AlertCircle className="h-4 w-4 text-amber-600" />
-                  <AlertDescription className="text-amber-900">
-                    <div className="space-y-3">
-                      <p className="font-semibold">Identity verification required</p>
-                      <p className="text-sm">
-                        You must complete identity verification to access all features of the platform.
-                      </p>
-                      <Button 
-                        onClick={handleCompletePersonaVerification}
-                        className="bg-amber-600 hover:bg-amber-700 text-white h-11 text-base min-w-[220px]"
-                      >
-                        Complete Identity Verification
-                        <ArrowRight className="ml-2 h-4 w-4" />
-                      </Button>
-                    </div>
-                  </AlertDescription>
-                </Alert>
-              )}
-            </div>
-          </CardContent>
-        </Card>
+        </div>
       )}
     </div>
   )

@@ -15,6 +15,7 @@ const content = {
     features: "Features",
     pricing: "Pricing",
     universities: "Universities",
+
     aboutUs: "About us",
     blog: "Blog",
     careers: "Careers",
@@ -37,6 +38,7 @@ const content = {
     features: "Functies",
     pricing: "Prijzen",
     universities: "Universiteiten",
+
     aboutUs: "Over ons",
     blog: "Blog",
     careers: "Carrières",
@@ -65,9 +67,9 @@ export default function Footer() {
             <h3 className="text-white text-lg sm:text-xl font-semibold">Domu Match</h3>
             <p className="text-sm sm:text-base text-slate-400 max-w-prose">{t.brandDescription}</p>
             <div className="flex items-center gap-3">
-              <a aria-label="Twitter" className="rounded-full p-2 bg-white/5 hover:bg-white/10 focus-visible:ring-2 focus-visible:ring-brand-primary flex items-center justify-center min-w-[44px] min-h-[44px]"><Twitter size={18}/></a>
-              <a aria-label="LinkedIn" href="https://www.linkedin.com/company/domu-match/?viewAsMember=true" target="_blank" rel="noopener noreferrer" className="rounded-full p-2 bg-white/5 hover:bg-white/10 focus-visible:ring-2 focus-visible:ring-brand-primary flex items-center justify-center min-w-[44px] min-h-[44px]"><Linkedin size={18}/></a>
-              <a aria-label="Instagram" href="https://www.instagram.com/domumatch" target="_blank" rel="noopener noreferrer" className="rounded-full p-2 bg-white/5 hover:bg-white/10 focus-visible:ring-2 focus-visible:ring-brand-primary flex items-center justify-center min-w-[44px] min-h-[44px]"><Instagram size={18}/></a>
+              <a aria-label="Twitter" className="rounded-full p-2 bg-white/5 hover:bg-white/10 focus-visible:ring-2 focus-visible:ring-brand-primary flex items-center justify-center min-w-[44px] min-h-[44px]"><Twitter size={18} /></a>
+              <a aria-label="LinkedIn" href="https://www.linkedin.com/company/domu-match/?viewAsMember=true" target="_blank" rel="noopener noreferrer" className="rounded-full p-2 bg-white/5 hover:bg-white/10 focus-visible:ring-2 focus-visible:ring-brand-primary flex items-center justify-center min-w-[44px] min-h-[44px]"><Linkedin size={18} /></a>
+              <a aria-label="Instagram" href="https://www.instagram.com/domumatch" target="_blank" rel="noopener noreferrer" className="rounded-full p-2 bg-white/5 hover:bg-white/10 focus-visible:ring-2 focus-visible:ring-brand-primary flex items-center justify-center min-w-[44px] min-h-[44px]"><Instagram size={18} /></a>
             </div>
           </div>
 
@@ -79,6 +81,7 @@ export default function Footer() {
               <li><Link href="/features" className="hover:text-white">{t.features}</Link></li>
               <li><Link href="/pricing" className="hover:text-white">{t.pricing}</Link></li>
               <li><Link href="/universities" className="hover:text-white">{t.universities}</Link></li>
+
             </ul>
           </div>
 
@@ -103,8 +106,8 @@ export default function Footer() {
           </div>
         </div>
 
-        <div className="mt-8 sm:mt-12 border-t border-white/10 pt-6 flex flex-col sm:flex-row items-center justify-between gap-4">
-          <p className="text-slate-500 text-xs sm:text-sm text-center sm:text-left">© 2026 Domu Match. {t.allRightsReserved}</p>
+        <div className="mt-8 sm:mt-12 border-t border-white/10 pt-6 flex flex-col items-center gap-4">
+          <p className="text-slate-500 text-xs sm:text-sm text-center">© 2026 Domu Match. {t.allRightsReserved}</p>
           <div className="flex items-center gap-4 sm:gap-6 text-xs sm:text-sm text-slate-400">
             <Link href="/privacy" className="hover:text-white py-2">{t.privacy}</Link>
             <Link href="/terms" className="hover:text-white py-2">{t.terms}</Link>

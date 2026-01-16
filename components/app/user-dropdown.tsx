@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Button } from '@/components/ui/button'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { 
@@ -27,10 +27,29 @@ interface UserDropdownProps {
 export function UserDropdown({ user }: UserDropdownProps) {
   const router = useRouter()
   const supabase = createClient()
+  const [mounted, setMounted] = useState(false)
+
+  useEffect(() => {
+    setMounted(true)
+  }, [])
 
   const handleSignOut = async () => {
     await supabase.auth.signOut()
     router.push('/')
+  }
+
+  // Prevent hydration mismatch by only rendering dropdown after mount
+  if (!mounted) {
+    return (
+      <Button variant="ghost" className="relative h-10 w-10 rounded-full">
+        <Avatar className="h-10 w-10">
+          <AvatarImage src={user.avatar} />
+          <AvatarFallback>
+            {user.name?.[0]?.toUpperCase() || user.email.charAt(0)}
+          </AvatarFallback>
+        </Avatar>
+      </Button>
+    )
   }
 
   return (

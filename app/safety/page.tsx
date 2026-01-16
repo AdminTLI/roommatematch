@@ -16,19 +16,32 @@ export default async function SafetyPage() {
   let universityName: string | null = null
 
   try {
-    // Get user's profile to find university_id
+    // First try to get university_id from profiles table
     const { data: profile } = await supabase
       .from('profiles')
       .select('university_id')
       .eq('user_id', user.id)
       .maybeSingle()
 
-    if (profile?.university_id) {
+    let universityId = profile?.university_id
+
+    // If not found in profiles, try user_academic table as fallback
+    if (!universityId) {
+      const { data: academic } = await supabase
+        .from('user_academic')
+        .select('university_id')
+        .eq('user_id', user.id)
+        .maybeSingle()
+      
+      universityId = academic?.university_id
+    }
+
+    if (universityId) {
       // Fetch university security phone
       const { data: university } = await supabase
         .from('universities')
         .select('security_phone, name')
-        .eq('id', profile.university_id)
+        .eq('id', universityId)
         .maybeSingle()
 
       if (university) {

@@ -45,3 +45,5 @@ WHERE n.type = 'match_created'
   AND n.message NOT LIKE '%someone%'
   AND (ms.id IS NULL OR ms.status != 'confirmed');
 
+
+

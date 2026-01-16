@@ -7,12 +7,12 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Progress } from '@/components/ui/progress'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Badge } from '@/components/ui/badge'
-import { 
-  FileText, 
-  Edit, 
-  RotateCcw, 
-  CheckCircle, 
-  Clock, 
+import {
+  FileText,
+  Edit,
+  RotateCcw,
+  CheckCircle,
+  Clock,
   AlertCircle,
   Loader2
 } from 'lucide-react'
@@ -119,152 +119,141 @@ export function QuestionnaireSettings({ progressData }: QuestionnaireSettingsPro
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-10">
       {error && (
-        <Alert variant="destructive">
+        <Alert variant="destructive" className="bg-red-500/10 border-red-500/20 text-red-600 dark:text-red-400">
           <AlertCircle className="h-4 w-4" />
           <AlertDescription>{error}</AlertDescription>
         </Alert>
       )}
 
       {success && (
-        <Alert className="border-green-200 bg-green-50">
-          <CheckCircle className="h-4 w-4 text-green-600" />
-          <AlertDescription className="text-green-800">{success}</AlertDescription>
+        <Alert className="bg-emerald-500/10 border-emerald-500/20 text-emerald-600 dark:text-emerald-400">
+          <CheckCircle className="h-4 w-4" />
+          <AlertDescription>{success}</AlertDescription>
         </Alert>
       )}
 
-      {/* Progress Overview */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <FileText className="w-5 h-5" />
-            Questionnaire Progress
-          </CardTitle>
-          <CardDescription>
-            Track your compatibility questionnaire completion status.
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-6">
-          {/* Progress Section */}
-          <div className="space-y-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-gray-600 dark:text-text-secondary mb-1">Progress</p>
-                <div className="flex items-baseline gap-2">
-                  <span className="text-3xl font-bold text-gray-900 dark:text-text-primary">{completedSections.length}</span>
-                  <span className="text-lg text-gray-500 dark:text-text-muted">/ {totalSections}</span>
-                  <span className="text-sm text-gray-500 dark:text-text-muted">sections</span>
-                </div>
-              </div>
-              <div>
-                {isFullySubmitted ? (
-                  <Badge variant="default" className="bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-300 border-green-200 dark:border-green-700 px-3 py-1.5">
-                    <CheckCircle className="w-4 h-4 mr-1.5" />
-                    Completed
-                  </Badge>
-                ) : (
-                  <Badge variant="secondary" className="px-3 py-1.5">
-                    <Clock className="w-4 h-4 mr-1.5" />
-                    In Progress
-                  </Badge>
-                )}
+      {/* Progress Overview Group */}
+      <div className="space-y-4">
+        <h3 className="text-sm font-medium text-zinc-600 dark:text-zinc-400 uppercase tracking-wider px-1">Progress Overview</h3>
+        <div className="bg-white/80 dark:bg-zinc-900/40 border border-zinc-200 dark:border-white/10 rounded-2xl overflow-hidden p-6 space-y-6 backdrop-blur-xl">
+          <div className="flex items-end justify-between">
+            <div className="space-y-1">
+              <p className="text-sm text-zinc-600 dark:text-zinc-400">Overall Completion</p>
+              <div className="flex items-baseline gap-2">
+                <span className="text-4xl font-bold text-zinc-900 dark:text-white">{progressPercentage}%</span>
+                <span className="text-xs text-zinc-500 dark:text-zinc-400 uppercase tracking-widest font-semibold pb-1">
+                  {completedSections.length} / {totalSections} Sections
+                </span>
               </div>
             </div>
-            <Progress value={progressPercentage} className="h-3" />
+            {isFullySubmitted ? (
+              <Badge className="bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20 px-3 py-1 rounded-full text-[10px] uppercase font-bold tracking-wider">
+                Completed
+              </Badge>
+            ) : (
+              <Badge className="bg-blue-500/10 text-blue-600 dark:text-blue-400 border-blue-500/20 px-3 py-1 rounded-full text-[10px] uppercase font-bold tracking-wider">
+                In Progress
+              </Badge>
+            )}
           </div>
 
-          {/* Status Information */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-4 border-t border-gray-200 dark:border-border-subtle">
+          <div className="space-y-2">
+            <Progress value={progressPercentage} className="h-2 bg-zinc-200 dark:bg-white/5 overflow-hidden">
+              {/* Note: In a real app, the inner div would have bg-blue-500 */}
+            </Progress>
+            <div className="flex justify-between text-[10px] text-zinc-500 dark:text-zinc-400 uppercase font-bold tracking-tighter">
+              <span>Start</span>
+              <span>Submit</span>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-2 gap-8 pt-4 border-t border-zinc-200 dark:border-white/5">
             <div className="space-y-1">
-              <p className="text-xs font-medium text-gray-500 dark:text-text-muted uppercase tracking-wide">Last Updated</p>
-              <p className="text-sm font-semibold text-gray-900 dark:text-text-primary">{formatDate(lastUpdated)}</p>
+              <p className="text-[10px] font-bold text-zinc-500 dark:text-zinc-400 uppercase tracking-widest">Last Updated</p>
+              <p className="text-sm text-zinc-900 dark:text-zinc-100">{formatDate(lastUpdated)}</p>
             </div>
             {submittedAt && (
-              <div className="space-y-1">
-                <p className="text-xs font-medium text-gray-500 dark:text-text-muted uppercase tracking-wide">Submitted</p>
-                <p className="text-sm font-semibold text-gray-900 dark:text-text-primary">{formatDate(submittedAt)}</p>
+              <div className="space-y-1 text-right">
+                <p className="text-[10px] font-bold text-zinc-500 dark:text-zinc-400 uppercase tracking-widest">Submitted</p>
+                <p className="text-sm text-zinc-900 dark:text-zinc-100">{formatDate(submittedAt)}</p>
               </div>
             )}
           </div>
-        </CardContent>
-      </Card>
+        </div>
+      </div>
 
-      {/* Completed Sections */}
+      {/* Completed Sections Group */}
       {completedSections.length > 0 && (
-        <Card>
-          <CardHeader>
-            <CardTitle>Completed Sections</CardTitle>
-            <CardDescription>
-              Click on any section to edit your responses.
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-              {completedSections.map((section) => (
-                <button
-                  key={section}
-                  onClick={() => handleEditSection(section)}
-                  className="flex items-center justify-between gap-3 p-3 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-xl hover:bg-green-100 dark:hover:bg-green-900/30 transition-colors text-left group"
-                >
-                  <div className="flex items-center gap-3 flex-1 min-w-0">
-                    <CheckCircle className="w-5 h-5 text-green-600 dark:text-green-400 flex-shrink-0" />
-                    <span className="text-sm font-medium text-gray-900 dark:text-text-primary truncate">{getSectionDisplayName(section)}</span>
+        <div className="space-y-4">
+          <h3 className="text-sm font-medium text-zinc-600 dark:text-zinc-400 uppercase tracking-wider px-1">Completed Sections</h3>
+          <div className="bg-white/80 dark:bg-zinc-900/40 border border-zinc-200 dark:border-white/10 rounded-2xl overflow-hidden divide-y divide-zinc-200 dark:divide-white/5 backdrop-blur-xl">
+            {completedSections.map((section) => (
+              <button
+                key={section}
+                onClick={() => handleEditSection(section)}
+                className="w-full flex items-center justify-between p-4 hover:bg-zinc-100 dark:hover:bg-white/5 transition-all duration-300 group text-left"
+              >
+                <div className="flex items-center gap-3">
+                  <div className="w-8 h-8 rounded-lg bg-emerald-500/10 flex items-center justify-center">
+                    <CheckCircle className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
                   </div>
-                  <Edit className="w-4 h-4 text-gray-400 dark:text-text-muted group-hover:text-gray-600 dark:group-hover:text-text-secondary flex-shrink-0 opacity-0 group-hover:opacity-100 transition-opacity" />
-                </button>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
+                  <div>
+                    <span className="text-zinc-900 dark:text-zinc-100 text-sm font-medium block">{getSectionDisplayName(section)}</span>
+                    <span className="text-[10px] text-zinc-500 dark:text-zinc-400 uppercase font-bold tracking-tighter">Section Completed</span>
+                  </div>
+                </div>
+                <Edit className="w-4 h-4 text-zinc-500 dark:text-zinc-400 group-hover:text-zinc-900 dark:group-hover:text-white transition-colors" />
+              </button>
+            ))}
+          </div>
+        </div>
       )}
 
-      {/* Actions */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Questionnaire Actions</CardTitle>
-          <CardDescription>
-            Manage your questionnaire responses and completion status.
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="flex flex-col sm:flex-row gap-3">
-            <Button 
+      {/* Actions Group */}
+      <div className="space-y-4">
+        <h3 className="text-sm font-medium text-zinc-600 dark:text-zinc-400 uppercase tracking-wider px-1">Quick Actions</h3>
+        <div className="bg-white/80 dark:bg-zinc-900/40 border border-zinc-200 dark:border-white/10 rounded-2xl p-6 space-y-6 backdrop-blur-xl">
+          <div className="flex flex-col sm:flex-row gap-4">
+            <Button
               onClick={handleEditAnswers}
-              variant="primary"
-              className="flex items-center gap-2"
-              size="lg"
+              className="flex-1 h-12 bg-blue-500 hover:bg-blue-600 text-white rounded-xl shadow-lg shadow-blue-500/20 font-semibold"
             >
-              <Edit className="w-4 h-4" />
-              Edit My Answers
+              <Edit className="w-4 h-4 mr-2" />
+              Edit Responses
             </Button>
-            
-            <Button 
+
+            <Button
               onClick={handleRetakeQuestionnaire}
               variant="outline"
               disabled={isResetting}
-              className="flex items-center gap-2"
+              className="flex-1 h-12 border-zinc-200 dark:border-white/10 hover:bg-zinc-100 dark:hover:bg-white/5 text-zinc-900 dark:text-zinc-100 rounded-xl"
             >
               {isResetting ? (
                 <>
-                  <Loader2 className="w-4 h-4 animate-spin" />
+                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
                   Resetting...
                 </>
               ) : (
                 <>
-                  <RotateCcw className="w-4 h-4" />
-                  Retake Questionnaire
+                  <RotateCcw className="w-4 h-4 mr-2" />
+                  Retake All
                 </>
               )}
             </Button>
           </div>
 
-          <div className="text-sm text-gray-500 dark:text-text-muted space-y-1">
-            <p><strong className="text-gray-700 dark:text-text-primary">Edit My Answers:</strong> Modify your existing responses without losing progress.</p>
-            <p><strong className="text-gray-700 dark:text-text-primary">Retake Questionnaire:</strong> Start fresh with a new questionnaire (clears submission status).</p>
+          <div className="bg-zinc-50 dark:bg-zinc-900/60 p-4 rounded-xl border border-zinc-200 dark:border-white/5 space-y-3">
+            <p className="text-xs leading-relaxed text-zinc-600 dark:text-zinc-400">
+              <strong className="text-zinc-900 dark:text-zinc-100">Edit Responses:</strong> Modify specific sections without clearing your progress. Your current matches will be updated automatically.
+            </p>
+            <p className="text-xs leading-relaxed text-zinc-600 dark:text-zinc-400">
+              <strong className="text-zinc-900 dark:text-zinc-100">Retake All:</strong> This will archive your current responses and start the matching process from scratch.
+            </p>
           </div>
-        </CardContent>
-      </Card>
+        </div>
+      </div>
     </div>
   )
 }

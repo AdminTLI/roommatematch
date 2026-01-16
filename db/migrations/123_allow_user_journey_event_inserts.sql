@@ -15,3 +15,5 @@ CREATE POLICY "Users can insert their own journey events" ON user_journey_events
 
 
 
+
+

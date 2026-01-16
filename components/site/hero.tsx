@@ -62,7 +62,7 @@ export function Hero() {
       traits: ["Studierooster", "Netheid", "Stilte uren"]
     },
     {
-      name: "Lucas", 
+      name: "Lucas",
       match: 89,
       university: "Universiteit van Amsterdam",
       program: "Economie",
@@ -79,7 +79,7 @@ export function Hero() {
       traits: ["Study schedule", "Cleanliness", "Quiet hours"]
     },
     {
-      name: "Lucas", 
+      name: "Lucas",
       match: 89,
       university: "University of Amsterdam",
       program: "Economics",
@@ -104,17 +104,17 @@ export function Hero() {
               <span className="text-xs">✨</span>
               {locale === 'nl' ? 'Aangedreven door AI' : 'Powered by AI'}
             </div>
-            
+
             {/* Main Heading */}
             <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-bold leading-tight tracking-tight text-brand-text">
               {t.title} <span className="text-brand-primary">{t.titleStrangers}</span> {t.titleTo} <span className="text-brand-primary">{t.titleRoommates}</span>
             </h1>
-            
+
             {/* Subtitle */}
             <p className="text-base sm:text-lg md:text-xl lg:text-2xl leading-relaxed text-brand-muted max-w-2xl">
               {t.subtitle}
             </p>
-            
+
             {/* CTA Buttons */}
             <div className="flex flex-col sm:flex-row gap-4 pt-2">
               <Button
@@ -158,7 +158,7 @@ export function Hero() {
           {/* Right column - Match Cards */}
           <div className="relative z-10 grid gap-4 sm:gap-6 lg:gap-8 mt-8 md:mt-0">
             {mockMatches.map((match, index) => (
-              <Card 
+              <Card
                 key={match.name}
                 className="rounded-2xl border-2 border-brand-border/50 bg-white shadow-elev-2 p-4 sm:p-6 lg:p-8 transition-all duration-300 hover:shadow-elev-2 hover:-translate-y-1 hover:border-brand-primary/30"
               >
@@ -172,7 +172,7 @@ export function Hero() {
                     </span>
                   </div>
                 </div>
-                
+
                 <div className="space-y-3">
                   <h3 className="text-2xl lg:text-3xl font-bold text-brand-text">
                     {match.name}
@@ -180,11 +180,12 @@ export function Hero() {
                   <div className="space-y-1 text-base text-brand-muted">
                     <div className="font-medium">{match.program}</div>
                     <div>{match.university}</div>
+
                   </div>
                   <div className="pt-2">
                     <div className="flex flex-wrap gap-2">
                       {match.traits.map((trait, traitIndex) => (
-                        <span 
+                        <span
                           key={traitIndex}
                           className="inline-flex items-center px-3 py-1.5 rounded-full bg-brand-primary/5 border border-brand-primary/10 text-sm font-medium text-brand-text"
                         >

@@ -5,10 +5,10 @@ import { useRouter } from 'next/navigation'
 import { useState, useEffect, useCallback, useRef, useMemo } from 'react'
 import { useQuery, useQueries } from '@tanstack/react-query'
 import { createPortal } from 'react-dom'
-import { 
-  TrendingUp, 
-  Users, 
-  MessageCircle, 
+import {
+  TrendingUp,
+  Users,
+  MessageCircle,
   Calendar,
   ArrowRight,
   Plus,
@@ -27,9 +27,13 @@ import {
   User,
   Building2,
   Settings,
-  LayoutDashboard
+  LayoutDashboard,
+  Sparkles,
+  Zap
 } from 'lucide-react'
+import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
+import { DiscoveryCard } from './discovery-card'
 import { EmptyState } from '@/components/ui/empty-state'
 import { Card, CardContent } from '@/components/ui/card'
 import type { DashboardData } from '@/types/dashboard'
@@ -100,81 +104,237 @@ export function DashboardContent({ hasCompletedQuestionnaire = false, hasPartial
       logger.log('[loadRecentMatches] No user ID provided')
       return []
     }
-    
+
     return monitorQuery('fetchRecentMatches', async () => {
       try {
         logger.log('[loadRecentMatches] Fetching recent match suggestions for user:', user.id)
-        
-        // Fetch recent match suggestions from match_suggestions table
-        // Get suggestions where user is in member_ids array, ordered by most recent
-        const now = new Date().toISOString()
-        const { data: suggestions, error: suggestionsError } = await supabase
-        .from('match_suggestions')
-        .select('id, member_ids, fit_score, fit_index, status, created_at, expires_at')
-        .eq('kind', 'pair')
-        .contains('member_ids', [user.id])
-        .neq('status', 'rejected')
-        .gte('expires_at', now) // Only non-expired suggestions
-        .order('created_at', { ascending: false }) // Most recent first
-        .limit(20) // Get more to deduplicate and find 3 most recent
 
-      if (suggestionsError) {
-        logger.error('[loadRecentMatches] Error loading suggestions:', suggestionsError)
-        return []
-      }
-
-      logger.log('[loadRecentMatches] Raw suggestions data:', {
-        suggestionsCount: suggestions?.length || 0,
-        suggestionsData: suggestions
-      })
-
-      if (!suggestions || suggestions.length === 0) {
-        return []
-      }
-
-      // Extract other user ID from each suggestion and deduplicate by keeping most recent
-      // Map: otherUserId -> { suggestionId, created_at }
-      const matchMap = new Map<string, { suggestionId: string; created_at: string }>()
-      suggestions.forEach((s: any) => {
-        const memberIds = s.member_ids as string[]
-        if (!memberIds || memberIds.length !== 2) return
-        
-        // Find the other user (not the current user)
-        const otherUserId = memberIds[0] === user.id ? memberIds[1] : memberIds[0]
-        
-        // Keep the most recent suggestion for each user
-        const existing = matchMap.get(otherUserId)
-        if (!existing || new Date(s.created_at) > new Date(existing.created_at)) {
-          matchMap.set(otherUserId, { suggestionId: s.id, created_at: s.created_at })
+        // Load processed suggestions from localStorage (same as matches page)
+        // This ensures we filter out suggestions that have been declined/accepted/confirmed
+        const STORAGE_KEY = `processed_suggestions_${user.id}`
+        const processedSuggestions = new Map<string, 'declined' | 'accepted' | 'confirmed'>()
+        if (typeof window !== 'undefined') {
+          try {
+            const stored = localStorage.getItem(STORAGE_KEY)
+            if (stored) {
+              const data = JSON.parse(stored) as Record<string, { status: string; timestamp: number }>
+              for (const [id, value] of Object.entries(data)) {
+                if (value.status === 'declined' || value.status === 'accepted' || value.status === 'confirmed') {
+                  processedSuggestions.set(id, value.status as 'declined' | 'accepted' | 'confirmed')
+                }
+              }
+            }
+          } catch (error) {
+            logger.warn('[loadRecentMatches] Failed to load processed suggestions from localStorage:', error)
+          }
         }
-      })
 
-      // Get the 3 most recent unique matches (sorted by created_at)
-      const recentMatches = Array.from(matchMap.entries())
-        .map(([userId, data]) => ({ userId, created_at: data.created_at }))
-        .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
-        .slice(0, 3) // Take 3 most recent
+        // Use the same API endpoint as the matches page to ensure consistency
+        // This uses the same RPC deduplication logic
+        const response = await fetch('/api/match/suggestions/my?limit=20&offset=0')
+        if (!response.ok) {
+          logger.error('[loadRecentMatches] Error fetching suggestions from API:', response.statusText)
+          return []
+        }
 
-      if (recentMatches.length === 0) {
-        return []
-      }
+        const data = await response.json()
+        const rawSuggestions = data.suggestions || []
 
-      const recentUserIds = recentMatches.map(m => m.userId)
+        logger.log('[loadRecentMatches] Raw suggestions from API:', {
+          suggestionsCount: rawSuggestions.length,
+          processedSuggestionsCount: processedSuggestions.size
+        })
 
-      // Compute compatibility scores using batch function when multiple users
-      // Falls back to individual calls with caching for single user
-      let compatibilityScores: Array<{ userId: string; score: number }>
-      
-      if (recentUserIds.length > 1) {
-        // Use batch function for multiple users (more efficient)
-        try {
-          const { data, error } = await supabase.rpc('compute_compatibility_scores_batch', {
-            user_a_id: user.id,
-            user_b_ids: recentUserIds
+        if (rawSuggestions.length === 0) {
+          return []
+        }
+
+        // Client-side dedupe: keep only latest suggestion per otherId (same as matches page)
+        const deduped = new Map<string, typeof rawSuggestions[0]>()
+        for (const sug of rawSuggestions) {
+          const otherId = sug.memberIds.find((id: string) => id !== user.id)
+          if (!otherId) continue
+
+          const existing = deduped.get(otherId)
+          if (!existing || new Date(sug.createdAt) > new Date(existing.createdAt)) {
+            deduped.set(otherId, sug)
+          }
+        }
+
+        // Sync localStorage with database: Clear entries where DB status doesn't match localStorage
+        const staleEntries: string[] = []
+        Array.from(deduped.values()).forEach(s => {
+          const cachedStatus = processedSuggestions.get(s.id)
+          if (cachedStatus) {
+            // If DB shows pending but localStorage says processed, localStorage is stale - clear it
+            if (s.status === 'pending' && (cachedStatus === 'declined' || cachedStatus === 'accepted' || cachedStatus === 'confirmed')) {
+              logger.log('[loadRecentMatches] Detected stale localStorage entry:', {
+                id: s.id,
+                cachedStatus,
+                dbStatus: s.status
+              })
+              staleEntries.push(s.id)
+            }
+          }
+        })
+
+        // Remove stale entries from processedSuggestions
+        if (staleEntries.length > 0 && typeof window !== 'undefined') {
+          try {
+            const stored = localStorage.getItem(STORAGE_KEY)
+            if (stored) {
+              const data = JSON.parse(stored) as Record<string, { status: string; timestamp: number }>
+              staleEntries.forEach(id => delete data[id])
+              localStorage.setItem(STORAGE_KEY, JSON.stringify(data))
+              logger.log('[loadRecentMatches] Cleared', staleEntries.length, 'stale localStorage entries')
+            }
+          } catch (error) {
+            logger.warn('[loadRecentMatches] Failed to clear stale localStorage entries:', error)
+          }
+        }
+
+        // Filter to only pending suggestions that user hasn't accepted (same filtering as matches page)
+        // Also check localStorage cache to filter out processed suggestions
+        const suggested = Array.from(deduped.values()).filter(s => {
+          // Skip if this was a stale entry we just cleared
+          if (staleEntries.includes(s.id)) {
+            return true // Include it since we cleared the stale cache
+          }
+
+          // Check local cache first - if we've processed this suggestion, exclude it
+          const processedStatus = processedSuggestions.get(s.id)
+          if (processedStatus === 'declined' || processedStatus === 'accepted' || processedStatus === 'confirmed') {
+            logger.log('[loadRecentMatches] Excluding processed suggestion:', {
+              id: s.id,
+              processedStatus,
+              apiStatus: s.status
+            })
+            return false
+          }
+
+          // Must be pending status
+          if (s.status !== 'pending') {
+            return false
+          }
+          // User must not have already accepted (accepted matches go to pending tab)
+          if (s.acceptedBy?.includes(user.id)) {
+            return false
+          }
+          return true
+        })
+
+        // Get the 3 most recent unique matches (sorted by createdAt)
+        const recentMatches = suggested
+          .map(s => {
+            const otherId = s.memberIds.find((id: string) => id !== user.id)
+            return { userId: otherId, createdAt: s.createdAt, suggestion: s }
           })
-          
-          if (error) {
-            logger.error('Error computing batch compatibility scores:', error)
+          .filter(m => m.userId) // Filter out any null userIds
+          .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+          .slice(0, 3) // Take 3 most recent
+          .map(m => ({ userId: m.userId, created_at: m.createdAt }))
+
+        if (recentMatches.length === 0) {
+          return []
+        }
+
+        const recentUserIds = recentMatches.map(m => m.userId)
+
+        // Helper function to safely extract numeric scores from database results
+        const extractScore = (value: any, defaultValue: number = 0): number => {
+          if (value == null || value === undefined || value === '') return defaultValue
+          const num = Number(value)
+          return isNaN(num) ? defaultValue : num
+        }
+
+        // Compute compatibility scores using batch function when multiple users
+        // Falls back to individual calls with caching for single user
+        let compatibilityScores: Array<{ userId: string; score: number; harmonyScore: number; contextScore: number }>
+
+        if (recentUserIds.length > 1) {
+          // Use batch function for multiple users (more efficient)
+          try {
+            const { data, error } = await supabase.rpc('compute_compatibility_scores_batch', {
+              user_a_id: user.id,
+              user_b_ids: recentUserIds
+            })
+
+            if (error) {
+              logger.error('Error computing batch compatibility scores:', error)
+              // Fall back to individual calls
+              compatibilityScores = await Promise.all(
+                recentUserIds.map(async (otherUserId) => {
+                  try {
+                    const cacheKey = getCompatibilityCacheKey(user.id, otherUserId)
+                    const result = await queryClient.fetchQuery({
+                      queryKey: cacheKey,
+                      queryFn: async () => {
+                        const { data, error } = await supabase.rpc('compute_compatibility_score', {
+                          user_a_id: user.id,
+                          user_b_id: otherUserId
+                        })
+                        if (error) throw error
+                        return Array.isArray(data) && data.length > 0 ? data[0] : (data || {})
+                      },
+                      staleTime: getCompatibilityStaleTime(),
+                    })
+                    const score = Number(result?.compatibility_score || 0)
+                    const harmonyScore = result?.harmony_score != null && result?.harmony_score !== undefined 
+                      ? Number(result.harmony_score) 
+                      : 0
+                    const contextScore = result?.context_score != null && result?.context_score !== undefined
+                      ? Number(result.context_score)
+                      : 0
+                    // Cache the result
+                    queryClient.setQueryData(cacheKey, result)
+                    return { userId: otherUserId, score, harmonyScore, contextScore }
+                  } catch (error) {
+                    logger.error(`Error computing compatibility score for ${otherUserId}:`, error)
+                    return { userId: otherUserId, score: 0 }
+                  }
+                })
+              )
+            } else {
+              // Process batch results and cache them
+              // Log the entire batch response for debugging
+              if (process.env.NODE_ENV === 'development' && data && data.length > 0) {
+                logger.log('[Dashboard] Batch response sample:', JSON.stringify(data[0], null, 2))
+              }
+              
+              compatibilityScores = await Promise.all(
+                (data || []).map(async (result: any) => {
+                  const otherUserId = result.user_b_id
+                  const score = extractScore(result?.compatibility_score, 0)
+                  
+                  // Extract harmony_score and context_score - PostgreSQL returns snake_case
+                  const harmonyScore = extractScore(result?.harmony_score, 0)
+                  const contextScore = extractScore(result?.context_score, 0)
+                  
+                  if (process.env.NODE_ENV === 'development') {
+                    logger.log(`[Dashboard] Batch result for ${otherUserId}:`, {
+                      score,
+                      harmonyScore,
+                      contextScore,
+                      rawHarmony: result?.harmony_score,
+                      rawContext: result?.context_score,
+                      harmonyType: typeof result?.harmony_score,
+                      contextType: typeof result?.context_score,
+                      allKeys: Object.keys(result || {})
+                    })
+                  }
+
+                  // Cache each result individually for future use
+                  const cacheKey = getCompatibilityCacheKey(user.id, otherUserId)
+                  queryClient.setQueryData(cacheKey, result, {
+                    updatedAt: Date.now(),
+                  })
+
+                  return { userId: otherUserId, score, harmonyScore, contextScore }
+                })
+              )
+            }
+          } catch (error) {
+            logger.error('Error in batch compatibility score computation:', error)
             // Fall back to individual calls
             compatibilityScores = await Promise.all(
               recentUserIds.map(async (otherUserId) => {
@@ -188,236 +348,237 @@ export function DashboardContent({ hasCompletedQuestionnaire = false, hasPartial
                         user_b_id: otherUserId
                       })
                       if (error) throw error
-                      return Array.isArray(data) && data.length > 0 ? data[0] : (data || {})
+                      const resultData = Array.isArray(data) && data.length > 0 ? data[0] : (data || {})
+                      // Debug logging to see what we're getting from the database
+                      if (process.env.NODE_ENV === 'development') {
+                        logger.log(`[Dashboard] Compatibility result for ${otherUserId}:`, {
+                          compatibility_score: resultData?.compatibility_score,
+                          harmony_score: resultData?.harmony_score,
+                          context_score: resultData?.context_score,
+                          keys: Object.keys(resultData || {})
+                        })
+                      }
+                      return resultData
                     },
                     staleTime: getCompatibilityStaleTime(),
                   })
-                  const score = Number(result?.compatibility_score || 0)
-                  // Cache the result
-                  queryClient.setQueryData(cacheKey, result)
-                  return { userId: otherUserId, score }
+                  const score = extractScore(result?.compatibility_score, 0)
+                  const harmonyScore = extractScore(result?.harmony_score, 0)
+                  const contextScore = extractScore(result?.context_score, 0)
+                  
+                  if (process.env.NODE_ENV === 'development') {
+                    logger.log(`[Dashboard] Individual result for ${otherUserId}:`, {
+                      score,
+                      harmonyScore,
+                      contextScore,
+                      rawHarmony: result?.harmony_score,
+                      rawContext: result?.context_score,
+                      harmonyType: typeof result?.harmony_score,
+                      contextType: typeof result?.context_score,
+                      resultKeys: Object.keys(result || {}),
+                      fullResult: result
+                    })
+                  }
+                  
+                  return { userId: otherUserId, score, harmonyScore, contextScore }
                 } catch (error) {
                   logger.error(`Error computing compatibility score for ${otherUserId}:`, error)
                   return { userId: otherUserId, score: 0 }
                 }
               })
             )
-          } else {
-            // Process batch results and cache them
-            compatibilityScores = await Promise.all(
-              (data || []).map(async (result: any) => {
-                const otherUserId = result.user_b_id
-                const score = Number(result?.compatibility_score || 0)
-                
-                // Cache each result individually for future use
-                const cacheKey = getCompatibilityCacheKey(user.id, otherUserId)
-                queryClient.setQueryData(cacheKey, result, {
-                  updatedAt: Date.now(),
-                })
-                
-                return { userId: otherUserId, score }
-              })
-            )
           }
-        } catch (error) {
-          logger.error('Error in batch compatibility score computation:', error)
-          // Fall back to individual calls
-          compatibilityScores = await Promise.all(
-            recentUserIds.map(async (otherUserId) => {
-              try {
-                const cacheKey = getCompatibilityCacheKey(user.id, otherUserId)
-                const result = await queryClient.fetchQuery({
-                  queryKey: cacheKey,
-                  queryFn: async () => {
-                    const { data, error } = await supabase.rpc('compute_compatibility_score', {
-                      user_a_id: user.id,
-                      user_b_id: otherUserId
-                    })
-                    if (error) throw error
-                    return Array.isArray(data) && data.length > 0 ? data[0] : (data || {})
-                  },
-                  staleTime: getCompatibilityStaleTime(),
+        } else if (recentUserIds.length === 1) {
+          // Single user - use cached individual call
+          const otherUserId = recentUserIds[0]
+          try {
+            const cacheKey = getCompatibilityCacheKey(user.id, otherUserId)
+            const result = await queryClient.fetchQuery({
+              queryKey: cacheKey,
+              queryFn: async () => {
+                const { data, error } = await supabase.rpc('compute_compatibility_score', {
+                  user_a_id: user.id,
+                  user_b_id: otherUserId
                 })
-                const score = Number(result?.compatibility_score || 0)
-                return { userId: otherUserId, score }
-              } catch (error) {
-                logger.error(`Error computing compatibility score for ${otherUserId}:`, error)
-                return { userId: otherUserId, score: 0 }
-              }
+                if (error) throw error
+                return Array.isArray(data) && data.length > 0 ? data[0] : (data || {})
+              },
+              staleTime: getCompatibilityStaleTime(),
             })
-          )
-        }
-      } else if (recentUserIds.length === 1) {
-        // Single user - use cached individual call
-        const otherUserId = recentUserIds[0]
-        try {
-          const cacheKey = getCompatibilityCacheKey(user.id, otherUserId)
-          const result = await queryClient.fetchQuery({
-            queryKey: cacheKey,
-            queryFn: async () => {
-              const { data, error } = await supabase.rpc('compute_compatibility_score', {
-                user_a_id: user.id,
-                user_b_id: otherUserId
+            const score = extractScore(result?.compatibility_score, 0)
+            const harmonyScore = extractScore(result?.harmony_score, 0)
+            const contextScore = extractScore(result?.context_score, 0)
+            
+            if (process.env.NODE_ENV === 'development') {
+              logger.log(`[Dashboard] Single user result for ${otherUserId}:`, {
+                score,
+                harmonyScore,
+                contextScore,
+                rawHarmony: result?.harmony_score,
+                rawContext: result?.context_score,
+                resultKeys: Object.keys(result || {})
               })
-              if (error) throw error
-              return Array.isArray(data) && data.length > 0 ? data[0] : (data || {})
-            },
-            staleTime: getCompatibilityStaleTime(),
-          })
-          const score = Number(result?.compatibility_score || 0)
-          compatibilityScores = [{ userId: otherUserId, score }]
-        } catch (error) {
-          logger.error(`Error computing compatibility score for ${otherUserId}:`, error)
-          compatibilityScores = [{ userId: otherUserId, score: 0 }]
+            }
+            
+            compatibilityScores = [{ userId: otherUserId, score, harmonyScore, contextScore }]
+          } catch (error) {
+            logger.error(`Error computing compatibility score for ${otherUserId}:`, error)
+            compatibilityScores = [{ userId: otherUserId, score: 0 }]
+          }
+        } else {
+          compatibilityScores = []
         }
-      } else {
-        compatibilityScores = []
-      }
 
-      // Create a map of userId to score for easy lookup
-      const scoreMap = new Map(compatibilityScores.map(m => [m.userId, m.score]))
+        // Create maps for easy lookup
+        const scoreMap = new Map(compatibilityScores.map(m => [m.userId, m.score]))
+        const harmonyScoreMap = new Map(compatibilityScores.map(m => [m.userId, m.harmonyScore]))
+        const contextScoreMap = new Map(compatibilityScores.map(m => [m.userId, m.contextScore]))
 
-      // Maintain the order from recentMatches (most recent first) and add scores
-      const recentMatchEntries = recentMatches.map(({ userId, created_at }) => ({
-        userId,
-        created_at,
-        score: scoreMap.get(userId) || 0
-      }))
+        // Maintain the order from recentMatches (most recent first) and add scores
+        const recentMatchEntries = recentMatches.map(({ userId, created_at }) => ({
+          userId,
+          created_at,
+          score: scoreMap.get(userId) || 0,
+          harmonyScore: harmonyScoreMap.get(userId),
+          contextScore: contextScoreMap.get(userId)
+        }))
 
-      const finalUserIds = recentMatchEntries.map(m => m.userId)
+        const finalUserIds = recentMatchEntries.map(m => m.userId)
 
-      // Add this check before querying profiles
-      if (finalUserIds.length === 0) {
-        logger.log('No user IDs to fetch profiles for')
-        return []
-      }
+        // Add this check before querying profiles
+        if (finalUserIds.length === 0) {
+          logger.log('No user IDs to fetch profiles for')
+          return []
+        }
 
-      // Fetch profiles for matched users
-      const { data: profiles, error: profilesError } = await supabase
-        .from('profiles')
-        .select(`
+        // Fetch profiles for matched users
+        const { data: profiles, error: profilesError } = await supabase
+          .from('profiles')
+          .select(`
           user_id, 
           first_name, 
           last_name, 
           university_id, 
           universities(name)
         `)
-        .in('user_id', finalUserIds)
+          .in('user_id', finalUserIds)
 
-      if (profilesError) {
-        logger.error('Error loading profiles:', profilesError)
-        return []
-      }
+        if (profilesError) {
+          logger.error('Error loading profiles:', profilesError)
+          return []
+        }
 
-      // Fetch program names separately from user_academic
-      // Try with explicit foreign key first, fallback to simple join if that fails
-      const { data: academicData, error: academicError } = await supabase
-        .from('user_academic')
-        .select(`
+        // Fetch program names separately from user_academic
+        // Try with explicit foreign key first, fallback to simple join if that fails
+        const { data: academicData, error: academicError } = await supabase
+          .from('user_academic')
+          .select(`
           user_id,
           program_id,
           programs(name)
         `)
-        .in('user_id', finalUserIds)
-      
-      if (academicError) {
-        logger.warn('Error loading academic data (non-critical):', academicError)
-      }
+          .in('user_id', finalUserIds)
 
-      // Create a map of user_id to program name
-      const programMap = new Map<string, string>()
-      academicData?.forEach((academic: any) => {
-        if (academic.programs?.name) {
-          programMap.set(academic.user_id, academic.programs.name)
-        }
-      })
-
-      // Create a map of user_id to match score
-      const matchScoreMap = new Map(recentMatchEntries.map(m => [m.userId, m.score]))
-
-      // Format matches maintaining the order from recentMatchEntries (most recent first)
-      const formattedMatches = recentMatchEntries.map(({ userId, score }) => {
-        const profile = profiles?.find((p: any) => p.user_id === userId)
-        if (!profile) {
-          return null
+        if (academicError) {
+          logger.warn('Error loading academic data (non-critical):', academicError)
         }
 
-        const fullName = [profile.first_name?.trim(), profile.last_name?.trim()].filter(Boolean).join(' ') || 'User'
-        const programDisplay = programMap.get(userId) || null
-        
-        // Handle universities as either object or array (Supabase type inference issue)
-        const universityData = Array.isArray(profile.universities) 
-          ? profile.universities[0] 
-          : profile.universities
-        const universityName = universityData?.name || 'University'
-        
-        // Helper function to check if a string is a UUID
-        const isUUID = (str: string): boolean => {
-          if (!str || typeof str !== 'string') return false
-          // Check for full UUID format
-          if (/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(str)) return true
-          // Check for UUID-like patterns (without dashes or partial)
-          if (/[0-9a-f]{8}-?[0-9a-f]{4}-?[0-9a-f]{4}-?[0-9a-f]{4}-?[0-9a-f]{12}/i.test(str)) return true
-          return false
-        }
-        
-        // Remove any UUIDs from strings (even if embedded)
-        const removeUUIDs = (str: string): string => {
-          if (!str || typeof str !== 'string') return str
-          // Remove UUID patterns completely
-          return str.replace(/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/gi, '').trim()
-        }
-        
-        // Clean all fields to ensure no UUIDs are displayed
-        let safeName = removeUUIDs(fullName)
-        if (isUUID(safeName) || safeName === userId || safeName.includes(userId) || !safeName) {
-          safeName = 'User'
-        }
-        
-        let safeUniversity = removeUUIDs(universityName)
-        if (isUUID(safeUniversity) || safeUniversity === userId || safeUniversity.includes(userId) || !safeUniversity) {
-          safeUniversity = 'University'
-        }
-        
-        let safeProgram = removeUUIDs(programDisplay || '')
-        if (isUUID(safeProgram) || safeProgram === userId || safeProgram.includes(userId) || !safeProgram) {
-          safeProgram = ''
-        }
-        
-        // Normalize score to 0-1 range if needed
-        // fit_score should already be in 0-1 range, but handle edge cases
-        let normalizedScore = score
-        if (normalizedScore > 1.0) {
-          // If score is > 1.0, it might already be in 0-100 range (like 94 instead of 0.94)
-          if (normalizedScore > 100) {
-            // If > 100, cap at 100 and convert to 0-1 range
-            normalizedScore = 100 / 100
-          } else {
-            // If between 1 and 100, convert to 0-1 range
-            normalizedScore = normalizedScore / 100
+        // Create a map of user_id to program name
+        const programMap = new Map<string, string>()
+        academicData?.forEach((academic: any) => {
+          if (academic.programs?.name) {
+            programMap.set(academic.user_id, academic.programs.name)
           }
-        }
-        // Ensure it's in valid range (0-1)
-        normalizedScore = Math.max(0, Math.min(normalizedScore, 1.0))
-        
-        return {
-          id: userId,
-          userId: userId,
-          name: safeName,
-          score: normalizedScore, // Keep as decimal 0-1 for calculations
-          program: safeProgram,
-          university: safeUniversity,
-          avatar: undefined
-        }
-      }).filter((m): m is NonNullable<typeof m> => m !== null) // Remove null entries
+        })
 
-      logger.log('loadRecentMatches: Formatted', formattedMatches.length, 'recent matches from match_suggestions table')
+        // Create a map of user_id to match score
+        const matchScoreMap = new Map(recentMatchEntries.map(m => [m.userId, m.score]))
 
-      return formattedMatches
-    } catch (error) {
-      logger.error('Failed to load recent matches:', error)
-      return []
-    }
+        // Format matches maintaining the order from recentMatchEntries (most recent first)
+        const formattedMatches = recentMatchEntries.map(({ userId, score, harmonyScore, contextScore }) => {
+          const profile = profiles?.find((p: any) => p.user_id === userId)
+          if (!profile) {
+            return null
+          }
+
+          const fullName = [profile.first_name?.trim(), profile.last_name?.trim()].filter(Boolean).join(' ') || 'User'
+          const programDisplay = programMap.get(userId) || null
+
+          // Handle universities as either object or array (Supabase type inference issue)
+          const universityData = Array.isArray(profile.universities)
+            ? profile.universities[0]
+            : profile.universities
+          const universityName = universityData?.name || 'University'
+
+          // Helper function to check if a string is a UUID
+          const isUUID = (str: string): boolean => {
+            if (!str || typeof str !== 'string') return false
+            // Check for full UUID format
+            if (/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(str)) return true
+            // Check for UUID-like patterns (without dashes or partial)
+            if (/[0-9a-f]{8}-?[0-9a-f]{4}-?[0-9a-f]{4}-?[0-9a-f]{4}-?[0-9a-f]{12}/i.test(str)) return true
+            return false
+          }
+
+          // Remove any UUIDs from strings (even if embedded)
+          const removeUUIDs = (str: string): string => {
+            if (!str || typeof str !== 'string') return str
+            // Remove UUID patterns completely
+            return str.replace(/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/gi, '').trim()
+          }
+
+          // Clean all fields to ensure no UUIDs are displayed
+          let safeName = removeUUIDs(fullName)
+          if (isUUID(safeName) || safeName === userId || safeName.includes(userId) || !safeName) {
+            safeName = 'User'
+          }
+
+          let safeUniversity = removeUUIDs(universityName)
+          if (isUUID(safeUniversity) || safeUniversity === userId || safeUniversity.includes(userId) || !safeUniversity) {
+            safeUniversity = 'University'
+          }
+
+          let safeProgram = removeUUIDs(programDisplay || '')
+          if (isUUID(safeProgram) || safeProgram === userId || safeProgram.includes(userId) || !safeProgram) {
+            safeProgram = ''
+          }
+
+          // Normalize score to 0-1 range if needed
+          // fit_score should already be in 0-1 range, but handle edge cases
+          let normalizedScore = score
+          if (normalizedScore > 1.0) {
+            // If score is > 1.0, it might already be in 0-100 range (like 94 instead of 0.94)
+            if (normalizedScore > 100) {
+              // If > 100, cap at 100 and convert to 0-1 range
+              normalizedScore = 100 / 100
+            } else {
+              // If between 1 and 100, convert to 0-1 range
+              normalizedScore = normalizedScore / 100
+            }
+          }
+          // Ensure it's in valid range (0-1)
+          normalizedScore = Math.max(0, Math.min(normalizedScore, 1.0))
+
+          return {
+            id: userId,
+            userId: userId,
+            name: safeName,
+            score: normalizedScore, // Keep as decimal 0-1 for calculations
+            harmonyScore: extractScore(harmonyScore, 0), // Extract with helper to ensure it's a number
+            contextScore: extractScore(contextScore, 0), // Extract with helper to ensure it's a number
+            program: safeProgram,
+            university: safeUniversity,
+            avatar: undefined
+          }
+        }).filter((m): m is NonNullable<typeof m> => m !== null) // Remove null entries
+
+        logger.log('loadRecentMatches: Formatted', formattedMatches.length, 'recent matches from match_suggestions table')
+
+        return formattedMatches
+      } catch (error) {
+        logger.error('Failed to load recent matches:', error)
+        return []
+      }
     })
   }, [user?.id, supabase])
 
@@ -438,62 +599,63 @@ export function DashboardContent({ hasCompletedQuestionnaire = false, hasPartial
 
     return monitorQuery('fetchTotalMatchesCount', async () => {
       try {
-      logger.log('loadTotalMatchesCount: Fetching match suggestions for user', user.id)
-      const now = new Date().toISOString()
+        logger.log('loadTotalMatchesCount: Fetching match suggestions for user', user.id)
+        const now = new Date().toISOString()
 
-      // Fetch active pair suggestions and count unique matched users,
-      // so repeated suggestions for the same pair don't inflate totals.
-      const { data: suggestions, error } = await supabase
-        .from('match_suggestions')
-        .select('member_ids, fit_score')
-        .eq('kind', 'pair')
-        .contains('member_ids', [user.id])
-        .neq('status', 'rejected')
-        .gte('expires_at', now) // Only non-expired suggestions
+        // Fetch active confirmed pair suggestions and count unique matched users,
+        // so repeated suggestions for the same pair don't inflate totals.
+        // Only show confirmed matches where both users have accepted
+        const { data: suggestions, error } = await supabase
+          .from('match_suggestions')
+          .select('member_ids, fit_score')
+          .eq('kind', 'pair')
+          .contains('member_ids', [user.id])
+          .eq('status', 'confirmed') // Only show confirmed matches where both users have accepted
+          .gte('expires_at', now) // Only non-expired suggestions
 
-      if (error) {
-        logger.error('Error fetching match suggestions for count:', error)
-      } else if (suggestions && suggestions.length > 0) {
-        const matchMap = new Map<string, number>()
+        if (error) {
+          logger.error('Error fetching match suggestions for count:', error)
+        } else if (suggestions && suggestions.length > 0) {
+          const matchMap = new Map<string, number>()
 
-        suggestions.forEach((s: any) => {
-          const memberIds = s.member_ids as string[]
-          if (!memberIds || memberIds.length !== 2) return
+          suggestions.forEach((s: any) => {
+            const memberIds = s.member_ids as string[]
+            if (!memberIds || memberIds.length !== 2) return
 
-          const otherUserId = memberIds[0] === user.id ? memberIds[1] : memberIds[0]
-          const fitScore = Number(s.fit_score || 0)
+            const otherUserId = memberIds[0] === user.id ? memberIds[1] : memberIds[0]
+            const fitScore = Number(s.fit_score || 0)
 
-          const currentBest = matchMap.get(otherUserId) ?? 0
-          if (fitScore > currentBest) {
-            matchMap.set(otherUserId, fitScore)
-          }
-        })
+            const currentBest = matchMap.get(otherUserId) ?? 0
+            if (fitScore > currentBest) {
+              matchMap.set(otherUserId, fitScore)
+            }
+          })
 
-        const total = matchMap.size
-        logger.log('loadTotalMatchesCount: Unique matched users from suggestions', total)
+          const total = matchMap.size
+          logger.log('loadTotalMatchesCount: Unique matched users from suggestions', total)
+          return total
+        }
+
+        // Fallback: use legacy matches table if there are no suggestions
+        logger.log('loadTotalMatchesCount: No active match_suggestions, falling back to matches table')
+
+        const { count: matchesAsA } = await supabase
+          .from('matches')
+          .select('*', { count: 'exact', head: true })
+          .eq('a_user', user.id)
+
+        const { count: matchesAsB } = await supabase
+          .from('matches')
+          .select('*', { count: 'exact', head: true })
+          .eq('b_user', user.id)
+
+        const total = (matchesAsA || 0) + (matchesAsB || 0)
+        logger.log('loadTotalMatchesCount: Total matches from legacy table', total)
         return total
+      } catch (error) {
+        logger.error('Failed to load total matches count:', error)
+        return 0
       }
-
-      // Fallback: use legacy matches table if there are no suggestions
-      logger.log('loadTotalMatchesCount: No active match_suggestions, falling back to matches table')
-
-      const { count: matchesAsA } = await supabase
-        .from('matches')
-        .select('*', { count: 'exact', head: true })
-        .eq('a_user', user.id)
-
-      const { count: matchesAsB } = await supabase
-        .from('matches')
-        .select('*', { count: 'exact', head: true })
-        .eq('b_user', user.id)
-
-      const total = (matchesAsA || 0) + (matchesAsB || 0)
-      logger.log('loadTotalMatchesCount: Total matches from legacy table', total)
-      return total
-    } catch (error) {
-      logger.error('Failed to load total matches count:', error)
-      return 0
-    }
     })
   }, [user?.id, supabase])
 
@@ -514,88 +676,89 @@ export function DashboardContent({ hasCompletedQuestionnaire = false, hasPartial
 
     return monitorQuery('fetchAvgCompatibility', async () => {
       try {
-      logger.log('loadAvgCompatibility: Fetching matches for user', user.id)
-      // Fetch active match suggestions (matching server-side logic: limit 20, then deduplicate)
-      const now = new Date().toISOString()
-      const { data: suggestions, error } = await supabase
-        .from('match_suggestions')
-        .select('fit_score, member_ids, created_at')
-        .eq('kind', 'pair')
-        .contains('member_ids', [user.id])
-        .neq('status', 'rejected')
-        .gte('expires_at', now) // Only non-expired suggestions
-        .order('created_at', { ascending: false }) // Most recent first (matching server)
-        .limit(20) // Match server-side limit to ensure consistent calculation
+        logger.log('loadAvgCompatibility: Fetching matches for user', user.id)
+        // Fetch active confirmed match suggestions (matching server-side logic: limit 20, then deduplicate)
+        // Only show confirmed matches where both users have accepted
+        const now = new Date().toISOString()
+        const { data: suggestions, error } = await supabase
+          .from('match_suggestions')
+          .select('fit_score, member_ids, created_at')
+          .eq('kind', 'pair')
+          .contains('member_ids', [user.id])
+          .eq('status', 'confirmed') // Only show confirmed matches where both users have accepted
+          .gte('expires_at', now) // Only non-expired suggestions
+          .order('created_at', { ascending: false }) // Most recent first (matching server)
+          .limit(20) // Match server-side limit to ensure consistent calculation
 
-      if (error) {
-        logger.error('Error fetching match suggestions for avg:', error)
-      }
-
-      // Deduplicate by keeping most recent suggestion for each user (matching server logic)
-      const matchMap = new Map<string, string>() // Map userId -> created_at
-      ;(suggestions || []).forEach((s: any) => {
-        const memberIds = s.member_ids as string[]
-        if (!memberIds || memberIds.length !== 2) return
-
-        const otherUserId = memberIds[0] === user.id ? memberIds[1] : memberIds[0]
-        
-        // Keep the most recent suggestion for each user (matching server logic)
-        const existing = matchMap.get(otherUserId)
-        if (!existing || new Date(s.created_at) > new Date(existing)) {
-          matchMap.set(otherUserId, s.created_at)
+        if (error) {
+          logger.error('Error fetching match suggestions for avg:', error)
         }
-      })
 
-      // Get unique matched users from deduplicated map
-      const uniqueUserIds = Array.from(matchMap.keys())
+        // Deduplicate by keeping most recent suggestion for each user (matching server logic)
+        const matchMap = new Map<string, string>() // Map userId -> created_at
+          ; (suggestions || []).forEach((s: any) => {
+            const memberIds = s.member_ids as string[]
+            if (!memberIds || memberIds.length !== 2) return
 
-      // Compute compatibility scores using the new algorithm for all matched users
-      const compatibilityScores = await Promise.all(
-        uniqueUserIds.map(async (otherUserId) => {
-          try {
-            const { data, error } = await supabase.rpc('compute_compatibility_score', {
-              user_a_id: user.id,
-              user_b_id: otherUserId
-            })
-            
-            if (error) {
+            const otherUserId = memberIds[0] === user.id ? memberIds[1] : memberIds[0]
+
+            // Keep the most recent suggestion for each user (matching server logic)
+            const existing = matchMap.get(otherUserId)
+            if (!existing || new Date(s.created_at) > new Date(existing)) {
+              matchMap.set(otherUserId, s.created_at)
+            }
+          })
+
+        // Get unique matched users from deduplicated map
+        const uniqueUserIds = Array.from(matchMap.keys())
+
+        // Compute compatibility scores using the new algorithm for all matched users
+        const compatibilityScores = await Promise.all(
+          uniqueUserIds.map(async (otherUserId) => {
+            try {
+              const { data, error } = await supabase.rpc('compute_compatibility_score', {
+                user_a_id: user.id,
+                user_b_id: otherUserId
+              })
+
+              if (error) {
+                logger.error(`Error computing compatibility score for ${otherUserId}:`, error)
+                return 0
+              }
+
+              // The function returns a table (array), get the first row
+              const result = Array.isArray(data) && data.length > 0 ? data[0] : (data || {})
+              return Number(result.compatibility_score || 0)
+            } catch (error) {
               logger.error(`Error computing compatibility score for ${otherUserId}:`, error)
               return 0
             }
-            
-            // The function returns a table (array), get the first row
-            const result = Array.isArray(data) && data.length > 0 ? data[0] : (data || {})
-            return Number(result.compatibility_score || 0)
-          } catch (error) {
-            logger.error(`Error computing compatibility score for ${otherUserId}:`, error)
-            return 0
-          }
-        })
-      )
-
-      const allScores = compatibilityScores
-        .map(score => Math.min(score, 1.0)) // Cap each score at 1.0 (100%)
-        .filter(score => score > 0) // Only include valid scores
-
-      logger.log('loadAvgCompatibility: Found', allScores.length, 'matches', 'scores:', allScores)
-
-      if (allScores.length > 0) {
-        const average = Math.min(
-          Math.round(
-            (allScores.reduce((sum, score) => sum + score, 0) / allScores.length) * 100
-          ),
-          100 // Cap the final result at 100%
+          })
         )
-        logger.log('loadAvgCompatibility: Average calculated as', average)
-        return average
-      } else {
-        logger.log('loadAvgCompatibility: No matches found, setting to 0')
+
+        const allScores = compatibilityScores
+          .map(score => Math.min(score, 1.0)) // Cap each score at 1.0 (100%)
+          .filter(score => score > 0) // Only include valid scores
+
+        logger.log('loadAvgCompatibility: Found', allScores.length, 'matches', 'scores:', allScores)
+
+        if (allScores.length > 0) {
+          const average = Math.min(
+            Math.round(
+              (allScores.reduce((sum, score) => sum + score, 0) / allScores.length) * 100
+            ),
+            100 // Cap the final result at 100%
+          )
+          logger.log('loadAvgCompatibility: Average calculated as', average)
+          return average
+        } else {
+          logger.log('loadAvgCompatibility: No matches found, setting to 0')
+          return 0
+        }
+      } catch (error) {
+        logger.error('Failed to load average compatibility:', error)
         return 0
       }
-    } catch (error) {
-      logger.error('Failed to load average compatibility:', error)
-      return 0
-    }
     })
   }, [user?.id, supabase])
 
@@ -612,177 +775,177 @@ export function DashboardContent({ hasCompletedQuestionnaire = false, hasPartial
   // Fetch recent activity with React Query
   const fetchRecentActivity = useCallback(async (): Promise<any[]> => {
     if (!user?.id) return []
-    
+
     return monitorQuery('fetchRecentActivity', async () => {
       try {
 
-      // Fetch notifications
-      const response = await fetch('/api/notifications/my?limit=10')
-      const notificationsData = response.ok ? await response.json() : { notifications: [] }
-      const notifications = notificationsData.notifications || []
-      
-      // Fetch recent chat messages
-      const { data: chatMembers } = await supabase
-        .from('chat_members')
-        .select('chat_id')
-        .eq('user_id', user.id)
+        // Fetch notifications
+        const response = await fetch('/api/notifications/my?limit=10')
+        const notificationsData = response.ok ? await response.json() : { notifications: [] }
+        const notifications = notificationsData.notifications || []
 
-      let chatMessages: any[] = []
-      if (chatMembers && chatMembers.length > 0) {
-        const chatIds = chatMembers.map(cm => cm.chat_id)
-        
-        // Get last_read_at for each chat
-        const { data: memberships } = await supabase
+        // Fetch recent chat messages
+        const { data: chatMembers } = await supabase
           .from('chat_members')
-          .select('chat_id, last_read_at')
+          .select('chat_id')
           .eq('user_id', user.id)
-          .in('chat_id', chatIds)
 
-        if (memberships) {
-          // Get recent messages from user's chats
-          // Note: Fetch messages first, then get profile names separately to avoid foreign key issues
-          const { data: messages } = await supabase
-            .from('messages')
-            .select(`
+        let chatMessages: any[] = []
+        if (chatMembers && chatMembers.length > 0) {
+          const chatIds = chatMembers.map(cm => cm.chat_id)
+
+          // Get last_read_at for each chat
+          const { data: memberships } = await supabase
+            .from('chat_members')
+            .select('chat_id, last_read_at')
+            .eq('user_id', user.id)
+            .in('chat_id', chatIds)
+
+          if (memberships) {
+            // Get recent messages from user's chats
+            // Note: Fetch messages first, then get profile names separately to avoid foreign key issues
+            const { data: messages } = await supabase
+              .from('messages')
+              .select(`
               id,
               content,
               user_id,
               chat_id,
               created_at
             `)
-            .in('chat_id', chatIds)
-            .neq('user_id', user.id)
-            .order('created_at', { ascending: false })
-            .limit(10)
+              .in('chat_id', chatIds)
+              .neq('user_id', user.id)
+              .order('created_at', { ascending: false })
+              .limit(10)
 
-          if (messages) {
-            // Get profile names for messages
-            const userIds = new Set(messages.map(m => m.user_id))
-            const { data: profiles } = await supabase
-              .from('profiles')
-              .select('user_id, first_name')
-              .in('user_id', Array.from(userIds))
+            if (messages) {
+              // Get profile names for messages
+              const userIds = new Set(messages.map(m => m.user_id))
+              const { data: profiles } = await supabase
+                .from('profiles')
+                .select('user_id, first_name')
+                .in('user_id', Array.from(userIds))
 
-            const profilesMap = new Map(profiles?.map(p => [p.user_id, p]) || [])
-            
-            chatMessages = messages.map((msg: any) => {
-              const profile = profilesMap.get(msg.user_id)
-              const senderName = profile?.first_name || 'User'
-              const timeAgo = formatTimeAgo(msg.created_at)
-              return {
-                id: `message-${msg.id}`,
-                type: 'chat_message',
-                title: `${senderName} has sent you a message`,
-                message: '', // Don't show content
-                timeAgo,
-                isRead: false, // We'll check this based on last_read_at
-                metadata: { chat_id: msg.chat_id, message_id: msg.id }
-              }
-            })
+              const profilesMap = new Map(profiles?.map(p => [p.user_id, p]) || [])
+
+              chatMessages = messages.map((msg: any) => {
+                const profile = profilesMap.get(msg.user_id)
+                const senderName = profile?.first_name || 'User'
+                const timeAgo = formatTimeAgo(msg.created_at)
+                return {
+                  id: `message-${msg.id}`,
+                  type: 'chat_message',
+                  title: `${senderName} has sent you a message`,
+                  message: '', // Don't show content
+                  timeAgo,
+                  isRead: false, // We'll check this based on last_read_at
+                  metadata: { chat_id: msg.chat_id, message_id: msg.id }
+                }
+              })
+            }
           }
         }
-      }
-      
-      // Combine notifications and chat messages, sort by time
-      // For match_created and match_accepted notifications, verify both users accepted before showing names
-      const processedNotifications = await Promise.all(notifications.map(async (notif: any) => {
-        const timeAgo = formatTimeAgo(notif.created_at)
-        
-        // Safety check: For match_created and match_accepted notifications, verify both users accepted
-        if (notif.type === 'match_created' || notif.type === 'match_accepted') {
-          let bothUsersAccepted = false
-          
-          // First, check if message contains a name that needs sanitization
-          let hasName = false
-          let genericMessage = ''
-          
-          if (notif.type === 'match_created' && notif.message && notif.message.includes('match with')) {
-            // Check if message contains a name - if it has text between "with" and "!" that's not generic, it's a name
-            const matchWithPattern = /match with ([^!]+)!/i
-            const match = notif.message.match(matchWithPattern)
-            if (match) {
-              const namePart = match[1].toLowerCase().trim()
-              hasName = !namePart.includes('someone') && 
-                       !namePart.includes('a potential roommate') &&
-                       !namePart.includes('user') &&
-                       namePart.length > 0
+
+        // Combine notifications and chat messages, sort by time
+        // For match_created and match_accepted notifications, verify both users accepted before showing names
+        const processedNotifications = await Promise.all(notifications.map(async (notif: any) => {
+          const timeAgo = formatTimeAgo(notif.created_at)
+
+          // Safety check: For match_created and match_accepted notifications, verify both users accepted
+          if (notif.type === 'match_created' || notif.type === 'match_accepted') {
+            let bothUsersAccepted = false
+
+            // First, check if message contains a name that needs sanitization
+            let hasName = false
+            let genericMessage = ''
+
+            if (notif.type === 'match_created' && notif.message && notif.message.includes('match with')) {
+              // Check if message contains a name - if it has text between "with" and "!" that's not generic, it's a name
+              const matchWithPattern = /match with ([^!]+)!/i
+              const match = notif.message.match(matchWithPattern)
+              if (match) {
+                const namePart = match[1].toLowerCase().trim()
+                hasName = !namePart.includes('someone') &&
+                  !namePart.includes('a potential roommate') &&
+                  !namePart.includes('user') &&
+                  namePart.length > 0
+              }
+              genericMessage = 'You have matched with someone! Check out your matches to see who.'
+            } else if (notif.type === 'match_accepted' && notif.message && notif.message.includes('accepted your match request')) {
+              // Check if message contains a name (not just "Someone")
+              hasName = !notif.message.includes('Someone') &&
+                !notif.message.includes('someone') &&
+                !notif.message.includes('Someone accepted your match request')
+              genericMessage = 'Someone accepted your match request!'
             }
-            genericMessage = 'You have matched with someone! Check out your matches to see who.'
-          } else if (notif.type === 'match_accepted' && notif.message && notif.message.includes('accepted your match request')) {
-            // Check if message contains a name (not just "Someone")
-            hasName = !notif.message.includes('Someone') && 
-                     !notif.message.includes('someone') &&
-                     !notif.message.includes('Someone accepted your match request')
-            genericMessage = 'Someone accepted your match request!'
-          }
-          
-          // Only verify if we detected a name (optimization)
-          if (hasName && notif.metadata?.match_id) {
-            try {
-              // First try match_suggestions table (new system)
-              const { data: suggestion } = await supabase
-                .from('match_suggestions')
-                .select('status, accepted_by, member_ids')
-                .eq('id', notif.metadata.match_id)
-                .single()
-              
-              if (suggestion) {
-                const acceptedBy = suggestion.accepted_by || []
-                const memberIds = suggestion.member_ids || []
-                bothUsersAccepted = suggestion.status === 'confirmed' || 
-                  (memberIds.length === 2 && memberIds.every((id: string) => acceptedBy.includes(id)))
-              } else {
-                // If not found in match_suggestions, try old matches table
-                const { data: match } = await supabase
-                  .from('matches')
-                  .select('status, a_user, b_user')
+
+            // Only verify if we detected a name (optimization)
+            if (hasName && notif.metadata?.match_id) {
+              try {
+                // First try match_suggestions table (new system)
+                const { data: suggestion } = await supabase
+                  .from('match_suggestions')
+                  .select('status, accepted_by, member_ids')
                   .eq('id', notif.metadata.match_id)
                   .single()
-                
-                if (match) {
-                  // In old matches table, status 'confirmed' means both accepted
-                  bothUsersAccepted = match.status === 'confirmed'
+
+                if (suggestion) {
+                  const acceptedBy = suggestion.accepted_by || []
+                  const memberIds = suggestion.member_ids || []
+                  bothUsersAccepted = suggestion.status === 'confirmed' ||
+                    (memberIds.length === 2 && memberIds.every((id: string) => acceptedBy.includes(id)))
+                } else {
+                  // If not found in match_suggestions, try old matches table
+                  const { data: match } = await supabase
+                    .from('matches')
+                    .select('status, a_user, b_user')
+                    .eq('id', notif.metadata.match_id)
+                    .single()
+
+                  if (match) {
+                    // In old matches table, status 'confirmed' means both accepted
+                    bothUsersAccepted = match.status === 'confirmed'
+                  }
                 }
+              } catch (error: any) {
+                // If we can't verify, assume not both accepted (safer for privacy)
+                logger.warn('Failed to verify match acceptance status, assuming not both accepted', error)
+                bothUsersAccepted = false
               }
-            } catch (error) {
-              // If we can't verify, assume not both accepted (safer for privacy)
-              logger.warn('Failed to verify match acceptance status, assuming not both accepted', error)
-              bothUsersAccepted = false
+            }
+
+            // If name detected AND (both users haven't accepted OR we couldn't verify), sanitize
+            if (hasName && !bothUsersAccepted) {
+              notif.message = genericMessage
             }
           }
-          
-          // If name detected AND (both users haven't accepted OR we couldn't verify), sanitize
-          if (hasName && !bothUsersAccepted) {
-            notif.message = genericMessage
+
+          return {
+            id: notif.id,
+            type: notif.type,
+            title: notif.title,
+            message: notif.message,
+            timeAgo,
+            isRead: notif.is_read,
+            metadata: notif.metadata || {}
           }
-        }
-        
-        return {
-          id: notif.id,
-          type: notif.type,
-          title: notif.title,
-          message: notif.message,
-          timeAgo,
-          isRead: notif.is_read,
-          metadata: notif.metadata || {}
-        }
-      }))
-      
-      const allActivity = [...processedNotifications, ...chatMessages]
-      
-      // Sort by created_at (newest first) - approximate sort by timeAgo
-      allActivity.sort((a, b) => {
-        // Simple sort - items with "Just now" come first, then minutes, hours, days
-        if (a.timeAgo === 'Just now') return -1
-        if (b.timeAgo === 'Just now') return 1
-        return 0
-      })
-      
-      return allActivity.slice(0, 10)
-    } catch (error) {
-      logger.error('Failed to load activity:', error)
-      return []
-    }
+        }))
+
+        const allActivity = [...processedNotifications, ...chatMessages]
+
+        // Sort by created_at (newest first) - approximate sort by timeAgo
+        allActivity.sort((a, b) => {
+          // Simple sort - items with "Just now" come first, then minutes, hours, days
+          if (a.timeAgo === 'Just now') return -1
+          if (b.timeAgo === 'Just now') return 1
+          return 0
+        })
+
+        return allActivity.slice(0, 10)
+      } catch (error) {
+        logger.error('Failed to load activity:', error)
+        return []
+      }
     })
   }, [user?.id, supabase])
 
@@ -871,7 +1034,7 @@ export function DashboardContent({ hasCompletedQuestionnaire = false, hasPartial
 
   const handleActivityClick = (activity: any) => {
     const { metadata, type } = activity
-    
+
     switch (type) {
       case 'match_created':
       case 'match_accepted':
@@ -924,367 +1087,151 @@ export function DashboardContent({ hasCompletedQuestionnaire = false, hasPartial
   }
 
   return (
-    <div className="space-y-2 lg:space-y-2 flex flex-col pb-24 md:pb-6">
-      {/* Email verification warning */}
-      {user && !user.email_confirmed_at && (
-        <motion.div
-          initial={{ opacity: 0, y: -20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5 }}
-          className="border rounded-lg p-4 bg-semantic-danger/10 border-semantic-danger/30"
-        >
-          <div className="flex items-start gap-3">
-            <AlertCircle className="h-5 w-5 mt-0.5 text-semantic-danger" />
-            <div className="flex-1">
-              <h3 className="font-semibold text-semantic-danger">
-                Email Verification Required
-              </h3>
-              <p className="text-sm mt-1 text-semantic-danger">
-                Please verify your email address to submit the questionnaire and access all features.
-              </p>
+    <div className="space-y-8 pb-24 md:pb-6">
+      {/* Header Section */}
+      <motion.div
+        variants={fadeInUp}
+        initial="initial"
+        animate="animate"
+        className="flex flex-col gap-2"
+      >
+        <div className="flex items-center gap-2 text-indigo-400 mb-1">
+          <Sparkles className="w-5 h-5" />
+          <span className="text-sm font-medium uppercase tracking-wider">Discovery Feed</span>
+        </div>
+        <h1 className="text-4xl md:text-5xl font-extrabold text-zinc-900 dark:text-white tracking-tight">
+          Hello, <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-500 to-purple-500 dark:from-indigo-400 dark:to-purple-400">{firstName || 'Student'}</span>
+        </h1>
+        <p className="text-zinc-500 dark:text-zinc-400 max-w-lg text-lg font-medium">
+          Here are your suggested matches. Complete your profile to discover more potential roommates.
+        </p>
+      </motion.div>
+
+      {/* Discovery Feed Grid */}
+      <motion.div
+        variants={staggerChildren}
+        initial="initial"
+        animate="animate"
+        className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 auto-rows-fr"
+      >
+        {recentMatches.length > 0 && (
+          recentMatches.map((match: any) => (
+            <motion.div key={match.id} variants={fadeInUp} className="h-full">
+              <DiscoveryCard
+                profile={{
+                  id: match.userId || match.id,
+                  name: match.name,
+                  program: match.program,
+                  university: match.university,
+                  matchPercentage: Math.round((match.score || 0) * 100) > 100 ? Math.round(match.score || 0) : Math.round((match.score || 0) * 100),
+                  harmonyScore: match.harmonyScore,
+                  contextScore: match.contextScore,
+                  avatar: match.avatar
+                }}
+              />
+            </motion.div>
+          ))
+        )}
+
+        {/* Empty State Card - Shows when no matches */}
+        {recentMatches.length === 0 && !isLoadingMatches && (
+          <motion.div
+            variants={fadeInUp}
+            className="group relative flex flex-col items-center justify-center p-8 rounded-3xl bg-white/20 dark:bg-white/[0.02] border border-white/10 border-dashed backdrop-blur-xl transition-all duration-300 hover:bg-white/30 dark:hover:bg-white/[0.04] cursor-pointer h-full"
+            onClick={() => router.push('/settings')}
+          >
+            <div className="w-16 h-16 rounded-2xl bg-purple-500/10 dark:bg-purple-500/20 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-500">
+              <TrendingUp className="w-8 h-8 text-purple-600 dark:text-purple-400" />
+            </div>
+            <div className="text-center">
+              <h3 className="text-xl font-bold text-zinc-900 dark:text-white mb-2">No suggested matches yet</h3>
+              <p className="text-zinc-500 dark:text-zinc-400 text-sm max-w-[200px] mb-4">Complete your profile to discover potential roommates. New suggestions will appear here as they become available.</p>
               <Button 
-                asChild
-                className="mt-3 min-h-[44px] w-full sm:w-auto"
-                variant="primary"
+                variant="outline" 
+                size="sm"
+                onClick={(e) => {
+                  e.stopPropagation()
+                  router.push('/settings')
+                }}
+                className="mt-2"
               >
-                <a href="/settings">
-                  Go to Settings to Verify Email
-                </a>
+                Update Profile
               </Button>
             </div>
-          </div>
-        </motion.div>
-      )}
+          </motion.div>
+        )}
 
-      {/* Show prompt if questionnaire not completed */}
-      {!hasCompletedQuestionnaire && (
-        <motion.div
-          initial={{ opacity: 0, y: -20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5 }}
-          className={`border rounded-lg p-4 ${
-            hasPartialProgress 
-              ? 'bg-semantic-accent-soft border-semantic-accent/30' 
-              : 'bg-semantic-warning/20 border-semantic-warning/30'
-          }`}
-        >
-          <div className="flex items-start gap-3">
-            <AlertCircle className={`h-5 w-5 mt-0.5 ${
-              hasPartialProgress ? 'text-semantic-accent' : 'text-semantic-warning'
-            }`} />
-            <div className="flex-1">
-              <h3 className={`font-semibold ${
-                hasPartialProgress ? 'text-semantic-accent' : 'text-semantic-warning'
-              }`}>
-                {hasPartialProgress ? 'Update Your Compatibility Profile' : 'Complete Your Compatibility Test'}
-              </h3>
-              <p className={`text-sm mt-1 ${
-                hasPartialProgress ? 'text-semantic-accent' : 'text-semantic-warning'
-              }`}>
-                {hasPartialProgress 
-                  ? `Your profile is missing some information. Update your questionnaire to ensure accurate matching.`
-                  : 'To find the best roommate matches, please complete our compatibility questionnaire.'
-                }
-              </p>
-              <Button 
-                asChild
-                className="mt-3 min-h-[44px] w-full sm:w-auto"
-                variant="primary"
-              >
-                <a href={hasPartialProgress ? "/onboarding?mode=edit" : "/onboarding"}>
-                  {hasPartialProgress ? 'Update Profile' : 'Start Questionnaire'}
-                </a>
-              </Button>
+        {/* Call to Action - Find More - Shows when there are 1-2 matches */}
+        {recentMatches.length > 0 && recentMatches.length < 3 && (
+          <motion.div
+            variants={fadeInUp}
+            className="group relative flex flex-col items-center justify-center p-8 rounded-3xl bg-white/20 dark:bg-white/[0.02] border border-zinc-200 dark:border-white/10 border-dashed backdrop-blur-xl transition-all duration-300 hover:bg-white/30 dark:hover:bg-white/[0.04] cursor-pointer h-full"
+            onClick={() => router.push('/settings')}
+          >
+            <div className="w-16 h-16 rounded-2xl bg-purple-500/10 dark:bg-purple-500/20 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-500">
+              <Zap className="w-8 h-8 text-purple-600 dark:text-purple-400" />
             </div>
-          </div>
-        </motion.div>
-      )}
+            <div className="text-center">
+              <h3 className="text-xl font-bold text-zinc-900 dark:text-white">Find More</h3>
+              <p className="text-zinc-500 dark:text-zinc-400 text-sm mt-2 max-w-[180px]">Refine your preferences to see more people.</p>
+            </div>
+          </motion.div>
+        )}
+      </motion.div>
 
-
-      {/* Header */}
+      {/* Recent Activity Section */}
       <motion.div
+        variants={fadeInUp}
         initial="initial"
         animate="animate"
-        variants={staggerChildren}
-        className="space-y-2 flex-shrink-0"
+        className="pt-12 mt-4"
       >
-        <motion.div variants={fadeInUp} className="flex items-center justify-between">
-          <div>
-            <h1 className="text-lg lg:text-xl font-bold text-text-primary">Welcome back{firstName ? ` ${firstName}` : ''}!</h1>
-            <p className="text-xs lg:text-sm text-text-secondary mt-0.5">Here's what's happening with your matches today.</p>
-          </div>
-        </motion.div>
-        
-        {/* Summary Badges - Real Data */}
-        <motion.div variants={fadeInUp} className="flex flex-wrap gap-1.5 sm:gap-2">
-          {dashboardData.summary.newMatchesCount > 0 && (
-            <div className="inline-flex items-center gap-1.5 px-2 py-0.5 bg-semantic-success/20 text-semantic-success text-xs font-medium rounded-full">
-              <Star className="w-2.5 h-2.5" />
-              {dashboardData.summary.newMatchesCount} new {dashboardData.summary.newMatchesCount === 1 ? 'match' : 'matches'}
+        <div className="flex items-center justify-between mb-8">
+          <div className="flex items-center gap-2">
+            <div className="w-8 h-8 rounded-lg bg-blue-500/10 flex items-center justify-center">
+              <TrendingUp className="w-4 h-4 text-blue-500" />
             </div>
-          )}
-          {dashboardData.summary.unreadMessagesCount > 0 && (
-            <button
-              onClick={() => router.push('/chat')}
-              className="inline-flex items-center gap-1.5 px-2 py-0.5 bg-semantic-accent-soft text-semantic-accent text-xs font-medium rounded-full hover:bg-semantic-accent-soft/80 transition-colors cursor-pointer"
+            <span className="text-sm font-bold uppercase tracking-widest text-zinc-900 dark:text-zinc-400">Recent Activity</span>
+          </div>
+          <Button
+            variant="ghost"
+            className="text-zinc-500 dark:text-zinc-400 hover:text-blue-500 dark:hover:text-blue-400 text-xs font-bold uppercase tracking-widest transition-colors h-auto p-0"
+            onClick={() => router.push('/notifications')}
+          >
+            View All
+          </Button>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+          {recentActivity?.slice(0, 4).map((activity: any) => (
+            <motion.div
+              key={activity.id}
+              whileHover={{ y: -4, scale: 1.02 }}
+              onClick={() => handleActivityClick(activity)}
+              className="flex items-start gap-4 p-5 rounded-3xl bg-white/80 dark:bg-zinc-900/40 border border-zinc-200 dark:border-white/10 backdrop-blur-xl cursor-pointer group transition-all"
             >
-              <MessageCircle className="w-2.5 h-2.5" />
-              {dashboardData.summary.unreadMessagesCount} unread {dashboardData.summary.unreadMessagesCount === 1 ? 'message' : 'messages'}
-            </button>
-          )}
-          {/* Profile Completion Badge */}
-          {profileCompletion < 100 && (
-            <button
-              onClick={() => router.push('/settings')}
-              className="inline-flex items-center gap-1.5 px-2 py-0.5 bg-semantic-accent-soft text-semantic-accent text-xs font-medium rounded-full hover:bg-semantic-accent-soft/80 transition-colors cursor-pointer"
-            >
-              <TrendingUp className="w-2.5 h-2.5" />
-              Profile {profileCompletion}% complete
-            </button>
-          )}
-          {/* Questionnaire Progress Badge */}
-          {questionnaireProgress && !questionnaireProgress.isSubmitted && (
-            <div className="inline-flex items-center gap-1.5 px-2 py-0.5 bg-semantic-accent-soft text-semantic-accent text-xs font-medium rounded-full">
-              <FileText className="w-2.5 h-2.5" />
-              Questionnaire {questionnaireProgress.completedSections}/{questionnaireProgress.totalSections} sections
+              <div className={cn(
+                "w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 transition-all duration-500 group-hover:rotate-12 group-hover:scale-110",
+                getActivityColor(activity.type).includes('text-white') ? getActivityColor(activity.type) : `${getActivityColor(activity.type)} bg-opacity-10`
+              )}>
+                {getActivityIcon(activity.type)}
+              </div>
+              <div className="min-w-0 flex-1">
+                <p className="text-zinc-900 dark:text-zinc-100 text-sm font-bold leading-tight group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors line-clamp-2">
+                  {activity.title || activity.message || 'New activity'}
+                </p>
+                <p className="text-zinc-500 text-[10px] mt-2 font-bold uppercase tracking-wider">{activity.timeAgo}</p>
+              </div>
+            </motion.div>
+          ))}
+          {(!recentActivity || recentActivity.length === 0) && (
+            <div className="col-span-full py-16 flex flex-col items-center justify-center bg-white/10 dark:bg-white/[0.02] border border-dashed border-white/10 rounded-3xl">
+              <Bell className="w-10 h-10 mb-4 text-zinc-300 dark:text-zinc-700 animate-pulse" />
+              <p className="text-sm text-zinc-500 font-medium">No recent activity to show yet.</p>
             </div>
           )}
-          {dashboardData.summary.newMatchesCount === 0 && dashboardData.summary.unreadMessagesCount === 0 && profileCompletion === 100 && (!questionnaireProgress || questionnaireProgress.isSubmitted) && (
-            <div className="inline-flex items-center gap-1.5 px-2 py-0.5 bg-semantic-success/20 text-semantic-success text-xs font-medium rounded-full">
-              <Star className="w-2.5 h-2.5" />
-              All caught up!
-            </div>
-          )}
-        </motion.div>
+        </div>
       </motion.div>
-
-      {/* Stats Cards - Real Data */}
-      <motion.div
-        initial="initial"
-        animate="animate"
-        variants={staggerChildren}
-        className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2 sm:gap-2 flex-shrink-0"
-      >
-        <motion.div variants={fadeInUp}>
-          <div className="bg-bg-surface p-3 sm:p-4 rounded-xl shadow-sm border border-border-subtle">
-            <div className="text-xl sm:text-2xl font-bold text-text-primary text-center">
-              {Math.min(Math.round(avgCompatibility || 0), 100)}
-            </div>
-            <div className="text-xs text-text-secondary mt-0.5 text-center">Avg Compatibility</div>
-          </div>
-        </motion.div>
-        
-        <motion.div variants={fadeInUp}>
-          <div className="bg-bg-surface p-3 sm:p-4 rounded-xl shadow-sm border border-border-subtle">
-            <div className="text-xl sm:text-2xl font-bold text-text-primary text-center">{totalMatches}</div>
-            <div className="text-xs text-text-secondary mt-0.5 text-center">Total Matches</div>
-          </div>
-        </motion.div>
-        
-        <motion.div variants={fadeInUp}>
-          <div className="bg-bg-surface p-3 sm:p-4 rounded-xl shadow-sm border border-border-subtle">
-            <div className="text-xl sm:text-2xl font-bold text-text-primary text-center">{dashboardData.kpis.activeChats}</div>
-            <div className="text-xs text-text-secondary mt-0.5 text-center">Active Chats</div>
-          </div>
-        </motion.div>
-      </motion.div>
-
-      {/* Main Content Grid - Recent Matches and Recent Activity */}
-      <motion.div
-        initial="initial"
-        animate="animate"
-        variants={staggerChildren}
-        className="grid grid-cols-1 lg:grid-cols-2 gap-2 sm:gap-2 lg:gap-3"
-      >
-        {/* Recent Matches - Real Data */}
-        <motion.div variants={fadeInUp} className="flex flex-col min-h-0">
-          <div className="bg-bg-surface p-3 sm:p-4 rounded-xl shadow-sm border border-border-subtle flex flex-col h-full max-h-full">
-            <div className="flex items-center justify-between mb-2">
-              <h3 className="text-sm lg:text-base font-bold text-text-primary">Recent Matches</h3>
-              <button 
-                className="flex items-center justify-center w-8 h-8 text-text-muted hover:text-text-primary hover:bg-bg-surface-alt rounded-lg transition-colors" 
-                onClick={() => refetchRecentMatches()}
-                disabled={isLoadingMatches}
-                title="Refresh matches"
-              >
-                {isLoadingMatches ? (
-                  <Loader2 className="w-4 h-4 animate-spin" />
-                ) : (
-                  <RefreshCw className="w-4 h-4" />
-                )}
-              </button>
-            </div>
-            
-            {isLoadingMatches ? (
-              <div className="flex items-center justify-center py-8 flex-1">
-                <Loader2 className="w-6 h-6 animate-spin text-text-muted" />
-              </div>
-            ) : recentMatches.length > 0 ? (
-              <div className="flex flex-col flex-1 min-h-0">
-                <div className="space-y-2 overflow-y-auto flex-1 pr-2">
-                  {recentMatches.map((match) => (
-                    <div key={match.id} className="flex items-center gap-3 p-3 bg-bg-surface-alt border border-border-subtle rounded-lg hover:shadow-md transition-shadow">
-                      <div className="w-10 h-10 bg-gradient-to-br from-semantic-accent to-semantic-accent-hover rounded-full flex items-center justify-center text-white font-bold text-sm flex-shrink-0">
-                        {match.name[0].toUpperCase()}
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <h4 className="font-semibold text-sm text-text-primary truncate">{match.name}</h4>
-                        <div className="text-xs text-text-secondary mt-0.5">
-                          {match.program && (
-                            <div className="truncate">{match.program}</div>
-                          )}
-                          {match.university && (
-                            <div className="truncate">{match.university}</div>
-                          )}
-                        </div>
-                      </div>
-                      <div className="flex items-center gap-3 flex-shrink-0">
-                        {match.score > 0 && (
-                          <div className="text-xl font-bold text-semantic-accent">
-                            {(() => {
-                              // Handle both 0-1 range and 0-100 range scores
-                              let displayScore = match.score
-                              if (displayScore <= 1.0) {
-                                // Score is in 0-1 range, convert to 0-100
-                                displayScore = Math.round(displayScore * 100)
-                              } else {
-                                // Score is already in 0-100 range
-                                displayScore = Math.round(displayScore)
-                              }
-                              // Cap at 100
-                              return Math.min(displayScore, 100)
-                            })()}
-                          </div>
-                        )}
-                        <button 
-                          onClick={() => handleChatWithMatch(match.userId || match.id)}
-                          className="w-10 h-10 flex items-center justify-center bg-semantic-accent text-white rounded-lg hover:bg-semantic-accent-hover transition-colors"
-                          aria-label="Chat with match"
-                        >
-                          <MessageCircle className="w-5 h-5" />
-                        </button>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-                <div className="pt-2 border-t border-border-subtle mt-2 flex-shrink-0">
-                  <button 
-                    className="w-full flex items-center justify-center gap-1 text-xs text-semantic-accent hover:text-semantic-accent-hover font-medium py-1.5" 
-                    onClick={handleBrowseMatches}
-                  >
-                    View all
-                    <ArrowRight className="w-3 h-3" />
-                  </button>
-                </div>
-              </div>
-            ) : (
-              <div className="flex-1 flex items-center justify-center">
-                <EmptyState
-                  icon={Users}
-                  title="No matches yet"
-                  description="Complete your profile and questionnaire to find compatible roommates"
-                  action={{
-                    label: "Browse Matches",
-                    onClick: handleBrowseMatches
-                  }}
-                />
-              </div>
-            )}
-          </div>
-        </motion.div>
-
-        {/* Recent Activity - Live Notifications */}
-        <motion.div variants={fadeInUp} className="flex flex-col min-h-0">
-          <div className="bg-bg-surface p-3 sm:p-4 rounded-xl shadow-sm border border-border-subtle flex flex-col h-full max-h-full">
-            <div className="flex items-center justify-between mb-2">
-              <h3 className="text-sm lg:text-base font-bold text-text-primary">Recent Activity</h3>
-              <button 
-                className="flex items-center justify-center w-8 h-8 text-text-muted hover:text-text-primary hover:bg-bg-surface-alt rounded-lg transition-colors" 
-                onClick={() => refetchRecentActivity()}
-                disabled={isLoadingActivity}
-                title="Refresh activity"
-              >
-                {isLoadingActivity ? (
-                  <Loader2 className="w-4 h-4 animate-spin" />
-                ) : (
-                  <RefreshCw className="w-4 h-4" />
-                )}
-              </button>
-            </div>
-            
-            {isLoadingActivity ? (
-              <div className="flex items-center justify-center py-8 flex-1">
-                <Loader2 className="w-6 h-6 animate-spin text-text-muted" />
-              </div>
-            ) : recentActivity.length > 0 ? (
-              <div className="flex flex-col flex-1 min-h-0">
-                <div className="space-y-1.5 overflow-y-auto flex-1 pr-2">
-                  {recentActivity.slice(0, 3).map((activity) => (
-                    <button
-                      key={activity.id}
-                      onClick={() => handleActivityClick(activity)}
-                      className={`w-full flex items-start gap-2 p-2 rounded-lg transition-colors text-left ${
-                        activity.isRead 
-                          ? 'bg-bg-surface-alt hover:bg-bg-surface-alt/80' 
-                          : 'bg-semantic-accent-soft hover:bg-semantic-accent-soft/80 border border-semantic-accent/30'
-                      }`}
-                    >
-                      <div className={`flex-shrink-0 w-6 h-6 rounded-full flex items-center justify-center ${
-                        activity.isRead ? 'bg-bg-surface-alt' : getActivityColor(activity.type)
-                      }`}>
-                        <div className={activity.isRead ? 'text-text-muted' : ''}>
-                          {getActivityIcon(activity.type)}
-                        </div>
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <p className={`font-medium text-xs ${
-                          activity.isRead ? 'text-text-secondary' : 'text-text-primary'
-                        }`}>
-                          {activity.title}
-                        </p>
-                        {activity.message && (
-                          <p className={`text-xs mt-0.5 ${
-                            activity.isRead ? 'text-text-muted' : 'text-text-secondary'
-                          }`}>
-                            {activity.message}
-                          </p>
-                        )}
-                        <p className="text-xs text-text-muted mt-0.5">
-                          {activity.timeAgo}
-                        </p>
-                      </div>
-                      {!activity.isRead && (
-                        <div className="flex-shrink-0 w-1.5 h-1.5 bg-semantic-accent rounded-full mt-1.5" />
-                      )}
-                    </button>
-                  ))}
-                </div>
-                {recentActivity.length > 3 && (
-                  <div className="pt-2 border-t border-border-subtle mt-2 flex-shrink-0 mb-4">
-                    <button 
-                      className="w-full flex items-center justify-center gap-1 text-xs text-semantic-accent hover:text-semantic-accent-hover font-medium py-2" 
-                      onClick={handleViewAllActivity}
-                    >
-                      View more
-                      <ArrowRight className="w-3 h-3" />
-                    </button>
-                  </div>
-                )}
-              </div>
-            ) : (
-              <div className="flex-1 flex items-center justify-center">
-                <EmptyState
-                  icon={Bell}
-                  title="No recent activity"
-                  description="Your activity feed will appear here once you start matching and chatting"
-                />
-              </div>
-            )}
-          </div>
-        </motion.div>
-      </motion.div>
-
-
     </div>
   )
 }

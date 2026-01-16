@@ -59,13 +59,23 @@ BEGIN
     FROM match_suggestions ms
     WHERE p_user_id = ANY(ms.member_ids)
       AND (
+        -- When includeExpired is true, include everything (declined, confirmed, all statuses)
         p_include_expired 
+        -- When includeExpired is false, include:
+        -- - Confirmed matches (status = 'confirmed')
+        -- - Pending matches (status = 'pending')
+        -- - Accepted matches where not all members have accepted yet
+        -- Exclude: declined matches and accepted matches where all members have accepted (but status not yet 'confirmed')
         OR (
-          ms.status != 'declined' 
-          AND NOT (
-            ms.status = 'accepted' 
-            AND ms.accepted_by IS NOT NULL 
-            AND array_length(ms.accepted_by, 1) = array_length(ms.member_ids, 1)
+          ms.status = 'confirmed'  -- Always include confirmed matches
+          OR (
+            ms.status != 'declined' 
+            AND ms.status != 'confirmed'
+            AND NOT (
+              ms.status = 'accepted' 
+              AND ms.accepted_by IS NOT NULL 
+              AND array_length(ms.accepted_by, 1) = array_length(ms.member_ids, 1)
+            )
           )
         )
       )

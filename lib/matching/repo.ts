@@ -17,27 +17,27 @@ export type CohortFilter = {
 };
 
 export type MatchRecord =
-  | { 
-      kind: 'pair'; 
-      aId: string; 
-      bId: string; 
-      fit: number; 
-      fitIndex: number; 
-      sectionScores: Record<string, number>; 
-      reasons: string[]; 
-      runId: string; 
-      locked: boolean; 
-      createdAt: string 
-    }
-  | { 
-      kind: 'group'; 
-      memberIds: string[]; 
-      avgFit: number; 
-      fitIndex: number; 
-      runId: string; 
-      locked: boolean; 
-      createdAt: string 
-    };
+  | {
+    kind: 'pair';
+    aId: string;
+    bId: string;
+    fit: number;
+    fitIndex: number;
+    sectionScores: Record<string, number>;
+    reasons: string[];
+    runId: string;
+    locked: boolean;
+    createdAt: string
+  }
+  | {
+    kind: 'group';
+    memberIds: string[];
+    avgFit: number;
+    fitIndex: number;
+    runId: string;
+    locked: boolean;
+    createdAt: string
+  };
 
 export interface Candidate {
   id: string;
@@ -67,21 +67,21 @@ export interface MatchRepo {
   // Cohort selection
   loadCandidates(filter: CohortFilter): Promise<Candidate[]>;
   getCandidateByUserId(userId: string): Promise<Candidate | null>;
-  
+
   // Match runs
   saveMatchRun(run: Omit<MatchRun, 'id' | 'createdAt'>): Promise<void>;
   getMatchRun(runId: string): Promise<MatchRun | null>;
   listMatchRuns(limit?: number): Promise<MatchRun[]>;
-  
+
   // Match records
   saveMatches(matches: MatchRecord[]): Promise<void>;
   listMatches(runId?: string, locked?: boolean): Promise<MatchRecord[]>;
   lockMatch(ids: string[], runId: string): Promise<void>; // lock a pair or a group
-  
+
   // User management
   markUsersMatched(userIds: string[], runId: string): Promise<void>;
   isUserMatched(userId: string): Promise<boolean>;
-  
+
   // Suggestions (student flow)
   createSuggestions(sugs: MatchSuggestion[]): Promise<void>;
   listSuggestionsForUser(userId: string, includeExpired?: boolean, limit?: number, offset?: number): Promise<MatchSuggestion[]>;
@@ -93,8 +93,11 @@ export interface MatchRepo {
   expireAllOldSuggestions(): Promise<number>; // Expire all suggestions past expiry (admin operation)
   getSuggestionsForPair(userAId: string, userBId: string, includeExpired?: boolean): Promise<MatchSuggestion[]>;
   updateSuggestionAcceptedByAndStatus(id: string, acceptedBy: string[], status: 'pending' | 'accepted' | 'declined' | 'expired' | 'confirmed'): Promise<void>;
-  
+
   // Blocklist
   getBlocklist(userId: string): Promise<string[]>;
   addToBlocklist(userId: string, otherId: string): Promise<void>;
+
+  // Optimization V2
+  findBestMatchesV2(userId: string, limit?: number): Promise<any[]>;
 }

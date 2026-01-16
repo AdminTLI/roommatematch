@@ -30,11 +30,12 @@ import { showErrorToast, showSuccessToast } from '@/lib/toast'
 import { fetchWithCSRF } from '@/lib/utils/fetch-with-csrf'
 import { queryKeys, queryClient } from '@/app/providers'
 import { safeLogger } from '@/lib/utils/logger'
-import { 
-  Send, 
-  ArrowLeft, 
-  Users, 
-  AlertTriangle, 
+import { filterContent, getViolationErrorMessage } from '@/lib/utils/content-filter'
+import {
+  Send,
+  ArrowLeft,
+  Users,
+  AlertTriangle,
   Shield,
   MessageCircle,
   Clock,
@@ -42,25 +43,30 @@ import {
   CheckCheck,
   Flag,
   MoreVertical,
+  MoreHorizontal,
   Ban,
   Trash2,
   CheckCircle,
   LogOut,
   BarChart3,
-  Info
+  Info,
+  PanelRightClose,
+  PanelRightOpen
 } from 'lucide-react'
 import { GroupCompatibilityDisplay } from '../../components/group-compatibility-display'
 import { GroupFeedbackForm } from '../../components/group-feedback-form'
 import { LockedGroupChat } from '../../components/locked-group-chat'
-import { CompatibilityPanel } from '../../components/compatibility-panel'
-import { UserInfoPanel } from '../../components/user-info-panel'
+// Removed CompatibilityPanel and UserInfoPanel - now using ProfileCompatibilityPane in right sidebar
 import { MessageSkeleton } from '@/components/ui/message-skeleton'
 import { MessageSearch } from './message-search'
+import { MessageReactions } from './message-reactions'
 
 interface ChatInterfaceProps {
   roomId: string
   user: User
   onBack?: () => void
+  onToggleRightPane?: () => void
+  rightPaneOpen?: boolean
 }
 
 interface ChatMember {
@@ -83,10 +89,10 @@ interface Message {
   is_system_message?: boolean
 }
 
-export function ChatInterface({ roomId, user, onBack }: ChatInterfaceProps) {
+export function ChatInterface({ roomId, user, onBack, onToggleRightPane, rightPaneOpen = false }: ChatInterfaceProps) {
   const router = useRouter()
   const supabase = createClient()
-  
+
   const [messages, setMessages] = useState<Message[]>([])
   const [members, setMembers] = useState<ChatMember[]>([])
   const [newMessage, setNewMessage] = useState('')
@@ -99,6 +105,11 @@ export function ChatInterface({ roomId, user, onBack }: ChatInterfaceProps) {
   const [showReportDialog, setShowReportDialog] = useState(false)
   const [reportReason, setReportReason] = useState('')
   const [isReporting, setIsReporting] = useState(false)
+  const [showMessageReportDialog, setShowMessageReportDialog] = useState(false)
+  const [selectedMessageForReport, setSelectedMessageForReport] = useState<Message | null>(null)
+  const [messageReportReason, setMessageReportReason] = useState('')
+  const [messageReportDetails, setMessageReportDetails] = useState('')
+  const [isReportingMessage, setIsReportingMessage] = useState(false)
   const [showDeleteDialog, setShowDeleteDialog] = useState(false)
   const [isDeleting, setIsDeleting] = useState(false)
   const [isBlocking, setIsBlocking] = useState(false)
@@ -114,20 +125,15 @@ export function ChatInterface({ roomId, user, onBack }: ChatInterfaceProps) {
   const [showLeaveGroupDialog, setShowLeaveGroupDialog] = useState(false)
   const [isLeavingGroup, setIsLeavingGroup] = useState(false)
   const [isLocked, setIsLocked] = useState(false)
-  const [showCompatibilityPanel, setShowCompatibilityPanel] = useState(false)
-  const [compatibilityData, setCompatibilityData] = useState<any>(null)
-  const [isLoadingCompatibility, setIsLoadingCompatibility] = useState(false)
-  const [compatibilityDataRoomId, setCompatibilityDataRoomId] = useState<string | null>(null)
-  const [showUserInfoPanel, setShowUserInfoPanel] = useState(false)
-  const [userInfoData, setUserInfoData] = useState<any>(null)
-  const [isLoadingUserInfo, setIsLoadingUserInfo] = useState(false)
-  const [userInfoError, setUserInfoError] = useState<string | null>(null)
+  // Removed panel state - now handled by right pane in ChatThreeColumnLayout
   const [hasMatch, setHasMatch] = useState(false)
   const [hasMoreMessages, setHasMoreMessages] = useState(false)
   const [isLoadingMoreMessages, setIsLoadingMoreMessages] = useState(false)
   const [oldestMessageTimestamp, setOldestMessageTimestamp] = useState<string | null>(null)
   const [showSearch, setShowSearch] = useState(false)
-  
+  const [messageReactions, setMessageReactions] = useState<Map<string, Array<{ emoji: string; count: number; userReactions: string[] }>>>(new Map())
+  const reactionsChannelRef = useRef<any>(null)
+
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const messagesContainerRef = useRef<HTMLDivElement>(null)
   const typingTimeoutRef = useRef<NodeJS.Timeout>()
@@ -149,6 +155,48 @@ export function ChatInterface({ roomId, user, onBack }: ChatInterfaceProps) {
   const [lastSeenMap, setLastSeenMap] = useState<Map<string, string>>(new Map())
   const [lastReadAt, setLastReadAt] = useState<string | null>(null)
   const firstUnreadMessageRef = useRef<HTMLDivElement>(null)
+
+  // Helper function to scroll container to bottom (prevents page scroll)
+  const scrollContainerToBottom = useCallback((behavior: 'auto' | 'smooth' = 'auto') => {
+    const container = messagesContainerRef.current
+    if (!container) return
+    
+    if (behavior === 'smooth') {
+      container.scrollTo({
+        top: container.scrollHeight,
+        behavior: 'smooth'
+      })
+    } else {
+      container.scrollTop = container.scrollHeight
+    }
+  }, [])
+
+  // Helper function to scroll container to element (prevents page scroll)
+  const scrollContainerToElement = useCallback((element: HTMLElement, block: 'start' | 'center' | 'end' | 'nearest' = 'center') => {
+    const container = messagesContainerRef.current
+    if (!container || !container.contains(element)) return
+
+    const containerRect = container.getBoundingClientRect()
+    const elementRect = element.getBoundingClientRect()
+    const containerScrollTop = container.scrollTop
+    const elementOffsetTop = elementRect.top - containerRect.top + containerScrollTop
+
+    let targetScrollTop: number
+    if (block === 'center') {
+      targetScrollTop = elementOffsetTop - (container.clientHeight / 2) + (elementRect.height / 2)
+    } else if (block === 'start') {
+      targetScrollTop = elementOffsetTop
+    } else if (block === 'end') {
+      targetScrollTop = elementOffsetTop - container.clientHeight + elementRect.height
+    } else {
+      // nearest - scroll only if element is not visible
+      const isVisible = elementRect.top >= containerRect.top && elementRect.bottom <= containerRect.bottom
+      if (isVisible) return
+      targetScrollTop = elementOffsetTop - (container.clientHeight / 2) + (elementRect.height / 2)
+    }
+
+    container.scrollTop = Math.max(0, Math.min(targetScrollTop, container.scrollHeight - container.clientHeight))
+  }, [])
 
   // Mock data for demonstration
   const mockMessages: Message[] = [
@@ -298,11 +346,11 @@ export function ChatInterface({ roomId, user, onBack }: ChatInterfaceProps) {
           chat_id: roomId
         })
       })
-      
+
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({ error: 'Unknown error' }))
         const errorMessage = errorData.error || `Failed to mark messages as read (${response.status})`
-        
+
         if (!retry) {
           // Add to retry queue with attempt number for exponential backoff
           setReadRetryQueue(prev => [...prev, { timestamp: Date.now(), attempt: 0 }])
@@ -321,7 +369,7 @@ export function ChatInterface({ roomId, user, onBack }: ChatInterfaceProps) {
     } catch (error) {
       safeLogger.error('[Chat] Failed to mark as read:', error)
       const errorMessage = error instanceof Error ? error.message : 'Network error while marking as read'
-      
+
       if (!retry) {
         setReadRetryQueue(prev => [...prev, { timestamp: Date.now(), attempt: 0 }])
         setReadFailureCount(prev => prev + 1)
@@ -342,10 +390,10 @@ export function ChatInterface({ roomId, user, onBack }: ChatInterfaceProps) {
       const [nextRetry, ...remaining] = readRetryQueue
       const now = Date.now()
       const timeSinceFailure = now - nextRetry.timestamp
-      
+
       // Exponential backoff: 2^attempt seconds (max 60 seconds)
       const backoffDelay = Math.min(1000 * Math.pow(2, nextRetry.attempt), 60000)
-      
+
       if (timeSinceFailure >= backoffDelay) {
         // Time to retry
         markAsRead(true, nextRetry.attempt + 1).then(() => {
@@ -377,7 +425,7 @@ export function ChatInterface({ roomId, user, onBack }: ChatInterfaceProps) {
   useEffect(() => {
     if (readFailureCount >= 3 && readError) {
       showErrorToast(
-        'Connection issue', 
+        'Connection issue',
         `Unable to mark messages as read. Retrying automatically... (${readFailureCount} attempts)`
       )
       // Don't reset count - let exponential backoff handle retries
@@ -391,30 +439,7 @@ export function ChatInterface({ roomId, user, onBack }: ChatInterfaceProps) {
     }
   }, [roomId, user?.id])
 
-  // Clear compatibility data when switching to a different chat
-  useEffect(() => {
-    safeLogger.debug('[Compatibility] RoomId changed:', {
-      newRoomId: roomId,
-      dataRoomId: compatibilityDataRoomId,
-      isGroup,
-      willClear: compatibilityDataRoomId && compatibilityDataRoomId !== roomId
-    })
-    
-    // If roomId changes and we have compatibility data for a different room, clear it
-    if (compatibilityDataRoomId && compatibilityDataRoomId !== roomId) {
-        safeLogger.debug('[Compatibility] Clearing old compatibility data')
-      setCompatibilityData(null)
-      setCompatibilityDataRoomId(null)
-      setShowCompatibilityPanel(false) // Also close the panel when switching chats
-    }
-    
-    // Clear user info when switching chats
-    if (showUserInfoPanel) {
-      setShowUserInfoPanel(false)
-      setUserInfoData(null)
-      setUserInfoError(null)
-    }
-  }, [roomId, compatibilityDataRoomId, isGroup, showUserInfoPanel])
+  // Panel state now managed by ChatThreeColumnLayout parent component
 
   // Note: Auto-scroll logic is now handled in the useEffect that checks for unread messages
   // This prevents scrolling to bottom on every message change
@@ -431,7 +456,7 @@ export function ChatInterface({ roomId, user, onBack }: ChatInterfaceProps) {
   const loadChatData = useCallback(async () => {
     setIsLoading(true)
     setError('') // Clear any previous errors
-    
+
     try {
       // For demo mode, use mock data directly
       if (user.id === 'demo-user-id') {
@@ -447,7 +472,7 @@ export function ChatInterface({ roomId, user, onBack }: ChatInterfaceProps) {
       // Try to load with lock columns first, fallback to basic query if columns don't exist
       let roomData: any = null
       let roomError: any = null
-      
+
       // First try with lock columns (for new schema)
       const { data: roomDataWithLock, error: roomErrorWithLock } = await supabase
         .from('chats')
@@ -473,7 +498,7 @@ export function ChatInterface({ roomId, user, onBack }: ChatInterfaceProps) {
           `)
           .eq('id', roomId)
           .single()
-        
+
         if (roomErrorBasic) {
           roomError = roomErrorBasic
         } else {
@@ -530,12 +555,12 @@ export function ChatInterface({ roomId, user, onBack }: ChatInterfaceProps) {
 
       // Reverse messages array to show newest at bottom (we fetched with descending order)
       const reversedMessages = (messagesData || []).reverse()
-      
+
       // Check if there are more messages to load
       // If we got exactly MESSAGE_LIMIT messages, there might be more
       const totalMessages = messagesData?.length || 0
       setHasMoreMessages(totalMessages === MESSAGE_LIMIT)
-      
+
       // Store the oldest message timestamp for pagination
       if (reversedMessages.length > 0) {
         setOldestMessageTimestamp(reversedMessages[0].created_at)
@@ -558,6 +583,58 @@ export function ChatInterface({ roomId, user, onBack }: ChatInterfaceProps) {
           })
         }
       }
+
+      // Load reactions for all messages (handle gracefully if table doesn't exist yet)
+      const reactionsMap = new Map<string, Array<{ emoji: string; count: number; userReactions: string[] }>>()
+      if (messageIds.length > 0) {
+        try {
+          const { data: reactionsData, error: reactionsError } = await supabase
+            .from('message_reactions')
+            .select('message_id, emoji, user_id')
+            .in('message_id', messageIds)
+
+          // Only process if no error (table exists) or error is not 404/PGRST116
+          if (!reactionsError) {
+            if (reactionsData) {
+              // Group reactions by message_id and emoji
+              const grouped = new Map<string, Map<string, string[]>>()
+              reactionsData.forEach((reaction: any) => {
+                if (!grouped.has(reaction.message_id)) {
+                  grouped.set(reaction.message_id, new Map())
+                }
+                const emojiMap = grouped.get(reaction.message_id)!
+                if (!emojiMap.has(reaction.emoji)) {
+                  emojiMap.set(reaction.emoji, [])
+                }
+                emojiMap.get(reaction.emoji)!.push(reaction.user_id)
+              })
+
+              // Convert to expected format
+              grouped.forEach((emojiMap, msgId) => {
+                const reactions: Array<{ emoji: string; count: number; userReactions: string[] }> = []
+                emojiMap.forEach((userIds, emoji) => {
+                  reactions.push({
+                    emoji,
+                    count: userIds.length,
+                    userReactions: userIds
+                  })
+                })
+                reactionsMap.set(msgId, reactions)
+              })
+            }
+          } else {
+            // Table doesn't exist yet - silently ignore (migration not run)
+            // Only log if it's not a "table doesn't exist" error
+            if (reactionsError.code !== 'PGRST116' && reactionsError.code !== '42P01') {
+              safeLogger.warn('[Chat] Failed to load reactions:', reactionsError)
+            }
+          }
+        } catch (err) {
+          // Silently handle - table may not exist yet
+          safeLogger.debug('[Chat] Reactions table may not exist yet:', err)
+        }
+      }
+      setMessageReactions(reactionsMap)
 
       // Collect all user IDs from members and messages
       const userIds = new Set<string>()
@@ -583,6 +660,24 @@ export function ChatInterface({ roomId, user, onBack }: ChatInterfaceProps) {
               // Store profiles in state for use in typing indicators
               setProfilesMap(profilesMap)
             }
+          } else if (profilesResponse.status === 429) {
+            // Rate limited - try fallback: fetch profiles directly from Supabase
+            if (userIds.size > 0) {
+              try {
+                const { data: fallbackProfiles, error: fallbackError } = await supabase
+                  .from('profiles')
+                  .select('user_id, first_name, last_name')
+                  .in('user_id', Array.from(userIds))
+
+                if (!fallbackError && fallbackProfiles) {
+                  profilesMap = new Map(fallbackProfiles.map((p: any) => [p.user_id, p]))
+                  setProfilesMap(profilesMap)
+                  safeLogger.debug(`[Chat] Fallback: Loaded ${profilesMap.size} profiles directly from Supabase`)
+                }
+              } catch (fallbackErr) {
+                safeLogger.warn('[Chat] Fallback profile fetch also failed:', fallbackErr)
+              }
+            }
           } else {
             safeLogger.warn('[Chat] Failed to fetch profiles via API:', await profilesResponse.text())
           }
@@ -595,16 +690,28 @@ export function ChatInterface({ roomId, user, onBack }: ChatInterfaceProps) {
       // Transform messages data - handle missing profiles gracefully
       const transformedMessages: Message[] = (reversedMessages || []).map(msg => {
         const profile = profilesMap.get(msg.user_id)
-        const senderName = profile 
-          ? [profile.first_name?.trim(), profile.last_name?.trim()].filter(Boolean).join(' ') || 'User'
-          : 'Unknown User'
-        
+        let senderName = 'User'
+        if (profile) {
+          const firstName = profile.first_name?.trim()
+          const lastName = profile.last_name?.trim()
+          if (firstName && lastName) {
+            senderName = `${firstName} ${lastName}`
+          } else if (firstName) {
+            senderName = firstName
+          } else if (lastName) {
+            senderName = lastName
+          }
+          // If profile exists but no names, keep 'User' as fallback
+        } else {
+          senderName = 'Unknown User'
+        }
+
         // Get read receipts for this message
         const readBy = readReceiptsMap.get(msg.id) || []
-        
+
         // Check if this is a system greeting message
         const isSystemGreeting = msg.content === "You're matched! Start your conversation 👋"
-        
+
         return {
           id: msg.id,
           content: msg.content,
@@ -623,15 +730,27 @@ export function ChatInterface({ roomId, user, onBack }: ChatInterfaceProps) {
       const uniqueMembers = Array.from(
         new Map((membersData || []).map(m => [m.user_id, m])).values()
       )
-      
+
       const transformedMembers: ChatMember[] = uniqueMembers
         .filter(member => member.user_id !== user.id) // Exclude current user
         .map(member => {
           const profile = profilesMap.get(member.user_id)
-          const memberName = profile
-            ? [profile.first_name?.trim(), profile.last_name?.trim()].filter(Boolean).join(' ') || 'User'
-            : 'Unknown User'
-          
+          let memberName = 'User'
+          if (profile) {
+            const firstName = profile.first_name?.trim()
+            const lastName = profile.last_name?.trim()
+            if (firstName && lastName) {
+              memberName = `${firstName} ${lastName}`
+            } else if (firstName) {
+              memberName = firstName
+            } else if (lastName) {
+              memberName = lastName
+            }
+            // If profile exists but no names, keep 'User' as fallback
+          } else {
+            memberName = 'Unknown User'
+          }
+
           return {
             id: member.user_id,
             name: memberName,
@@ -644,7 +763,7 @@ export function ChatInterface({ roomId, user, onBack }: ChatInterfaceProps) {
       // Store chat type and other person's name for 1-on-1 chats
       setIsGroup(roomData.is_group || false)
       setIsLocked(roomData.is_locked || false)
-      
+
       // Load group compatibility if it's a group chat
       if (roomData.is_group) {
         try {
@@ -657,13 +776,13 @@ export function ChatInterface({ roomId, user, onBack }: ChatInterfaceProps) {
           safeLogger.warn('[Chat] Failed to load group compatibility:', err)
         }
       }
-      
+
       // For 1-on-1 chats, store the other person's name and check if blocked
       if (!roomData.is_group && transformedMembers.length === 1) {
         const otherMember = transformedMembers[0]
         setOtherPersonName(otherMember.name)
         setBlockedUserId(otherMember.id)
-        
+
         // Check if this user is blocked
         try {
           const { data: blockCheck } = await supabase
@@ -672,13 +791,13 @@ export function ChatInterface({ roomId, user, onBack }: ChatInterfaceProps) {
             .eq('user_id', user.id)
             .eq('blocked_user_id', otherMember.id)
             .maybeSingle()
-          
+
           setIsBlocked(!!blockCheck)
         } catch (err) {
           safeLogger.error('[Chat] Failed to check block status:', err)
           setIsBlocked(false)
         }
-        
+
         // Check verification status for the other user
         // Use profile.verification_status instead of querying verifications table directly
         // This avoids RLS issues and is more efficient (profiles are already loaded)
@@ -699,7 +818,7 @@ export function ChatInterface({ roomId, user, onBack }: ChatInterfaceProps) {
         setIsBlocked(false)
         setOtherUserVerificationStatus(null)
       }
-      
+
       // Load individual compatibility data if it's a 1-on-1 chat
       if (!roomData.is_group && transformedMembers.length === 1) {
         // Don't auto-load, only load when user clicks the button
@@ -708,10 +827,10 @@ export function ChatInterface({ roomId, user, onBack }: ChatInterfaceProps) {
 
       setMessages(transformedMessages)
       setMembers(transformedMembers)
-      
+
       // Reset scroll flag when new messages are loaded
       hasScrolledInitiallyRef.current = false
-      
+
     } catch (error) {
       safeLogger.error('[Chat] Failed to load chat data:', error)
       const errorMessage = error instanceof Error ? error.message : 'Failed to load chat messages'
@@ -726,7 +845,7 @@ export function ChatInterface({ roomId, user, onBack }: ChatInterfaceProps) {
 
   const loadOlderMessages = useCallback(async () => {
     if (!oldestMessageTimestamp || isLoadingMoreMessages || !hasMoreMessages) return
-    
+
     setIsLoadingMoreMessages(true)
     try {
       const MESSAGE_LIMIT = 50
@@ -755,10 +874,10 @@ export function ChatInterface({ roomId, user, onBack }: ChatInterfaceProps) {
 
       // Reverse to get chronological order (oldest first)
       const reversedOlder = olderMessages.reverse()
-      
+
       // Check if there are more messages
       setHasMoreMessages(olderMessages.length === MESSAGE_LIMIT)
-      
+
       // Update oldest message timestamp
       if (reversedOlder.length > 0) {
         setOldestMessageTimestamp(reversedOlder[0].created_at)
@@ -784,7 +903,7 @@ export function ChatInterface({ roomId, user, onBack }: ChatInterfaceProps) {
       // Get profiles for new messages
       const userIds = new Set<string>(reversedOlder.map(m => m.user_id))
       const profilesToFetch = Array.from(userIds).filter(id => !profilesMap.has(id))
-      
+
       if (profilesToFetch.length > 0) {
         try {
           const profilesResponse = await fetchWithCSRF('/api/chat/profiles', {
@@ -810,13 +929,13 @@ export function ChatInterface({ roomId, user, onBack }: ChatInterfaceProps) {
       // Transform new messages
       const transformedOlder: Message[] = reversedOlder.map(msg => {
         const profile = profilesMap.get(msg.user_id)
-        const senderName = profile 
+        const senderName = profile
           ? [profile.first_name?.trim(), profile.last_name?.trim()].filter(Boolean).join(' ') || 'User'
           : 'Unknown User'
-        
+
         const readBy = readReceiptsMap.get(msg.id) || []
         const isSystemGreeting = msg.content === "You're matched! Start your conversation 👋"
-        
+
         return {
           id: msg.id,
           content: msg.content,
@@ -831,7 +950,7 @@ export function ChatInterface({ roomId, user, onBack }: ChatInterfaceProps) {
 
       // Prepend older messages to existing messages
       setMessages(prev => [...transformedOlder, ...prev])
-      
+
       // Maintain scroll position (don't jump to top)
       setTimeout(() => {
         if (messagesContainerRef.current) {
@@ -856,7 +975,7 @@ export function ChatInterface({ roomId, user, onBack }: ChatInterfaceProps) {
         e.preventDefault()
         setShowSearch(true)
       }
-      
+
       // Esc: Close modals/dialogs
       if (e.key === 'Escape') {
         if (showReportDialog) {
@@ -866,12 +985,7 @@ export function ChatInterface({ roomId, user, onBack }: ChatInterfaceProps) {
         if (showDeleteDialog) {
           setShowDeleteDialog(false)
         }
-        if (showCompatibilityPanel) {
-          setShowCompatibilityPanel(false)
-        }
-        if (showUserInfoPanel) {
-          setShowUserInfoPanel(false)
-        }
+        // Panels are now managed by parent layout component
         if (showLeaveGroupDialog) {
           setShowLeaveGroupDialog(false)
         }
@@ -882,146 +996,14 @@ export function ChatInterface({ roomId, user, onBack }: ChatInterfaceProps) {
     return () => {
       window.removeEventListener('keydown', handleKeyDown)
     }
-  }, [showReportDialog, showDeleteDialog, showCompatibilityPanel, showUserInfoPanel, showLeaveGroupDialog])
+  }, [showReportDialog, showDeleteDialog, showLeaveGroupDialog])
 
-  const fetchCompatibilityData = useCallback(async () => {
-    if (isGroup || isLoadingCompatibility) return
-    
-    setIsLoadingCompatibility(true)
-    try {
-      // Add cache-busting timestamp to ensure fresh data
-      const url = `/api/chat/compatibility?chatId=${roomId}&_t=${Date.now()}`
-      safeLogger.debug('[Compatibility] Fetching compatibility data for roomId:', roomId, 'URL:', url)
-      
-      const response = await fetch(url, {
-        cache: 'no-store', // Prevent browser caching
-        headers: {
-          'Cache-Control': 'no-cache, no-store, must-revalidate',
-          'Pragma': 'no-cache',
-          'Expires': '0'
-        }
-      })
-      const responseData = await response.json()
-      
-      safeLogger.debug('[Compatibility] Response for roomId:', roomId, 'Data:', {
-        compatibility_score: responseData.compatibility_score,
-        harmony_score: responseData.harmony_score,
-        context_score: responseData.context_score
-      })
-      
-      if (response.ok) {
-        setCompatibilityData(responseData)
-        setCompatibilityDataRoomId(roomId) // Track which roomId this data belongs to
-      } else {
-        safeLogger.error('[Compatibility] Failed to fetch compatibility data:', {
-          status: response.status,
-          error: responseData.error,
-          details: responseData.details,
-          fullResponse: responseData,
-          roomId
-        })
-        setCompatibilityData(null)
-        setCompatibilityDataRoomId(null)
-        // Show user-friendly error message
-        if (response.status === 404 && responseData.details) {
-          showErrorToast('Compatibility data not available', responseData.details)
-        } else {
-          showErrorToast('Failed to load compatibility data', responseData.details || responseData.error || 'Please try again later.')
-        }
-      }
-    } catch (error) {
-      safeLogger.error('[Compatibility] Error fetching compatibility data:', error, 'roomId:', roomId)
-      setCompatibilityData(null)
-      setCompatibilityDataRoomId(null)
-      showErrorToast('Network error', 'Failed to fetch compatibility data. Please check your connection and try again.')
-    } finally {
-      setIsLoadingCompatibility(false)
-    }
-  }, [roomId, isGroup, isLoadingCompatibility])
+  // Compatibility and user info fetching now handled by ProfileCompatibilityPane component
 
-  const handleOpenCompatibility = useCallback(() => {
-    safeLogger.debug('[Compatibility] Opening panel for roomId:', roomId, {
-      hasData: !!compatibilityData,
-      dataRoomId: compatibilityDataRoomId,
-      currentRoomId: roomId,
-      shouldFetch: !compatibilityData || compatibilityDataRoomId !== roomId
-    })
-    
-    setShowCompatibilityPanel(true)
-    // Always fetch fresh data - don't rely on cache to ensure we get the right data
-    // This ensures we always have the correct compatibility for the current chat
-    if (!isLoadingCompatibility) {
-      safeLogger.debug('[Compatibility] Fetching fresh data for roomId:', roomId)
-      fetchCompatibilityData()
-    }
-  }, [roomId, isLoadingCompatibility, fetchCompatibilityData])
-
-  const fetchUserInfo = useCallback(async () => {
-    if (isGroup || isLoadingUserInfo) return
-    
-    setIsLoadingUserInfo(true)
-    setUserInfoError(null)
-    try {
-      const response = await fetch(`/api/chat/user-info?chatId=${roomId}`, {
-        cache: 'no-store',
-        headers: {
-          'Cache-Control': 'no-cache, no-store, must-revalidate',
-          'Pragma': 'no-cache',
-          'Expires': '0'
-        }
-      })
-      const responseData = await response.json()
-      
-      if (response.ok) {
-        setUserInfoData(responseData)
-        setHasMatch(true)
-        setUserInfoError(null)
-      } else {
-        if (response.status === 403) {
-          setHasMatch(false)
-          setUserInfoError('You can only view info for matched users.')
-        } else if (response.status === 404) {
-          setUserInfoError('User profile not found.')
-        } else {
-          setUserInfoError(responseData.details || responseData.error || 'Unable to load user information.')
-        }
-        setUserInfoData(null)
-      }
-    } catch (error) {
-      safeLogger.error('[UserInfo] Error fetching user info:', error, 'roomId:', roomId)
-      setUserInfoData(null)
-      setUserInfoError('Network error. Please check your connection and try again.')
-    } finally {
-      setIsLoadingUserInfo(false)
-    }
-  }, [roomId, isGroup, isLoadingUserInfo])
-
-  const handleOpenUserInfo = useCallback(() => {
-    setShowUserInfoPanel(true)
-    if (!isLoadingUserInfo) {
-      fetchUserInfo()
-    }
-  }, [isLoadingUserInfo, fetchUserInfo])
-
-  // Check if users are matched when chat loads (for individual chats)
+  // Match status check - simplified, ProfileCompatibilityPane will handle data fetching
   useEffect(() => {
     if (!isGroup && roomId && members.length === 1) {
-      // Check match status by trying to fetch user info (will return 403 if not matched)
-      const checkMatch = async () => {
-        try {
-          const response = await fetch(`/api/chat/user-info?chatId=${roomId}`, {
-            cache: 'no-store'
-          })
-          if (response.ok) {
-            setHasMatch(true)
-          } else if (response.status === 403) {
-            setHasMatch(false)
-          }
-        } catch {
-          setHasMatch(false)
-        }
-      }
-      checkMatch()
+      setHasMatch(true) // Assume matched if individual chat exists
     } else {
       setHasMatch(false)
     }
@@ -1031,15 +1013,15 @@ export function ChatInterface({ roomId, user, onBack }: ChatInterfaceProps) {
   const isJWTError = useCallback((error: any): boolean => {
     if (!error) return false
     const errorStr = typeof error === 'string' ? error : JSON.stringify(error)
-    return errorStr.includes('JWT') || 
-           errorStr.includes('Token') || 
-           errorStr.includes('expired') ||
-           errorStr.includes('InvalidJWTToken')
+    return errorStr.includes('JWT') ||
+      errorStr.includes('Token') ||
+      errorStr.includes('expired') ||
+      errorStr.includes('InvalidJWTToken')
   }, [])
 
   const setupRealtimeSubscription = useCallback(() => {
     safeLogger.debug('[Realtime] Setting up subscription for roomId:', roomId)
-    
+
     // Clean up existing subscription if any
     if (messagesChannelRef.current) {
       safeLogger.debug('[Realtime] Cleaning up existing messages channel')
@@ -1051,7 +1033,7 @@ export function ChatInterface({ roomId, user, onBack }: ChatInterfaceProps) {
     // Subscribe to new messages via broadcast channel
     const channelName = `room:${roomId}:messages`
     safeLogger.debug('[Realtime] Creating broadcast channel:', channelName)
-    
+
     const messagesChannel = supabase
       .channel(channelName, {
         config: {
@@ -1064,7 +1046,7 @@ export function ChatInterface({ roomId, user, onBack }: ChatInterfaceProps) {
           event: payload.event,
           payload: payload
         })
-        
+
         try {
           // Validate payload structure
           if (!payload || typeof payload !== 'object') {
@@ -1079,7 +1061,7 @@ export function ChatInterface({ roomId, user, onBack }: ChatInterfaceProps) {
           }
 
           const newMessage = payload.payload as any
-          
+
           // Validate required fields
           if (!newMessage.id) {
             console.error('[Realtime] ❌ Missing message ID in payload:', payload)
@@ -1110,13 +1092,13 @@ export function ChatInterface({ roomId, user, onBack }: ChatInterfaceProps) {
             currentUserId: user.id,
             roomId: roomId
           })
-          
+
           // Only add if it's not from the current user (to avoid duplicates from optimistic updates)
           if (newMessage.user_id === user.id) {
             console.log('[Realtime] ℹ️ Skipping own message (optimistic update already handled):', newMessage.id)
             return
           }
-          
+
           // Fetch profile for the sender using API route
           let senderName = 'Unknown User'
           try {
@@ -1153,30 +1135,30 @@ export function ChatInterface({ roomId, user, onBack }: ChatInterfaceProps) {
             console.error('[Realtime] ❌ Error fetching profile for new message:', err)
             // Continue with 'Unknown User' - don't block message display
           }
-          
+
           // Check if this is a system greeting message
           const isSystemGreeting = newMessage.content === "You're matched! Start your conversation 👋"
-          
+
           setMessages(prev => {
             console.log('[Realtime] 📊 Current state before update:', {
               currentMessagesCount: prev.length,
               currentMessageIDs: prev.map(m => m.id),
               newMessageId: newMessage.id
             })
-            
+
             // Double-check for duplicates
             const exists = prev.some(msg => msg.id === newMessage.id)
             if (exists) {
               console.warn('[Realtime] ⚠️ Message already exists in state, skipping duplicate:', newMessage.id)
               return prev
             }
-            
+
             // Validate message content
             if (!newMessage.content || typeof newMessage.content !== 'string') {
               console.error('[Realtime] ❌ Invalid message content:', newMessage)
               return prev
             }
-            
+
             console.log('[Realtime] ➕ Adding new message to state:', {
               id: newMessage.id,
               sender: senderName,
@@ -1185,7 +1167,7 @@ export function ChatInterface({ roomId, user, onBack }: ChatInterfaceProps) {
               contentPreview: newMessage.content.substring(0, 30),
               createdAt: newMessage.created_at
             })
-            
+
             const messageToAdd: Message = {
               id: newMessage.id,
               content: newMessage.content,
@@ -1196,27 +1178,27 @@ export function ChatInterface({ roomId, user, onBack }: ChatInterfaceProps) {
               is_own: false,
               is_system_message: isSystemGreeting
             }
-            
+
             const updatedMessages = [...prev, messageToAdd]
-            
+
             console.log('[Realtime] ✅ State updated successfully:', {
               previousCount: prev.length,
               newCount: updatedMessages.length,
               addedMessageId: newMessage.id
             })
-            
+
             return updatedMessages
           })
-          
+
           // Scroll to bottom when new message arrives
           setTimeout(() => {
             try {
-              messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
+              scrollContainerToBottom('smooth')
             } catch (scrollError) {
               console.warn('[Realtime] ⚠️ Error scrolling to bottom:', scrollError)
             }
           }, 100)
-          
+
           console.log('[Realtime] ✅ Message processing completed successfully')
         } catch (error) {
           console.error('[Realtime] ❌ Fatal error processing new message:', error)
@@ -1225,7 +1207,7 @@ export function ChatInterface({ roomId, user, onBack }: ChatInterfaceProps) {
             stack: error instanceof Error ? error.stack : undefined,
             payload: payload
           })
-          
+
           // Try to reload chat data as fallback
           console.log('[Realtime] 🔄 Attempting to reload chat data as fallback...')
           try {
@@ -1243,7 +1225,7 @@ export function ChatInterface({ roomId, user, onBack }: ChatInterfaceProps) {
         console.log('[Realtime] Channel:', channelName)
         console.log('[Realtime] RoomId:', roomId)
         console.log('[Realtime] User ID:', user.id)
-        
+
         if (status === 'SUBSCRIBED') {
           console.log('[Realtime] ✅ Successfully subscribed to broadcast channel')
           console.log('[Realtime] 📡 Listening for INSERT broadcast events')
@@ -1262,40 +1244,40 @@ export function ChatInterface({ roomId, user, onBack }: ChatInterfaceProps) {
           const errorMessage = hasError
             ? (typeof err === 'string' ? err : (err as any).message || 'Channel error')
             : 'Unknown error (no error details provided)'
-          
+
           // Check if this is a JWT/token expiration error
           if (isJWTError(err)) {
             console.log('[Realtime] 🔐 JWT token error detected, refreshing session...')
             setConnectionStatus('connecting')
             setError('Refreshing connection...')
-            // Refresh session and resubscribe
-            ;(async () => {
-              try {
-                const { data: { session }, error: refreshError } = await supabase.auth.refreshSession()
-                
-                if (refreshError) {
-                  console.error('[Realtime] ❌ Failed to refresh session:', refreshError)
-                  setError('Session expired. Please refresh the page.')
-                  return
+              // Refresh session and resubscribe
+              ; (async () => {
+                try {
+                  const { data: { session }, error: refreshError } = await supabase.auth.refreshSession()
+
+                  if (refreshError) {
+                    console.error('[Realtime] ❌ Failed to refresh session:', refreshError)
+                    setError('Session expired. Please refresh the page.')
+                    return
+                  }
+
+                  if (session) {
+                    console.log('[Realtime] ✅ Session refreshed successfully')
+                    // Wait a bit for the new token to propagate, then resubscribe
+                    setTimeout(() => {
+                      if (setupRealtimeSubscriptionRef.current) {
+                        setupRealtimeSubscriptionRef.current()
+                      }
+                    }, 500)
+                  }
+                } catch (refreshErr) {
+                  console.error('[Realtime] ❌ Error refreshing session:', refreshErr)
+                  setError('Failed to refresh connection. Please refresh the page.')
                 }
-                
-                if (session) {
-                  console.log('[Realtime] ✅ Session refreshed successfully')
-                  // Wait a bit for the new token to propagate, then resubscribe
-                  setTimeout(() => {
-                    if (setupRealtimeSubscriptionRef.current) {
-                      setupRealtimeSubscriptionRef.current()
-                    }
-                  }, 500)
-                }
-              } catch (refreshErr) {
-                console.error('[Realtime] ❌ Error refreshing session:', refreshErr)
-                setError('Failed to refresh connection. Please refresh the page.')
-              }
-            })()
+              })()
             return
           }
-          
+
           // For non-JWT errors, use exponential backoff retry
           const maxRetries = 10
           if (messageChannelRetryAttempts.current < maxRetries) {
@@ -1315,15 +1297,15 @@ export function ChatInterface({ roomId, user, onBack }: ChatInterfaceProps) {
                 roomId: roomId
               })
             }
-            
+
             // Update connection status
             setConnectionStatus('connecting')
             setError('Connection error. Reconnecting...')
-            
+
             // Calculate exponential backoff delay
             const delay = Math.min(2000 * Math.pow(1.5, messageChannelRetryAttempts.current), 30000)
             messageChannelRetryAttempts.current++
-            
+
             // Attempt to resubscribe after a delay (prevent multiple simultaneous attempts)
             if (resubscribeTimeoutRef.current) {
               clearTimeout(resubscribeTimeoutRef.current)
@@ -1352,15 +1334,15 @@ export function ChatInterface({ roomId, user, onBack }: ChatInterfaceProps) {
                 console.warn('[Realtime] ⚠️ This may indicate network issues or Supabase Realtime service problems')
               }
             }
-            
+
             // Update connection status and show user feedback
             setConnectionStatus('connecting')
             setError('Connection timeout. Reconnecting...')
-            
+
             // Calculate exponential backoff delay (2s initial, 1.5x multiplier, max 30s)
             const delay = Math.min(2000 * Math.pow(1.5, messageChannelRetryAttempts.current), 30000)
             messageChannelRetryAttempts.current++
-            
+
             // Attempt to resubscribe after a delay (prevent multiple simultaneous attempts)
             if (resubscribeTimeoutRef.current) {
               clearTimeout(resubscribeTimeoutRef.current)
@@ -1382,13 +1364,13 @@ export function ChatInterface({ roomId, user, onBack }: ChatInterfaceProps) {
         } else if (status === 'CLOSED') {
           console.log('[Realtime] ℹ️ Channel closed')
           console.log('[Realtime] ℹ️ This is normal when component unmounts or connection is lost')
-          
+
           // Clear any pending error timeout since channel is closing
           if (errorTimeoutRef.current) {
             clearTimeout(errorTimeoutRef.current)
             errorTimeoutRef.current = null
           }
-          
+
           // Only attempt to resubscribe if:
           // 1. We're not unmounting (component is still mounted)
           // 2. The channel reference still exists (wasn't intentionally cleaned up)
@@ -1397,7 +1379,7 @@ export function ChatInterface({ roomId, user, onBack }: ChatInterfaceProps) {
             // Don't show error immediately - wait to see if it reconnects quickly
             // This prevents flickering during token refreshes and HMR
             const attemptDelay = Math.min(2000 * Math.pow(1.5, readFailureCount), 10000)
-            
+
             // Set a delayed check - only show error if still disconnected after delay
             // This prevents the flickering "Attempting to reconnect" popup
             errorTimeoutRef.current = setTimeout(() => {
@@ -1408,7 +1390,7 @@ export function ChatInterface({ roomId, user, onBack }: ChatInterfaceProps) {
               }
               errorTimeoutRef.current = null
             }, 3000) // Wait 3 seconds before showing error (gives time for quick reconnects)
-            
+
             resubscribeTimeoutRef.current = setTimeout(() => {
               if (!isUnmountingRef.current && messagesChannelRef.current) {
                 console.log('[Realtime] 🔄 Attempting to resubscribe after disconnect...')
@@ -1508,16 +1490,16 @@ export function ChatInterface({ roomId, user, onBack }: ChatInterfaceProps) {
             if (process.env.NODE_ENV === 'development') {
               console.warn(`[Realtime] ⚠️ Typing channel ${status === 'TIMED_OUT' ? 'timed out' : 'error'} - will retry`)
             }
-            
+
             // Calculate exponential backoff delay
             const delay = Math.min(2000 * Math.pow(1.5, typingChannelRetryAttempts.current), 30000)
             typingChannelRetryAttempts.current++
-            
+
             // Clean up existing timeout if any
             if (typingChannelResubscribeTimeoutRef.current) {
               clearTimeout(typingChannelResubscribeTimeoutRef.current)
             }
-            
+
             // Retry subscription
             typingChannelResubscribeTimeoutRef.current = setTimeout(() => {
               if (!isUnmountingRef.current && typingChannelRef.current) {
@@ -1573,7 +1555,7 @@ export function ChatInterface({ roomId, user, onBack }: ChatInterfaceProps) {
                       typingChannelRetryAttempts.current = 0
                     }
                   })
-                
+
                 // Clean up old channel
                 if (typingChannelRef.current) {
                   typingChannelRef.current.unsubscribe()
@@ -1593,7 +1575,7 @@ export function ChatInterface({ roomId, user, onBack }: ChatInterfaceProps) {
           }
         }
       })
-    
+
     // Store channel reference for reuse
     typingChannelRef.current = typingChannel
 
@@ -1604,7 +1586,7 @@ export function ChatInterface({ roomId, user, onBack }: ChatInterfaceProps) {
         const state = presenceChannel.presenceState()
         const onlineSet = new Set<string>()
         const lastSeen = new Map<string, string>()
-        
+
         Object.keys(state).forEach(key => {
           const presence = state[key] as any
           const presenceUserId = presence?.[0]?.user_id || key
@@ -1618,7 +1600,7 @@ export function ChatInterface({ roomId, user, onBack }: ChatInterfaceProps) {
             }
           }
         })
-        
+
         setOnlineUsers(onlineSet)
         setLastSeenMap(lastSeen)
       })
@@ -1658,7 +1640,7 @@ export function ChatInterface({ roomId, user, onBack }: ChatInterfaceProps) {
             user_id: user.id,
             last_seen: new Date().toISOString()
           })
-          
+
           // Update presence every 30 seconds to show we're still online
           const presenceInterval = setInterval(async () => {
             if (presenceChannelRef.current) {
@@ -1669,9 +1651,9 @@ export function ChatInterface({ roomId, user, onBack }: ChatInterfaceProps) {
               })
             }
           }, 30000)
-          
-          // Store interval ID for cleanup
-          ;(presenceChannelRef.current as any).intervalId = presenceInterval
+
+            // Store interval ID for cleanup
+            ; (presenceChannelRef.current as any).intervalId = presenceInterval
           presenceChannelRetryAttempts.current = 0 // Reset retry attempts on success
         } else if (status === 'TIMED_OUT' || status === 'CHANNEL_ERROR') {
           const maxRetries = 10
@@ -1679,16 +1661,16 @@ export function ChatInterface({ roomId, user, onBack }: ChatInterfaceProps) {
             if (process.env.NODE_ENV === 'development') {
               console.warn(`[Realtime] ⚠️ Presence channel ${status === 'TIMED_OUT' ? 'timed out' : 'error'} - will retry`)
             }
-            
+
             // Calculate exponential backoff delay
             const delay = Math.min(2000 * Math.pow(1.5, presenceChannelRetryAttempts.current), 30000)
             presenceChannelRetryAttempts.current++
-            
+
             // Clean up existing timeout if any
             if (presenceChannelResubscribeTimeoutRef.current) {
               clearTimeout(presenceChannelResubscribeTimeoutRef.current)
             }
-            
+
             // Retry subscription
             presenceChannelResubscribeTimeoutRef.current = setTimeout(() => {
               if (!isUnmountingRef.current && presenceChannelRef.current) {
@@ -1699,7 +1681,7 @@ export function ChatInterface({ roomId, user, onBack }: ChatInterfaceProps) {
                     const state = newPresenceChannel.presenceState()
                     const onlineSet = new Set<string>()
                     const lastSeen = new Map<string, string>()
-                    
+
                     Object.keys(state).forEach(key => {
                       const presence = state[key] as any
                       const presenceUserId = presence?.[0]?.user_id || key
@@ -1713,7 +1695,7 @@ export function ChatInterface({ roomId, user, onBack }: ChatInterfaceProps) {
                         }
                       }
                     })
-                    
+
                     setOnlineUsers(onlineSet)
                     setLastSeenMap(lastSeen)
                   })
@@ -1751,7 +1733,7 @@ export function ChatInterface({ roomId, user, onBack }: ChatInterfaceProps) {
                         user_id: user.id,
                         last_seen: new Date().toISOString()
                       })
-                      
+
                       const presenceInterval = setInterval(async () => {
                         if (presenceChannelRef.current) {
                           await presenceChannelRef.current.track({
@@ -1761,12 +1743,12 @@ export function ChatInterface({ roomId, user, onBack }: ChatInterfaceProps) {
                           })
                         }
                       }, 30000)
-                      
-                      ;(presenceChannelRef.current as any).intervalId = presenceInterval
+
+                        ; (presenceChannelRef.current as any).intervalId = presenceInterval
                       presenceChannelRetryAttempts.current = 0
                     }
                   })
-                
+
                 // Clean up old channel and interval
                 if (presenceChannelRef.current) {
                   const intervalId = (presenceChannelRef.current as any).intervalId
@@ -1789,12 +1771,12 @@ export function ChatInterface({ roomId, user, onBack }: ChatInterfaceProps) {
           }
         }
       })
-    
+
     presenceChannelRef.current = presenceChannel
 
     // Store reference for refresh function
     setupRealtimeSubscriptionRef.current = setupRealtimeSubscription
-    
+
     return () => {
       console.log('[Realtime] Cleaning up subscriptions')
       if (resubscribeTimeoutRef.current) {
@@ -1852,7 +1834,7 @@ export function ChatInterface({ roomId, user, onBack }: ChatInterfaceProps) {
       const originalBodyHeight = document.body.style.height
       const originalHtmlHeight = document.documentElement.style.height
       const originalBodyPosition = document.body.style.position
-      
+
       // Prevent scrolling on html and body
       document.documentElement.style.overflow = 'hidden'
       document.documentElement.style.height = '100vh'
@@ -1860,23 +1842,23 @@ export function ChatInterface({ roomId, user, onBack }: ChatInterfaceProps) {
       document.body.style.height = '100vh'
       document.body.style.position = 'fixed'
       document.body.style.width = '100%'
-      
+
       // Also prevent scroll on the main container
       const mainContainer = document.querySelector('main')
       if (mainContainer) {
         const originalMainOverflow = (mainContainer as HTMLElement).style.overflow
-        ;(mainContainer as HTMLElement).style.overflow = 'hidden'
-        
+          ; (mainContainer as HTMLElement).style.overflow = 'hidden'
+
         return () => {
           document.documentElement.style.overflow = originalHtmlOverflow
           document.documentElement.style.height = originalHtmlHeight
           document.body.style.overflow = originalBodyOverflow
           document.body.style.height = originalBodyHeight
           document.body.style.position = originalBodyPosition
-          ;(mainContainer as HTMLElement).style.overflow = originalMainOverflow
+            ; (mainContainer as HTMLElement).style.overflow = originalMainOverflow
         }
       }
-      
+
       return () => {
         document.documentElement.style.overflow = originalHtmlOverflow
         document.documentElement.style.height = originalHtmlHeight
@@ -1896,7 +1878,7 @@ export function ChatInterface({ roomId, user, onBack }: ChatInterfaceProps) {
         hasSession: !!session,
         userId: session?.user?.id
       })
-      
+
       // When token is refreshed, re-establish Realtime subscriptions
       if (event === 'TOKEN_REFRESHED' || event === 'SIGNED_IN') {
         console.log('[Realtime] 🔄 Token refreshed, re-establishing subscriptions...')
@@ -1923,20 +1905,20 @@ export function ChatInterface({ roomId, user, onBack }: ChatInterfaceProps) {
   useEffect(() => {
     // Reset unmounting flag
     isUnmountingRef.current = false
-    
+
     // Set up realtime subscription immediately
     setupRealtimeSubscription()
-    
+
     // Load chat data
     loadChatData()
-    
+
     // Mark as read
     markAsRead()
-    
+
     return () => {
       // Mark as unmounting to prevent resubscription attempts
       isUnmountingRef.current = true
-      
+
       // Clear any pending resubscribe attempts
       if (resubscribeTimeoutRef.current) {
         clearTimeout(resubscribeTimeoutRef.current)
@@ -1946,7 +1928,7 @@ export function ChatInterface({ roomId, user, onBack }: ChatInterfaceProps) {
         clearTimeout(errorTimeoutRef.current)
         errorTimeoutRef.current = null
       }
-      
+
       if (typingTimeoutRef.current) {
         clearTimeout(typingTimeoutRef.current)
       }
@@ -1975,7 +1957,7 @@ export function ChatInterface({ roomId, user, onBack }: ChatInterfaceProps) {
     // Only run when loading is complete and we have messages
     if (messages.length > 0 && !isLoading && !hasScrolledInitiallyRef.current) {
       scrollLockRef.current = true // Lock scroll position
-      
+
       const performScroll = () => {
         const container = messagesContainerRef.current
         if (!container || hasScrolledInitiallyRef.current) return false
@@ -1991,10 +1973,7 @@ export function ChatInterface({ roomId, user, onBack }: ChatInterfaceProps) {
           // Use requestAnimationFrame to ensure DOM is ready
           requestAnimationFrame(() => {
             if (firstUnreadMessageRef.current && container.contains(firstUnreadMessageRef.current)) {
-              firstUnreadMessageRef.current.scrollIntoView({ 
-                behavior: 'auto',
-                block: 'center'
-              })
+              scrollContainerToElement(firstUnreadMessageRef.current, 'center')
               hasScrolledInitiallyRef.current = true
               // Keep lock for 1 second after scroll
               setTimeout(() => {
@@ -2004,7 +1983,7 @@ export function ChatInterface({ roomId, user, onBack }: ChatInterfaceProps) {
           })
           return true
         }
-        
+
         // No unread messages - scroll to bottom immediately
         requestAnimationFrame(() => {
           if (container) {
@@ -2018,7 +1997,7 @@ export function ChatInterface({ roomId, user, onBack }: ChatInterfaceProps) {
         })
         return true
       }
-      
+
       // Try immediately
       if (!performScroll()) {
         // If not ready, try multiple times with increasing delays
@@ -2063,7 +2042,7 @@ export function ChatInterface({ roomId, user, onBack }: ChatInterfaceProps) {
 
         const isNearTop = currentContainer.scrollTop < 100
         const hasContent = currentContainer.scrollHeight > currentContainer.clientHeight
-        
+
         if (isNearTop && hasContent) {
           // Scroll was reset, restore to bottom immediately
           currentContainer.scrollTop = currentContainer.scrollHeight
@@ -2091,10 +2070,8 @@ export function ChatInterface({ roomId, user, onBack }: ChatInterfaceProps) {
   // React Query mutation for sending messages with optimistic updates
   const sendMessageMutation = useMutation({
     mutationFn: async (content: string) => {
-      // Check for links (safety feature)
-      if (containsLinks(content)) {
-        throw new Error('Links are not allowed in chat messages for safety reasons.')
-      }
+      // Content validation is now handled server-side, but we also validate client-side
+      // for immediate feedback. Server will reject if validation fails.
 
       const response = await fetchWithCSRF('/api/chat/send', {
         method: 'POST',
@@ -2127,7 +2104,7 @@ export function ChatInterface({ roomId, user, onBack }: ChatInterfaceProps) {
           errorDetails
         })
         // Include details in error message for development
-        const fullErrorMessage = errorDetails 
+        const fullErrorMessage = errorDetails
           ? `${errorMessage}\n\nDetails: ${JSON.stringify(errorDetails, null, 2)}`
           : errorMessage
         throw new Error(fullErrorMessage)
@@ -2142,7 +2119,7 @@ export function ChatInterface({ roomId, user, onBack }: ChatInterfaceProps) {
 
       // Get sender name from profilesMap
       const profile = profilesMap.get(user.id)
-      const senderName = profile 
+      const senderName = profile
         ? [profile.first_name?.trim(), profile.last_name?.trim()].filter(Boolean).join(' ') || 'User'
         : 'You'
 
@@ -2165,10 +2142,10 @@ export function ChatInterface({ roomId, user, onBack }: ChatInterfaceProps) {
       setMessages(prev => {
         const filtered = prev.filter(m => !m.id.startsWith('temp-'))
         const profile = profilesMap.get(user.id)
-        const senderName = profile 
+        const senderName = profile
           ? [profile.first_name?.trim(), profile.last_name?.trim()].filter(Boolean).join(' ') || 'User'
           : 'You'
-        
+
         return [...filtered, {
           id: message.id,
           content: message.content,
@@ -2193,13 +2170,13 @@ export function ChatInterface({ roomId, user, onBack }: ChatInterfaceProps) {
             content: message.content,
             created_at: message.created_at
           }
-          
+
           const { error: broadcastError } = await channel.send({
             type: 'broadcast',
             event: 'INSERT',
             payload: broadcastPayload
           })
-          
+
           if (broadcastError) {
             console.error('[Realtime] Failed to broadcast message:', broadcastError)
           } else {
@@ -2236,9 +2213,27 @@ export function ChatInterface({ roomId, user, onBack }: ChatInterfaceProps) {
 
   const isSending = sendMessageMutation.isPending
 
-  const containsLinks = (text: string): boolean => {
-    const urlRegex = /(https?:\/\/[^\s]+|www\.[^\s]+|[a-zA-Z0-9-]+\.[a-zA-Z]{2,})/i
-    return urlRegex.test(text)
+  // Validate content in real-time
+  const validateContent = (text: string) => {
+    if (!text.trim()) {
+      setContentValidationError('')
+      return true
+    }
+    
+    const contentCheck = filterContent(text)
+    const blockingViolations = contentCheck.violations.filter(v => 
+      v === 'links' || v === 'email' || v === 'phone'
+    )
+    
+    if (blockingViolations.length > 0) {
+      const errorMessage = getViolationErrorMessage(blockingViolations)
+      setContentValidationError(errorMessage)
+      return false
+    }
+    
+    // Clear error if no blocking violations
+    setContentValidationError('')
+    return true
   }
 
   const handleTyping = () => {
@@ -2250,7 +2245,7 @@ export function ChatInterface({ roomId, user, onBack }: ChatInterfaceProps) {
     typingDebounceRef.current = setTimeout(() => {
       // Reuse existing typing channel instead of creating new one
       const channel = typingChannelRef.current
-      
+
       if (!channel) {
         console.warn('Typing channel not initialized')
         return
@@ -2289,9 +2284,50 @@ export function ChatInterface({ roomId, user, onBack }: ChatInterfaceProps) {
   }
 
   const formatTime = (timestamp: string) => {
-    return new Date(timestamp).toLocaleTimeString([], { 
-      hour: '2-digit', 
-      minute: '2-digit' 
+    const messageDate = new Date(timestamp)
+    const now = new Date()
+    const today = new Date(now.getFullYear(), now.getMonth(), now.getDate())
+    const yesterday = new Date(today)
+    yesterday.setDate(yesterday.getDate() - 1)
+    const messageDay = new Date(messageDate.getFullYear(), messageDate.getMonth(), messageDate.getDate())
+    
+    // Same day - show time
+    if (messageDay.getTime() === today.getTime()) {
+      return messageDate.toLocaleTimeString([], {
+        hour: '2-digit',
+        minute: '2-digit'
+      })
+    }
+    
+    // Yesterday - show "Yesterday"
+    if (messageDay.getTime() === yesterday.getTime()) {
+      return 'Yesterday'
+    }
+    
+    // Same week (Monday to Sunday) - show day name
+    const daysDiff = Math.floor((today.getTime() - messageDay.getTime()) / (1000 * 60 * 60 * 24))
+    if (daysDiff >= 2 && daysDiff < 7) {
+      // Check if same week by getting Monday of both weeks
+      const getMonday = (date: Date) => {
+        const d = new Date(date)
+        const day = d.getDay()
+        const diff = d.getDate() - day + (day === 0 ? -6 : 1) // Adjust when day is Sunday
+        return new Date(d.setDate(diff))
+      }
+      
+      const messageMonday = getMonday(messageDate)
+      const todayMonday = getMonday(now)
+      
+      // Same week and same year - show day name
+      if (messageMonday.getTime() === todayMonday.getTime() && messageDate.getFullYear() === now.getFullYear()) {
+        return messageDate.toLocaleDateString([], { weekday: 'long' })
+      }
+    }
+    
+    // Older - show short date format (e.g., "1 Jan", "18 Mar")
+    return messageDate.toLocaleDateString([], {
+      day: 'numeric',
+      month: 'short'
     })
   }
 
@@ -2300,18 +2336,18 @@ export function ChatInterface({ roomId, user, onBack }: ChatInterfaceProps) {
     const today = new Date()
     const yesterday = new Date(today)
     yesterday.setDate(yesterday.getDate() - 1)
-    
+
     const dateStr = date.toDateString()
     const todayStr = today.toDateString()
     const yesterdayStr = yesterday.toDateString()
-    
+
     if (dateStr === todayStr) {
       return 'Today'
     } else if (dateStr === yesterdayStr) {
       return 'Yesterday'
     } else {
-      return date.toLocaleDateString([], { 
-        month: 'short', 
+      return date.toLocaleDateString([], {
+        month: 'short',
         day: 'numeric',
         year: date.getFullYear() !== today.getFullYear() ? 'numeric' : undefined
       })
@@ -2322,21 +2358,21 @@ export function ChatInterface({ roomId, user, onBack }: ChatInterfaceProps) {
     if (currentIndex === 0) return true
     const currentMessage = messages[currentIndex]
     const previousMessage = messages[currentIndex - 1]
-    
+
     if (!currentMessage || !previousMessage) return false
-    
+
     const currentDate = new Date(currentMessage.created_at).toDateString()
     const previousDate = new Date(previousMessage.created_at).toDateString()
-    
+
     return currentDate !== previousDate
   }
 
   const getReadStatus = (message: Message) => {
     if (!message.is_own) return null
-    
+
     const otherMembers = members.filter(m => m.id !== user.id)
     const readByOthers = message.read_by.filter(id => id !== user.id)
-    
+
     if (readByOthers.length === otherMembers.length) {
       return <CheckCheck className="h-4 w-4 text-semantic-accent" />
     } else if (readByOthers.length > 0) {
@@ -2375,8 +2411,8 @@ export function ChatInterface({ roomId, user, onBack }: ChatInterfaceProps) {
       const response = await fetchWithCSRF('/api/chat/report', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ 
-          target_user_id: otherUserId, 
+        body: JSON.stringify({
+          target_user_id: otherUserId,
           category: mapReportReasonToCategory(reportReason),
           details: reportReason,
           message_id: null
@@ -2397,12 +2433,47 @@ export function ChatInterface({ roomId, user, onBack }: ChatInterfaceProps) {
     }
   }
 
+  const handleReportMessage = async () => {
+    if (!messageReportReason.trim() || !selectedMessageForReport) {
+      showErrorToast('Validation Error', 'Please select a reason for reporting.')
+      return
+    }
+    setIsReportingMessage(true)
+    try {
+      const response = await fetchWithCSRF('/api/chat/report', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          target_user_id: selectedMessageForReport.sender_id,
+          message_id: selectedMessageForReport.id,
+          category: mapReportReasonToCategory(messageReportReason),
+          details: messageReportDetails || messageReportReason
+        })
+      })
+      if (response.ok) {
+        setShowMessageReportDialog(false)
+        setSelectedMessageForReport(null)
+        setMessageReportReason('')
+        setMessageReportDetails('')
+        showSuccessToast('Report submitted', 'Thank you for your report. We will review it shortly.')
+      } else {
+        const errorData = await response.json()
+        throw new Error(errorData.error || 'Failed to submit report')
+      }
+    } catch (error: any) {
+      console.error('Failed to report message:', error)
+      showErrorToast('Failed to submit report', error.message || 'Please try again.')
+    } finally {
+      setIsReportingMessage(false)
+    }
+  }
+
   const handleBlockUser = async () => {
     if (isGroup) {
       showErrorToast('Cannot block', 'Blocking is only available for individual chats.')
       return
     }
-    
+
     setIsBlocking(true)
     try {
       const otherUserId = members.find(m => m.id !== user.id)?.id
@@ -2410,14 +2481,14 @@ export function ChatInterface({ roomId, user, onBack }: ChatInterfaceProps) {
         showErrorToast('Error', 'Unable to identify user to block.')
         return
       }
-      
+
       // Block user via API
       const response = await fetchWithCSRF('/api/match/block', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ blocked_user_id: otherUserId })
       })
-      
+
       if (response.ok) {
         showSuccessToast('User blocked', 'This user has been blocked and you will no longer receive messages from them.')
         router.push('/chat')
@@ -2440,7 +2511,7 @@ export function ChatInterface({ roomId, user, onBack }: ChatInterfaceProps) {
       const response = await fetchWithCSRF(`/api/chat/${roomId}/leave`, {
         method: 'POST'
       })
-      
+
       if (response.ok) {
         showSuccessToast('Conversation deleted', 'The conversation has been deleted.')
         router.push('/chat')
@@ -2469,47 +2540,31 @@ export function ChatInterface({ roomId, user, onBack }: ChatInterfaceProps) {
   //   )
   // }
 
-  // Show compatibility panel as full-screen overlay instead of chat
-  if (!isGroup && showCompatibilityPanel) {
-    return (
-      <CompatibilityPanel
-        open={showCompatibilityPanel}
-        onOpenChange={setShowCompatibilityPanel}
-        compatibility={compatibilityData}
-        isLoading={isLoadingCompatibility}
-      />
-    )
-  }
-
-  if (!isGroup && showUserInfoPanel) {
-    return (
-      <UserInfoPanel
-        open={showUserInfoPanel}
-        onOpenChange={setShowUserInfoPanel}
-        userInfo={userInfoData}
-        isLoading={isLoadingUserInfo}
-        error={userInfoError}
-      />
-    )
-  }
+  // No longer showing panels as full-screen overlays - they're in the right pane now
 
   return (
-    <div 
-      className="flex flex-col h-full min-h-0 w-full bg-bg-surface overflow-hidden" 
-      style={{ 
-        height: '100%', 
+    <div
+      className="flex flex-col h-full w-full bg-transparent rounded-lg border border-gray-200 dark:border-gray-800 overflow-hidden"
+      style={{
+        height: '100%',
         maxHeight: '100%',
         minHeight: 0,
-        flex: '1 1 0%' // Ensure it takes available space but doesn't grow
+        flex: '1 1 0%',
+        display: 'flex',
+        flexDirection: 'column',
+        position: 'relative',
+        overflow: 'hidden',
+        width: '100%',
+        contain: 'layout style'
       }}
     >
       {/* Modern Chat Header */}
-      <div className="flex-shrink-0 bg-bg-surface border-b border-border-subtle shadow-sm">
-        <div className="px-1 sm:px-4 lg:px-8 py-3 sm:py-4">
+      <div className="flex-shrink-0 bg-white dark:bg-gray-900 border-b border-white dark:border-gray-800 z-30">
+        <div className="px-1 sm:px-4 lg:px-8 py-4 sm:py-5">
           <div className="flex items-center justify-between gap-4">
             <div className="flex items-center gap-3 flex-1 min-w-0">
-              <Button 
-                variant="ghost" 
+              <Button
+                variant="ghost"
                 size="sm"
                 onClick={() => {
                   if (onBack) {
@@ -2518,90 +2573,98 @@ export function ChatInterface({ roomId, user, onBack }: ChatInterfaceProps) {
                     router.back()
                   }
                 }}
-                className="h-10 w-10 p-0 flex-shrink-0 rounded-xl bg-bg-surface-alt hover:bg-bg-surface border border-border-subtle shadow-sm lg:hidden"
+                className="h-10 w-10 p-0 flex-shrink-0 rounded-full bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 border border-white dark:border-gray-700 transition-all hover:scale-105 active:scale-95 lg:hidden"
               >
-                <ArrowLeft className="h-5 w-5" />
+                <ArrowLeft className="h-5 w-5 text-gray-900 dark:text-gray-100" />
               </Button>
               <div className="flex items-center gap-3 flex-1 min-w-0">
-                <div className="flex items-center gap-3 flex-1 min-w-0">
+                <div className="flex flex-col gap-1 flex-1 min-w-0">
                   {isLoading ? (
-                    <div className="h-6 w-32 bg-bg-surface-alt rounded animate-pulse"></div>
+                    <div className="h-6 w-32 bg-gray-200 rounded animate-pulse"></div>
                   ) : (
-                    <h1 className="text-lg sm:text-xl font-semibold text-text-primary truncate">
-                      {isGroup ? 'Roommate Chat' : (otherPersonName || 'Chat')}
-                    </h1>
-                  )}
-                  {!isGroup && otherUserVerificationStatus && (
-                    <div className="flex-shrink-0">
-                      {otherUserVerificationStatus === 'verified' ? (
-                        <div className="relative">
-                          <div className="w-8 h-8 rounded-xl bg-semantic-accent flex items-center justify-center border-2 border-semantic-accent/30 shadow-sm">
-                            <CheckCircle className="h-4 w-4 text-white fill-white" />
-                          </div>
-                        </div>
-                      ) : (
-                        <div className="relative">
-                          <div className="w-8 h-8 rounded-xl border-2 border-border-subtle flex items-center justify-center bg-bg-surface-alt">
-                            <div className="w-3 h-3 rounded-full bg-border-subtle"></div>
-                          </div>
-                        </div>
-                      )}
-                    </div>
-                  )}
-                  {isGroup && (
-                    <div className="flex items-center gap-1.5 flex-shrink-0 px-2.5 py-1 rounded-lg bg-bg-surface-alt border border-border-subtle">
-                      <Users className="h-4 w-4 text-text-muted" />
-                      <span className="text-xs font-semibold text-text-muted">
-                        {members.length}
-                      </span>
-                    </div>
+                    <>
+                      <h1 className="text-lg sm:text-xl font-bold text-gray-900 dark:text-gray-100 truncate">
+                        {isGroup ? 'Roommate Chat' : (otherPersonName || 'Chat')}
+                      </h1>
+                      {(() => {
+                        const otherTypingUsers = typingUsers.filter(userId => userId !== user.id)
+                        if (otherTypingUsers.length > 0 && !isGroup) {
+                          const typingNames = otherTypingUsers.map(userId => {
+                            const profile = profilesMap.get(userId)
+                            return profile?.first_name?.trim() || 'Someone'
+                          })
+                          return (
+                            <p className="text-xs text-gray-600 dark:text-gray-400 font-medium">
+                              {typingNames.length === 1 
+                                ? `${typingNames[0]} is typing...`
+                                : 'Typing...'
+                              }
+                            </p>
+                          )
+                        }
+                        return null
+                      })()}
+                    </>
                   )}
                 </div>
+                {!isGroup && otherUserVerificationStatus && (
+                  <div className="flex-shrink-0">
+                    {otherUserVerificationStatus === 'verified' ? (
+                      <div className="relative">
+                        <div className="w-8 h-8 rounded-xl bg-semantic-accent flex items-center justify-center border-2 border-semantic-accent/30 shadow-sm">
+                          <CheckCircle className="h-4 w-4 text-white fill-white" />
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="relative">
+                        <div className="w-8 h-8 rounded-xl border-2 border-border-subtle flex items-center justify-center bg-bg-surface-alt">
+                          <div className="w-3 h-3 rounded-full bg-border-subtle"></div>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                )}
+                {isGroup && (
+                  <div className="flex items-center gap-1.5 flex-shrink-0 px-2.5 py-1 rounded-lg bg-bg-surface-alt border border-border-subtle">
+                    <Users className="h-4 w-4 text-text-muted" />
+                    <span className="text-xs font-semibold text-text-muted">
+                      {members.length}
+                    </span>
+                  </div>
+                )}
               </div>
             </div>
-            
+
             <div className="flex items-center gap-2 flex-shrink-0">
               {isGroup && groupCompatibility && (
                 <Button
                   variant="ghost"
                   size="sm"
                   onClick={() => setShowCompatibility(!showCompatibility)}
-                  className="h-10 px-3 rounded-xl hover:bg-bg-surface-alt border border-border-subtle"
+                  className="h-10 w-10 p-0 rounded-full bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 border border-white dark:border-gray-700 transition-all"
+                  title="Compatibility"
                 >
-                  <BarChart3 className="h-4 w-4 mr-2" />
-                  <span className="text-xs font-medium">Compatibility</span>
+                  <BarChart3 className="h-4 w-4 text-gray-900 dark:text-gray-100" />
                 </Button>
               )}
-              {!isGroup && (
-                <>
-                  {hasMatch && (
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={handleOpenUserInfo}
-                      disabled={isLoadingUserInfo}
-                      className="h-10 px-3 rounded-xl hover:bg-bg-surface-alt border border-border-subtle"
-                    >
-                      <Info className="h-4 w-4 mr-2" />
-                      <span className="text-xs font-medium">
-                        {isLoadingUserInfo ? 'Loading...' : 'Info'}
-                      </span>
-                    </Button>
+              {/* Toggle right pane button (for individual chats) */}
+              {!isGroup && onToggleRightPane && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={onToggleRightPane}
+                  className="h-10 w-10 p-0 rounded-xl hover:bg-bg-surface-alt border border-border-subtle"
+                  title={rightPaneOpen ? 'Hide profile' : 'Show profile'}
+                >
+                  {rightPaneOpen ? (
+                    <PanelRightClose className="h-5 w-5" />
+                  ) : (
+                    <PanelRightOpen className="h-5 w-5" />
                   )}
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={handleOpenCompatibility}
-                    disabled={isLoadingCompatibility}
-                    className="h-10 px-3 rounded-xl hover:bg-bg-surface-alt border border-border-subtle"
-                  >
-                    <BarChart3 className="h-4 w-4 mr-2" />
-                    <span className="text-xs font-medium">
-                      {isLoadingCompatibility ? 'Loading...' : 'Compatibility'}
-                    </span>
-                  </Button>
-                </>
+                  <span className="sr-only">Toggle profile panel</span>
+                </Button>
               )}
+              {/* Group chat dropdown menu */}
               {isGroup && (
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
@@ -2632,6 +2695,7 @@ export function ChatInterface({ roomId, user, onBack }: ChatInterfaceProps) {
                   </DropdownMenuContent>
                 </DropdownMenu>
               )}
+              {/* Individual chat dropdown menu */}
               {!isGroup && (
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
@@ -2640,59 +2704,50 @@ export function ChatInterface({ roomId, user, onBack }: ChatInterfaceProps) {
                       size="sm"
                       className="h-10 w-10 p-0 rounded-xl hover:bg-bg-surface-alt border border-border-subtle"
                     >
-                      <MoreVertical className="h-5 w-5" />
+                      <MoreHorizontal className="h-5 w-5" />
                       <span className="sr-only">Open menu</span>
                     </Button>
                   </DropdownMenuTrigger>
-                <DropdownMenuContent align="end">
-                  {hasMatch && (
-                    <>
-                      <DropdownMenuItem
-                        onClick={handleOpenUserInfo}
-                        disabled={isLoadingUserInfo}
-                      >
-                        <Info className="h-4 w-4 mr-2" />
-                        {isLoadingUserInfo ? 'Loading...' : 'View Info'}
-                      </DropdownMenuItem>
-                      <DropdownMenuSeparator />
-                    </>
-                  )}
-                  <DropdownMenuItem
-                    onClick={handleOpenCompatibility}
-                    disabled={isLoadingCompatibility}
-                  >
-                    <BarChart3 className="h-4 w-4 mr-2" />
-                    {isLoadingCompatibility ? 'Loading...' : 'View Compatibility'}
-                  </DropdownMenuItem>
-                  <DropdownMenuSeparator />
-                  <DropdownMenuItem
-                    onClick={handleBlockUser}
-                    disabled={isBlocking}
-                    className="text-semantic-danger focus:text-semantic-danger focus:bg-semantic-danger/10"
-                  >
-                    <Ban className="h-4 w-4 mr-2" />
-                    {isBlocking ? 'Blocking...' : 'Block User'}
-                  </DropdownMenuItem>
-                  <DropdownMenuItem
-                    onClick={() => setShowReportDialog(true)}
-                    className="text-semantic-danger focus:text-semantic-danger focus:bg-semantic-danger/10"
-                  >
-                    <Flag className="h-4 w-4 mr-2" />
-                    Report User
-                  </DropdownMenuItem>
-                  <DropdownMenuSeparator />
-                  <DropdownMenuItem
-                    onClick={() => setShowDeleteDialog(true)}
-                    disabled={isDeleting}
-                    className="text-semantic-danger focus:text-semantic-danger focus:bg-semantic-danger/10"
-                  >
-                    <Trash2 className="h-4 w-4 mr-2" />
-                    {isDeleting ? 'Deleting...' : 'Delete Conversation'}
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
-            )}
-          </div>
+                  <DropdownMenuContent align="end">
+                    {onToggleRightPane && (
+                      <>
+                        <DropdownMenuItem
+                          onClick={onToggleRightPane}
+                        >
+                          <Info className="h-4 w-4 mr-2" />
+                          {rightPaneOpen ? 'Hide Profile' : 'Show Profile'}
+                        </DropdownMenuItem>
+                        <DropdownMenuSeparator />
+                      </>
+                    )}
+                    <DropdownMenuItem
+                      onClick={handleBlockUser}
+                      disabled={isBlocking}
+                      className="text-semantic-danger focus:text-semantic-danger focus:bg-semantic-danger/10"
+                    >
+                      <Ban className="h-4 w-4 mr-2" />
+                      {isBlocking ? 'Blocking...' : 'Block User'}
+                    </DropdownMenuItem>
+                    <DropdownMenuItem
+                      onClick={() => setShowReportDialog(true)}
+                      className="text-semantic-danger focus:text-semantic-danger focus:bg-semantic-danger/10"
+                    >
+                      <Flag className="h-4 w-4 mr-2" />
+                      Report User
+                    </DropdownMenuItem>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem
+                      onClick={() => setShowDeleteDialog(true)}
+                      disabled={isDeleting}
+                      className="text-semantic-danger focus:text-semantic-danger focus:bg-semantic-danger/10"
+                    >
+                      <Trash2 className="h-4 w-4 mr-2" />
+                      {isDeleting ? 'Deleting...' : 'Delete Conversation'}
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              )}
+            </div>
           </div>
         </div>
       </div>
@@ -2701,12 +2756,12 @@ export function ChatInterface({ roomId, user, onBack }: ChatInterfaceProps) {
       {isBlocked && blockedUserId && (
         <div className="flex-shrink-0 py-2">
           <div className="w-full lg:max-w-4xl lg:mx-auto px-1 sm:px-4 lg:px-8">
-          <Alert variant="destructive" className="py-2 bg-semantic-danger/10 dark:bg-semantic-danger/20 border border-semantic-danger/30 rounded-lg">
-            <Ban className="h-4 w-4" />
-            <AlertDescription className="text-sm">
-              You have blocked this user. Messages from blocked users are hidden.
-            </AlertDescription>
-          </Alert>
+            <Alert variant="destructive" className="py-2 bg-semantic-danger/10 dark:bg-semantic-danger/20 border border-semantic-danger/30 rounded-lg">
+              <Ban className="h-4 w-4" />
+              <AlertDescription className="text-sm">
+                You have blocked this user. Messages from blocked users are hidden.
+              </AlertDescription>
+            </Alert>
           </div>
         </div>
       )}
@@ -2715,13 +2770,12 @@ export function ChatInterface({ roomId, user, onBack }: ChatInterfaceProps) {
       {(error && connectionStatus === 'disconnected') || connectionStatus === 'connecting' ? (
         <div className="flex-shrink-0 py-2">
           <div className="w-full lg:max-w-4xl lg:mx-auto px-1 sm:px-4 lg:px-8">
-            <Alert 
-              variant={connectionStatus === 'disconnected' ? 'destructive' : 'default'} 
-              className={`rounded-lg ${
-                connectionStatus === 'disconnected' 
+            <Alert
+              variant={connectionStatus === 'disconnected' ? 'destructive' : 'default'}
+              className={`rounded-lg ${connectionStatus === 'disconnected'
                   ? 'bg-semantic-danger/10 dark:bg-semantic-danger/20 border border-semantic-danger/30'
                   : 'bg-bg-surface-alt border border-border-subtle'
-              }`}
+                }`}
             >
               {connectionStatus === 'connecting' ? (
                 <>
@@ -2743,7 +2797,7 @@ export function ChatInterface({ roomId, user, onBack }: ChatInterfaceProps) {
       {isGroup && showCompatibility && groupCompatibility && (
         <div className="flex-shrink-0 py-3 border-b border-border-subtle bg-bg-surface-alt">
           <div className="w-full lg:max-w-4xl lg:mx-auto px-1 sm:px-4 lg:px-8">
-            <GroupCompatibilityDisplay 
+            <GroupCompatibilityDisplay
               compatibility={groupCompatibility}
               compact={false}
             />
@@ -2755,33 +2809,33 @@ export function ChatInterface({ roomId, user, onBack }: ChatInterfaceProps) {
       {isGroup && members.length > 0 && (
         <div className="flex-shrink-0 py-2">
           <div className="w-full lg:max-w-4xl lg:mx-auto px-1 sm:px-4 lg:px-8">
-          <div className="flex items-center gap-2 overflow-x-auto scrollbar-hide">
-            {members.map((member) => (
-              <div key={member.id} className="flex items-center gap-2 flex-shrink-0">
-                <div className="relative">
-                  <Avatar className="w-6 h-6">
-                    <AvatarImage src={member.avatar} />
-                    <AvatarFallback className="text-xs">
-                      {member.name.charAt(0)}
-                    </AvatarFallback>
-                  </Avatar>
-                  {member.is_online && (
-                    <div className="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 bg-semantic-success rounded-full border border-bg-surface"></div>
-                  )}
+            <div className="flex items-center gap-2 overflow-x-auto scrollbar-hide">
+              {members.map((member) => (
+                <div key={member.id} className="flex items-center gap-2 flex-shrink-0">
+                  <div className="relative">
+                    <Avatar className="w-6 h-6">
+                      <AvatarImage src={member.avatar} />
+                      <AvatarFallback className="text-xs">
+                        {member.name.charAt(0)}
+                      </AvatarFallback>
+                    </Avatar>
+                    {member.is_online && (
+                      <div className="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 bg-semantic-success rounded-full border border-bg-surface"></div>
+                    )}
+                  </div>
+                  <span className="text-xs font-medium text-text-primary whitespace-nowrap">{member.name}</span>
                 </div>
-                <span className="text-xs font-medium text-text-primary whitespace-nowrap">{member.name}</span>
-              </div>
-            ))}
-          </div>
+              ))}
+            </div>
           </div>
         </div>
       )}
 
       {/* Messages - Scrollable area OR Locked Group Chat */}
       {isGroup && isLocked ? (
-        <div className="flex-1 overflow-y-auto min-h-0 relative bg-bg-surface">
+        <div className="flex-1 overflow-y-auto min-h-0 relative bg-bg-surface scrollbar-visible">
           <div className="relative z-20 w-full lg:max-w-4xl lg:mx-auto px-1 sm:px-4 lg:px-8 py-4 lg:py-6">
-            <LockedGroupChat 
+            <LockedGroupChat
               chatId={roomId}
               userId={user.id}
               onUnlock={() => {
@@ -2792,15 +2846,20 @@ export function ChatInterface({ roomId, user, onBack }: ChatInterfaceProps) {
           </div>
         </div>
       ) : (
-        <div 
-          ref={messagesContainerRef} 
-          className="flex-1 overflow-y-auto min-h-0 relative bg-bg-surface"
+        <div
+          ref={messagesContainerRef}
+          className="flex-1 overflow-y-auto relative bg-transparent scrollbar-visible"
           style={{
             // Prevent scroll reset during initial load
             scrollBehavior: hasScrolledInitiallyRef.current ? 'smooth' : 'auto',
-            // Ensure fixed height for proper scrolling
-            height: 0, // This forces flex-1 to work properly
-            flex: '1 1 0%'
+            // THE FIX: This is the ONLY element allowed to scroll
+            flexGrow: 1,
+            overflowY: 'auto',
+            overflowX: 'hidden',
+            minHeight: 0,
+            position: 'relative',
+            width: '100%',
+            contain: 'layout'
           }}
           onScroll={(e) => {
             // If scroll is locked and user scrolled to top, restore to bottom
@@ -2813,224 +2872,336 @@ export function ChatInterface({ roomId, user, onBack }: ChatInterfaceProps) {
             }
           }}
         >
-          {/* Content overlay - Full width on mobile, constrained on desktop */}
-          <div className="relative z-20 w-full lg:max-w-4xl lg:mx-auto px-1 sm:px-4 lg:px-8 py-3 sm:py-4 lg:py-6">
+          {/* Content overlay - Full width edge-to-edge like Messenger */}
+          <div className="relative z-20 w-full px-1 sm:px-2 py-3 sm:py-4 lg:py-6 pb-4">
             {isLoading ? (
-            <div className="space-y-3">
-              <MessageSkeleton isOwn={false} />
-              <MessageSkeleton isOwn={true} />
-              <MessageSkeleton isOwn={false} />
-              <MessageSkeleton isOwn={true} />
-              <MessageSkeleton isOwn={false} />
-            </div>
-          ) : messages.length === 0 ? (
-            <div className="text-center py-16">
-              <div className="w-20 h-20 mx-auto mb-6 rounded-2xl bg-semantic-accent-soft flex items-center justify-center">
-                <MessageCircle className="h-10 w-10 text-semantic-accent" />
+              <div className="space-y-3">
+                <MessageSkeleton isOwn={false} />
+                <MessageSkeleton isOwn={true} />
+                <MessageSkeleton isOwn={false} />
+                <MessageSkeleton isOwn={true} />
+                <MessageSkeleton isOwn={false} />
               </div>
-              <h3 className="text-lg font-bold text-text-primary mb-2">No messages yet</h3>
-              <p className="text-text-secondary text-sm">Start the conversation with your match!</p>
-            </div>
-          ) : (
-            <div className="space-y-3">
-            {/* Load Older Messages button */}
-            {hasMoreMessages && (
-              <div className="flex justify-center py-2">
-                <Button
-                  onClick={loadOlderMessages}
-                  disabled={isLoadingMoreMessages}
-                  variant="outline"
-                  size="sm"
-                  className="text-xs"
-                >
-                  {isLoadingMoreMessages ? 'Loading...' : 'Load Older Messages'}
-                </Button>
+            ) : messages.length === 0 ? (
+              <div className="text-center py-20">
+                <div className="w-24 h-24 mx-auto mb-6 rounded-3xl bg-gradient-to-br from-indigo-500/20 via-purple-500/20 to-indigo-600/20 backdrop-blur-xl border border-indigo-500/30 flex items-center justify-center shadow-[0_8px_32px_-8px_rgba(99,102,241,0.3)]">
+                  <MessageCircle className="h-12 w-12 text-indigo-400" />
+                </div>
+                <h3 className="text-xl font-bold text-gray-900 dark:text-gray-100 mb-2">No messages yet</h3>
+                <p className="text-gray-600 dark:text-gray-400 text-sm font-medium">Start the conversation with your match!</p>
               </div>
-            )}
-            {messages
-              .filter(message => !isBlocked || message.sender_id !== blockedUserId)
-              .map((message, index) => {
-                const showDateSeparator = shouldShowDateSeparator(index)
-                
-                // Check if this is the first unread message
-                const isFirstUnread = (() => {
-                  if (message.is_system_message || message.is_own) return false
-                  
-                  const messageTime = new Date(message.created_at).getTime()
-                  const lastReadTime = lastReadAt ? new Date(lastReadAt).getTime() : 0
-                  const isUnread = !message.read_by.includes(user.id) || 
-                                 (lastReadAt && messageTime > lastReadTime) ||
-                                 (!lastReadAt && messageTime > 0)
-                  
-                  if (!isUnread) return false
-                  
-                  // Check if this is the first unread (all previous messages are read)
-                  const previousMessages = messages.slice(0, index).filter(m => 
-                    !isBlocked || m.sender_id !== blockedUserId
-                  )
-                  const hasPreviousUnread = previousMessages.some(m => {
-                    if (m.is_system_message || m.is_own) return false
-                    const mTime = new Date(m.created_at).getTime()
-                    const mLastReadTime = lastReadAt ? new Date(lastReadAt).getTime() : 0
-                    return !m.read_by.includes(user.id) || 
-                           (lastReadAt && mTime > mLastReadTime) ||
-                           (!lastReadAt && mTime > 0)
+            ) : (
+              <div className="space-y-3">
+                {/* Load Older Messages button */}
+                {hasMoreMessages && (
+                  <div className="flex justify-center py-2">
+                    <Button
+                      onClick={loadOlderMessages}
+                      disabled={isLoadingMoreMessages}
+                      variant="outline"
+                      size="sm"
+                      className="text-xs"
+                    >
+                      {isLoadingMoreMessages ? 'Loading...' : 'Load Older Messages'}
+                    </Button>
+                  </div>
+                )}
+                {messages
+                  .filter(message => !isBlocked || message.sender_id !== blockedUserId)
+                  .map((message, index) => {
+                    const showDateSeparator = shouldShowDateSeparator(index)
+
+                    // Check if this is the first unread message
+                    const isFirstUnread = (() => {
+                      if (message.is_system_message || message.is_own) return false
+
+                      const messageTime = new Date(message.created_at).getTime()
+                      const lastReadTime = lastReadAt ? new Date(lastReadAt).getTime() : 0
+                      const isUnread = !message.read_by.includes(user.id) ||
+                        (lastReadAt && messageTime > lastReadTime) ||
+                        (!lastReadAt && messageTime > 0)
+
+                      if (!isUnread) return false
+
+                      // Check if this is the first unread (all previous messages are read)
+                      const previousMessages = messages.slice(0, index).filter(m =>
+                        !isBlocked || m.sender_id !== blockedUserId
+                      )
+                      const hasPreviousUnread = previousMessages.some(m => {
+                        if (m.is_system_message || m.is_own) return false
+                        const mTime = new Date(m.created_at).getTime()
+                        const mLastReadTime = lastReadAt ? new Date(lastReadAt).getTime() : 0
+                        return !m.read_by.includes(user.id) ||
+                          (lastReadAt && mTime > mLastReadTime) ||
+                          (!lastReadAt && mTime > 0)
+                      })
+
+                      return !hasPreviousUnread
+                    })()
+
+                    return (
+                      <div
+                        key={message.id}
+                        ref={isFirstUnread ? firstUnreadMessageRef : null}
+                        data-message-id={message.id}
+                        className="animate-in fade-in slide-in-from-bottom-2 duration-300"
+                      >
+                        {showDateSeparator && (
+                          <div className="flex justify-center my-6">
+                            <div className="bg-gray-100 dark:bg-gray-800 border border-white dark:border-gray-700 px-4 py-2 rounded-full shadow-lg">
+                              <span className="text-xs text-gray-600 dark:text-gray-300 font-semibold">
+                                {formatDate(message.created_at)}
+                              </span>
+                            </div>
+                          </div>
+                        )}
+
+                        {message.is_system_message ? (
+                          <div className="flex justify-center my-4">
+                            <div className="bg-gray-100 dark:bg-gray-800 border border-white dark:border-gray-700 rounded-2xl px-5 py-3 shadow-lg">
+                              <p className="text-sm text-chat-text-primary dark:text-gray-200 text-center font-bold">
+                                {message.content}
+                              </p>
+                            </div>
+                          </div>
+                        ) : (
+                          <div
+                            className={`flex gap-2 ${message.is_own ? 'justify-end' : 'justify-start'}`}
+                          >
+                            {!message.is_own && (
+                              <Avatar className="w-8 h-8 sm:w-7 sm:h-7 flex-shrink-0">
+                                <AvatarImage src={message.sender_avatar} />
+                                <AvatarFallback className="text-xs">
+                                  {message.sender_name.charAt(0)}
+                                </AvatarFallback>
+                              </Avatar>
+                            )}
+
+                            <div className={`max-w-[95%] sm:max-w-[90%] md:max-w-[85%] ${message.is_own ? 'order-first' : ''}`}>
+                              {!message.is_own && (
+                                <div className="text-xs font-semibold text-chat-text-secondary mb-1.5 px-1">
+                                  {message.sender_name}
+                                </div>
+                              )}
+                              <DropdownMenu>
+                                <DropdownMenuTrigger asChild>
+                                  <div className={`rounded-2xl px-4 py-3 shadow-lg max-w-full transition-all cursor-pointer hover:opacity-90 ${message.is_own
+                                      ? 'bg-chat-surface-sent text-white rounded-tr-sm rounded-bl-2xl'
+                                      : 'bg-chat-surface text-chat-text-primary rounded-tl-sm rounded-br-2xl'
+                                    }`}>
+                                    <p className={`text-sm sm:text-base break-words leading-relaxed ${message.is_own ? 'text-white font-medium' : 'text-chat-text-primary'}`}>{message.content}</p>
+                                  </div>
+                                </DropdownMenuTrigger>
+                                <DropdownMenuContent align={message.is_own ? 'end' : 'start'}>
+                                  <DropdownMenuItem
+                                    onClick={() => {
+                                      navigator.clipboard.writeText(message.content)
+                                      showSuccessToast('Copied', 'Message copied to clipboard')
+                                    }}
+                                  >
+                                    Copy Message
+                                  </DropdownMenuItem>
+                                  {!message.is_own && (
+                                    <>
+                                      <DropdownMenuSeparator />
+                                      <DropdownMenuItem
+                                        onClick={() => {
+                                          setSelectedMessageForReport(message)
+                                          setShowMessageReportDialog(true)
+                                        }}
+                                        className="text-semantic-danger focus:text-semantic-danger focus:bg-semantic-danger/10"
+                                      >
+                                        <Flag className="h-4 w-4 mr-2" />
+                                        Report Message
+                                      </DropdownMenuItem>
+                                    </>
+                                  )}
+                                </DropdownMenuContent>
+                              </DropdownMenu>
+                              <div className={`flex items-center gap-1.5 mt-1 px-1 ${message.is_own ? 'justify-end' : 'justify-start'}`}>
+                                <span className="text-[10px] text-chat-text-secondary font-medium">
+                                  {formatTime(message.created_at)}
+                                </span>
+                                {message.is_own && getReadStatus(message)}
+                              </div>
+                              {!message.is_system_message && (
+                                <div className={`px-1 ${message.is_own ? 'flex justify-end' : ''}`}>
+                                  <MessageReactions
+                                    messageId={message.id}
+                                    userId={user.id}
+                                    reactions={messageReactions.get(message.id) || []}
+                                    onReactionChange={() => {
+                                      // Reload reactions for this message
+                                      const loadReactions = async () => {
+                                        try {
+                                          const { data: reactionsData, error } = await supabase
+                                            .from('message_reactions')
+                                            .select('message_id, emoji, user_id')
+                                            .eq('message_id', message.id)
+
+                                          if (error) {
+                                            // Table may not exist - silently ignore
+                                            if (error.code !== 'PGRST116' && error.code !== '42P01') {
+                                              safeLogger.warn('[Chat] Failed to reload reactions:', error)
+                                            }
+                                            return
+                                          }
+
+                                          if (reactionsData) {
+                                            const grouped = new Map<string, string[]>()
+                                            reactionsData.forEach((r: any) => {
+                                              if (!grouped.has(r.emoji)) {
+                                                grouped.set(r.emoji, [])
+                                              }
+                                              grouped.get(r.emoji)!.push(r.user_id)
+                                            })
+
+                                            const reactions: Array<{ emoji: string; count: number; userReactions: string[] }> = []
+                                            grouped.forEach((userIds, emoji) => {
+                                              reactions.push({
+                                                emoji,
+                                                count: userIds.length,
+                                                userReactions: userIds
+                                              })
+                                            })
+
+                                            setMessageReactions(prev => {
+                                              const updated = new Map(prev)
+                                              updated.set(message.id, reactions)
+                                              return updated
+                                            })
+                                          }
+                                        } catch (err) {
+                                          safeLogger.debug('[Chat] Failed to reload reactions:', err)
+                                        }
+                                      }
+                                      loadReactions()
+                                    }}
+                                  />
+                                </div>
+                              )}
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    )
+                  })}
+
+                {/* Typing Indicator */}
+                {(() => {
+                  const otherTypingUsers = typingUsers.filter(userId => userId !== user.id)
+                  if (otherTypingUsers.length === 0) return null
+
+                  const typingNames = otherTypingUsers.map(userId => {
+                    const profile = profilesMap.get(userId)
+                    if (profile) {
+                      return profile.first_name?.trim() || 'User'
+                    }
+                    return 'Someone'
                   })
-                  
-                  return !hasPreviousUnread
-                })()
-                
-                return (
-                  <div 
-                    key={message.id} 
-                    ref={isFirstUnread ? firstUnreadMessageRef : null}
-                    data-message-id={message.id}
-                  >
-                    {showDateSeparator && (
-                      <div className="flex justify-center my-6">
-                        <div className="bg-bg-surface border border-border-subtle px-4 py-1.5 rounded-full shadow-sm">
-                          <span className="text-xs text-text-secondary font-semibold">
-                            {formatDate(message.created_at)}
+
+                  let typingText = ''
+                  if (typingNames.length === 1) {
+                    typingText = `${typingNames[0]} is typing...`
+                  } else if (typingNames.length === 2) {
+                    typingText = `${typingNames[0]} and ${typingNames[1]} are typing...`
+                  } else {
+                    typingText = 'Multiple people are typing...'
+                  }
+
+                  return (
+                    <div className="flex gap-2">
+                      <div className="w-7 h-7 flex-shrink-0"></div>
+                      <div className="bg-white/10 backdrop-blur-md border border-white/20 rounded-2xl px-4 py-3 shadow-lg">
+                        <div className="flex items-center gap-2">
+                          <div className="flex gap-1">
+                            <div className="w-2 h-2 bg-indigo-400 rounded-full animate-bounce"></div>
+                            <div className="w-2 h-2 bg-purple-400 rounded-full animate-bounce" style={{ animationDelay: '0.1s' }}></div>
+                            <div className="w-2 h-2 bg-indigo-400 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
+                          </div>
+                          <span className="text-xs text-zinc-300 font-medium">
+                            {typingText}
                           </span>
                         </div>
                       </div>
-                    )}
-                    
-                    {message.is_system_message ? (
-                      <div className="flex justify-center my-4">
-                        <div className="bg-semantic-accent-soft border border-semantic-accent/30 rounded-xl px-4 py-2.5 shadow-sm">
-                          <p className="text-sm text-semantic-accent text-center font-semibold">
-                            {message.content}
-                          </p>
-                        </div>
-                      </div>
-                    ) : (
-                      <div 
-                        className={`flex gap-2 ${message.is_own ? 'justify-end' : 'justify-start'}`}
-                      >
-                        {!message.is_own && (
-                          <Avatar className="w-8 h-8 sm:w-7 sm:h-7 flex-shrink-0">
-                            <AvatarImage src={message.sender_avatar} />
-                            <AvatarFallback className="text-xs">
-                              {message.sender_name.charAt(0)}
-                            </AvatarFallback>
-                          </Avatar>
-                        )}
-                        
-                        <div className={`max-w-[85%] sm:max-w-[75%] md:max-w-[70%] ${message.is_own ? 'order-first' : ''}`}>
-                          {!message.is_own && (
-                            <div className="text-xs font-semibold text-text-muted mb-1.5 px-1">
-                              {message.sender_name}
-                            </div>
-                          )}
-                          <div className={`rounded-2xl px-3 sm:px-4 py-2 sm:py-2.5 shadow-sm ${
-                            message.is_own 
-                              ? 'bg-semantic-accent text-white border-2 border-semantic-accent/20' 
-                              : 'bg-bg-surface border border-border-subtle'
-                          }`}>
-                            <p className={`text-sm sm:text-base break-words leading-relaxed ${message.is_own ? 'text-white font-medium' : 'text-text-primary'}`}>{message.content}</p>
-                          </div>
-                          <div className={`flex items-center gap-1.5 mt-1.5 ${message.is_own ? 'justify-end' : 'justify-start'}`}>
-                            <span className="text-[10px] text-text-muted font-medium">
-                              {formatTime(message.created_at)}
-                            </span>
-                            {message.is_own && getReadStatus(message)}
-                          </div>
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                )
-              })}
-            
-            {/* Typing Indicator */}
-            {(() => {
-              const otherTypingUsers = typingUsers.filter(userId => userId !== user.id)
-              if (otherTypingUsers.length === 0) return null
-
-              const typingNames = otherTypingUsers.map(userId => {
-                const profile = profilesMap.get(userId)
-                if (profile) {
-                  return profile.first_name?.trim() || 'User'
-                }
-                return 'Someone'
-              })
-
-              let typingText = ''
-              if (typingNames.length === 1) {
-                typingText = `${typingNames[0]} is typing...`
-              } else if (typingNames.length === 2) {
-                typingText = `${typingNames[0]} and ${typingNames[1]} are typing...`
-              } else {
-                typingText = 'Multiple people are typing...'
-              }
-
-              return (
-                <div className="flex gap-2">
-                  <div className="w-7 h-7 flex-shrink-0"></div>
-                  <div className="bg-bg-surface border border-border-subtle rounded-2xl px-4 py-2.5 shadow-sm">
-                    <div className="flex items-center gap-2">
-                      <div className="flex gap-1">
-                        <div className="w-1.5 h-1.5 bg-text-muted rounded-full animate-bounce"></div>
-                        <div className="w-1.5 h-1.5 bg-text-muted rounded-full animate-bounce" style={{ animationDelay: '0.1s' }}></div>
-                        <div className="w-1.5 h-1.5 bg-text-muted rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
-                      </div>
-                      <span className="text-xs text-text-muted font-medium">
-                        {typingText}
-                      </span>
                     </div>
-                  </div>
-                </div>
-              )
-            })()}
-            
-            <div ref={messagesEndRef} />
+                  )
+                })()}
+
+                <div ref={messagesEndRef} />
+              </div>
+            )}
           </div>
-          )}
         </div>
-      </div>
       )}
 
-      {/* Message Input - At bottom */}
+      {/* Message Input - Fixed at bottom of chat container */}
       {!(isGroup && isLocked) && (
-      <div className="flex-shrink-0 bg-bg-surface border-t border-border-subtle shadow-sm sm:rounded-br-2xl">
         <div 
-          className="px-1 sm:px-4 lg:px-8 pt-3 sm:pt-4" 
-          style={{ 
-            paddingBottom: 'calc(2rem + env(safe-area-inset-bottom, 0px))' // 32px base + safe area padding
+          className="flex-shrink-0 bg-white dark:bg-gray-900 border-t border-white dark:border-gray-800 shadow-2xl rounded-b-lg"
+          style={{
+            flexShrink: 0,
+            flexGrow: 0,
+            flexBasis: 'auto',
+            position: 'relative',
+            zIndex: 100,
+            minHeight: 'auto',
+            width: '100%',
+            maxWidth: '100%',
+            display: 'flex',
+            flexDirection: 'column',
+            backgroundColor: 'var(--background, white)',
+            order: 999,
+            contain: 'layout style'
           }}
         >
-          <div className="w-full lg:max-w-4xl lg:mx-auto">
-            <div className="flex gap-2 sm:gap-3 items-end">
-              <Input
-                value={newMessage}
-                onChange={(e) => {
-                  setNewMessage(e.target.value)
-                  handleTyping()
-                }}
-                onKeyPress={(e) => {
-                  if (e.key === 'Enter' && !e.shiftKey) {
-                    e.preventDefault()
-                    sendMessage()
-                  }
-                }}
-                placeholder={isBlocked ? "You cannot send messages to a blocked user" : "Type your message..."}
-                disabled={isSending || isBlocked}
-                inputMode="text"
-                enterKeyHint="send"
-                className="flex-1 min-w-0 h-11 sm:h-12 text-sm sm:text-base bg-bg-surface-alt border-2 border-border-subtle rounded-xl focus:bg-bg-surface focus:border-semantic-accent focus:ring-2 focus:ring-semantic-accent/20 shadow-sm transition-all placeholder:text-text-muted"
-              />
-              <Button 
-                onClick={sendMessage}
-                disabled={!newMessage.trim() || isSending || isBlocked}
-                className="h-11 sm:h-12 w-11 sm:w-12 min-h-[44px] min-w-[44px] sm:min-h-0 sm:min-w-0 p-0 flex-shrink-0 rounded-xl bg-semantic-accent hover:bg-semantic-accent-hover border-2 border-semantic-accent/20 disabled:opacity-50 disabled:cursor-not-allowed shadow-md transition-all touch-manipulation"
-              >
-                <Send className="h-4 w-4 sm:h-5 sm:w-5 text-white" />
-              </Button>
+          <div className="px-1 sm:px-4 lg:px-8 pt-4 sm:pt-5 pb-20 md:pb-5 w-full">
+            <div className="w-full">
+              <div className="flex gap-2 sm:gap-3 items-end">
+                <div className="flex-1 min-w-0">
+                  <Input
+                    value={newMessage}
+                    onChange={(e) => {
+                      const value = e.target.value
+                      setNewMessage(value)
+                      validateContent(value)
+                      handleTyping()
+                    }}
+                    onKeyPress={(e) => {
+                      if (e.key === 'Enter' && !e.shiftKey) {
+                        e.preventDefault()
+                        if (!contentValidationError) {
+                          sendMessage()
+                        }
+                      }
+                    }}
+                    placeholder={isBlocked ? "You cannot send messages to a blocked user" : "Type your message..."}
+                    disabled={isSending || isBlocked}
+                    inputMode="text"
+                    enterKeyHint="send"
+                    className={`flex-1 min-w-0 h-12 sm:h-13 text-sm sm:text-base bg-gray-100 border rounded-full focus:bg-gray-100 focus:ring-2 transition-all placeholder:text-gray-500 text-gray-900 font-medium ${
+                      contentValidationError 
+                        ? 'border-red-500 focus:border-red-500 focus:ring-red-300' 
+                        : 'border-white focus:border-blue-500 focus:ring-blue-300'
+                    }`}
+                  />
+                  {contentValidationError && (
+                    <p className="text-xs text-red-600 dark:text-red-400 mt-1 px-3">
+                      {contentValidationError}
+                    </p>
+                  )}
+                </div>
+                <Button
+                  onClick={sendMessage}
+                  disabled={!newMessage.trim() || isSending || isBlocked || !!contentValidationError}
+                  className="h-12 sm:h-13 w-12 sm:w-13 min-h-[48px] min-w-[48px] sm:min-h-0 sm:min-w-0 p-0 flex-shrink-0 rounded-full bg-chat-surface-sent hover:opacity-90 text-white shadow-lg transition-all touch-manipulation disabled:opacity-50 disabled:shadow-none transform hover:scale-105 active:scale-95"
+                >
+                  <Send className="h-5 w-5" />
+                </Button>
+              </div>
             </div>
           </div>
         </div>
-      </div>
       )}
 
       {/* Report User Dialog */}
@@ -3077,6 +3248,69 @@ export function ChatInterface({ roomId, user, onBack }: ChatInterfaceProps) {
         </DialogContent>
       </Dialog>
 
+      {/* Report Message Dialog */}
+      <Dialog open={showMessageReportDialog} onOpenChange={setShowMessageReportDialog}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Report Message</DialogTitle>
+            <DialogDescription>
+              Please select the reason for reporting this message. Our team will review your report.
+            </DialogDescription>
+          </DialogHeader>
+          {selectedMessageForReport && (
+            <div className="py-2">
+              <p className="text-sm text-gray-600 dark:text-gray-400 mb-2">Message:</p>
+              <div className="bg-gray-100 dark:bg-gray-800 rounded-lg p-3 mb-4">
+                <p className="text-sm">{selectedMessageForReport.content}</p>
+              </div>
+            </div>
+          )}
+          <div className="space-y-2 py-4">
+            {[
+              { value: 'spam', label: 'Spam' },
+              { value: 'harassment', label: 'Harassment' },
+              { value: 'inappropriate', label: 'Inappropriate Content' },
+              { value: 'other', label: 'Other' }
+            ].map((reason) => (
+              <label key={reason.value} className="flex items-center space-x-2 cursor-pointer">
+                <input
+                  type="radio"
+                  name="messageReportReason"
+                  value={reason.value}
+                  checked={messageReportReason === reason.value}
+                  onChange={(e) => setMessageReportReason(e.target.value)}
+                  className="w-4 h-4"
+                />
+                <span className="text-sm">{reason.label}</span>
+              </label>
+            ))}
+          </div>
+          <div className="py-2">
+            <label className="text-sm font-medium mb-2 block">Additional Details (Optional)</label>
+            <textarea
+              value={messageReportDetails}
+              onChange={(e) => setMessageReportDetails(e.target.value)}
+              placeholder="Provide any additional context..."
+              rows={3}
+              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-md bg-white dark:bg-gray-900 text-sm"
+            />
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => {
+              setShowMessageReportDialog(false)
+              setSelectedMessageForReport(null)
+              setMessageReportReason('')
+              setMessageReportDetails('')
+            }}>
+              Cancel
+            </Button>
+            <Button variant="destructive" onClick={handleReportMessage} disabled={isReportingMessage || !messageReportReason}>
+              {isReportingMessage ? 'Submitting...' : 'Submit Report'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
       {/* Delete Conversation Dialog */}
       <Dialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
         <DialogContent>
@@ -3104,9 +3338,9 @@ export function ChatInterface({ roomId, user, onBack }: ChatInterfaceProps) {
         onClose={() => setShowSearch(false)}
         onMessageSelect={(messageId) => {
           // Scroll to message
-          const messageElement = document.querySelector(`[data-message-id="${messageId}"]`)
+          const messageElement = document.querySelector(`[data-message-id="${messageId}"]`) as HTMLElement
           if (messageElement) {
-            messageElement.scrollIntoView({ behavior: 'smooth', block: 'center' })
+            scrollContainerToElement(messageElement, 'center')
             // Highlight the message briefly
             messageElement.classList.add('ring-2', 'ring-semantic-accent', 'ring-offset-2')
             setTimeout(() => {

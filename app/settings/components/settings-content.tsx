@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { 
+import {
   Select,
   SelectContent,
   SelectItem,
@@ -33,230 +33,118 @@ interface SettingsContentProps {
 export function SettingsContent({ user, profile, academic, progressData }: SettingsContentProps) {
   const [activeTab, setActiveTab] = useState('profile')
 
+  const navItems = [
+    { id: 'profile', label: 'Profile', icon: User },
+    { id: 'questionnaire', label: 'Questionnaire', icon: FileText },
+    { id: 'account', label: 'Account', icon: SettingsIcon },
+    { id: 'privacy', label: 'Privacy', icon: Shield },
+  ]
+
   return (
-    <div className="max-w-4xl mx-auto p-4 sm:p-6 pb-6">
-      <div className="mb-6 sm:mb-8">
-        <h1 className="text-2xl sm:text-3xl font-bold text-text-primary">Settings</h1>
-        <p className="text-sm sm:text-base text-text-secondary mt-2">
+    <div className="max-w-6xl mx-auto p-4 sm:p-6 pb-24 lg:pb-6">
+      <div className="mb-8">
+        <h1 className="text-3xl font-bold text-zinc-900 dark:text-white">
+          Settings
+        </h1>
+        <p className="text-zinc-600 dark:text-zinc-400 mt-2">
           Manage your account settings, profile information, and questionnaire responses.
         </p>
       </div>
 
-
-      <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4 sm:space-y-6">
-        {/* Responsive Tabs */}
-        <div className="mb-4 sm:mb-6">
-          {/* Mobile: Dropdown Select (< 640px) */}
-          <div className="block sm:hidden">
-            <Select value={activeTab} onValueChange={setActiveTab}>
-              <SelectTrigger className="w-full bg-bg-surface border border-border-subtle rounded-xl shadow-sm">
-                <SelectValue>
-                  <div className="flex items-center gap-2">
-                    {activeTab === 'profile' && <User className="w-4 h-4" />}
-                    {activeTab === 'questionnaire' && <FileText className="w-4 h-4" />}
-                    {activeTab === 'account' && <SettingsIcon className="w-4 h-4" />}
-                    {activeTab === 'privacy' && <Shield className="w-4 h-4" />}
-                    <span className="font-medium">
-                      {activeTab === 'profile' && 'Profile'}
-                      {activeTab === 'questionnaire' && 'Questionnaire'}
-                      {activeTab === 'account' && 'Account'}
-                      {activeTab === 'privacy' && 'Privacy'}
-                    </span>
-                  </div>
-                </SelectValue>
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="profile">
-                  <div className="flex items-center gap-2">
-                    <User className="w-4 h-4" />
-                    <span>Profile</span>
-                  </div>
-                </SelectItem>
-                <SelectItem value="questionnaire">
-                  <div className="flex items-center gap-2">
-                    <FileText className="w-4 h-4" />
-                    <span>Questionnaire</span>
-                  </div>
-                </SelectItem>
-                <SelectItem value="account">
-                  <div className="flex items-center gap-2">
-                    <SettingsIcon className="w-4 h-4" />
-                    <span>Account</span>
-                  </div>
-                </SelectItem>
-                <SelectItem value="privacy">
-                  <div className="flex items-center gap-2">
-                    <Shield className="w-4 h-4" />
-                    <span>Privacy</span>
-                  </div>
-                </SelectItem>
-              </SelectContent>
-            </Select>
+      <div className="flex flex-col lg:flex-row gap-8">
+        {/* Navigation Sidebar / Header */}
+        <aside className="lg:w-64 flex-shrink-0">
+          <div className="bg-white/80 dark:bg-zinc-900/40 backdrop-blur-xl border border-zinc-200 dark:border-white/10 rounded-3xl p-2 hidden lg:block shadow-sm">
+            <nav className="space-y-1">
+              {navItems.map((item) => (
+                <button
+                  key={item.id}
+                  onClick={() => setActiveTab(item.id)}
+                  className={`w-full flex items-center gap-3 px-4 py-3 rounded-2xl text-sm font-medium transition-all duration-300 ${activeTab === item.id
+                      ? 'bg-blue-500 text-white shadow-lg shadow-blue-500/20'
+                      : 'text-zinc-600 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-white/5 hover:text-zinc-900 dark:hover:text-white'
+                    }`}
+                >
+                  <item.icon className={`w-5 h-5 ${activeTab === item.id ? 'text-white' : 'text-zinc-500 dark:text-zinc-400'}`} />
+                  {item.label}
+                </button>
+              ))}
+            </nav>
           </div>
 
-          {/* Tablet: Grid Layout (640px - 1024px) */}
-          <div className="hidden sm:block lg:hidden">
-            <div className="grid grid-cols-2 gap-2 bg-bg-surface border border-border-subtle p-1.5 rounded-2xl shadow-sm">
-              <button
-                onClick={() => setActiveTab('profile')}
-                className={`flex items-center justify-center gap-2 px-4 py-3 rounded-xl text-sm font-medium transition-colors min-h-[44px] ${
-                  activeTab === 'profile'
-                    ? 'bg-semantic-accent text-white shadow-sm'
-                    : 'text-text-secondary hover:text-text-primary hover:bg-bg-surface-alt active:bg-bg-surface-alt'
-                }`}
-              >
-                <User className="w-4 h-4" />
-                <span>Profile</span>
-              </button>
-              <button
-                onClick={() => setActiveTab('questionnaire')}
-                className={`flex items-center justify-center gap-2 px-4 py-3 rounded-xl text-sm font-medium transition-colors min-h-[44px] ${
-                  activeTab === 'questionnaire'
-                    ? 'bg-semantic-accent text-white shadow-sm'
-                    : 'text-text-secondary hover:text-text-primary hover:bg-bg-surface-alt active:bg-bg-surface-alt'
-                }`}
-              >
-                <FileText className="w-4 h-4" />
-                <span>Questionnaire</span>
-              </button>
-              <button
-                onClick={() => setActiveTab('account')}
-                className={`flex items-center justify-center gap-2 px-4 py-3 rounded-xl text-sm font-medium transition-colors min-h-[44px] ${
-                  activeTab === 'account'
-                    ? 'bg-semantic-accent text-white shadow-sm'
-                    : 'text-text-secondary hover:text-text-primary hover:bg-bg-surface-alt active:bg-bg-surface-alt'
-                }`}
-              >
-                <SettingsIcon className="w-4 h-4" />
-                <span>Account</span>
-              </button>
-              <button
-                onClick={() => setActiveTab('privacy')}
-                className={`flex items-center justify-center gap-2 px-4 py-3 rounded-xl text-sm font-medium transition-colors min-h-[44px] ${
-                  activeTab === 'privacy'
-                    ? 'bg-semantic-accent text-white shadow-sm'
-                    : 'text-text-secondary hover:text-text-primary hover:bg-bg-surface-alt active:bg-bg-surface-alt'
-                }`}
-              >
-                <Shield className="w-4 h-4" />
-                <span>Privacy</span>
-              </button>
+          {/* Mobile/Tablet Horizontal Scroll Nav */}
+          <div className="lg:hidden overflow-x-auto pb-4 hide-scrollbar">
+            <div className="flex gap-2 min-w-max">
+              {navItems.map((item) => (
+                <button
+                  key={item.id}
+                  onClick={() => setActiveTab(item.id)}
+                  className={`flex items-center gap-2 px-6 py-2.5 rounded-full text-sm font-medium transition-all duration-300 border ${activeTab === item.id
+                      ? 'bg-blue-500 border-blue-400 text-white'
+                      : 'bg-white/80 dark:bg-zinc-900/40 border-zinc-200 dark:border-white/10 text-zinc-600 dark:text-zinc-400'
+                    }`}
+                >
+                  <item.icon className="w-4 h-4" />
+                  {item.label}
+                </button>
+              ))}
             </div>
           </div>
+        </aside>
 
-          {/* Desktop: Horizontal Layout (>= 1024px) */}
-          <div className="hidden lg:block">
-            <div className="flex gap-1 bg-bg-surface border border-border-subtle p-1.5 rounded-2xl shadow-sm">
-              <button
-                onClick={() => setActiveTab('profile')}
-                className={`flex-1 flex items-center justify-center gap-2 px-4 py-3 rounded-xl text-base font-medium transition-colors min-h-[44px] ${
-                  activeTab === 'profile'
-                    ? 'bg-semantic-accent text-white shadow-sm'
-                    : 'text-text-secondary hover:text-text-primary hover:bg-bg-surface-alt active:bg-bg-surface-alt'
-                }`}
-              >
-                <User className="w-5 h-5" />
-                <span>Profile</span>
-              </button>
-              <button
-                onClick={() => setActiveTab('questionnaire')}
-                className={`flex-1 flex items-center justify-center gap-2 px-4 py-3 rounded-xl text-base font-medium transition-colors min-h-[44px] ${
-                  activeTab === 'questionnaire'
-                    ? 'bg-semantic-accent text-white shadow-sm'
-                    : 'text-text-secondary hover:text-text-primary hover:bg-bg-surface-alt active:bg-bg-surface-alt'
-                }`}
-              >
-                <FileText className="w-5 h-5" />
-                <span>Questionnaire</span>
-              </button>
-              <button
-                onClick={() => setActiveTab('account')}
-                className={`flex-1 flex items-center justify-center gap-2 px-4 py-3 rounded-xl text-base font-medium transition-colors min-h-[44px] ${
-                  activeTab === 'account'
-                    ? 'bg-semantic-accent text-white shadow-sm'
-                    : 'text-text-secondary hover:text-text-primary hover:bg-bg-surface-alt active:bg-bg-surface-alt'
-                }`}
-              >
-                <SettingsIcon className="w-5 h-5" />
-                <span>Account</span>
-              </button>
-              <button
-                onClick={() => setActiveTab('privacy')}
-                className={`flex-1 flex items-center justify-center gap-2 px-4 py-3 rounded-xl text-base font-medium transition-colors min-h-[44px] ${
-                  activeTab === 'privacy'
-                    ? 'bg-semantic-accent text-white shadow-sm'
-                    : 'text-text-secondary hover:text-text-primary hover:bg-bg-surface-alt active:bg-bg-surface-alt'
-                }`}
-              >
-                <Shield className="w-5 h-5" />
-                <span>Privacy</span>
-              </button>
-            </div>
+        {/* Main Content Area */}
+        <div className="flex-1">
+          <div className="bg-white/80 dark:bg-zinc-900/40 backdrop-blur-xl border border-zinc-200 dark:border-white/10 rounded-3xl overflow-hidden shadow-sm">
+            <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+              <TabsContent value="profile" className="mt-0 focus-visible:outline-none">
+                <div className="p-6">
+                  <div className="mb-6">
+                    <h2 className="text-xl font-semibold text-zinc-900 dark:text-white">Profile Information</h2>
+                    <p className="text-sm text-zinc-600 dark:text-zinc-400 mt-1">Update your personal information and preferences.</p>
+                  </div>
+                  <ProfileSettings
+                    user={user}
+                    profile={profile}
+                    academic={academic}
+                  />
+                </div>
+              </TabsContent>
+
+              <TabsContent value="questionnaire" className="mt-0 focus-visible:outline-none">
+                <div className="p-6">
+                  <div className="mb-6">
+                    <h2 className="text-xl font-semibold text-zinc-900 dark:text-white">Questionnaire Management</h2>
+                    <p className="text-sm text-zinc-600 dark:text-zinc-400 mt-1">View and manage your compatibility questionnaire responses.</p>
+                  </div>
+                  <QuestionnaireSettings
+                    progressData={progressData}
+                  />
+                </div>
+              </TabsContent>
+
+              <TabsContent value="account" className="mt-0 focus-visible:outline-none">
+                <div className="p-6">
+                  <div className="mb-6">
+                    <h2 className="text-xl font-semibold text-zinc-900 dark:text-white">Account Settings</h2>
+                    <p className="text-sm text-zinc-600 dark:text-zinc-400 mt-1">Manage your account preferences and security settings.</p>
+                  </div>
+                  <AccountSettings user={user} />
+                </div>
+              </TabsContent>
+
+              <TabsContent value="privacy" className="mt-0 focus-visible:outline-none">
+                <div className="p-6">
+                  <div className="mb-6">
+                    <h2 className="text-xl font-semibold text-zinc-900 dark:text-white">Privacy & Data</h2>
+                    <p className="text-sm text-zinc-600 dark:text-zinc-400 mt-1">Control your data visibility and privacy settings.</p>
+                  </div>
+                  <PrivacySettings user={user} />
+                </div>
+              </TabsContent>
+            </Tabs>
           </div>
         </div>
-
-        <TabsContent value="profile">
-          <Card>
-            <CardHeader className="pb-2 sm:pb-4">
-              <CardTitle>Profile Information</CardTitle>
-              <CardDescription>
-                Update your personal information and preferences.
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="p-4 sm:p-6">
-              <ProfileSettings 
-                user={user}
-                profile={profile}
-                academic={academic}
-              />
-            </CardContent>
-          </Card>
-        </TabsContent>
-
-        <TabsContent value="questionnaire">
-          <Card>
-            <CardHeader className="pb-2 sm:pb-4">
-              <CardTitle>Questionnaire Management</CardTitle>
-              <CardDescription>
-                View and manage your compatibility questionnaire responses.
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="p-4 sm:p-6">
-              <QuestionnaireSettings 
-                progressData={progressData}
-              />
-            </CardContent>
-          </Card>
-        </TabsContent>
-
-        <TabsContent value="account">
-          <Card>
-            <CardHeader className="pb-2 sm:pb-4">
-              <CardTitle>Account Settings</CardTitle>
-              <CardDescription>
-                Manage your account preferences and security settings.
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="p-4 sm:p-6">
-              <AccountSettings user={user} />
-            </CardContent>
-          </Card>
-        </TabsContent>
-
-        <TabsContent value="privacy">
-          <Card>
-            <CardHeader className="pb-2 sm:pb-4">
-              <CardTitle>Privacy & Data</CardTitle>
-              <CardDescription>
-                Control your data visibility and privacy settings.
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="p-4 sm:p-6">
-              <PrivacySettings user={user} />
-            </CardContent>
-          </Card>
-        </TabsContent>
-      </Tabs>
+      </div>
     </div>
   )
 }

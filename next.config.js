@@ -28,6 +28,12 @@ const nextConfig = {
     } : false,
   },
   webpack: (config, { dev, isServer }) => {
+    // Fix date-fns module resolution issue
+    config.resolve.alias = {
+      ...config.resolve.alias,
+      'date-fns/esm': 'date-fns',
+    }
+
     if (dev) {
       // Use native file system events instead of aggressive polling to avoid chunk loading issues
       // Native events are faster and more reliable for most development environments

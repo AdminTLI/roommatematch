@@ -4,123 +4,172 @@
 
 @layer base {
   :root {
-    /* Brand Colors - Clean student-friendly palette */
-    --brand-primary: #7a3bb6;
-    --brand-primaryHover: #6a32a0;
-    --brand-accent: #06B6D4;
-    --brand-surface: #F8FAFC;
-    --brand-text: #0F172A;
-    --brand-muted: #475569;
-    --brand-border: #E2E8F0;
-    
-    /* Semantic color tokens - Light mode */
-    --bg-body: 210 40% 96%;           /* App chrome background */
-    --bg-surface: 0 0% 100%;          /* Primary cards / surfaces */
-    --bg-surface-alt: 210 40% 98%;    /* Subtle alternate surfaces */
-    --border-subtle: 214.3 31.8% 91.4%;
-    --text-primary: 222.2 47.4% 11.2%;
-    --text-secondary: 215.4 16.3% 40%;
-    --text-muted: 215.4 16.3% 55%;
-    --accent: 271 51% 47%;      /* Brand accent (buttons, highlights) */
-    --accent-hover: 271 51% 40%;
-    --accent-soft: 271 51% 96%;   /* Soft accent background for pills/cards */
+    /* Brand Colors - Standard Light Mode */
+    --brand-primary: #7c3aed;
+    /* Indigo/Violet */
+    --brand-primaryHover: #6d28d9;
+    --brand-accent: #db2777;
+    /* Pink/Rose */
+    --brand-surface: #ffffff;
+    --brand-text: #1e293b;
+    --brand-muted: #64748b;
+    --brand-border: #e2e8f0;
+
+    /* Semantic color tokens - Glass Light Theme */
+    --bg-body: 210 40% 98%;
+    /* Soft white/blue */
+    --bg-surface: 0 0% 100%;
+    /* Pure white surface */
+    --bg-surface-alt: 210 40% 96%;
+    --border-subtle: 210 40% 92%;
+    --text-primary: 222 47% 11%;
+    --text-secondary: 215 16% 47%;
+    --text-muted: 215 16% 65%;
+    --accent: 263 70% 50%;
+    --accent-hover: 263 70% 40%;
+    --accent-soft: 264 100% 96%;
     --danger: 0 84.2% 60.2%;
     --warning: 38 92% 50%;
     --success: 142 76% 36%;
-    
-    /* shadcn/ui colors for compatibility */
-    --background: 210 40% 96%;        /* Match app chrome */
-    --foreground: 222.2 47.4% 11.2%;
+
+    /* shadcn/ui light defaults */
+    --background: 0 0% 100%;
+    --foreground: 222.2 84% 4.9%;
     --card: 0 0% 100%;
-    --card-foreground: 222.2 47.4% 11.2%;
+    --card-foreground: 222.2 84% 4.9%;
     --popover: 0 0% 100%;
-    --popover-foreground: 222.2 47.4% 11.2%;
-    --primary: 271 51% 47%;
+    --popover-foreground: 222.2 84% 4.9%;
+    --primary: 263.4 70% 50.4%;
     --primary-foreground: 210 40% 98%;
-    --secondary: 210 40% 98%;
+    --secondary: 210 40% 96.1%;
     --secondary-foreground: 222.2 47.4% 11.2%;
-    --muted: 210 40% 96%;
-    --muted-foreground: 215.4 16.3% 45%;
-    /* Accent shares the brand accent so pills/toggles feel consistent */
-    --accent-foreground: 210 40% 98%;
+    --muted: 210 40% 96.1%;
+    --muted-foreground: 215.4 16.3% 46.9%;
+    --accent-foreground: 222.2 47.4% 11.2%;
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 210 40% 98%;
     --border: 214.3 31.8% 91.4%;
     --input: 214.3 31.8% 91.4%;
-    --ring: 271 51% 47%;
-    --radius: 0.5rem;
+    --ring: 263.4 70% 50.4%;
+    --radius: 1rem;
+
+    /* Chat-specific semantic color tokens - Light Mode */
+    --chat-bg-primary: 0 0% 100%;
+    /* Pure white background */
+    --chat-bg-secondary: 210 40% 96%;
+    /* Light grey for sidebar/alternate backgrounds */
+    --chat-surface: 210 30% 94%;
+    /* Light grey for received message bubbles */
+    --chat-surface-sent: 217 91% 60%;
+    /* Vibrant blue for sent messages (#3B82F6) - same in both modes */
+    --chat-text-primary: 222 47% 11%;
+    /* Dark text for primary content */
+    --chat-text-secondary: 215 16% 47%;
+    /* Muted text for secondary content */
+    --chat-border: 214.3 31.8% 91.4%;
+    /* Border color */
+    --chat-online: 142 76% 36%;
+    /* Green for online status indicator */
   }
 
   .dark {
-    /* Semantic color tokens - Dark mode */
-    --bg-body: 222 47% 11%;        /* Very dark blue-gray app chrome */
-    --bg-surface: 222 47% 16%;     /* Primary cards / surfaces */
-    --bg-surface-alt: 222 47% 20%; /* Slightly lifted surfaces */
-    --border-subtle: 222 32% 30%;  /* Improved visibility for borders */
-    --text-primary: 210 40% 98%;   /* High contrast text */
-    --text-secondary: 215 20% 78%; /* Secondary text with improved contrast */
-    --text-muted: 215 20% 70%;     /* Muted text with better readability */
-    --accent: 271 51% 60%;         /* Lighter purple for dark mode */
-    --accent-hover: 271 51% 65%;   /* Even lighter purple for hover */
-    --accent-soft: 271 51% 22%;    /* Soft accent background for pills */
-    --danger: 0 72% 51%;           /* Brighter red for visibility */
-    --warning: 38 92% 55%;         /* Brighter warning color */
-    --success: 142 76% 45%;        /* Brighter success color */
-    
-    /* Backgrounds - improved contrast */
-    --background: 222 47% 11%;     /* Match app chrome */
+    /* Brand Colors - Deep Slate Premium Palette (Dark) */
+    --brand-primary: #8b5cf6;
+    --brand-primaryHover: #7c3aed;
+    --brand-accent: #f472b6;
+    --brand-surface: #0f172a;
+    --brand-text: #f1f5f9;
+    --brand-muted: #94a3b8;
+    --brand-border: #334155;
+
+    /* Semantic color tokens - Solid Slate Theme */
+    --bg-body: 222 47% 11%;
+    /* slate-900 #0f172a */
+    --bg-surface: 217 33% 17%;
+    /* slate-800 #1e293b */
+    --bg-surface-alt: 215 25% 27%;
+    /* slate-700 #334155 */
+    --border-subtle: 215 20% 35%;
+    --text-primary: 210 40% 98%;
+    /* slate-50 #f8fafc */
+    --text-secondary: 215 20% 65%;
+    /* slate-400 #94a3b8 */
+    --text-muted: 215 16% 47%;
+    /* slate-500 #64748b */
+    --accent: 263 70% 50%;
+    --accent-hover: 263 70% 40%;
+    --accent-soft: 264 60% 25%;
+
+    /* Score indicator colors */
+    --score-excellent: #10b981;
+    /* emerald-500 */
+    --score-good: #6366f1;
+    /* indigo-500 */
+    --score-fair: #f59e0b;
+    /* amber-500 */
+    --score-low: #64748b;
+    /* slate-500 */
+
+    /* shadcn/ui dark overrides - Solid Slate */
+    --background: 222 47% 11%;
+    /* slate-900 */
     --foreground: 210 40% 98%;
-    --card: 222 47% 16%;           /* Cards slightly lifted from body */
+    /* slate-50 */
+    --card: 217 33% 17%;
+    /* slate-800 */
     --card-foreground: 210 40% 98%;
-    --popover: 222 47% 16%;
+    --popover: 217 33% 17%;
     --popover-foreground: 210 40% 98%;
-    
-    /* Brand colors (tuned for dark mode) */
-    --primary: 271 51% 60%;        /* Lighter purple */
-    --primary-foreground: 222 47% 11%;
-    --secondary: 222 37% 18%;
+    --primary: 263.4 70% 50.4%;
+    --primary-foreground: 210 40% 98%;
+    --secondary: 215 25% 27%;
+    /* slate-700 */
     --secondary-foreground: 210 40% 98%;
-    --muted: 222 37% 18%;
-    --muted-foreground: 215 20% 78%; /* Improved contrast for muted text */
+    --muted: 215 25% 27%;
+    --muted-foreground: 215 20% 65%;
     --accent-foreground: 210 40% 98%;
-    
-    /* Destructive colors - improved visibility */
-    --destructive: 0 72% 51%;
+    --destructive: 0 62.8% 30.6%;
     --destructive-foreground: 210 40% 98%;
-    
-    /* Borders & inputs - improved visibility */
-    --border: 222 37% 28%;         /* Slightly lighter for better visibility */
-    --input: 222 37% 18%;
-    --ring: 271 51% 60%;
-    
-    /* Custom brand colors for dark mode */
-    --brand-primary: #9d5dd1;     /* Lighter purple */
-    --brand-primaryHover: #a368d4; /* Even lighter purple */
-    --brand-accent: #67E8F9;      /* Lighter cyan */
-    --brand-surface: #1E2433;     /* Dark surface */
-    --brand-text: #F8FAFC;        /* Light text */
-    --brand-muted: #94A3B8;       /* Muted text */
-    --brand-border: #2D3548;      /* Dark border */
-    
-    /* App-specific dark colors */
-    --surface-0: #121826;
-    --surface-1: #1E2433;
-    --surface-2: #252B3D;
-    --surface-3: #2D3548;
-    --dashboard: #0F1419;
-    --line: #2D3548;
-    
-    /* Ink colors (inverted for dark mode) */
-    --ink-50: #0F1419;
-    --ink-100: #1E2433;
-    --ink-200: #252B3D;
-    --ink-300: #2D3548;
-    --ink-400: #475569;
-    --ink-500: #64748B;
-    --ink-600: #94A3B8;
-    --ink-700: #CBD5E1;
-    --ink-800: #E2E8F0;
-    --ink-900: #F8FAFC;
+    --border: 215 25% 27%;
+    /* slate-700 */
+    --input: 215 25% 27%;
+    --ring: 263.4 70% 50.4%;
+
+    /* Surface hierarchy */
+    --surface-0: #0f172a;
+    /* slate-900 */
+    --surface-1: #1e293b;
+    /* slate-800 */
+    --surface-2: #334155;
+    /* slate-700 */
+    --surface-3: #475569;
+    /* slate-600 */
+    --dashboard: #0f172a;
+    --line: #334155;
+
+    /* Chat-specific semantic color tokens - Dark Mode */
+    --chat-bg-primary: 222 47% 11%;
+    /* Deep charcoal/black background (slate-900) */
+    --chat-bg-secondary: 217 33% 17%;
+    /* Dark grey for sidebar/alternate backgrounds (slate-800) */
+    --chat-surface: 215 25% 27%;
+    /* Dark grey for received message bubbles (slate-700) */
+    --chat-surface-sent: 217 91% 60%;
+    /* Vibrant blue for sent messages (#3B82F6) - same in both modes */
+    --chat-text-primary: 210 40% 98%;
+    /* Light text for primary content (slate-50) */
+    --chat-text-secondary: 215 20% 65%;
+    /* Muted light text for secondary content (slate-400) */
+    --chat-border: 215 25% 27%;
+    /* Border color (slate-700) */
+    --chat-online: 142 76% 36%;
+    /* Green for online status indicator */
+  }
+
+  :root {
+    /* Gradient colors for light mode */
+    --gradient-from: rgba(124, 58, 237, 0.08);
+    --gradient-to: #f8fafc;
   }
 }
 
@@ -128,7 +177,7 @@
   * {
     @apply border-border;
   }
-  
+
   html {
     scroll-behavior: smooth;
     -webkit-overflow-scrolling: touch;
@@ -138,9 +187,9 @@
     width: 100%;
     max-width: 100%;
   }
-  
+
   body {
-    @apply bg-background text-foreground;
+    @apply bg-background text-foreground min-h-screen transition-colors duration-500;
     font-feature-settings: "rlig" 1, "calt" 1;
     overflow-x: hidden;
     width: 100%;
@@ -148,30 +197,44 @@
     position: relative;
   }
 
+  .dark body {
+    background: #0f172a;
+    /* Solid slate-900 background for consistent contrast */
+  }
+
   /* Prevent scroll lock on marketing page when Select dropdown is open */
   body.marketing-page[data-scroll-locked] {
     overflow: visible !important;
     position: relative !important;
   }
-  
+
   html:has(body.marketing-page[data-scroll-locked]) {
     overflow: visible !important;
   }
 
   /* Responsive media defaults */
-  img, video, canvas, svg {
+  img,
+  video,
+  canvas,
+  svg {
     max-width: 100%;
     height: auto;
     display: block;
   }
-  
+
   /* Prevent layout breaks on zoom */
   * {
     box-sizing: border-box;
   }
-  
+
   /* Ensure containers don't exceed viewport */
-  main, section, article, aside, nav, header, footer {
+  main,
+  section,
+  article,
+  aside,
+  nav,
+  header,
+  footer {
     max-width: 100%;
     overflow-x: hidden;
   }
@@ -181,19 +244,21 @@
   }
 
   /* Improve touch targets - exclude Radix form controls */
-  button:not([role="radio"]):not([role="checkbox"]):not([role="switch"]), 
-  a:not([role="radio"]):not([role="checkbox"]):not([role="switch"]), 
+  button:not([role="radio"]):not([role="checkbox"]):not([role="switch"]),
+  a:not([role="radio"]):not([role="checkbox"]):not([role="switch"]),
   [role="button"]:not([role="radio"]):not([role="checkbox"]):not([role="switch"]) {
     min-height: 44px;
     min-width: 44px;
   }
-  
+
   /* Ensure form controls maintain their intended size */
-  [role="radio"], [role="checkbox"], [role="switch"] {
+  [role="radio"],
+  [role="checkbox"],
+  [role="switch"] {
     min-height: unset !important;
     min-width: unset !important;
   }
-  
+
   /* Better tap highlighting */
   * {
     -webkit-tap-highlight-color: rgba(122, 59, 182, 0.1);
@@ -204,35 +269,77 @@
     outline: none;
     box-shadow: 0 0 0 2px #7a3bb6, 0 0 0 4px rgba(122, 59, 182, 0.2);
   }
-  
+
   .dark *:focus-visible {
     box-shadow: 0 0 0 2px #9d5dd1, 0 0 0 4px rgba(157, 93, 209, 0.3);
   }
 }
 
 /* Chat page specific styles - prevent page scrolling */
+/* Lock the root - No global scroll */
+html.chat-page,
 html:has([data-chat-page]),
+body.chat-page,
 body:has([data-chat-page]) {
   overflow: hidden !important;
   height: 100vh !important;
   max-height: 100vh !important;
-  position: fixed !important;
   width: 100% !important;
+  --chat-bottom-offset: 120px;
 }
 
+body.chat-page main,
 body:has([data-chat-page]) main {
   overflow: hidden !important;
   padding: 0 !important;
-  height: calc(100vh - 4rem) !important; /* Account for TopNav */
-  max-height: calc(100vh - 4rem) !important;
   display: flex !important;
   flex-direction: column !important;
   width: 100% !important;
   max-width: 100% !important;
   position: relative !important;
+  min-height: 0 !important;
+  /* Prevent any expansion beyond viewport */
+  contain: layout style !important;
 }
 
-body:has([data-chat-page]) main > div {
+body.chat-page .safe-area-inset,
+body:has([data-chat-page]) .safe-area-inset {
+  height: 100vh !important;
+  max-height: 100vh !important;
+  overflow: hidden !important;
+}
+
+body.chat-page .safe-area-inset > div,
+body:has([data-chat-page]) .safe-area-inset > div {
+  height: 100% !important;
+  max-height: 100% !important;
+  overflow: hidden !important;
+}
+
+/* On mobile, adjust for floating dock + safe area */
+@media (max-width: 768px) {
+  body.chat-page,
+  body:has([data-chat-page]) {
+    --chat-bottom-offset: calc(96px + env(safe-area-inset-bottom, 0px));
+  }
+
+  body.chat-page main,
+  body:has([data-chat-page]) main {
+    padding-bottom: 0 !important;
+  }
+
+  body.chat-page [data-messenger-sidebar],
+  body:has([data-chat-page]) [data-messenger-sidebar],
+  body.chat-page [data-messenger-profile-pane],
+  body:has([data-chat-page]) [data-messenger-profile-pane],
+  body.chat-page [data-profile-compatibility-pane],
+  body:has([data-chat-page]) [data-profile-compatibility-pane] {
+    padding-bottom: var(--chat-bottom-offset, 120px) !important;
+  }
+}
+
+body.chat-page main>div,
+body:has([data-chat-page]) main>div {
   height: 100% !important;
   max-height: 100% !important;
   padding: 0 !important;
@@ -241,9 +348,191 @@ body:has([data-chat-page]) main > div {
   width: 100% !important;
   max-width: 100% !important;
   overflow: hidden !important;
+  min-height: 0 !important;
+  flex: 1 1 0% !important;
+}
+
+
+/* Define chat safe-zone - respect floating navigation bar */
+body.chat-page main>div>div[data-chat-page],
+body:has([data-chat-page]) main>div>div[data-chat-page] {
+  flex: 1 1 0% !important;
+  min-height: 0 !important;
+  height: calc(100% - var(--chat-bottom-offset, 120px)) !important;
+  max-height: calc(100% - var(--chat-bottom-offset, 120px)) !important;
+  display: flex !important;
+  flex-direction: column !important;
+  overflow: hidden !important;
+  width: 100% !important;
+}
+
+/* Hide footer on chat page */
+body.chat-page main>div>div:has(footer),
+body:has([data-chat-page]) main>div>div:has(footer),
+body.chat-page main>div>footer,
+body:has([data-chat-page]) main>div>footer {
+  display: none !important;
+}
+
+/* Ensure chat interface flex layout works */
+body.chat-page [data-chat-page] > div,
+body:has([data-chat-page]) [data-chat-page] > div {
+  display: flex !important;
+  flex-direction: column !important;
+  height: 100% !important;
+  max-height: 100% !important;
+  min-height: 0 !important;
+  overflow: hidden !important;
+  flex: 1 1 0% !important;
+  width: 100% !important;
+}
+
+/* Ensure three-column layout is properly constrained - MUST be row on desktop */
+body.chat-page .flex.h-full,
+body:has([data-chat-page]) .flex.h-full {
+  height: 100% !important;
+  max-height: 100% !important;
+  min-height: 0 !important;
+  overflow: hidden !important;
+  display: flex !important;
+  /* Don't override flex-direction here - let inline styles handle it */
+}
+
+/* Ensure chat interface container is properly constrained - target the three-column layout specifically */
+body.chat-page [data-chat-page] > div > div[class*="flex"][class*="h-full"],
+body:has([data-chat-page]) [data-chat-page] > div > div[class*="flex"][class*="h-full"] {
+  height: 100% !important;
+  max-height: 100% !important;
+  min-height: 0 !important;
+  overflow: hidden !important;
+}
+
+/* Ensure chat list is properly constrained - Left Column */
+body.chat-page [class*="bg-chat-bg-secondary"],
+body:has([data-chat-page]) [class*="bg-chat-bg-secondary"] {
+  height: 100% !important;
+  max-height: 100% !important;
+  min-height: 0 !important;
+  overflow-y: auto !important;
+  display: flex !important;
+  flex-direction: column !important;
+}
+
+/* Ensure middle chat column is properly constrained */
+body.chat-page [class*="bg-chat-bg-primary"],
+body:has([data-chat-page]) [class*="bg-chat-bg-primary"] {
+  height: 100% !important;
+  max-height: 100% !important;
+  min-height: 0 !important;
+  overflow: hidden !important;
+  display: flex !important;
+  flex-direction: column !important;
+}
+
+/* Ensure right pane is properly constrained - Right Column */
+body.chat-page [class*="border-chat-border"]:has([class*="flex-shrink-0"]),
+body:has([data-chat-page]) [class*="border-chat-border"]:has([class*="flex-shrink-0"]) {
+  height: 100% !important;
+  max-height: 100% !important;
+  min-height: 0 !important;
+  overflow-y: auto !important;
+  display: flex !important;
+  flex-direction: column !important;
+}
+
+/* Ensure message input container stays visible */
+body.chat-page [class*="border-t"][class*="shadow-2xl"],
+body:has([data-chat-page]) [class*="border-t"][class*="shadow-2xl"] {
+  flex-shrink: 0 !important;
+  flex-grow: 0 !important;
+  position: relative !important;
+  z-index: 100 !important;
+  width: 100% !important;
+  max-width: 100% !important;
+}
+
+/* Three-column layout styles */
+.chat-three-column {
+  display: flex;
+  height: 100%;
+  overflow: hidden;
+}
+
+.chat-left-sidebar {
+  width: 320px;
+  flex-shrink: 0;
+  background-color: hsl(var(--chat-bg-secondary));
+  border-right: 1px solid hsl(var(--chat-border));
+}
+
+.chat-middle {
+  flex: 1;
+  min-width: 0;
+  background-color: hsl(var(--chat-bg-primary));
+}
+
+.chat-right-pane {
+  width: 380px;
+  flex-shrink: 0;
+  border-left: 1px solid hsl(var(--chat-border));
+  background: linear-gradient(to bottom right, rgba(139, 92, 246, 0.5), rgba(99, 102, 241, 0.5), rgba(59, 130, 246, 0.5));
+}
+
+.dark .chat-right-pane {
+  background: linear-gradient(to bottom right, rgba(139, 92, 246, 0.8), rgba(99, 102, 241, 0.8), rgba(59, 130, 246, 0.8));
+}
+
+/* Right pane slide animation */
+@keyframes slideInRight {
+  from {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+@keyframes slideOutRight {
+  from {
+    transform: translateX(0);
+    opacity: 1;
+  }
+  to {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+}
+
+.chat-right-pane-enter {
+  animation: slideInRight 0.3s ease-out;
+}
+
+.chat-right-pane-exit {
+  animation: slideOutRight 0.3s ease-in;
+}
+
+/* Message reactions styles */
+.message-reactions-container {
+  position: relative;
+}
+
+.message-reaction-button {
+  transition: all 0.2s ease;
+}
+
+.message-reaction-button:hover {
+  transform: scale(1.1);
+}
+
+.message-reaction-picker {
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
 }
 
 @layer utilities {
+
   /* Safe area inset utilities */
   .safe-area-inset {
     padding-top: env(safe-area-inset-top);
@@ -251,28 +540,160 @@ body:has([data-chat-page]) main > div {
     padding-left: env(safe-area-inset-left);
     padding-right: env(safe-area-inset-right);
   }
-  
+
   .pb-safe-bottom {
     padding-bottom: calc(1rem + env(safe-area-inset-bottom));
   }
-  
+
   .pt-safe-top {
     padding-top: calc(1rem + env(safe-area-inset-top));
   }
 
   /* Hide scrollbar but keep functionality */
   .scrollbar-hide {
-    -ms-overflow-style: none;  /* IE and Edge */
-    scrollbar-width: none;  /* Firefox */
+    -ms-overflow-style: none;
+    /* IE and Edge */
+    scrollbar-width: none;
+    /* Firefox */
+  }
+
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
+    /* Chrome, Safari and Opera */
+  }
+
+  /* Visible scrollbar for chat panels */
+  .scrollbar-visible {
+    scrollbar-width: thin;
+    scrollbar-color: rgba(156, 163, 175, 0.5) transparent;
+  }
+
+  .scrollbar-visible::-webkit-scrollbar {
+    width: 8px;
+  }
+
+  .scrollbar-visible::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  .scrollbar-visible::-webkit-scrollbar-thumb {
+    background-color: rgba(156, 163, 175, 0.5);
+    border-radius: 4px;
+  }
+
+  .scrollbar-visible::-webkit-scrollbar-thumb:hover {
+    background-color: rgba(156, 163, 175, 0.7);
+  }
+
+  .dark .scrollbar-visible {
+    scrollbar-color: rgba(107, 114, 128, 0.5) transparent;
+  }
+
+  .dark .scrollbar-visible::-webkit-scrollbar-thumb {
+    background-color: rgba(107, 114, 128, 0.5);
+  }
+
+  .dark .scrollbar-visible::-webkit-scrollbar-thumb:hover {
+    background-color: rgba(107, 114, 128, 0.7);
+  }
+
+  /* Custom scrollbar for profile panel with dark gradient background */
+  .scrollbar-visible-dark-gradient::-webkit-scrollbar {
+    width: 8px;
+  }
+
+  .scrollbar-visible-dark-gradient::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  .scrollbar-visible-dark-gradient::-webkit-scrollbar-thumb {
+    background-color: rgba(255, 255, 255, 0.5) !important;
+    border-radius: 4px;
+  }
+
+  .scrollbar-visible-dark-gradient::-webkit-scrollbar-thumb:hover {
+    background-color: rgba(255, 255, 255, 0.7) !important;
+  }
+
+  .scrollbar-visible-dark-gradient {
+    scrollbar-width: thin !important;
+    scrollbar-color: rgba(255, 255, 255, 0.5) transparent !important;
+  }
+
+  /* Messenger Chat Layout - Fixed Viewport (uses data-chat-page for consistency) */
+  /* Three-column flex layout for messenger */
+  body.chat-page [data-chat-page] [data-messenger-chat],
+  body:has([data-chat-page]) [data-chat-page] [data-messenger-chat] {
+    flex: 1 1 0% !important;
+    min-height: 0 !important;
+    height: 100% !important;
+    max-height: 100% !important;
+    display: flex !important;
+    flex-direction: row !important;
+    overflow: hidden !important;
+    width: 100% !important;
+  }
+
+  /* Three-column flex layout */
+  body.chat-page [data-messenger-chat] > div[data-messenger-sidebar],
+  body:has([data-chat-page]) [data-messenger-chat] > div[data-messenger-sidebar],
+  body.chat-page [data-messenger-chat] > div[data-messenger-profile],
+  body:has([data-chat-page]) [data-messenger-chat] > div[data-messenger-profile] {
+    height: 100% !important;
+    max-height: 100% !important;
+    min-height: 0 !important;
+    overflow: hidden !important; /* Changed from overflow-y: auto to overflow: hidden to let inner content scroll */
+    flex-direction: column !important;
+    flex: 0 0 auto !important; /* Prevent flex growth for fixed-width columns */
   }
   
-  .scrollbar-hide::-webkit-scrollbar {
-    display: none;  /* Chrome, Safari and Opera */
+  /* Conversation column wrapper - prevent expansion */
+  body.chat-page [data-messenger-chat] > .messenger-conversation-wrapper,
+  body:has([data-chat-page]) [data-messenger-chat] > .messenger-conversation-wrapper {
+    height: 100% !important;
+    max-height: 100% !important;
+    min-height: 0 !important;
+    overflow: hidden !important;
+    display: flex !important;
+    flex-direction: column !important;
+    flex: 1 1 0% !important; /* Allow growth but constrained by max-height */
+    position: relative !important;
+  }
+  
+  /* Conversation container - match sidebar structure exactly */
+  body.chat-page [data-messenger-conversation],
+  body:has([data-chat-page]) [data-messenger-conversation] {
+    height: 100% !important;
+    max-height: 100% !important;
+    min-height: 0 !important;
+    overflow: hidden !important;
+    display: flex !important;
+    flex-direction: column !important;
+  }
+  
+  /* Ensure profile pane content is scrollable */
+  body.chat-page [data-messenger-profile] > div,
+  body:has([data-chat-page]) [data-messenger-profile] > div {
+    height: 100% !important;
+    max-height: 100% !important;
+    min-height: 0 !important;
+    overflow: hidden !important;
+    display: flex !important;
+    flex-direction: column !important;
+  }
+
+  /* Messenger message bubble border-radius overrides */
+  [data-messenger-message-sent] {
+    border-radius: 18px 18px 4px 18px !important;
+  }
+
+  [data-messenger-message-received] {
+    border-radius: 18px 18px 18px 4px !important;
   }
 
   /* Edge fade hint for horizontal scroll areas */
   .edge-fade-right {
-    background: linear-gradient(to right, rgba(255,255,255,0), rgba(255,255,255,1));
+    background: linear-gradient(to right, rgba(255, 255, 255, 0), rgba(255, 255, 255, 1));
   }
 
   /* Blog Content Styling */
@@ -408,4 +829,5 @@ body:has([data-chat-page]) main > div {
       line-height: 1.875rem;
     }
   }
+
 }

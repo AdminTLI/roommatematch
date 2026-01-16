@@ -1,8 +1,9 @@
 'use client'
 
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useMemo } from 'react'
 import { useRouter } from 'next/navigation'
 import { useQuery } from '@tanstack/react-query'
+import { motion } from 'framer-motion'
 import { Card, CardContent } from '@/components/ui/card'
 import { fetchWithCSRF } from '@/lib/utils/fetch-with-csrf'
 import { Button } from '@/components/ui/button'
@@ -10,10 +11,10 @@ import { Badge } from '@/components/ui/badge'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { createClient } from '@/lib/supabase/client'
 import { User } from '@supabase/supabase-js'
-import { 
-  MessageCircle, 
-  Users, 
-  Clock, 
+import {
+  MessageCircle,
+  Users,
+  Clock,
   Search,
   Plus,
   MoreVertical,
@@ -60,6 +61,55 @@ interface ChatListProps {
   selectedChatId?: string
 }
 
+// Helper function for smart timestamp formatting (same as chat interface)
+const formatMessageTime = (timestamp: string) => {
+  const messageDate = new Date(timestamp)
+  const now = new Date()
+  const today = new Date(now.getFullYear(), now.getMonth(), now.getDate())
+  const yesterday = new Date(today)
+  yesterday.setDate(yesterday.getDate() - 1)
+  const messageDay = new Date(messageDate.getFullYear(), messageDate.getMonth(), messageDate.getDate())
+  
+  // Same day - show time
+  if (messageDay.getTime() === today.getTime()) {
+    return messageDate.toLocaleTimeString([], {
+      hour: '2-digit',
+      minute: '2-digit'
+    })
+  }
+  
+  // Yesterday - show "Yesterday"
+  if (messageDay.getTime() === yesterday.getTime()) {
+    return 'Yesterday'
+  }
+  
+  // Same week (Monday to Sunday) - show day name
+  const daysDiff = Math.floor((today.getTime() - messageDay.getTime()) / (1000 * 60 * 60 * 24))
+  if (daysDiff >= 2 && daysDiff < 7) {
+    // Check if same week by getting Monday of both weeks
+    const getMonday = (date: Date) => {
+      const d = new Date(date)
+      const day = d.getDay()
+      const diff = d.getDate() - day + (day === 0 ? -6 : 1) // Adjust when day is Sunday
+      return new Date(d.setDate(diff))
+    }
+    
+    const messageMonday = getMonday(messageDate)
+    const todayMonday = getMonday(now)
+    
+    // Same week and same year - show day name
+    if (messageMonday.getTime() === todayMonday.getTime() && messageDate.getFullYear() === now.getFullYear()) {
+      return messageDate.toLocaleDateString([], { weekday: 'long' })
+    }
+  }
+  
+  // Older - show short date format (e.g., "1 Jan", "18 Mar")
+  return messageDate.toLocaleDateString([], {
+    day: 'numeric',
+    month: 'short'
+  })
+}
+
 export function ChatList({ user, onChatSelect, selectedChatId }: ChatListProps) {
   const [searchQuery, setSearchQuery] = useState('')
   const [isNewChatModalOpen, setIsNewChatModalOpen] = useState(false)
@@ -102,12 +152,12 @@ export function ChatList({ user, onChatSelect, selectedChatId }: ChatListProps) 
         `)
         .in('id', chatIds)
         .order('created_at', { ascending: false })
-      
+
       if (chatsError) {
         console.error('[ChatList] Error fetching chats:', chatsError)
         throw chatsError
       }
-      
+
       if (!chatRooms || chatRooms.length === 0) {
         console.warn('[ChatList] No chat rooms found', {
           chatIdsCount: chatIds.length,
@@ -116,7 +166,7 @@ export function ChatList({ user, onChatSelect, selectedChatId }: ChatListProps) 
         })
         return []
       }
-      
+
       console.log('[ChatList] Fetched chat rooms:', {
         chatIdsCount: chatIds.length,
         chatRoomsCount: chatRooms.length,
@@ -127,7 +177,7 @@ export function ChatList({ user, onChatSelect, selectedChatId }: ChatListProps) 
       // For "recently matched" check, we'll check if latest message is a system greeting
       let latestMessagesMap = new Map<string, any>()
       let allMessagesMap = new Map<string, any[]>() // Store all messages per chat for search
-      
+
       if (chatIds.length > 0) {
         // Fetch latest message per chat using a more efficient approach
         // We'll fetch messages ordered by created_at DESC and group by chat_id, taking first
@@ -140,12 +190,12 @@ export function ChatList({ user, onChatSelect, selectedChatId }: ChatListProps) 
             .in('chat_id', chatIds)
             .order('created_at', { ascending: false })
             .limit(chatIds.length * 2) // Limit to reasonable number (2 messages per chat max)
-          
+
           if (messagesError) {
             console.warn('[ChatList] Error fetching messages (non-fatal):', messagesError)
             // Continue without messages - chats should still be shown
           }
-          
+
           // Group by chat_id and keep only the latest (first) message per chat
           // Also store all messages per chat for search functionality
           if (allMessages && allMessages.length > 0) {
@@ -175,13 +225,13 @@ export function ChatList({ user, onChatSelect, selectedChatId }: ChatListProps) 
       const chatRoomsWithMessages = (chatRooms || []).map((room: any) => {
         const latestMessage = latestMessagesMap.get(room.id)
         const messages = latestMessage ? [latestMessage] : []
-        
+
         // For "recently matched" check: if latest message exists and is NOT a system greeting,
         // then the chat is active (has user messages)
         // If there's no message at all, it's also "recently matched"
         const systemGreeting = "You're matched! Start your conversation 👋"
         const hasUserMessages = latestMessage ? latestMessage.content !== systemGreeting : false
-        
+
         return {
           ...room,
           messages: messages,
@@ -189,9 +239,9 @@ export function ChatList({ user, onChatSelect, selectedChatId }: ChatListProps) 
           hasUserMessages: hasUserMessages
         }
       })
-      
+
       const finalChatRooms = chatRoomsWithMessages
-      
+
       console.log('[ChatList] Processed chat rooms:', {
         totalRooms: finalChatRooms.length,
         roomsWithMessages: finalChatRooms.filter((r: any) => r.messages.length > 0).length,
@@ -203,7 +253,7 @@ export function ChatList({ user, onChatSelect, selectedChatId }: ChatListProps) 
       if (finalChatRooms && finalChatRooms.length > 0) {
         try {
           const chatIds = finalChatRooms.map((room: any) => room.id)
-          
+
           const profilesResponse = await fetchWithCSRF('/api/chat/profiles', {
             method: 'POST',
             headers: {
@@ -235,6 +285,40 @@ export function ChatList({ user, onChatSelect, selectedChatId }: ChatListProps) 
               })
             } else {
               console.warn(`[ChatList] Profiles data is not an array:`, profilesData)
+            }
+          } else if (profilesResponse.status === 429) {
+            // Rate limited - try fallback: fetch profiles directly from Supabase
+            // Collect all user IDs from chat members
+            const allUserIds = new Set<string>()
+            finalChatRooms.forEach((room: any) => {
+              room.chat_members?.forEach((member: any) => {
+                if (member.user_id && member.user_id !== user.id) {
+                  allUserIds.add(member.user_id)
+                }
+              })
+            })
+
+            if (allUserIds.size > 0) {
+              try {
+                const { data: fallbackProfiles, error: fallbackError } = await supabase
+                  .from('profiles')
+                  .select('user_id, first_name, last_name')
+                  .in('user_id', Array.from(allUserIds))
+
+              if (!fallbackError && fallbackProfiles) {
+                fallbackProfiles.forEach((profile: any) => {
+                  if (profile?.user_id) {
+                    profilesMap.set(profile.user_id, profile)
+                  }
+                })
+                console.log(`[ChatList] Fallback: Loaded ${profilesMap.size} profiles directly from Supabase`)
+              } else if (fallbackError) {
+                // RLS likely blocking - this is expected, log at debug level
+                console.debug('[ChatList] Fallback profile fetch blocked by RLS (expected):', fallbackError.message)
+              }
+            } catch (fallbackErr) {
+              console.debug('[ChatList] Fallback profile fetch failed (RLS likely blocking):', fallbackErr)
+            }
             }
           } else {
             // Try to read error text, but handle potential errors
@@ -291,53 +375,50 @@ export function ChatList({ user, onChatSelect, selectedChatId }: ChatListProps) 
         // A chat becomes "active" the moment ANY message is sent or received (not just system greetings)
         // Use the hasUserMessages flag set during message fetching (optimized to check only latest message)
         const hasUserMessages = room.hasUserMessages || false
-        
+
         // A chat is recently matched ONLY if it has no user messages (only system greetings or empty)
         // The moment a user sends or receives ANY message, it becomes active
         const isRecentlyMatched = !hasUserMessages;
-        
+
         // Compatibility score not available without matches table - set to undefined
         const compatibilityScore = undefined;
-        
+
         // Get the other participant for individual chats
         const otherParticipant = room.chat_members?.find((p: any) => p.user_id !== user.id)
         const otherProfile = otherParticipant ? profilesMap.get(otherParticipant.user_id) : null
-        
+
         // Construct participant name with better fallback logic
         let participantName = 'User'
         if (otherProfile) {
           const firstName = otherProfile.first_name?.trim()
           const lastName = otherProfile.last_name?.trim()
-          if (firstName) {
-            participantName = lastName ? `${firstName} ${lastName}` : firstName
+          if (firstName && lastName) {
+            participantName = `${firstName} ${lastName}`
+          } else if (firstName) {
+            participantName = firstName
           } else if (lastName) {
             participantName = lastName
           }
+          // If profile exists but no names, keep 'User' as fallback
+        } else if (otherParticipant) {
+          // Profile not found but participant exists - log for debugging
+          console.warn(`[ChatList] Profile not found for participant ${otherParticipant.user_id} in chat ${room.id}`)
         }
-        
-        // Debug: Log detailed info about profile lookup
+
+        // Debug: Log detailed info about profile lookup (only at debug level to avoid spam)
         if (!otherProfile && otherParticipant) {
-          console.warn(`[ChatList] Profile not found for user ${otherParticipant.user_id} in chat ${room.id}`, {
+          console.debug(`[ChatList] Profile not found for user ${otherParticipant.user_id} in chat ${room.id}`, {
             otherParticipantUserId: otherParticipant.user_id,
             chatId: room.id,
-            profilesMapSize: profilesMap.size,
-            profilesMapKeys: Array.from(profilesMap.keys()),
-            allChatMemberIds: room.chat_members?.map((m: any) => m.user_id)
-          })
-        } else if (otherProfile) {
-          console.log(`[ChatList] Found profile for user ${otherParticipant.user_id}:`, {
-            userId: otherParticipant.user_id,
-            firstName: otherProfile.first_name,
-            lastName: otherProfile.last_name,
-            constructedName: participantName
+            profilesMapSize: profilesMap.size
           })
         }
-        
+
         // Get last message
         const lastMessage = room.messages?.[0]
         const userMembership = room.chat_members?.find((p: any) => p.user_id === user.id)
         const lastReadAt = userMembership?.last_read_at || new Date(0).toISOString()
-        
+
         // Get the most recent message timestamp for sorting
         // Safely parse dates with validation
         const safeParseDate = (dateStr: string | null | undefined): Date | null => {
@@ -345,19 +426,19 @@ export function ChatList({ user, onChatSelect, selectedChatId }: ChatListProps) 
           const date = new Date(dateStr)
           return isNaN(date.getTime()) ? null : date
         }
-        
+
         const lastMessageDate = lastMessage?.created_at ? safeParseDate(lastMessage.created_at) : null
         const roomCreatedDate = room.created_at ? safeParseDate(room.created_at) : null
         const lastReadDate = safeParseDate(lastReadAt)
-        
-        const mostRecentMessageTime = lastMessageDate 
+
+        const mostRecentMessageTime = lastMessageDate
           ? lastMessageDate.getTime()
           : (roomCreatedDate ? roomCreatedDate.getTime() : 0)
-        
+
         // Get all messages for this chat for search functionality
         const chatMessages = allMessagesMap.get(room.id) || []
         const allMessagesContent = chatMessages.map((msg: any) => msg.content)
-        
+
         return {
           id: room.id,
           name: room.is_group ? `Group Chat` : participantName,
@@ -376,11 +457,14 @@ export function ChatList({ user, onChatSelect, selectedChatId }: ChatListProps) 
             if (profile) {
               const firstName = profile.first_name?.trim()
               const lastName = profile.last_name?.trim()
-              if (firstName) {
-                fullName = lastName ? `${firstName} ${lastName}` : firstName
+              if (firstName && lastName) {
+                fullName = `${firstName} ${lastName}`
+              } else if (firstName) {
+                fullName = firstName
               } else if (lastName) {
                 fullName = lastName
               }
+              // If profile exists but no names, keep 'User' as fallback
             }
             return {
               id: p.user_id,
@@ -405,14 +489,14 @@ export function ChatList({ user, onChatSelect, selectedChatId }: ChatListProps) 
         activeConversations: transformedChats.filter(c => !c.isRecentlyMatched).length,
         chatIds: transformedChats.map(c => c.id)
       })
-      
+
       return transformedChats
     } catch (error) {
       // Use console.error here as this is client-side code
       const errorMessage = error instanceof Error ? error.message : String(error)
       const errorName = error instanceof Error ? error.name : typeof error
       const isNetworkError = error instanceof TypeError && errorMessage === 'Failed to fetch'
-      
+
       console.error('[ChatList] Failed to load chats:', {
         error: errorMessage,
         errorName,
@@ -420,15 +504,18 @@ export function ChatList({ user, onChatSelect, selectedChatId }: ChatListProps) 
         userId: user.id,
         stack: error instanceof Error ? error.stack : undefined
       })
-      
+
       // Return empty array to prevent UI crash - user can retry by refreshing
       return []
     }
   }, [user.id])
 
+  // Memoize queryKeys to prevent unnecessary re-subscriptions
+  const chatsQueryKeys = useMemo(() => queryKeys.chats(user.id), [user.id])
+
   // Use React Query to fetch and cache chats
   const { data: chats = [], isLoading, refetch } = useQuery({
-    queryKey: queryKeys.chats(user.id),
+    queryKey: chatsQueryKeys,
     queryFn: fetchChats,
     staleTime: 10_000, // 10 seconds for real-time data
     enabled: !!user.id,
@@ -438,7 +525,7 @@ export function ChatList({ user, onChatSelect, selectedChatId }: ChatListProps) 
   useRealtimeInvalidation({
     table: 'messages',
     event: 'INSERT',
-    queryKeys: queryKeys.chats(user.id),
+    queryKeys: chatsQueryKeys,
     enabled: !!user.id,
   })
 
@@ -463,33 +550,55 @@ export function ChatList({ user, onChatSelect, selectedChatId }: ChatListProps) 
     loadInvitations()
   }, [loadInvitations])
 
+  // Extract online users from chats using useMemo to avoid infinite loops
+  const onlineUsers = useMemo(() => {
+    const onlineUsersMap = new Map<string, {id: string, name: string, avatar?: string}>()
+    
+    chats.forEach(chat => {
+      chat.participants.forEach(participant => {
+        // Only include participants who are online and not the current user
+        if (participant.isOnline && participant.id !== user.id) {
+          if (!onlineUsersMap.has(participant.id)) {
+            onlineUsersMap.set(participant.id, {
+              id: participant.id,
+              name: participant.name,
+              avatar: participant.avatar
+            })
+          }
+        }
+      })
+    })
+    
+    return Array.from(onlineUsersMap.values())
+  }, [chats, user.id])
+
   const filteredChats = chats.filter(chat => {
     if (!searchQuery.trim()) return true
-    
+
     const query = searchQuery.toLowerCase()
-    
+
     // Search in chat name
     if (chat.name.toLowerCase().includes(query)) {
       return true
     }
-    
+
     // Search in participant names
     if (chat.participants.some(p => p.name.toLowerCase().includes(query))) {
       return true
     }
-    
+
     // Search in message content
-    if (chat.allMessages && chat.allMessages.some(msg => 
+    if (chat.allMessages && chat.allMessages.some(msg =>
       msg.toLowerCase().includes(query)
     )) {
       return true
     }
-    
+
     // Search in last message
     if (chat.lastMessage?.content.toLowerCase().includes(query)) {
       return true
     }
-    
+
     return false
   })
 
@@ -503,7 +612,7 @@ export function ChatList({ user, onChatSelect, selectedChatId }: ChatListProps) 
       const timeB = (b as any).mostRecentMessageTime || 0
       return timeB - timeA // Most recent first
     })
-  
+
   const activeConversations = filteredChats
     .filter(chat => !chat.isRecentlyMatched)
     .sort((a, b) => {
@@ -512,6 +621,15 @@ export function ChatList({ user, onChatSelect, selectedChatId }: ChatListProps) 
       const timeB = (b as any).mostRecentMessageTime || 0
       return timeB - timeA // Most recent first
     })
+
+  // Debug: Log chat counts
+  console.log('[ChatList] Chat counts:', {
+    total: chats.length,
+    filtered: filteredChats.length,
+    recentlyMatched: recentlyMatchedChats.length,
+    active: activeConversations.length,
+    isLoading
+  })
 
   const handleChatClick = (chatId: string, e?: React.MouseEvent) => {
     // Prevent event propagation if clicked on nested interactive elements
@@ -524,24 +642,24 @@ export function ChatList({ user, onChatSelect, selectedChatId }: ChatListProps) 
       e.preventDefault()
       e.stopPropagation()
     }
-    
+
     if (!chatId) {
       console.error('[ChatList] Cannot select: chatId is missing')
       return
     }
-    
+
     // Persist last visited room
     try {
       localStorage.setItem(`last_chat_room_${user.id}`, chatId)
     } catch (error) {
       // Silently fail if localStorage is unavailable
     }
-    
+
     console.log(`[ChatList] Selecting chat room: ${chatId}`, {
       chatId,
       userId: user.id
     })
-    
+
     // Call the selection callback instead of navigating
     if (onChatSelect) {
       onChatSelect(chatId)
@@ -583,42 +701,101 @@ export function ChatList({ user, onChatSelect, selectedChatId }: ChatListProps) 
   }
 
   return (
-    <div className="h-full flex flex-col w-full bg-bg-surface overflow-hidden min-h-0">
+    <div 
+      className="h-full flex flex-col w-full bg-white overflow-hidden min-h-0"
+      style={{
+        height: '100%',
+        maxHeight: '100%',
+        minHeight: 0,
+        display: 'flex',
+        flexDirection: 'column',
+        width: '100%',
+        overflow: 'hidden'
+      }}
+    >
       {/* Header */}
-      <div className="flex-shrink-0 px-2 sm:px-4 lg:px-5 py-5 border-b border-border-subtle bg-bg-surface">
-        <div className="flex items-center justify-between mb-6">
+      <div className="flex-shrink-0 px-4 py-6 border-b border-white bg-white">
+        <div className="flex items-center justify-between mb-5">
           <div>
-            <h1 className="text-xl sm:text-2xl font-semibold text-text-primary mb-0.5">Messages</h1>
-            <p className="text-xs sm:text-sm text-text-muted font-normal">Connect with your matches</p>
+            <h1 className="text-2xl font-bold text-gray-900 mb-1">Messages</h1>
+            <p className="text-sm text-gray-600 font-medium">Connect with your matches</p>
           </div>
-          <Button 
-            onClick={handleNewChat} 
-            size="sm" 
-            className="h-9 w-9 p-0 rounded-lg bg-semantic-accent hover:bg-semantic-accent-hover text-white shadow-sm"
+          <Button
+            onClick={() => handleNewChat()}
+            size="sm"
+            className="h-10 w-10 p-0 rounded-full bg-chat-surface-sent hover:opacity-90 text-white shadow-lg transition-all transform hover:scale-105 active:scale-95"
           >
-            <Plus className="h-4 w-4" />
+            <Plus className="h-5 w-5" />
           </Button>
         </div>
         <div className="relative">
-          <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-text-muted" />
+          <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-500 z-10" />
           <input
             type="text"
             placeholder="Search conversations..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full pl-10 pr-4 py-2.5 border border-border-subtle rounded-xl focus:ring-2 focus:ring-semantic-accent focus:border-semantic-accent/50 text-sm min-h-[40px] bg-bg-surface-alt text-text-primary placeholder:text-text-muted transition-all shadow-sm"
+            className="w-full pl-10 pr-4 py-3 bg-gray-100 border border-white rounded-full focus:ring-2 focus:ring-chat-surface-sent/50 focus:border-chat-surface-sent/50 focus:bg-gray-100 text-sm min-h-[44px] text-gray-900 placeholder:text-gray-500 transition-all"
           />
         </div>
       </div>
 
       {/* Scrollable Chat List */}
-      <div className="flex-1 overflow-y-auto bg-bg-surface relative mt-2">
+      <div className="flex-1 overflow-y-auto relative mt-2 scrollbar-visible bg-white">
+        {/* Online Now Section */}
+        {onlineUsers.length > 0 && (
+          <div className="px-4 pt-4 pb-3">
+            <div className="flex items-center justify-between mb-3">
+              <h2 className="text-xs font-bold text-gray-600 uppercase tracking-wider">
+                Online now
+              </h2>
+              <button className="text-xs text-chat-surface-sent hover:opacity-80 transition-opacity font-medium">
+                More &gt;
+              </button>
+            </div>
+            <div className="flex gap-3 overflow-x-auto scrollbar-hide pb-2">
+              {onlineUsers.slice(0, 10).map((onlineUser) => (
+                <div
+                  key={onlineUser.id}
+                  className="flex flex-col items-center gap-2 flex-shrink-0 cursor-pointer hover:opacity-80 transition-opacity"
+                  onClick={() => {
+                    // Find chat with this user and select it
+                    const chatWithUser = chats.find(chat => 
+                      chat.type === 'individual' && 
+                      chat.participants.some(p => p.id === onlineUser.id)
+                    )
+                    if (chatWithUser && onChatSelect) {
+                      onChatSelect(chatWithUser.id)
+                    }
+                  }}
+                >
+                  <div className="relative">
+                    <Avatar className="w-12 h-12">
+                      <AvatarImage src={onlineUser.avatar} />
+                      <AvatarFallback className="text-sm font-semibold bg-chat-surface text-gray-900">
+                        {onlineUser.name.charAt(0)}
+                      </AvatarFallback>
+                    </Avatar>
+                    <div className="absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 bg-chat-online rounded-full border-2 border-chat-bg-primary"></div>
+                  </div>
+                  <span className="text-xs text-gray-900 font-medium max-w-[60px] truncate">
+                    {onlineUser.name}
+                  </span>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
         {/* Pending Invitations Section */}
         {pendingInvitations.length > 0 && (
-          <div className="px-2 sm:px-4 lg:px-4 pt-4 pb-2">
-            <div className="flex items-center gap-2 mb-3">
-              <h2 className="text-xs font-semibold text-text-primary uppercase tracking-wider">Pending Invitations</h2>
-              <Badge variant="destructive" className="bg-semantic-accent text-white font-bold text-xs px-1.5 py-0.5 h-5">
+          <div className="px-4 pt-5 pb-3">
+            <div className="flex items-center gap-2.5 mb-4">
+              <h2 className="text-xs font-bold text-gray-600 uppercase tracking-wider flex items-center gap-2">
+                <span className="w-1 h-4 bg-chat-surface-sent rounded-full"></span>
+                Pending Invitations
+              </h2>
+              <Badge className="bg-chat-surface-sent text-white font-bold text-xs px-2 py-0.5 h-5 shadow-sm rounded-full">
                 {pendingInvitations.length}
               </Badge>
             </div>
@@ -645,16 +822,19 @@ export function ChatList({ user, onChatSelect, selectedChatId }: ChatListProps) 
 
         {/* Recently Matched Section */}
         {recentlyMatchedChats.length > 0 && (
-          <div className="px-2 sm:px-4 lg:px-4 pt-4 pb-2">
-            <div className="flex items-center gap-2 mb-3">
-              <h2 className="text-xs font-semibold text-text-primary uppercase tracking-wider">Recently Matched</h2>
-              <Badge variant="destructive" className="bg-semantic-danger text-white font-bold text-xs px-1.5 py-0.5 h-5">
+          <div className="px-4 pt-5 pb-3">
+            <div className="flex items-center gap-2.5 mb-4">
+              <h2 className="text-xs font-bold text-gray-600 uppercase tracking-wider flex items-center gap-2">
+                <span className="w-1 h-4 bg-chat-online rounded-full"></span>
+                Recently Matched
+              </h2>
+              <Badge className="bg-chat-online/20 text-chat-online border border-chat-online/40 text-xs font-bold px-2 py-0.5 h-5 shadow-sm rounded-full">
                 {recentlyMatchedChats.length}
               </Badge>
             </div>
-            
-            <div className="space-y-2">
-              {recentlyMatchedChats.map((chat) => {
+
+            <div className="space-y-3">
+              {recentlyMatchedChats.map((chat, index) => {
                 const isSelected = selectedChatId === chat.id
                 console.log(`[ChatList] Rendering chat card:`, {
                   chatId: chat.id,
@@ -663,71 +843,74 @@ export function ChatList({ user, onChatSelect, selectedChatId }: ChatListProps) 
                   participants: chat.participants.map((p: any) => ({ id: p.id, name: p.name }))
                 })
                 return (
-                <div
-                  key={chat.id}
-                  onClick={(e) => handleChatClick(chat.id, e)}
-                  className={`
-                    cursor-pointer transition-all duration-200 rounded-xl p-3.5
-                    ${isSelected 
-                      ? 'bg-semantic-accent/15 border-2 border-semantic-accent/40 shadow-md' 
-                      : 'bg-bg-surface border border-border-subtle hover:bg-bg-surface-alt hover:border-semantic-accent/20 hover:shadow-sm'
-                    }
+                  <motion.div
+                    key={chat.id}
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.3, delay: index * 0.05 }}
+                    whileHover={{ y: -2, scale: 1.01 }}
+                    whileTap={{ scale: 0.98 }}
+                    onClick={(e) => handleChatClick(chat.id, e)}
+                    className={`
+                    cursor-pointer transition-all duration-300 rounded-2xl p-4 mb-1 group relative overflow-hidden
+                    ${isSelected
+                        ? 'bg-blue-100 border-2 border-blue-300 shadow-lg'
+                        : 'bg-white border border-gray-200 hover:bg-gray-50 hover:border-gray-300'
+                      }
                   `}
-                >
-                  <div className="flex items-center gap-3">
-                    {/* Avatar */}
-                    <div className="relative flex-shrink-0">
-                      {chat.type === 'individual' ? (
-                        <Avatar className="w-12 h-12 ring-2 ring-semantic-accent/20">
-                          {(() => {
-                            // For individual chats, find the other participant (not the current user)
-                            const otherParticipant = chat.participants.find((p: any) => p.id !== user.id) || chat.participants[0]
-                            return (
-                              <>
-                                <AvatarImage src={otherParticipant?.avatar} />
-                                <AvatarFallback className="text-sm font-bold bg-semantic-accent-soft text-semantic-accent">
-                                  {otherParticipant?.name?.charAt(0) || chat.name?.charAt(0) || '?'}
-                                </AvatarFallback>
-                              </>
-                            )
-                          })()}
-                        </Avatar>
-                      ) : (
-                        <div className="relative w-12 h-12">
-                          <Avatar className="w-7 h-7 absolute top-0 left-0 ring-2 ring-bg-surface">
-                            <AvatarImage src={chat.participants[0]?.avatar} />
-                            <AvatarFallback className="text-xs font-semibold">
-                              {chat.participants[0]?.name?.charAt(0) || '?'}
-                            </AvatarFallback>
-                          </Avatar>
-                          <Avatar className="w-7 h-7 absolute bottom-0 right-0 ring-2 ring-bg-surface">
-                            <AvatarImage src={chat.participants[1]?.avatar} />
-                            <AvatarFallback className="text-xs font-semibold">
-                              {chat.participants[1]?.name?.charAt(0) || '?'}
-                            </AvatarFallback>
-                          </Avatar>
-                        </div>
-                      )}
-                    </div>
-
-                    {/* Chat Info */}
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center justify-between gap-2 mb-1">
-                        <h3 className="text-sm font-semibold text-text-primary truncate">
-                          {chat.name}
-                        </h3>
-                        {chat.compatibilityScore && (
-                          <Badge className="bg-semantic-success text-white border-0 text-xs font-bold px-1.5 py-0.5 h-5">
-                            {chat.compatibilityScore}%
-                          </Badge>
+                  >
+                    <div className="flex items-center gap-4 relative z-10">
+                      {/* Avatar */}
+                      <div className="relative flex-shrink-0">
+                        {chat.type === 'individual' ? (
+                          <div className="relative">
+                            <Avatar className={`w-14 h-14 ring-2 shadow-lg ${isSelected ? 'ring-chat-surface-sent/50' : 'ring-chat-border/30'}`}>
+                              {(() => {
+                                // For individual chats, find the other participant (not the current user)
+                                const otherParticipant = chat.participants.find((p: any) => p.id !== user.id) || chat.participants[0]
+                                return (
+                                  <>
+                                    <AvatarImage src={otherParticipant?.avatar} />
+                                    <AvatarFallback className="text-base font-bold bg-chat-surface-sent text-white">
+                                      {otherParticipant?.name?.charAt(0) || chat.name?.charAt(0) || '?'}
+                                    </AvatarFallback>
+                                  </>
+                                )
+                              })()}
+                            </Avatar>
+                            <div className="absolute -bottom-0.5 -right-0.5 w-4 h-4 bg-emerald-500 rounded-full border-2 border-bg-surface shadow-sm"></div>
+                          </div>
+                        ) : (
+                          <div className="relative w-14 h-14">
+                            <Avatar className="w-8 h-8 absolute top-0 left-0 ring-2 ring-bg-surface shadow-md">
+                              <AvatarImage src={chat.participants[0]?.avatar} />
+                              <AvatarFallback className="text-xs font-semibold bg-gradient-to-br from-indigo-500 to-purple-600 text-white">
+                                {chat.participants[0]?.name?.charAt(0) || '?'}
+                              </AvatarFallback>
+                            </Avatar>
+                            <Avatar className="w-8 h-8 absolute bottom-0 right-0 ring-2 ring-bg-surface shadow-md">
+                              <AvatarImage src={chat.participants[1]?.avatar} />
+                              <AvatarFallback className="text-xs font-semibold bg-gradient-to-br from-purple-500 to-pink-600 text-white">
+                                {chat.participants[1]?.name?.charAt(0) || '?'}
+                              </AvatarFallback>
+                            </Avatar>
+                          </div>
                         )}
                       </div>
-                      <p className="text-xs text-semantic-accent font-medium truncate">
-                        Start a conversation with your new match!
-                      </p>
+
+                      {/* Chat Info */}
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center justify-between gap-2 mb-1.5">
+                          <h3 className={`text-sm font-bold truncate ${isSelected ? 'text-gray-900' : 'text-gray-900'}`}>
+                            {chat.name}
+                          </h3>
+                        </div>
+                        <p className={`text-xs font-medium truncate ${isSelected ? 'text-gray-600' : 'text-gray-600'}`}>
+                          ✨ Start a conversation with your new match!
+                        </p>
+                      </div>
                     </div>
-                  </div>
-                </div>
+                  </motion.div>
                 )
               })}
             </div>
@@ -735,125 +918,134 @@ export function ChatList({ user, onChatSelect, selectedChatId }: ChatListProps) 
         )}
 
         {/* Active Conversations Section */}
-        <div className="px-2 sm:px-4 lg:px-4 pt-2 pb-4">
-          <div className="flex items-center gap-2 mb-3">
-            <h2 className="text-xs font-semibold text-text-primary uppercase tracking-wider">Active Conversations</h2>
-            <Badge variant="secondary" className="text-xs font-bold px-1.5 py-0.5 h-5">
+        <div className="px-4 pt-3 pb-4">
+          <div className="flex items-center gap-2.5 mb-4">
+            <h2 className="text-xs font-bold text-gray-600 uppercase tracking-wider flex items-center gap-2">
+              <span className="w-1 h-4 bg-chat-surface-sent rounded-full"></span>
+              Active Conversations
+            </h2>
+            <Badge className="bg-gray-100 text-gray-600 border border-white text-xs font-bold px-2 py-0.5 h-5 shadow-sm rounded-full">
               {activeConversations.length}
             </Badge>
           </div>
-          
+
           {activeConversations.length === 0 ? (
-            <div className="text-center py-12 px-2 sm:px-4 lg:px-4">
-              <div className="w-16 h-16 mx-auto mb-4 rounded-xl bg-bg-surface-alt flex items-center justify-center">
-                <MessageCircle className="h-8 w-8 text-text-muted" />
+            <div className="text-center py-16 px-2 sm:px-4 lg:px-4">
+              <div className="w-20 h-20 mx-auto mb-5 rounded-2xl bg-gradient-to-br from-white/10 to-white/5 backdrop-blur-md border border-white/10 flex items-center justify-center shadow-lg">
+                <MessageCircle className="h-10 w-10 text-indigo-400/60" />
               </div>
-              <h3 className="text-sm font-bold text-text-primary mb-2">
+              <h3 className="text-base font-bold text-gray-900 mb-2">
                 {searchQuery ? 'No conversations found' : 'No active conversations'}
               </h3>
-              <p className="text-xs text-text-secondary leading-relaxed">
-                {searchQuery 
-                  ? 'Try adjusting your search terms' 
-                  : recentlyMatchedChats.length > 0 
+              <p className="text-sm text-gray-600 leading-relaxed max-w-sm mx-auto">
+                {searchQuery
+                  ? 'Try adjusting your search terms'
+                  : recentlyMatchedChats.length > 0
                     ? 'Start conversations with your recent matches above'
                     : 'Start a conversation with your matches'
                 }
               </p>
             </div>
           ) : (
-            <div className="space-y-2">
-              {activeConversations.map((chat) => {
+            <div className="space-y-2.5">
+              {activeConversations.map((chat, index) => {
                 const isSelected = selectedChatId === chat.id
                 return (
-                <div
-                  key={chat.id}
-                  onClick={(e) => handleChatClick(chat.id, e)}
-                  className={`
-                    cursor-pointer transition-all duration-200 rounded-xl p-3.5
-                    ${isSelected 
-                      ? 'bg-semantic-accent/15 border-2 border-semantic-accent/40 shadow-md' 
-                      : 'bg-bg-surface border border-border-subtle hover:bg-bg-surface-alt hover:border-semantic-accent/20 hover:shadow-sm'
-                    }
+                  <motion.div
+                    key={chat.id}
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.3, delay: index * 0.03 }}
+                    whileHover={{ y: -2, scale: 1.01 }}
+                    whileTap={{ scale: 0.98 }}
+                    onClick={(e) => handleChatClick(chat.id, e)}
+                    className={`
+                    cursor-pointer transition-all duration-300 rounded-2xl p-4 mb-1 group relative overflow-hidden
+                    ${isSelected
+                        ? 'bg-blue-100 border-2 border-blue-300 shadow-lg'
+                        : 'bg-white border border-gray-200 hover:bg-gray-50 hover:border-gray-300'
+                      }
                   `}
-                >
-                  <div className="flex items-center gap-3">
-                    {/* Avatar */}
-                    <div className="relative flex-shrink-0">
-                      {chat.type === 'individual' ? (
-                        <Avatar className="w-12 h-12 ring-2 ring-border-subtle">
-                          {(() => {
-                            // For individual chats, find the other participant (not the current user)
-                            const otherParticipant = chat.participants.find((p: any) => p.id !== user.id) || chat.participants[0]
-                            return (
-                              <>
-                                <AvatarImage src={otherParticipant?.avatar} />
-                                <AvatarFallback className="text-sm font-bold bg-bg-surface-alt text-text-primary">
-                                  {otherParticipant?.name?.charAt(0) || chat.name?.charAt(0) || '?'}
-                                </AvatarFallback>
-                              </>
-                            )
-                          })()}
-                        </Avatar>
-                      ) : (
-                        <div className="relative w-12 h-12">
-                          <Avatar className="w-7 h-7 absolute top-0 left-0 ring-2 ring-bg-surface">
-                            <AvatarImage src={chat.participants[0]?.avatar} />
-                            <AvatarFallback className="text-xs font-semibold">
-                              {chat.participants[0]?.name?.charAt(0) || '?'}
-                            </AvatarFallback>
-                          </Avatar>
-                          <Avatar className="w-7 h-7 absolute bottom-0 right-0 ring-2 ring-bg-surface">
-                            <AvatarImage src={chat.participants[1]?.avatar} />
-                            <AvatarFallback className="text-xs font-semibold">
-                              {chat.participants[1]?.name?.charAt(0) || '?'}
-                            </AvatarFallback>
-                          </Avatar>
-                        </div>
-                      )}
-                      {chat.participants.some((p: any) => p.isOnline) && (
-                        <div className="absolute -bottom-0.5 -right-0.5 w-3 h-3 bg-semantic-success rounded-full border-2 border-bg-surface shadow-sm"></div>
-                      )}
-                    </div>
-
-                    {/* Chat Info */}
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center justify-between gap-2 mb-1">
-                        <h3 className={`text-sm truncate ${
-                          !chat.lastMessage?.isRead ? 'font-semibold text-text-primary' : 'font-medium text-text-primary'
-                        }`}>
-                          {chat.name}
-                        </h3>
-                        {chat.lastMessage && chat.lastMessage.created_at && (
-                          <span className="text-[10px] text-text-muted whitespace-nowrap flex-shrink-0 font-medium">
-                            {(() => {
-                              // Parse the raw created_at timestamp, not the formatted timestamp string
-                              const date = new Date(chat.lastMessage.created_at)
-                              if (isNaN(date.getTime())) return ''
-                              return date.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: false })
-                            })()}
-                          </span>
+                  >
+                    <div className="flex items-center gap-4 relative z-10">
+                      {/* Avatar */}
+                      <div className="relative flex-shrink-0">
+                        {chat.type === 'individual' ? (
+                          <div className="relative">
+                            <Avatar className={`w-12 h-12 ring-2 shadow-lg ${isSelected ? 'ring-chat-surface-sent/50' : 'ring-chat-border/30'}`}>
+                              {(() => {
+                                // For individual chats, find the other participant (not the current user)
+                                const otherParticipant = chat.participants.find((p: any) => p.id !== user.id) || chat.participants[0]
+                                return (
+                                  <>
+                                    <AvatarImage src={otherParticipant?.avatar} />
+                                    <AvatarFallback className={`text-sm font-bold ${isSelected ? 'bg-chat-surface-sent text-white' : 'bg-chat-surface text-gray-900 transition-all'}`}>
+                                      {otherParticipant?.name?.charAt(0) || chat.name?.charAt(0) || '?'}
+                                    </AvatarFallback>
+                                  </>
+                                )
+                              })()}
+                            </Avatar>
+                            {chat.participants.some((p: any) => p.isOnline) && (
+                              <div className="absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 bg-chat-online rounded-full border-2 border-chat-bg-primary shadow-lg"></div>
+                            )}
+                          </div>
+                        ) : (
+                          <div className="relative w-12 h-12">
+                            <Avatar className="w-7 h-7 absolute top-0 left-0 ring-2 ring-bg-surface shadow-md">
+                              <AvatarImage src={chat.participants[0]?.avatar} />
+                              <AvatarFallback className="text-xs font-semibold bg-gradient-to-br from-indigo-500 to-purple-600 text-white">
+                                {chat.participants[0]?.name?.charAt(0) || '?'}
+                              </AvatarFallback>
+                            </Avatar>
+                            <Avatar className="w-7 h-7 absolute bottom-0 right-0 ring-2 ring-bg-surface shadow-md">
+                              <AvatarImage src={chat.participants[1]?.avatar} />
+                              <AvatarFallback className="text-xs font-semibold bg-gradient-to-br from-purple-500 to-pink-600 text-white">
+                                {chat.participants[1]?.name?.charAt(0) || '?'}
+                              </AvatarFallback>
+                            </Avatar>
+                          </div>
                         )}
                       </div>
-                      
-                      {chat.lastMessage && (
-                        <div className="flex items-center gap-2">
-                          <p className={`text-xs truncate flex-1 ${
-                            !chat.lastMessage.isRead 
-                              ? 'font-semibold text-text-primary' 
-                              : 'text-text-secondary font-medium'
-                          }`}>
-                            {chat.lastMessage.content}
-                          </p>
-                          {chat.unreadCount > 0 && (
-                            <Badge variant="destructive" className="bg-semantic-danger text-white font-bold text-xs flex-shrink-0 min-w-[20px] h-5 flex items-center justify-center px-1.5 shadow-sm">
-                              {chat.unreadCount}
-                            </Badge>
+
+                      {/* Chat Info */}
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center justify-between gap-2 mb-1.5">
+                          <h3 className={`text-sm truncate ${!chat.lastMessage?.isRead 
+                            ? `font-bold ${isSelected ? 'text-gray-900' : 'text-gray-900'}`
+                            : `font-semibold ${isSelected ? 'text-gray-900' : 'text-gray-900'}`
+                            }`}>
+                            {chat.name}
+                          </h3>
+                          {chat.lastMessage && chat.lastMessage.created_at && (
+                            <span className={`text-[10px] whitespace-nowrap flex-shrink-0 font-medium ${isSelected ? 'text-gray-600' : 'text-gray-600'}`}>
+                              {(() => {
+                                const date = new Date(chat.lastMessage.created_at)
+                                if (isNaN(date.getTime())) return ''
+                                return formatMessageTime(chat.lastMessage.created_at)
+                              })()}
+                            </span>
                           )}
                         </div>
-                      )}
+
+                        {chat.lastMessage && (
+                          <div className="flex items-center gap-2">
+                            <p className={`text-xs truncate flex-1 ${!chat.lastMessage.isRead
+                              ? `font-semibold ${isSelected ? 'text-gray-900' : 'text-gray-900'}`
+                              : `font-medium ${isSelected ? 'text-gray-600' : 'text-gray-600'}`
+                              }`}>
+                              {chat.lastMessage.content}
+                            </p>
+                            {chat.unreadCount > 0 && (
+                              <Badge className="bg-chat-surface-sent text-white font-bold text-xs flex-shrink-0 min-w-[22px] h-5 flex items-center justify-center px-2 rounded-full">
+                                {chat.unreadCount}
+                              </Badge>
+                            )}
+                          </div>
+                        )}
+                      </div>
                     </div>
-                  </div>
-                </div>
+                  </motion.div>
                 )
               })}
             </div>

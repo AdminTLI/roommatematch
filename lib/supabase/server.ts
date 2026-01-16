@@ -127,7 +127,7 @@ export async function withTimeout<T>(
 }
 
 export async function requireVerifiedUser() {
-  const supabase = createClient()
+  const supabase = await createClient()
   const { data: { user }, error } = await supabase.auth.getUser()
   if (error || !user) {
     return { ok: false as const, status: 401 as const, user: null }

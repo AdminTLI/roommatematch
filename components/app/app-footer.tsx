@@ -2,32 +2,30 @@
 
 export function AppFooter() {
   return (
-    <footer className="w-full border-t border-border bg-bg-surface py-4 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-7xl mx-auto">
-        <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
-          <p className="text-sm text-muted-foreground text-center sm:text-left">
-            © 2026 Domu Match. All rights reserved.
-          </p>
-          <div className="flex items-center gap-6 text-sm text-muted-foreground">
-            <a 
-              href="/privacy" 
-              className="hover:text-foreground transition-colors"
-            >
-              Privacy
-            </a>
-            <a 
-              href="/terms" 
-              className="hover:text-foreground transition-colors"
-            >
-              Terms
-            </a>
-            <a 
-              href="/accessibility" 
-              className="hover:text-foreground transition-colors"
-            >
-              Accessibility
-            </a>
-          </div>
+    <footer className="w-full bg-white dark:bg-[#0f172a] px-4 sm:px-6 lg:px-8 py-3 flex items-center justify-center">
+      <div className="max-w-7xl mx-auto w-full flex items-center justify-between gap-4 min-h-[44px] md:min-h-[56px]">
+        <p className="text-sm text-foreground/70 dark:text-foreground/70 whitespace-nowrap">
+          © 2026 Domu Match. All rights reserved.
+        </p>
+        <div className="flex items-center gap-4 text-sm flex-shrink-0">
+          <a 
+            href="/privacy" 
+            className="text-foreground/70 dark:text-foreground/70 hover:text-foreground dark:hover:text-foreground transition-colors whitespace-nowrap"
+          >
+            Privacy
+          </a>
+          <a 
+            href="/terms" 
+            className="text-foreground/70 dark:text-foreground/70 hover:text-foreground dark:hover:text-foreground transition-colors whitespace-nowrap"
+          >
+            Terms
+          </a>
+          <a 
+            href="/accessibility" 
+            className="text-foreground/70 dark:text-foreground/70 hover:text-foreground dark:hover:text-foreground transition-colors whitespace-nowrap"
+          >
+            Accessibility
+          </a>
         </div>
       </div>
     </footer>

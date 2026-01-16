@@ -49,3 +49,5 @@ If you see "EXISTS ✅" for the new user, the trigger is working correctly!
 
 
 
+
+

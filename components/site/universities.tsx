@@ -163,7 +163,7 @@ export function Universities() {
               onOpenChange={setSelectOpen}
               disabled={loadingCities}
             >
-              <SelectTrigger className="w-full border-2 border-brand-primary focus:border-brand-primary focus:ring-2 focus:ring-brand-primary [&>span]:flex-1 [&>span]:text-center">
+              <SelectTrigger className="w-full border-2 border-brand-primary focus:border-brand-primary focus:ring-2 focus:ring-brand-primary [&>span]:flex-1 [&>span]:text-center [&>span[data-placeholder]]:text-gray-600">
                 <SelectValue placeholder={t.selectCityPlaceholder} />
               </SelectTrigger>
               <SelectContent disableScrollLock>

@@ -84,7 +84,7 @@ export function BottomTabBar({ user }: BottomTabBarProps) {
 
 	return (
 		<nav className="fixed bottom-0 left-0 right-0 z-40 border-t border-border-subtle bg-bg-surface/95 dark:bg-bg-surface/95 backdrop-blur supports-[backdrop-filter]:bg-bg-surface/80 dark:supports-[backdrop-filter]:bg-bg-surface/80 md:hidden pb-safe-bottom">
-			<ul className="pt-safe-top grid grid-cols-4 h-16 w-full">
+			<ul className="pt-safe-top grid grid-cols-4 h-20 w-full">
 				{tabs.map((tab) => {
 					const isActive = pathname === tab.href || pathname.startsWith(tab.href + '/')
 					const Icon = tab.icon
@@ -93,7 +93,7 @@ export function BottomTabBar({ user }: BottomTabBarProps) {
 							<Link
 								href={tab.href}
 								className={cn(
-									'flex h-full w-full flex-col items-center justify-center gap-1 text-xs',
+									'flex h-full w-full flex-col items-center justify-center gap-1.5 text-sm',
 									isActive
 										? 'text-semantic-accent'
 										: 'text-text-muted hover:text-text-secondary',
@@ -101,7 +101,7 @@ export function BottomTabBar({ user }: BottomTabBarProps) {
 								aria-current={isActive ? 'page' : undefined}
 							>
 								<div className="relative flex items-center justify-center">
-									<Icon className="h-5 w-5" />
+									<Icon className="h-6 w-6" />
 									{tab.badge && unreadChatCount > 0 && (
 										<span className="absolute -top-1 -right-2 min-w-[18px] h-[18px] rounded-full bg-semantic-danger text-white text-[10px] leading-[18px] px-1 text-center">
 											{unreadChatCount > 99 ? '99+' : unreadChatCount}

@@ -3,11 +3,11 @@
 import { Card, CardContent } from '@/components/ui/card'
 import Container from '@/components/ui/primitives/container'
 import Section from '@/components/ui/primitives/section'
-import { 
-  Brain, 
-  Filter, 
-  MessageSquare, 
-  ShieldCheck, 
+import {
+  Brain,
+  Filter,
+  MessageSquare,
+  ShieldCheck,
   Building2
 } from 'lucide-react'
 import { motion } from 'framer-motion'
@@ -59,6 +59,7 @@ const content = {
         gradient: "from-indigo-500/20 via-blue-500/20 to-purple-500/20",
         iconGradient: "from-indigo-500 to-blue-600"
       }
+
     ]
   },
   nl: {
@@ -106,6 +107,7 @@ const content = {
         gradient: "from-indigo-500/20 via-blue-500/20 to-purple-500/20",
         iconGradient: "from-indigo-500 to-blue-600"
       }
+
     ]
   }
 }
@@ -113,7 +115,7 @@ const content = {
 export function Features() {
   const { locale } = useApp()
   const t = content[locale]
-  
+
   const containerVariants = {
     hidden: { opacity: 0 },
     visible: {
@@ -131,7 +133,7 @@ export function Features() {
       y: 0,
       transition: {
         duration: 0.6,
-        ease: [0.22, 1, 0.36, 1]
+        ease: "easeOut"
       }
     }
   }
@@ -152,7 +154,7 @@ export function Features() {
   return (
     <Section className="relative overflow-hidden bg-white">
       <Container>
-        <motion.div 
+        <motion.div
           className="text-center mb-12"
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
@@ -167,7 +169,7 @@ export function Features() {
           </p>
         </motion.div>
 
-        <motion.div 
+        <motion.div
           className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
           variants={containerVariants}
           initial="hidden"
@@ -187,24 +189,24 @@ export function Features() {
                   whileHover={{ scale: 1.02 }}
                   transition={{ duration: 0.2 }}
                 >
-                    <Card className="h-full rounded-2xl border border-brand-border/50 bg-white/80 backdrop-blur-sm shadow-elev-1 hover:shadow-elev-2 transition-all duration-200 overflow-hidden">
-                      <CardContent className="p-6 md:p-8 h-full flex flex-col min-h-[280px]">
-                        <div className="flex items-center mb-6">
-                          <div className={`h-14 w-14 bg-gradient-to-br ${feature.iconGradient} rounded-xl flex items-center justify-center shadow-md group-hover:shadow-lg transition-shadow duration-200`}>
-                            <Icon className="h-7 w-7 text-white" />
-                          </div>
+                  <Card className="h-full rounded-2xl border border-brand-border/50 bg-white/80 backdrop-blur-sm shadow-elev-1 hover:shadow-elev-2 transition-all duration-200 overflow-hidden">
+                    <CardContent className="p-6 md:p-8 h-full flex flex-col min-h-[280px]">
+                      <div className="flex items-center mb-6">
+                        <div className={`h-14 w-14 bg-gradient-to-br ${feature.iconGradient} rounded-xl flex items-center justify-center shadow-md group-hover:shadow-lg transition-shadow duration-200`}>
+                          <Icon className="h-7 w-7 text-white" />
                         </div>
-                        
-                        <div className="flex-1 flex flex-col">
-                          <h3 className="text-xl md:text-2xl font-bold text-brand-text mb-4">
-                            {feature.title}
-                          </h3>
-                          <p className="text-base text-brand-muted leading-relaxed flex-1">
-                            {feature.description}
-                          </p>
-                        </div>
-                      </CardContent>
-                    </Card>
+                      </div>
+
+                      <div className="flex-1 flex flex-col">
+                        <h3 className="text-xl md:text-2xl font-bold text-brand-text mb-4">
+                          {feature.title}
+                        </h3>
+                        <p className="text-base text-brand-muted leading-relaxed flex-1">
+                          {feature.description}
+                        </p>
+                      </div>
+                    </CardContent>
+                  </Card>
                 </motion.div>
               </motion.div>
             )

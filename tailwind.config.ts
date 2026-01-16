@@ -31,6 +31,15 @@ const config: Config = {
         'semantic-danger': "hsl(var(--danger))",
         'semantic-warning': "hsl(var(--warning))",
         'semantic-success': "hsl(var(--success))",
+        // Chat-specific semantic color tokens
+        'chat-bg-primary': "hsl(var(--chat-bg-primary))",
+        'chat-bg-secondary': "hsl(var(--chat-bg-secondary))",
+        'chat-surface': "hsl(var(--chat-surface))",
+        'chat-surface-sent': "hsl(var(--chat-surface-sent))",
+        'chat-text-primary': "hsl(var(--chat-text-primary))",
+        'chat-text-secondary': "hsl(var(--chat-text-secondary))",
+        'chat-border': "hsl(var(--chat-border))",
+        'chat-online': "hsl(var(--chat-online))",
         brand: {
           primary: '#7a3bb6',        // Purple
           primaryHover: '#6a32a0',   // Darker purple

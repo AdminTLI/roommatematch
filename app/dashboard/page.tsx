@@ -160,9 +160,10 @@ async function fetchDashboardData(userId: string): Promise<DashboardData> {
   }
 
   try {
-    // Fetch non-expired pair suggestions where user is a member.
+    // Fetch non-expired confirmed pair matches where user is a member.
     // We deduplicate by other user ID so repeated suggestions
     // for the same pair do not inflate the match count.
+    // Only includes matches where both users have accepted (status = 'confirmed').
     const now = new Date().toISOString()
     const sevenDaysAgo = new Date()
     sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7)
@@ -172,7 +173,7 @@ async function fetchDashboardData(userId: string): Promise<DashboardData> {
       .select('id, member_ids, fit_score, created_at, status, expires_at')
       .eq('kind', 'pair')
       .contains('member_ids', [userId])
-      .neq('status', 'rejected')
+      .eq('status', 'confirmed') // Only show confirmed matches where both users have accepted
       .gte('expires_at', now)
 
     if (error) {
@@ -286,31 +287,75 @@ async function fetchDashboardData(userId: string): Promise<DashboardData> {
   }
 
   try {
-    // Fetch recent match suggestions (ordered by created_at, most recent first)
+    // Fetch recent pending match suggestions (ordered by created_at, most recent first)
+    // Only show pending suggestions (not yet responded to)
+    // IMPORTANT: We must filter out matches where the user has already accepted
+    // These should appear in the "pending" tab (waiting for other user), not on the dashboard
     const now = new Date().toISOString()
-    const { data: suggestions } = await supabase
+    const { data: suggestions, error: suggestionsError } = await supabase
       .from('match_suggestions')
       .select(`
         id,
         member_ids,
         fit_score,
         fit_index,
-        created_at
+        created_at,
+        accepted_by,
+        status,
+        expires_at
       `)
       .eq('kind', 'pair')
       .contains('member_ids', [userId])
-      .neq('status', 'rejected')
+      .eq('status', 'pending') // Only show pending suggestions (not yet responded to)
       .gte('expires_at', now) // Only non-expired suggestions
       .order('created_at', { ascending: false }) // Most recent first
       .limit(20) // Get enough records to deduplicate and find 3 most recent
 
+    if (suggestionsError) {
+      console.error('[Dashboard] Error fetching match suggestions:', suggestionsError)
+    }
+
     if (suggestions && suggestions.length > 0) {
       // Extract other user IDs and deduplicate by keeping most recent
       // Map: otherUserId -> { created_at }
+      // Also filter out suggestions where user has already accepted (they should go to pending tab, not suggested)
       const matchMap = new Map<string, string>() // Map userId -> created_at
+      let filteredCount = 0
       suggestions.forEach((s: any) => {
         const memberIds = s.member_ids as string[]
-        if (!memberIds || memberIds.length !== 2) return
+        if (!memberIds || memberIds.length !== 2) {
+          console.warn('[Dashboard] Invalid member_ids in suggestion:', s.id, memberIds)
+          return
+        }
+        
+        // CRITICAL FILTER: Skip if user has already accepted this suggestion
+        // These matches should appear in the "pending" tab (waiting for other user's response),
+        // NOT in the dashboard or "suggested" tab
+        const acceptedBy = s.accepted_by || []
+        if (Array.isArray(acceptedBy) && acceptedBy.includes(userId)) {
+          if (process.env.NODE_ENV === 'development') {
+            console.log('[Dashboard] Filtering out accepted suggestion:', {
+              suggestionId: s.id,
+              userId,
+              acceptedBy,
+              status: s.status
+            })
+          }
+          filteredCount++
+          return
+        }
+        
+        // Additional safety check: if status is not pending, skip it
+        if (s.status !== 'pending') {
+          if (process.env.NODE_ENV === 'development') {
+            console.warn('[Dashboard] Unexpected non-pending status in query results:', {
+              suggestionId: s.id,
+              status: s.status,
+              userId
+            })
+          }
+          return
+        }
         
         const otherUserId = memberIds[0] === userId ? memberIds[1] : memberIds[0]
         
@@ -320,6 +365,10 @@ async function fetchDashboardData(userId: string): Promise<DashboardData> {
           matchMap.set(otherUserId, s.created_at)
         }
       })
+
+      if (process.env.NODE_ENV === 'development' && filteredCount > 0) {
+        console.log('[Dashboard] Filtered out accepted suggestions:', filteredCount)
+      }
 
       // Get the 3 most recent unique matches (sorted by created_at)
       const recentMatches = Array.from(matchMap.entries())
@@ -347,8 +396,14 @@ async function fetchDashboardData(userId: string): Promise<DashboardData> {
               // The function returns a table (array), get the first row
               const result = Array.isArray(data) && data.length > 0 ? data[0] : (data || {})
               const compatibilityScore = Number(result.compatibility_score || 0)
+              const harmonyScore = result?.harmony_score != null && result?.harmony_score !== undefined
+                ? Number(result.harmony_score)
+                : 0
+              const contextScore = result?.context_score != null && result?.context_score !== undefined
+                ? Number(result.context_score)
+                : 0
               
-              return { userId: otherUserId, score: compatibilityScore }
+              return { userId: otherUserId, score: compatibilityScore, harmonyScore, contextScore }
             } catch (error) {
               console.error(`Error computing compatibility score for ${otherUserId}:`, error)
               return { userId: otherUserId, score: 0 }
@@ -356,14 +411,18 @@ async function fetchDashboardData(userId: string): Promise<DashboardData> {
           })
         )
 
-        // Create a map of userId to score for easy lookup
+        // Create maps for easy lookup
         const scoreMap = new Map(compatibilityScores.map(m => [m.userId, m.score]))
+        const harmonyScoreMap = new Map(compatibilityScores.map(m => [m.userId, (m as any).harmonyScore]))
+        const contextScoreMap = new Map(compatibilityScores.map(m => [m.userId, (m as any).contextScore]))
 
         // Maintain the order from recentMatches (most recent first) and add scores
         const recentEntries = recentMatches.map(({ userId, created_at }) => ({
           userId,
           created_at,
-          score: scoreMap.get(userId) || 0
+          score: scoreMap.get(userId) || 0,
+          harmonyScore: harmonyScoreMap.get(userId),
+          contextScore: contextScoreMap.get(userId)
         }))
 
         if (recentEntries.length > 0) {
@@ -413,7 +472,7 @@ async function fetchDashboardData(userId: string): Promise<DashboardData> {
             return str.replace(/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/gi, '').trim()
           }
           
-          topMatches = recentEntries.map(({ userId: otherUserId, score: compatibilityScore }) => {
+          topMatches = recentEntries.map(({ userId: otherUserId, score: compatibilityScore, harmonyScore, contextScore }) => {
           const profile = profiles?.find((p: any) => p.user_id === otherUserId)
           const programName = programMap.get(otherUserId)
           
@@ -442,6 +501,8 @@ async function fetchDashboardData(userId: string): Promise<DashboardData> {
             id: otherUserId, // Use userId as id since we don't have suggestion id anymore
             name: safeName,
             score: compatibilityScore, // Use new algorithm's compatibility_score (0-1 range)
+            harmonyScore: harmonyScore != null && harmonyScore !== undefined ? Number(harmonyScore) : 0,
+            contextScore: contextScore != null && contextScore !== undefined ? Number(contextScore) : 0,
             program: safeProgram,
             university: safeUniversity,
             avatar: undefined

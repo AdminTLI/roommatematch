@@ -15,12 +15,14 @@ const navigationContent = {
     { name: 'How it works', href: '/how-it-works' },
     { name: 'Features', href: '/features' },
     { name: 'Universities', href: '/universities' },
+
     { name: 'About us', href: '/about' },
   ],
   nl: [
     { name: 'Hoe het werkt', href: '/how-it-works' },
     { name: 'Functies', href: '/features' },
     { name: 'Universiteiten', href: '/universities' },
+
     { name: 'Over ons', href: '/about' },
   ]
 }
@@ -41,7 +43,7 @@ export function Navbar() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
   const [mounted, setMounted] = useState(false)
   const { locale } = useApp()
-  
+
   // Only access locale-dependent content after mount to prevent hydration mismatch
   const navigation = mounted ? navigationContent[locale] : navigationContent['en']
   const buttons = mounted ? buttonContent[locale] : buttonContent['en']
@@ -58,7 +60,7 @@ export function Navbar() {
     } else {
       document.body.style.overflow = ''
     }
-    
+
     // Cleanup on unmount
     return () => {
       document.body.style.overflow = ''
@@ -72,7 +74,7 @@ export function Navbar() {
   const handleSignIn = () => {
     router.push('/auth/sign-in')
   }
-  
+
   const handleCloseMenu = () => {
     setIsMobileMenuOpen(false)
   }
@@ -84,26 +86,26 @@ export function Navbar() {
   return (
     <>
       {/* Skip link */}
-      <a 
-        href="#main-content" 
+      <a
+        href="#main-content"
         className="sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 z-50 bg-brand-primary text-white px-4 py-2 rounded-md"
       >
         Skip to main content
       </a>
 
-      <nav className="h-16 md:h-20 bg-white/95 dark:bg-gray-900/95 backdrop-blur-sm border-b border-brand-border fixed top-0 left-0 right-0 z-50 w-full">
+      <nav className="h-16 md:h-20 bg-white fixed top-0 left-0 right-0 z-50 w-full">
         <Container className="h-full">
           <div className="flex items-center justify-between h-full py-0">
             {/* Logo */}
-            <Link 
+            <Link
               href="/"
               className="flex items-center space-x-2.5 hover:opacity-80 transition-opacity flex-shrink-0 h-full"
             >
               {/* Logo Image - will show if file exists, otherwise fallback to text */}
               <div className="relative h-8 w-8 md:h-10 md:w-10 flex-shrink-0 hidden sm:block">
-                <Image 
-                  src="/images/logo.png" 
-                  alt="Domu Match" 
+                <Image
+                  src="/images/logo.png"
+                  alt="Domu Match"
                   fill
                   className="object-contain rounded-lg"
                   priority
@@ -111,7 +113,7 @@ export function Navbar() {
                   onError={(e) => {
                     // Hide image container if logo fails to load
                     const target = e.target as HTMLElement;
-                    const container = target.closest('.relative');
+                    const container = target.closest('.relative') as HTMLElement;
                     if (container) {
                       container.style.display = 'none';
                     }
@@ -140,15 +142,13 @@ export function Navbar() {
               <div className="flex items-center h-full">
                 <LanguageSwitcher variant="minimal" />
               </div>
-              <Button 
-                variant="outline" 
-                size="lg"
+              <button
                 onClick={handleSignIn}
-                className="h-10"
+                className="inline-flex items-center justify-center font-medium rounded-2xl transition-all h-10 px-6 text-base bg-white text-gray-900 border border-gray-300 hover:bg-primary hover:text-white hover:border-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:opacity-60 disabled:pointer-events-none whitespace-nowrap"
               >
                 <span suppressHydrationWarning>{buttons.signIn}</span>
-              </Button>
-              <Button 
+              </button>
+              <Button
                 variant="primary"
                 size="lg"
                 onClick={handleGetStarted}
@@ -194,12 +194,12 @@ export function Navbar() {
 
       {/* Mobile menu - outside nav to avoid stacking context issues */}
       {isMobileMenuOpen && (
-        <div 
+        <div
           id="mobile-menu"
           className="lg:hidden fixed inset-x-0 bg-white z-[70] shadow-2xl rounded-2xl animate-in slide-in-from-top duration-300"
-          style={{ 
-            top: '72px', 
-            maxHeight: 'calc(100vh - 72px - 1rem)', 
+          style={{
+            top: '72px',
+            maxHeight: 'calc(100vh - 72px - 1rem)',
             marginTop: '0.5rem',
             marginBottom: '1rem',
             marginLeft: '1rem',
@@ -238,24 +238,22 @@ export function Navbar() {
                 <ArrowRight className="h-4 w-4 text-gray-400 group-hover:text-brand-primary group-hover:translate-x-1 transition-all duration-200" />
               </Link>
             ))}
-            
+
             {/* Divider */}
             <div className="my-6 border-t border-gray-100" />
-            
+
             {/* Action Buttons */}
             <div className="space-y-3">
-              <Button 
-                variant="outline" 
-                size="lg"
-                className="w-full justify-center h-12 text-base font-semibold border-2 border-gray-200 hover:bg-gray-50 hover:border-gray-300 transition-all duration-200"
+              <button
+                className="inline-flex items-center justify-center font-medium rounded-2xl transition-all w-full justify-center h-12 px-6 text-base font-semibold bg-white text-gray-900 border-2 border-gray-300 hover:bg-primary hover:text-white hover:border-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:opacity-60 disabled:pointer-events-none whitespace-nowrap"
                 onClick={() => {
                   handleSignIn()
                   handleCloseMenu()
                 }}
               >
                 <span suppressHydrationWarning>{buttons.signIn}</span>
-              </Button>
-              <Button 
+              </button>
+              <Button
                 variant="primary"
                 size="lg"
                 className="w-full justify-center h-12 text-base font-semibold shadow-lg hover:shadow-xl transition-all duration-200 hover:scale-[1.02] active:scale-[0.98]"

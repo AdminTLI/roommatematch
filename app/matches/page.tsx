@@ -43,12 +43,28 @@ export default async function MatchesPage() {
     redirect('/auth/sign-in')
   }
 
+  // Get first name from profile for the greeting
+  const { data: profile } = await supabase
+    .from('profiles')
+    .select('first_name')
+    .eq('user_id', user.id)
+    .maybeSingle()
+
+  // Create user object with name and first name for StudentMatchesInterface
+  const userWithName = {
+    id: user.id,
+    email: user.email || '',
+    name: userProfile.name,
+    firstName: profile?.first_name || userProfile.name?.split(' ')[0] || 'Student',
+    avatar: userProfile.avatar,
+  }
+
   return (
     <AppShell 
       user={userProfile}
       showQuestionnairePrompt={true}
     >
-      <StudentMatchesInterface user={user} />
+      <StudentMatchesInterface user={userWithName} />
     </AppShell>
   )
 }

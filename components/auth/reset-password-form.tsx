@@ -26,9 +26,9 @@ export function ResetPasswordForm() {
     setError('')
 
     try {
-      // Use callback route - Supabase's verify endpoint will redirect here with a code
-      // The callback route will detect password reset and redirect to confirm page
-      const redirectTo = `${window.location.origin}/auth/callback?redirect=${encodeURIComponent('/auth/reset-password/confirm')}`
+      // Point directly to the confirm page - it handles code exchange itself
+      // This bypasses the callback route which was defaulting to dashboard
+      const redirectTo = `${window.location.origin}/auth/reset-password/confirm`
       
       console.log('Attempting to send password reset email:', {
         email,
@@ -60,18 +60,18 @@ export function ResetPasswordForm() {
 
   if (success) {
     return (
-      <Card className="w-full">
+      <Card className="w-full bg-white border-gray-200 shadow-md">
         <CardHeader className="text-center">
           <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-green-100">
             <Mail className="h-6 w-6 text-green-600" />
           </div>
-          <CardTitle className="text-2xl">Check your email</CardTitle>
-          <CardDescription>
-            We've sent password reset instructions to <strong>{email}</strong>
+          <CardTitle className="text-2xl text-black">Check your email</CardTitle>
+          <CardDescription className="text-gray-700">
+            We've sent password reset instructions to <strong className="text-black">{email}</strong>
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
-          <p className="text-sm text-muted-foreground text-center">
+          <p className="text-sm text-gray-600 text-center">
             Click the link in the email to reset your password. The link will expire in 1 hour.
           </p>
           <div className="flex flex-col gap-2">
@@ -83,7 +83,7 @@ export function ResetPasswordForm() {
             </Button>
             <Button
               variant="outline"
-              className="w-full"
+              className="w-full !text-gray-800"
               onClick={() => {
                 setSuccess(false)
                 setEmail('')
@@ -98,10 +98,10 @@ export function ResetPasswordForm() {
   }
 
   return (
-    <Card className="w-full">
+    <Card className="w-full bg-white border-gray-200 shadow-md">
       <CardHeader className="text-center">
-        <CardTitle className="text-2xl">Reset your password</CardTitle>
-        <CardDescription>
+        <CardTitle className="text-2xl text-black">Reset your password</CardTitle>
+        <CardDescription className="text-gray-700">
           Enter your email address and we'll send you a link to reset your password
         </CardDescription>
       </CardHeader>
@@ -114,16 +114,16 @@ export function ResetPasswordForm() {
 
         <form onSubmit={handleResetPassword} className="space-y-4">
           <div className="space-y-2">
-            <Label htmlFor="email">Email</Label>
+            <Label htmlFor="email" className="text-black">Email</Label>
             <div className="relative">
-              <Mail className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+              <Mail className="absolute left-3 top-3 h-4 w-4 text-gray-500" />
               <Input
                 id="email"
                 type="email"
                 placeholder="Enter your email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="pl-10"
+                className="pl-10 text-gray-900 placeholder:text-gray-400"
                 required
               />
             </div>

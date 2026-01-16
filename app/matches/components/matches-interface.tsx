@@ -8,6 +8,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Badge } from '@/components/ui/badge'
 import { MatchCard } from '@/app/(components)/match-card'
 import { GroupSuggestionCard } from '@/app/(components)/group-suggestion-card'
+import { DiscoveryCard } from '@/app/dashboard/components/discovery-card'
+import { motion } from 'framer-motion'
 import { createClient } from '@/lib/supabase/client'
 import { User } from '@supabase/supabase-js'
 import { 
@@ -186,6 +188,58 @@ export function MatchesInterface({ user }: MatchesInterfaceProps) {
     router.push(`/chat/${matchId}`)
   }
 
+  const handleConnect = async (matchId: string) => {
+    await handleAcceptMatch(matchId)
+    router.push(`/chat?userId=${matchId}`)
+  }
+
+  // Generate compatibility highlights from match data
+  const generateCompatibilityHighlights = (match: Match): string[] => {
+    const highlights: string[] = []
+    
+    if (match.top_alignment) {
+      const alignmentLabels: { [key: string]: string } = {
+        'personality': 'Personality',
+        'schedule': 'Schedule',
+        'lifestyle': 'Lifestyle',
+        'social': 'Social preferences',
+        'academic': 'Academic goals'
+      }
+      highlights.push(`Strong alignment on ${alignmentLabels[match.top_alignment] || match.top_alignment}`)
+    }
+    
+    if (match.harmony_score !== null && match.harmony_score !== undefined && match.harmony_score >= 0.7) {
+      highlights.push('Excellent day-to-day living compatibility')
+    }
+    
+    if (match.context_score !== null && match.context_score !== undefined && match.context_score >= 0.7) {
+      highlights.push('Similar academic background and goals')
+    }
+    
+    if (match.academic_details?.program_affinity) {
+      highlights.push('Same study program')
+    } else if (match.academic_details?.university_affinity) {
+      highlights.push('Same university')
+    }
+    
+    if (match.schedule_score >= 0.7) {
+      highlights.push('Compatible daily schedules')
+    }
+    
+    if (match.lifestyle_score >= 0.7) {
+      highlights.push('Similar lifestyle preferences')
+    }
+    
+    // Ensure we have at least 3 highlights, use defaults if needed
+    while (highlights.length < 3) {
+      if (highlights.length === 0) highlights.push('Similar lifestyle preferences')
+      else if (highlights.length === 1) highlights.push('Compatible schedules')
+      else highlights.push('Shared interests')
+    }
+    
+    return highlights.slice(0, 3)
+  }
+
   const handleAcceptGroup = async (groupId: string) => {
     try {
       console.log('Accepting group:', groupId)
@@ -201,10 +255,10 @@ export function MatchesInterface({ user }: MatchesInterfaceProps) {
 
   if (isLoading) {
     return (
-      <div className="max-w-6xl mx-auto">
+      <div className="space-y-8 pb-24 md:pb-6">
         <div className="animate-pulse space-y-6">
           <div className="h-8 bg-bg-surface-alt rounded w-1/4"></div>
-          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 auto-rows-fr">
             {[1, 2, 3].map((i) => (
               <div key={i} className="h-96 bg-bg-surface-alt rounded-lg"></div>
             ))}
@@ -215,7 +269,7 @@ export function MatchesInterface({ user }: MatchesInterfaceProps) {
   }
 
   return (
-    <div className="max-w-6xl mx-auto px-4 sm:px-6">
+    <div className="space-y-8 pb-24 md:pb-6">
       {/* Header */}
       <div className="mb-6 sm:mb-8">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-4">
@@ -271,7 +325,7 @@ export function MatchesInterface({ user }: MatchesInterfaceProps) {
                 <div>
                   <div className="text-2xl font-bold">
                     {individualMatches.length > 0 ? 
-                      Math.round(Math.max(...individualMatches.map(m => m.compatibility)) * 100) : 0}%
+                      Math.round(Math.max(...individualMatches.map(m => m.compatibility_score)) * 100) : 0}%
                   </div>
                   <div className="text-sm text-text-muted">Best Match</div>
                 </div>
@@ -320,37 +374,28 @@ export function MatchesInterface({ user }: MatchesInterfaceProps) {
               </CardContent>
             </Card>
           ) : (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 auto-rows-fr">
               {individualMatches.map((match) => (
-                <MatchCard
+                <motion.div
                   key={match.match_user_id}
-                  id={match.match_user_id}
-                  name={match.name}
-                  university={match.university_name}
-                  program={match.program_name}
-                  degreeLevel={match.degree_level}
-                  budgetBand={`€${match.budget_min}-€${match.budget_max}`}
-                  compatibility={match.compatibility_score}
-                  compatibilityBreakdown={{
-                    personality: match.personality_score,
-                    schedule: match.schedule_score,
-                    lifestyle: match.lifestyle_score,
-                    social: match.social_score,
-                    academic: match.academic_bonus
-                  }}
-                  harmonyScore={match.harmony_score}
-                  contextScore={match.context_score}
-                  dimensionScores={match.dimension_scores_json}
-                  isValidMatch={match.is_valid_match}
-                  topAlignment={match.top_alignment as any}
-                  watchOut={match.watch_out}
-                  houseRulesSuggestion={match.house_rules_suggestion}
-                  academicBonuses={match.academic_details}
-                  onAccept={handleAcceptMatch}
-                  onReject={handleRejectMatch}
-                  onViewProfile={handleViewProfile}
-                  onStartChat={handleStartChat}
-                />
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.3 }}
+                  className="h-full"
+                >
+                  <DiscoveryCard
+                    profile={{
+                      id: match.match_user_id,
+                      matchPercentage: Math.round(match.compatibility_score * 100),
+                      harmonyScore: match.harmony_score !== null && match.harmony_score !== undefined ? match.harmony_score : 0,
+                      contextScore: match.context_score !== null && match.context_score !== undefined ? match.context_score : 0,
+                      compatibilityHighlights: generateCompatibilityHighlights(match),
+                      dimensionScores: match.dimension_scores_json || null
+                    }}
+                    onSkip={handleRejectMatch}
+                    onConnect={handleConnect}
+                  />
+                </motion.div>
               ))}
             </div>
           )}
@@ -376,14 +421,15 @@ export function MatchesInterface({ user }: MatchesInterfaceProps) {
                 <GroupSuggestionCard
                   key={group.group_id}
                   id={group.group_id}
-                  memberCount={group.member_count}
                   averageCompatibility={group.compatibility_score}
                   members={group.members.map(member => ({
                     id: member.user_id,
                     name: member.name,
-                    university: member.university,
-                    program: member.program
+                    compatibility: group.compatibility_score
                   }))}
+                  constraints={[]}
+                  benefits={[]}
+                  watchOuts={[]}
                   onAccept={handleAcceptGroup}
                   onOpenGroup={handleOpenGroup}
                 />

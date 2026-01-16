@@ -13,6 +13,7 @@ export function SessionTrackerProvider({ children }: { children: React.ReactNode
   const pathname = usePathname()
   const supabaseRef = useRef(createClient())
   const initializedRef = useRef(false)
+  const lastTrackedPathRef = useRef<string | null>(null)
 
   useEffect(() => {
     // Get current user and initialize session tracking (only once)
@@ -40,6 +41,11 @@ export function SessionTrackerProvider({ children }: { children: React.ReactNode
   // Track page views when pathname changes
   useEffect(() => {
     if (pathname && initializedRef.current) {
+      // Skip if we've already tracked this pathname (prevents duplicate tracking in React Strict Mode)
+      if (lastTrackedPathRef.current === pathname) {
+        return
+      }
+
       const trackView = async () => {
         try {
           const { data: { user } } = await supabaseRef.current.auth.getUser()
@@ -47,11 +53,16 @@ export function SessionTrackerProvider({ children }: { children: React.ReactNode
           const fullUrl = typeof window !== 'undefined' 
             ? window.location.href 
             : pathname
-          trackPageView(fullUrl, user?.id, {
+          
+          await trackPageView(fullUrl, user?.id, {
             timestamp: new Date().toISOString()
           })
+          
+          // Mark this pathname as tracked
+          lastTrackedPathRef.current = pathname
         } catch (error) {
-          // Silently fail - don't break the app if tracking fails
+          // Silently fail - trackUserJourneyEvent already handles rate limiting gracefully
+          // Don't break the app if tracking fails
         }
       }
       trackView()

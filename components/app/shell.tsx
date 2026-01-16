@@ -2,7 +2,7 @@
 
 import { motion, AnimatePresence } from 'framer-motion'
 import { TopNav } from './TopNav'
-import { Sidebar } from './sidebar'
+import { FloatingDock } from './navigation/floating-dock'
 import { BottomTabBar } from './BottomTabBar'
 import { useState } from 'react'
 import { useEffect } from 'react'
@@ -42,7 +42,7 @@ export function AppShell({ children, user, showQuestionnairePrompt = false, hide
     needsPersonaVerification: boolean
   } | null>(null)
   const [isLoadingVerification, setIsLoadingVerification] = useState(true)
-  
+
   // Hide banner on verify page
   const isVerifyPage = pathname === '/verify' || pathname?.startsWith('/verify')
 
@@ -85,7 +85,7 @@ export function AppShell({ children, user, showQuestionnairePrompt = false, hide
         setShowQuestionnaire(!demoCompleted)
         return
       }
-      
+
       // Real user: check database
       const supabase = createClient()
       const { data, error } = await supabase
@@ -125,19 +125,18 @@ export function AppShell({ children, user, showQuestionnairePrompt = false, hide
 
   return (
     <ThemeProvider>
-      <div className="min-h-screen bg-bg-body dark:bg-bg-body safe-area-inset">
-        <div className="flex min-h-screen lg:h-screen">
-          {/* Sidebar - hidden on mobile */}
-          <aside className="hidden lg:block lg:w-64 lg:flex-shrink-0">
-            <Sidebar user={user} />
-          </aside>
-          
+      <div className="min-h-screen bg-transparent safe-area-inset">
+        <div className="flex min-h-screen flex-col">
           {/* Main content area */}
-          <div className="flex-1 flex flex-col overflow-hidden">
+          <div className="flex-1 flex flex-col overflow-hidden relative z-0">
             <TopNav user={user} />
+
+            {/* Floating Dock Navigation */}
+            <FloatingDock />
+
             {/* Verification Banner */}
             {showVerificationBanner && (
-              <div className="px-4 pt-4 pb-0 w-full max-w-full overflow-hidden">
+              <div className="px-4 pt-4 pb-0 w-full max-w-full overflow-hidden relative z-10">
                 <Alert variant="destructive" className="w-full border-amber-300 bg-amber-50 dark:bg-amber-900/20">
                   <AlertCircle className="h-4 w-4 text-amber-600" />
                   <AlertDescription className="text-amber-900 dark:text-amber-200">
@@ -147,7 +146,7 @@ export function AppShell({ children, user, showQuestionnairePrompt = false, hide
                           {needsEmailVerification ? 'Email verification required' : 'Identity verification required'}
                         </p>
                         <p className="text-sm">
-                          {needsEmailVerification 
+                          {needsEmailVerification
                             ? 'Please verify your email address to access all features.'
                             : 'Please complete identity verification to access all features.'}
                         </p>
@@ -175,8 +174,8 @@ export function AppShell({ children, user, showQuestionnairePrompt = false, hide
                 </Alert>
               </div>
             )}
-            <div className="flex-1 flex flex-col overflow-hidden">
-              <main className="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8 pb-safe-bottom md:pb-6 chat-page-main">
+            <div className="flex-1 flex flex-col overflow-hidden relative">
+              <main className="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8 pb-40 md:pb-40 chat-page-main">
                 <motion.div
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
@@ -184,15 +183,14 @@ export function AppShell({ children, user, showQuestionnairePrompt = false, hide
                   className="max-w-7xl mx-auto h-full"
                 >
                   {children}
+                  <div className="mt-4 mb-2">
+                    <AppFooter />
+                  </div>
                 </motion.div>
               </main>
-              <AppFooter />
             </div>
           </div>
         </div>
-
-        {/* Bottom mobile tabs - Hidden since sidebar works perfectly */}
-        {/* <BottomTabBar user={user} /> */}
 
         {/* Message Notification Popup */}
         <MessageNotificationPopup userId={user.id} />

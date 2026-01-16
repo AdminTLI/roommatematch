@@ -39,3 +39,5 @@ WHERE n1.type = 'match_created'
       AND n2.id != n1.id
   );
 
+
+

@@ -1,6 +1,7 @@
 import { z } from 'zod'
 import { getUserFriendlyError } from '@/lib/errors/user-friendly-messages'
 import { INTERESTS_LIST } from '@/lib/constants/interests'
+import { getHousingStatusKeys } from '@/lib/constants/housing-status'
 
 /**
  * Validation schema for profile updates
@@ -40,6 +41,18 @@ export const profileUpdateSchema = z.object({
         return interests.every(interest => INTERESTS_LIST.includes(interest as any))
       },
       { message: 'All interests must be from the predefined list' }
+    )
+    .optional()
+    .default([]),
+  
+  housingStatus: z.array(z.enum(['seeking_room', 'offering_room', 'team_up', 'exploring']))
+    .max(4, 'Maximum 4 housing statuses allowed (one of each)')
+    .refine(
+      (statuses) => {
+        // Ensure no duplicates
+        return new Set(statuses).size === statuses.length
+      },
+      { message: 'Duplicate housing statuses are not allowed' }
     )
     .optional()
     .default([]),

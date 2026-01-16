@@ -81,12 +81,25 @@ export async function GET(request: NextRequest) {
 
     // Verify match relationship
     // Check match_suggestions table first
-    const { data: matchSuggestion, error: suggestionError } = await admin
+    // Query for matches where the user is involved, then filter in memory for the target user
+    // This is more reliable than .contains() which may not work correctly for array contains checks
+    const { data: allSuggestions, error: suggestionError } = await admin
       .from('match_suggestions')
       .select('id, status, member_ids')
-      .contains('member_ids', [user.id, targetUserId])
+      .contains('member_ids', [user.id])
       .in('status', ['confirmed', 'accepted'])
-      .maybeSingle()
+    
+    if (suggestionError) {
+      safeLogger.warn('Error checking match suggestions', { error: suggestionError, userId: user.id, targetUserId })
+    }
+    
+    // Filter in memory to find matches with both users
+    const matchSuggestion = allSuggestions?.find((s: any) => {
+      const memberIds = s.member_ids as string[]
+      return Array.isArray(memberIds) && 
+             memberIds.includes(user.id) && 
+             memberIds.includes(targetUserId)
+    })
 
     // Also check matches table as fallback
     let hasMatch = false
@@ -106,6 +119,12 @@ export async function GET(request: NextRequest) {
     }
 
     if (!hasMatch) {
+      safeLogger.warn('No match found for user info access', { 
+        userId: user.id, 
+        targetUserId, 
+        chatId,
+        suggestionsChecked: allSuggestions?.length || 0
+      })
       return NextResponse.json(
         { error: 'You can only view info for matched users' },
         { status: 403 }
@@ -115,7 +134,7 @@ export async function GET(request: NextRequest) {
     // Fetch profile data
     const { data: profile, error: profileError } = await admin
       .from('profiles')
-      .select('first_name, last_name, bio, interests')
+      .select('first_name, last_name, bio, interests, housing_status')
       .eq('user_id', targetUserId)
       .maybeSingle()
 
@@ -134,12 +153,60 @@ export async function GET(request: NextRequest) {
       )
     }
 
+    // Fetch academic data with joins for university and program info
+    const { data: academicData, error: academicError } = await admin
+      .from('user_academic')
+      .select(`
+        university_id,
+        degree_level,
+        program_id,
+        study_start_year,
+        universities!user_academic_university_id_fkey (
+          name,
+          common_name
+        ),
+        programs!user_academic_program_id_fkey (
+          name,
+          name_en
+        )
+      `)
+      .eq('user_id', targetUserId)
+      .maybeSingle()
+
+    // Fetch study year from view
+    let studyYear: number | null = null
+    if (academicData) {
+      const { data: studyYearData, error: studyYearError } = await admin
+        .from('user_study_year_v')
+        .select('study_year')
+        .eq('user_id', targetUserId)
+        .maybeSingle()
+
+      if (!studyYearError && studyYearData) {
+        studyYear = studyYearData.study_year
+      } else if (academicData.study_start_year) {
+        // Fallback: calculate from study_start_year
+        const currentYear = new Date().getFullYear()
+        studyYear = currentYear - academicData.study_start_year
+      }
+    }
+
+    // Extract university and program names
+    const universityName = academicData?.universities?.name || academicData?.universities?.common_name || null
+    const programName = academicData?.programs?.name_en || academicData?.programs?.name || null
+    const degreeLevel = academicData?.degree_level || null
+
     // Return user info
     return NextResponse.json({
       first_name: profile.first_name || null,
       last_name: profile.last_name || null,
       bio: profile.bio || null,
-      interests: (profile.interests && Array.isArray(profile.interests)) ? profile.interests : []
+      interests: (profile.interests && Array.isArray(profile.interests)) ? profile.interests : [],
+      housing_status: (profile.housing_status && Array.isArray(profile.housing_status)) ? profile.housing_status : [],
+      university_name: universityName,
+      programme_name: programName,
+      degree_level: degreeLevel,
+      study_year: studyYear
     }, {
       headers: {
         'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate',
@@ -167,4 +234,6 @@ export async function GET(request: NextRequest) {
     )
   }
 }
+
+
 

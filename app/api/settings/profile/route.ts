@@ -33,7 +33,7 @@ export async function POST(request: Request) {
       }, { status: 400 })
     }
     
-    const { firstName, lastName, phone, bio, interests } = validationResult.data
+    const { firstName, lastName, phone, bio, interests, housingStatus } = validationResult.data
 
     // Check if user exists in users table using SERVICE ROLE (bypass RLS)
     const { createServiceClient } = await import('@/lib/supabase/service')
@@ -262,6 +262,7 @@ export async function POST(request: Request) {
         phone: phone || null,
         bio: bio || null,
         interests: interests && Array.isArray(interests) ? interests : [],
+        housing_status: housingStatus && Array.isArray(housingStatus) ? housingStatus : [],
         degree_level: academicData.degree_level,
         updated_at: new Date().toISOString()
       }, {

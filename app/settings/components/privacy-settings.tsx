@@ -7,11 +7,11 @@ import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Switch } from '@/components/ui/switch'
 import { Label } from '@/components/ui/label'
 import { Input } from '@/components/ui/input'
-import { 
-  Eye, 
-  EyeOff, 
-  Download, 
-  Trash2, 
+import {
+  Eye,
+  EyeOff,
+  Download,
+  Trash2,
   AlertTriangle,
   Loader2,
   Check,
@@ -42,7 +42,7 @@ export function PrivacySettings({ user }: PrivacySettingsProps) {
   const [deleteLoading, setDeleteLoading] = useState(false)
   const [pendingRequests, setPendingRequests] = useState<DSARRequest[]>([])
   const [deletionScheduled, setDeletionScheduled] = useState<string | null>(null)
-  
+
   const [privacySettings, setPrivacySettings] = useState({
     profileVisible: true,
     showInMatches: true,
@@ -62,7 +62,7 @@ export function PrivacySettings({ user }: PrivacySettingsProps) {
     try {
       // In a real app, this would save to a user preferences table
       await new Promise(resolve => setTimeout(resolve, 1000)) // Simulate API call
-      
+
       setIsSuccess(true)
       setTimeout(() => setIsSuccess(false), 3000)
     } catch (err) {
@@ -83,9 +83,9 @@ export function PrivacySettings({ user }: PrivacySettingsProps) {
       if (response.ok) {
         const data = await response.json()
         setPendingRequests(data.requests || [])
-        
+
         // Check for scheduled deletion
-        const deletionRequest = data.requests?.find((r: DSARRequest) => 
+        const deletionRequest = data.requests?.find((r: DSARRequest) =>
           r.request_type === 'deletion' && r.status === 'completed'
         )
         if (deletionRequest) {
@@ -101,7 +101,7 @@ export function PrivacySettings({ user }: PrivacySettingsProps) {
   const handleDownloadData = async () => {
     setExportLoading(true)
     setError(null)
-    
+
     try {
       const response = await fetch('/api/privacy/export', {
         method: 'GET',
@@ -131,7 +131,7 @@ export function PrivacySettings({ user }: PrivacySettingsProps) {
 
       setIsSuccess(true)
       setTimeout(() => setIsSuccess(false), 5000)
-      
+
       // Refresh pending requests
       await fetchPendingRequests()
     } catch (err) {
@@ -176,10 +176,10 @@ export function PrivacySettings({ user }: PrivacySettingsProps) {
       setDeletionScheduled(data.deletion_scheduled_at)
       setShowDeleteConfirm(false)
       setDeleteConfirmText('')
-      
+
       setIsSuccess(true)
       setTimeout(() => setIsSuccess(false), 10000)
-      
+
       // Refresh pending requests
       await fetchPendingRequests()
     } catch (err) {
@@ -202,135 +202,92 @@ export function PrivacySettings({ user }: PrivacySettingsProps) {
   }
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-10">
       {error && (
-        <Alert variant="destructive" className="mb-2">
+        <Alert variant="destructive" className="bg-red-500/10 border-red-500/20 text-red-600 dark:text-red-400">
           <AlertTriangle className="h-4 w-4" />
           <AlertDescription>{error}</AlertDescription>
         </Alert>
       )}
 
       {isSuccess && (
-        <Alert className="border-green-200 bg-green-50 mb-2">
-          <Check className="h-4 w-4 text-green-600" />
-          <AlertDescription className="text-green-800">
+        <Alert className="bg-emerald-500/10 border-emerald-500/20 text-emerald-600 dark:text-emerald-400">
+          <Check className="h-4 w-4" />
+          <AlertDescription>
             Privacy settings saved successfully!
           </AlertDescription>
         </Alert>
       )}
 
-      {/* Privacy Controls */}
-      <Card className="border-gray-200 dark:border-border-subtle">
-        <CardHeader className="pb-4">
-          <CardTitle className="flex items-center gap-3 text-xl">
-            <Eye className="w-5 h-5 text-gray-600 dark:text-text-secondary" />
-            Privacy Controls
-          </CardTitle>
-          <CardDescription className="text-base mt-2">
-            Control who can see your profile and contact you.
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-6 pt-2">
-          <div className="space-y-4 pt-2">
-            <div className="flex items-center justify-between py-3 border-b border-gray-100 dark:border-border-subtle">
-              <div className="space-y-1 flex-1 pr-4">
-                <Label className="text-sm font-medium">Make Profile Visible</Label>
-                <p className="text-sm text-gray-600 dark:text-text-muted">Allow other users to see your profile in search results</p>
+      {/* Privacy Controls Group */}
+      <div className="space-y-4">
+        <h3 className="text-sm font-medium text-zinc-600 dark:text-zinc-400 uppercase tracking-wider px-1">Privacy Controls</h3>
+        <div className="bg-white/80 dark:bg-zinc-900/40 border border-zinc-200 dark:border-white/10 rounded-2xl overflow-hidden divide-y divide-zinc-200 dark:divide-white/5 px-4 backdrop-blur-xl">
+          {[
+            { id: 'profileVisible', label: 'Make Profile Visible', desc: 'Allow other users to see your profile in search results' },
+            { id: 'showInMatches', label: 'Show in Matches', desc: 'Include your profile in roommate matching algorithm' },
+            { id: 'allowMessages', label: 'Allow Messages', desc: 'Let other users send you messages' },
+            { id: 'dataSharing', label: 'Data Sharing', desc: 'Allow anonymized data to be used for research' },
+          ].map((item) => (
+            <div key={item.id} className="py-4 flex items-center justify-between gap-4">
+              <div className="flex-1 min-w-0">
+                <Label className="text-zinc-900 dark:text-zinc-100 block mb-0.5 font-medium">{item.label}</Label>
+                <p className="text-xs text-zinc-600 dark:text-zinc-400 truncate">{item.desc}</p>
               </div>
               <Switch
-                checked={privacySettings.profileVisible}
-                onCheckedChange={(checked) => handlePrivacyChange('profileVisible', checked)}
+                checked={privacySettings[item.id as keyof typeof privacySettings]}
+                onCheckedChange={(checked) => handlePrivacyChange(item.id, checked)}
+                className="data-[state=checked]:bg-blue-500"
               />
             </div>
+          ))}
+        </div>
+      </div>
 
-            <div className="flex items-center justify-between py-3 border-b border-gray-100 dark:border-border-subtle">
-              <div className="space-y-1 flex-1 pr-4">
-                <Label className="text-sm font-medium">Show in Matches</Label>
-                <p className="text-sm text-gray-600 dark:text-text-muted">Include your profile in roommate matching algorithm</p>
-              </div>
-              <Switch
-                checked={privacySettings.showInMatches}
-                onCheckedChange={(checked) => handlePrivacyChange('showInMatches', checked)}
-              />
-            </div>
+      <div className="flex justify-end pt-2">
+        <Button
+          onClick={handleSavePrivacy}
+          disabled={isLoading}
+          className="w-full sm:w-auto min-w-[140px] h-11 text-base bg-blue-500 hover:bg-blue-600 text-white rounded-xl shadow-lg shadow-blue-500/20"
+        >
+          {isLoading ? (
+            <>
+              <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+              Saving...
+            </>
+          ) : (
+            'Save Settings'
+          )}
+        </Button>
+      </div>
 
-            <div className="flex items-center justify-between py-3 border-b border-gray-100 dark:border-border-subtle">
-              <div className="space-y-1 flex-1 pr-4">
-                <Label className="text-sm font-medium">Allow Messages</Label>
-                <p className="text-sm text-gray-600 dark:text-text-muted">Let other users send you messages</p>
-              </div>
-              <Switch
-                checked={privacySettings.allowMessages}
-                onCheckedChange={(checked) => handlePrivacyChange('allowMessages', checked)}
-              />
-            </div>
-
-            <div className="flex items-center justify-between py-3">
-              <div className="space-y-1 flex-1 pr-4">
-                <Label className="text-sm font-medium">Data Sharing</Label>
-                <p className="text-sm text-gray-600 dark:text-text-muted">Allow anonymized data to be used for research and improvements</p>
-              </div>
-              <Switch
-                checked={privacySettings.dataSharing}
-                onCheckedChange={(checked) => handlePrivacyChange('dataSharing', checked)}
-              />
-            </div>
-          </div>
-
-          <div className="flex justify-end pt-4 border-t border-gray-100 dark:border-border-subtle">
-            <Button 
-              onClick={handleSavePrivacy}
-              disabled={isLoading}
-              className="w-full sm:w-auto min-w-[140px] h-11 text-base"
-            >
-              {isLoading ? (
-                <>
-                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                  Saving...
-                </>
-              ) : (
-                'Save Settings'
-              )}
-            </Button>
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Data Management */}
-      <Card className="border-gray-200 dark:border-border-subtle">
-        <CardHeader className="pb-4">
-          <CardTitle className="flex items-center gap-3 text-xl">
-            <Download className="w-5 h-5 text-gray-600 dark:text-text-secondary" />
-            Data Management
-          </CardTitle>
-          <CardDescription className="text-base mt-2">
-            Download your data or manage your account.
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-6 pt-2">
+      {/* Data Management Group */}
+      <div className="space-y-4">
+        <h3 className="text-sm font-medium text-zinc-600 dark:text-zinc-400 uppercase tracking-wider px-1">Data Management</h3>
+        <div className="bg-white/80 dark:bg-zinc-900/40 border border-zinc-200 dark:border-white/10 rounded-2xl overflow-hidden p-6 space-y-6 backdrop-blur-xl">
           {getPendingExportRequest() && (
-            <Alert className="border-blue-200 dark:border-blue-800 bg-blue-50 dark:bg-blue-900/20">
-              <Clock className="h-4 w-4 text-blue-600 dark:text-blue-400" />
-              <AlertDescription className="text-blue-800 dark:text-blue-200">
-                <strong>Export in progress:</strong> Your data export request is being processed. 
+            <Alert className="bg-blue-500/10 border-blue-500/20 text-blue-600 dark:text-blue-400">
+              <Clock className="h-4 w-4" />
+              <AlertDescription>
+                <strong>Export in progress:</strong> Your data export request is being processed.
                 Estimated completion: {getDaysUntilDeadline(getPendingExportRequest()!.sla_deadline)} days.
               </AlertDescription>
             </Alert>
           )}
-          
-          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 p-6 border border-gray-200 dark:border-border-subtle rounded-lg bg-gray-50 dark:bg-bg-surface-alt">
-            <div className="flex-1">
-              <h4 className="font-semibold text-base mb-2 dark:text-text-primary">Download Your Data</h4>
-              <p className="text-sm text-gray-600 dark:text-text-muted">
+
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6 p-5 bg-zinc-50 dark:bg-zinc-900/60 rounded-xl border border-zinc-200 dark:border-white/5">
+            <div className="flex-1 min-w-0">
+              <h4 className="font-semibold text-zinc-900 dark:text-white mb-2">Download Your Data</h4>
+              <p className="text-xs text-zinc-600 dark:text-zinc-400 leading-relaxed max-w-lg">
                 Get a copy of all your data in a portable JSON format (GDPR Article 15 - Right of Access).
                 You can request one export per 24 hours.
               </p>
             </div>
-            <Button 
-              variant="outline" 
+            <Button
+              variant="outline"
               onClick={handleDownloadData}
               disabled={exportLoading || isLoading || !!getPendingExportRequest()}
-              className="w-full sm:w-auto min-w-[140px] h-11 text-base whitespace-nowrap"
+              className="w-full sm:w-auto min-w-[160px] h-11 text-sm border-zinc-200 dark:border-white/10 hover:bg-zinc-100 dark:hover:bg-white/5 text-zinc-900 dark:text-zinc-100 rounded-xl"
             >
               {exportLoading ? (
                 <>
@@ -340,78 +297,69 @@ export function PrivacySettings({ user }: PrivacySettingsProps) {
               ) : (
                 <>
                   <Download className="w-4 h-4 mr-2" />
-                  Download Data
+                  Download JSON
                 </>
               )}
             </Button>
           </div>
-        </CardContent>
-      </Card>
+        </div>
+      </div>
 
-      {/* Account Deletion */}
-      <Card className="border-red-200 dark:border-red-800">
-        <CardHeader className="pb-4">
-          <CardTitle className="flex items-center gap-3 text-xl text-red-600 dark:text-red-400">
-            <Trash2 className="w-5 h-5" />
-            Danger Zone
-          </CardTitle>
-          <CardDescription className="text-base mt-2">
-            Permanently delete your account and all associated data.
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-6 pt-2">
+      {/* Danger Zone Group */}
+      <div className="space-y-4">
+        <h3 className="text-sm font-medium text-red-600 dark:text-red-500 uppercase tracking-wider px-1">Danger Zone</h3>
+        <div className="bg-red-50/80 dark:bg-red-500/5 border border-red-200 dark:border-red-500/20 rounded-2xl overflow-hidden p-6 space-y-6 backdrop-blur-xl">
           {deletionScheduled && (
-            <Alert className="border-orange-200 dark:border-orange-800 bg-orange-50 dark:bg-orange-900/20">
-              <Clock className="h-4 w-4 text-orange-600 dark:text-orange-400" />
-              <AlertDescription className="text-orange-800 dark:text-orange-200">
+            <Alert className="bg-orange-500/10 border-orange-500/20 text-orange-600 dark:text-orange-400">
+              <Clock className="h-4 w-4" />
+              <AlertDescription>
                 <strong>Deletion scheduled:</strong> Your account is scheduled for deletion on{' '}
-                {new Date(deletionScheduled).toLocaleDateString()}. 
-                You can cancel this request by contacting support within 7 days.
-                Verification documents will be retained for 4 weeks as required by Dutch law.
+                {new Date(deletionScheduled).toLocaleDateString()}.
               </AlertDescription>
             </Alert>
           )}
 
-          <Alert variant="destructive" className="py-4">
-            <AlertTriangle className="h-5 w-5" />
-            <AlertDescription className="text-base">
-              <strong>Warning:</strong> This action cannot be undone. This will permanently delete your account, 
-              profile, questionnaire responses, matches, and all other data after a 7-day grace period.
-              Verification documents will be retained for 4 weeks as required by Dutch law.
-            </AlertDescription>
-          </Alert>
+          <div className="flex items-start gap-4">
+            <AlertTriangle className="w-5 h-5 text-red-600 dark:text-red-500 flex-shrink-0 mt-0.5" />
+            <div className="flex-1 min-w-0">
+              <h4 className="font-semibold text-zinc-900 dark:text-white mb-1">Delete Account</h4>
+              <p className="text-xs text-zinc-600 dark:text-zinc-400 leading-relaxed">
+                Permanently delete your profile and all data. After a 7-day grace period, this action cannot be undone.
+              </p>
+            </div>
+          </div>
 
           {!showDeleteConfirm ? (
-            <Button 
-              variant="destructive" 
+            <Button
+              variant="destructive"
               onClick={handleDeleteAccount}
               disabled={deleteLoading || !!deletionScheduled}
-              className="w-full sm:w-auto min-w-[160px] h-11 text-base"
+              className="w-full sm:w-auto min-w-[160px] h-11 text-sm bg-red-500 hover:bg-red-600 text-white rounded-xl shadow-lg shadow-red-500/20"
             >
               <Trash2 className="w-4 h-4 mr-2" />
-              {deletionScheduled ? 'Deletion Already Scheduled' : 'Delete Account'}
+              {deletionScheduled ? 'Deletion Scheduled' : 'Delete My Account'}
             </Button>
           ) : (
-            <div className="space-y-4">
-              <div>
-                <Label htmlFor="delete-confirm" className="text-base text-gray-700 dark:text-text-primary font-medium mb-2 block">
-                  Are you absolutely sure? Type "DELETE" to confirm.
+            <div className="space-y-5 pt-2">
+              <div className="space-y-2">
+                <Label htmlFor="delete-confirm" className="text-xs text-zinc-600 dark:text-zinc-400 px-1">
+                  Type <span className="text-zinc-900 dark:text-white font-mono">DELETE</span> to confirm
                 </Label>
                 <Input
                   id="delete-confirm"
                   type="text"
                   value={deleteConfirmText}
                   onChange={(e) => setDeleteConfirmText(e.target.value)}
-                  placeholder="Type DELETE to confirm"
-                  className="max-w-md"
+                  placeholder="DELETE"
+                  className="max-w-xs bg-zinc-50 dark:bg-white/5 border-red-500/20 focus-visible:ring-red-500/20 text-zinc-900 dark:text-white rounded-xl h-11"
                 />
               </div>
               <div className="flex flex-col sm:flex-row gap-3">
-                <Button 
-                  variant="destructive" 
+                <Button
+                  variant="destructive"
                   onClick={handleDeleteAccount}
                   disabled={deleteLoading || deleteConfirmText !== 'DELETE'}
-                  className="flex-1 sm:flex-initial min-w-[200px] h-11 text-base"
+                  className="flex-1 sm:flex-initial min-w-[200px] h-11 text-sm bg-red-500 hover:bg-red-600 text-white rounded-xl shadow-lg shadow-red-500/20"
                 >
                   {deleteLoading ? (
                     <>
@@ -419,29 +367,26 @@ export function PrivacySettings({ user }: PrivacySettingsProps) {
                       Processing...
                     </>
                   ) : (
-                    <>
-                      <Trash2 className="w-4 h-4 mr-2" />
-                      Yes, Delete My Account
-                    </>
+                    'Confirm Permanent Deletion'
                   )}
                 </Button>
-                <Button 
-                  variant="outline" 
+                <Button
+                  variant="ghost"
                   onClick={() => {
                     setShowDeleteConfirm(false)
                     setDeleteConfirmText('')
                     setError(null)
                   }}
                   disabled={deleteLoading}
-                  className="flex-1 sm:flex-initial min-w-[120px] h-11 text-base"
+                  className="flex-1 sm:flex-initial min-w-[100px] h-11 text-sm text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white hover:bg-zinc-100 dark:hover:bg-white/5 rounded-xl"
                 >
                   Cancel
                 </Button>
               </div>
             </div>
           )}
-        </CardContent>
-      </Card>
+        </div>
+      </div>
     </div>
   )
 }

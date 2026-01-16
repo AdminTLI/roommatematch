@@ -83,7 +83,7 @@ export function AppHeader({ user }: AppHeaderProps) {
   })
 
   return (
-    <header className="sticky top-0 z-50 bg-white/95 dark:bg-gray-900/95 backdrop-blur-sm border-b border-gray-200 dark:border-gray-800">
+    <header className="sticky top-0 z-50 bg-white/95 dark:bg-gray-900/95 backdrop-blur-sm">
       <nav className="container mx-auto px-4 py-4" role="navigation" aria-label="Main navigation">
         <div className="flex items-center justify-between">
           {/* Logo */}

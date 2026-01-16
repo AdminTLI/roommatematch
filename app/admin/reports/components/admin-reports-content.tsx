@@ -53,9 +53,34 @@ interface Report {
   }
 }
 
+interface FlaggedMessage {
+  id: string
+  content: string
+  created_at: string
+  is_flagged: boolean
+  auto_flagged: boolean
+  flagged_reason: string[]
+  flagged_at: string | null
+  user_id: string
+  chat_id: string
+  profiles?: {
+    user_id: string
+    first_name: string
+    last_name: string
+    email: string
+  }
+  chats?: {
+    id: string
+    is_group: boolean
+  }
+}
+
 export function AdminReportsContent() {
+  const [activeTab, setActiveTab] = useState<'reports' | 'flagged'>('reports')
   const [reports, setReports] = useState<Report[]>([])
+  const [flaggedMessages, setFlaggedMessages] = useState<FlaggedMessage[]>([])
   const [isLoading, setIsLoading] = useState(true)
+  const [isLoadingFlagged, setIsLoadingFlagged] = useState(false)
   const [selectedReport, setSelectedReport] = useState<Report | null>(null)
   const [showActionDialog, setShowActionDialog] = useState(false)
   const [actionType, setActionType] = useState<'dismiss' | 'warn' | 'ban'>('dismiss')
@@ -66,10 +91,32 @@ export function AdminReportsContent() {
     category: 'all'
   })
   const [total, setTotal] = useState(0)
+  const [flaggedTotal, setFlaggedTotal] = useState(0)
 
   useEffect(() => {
-    loadReports()
-  }, [filters])
+    if (activeTab === 'reports') {
+      loadReports()
+    } else {
+      loadFlaggedMessages()
+    }
+  }, [filters, activeTab])
+
+  const loadFlaggedMessages = async () => {
+    setIsLoadingFlagged(true)
+    try {
+      const response = await fetch('/api/admin/messages/flagged?limit=100')
+      if (response.ok) {
+        const data = await response.json()
+        setFlaggedMessages(data.messages || [])
+        setFlaggedTotal(data.total || 0)
+      }
+    } catch (error) {
+      console.error('Failed to load flagged messages:', error)
+      showErrorToast('Failed to load flagged messages')
+    } finally {
+      setIsLoadingFlagged(false)
+    }
+  }
 
   const loadReports = async () => {
     setIsLoading(true)
@@ -287,89 +334,218 @@ export function AdminReportsContent() {
     return <div className="p-6">Loading...</div>
   }
 
+  const handleFlaggedMessageAction = async (messageId: string, action: 'approve' | 'delete') => {
+    try {
+      const { fetchWithCSRF } = await import('@/lib/utils/fetch-with-csrf')
+      const response = await fetchWithCSRF('/api/admin/messages/flagged', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ messageId, action })
+      })
+
+      if (response.ok) {
+        showSuccessToast(`Message ${action === 'approve' ? 'approved' : 'deleted'} successfully`)
+        loadFlaggedMessages()
+      } else {
+        showErrorToast(`Failed to ${action} message`)
+      }
+    } catch (error) {
+      console.error('Failed to process flagged message action:', error)
+      showErrorToast(`Failed to ${action} message`)
+    }
+  }
+
   return (
     <div className="p-6 space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold">Reports Queue</h1>
+          <h1 className="text-2xl font-bold">Safety & Moderation</h1>
           <p className="text-gray-600 dark:text-gray-400">
-            Review and triage abuse reports ({total} total)
+            Review reports and flagged content
           </p>
         </div>
-        <Button onClick={loadReports} variant="outline" disabled={isLoading}>
-          <RefreshCw className={`h-4 w-4 mr-2 ${isLoading ? 'animate-spin' : ''}`} />
+        <Button 
+          onClick={() => activeTab === 'reports' ? loadReports() : loadFlaggedMessages()} 
+          variant="outline" 
+          disabled={isLoading || isLoadingFlagged}
+        >
+          <RefreshCw className={`h-4 w-4 mr-2 ${(isLoading || isLoadingFlagged) ? 'animate-spin' : ''}`} />
           Refresh
         </Button>
       </div>
 
-      {/* Filters */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Filters</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <label className="text-sm font-medium mb-2 block">Status</label>
-              <Select value={filters.status} onValueChange={(value) => setFilters({ ...filters, status: value })}>
-                <SelectTrigger>
-                  <SelectValue placeholder="All statuses" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All</SelectItem>
-                  <SelectItem value="open">Open</SelectItem>
-                  <SelectItem value="actioned">Actioned</SelectItem>
-                  <SelectItem value="dismissed">Dismissed</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            <div>
-              <label className="text-sm font-medium mb-2 block">Category</label>
-              <Select value={filters.category} onValueChange={(value) => setFilters({ ...filters, category: value })}>
-                <SelectTrigger>
-                  <SelectValue placeholder="All categories" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All</SelectItem>
-                  <SelectItem value="spam">Spam</SelectItem>
-                  <SelectItem value="harassment">Harassment</SelectItem>
-                  <SelectItem value="inappropriate">Inappropriate</SelectItem>
-                  <SelectItem value="other">Other</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
+      {/* Tabs */}
+      <div className="border-b border-gray-200 dark:border-gray-700">
+        <div className="flex space-x-8">
+          <button
+            onClick={() => setActiveTab('reports')}
+            className={`py-4 px-1 border-b-2 font-medium text-sm ${
+              activeTab === 'reports'
+                ? 'border-blue-500 text-blue-600 dark:text-blue-400'
+                : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+            }`}
+          >
+            User Reports ({total})
+          </button>
+          <button
+            onClick={() => setActiveTab('flagged')}
+            className={`py-4 px-1 border-b-2 font-medium text-sm ${
+              activeTab === 'flagged'
+                ? 'border-blue-500 text-blue-600 dark:text-blue-400'
+                : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+            }`}
+          >
+            Flagged Messages ({flaggedTotal})
+          </button>
+        </div>
+      </div>
 
-      {/* Reports Table */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Reports</CardTitle>
-          <CardDescription>All abuse reports submitted by users</CardDescription>
-        </CardHeader>
-        <CardContent>
-          {reports.length === 0 ? (
-            <div className="text-center py-12">
-              <AlertTriangle className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-              <p className="text-lg font-medium text-gray-900 dark:text-gray-100 mb-2">No Reports Found</p>
-              <p className="text-gray-500 dark:text-gray-400">
-                {filters.status !== 'all' || filters.category !== 'all'
-                  ? 'No reports match your current filters. Try adjusting your filters.'
-                  : 'There are currently no reports in the system. Reports will appear here when users submit them.'}
-              </p>
-            </div>
-          ) : (
-            <DataTable
-              columns={columns}
-              data={reports}
-              searchKey="id"
-              searchPlaceholder="Search by report ID..."
-              pageSize={20}
-            />
-          )}
-        </CardContent>
-      </Card>
+      {activeTab === 'reports' ? (
+        <>
+          {/* Filters */}
+          <Card>
+            <CardHeader>
+              <CardTitle>Filters</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label className="text-sm font-medium mb-2 block">Status</label>
+                  <Select value={filters.status} onValueChange={(value) => setFilters({ ...filters, status: value })}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="All statuses" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">All</SelectItem>
+                      <SelectItem value="open">Open</SelectItem>
+                      <SelectItem value="actioned">Actioned</SelectItem>
+                      <SelectItem value="dismissed">Dismissed</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div>
+                  <label className="text-sm font-medium mb-2 block">Category</label>
+                  <Select value={filters.category} onValueChange={(value) => setFilters({ ...filters, category: value })}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="All categories" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">All</SelectItem>
+                      <SelectItem value="spam">Spam</SelectItem>
+                      <SelectItem value="harassment">Harassment</SelectItem>
+                      <SelectItem value="inappropriate">Inappropriate</SelectItem>
+                      <SelectItem value="other">Other</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Reports Table */}
+          <Card>
+            <CardHeader>
+              <CardTitle>Reports</CardTitle>
+              <CardDescription>All abuse reports submitted by users</CardDescription>
+            </CardHeader>
+            <CardContent>
+              {reports.length === 0 ? (
+                <div className="text-center py-12">
+                  <AlertTriangle className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+                  <p className="text-lg font-medium text-gray-900 dark:text-gray-100 mb-2">No Reports Found</p>
+                  <p className="text-gray-500 dark:text-gray-400">
+                    {filters.status !== 'all' || filters.category !== 'all'
+                      ? 'No reports match your current filters. Try adjusting your filters.'
+                      : 'There are currently no reports in the system. Reports will appear here when users submit them.'}
+                  </p>
+                </div>
+              ) : (
+                <DataTable
+                  columns={columns}
+                  data={reports}
+                  searchKey="id"
+                  searchPlaceholder="Search by report ID..."
+                  pageSize={20}
+                />
+              )}
+            </CardContent>
+          </Card>
+        </>
+      ) : (
+        /* Flagged Messages */
+        <Card>
+          <CardHeader>
+            <CardTitle>Flagged Messages</CardTitle>
+            <CardDescription>Messages automatically flagged by the system for review</CardDescription>
+          </CardHeader>
+          <CardContent>
+            {isLoadingFlagged ? (
+              <div className="text-center py-12">
+                <RefreshCw className="h-8 w-8 text-gray-400 mx-auto mb-4 animate-spin" />
+                <p className="text-gray-500">Loading flagged messages...</p>
+              </div>
+            ) : flaggedMessages.length === 0 ? (
+              <div className="text-center py-12">
+                <CheckCircle className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+                <p className="text-lg font-medium text-gray-900 dark:text-gray-100 mb-2">No Flagged Messages</p>
+                <p className="text-gray-500 dark:text-gray-400">
+                  There are currently no flagged messages. Messages will appear here when the system detects suspicious content.
+                </p>
+              </div>
+            ) : (
+              <div className="space-y-4">
+                {flaggedMessages.map((message) => (
+                  <div key={message.id} className="border border-gray-200 dark:border-gray-700 rounded-lg p-4">
+                    <div className="flex items-start justify-between mb-3">
+                      <div className="flex-1">
+                        <div className="flex items-center gap-2 mb-2">
+                          <span className="font-medium">
+                            {message.profiles 
+                              ? `${message.profiles.first_name} ${message.profiles.last_name || ''}`.trim() || message.profiles.email
+                              : 'Unknown User'}
+                          </span>
+                          <Badge variant={message.auto_flagged ? 'default' : 'secondary'}>
+                            {message.auto_flagged ? 'Auto-flagged' : 'Manually flagged'}
+                          </Badge>
+                          {message.flagged_reason && message.flagged_reason.length > 0 && (
+                            <Badge className="bg-orange-100 text-orange-800">
+                              {message.flagged_reason.join(', ')}
+                            </Badge>
+                          )}
+                        </div>
+                        <p className="text-sm text-gray-600 dark:text-gray-400 mb-2">
+                          {new Date(message.created_at).toLocaleString()}
+                        </p>
+                      </div>
+                      <div className="flex gap-2">
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => handleFlaggedMessageAction(message.id, 'approve')}
+                        >
+                          <CheckCircle className="h-3 w-3 mr-1" />
+                          Approve
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="destructive"
+                          onClick={() => handleFlaggedMessageAction(message.id, 'delete')}
+                        >
+                          <XCircle className="h-3 w-3 mr-1" />
+                          Delete
+                        </Button>
+                      </div>
+                    </div>
+                    <div className="bg-gray-50 dark:bg-gray-800 rounded p-3">
+                      <p className="text-sm">{message.content}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      )}
 
       {/* Action Dialog */}
       <Dialog open={showActionDialog} onOpenChange={setShowActionDialog}>

@@ -9,3 +9,5 @@ CREATE POLICY "Users can insert their own data" ON users
 
 
 
+
+

@@ -19,7 +19,9 @@ import {
   FileText,
   Bell,
   Ban,
-  Activity
+  Activity,
+  Flag,
+  CheckCircle
 } from 'lucide-react'
 
 interface AdminDashboardProps {
@@ -66,6 +68,7 @@ export function AdminDashboard({ admin }: AdminDashboardProps) {
   const [activeTab, setActiveTab] = useState('overview')
   const [analytics, setAnalytics] = useState<AnalyticsData | null>(null)
   const [reports, setReports] = useState<Report[]>([])
+  const [flaggedMessagesCount, setFlaggedMessagesCount] = useState(0)
   const [isLoading, setIsLoading] = useState(true)
 
   // Mock data for demonstration
@@ -175,6 +178,14 @@ export function AdminDashboard({ admin }: AdminDashboardProps) {
       // Combine both sets of reports
       const reportsData = [...(reportsDataPending || []), ...(reportsDataOpen || [])]
         .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
+
+      // Load flagged messages count
+      const { count: flaggedCount } = await supabase
+        .from('messages')
+        .select('id', { count: 'exact', head: true })
+        .eq('is_flagged', true)
+      
+      setFlaggedMessagesCount(flaggedCount || 0)
 
       // Transform analytics data
       const transformedAnalytics: AnalyticsData = {
@@ -467,11 +478,11 @@ export function AdminDashboard({ admin }: AdminDashboardProps) {
           <TabsTrigger value="moderation" className="flex items-center gap-2 flex-shrink-0">
             <Shield className="h-4 w-4" />
             Moderation
-            {analytics?.reportsPending && analytics.reportsPending > 0 && (
+            {(analytics?.reportsPending && analytics.reportsPending > 0) || flaggedMessagesCount > 0 ? (
               <Badge variant="destructive" className="ml-1">
-                {analytics.reportsPending}
+                {(analytics?.reportsPending || 0) + flaggedMessagesCount}
               </Badge>
-            )}
+            ) : null}
           </TabsTrigger>
           <TabsTrigger value="analytics" className="flex items-center gap-2 flex-shrink-0">
             <TrendingUp className="h-4 w-4" />
@@ -544,6 +555,50 @@ export function AdminDashboard({ admin }: AdminDashboardProps) {
         </TabsContent>
 
         <TabsContent value="moderation" className="space-y-6">
+          {/* Flagged Messages */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Flag className="h-5 w-5" />
+                Flagged Messages
+                {flaggedMessagesCount > 0 && (
+                  <Badge variant="destructive" className="ml-2">
+                    {flaggedMessagesCount}
+                  </Badge>
+                )}
+              </CardTitle>
+              <CardDescription>
+                Messages automatically flagged by the system for suspicious content
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              {flaggedMessagesCount === 0 ? (
+                <div className="text-center py-8">
+                  <CheckCircle className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+                  <p className="text-gray-500">No flagged messages</p>
+                  <p className="text-sm text-gray-400 mt-2">
+                    Messages will appear here when the system detects suspicious content
+                  </p>
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between">
+                    <p className="text-sm text-gray-600 dark:text-gray-400">
+                      {flaggedMessagesCount} message{flaggedMessagesCount !== 1 ? 's' : ''} need{flaggedMessagesCount === 1 ? 's' : ''} review
+                    </p>
+                    <Button 
+                      variant="outline" 
+                      size="sm"
+                      onClick={() => window.location.href = '/admin/reports?tab=flagged'}
+                    >
+                      View All Flagged Messages
+                    </Button>
+                  </div>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+
           {/* Reports */}
           <Card>
             <CardHeader>
