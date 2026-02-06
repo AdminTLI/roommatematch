@@ -25,20 +25,23 @@ export async function GET() {
     safeLogger.debug('[Marketing Stats] Starting stats calculation...')
     safeLogger.debug('[Marketing Stats] Time window: last 12 months from', oneYearAgoISO)
 
-    // Helper to compute average score from match_suggestions
+    // Helper to compute average score. fit_score in DB is DECIMAL(4,3) 0.000-1.000;
+    // normalize any value > 1 as 0-100 scale so we always output 0-100.
+    const toZeroToOne = (n: number) => (n > 1 ? n / 100 : n)
     const avg = (rows: { fit_score: number | string | null }[]) => {
-      const nums = rows.map(r => {
-        const num = Number(r.fit_score || 0)
-        if (Number.isNaN(num)) return null
-        return num
-      }).filter(n => n !== null) as number[]
-      
+      const nums = rows
+        .map(r => {
+          const num = Number(r.fit_score || 0)
+          if (Number.isNaN(num)) return null
+          return toZeroToOne(num)
+        })
+        .filter((n): n is number => n !== null)
+
       if (nums.length === 0) {
         safeLogger.debug('[Marketing Stats] No valid scores found in avg calculation')
         return 0
       }
-      
-      // fit_score is stored as DECIMAL(4,3) in range 0.000-1.000, convert to 0-100
+
       const mean0to1 = nums.reduce((a, b) => a + b, 0) / nums.length
       const result = Math.round(mean0to1 * 100)
       safeLogger.debug('[Marketing Stats] Score calculation:', {
@@ -247,12 +250,26 @@ export async function GET() {
 
     safeLogger.debug('[Marketing Stats] Locked match records:', lockedRecords?.length || 0)
     
-    // Combine confirmed suggestions and locked records for average
-    const allConfirmed = [
-      ...confirmedSuggestions,
-      ...(lockedRecords || []).map(r => ({ fit_score: r.fit_score }))
-    ]
-    
+    // Combine confirmed suggestions and locked records; dedupe by pair so the same pair
+    // (from both match_suggestions and match_records) is only counted once
+    const pairToScore = new Map<string, number>()
+    const toPairKey = (ids: string[] | null) => ids && ids.length === 2 ? [...ids].sort().join(':') : null
+    confirmedSuggestions.forEach(s => {
+      const key = toPairKey((s.member_ids as string[]) || null)
+      if (key != null) {
+        const n = Number(s.fit_score ?? 0)
+        if (!Number.isNaN(n)) pairToScore.set(key, n)
+      }
+    })
+    ;(lockedRecords || []).forEach((r: { user_ids?: string[]; fit_score?: unknown }) => {
+      const key = toPairKey((r.user_ids as string[]) || null)
+      if (key != null && !pairToScore.has(key)) {
+        const n = Number(r.fit_score ?? 0)
+        if (!Number.isNaN(n)) pairToScore.set(key, n)
+      }
+    })
+    const allConfirmed = Array.from(pairToScore.values()).map(fit_score => ({ fit_score }))
+
     const avgScoreConfirmedMatches = avg(allConfirmed)
     safeLogger.debug('[Marketing Stats] Average score (confirmed matches):', avgScoreConfirmedMatches)
 
@@ -260,21 +277,39 @@ export async function GET() {
     // Don't rely on chats.match_id (it's null). Instead, match by user pairs
     safeLogger.debug('[Marketing Stats] Computing chat conversion metrics...')
     
-    // Get confirmed suggestions and locked records for chat conversion
-    const confirmedForChat = [
-      ...suggestions.filter(s => s.status === 'confirmed').map(s => ({
-        id: s.id,
-        member_ids: s.member_ids,
-        created_at: s.created_at
-      })),
-      ...(lockedRecords || []).map(r => ({
-        id: (r as any).id || '',
-        member_ids: (r as any).user_ids || [],
-        created_at: (r as any).created_at
-      }))
-    ]
-    
-    safeLogger.debug('[Marketing Stats] Confirmed matches for chat lookup:', confirmedForChat.length)
+    // Get confirmed suggestions and locked records for chat conversion; dedupe by pair
+    // so the same pair (from both match_suggestions and match_records) is only counted once
+    const pairToMatch = new Map<
+      string,
+      { id: string; member_ids: string[]; created_at: string }
+    >()
+    suggestions
+      .filter(s => s.status === 'confirmed')
+      .forEach(s => {
+        const ids = (s.member_ids as string[]) || []
+        const key = ids.length === 2 ? [...ids].sort().join(':') : null
+        if (key && !pairToMatch.has(key)) {
+          pairToMatch.set(key, {
+            id: s.id,
+            member_ids: ids,
+            created_at: s.created_at
+          })
+        }
+      })
+    ;(lockedRecords || []).forEach((r: { id?: string; user_ids?: string[]; created_at?: string }) => {
+      const ids = (r.user_ids as string[]) || []
+      const key = ids.length === 2 ? [...ids].sort().join(':') : null
+      if (key && !pairToMatch.has(key)) {
+        pairToMatch.set(key, {
+          id: (r.id as string) || '',
+          member_ids: ids,
+          created_at: (r.created_at as string) || ''
+        })
+      }
+    })
+    const confirmedForChat = Array.from(pairToMatch.values())
+
+    safeLogger.debug('[Marketing Stats] Confirmed matches for chat lookup (deduped):', confirmedForChat.length)
 
     let matchesWithChat24h = 0
 

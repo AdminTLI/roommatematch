@@ -41,7 +41,7 @@ export function LiveStats({ locale: localeProp }: LiveStatsProps) {
           description: (data: MarketingStatsResponse) => `and ${data.matchedWithin48hPercent}% within 48 hours`,
         },
         quality: {
-          label: "Average compatibility of confirmed roommates",
+          label: "Confirmed match compatibility",
           description: (data: MarketingStatsResponse) => `vs ${data.avgScoreAllMatches}% across all matches`,
         },
         speedChat: {
@@ -67,7 +67,7 @@ export function LiveStats({ locale: localeProp }: LiveStatsProps) {
           description: (data: MarketingStatsResponse) => `en ${data.matchedWithin48hPercent}% binnen 48 uur`,
         },
         quality: {
-          label: "Gemiddelde compatibiliteit van bevestigde huisgenoten",
+          label: "Compatibiliteit bevestigde matches",
           description: (data: MarketingStatsResponse) => `vs ${data.avgScoreAllMatches}% over alle matches`,
         },
         speedChat: {
