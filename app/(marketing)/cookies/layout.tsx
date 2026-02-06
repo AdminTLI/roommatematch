@@ -15,11 +15,11 @@ export const metadata: Metadata = {
     title: 'Cookie Policy | Domu Match',
     description: 'Read Domu Match cookie policy. Learn how we use cookies and comply with EU ePrivacy Directive.',
     type: 'website',
-    url: 'https://domumatch.vercel.app/cookies',
+    url: 'https://domumatch.com/cookies',
     siteName: 'Domu Match',
     images: [
       {
-        url: 'https://domumatch.vercel.app/images/logo.png',
+        url: 'https://domumatch.com/images/logo.png',
         width: 1200,
         height: 630,
         alt: 'Cookie Policy - Domu Match',
@@ -31,10 +31,10 @@ export const metadata: Metadata = {
     card: 'summary_large_image',
     title: 'Cookie Policy | Domu Match',
     description: 'Read Domu Match cookie policy. Learn how we use cookies and comply with EU ePrivacy Directive.',
-    images: ['https://domumatch.vercel.app/images/logo.png'],
+    images: ['https://domumatch.com/images/logo.png'],
   },
   alternates: {
-    canonical: 'https://domumatch.vercel.app/cookies',
+    canonical: 'https://domumatch.com/cookies',
   },
   robots: {
     index: true,

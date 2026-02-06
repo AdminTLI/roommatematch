@@ -82,15 +82,17 @@ BEGIN
     RETURN;
   END IF;
   
-  -- Get user academic profiles
-  SELECT ua.university_id, ua.program_id, p.faculty, usy.study_year
+  -- Get user academic profiles (include undecided_program for context score)
+  SELECT ua.university_id, ua.program_id, p.faculty, usy.study_year,
+    (COALESCE(ua.undecided_program, false) OR ua.program_id IS NULL) AS undecided_program
   INTO user_a_profile
   FROM public.user_academic ua
   LEFT JOIN public.programs p ON ua.program_id = p.id
   LEFT JOIN public.user_study_year_v usy ON ua.user_id = usy.user_id
   WHERE ua.user_id = user_a_id;
   
-  SELECT ua.university_id, ua.program_id, p.faculty, usy.study_year
+  SELECT ua.university_id, ua.program_id, p.faculty, usy.study_year,
+    (COALESCE(ua.undecided_program, false) OR ua.program_id IS NULL) AS undecided_program
   INTO user_b_profile
   FROM public.user_academic ua
   LEFT JOIN public.programs p ON ua.program_id = p.id
@@ -164,7 +166,8 @@ BEGIN
     user_a_profile.university_id, user_b_profile.university_id,
     user_a_profile.program_id, user_b_profile.program_id,
     user_a_profile.faculty, user_b_profile.faculty,
-    v_study_year_a, v_study_year_b
+    v_study_year_a, v_study_year_b,
+    user_a_profile.undecided_program, user_b_profile.undecided_program
   );
   
   RAISE NOTICE '[Compatibility] Context score: %', v_context_score;
@@ -219,19 +222,14 @@ EXCEPTION
       0.0::NUMERIC,  -- social_score
       0.0::NUMERIC,  -- academic_bonus
       0.0::NUMERIC,  -- penalty
-      'Unavailable'::TEXT,
-      ('Compatibility data could not be computed. Error: ' || SQLERRM)::TEXT,  -- Include error message
-      ''::TEXT,
-      jsonb_build_object('error', SQLERRM, 'sqlstate', SQLSTATE)::JSONB,  -- Include error in academic_details
+      'Error computing score'::TEXT,  -- top_alignment
+      SQLERRM::TEXT,  -- watch_out
+      ''::TEXT,  -- house_rules_suggestion
+      '{}'::JSONB,  -- academic_details
       0.0::NUMERIC,  -- harmony_score
       0.0::NUMERIC,  -- context_score
-      '{}'::JSONB,   -- dimension_scores_json
-      FALSE::BOOLEAN,
-      COMPATIBILITY_ALGORITHM_VERSION::TEXT;
+      '{}'::JSONB,  -- dimension_scores_json
+      false::BOOLEAN,  -- is_valid_match
+      COMPATIBILITY_ALGORITHM_VERSION::TEXT;  -- algorithm_version
 END;
 $$;
-
--- Grant permissions
-GRANT EXECUTE ON FUNCTION public.compute_compatibility_score(UUID, UUID) TO authenticated;
-GRANT EXECUTE ON FUNCTION public.compute_compatibility_score(UUID, UUID) TO service_role;
-

@@ -21,11 +21,11 @@ export const metadata: Metadata = {
     title: 'Help Center | Domu Match',
     description: 'Get help with Domu Match. Find answers about getting started, verification, matching, and safety features.',
     type: 'website',
-    url: 'https://domumatch.vercel.app/help-center',
+    url: 'https://domumatch.com/help-center',
     siteName: 'Domu Match',
     images: [
       {
-        url: 'https://domumatch.vercel.app/images/logo.png',
+        url: 'https://domumatch.com/images/logo.png',
         width: 1200,
         height: 630,
         alt: 'Help Center - Domu Match',
@@ -37,10 +37,10 @@ export const metadata: Metadata = {
     card: 'summary_large_image',
     title: 'Help Center | Domu Match',
     description: 'Get help with Domu Match. Find answers about getting started, verification, and matching.',
-    images: ['https://domumatch.vercel.app/images/logo.png'],
+    images: ['https://domumatch.com/images/logo.png'],
   },
   alternates: {
-    canonical: 'https://domumatch.vercel.app/help-center',
+    canonical: 'https://domumatch.com/help-center',
   },
 }
 
@@ -71,13 +71,13 @@ export default function HelpCenterPage() {
             '@type': 'ListItem',
             position: 1,
             name: 'Home',
-            item: 'https://domumatch.vercel.app',
+            item: 'https://domumatch.com',
           },
           {
             '@type': 'ListItem',
             position: 2,
             name: 'Help Center',
-            item: 'https://domumatch.vercel.app/help-center',
+            item: 'https://domumatch.com/help-center',
           },
         ],
       },

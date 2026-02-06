@@ -12,7 +12,9 @@ SELECT
       (SELECT p.faculty FROM public.user_academic ua2 LEFT JOIN public.programs p ON ua2.program_id = p.id WHERE ua2.user_id = '2763f0a1-91fd-482c-81ed-f830327b2c2c'::uuid),
       (SELECT p.faculty FROM public.user_academic ua2 LEFT JOIN public.programs p ON ua2.program_id = p.id WHERE ua2.user_id = u.id),
       (SELECT COALESCE(usy.study_year, 1) FROM public.user_study_year_v usy WHERE usy.user_id = '2763f0a1-91fd-482c-81ed-f830327b2c2c'::uuid),
-      COALESCE(usy.study_year, 1)
+      COALESCE(usy.study_year, 1),
+      (SELECT (COALESCE(ua2.undecided_program, false) OR ua2.program_id IS NULL) FROM public.user_academic ua2 WHERE ua2.user_id = '2763f0a1-91fd-482c-81ed-f830327b2c2c'::uuid),
+      (COALESCE(ua.undecided_program, false) OR ua.program_id IS NULL)
     )::numeric * 100, 1
   ) as context_percent,
   ua.university_id = (SELECT university_id FROM public.user_academic WHERE user_id = '2763f0a1-91fd-482c-81ed-f830327b2c2c'::uuid) as same_university,

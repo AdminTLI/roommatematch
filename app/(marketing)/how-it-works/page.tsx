@@ -17,16 +17,22 @@ export const metadata: Metadata = {
     'student housing platform process',
     'roommate matching steps',
     'verified roommate matching',
+    'roommate matching guide',
+    'how to use roommate app',
+    'student housing matching process',
+    'find roommate step by step',
+    'roommate compatibility matching',
+    'verified student platform',
   ],
   openGraph: {
     title: 'How Roommate Matching Works | Domu Match',
     description: 'Discover how our science-backed roommate matching works in the Netherlands. From sign-up to move-in, learn about our verified student platform.',
     type: 'website',
-    url: 'https://domumatch.vercel.app/how-it-works',
+    url: 'https://domumatch.com/how-it-works',
     siteName: 'Domu Match',
     images: [
       {
-        url: 'https://domumatch.vercel.app/images/logo.png',
+        url: 'https://domumatch.com/images/logo.png',
         width: 1200,
         height: 630,
         alt: 'How Roommate Matching Works - Domu Match',
@@ -38,10 +44,10 @@ export const metadata: Metadata = {
     card: 'summary_large_image',
     title: 'How Roommate Matching Works | Domu Match',
     description: 'Discover how our science-backed roommate matching works in the Netherlands.',
-    images: ['https://domumatch.vercel.app/images/logo.png'],
+    images: ['https://domumatch.com/images/logo.png'],
   },
   alternates: {
-    canonical: 'https://domumatch.vercel.app/how-it-works',
+    canonical: 'https://domumatch.com/how-it-works',
   },
 }
 
@@ -93,13 +99,13 @@ export default function HowItWorksPage() {
             '@type': 'ListItem',
             position: 1,
             name: 'Home',
-            item: 'https://domumatch.vercel.app',
+            item: 'https://domumatch.com',
           },
           {
             '@type': 'ListItem',
             position: 2,
             name: 'How It Works',
-            item: 'https://domumatch.vercel.app/how-it-works',
+            item: 'https://domumatch.com/how-it-works',
           },
         ],
       },

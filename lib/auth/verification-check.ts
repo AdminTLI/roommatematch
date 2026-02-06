@@ -1,4 +1,4 @@
-import { createClient, createAdminClient } from '@/lib/supabase/server'
+import { createAdminClient } from '@/lib/supabase/server'
 import type { User } from '@supabase/supabase-js'
 
 export interface VerificationStatus {
@@ -8,40 +8,34 @@ export interface VerificationStatus {
   needsPersonaVerification: boolean
 }
 
-// In-memory cache for verification status with TTL
+// In-memory cache: ONLY for verified users (24h). Never cache unverified - avoids stale blocks.
+// Critical: verified users must never see Persona again (cost + UX)
 interface CachedVerificationStatus {
   status: VerificationStatus
   expiresAt: number
 }
-
 const verificationCache = new Map<string, CachedVerificationStatus>()
-const VERIFICATION_CACHE_TTL_MS = 60 * 1000 // 60 seconds
+const VERIFIED_CACHE_TTL_MS = 24 * 60 * 60 * 1000
 
-// Clean up expired cache entries periodically
 if (typeof global !== 'undefined') {
   setInterval(() => {
     const now = Date.now()
     for (const [key, cached] of verificationCache.entries()) {
-      if (cached.expiresAt < now) {
-        verificationCache.delete(key)
-      }
+      if (cached.expiresAt < now) verificationCache.delete(key)
     }
-  }, 60000) // Clean up every minute
+  }, 60000)
 }
 
-/**
- * Clear verification cache for a specific user
- * Use this when verification status changes to ensure fresh data
- * @param userId - The user ID to clear cache for
- */
 export function clearVerificationCache(userId: string): void {
   verificationCache.delete(userId)
 }
 
 /**
- * Check user verification status (email and Persona) with caching
- * @param user - The authenticated user from Supabase auth
- * @returns Verification status object
+ * Check user verification status. Data stored in:
+ * - verifications table: status='approved' means Persona verified (source of truth)
+ * - profiles table: verification_status='verified' (synced by persona-complete)
+ *
+ * Uses admin client only (no cookies) so it works in Edge middleware.
  */
 export async function checkUserVerificationStatus(
   user: User | null
@@ -55,16 +49,13 @@ export async function checkUserVerificationStatus(
     }
   }
 
-  // Check cache first
   const cacheKey = user.id
   const cached = verificationCache.get(cacheKey)
   const now = Date.now()
-
   if (cached && cached.expiresAt > now) {
     return cached.status
   }
 
-  // Check email verification status (from user object - no DB query needed)
   const emailVerified = Boolean(
     user.email_confirmed_at &&
     typeof user.email_confirmed_at === 'string' &&
@@ -72,35 +63,26 @@ export async function checkUserVerificationStatus(
     !isNaN(Date.parse(user.email_confirmed_at))
   )
 
-  // Check Persona verification status
-  // Use admin client to bypass RLS and ensure we get fresh data (consistent with /api/verification/status)
+  // Use admin client only - works in Edge middleware (no cookies() dependency)
   const admin = createAdminClient()
-  const supabase = await createClient()
-  
   const [verificationResult, profileResult] = await Promise.all([
-    // Check verifications table first using admin client for reliable access
     admin
       .from('verifications')
       .select('status')
       .eq('user_id', user.id)
-      .order('created_at', { ascending: false })
+      .eq('status', 'approved')
       .limit(1)
       .maybeSingle(),
-    // Also fetch profile in parallel (can use regular client for profiles)
-    supabase
+    admin
       .from('profiles')
       .select('verification_status')
       .eq('user_id', user.id)
       .maybeSingle()
   ])
 
-  // If verification is approved, user is verified
-  let personaVerified = verificationResult.data?.status === 'approved'
-  
-  // If no verification record or not approved, check profile status
-  if (!personaVerified) {
-    personaVerified = profileResult.data?.verification_status === 'verified'
-  }
+  const personaVerified =
+    verificationResult.data?.status === 'approved' ||
+    profileResult.data?.verification_status === 'verified'
 
   const status: VerificationStatus = {
     emailVerified,
@@ -109,11 +91,13 @@ export async function checkUserVerificationStatus(
     needsPersonaVerification: emailVerified && !personaVerified,
   }
 
-  // Cache the result
-  verificationCache.set(cacheKey, {
-    status,
-    expiresAt: now + VERIFICATION_CACHE_TTL_MS,
-  })
+  // ONLY cache verified - never cache unverified (prevents stale blocks for users who just verified)
+  if (personaVerified) {
+    verificationCache.set(cacheKey, {
+      status,
+      expiresAt: now + VERIFIED_CACHE_TTL_MS,
+    })
+  }
 
   return status
 }

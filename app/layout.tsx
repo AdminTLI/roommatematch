@@ -17,6 +17,10 @@ export const metadata: Metadata = {
     icon: '/images/logo.png',
     apple: '/images/logo.png',
   },
+  verification: {
+    // Add your Google Search Console verification code here after claiming the property
+    // google: 'your-verification-code',
+  },
 }
 
 export const viewport = {

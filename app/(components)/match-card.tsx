@@ -217,38 +217,38 @@ export function MatchCard({
   }
 
   const getScoreColor = (score: number) => {
-    if (score >= 0.8) return 'text-emerald-600 dark:text-emerald-400'
-    if (score >= 0.6) return 'text-blue-600 dark:text-blue-400'
-    if (score >= 0.4) return 'text-amber-600 dark:text-amber-400'
-    return 'text-red-600 dark:text-red-400'
+    if (score >= 0.85) return 'text-emerald-600 dark:text-emerald-400'
+    if (score >= 0.7) return 'text-indigo-600 dark:text-indigo-400'
+    if (score >= 0.55) return 'text-violet-600 dark:text-violet-400'
+    return 'text-amber-600 dark:text-amber-400'
   }
 
   const getScoreBgColor = (score: number) => {
-    if (score >= 0.8) return 'bg-emerald-500'
-    if (score >= 0.6) return 'bg-blue-500'
-    if (score >= 0.4) return 'bg-amber-500'
-    return 'bg-red-500'
+    if (score >= 0.85) return 'bg-emerald-500'
+    if (score >= 0.7) return 'bg-indigo-500'
+    if (score >= 0.55) return 'bg-violet-500'
+    return 'bg-amber-500'
   }
 
   const getScoreGradient = (score: number) => {
-    if (score >= 0.8) return 'from-emerald-500 to-emerald-600'
-    if (score >= 0.6) return 'from-blue-500 to-blue-600'
-    if (score >= 0.4) return 'from-amber-500 to-amber-600'
-    return 'from-red-500 to-red-600'
+    if (score >= 0.85) return 'from-emerald-500 to-emerald-600'
+    if (score >= 0.7) return 'from-indigo-500 to-indigo-600'
+    if (score >= 0.55) return 'from-violet-500 to-violet-600'
+    return 'from-amber-500 to-amber-600'
   }
 
   const getCompatibilityColor = (score: number) => {
-    if (score >= 0.8) return 'bg-green-500'
-    if (score >= 0.6) return 'bg-blue-500'
-    if (score >= 0.4) return 'bg-yellow-500'
-    return 'bg-red-500'
+    if (score >= 0.85) return 'bg-emerald-500'
+    if (score >= 0.7) return 'bg-indigo-500'
+    if (score >= 0.55) return 'bg-violet-500'
+    return 'bg-amber-500'
   }
 
   const getCompatibilityLabel = (score: number) => {
-    if (score >= 0.8) return 'Excellent'
-    if (score >= 0.6) return 'Good'
-    if (score >= 0.4) return 'Fair'
-    return 'Poor'
+    if (score >= 0.85) return 'Amazing'
+    if (score >= 0.7) return 'Great'
+    if (score >= 0.55) return 'Good'
+    return 'Low'
   }
 
   const formatCompatibilityScore = (score: number) => {
@@ -312,21 +312,21 @@ export function MatchCard({
 
   const compatibilityHighlights = generateCompatibilityHighlights()
 
-  // Helper functions matching DiscoveryCard style
+  // Four distinct colors: Amazing=emerald, Great=indigo, Good=violet, Low=amber
   const getDiscoveryScoreColor = (score: number) => {
     const percent = Math.round(score * 100)
-    if (percent >= 80) return 'text-emerald-400'
-    if (percent >= 60) return 'text-indigo-400'
-    if (percent >= 40) return 'text-amber-400'
-    return 'text-slate-400'
+    if (percent >= 85) return 'text-emerald-400'
+    if (percent >= 70) return 'text-indigo-400'
+    if (percent >= 55) return 'text-violet-400'
+    return 'text-amber-400'
   }
 
   const getDiscoveryScoreBarColor = (score: number) => {
     const percent = Math.round(score * 100)
-    if (percent >= 80) return 'bg-emerald-500'
-    if (percent >= 60) return 'bg-indigo-500'
-    if (percent >= 40) return 'bg-amber-500'
-    return 'bg-slate-500'
+    if (percent >= 85) return 'bg-emerald-500'
+    if (percent >= 70) return 'bg-indigo-500'
+    if (percent >= 55) return 'bg-violet-500'
+    return 'bg-amber-500'
   }
 
   return (

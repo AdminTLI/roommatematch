@@ -175,7 +175,7 @@ export function AppShell({ children, user, showQuestionnairePrompt = false, hide
               </div>
             )}
             <div className="flex-1 flex flex-col overflow-hidden relative">
-              <main className="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8 pb-40 md:pb-40 chat-page-main">
+              <main className="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8 pb-24 md:pb-40 chat-page-main">
                 <motion.div
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
@@ -183,7 +183,7 @@ export function AppShell({ children, user, showQuestionnairePrompt = false, hide
                   className="max-w-7xl mx-auto h-full"
                 >
                   {children}
-                  <div className="mt-4 mb-2">
+                  <div className="mt-6 sm:mt-8">
                     <AppFooter />
                   </div>
                 </motion.div>

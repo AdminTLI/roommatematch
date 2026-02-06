@@ -105,8 +105,8 @@
 
   { "id":"M5_Q1","section":"social-hosting-language","kind":"likert","scale":"agreement","label":"I want a socially active home (weekly hangs/meals)." },
   { "id":"M5_Q2","section":"social-hosting-language","kind":"likert","scale":"agreement","label":"I prefer a quiet home (rare group hangs)." },
-  { "id":"M5_Q3","section":"social-hosting-language","kind":"mcq","label":"How many daytime guests do you typically have per week?","options":[{"value":"0","label":"0"},{"value":"1-2","label":"1–2"},{"value":"3-4","label":"3–4"},{"value":"5+","label":"5+"}] },
-  { "id":"M5_Q4","section":"social-hosting-language","kind":"mcq","label":"How many overnight guests do you typically have per month?","options":[{"value":"0","label":"0"},{"value":"1-2","label":"1–2"},{"value":"3-4","label":"3–4"},{"value":"5+","label":"5+"}] },
+  { "id":"M5_Q3","section":"social-hosting-language","kind":"mcq","label":"How many daytime guests do you expect to have per week?","options":[{"value":"0-2","label":"0–2"},{"value":"3-5","label":"3–5"},{"value":"6-10","label":"6–10"},{"value":"10+","label":"10+"}] },
+  { "id":"M5_Q4","section":"social-hosting-language","kind":"mcq","label":"How many overnight guests do you expect to have per month?","options":[{"value":"0","label":"0"},{"value":"1-2","label":"1–2"},{"value":"3-4","label":"3–4"},{"value":"5+","label":"5+"}] },
   { "id":"M5_Q5","section":"social-hosting-language","kind":"toggle","dbEligible":true,"label":"Prefer no overnight guests on weeknights." },
   { "id":"M5_Q6","section":"social-hosting-language","kind":"mcq","label":"Minimum notice before inviting guests","options":[{"value":"none","label":"None"},{"value":"same-day","label":"Same day"},{"value":"1-day","label":"1 day"},{"value":"2+days","label":"2+ days"}] },
   { "id":"M5_Q7","section":"social-hosting-language","kind":"mcq","label":"Max group size I’m comfortable with at home","options":[{"value":"2-3","label":"2–3"},{"value":"4-6","label":"4–6"},{"value":"7-10","label":"7–10"},{"value":"11+","label":"11+"}] },

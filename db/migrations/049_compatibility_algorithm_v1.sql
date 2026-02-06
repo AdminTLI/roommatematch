@@ -1018,6 +1018,7 @@ $$;
 -- ============================================
 
 -- Calculate context score (academic + lifestyle context)
+-- p_undecided_a / p_undecided_b: true when user has no programme selected (undecided_program = true or program_id IS NULL) → programme component is neutral (0.5)
 CREATE OR REPLACE FUNCTION calculate_context_score(
   p_university_a UUID,
   p_university_b UUID,
@@ -1026,7 +1027,9 @@ CREATE OR REPLACE FUNCTION calculate_context_score(
   p_faculty_a TEXT,
   p_faculty_b TEXT,
   p_study_year_a INTEGER,
-  p_study_year_b INTEGER
+  p_study_year_b INTEGER,
+  p_undecided_a BOOLEAN DEFAULT false,
+  p_undecided_b BOOLEAN DEFAULT false
 ) RETURNS NUMERIC
 LANGUAGE plpgsql
 IMMUTABLE
@@ -1049,8 +1052,10 @@ BEGIN
     END IF;
   END IF;
   
-  -- Programme/Faculty (c_program = 0.35)
-  IF p_program_a IS NOT NULL AND p_program_b IS NOT NULL THEN
+  -- Programme/Faculty (c_program = 0.35): neutral (0.5) if either user has no programme selected
+  IF p_undecided_a OR p_undecided_b THEN
+    v_program_score := 0.5;
+  ELSIF p_program_a IS NOT NULL AND p_program_b IS NOT NULL THEN
     IF p_program_a = p_program_b THEN
       v_program_score := 1.0;
     ELSIF p_faculty_a IS NOT NULL AND p_faculty_b IS NOT NULL AND p_faculty_a = p_faculty_b THEN
@@ -1299,12 +1304,13 @@ BEGIN
     RETURN;
   END IF;
   
-  -- Get user academic profiles
+  -- Get user academic profiles (include undecided_program for context score)
   SELECT 
     ua.university_id,
     ua.program_id,
     p.faculty,
-    usy.study_year
+    usy.study_year,
+    (COALESCE(ua.undecided_program, false) OR ua.program_id IS NULL) AS undecided_program
   INTO user_a_profile
   FROM user_academic ua
   LEFT JOIN programs p ON ua.program_id = p.id
@@ -1315,7 +1321,8 @@ BEGIN
     ua.university_id,
     ua.program_id,
     p.faculty,
-    usy.study_year
+    usy.study_year,
+    (COALESCE(ua.undecided_program, false) OR ua.program_id IS NULL) AS undecided_program
   INTO user_b_profile
   FROM user_academic ua
   LEFT JOIN programs p ON ua.program_id = p.id
@@ -1394,7 +1401,9 @@ BEGIN
     user_a_profile.faculty,
     user_b_profile.faculty,
     v_study_year_a,
-    v_study_year_b
+    v_study_year_b,
+    user_a_profile.undecided_program,
+    user_b_profile.undecided_program
   );
   
   -- Calculate global score: 0.75 * harmony + 0.25 * context

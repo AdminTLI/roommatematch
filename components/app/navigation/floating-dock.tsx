@@ -32,7 +32,7 @@ export function FloatingDock() {
                 initial={{ y: 100, opacity: 0 }}
                 animate={{ y: 0, opacity: 1 }}
                 transition={{ type: "spring", stiffness: 300, damping: 30 }}
-                className="pointer-events-auto bg-white/5 backdrop-blur-2xl border border-white/10 rounded-full p-2.5 flex items-center justify-center shadow-2xl shadow-indigo-500/10"
+                className="pointer-events-auto bg-white/25 dark:bg-slate-900/25 backdrop-blur-2xl backdrop-saturate-150 border border-white/40 dark:border-white/20 rounded-full p-2.5 flex items-center justify-center shadow-[0_0_28px_rgba(15,23,42,0.08)] dark:shadow-[0_0_32px_rgba(0,0,0,0.4)]"
             >
                 <div className="flex items-center space-x-2 sm:space-x-3">
                     {tabs.map((tab) => {
@@ -51,11 +51,11 @@ export function FloatingDock() {
 
                                 <div className={cn(
                                     "relative flex items-center justify-center w-12 h-12 sm:w-14 sm:h-14 rounded-full transition-colors duration-200 z-10",
-                                    !isActive && "text-zinc-400 hover:text-white hover:bg-white/5"
+                                    !isActive && "text-zinc-400 hover:text-indigo-500 hover:bg-indigo-50 dark:hover:text-indigo-400 dark:hover:bg-indigo-950/50"
                                 )}>
                                     <Icon className={cn(
                                         "w-5 h-5 sm:w-6 sm:h-6 transition-colors duration-200",
-                                        isActive ? "text-white" : "text-zinc-400 group-hover:text-white"
+                                        isActive ? "text-white" : "text-zinc-400 group-hover:text-indigo-500 dark:group-hover:text-indigo-400"
                                     )} />
                                 </div>
                             </Link>

@@ -23,11 +23,11 @@ export const metadata: Metadata = {
     title: 'University Housing Solutions | Domu Match',
     description: 'Reduce housing disputes with intelligent roommate matching for Dutch universities. Admin dashboard, analytics, and dedicated support.',
     type: 'website',
-    url: 'https://domumatch.vercel.app/universities',
+    url: 'https://domumatch.com/universities',
     siteName: 'Domu Match',
     images: [
       {
-        url: 'https://domumatch.vercel.app/images/logo.png',
+        url: 'https://domumatch.com/images/logo.png',
         width: 1200,
         height: 630,
         alt: 'University Housing Solutions - Domu Match',
@@ -39,10 +39,10 @@ export const metadata: Metadata = {
     card: 'summary_large_image',
     title: 'University Housing Solutions | Domu Match',
     description: 'Reduce housing disputes with intelligent roommate matching for Dutch universities.',
-    images: ['https://domumatch.vercel.app/images/logo.png'],
+    images: ['https://domumatch.com/images/logo.png'],
   },
   alternates: {
-    canonical: 'https://domumatch.vercel.app/universities',
+    canonical: 'https://domumatch.com/universities',
   },
 }
 
@@ -55,13 +55,13 @@ export default function UniversitiesPage() {
         '@type': 'ListItem',
         position: 1,
         name: 'Home',
-        item: 'https://domumatch.vercel.app',
+        item: 'https://domumatch.com',
       },
       {
         '@type': 'ListItem',
         position: 2,
         name: 'For Universities',
-        item: 'https://domumatch.vercel.app/universities',
+        item: 'https://domumatch.com/universities',
       },
     ],
   }

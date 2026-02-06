@@ -10,10 +10,8 @@ export function formatCompatibilityScore(score: number): string {
 }
 
 export function getCompatibilityLabel(score: number): string {
-  if (score >= 0.9) return 'Excellent Match'
-  if (score >= 0.8) return 'Great Match'
-  if (score >= 0.7) return 'Good Match'
-  if (score >= 0.6) return 'Fair Match'
-  if (score >= 0.5) return 'Okay Match'
-  return 'Poor Match'
+  if (score >= 0.85) return 'Amazing'
+  if (score >= 0.7) return 'Great'
+  if (score >= 0.55) return 'Good'
+  return 'Low'
 }

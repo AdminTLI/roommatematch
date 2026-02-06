@@ -16,16 +16,22 @@ export const metadata: Metadata = {
     'university housing platform pricing',
     'student housing software pricing',
     'Netherlands university housing pricing',
+    'free roommate finder',
+    'free student housing app',
+    'no cost roommate matching',
+    'free verified student platform',
+    'student housing pricing plans',
+    'affordable roommate matching',
   ],
   openGraph: {
     title: 'Pricing Plans | Domu Match',
     description: 'Affordable pricing plans for Dutch universities. Reduce housing disputes with our intelligent roommate matching platform.',
     type: 'website',
-    url: 'https://domumatch.vercel.app/pricing',
+    url: 'https://domumatch.com/pricing',
     siteName: 'Domu Match',
     images: [
       {
-        url: 'https://domumatch.vercel.app/images/logo.png',
+        url: 'https://domumatch.com/images/logo.png',
         width: 1200,
         height: 630,
         alt: 'Pricing Plans - Domu Match',
@@ -37,10 +43,10 @@ export const metadata: Metadata = {
     card: 'summary_large_image',
     title: 'Pricing Plans | Domu Match',
     description: 'Affordable pricing plans for Dutch universities. Reduce housing disputes with intelligent roommate matching.',
-    images: ['https://domumatch.vercel.app/images/logo.png'],
+    images: ['https://domumatch.com/images/logo.png'],
   },
   alternates: {
-    canonical: 'https://domumatch.vercel.app/pricing',
+    canonical: 'https://domumatch.com/pricing',
   },
 }
 
@@ -53,13 +59,13 @@ export default function PricingPage() {
         '@type': 'ListItem',
         position: 1,
         name: 'Home',
-        item: 'https://domumatch.vercel.app',
+        item: 'https://domumatch.com',
       },
       {
         '@type': 'ListItem',
         position: 2,
         name: 'Pricing',
-        item: 'https://domumatch.vercel.app/pricing',
+        item: 'https://domumatch.com/pricing',
       },
     ],
   }

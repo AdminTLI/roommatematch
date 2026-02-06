@@ -102,25 +102,25 @@ export function MarketingFooter() {
         {/* Bottom Section */}
         <div className="border-t border-gray-800 mt-12 pt-8">
           <div className="flex flex-col items-center gap-4">
-            <div className="text-gray-400 text-sm text-center">
+            <div className="text-gray-400 text-sm text-center px-4">
               © 2026 Domu Match. All rights reserved.
             </div>
             
-            <div className="flex items-center gap-6 text-sm text-gray-400">
-              <Link href="/privacy" className="hover:text-white transition-colors">
+            <div className="flex flex-wrap items-center justify-center gap-4 sm:gap-6 text-sm text-gray-400 px-4">
+              <Link href="/privacy" className="hover:text-white transition-colors whitespace-nowrap">
                 Privacy
               </Link>
-              <Link href="/terms" className="hover:text-white transition-colors">
+              <Link href="/terms" className="hover:text-white transition-colors whitespace-nowrap">
                 Terms & Conditions
               </Link>
-              <Link href="/accessibility" className="hover:text-white transition-colors">
+              <Link href="/accessibility" className="hover:text-white transition-colors whitespace-nowrap">
                 Accessibility
               </Link>
               <a 
                 href="https://github.com/domumatch" 
                 target="_blank" 
                 rel="noopener noreferrer"
-                className="hover:text-white transition-colors flex items-center gap-1"
+                className="hover:text-white transition-colors flex items-center gap-1 whitespace-nowrap"
               >
                 GitHub
                 <ExternalLink className="h-3 w-3" />

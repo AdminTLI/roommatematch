@@ -56,6 +56,7 @@ function DiscoveryCardWrapper({
     harmony_score?: number | null
     context_score?: number | null
     dimension_scores_json?: { [key: string]: number } | null
+    other_user_has_incomplete_academic?: boolean
   } | null>(null)
   const [isLoading, setIsLoading] = useState(true)
 
@@ -137,7 +138,8 @@ function DiscoveryCardWrapper({
           harmonyScore: harmonyScore,
           contextScore: contextScore,
           compatibilityHighlights: generateHighlights(),
-          dimensionScores: compatibilityData?.dimension_scores_json || null
+          dimensionScores: compatibilityData?.dimension_scores_json || null,
+          otherUserHasIncompleteAcademic: compatibilityData?.other_user_has_incomplete_academic ?? false
         }}
         onSkip={onSkip}
         onConnect={onConnect}
@@ -804,7 +806,7 @@ export function StudentMatchesInterface({ user }: StudentMatchesInterfaceProps) 
       }
 
       const { chat_id } = await response.json()
-      router.push(`/chat/${chat_id}`)
+      router.push(`/chat?chatId=${chat_id}`)
       setSelectedMatches(new Set())
     } catch (error) {
       console.error('Error creating individual chat:', error)
@@ -858,7 +860,7 @@ export function StudentMatchesInterface({ user }: StudentMatchesInterfaceProps) 
       }
 
       const { chat_id } = await response.json()
-      router.push(`/chat/${chat_id}`)
+      router.push(`/chat?chatId=${chat_id}`)
       setSelectedMatches(new Set())
     } catch (error) {
       console.error('Error creating group chat:', error)
@@ -1037,7 +1039,7 @@ export function StudentMatchesInterface({ user }: StudentMatchesInterfaceProps) 
                       })
                       if (response.ok) {
                         const { chat_id } = await response.json()
-                        router.push(`/chat/${chat_id}`)
+                        router.push(`/chat?chatId=${chat_id}`)
                       }
                     } catch (error) {
                       console.error('Error creating chat:', error)

@@ -71,18 +71,16 @@ interface ProfileCompatibilityPaneProps {
 }
 
 const getScoreGradient = (score: number) => {
-  if (score >= 0.9) return 'from-emerald-500 to-green-600'
-  if (score >= 0.8) return 'from-blue-500 to-indigo-600'
-  if (score >= 0.7) return 'from-indigo-500 to-purple-600'
-  if (score >= 0.6) return 'from-purple-500 to-pink-600'
-  return 'from-pink-500 to-red-600'
+  if (score >= 0.85) return 'from-emerald-500 to-green-600'
+  if (score >= 0.7) return 'from-blue-500 to-indigo-600'
+  if (score >= 0.55) return 'from-violet-500 to-purple-600'
+  return 'from-amber-500 to-orange-500'
 }
 
 const getCompatibilityLabel = (score: number) => {
-  if (score >= 0.9) return 'Excellent'
-  if (score >= 0.8) return 'Very Good'
-  if (score >= 0.7) return 'Good'
-  if (score >= 0.6) return 'Fair'
+  if (score >= 0.85) return 'Amazing'
+  if (score >= 0.7) return 'Great'
+  if (score >= 0.55) return 'Good'
   return 'Low'
 }
 
@@ -130,17 +128,17 @@ const dimensionConfig: { [key: string]: { label: string; description: string; ic
 }
 
 const getScoreColor = (score: number) => {
-  if (score >= 0.8) return 'text-emerald-600 dark:text-emerald-400'
-  if (score >= 0.6) return 'text-blue-600 dark:text-blue-400'
-  if (score >= 0.4) return 'text-yellow-600 dark:text-yellow-400'
-  return 'text-red-600 dark:text-red-400'
+  if (score >= 0.85) return 'text-emerald-600 dark:text-emerald-400'
+  if (score >= 0.7) return 'text-indigo-600 dark:text-indigo-400'
+  if (score >= 0.55) return 'text-violet-600 dark:text-violet-400'
+  return 'text-amber-600 dark:text-amber-400'
 }
 
 const getScoreBarColor = (score: number) => {
-  if (score >= 0.8) return 'bg-emerald-400'
-  if (score >= 0.6) return 'bg-blue-400'
-  if (score >= 0.4) return 'bg-yellow-400'
-  return 'bg-red-400'
+  if (score >= 0.85) return 'bg-emerald-500'
+  if (score >= 0.7) return 'bg-indigo-500'
+  if (score >= 0.55) return 'bg-violet-500'
+  return 'bg-amber-500'
 }
 
 export function ProfileCompatibilityPane({ chatId, userId, isOpen, onClose }: ProfileCompatibilityPaneProps) {

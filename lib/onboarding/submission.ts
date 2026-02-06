@@ -476,7 +476,7 @@ export async function upsertProfileAndAcademic(
     const isUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(data.program_id)
     
     if (isUUID) {
-      // Verify the program exists in the programs table
+      // Verify the program exists in the programs table (user_academic.program_id references programs)
       try {
         const { data: programExists, error: programCheckError } = await supabase
           .from('programs')
@@ -489,14 +489,36 @@ export async function upsertProfileAndAcademic(
           programIdForDb = null
           undecidedProgram = true
         } else if (programExists) {
-          // Program exists, use it
+          // Program exists in programs table, use it
           programIdForDb = data.program_id
           undecidedProgram = false
         } else {
-          // Program doesn't exist, set to null
-          console.warn('[upsertProfileAndAcademic] Program ID does not exist in programs table:', data.program_id)
-          programIdForDb = null
-          undecidedProgram = true
+          // UUID not in programs - may be from programmes table (questionnaire sends programmes.id when rio_code is null)
+          const { data: programmeById } = await supabase
+            .from('programmes')
+            .select('id, croho_code, name, level')
+            .eq('id', data.program_id)
+            .maybeSingle()
+          
+          if (programmeById?.croho_code) {
+            const { data: programByCroho } = await supabase
+              .from('programs')
+              .select('id')
+              .eq('croho_code', programmeById.croho_code)
+              .maybeSingle()
+            if (programByCroho) {
+              programIdForDb = programByCroho.id
+              undecidedProgram = false
+              console.log('[upsertProfileAndAcademic] Resolved programmes.id to programs.id via CROHO:', programByCroho.id)
+            } else {
+              programIdForDb = null
+              undecidedProgram = true
+            }
+          } else {
+            console.warn('[upsertProfileAndAcademic] Program ID does not exist in programs table and not found in programmes:', data.program_id)
+            programIdForDb = null
+            undecidedProgram = true
+          }
         }
       } catch (checkError) {
         console.error('[upsertProfileAndAcademic] Failed to verify program existence:', checkError)

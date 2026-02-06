@@ -17,16 +17,23 @@ export const metadata: Metadata = {
     'student housing platform features',
     'compatibility matching technology',
     'Netherlands student housing features',
+    'AI-powered roommate matching',
+    'verified student matching',
+    'safe student housing platform',
+    'roommate compatibility features',
+    'student verification system',
+    'explainable AI matching',
+    'transparent compatibility scores',
   ],
   openGraph: {
     title: 'Roommate Matching Features | Domu Match',
     description: 'Explore Domu Match features: AI-powered compatibility matching, verified students, safe messaging, and university integration.',
     type: 'website',
-    url: 'https://domumatch.vercel.app/features',
+    url: 'https://domumatch.com/features',
     siteName: 'Domu Match',
     images: [
       {
-        url: 'https://domumatch.vercel.app/images/logo.png',
+        url: 'https://domumatch.com/images/logo.png',
         width: 1200,
         height: 630,
         alt: 'Roommate Matching Features - Domu Match',
@@ -38,10 +45,10 @@ export const metadata: Metadata = {
     card: 'summary_large_image',
     title: 'Roommate Matching Features | Domu Match',
     description: 'Explore Domu Match features: AI-powered compatibility matching, verified students, safe messaging.',
-    images: ['https://domumatch.vercel.app/images/logo.png'],
+    images: ['https://domumatch.com/images/logo.png'],
   },
   alternates: {
-    canonical: 'https://domumatch.vercel.app/features',
+    canonical: 'https://domumatch.com/features',
   },
 }
 
@@ -54,13 +61,13 @@ export default function FeaturesPage() {
         '@type': 'ListItem',
         position: 1,
         name: 'Home',
-        item: 'https://domumatch.vercel.app',
+        item: 'https://domumatch.com',
       },
       {
         '@type': 'ListItem',
         position: 2,
         name: 'Features',
-        item: 'https://domumatch.vercel.app/features',
+        item: 'https://domumatch.com/features',
       },
     ],
   }

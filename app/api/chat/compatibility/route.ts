@@ -298,6 +298,33 @@ export async function GET(request: NextRequest) {
       // Continue without personalized explanation - scores are still returned
     }
 
+    // Check if the OTHER user (target) has incomplete university/academic info
+    // This explains why context score may be lower - show a helpful message on the match card
+    let otherUserHasIncompleteAcademic = false
+    try {
+      const { data: targetAcademic } = await admin
+        .from('user_academic')
+        .select('university_id, degree_level, program_id, study_start_year, undecided_program')
+        .eq('user_id', targetUserId)
+        .maybeSingle()
+
+      if (!targetAcademic) {
+        otherUserHasIncompleteAcademic = true
+      } else {
+        const missingUniversity = targetAcademic.university_id == null
+        const missingDegreeLevel = targetAcademic.degree_level == null || targetAcademic.degree_level === ''
+        const missingStartYear = targetAcademic.study_start_year == null
+        const undecidedProgram = targetAcademic.undecided_program === true || targetAcademic.program_id == null
+        otherUserHasIncompleteAcademic =
+          missingUniversity || missingDegreeLevel || missingStartYear || undecidedProgram
+      }
+    } catch (academicCheckError) {
+      safeLogger.warn('Failed to check target user academic completeness', {
+        targetUserId,
+        error: academicCheckError instanceof Error ? academicCheckError.message : 'Unknown'
+      })
+    }
+
     const responseData = {
       // Existing fields
       compatibility_score: Number(score.compatibility_score) || 0,
@@ -319,6 +346,9 @@ export async function GET(request: NextRequest) {
       dimension_scores_json: score.dimension_scores_json || null,
       is_valid_match: score.is_valid_match !== false, // Default to true if null/undefined
       algorithm_version: score.algorithm_version || 'v1.0',
+
+      // Flag to explain lower context score: other user has incomplete university info
+      other_user_has_incomplete_academic: otherUserHasIncompleteAcademic,
       
       // Debug fields (remove in production)
       _debug: {

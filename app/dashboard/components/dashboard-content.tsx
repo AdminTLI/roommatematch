@@ -260,7 +260,8 @@ export function DashboardContent({ hasCompletedQuestionnaire = false, hasPartial
             })
 
             if (error) {
-              logger.error('Error computing batch compatibility scores:', error)
+              // Non-fatal: log as warning and fall back to individual calls
+              logger.warn('Error computing batch compatibility scores, falling back to individual RPC calls', { error })
               // Fall back to individual calls
               compatibilityScores = await Promise.all(
                 recentUserIds.map(async (otherUserId) => {
@@ -543,21 +544,48 @@ export function DashboardContent({ hasCompletedQuestionnaire = false, hasPartial
           return []
         }
 
-        // Fetch profiles for matched users
+        // Fetch profiles for matched users (without relying on nested relationships)
         const { data: profiles, error: profilesError } = await supabase
           .from('profiles')
           .select(`
           user_id, 
           first_name, 
           last_name, 
-          university_id, 
-          universities(name)
+          university_id
         `)
           .in('user_id', finalUserIds)
 
         if (profilesError) {
-          logger.error('Error loading profiles:', profilesError)
+          // Non-fatal: log as warning and return empty matches to avoid console errors
+          logger.warn('Error loading profiles for recent matches (likely RLS/permissions or schema mismatch). Returning empty list.', { error: profilesError })
           return []
+        }
+
+        // Fetch university names separately to avoid nested relation issues
+        const universityMap = new Map<string, string>()
+        const universityIds = Array.from(
+          new Set(
+            (profiles || [])
+              .map((p: any) => p.university_id)
+              .filter((id: string | null | undefined): id is string => !!id)
+          )
+        )
+
+        if (universityIds.length > 0) {
+          const { data: universities, error: universitiesError } = await supabase
+            .from('universities')
+            .select('id, name')
+            .in('id', universityIds)
+
+          if (universitiesError) {
+            logger.warn('Error loading university data (non-critical):', universitiesError)
+          } else {
+            universities?.forEach((u: any) => {
+              if (u.id && u.name) {
+                universityMap.set(u.id, u.name)
+              }
+            })
+          }
         }
 
         // Fetch program names separately from user_academic
@@ -596,11 +624,10 @@ export function DashboardContent({ hasCompletedQuestionnaire = false, hasPartial
           const fullName = [profile.first_name?.trim(), profile.last_name?.trim()].filter(Boolean).join(' ') || 'User'
           const programDisplay = programMap.get(userId) || null
 
-          // Handle universities as either object or array (Supabase type inference issue)
-          const universityData = Array.isArray(profile.universities)
-            ? profile.universities[0]
-            : profile.universities
-          const universityName = universityData?.name || 'University'
+          // Resolve university name via the separate university lookup
+          const universityName = profile.university_id
+            ? universityMap.get(profile.university_id) || 'University'
+            : 'University'
 
           // Helper function to check if a string is a UUID
           const isUUID = (str: string): boolean => {
@@ -1257,19 +1284,8 @@ export function DashboardContent({ hasCompletedQuestionnaire = false, hasPartial
               <TrendingUp className="w-10 h-10 text-violet-400" />
             </div>
             <div className="text-center max-w-[280px]">
-              <h3 className="text-2xl font-bold text-white mb-3">No suggested matches yet</h3>
-              <p className="text-slate-400 text-sm mb-6 leading-relaxed">Complete your profile to discover potential roommates. New suggestions will appear here as they become available.</p>
-              <Button 
-                variant="default" 
-                size="sm"
-                onClick={(e) => {
-                  e.stopPropagation()
-                  router.push('/settings')
-                }}
-                className="bg-violet-600 hover:bg-violet-500 text-white"
-              >
-                Update Profile
-              </Button>
+              <h3 className="text-2xl font-bold text-white mb-8">No suggested matches yet</h3>
+              <p className="text-slate-400 text-sm leading-relaxed">New suggestions will appear here as they become available.</p>
             </div>
           </motion.div>
         )}

@@ -134,7 +134,7 @@ export const itemIdToQuestionKey: Record<string, string> = {
   // Social, Hosting & Language - Map to existing social keys
   'M5_Q1': 'social_level',       // "I want a socially active home (weekly hangs/meals)."
   'M5_Q2': 'social_level',       // "I prefer a quiet home (rare group hangs)."
-  'M5_Q3': 'guests_frequency',   // Typical daytime guests per week
+  'M5_Q3': 'guests_frequency',   // Expected daytime guests per week
   'M5_Q4': 'guests_frequency',    // Typical overnight guests per month
   'M5_Q5': 'guests_frequency',    // "Prefer no overnight guests on weeknights."
   'M5_Q6': 'guests_frequency',    // Minimum notice before inviting guests

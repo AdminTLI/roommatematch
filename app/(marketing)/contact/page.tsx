@@ -19,11 +19,11 @@ export const metadata: Metadata = {
     title: 'Contact Us | Domu Match',
     description: 'Get in touch with Domu Match. Questions about roommate matching, student housing, or our platform? Contact us today.',
     type: 'website',
-    url: 'https://domumatch.vercel.app/contact',
+    url: 'https://domumatch.com/contact',
     siteName: 'Domu Match',
     images: [
       {
-        url: 'https://domumatch.vercel.app/images/logo.png',
+        url: 'https://domumatch.com/images/logo.png',
         width: 1200,
         height: 630,
         alt: 'Contact Domu Match',
@@ -35,10 +35,10 @@ export const metadata: Metadata = {
     card: 'summary_large_image',
     title: 'Contact Us | Domu Match',
     description: 'Get in touch with Domu Match. Questions about roommate matching or student housing? Contact us today.',
-    images: ['https://domumatch.vercel.app/images/logo.png'],
+    images: ['https://domumatch.com/images/logo.png'],
   },
   alternates: {
-    canonical: 'https://domumatch.vercel.app/contact',
+    canonical: 'https://domumatch.com/contact',
   },
 }
 
@@ -51,13 +51,13 @@ export default function ContactPage() {
         '@type': 'ListItem',
         position: 1,
         name: 'Home',
-        item: 'https://domumatch.vercel.app',
+        item: 'https://domumatch.com',
       },
       {
         '@type': 'ListItem',
         position: 2,
         name: 'Contact',
-        item: 'https://domumatch.vercel.app/contact',
+        item: 'https://domumatch.com/contact',
       },
     ],
   }

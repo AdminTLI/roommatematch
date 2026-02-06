@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { motion } from 'framer-motion'
-import { X, UserPlus, Zap, Heart, Users, MessageCircle, LucideIcon, Info, Droplets, Volume2, Moon, Coffee, BookOpen, Home, Sparkles } from 'lucide-react'
+import { X, UserPlus, Zap, Heart, Users, MessageCircle, LucideIcon, Info, Droplets, Volume2, Moon, Coffee, BookOpen, Home, Sparkles, GraduationCap } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import {
   Tooltip,
@@ -21,6 +21,8 @@ interface DiscoveryCardProps {
         contextScore?: number
         compatibilityHighlights?: string[]
         dimensionScores?: { [key: string]: number } | null
+        /** True when the other user has incomplete university info (missing university, programme, start year, or selected "I haven't selected a programme yet") - explains why context score may be lower */
+        otherUserHasIncompleteAcademic?: boolean
     }
     onSkip?: (id: string) => void
     onConnect?: (id: string) => void
@@ -72,25 +74,25 @@ const dimensionConfig: { [key: string]: { label: string; description: string; ic
   }
 }
 
-// Helper to get score color class
+// Four distinct colors: Amazing=emerald, Great=indigo, Good=violet, Low=amber
 function getScoreColor(score: number): string {
-    if (score >= 80) return 'text-emerald-400'
-    if (score >= 60) return 'text-indigo-400'
-    if (score >= 40) return 'text-amber-400'
-    return 'text-slate-400'
+    if (score >= 85) return 'text-emerald-400'
+    if (score >= 70) return 'text-indigo-400'
+    if (score >= 55) return 'text-violet-400'
+    return 'text-amber-400'
 }
 
 function getScoreBarColor(score: number): string {
-    if (score >= 80) return 'bg-emerald-500'
-    if (score >= 60) return 'bg-indigo-500'
-    if (score >= 40) return 'bg-amber-500'
-    return 'bg-slate-500'
+    if (score >= 85) return 'bg-emerald-500'
+    if (score >= 70) return 'bg-indigo-500'
+    if (score >= 55) return 'bg-violet-500'
+    return 'bg-amber-500'
 }
 
 function getScoreLabel(score: number): string {
-    if (score >= 80) return 'Excellent'
-    if (score >= 60) return 'Good'
-    if (score >= 40) return 'Fair'
+    if (score >= 85) return 'Amazing'
+    if (score >= 70) return 'Great'
+    if (score >= 55) return 'Good'
     return 'Low'
 }
 
@@ -177,11 +179,24 @@ export function DiscoveryCard({ profile, onSkip, onConnect, connectButtonText = 
                 {/* Harmony Score */}
                 <div className="space-y-2">
                     <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-2">
-                            <Heart className="w-4 h-4 text-pink-400" />
-                            <span className="text-sm font-medium text-slate-300">Harmony</span>
+                        <div className="flex flex-nowrap items-center gap-2 min-w-0">
+                            <Heart className="w-4 h-4 text-pink-400 flex-shrink-0" />
+                            <span className="text-sm font-medium text-slate-300 whitespace-nowrap">Harmony</span>
+                            <TooltipProvider>
+                              <Tooltip>
+                                <TooltipTrigger asChild>
+                                  <button type="button" className="flex-shrink-0 cursor-help rounded-full p-0.5 text-slate-400 hover:text-slate-300 focus:outline-none focus:ring-2 focus:ring-indigo-500/50">
+                                    <Info className="h-3.5 w-3.5" aria-hidden />
+                                    <span className="sr-only">What is Harmony Score?</span>
+                                  </button>
+                                </TooltipTrigger>
+                                <TooltipContent side="top" className="max-w-xs bg-slate-900 dark:bg-slate-800 border-slate-700 text-slate-100 text-xs">
+                                  <p>Measures how well your day-to-day living preferences align - cleanliness, sleep, noise, guests, shared spaces, substances, study/social balance, and home vibe.</p>
+                                </TooltipContent>
+                              </Tooltip>
+                            </TooltipProvider>
                         </div>
-                        <span className={`text-sm font-bold ${getScoreColor(harmonyScore)}`}>
+                        <span className={`text-sm font-bold flex-shrink-0 ${getScoreColor(harmonyScore)}`}>
                             {harmonyScore}%
                         </span>
                     </div>
@@ -198,11 +213,24 @@ export function DiscoveryCard({ profile, onSkip, onConnect, connectButtonText = 
                 {/* Context Score */}
                 <div className="space-y-2">
                     <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-2">
-                            <Users className="w-4 h-4 text-blue-400" />
-                            <span className="text-sm font-medium text-slate-300">Context</span>
+                        <div className="flex flex-nowrap items-center gap-2 min-w-0">
+                            <Users className="w-4 h-4 text-blue-400 flex-shrink-0" />
+                            <span className="text-sm font-medium text-slate-300 whitespace-nowrap">Context</span>
+                            <TooltipProvider>
+                              <Tooltip>
+                                <TooltipTrigger asChild>
+                                  <button type="button" className="flex-shrink-0 cursor-help rounded-full p-0.5 text-slate-400 hover:text-slate-300 focus:outline-none focus:ring-2 focus:ring-indigo-500/50">
+                                    <Info className="h-3.5 w-3.5" aria-hidden />
+                                    <span className="sr-only">What is Context Score?</span>
+                                  </button>
+                                </TooltipTrigger>
+                                <TooltipContent side="top" className="max-w-xs bg-slate-900 dark:bg-slate-800 border-slate-700 text-slate-100 text-xs">
+                                  <p>Measures how similar your academic context is - university, programme, and study year.</p>
+                                </TooltipContent>
+                              </Tooltip>
+                            </TooltipProvider>
                         </div>
-                        <span className={`text-sm font-bold ${getScoreColor(contextScore)}`}>
+                        <span className={`text-sm font-bold flex-shrink-0 ${getScoreColor(contextScore)}`}>
                             {contextScore}%
                         </span>
                     </div>
@@ -287,17 +315,47 @@ export function DiscoveryCard({ profile, onSkip, onConnect, connectButtonText = 
                   )}
                 </div>
 
+                {/* Incomplete Academic Info Notice - explains lower context score */}
+                {profile.otherUserHasIncompleteAcademic && (
+                  <div className="mb-5 pb-5 border-b border-slate-700/50">
+                    <div className="flex gap-3 p-3 rounded-lg bg-amber-950/30 border border-amber-800/50">
+                      <GraduationCap className="w-5 h-5 text-amber-400 flex-shrink-0 mt-0.5" />
+                      <div className="min-w-0">
+                        <p className="text-sm font-medium text-amber-200 mb-1">
+                          Context score may be lower
+                        </p>
+                        <p className="text-xs text-amber-300/90 leading-relaxed">
+                          This match could be stronger than the score suggests. The other person hasn&apos;t fully filled out their university details (missing university, programme, start year, or selected &quot;I haven&apos;t selected a programme yet&quot;), so our context algorithm has less information to compare. The compatibility score could improve once they complete their profile.
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
                 {/* Harmony & Context Scores - Horizontal Layout */}
                 {(harmonyScore > 0 || contextScore > 0) && (
                   <div className="grid grid-cols-2 gap-4 mb-5 pb-5 border-b border-slate-700/50">
                     {harmonyScore > 0 && (
                       <div className="space-y-2">
                         <div className="flex items-center justify-between">
-                          <div className="flex items-center gap-2">
-                            <Heart className="w-4 h-4 text-pink-400" />
-                            <span className="text-sm font-medium text-slate-300">Harmony</span>
+                          <div className="flex flex-nowrap items-center gap-2 min-w-0">
+                            <Heart className="w-4 h-4 text-pink-400 flex-shrink-0" />
+                            <span className="text-sm font-medium text-slate-300 whitespace-nowrap">Harmony</span>
+                            <TooltipProvider>
+                              <Tooltip>
+                                <TooltipTrigger asChild>
+                                  <button type="button" className="flex-shrink-0 cursor-help rounded-full p-0.5 text-slate-400 hover:text-slate-300 focus:outline-none focus:ring-2 focus:ring-indigo-500/50">
+                                    <Info className="h-3.5 w-3.5" aria-hidden />
+                                    <span className="sr-only">What is Harmony Score?</span>
+                                  </button>
+                                </TooltipTrigger>
+                                <TooltipContent side="top" className="max-w-xs bg-slate-900 dark:bg-slate-800 border-slate-700 text-slate-100 text-xs">
+                                  <p>Measures how well your day-to-day living preferences align - cleanliness, sleep, noise, guests, shared spaces, substances, study/social balance, and home vibe.</p>
+                                </TooltipContent>
+                              </Tooltip>
+                            </TooltipProvider>
                           </div>
-                          <span className={`text-sm font-semibold ${getScoreColor(harmonyScore)}`}>
+                          <span className={`text-sm font-semibold flex-shrink-0 ${getScoreColor(harmonyScore)}`}>
                             {harmonyScore}%
                           </span>
                         </div>
@@ -313,11 +371,24 @@ export function DiscoveryCard({ profile, onSkip, onConnect, connectButtonText = 
                     {contextScore > 0 && (
                       <div className="space-y-2">
                         <div className="flex items-center justify-between">
-                          <div className="flex items-center gap-2">
-                            <Users className="w-4 h-4 text-blue-400" />
-                            <span className="text-sm font-medium text-slate-300">Context</span>
+                          <div className="flex flex-nowrap items-center gap-2 min-w-0">
+                            <Users className="w-4 h-4 text-blue-400 flex-shrink-0" />
+                            <span className="text-sm font-medium text-slate-300 whitespace-nowrap">Context</span>
+                            <TooltipProvider>
+                              <Tooltip>
+                                <TooltipTrigger asChild>
+                                  <button type="button" className="flex-shrink-0 cursor-help rounded-full p-0.5 text-slate-400 hover:text-slate-300 focus:outline-none focus:ring-2 focus:ring-indigo-500/50">
+                                    <Info className="h-3.5 w-3.5" aria-hidden />
+                                    <span className="sr-only">What is Context Score?</span>
+                                  </button>
+                                </TooltipTrigger>
+                                <TooltipContent side="top" className="max-w-xs bg-slate-900 dark:bg-slate-800 border-slate-700 text-slate-100 text-xs">
+                                  <p>Measures how similar your academic context is - university, programme, and study year.</p>
+                                </TooltipContent>
+                              </Tooltip>
+                            </TooltipProvider>
                           </div>
-                          <span className={`text-sm font-semibold ${getScoreColor(contextScore)}`}>
+                          <span className={`text-sm font-semibold flex-shrink-0 ${getScoreColor(contextScore)}`}>
                             {contextScore}%
                           </span>
                         </div>

@@ -421,13 +421,13 @@ export function NotificationsPage({ user }: NotificationsPageProps) {
 
       {/* Notifications */}
       <Tabs value={selectedTab} onValueChange={(value) => setSelectedTab(value as 'all' | 'unread')}>
-        <TabsList className="grid w-full grid-cols-2 h-auto">
-          <TabsTrigger value="all" className="flex items-center gap-1.5 sm:gap-2 text-xs sm:text-sm py-2.5 sm:py-2 min-h-[44px] sm:min-h-0">
+        <TabsList className="grid w-full grid-cols-2 h-auto rounded-xl">
+          <TabsTrigger value="all" className="flex items-center gap-1.5 sm:gap-2 text-xs sm:text-sm py-2.5 sm:py-2 min-h-[44px] sm:min-h-0 rounded-lg">
             <span className="hidden sm:inline">All Notifications</span>
             <span className="sm:hidden">All</span>
             <Badge variant="secondary" className="text-xs">{totalCount}</Badge>
           </TabsTrigger>
-          <TabsTrigger value="unread" className="flex items-center gap-1.5 sm:gap-2 text-xs sm:text-sm py-2.5 sm:py-2 min-h-[44px] sm:min-h-0">
+          <TabsTrigger value="unread" className="flex items-center gap-1.5 sm:gap-2 text-xs sm:text-sm py-2.5 sm:py-2 min-h-[44px] sm:min-h-0 rounded-lg">
             Unread
             <Badge variant="destructive" className="text-xs">{unreadCount}</Badge>
           </TabsTrigger>
@@ -453,11 +453,11 @@ export function NotificationsPage({ user }: NotificationsPageProps) {
           ) : filteredNotifications.length === 0 ? (
             <Card>
               <CardContent className="p-12 text-center">
-                <Bell className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-                <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                <Bell className="h-12 w-12 text-gray-400 dark:text-gray-500 mx-auto mb-4" />
+                <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
                   {searchQuery ? 'No notifications found' : 'No notifications yet'}
                 </h3>
-                <p className="text-gray-600 mb-4">
+                <p className="text-gray-600 dark:text-gray-300 mb-4">
                   {searchQuery 
                     ? 'Try adjusting your search terms'
                     : 'We\'ll notify you about matches, messages, and updates'
@@ -523,13 +523,13 @@ export function NotificationsPage({ user }: NotificationsPageProps) {
           ) : filteredNotifications.filter(n => !n.is_read).length === 0 ? (
             <Card>
               <CardContent className="p-12 text-center">
-                <div className="h-12 w-12 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                  <CheckCheck className="h-6 w-6 text-green-600" />
+                <div className="h-12 w-12 bg-green-100 dark:bg-green-500/20 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <CheckCheck className="h-6 w-6 text-green-600 dark:text-green-400" />
                 </div>
-                <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
                   All caught up!
                 </h3>
-                <p className="text-gray-600">
+                <p className="text-gray-600 dark:text-gray-300">
                   You have no unread notifications
                 </p>
               </CardContent>

@@ -202,13 +202,34 @@ export async function POST(request: Request) {
               .maybeSingle()
             
             if (program) {
-              // UUID exists and is valid
+              // UUID exists and is valid (from programs table)
               submissionData.undecided_program = false
               programIdResolved = true
               safeLogger.debug('[Submit] Program UUID verified:', submissionData.program_id)
             } else {
-              console.warn('[Submit] Program UUID not found in programs table, will try RIO/CROHO lookup')
-              // Fall through to RIO/CROHO lookup - don't set programIdResolved
+              // UUID not in programs - likely from programmes table (questionnaire sends programmes.id when rio_code is null)
+              const { data: programmeById } = await serviceSupabase
+                .from('programmes')
+                .select('id, rio_code, croho_code, name, level, institution_slug')
+                .eq('id', submissionData.program_id)
+                .maybeSingle()
+              
+              if (programmeById && programmeById.croho_code) {
+                const { data: programByCroho } = await serviceSupabase
+                  .from('programs')
+                  .select('id')
+                  .eq('croho_code', programmeById.croho_code)
+                  .maybeSingle()
+                if (programByCroho) {
+                  submissionData.program_id = programByCroho.id
+                  submissionData.undecided_program = false
+                  programIdResolved = true
+                  safeLogger.debug('[Submit] Resolved programmes.id to programs.id via CROHO:', programByCroho.id)
+                }
+              }
+              if (!programIdResolved) {
+                console.warn('[Submit] Program UUID not found in programs table, will try RIO/CROHO lookup')
+              }
             }
           }
           

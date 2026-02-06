@@ -15,11 +15,11 @@ export const metadata: Metadata = {
     title: 'Privacy Policy | Domu Match',
     description: 'Read Domu Match privacy policy. Learn how we protect your data and comply with GDPR in the Netherlands.',
     type: 'website',
-    url: 'https://domumatch.vercel.app/privacy',
+    url: 'https://domumatch.com/privacy',
     siteName: 'Domu Match',
     images: [
       {
-        url: 'https://domumatch.vercel.app/images/logo.png',
+        url: 'https://domumatch.com/images/logo.png',
         width: 1200,
         height: 630,
         alt: 'Privacy Policy - Domu Match',
@@ -31,10 +31,10 @@ export const metadata: Metadata = {
     card: 'summary_large_image',
     title: 'Privacy Policy | Domu Match',
     description: 'Read Domu Match privacy policy. Learn how we protect your data and comply with GDPR.',
-    images: ['https://domumatch.vercel.app/images/logo.png'],
+    images: ['https://domumatch.com/images/logo.png'],
   },
   alternates: {
-    canonical: 'https://domumatch.vercel.app/privacy',
+    canonical: 'https://domumatch.com/privacy',
   },
   robots: {
     index: true,

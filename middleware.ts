@@ -144,6 +144,7 @@ export async function middleware(req: NextRequest) {
       const skipCSRFRoutes = [
         '/api/verification/persona-complete',
         '/api/verification/provider-webhook',
+        '/api/verification/sync', // Repair sync for users with approved verification but out-of-sync profile
         '/api/careers/apply',
         '/api/analytics/track-event',
         '/api/admin/sync-updates', // Admin endpoint for syncing deployment updates

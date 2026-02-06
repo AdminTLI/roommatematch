@@ -97,15 +97,17 @@ BEGIN
     RETURN;
   END IF;
   
-  -- Get user academic profiles
-  SELECT ua.university_id, ua.program_id, p.faculty, usy.study_year
+  -- Get user academic profiles (include undecided_program for context score)
+  SELECT ua.university_id, ua.program_id, p.faculty, usy.study_year,
+    (COALESCE(ua.undecided_program, false) OR ua.program_id IS NULL) AS undecided_program
   INTO user_a_profile
   FROM user_academic ua
   LEFT JOIN programs p ON ua.program_id = p.id
   LEFT JOIN user_study_year_v usy ON ua.user_id = usy.user_id
   WHERE ua.user_id = user_a_id;
   
-  SELECT ua.university_id, ua.program_id, p.faculty, usy.study_year
+  SELECT ua.university_id, ua.program_id, p.faculty, usy.study_year,
+    (COALESCE(ua.undecided_program, false) OR ua.program_id IS NULL) AS undecided_program
   INTO user_b_profile
   FROM user_academic ua
   LEFT JOIN programs p ON ua.program_id = p.id
@@ -179,7 +181,8 @@ BEGIN
     user_a_profile.university_id, user_b_profile.university_id,
     user_a_profile.program_id, user_b_profile.program_id,
     user_a_profile.faculty, user_b_profile.faculty,
-    v_study_year_a, v_study_year_b
+    v_study_year_a, v_study_year_b,
+    user_a_profile.undecided_program, user_b_profile.undecided_program
   );
   
   RAISE NOTICE '[Compatibility] Context score: %', v_context_score;

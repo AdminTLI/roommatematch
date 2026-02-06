@@ -11,6 +11,7 @@ const content = {
     product: "Product",
     company: "Company",
     support: "Support",
+    cities: "Find Roommates",
     howItWorks: "How it works",
     features: "Features",
     pricing: "Pricing",
@@ -21,6 +22,7 @@ const content = {
     careers: "Careers",
     contact: "Contact",
     helpCenter: "Help center",
+    faq: "FAQ",
     safety: "Safety",
     privacyPolicy: "Privacy policy",
     termsOfService: "Terms & Conditions",
@@ -34,6 +36,7 @@ const content = {
     product: "Product",
     company: "Bedrijf",
     support: "Ondersteuning",
+    cities: "Vind huisgenoten",
     howItWorks: "Hoe het werkt",
     features: "Functies",
     pricing: "Prijzen",
@@ -44,6 +47,7 @@ const content = {
     careers: "Carrières",
     contact: "Contact",
     helpCenter: "Helpcentrum",
+    faq: "Veelgestelde vragen",
     safety: "Veiligheid",
     privacyPolicy: "Privacybeleid",
     termsOfService: "Algemene voorwaarden",
@@ -61,7 +65,7 @@ export default function Footer() {
   return (
     <footer className="bg-[#0B1220] text-slate-300">
       <Container className="py-12 sm:py-16">
-        <div className="grid gap-8 sm:gap-10 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
+        <div className="grid gap-8 sm:gap-10 grid-cols-1 sm:grid-cols-2 lg:grid-cols-5">
           {/* Brand */}
           <div className="space-y-4 sm:col-span-2 lg:col-span-1">
             <h3 className="text-white text-lg sm:text-xl font-semibold">Domu Match</h3>
@@ -81,7 +85,18 @@ export default function Footer() {
               <li><Link href="/features" className="hover:text-white">{t.features}</Link></li>
               <li><Link href="/pricing" className="hover:text-white">{t.pricing}</Link></li>
               <li><Link href="/universities" className="hover:text-white">{t.universities}</Link></li>
+            </ul>
+          </div>
 
+          <div>
+            <h4 className="text-white font-semibold mb-4">{t.cities}</h4>
+            <ul className="space-y-3 text-slate-400">
+              <li><Link href="/amsterdam" className="hover:text-white">Amsterdam</Link></li>
+              <li><Link href="/rotterdam" className="hover:text-white">Rotterdam</Link></li>
+              <li><Link href="/utrecht" className="hover:text-white">Utrecht</Link></li>
+              <li><Link href="/den-haag" className="hover:text-white">Den Haag</Link></li>
+              <li><Link href="/eindhoven" className="hover:text-white">Eindhoven</Link></li>
+              <li><Link href="/groningen" className="hover:text-white">Groningen</Link></li>
             </ul>
           </div>
 
@@ -99,6 +114,7 @@ export default function Footer() {
             <h4 className="text-white font-semibold mb-4">{t.support}</h4>
             <ul className="space-y-3 text-slate-400">
               <li><Link href="/help-center" className="hover:text-white">{t.helpCenter}</Link></li>
+              <li><Link href="/faq" className="hover:text-white">{t.faq}</Link></li>
               <li><Link href="/safety" className="hover:text-white">{t.safety}</Link></li>
               <li><Link href="/privacy" className="hover:text-white">{t.privacyPolicy}</Link></li>
               <li><Link href="/terms" className="hover:text-white">{t.termsOfService}</Link></li>
@@ -107,11 +123,11 @@ export default function Footer() {
         </div>
 
         <div className="mt-8 sm:mt-12 border-t border-white/10 pt-6 flex flex-col items-center gap-4">
-          <p className="text-slate-500 text-xs sm:text-sm text-center">© 2026 Domu Match. {t.allRightsReserved}</p>
-          <div className="flex items-center gap-4 sm:gap-6 text-xs sm:text-sm text-slate-400">
-            <Link href="/privacy" className="hover:text-white py-2">{t.privacy}</Link>
-            <Link href="/terms" className="hover:text-white py-2">{t.terms}</Link>
-            <a className="hover:text-white py-2">{t.cookies}</a>
+          <p className="text-slate-500 text-xs sm:text-sm text-center px-4">© 2026 Domu Match. {t.allRightsReserved}</p>
+          <div className="flex flex-wrap items-center justify-center gap-4 sm:gap-6 text-xs sm:text-sm text-slate-400 px-4">
+            <Link href="/privacy" className="hover:text-white py-2 whitespace-nowrap">{t.privacy}</Link>
+            <Link href="/terms" className="hover:text-white py-2 whitespace-nowrap">{t.terms}</Link>
+            <a className="hover:text-white py-2 whitespace-nowrap">{t.cookies}</a>
           </div>
         </div>
       </Container>

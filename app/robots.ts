@@ -1,7 +1,7 @@
 import { MetadataRoute } from 'next'
 
 export default function robots(): MetadataRoute.Robots {
-  const baseUrl = 'https://domumatch.vercel.app'
+  const baseUrl = 'https://domumatch.com'
   
   return {
     rules: [

@@ -11,6 +11,7 @@ import { User } from '@supabase/supabase-js'
 import { cn } from '@/lib/utils'
 import { createClient } from '@/lib/supabase/client'
 import { getInstitutionType } from '@/lib/getInstitutionType'
+import { getInstitutionLabel } from '@/lib/loadInstitutions'
 import { calculateStudyYearWithMonths, getStudyYearStatus } from '@/lib/academic/calculateStudyYear'
 
 interface AcademicStepProps {
@@ -559,7 +560,7 @@ export function AcademicStep({ data, onChange, user, errors = {}, onFieldBlur }:
             Academic Profile Summary
           </h4>
           <div className="text-sm text-green-700 dark:text-green-300 space-y-1">
-            <div><strong>Institution:</strong> {universityName ? universityName.toUpperCase() : (data.institution_slug ? data.institution_slug.toUpperCase() : 'Not specified')}</div>
+            <div><strong>Institution:</strong> {getInstitutionLabel(data.institution_slug) ?? universityName ?? (data.institution_slug && data.institution_slug !== 'other' ? data.institution_slug.replace(/-/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase()) : data.institution_other) ?? 'Not specified'}</div>
             <div><strong>Degree Level:</strong> {
               data.degree_level === 'bachelor' ? "Bachelor's" :
               data.degree_level === 'master' ? "Master's" :

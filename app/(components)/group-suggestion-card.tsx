@@ -37,10 +37,10 @@ export function GroupSuggestionCard({
   }
 
   const getCompatibilityColor = (score: number) => {
-    if (score >= 0.8) return 'text-green-600'
-    if (score >= 0.6) return 'text-blue-600'
-    if (score >= 0.4) return 'text-yellow-600'
-    return 'text-red-600'
+    if (score >= 0.85) return 'text-emerald-600'
+    if (score >= 0.7) return 'text-indigo-600'
+    if (score >= 0.55) return 'text-violet-600'
+    return 'text-amber-600'
   }
 
   return (

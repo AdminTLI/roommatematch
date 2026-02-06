@@ -43,18 +43,16 @@ interface MessengerProfilePaneProps {
 }
 
 const getScoreGradient = (score: number) => {
-  if (score >= 0.9) return 'from-emerald-500 to-green-600'
-  if (score >= 0.8) return 'from-blue-500 to-indigo-600'
-  if (score >= 0.7) return 'from-indigo-500 to-purple-600'
-  if (score >= 0.6) return 'from-purple-500 to-pink-600'
-  return 'from-pink-500 to-red-600'
+  if (score >= 0.85) return 'from-emerald-500 to-green-600'
+  if (score >= 0.7) return 'from-blue-500 to-indigo-600'
+  if (score >= 0.55) return 'from-violet-500 to-purple-600'
+  return 'from-amber-500 to-orange-500'
 }
 
 const getCompatibilityLabel = (score: number) => {
-  if (score >= 0.9) return 'Excellent'
-  if (score >= 0.8) return 'Very Good'
-  if (score >= 0.7) return 'Good'
-  if (score >= 0.6) return 'Fair'
+  if (score >= 0.85) return 'Amazing'
+  if (score >= 0.7) return 'Great'
+  if (score >= 0.55) return 'Good'
   return 'Low'
 }
 
@@ -102,17 +100,17 @@ const dimensionConfig: { [key: string]: { label: string; description: string; ic
 }
 
 const getScoreColor = (score: number) => {
-  if (score >= 0.8) return 'text-emerald-600 dark:text-emerald-400'
-  if (score >= 0.6) return 'text-indigo-600 dark:text-indigo-400'
-  if (score >= 0.4) return 'text-amber-600 dark:text-amber-400'
-  return 'text-red-600 dark:text-red-400'
+  if (score >= 0.85) return 'text-emerald-600 dark:text-emerald-400'
+  if (score >= 0.7) return 'text-indigo-600 dark:text-indigo-400'
+  if (score >= 0.55) return 'text-violet-600 dark:text-violet-400'
+  return 'text-amber-600 dark:text-amber-400'
 }
 
 const getScoreBarColor = (score: number) => {
-  if (score >= 0.8) return 'bg-emerald-500'
-  if (score >= 0.6) return 'bg-indigo-500'
-  if (score >= 0.4) return 'bg-amber-500'
-  return 'bg-red-500'
+  if (score >= 0.85) return 'bg-emerald-500'
+  if (score >= 0.7) return 'bg-indigo-500'
+  if (score >= 0.55) return 'bg-violet-500'
+  return 'bg-amber-500'
 }
 
 export function MessengerProfilePane({ chatId, isOpen, onClose }: MessengerProfilePaneProps) {
@@ -270,22 +268,20 @@ export function MessengerProfilePane({ chatId, isOpen, onClose }: MessengerProfi
                     <div className="relative">
                       <span className={cn(
                         'text-6xl font-black tracking-tight block',
-                        compatibility.compatibility_score >= 0.9 ? 'text-emerald-600 dark:text-emerald-400' :
-                        compatibility.compatibility_score >= 0.8 ? 'text-indigo-600 dark:text-indigo-400' :
+                        compatibility.compatibility_score >= 0.85 ? 'text-emerald-600 dark:text-emerald-400' :
                         compatibility.compatibility_score >= 0.7 ? 'text-indigo-600 dark:text-indigo-400' :
-                        compatibility.compatibility_score >= 0.6 ? 'text-amber-600 dark:text-amber-400' :
-                        'text-gray-500 dark:text-gray-400'
+                        compatibility.compatibility_score >= 0.55 ? 'text-violet-600 dark:text-violet-400' :
+                        'text-amber-600 dark:text-amber-400'
                       )}>
                         {matchScore}%
                       </span>
                       <div className="mt-2">
                         <span className={cn(
                           'text-sm font-semibold px-3 py-1 rounded-full bg-white dark:bg-gray-900 inline-block border border-gray-200 dark:border-gray-700',
-                          compatibility.compatibility_score >= 0.9 ? 'text-emerald-600 dark:text-emerald-400' :
-                          compatibility.compatibility_score >= 0.8 ? 'text-indigo-600 dark:text-indigo-400' :
+                          compatibility.compatibility_score >= 0.85 ? 'text-emerald-600 dark:text-emerald-400' :
                           compatibility.compatibility_score >= 0.7 ? 'text-indigo-600 dark:text-indigo-400' :
-                          compatibility.compatibility_score >= 0.6 ? 'text-amber-600 dark:text-amber-400' :
-                          'text-gray-600 dark:text-gray-400'
+                          compatibility.compatibility_score >= 0.55 ? 'text-violet-600 dark:text-violet-400' :
+                          'text-amber-600 dark:text-amber-400'
                         )}>
                           {getCompatibilityLabel(compatibility.compatibility_score)} Match
                         </span>
@@ -325,7 +321,22 @@ export function MessengerProfilePane({ chatId, isOpen, onClose }: MessengerProfi
                       <div className="grid grid-cols-2 gap-3">
                         {compatibility.harmony_score !== null && (
                           <div className="p-3 rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800">
-                            <div className="text-xs text-gray-600 dark:text-gray-400 mb-1">Harmony Score</div>
+                            <div className="flex flex-nowrap items-center gap-1.5 mb-1 min-w-0">
+                              <span className="text-xs text-gray-600 dark:text-gray-400 whitespace-nowrap">Harmony Score</span>
+                              <TooltipProvider>
+                                <Tooltip>
+                                  <TooltipTrigger asChild>
+                                    <button type="button" className="flex-shrink-0 cursor-help rounded-full p-0.5 text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 focus:outline-none focus:ring-2 focus:ring-indigo-500/50">
+                                      <Info className="h-3.5 w-3.5" aria-hidden />
+                                      <span className="sr-only">What is Harmony Score?</span>
+                                    </button>
+                                  </TooltipTrigger>
+                                  <TooltipContent side="top" className="max-w-xs bg-gray-900 dark:bg-gray-800 border-gray-700 text-gray-100 text-xs">
+                                    <p>Measures how well your day-to-day living preferences align - cleanliness, sleep, noise, guests, shared spaces, substances, study/social balance, and home vibe.</p>
+                                  </TooltipContent>
+                                </Tooltip>
+                              </TooltipProvider>
+                            </div>
                             <div className="text-2xl font-bold text-gray-900 dark:text-white">
                               {Math.round(compatibility.harmony_score * 100)}%
                             </div>
@@ -339,7 +350,22 @@ export function MessengerProfilePane({ chatId, isOpen, onClose }: MessengerProfi
                         )}
                         {compatibility.context_score !== null && (
                           <div className="p-3 rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800">
-                            <div className="text-xs text-gray-600 dark:text-gray-400 mb-1">Context Score</div>
+                            <div className="flex flex-nowrap items-center gap-1.5 mb-1 min-w-0">
+                              <span className="text-xs text-gray-600 dark:text-gray-400 whitespace-nowrap">Context Score</span>
+                              <TooltipProvider>
+                                <Tooltip>
+                                  <TooltipTrigger asChild>
+                                    <button type="button" className="flex-shrink-0 cursor-help rounded-full p-0.5 text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 focus:outline-none focus:ring-2 focus:ring-indigo-500/50">
+                                      <Info className="h-3.5 w-3.5" aria-hidden />
+                                      <span className="sr-only">What is Context Score?</span>
+                                    </button>
+                                  </TooltipTrigger>
+                                  <TooltipContent side="top" className="max-w-xs bg-gray-900 dark:bg-gray-800 border-gray-700 text-gray-100 text-xs">
+                                    <p>Measures how similar your academic context is - university, programme, and study year.</p>
+                                  </TooltipContent>
+                                </Tooltip>
+                              </TooltipProvider>
+                            </div>
                             <div className="text-2xl font-bold text-gray-900 dark:text-white">
                               {Math.round(compatibility.context_score * 100)}%
                             </div>

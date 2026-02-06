@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import {
@@ -32,6 +32,13 @@ interface SettingsContentProps {
 
 export function SettingsContent({ user, profile, academic, progressData }: SettingsContentProps) {
   const [activeTab, setActiveTab] = useState('profile')
+  const [mounted, setMounted] = useState(false)
+
+  // Defer Radix UI (Tabs, Popover, Dialog, Tooltip) until after mount to avoid
+  // hydration mismatch from server/client ID differences (e.g. aria-labelledby, id).
+  useEffect(() => {
+    setMounted(true)
+  }, [])
 
   const navItems = [
     { id: 'profile', label: 'Profile', icon: User },
@@ -92,56 +99,66 @@ export function SettingsContent({ user, profile, academic, progressData }: Setti
           </div>
         </aside>
 
-        {/* Main Content Area */}
+        {/* Main Content Area - only render Radix UI after mount to avoid hydration mismatch */}
         <div className="flex-1">
           <div className="bg-white/80 dark:bg-zinc-900/40 backdrop-blur-xl border border-zinc-200 dark:border-white/10 rounded-3xl overflow-hidden shadow-sm">
-            <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-              <TabsContent value="profile" className="mt-0 focus-visible:outline-none">
-                <div className="p-6">
-                  <div className="mb-6">
-                    <h2 className="text-xl font-semibold text-zinc-900 dark:text-white">Profile Information</h2>
-                    <p className="text-sm text-zinc-600 dark:text-zinc-400 mt-1">Update your personal information and preferences.</p>
-                  </div>
-                  <ProfileSettings
-                    user={user}
-                    profile={profile}
-                    academic={academic}
-                  />
+            {!mounted ? (
+              <div className="p-6 min-h-[320px] flex items-center justify-center">
+                <div className="animate-pulse flex flex-col gap-3 w-full max-w-sm">
+                  <div className="h-6 bg-zinc-200 dark:bg-zinc-700 rounded" />
+                  <div className="h-4 bg-zinc-200 dark:bg-zinc-700 rounded w-3/4" />
+                  <div className="h-32 bg-zinc-200 dark:bg-zinc-700 rounded mt-4" />
                 </div>
-              </TabsContent>
+              </div>
+            ) : (
+              <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+                <TabsContent value="profile" className="mt-0 focus-visible:outline-none">
+                  <div className="p-6">
+                    <div className="mb-6">
+                      <h2 className="text-xl font-semibold text-zinc-900 dark:text-white">Profile Information</h2>
+                      <p className="text-sm text-zinc-600 dark:text-zinc-400 mt-1">Update your personal information and preferences.</p>
+                    </div>
+                    <ProfileSettings
+                      user={user}
+                      profile={profile}
+                      academic={academic}
+                    />
+                  </div>
+                </TabsContent>
 
-              <TabsContent value="questionnaire" className="mt-0 focus-visible:outline-none">
-                <div className="p-6">
-                  <div className="mb-6">
-                    <h2 className="text-xl font-semibold text-zinc-900 dark:text-white">Questionnaire Management</h2>
-                    <p className="text-sm text-zinc-600 dark:text-zinc-400 mt-1">View and manage your compatibility questionnaire responses.</p>
+                <TabsContent value="questionnaire" className="mt-0 focus-visible:outline-none">
+                  <div className="p-6">
+                    <div className="mb-6">
+                      <h2 className="text-xl font-semibold text-zinc-900 dark:text-white">Questionnaire Management</h2>
+                      <p className="text-sm text-zinc-600 dark:text-zinc-400 mt-1">View and manage your compatibility questionnaire responses.</p>
+                    </div>
+                    <QuestionnaireSettings
+                      progressData={progressData}
+                    />
                   </div>
-                  <QuestionnaireSettings
-                    progressData={progressData}
-                  />
-                </div>
-              </TabsContent>
+                </TabsContent>
 
-              <TabsContent value="account" className="mt-0 focus-visible:outline-none">
-                <div className="p-6">
-                  <div className="mb-6">
-                    <h2 className="text-xl font-semibold text-zinc-900 dark:text-white">Account Settings</h2>
-                    <p className="text-sm text-zinc-600 dark:text-zinc-400 mt-1">Manage your account preferences and security settings.</p>
+                <TabsContent value="account" className="mt-0 focus-visible:outline-none">
+                  <div className="p-6">
+                    <div className="mb-6">
+                      <h2 className="text-xl font-semibold text-zinc-900 dark:text-white">Account Settings</h2>
+                      <p className="text-sm text-zinc-600 dark:text-zinc-400 mt-1">Manage your account preferences and security settings.</p>
+                    </div>
+                    <AccountSettings user={user} />
                   </div>
-                  <AccountSettings user={user} />
-                </div>
-              </TabsContent>
+                </TabsContent>
 
-              <TabsContent value="privacy" className="mt-0 focus-visible:outline-none">
-                <div className="p-6">
-                  <div className="mb-6">
-                    <h2 className="text-xl font-semibold text-zinc-900 dark:text-white">Privacy & Data</h2>
-                    <p className="text-sm text-zinc-600 dark:text-zinc-400 mt-1">Control your data visibility and privacy settings.</p>
+                <TabsContent value="privacy" className="mt-0 focus-visible:outline-none">
+                  <div className="p-6">
+                    <div className="mb-6">
+                      <h2 className="text-xl font-semibold text-zinc-900 dark:text-white">Privacy & Data</h2>
+                      <p className="text-sm text-zinc-600 dark:text-zinc-400 mt-1">Control your data visibility and privacy settings.</p>
+                    </div>
+                    <PrivacySettings user={user} />
                   </div>
-                  <PrivacySettings user={user} />
-                </div>
-              </TabsContent>
-            </Tabs>
+                </TabsContent>
+              </Tabs>
+            )}
           </div>
         </div>
       </div>

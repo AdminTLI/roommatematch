@@ -268,17 +268,17 @@ export function SuggestionCard({
   }
 
   const getScoreColor = (score: number) => {
-    if (score >= 80) return 'text-emerald-600 dark:text-emerald-400'
-    if (score >= 60) return 'text-indigo-600 dark:text-indigo-400'
-    if (score >= 40) return 'text-amber-600 dark:text-amber-400'
-    return 'text-zinc-500 dark:text-zinc-400'
+    if (score >= 85) return 'text-emerald-600 dark:text-emerald-400'
+    if (score >= 70) return 'text-indigo-600 dark:text-indigo-400'
+    if (score >= 55) return 'text-violet-600 dark:text-violet-400'
+    return 'text-amber-600 dark:text-amber-400'
   }
 
   const getScoreBarColor = (score: number) => {
-    if (score >= 80) return 'bg-emerald-500 dark:bg-emerald-400'
-    if (score >= 60) return 'bg-indigo-500 dark:bg-indigo-400'
-    if (score >= 40) return 'bg-amber-500 dark:bg-amber-400'
-    return 'bg-zinc-400 dark:bg-zinc-500'
+    if (score >= 85) return 'bg-emerald-500 dark:bg-emerald-400'
+    if (score >= 70) return 'bg-indigo-500 dark:bg-indigo-400'
+    if (score >= 55) return 'bg-violet-500 dark:bg-violet-400'
+    return 'bg-amber-500 dark:bg-amber-400'
   }
 
   const formatTopAlignment = (alignment: string | null | undefined) => {
@@ -411,9 +411,9 @@ export function SuggestionCard({
 
   const getCompatibilityLabel = (score: number | null) => {
     if (!score) return 'Loading'
-    if (score >= 80) return 'Excellent'
-    if (score >= 60) return 'Good'
-    if (score >= 40) return 'Fair'
+    if (score >= 85) return 'Amazing'
+    if (score >= 70) return 'Great'
+    if (score >= 55) return 'Good'
     return 'Low'
   }
 
@@ -481,11 +481,24 @@ export function SuggestionCard({
             {harmonyScore !== null && (
               <div className="space-y-2">
                 <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <Heart className="w-4 h-4 text-pink-500" />
-                    <span className="text-sm font-medium text-zinc-700 dark:text-zinc-300">Harmony</span>
+                  <div className="flex flex-nowrap items-center gap-2 min-w-0">
+                    <Heart className="w-4 h-4 text-pink-500 flex-shrink-0" />
+                    <span className="text-sm font-medium text-zinc-700 dark:text-zinc-300 whitespace-nowrap">Harmony</span>
+                    <TooltipProvider>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <button type="button" className="flex-shrink-0 cursor-help rounded-full p-0.5 text-zinc-500 dark:text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-300 focus:outline-none focus:ring-2 focus:ring-indigo-500/50">
+                            <Info className="h-3.5 w-3.5" aria-hidden />
+                            <span className="sr-only">What is Harmony Score?</span>
+                          </button>
+                        </TooltipTrigger>
+                        <TooltipContent side="top" className="max-w-xs bg-zinc-900 dark:bg-zinc-800 border-zinc-700 text-zinc-100 text-xs">
+                          <p>Measures how well your day-to-day living preferences align - cleanliness, sleep, noise, guests, shared spaces, substances, study/social balance, and home vibe.</p>
+                        </TooltipContent>
+                      </Tooltip>
+                    </TooltipProvider>
                   </div>
-                  <span className={`text-sm font-semibold ${getScoreColor(harmonyScore)}`}>
+                  <span className={`text-sm font-semibold flex-shrink-0 ${getScoreColor(harmonyScore)}`}>
                     {harmonyScore}%
                   </span>
                 </div>
@@ -501,11 +514,24 @@ export function SuggestionCard({
             {contextScore !== null && (
               <div className="space-y-2">
                 <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <Users className="w-4 h-4 text-blue-500" />
-                    <span className="text-sm font-medium text-zinc-700 dark:text-zinc-300">Context</span>
+                  <div className="flex flex-nowrap items-center gap-2 min-w-0">
+                    <Users className="w-4 h-4 text-blue-500 flex-shrink-0" />
+                    <span className="text-sm font-medium text-zinc-700 dark:text-zinc-300 whitespace-nowrap">Context</span>
+                    <TooltipProvider>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <button type="button" className="flex-shrink-0 cursor-help rounded-full p-0.5 text-zinc-500 dark:text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-300 focus:outline-none focus:ring-2 focus:ring-indigo-500/50">
+                            <Info className="h-3.5 w-3.5" aria-hidden />
+                            <span className="sr-only">What is Context Score?</span>
+                          </button>
+                        </TooltipTrigger>
+                        <TooltipContent side="top" className="max-w-xs bg-zinc-900 dark:bg-zinc-800 border-zinc-700 text-zinc-100 text-xs">
+                          <p>Measures how similar your academic context is - university, programme, and study year.</p>
+                        </TooltipContent>
+                      </Tooltip>
+                    </TooltipProvider>
                   </div>
-                  <span className={`text-sm font-semibold ${getScoreColor(contextScore)}`}>
+                  <span className={`text-sm font-semibold flex-shrink-0 ${getScoreColor(contextScore)}`}>
                     {contextScore}%
                   </span>
                 </div>

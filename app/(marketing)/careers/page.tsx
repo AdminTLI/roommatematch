@@ -19,11 +19,11 @@ export const metadata: Metadata = {
     title: 'Careers | Domu Match - Join Our Community',
     description: 'Volunteer with Domu Match as an experienced contributor or student. Build real impact on roommate safety and trust.',
     type: 'website',
-    url: 'https://domumatch.vercel.app/careers',
+    url: 'https://domumatch.com/careers',
     siteName: 'Domu Match',
     images: [
       {
-        url: 'https://domumatch.vercel.app/images/logo.png',
+        url: 'https://domumatch.com/images/logo.png',
         width: 1200,
         height: 630,
         alt: 'Careers at Domu Match',
@@ -35,10 +35,10 @@ export const metadata: Metadata = {
     card: 'summary_large_image',
     title: 'Careers | Domu Match - Join Our Community',
     description: 'Volunteer with Domu Match. Build real impact on roommate safety and trust in the Netherlands.',
-    images: ['https://domumatch.vercel.app/images/logo.png'],
+    images: ['https://domumatch.com/images/logo.png'],
   },
   alternates: {
-    canonical: 'https://domumatch.vercel.app/careers',
+    canonical: 'https://domumatch.com/careers',
   },
 }
 
@@ -51,13 +51,13 @@ export default function CareersPage() {
         '@type': 'ListItem',
         position: 1,
         name: 'Home',
-        item: 'https://domumatch.vercel.app',
+        item: 'https://domumatch.com',
       },
       {
         '@type': 'ListItem',
         position: 2,
         name: 'Careers',
-        item: 'https://domumatch.vercel.app/careers',
+        item: 'https://domumatch.com/careers',
       },
     ],
   }

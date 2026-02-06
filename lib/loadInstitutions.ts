@@ -15,4 +15,12 @@ export function toGroupedOptions() {
   ]
 }
 
+/** Get the full display label for an institution by slug (same source as InstitutionSelect). */
+export function getInstitutionLabel(slug: string): string | undefined {
+  if (!slug || slug === 'other') return undefined
+  const { wo, wo_special, hbo } = loadInstitutions()
+  const all = [...wo, ...wo_special, ...hbo]
+  return all.find((i) => i.id === slug)?.label
+}
+
 

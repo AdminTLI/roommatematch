@@ -1,9 +1,10 @@
 'use client'
 
-import { useState, useEffect, startTransition, useCallback } from 'react'
+import React, { useState, useEffect, useRef, useCallback } from 'react'
 import { createPortal } from 'react-dom'
 import { useRouter } from 'next/navigation'
 import { useQuery } from '@tanstack/react-query'
+import { Plus_Jakarta_Sans } from 'next/font/google'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -25,6 +26,8 @@ import {
   MoreHorizontal,
   X
 } from 'lucide-react'
+
+const plusJakarta = Plus_Jakarta_Sans({ subsets: ['latin'], weight: ['400', '500', '600', '700'] })
 
 // Hook to detect if we're on mobile
 function useIsMobile() {
@@ -68,27 +71,25 @@ export function NotificationDropdown({
   const [mounted, setMounted] = useState(false)
   const [activeTab, setActiveTab] = useState<'all' | 'unread'>('all')
   const [dropdownPosition, setDropdownPosition] = useState<{ top: number; left: number } | null>(null)
+  const listScrollRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
     setMounted(true)
   }, [])
 
-  // Calculate position to center panel on bell icon
+  // Calculate position to center panel on bell icon (only on window scroll/resize, not when scrolling inside panel)
   useEffect(() => {
     if (!isOpen || isMobile || !mounted) return
 
     const updatePosition = () => {
-      // Find the bell button in the header
       const bellButton = document.querySelector('[aria-label="Notifications"]') as HTMLElement
       if (!bellButton) return
 
       const bellRect = bellButton.getBoundingClientRect()
       const bellCenterX = bellRect.left + bellRect.width / 2
-      const panelWidth = 384 // w-96 = 384px
+      const panelWidth = 384
       const panelLeft = bellCenterX - panelWidth / 2
-
-      // Ensure panel doesn't go off-screen
-      const padding = 16 // 1rem padding from screen edge
+      const padding = 16
       const left = Math.max(padding, Math.min(panelLeft, window.innerWidth - panelWidth - padding))
 
       setDropdownPosition({
@@ -98,11 +99,18 @@ export function NotificationDropdown({
     }
 
     updatePosition()
-    window.addEventListener('scroll', updatePosition, true)
+    // Use passive: false only for resize; for scroll, only listen to window scroll (not capture)
+    // so that scrolling inside the panel doesn't trigger this
+    const handleScroll = (e: Event) => {
+      const target = e.target as Node
+      if (listScrollRef.current && listScrollRef.current.contains(target)) return
+      updatePosition()
+    }
+    window.addEventListener('scroll', handleScroll, true)
     window.addEventListener('resize', updatePosition)
 
     return () => {
-      window.removeEventListener('scroll', updatePosition, true)
+      window.removeEventListener('scroll', handleScroll, true)
       window.removeEventListener('resize', updatePosition)
     }
   }, [isOpen, isMobile, mounted])
@@ -327,11 +335,11 @@ export function NotificationDropdown({
         e.stopPropagation()
       }}
     >
-      <div className="flex items-center gap-1.5 sm:gap-2 flex-1 min-w-0">
-        <Bell className="h-4 w-4 sm:h-5 sm:w-5 flex-shrink-0 text-text-primary" />
-        <h2 className="text-base sm:text-lg font-semibold whitespace-nowrap text-text-primary">Notifications</h2>
+      <div className={`flex items-center gap-2 sm:gap-2.5 flex-1 min-w-0 ${plusJakarta.className}`}>
+        <Bell className="h-5 w-5 flex-shrink-0 text-violet-600 dark:text-violet-400" />
+        <h2 className="text-base font-semibold whitespace-nowrap text-zinc-900 dark:text-white tracking-tight">Notifications</h2>
         {unreadCount > 0 && (
-          <Badge variant="destructive" className="ml-1 sm:ml-2 flex-shrink-0 text-xs">
+          <Badge variant="destructive" className="ml-1 flex-shrink-0 text-[10px] h-4 px-1.5 rounded-full bg-violet-600 hover:bg-violet-500 dark:bg-violet-600 dark:hover:bg-violet-500 border-0 leading-none">
             {unreadCount}
           </Badge>
         )}
@@ -354,7 +362,7 @@ export function NotificationDropdown({
             handleMarkAllClick(e)
           }}
           disabled={unreadCount === 0}
-          className="h-9 w-9 p-0 min-w-[36px]"
+          className="h-9 w-9 p-0 min-w-[36px] hover:bg-zinc-100 dark:hover:bg-slate-700 text-zinc-600 dark:text-slate-300 hover:text-zinc-900 dark:hover:text-white disabled:opacity-40"
           title="Mark all as read"
           type="button"
         >
@@ -375,7 +383,7 @@ export function NotificationDropdown({
               window.location.href = '/notifications'
             }, 0)
           }}
-          className="h-9 w-9 p-0 min-w-[36px]"
+          className="h-9 w-9 p-0 min-w-[36px] hover:bg-zinc-100 dark:hover:bg-slate-700 text-zinc-600 dark:text-slate-300 hover:text-zinc-900 dark:hover:text-white"
           title="View all notifications"
           type="button"
         >
@@ -393,7 +401,7 @@ export function NotificationDropdown({
               e.stopPropagation()
               onClose()
             }}
-            className="h-9 w-9 p-0 min-w-[36px]"
+            className="h-9 w-9 p-0 min-w-[36px] hover:bg-zinc-100 dark:hover:bg-slate-700 text-zinc-600 dark:text-slate-300 hover:text-zinc-900 dark:hover:text-white"
             title="Close notifications"
             type="button"
           >
@@ -412,29 +420,29 @@ export function NotificationDropdown({
       : notifications
 
     return (
-      <div className="flex flex-col h-[calc(100vh-160px)] sm:h-[400px] md:h-96">
+      <div className="flex flex-col h-full min-h-0">
         {/* Professional Tabs */}
-        <div className="flex-shrink-0 px-4 pt-4 pb-3">
+        <div className="flex-shrink-0 px-3 pt-3 pb-2 bg-white dark:bg-slate-800">
           <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as 'all' | 'unread')}>
-            <TabsList className="grid w-full grid-cols-2">
-              <TabsTrigger 
-                value="all" 
-                className="text-xs sm:text-sm"
+            <TabsList className="grid w-full grid-cols-2 grid-rows-1 h-11 rounded-xl bg-zinc-100 dark:bg-slate-700/50 p-1.5 gap-1.5 items-center">
+              <TabsTrigger
+                value="all"
+                className="w-full text-xs font-medium rounded-lg data-[state=active]:bg-violet-600 data-[state=active]:text-white text-zinc-600 dark:text-slate-300 h-5 min-h-0 flex items-center justify-center gap-1.5 px-2.5 py-0"
               >
-                All
+                <span>All</span>
                 {notifications.length > 0 && (
-                  <Badge variant="secondary" className="ml-1.5 h-4 min-w-[16px] px-1.5 text-[10px] font-medium border-0">
+                  <Badge variant="secondary" className="h-4 min-w-[16px] px-1.5 text-[10px] font-medium rounded-full border-0 bg-zinc-400/80 dark:bg-slate-600/80 text-white leading-none flex items-center justify-center shrink-0">
                     {notifications.length}
                   </Badge>
                 )}
               </TabsTrigger>
-              <TabsTrigger 
-                value="unread" 
-                className="text-xs sm:text-sm"
+              <TabsTrigger
+                value="unread"
+                className="w-full text-xs font-medium rounded-lg data-[state=active]:bg-violet-600 data-[state=active]:text-white text-zinc-600 dark:text-slate-300 h-5 min-h-0 flex items-center justify-center gap-1.5 px-2.5 py-0"
               >
-                Unread
+                <span>Unread</span>
                 {unreadCount > 0 && (
-                  <Badge variant="destructive" className="ml-1.5 h-4 min-w-[16px] px-1.5 text-[10px] font-medium">
+                  <Badge variant="destructive" className="h-4 min-w-[16px] px-1.5 text-[10px] font-medium rounded-full bg-violet-600/80 text-white border-0 leading-none flex items-center justify-center shrink-0">
                     {unreadCount}
                   </Badge>
                 )}
@@ -443,19 +451,26 @@ export function NotificationDropdown({
           </Tabs>
         </div>
 
-        {/* Notification List */}
-        <div className="flex-1 overflow-y-auto">
+        {/* Notification List - Scrollable container; ref so window scroll listener ignores scrolls here */}
+        <div
+          ref={listScrollRef}
+          className="flex-1 min-h-0 overflow-y-auto overflow-x-hidden bg-white dark:bg-slate-800 overscroll-contain"
+          style={{ WebkitOverflowScrolling: 'touch' }}
+          onWheel={(e) => e.stopPropagation()}
+        >
           {isLoading ? (
-            <div className="p-4 text-center text-text-secondary">
+            <div className="p-4 text-center text-zinc-500 dark:text-slate-400 text-xs">
               Loading notifications...
             </div>
           ) : filteredNotifications.length === 0 ? (
-            <div className="p-8 text-center">
-              <Bell className="h-12 w-12 text-text-muted mx-auto mb-3" />
-              <p className="text-text-secondary text-sm">
+            <div className="p-6 text-center">
+              <div className="w-12 h-12 rounded-xl bg-violet-100 dark:bg-violet-500/10 flex items-center justify-center mx-auto mb-3">
+                <Bell className="h-6 w-6 text-violet-600 dark:text-violet-400" />
+              </div>
+              <p className="text-zinc-900 dark:text-white text-sm font-semibold mb-1">
                 {activeTab === 'unread' ? 'No unread notifications' : 'No notifications yet'}
               </p>
-              <p className="text-text-muted text-xs mt-1">
+              <p className="text-zinc-500 dark:text-slate-400 text-xs mt-1">
                 {activeTab === 'unread' 
                   ? 'All caught up! New notifications will appear here.'
                   : "We'll notify you about matches, messages, and updates"
@@ -463,7 +478,7 @@ export function NotificationDropdown({
               </p>
             </div>
           ) : (
-            <div className="space-y-2 p-4">
+            <div className="space-y-2 p-3">
               {filteredNotifications.map((notification) => (
                 <div key={notification.id} className="flex justify-center">
                   <div className="w-full max-w-full">
@@ -479,7 +494,7 @@ export function NotificationDropdown({
                 </div>
               ))}
               {activeTab === 'unread' && counts && counts.unread > filteredNotifications.length && (
-                <p className="text-xs text-text-muted px-2 pb-2">
+                <p className="text-[10px] text-zinc-400 dark:text-slate-500 px-2 pb-2">
                   Showing the first {filteredNotifications.length} of {counts.unread} unread notifications. 
                   Tap "View all notifications" to open the full list.
                 </p>
@@ -495,17 +510,17 @@ export function NotificationDropdown({
   if (isMobile) {
     return (
       <Sheet open={isOpen} onOpenChange={onClose}>
-        <SheetContent 
+        <SheetContent
           data-notification-dropdown
-          side="right" 
-          className="w-full p-4 z-[100]"
+          side="right"
+          className={`${plusJakarta.className} w-full p-0 z-[100] bg-white dark:bg-slate-800 border-zinc-200 dark:border-slate-700 flex flex-col`}
           onClick={(e) => {
             // Prevent clicks inside sheet from closing it
             e.stopPropagation()
           }}
         >
           <SheetHeader 
-            className="mb-4 pr-12"
+            className="mb-0 pr-12 px-4 pt-4 flex-shrink-0"
             onClick={(e) => {
               // Prevent header clicks from closing sheet
               e.stopPropagation()
@@ -521,7 +536,9 @@ export function NotificationDropdown({
               <HeaderContent isMobile={true} />
             </SheetTitle>
           </SheetHeader>
-          <NotificationList />
+          <div className="flex-1 min-h-0 flex flex-col overflow-hidden">
+            <NotificationList />
+          </div>
         </SheetContent>
       </Sheet>
     )
@@ -553,16 +570,16 @@ export function NotificationDropdown({
           e.stopPropagation()
         }}
       >
-        <Card className="shadow-elev-2 overflow-hidden">
-          <CardHeader 
-            className="pb-4 px-6 pt-6 border-b border-border-subtle"
+        <Card className={`${plusJakarta.className} shadow-xl overflow-hidden bg-white dark:bg-slate-800 border-zinc-200 dark:border-slate-700 rounded-2xl border`}>
+          <CardHeader
+            className="pb-3 px-4 pt-4 border-b border-zinc-200 dark:border-slate-700/50 rounded-t-2xl"
             onClick={(e) => {
               // Prevent header clicks from closing dropdown
               e.stopPropagation()
             }}
           >
-            <CardTitle 
-              className="text-base"
+            <CardTitle
+              className="text-base font-semibold"
               onClick={(e) => {
                 // Prevent title clicks from closing dropdown
                 e.stopPropagation()
@@ -571,7 +588,7 @@ export function NotificationDropdown({
               <HeaderContent isMobile={false} />
             </CardTitle>
           </CardHeader>
-          <CardContent className="p-0 bg-transparent">
+          <CardContent className="p-0 bg-white dark:bg-slate-800 flex flex-col" style={{ height: '500px', maxHeight: '500px', minHeight: 0 }}>
             <NotificationList />
           </CardContent>
         </Card>

@@ -295,7 +295,7 @@ export function ProfileSettings({ user, profile, academic }: ProfileSettingsProp
           {[
             { label: 'University', value: academic?.universities?.name || academic?.university_id, icon: GraduationCap },
             { label: 'Degree Level', value: academic?.degree_level ? academic.degree_level.charAt(0).toUpperCase() + academic.degree_level.slice(1) : null, icon: GraduationCap },
-            { label: 'Program', value: academic?.undecided_program ? 'Undecided' : (academic?.programs?.name || profile?.program), icon: GraduationCap },
+            { label: 'Program', value: (academic?.undecided_program && !profile?.program) ? 'Undecided' : (academic?.programs?.name || profile?.program), icon: GraduationCap },
             { label: 'Graduation', value: academic?.expected_graduation_year ? `Class of ${academic.expected_graduation_year}` : null, icon: GraduationCap },
           ].map((item, i) => (
             <div key={i} className="p-4 flex flex-col sm:flex-row sm:items-center gap-4 bg-zinc-50 dark:bg-zinc-900/60">

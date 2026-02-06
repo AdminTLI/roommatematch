@@ -233,23 +233,12 @@ export function VerifyInterface({ user }: VerifyInterfaceProps) {
             }
           }
           
-          // If status hasn't been fetched yet, wait a bit and try again
-          if (!statusFetchedRef.current) {
-            // Wait up to 2 seconds for status to be fetched
-            let attempts = 0
-            const maxAttempts = 20
-            const checkStatus = () => {
-              if (statusFetchedRef.current || attempts >= maxAttempts) {
-                tryAutoOpen()
-              } else {
-                attempts++
-                setTimeout(checkStatus, 100)
-              }
-            }
-            checkStatus()
-          } else {
+          // CRITICAL: Only auto-open if status has been fetched. Never open before API confirms -
+          // otherwise verified users see Persona due to race (Persona loads before status API).
+          if (statusFetchedRef.current) {
             tryAutoOpen()
           }
+          // If not fetched yet: fetchStatus completion will open when it gets unverified/failed
         },
         onComplete: async ({ inquiryId, status: personaStatus }) => {
           console.log(`Completed inquiry ${inquiryId} with status ${personaStatus}`)
@@ -427,27 +416,26 @@ export function VerifyInterface({ user }: VerifyInterfaceProps) {
         const newStatus = data.status
         console.log('[Verify] Status fetched:', { newStatus, fullData: data })
         setStatus(newStatus)
+        statusRef.current = newStatus
         statusFetchedRef.current = true
         
-        // Update shouldAutoOpen based on status
         if (newStatus === 'verified' || newStatus === 'pending') {
           shouldAutoOpenRef.current = false
         }
         
-        // Don't automatically redirect - let user click the button
-        // Automatic redirects can cause loops with middleware cache
-        if (newStatus === 'verified') {
-          console.log('[Verify] Status is verified - user can click Continue button', {
-            newStatus,
-            currentStatus: status,
-            statusRef: statusRef.current
-          })
-        } else {
-          console.log('[Verify] Status is not verified:', {
-            newStatus,
-            currentStatus: status,
-            statusRef: statusRef.current
-          })
+        // If user needs verification AND Persona is ready, open now (Persona onReady may have fired before us)
+        if ((newStatus === 'unverified' || newStatus === 'failed') && shouldAutoOpenRef.current && !hasOpenedPersonaRef.current && personaClientRef.current) {
+          setIsStarting(true)
+          setIsPersonaActive(true)
+          hasOpenedPersonaRef.current = true
+          try {
+            personaClientRef.current.open()
+          } catch (err) {
+            console.error('Failed to open Persona after status fetch:', err)
+            setIsStarting(false)
+            setIsPersonaActive(false)
+            hasOpenedPersonaRef.current = false
+          }
         }
       } else if (response.status === 404) {
         // Profile doesn't exist yet - user is unverified
@@ -684,6 +672,33 @@ export function VerifyInterface({ user }: VerifyInterfaceProps) {
                   This typically takes just a few minutes.
                 </p>
               </div>
+
+              <p className="text-sm text-zinc-500 dark:text-zinc-400">
+                Already verified?{' '}
+                <button
+                  type="button"
+                  onClick={async () => {
+                    try {
+                      const tokenRes = await fetch('/api/csrf-token', { credentials: 'include' })
+                      const { token } = tokenRes.ok ? await tokenRes.json() : {}
+                      const headers: HeadersInit = { 'Content-Type': 'application/json' }
+                      if (token) headers['x-csrf-token'] = token
+                      const res = await fetch('/api/verification/sync', { method: 'POST', headers })
+                      const data = await res.json()
+                      if (data.synced) {
+                        window.location.href = '/onboarding/intro'
+                      } else {
+                        setError(data.message || 'No verified record found.')
+                      }
+                    } catch (e) {
+                      setError('Failed to sync. Please try again.')
+                    }
+                  }}
+                  className="underline hover:no-underline text-brand-primary"
+                >
+                  Sync my verification status
+                </button>
+              </p>
 
               <div className="bg-blue-50 dark:bg-blue-900/20 rounded-lg p-4 text-left">
                 <h4 className="font-medium text-blue-900 dark:text-blue-200 mb-2">
