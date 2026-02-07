@@ -13,15 +13,15 @@ import { useApp } from '@/app/providers'
 const navigationContent = {
   en: [
     { name: 'How it works', href: '/how-it-works' },
-    { name: 'Features', href: '/features' },
-    { name: 'Universities', href: '/universities' },
+    { name: 'For Students', href: '/features' },
+    { name: 'For Universities', href: '/universities' },
 
     { name: 'About us', href: '/about' },
   ],
   nl: [
     { name: 'Hoe het werkt', href: '/how-it-works' },
-    { name: 'Functies', href: '/features' },
-    { name: 'Universiteiten', href: '/universities' },
+    { name: 'Voor studenten', href: '/features' },
+    { name: 'Voor universiteiten', href: '/universities' },
 
     { name: 'Over ons', href: '/about' },
   ]

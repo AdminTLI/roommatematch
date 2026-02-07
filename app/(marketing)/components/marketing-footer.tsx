@@ -12,7 +12,7 @@ export function MarketingFooter() {
     {
       title: 'Product',
       links: [
-        { name: 'Features', href: '/features' },
+        { name: 'For Students', href: '/features' },
         { name: 'How it works', href: '/#how-it-works' },
         { name: 'Safety', href: '/#safety' },
         { name: 'Pricing', href: '/pricing' }

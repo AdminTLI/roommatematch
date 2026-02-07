@@ -12,6 +12,7 @@ export interface MarketingStatsResponse {
   verifiedUsersPercent: number
   universitiesCount: number
   programmesCount: number
+  totalUsers: number
   generatedAt: string
 }
 
@@ -79,6 +80,7 @@ export async function GET() {
         verifiedUsersPercent: 0,
         universitiesCount: 0,
         programmesCount: 0,
+        totalUsers: 0,
         generatedAt: new Date().toISOString(),
       } as MarketingStatsResponse)
     }
@@ -508,6 +510,7 @@ export async function GET() {
       verifiedUsersPercent,
       universitiesCount,
       programmesCount,
+      totalUsers: users.length,
       generatedAt: new Date().toISOString(),
     }
 
