@@ -45,7 +45,7 @@ const content = {
       {
         icon: Eye,
         title: 'Transparent Matches',
-        description: "You see why you're matched—compatibility score and reasoning, no black box.",
+        description: "You see why you're matched - compatibility score and reasoning, no black box.",
       },
       {
         icon: AlertTriangle,
@@ -100,7 +100,7 @@ const content = {
       {
         icon: Eye,
         title: 'Transparante Matches',
-        description: 'Je ziet waarom je matcht—compatibiliteitsscore en uitleg, geen black box.',
+        description: 'Je ziet waarom je matcht - compatibiliteitsscore en uitleg, geen black box.',
       },
       {
         icon: AlertTriangle,

@@ -170,7 +170,7 @@ export const content: Record<Locale, FeaturesForStudentsContent> = {
       button: 'Get Started',
     },
     socialProof: {
-      universities: ['UvA', 'VU Amsterdam', 'TU Delft', 'Utrecht University', 'EUR'],
+      universities: ['Tilburg University', 'Avans University of Applied Sciences', 'Breda University of Applied Sciences'],
     },
     comparison: {
       title: 'How we compare',
@@ -280,7 +280,7 @@ export const content: Record<Locale, FeaturesForStudentsContent> = {
       button: 'Begin nu',
     },
     socialProof: {
-      universities: ['UvA', 'VU Amsterdam', 'TU Delft', 'Universiteit Utrecht', 'EUR'],
+      universities: ['Tilburg University', 'Avans University of Applied Sciences', 'Breda University of Applied Sciences'],
     },
     comparison: {
       title: 'Zo vergelijken we',

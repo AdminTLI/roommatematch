@@ -27,7 +27,7 @@ const content = {
     featuresSubtitle: 'Built on science, backed by universities, designed for safety',
     ctaTitle: 'Ready to find your perfect match?',
     ctaSubtitle:
-      'Set up your profile in about 10 minutes. No commitment—just better matches.',
+      'Set up your profile in about 10 minutes. No commitment - just better matches.',
     ctaButton: 'Get started for free',
     steps: [
       {
@@ -65,7 +65,7 @@ const content = {
         icon: Users,
         title: 'Get your matches',
         description:
-          'We show you compatible roommates with a clear score and reasoning—no black box. You see why you match before you message.',
+          'We show you compatible roommates with a clear score and reasoning - no black box. You see why you match before you message.',
         details: [
           'Compatibility score and short explanation',
           'Academic program and study year considered',
@@ -111,7 +111,7 @@ const content = {
         icon: Zap,
         title: 'Smart matching',
         description:
-          '40+ compatibility factors help us suggest roommates who are more likely to click—before any conflict starts.',
+          '40+ compatibility factors help us suggest roommates who are more likely to click - before any conflict starts.',
       },
       {
         icon: Shield,
@@ -123,7 +123,7 @@ const content = {
         icon: CheckCircle,
         title: 'Transparent matches',
         description:
-          'You see your compatibility score and why you matched. No mystery—just clear, explainable results.',
+          'You see your compatibility score and why you matched. No mystery - just clear, explainable results.',
       },
     ],
   },
@@ -135,7 +135,7 @@ const content = {
     featuresSubtitle: 'Gebouwd op wetenschap, ondersteund door universiteiten, ontworpen voor veiligheid',
     ctaTitle: 'Klaar om je perfecte match te vinden?',
     ctaSubtitle:
-      'Zet je profiel in ongeveer 10 minuten op. Geen verplichting—alleen betere matches.',
+      'Zet je profiel in ongeveer 10 minuten op. Geen verplichting - alleen betere matches.',
     ctaButton: 'Begin gratis',
     steps: [
       {
@@ -173,7 +173,7 @@ const content = {
         icon: Users,
         title: 'Krijg je matches',
         description:
-          'We tonen je compatibele huisgenoten met een duidelijke score en uitleg—geen black box. Je ziet waarom je matcht voordat je bericht stuurt.',
+          'We tonen je compatibele huisgenoten met een duidelijke score en uitleg - geen black box. Je ziet waarom je matcht voordat je bericht stuurt.',
         details: [
           'Compatibiliteitsscore en korte uitleg',
           'Studierichting en jaar meegenomen',
@@ -219,7 +219,7 @@ const content = {
         icon: Zap,
         title: 'Slimme matching',
         description:
-          '40+ compatibiliteitsfactoren helpen ons huisgenoten voor te stellen die beter bij elkaar passen—voordat er conflicten ontstaan.',
+          '40+ compatibiliteitsfactoren helpen ons huisgenoten voor te stellen die beter bij elkaar passen - voordat er conflicten ontstaan.',
       },
       {
         icon: Shield,
@@ -231,7 +231,7 @@ const content = {
         icon: CheckCircle,
         title: 'Transparante matches',
         description:
-          'Je ziet je compatibiliteitsscore en waarom je matcht. Geen mysterie—alleen duidelijke, uitlegbare resultaten.',
+          'Je ziet je compatibiliteitsscore en waarom je matcht. Geen mysterie - alleen duidelijke, uitlegbare resultaten.',
       },
     ],
   },

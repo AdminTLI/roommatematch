@@ -16,7 +16,7 @@ const content = {
     primary: "See open tracks",
     secondary: "Why volunteer with us",
     points: [
-      "Work directly with the founder—no layers",
+      "Work directly with the founder - no layers",
       "Scope a project, ship it, and showcase it",
       "First contributors get priority when paid roles open"
     ],
@@ -30,7 +30,7 @@ const content = {
     primary: "Bekijk de tracks",
     secondary: "Waarom vrijwilligen",
     points: [
-      "Werk direct met de founder—zonder lagen",
+      "Werk direct met de founder - zonder lagen",
       "Scope een project, ship het, laat het zien",
       "Eerste contributors krijgen voorrang op betaalde rollen"
     ],

@@ -93,7 +93,7 @@ export const content: Record<Locale, UniversitiesLandingContent> = {
       ctaSecondary: 'Download Impact Report',
       chartLabel: 'Student Satisfaction Index',
       chartCaption:
-        'Roommate relationship quality declines over the academic year—both across and within semesters.\n\nRRS means: Oct 3.82 → Apr 3.42. Compatible matching can help reverse this trend.',
+        'Roommate relationship quality declines over the academic year - both across and within semesters.\n\nRRS means: Oct 3.82 → Apr 3.42. Compatible matching can help reverse this trend.',
       chartSourceUrl: 'https://doi.org/10.3389/fpsyg.2022.960421',
       chartSourceLabel: 'Willis & Lane (2022), Frontiers in Psychology',
     },

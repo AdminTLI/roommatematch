@@ -55,7 +55,9 @@ export function TrustSection() {
                 {t.copy}
               </p>
               <p className="text-sm text-white/60">
-                Used by students at {socialProof.universities.join(', ')}
+                Used by students at {socialProof.universities.length <= 2
+                  ? socialProof.universities.join(' and ')
+                  : socialProof.universities.slice(0, -1).join(', ') + ', and ' + socialProof.universities[socialProof.universities.length - 1]}
               </p>
             </div>
 
@@ -81,7 +83,7 @@ export function TrustSection() {
                         aria-label="Verified"
                       />
                     </div>
-                    <p className="text-sm text-white/60">UvA • Computer Science</p>
+                    <p className="text-sm text-white/60">Tilburg University • Economics</p>
                   </div>
                 </div>
                 <div className="pt-4 border-t border-white/10">
