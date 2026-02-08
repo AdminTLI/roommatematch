@@ -65,7 +65,7 @@ const faqSchema = {
       name: 'How do you handle student consent for data?',
       acceptedAnswer: {
         '@type': 'Answer',
-        text: 'Students give explicit consent before any of their data is used for matching or analytics. For university dashboards we only provide aggregated, anonymized insights—no identifiable student data is shared. We support full "Right to be Forgotten" and data export in line with GDPR.',
+        text: 'Students give explicit consent before any of their data is used for matching or analytics. For university dashboards we only provide aggregated, anonymized insights - no identifiable student data is shared. We support full "Right to be Forgotten" and data export in line with GDPR.',
       },
     },
     {

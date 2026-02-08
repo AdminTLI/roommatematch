@@ -25,7 +25,7 @@ export function ThemeRouteHandler() {
             pathname === '/' ||
             pathname?.startsWith('/auth') ||
             pathname?.startsWith('/how-it-works') ||
-            pathname?.startsWith('/features') ||
+            pathname?.startsWith('/students') ||
             pathname?.startsWith('/universities') ||
             pathname?.startsWith('/about') ||
             pathname?.startsWith('/privacy') ||

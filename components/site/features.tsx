@@ -1,218 +1,163 @@
 'use client'
 
-import { Card, CardContent } from '@/components/ui/card'
+import { motion, useReducedMotion } from 'framer-motion'
 import Container from '@/components/ui/primitives/container'
 import Section from '@/components/ui/primitives/section'
-import {
-  Brain,
-  Filter,
-  MessageSquare,
-  ShieldCheck,
-  Building2
-} from 'lucide-react'
-import { motion } from 'framer-motion'
+import { Brain, Filter, MessageSquare, ShieldCheck } from 'lucide-react'
 import { useApp } from '@/app/providers'
+import { cn } from '@/lib/utils'
 
 const content = {
   en: {
-    title: "Everything you need to",
-    titleHighlight: "find your ideal roommate",
-    subtitle: "Our comprehensive platform makes finding the right roommate simple and stress-free",
+    title: 'Everything you need to',
+    titleHighlight: 'find your ideal roommate',
+    subtitle:
+      'Our comprehensive platform makes finding the right roommate simple and stress-free.',
     features: [
       {
         icon: Brain,
-        title: "Smart matching",
-        description: "AI-powered compatibility analysis based on lifestyle, study habits, and personality traits to help you connect with ideal roommates.",
-        size: "large",
-        gradient: "from-blue-500/20 via-purple-500/20 to-pink-500/20",
-        iconGradient: "from-blue-500 to-purple-600"
+        title: 'Smart matching',
+        description:
+          'AI-powered compatibility analysis based on lifestyle, study habits, and personality traits to help you connect with ideal roommates.',
       },
       {
         icon: Filter,
-        title: "Advanced filters",
-        description: "Filter by university, program, study year, budget, lifestyle preferences, and more to find compatible students.",
-        size: "medium",
-        gradient: "from-emerald-500/20 via-teal-500/20 to-cyan-500/20",
-        iconGradient: "from-emerald-500 to-teal-600"
+        title: 'Advanced filters',
+        description:
+          'Filter by university, program, study year, budget, lifestyle preferences, and more to find compatible students.',
       },
       {
         icon: MessageSquare,
-        title: "Conversation starters",
-        description: "Get personalized ice-breaker questions and compatibility insights to help you start meaningful conversations with potential roommates.",
-        size: "medium",
-        gradient: "from-orange-500/20 via-red-500/20 to-pink-500/20",
-        iconGradient: "from-orange-500 to-red-600"
+        title: 'Conversation starters',
+        description:
+          'Get personalized ice-breaker questions and compatibility insights to help you start meaningful conversations with potential roommates.',
       },
       {
         icon: ShieldCheck,
-        title: "Verified & secure",
-        description: "All users are verified through university email and ID verification. Your data is protected with enterprise-grade security.",
-        size: "small",
-        gradient: "from-green-500/20 via-emerald-500/20 to-teal-500/20",
-        iconGradient: "from-green-500 to-emerald-600"
+        title: 'Verified & secure',
+        description:
+          'All users are verified through university email and ID verification. Your data is protected with enterprise-grade security.',
       },
-      {
-        icon: Building2,
-        title: "University partnerships",
-        description: "Trusted by 50+ leading Dutch universities. Get access to student support services and university resources.",
-        size: "small",
-        gradient: "from-indigo-500/20 via-blue-500/20 to-purple-500/20",
-        iconGradient: "from-indigo-500 to-blue-600"
-      }
-
-    ]
+    ],
   },
   nl: {
-    title: "Alles wat je nodig hebt om",
-    titleHighlight: "je ideale huisgenoot te vinden",
-    subtitle: "Ons uitgebreide platform maakt het vinden van de juiste huisgenoot eenvoudig en stressvrij",
+    title: 'Alles wat je nodig hebt om',
+    titleHighlight: 'je ideale huisgenoot te vinden',
+    subtitle:
+      'Ons uitgebreide platform maakt het vinden van de juiste huisgenoot eenvoudig en stressvrij.',
     features: [
       {
         icon: Brain,
-        title: "Slimme matching",
-        description: "AI-gestuurde compatibiliteitsanalyse op basis van levensstijl, studiegewoonten en persoonlijkheidskenmerken om je te helpen verbinden met ideale huisgenoten.",
-        size: "large",
-        gradient: "from-blue-500/20 via-purple-500/20 to-pink-500/20",
-        iconGradient: "from-blue-500 to-purple-600"
+        title: 'Slimme matching',
+        description:
+          'AI-gestuurde compatibiliteitsanalyse op basis van levensstijl, studiegewoonten en persoonlijkheidskenmerken om je te helpen verbinden met ideale huisgenoten.',
       },
       {
         icon: Filter,
-        title: "Geavanceerde filters",
-        description: "Filter op universiteit, programma, studiejaar, budget, levensstijlvoorkeuren en meer om compatibele studenten te vinden.",
-        size: "medium",
-        gradient: "from-emerald-500/20 via-teal-500/20 to-cyan-500/20",
-        iconGradient: "from-emerald-500 to-teal-600"
+        title: 'Geavanceerde filters',
+        description:
+          'Filter op universiteit, programma, studiejaar, budget, levensstijlvoorkeuren en meer om compatibele studenten te vinden.',
       },
       {
         icon: MessageSquare,
-        title: "Gespreksstarters",
-        description: "Krijg gepersonaliseerde ijsbrekervragen en compatibiliteitsinzichten om je te helpen betekenisvolle gesprekken te starten met potentiële huisgenoten.",
-        size: "medium",
-        gradient: "from-orange-500/20 via-red-500/20 to-pink-500/20",
-        iconGradient: "from-orange-500 to-red-600"
+        title: 'Gespreksstarters',
+        description:
+          'Krijg gepersonaliseerde ijsbrekervragen en compatibiliteitsinzichten om je te helpen betekenisvolle gesprekken te starten met potentiële huisgenoten.',
       },
       {
         icon: ShieldCheck,
-        title: "Geverifieerd en veilig",
-        description: "Alle gebruikers zijn geverifieerd via universiteits-e-mail en ID-verificatie. Je gegevens zijn beschermd met enterprise-grade beveiliging.",
-        size: "small",
-        gradient: "from-green-500/20 via-emerald-500/20 to-teal-500/20",
-        iconGradient: "from-green-500 to-emerald-600"
+        title: 'Geverifieerd en veilig',
+        description:
+          'Alle gebruikers zijn geverifieerd via universiteits-e-mail en ID-verificatie. Je gegevens zijn beschermd met enterprise-grade beveiliging.',
       },
-      {
-        icon: Building2,
-        title: "Universiteitspartnerschappen",
-        description: "Vertrouwd door 50+ toonaangevende Nederlandse universiteiten. Krijg toegang tot studentenondersteuningsdiensten en universiteitsbronnen.",
-        size: "small",
-        gradient: "from-indigo-500/20 via-blue-500/20 to-purple-500/20",
-        iconGradient: "from-indigo-500 to-blue-600"
-      }
-
-    ]
-  }
+    ],
+  },
 }
 
 export function Features() {
   const { locale } = useApp()
+  const reducedMotion = useReducedMotion()
   const t = content[locale]
 
-  const containerVariants = {
-    hidden: { opacity: 0 },
-    visible: {
-      opacity: 1,
-      transition: {
-        staggerChildren: 0.1
-      }
-    }
-  }
-
   const itemVariants = {
-    hidden: { opacity: 0, y: 20 },
-    visible: {
+    hidden: reducedMotion ? { opacity: 0 } : { opacity: 0, y: 24 },
+    visible: (i: number) => ({
       opacity: 1,
       y: 0,
       transition: {
-        duration: 0.6,
-        ease: "easeOut"
-      }
-    }
-  }
-
-  const getGridClasses = (size: string) => {
-    switch (size) {
-      case 'large':
-        return 'col-span-1 md:col-span-2'
-      case 'medium':
-        return 'col-span-1'
-      case 'small':
-        return 'col-span-1'
-      default:
-        return 'col-span-1'
-    }
+        delay: reducedMotion ? 0 : i * 0.1,
+        duration: 0.45,
+        ease: 'easeOut',
+      },
+    }),
   }
 
   return (
-    <Section className="relative overflow-hidden bg-white">
-      <Container>
+    <Section className="relative overflow-hidden bg-slate-950 py-16 md:py-24">
+      <div
+        className="absolute inset-0 bg-gradient-to-b from-indigo-950/15 via-transparent to-purple-950/15 pointer-events-none"
+        aria-hidden
+      />
+
+      <Container className="relative z-10">
         <motion.div
           className="text-center mb-12"
-          initial={{ opacity: 0, y: 20 }}
+          initial={{ opacity: 0, y: 16 }}
           whileInView={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8 }}
-          viewport={{ once: true, margin: "-50px" }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.5 }}
         >
-          <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-brand-text mb-6 leading-tight pt-4">
-            {t.title} <span className="text-brand-primary">{t.titleHighlight}</span>
+          <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-white tracking-tight mb-4 max-w-3xl mx-auto">
+            {t.title}{' '}
+            <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-500 to-purple-500 dark:from-indigo-400 dark:to-purple-400">{t.titleHighlight}</span>
           </h2>
-          <p className="text-base md:text-lg lg:text-xl leading-relaxed max-w-3xl mx-auto text-brand-muted">
+          <p className="text-base md:text-lg text-white/70 max-w-2xl mx-auto">
             {t.subtitle}
           </p>
         </motion.div>
 
         <motion.div
-          className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
-          variants={containerVariants}
+          className="grid grid-cols-1 md:grid-cols-2 gap-6"
           initial="hidden"
           whileInView="visible"
-          viewport={{ once: true }}
+          viewport={{ once: true, margin: '-40px' }}
+          variants={{ visible: { transition: { staggerChildren: 0.1 } } }}
         >
           {t.features.map((feature, index) => {
             const Icon = feature.icon
             return (
               <motion.div
                 key={index}
-                className={getGridClasses(feature.size)}
+                className={cn(
+                  'glass noise-overlay p-6 md:p-8 flex flex-col min-h-[200px]',
+                  'transition-all duration-300 hover:border-white/30 hover:bg-white/15'
+                )}
                 variants={itemVariants}
+                custom={index}
+                whileHover={
+                  reducedMotion ? undefined : { scale: 1.02, y: -4 }
+                }
               >
-                <motion.div
-                  className="relative group h-full"
-                  whileHover={{ scale: 1.02 }}
-                  transition={{ duration: 0.2 }}
-                >
-                  <Card className="h-full rounded-2xl border border-brand-border/50 bg-white/80 backdrop-blur-sm shadow-elev-1 hover:shadow-elev-2 transition-all duration-200 overflow-hidden">
-                    <CardContent className="p-6 md:p-8 h-full flex flex-col min-h-[280px]">
-                      <div className="flex items-center mb-6">
-                        <div className={`h-14 w-14 bg-gradient-to-br ${feature.iconGradient} rounded-xl flex items-center justify-center shadow-md group-hover:shadow-lg transition-shadow duration-200`}>
-                          <Icon className="h-7 w-7 text-white" />
-                        </div>
-                      </div>
-
-                      <div className="flex-1 flex flex-col">
-                        <h3 className="text-xl md:text-2xl font-bold text-brand-text mb-4">
-                          {feature.title}
-                        </h3>
-                        <p className="text-base text-brand-muted leading-relaxed flex-1">
-                          {feature.description}
-                        </p>
-                      </div>
-                    </CardContent>
-                  </Card>
-                </motion.div>
+                <div className="flex items-start gap-4 mb-4">
+                  <div className="h-12 w-12 rounded-xl bg-white/10 border border-white/20 flex items-center justify-center flex-shrink-0">
+                    <Icon
+                      className="h-6 w-6 text-indigo-400"
+                      aria-hidden
+                    />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <h3 className="text-xl font-semibold text-white tracking-tight mb-2">
+                      {feature.title}
+                    </h3>
+                    <p className="text-white/70 leading-relaxed text-sm md:text-base">
+                      {feature.description}
+                    </p>
+                  </div>
+                </div>
               </motion.div>
             )
           })}
         </motion.div>
-
       </Container>
     </Section>
   )

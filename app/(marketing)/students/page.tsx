@@ -24,7 +24,7 @@ export const metadata: Metadata = {
     description:
       "The only student platform that matches you on lifestyle, sleep schedules, and study habits. 100% ID Verified. Zero Scams.",
     type: 'website',
-    url: 'https://domumatch.com/features',
+    url: 'https://domumatch.com/students',
     siteName: 'Domu Match',
     images: [
       {
@@ -38,13 +38,13 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'For Students | Domu Match',
+    title: 'Domu Match - For Students',
     description:
       "The only student platform that matches you on lifestyle, sleep schedules, and study habits. 100% ID Verified.",
     images: ['https://domumatch.com/images/logo.png'],
   },
   alternates: {
-    canonical: 'https://domumatch.com/features',
+    canonical: 'https://domumatch.com/students',
   },
 }
 
@@ -100,13 +100,13 @@ const breadcrumbSchema = {
     {
       '@type': 'ListItem',
       position: 2,
-      name: 'Features',
-      item: 'https://domumatch.com/features',
+      name: 'For Students',
+      item: 'https://domumatch.com/students',
     },
   ],
 }
 
-export default function FeaturesPage() {
+export default function StudentsPage() {
   return (
     <>
       <script

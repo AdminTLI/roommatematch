@@ -1,113 +1,154 @@
 'use client'
 
-import { Card, CardContent } from '@/components/ui/card'
+import { motion, useReducedMotion } from 'framer-motion'
 import Container from '@/components/ui/primitives/container'
 import Section from '@/components/ui/primitives/section'
 import { Shield, Brain, Zap, Heart } from 'lucide-react'
 import { useApp } from '@/app/providers'
+import { cn } from '@/lib/utils'
 
 const content = {
   en: {
-    title: "Why Domu Match works",
-    subtitle: "Our compatibility-first approach helps you find roommates as compatible as your best friends",
+    title: 'Why Domu Match works',
+    titleHighlight: 'Domu Match',
+    subtitle:
+      'Our compatibility-first approach helps you find roommates as compatible as your best friends.',
     benefits: [
       {
         icon: Brain,
-        title: "Science-backed matching",
-        description: "Our algorithm analyzes 40+ compatibility factors to predict roommate success before conflicts start. No more guessing - find your perfect fit."
+        title: 'Science-backed matching',
+        description:
+          'Our algorithm analyzes 40+ compatibility factors to predict roommate success before conflicts start. No more guessing - find your perfect fit.',
       },
       {
         icon: Shield,
-        title: "Verified & safe",
-        description: "Every student is verified with government ID and selfie verification. You can focus on compatibility, not safety concerns."
+        title: 'Verified & safe',
+        description:
+          'Every student is verified with government ID and selfie verification. You can focus on compatibility, not safety concerns.',
       },
       {
         icon: Zap,
-        title: "Save time & money",
-        description: "Find compatible students in days, not weeks. Prevent conflicts and disputes by connecting with ideal roommates from the start."
+        title: 'Save time & money',
+        description:
+          'Find compatible students in days, not weeks. Prevent conflicts and disputes by connecting with ideal roommates from the start.',
       },
       {
         icon: Heart,
-        title: "Find your ideal roommate",
-        description: "See exactly why you're compatible with transparent explanations. Connect based on lifestyle, study habits, and values that matter."
-      }
-    ]
+        title: 'Find your ideal roommate',
+        description:
+          "See exactly why you're compatible with transparent explanations. Connect based on lifestyle, study habits, and values that matter.",
+      },
+    ],
   },
   nl: {
-    title: "Waarom Domu Match werkt",
-    subtitle: "Onze compatibiliteit-eerst aanpak helpt je huisgenoten te vinden die zo compatibel zijn als je beste vrienden",
+    title: 'Waarom Domu Match werkt',
+    titleHighlight: 'Domu Match',
+    subtitle:
+      'Onze compatibiliteit-eerst aanpak helpt je huisgenoten te vinden die zo compatibel zijn als je beste vrienden.',
     benefits: [
       {
         icon: Brain,
-        title: "Wetenschappelijk onderbouwde matching",
-        description: "Ons algoritme analyseert 40+ compatibiliteitsfactoren om het succes van huisgenoten te voorspellen voordat conflicten beginnen. Geen gokken meer - vind je perfecte match."
+        title: 'Wetenschappelijk onderbouwde matching',
+        description:
+          'Ons algoritme analyseert 40+ compatibiliteitsfactoren om het succes van huisgenoten te voorspellen voordat conflicten beginnen. Geen gokken meer - vind je perfecte match.',
       },
       {
         icon: Shield,
-        title: "Geverifieerd en veilig",
-        description: "Elke student is geverifieerd met overheids-ID en selfie-verificatie. Je kunt je focussen op compatibiliteit, niet op veiligheidszorgen."
+        title: 'Geverifieerd en veilig',
+        description:
+          'Elke student is geverifieerd met overheids-ID en selfie-verificatie. Je kunt je focussen op compatibiliteit, niet op veiligheidszorgen.',
       },
       {
         icon: Zap,
-        title: "Bespaar tijd en geld",
-        description: "Vind compatibele studenten in dagen, niet weken. Voorkom conflicten en geschillen door vanaf het begin verbinding te maken met ideale huisgenoten."
+        title: 'Bespaar tijd en geld',
+        description:
+          'Vind compatibele studenten in dagen, niet weken. Voorkom conflicten en geschillen door vanaf het begin verbinding te maken met ideale huisgenoten.',
       },
       {
         icon: Heart,
-        title: "Vind je ideale huisgenoot",
-        description: "Zie precies waarom je compatibel bent met transparante uitleg. Verbind op basis van levensstijl, studiegewoonten en waarden die ertoe doen."
-      }
-    ]
-  }
+        title: 'Vind je ideale huisgenoot',
+        description:
+          'Zie precies waarom je compatibel bent met transparante uitleg. Verbind op basis van levensstijl, studiegewoonten en waarden die ertoe doen.',
+      },
+    ],
+  },
 }
 
 export function Testimonials() {
   const { locale } = useApp()
+  const reducedMotion = useReducedMotion()
   const t = content[locale]
 
+  const itemVariants = {
+    hidden: reducedMotion ? { opacity: 0 } : { opacity: 0, y: 24 },
+    visible: (i: number) => ({
+      opacity: 1,
+      y: 0,
+      transition: { delay: reducedMotion ? 0 : i * 0.1, duration: 0.45, ease: 'easeOut' },
+    }),
+  }
+
   return (
-    <Section>
-      <Container>
-        <div className="text-center mb-12">
-          <h2 className="text-3xl md:text-4xl font-bold text-brand-text mb-4">
+    <Section className="relative overflow-hidden bg-slate-950 py-16 md:py-24">
+      <div
+        className="absolute inset-0 bg-gradient-to-b from-indigo-950/15 via-transparent to-purple-950/15 pointer-events-none"
+        aria-hidden
+      />
+
+      <Container className="relative z-10">
+        <motion.div
+          className="text-center mb-12"
+          initial={{ opacity: 0, y: 16 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.5 }}
+        >
+          <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-white tracking-tight mb-4 max-w-3xl mx-auto">
             {locale === 'nl' ? (
-              <>Waarom <span className="text-brand-primary">Domu Match</span> werkt</>
+              <>Waarom <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-500 to-purple-500 dark:from-indigo-400 dark:to-purple-400">{t.titleHighlight}</span> werkt</>
             ) : (
-              <>Why <span className="text-brand-primary">Domu Match</span> works</>
+              <>Why <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-500 to-purple-500 dark:from-indigo-400 dark:to-purple-400">{t.titleHighlight}</span> works</>
             )}
           </h2>
-          <p className="text-base md:text-lg leading-relaxed max-w-prose mx-auto text-brand-muted">
+          <p className="text-base md:text-lg text-white/70 max-w-2xl mx-auto">
             {t.subtitle}
           </p>
-        </div>
+        </motion.div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <motion.div
+          className="grid grid-cols-1 md:grid-cols-4 gap-6 items-stretch"
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true, margin: '-40px' }}
+          variants={{ visible: { transition: { staggerChildren: 0.1 } } }}
+        >
           {t.benefits.map((benefit, index) => {
             const Icon = benefit.icon
             return (
-              <Card 
+              <motion.div
                 key={index}
-                className="rounded-2xl border border-brand-border/50 shadow-elev-1 p-6 md:p-8 bg-white/80 backdrop-blur-sm h-full flex flex-col transition-transform duration-200 hover:-translate-y-0.5 hover:shadow-elev-2"
+                className={cn(
+                  'glass noise-overlay flex flex-col h-full p-6 md:p-6',
+                  'transition-all duration-300 hover:border-white/30 hover:bg-white/15'
+                )}
+                variants={itemVariants}
+                custom={index}
+                whileHover={reducedMotion ? undefined : { scale: 1.02, y: -4 }}
               >
-                <CardContent className="p-0 flex flex-col h-full">
-                  <div className="flex items-start gap-4 mb-4">
-                    <div className="h-12 w-12 bg-brand-primary/10 rounded-xl flex items-center justify-center flex-shrink-0">
-                      <Icon className="h-6 w-6 text-brand-primary" />
-                    </div>
-                    <div className="flex-1">
-                      <h3 className="text-xl font-semibold text-brand-text mb-2">
-                        {benefit.title}
-                      </h3>
-                      <p className="text-brand-muted leading-relaxed">
-                        {benefit.description}
-                      </p>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
+                {/* Fixed-height icon block so headings align across the row */}
+                <div className="h-12 w-12 rounded-xl bg-white/10 border border-white/20 flex items-center justify-center flex-shrink-0 mb-4">
+                  <Icon className="h-6 w-6 text-indigo-400" aria-hidden />
+                </div>
+                <h3 className="text-base font-semibold text-white tracking-tight mb-2 leading-tight">
+                  {benefit.title}
+                </h3>
+                <p className="text-white/70 text-sm leading-relaxed flex-1 min-h-0">
+                  {benefit.description}
+                </p>
+              </motion.div>
             )
           })}
-        </div>
+        </motion.div>
       </Container>
     </Section>
   )

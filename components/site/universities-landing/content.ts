@@ -104,7 +104,7 @@ export const content: Record<Locale, UniversitiesLandingContent> = {
       void: {
         title: 'The Void',
         description:
-          "You know their grades, but you don't know their living environment—until it's too late.",
+          "You know their grades, but you don't know their living environment - until it's too late.",
       },
     },
     solution: {
@@ -173,7 +173,7 @@ export const content: Record<Locale, UniversitiesLandingContent> = {
       {
         question: 'How do you handle student consent for data?',
         answer:
-          'Students give explicit consent before any of their data is used for matching or analytics. For university dashboards we only provide aggregated, anonymized insights—no identifiable student data is shared. We support full "Right to be Forgotten" and data export in line with GDPR.',
+          'Students give explicit consent before any of their data is used for matching or analytics. For university dashboards we only provide aggregated, anonymized insights - no identifiable student data is shared. We support full "Right to be Forgotten" and data export in line with GDPR.',
       },
       {
         question: 'What is the cost model for universities?',
@@ -222,7 +222,7 @@ export const content: Record<Locale, UniversitiesLandingContent> = {
       void: {
         title: 'Het vacuüm',
         description:
-          'U kent hun cijfers, maar niet hun leefomgeving—tot het te laat is.',
+          'U kent hun cijfers, maar niet hun leefomgeving - tot het te laat is.',
       },
     },
     solution: {
@@ -291,7 +291,7 @@ export const content: Record<Locale, UniversitiesLandingContent> = {
       {
         question: 'Hoe gaan jullie om met toestemming van studenten voor data?',
         answer:
-          'Studenten geven expliciet toestemming voordat hun data wordt gebruikt voor matching of analytics. Voor universiteitsdashboards leveren we alleen geaggregeerde, geanonimiseerde inzichten—geen identificeerbare studentdata. We ondersteunen volledig "Recht op vergetelheid" en data-export conform de AVG.',
+          'Studenten geven expliciet toestemming voordat hun data wordt gebruikt voor matching of analytics. Voor universiteitsdashboards leveren we alleen geaggregeerde, geanonimiseerde inzichten - geen identificeerbare studentdata. We ondersteunen volledig "Recht op vergetelheid" en data-export conform de AVG.',
       },
       {
         question: 'Wat is het kostenmodel voor universiteiten?',

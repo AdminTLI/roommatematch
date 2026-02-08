@@ -3,24 +3,25 @@
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
-import { useRouter } from 'next/navigation'
+import { useRouter, usePathname } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import Container from '@/components/ui/primitives/container'
 import { Menu, X, ChevronRight, ArrowRight } from 'lucide-react'
 import { LanguageSwitcher } from '@/app/(marketing)/components/language-switcher'
 import { useApp } from '@/app/providers'
+import { cn } from '@/lib/utils'
 
 const navigationContent = {
   en: [
     { name: 'How it works', href: '/how-it-works' },
-    { name: 'For Students', href: '/features' },
+    { name: 'For Students', href: '/students' },
     { name: 'For Universities', href: '/universities' },
 
     { name: 'About us', href: '/about' },
   ],
   nl: [
     { name: 'Hoe het werkt', href: '/how-it-works' },
-    { name: 'Voor studenten', href: '/features' },
+    { name: 'Voor studenten', href: '/students' },
     { name: 'Voor universiteiten', href: '/universities' },
 
     { name: 'Over ons', href: '/about' },
@@ -40,9 +41,11 @@ const buttonContent = {
 
 export function Navbar() {
   const router = useRouter()
+  const pathname = usePathname()
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
   const [mounted, setMounted] = useState(false)
   const { locale } = useApp()
+  const isHomePage = pathname === '/'
 
   // Only access locale-dependent content after mount to prevent hydration mismatch
   const navigation = mounted ? navigationContent[locale] : navigationContent['en']
@@ -93,15 +96,21 @@ export function Navbar() {
         Skip to main content
       </a>
 
-      <nav className="h-16 md:h-20 bg-white fixed top-0 left-0 right-0 z-50 w-full">
-        <Container className="h-full">
-          <div className="flex items-center justify-between h-full py-0">
+      <nav
+        className={cn(
+          'h-16 md:h-20 fixed top-0 left-0 right-0 z-50 w-full transition-colors duration-200',
+          isHomePage
+            ? 'bg-white/5 backdrop-blur-lg border-b border-white/10'
+            : 'bg-white'
+        )}
+      >
+        <Container className="h-full max-w-6xl xl:max-w-7xl 2xl:max-w-[1400px] lg:px-10 xl:px-12 2xl:px-16">
+          <div className="flex items-center justify-between h-full py-0 gap-6 xl:gap-10 2xl:gap-14">
             {/* Logo */}
             <Link
               href="/"
-              className="flex items-center space-x-2.5 hover:opacity-80 transition-opacity flex-shrink-0 h-full"
+              className="flex items-center space-x-2.5 hover:opacity-80 transition-opacity flex-shrink-0 h-full min-w-0"
             >
-              {/* Logo Image - will show if file exists, otherwise fallback to text */}
               <div className="relative h-8 w-8 md:h-10 md:w-10 flex-shrink-0 hidden sm:block">
                 <Image
                   src="/images/logo.png"
@@ -111,25 +120,32 @@ export function Navbar() {
                   priority
                   sizes="(max-width: 768px) 32px, 40px"
                   onError={(e) => {
-                    // Hide image container if logo fails to load
-                    const target = e.target as HTMLElement;
-                    const container = target.closest('.relative') as HTMLElement;
-                    if (container) {
-                      container.style.display = 'none';
-                    }
+                    const target = e.target as HTMLElement
+                    const container = target.closest('.relative') as HTMLElement
+                    if (container) container.style.display = 'none'
                   }}
                 />
               </div>
-              <span className="text-xl sm:text-2xl font-bold text-brand-text leading-none">Domu Match</span>
+              <span
+                className={cn(
+                  'text-xl sm:text-2xl font-bold leading-none',
+                  isHomePage ? 'text-white' : 'text-brand-text'
+                )}
+              >
+                Domu Match
+              </span>
             </Link>
 
-            {/* Desktop Navigation - Full links for laptops (lg+) */}
-            <div className="hidden lg:flex items-center gap-8 h-full">
+            {/* Desktop Navigation */}
+            <div className="hidden lg:flex items-center gap-8 xl:gap-10 2xl:gap-14 h-full flex-1 justify-center min-w-0">
               {navigation.map((item) => (
                 <Link
                   key={item.href}
                   href={item.href}
-                  className="text-brand-muted hover:text-brand-text transition-colors font-medium leading-tight flex items-center h-full py-0 whitespace-nowrap"
+                  className={cn(
+                    'transition-colors font-medium leading-tight flex items-center h-full py-0 whitespace-nowrap px-1',
+                    isHomePage ? 'text-white/80 hover:text-white' : 'text-brand-muted hover:text-brand-text'
+                  )}
                   suppressHydrationWarning
                 >
                   {item.name}
@@ -137,14 +153,19 @@ export function Navbar() {
               ))}
             </div>
 
-            {/* Desktop CTA - Full buttons for laptops (lg+) */}
-            <div className="hidden lg:flex items-center gap-4 h-full">
+            {/* Desktop CTA */}
+            <div className="hidden lg:flex items-center gap-5 xl:gap-7 2xl:gap-8 h-full flex-shrink-0">
               <div className="flex items-center h-full">
                 <LanguageSwitcher variant="minimal" />
               </div>
               <button
                 onClick={handleSignIn}
-                className="inline-flex items-center justify-center font-medium rounded-2xl transition-all h-10 px-6 text-base bg-white text-gray-900 border border-gray-300 hover:bg-primary hover:text-white hover:border-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:opacity-60 disabled:pointer-events-none whitespace-nowrap"
+                className={cn(
+                  'inline-flex items-center justify-center font-medium rounded-2xl transition-all h-10 px-6 text-base focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 disabled:opacity-60 disabled:pointer-events-none whitespace-nowrap',
+                  isHomePage
+                    ? 'bg-transparent border border-white/30 text-white hover:bg-white/10 focus-visible:ring-white/50'
+                    : 'bg-white text-gray-900 border border-gray-300 hover:bg-primary hover:text-white hover:border-primary focus-visible:ring-ring'
+                )}
               >
                 <span suppressHydrationWarning>{buttons.signIn}</span>
               </button>
@@ -152,14 +173,18 @@ export function Navbar() {
                 variant="primary"
                 size="lg"
                 onClick={handleGetStarted}
-                className="h-10"
+                className={cn(
+                  'h-10',
+                  isHomePage &&
+                    'bg-gradient-to-r from-indigo-500 to-purple-500 text-white border-0 shadow-lg shadow-indigo-500/50 hover:scale-105'
+                )}
               >
                 <span suppressHydrationWarning>{buttons.getStarted}</span>
                 <ChevronRight className="ml-1 h-4 w-4" />
               </Button>
             </div>
 
-            {/* Mobile menu button and language switcher - show on mobile and tablet (< lg) */}
+            {/* Mobile menu button */}
             <div className="lg:hidden flex items-center gap-3 h-full">
               <div className="flex items-center h-full">
                 <LanguageSwitcher variant="minimal" />
@@ -167,7 +192,12 @@ export function Navbar() {
               <button
                 type="button"
                 onClick={handleToggleMenu}
-                className="p-2 rounded-md hover:bg-brand-surface transition-colors focus-visible:ring-2 focus-visible:ring-brand-primary relative z-[70] flex items-center justify-center h-10 w-10"
+                className={cn(
+                  'p-2 rounded-md transition-colors focus-visible:ring-2 relative z-[70] flex items-center justify-center h-10 w-10',
+                  isHomePage
+                    ? 'text-white hover:bg-white/10 focus-visible:ring-white/50'
+                    : 'hover:bg-brand-surface focus-visible:ring-brand-primary text-brand-text'
+                )}
                 aria-expanded={isMobileMenuOpen}
                 aria-controls="mobile-menu"
                 aria-label="Toggle mobile menu"

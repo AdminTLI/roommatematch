@@ -181,7 +181,7 @@ export function LandingPage() {
             <div>
               <h3 className="font-semibold mb-4">Product</h3>
               <ul className="space-y-2 text-gray-400">
-                <li><Link href="/features" className="hover:text-white transition-colors">Features</Link></li>
+                <li><Link href="/students" className="hover:text-white transition-colors">Features</Link></li>
                 <li><Link href="/pricing" className="hover:text-white transition-colors">Pricing</Link></li>
                 <li><Link href="/safety" className="hover:text-white transition-colors">Safety</Link></li>
               </ul>

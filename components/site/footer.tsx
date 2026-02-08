@@ -1,61 +1,61 @@
 'use client'
 
-import Container from "@/components/ui/primitives/container"
-import Link from "next/link"
-import { Twitter, Linkedin, Instagram } from "lucide-react"
+import Container from '@/components/ui/primitives/container'
+import Link from 'next/link'
+import { Twitter, Linkedin, Instagram } from 'lucide-react'
 import { useApp } from '@/app/providers'
 
 const content = {
   en: {
-    brandDescription: "The smartest way to find compatible roommates. Science-backed matching for better living.",
-    product: "Product",
-    company: "Company",
-    support: "Support",
-    cities: "Find Roommates",
-    howItWorks: "How it works",
-    features: "Features",
-    pricing: "Pricing",
-    universities: "Universities",
-
-    aboutUs: "About us",
-    blog: "Blog",
-    careers: "Careers",
-    contact: "Contact",
-    helpCenter: "Help center",
-    faq: "FAQ",
-    safety: "Safety",
-    privacyPolicy: "Privacy policy",
-    termsOfService: "Terms & Conditions",
-    privacy: "Privacy",
-    terms: "Terms & Conditions",
-    cookies: "Cookies",
-    allRightsReserved: "All rights reserved."
+    brandDescription:
+      'The smartest way to find compatible roommates. Science-backed matching for better living.',
+    product: 'Product',
+    company: 'Company',
+    support: 'Support',
+    cities: 'Find Roommates',
+    howItWorks: 'How it works',
+    features: 'Features',
+    pricing: 'Pricing',
+    universities: 'Universities',
+    aboutUs: 'About us',
+    blog: 'Blog',
+    careers: 'Careers',
+    contact: 'Contact',
+    helpCenter: 'Help center',
+    faq: 'FAQ',
+    safety: 'Safety',
+    privacyPolicy: 'Privacy policy',
+    termsOfService: 'Terms & Conditions',
+    privacy: 'Privacy',
+    terms: 'Terms & Conditions',
+    cookies: 'Cookies',
+    allRightsReserved: 'All rights reserved.',
   },
   nl: {
-    brandDescription: "De slimste manier om compatibele huisgenoten te vinden. Wetenschappelijk onderbouwde matching voor beter wonen.",
-    product: "Product",
-    company: "Bedrijf",
-    support: "Ondersteuning",
-    cities: "Vind huisgenoten",
-    howItWorks: "Hoe het werkt",
-    features: "Functies",
-    pricing: "Prijzen",
-    universities: "Universiteiten",
-
-    aboutUs: "Over ons",
-    blog: "Blog",
-    careers: "Carrières",
-    contact: "Contact",
-    helpCenter: "Helpcentrum",
-    faq: "Veelgestelde vragen",
-    safety: "Veiligheid",
-    privacyPolicy: "Privacybeleid",
-    termsOfService: "Algemene voorwaarden",
-    privacy: "Privacy",
-    terms: "Algemene voorwaarden",
-    cookies: "Cookies",
-    allRightsReserved: "Alle rechten voorbehouden."
-  }
+    brandDescription:
+      'De slimste manier om compatibele huisgenoten te vinden. Wetenschappelijk onderbouwde matching voor beter wonen.',
+    product: 'Product',
+    company: 'Bedrijf',
+    support: 'Ondersteuning',
+    cities: 'Vind huisgenoten',
+    howItWorks: 'Hoe het werkt',
+    features: 'Functies',
+    pricing: 'Prijzen',
+    universities: 'Universiteiten',
+    aboutUs: 'Over ons',
+    blog: 'Blog',
+    careers: 'Carrières',
+    contact: 'Contact',
+    helpCenter: 'Helpcentrum',
+    faq: 'Veelgestelde vragen',
+    safety: 'Veiligheid',
+    privacyPolicy: 'Privacybeleid',
+    termsOfService: 'Algemene voorwaarden',
+    privacy: 'Privacy',
+    terms: 'Algemene voorwaarden',
+    cookies: 'Cookies',
+    allRightsReserved: 'Alle rechten voorbehouden.',
+  },
 }
 
 export default function Footer() {
@@ -69,65 +69,197 @@ export default function Footer() {
           {/* Brand */}
           <div className="space-y-4 sm:col-span-2 lg:col-span-1">
             <h3 className="text-white text-lg sm:text-xl font-semibold">Domu Match</h3>
-            <p className="text-sm sm:text-base text-slate-400 max-w-prose">{t.brandDescription}</p>
+            <p className="text-sm sm:text-base text-slate-400 max-w-prose">
+              {t.brandDescription}
+            </p>
             <div className="flex items-center gap-3">
-              <a aria-label="Twitter" className="rounded-full p-2 bg-white/5 hover:bg-white/10 focus-visible:ring-2 focus-visible:ring-brand-primary flex items-center justify-center min-w-[44px] min-h-[44px]"><Twitter size={18} /></a>
-              <a aria-label="LinkedIn" href="https://www.linkedin.com/company/domu-match/?viewAsMember=true" target="_blank" rel="noopener noreferrer" className="rounded-full p-2 bg-white/5 hover:bg-white/10 focus-visible:ring-2 focus-visible:ring-brand-primary flex items-center justify-center min-w-[44px] min-h-[44px]"><Linkedin size={18} /></a>
-              <a aria-label="Instagram" href="https://www.instagram.com/domumatch" target="_blank" rel="noopener noreferrer" className="rounded-full p-2 bg-white/5 hover:bg-white/10 focus-visible:ring-2 focus-visible:ring-brand-primary flex items-center justify-center min-w-[44px] min-h-[44px]"><Instagram size={18} /></a>
+              <a
+                aria-label="Twitter"
+                href="https://twitter.com/domumatch"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="rounded-full p-2 bg-white/5 hover:bg-white/10 focus-visible:ring-2 focus-visible:ring-white/50 flex items-center justify-center min-w-[44px] min-h-[44px]"
+              >
+                <Twitter size={18} />
+              </a>
+              <a
+                aria-label="LinkedIn"
+                href="https://www.linkedin.com/company/domu-match/?viewAsMember=true"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="rounded-full p-2 bg-white/5 hover:bg-white/10 focus-visible:ring-2 focus-visible:ring-white/50 flex items-center justify-center min-w-[44px] min-h-[44px]"
+              >
+                <Linkedin size={18} />
+              </a>
+              <a
+                aria-label="Instagram"
+                href="https://www.instagram.com/domumatch"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="rounded-full p-2 bg-white/5 hover:bg-white/10 focus-visible:ring-2 focus-visible:ring-white/50 flex items-center justify-center min-w-[44px] min-h-[44px]"
+              >
+                <Instagram size={18} />
+              </a>
             </div>
           </div>
 
-          {/* Columns */}
+          {/* Product */}
           <div>
             <h4 className="text-white font-semibold mb-4">{t.product}</h4>
             <ul className="space-y-3 text-slate-400">
-              <li><Link href="/how-it-works" className="hover:text-white">{t.howItWorks}</Link></li>
-              <li><Link href="/features" className="hover:text-white">{t.features}</Link></li>
-              <li><Link href="/pricing" className="hover:text-white">{t.pricing}</Link></li>
-              <li><Link href="/universities" className="hover:text-white">{t.universities}</Link></li>
+              <li>
+                <Link href="/how-it-works" className="hover:text-white transition-colors">
+                  {t.howItWorks}
+                </Link>
+              </li>
+              <li>
+                <Link href="/features" className="hover:text-white transition-colors">
+                  {t.features}
+                </Link>
+              </li>
+              <li>
+                <Link href="/pricing" className="hover:text-white transition-colors">
+                  {t.pricing}
+                </Link>
+              </li>
+              <li>
+                <Link href="/universities" className="hover:text-white transition-colors">
+                  {t.universities}
+                </Link>
+              </li>
             </ul>
           </div>
 
+          {/* Cities - SEO internal linking */}
           <div>
             <h4 className="text-white font-semibold mb-4">{t.cities}</h4>
             <ul className="space-y-3 text-slate-400">
-              <li><Link href="/amsterdam" className="hover:text-white">Amsterdam</Link></li>
-              <li><Link href="/rotterdam" className="hover:text-white">Rotterdam</Link></li>
-              <li><Link href="/utrecht" className="hover:text-white">Utrecht</Link></li>
-              <li><Link href="/den-haag" className="hover:text-white">Den Haag</Link></li>
-              <li><Link href="/eindhoven" className="hover:text-white">Eindhoven</Link></li>
-              <li><Link href="/groningen" className="hover:text-white">Groningen</Link></li>
+              <li>
+                <Link href="/amsterdam" className="hover:text-white transition-colors">
+                  Amsterdam
+                </Link>
+              </li>
+              <li>
+                <Link href="/rotterdam" className="hover:text-white transition-colors">
+                  Rotterdam
+                </Link>
+              </li>
+              <li>
+                <Link href="/utrecht" className="hover:text-white transition-colors">
+                  Utrecht
+                </Link>
+              </li>
+              <li>
+                <Link href="/den-haag" className="hover:text-white transition-colors">
+                  Den Haag
+                </Link>
+              </li>
+              <li>
+                <Link href="/eindhoven" className="hover:text-white transition-colors">
+                  Eindhoven
+                </Link>
+              </li>
+              <li>
+                <Link href="/groningen" className="hover:text-white transition-colors">
+                  Groningen
+                </Link>
+              </li>
+              <li>
+                <Link href="/leiden" className="hover:text-white transition-colors">
+                  Leiden
+                </Link>
+              </li>
+              <li>
+                <Link href="/nijmegen" className="hover:text-white transition-colors">
+                  Nijmegen
+                </Link>
+              </li>
             </ul>
           </div>
 
+          {/* Company */}
           <div>
             <h4 className="text-white font-semibold mb-4">{t.company}</h4>
             <ul className="space-y-3 text-slate-400">
-              <li><Link href="/about" className="hover:text-white">{t.aboutUs}</Link></li>
-              <li><Link href="/blog" className="hover:text-white">{t.blog}</Link></li>
-              <li><Link href="/careers" className="hover:text-white">{t.careers}</Link></li>
-              <li><Link href="/contact" className="hover:text-white">{t.contact}</Link></li>
+              <li>
+                <Link href="/about" className="hover:text-white transition-colors">
+                  {t.aboutUs}
+                </Link>
+              </li>
+              <li>
+                <Link href="/blog" className="hover:text-white transition-colors">
+                  {t.blog}
+                </Link>
+              </li>
+              <li>
+                <Link href="/careers" className="hover:text-white transition-colors">
+                  {t.careers}
+                </Link>
+              </li>
+              <li>
+                <Link href="/contact" className="hover:text-white transition-colors">
+                  {t.contact}
+                </Link>
+              </li>
             </ul>
           </div>
 
+          {/* Support */}
           <div>
             <h4 className="text-white font-semibold mb-4">{t.support}</h4>
             <ul className="space-y-3 text-slate-400">
-              <li><Link href="/help-center" className="hover:text-white">{t.helpCenter}</Link></li>
-              <li><Link href="/faq" className="hover:text-white">{t.faq}</Link></li>
-              <li><Link href="/safety" className="hover:text-white">{t.safety}</Link></li>
-              <li><Link href="/privacy" className="hover:text-white">{t.privacyPolicy}</Link></li>
-              <li><Link href="/terms" className="hover:text-white">{t.termsOfService}</Link></li>
+              <li>
+                <Link href="/help-center" className="hover:text-white transition-colors">
+                  {t.helpCenter}
+                </Link>
+              </li>
+              <li>
+                <Link href="/faq" className="hover:text-white transition-colors">
+                  {t.faq}
+                </Link>
+              </li>
+              <li>
+                <Link href="/safety" className="hover:text-white transition-colors">
+                  {t.safety}
+                </Link>
+              </li>
+              <li>
+                <Link href="/privacy" className="hover:text-white transition-colors">
+                  {t.privacyPolicy}
+                </Link>
+              </li>
+              <li>
+                <Link href="/terms" className="hover:text-white transition-colors">
+                  {t.termsOfService}
+                </Link>
+              </li>
             </ul>
           </div>
         </div>
 
         <div className="mt-8 sm:mt-12 border-t border-white/10 pt-6 flex flex-col items-center gap-4">
-          <p className="text-slate-500 text-xs sm:text-sm text-center px-4">© 2026 Domu Match. {t.allRightsReserved}</p>
+          <p className="text-slate-500 text-xs sm:text-sm text-center px-4">
+            © {new Date().getFullYear()} Domu Match. {t.allRightsReserved}
+          </p>
           <div className="flex flex-wrap items-center justify-center gap-4 sm:gap-6 text-xs sm:text-sm text-slate-400 px-4">
-            <Link href="/privacy" className="hover:text-white py-2 whitespace-nowrap">{t.privacy}</Link>
-            <Link href="/terms" className="hover:text-white py-2 whitespace-nowrap">{t.terms}</Link>
-            <a className="hover:text-white py-2 whitespace-nowrap">{t.cookies}</a>
+            <Link
+              href="/privacy"
+              className="hover:text-white py-2 whitespace-nowrap transition-colors"
+            >
+              {t.privacy}
+            </Link>
+            <Link
+              href="/terms"
+              className="hover:text-white py-2 whitespace-nowrap transition-colors"
+            >
+              {t.terms}
+            </Link>
+            <Link
+              href="/cookies"
+              className="hover:text-white py-2 whitespace-nowrap transition-colors"
+            >
+              {t.cookies}
+            </Link>
           </div>
         </div>
       </Container>

@@ -1,20 +1,17 @@
 'use client'
 
 import { Navbar } from '@/components/site/navbar'
-import { Hero } from '@/components/site/hero'
+import { HeroAurora } from '@/components/site/hero-aurora'
+import { LiveStats } from './components/live-stats'
+import { BentoInfrastructure } from '@/components/site/bento-infrastructure'
+import { Universities } from '@/components/site/universities'
 import { Features } from '@/components/site/features'
 import { Testimonials } from '@/components/site/testimonials'
-import { Universities } from '@/components/site/universities'
-
 import Footer from '@/components/site/footer'
-import { useApp } from '@/app/providers'
-import { SocialProof } from './components/social-proof'
-import { FinalCTA as MarketingFinalCTA } from './components/final-cta'
-import { LiveStats } from './components/live-stats'
 import { MarketingLayoutFix } from './components/marketing-layout-fix'
+import { StatsTicker } from './components/stats-ticker'
 
 export default function MarketingPage() {
-  const { locale } = useApp()
 
   // Structured data for homepage
   const homepageStructuredData = {
@@ -206,16 +203,15 @@ export default function MarketingPage() {
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(homepageStructuredData) }}
       />
-      <main id="main-content" className="min-h-screen bg-white pt-16 md:pt-20">
+      <main id="main-content" className="min-h-screen bg-slate-950 pt-16 md:pt-20">
         <Navbar />
-        <Hero />
-        <LiveStats locale={locale} />
+        <HeroAurora />
+        <LiveStats />
+        <BentoInfrastructure />
         <Universities />
-
-        <SocialProof locale={locale} />
         <Features />
         <Testimonials />
-        <MarketingFinalCTA locale={locale} />
+        <StatsTicker />
         <Footer />
       </main>
     </>
