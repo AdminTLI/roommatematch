@@ -1,10 +1,12 @@
 'use client'
 
+import { motion } from 'framer-motion'
 import Container from '@/components/ui/primitives/container'
 import Section from '@/components/ui/primitives/section'
 import { Shield, CheckCircle } from 'lucide-react'
 import { useApp } from '@/app/providers'
 import { content } from './content'
+import { cn } from '@/lib/utils'
 
 export function TrustSection() {
   const { locale } = useApp()
@@ -14,31 +16,45 @@ export function TrustSection() {
   return (
     <Section
       id="trust"
-      className="bg-blue-50/40"
+      className="relative overflow-hidden bg-slate-950 py-16 md:py-24"
       aria-labelledby="trust-heading"
     >
-      <Container>
-        <div className="rounded-2xl border-2 border-blue-200 bg-white p-8 md:p-12 shadow-sm">
+      <div
+        className="absolute inset-0 bg-gradient-to-b from-indigo-950/20 via-transparent to-purple-950/20 pointer-events-none"
+        aria-hidden
+      />
+
+      <Container className="relative z-10">
+        <motion.div
+          className={cn(
+            'glass noise-overlay p-8 md:p-12',
+            'transition-all duration-300 hover:border-white/30'
+          )}
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.5 }}
+        >
           <div className="grid gap-10 lg:grid-cols-2 items-center">
             {/* Left: Copy + Badge */}
             <div className="space-y-6">
               <div className="inline-flex items-center gap-3">
-                <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-blue-600 text-white">
-                  <Shield className="h-6 w-6" aria-hidden />
+                <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-emerald-500/20 border border-emerald-400/30">
+                  <Shield className="h-6 w-6 text-emerald-400" aria-hidden />
                 </div>
                 <div>
                   <h2
                     id="trust-heading"
-                    className="text-xl sm:text-2xl font-bold text-slate-900"
+                    className="text-xl sm:text-2xl font-bold text-white tracking-tight"
                   >
                     {t.badge}
                   </h2>
                 </div>
               </div>
-              <p className="text-lg sm:text-xl text-slate-900 leading-relaxed">
+              <p className="text-lg sm:text-xl text-white/80 leading-relaxed">
                 {t.copy}
               </p>
-              <p className="text-sm text-slate-600">
+              <p className="text-sm text-white/60">
                 Used by students at {socialProof.universities.join(', ')}
               </p>
             </div>
@@ -46,37 +62,40 @@ export function TrustSection() {
             {/* Right: Verified User mockup card */}
             <div className="flex justify-center">
               <div
-                className="rounded-2xl border-2 border-blue-200 bg-blue-50/50 p-6 shadow-elev-1 max-w-sm w-full"
+                className={cn(
+                  'glass-dark noise-overlay p-6 rounded-2xl max-w-sm w-full',
+                  'border-white/20'
+                )}
                 role="img"
                 aria-label={t.verifiedLabel}
               >
                 <div className="flex items-center gap-4 mb-4">
-                  <div className="h-14 w-14 rounded-full bg-indigo-100 flex items-center justify-center">
-                    <span className="text-xl font-bold text-indigo-700">JD</span>
+                  <div className="h-14 w-14 rounded-full bg-indigo-500/20 border border-indigo-400/30 flex items-center justify-center">
+                    <span className="text-xl font-bold text-indigo-300">JD</span>
                   </div>
                   <div>
                     <div className="flex items-center gap-2">
-                      <span className="font-semibold text-slate-900">Jane Doe</span>
+                      <span className="font-semibold text-white">Jane Doe</span>
                       <CheckCircle
-                        className="h-5 w-5 text-emerald-500"
+                        className="h-5 w-5 text-emerald-400"
                         aria-label="Verified"
                       />
                     </div>
-                    <p className="text-sm text-slate-600">UvA • Computer Science</p>
+                    <p className="text-sm text-white/60">UvA • Computer Science</p>
                   </div>
                 </div>
-                <div className="pt-4 border-t border-slate-200">
-                  <p className="text-xs text-slate-500 font-medium uppercase tracking-wider">
+                <div className="pt-4 border-t border-white/10">
+                  <p className="text-xs text-white/50 font-medium uppercase tracking-wider">
                     {t.verifiedLabel}
                   </p>
-                  <p className="text-sm text-slate-900 mt-1">
+                  <p className="text-sm text-white/80 mt-1">
                     Government ID verified via Persona
                   </p>
                 </div>
               </div>
             </div>
           </div>
-        </div>
+        </motion.div>
       </Container>
     </Section>
   )

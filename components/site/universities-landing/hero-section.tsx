@@ -1,100 +1,150 @@
 'use client'
 
-import { Button } from '@/components/ui/button'
+import Link from 'next/link'
+import { motion, useReducedMotion } from 'framer-motion'
 import Container from '@/components/ui/primitives/container'
 import Section from '@/components/ui/primitives/section'
-import { TrendingUp } from 'lucide-react'
+import { TrendingDown } from 'lucide-react'
 import { useApp } from '@/app/providers'
 import { content } from './content'
+import { cn } from '@/lib/utils'
+
+// Willis & Lane (2022), Front. Psychol.: RRS trajectory Sep→Jun from study (Oct 3.82 → Apr 3.42).
+// Display heights remapped to full vertical range so the decline is clearly visible (same trajectory, steeper visual slope).
+const barHeights = [100, 92, 82, 72, 66, 60, 52, 44, 40, 38] // Sep → Jun; trajectory preserved, range amplified
+const barColors = [
+  'bg-emerald-500',
+  'bg-emerald-600',
+  'bg-emerald-600',
+  'bg-amber-500',
+  'bg-amber-600',
+  'bg-amber-600',
+  'bg-rose-500',
+  'bg-rose-600',
+  'bg-rose-600',
+  'bg-rose-500',
+]
+const monthLabels = ['Sep', 'Oct', 'Nov', 'Dec', 'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun']
 
 export function HeroSection() {
   const { locale } = useApp()
   const t = content[locale].hero
-
-  const barHeights = [40, 52, 48, 65, 72, 68, 78, 85, 82, 90]
-  const barColors = [
-    'bg-blue-500',
-    'bg-blue-600',
-    'bg-indigo-500',
-    'bg-indigo-600',
-    'bg-emerald-500',
-    'bg-emerald-600',
-    'bg-emerald-500',
-    'bg-emerald-600',
-    'bg-emerald-400',
-    'bg-emerald-400',
-  ]
+  const reducedMotion = useReducedMotion()
+  const motionInitial = reducedMotion ? { opacity: 0 } : { opacity: 0, y: 24 }
+  const motionConfig = reducedMotion ? { opacity: 1 } : { opacity: 1, y: 0 }
 
   return (
     <Section
       id="hero"
-      className="relative overflow-hidden bg-gradient-to-br from-slate-900 via-indigo-950 to-slate-900 text-white"
+      className="relative overflow-hidden bg-gradient-to-br from-slate-950 via-indigo-950/50 to-slate-950 py-16 md:py-24"
       aria-labelledby="hero-heading"
     >
-      <Container>
+      <div
+        className="absolute inset-0 bg-gradient-to-b from-indigo-950/30 via-transparent to-purple-950/20 pointer-events-none"
+        aria-hidden
+      />
+      <div aria-hidden className="pointer-events-none absolute inset-0">
+        <div className="absolute top-1/4 left-1/4 w-[500px] h-[500px] rounded-full bg-indigo-500/15 blur-[100px]" />
+        <div className="absolute bottom-1/4 right-1/4 w-[400px] h-[400px] rounded-full bg-purple-500/10 blur-[80px]" />
+      </div>
+
+      <Container className="relative z-10">
         <div className="grid gap-10 lg:grid-cols-2 lg:gap-12 items-center">
           <div className="space-y-6 text-center lg:text-left">
-            <h1
+            <motion.h1
               id="hero-heading"
-              className="text-3xl sm:text-4xl md:text-5xl font-bold leading-tight"
+              className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold text-white tracking-tight leading-tight"
+              initial={motionInitial}
+              animate={motionConfig}
+              transition={{ duration: reducedMotion ? 0 : 0.5, ease: 'easeOut' }}
             >
               {t.headline}
-            </h1>
-            <p className="text-lg text-slate-300 max-w-xl mx-auto lg:mx-0 leading-relaxed">
+            </motion.h1>
+            <motion.p
+              className="text-lg text-white/80 max-w-xl mx-auto lg:mx-0 leading-relaxed"
+              initial={motionInitial}
+              animate={motionConfig}
+              transition={{ duration: reducedMotion ? 0 : 0.5, delay: reducedMotion ? 0 : 0.08, ease: 'easeOut' }}
+            >
               {t.subheadline}
-            </p>
-            <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">
-              <Button
-                size="lg"
-                asChild
-                className="bg-indigo-500 text-white hover:bg-indigo-600 min-h-[48px] px-8 rounded-2xl shadow-lg border-0"
+            </motion.p>
+            <motion.div
+              className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start"
+              initial={motionInitial}
+              animate={motionConfig}
+              transition={{ duration: reducedMotion ? 0 : 0.5, delay: reducedMotion ? 0 : 0.12, ease: 'easeOut' }}
+            >
+              <Link
+                href="#request-demo"
+                aria-label={t.ctaPrimary}
+                className={cn(
+                  'inline-flex items-center justify-center rounded-xl px-8 py-4 min-h-[48px] text-base font-semibold',
+                  'bg-gradient-to-r from-indigo-500 to-purple-500 text-white',
+                  'shadow-lg shadow-indigo-500/50 hover:scale-105 transition-all duration-200',
+                  'focus-visible:outline focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-slate-950'
+                )}
               >
-                <a href="#request-demo" aria-label={t.ctaPrimary}>
-                  {t.ctaPrimary}
-                </a>
-              </Button>
-              <Button
-                size="lg"
-                asChild
-                className="min-h-[48px] px-8 rounded-2xl border-2 border-indigo-400/80 bg-transparent text-white hover:bg-indigo-500/20 hover:border-indigo-300 hover:text-white"
+                {t.ctaPrimary}
+              </Link>
+              <Link
+                href="/contact?subject=impact-report"
+                aria-label={t.ctaSecondary}
+                className={cn(
+                  'inline-flex items-center justify-center rounded-xl px-8 py-4 min-h-[48px] text-base font-semibold',
+                  'bg-transparent border border-white/30 text-white hover:bg-white/10 transition-all duration-200',
+                  'focus-visible:outline focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-slate-950'
+                )}
               >
-                <a
-                  href="/contact?subject=impact-report"
-                  aria-label={t.ctaSecondary}
-                >
-                  {t.ctaSecondary}
-                </a>
-              </Button>
-            </div>
+                {t.ctaSecondary}
+              </Link>
+            </motion.div>
           </div>
 
-          <div
-            className="rounded-2xl border border-indigo-500/30 bg-slate-800/90 backdrop-blur p-6 shadow-xl"
-            aria-hidden
+          <motion.div
+            className={cn(
+              'glass noise-overlay p-6 md:p-8 rounded-2xl',
+              'transition-all duration-300 hover:border-white/30 hover:bg-white/15'
+            )}
+            aria-labelledby="chart-label-universities"
+            initial={reducedMotion ? false : { opacity: 0, y: 24 }}
+            animate={reducedMotion ? false : { opacity: 1, y: 0 }}
+            transition={{ duration: reducedMotion ? 0 : 0.5, delay: reducedMotion ? 0 : 0.2 }}
           >
             <div className="flex items-center gap-2 mb-4">
-              <TrendingUp className="h-5 w-5 text-emerald-400" />
-              <span className="text-sm font-semibold text-slate-200">
-                {t.chartLabel}
-              </span>
+              <TrendingDown className="h-5 w-5 text-amber-400" aria-hidden />
+              <span id="chart-label-universities" className="text-sm font-semibold text-white/80">{t.chartLabel}</span>
             </div>
             <div className="h-48 flex items-end gap-2">
               {barHeights.map((h, i) => (
                 <div
                   key={i}
-                  className={`flex-1 min-w-[8px] rounded-t ${barColors[i]} transition-all`}
+                  className={cn('flex-1 min-w-[8px] rounded-t transition-all', barColors[i])}
                   style={{ height: `${h}%` }}
                 />
               ))}
             </div>
-            <div className="mt-2 flex justify-between text-xs text-slate-400">
-              <span>Sep</span>
-              <span>Oct</span>
-              <span>Nov</span>
-              <span>Dec</span>
-              <span>Jan</span>
+            <div className="mt-2 flex justify-between text-xs text-white/50">
+              {monthLabels.map((label) => (
+                <span key={label}>{label}</span>
+              ))}
             </div>
-          </div>
+            <p className="mt-4 text-xs text-white/60 leading-relaxed whitespace-pre-line">
+              {t.chartCaption}
+            </p>
+            <footer className="mt-4 pt-3 border-t border-white/20">
+              <p className="text-xs text-white/50">
+                <span className="text-white/40">Source: </span>
+                <a
+                  href={t.chartSourceUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-white/70 underline underline-offset-2 hover:text-white focus:outline focus:ring-2 focus:ring-white/50 rounded"
+                >
+                  {t.chartSourceLabel}
+                </a>
+              </p>
+            </footer>
+          </motion.div>
         </div>
       </Container>
     </Section>

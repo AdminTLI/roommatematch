@@ -1,76 +1,113 @@
 'use client'
 
+import { motion, useReducedMotion } from 'framer-motion'
 import Container from '@/components/ui/primitives/container'
 import Section from '@/components/ui/primitives/section'
 import { HelpCircle, Percent, EyeOff } from 'lucide-react'
 import { useApp } from '@/app/providers'
 import { content } from './content'
+import { cn } from '@/lib/utils'
 
 const icons = [HelpCircle, Percent, EyeOff]
 
 export function SolutionSection() {
   const { locale } = useApp()
   const t = content[locale].solution
+  const reducedMotion = useReducedMotion()
 
-  const cardStyles = [
-    'rounded-2xl border-l-4 border-l-blue-500 border border-slate-200 bg-white p-6 shadow-elev-1 hover:border-blue-200 transition-all',
-    'rounded-2xl border-l-4 border-l-emerald-500 border border-slate-200 bg-white p-6 shadow-elev-1 hover:border-emerald-200 transition-all',
-    'rounded-2xl border-l-4 border-l-violet-500 border border-slate-200 bg-white p-6 shadow-elev-1 hover:border-violet-200 transition-all',
-  ]
+  const itemVariants = {
+    hidden: reducedMotion ? { opacity: 0 } : { opacity: 0, y: 24 },
+    visible: (i: number) => ({
+      opacity: 1,
+      y: 0,
+      transition: {
+        delay: reducedMotion ? 0 : i * 0.1,
+        duration: 0.45,
+        ease: 'easeOut',
+      },
+    }),
+  }
+
   const iconStyles = [
-    'bg-blue-500 text-white',
-    'bg-emerald-500 text-white',
-    'bg-violet-500 text-white',
+    'bg-blue-500/20 border-blue-400/30 text-blue-400',
+    'bg-emerald-500/20 border-emerald-400/30 text-emerald-400',
+    'bg-violet-500/20 border-violet-400/30 text-violet-400',
   ]
 
   return (
     <Section
       id="solution"
-      className="bg-gradient-to-b from-blue-50/50 to-slate-50"
+      className="relative overflow-hidden bg-slate-950 py-16 md:py-24"
       aria-labelledby="solution-heading"
     >
-      <Container>
-        <div className="text-center mb-12 md:mb-16">
-          <p className="text-indigo-600 font-semibold text-sm uppercase tracking-wider mb-2">
+      <div
+        className="absolute inset-0 bg-gradient-to-b from-purple-950/15 via-transparent to-indigo-950/15 pointer-events-none"
+        aria-hidden
+      />
+
+      <Container className="relative z-10">
+        <motion.div
+          className="text-center mb-12 md:mb-16"
+          initial={{ opacity: 0, y: 16 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.5 }}
+        >
+          <p className="text-indigo-400 font-semibold text-sm uppercase tracking-wider mb-2">
             {t.blueprintLabel}
           </p>
           <h2
             id="solution-heading"
-            className="text-2xl sm:text-3xl md:text-4xl font-bold text-slate-900 mb-3"
+            className="text-3xl md:text-4xl lg:text-5xl font-bold text-white mb-3 tracking-tight max-w-3xl mx-auto"
           >
             {t.title}
           </h2>
-          <p className="text-lg text-slate-600 max-w-2xl mx-auto">
+          <p className="text-lg text-white/70 max-w-2xl mx-auto">
             {t.subtitle}
           </p>
-        </div>
+        </motion.div>
 
-        <div className="grid gap-6 md:grid-cols-3">
+        <motion.div
+          className="grid gap-6 md:grid-cols-3"
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true, margin: '-40px' }}
+          variants={{ visible: { transition: { staggerChildren: 0.1 } } }}
+        >
           {t.features.map((feature, index) => {
             const Icon = icons[index] ?? HelpCircle
             return (
-              <div
+              <motion.div
                 key={index}
-                className={cardStyles[index]}
+                className={cn(
+                  'glass noise-overlay p-6 md:p-8 flex flex-col min-h-[200px]',
+                  'transition-all duration-300 hover:border-white/30 hover:bg-white/15'
+                )}
+                variants={itemVariants}
+                custom={index}
+                whileHover={reducedMotion ? undefined : { scale: 1.02, y: -4 }}
               >
                 <div className="flex items-center gap-3 mb-4">
                   <div
-                    className={`flex h-12 w-12 items-center justify-center rounded-xl flex-shrink-0 ${iconStyles[index]}`}
+                    className={cn(
+                      'flex h-12 w-12 items-center justify-center rounded-xl flex-shrink-0 border',
+                      iconStyles[index]
+                    )}
                     aria-hidden
                   >
                     <Icon className="h-6 w-6" />
                   </div>
-                  <h3 className="text-xl font-bold text-slate-900">
+                  <h3 className="text-xl font-bold text-white tracking-tight">
                     {feature.title}
                   </h3>
                 </div>
-                <p className="text-slate-600 leading-relaxed">
+                <p className="text-white/70 leading-relaxed flex-1">
                   {feature.description}
                 </p>
-              </div>
+              </motion.div>
             )
           })}
-        </div>
+        </motion.div>
       </Container>
     </Section>
   )

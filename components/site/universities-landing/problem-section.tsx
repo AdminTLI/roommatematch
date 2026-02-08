@@ -1,64 +1,95 @@
 'use client'
 
+import { motion, useReducedMotion } from 'framer-motion'
 import Container from '@/components/ui/primitives/container'
 import Section from '@/components/ui/primitives/section'
 import { Users, AlertCircle, EyeOff } from 'lucide-react'
 import { useApp } from '@/app/providers'
 import { content } from './content'
+import { cn } from '@/lib/utils'
 
 const icons = [Users, AlertCircle, EyeOff]
+
+const iconBoxStyles = [
+  'bg-blue-500/20 border-blue-400/30 text-blue-400',
+  'bg-amber-500/20 border-amber-400/30 text-amber-400',
+  'bg-violet-500/20 border-violet-400/30 text-violet-400',
+]
 
 export function ProblemSection() {
   const { locale } = useApp()
   const t = content[locale].problem
+  const reducedMotion = useReducedMotion()
   const columns = [
     { title: t.isolation.title, description: t.isolation.description },
     { title: t.conflict.title, description: t.conflict.description },
     { title: t.void.title, description: t.void.description },
   ]
 
-  const cardStyles = [
-    'rounded-2xl border border-blue-200 bg-blue-50/70 p-6 text-center',
-    'rounded-2xl border border-amber-200 bg-amber-50/70 p-6 text-center',
-    'rounded-2xl border border-violet-200 bg-violet-50/70 p-6 text-center',
-  ]
-  const iconBgStyles = [
-    'bg-blue-100 text-blue-700',
-    'bg-amber-100 text-amber-700',
-    'bg-violet-100 text-violet-700',
-  ]
+  const itemVariants = {
+    hidden: reducedMotion ? { opacity: 0 } : { opacity: 0, y: 20 },
+    visible: (i: number) => ({
+      opacity: 1,
+      y: 0,
+      transition: { delay: reducedMotion ? 0 : i * 0.1, duration: 0.45, ease: 'easeOut' },
+    }),
+  }
 
   return (
     <Section
       id="problem"
-      className="bg-white"
+      className="relative overflow-hidden bg-slate-950 py-16 md:py-24"
       aria-labelledby="problem-heading"
     >
-      <Container>
-        <h2
+      <div
+        className="absolute inset-0 bg-gradient-to-b from-indigo-950/15 via-transparent to-purple-950/15 pointer-events-none"
+        aria-hidden
+      />
+      <Container className="relative z-10">
+        <motion.h2
           id="problem-heading"
-          className="text-2xl sm:text-3xl md:text-4xl font-bold text-slate-900 text-center mb-10 md:mb-14"
+          className="text-3xl md:text-4xl lg:text-5xl font-bold text-white tracking-tight text-center mb-10 md:mb-14 max-w-3xl mx-auto"
+          initial={{ opacity: 0, y: 16 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.5 }}
         >
           {t.title}
-        </h2>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+        </motion.h2>
+        <motion.div
+          className="grid grid-cols-1 md:grid-cols-3 gap-6"
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true, margin: '-40px' }}
+          variants={{ visible: { transition: { staggerChildren: 0.1 } } }}
+        >
           {columns.map((col, index) => {
             const Icon = icons[index]
             return (
-              <div key={index} className={cardStyles[index]}>
+              <motion.div
+                key={index}
+                className={cn(
+                  'glass noise-overlay p-6 md:p-8 flex flex-col items-center text-center min-h-[200px]',
+                  'transition-all duration-300 hover:border-white/30 hover:bg-white/15'
+                )}
+                variants={itemVariants}
+                custom={index}
+                whileHover={reducedMotion ? undefined : { scale: 1.02, y: -4 }}
+              >
                 <div
-                  className={`mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-xl ${iconBgStyles[index]}`}
+                  className={cn(
+                    'flex h-14 w-14 items-center justify-center rounded-2xl border mb-4',
+                    iconBoxStyles[index]
+                  )}
                 >
-                  <Icon className="h-6 w-6" aria-hidden />
+                  <Icon className="h-7 w-7" aria-hidden />
                 </div>
-                <h3 className="text-lg font-semibold text-slate-900 mb-2">
-                  {col.title}
-                </h3>
-                <p className="text-slate-600 leading-relaxed">{col.description}</p>
-              </div>
+                <h3 className="text-lg font-semibold text-white tracking-tight mb-2">{col.title}</h3>
+                <p className="text-white/70 leading-relaxed text-sm md:text-base">{col.description}</p>
+              </motion.div>
             )
           })}
-        </div>
+        </motion.div>
       </Container>
     </Section>
   )

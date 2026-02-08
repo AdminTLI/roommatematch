@@ -2,6 +2,7 @@ import { Metadata } from 'next'
 import { Navbar } from '@/components/site/navbar'
 import Footer from '@/components/site/footer'
 import { AboutContent } from './about-content'
+import { MarketingLayoutFix } from '../components/marketing-layout-fix'
 
 export const metadata: Metadata = {
   title: 'About Us | Domu Match - Science-Driven Matching',
@@ -70,15 +71,16 @@ export default function AboutPage() {
 
   return (
     <>
+      <MarketingLayoutFix />
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }}
       />
-      <main className="min-h-screen bg-white pt-16 md:pt-20">
+      <main id="main-content" className="min-h-screen bg-slate-950 pt-16 md:pt-20">
         <Navbar />
         <AboutContent />
-      <Footer />
-    </main>
+        <Footer />
+      </main>
     </>
   )
 }

@@ -5,10 +5,10 @@ import Section from '@/components/ui/primitives/section'
 import Container from '@/components/ui/primitives/container'
 import { Timeline } from '@/components/about/timeline'
 import { EvidenceTile } from '@/components/about/evidence-tile'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { CheckCircle2, Lightbulb, Shield, BookOpen, Target, GraduationCap, User } from 'lucide-react'
 import Link from 'next/link'
-import { Button } from '@/components/ui/button'
+import { motion, useReducedMotion } from 'framer-motion'
+import { cn } from '@/lib/utils'
 
 const content = {
   en: {
@@ -21,21 +21,23 @@ const content = {
       heading: 'Our Story',
       subheading: "How we started, what drives us, and where we're headed.",
       paragraphs: [
-        "Finding a good roommate shouldn't be a gamble. Yet for millions of students every year, it is. You fill out a form, get randomly assigned, and hope for the best. Sometimes it works out. Often it doesn't.",
-        "Domu Match was founded by Danish Samsudin, Founder and Developer, who saw the same problem play out again and again: students struggling with roommate conflicts that hurt their grades, their mental health, and their university experience. Research shows that nearly half of all students face frequent or occasional conflict with their roommates. That's not acceptable.",
-        "So we built a better way. We use compatibility science—the same principles that help people form lasting friendships—to match students based on lifestyle, personality, and academic factors. We verify every user. We make the matching process transparent. And we partner with universities to make this the standard for student housing.",
-        'Our goal is simple: make student living safer, happier, and more compatible. One match at a time.'
+        "University is supposed to be the most transformative chapter of your life, yet for millions of students, the excitement of an acceptance letter quickly fades into the anxiety of a housing lottery. We have seen this story play out too many times: brilliant students struggling to pass exams not because the coursework was too hard, but because their home environment was draining their energy. Domu Match was born from this silence - from the realization that while universities were excellent at teaching students what to learn, no one was helping them decide who to live with. We realized that in the high-stakes world of higher education, a compatible roommate isn't just a convenience; they are the difference between feeling isolated and feeling supported.",
+        "We refused to accept that your mental health should be left to chance, so we built the infrastructure to change it. By replacing random assignment with compatibility science, we help students find homes based on shared living values, daily rhythms, and mutual respect rather than just move-in dates. We bridge the gap between strangers, turning the daunting process of \"finding a room\" into the meaningful experience of building a micro-community. Our platform verifies every user and prioritizes privacy by design, ensuring that the technology works quietly in the background to create a foundation of trust before you ever unlock the front door.",
+        "This is about more than just a place to sleep; it is about reclaiming your home as a sanctuary. We believe that who you live with determines who you become during these critical years, which is why we are partnering with forward-thinking universities to make wellbeing-focused housing the new standard. Whether you are an international student navigating a new culture or a first-year leaving home for the first time, our mission remains the same: to ensure that when you close your books at the end of the day, you are coming home to a place where you can truly recharge, thrive, and be yourself."
       ],
-      founderQuote: 'We started Domu Match because we saw too many students struggling with roommate conflicts. Our mission is to use science and technology to create better matches—matches that last.',
-      founderTitle: 'Founder and Developer'
+      founders: [
+        { name: 'Danish Samsudin', title: 'Founder and Product Developer', quote: "As a former President of ESN Breda, I've seen how much universities are doing to prioritise their students well-being and mental health. It takes an entire 'behind the scenes' team to create a meaningful impact towards students, especially internationals. But I know I could contribute not just more, but better. After just a few months, I truly believe we now have what it takes to support HEI's with their long term goals and objectives." },
+        { name: 'Vitor Mello', title: 'Co-Founder and Sales and Marketing', quote: "I watched too many brilliant friends lose their spark simply because they were living in toxic environments. I refused to accept that 'bad roommates' are just a part of student life. We built Domu Match to prove that peace of mind isn't luck - it's a standard we can guarantee. I'm incredibly proud that we finally have the tool I wish my friends had years ago." }
+      ]
     },
     timeline: [
       { title: 'The Problem Identified', description: "We recognized that nearly half of all students face roommate conflicts that impact well-being and academic performance. Random assignment wasn't working.", date: '2025 August' },
       { title: 'Research Phase', description: 'We analyzed peer-reviewed studies on compatibility, peer effects, and student housing satisfaction from Nature and other leading sources.', date: '2025 September' },
       { title: 'Algorithm Development', description: 'We built a science-driven algorithm that analyzes 40+ lifestyle and academic factors, informed by social compatibility research.', date: '2025 October' },
-      { title: 'First Version Complete', description: 'The first version of Domu Match was completely built and underwent comprehensive debugging and error testing processes to ensure reliability and quality.', date: '2025 November' },
-      { title: 'Beta Testing Phase', description: 'We are currently in the beta testing phase, gathering feedback and refining the platform to ensure the best possible experience for students.', date: '2026 January' },
-      { title: 'Full Launch Planned', description: 'We plan to fully launch the platform in February/March 2026 for the first users to use, making science-backed matching accessible to students across the Netherlands.', date: 'February/March 2026' }
+      { title: 'First Version Complete', description: "The first version of Domu Match's user interface was put together and its basic functionality features fully built.", date: '2025 November' },
+      { title: 'Debugging and Error Testing', description: 'The platform is currently undergoing several changes to debug multiple errors and ensure that during the soft launch, users have a seamless experience. This will allow beta testers to provide more feedback on introducing the right features for the platform.', date: '2026 January' },
+      { title: 'Beta Testing Soft Launch', description: 'The platform will be launched to a small group of students in Breda and Tilburg. We will work together to ensure that we have the most important and wanted features that users expect working properly before our full planned launch.', date: '2026 March' },
+      { title: 'Full Launch Planned', description: 'We are expected to launch the platform for our first students in May. Students will be able to finally use our science-backed matching algorithm to connect with and find compatible roommates for the first time ever in The Netherlands.', date: '2026 May' }
     ],
     vision: {
       heading: "Where We're Headed",
@@ -67,7 +69,7 @@ const content = {
           title: 'Report Roommate Conflict',
           explanation: 'Nearly half of students face ongoing conflict. Negative peer effects hurt grades, well-being, and retention.',
           source: 'Golding et al., "Negative Roommate Relationships and the Health and Well-being of Undergraduate College Students"',
-          solution: "We analyze 40+ factors—study habits, cleanliness, social needs—to prevent conflict before it starts.",
+          solution: "We analyze 40+ factors - study habits, cleanliness, social needs - to prevent conflict before it starts.",
           icon: 'Users' as const
         },
         {
@@ -97,7 +99,7 @@ const content = {
       description: 'These principles guide everything we do, from building our algorithm to partnering with universities.',
       cards: [
         { title: 'Safety First', body: "Student safety is non-negotiable. We verify every user and prioritize secure, respectful interactions." },
-        { title: 'Science-Driven', body: 'Our matching is backed by research—not guesswork. Peer-reviewed compatibility science informs every recommendation.' },
+        { title: 'Science-Driven', body: 'Our matching is backed by research - not guesswork. Peer-reviewed compatibility science informs every recommendation.' },
         { title: 'Transparency', body: "No black boxes. We explain how matching works and why you're compatible with each potential roommate." },
         { title: 'University Partnership', body: 'We partner with universities so better matching becomes the housing standard.' }
       ]
@@ -113,9 +115,6 @@ const content = {
       ],
       button: 'Partner With Us'
     },
-    founder: {
-      name: 'Danish Samsudin'
-    }
   },
   nl: {
     hero: {
@@ -129,11 +128,13 @@ const content = {
       paragraphs: [
         'Een goede huisgenoot vinden zou geen loterij mogen zijn. Toch gebeurt het voor miljoenen studenten nog steeds: je vult een formulier in, krijgt een willekeurige toewijzing en hoopt op het beste.',
         'Domu Match is opgericht door Danish Samsudin, oprichter en ontwikkelaar, die keer op keer zag hoe conflicten cijfers, mentale gezondheid en het studentenleven schaadden. Bijna de helft van de studenten ervaart geregeld spanning met huisgenoten. Dat moet anders.',
-        'Daarom bouwen we aan een beter systeem. We gebruiken compatibiliteitswetenschap—dezelfde principes waarmee mensen hechte vriendschappen vormen—en matchen op levensstijl, persoonlijkheid en studie. Elke gebruiker wordt geverifieerd en het proces is transparant. Samen met universiteiten maken we dit de norm.',
+        'Daarom bouwen we aan een beter systeem. We gebruiken compatibiliteitswetenschap - dezelfde principes waarmee mensen hechte vriendschappen vormen - en matchen op levensstijl, persoonlijkheid en studie. Elke gebruiker wordt geverifieerd en het proces is transparant. Samen met universiteiten maken we dit de norm.',
         'Ons doel is eenvoudig: studenthuisvesting veiliger, blijer en beter passend maken. Eén match tegelijk.'
       ],
-      founderQuote: 'We zijn met Domu Match gestart omdat we te veel studenten zagen worstelen met huisgenoten. Onze missie: met wetenschap en technologie matches maken die echt standhouden.',
-      founderTitle: 'Oprichter en ontwikkelaar'
+      founders: [
+        { name: 'Danish Samsudin', title: 'Oprichter en ontwikkelaar', quote: 'We zijn met Domu Match gestart omdat we te veel studenten zagen worstelen met huisgenoten. Onze missie: met wetenschap en technologie matches maken die echt standhouden.' },
+        { name: 'Vitor Mello', title: 'Medeoprichter en verkoop en marketing', quote: 'i am a placeholder. don\'t forget to fill me out' }
+      ]
     },
     timeline: [
       { title: 'Probleem gesignaleerd', description: 'We zagen dat bijna de helft van de studenten conflicten heeft die welzijn en studie raken. Willekeurige toewijzing werkte niet.', date: '2025 augustus' },
@@ -141,7 +142,8 @@ const content = {
       { title: 'Algoritmeontwikkeling', description: 'We bouwden een algoritme dat meer dan 40 factoren weegt, geïnspireerd op sociale wetenschappen en best practices.', date: '2025 oktober' },
       { title: 'Eerste versie voltooid', description: 'De eerste versie van Domu Match werd volledig gebouwd en onderging uitgebreide debugging- en fouttestprocessen om betrouwbaarheid en kwaliteit te waarborgen.', date: '2025 november' },
       { title: 'Bètatestfase', description: 'We bevinden ons momenteel in de bètatestfase, verzamelen feedback en verfijnen het platform om de best mogelijke ervaring voor studenten te garanderen.', date: '2026 januari' },
-      { title: 'Volledige lancering gepland', description: 'We plannen de volledige lancering van het platform in februari/maart 2026 voor de eerste gebruikers, waardoor wetenschappelijk onderbouwde matching toegankelijk wordt voor studenten in heel Nederland.', date: 'Februari/Maart 2026' }
+      { title: 'Bètatest Soft Launch', description: 'Het platform wordt gelanceerd voor een kleine groep studenten in Breda en Tilburg. Samen zorgen we ervoor dat de belangrijkste en meest gewenste functies correct werken voordat we de volledige lancering plannen.', date: '2026 maart' },
+      { title: 'Volledige lancering gepland', description: 'We verwachten het platform in mei te lanceren voor onze eerste studenten. Studenten kunnen dan eindelijk ons wetenschappelijk onderbouwde matchingalgoritme gebruiken om compatibele huisgenoten te vinden - voor het eerst in Nederland.', date: '2026 mei' }
     ],
     vision: {
       heading: 'Waar we naartoe werken',
@@ -152,7 +154,7 @@ const content = {
         'Een community van geverifieerde studenten opbouwen',
         'Het matchingmodel continu bijsturen met resultaten en feedback',
         'Student-gestuurde groepschats lanceren om huizen te vormen',
-        'Rijkere profielen met bio’s, interesses en highlights toevoegen'
+        "Rijkere profielen met bio's, interesses en highlights toevoegen"
       ],
       longTermTitle: 'Langetermijnvisie',
       longTerm: [
@@ -173,7 +175,7 @@ const content = {
           title: 'Ervaart conflict',
           explanation: 'Bijna de helft van de studenten heeft terugkerende conflicten met huisgenoten, wat prestatie en welzijn schaadt.',
           source: 'Golding e.a., Negative Roommate Relationships and the Health and Well-being of Undergraduate College Students',
-          solution: 'Wij analyseren meer dan 40 factoren—studie, netheid, sociale behoeften—om conflicten te voorkomen.',
+          solution: 'Wij analyseren meer dan 40 factoren - studie, netheid, sociale behoeften - om conflicten te voorkomen.',
           icon: 'Users' as const
         },
         {
@@ -214,112 +216,162 @@ const content = {
       bullets: [
         { title: 'Veiligheid boven alles', text: 'Elke gebruiker wordt geverifieerd en elke interactie is beveiligd.' },
         { title: 'Wetenschap als basis', text: 'Ons algoritme volgt peer-reviewed compatibiliteitsprincipes.' },
-        { title: 'Transparant', text: 'We laten zien waarom je met iemand matcht en waar je op moet letten.' },
+        { title: 'Transparent', text: 'We laten zien waarom je met iemand matcht en waar je op moet letten.' },
         { title: 'Partnerschap', text: 'We werken met universiteiten om compatibiliteit de norm te maken.' }
       ],
       button: 'Werk met ons samen'
     },
-    founder: {
-      name: 'Danish Samsudin'
-    }
   }
 }
 
 export function AboutContent() {
   const { locale } = useApp()
   const t = content[locale]
+  const reducedMotion = useReducedMotion()
+
+  const fadeIn = {
+    initial: reducedMotion ? {} : { opacity: 0, y: 20 },
+    whileInView: reducedMotion ? {} : { opacity: 1, y: 0 },
+    viewport: { once: true },
+    transition: { duration: 0.5 },
+  }
 
   return (
     <>
-      <Section className="bg-gradient-to-b from-white to-brand-surface/30 pb-24">
-        <Container>
-          <div className="max-w-4xl mx-auto text-center">
-            <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-brand-text mb-6 leading-tight">
-              <span className="text-brand-primary">{t.hero.titlePrefix}</span> {t.hero.titleHighlight}
+      {/* Hero section */}
+      <Section className="relative overflow-hidden pt-16 md:pt-24 pb-20 md:pb-28">
+        <div className="absolute inset-0 bg-gradient-to-b from-indigo-950/30 via-transparent to-purple-950/20 pointer-events-none" aria-hidden />
+        <div className="absolute top-1/4 left-1/4 w-[500px] h-[500px] rounded-full bg-indigo-500/15 blur-[100px] pointer-events-none" aria-hidden />
+        <div className="absolute bottom-1/4 right-1/4 w-[400px] h-[400px] rounded-full bg-purple-500/10 blur-[80px] pointer-events-none" aria-hidden />
+
+        <Container className="relative z-10">
+          <motion.div
+            className="max-w-4xl mx-auto text-center"
+            initial={reducedMotion ? false : { opacity: 0, y: 24 }}
+            animate={reducedMotion ? false : { opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, ease: 'easeOut' }}
+          >
+            <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-white mb-6 leading-tight tracking-tight">
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 to-purple-400">{t.hero.titlePrefix}</span>{' '}
+              {t.hero.titleHighlight}
             </h1>
-            <p className="text-lg md:text-xl text-brand-muted max-w-3xl mx-auto leading-relaxed mb-10">
+            <p className="text-lg md:text-xl text-white/80 max-w-3xl mx-auto leading-relaxed">
               {t.hero.description}
             </p>
-          </div>
+          </motion.div>
         </Container>
       </Section>
 
-      <Section id="our-story" className="bg-white py-24">
-        <Container>
+      {/* Our Story */}
+      <Section id="our-story" className="relative overflow-hidden py-16 md:py-24">
+        <div className="absolute inset-0 bg-gradient-to-b from-indigo-950/15 via-transparent to-purple-950/15 pointer-events-none" aria-hidden />
+
+        <Container className="relative z-10">
           <div className="max-w-6xl mx-auto">
-            <div className="text-center mb-20">
-              <h2 className="text-3xl md:text-4xl font-bold text-brand-text mb-4">
-                <span className="text-brand-primary">{t.story.heading}</span>
+            <motion.div
+              className="text-center mb-16 md:mb-20"
+              {...fadeIn}
+            >
+              <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-white mb-4 tracking-tight">
+                <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 to-purple-400">{t.story.heading}</span>
               </h2>
-              <p className="text-lg text-brand-muted max-w-3xl mx-auto">
+              <p className="text-lg text-white/70 max-w-3xl mx-auto">
                 {t.story.subheading}
               </p>
-            </div>
+            </motion.div>
 
             <div className="grid lg:grid-cols-3 gap-12 mb-20">
-              <div className="lg:col-span-2 space-y-6">
+              <motion.div
+                className="lg:col-span-2 space-y-6"
+                initial={reducedMotion ? false : { opacity: 0, y: 20 }}
+                whileInView={reducedMotion ? false : { opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.5, delay: 0.1 }}
+              >
                 {t.story.paragraphs.map((paragraph, index) => (
                   <p
                     key={index}
-                    className={`text-lg text-brand-muted leading-relaxed ${index === t.story.paragraphs.length - 1 ? 'font-medium text-brand-text' : ''}`}
+                    className={cn(
+                      'text-lg text-white/70 leading-relaxed',
+                      index === t.story.paragraphs.length - 1 && 'font-medium text-white/90'
+                    )}
                   >
                     {paragraph}
                   </p>
                 ))}
-              </div>
-              <div>
-                <Card className="border-brand-border/50 bg-brand-surface/30 h-full">
-                  <CardHeader>
-                    <div className="flex items-center gap-3 mb-3">
-                      <div className="h-12 w-12 rounded-full bg-brand-primary/10 flex items-center justify-center">
-                        <User className="h-6 w-6 text-brand-primary" />
+              </motion.div>
+              <motion.div
+                initial={reducedMotion ? false : { opacity: 0, y: 20 }}
+                whileInView={reducedMotion ? false : { opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.5, delay: 0.2 }}
+              >
+                <div className="glass noise-overlay p-6 md:p-8 transition-all duration-300 hover:border-white/30 hover:bg-white/15">
+                  <div className="space-y-6">
+                    {t.story.founders.map((founder, index) => (
+                      <div key={founder.name}>
+                        <div className="flex items-center gap-3 mb-4">
+                          <div className="h-12 w-12 min-h-12 min-w-12 flex-shrink-0 rounded-full bg-indigo-500/20 border border-indigo-400/30 flex items-center justify-center">
+                            <User className="h-6 w-6 flex-shrink-0 text-indigo-400" aria-hidden />
+                          </div>
+                          <div>
+                            <h3 className="text-lg font-semibold text-white">{founder.name}</h3>
+                            <p className="text-sm text-white/60">{founder.title}</p>
+                          </div>
+                        </div>
+                        <p className="text-sm text-white/70 leading-relaxed">
+                          &ldquo;{founder.quote}&rdquo;
+                        </p>
+                        {index < t.story.founders.length - 1 && (
+                          <hr className="mt-6 border-white/20" aria-hidden />
+                        )}
                       </div>
-                      <div>
-                        <CardTitle className="text-lg">{t.founder.name}</CardTitle>
-                        <p className="text-sm text-brand-muted">{t.story.founderTitle}</p>
-                      </div>
-                    </div>
-                  </CardHeader>
-                  <CardContent>
-                    <p className="text-sm text-brand-muted leading-relaxed">
-                      “{t.story.founderQuote}”
-                    </p>
-                  </CardContent>
-                </Card>
-              </div>
+                    ))}
+                  </div>
+                </div>
+              </motion.div>
             </div>
 
-            <div className="mb-20">
-              <h3 className="text-2xl font-bold text-brand-text mb-12 text-center">
+            <motion.div
+              className="mb-20"
+              initial={reducedMotion ? false : { opacity: 0 }}
+              whileInView={reducedMotion ? false : { opacity: 1 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.5 }}
+            >
+              <h3 className="text-2xl font-bold text-white mb-12 text-center tracking-tight">
                 {locale === 'nl' ? 'Onze reis' : 'Our Journey'}
               </h3>
               <Timeline items={t.timeline} />
-            </div>
+            </motion.div>
 
-            <div className="mt-20">
-              <h3 className="text-2xl font-bold text-brand-text mb-8 text-center">{t.vision.heading}</h3>
+            <motion.div
+              className="mt-20"
+              {...fadeIn}
+            >
+              <h3 className="text-2xl font-bold text-white mb-8 text-center tracking-tight">{t.vision.heading}</h3>
               <div className="max-w-3xl mx-auto space-y-8">
-                <p className="text-lg text-brand-muted leading-relaxed text-center">
+                <p className="text-lg text-white/70 leading-relaxed text-center">
                   {t.vision.intro}
                 </p>
                 <div className="grid md:grid-cols-2 gap-12">
-                  <div>
-                    <h4 className="font-semibold text-brand-text mb-4 text-lg">{t.vision.shortTermTitle}</h4>
-                    <ul className="space-y-3 text-brand-muted">
+                  <div className="glass noise-overlay p-6 md:p-8 transition-all duration-300 hover:border-white/30 hover:bg-white/15">
+                    <h4 className="font-semibold text-white mb-4 text-lg">{t.vision.shortTermTitle}</h4>
+                    <ul className="space-y-3 text-white/70">
                       {t.vision.shortTerm.map((item, index) => (
                         <li key={index} className="flex items-start gap-2">
-                          <CheckCircle2 className="h-5 w-5 text-brand-primary flex-shrink-0 mt-0.5" />
+                          <CheckCircle2 className="h-5 w-5 text-indigo-400 flex-shrink-0 mt-0.5" />
                           <span>{item}</span>
                         </li>
                       ))}
                     </ul>
                   </div>
-                  <div>
-                    <h4 className="font-semibold text-brand-text mb-4 text-lg">{t.vision.longTermTitle}</h4>
-                    <ul className="space-y-3 text-brand-muted">
+                  <div className="glass noise-overlay p-6 md:p-8 transition-all duration-300 hover:border-white/30 hover:bg-white/15">
+                    <h4 className="font-semibold text-white mb-4 text-lg">{t.vision.longTermTitle}</h4>
+                    <ul className="space-y-3 text-white/70">
                       {t.vision.longTerm.map((item, index) => (
                         <li key={index} className="flex items-start gap-2">
-                          <CheckCircle2 className="h-5 w-5 text-brand-primary flex-shrink-0 mt-0.5" />
+                          <CheckCircle2 className="h-5 w-5 text-indigo-400 flex-shrink-0 mt-0.5" />
                           <span>{item}</span>
                         </li>
                       ))}
@@ -327,101 +379,149 @@ export function AboutContent() {
                   </div>
                 </div>
               </div>
-            </div>
+            </motion.div>
           </div>
         </Container>
       </Section>
 
-      <Section className="bg-brand-surface/50 py-24">
-        <Container>
+      {/* Evidence section */}
+      <Section className="relative overflow-hidden py-16 md:py-24">
+        <div className="absolute inset-0 bg-gradient-to-b from-indigo-950/20 via-transparent to-purple-950/20 pointer-events-none" aria-hidden />
+
+        <Container className="relative z-10">
           <div className="max-w-6xl mx-auto">
-            <div className="text-center mb-20">
-              <h2 className="text-3xl md:text-4xl font-bold text-brand-text mb-4">
-                <span className="text-brand-primary">{t.evidence.headingHighlight}</span> {t.evidence.headingSuffix}
+            <motion.div
+              className="text-center mb-16 md:mb-20"
+              {...fadeIn}
+            >
+              <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-white mb-4 tracking-tight">
+                <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 to-purple-400">{t.evidence.headingHighlight}</span>{' '}
+                {t.evidence.headingSuffix}
               </h2>
-              <p className="text-lg text-brand-muted max-w-3xl mx-auto">
+              <p className="text-lg text-white/70 max-w-3xl mx-auto">
                 {t.evidence.description}
               </p>
-            </div>
+            </motion.div>
 
-            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8 mb-16">
+            <motion.div
+              className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8 mb-16"
+              initial="hidden"
+              whileInView="visible"
+              viewport={{ once: true, margin: '-40px' }}
+              variants={{ visible: { transition: { staggerChildren: 0.1 } } }}
+            >
               {t.evidence.tiles.map((tile, index) => (
                 <EvidenceTile key={index} {...tile} />
               ))}
-            </div>
+            </motion.div>
 
-            <div className="bg-white rounded-2xl p-8 md:p-10 border border-brand-border/50">
+            <motion.div
+              className="glass noise-overlay p-8 md:p-10 transition-all duration-300 hover:border-white/30 hover:bg-white/15"
+              initial={reducedMotion ? false : { opacity: 0, y: 20 }}
+              whileInView={reducedMotion ? false : { opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.5 }}
+            >
               <div className="flex items-start gap-4">
                 <div className="flex-shrink-0">
-                  <Lightbulb className="h-6 w-6 text-brand-primary" />
+                  <Lightbulb className="h-6 w-6 text-indigo-400" />
                 </div>
                 <div>
-                  <h3 className="text-xl font-semibold text-brand-text mb-4">
+                  <h3 className="text-xl font-semibold text-white mb-4">
                     {t.evidence.insightTitle}
                   </h3>
-                  <p className="text-brand-muted leading-relaxed mb-4">
+                  <p className="text-white/70 leading-relaxed mb-4">
                     {t.evidence.insightBody}
                   </p>
-                  <p className="text-xs text-brand-muted italic">{t.evidence.insightSource}</p>
+                  <p className="text-xs text-white/50 italic">{t.evidence.insightSource}</p>
                 </div>
               </div>
-            </div>
+            </motion.div>
           </div>
         </Container>
       </Section>
 
-      <Section className="bg-brand-surface/30 py-24">
-        <Container>
+      {/* Values section */}
+      <Section className="relative overflow-hidden py-16 md:py-24">
+        <div className="absolute inset-0 bg-gradient-to-b from-indigo-950/15 via-transparent to-purple-950/15 pointer-events-none" aria-hidden />
+
+        <Container className="relative z-10">
           <div className="max-w-6xl mx-auto">
-            <div className="text-center mb-20">
-              <h2 className="text-3xl md:text-4xl font-bold text-brand-text mb-4">
-                {t.values.headingPrefix} <span className="text-brand-primary">{t.values.headingHighlight}</span>
+            <motion.div
+              className="text-center mb-16 md:mb-20"
+              {...fadeIn}
+            >
+              <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-white mb-4 tracking-tight">
+                {t.values.headingPrefix}{' '}
+                <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 to-purple-400">{t.values.headingHighlight}</span>
               </h2>
-              <p className="text-lg text-brand-muted max-w-3xl mx-auto">
+              <p className="text-lg text-white/70 max-w-3xl mx-auto">
                 {t.values.description}
               </p>
-            </div>
+            </motion.div>
 
-            <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
+            <motion.div
+              className="grid md:grid-cols-2 lg:grid-cols-4 gap-6 md:gap-8"
+              initial="hidden"
+              whileInView="visible"
+              viewport={{ once: true, margin: '-40px' }}
+              variants={{ visible: { transition: { staggerChildren: 0.08 } } }}
+            >
               {t.values.cards.map((card, index) => {
                 const icons = [Shield, BookOpen, Target, GraduationCap]
                 const Icon = icons[index]
                 return (
-                  <Card key={card.title} className="border-brand-border/50 text-center">
-                    <CardHeader>
-                      <div className="h-12 w-12 rounded-xl bg-brand-primary/10 flex items-center justify-center mx-auto mb-4">
-                        <Icon className="h-6 w-6 text-brand-primary" />
-                      </div>
-                      <CardTitle className="text-lg">{card.title}</CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                      <p className="text-sm text-brand-muted leading-relaxed">
-                        {card.body}
-                      </p>
-                    </CardContent>
-                  </Card>
+                  <motion.div
+                    key={card.title}
+                    className={cn(
+                      'glass noise-overlay p-6 md:p-8 text-center transition-all duration-300',
+                      'hover:border-white/30 hover:bg-white/15'
+                    )}
+                    initial={reducedMotion ? false : { opacity: 0, y: 24 }}
+                    whileInView={reducedMotion ? false : { opacity: 1, y: 0 }}
+                    viewport={{ once: true }}
+                    transition={{ duration: 0.5, delay: index * 0.08 }}
+                  >
+                    <div className="h-12 w-12 rounded-xl bg-white/10 border border-white/20 flex items-center justify-center mx-auto mb-4">
+                      <Icon className="h-6 w-6 text-indigo-400" />
+                    </div>
+                    <h3 className="text-lg font-semibold text-white mb-3">{card.title}</h3>
+                    <p className="text-sm text-white/70 leading-relaxed">
+                      {card.body}
+                    </p>
+                  </motion.div>
                 )
               })}
-            </div>
+            </motion.div>
           </div>
         </Container>
       </Section>
 
-      <Section className="bg-gradient-to-br from-brand-primary to-brand-primaryHover text-white py-24">
-        <Container>
-          <div className="max-w-4xl mx-auto text-center">
-            <h2 className="text-3xl md:text-4xl font-bold mb-6">
+      {/* CTA section */}
+      <Section className="relative overflow-hidden py-16 md:py-24">
+        <div className="absolute inset-0 bg-gradient-to-b from-indigo-950/30 via-purple-950/20 to-indigo-950/30 pointer-events-none" aria-hidden />
+        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[400px] rounded-full bg-indigo-500/20 blur-[120px] pointer-events-none" aria-hidden />
+
+        <Container className="relative z-10">
+          <motion.div
+            className="max-w-4xl mx-auto text-center"
+            initial={reducedMotion ? false : { opacity: 0, y: 20 }}
+            whileInView={reducedMotion ? false : { opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.6 }}
+          >
+            <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-white mb-6 tracking-tight">
               {t.cta.heading}
             </h2>
-            <p className="text-lg text-white/90 mb-10 max-w-2xl mx-auto leading-relaxed">
+            <p className="text-lg text-white/80 mb-10 max-w-2xl mx-auto leading-relaxed">
               {t.cta.description}
             </p>
 
-            <div className="bg-white/10 rounded-2xl p-8 mb-10 max-w-2xl mx-auto">
+            <div className="glass noise-overlay rounded-2xl p-8 mb-10 max-w-2xl mx-auto border-white/20 bg-white/5">
               <ul className="text-left space-y-4 text-white/90">
                 {t.cta.bullets.map((item, index) => (
                   <li key={index} className="flex items-start gap-3">
-                    <CheckCircle2 className="h-5 w-5 text-white flex-shrink-0 mt-0.5" />
+                    <CheckCircle2 className="h-5 w-5 text-indigo-400 flex-shrink-0 mt-0.5" />
                     <span>
                       <strong className="text-white">{item.title}:</strong> {item.text}
                     </span>
@@ -430,17 +530,20 @@ export function AboutContent() {
               </ul>
             </div>
 
-            <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Button asChild size="lg" variant="outline" className="border-white text-white hover:bg-white/10">
-                <Link href="/contact">
-                  {t.cta.button}
-                </Link>
-              </Button>
-            </div>
-          </div>
+            <Link
+              href="/contact"
+              className={cn(
+                'inline-flex items-center justify-center rounded-xl px-6 py-4 text-base font-semibold',
+                'bg-gradient-to-r from-indigo-500 to-purple-500 text-white',
+                'shadow-lg shadow-indigo-500/50 hover:scale-105 transition-all duration-200',
+                'focus-visible:outline focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-slate-950'
+              )}
+            >
+              {t.cta.button}
+            </Link>
+          </motion.div>
         </Container>
       </Section>
     </>
   )
 }
-

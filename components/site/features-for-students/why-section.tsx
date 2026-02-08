@@ -1,69 +1,104 @@
 'use client'
 
+import { motion, useReducedMotion } from 'framer-motion'
 import Container from '@/components/ui/primitives/container'
 import Section from '@/components/ui/primitives/section'
 import { Music, Droplets, Ghost } from 'lucide-react'
 import { useApp } from '@/app/providers'
 import { content } from './content'
+import { cn } from '@/lib/utils'
 
 const icons = [Music, Droplets, Ghost]
 
 export function WhySection() {
   const { locale } = useApp()
   const t = content[locale].why
+  const reducedMotion = useReducedMotion()
 
-  const cardStyles = [
-    'rounded-2xl border border-blue-200 bg-blue-50/70 p-6',
-    'rounded-2xl border border-amber-200 bg-amber-50/70 p-6',
-    'rounded-2xl border border-violet-200 bg-violet-50/70 p-6',
-  ]
-  const iconBgStyles = [
-    'bg-blue-100 text-blue-700',
-    'bg-amber-100 text-amber-700',
-    'bg-violet-100 text-violet-700',
+  const itemVariants = {
+    hidden: reducedMotion ? { opacity: 0 } : { opacity: 0, y: 24 },
+    visible: (i: number) => ({
+      opacity: 1,
+      y: 0,
+      transition: {
+        delay: reducedMotion ? 0 : i * 0.1,
+        duration: 0.45,
+        ease: 'easeOut',
+      },
+    }),
+  }
+
+  const iconStyles = [
+    'bg-blue-500/20 border-blue-400/30 text-blue-400',
+    'bg-amber-500/20 border-amber-400/30 text-amber-400',
+    'bg-violet-500/20 border-violet-400/30 text-violet-400',
   ]
 
   return (
     <Section
       id="why"
-      className="bg-white"
+      className="relative overflow-hidden bg-slate-950 py-16 md:py-24"
       aria-labelledby="why-heading"
     >
-      <Container>
-        <h2
+      <div
+        className="absolute inset-0 bg-gradient-to-b from-indigo-950/15 via-transparent to-purple-950/15 pointer-events-none"
+        aria-hidden
+      />
+
+      <Container className="relative z-10">
+        <motion.h2
           id="why-heading"
-          className="text-2xl sm:text-3xl md:text-4xl font-bold text-slate-900 text-center mb-10 md:mb-14"
+          className="text-3xl md:text-4xl lg:text-5xl font-bold text-white text-center mb-12 md:mb-14 tracking-tight max-w-3xl mx-auto"
+          initial={{ opacity: 0, y: 16 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.5 }}
         >
           {t.title}
-        </h2>
-        <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+        </motion.h2>
+        <motion.div
+          className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3"
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true, margin: '-40px' }}
+          variants={{ visible: { transition: { staggerChildren: 0.1 } } }}
+        >
           {t.painPoints.map((point, index) => {
             const Icon = icons[index] ?? Music
             return (
-              <div
+              <motion.div
                 key={index}
-                className={cardStyles[index]}
+                className={cn(
+                  'glass noise-overlay p-6 md:p-8 flex flex-col min-h-[180px]',
+                  'transition-all duration-300 hover:border-white/30 hover:bg-white/15'
+                )}
+                variants={itemVariants}
+                custom={index}
+                whileHover={reducedMotion ? undefined : { scale: 1.02, y: -4 }}
               >
                 <div className="flex items-start gap-4">
                   <div
-                    className={`flex h-12 w-12 items-center justify-center rounded-xl flex-shrink-0 ${iconBgStyles[index]}`}
+                    className={cn(
+                      'flex h-12 w-12 items-center justify-center rounded-xl flex-shrink-0 border',
+                      iconStyles[index]
+                    )}
                     aria-hidden
                   >
                     <Icon className="h-6 w-6" />
                   </div>
-                  <div>
-                    <h3 className="text-lg font-semibold text-slate-900 mb-2">
+                  <div className="flex-1 min-w-0">
+                    <h3 className="text-lg font-semibold text-white tracking-tight mb-2">
                       {point.title}
                     </h3>
-                    <p className="text-slate-600 leading-relaxed">
+                    <p className="text-white/70 leading-relaxed">
                       {point.description}
                     </p>
                   </div>
                 </div>
-              </div>
+              </motion.div>
             )
           })}
-        </div>
+        </motion.div>
       </Container>
     </Section>
   )

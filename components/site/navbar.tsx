@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
-import { useRouter, usePathname } from 'next/navigation'
+import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import Container from '@/components/ui/primitives/container'
 import { Menu, X, ChevronRight, ArrowRight } from 'lucide-react'
@@ -41,11 +41,11 @@ const buttonContent = {
 
 export function Navbar() {
   const router = useRouter()
-  const pathname = usePathname()
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
   const [mounted, setMounted] = useState(false)
   const { locale } = useApp()
-  const isHomePage = pathname === '/'
+  // Use home-page style (glass, white text) on all pages for consistent branding
+  const isDarkPage = true
 
   // Only access locale-dependent content after mount to prevent hydration mismatch
   const navigation = mounted ? navigationContent[locale] : navigationContent['en']
@@ -99,7 +99,7 @@ export function Navbar() {
       <nav
         className={cn(
           'h-16 md:h-20 fixed top-0 left-0 right-0 z-50 w-full transition-colors duration-200',
-          isHomePage
+          isDarkPage
             ? 'bg-white/5 backdrop-blur-lg border-b border-white/10'
             : 'bg-white'
         )}
@@ -129,7 +129,7 @@ export function Navbar() {
               <span
                 className={cn(
                   'text-xl sm:text-2xl font-bold leading-none',
-                  isHomePage ? 'text-white' : 'text-brand-text'
+                  isDarkPage ? 'text-white' : 'text-brand-text'
                 )}
               >
                 Domu Match
@@ -144,7 +144,7 @@ export function Navbar() {
                   href={item.href}
                   className={cn(
                     'transition-colors font-medium leading-tight flex items-center h-full py-0 whitespace-nowrap px-1',
-                    isHomePage ? 'text-white/80 hover:text-white' : 'text-brand-muted hover:text-brand-text'
+                    isDarkPage ? 'text-white/80 hover:text-white' : 'text-brand-muted hover:text-brand-text'
                   )}
                   suppressHydrationWarning
                 >
@@ -156,13 +156,13 @@ export function Navbar() {
             {/* Desktop CTA */}
             <div className="hidden lg:flex items-center gap-5 xl:gap-7 2xl:gap-8 h-full flex-shrink-0">
               <div className="flex items-center h-full">
-                <LanguageSwitcher variant="minimal" />
+                <LanguageSwitcher variant="minimal" context={isDarkPage ? 'glass' : 'default'} />
               </div>
               <button
                 onClick={handleSignIn}
                 className={cn(
                   'inline-flex items-center justify-center font-medium rounded-2xl transition-all h-10 px-6 text-base focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 disabled:opacity-60 disabled:pointer-events-none whitespace-nowrap',
-                  isHomePage
+                  isDarkPage
                     ? 'bg-transparent border border-white/30 text-white hover:bg-white/10 focus-visible:ring-white/50'
                     : 'bg-white text-gray-900 border border-gray-300 hover:bg-primary hover:text-white hover:border-primary focus-visible:ring-ring'
                 )}
@@ -175,7 +175,7 @@ export function Navbar() {
                 onClick={handleGetStarted}
                 className={cn(
                   'h-10',
-                  isHomePage &&
+                  isDarkPage &&
                     'bg-gradient-to-r from-indigo-500 to-purple-500 text-white border-0 shadow-lg shadow-indigo-500/50 hover:scale-105'
                 )}
               >
@@ -187,14 +187,14 @@ export function Navbar() {
             {/* Mobile menu button */}
             <div className="lg:hidden flex items-center gap-3 h-full">
               <div className="flex items-center h-full">
-                <LanguageSwitcher variant="minimal" />
+                <LanguageSwitcher variant="minimal" context={isDarkPage ? 'glass' : 'default'} />
               </div>
               <button
                 type="button"
                 onClick={handleToggleMenu}
                 className={cn(
                   'p-2 rounded-md transition-colors focus-visible:ring-2 relative z-[70] flex items-center justify-center h-10 w-10',
-                  isHomePage
+                  isDarkPage
                     ? 'text-white hover:bg-white/10 focus-visible:ring-white/50'
                     : 'hover:bg-brand-surface focus-visible:ring-brand-primary text-brand-text'
                 )}
@@ -226,7 +226,7 @@ export function Navbar() {
       {isMobileMenuOpen && (
         <div
           id="mobile-menu"
-          className="lg:hidden fixed inset-x-0 bg-white z-[70] shadow-2xl rounded-2xl animate-in slide-in-from-top duration-300"
+          className="relative overflow-hidden lg:hidden fixed inset-x-0 z-[70] shadow-2xl rounded-2xl animate-in slide-in-from-top duration-300 bg-slate-900/95 backdrop-blur-xl border border-white/10"
           style={{
             top: '72px',
             maxHeight: 'calc(100vh - 72px - 1rem)',
@@ -238,44 +238,52 @@ export function Navbar() {
             WebkitOverflowScrolling: 'touch'
           }}
         >
+          {/* Subtle gradient overlay for consistency with homepage */}
+          <div
+            className="absolute inset-0 bg-gradient-to-b from-indigo-950/20 via-transparent to-purple-950/10 pointer-events-none rounded-2xl"
+            aria-hidden
+          />
+          <div className="absolute top-1/4 left-1/4 w-64 h-64 rounded-full bg-indigo-500/10 blur-[80px] pointer-events-none" aria-hidden />
+          <div className="absolute bottom-1/4 right-1/4 w-48 h-48 rounded-full bg-purple-500/10 blur-[60px] pointer-events-none" aria-hidden />
+
           {/* Menu Header */}
-          <div className="sticky top-0 bg-white border-b border-gray-200 px-4 py-4 flex items-center justify-between z-10 rounded-t-2xl">
-            <h2 className="text-xl font-bold text-brand-text">Domu Match</h2>
+          <div className="relative sticky top-0 z-10 flex items-center justify-between px-4 py-4 border-b border-white/10 rounded-t-2xl bg-slate-900/80 backdrop-blur-sm">
+            <h2 className="text-xl font-bold text-white">Domu Match</h2>
             <button
               type="button"
               onClick={handleCloseMenu}
-              className="p-2 rounded-lg hover:bg-gray-100 transition-colors duration-200"
+              className="p-2 rounded-xl text-white/80 hover:text-white hover:bg-white/10 transition-all duration-200"
               aria-label="Close menu"
             >
-              <X className="h-6 w-6 text-gray-600" />
+              <X className="h-6 w-6" />
             </button>
           </div>
 
           {/* Menu Content */}
-          <div className="px-4 py-6 space-y-1">
+          <div className="relative px-4 py-6 space-y-1">
             {/* Navigation Links */}
-            {navigation.map((item, index) => (
+            {navigation.map((item) => (
               <Link
                 key={item.href}
                 href={item.href}
-                className="group flex items-center justify-between py-3.5 px-4 rounded-xl text-base font-semibold text-gray-900 hover:bg-gradient-to-r hover:from-brand-primary/5 hover:to-brand-primary/10 hover:text-brand-primary transition-all duration-200 active:scale-[0.98] border border-transparent hover:border-brand-primary/20"
+                className="group flex items-center justify-between py-3.5 px-4 rounded-xl text-base font-semibold text-white/90 hover:text-white hover:bg-white/5 transition-all duration-200 active:scale-[0.98] border border-transparent hover:border-white/10"
                 onClick={handleCloseMenu}
               >
                 <span className="flex items-center gap-2">
-                  <span className="w-1.5 h-1.5 rounded-full bg-brand-primary opacity-0 group-hover:opacity-100 transition-opacity duration-200" />
+                  <span className="w-1.5 h-1.5 rounded-full bg-indigo-400 opacity-0 group-hover:opacity-100 transition-opacity duration-200" />
                   <span suppressHydrationWarning>{item.name}</span>
                 </span>
-                <ArrowRight className="h-4 w-4 text-gray-400 group-hover:text-brand-primary group-hover:translate-x-1 transition-all duration-200" />
+                <ArrowRight className="h-4 w-4 text-white/50 group-hover:text-indigo-400 group-hover:translate-x-1 transition-all duration-200" />
               </Link>
             ))}
 
             {/* Divider */}
-            <div className="my-6 border-t border-gray-100" />
+            <div className="my-6 border-t border-white/10" />
 
             {/* Action Buttons */}
             <div className="space-y-3">
               <button
-                className="inline-flex items-center justify-center font-medium rounded-2xl transition-all w-full justify-center h-12 px-6 text-base font-semibold bg-white text-gray-900 border-2 border-gray-300 hover:bg-primary hover:text-white hover:border-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:opacity-60 disabled:pointer-events-none whitespace-nowrap"
+                className="inline-flex items-center justify-center font-medium rounded-2xl transition-all w-full h-12 px-6 text-base font-semibold bg-transparent border border-white/30 text-white hover:bg-white/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/50 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-900 disabled:opacity-60 disabled:pointer-events-none whitespace-nowrap"
                 onClick={() => {
                   handleSignIn()
                   handleCloseMenu()
@@ -283,10 +291,8 @@ export function Navbar() {
               >
                 <span suppressHydrationWarning>{buttons.signIn}</span>
               </button>
-              <Button
-                variant="primary"
-                size="lg"
-                className="w-full justify-center h-12 text-base font-semibold shadow-lg hover:shadow-xl transition-all duration-200 hover:scale-[1.02] active:scale-[0.98]"
+              <button
+                className="inline-flex items-center justify-center font-medium rounded-2xl transition-all w-full h-12 px-6 text-base font-semibold bg-gradient-to-r from-indigo-500 to-purple-500 text-white border-0 shadow-lg shadow-indigo-500/50 hover:scale-[1.02] active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-slate-900 disabled:opacity-60 disabled:pointer-events-none whitespace-nowrap"
                 onClick={() => {
                   handleGetStarted()
                   handleCloseMenu()
@@ -294,7 +300,7 @@ export function Navbar() {
               >
                 <span suppressHydrationWarning>{buttons.getStarted}</span>
                 <ChevronRight className="ml-2 h-5 w-5" />
-              </Button>
+              </button>
             </div>
           </div>
         </div>

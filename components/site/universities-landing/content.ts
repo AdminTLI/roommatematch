@@ -6,6 +6,9 @@ export interface HeroContent {
   ctaPrimary: string
   ctaSecondary: string
   chartLabel: string
+  chartCaption: string
+  chartSourceUrl: string
+  chartSourceLabel: string
 }
 
 export interface ProblemContent {
@@ -35,6 +38,7 @@ export interface PrivacyContent {
 export interface PilotContent {
   title: string
   pitch: string
+  cta: string
   benefits: { label: string; detail: string }[]
   trustPrefix: string
   trustItems: { name: string; description: string }[]
@@ -88,6 +92,10 @@ export const content: Record<Locale, UniversitiesLandingContent> = {
       ctaPrimary: 'Request a Pilot',
       ctaSecondary: 'Download Impact Report',
       chartLabel: 'Student Satisfaction Index',
+      chartCaption:
+        'Roommate relationship quality declines over the academic year—both across and within semesters.\n\nRRS means: Oct 3.82 → Apr 3.42. Compatible matching can help reverse this trend.',
+      chartSourceUrl: 'https://doi.org/10.3389/fpsyg.2022.960421',
+      chartSourceLabel: 'Willis & Lane (2022), Frontiers in Psychology',
     },
     problem: {
       title: 'The Silent Cause of Dropouts.',
@@ -138,6 +146,7 @@ export const content: Record<Locale, UniversitiesLandingContent> = {
       title: 'Join the 2026 Student Wellbeing Pilot.',
       pitch:
         'We are selecting 3 innovative Dutch Universities to co-design our dashboard standards.',
+      cta: 'Request a Pilot',
       benefits: [
         {
           label: 'Early Access',
@@ -206,6 +215,10 @@ export const content: Record<Locale, UniversitiesLandingContent> = {
       ctaPrimary: 'Vraag een pilot aan',
       ctaSecondary: 'Download impactrapport',
       chartLabel: 'Studenttevredenheidsindex',
+      chartCaption:
+        'De kwaliteit van de huisgenotenrelatie daalt in de loop van het academisch jaar—zowel tussen als binnen semesters.\n\nRRS-gemiddelden: okt 3,82 → apr 3,42. Compatibele matching kan helpen deze trend te keren.',
+      chartSourceUrl: 'https://doi.org/10.3389/fpsyg.2022.960421',
+      chartSourceLabel: 'Willis & Lane (2022), Frontiers in Psychology',
     },
     problem: {
       title: 'De stille oorzaak van uitval.',
@@ -256,6 +269,7 @@ export const content: Record<Locale, UniversitiesLandingContent> = {
       title: 'Doe mee met de Student Wellbeing Pilot 2026.',
       pitch:
         'We selecteren 3 innovatieve Nederlandse universiteiten om samen onze dashboardstandaarden vorm te geven.',
+      cta: 'Vraag een pilot aan',
       benefits: [
         {
           label: 'Vroege toegang',

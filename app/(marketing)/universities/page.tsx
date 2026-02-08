@@ -109,7 +109,7 @@ export default function UniversitiesPage() {
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }}
       />
-      <main id="main-content" className="min-h-screen bg-white pt-16 md:pt-20 pb-24">
+      <main id="main-content" className="min-h-screen bg-slate-950 pt-16 md:pt-20 pb-24">
         <Navbar />
         <div>
           <UniversitiesLanding />

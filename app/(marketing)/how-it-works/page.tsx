@@ -118,12 +118,12 @@ export default function HowItWorksPage() {
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }}
       />
-      <main className="min-h-screen bg-white pt-16 md:pt-20">
+      <main id="main-content" className="min-h-screen bg-slate-950 pt-16 md:pt-20">
         <Navbar />
         <div>
           <HowItWorksSection />
           <SafetySection />
-          <FinalCTA />
+          <FinalCTA variant="dark" />
         </div>
         <Footer />
       </main>
