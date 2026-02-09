@@ -16,14 +16,9 @@ export function TrustSection() {
   return (
     <Section
       id="trust"
-      className="relative overflow-hidden bg-slate-950 py-16 md:py-24"
+      className="relative overflow-hidden py-16 md:py-24"
       aria-labelledby="trust-heading"
     >
-      <div
-        className="absolute inset-0 bg-gradient-to-b from-indigo-950/20 via-transparent to-purple-950/20 pointer-events-none"
-        aria-hidden
-      />
-
       <Container className="relative z-10">
         <motion.div
           className={cn(

@@ -27,27 +27,9 @@ export function HeroSection() {
   return (
     <Section
       id="hero"
-      className="relative overflow-hidden min-h-[90vh] flex flex-col justify-center bg-gradient-to-br from-slate-950 via-indigo-950/50 via-purple-950/40 to-indigo-950/50 text-white"
+      className="relative overflow-hidden min-h-[90vh] flex flex-col justify-center text-white"
       aria-labelledby="hero-heading"
     >
-      {/* Gradient orbs */}
-      <div aria-hidden className="pointer-events-none absolute inset-0">
-        <div
-          className={cn(
-            'absolute top-1/4 left-1/4 w-[600px] h-[600px] rounded-full bg-indigo-500/20 blur-[120px]',
-            !reducedMotion && 'animate-pulse'
-          )}
-        />
-        <div
-          className={cn(
-            'absolute bottom-1/4 right-1/4 w-[500px] h-[500px] rounded-full bg-purple-500/15 blur-[100px]',
-            !reducedMotion && 'animate-pulse'
-          )}
-          style={!reducedMotion ? { animationDelay: '1s' } : undefined}
-        />
-        <div className="absolute top-1/2 left-1/2 w-[400px] h-[400px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-purple-500/10 blur-[80px]" />
-      </div>
-
       <Container className="relative z-10">
         <div className="grid gap-8 lg:grid-cols-2 lg:gap-12 items-center">
           {/* Left: Copy + CTAs */}
@@ -59,7 +41,11 @@ export function HeroSection() {
               animate={motionConfig}
               transition={{ duration: reducedMotion ? 0 : 0.6, ease: 'easeOut' }}
             >
-              {t.headline}
+              {locale === 'en' ? (
+                <>Don&apos;t let a bad <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 to-purple-400">roommate</span> ruin your year.</>
+              ) : (
+                <>Laat een slechte <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 to-purple-400">huisgenoot</span> je jaar niet verpesten.</>
+              )}
             </motion.h1>
             <motion.p
               className="text-base sm:text-lg text-white/80 max-w-xl mx-auto lg:mx-0 leading-relaxed"

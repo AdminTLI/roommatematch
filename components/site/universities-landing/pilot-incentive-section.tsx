@@ -18,13 +18,9 @@ export function PilotIncentiveSection() {
   return (
     <Section
       id="pilot-incentive"
-      className="relative overflow-hidden bg-slate-950 py-16 md:py-24"
+      className="relative overflow-hidden py-16 md:py-24"
       aria-labelledby="pilot-heading"
     >
-      <div
-        className="absolute inset-0 bg-gradient-to-b from-purple-950/20 via-transparent to-indigo-950/20 pointer-events-none"
-        aria-hidden
-      />
       <Container className="relative z-10">
         <motion.div
           className={cn(
@@ -40,7 +36,11 @@ export function PilotIncentiveSection() {
             id="pilot-heading"
             className="text-2xl sm:text-3xl md:text-4xl font-bold text-white text-center tracking-tight mb-4"
           >
-            {t.title}
+            {locale === 'en' ? (
+              <>Join the 2026 <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 to-purple-400">Student Wellbeing Pilot.</span></>
+            ) : (
+              <>Doe mee met de <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 to-purple-400">Student Wellbeing Pilot</span> 2026.</>
+            )}
           </h2>
           <p className="text-white/80 text-center max-w-2xl mx-auto mb-10">{t.pitch}</p>
           <ul className="space-y-4 max-w-xl mx-auto mb-10">

@@ -59,15 +59,9 @@ export function FinalCTA({ variant = 'light' }: FinalCTAProps) {
   return (
     <Section
       className={cn(
-        isDark && 'relative overflow-hidden bg-slate-950 py-16 md:py-24'
+        isDark && 'relative overflow-hidden py-16 md:py-24'
       )}
     >
-      {isDark && (
-        <div
-          className="absolute inset-0 bg-gradient-to-b from-indigo-950/20 via-transparent to-purple-950/20 pointer-events-none"
-          aria-hidden
-        />
-      )}
       <Container className="relative z-10">
         <div className="grid items-center gap-12 md:grid-cols-2">
           {/* Left column - Content */}

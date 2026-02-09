@@ -63,7 +63,7 @@ export default function Footer() {
   const t = content[locale]
 
   return (
-    <footer className="bg-[#0B1220] text-slate-300">
+    <footer className="bg-[#0B1220] text-slate-300 pb-safe-bottom">
       <Container className="py-12 sm:py-16">
         <div className="grid gap-8 sm:gap-10 grid-cols-1 sm:grid-cols-2 lg:grid-cols-5">
           {/* Brand */}
@@ -237,7 +237,7 @@ export default function Footer() {
           </div>
         </div>
 
-        <div className="mt-8 sm:mt-12 border-t border-white/10 pt-6 flex flex-col items-center gap-4">
+        <div className="mt-8 sm:mt-12 pt-6 flex flex-col items-center gap-4">
           <p className="text-slate-500 text-xs sm:text-sm text-center px-4">
             © {new Date().getFullYear()} Domu Match. {t.allRightsReserved}
           </p>

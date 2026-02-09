@@ -79,7 +79,11 @@ export function HeroAurora() {
           animate={motionConfig}
           transition={{ duration: reducedMotion ? 0 : 0.6, ease: 'easeOut' }}
         >
-          {t.headline}
+          {locale === 'en' ? (
+            <>From <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 to-purple-400">strangers</span> to <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 to-purple-400">roommates.</span></>
+          ) : (
+            <>Huisvesting is <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 to-purple-400">meer</span> dan een <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 to-purple-400">dak.</span></>
+          )}
         </motion.h1>
         <motion.p
           className="text-lg sm:text-xl md:text-2xl text-white/80 text-center max-w-2xl mb-12 md:mb-16"

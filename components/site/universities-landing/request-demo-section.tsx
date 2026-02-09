@@ -63,13 +63,9 @@ export function RequestDemoSection() {
   return (
     <Section
       id="request-demo"
-      className="relative overflow-hidden bg-slate-950 py-16 md:py-24"
+      className="relative overflow-hidden py-16 md:py-24"
       aria-labelledby="request-demo-heading"
     >
-      <div
-        className="absolute inset-0 bg-gradient-to-b from-indigo-950/20 via-transparent to-purple-950/20 pointer-events-none"
-        aria-hidden
-      />
       <Container className="relative z-10">
         <div className="max-w-2xl mx-auto">
           <h2

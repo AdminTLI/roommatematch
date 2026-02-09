@@ -31,13 +31,9 @@ export function SolutionSection() {
   return (
     <Section
       id="solution"
-      className="relative overflow-hidden bg-slate-950 py-16 md:py-24"
+      className="relative overflow-hidden py-16 md:py-24"
       aria-labelledby="solution-heading"
     >
-      <div
-        className="absolute inset-0 bg-gradient-to-b from-purple-950/15 via-transparent to-indigo-950/15 pointer-events-none"
-        aria-hidden
-      />
       <Container className="relative z-10">
         <motion.h2
           id="solution-heading"
@@ -47,7 +43,7 @@ export function SolutionSection() {
           viewport={{ once: true }}
           transition={{ duration: 0.5 }}
         >
-          The Solution
+          The <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 to-purple-400">Solution</span>
         </motion.h2>
         <motion.div
           className="grid grid-cols-1 md:grid-cols-3 gap-6"

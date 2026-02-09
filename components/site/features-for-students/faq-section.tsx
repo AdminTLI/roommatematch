@@ -20,14 +20,9 @@ export function FAQSection() {
   return (
     <Section
       id="faq"
-      className="relative overflow-hidden bg-slate-950 py-16 md:py-24"
+      className="relative overflow-hidden py-16 md:py-24"
       aria-labelledby="faq-heading"
     >
-      <div
-        className="absolute inset-0 bg-gradient-to-b from-purple-950/15 via-transparent to-indigo-950/15 pointer-events-none"
-        aria-hidden
-      />
-
       <Container className="relative z-10">
         <motion.h2
           id="faq-heading"

@@ -37,14 +37,9 @@ export function SolutionSection() {
   return (
     <Section
       id="solution"
-      className="relative overflow-hidden bg-slate-950 py-16 md:py-24"
+      className="relative overflow-hidden py-16 md:py-24"
       aria-labelledby="solution-heading"
     >
-      <div
-        className="absolute inset-0 bg-gradient-to-b from-purple-950/15 via-transparent to-indigo-950/15 pointer-events-none"
-        aria-hidden
-      />
-
       <Container className="relative z-10">
         <motion.div
           className="text-center mb-12 md:mb-16"
@@ -60,7 +55,11 @@ export function SolutionSection() {
             id="solution-heading"
             className="text-3xl md:text-4xl lg:text-5xl font-bold text-white mb-3 tracking-tight max-w-3xl mx-auto"
           >
-            {t.title}
+            {locale === 'en' ? (
+              <>The <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 to-purple-400">Compatibility</span> Blueprint</>
+            ) : (
+              <>Het <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 to-purple-400">Compatibiliteits</span>plan</>
+            )}
           </h2>
           <p className="text-lg text-white/70 max-w-2xl mx-auto">
             {t.subtitle}

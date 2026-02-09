@@ -50,6 +50,19 @@ export interface OfferContent {
   cta: string
 }
 
+export interface SavingsCalculatorContent {
+  heading: string
+  subheading: string
+  stat1Value: string
+  stat1Label: string
+  stat2Value: string
+  stat2Label: string
+  stat3Value: string
+  stat3Label: string
+  ctaSubtext: string
+  cta: string
+}
+
 export interface FAQItem {
   question: string
   answer: string
@@ -79,6 +92,7 @@ export interface UniversitiesLandingContent {
   privacy: PrivacyContent
   pilot: PilotContent
   offer: OfferContent
+  savingsCalculator: SavingsCalculatorContent
   faq: FAQItem[]
   requestDemo: RequestDemoContent
 }
@@ -172,6 +186,20 @@ export const content: Record<Locale, UniversitiesLandingContent> = {
       heading: 'Start with a Pilot Program.',
       copy: "You don't need to change your entire infrastructure. Run a pilot for your incoming International First-Years.",
       cta: 'Schedule a Strategy Call',
+    },
+    savingsCalculator: {
+      heading: 'What could better housing mean for your budget?',
+      subheading:
+        'Housing conflict is a leading driver of first-year attrition. Retaining even a small percentage of at-risk students can add up to significant revenue—and better outcomes.',
+      stat1Value: '€55.000',
+      stat1Label: 'Avg. loss per international dropout',
+      stat2Value: 'Top 3',
+      stat2Label: 'Reason for first-year attrition',
+      stat3Value: '2%+',
+      stat3Label: 'Conservative retention lift from better matching',
+      ctaSubtext:
+        'Use our interactive ROI calculator to estimate how much your university could save by retaining more students.',
+      cta: 'Calculate your savings',
     },
     faq: [
       {
@@ -295,6 +323,20 @@ export const content: Record<Locale, UniversitiesLandingContent> = {
       heading: 'Begin met een pilot.',
       copy: 'U hoeft uw hele infrastructuur niet om te gooien. Draai een pilot voor uw binnenkomende internationale eerstejaars.',
       cta: 'Plan een strategiegesprek',
+    },
+    savingsCalculator: {
+      heading: 'Wat kan betere huisvesting betekenen voor uw begroting?',
+      subheading:
+        'Huisvestingsconflicten zijn een belangrijke oorzaak van eerstejaarsuitval. Het behouden van zelfs een klein percentage risicostudenten kan uitmonden in aanzienlijke opbrengst—en betere uitkomsten.',
+      stat1Value: '€55.000',
+      stat1Label: 'Gem. verlies per internationale uitval',
+      stat2Value: 'Top 3',
+      stat2Label: 'Reden voor eerstejaarsuitval',
+      stat3Value: '2%+',
+      stat3Label: 'Conservatieve retentiewinst door betere matching',
+      ctaSubtext:
+        'Gebruik onze interactieve ROI-calculator om te schatten hoeveel uw universiteit kan besparen door meer studenten te behouden.',
+      cta: 'Bereken uw besparing',
     },
     faq: [
       {

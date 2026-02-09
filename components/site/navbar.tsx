@@ -100,7 +100,7 @@ export function Navbar() {
         className={cn(
           'h-16 md:h-20 fixed top-0 left-0 right-0 z-50 w-full transition-colors duration-200',
           isDarkPage
-            ? 'bg-white/5 backdrop-blur-lg border-b border-white/10'
+            ? 'bg-white/5 backdrop-blur-lg'
             : 'bg-white'
         )}
       >

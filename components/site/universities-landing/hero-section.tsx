@@ -36,18 +36,9 @@ export function HeroSection() {
   return (
     <Section
       id="hero"
-      className="relative overflow-hidden bg-gradient-to-br from-slate-950 via-indigo-950/50 to-slate-950 py-16 md:py-24"
+      className="relative overflow-hidden py-16 md:py-24"
       aria-labelledby="hero-heading"
     >
-      <div
-        className="absolute inset-0 bg-gradient-to-b from-indigo-950/30 via-transparent to-purple-950/20 pointer-events-none"
-        aria-hidden
-      />
-      <div aria-hidden className="pointer-events-none absolute inset-0">
-        <div className="absolute top-1/4 left-1/4 w-[500px] h-[500px] rounded-full bg-indigo-500/15 blur-[100px]" />
-        <div className="absolute bottom-1/4 right-1/4 w-[400px] h-[400px] rounded-full bg-purple-500/10 blur-[80px]" />
-      </div>
-
       <Container className="relative z-10">
         <div className="grid gap-10 lg:grid-cols-2 lg:gap-12 items-center">
           <div className="space-y-6 text-center lg:text-left">
@@ -58,7 +49,11 @@ export function HeroSection() {
               animate={motionConfig}
               transition={{ duration: reducedMotion ? 0 : 0.5, ease: 'easeOut' }}
             >
-              {t.headline}
+              {locale === 'en' ? (
+                <>Housing Stability = <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 to-purple-400">Student Retention.</span></>
+              ) : (
+                <>Huisvestingsstabiliteit = <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 to-purple-400">Studentenretentie.</span></>
+              )}
             </motion.h1>
             <motion.p
               className="text-lg text-white/80 max-w-xl mx-auto lg:mx-0 leading-relaxed"

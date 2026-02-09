@@ -15,7 +15,7 @@ export function OfferSection() {
   return (
     <Section
       id="offer"
-      className="relative overflow-hidden bg-slate-950 py-16 md:py-24"
+      className="relative overflow-hidden py-16 md:py-24"
       aria-labelledby="offer-heading"
     >
       <div

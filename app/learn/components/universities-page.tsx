@@ -1,5 +1,6 @@
 'use client'
 
+import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
@@ -16,7 +17,10 @@ import {
   Building2,
   Lock,
   Globe,
-  Zap
+  Zap,
+  Calculator,
+  Euro,
+  TrendingUp
 } from 'lucide-react'
 
 export function UniversitiesPage() {
@@ -235,6 +239,73 @@ export function UniversitiesPage() {
                 </CardContent>
               </Card>
             ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Calculate Your Savings Section */}
+      <section className="py-16 bg-gradient-to-br from-indigo-50 via-white to-blue-50 dark:from-gray-800 dark:via-gray-900 dark:to-indigo-950/30">
+        <div className="container mx-auto px-4">
+          <div className="max-w-4xl mx-auto">
+            <div className="text-center mb-12">
+              <div className="inline-flex items-center justify-center p-3 rounded-full bg-indigo-100 dark:bg-indigo-900/30 mb-6">
+                <Calculator className="h-10 w-10 text-indigo-600 dark:text-indigo-400" />
+              </div>
+              <h2 className="text-3xl lg:text-4xl font-bold text-gray-900 dark:text-white mb-4">
+                What could better housing mean for your budget?
+              </h2>
+              <p className="text-xl text-gray-600 dark:text-gray-300 max-w-2xl mx-auto">
+                Housing conflict is a leading driver of first-year attrition. Retaining even a small percentage of at-risk students can add up to significant revenue—and better outcomes.
+              </p>
+            </div>
+
+            <div className="grid sm:grid-cols-3 gap-6 mb-10">
+              <Card className="border-2 border-indigo-100 dark:border-indigo-900/50 bg-white/80 dark:bg-gray-900/80 backdrop-blur-sm">
+                <CardContent className="pt-6 text-center">
+                  <div className="mx-auto mb-3 p-2.5 rounded-xl bg-indigo-100 dark:bg-indigo-900/40 w-fit">
+                    <Euro className="h-6 w-6 text-indigo-600 dark:text-indigo-400" />
+                  </div>
+                  <p className="text-2xl font-bold text-indigo-600 dark:text-indigo-400">€55.000</p>
+                  <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
+                    Avg. loss per international dropout
+                  </p>
+                </CardContent>
+              </Card>
+              <Card className="border-2 border-indigo-100 dark:border-indigo-900/50 bg-white/80 dark:bg-gray-900/80 backdrop-blur-sm">
+                <CardContent className="pt-6 text-center">
+                  <div className="mx-auto mb-3 p-2.5 rounded-xl bg-indigo-100 dark:bg-indigo-900/40 w-fit">
+                    <TrendingUp className="h-6 w-6 text-indigo-600 dark:text-indigo-400" />
+                  </div>
+                  <p className="text-2xl font-bold text-indigo-600 dark:text-indigo-400">Top 3</p>
+                  <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
+                    Reason for first-year attrition
+                  </p>
+                </CardContent>
+              </Card>
+              <Card className="border-2 border-indigo-100 dark:border-indigo-900/50 bg-white/80 dark:bg-gray-900/80 backdrop-blur-sm">
+                <CardContent className="pt-6 text-center">
+                  <div className="mx-auto mb-3 p-2.5 rounded-xl bg-indigo-100 dark:bg-indigo-900/40 w-fit">
+                    <Users className="h-6 w-6 text-indigo-600 dark:text-indigo-400" />
+                  </div>
+                  <p className="text-2xl font-bold text-indigo-600 dark:text-indigo-400">2%+</p>
+                  <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
+                    Conservative retention lift from better matching
+                  </p>
+                </CardContent>
+              </Card>
+            </div>
+
+            <div className="text-center">
+              <p className="text-gray-600 dark:text-gray-400 mb-6 max-w-xl mx-auto">
+                Use our interactive ROI calculator to estimate how much your university could save by retaining more students.
+              </p>
+              <Button size="lg" className="text-lg px-8 py-4" asChild>
+                <Link href="/pricing">
+                  Calculate your savings
+                  <ArrowRight className="ml-2 h-5 w-5" />
+                </Link>
+              </Button>
+            </div>
           </div>
         </div>
       </section>

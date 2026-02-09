@@ -202,6 +202,12 @@
     /* Solid slate-900 background for consistent contrast */
   }
 
+  /* Marketing pages: match footer background so no visible gap below footer */
+  html:has(body.marketing-page),
+  body.marketing-page {
+    background: #0B1220;
+  }
+
   /* Prevent scroll lock on marketing page when Select dropdown is open */
   body.marketing-page[data-scroll-locked] {
     overflow: visible !important;
@@ -529,6 +535,20 @@ body:has([data-chat-page]) [class*="border-t"][class*="shadow-2xl"] {
 .message-reaction-picker {
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
+}
+
+/* Marketing pages: full-page radial gradient (no via-transparent, avoids middle line) */
+@layer components {
+  .marketing-page-bg-base {
+    background: radial-gradient(
+      ellipse 140% 100% at 15% 0%,
+      rgba(67, 56, 202, 0.5) 0%,
+      rgba(49, 46, 129, 0.8) 35%,
+      rgba(30, 27, 75, 0.95) 55%,
+      #0f172a 75%,
+      #020617 100%
+    );
+  }
 }
 
 /* Homepage 2026 glassmorphism and noise */

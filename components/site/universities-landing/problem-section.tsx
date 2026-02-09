@@ -38,13 +38,9 @@ export function ProblemSection() {
   return (
     <Section
       id="problem"
-      className="relative overflow-hidden bg-slate-950 py-16 md:py-24"
+      className="relative overflow-hidden py-16 md:py-24"
       aria-labelledby="problem-heading"
     >
-      <div
-        className="absolute inset-0 bg-gradient-to-b from-indigo-950/15 via-transparent to-purple-950/15 pointer-events-none"
-        aria-hidden
-      />
       <Container className="relative z-10">
         <motion.h2
           id="problem-heading"
@@ -54,7 +50,11 @@ export function ProblemSection() {
           viewport={{ once: true }}
           transition={{ duration: 0.5 }}
         >
-          {t.title}
+          {locale === 'en' ? (
+            <>The <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 to-purple-400">Silent Cause</span> of Dropouts.</>
+          ) : (
+            <>De <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 to-purple-400">stille oorzaak</span> van uitval.</>
+          )}
         </motion.h2>
         <motion.div
           className="grid grid-cols-1 md:grid-cols-3 gap-6"

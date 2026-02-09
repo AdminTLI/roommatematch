@@ -16,13 +16,9 @@ export function PrivacyGdprSection() {
   return (
     <Section
       id="privacy"
-      className="relative overflow-hidden bg-slate-950 py-16 md:py-24"
+      className="relative overflow-hidden py-16 md:py-24"
       aria-labelledby="privacy-heading"
     >
-      <div
-        className="absolute inset-0 bg-gradient-to-b from-indigo-950/15 via-transparent to-purple-950/15 pointer-events-none"
-        aria-hidden
-      />
       <Container className="relative z-10">
         <motion.div
           className={cn(

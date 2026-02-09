@@ -10,6 +10,7 @@ import { Testimonials } from '@/components/site/testimonials'
 import Footer from '@/components/site/footer'
 import { MarketingLayoutFix } from './components/marketing-layout-fix'
 import { StatsTicker } from './components/stats-ticker'
+import { MarketingPageBackground } from './components/marketing-page-background'
 
 export default function MarketingPage() {
 
@@ -203,16 +204,19 @@ export default function MarketingPage() {
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(homepageStructuredData) }}
       />
-      <main id="main-content" className="min-h-screen bg-slate-950 pt-16 md:pt-20">
-        <Navbar />
-        <HeroAurora />
-        <StatsTicker />
-        <LiveStats />
-        <BentoInfrastructure />
-        <Universities />
-        <Features />
-        <Testimonials />
-        <Footer />
+      <main id="main-content" className="relative min-h-screen pt-16 md:pt-20 pb-24 overflow-hidden">
+        <MarketingPageBackground />
+        <div className="relative z-10">
+          <Navbar />
+          <HeroAurora />
+          <StatsTicker />
+          <LiveStats />
+          <BentoInfrastructure />
+          <Universities />
+          <Features />
+          <Testimonials />
+          <Footer />
+        </div>
       </main>
     </>
   )

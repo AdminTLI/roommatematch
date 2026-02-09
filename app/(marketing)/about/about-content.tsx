@@ -240,10 +240,6 @@ export function AboutContent() {
     <>
       {/* Hero section */}
       <Section className="relative overflow-hidden pt-16 md:pt-24 pb-20 md:pb-28">
-        <div className="absolute inset-0 bg-gradient-to-b from-indigo-950/30 via-transparent to-purple-950/20 pointer-events-none" aria-hidden />
-        <div className="absolute top-1/4 left-1/4 w-[500px] h-[500px] rounded-full bg-indigo-500/15 blur-[100px] pointer-events-none" aria-hidden />
-        <div className="absolute bottom-1/4 right-1/4 w-[400px] h-[400px] rounded-full bg-purple-500/10 blur-[80px] pointer-events-none" aria-hidden />
-
         <Container className="relative z-10">
           <motion.div
             className="max-w-4xl mx-auto text-center"
@@ -264,8 +260,6 @@ export function AboutContent() {
 
       {/* Our Story */}
       <Section id="our-story" className="relative overflow-hidden py-16 md:py-24">
-        <div className="absolute inset-0 bg-gradient-to-b from-indigo-950/15 via-transparent to-purple-950/15 pointer-events-none" aria-hidden />
-
         <Container className="relative z-10">
           <div className="max-w-6xl mx-auto">
             <motion.div
@@ -386,8 +380,6 @@ export function AboutContent() {
 
       {/* Evidence section */}
       <Section className="relative overflow-hidden py-16 md:py-24">
-        <div className="absolute inset-0 bg-gradient-to-b from-indigo-950/20 via-transparent to-purple-950/20 pointer-events-none" aria-hidden />
-
         <Container className="relative z-10">
           <div className="max-w-6xl mx-auto">
             <motion.div
@@ -443,9 +435,6 @@ export function AboutContent() {
 
       {/* CTA section */}
       <Section className="relative overflow-hidden py-16 md:py-24">
-        <div className="absolute inset-0 bg-gradient-to-b from-indigo-950/30 via-purple-950/20 to-indigo-950/30 pointer-events-none" aria-hidden />
-        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[400px] rounded-full bg-indigo-500/20 blur-[120px] pointer-events-none" aria-hidden />
-
         <Container className="relative z-10">
           <motion.div
             className="max-w-4xl mx-auto text-center"

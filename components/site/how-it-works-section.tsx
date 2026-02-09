@@ -257,12 +257,7 @@ export function HowItWorksSection() {
   }
 
   return (
-    <Section className="relative overflow-hidden bg-slate-950 py-16 md:py-24">
-      <div
-        className="absolute inset-0 bg-gradient-to-b from-indigo-950/30 via-transparent to-purple-950/20 pointer-events-none"
-        aria-hidden
-      />
-
+    <Section className="relative overflow-hidden py-16 md:py-24">
       <Container className="relative z-10">
         {/* Header */}
         <motion.div
@@ -273,7 +268,11 @@ export function HowItWorksSection() {
           transition={{ duration: 0.5 }}
         >
           <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-white tracking-tight mb-6 max-w-4xl mx-auto">
-            {t.title}
+            {locale === 'en' ? (
+              <>How <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 to-purple-400">Domu Match</span> Works</>
+            ) : (
+              <>Hoe <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 to-purple-400">Domu Match</span> Werkt</>
+            )}
           </h1>
           <p className="text-lg md:text-xl text-white/80 max-w-3xl mx-auto leading-relaxed">
             {t.subtitle}
@@ -295,7 +294,7 @@ export function HowItWorksSection() {
         >
           <div className="text-center mb-12">
             <h2 className="text-3xl md:text-4xl font-bold text-white tracking-tight mb-4">
-              {t.featuresTitle}
+              Why our <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 to-purple-400">process works</span>
             </h2>
             <p className="text-lg text-white/70 max-w-2xl mx-auto">
               {t.featuresSubtitle}
@@ -342,7 +341,7 @@ export function HowItWorksSection() {
           transition={{ duration: 0.5 }}
         >
           <h2 className="text-2xl md:text-3xl font-bold text-white tracking-tight mb-4">
-            {t.ctaTitle}
+            Ready to find your <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 to-purple-400">perfect match?</span>
           </h2>
           <p className="text-base md:text-lg text-white/80 mb-8 max-w-2xl mx-auto">
             {t.ctaSubtitle}

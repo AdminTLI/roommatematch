@@ -56,7 +56,7 @@ export function StickyCTA() {
       aria-label={t.button}
       className={cn(
         'fixed bottom-0 left-0 right-0 z-40 py-3 safe-bottom',
-        'bg-slate-950/95 backdrop-blur-lg border-t border-white/20',
+        'bg-slate-950/95 backdrop-blur-lg',
         'shadow-[0_-4px_24px_rgba(0,0,0,0.3)]'
       )}
     >

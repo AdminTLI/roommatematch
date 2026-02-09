@@ -148,12 +148,7 @@ export function SafetySection() {
   }
 
   return (
-    <Section className="relative overflow-hidden bg-slate-950 py-16 md:py-24">
-      <div
-        className="absolute inset-0 bg-gradient-to-b from-purple-950/20 via-transparent to-indigo-950/20 pointer-events-none"
-        aria-hidden
-      />
-
+    <Section className="relative overflow-hidden py-16 md:py-24">
       <Container className="relative z-10">
         <motion.div
           className="text-center mb-12 md:mb-16"
@@ -163,7 +158,11 @@ export function SafetySection() {
           transition={{ duration: 0.5 }}
         >
           <h2 className="text-3xl md:text-4xl font-bold text-white tracking-tight mb-4">
-            {t.title}
+            {locale === 'en' ? (
+              <>Your safety is our <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 to-purple-400">priority</span></>
+            ) : (
+              <>Je veiligheid is onze <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 to-purple-400">prioriteit</span></>
+            )}
           </h2>
           <p className="text-base md:text-lg text-white/80 max-w-3xl mx-auto leading-relaxed">
             {t.subtitle}

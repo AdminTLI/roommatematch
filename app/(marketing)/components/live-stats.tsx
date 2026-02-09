@@ -156,12 +156,7 @@ export function LiveStats({ locale: localeProp }: LiveStatsProps) {
   }
 
   return (
-    <Section className="relative overflow-hidden bg-slate-950 py-16 md:py-24">
-      <div
-        className="absolute inset-0 bg-gradient-to-b from-indigo-950/20 via-transparent to-purple-950/10 pointer-events-none"
-        aria-hidden
-      />
-
+    <Section className="relative overflow-hidden py-16 md:py-24">
       <Container className="relative z-10">
         <motion.div
           className="text-center mb-12"

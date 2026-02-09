@@ -3,6 +3,7 @@ import Footer from '@/components/site/footer'
 import { HowItWorksSection } from '@/components/site/how-it-works-section'
 import { SafetySection } from '@/components/site/safety-section'
 import { FinalCTA } from '@/components/site/final-cta'
+import { MarketingPageBackground } from '../components/marketing-page-background'
 import { Metadata } from 'next'
 
 export const metadata: Metadata = {
@@ -118,14 +119,20 @@ export default function HowItWorksPage() {
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }}
       />
-      <main id="main-content" className="min-h-screen bg-slate-950 pt-16 md:pt-20">
-        <Navbar />
-        <div>
-          <HowItWorksSection />
-          <SafetySection />
-          <FinalCTA variant="dark" />
+      <main
+        id="main-content"
+        className="relative min-h-screen pt-16 md:pt-20 pb-24 overflow-hidden"
+      >
+        <MarketingPageBackground />
+        <div className="relative z-10">
+          <Navbar />
+          <div>
+            <HowItWorksSection />
+            <SafetySection />
+            <FinalCTA variant="dark" />
+          </div>
+          <Footer />
         </div>
-        <Footer />
       </main>
     </>
   )

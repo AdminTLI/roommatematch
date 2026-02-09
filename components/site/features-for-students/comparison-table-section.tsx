@@ -21,14 +21,9 @@ export function ComparisonTableSection() {
   return (
     <Section
       id="comparison"
-      className="relative overflow-hidden bg-slate-950 py-16 md:py-24"
+      className="relative overflow-hidden py-16 md:py-24"
       aria-labelledby="comparison-heading"
     >
-      <div
-        className="absolute inset-0 bg-gradient-to-b from-purple-950/15 via-transparent to-indigo-950/15 pointer-events-none"
-        aria-hidden
-      />
-
       <Container className="relative z-10">
         <motion.div
           className="text-center mb-10 md:mb-12"
@@ -41,7 +36,11 @@ export function ComparisonTableSection() {
             id="comparison-heading"
             className="text-3xl md:text-4xl font-bold text-white mb-3 tracking-tight"
           >
-            {t.title}
+            {locale === 'en' ? (
+              <>How we <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 to-purple-400">compare</span></>
+            ) : (
+              <>Zo <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 to-purple-400">vergelijken</span> we</>
+            )}
           </h2>
           <p className="text-white/70">{t.subtitle}</p>
         </motion.div>

@@ -21,14 +21,9 @@ export function InvestmentSection() {
   return (
     <Section
       id="investment"
-      className="relative overflow-hidden bg-slate-950 py-16 md:py-24"
+      className="relative overflow-hidden py-16 md:py-24"
       aria-labelledby="investment-heading"
     >
-      <div
-        className="absolute inset-0 bg-gradient-to-b from-indigo-950/20 via-transparent to-purple-950/20 pointer-events-none"
-        aria-hidden
-      />
-
       <Container className="relative z-10">
         <motion.div
           className={cn(
@@ -52,7 +47,11 @@ export function InvestmentSection() {
             id="investment-heading"
             className="text-2xl sm:text-3xl md:text-4xl font-bold text-white mb-4 tracking-tight"
           >
-            {t.heading}
+            {locale === 'en' ? (
+              <>15 Minutes for <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 to-purple-400">12 Months</span> of Peace.</>
+            ) : (
+              <>15 Minuten voor <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 to-purple-400">12 Maanden</span> Vrede.</>
+            )}
           </h2>
           <p className="text-lg text-white/70 max-w-2xl mx-auto mb-8 leading-relaxed">
             {t.copy}

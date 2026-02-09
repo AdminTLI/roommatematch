@@ -2,6 +2,7 @@ import { Navbar } from '@/components/site/navbar'
 import Footer from '@/components/site/footer'
 import { FeaturesForStudents } from '@/components/site/features-for-students'
 import { MarketingLayoutFix } from '../components/marketing-layout-fix'
+import { MarketingPageBackground } from '../components/marketing-page-background'
 import { Metadata } from 'next'
 
 export const metadata: Metadata = {
@@ -119,12 +120,18 @@ export default function StudentsPage() {
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }}
       />
-      <main id="main-content" className="min-h-screen bg-slate-950 pt-16 md:pt-20 pb-24">
-        <Navbar />
-        <div>
-          <FeaturesForStudents />
+      <main
+        id="main-content"
+        className="relative min-h-screen pt-16 md:pt-20 pb-24 overflow-hidden"
+      >
+        <MarketingPageBackground />
+        <div className="relative z-10">
+          <Navbar />
+          <div>
+            <FeaturesForStudents />
+          </div>
+          <Footer />
         </div>
-        <Footer />
       </main>
     </>
   )

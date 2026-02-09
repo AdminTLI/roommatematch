@@ -37,14 +37,9 @@ export function WhySection() {
   return (
     <Section
       id="why"
-      className="relative overflow-hidden bg-slate-950 py-16 md:py-24"
+      className="relative overflow-hidden py-16 md:py-24"
       aria-labelledby="why-heading"
     >
-      <div
-        className="absolute inset-0 bg-gradient-to-b from-indigo-950/15 via-transparent to-purple-950/15 pointer-events-none"
-        aria-hidden
-      />
-
       <Container className="relative z-10">
         <motion.h2
           id="why-heading"
@@ -54,7 +49,11 @@ export function WhySection() {
           viewport={{ once: true }}
           transition={{ duration: 0.5 }}
         >
-          {t.title}
+          {locale === 'en' ? (
+            <>Living with strangers <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 to-purple-400">shouldn&apos;t be a gamble.</span></>
+          ) : (
+            <>Samenwonen met vreemden <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 to-purple-400">zou geen gok moeten zijn.</span></>
+          )}
         </motion.h2>
         <motion.div
           className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3"

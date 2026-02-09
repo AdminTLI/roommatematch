@@ -91,10 +91,8 @@ export function BentoInfrastructure() {
   }
 
   return (
-    <Section className="relative overflow-hidden bg-slate-950 py-16 md:py-24">
-      <div className="absolute inset-0 bg-gradient-to-b from-indigo-950/30 via-transparent to-purple-950/20 pointer-events-none" aria-hidden />
-
-      <Container>
+    <Section className="relative overflow-hidden py-16 md:py-24">
+      <Container className="relative z-10">
         <motion.div
           className="grid grid-cols-1 md:grid-cols-3 gap-6"
           initial="hidden"
