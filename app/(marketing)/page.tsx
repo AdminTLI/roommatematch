@@ -204,7 +204,7 @@ export default function MarketingPage() {
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(homepageStructuredData) }}
       />
-      <main id="main-content" className="relative min-h-screen pt-16 md:pt-20 pb-24 overflow-hidden">
+      <main id="main-content" className="relative pt-16 md:pt-20 overflow-hidden">
         <MarketingPageBackground />
         <div className="relative z-10">
           <Navbar />

@@ -61,7 +61,7 @@ export default function RotterdamPage() {
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }}
       />
-      <main id="main-content" className="min-h-screen bg-slate-950 pt-16 md:pt-20">
+      <main id="main-content" className="bg-slate-950 pt-16 md:pt-20">
         <Navbar />
         <UniversityCityPage cityKey="rotterdam" />
         <Footer />

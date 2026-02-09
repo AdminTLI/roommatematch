@@ -206,6 +206,7 @@
   html:has(body.marketing-page),
   body.marketing-page {
     background: #0B1220;
+    min-height: 0; /* allow page to end at footer; base body has min-h-screen */
   }
 
   /* Prevent scroll lock on marketing page when Select dropdown is open */

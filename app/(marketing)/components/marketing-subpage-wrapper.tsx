@@ -23,7 +23,7 @@ export function MarketingSubpageWrapper({
       <MarketingLayoutFix />
       <main
         id="main-content"
-        className={`min-h-screen bg-slate-950 pt-16 md:pt-20 pb-24 ${className}`}
+        className={`bg-slate-950 pt-16 md:pt-20 ${className}`}
       >
         <Navbar />
         {children}

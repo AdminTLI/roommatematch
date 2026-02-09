@@ -114,7 +114,7 @@ export default function UniversitiesPage() {
       />
       <main
         id="main-content"
-        className="relative min-h-screen pt-16 md:pt-20 pb-24 overflow-hidden"
+        className="relative pt-16 md:pt-20 overflow-hidden"
       >
         <MarketingPageBackground />
         <div className="relative z-10">
