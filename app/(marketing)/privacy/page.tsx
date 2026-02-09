@@ -16,7 +16,7 @@ export default function PrivacyPage() {
       <Section className="bg-slate-950">
         <Container>
           <div className="max-w-4xl mx-auto">
-            <h1 className={proseClasses.h1}>
+            <h1 className="text-3xl md:text-4xl font-bold text-white mb-4">
               Privacy Policy
             </h1>
             <p className="text-slate-500 mb-8">
