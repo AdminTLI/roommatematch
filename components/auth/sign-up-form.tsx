@@ -7,9 +7,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Checkbox } from '@/components/ui/checkbox'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Alert, AlertDescription } from '@/components/ui/alert'
-import { Separator } from '@/components/ui/separator'
 import {
   Dialog,
   DialogContent,
@@ -22,6 +20,11 @@ import { Loader2, Mail, Lock, User, Calendar } from 'lucide-react'
 import { createBrowserClient } from '@supabase/ssr'
 import { useApp } from '@/app/providers'
 import { validateDateOfBirth, getAgeVerificationError } from '@/lib/auth/age-verification'
+
+const glassCardClass =
+  'w-full noise-overlay rounded-2xl border border-white/10 bg-white/5 backdrop-blur-lg shadow-2xl shadow-black/20'
+const inputClass =
+  'pl-10 min-h-[44px] bg-white/10 border-white/15 text-white placeholder:text-white/45 focus-visible:ring-white/30'
 
 export function SignUpForm() {
   const { dictionary } = useApp()
@@ -38,7 +41,6 @@ export function SignUpForm() {
   const [error, setError] = useState('')
   const [ageError, setAgeError] = useState('')
   const [showUnderageModal, setShowUnderageModal] = useState(false)
-  // Magic-link flow removed: OTP-only signup verification
   const router = useRouter()
   const supabase = createBrowserClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -101,8 +103,7 @@ export function SignUpForm() {
 
     try {
       console.log('[SignUp] Attempting to sign up user with email:', email)
-      
-      // Sign up user
+
       const { data, error } = await supabase.auth.signUp({
         email,
         password,
@@ -116,9 +117,9 @@ export function SignUpForm() {
         },
       })
 
-      console.log('[SignUp] Signup response:', { 
+      console.log('[SignUp] Signup response:', {
         data: data ? { user: data.user ? { id: data.user.id, email: data.user.email } : null, session: !!data.session } : null,
-        error 
+        error
       })
 
       if (error) {
@@ -128,7 +129,6 @@ export function SignUpForm() {
         return
       }
 
-      // Check if user was created
       if (!data.user) {
         console.error('[SignUp] No user returned from signup')
         setError('Failed to create account. Please try again.')
@@ -142,13 +142,8 @@ export function SignUpForm() {
         emailConfirmed: data.user.email_confirmed_at
       })
 
-      // Store email for OTP verification
       sessionStorage.setItem('verification-email', email)
-      
-      // signUp() should automatically send OTP with type 'signup' when enable_confirmations = true
-      // However, Supabase signUp() may return success even if email sending fails
-      // So we'll manually trigger email send via API route as a backup
-      // This ensures the email is actually sent even if Supabase's automatic sending fails
+
       console.log('[SignUp] Manually triggering verification email send as backup')
       try {
         const resendResponse = await fetch('/api/auth/resend-verification', {
@@ -163,14 +158,11 @@ export function SignUpForm() {
           console.log('[SignUp] Backup email send successful')
         } else {
           console.warn('[SignUp] Backup email send failed:', resendResult.error)
-          // Don't block navigation - auto-resend on verify-email page will try again
         }
       } catch (resendErr) {
         console.error('[SignUp] Error sending backup email:', resendErr)
-        // Don't block navigation - auto-resend on verify-email page will try again
       }
-      
-      // Navigate to verification page with auto-resend flag (as additional backup)
+
       router.push(`/auth/verify-email?email=${encodeURIComponent(email)}&auto=1`)
     } catch (err) {
       console.error('[SignUp] Unexpected error:', err)
@@ -180,201 +172,211 @@ export function SignUpForm() {
     }
   }
 
-  // Magic-link flow UI removed
-
   return (
-    <Card className="w-full">
-      <CardHeader className="text-center px-4 sm:px-6 pt-6 sm:pt-6">
-        <CardTitle className="text-xl sm:text-2xl">{t.title}</CardTitle>
-        <CardDescription className="text-sm sm:text-base">
-          {t.subtitle}
-        </CardDescription>
-      </CardHeader>
-      <CardContent className="space-y-4 sm:space-y-6 px-4 sm:px-6 pb-6 sm:pb-6">
-        {error && (
-          <Alert variant="destructive">
-            <AlertDescription>{error}</AlertDescription>
-          </Alert>
-        )}
-        {ageError && !error && (
-          <Alert variant="destructive">
-            <AlertDescription>{ageError}</AlertDescription>
-          </Alert>
-        )}
+    <>
+      <div className={glassCardClass}>
+        <div className="text-center px-4 sm:px-6 pt-6 sm:pt-6">
+          <h2 className="text-xl sm:text-2xl font-semibold tracking-tight text-white">
+            {t.title}
+          </h2>
+          <p className="mt-1 text-sm sm:text-base text-white/70">
+            {t.subtitle}
+          </p>
+        </div>
+        <div className="space-y-4 sm:space-y-6 px-4 sm:px-6 pb-6 pt-6">
+          {error && (
+            <Alert variant="destructive">
+              <AlertDescription>{error}</AlertDescription>
+            </Alert>
+          )}
+          {ageError && !error && (
+            <Alert variant="destructive">
+              <AlertDescription>{ageError}</AlertDescription>
+            </Alert>
+          )}
 
-        <form onSubmit={handleEmailSignUp} className="space-y-4">
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <form onSubmit={handleEmailSignUp} className="space-y-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="firstName" className="text-sm sm:text-base text-white">{t.firstName}</Label>
+                <div className="relative">
+                  <User className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-white/50" />
+                  <Input
+                    id="firstName"
+                    type="text"
+                    placeholder={t.firstNamePlaceholder}
+                    value={firstName}
+                    onChange={(e) => setFirstName(e.target.value)}
+                    className={inputClass}
+                    required
+                  />
+                </div>
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="lastName" className="text-sm sm:text-base text-white">{t.lastName}</Label>
+                <div className="relative">
+                  <User className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-white/50" />
+                  <Input
+                    id="lastName"
+                    type="text"
+                    placeholder={t.lastNamePlaceholder}
+                    value={lastName}
+                    onChange={(e) => setLastName(e.target.value)}
+                    className={inputClass}
+                    required
+                  />
+                </div>
+              </div>
+            </div>
+
             <div className="space-y-2">
-              <Label htmlFor="firstName" className="text-sm sm:text-base">{t.firstName}</Label>
+              <Label htmlFor="email" className="text-sm sm:text-base text-white">{t.email}</Label>
               <div className="relative">
-                <User className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-white/50" />
                 <Input
-                  id="firstName"
-                  type="text"
-                  placeholder={t.firstNamePlaceholder}
-                  value={firstName}
-                  onChange={(e) => setFirstName(e.target.value)}
-                  className="pl-10 min-h-[44px]"
+                  id="email"
+                  type="email"
+                  placeholder={t.emailPlaceholder}
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  className={inputClass}
                   required
                 />
               </div>
             </div>
+
             <div className="space-y-2">
-              <Label htmlFor="lastName" className="text-sm sm:text-base">{t.lastName}</Label>
+              <Label htmlFor="dob" className="text-sm sm:text-base text-white">{t.dateOfBirth ?? 'Date of birth'}</Label>
               <div className="relative">
-                <User className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-white/50" />
                 <Input
-                  id="lastName"
-                  type="text"
-                  placeholder={t.lastNamePlaceholder}
-                  value={lastName}
-                  onChange={(e) => setLastName(e.target.value)}
-                  className="pl-10 min-h-[44px]"
-                  required
-                />
-              </div>
-            </div>
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="email" className="text-sm sm:text-base">{t.email}</Label>
-            <div className="relative">
-              <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-              <Input
-                id="email"
-                type="email"
-                placeholder={t.emailPlaceholder}
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                className="pl-10 min-h-[44px]"
-                required
-              />
-            </div>
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="dob" className="text-sm sm:text-base">{t.dateOfBirth ?? 'Date of birth'}</Label>
-            <div className="relative">
-              <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-              <Input
-                id="dob"
-                type="date"
-                placeholder={t.dateOfBirthPlaceholder ?? 'YYYY-MM-DD'}
-                value={dateOfBirth}
-                onChange={(e) => {
-                  setDateOfBirth(e.target.value)
-                  setAgeError('')
-                  setError('')
-                  if (e.target.value) {
-                    const validation = validateDateOfBirth(e.target.value)
-                    if (!validation.valid) {
-                      setAgeError(validation.error || getAgeVerificationError(validation.age))
+                  id="dob"
+                  type="date"
+                  placeholder={t.dateOfBirthPlaceholder ?? 'YYYY-MM-DD'}
+                  value={dateOfBirth}
+                  onChange={(e) => {
+                    setDateOfBirth(e.target.value)
+                    setAgeError('')
+                    setError('')
+                    if (e.target.value) {
+                      const validation = validateDateOfBirth(e.target.value)
+                      if (!validation.valid) {
+                        setAgeError(validation.error || getAgeVerificationError(validation.age))
+                      }
                     }
-                  }
-                }}
-                max={new Date(new Date().setFullYear(new Date().getFullYear() - 17)).toISOString().split('T')[0]}
-                className="pl-10 min-h-[44px]"
-                required
-              />
-            </div>
-            {ageError && (
-              <p className="text-xs text-red-600">{ageError}</p>
-            )}
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="password" className="text-sm sm:text-base">{t.password}</Label>
-            <div className="relative">
-              <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-              <Input
-                id="password"
-                type="password"
-                placeholder={t.passwordPlaceholder}
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                className="pl-10 min-h-[44px]"
-                required
-              />
-            </div>
-            <p className="text-xs text-muted-foreground">
-              {t.passwordHint}
-            </p>
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="confirmPassword" className="text-sm sm:text-base">{t.confirmPassword}</Label>
-            <div className="relative">
-              <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-              <Input
-                id="confirmPassword"
-                type="password"
-                placeholder={t.confirmPasswordPlaceholder}
-                value={confirmPassword}
-                onChange={(e) => setConfirmPassword(e.target.value)}
-                className="pl-10 min-h-[44px]"
-                required
-              />
-            </div>
-          </div>
-
-          <div className="space-y-3 rounded-lg border border-gray-100 p-4">
-            <div className="flex items-start space-x-2">
-              <Checkbox
-                id="age-confirm"
-                checked={confirmAge}
-                onCheckedChange={(checked) => {
-                  setConfirmAge(!!checked)
-                  setError('')
-                }}
-                className="mt-1"
-              />
-              <Label htmlFor="age-confirm" className="text-xs sm:text-sm leading-relaxed cursor-pointer">
-                {t.ageConfirmation ?? 'I confirm that I am at least 17 years old.'}
-              </Label>
+                  }}
+                  max={new Date(new Date().setFullYear(new Date().getFullYear() - 17)).toISOString().split('T')[0]}
+                  className={inputClass}
+                  required
+                />
+              </div>
+              {ageError && (
+                <p className="text-xs text-red-300">{ageError}</p>
+              )}
             </div>
 
-            <div className="flex items-start space-x-2">
-              <Checkbox
-                id="terms"
-                checked={acceptTerms}
-                onCheckedChange={(checked) => {
-                  setAcceptTerms(!!checked)
-                  setError('')
-                }}
-                className="mt-1"
-              />
-              <Label htmlFor="terms" className="text-xs sm:text-sm leading-relaxed cursor-pointer">
-                {t.termsConfirmation ?? t.agreeToTerms}{' '}
-                <Link href="/terms" className="text-primary hover:underline">
-                  {t.termsOfService}
-                </Link>{' '}
-                {t.and}{' '}
-                <Link href="/privacy" className="text-primary hover:underline">
-                  {t.privacyPolicy}
-                </Link>
-              </Label>
+            <div className="space-y-2">
+              <Label htmlFor="password" className="text-sm sm:text-base text-white">{t.password}</Label>
+              <div className="relative">
+                <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-white/50" />
+                <Input
+                  id="password"
+                  type="password"
+                  placeholder={t.passwordPlaceholder}
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  className={inputClass}
+                  required
+                />
+              </div>
+              <p className="text-xs text-white/60">
+                {t.passwordHint}
+              </p>
             </div>
-          </div>
 
-          <Button
-            type="submit"
-            className="w-full min-h-[44px] text-base"
-            disabled={isLoading || !!ageError}
-          >
-            {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-            {t.signUpButton}
-          </Button>
-        </form>
+            <div className="space-y-2">
+              <Label htmlFor="confirmPassword" className="text-sm sm:text-base text-white">{t.confirmPassword}</Label>
+              <div className="relative">
+                <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-white/50" />
+                <Input
+                  id="confirmPassword"
+                  type="password"
+                  placeholder={t.confirmPasswordPlaceholder}
+                  value={confirmPassword}
+                  onChange={(e) => setConfirmPassword(e.target.value)}
+                  className={inputClass}
+                  required
+                />
+              </div>
+            </div>
 
-        {/* Removed alternative magic-link option for OTP-only flow */}
+            <div className="rounded-xl border border-white/10 bg-white/5 backdrop-blur-sm overflow-hidden">
+              <p className="px-4 py-2.5 text-xs font-medium uppercase tracking-wider text-white/50 border-b border-white/10">
+                Agreements
+              </p>
+              <div className="divide-y divide-white/10">
+                <label
+                  htmlFor="age-confirm"
+                  className="flex cursor-pointer items-start gap-3 px-4 py-3.5 transition-colors hover:bg-white/5"
+                >
+                  <Checkbox
+                    id="age-confirm"
+                    checked={confirmAge}
+                    onCheckedChange={(checked) => {
+                      setConfirmAge(!!checked)
+                      setError('')
+                    }}
+                    className="mt-0.5 h-4 w-4 shrink-0 rounded border-white/40 bg-white/5 data-[state=checked]:bg-indigo-500 data-[state=checked]:border-indigo-500 focus-visible:ring-white/30"
+                  />
+                  <span className="text-sm leading-snug text-white/90">
+                    {t.ageConfirmation ?? 'I confirm that I am at least 17 years old.'}
+                  </span>
+                </label>
+                <label
+                  htmlFor="terms"
+                  className="flex cursor-pointer items-start gap-3 px-4 py-3.5 transition-colors hover:bg-white/5"
+                >
+                  <Checkbox
+                    id="terms"
+                    checked={acceptTerms}
+                    onCheckedChange={(checked) => {
+                      setAcceptTerms(!!checked)
+                      setError('')
+                    }}
+                    className="mt-0.5 h-4 w-4 shrink-0 rounded border-white/40 bg-white/5 data-[state=checked]:bg-indigo-500 data-[state=checked]:border-indigo-500 focus-visible:ring-white/30"
+                  />
+                  <span className="text-sm leading-snug text-white/90">
+                    {t.termsConfirmation ?? t.agreeToTerms}{' '}
+                    <Link href="/terms" className="font-medium text-white underline decoration-white/40 underline-offset-2 hover:decoration-white">
+                      {t.termsOfService}
+                    </Link>
+                    {' '}{t.and}{' '}
+                    <Link href="/privacy" className="font-medium text-white underline decoration-white/40 underline-offset-2 hover:decoration-white">
+                      {t.privacyPolicy}
+                    </Link>
+                  </span>
+                </label>
+              </div>
+            </div>
 
-        <p className="text-center text-xs sm:text-sm text-muted-foreground">
-          {t.haveAccount}{' '}
-          <Link href="/auth/sign-in" className="text-primary hover:underline">
-            {t.signInLink}
-          </Link>
-        </p>
-      </CardContent>
+            <Button
+              type="submit"
+              className="w-full min-h-[44px] text-base bg-gradient-to-r from-indigo-500 to-purple-500 text-white border-0 shadow-lg shadow-indigo-500/30 hover:shadow-indigo-500/40 hover:scale-[1.01] transition-all disabled:opacity-70 disabled:hover:scale-100"
+              disabled={isLoading || !!ageError}
+            >
+              {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+              {t.signUpButton}
+            </Button>
+          </form>
+
+          <p className="text-center text-xs sm:text-sm text-white/70">
+            {t.haveAccount}{' '}
+            <Link href="/auth/sign-in" className="text-white hover:underline">
+              {t.signInLink}
+            </Link>
+          </p>
+        </div>
+      </div>
 
       <Dialog open={showUnderageModal} onOpenChange={(open) => {
         setShowUnderageModal(open)
@@ -396,6 +398,6 @@ export function SignUpForm() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
-    </Card>
+    </>
   )
 }
