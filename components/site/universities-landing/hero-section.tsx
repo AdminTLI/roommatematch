@@ -87,13 +87,14 @@ export function HeroSection() {
                 {t.ctaPrimary}
               </Link>
               <Link
-                href="/contact?subject=impact-report"
+                href="/reports/Domu Match Student Housing Impact Report (2026).pdf"
                 aria-label={t.ctaSecondary}
                 className={cn(
                   'inline-flex items-center justify-center rounded-xl px-8 py-4 min-h-[48px] text-base font-semibold',
                   'bg-transparent border border-white/30 text-white hover:bg-white/10 transition-all duration-200',
                   'focus-visible:outline focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-slate-950'
                 )}
+                download
               >
                 {t.ctaSecondary}
               </Link>
