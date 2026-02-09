@@ -206,12 +206,12 @@ export default function MarketingPage() {
       <main id="main-content" className="min-h-screen bg-slate-950 pt-16 md:pt-20">
         <Navbar />
         <HeroAurora />
+        <StatsTicker />
         <LiveStats />
         <BentoInfrastructure />
         <Universities />
         <Features />
         <Testimonials />
-        <StatsTicker />
         <Footer />
       </main>
     </>

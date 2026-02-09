@@ -13,7 +13,7 @@ import { cn } from '@/lib/utils'
 
 const navigationContent = {
   en: [
-    { name: 'How it works', href: '/how-it-works' },
+    { name: 'How It Works', href: '/how-it-works' },
     { name: 'For Students', href: '/students' },
     { name: 'For Universities', href: '/universities' },
 

@@ -73,11 +73,11 @@ export function TrustSection() {
               >
                 <div className="flex items-center gap-4 mb-4">
                   <div className="h-14 w-14 rounded-full bg-indigo-500/20 border border-indigo-400/30 flex items-center justify-center">
-                    <span className="text-xl font-bold text-indigo-300">JD</span>
+                    <span className="text-xl font-bold text-indigo-300">PH</span>
                   </div>
                   <div>
                     <div className="flex items-center gap-2">
-                      <span className="font-semibold text-white">Jane Doe</span>
+                      <span className="font-semibold text-white">Pien van Hoff</span>
                       <CheckCircle
                         className="h-5 w-5 text-emerald-400"
                         aria-label="Verified"

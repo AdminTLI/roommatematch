@@ -1,7 +1,8 @@
 'use client'
 
+import { useState } from 'react'
 import Link from 'next/link'
-import { motion, useReducedMotion } from 'framer-motion'
+import { motion, useReducedMotion, AnimatePresence } from 'framer-motion'
 import Container from '@/components/ui/primitives/container'
 import Section from '@/components/ui/primitives/section'
 import {
@@ -54,7 +55,7 @@ const content = {
         details: [
           '40+ factors: study schedule, cleanliness, social style',
           'Quiet hours, guests, and lifestyle preferences',
-          'Takes about 10 minutes',
+          'Takes about 15 minutes',
         ],
         gradient: 'from-emerald-500/20 to-emerald-600/10 border-emerald-400/30',
         iconBg: 'bg-emerald-500/20 border-emerald-400/30',
@@ -162,7 +163,7 @@ const content = {
         details: [
           '40+ factoren: studierooster, netheid, sociale stijl',
           'Stilte-uren, gasten en levensstijlvoorkeuren',
-          'Duurt ongeveer 10 minuten',
+          'Duurt ongeveer 15 minuten',
         ],
         gradient: 'from-emerald-500/20 to-emerald-600/10 border-emerald-400/30',
         iconBg: 'bg-emerald-500/20 border-emerald-400/30',
@@ -279,65 +280,9 @@ export function HowItWorksSection() {
           </p>
         </motion.div>
 
-        {/* Steps — single column of cards */}
-        <div className="space-y-6 mb-20">
-          {t.steps.map((step) => {
-            const Icon = step.icon
-            return (
-              <motion.div
-                key={step.step}
-                className={cn(
-                  'glass noise-overlay p-6 md:p-8 transition-all duration-300',
-                  'hover:border-white/30 hover:bg-white/15'
-                )}
-                initial="hidden"
-                whileInView="visible"
-                viewport={{ once: true, margin: '-40px' }}
-                variants={itemVariants}
-                custom={0}
-              >
-                <div className="flex flex-wrap items-center gap-4 mb-4">
-                  <div
-                    className={cn(
-                      'flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl border',
-                      step.iconBg
-                    )}
-                  >
-                    <Icon className={cn('h-6 w-6', step.iconColor)} aria-hidden />
-                  </div>
-                  <span
-                    className={cn(
-                      'text-lg font-bold tabular-nums rounded-lg border px-2.5 py-1 bg-gradient-to-br',
-                      step.gradient,
-                      'text-white'
-                    )}
-                  >
-                    {step.step}
-                  </span>
-                  <h3 className="text-xl md:text-2xl font-bold text-white tracking-tight">
-                    {step.title}
-                  </h3>
-                </div>
-                <p className="text-white/80 mb-4 text-base md:text-lg leading-relaxed">
-                  {step.description}
-                </p>
-                <ul className="space-y-2">
-                  {step.details.map((detail, detailIndex) => (
-                    <li
-                      key={detailIndex}
-                      className="flex items-start gap-2 text-sm md:text-base text-white/90"
-                    >
-                      <CheckCircle
-                        className="h-4 w-4 text-emerald-400 mt-0.5 flex-shrink-0"
-                        aria-hidden
-                      />
-                      {detail}
-                    </li>
-                  ))}
-                </ul>
-              </motion.div>
-            )
-          })}
+        {/* Steps — interactive stepper */}
+        <div className="mb-20">
+          <InteractiveSteps steps={t.steps} reducedMotion={reducedMotion} />
         </div>
 
         {/* Features - Why our process works */}
@@ -417,5 +362,173 @@ export function HowItWorksSection() {
         </motion.div>
       </Container>
     </Section>
+  )
+}
+
+type Step = (typeof content)['en']['steps'][number]
+
+interface InteractiveStepsProps {
+  steps: Step[]
+  reducedMotion: boolean
+}
+
+function InteractiveSteps({ steps, reducedMotion }: InteractiveStepsProps) {
+  const [activeIndex, setActiveIndex] = useState(0)
+  const activeStep = steps[activeIndex]
+  const ActiveIcon = activeStep.icon
+
+  return (
+    <div className="grid gap-8 lg:grid-cols-[minmax(0,1.05fr)_minmax(0,1.35fr)] items-start">
+      {/* Step selector */}
+      <motion.ol
+        className="relative space-y-3 md:space-y-4"
+        initial={{ opacity: 0, y: 16 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: true }}
+        transition={{ duration: 0.45, ease: 'easeOut' }}
+      >
+        <div
+          className="pointer-events-none absolute left-[1.5rem] top-6 bottom-6 hidden md:block"
+          aria-hidden
+        >
+          <div className="h-full w-px bg-gradient-to-b from-white/30 via-white/10 to-transparent" />
+        </div>
+
+        {steps.map((step, index) => {
+          const Icon = step.icon
+          const isActive = index === activeIndex
+
+          return (
+            <li key={step.step}>
+              <button
+                type="button"
+                onClick={() => setActiveIndex(index)}
+                className={cn(
+                  'group relative flex w-full items-center gap-4 rounded-2xl border px-4 py-3 text-left transition-all duration-200',
+                  'backdrop-blur-md',
+                  isActive
+                    ? 'border-white/70 bg-white/12 shadow-[0_0_0_1px_rgba(255,255,255,0.35)]'
+                    : 'border-white/10 bg-white/4 hover:border-white/40 hover:bg-white/8'
+                )}
+              >
+                <span className="relative z-10 flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-white/40 bg-slate-950/60 text-xs font-semibold text-white/80 tabular-nums">
+                  {step.step}
+                </span>
+
+                <div className="flex min-w-0 flex-1 flex-col gap-1">
+                  <div className="flex items-center gap-2">
+                    <Icon
+                      className={cn(
+                        'h-4 w-4 flex-shrink-0 text-white/60 transition-colors duration-200',
+                        isActive && step.iconColor
+                      )}
+                      aria-hidden
+                    />
+                    <p className="truncate text-sm font-semibold text-white/90 md:text-base">
+                      {step.title}
+                    </p>
+                  </div>
+                </div>
+
+                <ArrowRight
+                  className={cn(
+                    'hidden h-4 w-4 flex-shrink-0 text-white/50 transition-transform duration-200 md:block',
+                    isActive && 'translate-x-0.5 text-white'
+                  )}
+                  aria-hidden
+                />
+
+                {isActive && (
+                  <span
+                    className={cn(
+                      'pointer-events-none absolute inset-0 -z-10 rounded-2xl border bg-gradient-to-br opacity-80',
+                      step.gradient
+                    )}
+                    aria-hidden
+                  />
+                )}
+              </button>
+            </li>
+          )
+        })}
+      </motion.ol>
+
+      {/* Active step detail */}
+      <AnimatePresence mode="wait">
+        <motion.div
+          key={activeStep.step}
+          className={cn(
+            'glass noise-overlay relative h-full overflow-hidden rounded-2xl border px-6 py-6 md:px-8 md:py-8',
+            'flex flex-col justify-between'
+          )}
+          initial={
+            reducedMotion ? { opacity: 0 } : { opacity: 0, y: 18, scale: 0.98 }
+          }
+          animate={
+            reducedMotion ? { opacity: 1 } : { opacity: 1, y: 0, scale: 1 }
+          }
+          exit={
+            reducedMotion ? { opacity: 0 } : { opacity: 0, y: -12, scale: 0.99 }
+          }
+          transition={{ duration: 0.28, ease: 'easeOut' }}
+        >
+          <div
+            className={cn(
+              'pointer-events-none absolute inset-px rounded-[1rem] bg-gradient-to-br opacity-70',
+              activeStep.gradient
+            )}
+            aria-hidden
+          />
+
+          <div className="relative z-10">
+            <div className="mb-6 flex flex-wrap items-center gap-4">
+              <div
+                className={cn(
+                  'flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl border bg-slate-950/70',
+                  activeStep.iconBg
+                )}
+              >
+                <ActiveIcon
+                  className={cn('h-6 w-6', activeStep.iconColor)}
+                  aria-hidden
+                />
+              </div>
+
+              <div className="flex flex-col gap-1">
+                <h2 className="text-xl font-semibold tracking-tight text-white md:text-2xl">
+                  {activeStep.title}
+                </h2>
+              </div>
+            </div>
+
+            <p className="mb-5 text-sm text-white/85 md:text-base md:leading-relaxed">
+              {activeStep.description}
+            </p>
+
+            <ul className="space-y-2.5 md:space-y-3">
+              {activeStep.details.map((detail, index) => (
+                <li
+                  key={index}
+                  className="flex items-start gap-2 text-sm text-white/90 md:text-base"
+                >
+                  <CheckCircle
+                    className="mt-0.5 h-4 w-4 flex-shrink-0 text-emerald-300"
+                    aria-hidden
+                  />
+                  <span>{detail}</span>
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          <div className="relative z-10 mt-6 flex items-center text-xs text-white/60 md:text-sm">
+            <span>
+              {activeIndex + 1} of {steps.length}{' '}
+              {steps.length === 1 ? 'step' : 'steps'}
+            </span>
+          </div>
+        </motion.div>
+      </AnimatePresence>
+    </div>
   )
 }

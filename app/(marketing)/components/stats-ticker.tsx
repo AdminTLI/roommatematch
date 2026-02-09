@@ -7,14 +7,14 @@ const content = {
     'Incubated at Tilburg University and Avans',
     'GDPR Compliant',
     'Powered by Persona™',
-    'Built in Breda',
+    'Developed in The Netherlands',
     'Science-Backed Matching',
   ],
   nl: [
     'Incubaat bij Tilburg University en Avans',
     'AVG-conform',
     'Powered by Persona™',
-    'Gebouwd in Breda',
+    'Ontwikkeld in Nederland',
     'Wetenschappelijk onderbouwde matching',
   ],
 }

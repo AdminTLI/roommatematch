@@ -441,62 +441,6 @@ export function AboutContent() {
         </Container>
       </Section>
 
-      {/* Values section */}
-      <Section className="relative overflow-hidden py-16 md:py-24">
-        <div className="absolute inset-0 bg-gradient-to-b from-indigo-950/15 via-transparent to-purple-950/15 pointer-events-none" aria-hidden />
-
-        <Container className="relative z-10">
-          <div className="max-w-6xl mx-auto">
-            <motion.div
-              className="text-center mb-16 md:mb-20"
-              {...fadeIn}
-            >
-              <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-white mb-4 tracking-tight">
-                {t.values.headingPrefix}{' '}
-                <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 to-purple-400">{t.values.headingHighlight}</span>
-              </h2>
-              <p className="text-lg text-white/70 max-w-3xl mx-auto">
-                {t.values.description}
-              </p>
-            </motion.div>
-
-            <motion.div
-              className="grid md:grid-cols-2 lg:grid-cols-4 gap-6 md:gap-8"
-              initial="hidden"
-              whileInView="visible"
-              viewport={{ once: true, margin: '-40px' }}
-              variants={{ visible: { transition: { staggerChildren: 0.08 } } }}
-            >
-              {t.values.cards.map((card, index) => {
-                const icons = [Shield, BookOpen, Target, GraduationCap]
-                const Icon = icons[index]
-                return (
-                  <motion.div
-                    key={card.title}
-                    className={cn(
-                      'glass noise-overlay p-6 md:p-8 text-center transition-all duration-300',
-                      'hover:border-white/30 hover:bg-white/15'
-                    )}
-                    initial={reducedMotion ? false : { opacity: 0, y: 24 }}
-                    whileInView={reducedMotion ? false : { opacity: 1, y: 0 }}
-                    viewport={{ once: true }}
-                    transition={{ duration: 0.5, delay: index * 0.08 }}
-                  >
-                    <div className="h-12 w-12 rounded-xl bg-white/10 border border-white/20 flex items-center justify-center mx-auto mb-4">
-                      <Icon className="h-6 w-6 text-indigo-400" />
-                    </div>
-                    <h3 className="text-lg font-semibold text-white mb-3">{card.title}</h3>
-                    <p className="text-sm text-white/70 leading-relaxed">
-                      {card.body}
-                    </p>
-                  </motion.div>
-                )
-              })}
-            </motion.div>
-          </div>
-        </Container>
-      </Section>
-
       {/* CTA section */}
       <Section className="relative overflow-hidden py-16 md:py-24">
         <div className="absolute inset-0 bg-gradient-to-b from-indigo-950/30 via-purple-950/20 to-indigo-950/30 pointer-events-none" aria-hidden />
