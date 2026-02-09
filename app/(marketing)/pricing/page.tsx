@@ -1,31 +1,27 @@
-import { Navbar } from '@/components/site/navbar'
-import Footer from '@/components/site/footer'
-import { PricingSection } from '@/components/site/pricing-section'
+import { MarketingSubpageWrapper } from '../components/marketing-subpage-wrapper'
+import { PartnershipROIContent } from './partnership-roi-content'
 import { FAQ } from '@/components/site/faq'
 import { FinalCTA } from '@/components/site/final-cta'
 import { Metadata } from 'next'
 
 export const metadata: Metadata = {
-  title: 'Pricing Plans | Domu Match - University Housing',
-  description: 'Affordable pricing plans for Dutch universities. Reduce housing disputes with our intelligent roommate matching platform. Transparent pricing for student accommodation solutions.',
+  title: 'Partnership & ROI | Domu Match - University Housing',
+  description: 'B2B partnership pricing and ROI for universities. Reduce dropouts and mediation costs with Domu Match. Flexible pilot and campus license options with transparent pricing.',
   keywords: [
     'university housing pricing',
     'roommate matching pricing',
     'student accommodation pricing',
-    'housing management cost',
-    'university housing platform pricing',
+    'housing retention',
+    'university housing ROI',
     'student housing software pricing',
-    'Netherlands university housing pricing',
-    'free roommate finder',
-    'free student housing app',
-    'no cost roommate matching',
-    'free verified student platform',
-    'student housing pricing plans',
-    'affordable roommate matching',
+    'Netherlands university housing',
+    'campus license',
+    'housing mediation cost',
+    'first-year retention',
   ],
   openGraph: {
-    title: 'Pricing Plans | Domu Match',
-    description: 'Affordable pricing plans for Dutch universities. Reduce housing disputes with our intelligent roommate matching platform.',
+    title: 'Partnership & ROI | Domu Match',
+    description: 'B2B partnership pricing and ROI for universities. Reduce dropouts and mediation costs with Domu Match.',
     type: 'website',
     url: 'https://domumatch.com/pricing',
     siteName: 'Domu Match',
@@ -34,15 +30,15 @@ export const metadata: Metadata = {
         url: 'https://domumatch.com/images/logo.png',
         width: 1200,
         height: 630,
-        alt: 'Pricing Plans - Domu Match',
+        alt: 'Partnership & ROI - Domu Match',
       },
     ],
     locale: 'en_US',
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'Pricing Plans | Domu Match',
-    description: 'Affordable pricing plans for Dutch universities. Reduce housing disputes with intelligent roommate matching.',
+    title: 'Partnership & ROI | Domu Match',
+    description: 'B2B partnership pricing and ROI for universities. Reduce dropouts and mediation costs with Domu Match.',
     images: ['https://domumatch.com/images/logo.png'],
   },
   alternates: {
@@ -76,15 +72,13 @@ export default function PricingPage() {
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }}
       />
-      <main className="min-h-screen bg-white pt-16 md:pt-20">
-        <Navbar />
+      <MarketingSubpageWrapper>
         <div>
-          <PricingSection />
+          <PartnershipROIContent />
           <FAQ />
-          <FinalCTA />
+          <FinalCTA variant="dark" />
         </div>
-        <Footer />
-      </main>
+      </MarketingSubpageWrapper>
     </>
   )
 }

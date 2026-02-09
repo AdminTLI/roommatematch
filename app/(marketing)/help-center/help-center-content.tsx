@@ -62,14 +62,14 @@ export function HelpCenterContent() {
   }
 
   return (
-    <Section className="bg-gradient-to-b from-gray-50 to-white min-h-screen">
+    <Section className="bg-slate-950 min-h-screen">
       <Container className="py-12">
         {/* Hero Section with Search */}
         <div className="text-center mb-12">
-          <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4">
+          <h1 className="text-4xl md:text-5xl font-bold text-white mb-4">
             {locale === 'nl' ? 'Helpcentrum' : 'Help Center'}
           </h1>
-          <p className="text-xl text-gray-600 mb-8 max-w-2xl mx-auto">
+          <p className="text-xl text-slate-400 mb-8 max-w-2xl mx-auto">
             {locale === 'nl' 
               ? 'Vind antwoorden op je vragen en leer hoe je het platform optimaal gebruikt'
               : 'Find answers to your questions and learn how to make the most of our platform'
@@ -81,12 +81,12 @@ export function HelpCenterContent() {
         {/* Section Navigation Tabs */}
         <div className="mb-8">
           <Tabs value={selectedSection} onValueChange={handleSectionChange}>
-            <TabsList className="flex-wrap h-auto p-2 bg-white border border-gray-200 rounded-xl shadow-sm overflow-x-auto">
+            <TabsList className="flex-wrap h-auto p-2 bg-slate-800/50 border border-slate-700 rounded-xl overflow-x-auto">
               {sections.map((section) => (
                 <TabsTrigger
                   key={section.id}
                   value={section.id}
-                  className="px-4 py-2 data-[state=active]:bg-blue-50 data-[state=active]:text-blue-700 data-[state=active]:border-blue-200 rounded-lg transition-colors duration-200 whitespace-nowrap"
+                  className="px-4 py-2 data-[state=active]:bg-violet-600/30 data-[state=active]:text-violet-300 data-[state=active]:border-violet-500/50 rounded-lg transition-colors duration-200 whitespace-nowrap text-slate-300"
                   aria-label={`View ${section.title} section`}
                 >
                   <span className="mr-2">{section.icon}</span>
@@ -121,21 +121,21 @@ export function HelpCenterContent() {
         </div>
 
         {/* Quick Links Section */}
-        <div className="mt-16 pt-12 border-t border-gray-200">
-          <h2 className="text-2xl font-bold text-gray-900 mb-6 text-center">
+        <div className="mt-16 pt-12 border-t border-slate-700">
+          <h2 className="text-2xl font-bold text-white mb-6 text-center">
             {locale === 'nl' ? 'Nog steeds hulp nodig?' : 'Still need help?'}
           </h2>
           <div className="grid md:grid-cols-3 gap-6 max-w-4xl mx-auto">
             <a
               href="/contact"
-              className="p-6 bg-white border border-gray-200 rounded-xl hover:shadow-lg hover:border-blue-300 transition-all duration-200 text-center"
+              className="p-6 bg-slate-800/50 border border-slate-700 rounded-xl hover:border-violet-500/50 hover:bg-slate-800 transition-all duration-200 text-center"
               aria-label="Contact us for help"
             >
               <div className="text-3xl mb-3">📧</div>
-              <h3 className="font-semibold text-gray-900 mb-2">
+              <h3 className="font-semibold text-white mb-2">
                 {locale === 'nl' ? 'Contact Ons' : 'Contact Us'}
               </h3>
-              <p className="text-sm text-gray-600">
+              <p className="text-sm text-slate-400">
                 {locale === 'nl' 
                   ? 'Stuur ons een bericht voor persoonlijke hulp'
                   : 'Send us a message for personalized assistance'
@@ -144,14 +144,14 @@ export function HelpCenterContent() {
             </a>
             <a
               href="/safety"
-              className="p-6 bg-white border border-gray-200 rounded-xl hover:shadow-lg hover:border-blue-300 transition-all duration-200 text-center"
+              className="p-6 bg-slate-800/50 border border-slate-700 rounded-xl hover:border-violet-500/50 hover:bg-slate-800 transition-all duration-200 text-center"
               aria-label="Visit safety center"
             >
               <div className="text-3xl mb-3">🛡️</div>
-              <h3 className="font-semibold text-gray-900 mb-2">
+              <h3 className="font-semibold text-white mb-2">
                 {locale === 'nl' ? 'Veiligheidscentrum' : 'Safety Center'}
               </h3>
-              <p className="text-sm text-gray-600">
+              <p className="text-sm text-slate-400">
                 {locale === 'nl' 
                   ? 'Leer meer over veiligheidsfuncties en rapportage'
                   : 'Learn about safety features and reporting'
@@ -160,14 +160,14 @@ export function HelpCenterContent() {
             </a>
             <a
               href="mailto:support@domumatch.com"
-              className="p-6 bg-white border border-gray-200 rounded-xl hover:shadow-lg hover:border-blue-300 transition-all duration-200 text-center"
+              className="p-6 bg-slate-800/50 border border-slate-700 rounded-xl hover:border-violet-500/50 hover:bg-slate-800 transition-all duration-200 text-center"
               aria-label="Email support"
             >
               <div className="text-3xl mb-3">💬</div>
-              <h3 className="font-semibold text-gray-900 mb-2">
+              <h3 className="font-semibold text-white mb-2">
                 {locale === 'nl' ? 'Directe Support' : 'Direct Support'}
               </h3>
-              <p className="text-sm text-gray-600">
+              <p className="text-sm text-slate-400">
                 {locale === 'nl' 
                   ? 'E-mail ons direct voor snelle hulp'
                   : 'Email us directly for quick help'

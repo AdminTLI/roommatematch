@@ -100,7 +100,7 @@ export function CareersContent() {
 
   return (
     <>
-      <Section className="relative overflow-hidden bg-white">
+      <Section className="relative overflow-hidden bg-slate-950">
         <Container>
           <div className="mx-auto max-w-4xl text-center py-12 sm:py-18 space-y-7">
             <div className="mb-3 flex items-center justify-center">
@@ -109,7 +109,7 @@ export function CareersContent() {
             <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold tracking-tight">
               {t.hero.title.split(' ').slice(0, 3).join(' ')} <span className="text-brand-primary">{t.hero.title.split(' ').slice(3).join(' ')}</span>
             </h1>
-            <p className="mt-6 text-base sm:text-lg text-muted-foreground max-w-3xl mx-auto leading-relaxed">
+            <p className="mt-6 text-base sm:text-lg text-slate-400 max-w-3xl mx-auto leading-relaxed">
               {t.hero.body}
             </p>
             <div className="mt-8 flex items-center justify-center gap-3">
@@ -120,25 +120,25 @@ export function CareersContent() {
                 <a href="#roles">{t.hero.secondary}</a>
               </Button>
             </div>
-            <p className="mt-6 text-sm text-muted-foreground max-w-2xl mx-auto leading-relaxed">
+            <p className="mt-6 text-sm text-slate-400 max-w-2xl mx-auto leading-relaxed">
               {t.hero.footnote}
             </p>
           </div>
         </Container>
       </Section>
 
-      <Section className="relative overflow-hidden bg-white !py-4 md:!py-6 lg:!py-8">
+      <Section className="relative overflow-hidden bg-slate-950 !py-4 md:!py-6 lg:!py-8">
         <Container>
           <ProcessRibbon />
         </Container>
       </Section>
 
-      <Section id="tracks" className="relative overflow-hidden bg-white">
+      <Section id="tracks" className="relative overflow-hidden bg-slate-950">
         <Container>
           <div className="mx-auto max-w-5xl pt-8 pb-4 sm:pt-10 sm:pb-6">
             <div className="mb-8 text-center">
               <h2 className="text-3xl sm:text-4xl font-semibold tracking-tight">{t.tracks.heading}</h2>
-              <p className="mt-2 text-base leading-relaxed text-muted-foreground max-w-3xl mx-auto">
+              <p className="mt-2 text-base leading-relaxed text-slate-400 max-w-3xl mx-auto">
                 {t.tracks.subheading}
               </p>
             </div>
@@ -147,14 +147,14 @@ export function CareersContent() {
         </Container>
       </Section>
 
-      <Section id="roles" className="relative overflow-hidden bg-white">
+      <Section id="roles" className="relative overflow-hidden bg-slate-950">
         <Container>
           <div className="mx-auto max-w-5xl pt-1 pb-4 sm:pt-2 sm:pb-6">
             <div className="mb-10 text-center">
               <h2 className="text-3xl sm:text-4xl font-semibold tracking-tight">
                 {t.roles.heading}
               </h2>
-              <p className="mt-2 text-base leading-relaxed text-muted-foreground max-w-3xl mx-auto">
+              <p className="mt-2 text-base leading-relaxed text-slate-400 max-w-3xl mx-auto">
                 {t.roles.subheading}
               </p>
             </div>
@@ -163,42 +163,42 @@ export function CareersContent() {
         </Container>
       </Section>
 
-      <Section id="focus" className="relative overflow-hidden bg-white">
+      <Section id="focus" className="relative overflow-hidden bg-slate-950">
         <Container>
           <div className="mx-auto max-w-5xl py-5 sm:py-6">
             <div className="mb-3 text-center">
               <h2 className="text-3xl sm:text-4xl font-semibold tracking-tight">
                 <span className="text-brand-primary">{t.focus.heading.split(' ')[0]} {t.focus.heading.split(' ')[1]}</span> {t.focus.heading.split(' ').slice(2).join(' ')}
               </h2>
-              <p className="mt-2 text-base leading-relaxed text-muted-foreground max-w-3xl mx-auto">
+              <p className="mt-2 text-base leading-relaxed text-slate-400 max-w-3xl mx-auto">
                 {t.focus.subheading}
               </p>
             </div>
             <div className="grid gap-4 md:grid-cols-3">
               {t.focus.cards.map((card) => (
-                <div key={card.title} className="rounded-xl border bg-card p-4 text-center">
+                <div key={card.title} className="rounded-xl border border-slate-700 bg-slate-800/30 p-4 text-center">
                   <div className="font-medium">{card.title}</div>
-                  <p className="text-sm text-muted-foreground mt-1 leading-relaxed">
+                  <p className="text-sm text-slate-400 mt-1 leading-relaxed">
                     {card.body}
                   </p>
                 </div>
               ))}
             </div>
-            <p className="text-xs text-muted-foreground mt-4 text-center">
+            <p className="text-xs text-slate-400 mt-4 text-center">
               {t.focus.caption}
             </p>
           </div>
         </Container>
       </Section>
 
-      <Section id="benefits" className="relative overflow-hidden bg-white">
+      <Section id="benefits" className="relative overflow-hidden bg-slate-950">
         <Container>
           <div className="mx-auto max-w-5xl py-5 sm:py-6">
             <div className="mb-4 text-center">
               <h2 className="text-3xl sm:text-4xl font-semibold tracking-tight">
                 {t.benefits.heading.split(' ').slice(0, -1).join(' ')} <span className="text-brand-primary">{t.benefits.heading.split(' ').slice(-1)}</span>
               </h2>
-              <p className="mt-2 text-base leading-relaxed text-muted-foreground max-w-3xl mx-auto">
+              <p className="mt-2 text-base leading-relaxed text-slate-400 max-w-3xl mx-auto">
                 {t.benefits.subheading}
               </p>
             </div>
@@ -207,19 +207,19 @@ export function CareersContent() {
         </Container>
       </Section>
 
-      <Section id="apply" className="relative overflow-hidden bg-white">
+      <Section id="apply" className="relative overflow-hidden bg-slate-950">
         <Container>
           <div className="mx-auto max-w-3xl text-center py-10 sm:py-14">
             <h2 className="text-3xl sm:text-4xl font-semibold tracking-tight">
               {t.apply.heading.split(' ').slice(0, 3).join(' ')} <span className="text-brand-primary">{t.apply.heading.split(' ').slice(3).join(' ')}</span>
             </h2>
-            <p className="mt-3 text-base leading-relaxed text-muted-foreground max-w-3xl mx-auto">
+            <p className="mt-3 text-base leading-relaxed text-slate-400 max-w-3xl mx-auto">
               {t.apply.description}
             </p>
-            <p className="mt-2 text-sm text-muted-foreground leading-relaxed">
+            <p className="mt-2 text-sm text-slate-400 leading-relaxed">
               {t.apply.note1}
             </p>
-            <p className="mt-2 text-sm text-muted-foreground leading-relaxed max-w-2xl mx-auto">
+            <p className="mt-2 text-sm text-slate-400 leading-relaxed max-w-2xl mx-auto">
               {t.apply.note2}
             </p>
             <div className="mt-8 flex items-center justify-center">

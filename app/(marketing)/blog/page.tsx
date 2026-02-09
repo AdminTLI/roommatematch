@@ -1,5 +1,4 @@
-import Footer from '@/components/site/footer'
-import { Navbar } from '@/components/site/navbar'
+import { MarketingSubpageWrapper } from '../components/marketing-subpage-wrapper'
 import { Metadata } from 'next'
 import { BlogContent } from './blog-content'
 
@@ -70,11 +69,9 @@ export default function BlogPage() {
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }}
       />
-      <main className="min-h-screen bg-white">
-        <Navbar />
+      <MarketingSubpageWrapper>
         <BlogContent />
-        <Footer />
-      </main>
+      </MarketingSubpageWrapper>
     </>
   )
 }

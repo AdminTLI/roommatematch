@@ -59,7 +59,7 @@ export function HelpArticleComponent({
           formatted.push(
             <ul key={`list-${index}`} className="list-disc list-inside space-y-1 mb-4 ml-4">
               {listItems.map((item, i) => (
-                <li key={i} className="text-gray-700">
+                <li key={i} className="text-slate-400">
                   {formatBoldAndLinks(item)}
                 </li>
               ))}
@@ -70,7 +70,7 @@ export function HelpArticleComponent({
         }
         const boldText = trimmed.replace(/\*\*/g, '')
         formatted.push(
-          <strong key={index} className="font-semibold text-gray-900">
+          <strong key={index} className="font-semibold text-white">
             {boldText}
           </strong>
         )
@@ -81,7 +81,7 @@ export function HelpArticleComponent({
           formatted.push(
             <ul key={`list-${index}`} className="list-disc list-inside space-y-1 mb-4 ml-4">
               {listItems.map((item, i) => (
-                <li key={i} className="text-gray-700">
+                <li key={i} className="text-slate-400">
                   {formatBoldAndLinks(item)}
                 </li>
               ))}
@@ -93,7 +93,7 @@ export function HelpArticleComponent({
 
         if (trimmed.length > 0) {
           formatted.push(
-            <p key={index} className="mb-4 text-gray-700 leading-relaxed">
+            <p key={index} className="mb-4 text-slate-400 leading-relaxed">
               {formatBoldAndLinks(trimmed)}
             </p>
           )
@@ -106,7 +106,7 @@ export function HelpArticleComponent({
       formatted.push(
         <ul key="list-final" className="list-disc list-inside space-y-1 mb-4 ml-4">
           {listItems.map((item, i) => (
-            <li key={i} className="text-gray-700">
+            <li key={i} className="text-slate-400">
               {formatBoldAndLinks(item)}
             </li>
           ))}
@@ -133,7 +133,7 @@ export function HelpArticleComponent({
 
       // Add bold text
       parts.push(
-        <strong key={match.index} className="font-semibold text-gray-900">
+        <strong key={match.index} className="font-semibold text-white">
           {match[1]}
         </strong>
       )
@@ -154,25 +154,25 @@ export function HelpArticleComponent({
     .filter((article): article is NonNullable<typeof article> => article !== undefined)
 
   return (
-    <Card id={`article-${article.id}`} className={cn('border-gray-200 hover:shadow-md transition-shadow scroll-mt-8', className)}>
+    <Card id={`article-${article.id}`} className={cn('border-slate-700 bg-slate-800/30 hover:bg-slate-800/50 transition-colors scroll-mt-8', className)}>
       <Collapsible open={isOpen} onOpenChange={setIsOpen}>
         <CollapsibleTrigger className="w-full">
-          <CardHeader className="cursor-pointer hover:bg-gray-50 transition-colors duration-200">
+          <CardHeader className="cursor-pointer hover:bg-slate-800/50 transition-colors duration-200">
             <div className="flex items-start justify-between gap-4">
               <div className="flex items-start gap-3 flex-1">
                 <div className="mt-1 flex-shrink-0">
                   {article.type === 'faq' ? (
-                    <HelpCircle className="h-6 w-6 text-blue-500" />
+                    <HelpCircle className="h-6 w-6 text-violet-400" />
                   ) : (
-                    <FileText className="h-6 w-6 text-gray-400" />
+                    <FileText className="h-6 w-6 text-slate-400" />
                   )}
                 </div>
                 <div className="flex-1 min-w-0">
-                  <h3 className="text-lg font-semibold text-gray-900 text-left mb-1">
+                  <h3 className="text-lg font-semibold text-white text-left mb-1">
                     {article.title}
                   </h3>
                   {section && (
-                    <div className="flex items-center gap-2 text-sm text-gray-500">
+                    <div className="flex items-center gap-2 text-sm text-slate-500">
                       <span>{section.icon}</span>
                       <span>{section.title}</span>
                     </div>
@@ -181,9 +181,9 @@ export function HelpArticleComponent({
               </div>
               <div className="flex-shrink-0">
                 {isOpen ? (
-                  <ChevronUp className="h-5 w-5 text-gray-400" />
+                  <ChevronUp className="h-5 w-5 text-slate-400" />
                 ) : (
-                  <ChevronDown className="h-5 w-5 text-gray-400" />
+                  <ChevronDown className="h-5 w-5 text-slate-400" />
                 )}
               </div>
             </div>
@@ -191,13 +191,13 @@ export function HelpArticleComponent({
         </CollapsibleTrigger>
         <CollapsibleContent>
           <CardContent className="pt-0">
-            <div className="prose prose-sm max-w-none">
+            <div className="prose prose-sm prose-invert max-w-none prose-p:text-slate-400 prose-li:text-slate-400 prose-strong:text-white">
               {formatContent(article.content)}
             </div>
 
             {showRelated && relatedArticles.length > 0 && (
-              <div className="mt-6 pt-6 border-t border-gray-200">
-                <h4 className="text-sm font-semibold text-gray-900 mb-3">Related Articles</h4>
+              <div className="mt-6 pt-6 border-t border-slate-700">
+                <h4 className="text-sm font-semibold text-white mb-3">Related Articles</h4>
                 <div className="space-y-2">
                   {relatedArticles.slice(0, 3).map((related) => (
                     <button
@@ -207,7 +207,7 @@ export function HelpArticleComponent({
                           onRelatedClick(related.id, related.section)
                         }
                       }}
-                      className="w-full text-left flex items-center gap-2 px-3 py-2 text-sm text-blue-600 hover:bg-blue-50 rounded-lg transition-colors duration-200 group"
+                      className="w-full text-left flex items-center gap-2 px-3 py-2 text-sm text-violet-400 hover:bg-violet-500/20 rounded-lg transition-colors duration-200 group"
                       aria-label={`Read article: ${related.title}`}
                     >
                       <ExternalLink className="h-4 w-4 opacity-0 group-hover:opacity-100 transition-opacity" />
@@ -219,12 +219,12 @@ export function HelpArticleComponent({
             )}
 
             {article.tags.length > 0 && (
-              <div className="mt-4 pt-4 border-t border-gray-200">
+              <div className="mt-4 pt-4 border-t border-slate-700">
                 <div className="flex flex-wrap gap-2">
                   {article.tags.map((tag) => (
                     <span
                       key={tag}
-                      className="text-xs text-gray-500 bg-gray-100 px-2 py-1 rounded-full"
+                      className="text-xs text-slate-400 bg-slate-800 px-2 py-1 rounded-full"
                     >
                       {tag}
                     </span>

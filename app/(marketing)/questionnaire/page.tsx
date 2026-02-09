@@ -1,9 +1,9 @@
 'use client'
 
 import { useState } from 'react'
+import { MarketingSubpageWrapper } from '../components/marketing-subpage-wrapper'
 import Container from '@/components/ui/primitives/container'
 import Section from '@/components/ui/primitives/section'
-import Footer from '@/components/site/footer'
 import { Button } from '@/components/ui/button'
 import { useRouter } from 'next/navigation'
 import { useApp } from '@/app/providers'
@@ -54,23 +54,23 @@ export default function QuestionnairePage() {
   }
 
   return (
-    <main>
-      <Section className="bg-white">
+    <MarketingSubpageWrapper>
+      <Section className="bg-slate-950">
         <Container>
-          <h1 className="text-4xl font-bold mb-6 text-brand-text">{t.title}</h1>
-          <p className="text-brand-muted mb-8 max-w-2xl">{t.description}</p>
+          <h1 className="text-4xl font-bold mb-6 text-white">{t.title}</h1>
+          <p className="text-slate-400 mb-8 max-w-2xl">{t.description}</p>
 
           <div className="grid gap-6 max-w-2xl">
             {t.questions.map(q => (
               <div key={q.key}>
-                <label className="block text-sm font-medium text-brand-text mb-2">{q.label}</label>
+                <label className="block text-sm font-medium text-slate-200 mb-2">{q.label}</label>
                 <div className="flex flex-wrap gap-2">
                   {q.options.map(o => (
                     <button
                       key={o}
                       type="button"
                       onClick={() => setAnswer(q.key, o)}
-                      className={`px-4 py-2 rounded-md border ${answers[q.key] === o ? 'bg-brand-600 text-white border-brand-600' : 'bg-white border-brand-border text-brand-text'}`}
+                      className={`px-4 py-2 rounded-lg border transition-colors ${answers[q.key] === o ? 'bg-violet-600 text-white border-violet-600' : 'bg-slate-800/50 border-slate-600 text-slate-200 hover:border-slate-500'}`}
                     >
                       {o}
                     </button>
@@ -81,12 +81,11 @@ export default function QuestionnairePage() {
           </div>
 
           <div className="mt-8">
-            <Button onClick={handleSubmit} className="bg-brand-600 text-white">{t.continue}</Button>
+            <Button onClick={handleSubmit} className="bg-violet-600 hover:bg-violet-500 text-white">{t.continue}</Button>
           </div>
         </Container>
       </Section>
-      <Footer />
-    </main>
+    </MarketingSubpageWrapper>
   )
 }
 

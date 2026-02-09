@@ -1,7 +1,6 @@
 'use client'
 
-import { Navbar } from '@/components/site/navbar'
-import Footer from '@/components/site/footer'
+import { MarketingSubpageWrapper } from '../components/marketing-subpage-wrapper'
 import Container from '@/components/ui/primitives/container'
 import Section from '@/components/ui/primitives/section'
 import { useApp } from '@/app/providers'
@@ -419,49 +418,45 @@ export default function TermsPage() {
   const t = content[locale] ?? content.en
 
   return (
-    <main className="min-h-screen bg-white">
-      <Navbar />
-      <div className="pt-20">
-        <Section className="bg-white">
-          <Container>
-            <div className="max-w-4xl mx-auto">
-              <h1 className="text-4xl font-bold text-brand-text mb-3">{t.title}</h1>
-              <p className="text-brand-muted mb-2">
-                {t.lastUpdatedLabel}: {t.lastUpdatedValue}
-              </p>
-              <p className="text-brand-muted mb-4">{t.languageNote}</p>
-              <p className="text-brand-muted mb-10 leading-relaxed">
-                {t.preamble}
-              </p>
+    <MarketingSubpageWrapper>
+      <Section className="bg-slate-950">
+        <Container>
+          <div className="max-w-4xl mx-auto">
+            <h1 className="text-4xl font-bold text-white mb-3">{t.title}</h1>
+            <p className="text-slate-500 mb-2">
+              {t.lastUpdatedLabel}: {t.lastUpdatedValue}
+            </p>
+            <p className="text-slate-400 mb-4">{t.languageNote}</p>
+            <p className="text-slate-400 mb-10 leading-relaxed">
+              {t.preamble}
+            </p>
 
-              {t.sections.map((section) => (
-                <section key={section.id} className="mb-10">
-                  <h2 className="text-2xl font-semibold text-brand-text mt-6 mb-3">{section.title}</h2>
-                  {section.description && (
-                    <p className="text-brand-muted mb-3">{section.description}</p>
-                  )}
-                  {section.quote && (
-                    <div className="border-l-4 border-brand-primary bg-slate-50 px-4 py-3 mb-3 text-brand-text">
-                      {section.quote}
-                    </div>
-                  )}
-                  {section.bullets && (
-                    <ul className="list-disc pl-6 space-y-2 text-brand-muted">
-                      {section.bullets.map((item, index) => (
-                        <li key={index}>{item}</li>
-                      ))}
-                    </ul>
-                  )}
-                  {section.note && (
-                    <p className="text-brand-muted mt-3">{section.note}</p>
-                  )}
-                </section>
-              ))}
-            </div>
-          </Container>
-        </Section>
-      </div>
-      <Footer />
-    </main>
+            {t.sections.map((section) => (
+              <section key={section.id} className="mb-10">
+                <h2 className="text-2xl font-semibold text-white mt-6 mb-3">{section.title}</h2>
+                {section.description && (
+                  <p className="text-slate-400 mb-3">{section.description}</p>
+                )}
+                {section.quote && (
+                  <div className="border-l-4 border-violet-500 bg-slate-800/50 px-4 py-3 mb-3 text-slate-200 rounded-r">
+                    {section.quote}
+                  </div>
+                )}
+                {section.bullets && (
+                  <ul className="list-disc pl-6 space-y-2 text-slate-400">
+                    {section.bullets.map((item, index) => (
+                      <li key={index}>{item}</li>
+                    ))}
+                  </ul>
+                )}
+                {section.note && (
+                  <p className="text-slate-400 mt-3">{section.note}</p>
+                )}
+              </section>
+            ))}
+          </div>
+        </Container>
+      </Section>
+    </MarketingSubpageWrapper>
   )
 }

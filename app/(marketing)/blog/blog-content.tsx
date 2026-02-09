@@ -85,21 +85,21 @@ export function BlogContent() {
 
   return (
     <>
-      <Section className="bg-gradient-to-b from-white to-brand-surface/30 py-12 md:py-16 lg:py-20">
+      <Section className="bg-slate-950 py-12 md:py-16 lg:py-20">
         <Container>
           <div className="max-w-4xl mx-auto text-center">
-            <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-brand-text mb-6 leading-tight">
-              <span className="text-brand-primary">{t.title.split(' ')[0]}</span>{' '}
+            <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-white mb-6 leading-tight">
+              <span className="text-violet-400">{t.title.split(' ')[0]}</span>{' '}
               {t.title.replace(t.title.split(' ')[0], '').trim()}
             </h1>
-            <p className="text-lg md:text-xl text-brand-muted max-w-2xl mx-auto leading-relaxed">
+            <p className="text-lg md:text-xl text-slate-400 max-w-2xl mx-auto leading-relaxed">
               {t.subtitle}
             </p>
           </div>
         </Container>
       </Section>
 
-      <Section className="bg-white py-12 md:py-16">
+      <Section className="bg-slate-950 py-12 md:py-16">
         <Container>
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
             {t.posts.map((post) => {
@@ -113,28 +113,28 @@ export function BlogContent() {
               return (
                 <Card
                   key={post.slug}
-                  className="group border border-brand-border/50 bg-white hover:shadow-lg transition-all duration-300 overflow-hidden flex flex-col"
+                  className="group border border-slate-700 bg-slate-800/30 hover:bg-slate-800/50 hover:border-slate-600 transition-all duration-300 overflow-hidden flex flex-col"
                 >
                   <CardContent className="p-6 flex flex-col flex-1">
                     <div className="flex items-center gap-3 mb-4">
-                      <div className="h-10 w-10 rounded-xl bg-brand-primary/10 flex items-center justify-center group-hover:bg-brand-primary/20 transition-colors">
-                        <Icon className="h-5 w-5 text-brand-primary" />
+                      <div className="h-10 w-10 rounded-xl bg-violet-500/20 flex items-center justify-center group-hover:bg-violet-500/30 transition-colors">
+                        <Icon className="h-5 w-5 text-violet-400" />
                       </div>
-                      <span className="text-xs font-semibold text-brand-primary uppercase tracking-wide">
+                      <span className="text-xs font-semibold text-violet-400 uppercase tracking-wide">
                         {post.category}
                       </span>
                     </div>
 
-                    <h2 className="text-xl md:text-2xl font-bold text-brand-text mb-3 group-hover:text-brand-primary transition-colors">
+                    <h2 className="text-xl md:text-2xl font-bold text-white mb-3 group-hover:text-violet-400 transition-colors">
                       {post.title}
                     </h2>
 
-                    <p className="text-brand-muted mb-6 flex-1 leading-relaxed">
+                    <p className="text-slate-400 mb-6 flex-1 leading-relaxed">
                       {post.excerpt}
                     </p>
 
-                    <div className="flex items-center justify-between pt-4 border-t border-brand-border/50">
-                      <div className="flex items-center gap-4 text-xs text-brand-muted">
+                    <div className="flex items-center justify-between pt-4 border-t border-slate-700">
+                      <div className="flex items-center gap-4 text-xs text-slate-500">
                         <div className="flex items-center gap-1.5">
                           <Calendar className="h-3.5 w-3.5" />
                           <span>{dateFormatter.format(new Date(post.date))}</span>
@@ -149,7 +149,7 @@ export function BlogContent() {
                     <Button
                       asChild
                       variant="ghost"
-                      className="mt-4 w-full group-hover:bg-brand-primary/5"
+                      className="mt-4 w-full text-slate-300 hover:text-white group-hover:bg-violet-500/10"
                     >
                       <Link href={`/blog/${post.slug}`}>
                         {t.readArticle}

@@ -1,6 +1,7 @@
 import { Navbar } from '@/components/site/navbar'
 import Footer from '@/components/site/footer'
 import { UniversitiesLanding } from '@/components/site/universities-landing'
+import { MarketingLayoutFix } from '../components/marketing-layout-fix'
 import { Metadata } from 'next'
 
 export const metadata: Metadata = {
@@ -101,6 +102,7 @@ const breadcrumbSchema = {
 export default function UniversitiesPage() {
   return (
     <>
+      <MarketingLayoutFix />
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbSchema) }}

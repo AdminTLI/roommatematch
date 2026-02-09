@@ -13,7 +13,6 @@ const content = {
     title: "Simple, transparent pricing",
     subtitle: "Choose the plan that fits your university's needs. All plans include our core matching technology and are backed by our satisfaction guarantee.",
     benefitsTitle: "Why universities choose Domu Match",
-    trustText: "Trusted by housing departments at leading universities",
     plans: [
       {
         name: 'Pilot',
@@ -102,7 +101,6 @@ const content = {
     title: "Eenvoudige, transparante prijzen",
     subtitle: "Kies het plan dat past bij de behoeften van je universiteit. Alle plannen bevatten onze kern matchingtechnologie en worden ondersteund door onze tevredenheidsgarantie.",
     benefitsTitle: "Waarom universiteiten voor Domu Match kiezen",
-    trustText: "Vertrouwd door huisvestingsafdelingen bij toonaangevende universiteiten",
     plans: [
       {
         name: 'Pilot',
@@ -194,14 +192,14 @@ export function PricingSection() {
   const t = content[locale]
 
   return (
-    <Section className="bg-gradient-to-b from-white to-slate-50">
+    <Section className="bg-slate-950">
       <Container>
         {/* Header */}
         <div className="text-center mb-12 sm:mb-16">
-          <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold text-brand-text mb-4 sm:mb-6">
+          <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold text-white mb-4 sm:mb-6">
             {t.title}
           </h1>
-          <p className="text-base sm:text-lg md:text-xl text-brand-muted max-w-3xl mx-auto">
+          <p className="text-base sm:text-lg md:text-xl text-slate-400 max-w-3xl mx-auto">
             {t.subtitle}
           </p>
         </div>
@@ -213,10 +211,10 @@ export function PricingSection() {
             return (
               <Card 
                 key={plan.name}
-                className={`relative overflow-hidden transition-all duration-300 hover:shadow-elev-3 ${
+                className={`relative overflow-hidden transition-all duration-300 border ${
                   plan.highlight 
-                    ? 'border-brand-primary shadow-elev-2 scale-105' 
-                    : 'border-brand-border hover:border-brand-primary/50'
+                    ? 'border-violet-500 bg-slate-800/50 scale-105' 
+                    : 'border-slate-700 bg-slate-800/30 hover:border-slate-600'
                 }`}
               >
                 {plan.badge && (
@@ -230,23 +228,23 @@ export function PricingSection() {
                 
                 <CardHeader className="text-center pb-8">
                   <div className={`mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full ${
-                    plan.highlight ? 'bg-brand-primary/10' : 'bg-brand-accent/10'
+                    plan.highlight ? 'bg-violet-500/20' : 'bg-rose-500/20'
                   }`}>
                     <Icon className={`h-8 w-8 ${
-                      plan.highlight ? 'text-brand-primary' : 'text-brand-accent'
+                      plan.highlight ? 'text-violet-400' : 'text-rose-400'
                     }`} />
                   </div>
                   
-                  <CardTitle className="text-2xl">{plan.name}</CardTitle>
-                  <CardDescription className="text-base">
+                  <CardTitle className="text-2xl text-white">{plan.name}</CardTitle>
+                  <CardDescription className="text-base text-slate-400">
                     {plan.description}
                   </CardDescription>
                   
                   <div className="mt-6">
-                    <span className="text-4xl font-bold text-brand-text">
+                    <span className="text-4xl font-bold text-white">
                       {plan.price}
                     </span>
-                    <span className="text-brand-muted ml-2">
+                    <span className="text-slate-500 ml-2">
                       {plan.period}
                     </span>
                   </div>
@@ -256,8 +254,8 @@ export function PricingSection() {
                   <ul className="space-y-4">
                     {plan.features.map((feature, featureIndex) => (
                       <li key={featureIndex} className="flex items-start gap-3">
-                        <Check className="h-5 w-5 text-green-500 mt-0.5 flex-shrink-0" />
-                        <span className="text-brand-text">{feature}</span>
+                        <Check className="h-5 w-5 text-emerald-400 mt-0.5 flex-shrink-0" />
+                        <span className="text-slate-200">{feature}</span>
                       </li>
                     ))}
                   </ul>
@@ -265,8 +263,8 @@ export function PricingSection() {
                   <Button 
                     className={`w-full min-h-[44px] ${
                       plan.highlight 
-                        ? 'bg-brand-primary hover:bg-brand-primary/90' 
-                        : 'bg-brand-accent hover:bg-brand-accent/90'
+                        ? 'bg-violet-600 hover:bg-violet-500' 
+                        : 'bg-rose-600 hover:bg-rose-500'
                     }`}
                     size="lg"
                   >
@@ -279,8 +277,8 @@ export function PricingSection() {
         </div>
 
         {/* Benefits Section */}
-        <div className="bg-white rounded-2xl border border-brand-border p-6 sm:p-8 md:p-12">
-          <h2 className="text-2xl sm:text-3xl font-bold text-center text-brand-text mb-8 sm:mb-12">
+        <div className="bg-slate-800/50 rounded-2xl border border-slate-700 p-6 sm:p-8 md:p-12">
+          <h2 className="text-2xl sm:text-3xl font-bold text-center text-white mb-8 sm:mb-12">
             {t.benefitsTitle}
           </h2>
           
@@ -289,32 +287,18 @@ export function PricingSection() {
               const Icon = benefit.icon
               return (
                 <div key={index} className="text-center">
-                  <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-brand-primary/10">
-                    <Icon className="h-6 w-6 text-brand-primary" />
+                  <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-violet-500/20">
+                    <Icon className="h-6 w-6 text-violet-400" />
                   </div>
-                  <h3 className="text-xl font-semibold text-brand-text mb-2">
+                  <h3 className="text-xl font-semibold text-white mb-2">
                     {benefit.title}
                   </h3>
-                  <p className="text-brand-muted">
+                  <p className="text-slate-400">
                     {benefit.description}
                   </p>
                 </div>
               )
             })}
-          </div>
-        </div>
-
-        {/* Trust Indicators */}
-        <div className="text-center mt-12 sm:mt-16">
-          <p className="text-sm sm:text-base text-brand-muted mb-4 sm:mb-6">
-            {t.trustText}
-          </p>
-          <div className="flex flex-wrap justify-center items-center gap-4 sm:gap-6 md:gap-8 opacity-60">
-            <div className="text-sm sm:text-base md:text-lg font-semibold text-brand-text">TU Delft</div>
-            <div className="text-sm sm:text-base md:text-lg font-semibold text-brand-text">UvA</div>
-            <div className="text-sm sm:text-base md:text-lg font-semibold text-brand-text">Maastricht</div>
-            <div className="text-sm sm:text-base md:text-lg font-semibold text-brand-text">Utrecht</div>
-            <div className="text-sm sm:text-base md:text-lg font-semibold text-brand-text">Groningen</div>
           </div>
         </div>
       </Container>

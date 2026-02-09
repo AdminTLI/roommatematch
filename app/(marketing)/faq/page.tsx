@@ -1,6 +1,5 @@
 import { Metadata } from 'next'
-import { Navbar } from '@/components/site/navbar'
-import Footer from '@/components/site/footer'
+import { MarketingSubpageWrapper } from '../components/marketing-subpage-wrapper'
 import Container from '@/components/ui/primitives/container'
 import Section from '@/components/ui/primitives/section'
 import {
@@ -281,33 +280,31 @@ export default function FAQPage() {
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }}
       />
-      <main className="min-h-screen bg-white pt-16 md:pt-20">
-        <Navbar />
-
-        <Section>
+      <MarketingSubpageWrapper>
+        <Section className="bg-slate-950">
           <Container>
             <div className="max-w-4xl mx-auto space-y-8">
               <div className="text-center space-y-4">
-                <h1 className="text-4xl md:text-5xl font-bold text-brand-text">
+                <h1 className="text-4xl md:text-5xl font-bold text-white">
                   Frequently Asked Questions
                 </h1>
-                <p className="text-xl text-brand-muted max-w-2xl mx-auto">
+                <p className="text-xl text-slate-400 max-w-2xl mx-auto">
                   Everything you need to know about finding compatible roommates with Domu Match
                 </p>
               </div>
 
               {faqData.map((category, categoryIndex) => (
                 <div key={categoryIndex} className="space-y-4">
-                  <h2 className="text-2xl font-bold text-brand-text border-b-2 border-brand-primary/20 pb-2">
+                  <h2 className="text-2xl font-bold text-white border-b-2 border-violet-500/30 pb-2">
                     {category.category}
                   </h2>
                   <Accordion type="single" collapsible className="w-full">
                     {category.items.map((item, itemIndex) => (
-                      <AccordionItem key={itemIndex} value={`${categoryIndex}-${itemIndex}`}>
-                        <AccordionTrigger className="text-left text-lg font-medium">
+                      <AccordionItem key={itemIndex} value={`${categoryIndex}-${itemIndex}`} className="border-slate-700">
+                        <AccordionTrigger className="text-left text-lg font-medium text-slate-200 hover:text-white hover:no-underline">
                           {item.question}
                         </AccordionTrigger>
-                        <AccordionContent className="text-brand-muted leading-relaxed">
+                        <AccordionContent className="text-slate-400 leading-relaxed">
                           {item.answer}
                         </AccordionContent>
                       </AccordionItem>
@@ -316,21 +313,21 @@ export default function FAQPage() {
                 </div>
               ))}
 
-              <div className="bg-brand-primary/5 border border-brand-primary/20 rounded-lg p-8 text-center space-y-4 mt-12">
-                <h2 className="text-2xl font-bold text-brand-text">Still Have Questions?</h2>
-                <p className="text-brand-muted">
+              <div className="bg-slate-800/50 border border-slate-700 rounded-lg p-8 text-center space-y-4 mt-12">
+                <h2 className="text-2xl font-bold text-white">Still Have Questions?</h2>
+                <p className="text-slate-400">
                   Can't find the answer you're looking for? Our support team is here to help.
                 </p>
                 <div className="flex flex-col sm:flex-row gap-4 justify-center pt-4">
                   <a
                     href="mailto:support@domumatch.com"
-                    className="inline-flex items-center justify-center px-6 py-3 bg-brand-primary text-white rounded-lg hover:bg-brand-primaryHover transition-colors font-medium"
+                    className="inline-flex items-center justify-center px-6 py-3 bg-violet-600 text-white rounded-lg hover:bg-violet-500 transition-colors font-medium"
                   >
                     Email Support
                   </a>
                   <a
                     href="/help-center"
-                    className="inline-flex items-center justify-center px-6 py-3 border-2 border-brand-border text-brand-text rounded-lg hover:border-brand-primary hover:bg-brand-primary/5 transition-colors font-medium"
+                    className="inline-flex items-center justify-center px-6 py-3 border-2 border-slate-600 text-slate-200 rounded-lg hover:border-violet-500 hover:bg-violet-500/10 transition-colors font-medium"
                   >
                     Visit Help Center
                   </a>
@@ -339,9 +336,7 @@ export default function FAQPage() {
             </div>
           </Container>
         </Section>
-
-        <Footer />
-      </main>
+      </MarketingSubpageWrapper>
     </>
   )
 }

@@ -1,7 +1,6 @@
 'use client'
 
-import { Navbar } from '@/components/site/navbar'
-import Footer from '@/components/site/footer'
+import { MarketingSubpageWrapper } from '../components/marketing-subpage-wrapper'
 import Container from '@/components/ui/primitives/container'
 import Section from '@/components/ui/primitives/section'
 import { useApp } from '@/app/providers'
@@ -13,20 +12,18 @@ export default function PrivacyPage() {
   )
 
   return (
-    <main className="min-h-screen bg-white">
-      <Navbar />
-      <div className="pt-20">
-        <Section className="bg-white">
-          <Container>
-            <div className="max-w-4xl mx-auto">
-              <h1 className="text-4xl font-bold text-brand-text mb-4">
-                Privacy Policy
-              </h1>
-              <p className="text-brand-muted mb-8">
-                Last updated: {lastUpdated}
-              </p>
+    <MarketingSubpageWrapper>
+      <Section className="bg-slate-950">
+        <Container>
+          <div className="max-w-4xl mx-auto">
+            <h1 className={proseClasses.h1}>
+              Privacy Policy
+            </h1>
+            <p className="text-slate-500 mb-8">
+              Last updated: {lastUpdated}
+            </p>
 
-              <p className="text-brand-muted mb-8 leading-relaxed">
+            <p className="text-slate-400 mb-8 leading-relaxed">
                 Domu Match is designed for university students (typically 17+)
                 who want to find compatible roommates. This Privacy Policy
                 explains in clear language how we use your data and your rights
@@ -36,25 +33,25 @@ export default function PrivacyPage() {
 
               {/* Privacy at a Glance */}
               <section className="mb-12">
-                <h2 className="text-2xl font-semibold text-brand-text mb-4">
+                <h2 className="text-2xl font-semibold text-white mb-4">
                   Privacy at a Glance
                 </h2>
-                <div className="overflow-x-auto rounded-lg border border-gray-200">
+                <div className="overflow-x-auto rounded-lg border border-slate-700 overflow-hidden">
                   <table className="min-w-full text-left text-sm">
-                    <thead className="bg-gray-50">
+                    <thead className="bg-slate-800">
                       <tr>
-                        <th className="px-4 py-3 font-semibold text-gray-700">
+                        <th className="px-4 py-3 font-semibold text-slate-200">
                           Topic
                         </th>
-                        <th className="px-4 py-3 font-semibold text-gray-700">
+                        <th className="px-4 py-3 font-semibold text-slate-200">
                           Short answer
                         </th>
-                        <th className="px-4 py-3 font-semibold text-gray-700">
+                        <th className="px-4 py-3 font-semibold text-slate-200">
                           Read more
                         </th>
                       </tr>
                     </thead>
-                    <tbody className="divide-y divide-gray-200">
+                    <tbody className="divide-y divide-slate-700">
                       <tr>
                         <td className="px-4 py-3 align-top">
                           Who is responsible?
@@ -192,21 +189,21 @@ export default function PrivacyPage() {
 
               {/* Who We Are and Scope */}
               <section className="mb-12">
-                <h2 className="text-2xl font-semibold text-brand-text mb-4">
+                <h2 className="text-2xl font-semibold text-white mb-4">
                   Who We Are and Scope
                 </h2>
-                <h3 className="text-xl font-semibold text-brand-text mb-2">
+                <h3 className="text-xl font-semibold text-white mb-2">
                   Controller
                 </h3>
-                <p className="text-brand-muted mb-4">
+                <p className="text-slate-400 mb-4">
                   The controller responsible for your personal data is Domu
                   Match B.V., registered in the Netherlands. You will find our
                   contact details in the “Contact and Complaints” section.
                 </p>
-                <h3 className="text-xl font-semibold text-brand-text mb-2">
+                <h3 className="text-xl font-semibold text-white mb-2">
                   Who this policy is for
                 </h3>
-                <p className="text-brand-muted mb-4">
+                <p className="text-slate-400 mb-4">
                   This policy applies to students and young people (typically
                   17+) using Domu Match to find roommates, visitors to our
                   website or app, and students connected through participating
@@ -216,16 +213,16 @@ export default function PrivacyPage() {
 
               {/* Data We Collect */}
               <section className="mb-12">
-                <h2 className="text-2xl font-semibold text-brand-text mb-4">
+                <h2 className="text-2xl font-semibold text-white mb-4">
                   Data We Collect
                 </h2>
-                <h3 className="text-xl font-semibold text-brand-text mb-2">
+                <h3 className="text-xl font-semibold text-white mb-2">
                   Account and profile data
                 </h3>
-                <p className="text-brand-muted mb-2">
+                <p className="text-slate-400 mb-2">
                   We collect basic account and profile details, such as:
                 </p>
-                <ul className="list-disc pl-6 text-brand-muted mb-4 space-y-1">
+                <ul className="list-disc pl-6 text-slate-400 mb-4 space-y-1">
                   <li>Name, email address, and hashed password.</li>
                   <li>
                     University name, study programme, year of study, and
@@ -238,15 +235,15 @@ export default function PrivacyPage() {
                   <li>Optional profile picture.</li>
                 </ul>
 
-                <h3 className="text-xl font-semibold text-brand-text mb-2">
+                <h3 className="text-xl font-semibold text-white mb-2">
                   Lifestyle and behavioural data (Harmony questionnaire)
                 </h3>
-                <p className="text-brand-muted mb-2">
+                <p className="text-slate-400 mb-2">
                   To improve roommate matching, we offer a 200-question
                   lifestyle questionnaire (8 blocks of 25 questions). It covers
                   for example:
                 </p>
-                <ul className="list-disc pl-6 text-brand-muted mb-4 space-y-1">
+                <ul className="list-disc pl-6 text-slate-400 mb-4 space-y-1">
                   <li>Daily rhythms (wake-up time, sleep time, noise level).</li>
                   <li>
                     Tidiness and use of shared spaces (cleaning habits,
@@ -261,7 +258,7 @@ export default function PrivacyPage() {
                     weekends).
                   </li>
                 </ul>
-                <p className="text-brand-muted mb-4">
+                <p className="text-slate-400 mb-4">
                   Some answers may indirectly reveal sensitive data (for
                   example, about your health, religion, or sexual orientation).
                   You are never forced to share this: you can skip such
@@ -269,14 +266,14 @@ export default function PrivacyPage() {
                   deep lifestyle data with your explicit consent.
                 </p>
 
-                <h3 className="text-xl font-semibold text-brand-text mb-2">
+                <h3 className="text-xl font-semibold text-white mb-2">
                   ID Verification with Persona
                 </h3>
-                <p className="text-brand-muted mb-2">
+                <p className="text-slate-400 mb-2">
                   To reduce fraud and impersonation, we use Persona as our ID
                   verification provider:
                 </p>
-                <ul className="list-disc pl-6 text-brand-muted mb-4 space-y-1">
+                <ul className="list-disc pl-6 text-slate-400 mb-4 space-y-1">
                   <li>
                     During verification, Persona processes images or scans of
                     your government ID and, where needed, a selfie or video for
@@ -294,31 +291,31 @@ export default function PrivacyPage() {
                   </li>
                 </ul>
 
-                <h3 className="text-xl font-semibold text-brand-text mb-2">
+                <h3 className="text-xl font-semibold text-white mb-2">
                   Communication and chat
                 </h3>
-                <p className="text-brand-muted mb-2">
+                <p className="text-slate-400 mb-2">
                   When you use our internal chat, we process:
                 </p>
-                <ul className="list-disc pl-6 text-brand-muted mb-4 space-y-1">
+                <ul className="list-disc pl-6 text-slate-400 mb-4 space-y-1">
                   <li>Messages you send and receive.</li>
                   <li>Message metadata such as timestamps and read status.</li>
                 </ul>
-                <p className="text-brand-muted mb-4">
+                <p className="text-slate-400 mb-4">
                   By default, your real identity (full name and contact
                   details) is concealed from other users. You control when and
                   whether to mutually reveal your identity or share contact
                   details.
                 </p>
 
-                <h3 className="text-xl font-semibold text-brand-text mb-2">
+                <h3 className="text-xl font-semibold text-white mb-2">
                   Usage and technical data
                 </h3>
-                <p className="text-brand-muted mb-2">
+                <p className="text-slate-400 mb-2">
                   We collect device and technical data to run and secure the
                   platform, such as:
                 </p>
-                <ul className="list-disc pl-6 text-brand-muted mb-4 space-y-1">
+                <ul className="list-disc pl-6 text-slate-400 mb-4 space-y-1">
                   <li>Device type, operating system, browser type.</li>
                   <li>IP address, timestamps, pages and screens viewed.</li>
                   <li>
@@ -330,30 +327,30 @@ export default function PrivacyPage() {
 
               {/* Purposes and Legal Bases */}
               <section className="mb-12">
-                <h2 className="text-2xl font-semibold text-brand-text mb-4">
+                <h2 className="text-2xl font-semibold text-white mb-4">
                   Purposes and Legal Bases (Art. 6 GDPR)
                 </h2>
-                <p className="text-brand-muted mb-4">
+                <p className="text-slate-400 mb-4">
                   We must have a clear legal basis for each way we use your
                   data. Below is an overview of what we do and why we are
                   allowed to do it.
                 </p>
-                <div className="overflow-x-auto rounded-lg border border-gray-200 mb-6">
+                <div className="overflow-x-auto rounded-lg border border-slate-700 overflow-hidden mb-6">
                   <table className="min-w-full text-left text-sm">
-                    <thead className="bg-gray-50">
+                    <thead className="bg-slate-800">
                       <tr>
-                        <th className="px-4 py-3 font-semibold text-gray-700">
+                        <th className="px-4 py-3 font-semibold text-slate-200">
                           Purpose
                         </th>
-                        <th className="px-4 py-3 font-semibold text-gray-700">
+                        <th className="px-4 py-3 font-semibold text-slate-200">
                           Examples
                         </th>
-                        <th className="px-4 py-3 font-semibold text-gray-700">
+                        <th className="px-4 py-3 font-semibold text-slate-200">
                           Legal basis
                         </th>
                       </tr>
                     </thead>
-                    <tbody className="divide-y divide-gray-200">
+                    <tbody className="divide-y divide-slate-700">
                       <tr>
                         <td className="px-4 py-3 align-top">
                           Run your account and provide matching
@@ -409,7 +406,7 @@ export default function PrivacyPage() {
                     </tbody>
                   </table>
                 </div>
-                <p className="text-brand-muted mb-4">
+                <p className="text-slate-400 mb-4">
                   For the lifestyle questionnaire, you can always withdraw your
                   consent. We will then stop using your lifestyle responses for
                   new matches and delete or properly anonymize them (unless we
@@ -419,14 +416,14 @@ export default function PrivacyPage() {
 
               {/* Data Minimization and Purpose Limitation */}
               <section className="mb-12">
-                <h2 className="text-2xl font-semibold text-brand-text mb-4">
+                <h2 className="text-2xl font-semibold text-white mb-4">
                   Data Minimization and Purpose Limitation
                 </h2>
-                <p className="text-brand-muted mb-4">
+                <p className="text-slate-400 mb-4">
                   We carefully design our questions and data fields so that we
                   only ask for what we truly need. Our main purposes are:
                 </p>
-                <ul className="list-disc pl-6 text-brand-muted mb-4 space-y-1">
+                <ul className="list-disc pl-6 text-slate-400 mb-4 space-y-1">
                   <li>Roommate matching and related communication.</li>
                   <li>
                     Platform safety, fraud prevention, and responding to
@@ -437,7 +434,7 @@ export default function PrivacyPage() {
                     universities.
                   </li>
                 </ul>
-                <p className="text-brand-muted mb-4">
+                <p className="text-slate-400 mb-4">
                   We do not use your personal data for unrelated advertising,
                   and we do not sell your personal data to commercial third
                   parties. If we ever want to use your data for a new purpose
@@ -448,17 +445,17 @@ export default function PrivacyPage() {
 
               {/* Automated Decision-Making and Profiling */}
               <section className="mb-12">
-                <h2 className="text-2xl font-semibold text-brand-text mb-4">
+                <h2 className="text-2xl font-semibold text-white mb-4">
                   Automated Decision-Making and Profiling (Art. 22 GDPR)
                 </h2>
-                <h3 className="text-xl font-semibold text-brand-text mb-2">
+                <h3 className="text-xl font-semibold text-white mb-2">
                   How the matching algorithm works
                 </h3>
-                <p className="text-brand-muted mb-3">
+                <p className="text-slate-400 mb-3">
                   Domu Match uses automated processing to suggest potential
                   roommates:
                 </p>
-                <ul className="list-disc pl-6 text-brand-muted mb-4 space-y-1">
+                <ul className="list-disc pl-6 text-slate-400 mb-4 space-y-1">
                   <li>
                     <span className="font-semibold">Harmony score (≈75%)</span>{' '}
                     – based mostly on your lifestyle answers (daily rhythms,
@@ -476,10 +473,10 @@ export default function PrivacyPage() {
                   </li>
                 </ul>
 
-                <h3 className="text-xl font-semibold text-brand-text mb-2">
+                <h3 className="text-xl font-semibold text-white mb-2">
                   No solely automated legal or similarly significant decisions
                 </h3>
-                <p className="text-brand-muted mb-4">
+                <p className="text-slate-400 mb-4">
                   Our system only suggests possible roommates. It does not
                   decide where you may live, your academic results, or any
                   legal or financial outcome. You always choose who to contact,
@@ -488,10 +485,10 @@ export default function PrivacyPage() {
                   effects made solely by our algorithm.
                 </p>
 
-                <h3 className="text-xl font-semibold text-brand-text mb-2">
+                <h3 className="text-xl font-semibold text-white mb-2">
                   EU AI Act transparency
                 </h3>
-                <p className="text-brand-muted mb-4">
+                <p className="text-slate-400 mb-4">
                   In line with the EU AI Act transparency rules, we clearly
                   inform you that we use automated systems for matching,
                   explain the main factors (Harmony ≈ 75%, Context ≈ 25%), and
@@ -502,16 +499,16 @@ export default function PrivacyPage() {
 
               {/* Third-Party Disclosures */}
               <section className="mb-12">
-                <h2 className="text-2xl font-semibold text-brand-text mb-4">
+                <h2 className="text-2xl font-semibold text-white mb-4">
                   Third-Party Disclosures
                 </h2>
-                <h3 className="text-xl font-semibold text-brand-text mb-2">
+                <h3 className="text-xl font-semibold text-white mb-2">
                   Persona (ID verification)
                 </h3>
-                <p className="text-brand-muted mb-3">
+                <p className="text-slate-400 mb-3">
                   We use Persona to perform identity checks:
                 </p>
-                <ul className="list-disc pl-6 text-brand-muted mb-4 space-y-1">
+                <ul className="list-disc pl-6 text-slate-400 mb-4 space-y-1">
                   <li>
                     Persona may process your government ID and selfie/video and
                     create biometric templates to confirm that the ID belongs to
@@ -524,10 +521,10 @@ export default function PrivacyPage() {
                   </li>
                 </ul>
 
-                <h3 className="text-xl font-semibold text-brand-text mb-2">
+                <h3 className="text-xl font-semibold text-white mb-2">
                   Cloud hosting providers
                 </h3>
-                <p className="text-brand-muted mb-3">
+                <p className="text-slate-400 mb-3">
                   We host Domu Match using reputable cloud providers with
                   servers in the EU (for example, AWS, Azure, or Google Cloud
                   EU regions). These providers act as processors under data
@@ -535,10 +532,10 @@ export default function PrivacyPage() {
                   infrastructure, not for their own marketing.
                 </p>
 
-                <h3 className="text-xl font-semibold text-brand-text mb-2">
+                <h3 className="text-xl font-semibold text-white mb-2">
                   Pilot Universities (anonymized analytics)
                 </h3>
-                <p className="text-brand-muted mb-3">
+                <p className="text-slate-400 mb-3">
                   We may share anonymized and aggregated data with Pilot
                   Universities to understand how housing and roommate matching
                   relate to student success. Universities cannot identify you
@@ -550,14 +547,14 @@ export default function PrivacyPage() {
 
               {/* Data Retention */}
               <section className="mb-12">
-                <h2 className="text-2xl font-semibold text-brand-text mb-4">
+                <h2 className="text-2xl font-semibold text-white mb-4">
                   Data Retention (Storage Limitation)
                 </h2>
-                <p className="text-brand-muted mb-4">
+                <p className="text-slate-400 mb-4">
                   We keep your data only as long as we reasonably need it for
                   the purposes described above or as required by law.
                 </p>
-                <ul className="list-disc pl-6 text-brand-muted mb-4 space-y-1">
+                <ul className="list-disc pl-6 text-slate-400 mb-4 space-y-1">
                   <li>
                     We keep most of your personal data while your Domu Match
                     account is active.
@@ -583,15 +580,15 @@ export default function PrivacyPage() {
 
               {/* Your Rights */}
               <section className="mb-12">
-                <h2 className="text-2xl font-semibold text-brand-text mb-4">
+                <h2 className="text-2xl font-semibold text-white mb-4">
                   Your Rights as a Student
                 </h2>
-                <p className="text-brand-muted mb-4">
+                <p className="text-slate-400 mb-4">
                   Under the GDPR and UAVG, you have several important rights.
                   You can usually exercise them through your account settings or
                   by contacting us.
                 </p>
-                <ul className="list-disc pl-6 text-brand-muted mb-4 space-y-1">
+                <ul className="list-disc pl-6 text-slate-400 mb-4 space-y-1">
                   <li>
                     <span className="font-semibold">
                       Right of access and information:
@@ -635,7 +632,7 @@ export default function PrivacyPage() {
                     while we review your request.
                   </li>
                 </ul>
-                <p className="text-brand-muted mb-4">
+                <p className="text-slate-400 mb-4">
                   We may ask you to verify your identity before we handle your
                   request. We aim to respond within one month, as required by
                   law.
@@ -644,14 +641,14 @@ export default function PrivacyPage() {
 
               {/* Security Measures */}
               <section className="mb-12">
-                <h2 className="text-2xl font-semibold text-brand-text mb-4">
+                <h2 className="text-2xl font-semibold text-white mb-4">
                   Security Measures
                 </h2>
-                <p className="text-brand-muted mb-4">
+                <p className="text-slate-400 mb-4">
                   We use technical and organizational measures to protect your
                   data, including:
                 </p>
-                <ul className="list-disc pl-6 text-brand-muted mb-4 space-y-1">
+                <ul className="list-disc pl-6 text-slate-400 mb-4 space-y-1">
                   <li>
                     Encryption in transit (TLS/HTTPS) and encryption at rest for
                     our databases and storage.
@@ -665,7 +662,7 @@ export default function PrivacyPage() {
                     procedures.
                   </li>
                 </ul>
-                <p className="text-brand-muted mb-4">
+                <p className="text-slate-400 mb-4">
                   We design Domu Match in line with the principles of the 2026
                   Cybersecurity Act (Cbw), focusing on digital resilience and
                   security by design and by default. No system is perfectly
@@ -675,15 +672,15 @@ export default function PrivacyPage() {
 
               {/* Contact and Complaints */}
               <section className="mb-12">
-                <h2 className="text-2xl font-semibold text-brand-text mb-4">
+                <h2 className="text-2xl font-semibold text-white mb-4">
                   Contact and Complaints
                 </h2>
-                <p className="text-brand-muted mb-3">
+                <p className="text-slate-400 mb-3">
                   If you have questions or want to exercise your rights, you
                   can contact our privacy contact / Data Protection Officer
                   (DPO):
                 </p>
-                <ul className="list-disc pl-6 text-brand-muted mb-4 space-y-1">
+                <ul className="list-disc pl-6 text-slate-400 mb-4 space-y-1">
                   <li>Name: DPO Domu Match</li>
                   <li>Email: privacy@domumatch.example</li>
                   <li>
@@ -691,14 +688,14 @@ export default function PrivacyPage() {
                     code] [City], The Netherlands
                   </li>
                 </ul>
-                <p className="text-brand-muted mb-3">
+                <p className="text-slate-400 mb-3">
                   You also have the right to lodge a complaint with your local
                   data protection authority. In the Netherlands, this is the
                   Autoriteit Persoonsgegevens (Dutch Data Protection Authority)
                   at{' '}
                   <a
                     href="https://autoriteitpersoonsgegevens.nl"
-                    className="text-brand-600 underline"
+                    className="text-violet-400 underline"
                   >
                     https://autoriteitpersoonsgegevens.nl
                   </a>
@@ -708,12 +705,12 @@ export default function PrivacyPage() {
 
               {/* Definitions */}
               <section className="mb-16">
-                <h2 className="text-2xl font-semibold text-brand-text mb-4">
+                <h2 className="text-2xl font-semibold text-white mb-4">
                   Definitions
                 </h2>
-                <dl className="space-y-4 text-brand-muted">
+                <dl className="space-y-4 text-slate-400">
                   <div>
-                    <dt className="font-semibold text-brand-text">
+                    <dt className="font-semibold text-white">
                       Personal data
                     </dt>
                     <dd>
@@ -724,7 +721,7 @@ export default function PrivacyPage() {
                     </dd>
                   </div>
                   <div>
-                    <dt className="font-semibold text-brand-text">
+                    <dt className="font-semibold text-white">
                       Special category data
                     </dt>
                     <dd>
@@ -735,7 +732,7 @@ export default function PrivacyPage() {
                     </dd>
                   </div>
                   <div>
-                    <dt className="font-semibold text-brand-text">
+                    <dt className="font-semibold text-white">
                       Biometric data
                     </dt>
                     <dd>
@@ -748,7 +745,7 @@ export default function PrivacyPage() {
                     </dd>
                   </div>
                   <div>
-                    <dt className="font-semibold text-brand-text">Profiling</dt>
+                    <dt className="font-semibold text-white">Profiling</dt>
                     <dd>
                       Any automated processing of personal data to evaluate
                       personal aspects, such as behaviour, preferences, or
@@ -758,7 +755,7 @@ export default function PrivacyPage() {
                     </dd>
                   </div>
                   <div>
-                    <dt className="font-semibold text-brand-text">
+                    <dt className="font-semibold text-white">
                       Automated decision-making
                     </dt>
                     <dd>
@@ -774,9 +771,7 @@ export default function PrivacyPage() {
             </div>
           </Container>
         </Section>
-      </div>
-      <Footer />
-    </main>
+    </MarketingSubpageWrapper>
   )
 }
 

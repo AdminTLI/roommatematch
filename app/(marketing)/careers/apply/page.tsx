@@ -1,12 +1,10 @@
 'use client'
 
+import { MarketingSubpageWrapper } from '../../components/marketing-subpage-wrapper'
 import Container from '@/components/ui/primitives/container'
 import Section from '@/components/ui/primitives/section'
-import Footer from '@/components/site/footer'
-import { Navbar } from '@/components/site/navbar'
 import { ApplyForm } from '@/components/marketing/Careers/ApplyForm'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Badge } from '@/components/ui/badge'
 import { useApp } from '@/app/providers'
 
 const content = {
@@ -47,43 +45,42 @@ export default function CareersApplyPage() {
   const t = content[locale]
 
   return (
-    <main id="main-content">
-      <Navbar />
-      <Section className="relative overflow-hidden bg-white">
+    <MarketingSubpageWrapper>
+      <Section className="relative overflow-hidden bg-slate-950">
         <Container>
           <div className="mx-auto max-w-5xl text-center py-10 sm:py-12 space-y-4">
-            <h1 className="text-3xl sm:text-4xl font-bold tracking-tight">
+            <h1 className="text-3xl sm:text-4xl font-bold tracking-tight text-white">
               {t.title}
             </h1>
-            <p className="text-muted-foreground">
+            <p className="text-slate-400">
               {t.subtitle}
             </p>
-            <p className="text-sm text-muted-foreground">
+            <p className="text-sm text-slate-500">
               {t.note}
             </p>
           </div>
 
           
           <div className="mx-auto max-w-6xl space-y-6">
-            <Card className="rounded-2xl border border-muted/40 bg-gradient-to-b from-brand-primary/5 to-white shadow-sm">
+            <Card className="rounded-2xl border border-slate-700 bg-slate-800/50">
               <CardHeader className="pb-2">
-                <CardTitle className="text-xl text-center">{t.whyTitle}</CardTitle>
+                <CardTitle className="text-xl text-center text-white">{t.whyTitle}</CardTitle>
               </CardHeader>
               <CardContent className="space-y-5 text-sm leading-relaxed">
-                <p className="text-muted-foreground max-w-2xl mx-auto text-center">
+                <p className="text-slate-400 max-w-2xl mx-auto text-center">
                   {t.whyDescription}
                 </p>
                 <div className="space-y-2 max-w-2xl mx-auto">
-                  <div className="text-sm font-medium text-center">{t.currentFocus}</div>
-                  <ul className="list-disc pl-5 space-y-1.5 text-muted-foreground">
+                  <div className="text-sm font-medium text-center text-slate-200">{t.currentFocus}</div>
+                  <ul className="list-disc pl-5 space-y-1.5 text-slate-400">
                     {t.focusItems.map((item, idx) => (
                       <li key={idx}>{item}</li>
                     ))}
                   </ul>
                 </div>
-                <div className="rounded-md border border-muted/40 bg-white/70 p-3 text-xs text-center max-w-2xl mx-auto">
-                  <div className="font-medium text-foreground mb-1">{t.opportunity}</div>
-                  <p className="text-muted-foreground leading-relaxed">
+                <div className="rounded-md border border-slate-700 bg-slate-800/50 p-3 text-xs text-center max-w-2xl mx-auto">
+                  <div className="font-medium text-white mb-1">{t.opportunity}</div>
+                  <p className="text-slate-400 leading-relaxed">
                     {t.opportunityText}
                   </p>
                 </div>
@@ -97,8 +94,7 @@ export default function CareersApplyPage() {
 
         </Container>
       </Section>
-      <Footer />
-    </main>
+    </MarketingSubpageWrapper>
   )
 }
 

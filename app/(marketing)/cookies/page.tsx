@@ -1,7 +1,6 @@
 'use client'
 
-import { Navbar } from '@/components/site/navbar'
-import Footer from '@/components/site/footer'
+import { MarketingSubpageWrapper } from '../components/marketing-subpage-wrapper'
 import Container from '@/components/ui/primitives/container'
 import Section from '@/components/ui/primitives/section'
 import { useApp } from '@/app/providers'
@@ -345,28 +344,26 @@ export default function CookiePolicyPage() {
   const t = content[locale]
 
   return (
-    <main className="min-h-screen bg-white">
-      <Navbar />
-      <div className="pt-20">
-        <Section className="bg-white">
-          <Container>
-            <div className="max-w-4xl mx-auto">
-              <div className="flex items-center gap-3 mb-4">
-                <Cookie className="h-8 w-8 text-brand-600" />
-                <h1 className="text-4xl font-bold text-brand-text">{t.title}</h1>
-              </div>
-              <p className="text-brand-muted mb-8">
+    <MarketingSubpageWrapper>
+      <Section className="bg-slate-950">
+        <Container>
+          <div className="max-w-4xl mx-auto">
+            <div className="flex items-center gap-3 mb-4">
+              <Cookie className="h-8 w-8 text-violet-400" />
+              <h1 className="text-4xl font-bold text-white">{t.title}</h1>
+            </div>
+            <p className="text-slate-500 mb-8">
                 {t.lastUpdatedLabel}:{' '}
                 {new Date('2026-01-06').toLocaleDateString(locale === 'nl' ? 'nl-NL' : 'en-US')}
               </p>
 
               {/* Introduction */}
-              <p className="text-brand-muted mb-12 leading-relaxed">{t.introduction}</p>
+              <p className="text-slate-400 mb-12 leading-relaxed">{t.introduction}</p>
 
               {/* What are cookies */}
               <section className="mb-12">
-                <h2 className="text-2xl font-semibold text-brand-text mt-8 mb-4">{t.whatAreCookies.title}</h2>
-                <div className="space-y-3 text-brand-muted">
+                <h2 className="text-2xl font-semibold text-white mt-8 mb-4">{t.whatAreCookies.title}</h2>
+                <div className="space-y-3 text-slate-400">
                   {t.whatAreCookies.paragraphs.map((paragraph, index) => (
                     <p key={index}>{paragraph}</p>
                   ))}
@@ -375,25 +372,25 @@ export default function CookiePolicyPage() {
 
               {/* Categories intro */}
               <section className="mb-12">
-                <h2 className="text-2xl font-semibold text-brand-text mt-8 mb-4">
+                <h2 className="text-2xl font-semibold text-white mt-8 mb-4">
                   {t.categoriesIntro.title}
                 </h2>
-                <p className="text-brand-muted mb-6">{t.categoriesIntro.description}</p>
+                <p className="text-slate-400 mb-6">{t.categoriesIntro.description}</p>
 
                 <div className="space-y-6">
                   {/* Strictly Necessary */}
-                  <div className="border border-gray-200 rounded-lg p-6 bg-gray-50">
-                    <h3 className="text-xl font-semibold text-brand-text mb-3">
+                  <div className="border border-slate-700 rounded-lg p-6 bg-slate-800/50">
+                    <h3 className="text-xl font-semibold text-white mb-3">
                       {t.strictlyNecessary.title}
                     </h3>
-                    <p className="text-brand-muted mb-4">{t.strictlyNecessary.description}</p>
+                    <p className="text-slate-400 mb-4">{t.strictlyNecessary.description}</p>
 
                     <div className="overflow-x-auto">
-                      <table className="w-full text-sm text-left text-brand-muted border border-gray-200 rounded-lg overflow-hidden">
-                        <caption className="text-left text-xs text-gray-500 px-4 pt-2 pb-3">
+                      <table className="w-full text-sm text-left text-slate-400 border border-slate-700 rounded-lg overflow-hidden">
+                        <caption className="text-left text-xs text-slate-500 px-4 pt-2 pb-3">
                           {t.strictlyNecessary.tableCaption}
                         </caption>
-                        <thead className="bg-gray-100 text-xs uppercase text-gray-600">
+                        <thead className="bg-slate-800 text-xs uppercase text-slate-300">
                           <tr>
                             {t.strictlyNecessary.headers.map((header, index) => (
                               <th key={index} scope="col" className="px-4 py-3">
@@ -406,7 +403,7 @@ export default function CookiePolicyPage() {
                           {t.strictlyNecessary.rows.map((row, rowIndex) => (
                             <tr
                               key={rowIndex}
-                              className={rowIndex % 2 === 0 ? 'bg-white' : 'bg-gray-50'}
+                              className={rowIndex % 2 === 0 ? 'bg-slate-900/50' : 'bg-slate-800/30'}
                             >
                               {row.map((cell, cellIndex) => (
                                 <td key={cellIndex} className="px-4 py-3 align-top">
@@ -421,11 +418,11 @@ export default function CookiePolicyPage() {
                   </div>
 
                   {/* Analytics */}
-                  <div className="border border-gray-200 rounded-lg p-6">
-                    <h3 className="text-xl font-semibold text-brand-text mb-3">{t.analytics.title}</h3>
-                    <p className="text-brand-muted mb-4">{t.analytics.description}</p>
+                  <div className="border border-slate-700 rounded-lg p-6 bg-slate-800/30">
+                    <h3 className="text-xl font-semibold text-white mb-3">{t.analytics.title}</h3>
+                    <p className="text-slate-400 mb-4">{t.analytics.description}</p>
 
-                    <div className="space-y-4 text-brand-muted">
+                    <div className="space-y-4 text-slate-400">
                       <div>
                         <p className="font-semibold mb-2">
                           {locale === 'nl'
@@ -454,11 +451,11 @@ export default function CookiePolicyPage() {
                     </div>
 
                     <div className="overflow-x-auto mt-4">
-                      <table className="w-full text-sm text-left text-brand-muted border border-gray-200 rounded-lg overflow-hidden">
-                        <caption className="text-left text-xs text-gray-500 px-4 pt-2 pb-3">
+                      <table className="w-full text-sm text-left text-slate-400 border border-slate-700 rounded-lg overflow-hidden">
+                        <caption className="text-left text-xs text-slate-500 px-4 pt-2 pb-3">
                           {t.analytics.tableCaption}
                         </caption>
-                        <thead className="bg-gray-100 text-xs uppercase text-gray-600">
+                        <thead className="bg-slate-800 text-xs uppercase text-slate-300">
                           <tr>
                             {t.analytics.headers.map((header, index) => (
                               <th key={index} scope="col" className="px-4 py-3">
@@ -471,7 +468,7 @@ export default function CookiePolicyPage() {
                           {t.analytics.rows.map((row, rowIndex) => (
                             <tr
                               key={rowIndex}
-                              className={rowIndex % 2 === 0 ? 'bg-white' : 'bg-gray-50'}
+                              className={rowIndex % 2 === 0 ? 'bg-slate-900/50' : 'bg-slate-800/30'}
                             >
                               {row.map((cell, cellIndex) => (
                                 <td key={cellIndex} className="px-4 py-3 align-top">
@@ -489,15 +486,15 @@ export default function CookiePolicyPage() {
 
               {/* Cookie banner logic */}
               <section className="mb-12">
-                <h2 className="text-2xl font-semibold text-brand-text mt-8 mb-4">
+                <h2 className="text-2xl font-semibold text-white mt-8 mb-4">
                   {t.bannerLogic.title}
                 </h2>
-                <div className="space-y-3 text-brand-muted mb-4">
+                <div className="space-y-3 text-slate-400 mb-4">
                   {t.bannerLogic.paragraphs.map((paragraph, index) => (
                     <p key={index}>{paragraph}</p>
                   ))}
                 </div>
-                <ul className="list-disc pl-6 space-y-2 text-brand-muted">
+                <ul className="list-disc pl-6 space-y-2 text-slate-400">
                   {t.bannerLogic.bullets.map((item, index) => (
                     <li key={index}>{item}</li>
                   ))}
@@ -506,12 +503,12 @@ export default function CookiePolicyPage() {
 
               {/* Manage / delete cookies */}
               <section className="mb-12">
-                <h2 className="text-2xl font-semibold text-brand-text mt-8 mb-4">{t.manage.title}</h2>
-                <p className="text-brand-muted mb-4">{t.manage.description}</p>
+                <h2 className="text-2xl font-semibold text-white mt-8 mb-4">{t.manage.title}</h2>
+                <p className="text-slate-400 mb-4">{t.manage.description}</p>
 
-                <div className="space-y-6 text-brand-muted">
+                <div className="space-y-6 text-slate-400">
                   <div>
-                    <h3 className="text-lg font-semibold text-brand-text mb-2">
+                    <h3 className="text-lg font-semibold text-white mb-2">
                       {t.manage.onSiteTitle}
                     </h3>
                     <ul className="list-disc pl-6 space-y-2">
@@ -522,7 +519,7 @@ export default function CookiePolicyPage() {
                   </div>
 
                   <div>
-                    <h3 className="text-lg font-semibold text-brand-text mb-2">
+                    <h3 className="text-lg font-semibold text-white mb-2">
                       {t.manage.browserTitle}
                     </h3>
                     <p className="mb-3">{t.manage.browserIntro}</p>
@@ -533,7 +530,7 @@ export default function CookiePolicyPage() {
                             href={link.href}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="text-brand-600 hover:underline"
+                            className="text-violet-400 hover:text-violet-300 hover:underline"
                           >
                             {link.name}
                           </a>
@@ -546,11 +543,11 @@ export default function CookiePolicyPage() {
 
               {/* Retention */}
               <section className="mb-12">
-                <h2 className="text-2xl font-semibold text-brand-text mt-8 mb-4">
+                <h2 className="text-2xl font-semibold text-white mt-8 mb-4">
                   {t.retention.title}
                 </h2>
-                <p className="text-brand-muted mb-4">{t.retention.intro}</p>
-                <ul className="list-disc pl-6 space-y-2 text-brand-muted">
+                <p className="text-slate-400 mb-4">{t.retention.intro}</p>
+                <ul className="list-disc pl-6 space-y-2 text-slate-400">
                   {t.retention.bullets.map((item, index) => (
                     <li key={index}>{item}</li>
                   ))}
@@ -559,10 +556,10 @@ export default function CookiePolicyPage() {
 
               {/* Compliance */}
               <section className="mb-12">
-                <h2 className="text-2xl font-semibold text-brand-text mt-8 mb-4">
+                <h2 className="text-2xl font-semibold text-white mt-8 mb-4">
                   {t.compliance.title}
                 </h2>
-                <div className="space-y-3 text-brand-muted">
+                <div className="space-y-3 text-slate-400">
                   {t.compliance.paragraphs.map((paragraph, index) => (
                     <p key={index}>{paragraph}</p>
                   ))}
@@ -571,16 +568,14 @@ export default function CookiePolicyPage() {
 
               {/* Contact */}
               <section className="mb-12">
-                <h2 className="text-2xl font-semibold text-brand-text mt-8 mb-4">{t.contact.title}</h2>
-                <p className="text-brand-muted mb-4">{t.contact.description}</p>
-                <p className="text-brand-muted">{t.contact.email}</p>
+                <h2 className="text-2xl font-semibold text-white mt-8 mb-4">{t.contact.title}</h2>
+                <p className="text-slate-400 mb-4">{t.contact.description}</p>
+                <p className="text-slate-400">{t.contact.email}</p>
               </section>
             </div>
           </Container>
         </Section>
-      </div>
-      <Footer />
-    </main>
+    </MarketingSubpageWrapper>
   )
 }
 

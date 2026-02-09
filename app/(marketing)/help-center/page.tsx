@@ -1,5 +1,4 @@
-import Footer from '@/components/site/footer'
-import { Navbar } from '@/components/site/navbar'
+import { MarketingSubpageWrapper } from '../components/marketing-subpage-wrapper'
 import { HelpCenterContent } from './help-center-content'
 import { Metadata } from 'next'
 import { helpContent } from './help-content'
@@ -90,13 +89,11 @@ export default function HelpCenterPage() {
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }}
       />
-      <main>
-        <Navbar />
-        <Suspense fallback={<div className="min-h-screen bg-gray-50" />}>
+      <MarketingSubpageWrapper>
+        <Suspense fallback={<div className="min-h-[60vh] bg-slate-950" />}>
           <HelpCenterContent />
         </Suspense>
-        <Footer />
-      </main>
+      </MarketingSubpageWrapper>
     </>
   )
 }

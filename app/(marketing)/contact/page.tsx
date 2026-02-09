@@ -1,7 +1,5 @@
-import Footer from '@/components/site/footer'
-import { Navbar } from '@/components/site/navbar'
+import { MarketingSubpageWrapper } from '../components/marketing-subpage-wrapper'
 import { ContactContent } from './contact-content'
-
 import { Metadata } from 'next'
 
 export const metadata: Metadata = {
@@ -68,11 +66,9 @@ export default function ContactPage() {
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }}
       />
-      <main className="pt-16 md:pt-20">
-        <Navbar />
+      <MarketingSubpageWrapper>
         <ContactContent />
-        <Footer />
-      </main>
+      </MarketingSubpageWrapper>
     </>
   )
 }

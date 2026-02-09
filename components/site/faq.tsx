@@ -95,34 +95,34 @@ export function FAQ() {
   const t = content[locale]
 
   return (
-    <Section className="bg-slate-50">
+    <Section className="bg-slate-950">
       <Container>
         <div className="text-center mb-8 sm:mb-12">
-          <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-brand-text mb-3 sm:mb-4">
+          <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-white mb-3 sm:mb-4">
             {t.title}
           </h2>
-          <p className="text-base sm:text-lg text-brand-muted max-w-2xl mx-auto">
+          <p className="text-base sm:text-lg text-slate-400 max-w-2xl mx-auto">
             {t.subtitle}
           </p>
         </div>
 
         <div className="max-w-3xl mx-auto space-y-3 sm:space-y-4">
           {t.faqs.map((faq, index) => (
-            <Card key={index} className="border-brand-border">
+            <Card key={index} className="border-slate-700 bg-slate-800/30">
               <Collapsible>
                 <CollapsibleTrigger className="w-full min-h-[44px]">
                   <CardHeader className="text-left p-4 sm:p-6">
                     <div className="flex items-center justify-between gap-4">
-                      <CardTitle className="text-base sm:text-lg font-semibold text-brand-text text-left">
+                      <CardTitle className="text-base sm:text-lg font-semibold text-white text-left">
                         {faq.question}
                       </CardTitle>
-                      <ChevronDown className="h-5 w-5 text-brand-muted transition-transform duration-200 flex-shrink-0 group-data-[state=open]/collapsible:rotate-180" />
+                      <ChevronDown className="h-5 w-5 text-slate-400 transition-transform duration-200 flex-shrink-0 group-data-[state=open]/collapsible:rotate-180" />
                     </div>
                   </CardHeader>
                 </CollapsibleTrigger>
                 <CollapsibleContent>
                   <CardContent className="pt-0 px-4 sm:px-6 pb-4 sm:pb-6">
-                    <p className="text-sm sm:text-base text-brand-muted leading-relaxed">
+                    <p className="text-sm sm:text-base text-slate-400 leading-relaxed">
                       {faq.answer}
                     </p>
                   </CardContent>
@@ -133,13 +133,13 @@ export function FAQ() {
         </div>
 
         <div className="text-center mt-12">
-          <p className="text-brand-muted mb-4">
+          <p className="text-slate-400 mb-4">
             {t.stillHaveQuestions}
           </p>
-          <p className="text-sm text-brand-muted">
+          <p className="text-sm text-slate-400">
             {t.contactText}{' '}
-            <a href="mailto:universities@domumatch.com" className="text-brand-primary hover:underline">
-              universities@domumatch.com
+            <a href="mailto:domumatch@gmail.com" className="text-violet-400 hover:text-violet-300 hover:underline">
+              domumatch@gmail.com
             </a>
           </p>
         </div>
