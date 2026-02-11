@@ -80,6 +80,7 @@ def index():
 
 
 @app.route("/chat", methods=["POST"])
+@app.route("/api/domu/chat", methods=["POST"])  # For Vercel rewrite
 def chat():
     # Parse request
     try:

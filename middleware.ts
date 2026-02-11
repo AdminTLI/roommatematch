@@ -149,7 +149,8 @@ export async function middleware(req: NextRequest) {
         '/api/universities/request-demo',
         '/api/analytics/track-event',
         '/api/admin/sync-updates', // Admin endpoint for syncing deployment updates
-        '/api/auth/resend-verification' // Resend verification email (users may not be authenticated)
+        '/api/auth/resend-verification', // Resend verification email (users may not be authenticated)
+        '/api/domu/chat' // Domu AI chat (dashboard widget; protected by auth + same-origin)
       ]
       // Normalize pathname (remove trailing slash) for consistent matching
       const normalizedPathname = pathname.replace(/\/$/, '')

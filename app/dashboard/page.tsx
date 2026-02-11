@@ -2,6 +2,7 @@ import { AppShell } from '@/components/app/shell'
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import { DashboardContent } from './components/dashboard-content'
+import { DomuChatWidget } from './components/domu-chat-widget'
 import type { DashboardData } from '@/types/dashboard'
 import { checkQuestionnaireCompletion, questionSchemas } from '@/lib/onboarding/validation'
 import { calculateSectionProgress } from '@/lib/onboarding/sections'
@@ -108,21 +109,24 @@ export default async function DashboardPage() {
   }
 
   return (
-    <AppShell 
-      user={userProfile}
-      showQuestionnairePrompt={true}
-    >
-      <DashboardContent 
-        hasCompletedQuestionnaire={hasCompletedQuestionnaire}
-        hasPartialProgress={hasPartialProgress}
-        progressCount={progressCount}
-        profileCompletion={profileCompletion}
-        questionnaireProgress={questionnaireProgress}
-        dashboardData={dashboardData}
+    <>
+      <AppShell 
         user={userProfile}
-        firstName={profile?.first_name || ''}
-      />
-    </AppShell>
+        showQuestionnairePrompt={true}
+      >
+        <DashboardContent 
+          hasCompletedQuestionnaire={hasCompletedQuestionnaire}
+          hasPartialProgress={hasPartialProgress}
+          progressCount={progressCount}
+          profileCompletion={profileCompletion}
+          questionnaireProgress={questionnaireProgress}
+          dashboardData={dashboardData}
+          user={userProfile}
+          firstName={profile?.first_name || ''}
+        />
+      </AppShell>
+      <DomuChatWidget />
+    </>
   )
 }
 
