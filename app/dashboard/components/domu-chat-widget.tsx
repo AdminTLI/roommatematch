@@ -96,7 +96,7 @@ export function DomuChatWidget() {
               </div>
               <button
                 onClick={() => setIsOpen(false)}
-                className="rounded-full p-1.5 text-slate-500 transition-colors hover:bg-slate-200 hover:text-slate-700 dark:hover:bg-slate-600 dark:hover:text-slate-200"
+                className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-slate-500 transition-colors hover:bg-slate-200 hover:text-slate-700 dark:hover:bg-slate-600 dark:hover:text-slate-200"
                 aria-label="Close chat"
               >
                 <X className="h-5 w-5" />

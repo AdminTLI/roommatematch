@@ -1,5 +1,13 @@
+import importlib
 import os
+import sys
 from concurrent.futures import ThreadPoolExecutor, TimeoutError as FuturesTimeoutError
+
+# Ensure project root is in path so `knowledge` package can be imported
+_api_dir = os.path.dirname(os.path.abspath(__file__))
+_project_root = os.path.dirname(_api_dir)
+if _project_root not in sys.path:
+    sys.path.insert(0, _project_root)
 
 from flask import Flask, request, jsonify, send_file
 from flask_cors import CORS
@@ -9,6 +17,9 @@ from duckduckgo_search import DDGS
 from google import genai
 from google.genai import types
 from supabase import create_client as create_supabase_client
+
+# Platform manual: use module import so we can reload on each request (edits to data.py apply immediately)
+import knowledge.data as knowledge_data
 
 # Load env from .env, .env.local (Vercel injects env vars at runtime)
 load_dotenv()
@@ -66,6 +77,33 @@ def _save_to_supabase(user_message: str, assistant_reply: str) -> None:
         pass  # Don't block response on Supabase errors
 
 
+# --- System prompt (PLATFORM_MANUAL + learned behavior) ---
+
+
+def get_combined_context() -> str:
+    """
+    Build system prompt from PLATFORM_MANUAL and learned instructions.
+    Reloads knowledge.data on each call so edits to data.py are picked up immediately.
+    """
+    importlib.reload(knowledge_data)
+    platform_manual = knowledge_data.PLATFORM_MANUAL
+
+    # Learned instructions: dynamic behavior (e.g., from DB, file, or env).
+    # Can be extended later.
+    learned_instructions = os.getenv("DOMU_LEARNED_INSTRUCTIONS", "").strip()
+
+    return f"""You are Domu Match AI.
+
+HERE IS THE OFFICIAL PLATFORM MANUAL:
+{platform_manual}
+
+HERE ARE THE DYNAMIC INSTRUCTIONS (LEARNED BEHAVIOR):
+{learned_instructions or "(None yet—use the Manual for how-to questions.)"}
+
+Use the Manual to answer "How-to" questions.
+Use the Search Tool only for external info (weather, events)."""
+
+
 # --- Routes ---
 
 
@@ -99,7 +137,11 @@ def chat():
 
     try:
         client = genai.Client(api_key=api_key)
+        system_prompt = get_combined_context()
         config = types.GenerateContentConfig(
+            system_instruction=types.Content(
+                parts=[types.Part(text=system_prompt)]
+            ),
             tools=[search_internet],
             max_output_tokens=2048,
         )
