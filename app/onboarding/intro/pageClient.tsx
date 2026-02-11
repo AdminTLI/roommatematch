@@ -263,6 +263,10 @@ function IntroClientContent() {
     }
   }
 
+  const handlePrev = () => {
+    router.push(isEditMode ? '/onboarding/welcome?mode=edit' : '/onboarding/welcome')
+  }
+
   if (isLoading) {
     return (
       <ErrorBoundary>
@@ -271,6 +275,7 @@ function IntroClientContent() {
           totalSteps={11}
           title={isEditMode ? "Edit Your Academic Information" : "Tell us about yourself"}
           subtitle={isEditMode ? "Update your university and programme details" : "Your university and programme details plus consent to begin"}
+          onPrev={handlePrev}
           onNext={handleNext}
           nextDisabled={true}
         >
@@ -292,6 +297,7 @@ function IntroClientContent() {
         totalSteps={11}
         title={isEditMode ? "Edit Your Academic Information" : "Tell us about yourself"}
         subtitle={isEditMode ? "Update your university and programme details" : "Your university and programme details plus consent to begin"}
+        onPrev={handlePrev}
         onNext={handleNext}
         nextDisabled={!isValid || isSaving}
       >

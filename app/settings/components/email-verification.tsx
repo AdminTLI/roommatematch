@@ -101,17 +101,17 @@ export function EmailVerification({ user }: EmailVerificationProps) {
         }`}>
         <div className="space-y-6">
           <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-            <div className="flex items-center gap-4 flex-1">
-              <div className={`p-3 rounded-xl flex-shrink-0 ${isEmailVerified ? 'bg-emerald-500/10' : 'bg-amber-500/10'
-                }`}>
-                <Mail className={`w-6 h-6 ${isEmailVerified ? 'text-emerald-600 dark:text-emerald-500' : 'text-amber-600 dark:text-amber-500'
-                  }`} />
+              <div className="flex items-center gap-4 flex-1">
+                <div className={`p-3 rounded-xl flex-shrink-0 ${isEmailVerified ? 'bg-emerald-500/10' : 'bg-amber-500/10'
+                  }`}>
+                  <Mail className={`w-6 h-6 ${isEmailVerified ? 'text-emerald-600 dark:text-emerald-500' : 'text-amber-600 dark:text-amber-500'
+                    }`} />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-xs font-medium text-zinc-600 dark:text-zinc-400 mb-1">Email registration</p>
+                  <p className="text-base font-semibold text-zinc-900 dark:text-white break-all">{user.email}</p>
+                </div>
               </div>
-              <div className="flex-1 min-w-0">
-                <p className="text-[10px] font-bold text-zinc-500 dark:text-zinc-400 uppercase tracking-widest mb-1">Email Registration</p>
-                <p className="text-base font-semibold text-zinc-900 dark:text-white break-all">{user.email}</p>
-              </div>
-            </div>
             {isEmailVerified ? (
               <Badge className="bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20 px-3 py-1 rounded-full text-[10px] uppercase font-bold tracking-wider">
                 <CheckCircle className="w-3 h-3 mr-1.5" />
@@ -197,8 +197,8 @@ export function EmailVerification({ user }: EmailVerificationProps) {
                     }`} />
                 </div>
                 <div className="flex-1 min-w-0">
-                  <p className="text-[10px] font-bold text-zinc-500 dark:text-zinc-400 uppercase tracking-widest mb-1">Identity Security</p>
-                  <p className="text-base font-semibold text-zinc-900 dark:text-white">Persona Verification</p>
+                  <p className="text-xs font-medium text-zinc-600 dark:text-zinc-400 mb-1">Identity security</p>
+                  <p className="text-base font-semibold text-zinc-900 dark:text-white">Persona verification</p>
                 </div>
               </div>
               {isPersonaVerified ? (

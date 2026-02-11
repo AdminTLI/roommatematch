@@ -3,8 +3,8 @@ import { test, expect } from '@playwright/test'
 test.describe('Onboarding Questionnaire', () => {
   test('intro redirects and shows header', async ({ page }) => {
     await page.goto('/onboarding')
-    await expect(page).toHaveURL(/\/onboarding\/intro$/)
-    await expect(page.getByRole('heading', { name: 'Tell us about yourself' })).toBeVisible()
+    await expect(page).toHaveURL(/\/onboarding\/welcome$/)
+    await expect(page.getByRole('heading', { name: "Let's set you up for a great roommate match" })).toBeVisible()
   })
 
   test('sleep & circadian autosaves', async ({ page }) => {
@@ -22,7 +22,7 @@ test.describe('Onboarding Questionnaire', () => {
   })
 
   test('should show campus field as required in basics step', async ({ page }) => {
-    await page.goto('/onboarding')
+    await page.goto('/onboarding/intro')
     
     // Verify campus field is visible and required
     await expect(page.locator('[data-testid="campus-select"]')).toBeVisible()
@@ -43,7 +43,7 @@ test.describe('Onboarding Questionnaire', () => {
   
   test('should allow profile updates via upsert on re-onboarding', async ({ page }) => {
     // This test verifies the upsert functionality works for profile updates
-    await page.goto('/onboarding')
+    await page.goto('/onboarding/intro')
     
     // Complete onboarding first time
     await page.selectOption('[data-testid="university-select"]', { label: 'University of Amsterdam' })
@@ -78,7 +78,7 @@ test.describe('Onboarding Questionnaire', () => {
     await page.waitForURL('/dashboard', { timeout: 15000 })
     
     // Go back to onboarding to test upsert
-    await page.goto('/onboarding')
+    await page.goto('/onboarding/intro')
     
     // Change some values to test upsert
     await page.selectOption('[data-testid="university-select"]', { label: 'University of Amsterdam' })

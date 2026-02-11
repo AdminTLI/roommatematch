@@ -606,12 +606,12 @@ export function VerifyInterface({ user }: VerifyInterfaceProps) {
                   // This avoids any caching or redirect loop issues
                   try {
                     console.log('[Verify] Setting window.location.href...')
-                    window.location.href = '/onboarding/intro'
+                    window.location.href = '/onboarding/welcome'
                     console.log('[Verify] window.location.href set, navigation should happen')
                   } catch (error) {
                     console.error('[Verify] Error setting window.location.href:', error)
                     // Fallback: try router.push
-                    router.push('/onboarding/intro')
+                    router.push('/onboarding/welcome')
                   }
                 }} 
                 className="w-full"
@@ -686,7 +686,7 @@ export function VerifyInterface({ user }: VerifyInterfaceProps) {
                       const res = await fetch('/api/verification/sync', { method: 'POST', headers })
                       const data = await res.json()
                       if (data.synced) {
-                        window.location.href = '/onboarding/intro'
+                        window.location.href = '/onboarding/welcome'
                       } else {
                         setError(data.message || 'No verified record found.')
                       }

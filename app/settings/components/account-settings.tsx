@@ -98,7 +98,9 @@ export function AccountSettings({ user }: AccountSettingsProps) {
             </div>
             <div className="flex-1 text-sm text-zinc-600 dark:text-zinc-400 px-0 sm:px-3">
               {user.email}
-              <p className="text-[10px] text-zinc-500 dark:text-zinc-500 mt-1 uppercase tracking-tighter font-semibold">Contact support to change</p>
+              <p className="text-xs text-zinc-500 dark:text-zinc-500 mt-1">
+                Contact support to change
+              </p>
             </div>
           </div>
 

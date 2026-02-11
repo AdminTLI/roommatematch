@@ -38,7 +38,7 @@ export function QuestionnaireSettings({ progressData }: QuestionnaireSettingsPro
   const progressPercentage = Math.round((completedSections.length / totalSections) * 100)
 
   const handleEditAnswers = () => {
-    router.push('/onboarding/intro?mode=edit')
+    router.push('/onboarding/welcome?mode=edit')
   }
 
   const handleRetakeQuestionnaire = async () => {
@@ -163,7 +163,7 @@ export function QuestionnaireSettings({ progressData }: QuestionnaireSettingsPro
             <Progress value={progressPercentage} className="h-2 bg-zinc-200 dark:bg-white/5 overflow-hidden">
               {/* Note: In a real app, the inner div would have bg-blue-500 */}
             </Progress>
-            <div className="flex justify-between text-[10px] text-zinc-500 dark:text-zinc-400 uppercase font-bold tracking-tighter">
+            <div className="flex justify-between text-xs text-zinc-600 dark:text-zinc-400">
               <span>Start</span>
               <span>Submit</span>
             </div>
@@ -171,12 +171,12 @@ export function QuestionnaireSettings({ progressData }: QuestionnaireSettingsPro
 
           <div className="grid grid-cols-2 gap-8 pt-4 border-t border-zinc-200 dark:border-white/5">
             <div className="space-y-1">
-              <p className="text-[10px] font-bold text-zinc-500 dark:text-zinc-400 uppercase tracking-widest">Last Updated</p>
+              <p className="text-xs font-medium text-zinc-600 dark:text-zinc-400">Last updated</p>
               <p className="text-sm text-zinc-900 dark:text-zinc-100">{formatDate(lastUpdated)}</p>
             </div>
             {submittedAt && (
               <div className="space-y-1 text-right">
-                <p className="text-[10px] font-bold text-zinc-500 dark:text-zinc-400 uppercase tracking-widest">Submitted</p>
+                <p className="text-xs font-medium text-zinc-600 dark:text-zinc-400">Submitted</p>
                 <p className="text-sm text-zinc-900 dark:text-zinc-100">{formatDate(submittedAt)}</p>
               </div>
             )}
@@ -200,8 +200,12 @@ export function QuestionnaireSettings({ progressData }: QuestionnaireSettingsPro
                     <CheckCircle className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
                   </div>
                   <div>
-                    <span className="text-zinc-900 dark:text-zinc-100 text-sm font-medium block">{getSectionDisplayName(section)}</span>
-                    <span className="text-[10px] text-zinc-500 dark:text-zinc-400 uppercase font-bold tracking-tighter">Section Completed</span>
+                    <span className="block text-sm font-medium text-zinc-900 dark:text-zinc-100">
+                      {getSectionDisplayName(section)}
+                    </span>
+                    <span className="block text-sm text-zinc-600 dark:text-zinc-400">
+                      Section completed
+                    </span>
                   </div>
                 </div>
                 <Edit className="w-4 h-4 text-zinc-500 dark:text-zinc-400 group-hover:text-zinc-900 dark:group-hover:text-white transition-colors" />

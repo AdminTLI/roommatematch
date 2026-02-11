@@ -29,7 +29,7 @@ export default async function SupportPage() {
   // Get user profile
   const profile = await getUserProfile(user.id)
   if (!profile) {
-    redirect('/onboarding/intro')
+    redirect('/onboarding/welcome')
   }
 
   return (

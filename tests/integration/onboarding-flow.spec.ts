@@ -3,7 +3,7 @@ import { test, expect } from '@playwright/test'
 test.describe('Onboarding Flow Integration', () => {
   test.beforeEach(async ({ page }) => {
     // Navigate to onboarding page
-    await page.goto('/onboarding')
+    await page.goto('/onboarding/intro')
   })
 
   test('should complete full onboarding flow', async ({ page }) => {

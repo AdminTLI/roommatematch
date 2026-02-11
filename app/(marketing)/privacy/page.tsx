@@ -37,7 +37,7 @@ export default function PrivacyPage() {
                   Privacy at a Glance
                 </h2>
                 <div className="overflow-x-auto rounded-lg border border-slate-700 overflow-hidden">
-                  <table className="min-w-full text-left text-sm">
+                  <table className="min-w-full text-left text-sm text-slate-200">
                     <thead className="bg-slate-800">
                       <tr>
                         <th className="px-4 py-3 font-semibold text-slate-200">
@@ -336,7 +336,7 @@ export default function PrivacyPage() {
                   allowed to do it.
                 </p>
                 <div className="overflow-x-auto rounded-lg border border-slate-700 overflow-hidden mb-6">
-                  <table className="min-w-full text-left text-sm">
+                  <table className="min-w-full text-left text-sm text-slate-200">
                     <thead className="bg-slate-800">
                       <tr>
                         <th className="px-4 py-3 font-semibold text-slate-200">

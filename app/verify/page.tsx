@@ -18,7 +18,7 @@ export default async function VerifyPage() {
 
   // Verified users: redirect immediately - never show Persona
   if (!verificationStatus.needsEmailVerification && !verificationStatus.needsPersonaVerification) {
-    redirect('/onboarding/intro')
+    redirect('/onboarding/welcome')
   }
 
   if (verificationStatus.needsEmailVerification) {
