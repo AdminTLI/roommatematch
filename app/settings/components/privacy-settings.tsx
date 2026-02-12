@@ -6,7 +6,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Switch } from '@/components/ui/switch'
 import { Label } from '@/components/ui/label'
-import { Input } from '@/components/ui/input'
+import Link from 'next/link'
 import {
   Eye,
   EyeOff,
@@ -16,7 +16,8 @@ import {
   Loader2,
   Check,
   Clock,
-  FileText
+  FileText,
+  ChevronRight
 } from 'lucide-react'
 
 interface PrivacySettingsProps {
@@ -36,10 +37,7 @@ export function PrivacySettings({ user }: PrivacySettingsProps) {
   const [isLoading, setIsLoading] = useState(false)
   const [isSuccess, setIsSuccess] = useState(false)
   const [error, setError] = useState<string | null>(null)
-  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
-  const [deleteConfirmText, setDeleteConfirmText] = useState('')
   const [exportLoading, setExportLoading] = useState(false)
-  const [deleteLoading, setDeleteLoading] = useState(false)
   const [pendingRequests, setPendingRequests] = useState<DSARRequest[]>([])
   const [deletionScheduled, setDeletionScheduled] = useState<string | null>(null)
 
@@ -138,54 +136,6 @@ export function PrivacySettings({ user }: PrivacySettingsProps) {
       setError(err instanceof Error ? err.message : 'Failed to download data')
     } finally {
       setExportLoading(false)
-    }
-  }
-
-  const handleDeleteAccount = async () => {
-    if (!showDeleteConfirm) {
-      setShowDeleteConfirm(true)
-      return
-    }
-
-    if (deleteConfirmText !== 'DELETE') {
-      setError('Please type "DELETE" exactly to confirm')
-      return
-    }
-
-    setDeleteLoading(true)
-    setError(null)
-
-    try {
-      const response = await fetch('/api/privacy/delete', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          confirm: deleteConfirmText,
-          reason: 'User requested account deletion via settings'
-        })
-      })
-
-      if (!response.ok) {
-        const data = await response.json()
-        throw new Error(data.message || 'Failed to request account deletion')
-      }
-
-      const data = await response.json()
-      setDeletionScheduled(data.deletion_scheduled_at)
-      setShowDeleteConfirm(false)
-      setDeleteConfirmText('')
-
-      setIsSuccess(true)
-      setTimeout(() => setIsSuccess(false), 10000)
-
-      // Refresh pending requests
-      await fetchPendingRequests()
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to delete account')
-    } finally {
-      setDeleteLoading(false)
     }
   }
 
@@ -324,67 +274,22 @@ export function PrivacySettings({ user }: PrivacySettingsProps) {
             <div className="flex-1 min-w-0">
               <h4 className="font-semibold text-zinc-900 dark:text-white mb-1">Delete Account</h4>
               <p className="text-xs text-zinc-600 dark:text-zinc-400 leading-relaxed">
-                Permanently delete your profile and all data. After a 7-day grace period, this action cannot be undone.
+                Permanently delete your profile and all data. You will be asked to confirm and can choose to hide your profile instead.
               </p>
             </div>
           </div>
 
-          {!showDeleteConfirm ? (
+          <Link href="/settings/delete-account">
             <Button
               variant="destructive"
-              onClick={handleDeleteAccount}
-              disabled={deleteLoading || !!deletionScheduled}
+              disabled={!!deletionScheduled}
               className="w-full sm:w-auto min-w-[160px] h-11 text-sm bg-red-500 hover:bg-red-600 text-white rounded-xl shadow-lg shadow-red-500/20"
             >
               <Trash2 className="w-4 h-4 mr-2" />
               {deletionScheduled ? 'Deletion Scheduled' : 'Delete My Account'}
+              <ChevronRight className="w-4 h-4 ml-1" />
             </Button>
-          ) : (
-            <div className="space-y-5 pt-2">
-              <div className="space-y-2">
-                <Label htmlFor="delete-confirm" className="text-xs text-zinc-600 dark:text-zinc-400 px-1">
-                  Type <span className="text-zinc-900 dark:text-white font-mono">DELETE</span> to confirm
-                </Label>
-                <Input
-                  id="delete-confirm"
-                  type="text"
-                  value={deleteConfirmText}
-                  onChange={(e) => setDeleteConfirmText(e.target.value)}
-                  placeholder="DELETE"
-                  className="max-w-xs bg-zinc-50 dark:bg-white/5 border-red-500/20 focus-visible:ring-red-500/20 text-zinc-900 dark:text-white rounded-xl h-11"
-                />
-              </div>
-              <div className="flex flex-col sm:flex-row gap-3">
-                <Button
-                  variant="destructive"
-                  onClick={handleDeleteAccount}
-                  disabled={deleteLoading || deleteConfirmText !== 'DELETE'}
-                  className="flex-1 sm:flex-initial min-w-[200px] h-11 text-sm bg-red-500 hover:bg-red-600 text-white rounded-xl shadow-lg shadow-red-500/20"
-                >
-                  {deleteLoading ? (
-                    <>
-                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                      Processing...
-                    </>
-                  ) : (
-                    'Confirm Permanent Deletion'
-                  )}
-                </Button>
-                <Button
-                  variant="ghost"
-                  onClick={() => {
-                    setShowDeleteConfirm(false)
-                    setDeleteConfirmText('')
-                    setError(null)
-                  }}
-                  disabled={deleteLoading}
-                  className="flex-1 sm:flex-initial min-w-[100px] h-11 text-sm text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white hover:bg-zinc-100 dark:hover:bg-white/5 rounded-xl"
-                >
-                  Cancel
-                </Button>
-              </div>
-            </div>
-          )}
+          </Link>
         </div>
       </div>
     </div>

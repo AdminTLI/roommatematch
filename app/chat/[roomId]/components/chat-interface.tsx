@@ -705,6 +705,8 @@ export function ChatInterface({ roomId, user, onBack, onToggleRightPane, rightPa
             senderName = lastName
           }
           // If profile exists but no names, keep 'User' as fallback
+        } else if (msg.user_id == null) {
+          senderName = 'Deleted User'
         } else {
           senderName = 'Unknown User'
         }
@@ -1102,8 +1104,9 @@ export function ChatInterface({ roomId, user, onBack, onToggleRightPane, rightPa
             return
           }
 
-          // Fetch profile for the sender using API route
-          let senderName = 'Unknown User'
+          // Fetch profile for the sender (skip if sender deleted their account)
+          let senderName = newMessage.user_id == null ? 'Deleted User' : 'Unknown User'
+          if (newMessage.user_id != null) {
           try {
             console.log('[Realtime] Fetching profile for user:', newMessage.user_id)
             const profilesResponse = await fetchWithCSRF('/api/chat/profiles', {
@@ -1137,6 +1140,7 @@ export function ChatInterface({ roomId, user, onBack, onToggleRightPane, rightPa
           } catch (err) {
             console.error('[Realtime] ❌ Error fetching profile for new message:', err)
             // Continue with 'Unknown User' - don't block message display
+          }
           }
 
           // Check if this is a system greeting message

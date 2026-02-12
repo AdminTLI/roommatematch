@@ -218,7 +218,8 @@ export class SupabaseMatchRepo implements MatchRepo {
           university_id,
           degree_level,
           campus,
-          verification_status
+          verification_status,
+          is_visible
         ),
         user_academic(
           university_id,
@@ -274,6 +275,9 @@ export class SupabaseMatchRepo implements MatchRepo {
     } else {
       safeLogger.debug('[DEBUG] loadCandidates - onlyActive is false, including unverified users')
     }
+
+    // Exclude hidden profiles (Hide Profile / Snooze retention flow)
+    query = query.or('profiles.is_visible.is.null,profiles.is_visible.eq.true')
 
     if (filter.excludeUserIds?.length) {
       query = query.not('id', 'in', `(${filter.excludeUserIds.join(',')})`)
@@ -359,7 +363,12 @@ export class SupabaseMatchRepo implements MatchRepo {
     }
 
     // Transform the data into Candidate format
+    // Exclude hidden profiles (Hide Profile retention flow)
     const transformedCandidates = (data || [])
+      .filter((user: any) => {
+        const profile = user.profiles?.[0] || profileDataMap.get(user.id)
+        return profile?.is_visible !== false
+      })
       .map((user: any) => {
         // Try to get profile/academic/vector from join result first, then fallback to separate fetch
         let profile = user.profiles?.[0] || profileDataMap.get(user.id)

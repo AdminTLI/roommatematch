@@ -312,7 +312,9 @@ export function MessengerConversation({
         const profile = newProfilesMap.get(msg.user_id)
         const senderName = profile
           ? [profile.first_name?.trim(), profile.last_name?.trim()].filter(Boolean).join(' ') || 'User'
-          : 'User'
+          : msg.user_id == null
+            ? 'Deleted User'
+            : 'User'
 
         const readBy = readReceiptsMap.get(msg.id) || []
         const isSystemGreeting = msg.content === "You're matched! Start your conversation 👋"
