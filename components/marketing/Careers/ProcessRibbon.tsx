@@ -24,15 +24,18 @@ export function ProcessRibbon() {
 
   return (
     <div className="mx-auto max-w-5xl">
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-3 rounded-2xl border border-primary/20 bg-primary/5 text-card-foreground p-4 sm:p-5 shadow-md">
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-3 rounded-2xl border border-white/15 bg-white/5 backdrop-blur-xl p-4 sm:p-5 shadow-[0_18px_45px_rgba(15,23,42,0.9)]">
         {steps.map((step, idx) => {
           const Icon = step.icon
           return (
-            <div key={idx} className="flex items-center gap-3 rounded-lg bg-white/70 p-3">
-              <Icon className="h-5 w-5 text-primary" aria-hidden="true" />
+            <div
+              key={idx}
+              className="flex items-center gap-3 rounded-xl bg-white/8 border border-white/15 px-3 py-2.5 text-white"
+            >
+              <Icon className="h-5 w-5 text-sky-300" aria-hidden="true" />
               <div>
-                <div className="text-sm font-medium">{step.title}</div>
-                <div className="text-xs text-muted-foreground">{step.note}</div>
+                <div className="text-sm font-medium leading-tight">{step.title}</div>
+                <div className="text-xs text-white/70 leading-snug">{step.note}</div>
               </div>
             </div>
           )

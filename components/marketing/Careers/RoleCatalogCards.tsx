@@ -143,50 +143,72 @@ export function RoleCatalogCards() {
   return (
     <div className="mx-auto max-w-5xl space-y-6">
       {groups.map((group, gi) => (
-        <Card key={gi} className="border-muted shadow-md">
+        <Card
+          key={gi}
+          className="border border-white/15 bg-white/5 backdrop-blur-xl shadow-[0_18px_45px_rgba(15,23,42,0.9)] rounded-2xl"
+        >
           <CardHeader className="pb-3">
-            <CardTitle className="text-lg sm:text-xl">
-              <span className="text-brand-primary">{group.header}</span>{' '}
-              <span className="text-muted-foreground">– {group.sub}</span>
+            <CardTitle className="text-lg sm:text-xl text-white">
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 to-purple-400">
+                {group.header}
+              </span>{' '}
+              <span className="text-white/60">– {group.sub}</span>
             </CardTitle>
           </CardHeader>
           <CardContent className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
             {group.roles.map((r, ri) => (
-              <div key={ri} className="rounded-lg border p-5 bg-muted/20 h-full flex flex-col">
+              <div
+                key={ri}
+                className="rounded-xl border border-white/15 bg-white/5 h-full flex flex-col p-5 text-white/90 backdrop-blur-md"
+              >
                 {/* Removed decorative circle icon for cleaner look */}
                 {/* Title */}
-                <div className="text-base font-medium">{r.title}</div>
+                <div className="text-base font-semibold text-white">{r.title}</div>
                 {/* Badge directly under title */}
                 <div className="mt-1 flex items-center gap-2">
                   {r.dualFriendly ? (
                     <>
-                      <Badge variant="secondary">{badges.experienced}</Badge>
-                      <Badge>{badges.studentFriendly}</Badge>
+                      <Badge
+                        variant="secondary"
+                        className="border border-white/20 bg-white/10 text-[11px] text-white/90 rounded-full px-2.5 py-0.5"
+                      >
+                        {badges.experienced}
+                      </Badge>
+                      <Badge className="border border-white/20 bg-emerald-500/15 text-[11px] text-emerald-100 rounded-full px-2.5 py-0.5">
+                        {badges.studentFriendly}
+                      </Badge>
                     </>
                   ) : r.studentFriendly ? (
-                    <Badge>{badges.studentFriendly}</Badge>
+                    <Badge className="border border-white/20 bg-emerald-500/15 text-[11px] text-emerald-100 rounded-full px-2.5 py-0.5">
+                      {badges.studentFriendly}
+                    </Badge>
                   ) : (
-                    <Badge variant="secondary">{badges.experienced}</Badge>
+                    <Badge
+                      variant="secondary"
+                      className="border border-white/20 bg-white/10 text-[11px] text-white/90 rounded-full px-2.5 py-0.5"
+                    >
+                      {badges.experienced}
+                    </Badge>
                   )}
                 </div>
                 {/* Details as one coherent, human tone paragraph */}
                 {r.blurb && (
-                  <p className="mt-3 text-xs text-muted-foreground leading-relaxed">
+                  <p className="mt-3 text-xs text-white/70 leading-relaxed">
                     {r.blurb}
                   </p>
                 )}
-                <Separator className="my-3" />
+                <Separator className="my-3 border-white/10" />
                 {/* Impact statement moved to bottom (no truncation) */}
-                <p className="italic text-sm text-muted-foreground">
+                <p className="italic text-sm text-white/70">
                   {r.impact}
                 </p>
                 {/* Chips row at very bottom for alignment */}
                 <div className="mt-3 flex flex-wrap gap-2">
-                  <span className="inline-flex items-center gap-1 rounded-full bg-muted px-2 py-1 text-xs">
-                    <Sparkles className="h-3 w-3" />
+                  <span className="inline-flex items-center gap-1 rounded-full bg-white/8 px-3 py-1 text-[11px] text-white/80 border border-white/15">
+                    <Sparkles className="h-3 w-3 text-sky-300" />
                     <span className={r.commitment ? '' : 'opacity-0'}>{r.commitment || '—'}</span>
                   </span>
-                  <span className="inline-flex items-center gap-1 rounded-full bg-muted px-2 py-1 text-xs">
+                  <span className="inline-flex items-center gap-1 rounded-full bg-white/8 px-3 py-1 text-[11px] text-white/80 border border-white/15">
                     <span className={r.background ? '' : 'opacity-0'}>{r.background || '—'}</span>
                   </span>
                 </div>

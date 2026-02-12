@@ -65,45 +65,65 @@ export function Tracks() {
     <>
       <div className="grid gap-6 sm:gap-8 md:grid-cols-2">
         {cards.map(({ data, icons }, index) => (
-          <Card className="h-full" key={index}>
+          <Card
+            className="h-full border border-white/15 bg-white/5 backdrop-blur-xl rounded-2xl shadow-[0_18px_45px_rgba(15,23,42,0.9)]"
+            key={index}
+          >
             <CardHeader>
-              <div className="text-center">
-                <CardTitle className="text-brand-primary text-xl sm:text-2xl">{data.title}</CardTitle>
+              <div className="text-center space-y-2">
+                <CardTitle className="text-xl sm:text-2xl font-semibold tracking-tight text-white">
+                  {data.title}
+                </CardTitle>
                 <div className="mt-1">
-                  <Badge variant={index === 0 ? 'secondary' : 'default'}>{data.badge}</Badge>
+                  <Badge
+                    variant={index === 0 ? 'secondary' : 'default'}
+                    className="border border-white/20 bg-white/10 text-xs text-white/90 px-3 py-1 rounded-full"
+                  >
+                    {data.badge}
+                  </Badge>
                 </div>
               </div>
             </CardHeader>
             <CardContent className="space-y-5">
-              <p className="text-muted-foreground text-center">{data.intro}</p>
+              <p className="text-sm text-white/70 text-center leading-relaxed">{data.intro}</p>
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-sm">
                 {data.highlights.map((highlight, idx) => {
                   const Icon = icons[idx]
                   return (
-                    <div key={highlight} className="rounded-lg bg-muted/30 p-3 text-center">
-                      <Icon className="mx-auto h-4 w-4 text-brand-primary mb-1" />
+                    <div
+                      key={highlight}
+                      className="rounded-xl bg-white/5 border border-white/15 p-3 text-center text-white/80 backdrop-blur-md"
+                    >
+                      <Icon className="mx-auto h-4 w-4 text-sky-300 mb-1" />
                       {highlight}
                     </div>
                   )
                 })}
               </div>
-              <Separator className="my-3" />
-              <p className="text-xs text-muted-foreground text-center">{data.note}</p>
+              <Separator className="my-3 border-white/10" />
+              <p className="text-xs text-white/60 text-center leading-relaxed">{data.note}</p>
               <div className="flex flex-wrap justify-center gap-2 pt-1">
                 {data.chips.map((chip) => (
-                  <span key={chip} className="inline-flex items-center gap-1 rounded-full bg-muted px-2 py-1 text-xs">
-                    <CalendarClock className="h-3 w-3" aria-hidden="true" />
+                  <span
+                    key={chip}
+                    className="inline-flex items-center gap-1 rounded-full bg-white/8 px-3 py-1 text-[11px] text-white/80 border border-white/15"
+                  >
+                    <CalendarClock className="h-3 w-3 text-sky-300" aria-hidden="true" />
                     {chip}
                   </span>
                 ))}
               </div>
-              <p className="text-xs text-muted-foreground mt-2">{data.footer}</p>
+              <p className="text-xs text-white/60 mt-2 leading-relaxed text-center">{data.footer}</p>
             </CardContent>
           </Card>
         ))}
       </div>
       <div className="mt-6 text-center">
-        <Button asChild size="lg">
+        <Button
+          asChild
+          size="lg"
+          className="rounded-xl bg-gradient-to-r from-indigo-500 to-purple-500 text-white shadow-[0_18px_45px_rgba(79,70,229,0.8)] hover:from-indigo-400 hover:to-purple-400"
+        >
           <a href="/careers/apply">{t.cta}</a>
         </Button>
       </div>

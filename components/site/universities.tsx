@@ -171,19 +171,34 @@ export function Universities() {
               <SelectValue placeholder={t.selectCityPlaceholder} />
             </SelectTrigger>
             <SelectContent
-              className="bg-slate-900/95 backdrop-blur-lg border border-white/10 rounded-xl"
+              className={cn(
+                'glass noise-overlay border border-white/15 rounded-2xl bg-slate-900/80 backdrop-blur-2xl',
+                'shadow-[0_18px_45px_rgba(15,23,42,0.75)] max-h-[280px] overflow-y-auto px-1 py-2'
+              )}
               disableScrollLock
             >
               {loadingCities ? (
-                <SelectItem value="loading" disabled className="text-white/70 justify-center">
+                <SelectItem
+                  value="loading"
+                  disabled
+                  className="text-white/70 justify-center text-sm px-4 py-2.5"
+                >
                   {t.loading}
                 </SelectItem>
               ) : error ? (
-                <SelectItem value="error" disabled className="text-white/70 justify-center">
+                <SelectItem
+                  value="error"
+                  disabled
+                  className="text-white/70 justify-center text-sm px-4 py-2.5"
+                >
                   Error loading cities
                 </SelectItem>
               ) : cities.length === 0 ? (
-                <SelectItem value="none" disabled className="text-white/70 justify-center">
+                <SelectItem
+                  value="none"
+                  disabled
+                  className="text-white/70 justify-center text-sm px-4 py-2.5"
+                >
                   No cities available
                 </SelectItem>
               ) : (
@@ -191,7 +206,13 @@ export function Universities() {
                   <SelectItem
                     key={city}
                     value={city}
-                    className="text-white hover:bg-white/10 focus:bg-white/10 justify-center"
+                    className={cn(
+                      'relative text-white text-sm justify-center rounded-xl px-4 py-2.5 cursor-pointer',
+                      'transition-colors duration-150',
+                      'hover:bg-white/10 focus:bg-white/10',
+                      'focus:text-white data-[highlighted]:text-white data-[state=checked]:text-white',
+                      'data-[state=checked]:bg-gradient-to-r data-[state=checked]:from-indigo-500/40 data-[state=checked]:to-purple-500/40'
+                    )}
                   >
                     {city}
                   </SelectItem>

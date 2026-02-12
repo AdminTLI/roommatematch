@@ -73,20 +73,28 @@ export function Benefits() {
         {t.cards.map((card, idx) => {
           const Icon = card.icon
           return (
-            <Card key={idx} className="h-full text-center rounded-2xl border border-muted/40 bg-white shadow-sm hover:shadow-md transition">
+            <Card
+              key={idx}
+              className="h-full text-center rounded-2xl border border-white/15 bg-white/5 backdrop-blur-xl shadow-[0_18px_45px_rgba(15,23,42,0.9)] hover:border-white/30 transition-colors text-white"
+            >
               <CardHeader className="space-y-3">
-                <div className="mx-auto flex h-11 w-11 items-center justify-center rounded-full bg-brand-primary/10">
-                  <Icon className="h-5 w-5 text-brand-primary" />
+                <div className="mx-auto flex h-11 w-11 items-center justify-center rounded-2xl bg-gradient-to-br from-indigo-500/30 via-purple-500/30 to-sky-500/30 border border-white/20 shadow-[0_10px_30px_rgba(56,189,248,0.45)]">
+                  <Icon className="h-5 w-5 text-sky-100" />
                 </div>
-                <CardTitle className="text-lg">{card.title}</CardTitle>
+                <CardTitle className="text-lg font-semibold tracking-tight">{card.title}</CardTitle>
               </CardHeader>
               <CardContent className="space-y-3 text-sm px-6 pb-6">
-                <p className="text-muted-foreground leading-relaxed">
+                <p className="text-sm leading-relaxed text-white/70">
                   {card.description}
                 </p>
                 <div className="flex flex-wrap justify-center gap-2">
                   {card.tags.map((tag, tagIdx) => (
-                    <span key={tagIdx} className="inline-flex items-center rounded-full bg-muted/40 px-3 py-1 text-xs">{tag}</span>
+                    <span
+                      key={tagIdx}
+                      className="inline-flex items-center rounded-full bg-white/8 px-3 py-1 text-xs text-white/80 border border-white/15"
+                    >
+                      {tag}
+                    </span>
                   ))}
                 </div>
               </CardContent>

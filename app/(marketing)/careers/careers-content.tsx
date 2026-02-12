@@ -101,26 +101,46 @@ export function CareersContent() {
   return (
     <>
       <Section className="relative overflow-hidden bg-slate-950">
-        <Container>
+        <div aria-hidden className="pointer-events-none absolute inset-0">
+          <div className="absolute inset-0 bg-gradient-to-br from-slate-950 via-indigo-950/40 via-purple-950/35 to-slate-950" />
+          <div className="absolute -top-24 -left-24 h-72 w-72 rounded-full bg-indigo-500/18 blur-3xl" />
+          <div className="absolute -bottom-24 -right-24 h-72 w-72 rounded-full bg-purple-500/18 blur-3xl" />
+        </div>
+        <Container className="relative z-10">
           <div className="mx-auto max-w-4xl text-center py-12 sm:py-18 space-y-7">
             <div className="mb-3 flex items-center justify-center">
-              <Badge variant="secondary">{t.hero.badge}</Badge>
+              <Badge
+                variant="secondary"
+                className="rounded-full border border-white/20 bg-white/10 text-xs font-medium tracking-tight text-white/90 px-4 py-1.5 backdrop-blur-xl"
+              >
+                {t.hero.badge}
+              </Badge>
             </div>
-            <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold tracking-tight">
-              {t.hero.title.split(' ').slice(0, 3).join(' ')} <span className="text-brand-primary">{t.hero.title.split(' ').slice(3).join(' ')}</span>
+            <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold tracking-tight text-white">
+              {t.hero.title.split(' ').slice(0, 3).join(' ')}{' '}
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 to-purple-400">
+                {t.hero.title.split(' ').slice(3).join(' ')}
+              </span>
             </h1>
-            <p className="mt-6 text-base sm:text-lg text-slate-400 max-w-3xl mx-auto leading-relaxed">
+            <p className="mt-6 text-base sm:text-lg text-white/70 max-w-3xl mx-auto leading-relaxed">
               {t.hero.body}
             </p>
             <div className="mt-8 flex items-center justify-center gap-3">
-              <Button asChild>
+              <Button
+                asChild
+                className="rounded-xl bg-gradient-to-r from-indigo-500 to-purple-500 text-white shadow-[0_18px_45px_rgba(79,70,229,0.8)] hover:from-indigo-400 hover:to-purple-400"
+              >
                 <a href="#tracks">{t.hero.primary}</a>
               </Button>
-              <Button asChild variant="outline">
+              <Button
+                asChild
+                variant="outline"
+                className="rounded-xl border-white/40 bg-white/5 text-white hover:bg-white/10 hover:text-white"
+              >
                 <a href="#roles">{t.hero.secondary}</a>
               </Button>
             </div>
-            <p className="mt-6 text-sm text-slate-400 max-w-2xl mx-auto leading-relaxed">
+            <p className="mt-6 text-sm text-white/60 max-w-2xl mx-auto leading-relaxed">
               {t.hero.footnote}
             </p>
           </div>
@@ -137,8 +157,10 @@ export function CareersContent() {
         <Container>
           <div className="mx-auto max-w-5xl pt-8 pb-4 sm:pt-10 sm:pb-6">
             <div className="mb-8 text-center">
-              <h2 className="text-3xl sm:text-4xl font-semibold tracking-tight">{t.tracks.heading}</h2>
-              <p className="mt-2 text-base leading-relaxed text-slate-400 max-w-3xl mx-auto">
+              <h2 className="text-3xl sm:text-4xl font-semibold tracking-tight text-white">
+                {t.tracks.heading}
+              </h2>
+              <p className="mt-2 text-base leading-relaxed text-white/70 max-w-3xl mx-auto">
                 {t.tracks.subheading}
               </p>
             </div>
@@ -151,10 +173,10 @@ export function CareersContent() {
         <Container>
           <div className="mx-auto max-w-5xl pt-1 pb-4 sm:pt-2 sm:pb-6">
             <div className="mb-10 text-center">
-              <h2 className="text-3xl sm:text-4xl font-semibold tracking-tight">
+              <h2 className="text-3xl sm:text-4xl font-semibold tracking-tight text-white">
                 {t.roles.heading}
               </h2>
-              <p className="mt-2 text-base leading-relaxed text-slate-400 max-w-3xl mx-auto">
+              <p className="mt-2 text-base leading-relaxed text-white/70 max-w-3xl mx-auto">
                 {t.roles.subheading}
               </p>
             </div>
@@ -167,24 +189,30 @@ export function CareersContent() {
         <Container>
           <div className="mx-auto max-w-5xl py-5 sm:py-6">
             <div className="mb-3 text-center">
-              <h2 className="text-3xl sm:text-4xl font-semibold tracking-tight">
-                <span className="text-brand-primary">{t.focus.heading.split(' ')[0]} {t.focus.heading.split(' ')[1]}</span> {t.focus.heading.split(' ').slice(2).join(' ')}
+              <h2 className="text-3xl sm:text-4xl font-semibold tracking-tight text-white">
+                <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 to-purple-400">
+                  {t.focus.heading.split(' ')[0]} {t.focus.heading.split(' ')[1]}
+                </span>{' '}
+                {t.focus.heading.split(' ').slice(2).join(' ')}
               </h2>
-              <p className="mt-2 text-base leading-relaxed text-slate-400 max-w-3xl mx-auto">
+              <p className="mt-2 text-base leading-relaxed text-white/70 max-w-3xl mx-auto">
                 {t.focus.subheading}
               </p>
             </div>
             <div className="grid gap-4 md:grid-cols-3">
               {t.focus.cards.map((card) => (
-                <div key={card.title} className="rounded-xl border border-slate-700 bg-slate-800/30 p-4 text-center">
-                  <div className="font-medium">{card.title}</div>
-                  <p className="text-sm text-slate-400 mt-1 leading-relaxed">
+                <div
+                  key={card.title}
+                  className="rounded-2xl border border-white/15 bg-white/5 p-4 text-center text-white/90 backdrop-blur-md shadow-[0_14px_35px_rgba(15,23,42,0.8)]"
+                >
+                  <div className="font-medium text-white">{card.title}</div>
+                  <p className="text-sm text-white/70 mt-1 leading-relaxed">
                     {card.body}
                   </p>
                 </div>
               ))}
             </div>
-            <p className="text-xs text-slate-400 mt-4 text-center">
+            <p className="text-xs text-white/60 mt-4 text-center">
               {t.focus.caption}
             </p>
           </div>
@@ -195,10 +223,13 @@ export function CareersContent() {
         <Container>
           <div className="mx-auto max-w-5xl py-5 sm:py-6">
             <div className="mb-4 text-center">
-              <h2 className="text-3xl sm:text-4xl font-semibold tracking-tight">
-                {t.benefits.heading.split(' ').slice(0, -1).join(' ')} <span className="text-brand-primary">{t.benefits.heading.split(' ').slice(-1)}</span>
+              <h2 className="text-3xl sm:text-4xl font-semibold tracking-tight text-white">
+                {t.benefits.heading.split(' ').slice(0, -1).join(' ')}{' '}
+                <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 to-purple-400">
+                  {t.benefits.heading.split(' ').slice(-1)}
+                </span>
               </h2>
-              <p className="mt-2 text-base leading-relaxed text-slate-400 max-w-3xl mx-auto">
+              <p className="mt-2 text-base leading-relaxed text-white/70 max-w-3xl mx-auto">
                 {t.benefits.subheading}
               </p>
             </div>
@@ -210,16 +241,19 @@ export function CareersContent() {
       <Section id="apply" className="relative overflow-hidden bg-slate-950">
         <Container>
           <div className="mx-auto max-w-3xl text-center py-10 sm:py-14">
-            <h2 className="text-3xl sm:text-4xl font-semibold tracking-tight">
-              {t.apply.heading.split(' ').slice(0, 3).join(' ')} <span className="text-brand-primary">{t.apply.heading.split(' ').slice(3).join(' ')}</span>
+            <h2 className="text-3xl sm:text-4xl font-semibold tracking-tight text-white">
+              {t.apply.heading.split(' ').slice(0, 3).join(' ')}{' '}
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 to-purple-400">
+                {t.apply.heading.split(' ').slice(3).join(' ')}
+              </span>
             </h2>
-            <p className="mt-3 text-base leading-relaxed text-slate-400 max-w-3xl mx-auto">
+            <p className="mt-3 text-base leading-relaxed text-white/70 max-w-3xl mx-auto">
               {t.apply.description}
             </p>
-            <p className="mt-2 text-sm text-slate-400 leading-relaxed">
+            <p className="mt-2 text-sm text-white/65 leading-relaxed">
               {t.apply.note1}
             </p>
-            <p className="mt-2 text-sm text-slate-400 leading-relaxed max-w-2xl mx-auto">
+            <p className="mt-2 text-sm text-white/65 leading-relaxed max-w-2xl mx-auto">
               {t.apply.note2}
             </p>
             <div className="mt-8 flex items-center justify-center">

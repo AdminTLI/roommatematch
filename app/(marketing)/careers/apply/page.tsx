@@ -45,42 +45,51 @@ export default function CareersApplyPage() {
   const t = content[locale]
 
   return (
-    <MarketingSubpageWrapper>
+    <MarketingSubpageWrapper className="relative overflow-hidden">
       <Section className="relative overflow-hidden bg-slate-950">
-        <Container>
+        <div aria-hidden className="pointer-events-none absolute inset-0">
+          <div className="absolute inset-0 bg-gradient-to-br from-slate-950 via-indigo-950/40 via-purple-950/35 to-slate-950" />
+          <div className="absolute -top-24 -left-24 h-72 w-72 rounded-full bg-indigo-500/18 blur-3xl" />
+          <div className="absolute -bottom-24 -right-24 h-72 w-72 rounded-full bg-purple-500/18 blur-3xl" />
+        </div>
+        <Container className="relative z-10">
           <div className="mx-auto max-w-5xl text-center py-10 sm:py-12 space-y-4">
             <h1 className="text-3xl sm:text-4xl font-bold tracking-tight text-white">
               {t.title}
             </h1>
-            <p className="text-slate-400">
+            <p className="text-base text-white/75 max-w-2xl mx-auto">
               {t.subtitle}
             </p>
-            <p className="text-sm text-slate-500">
+            <p className="text-sm text-white/65 max-w-2xl mx-auto">
               {t.note}
             </p>
           </div>
 
           
           <div className="mx-auto max-w-6xl space-y-6">
-            <Card className="rounded-2xl border border-slate-700 bg-slate-800/50">
+            <Card className="rounded-2xl border border-white/15 bg-white/5 backdrop-blur-xl shadow-[0_18px_45px_rgba(15,23,42,0.9)]">
               <CardHeader className="pb-2">
-                <CardTitle className="text-xl text-center text-white">{t.whyTitle}</CardTitle>
+                <CardTitle className="text-xl text-center text-white tracking-tight">
+                  {t.whyTitle}
+                </CardTitle>
               </CardHeader>
               <CardContent className="space-y-5 text-sm leading-relaxed">
-                <p className="text-slate-400 max-w-2xl mx-auto text-center">
+                <p className="text-white/75 max-w-2xl mx-auto text-center">
                   {t.whyDescription}
                 </p>
                 <div className="space-y-2 max-w-2xl mx-auto">
-                  <div className="text-sm font-medium text-center text-slate-200">{t.currentFocus}</div>
-                  <ul className="list-disc pl-5 space-y-1.5 text-slate-400">
+                  <div className="text-sm font-medium text-center text-white">
+                    {t.currentFocus}
+                  </div>
+                  <ul className="list-disc pl-5 space-y-1.5 text-white/75 text-left">
                     {t.focusItems.map((item, idx) => (
                       <li key={idx}>{item}</li>
                     ))}
                   </ul>
                 </div>
-                <div className="rounded-md border border-slate-700 bg-slate-800/50 p-3 text-xs text-center max-w-2xl mx-auto">
+                <div className="rounded-xl border border-white/15 bg-white/5 p-3 text-xs text-center max-w-2xl mx-auto">
                   <div className="font-medium text-white mb-1">{t.opportunity}</div>
-                  <p className="text-slate-400 leading-relaxed">
+                  <p className="text-white/75 leading-relaxed">
                     {t.opportunityText}
                   </p>
                 </div>

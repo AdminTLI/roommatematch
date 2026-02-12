@@ -22,7 +22,7 @@ const content = {
       "Compatible homes become micro-support systems. When your living situation fits, you thrive - universities see happier students and better retention.",
     chatCompanion: 'AI Roommate Companion',
     chatCompanionCopy:
-      "Meet your personal AI roommate chatbot – part best friend, part campus tour guide. Ask about house rules, Dutch student life, or how things work in your building, any time you need support.",
+      "Meet your personal AI roommate chatbot - part best friend, part campus tour guide. Ask about house legalities, Dutch student life, or events in your city, any time you need support.",
     antiDropout: 'The Anti-Dropout Engine',
     antiDropoutCopy:
       "Safe homes create successful students. Research shows that housing stress is one of the biggest reasons students think about dropping out – it crushes focus, grades, and mental health. By reducing incompatibility before move-in, universities cut conflict, protect wellbeing, and keep more students enrolled all the way to graduation.",
