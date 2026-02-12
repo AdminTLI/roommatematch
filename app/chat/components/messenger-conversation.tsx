@@ -102,6 +102,8 @@ export function MessengerConversation({
   const [reportDetails, setReportDetails] = useState<string>('')
   const [isReporting, setIsReporting] = useState(false)
   const [isBlocking, setIsBlocking] = useState(false)
+  // isBlocked = current user has an active block against the partner in this chat
+  const [isBlocked, setIsBlocked] = useState(false)
   const [isDeleting, setIsDeleting] = useState(false)
   const [isMuting, setIsMuting] = useState(false)
   const [isArchiving, setIsArchiving] = useState(false)
@@ -294,9 +296,31 @@ export function MessengerConversation({
             setDisplayPartnerName(partnerFullName)
             setDisplayPartnerAvatar(partnerProfile.avatar_url || undefined)
           }
+
+          // Check if the current user has an active block against this partner (ended_at IS NULL)
+          try {
+            const { data: blockCheck, error: blockError } = await supabase
+              .from('match_blocklist')
+              .select('id, ended_at')
+              .eq('user_id', user.id)
+              .eq('blocked_user_id', otherMember.user_id)
+              .is('ended_at', null)
+              .maybeSingle()
+
+            if (blockError) {
+              console.error('[MessengerConversation] Failed to check block status:', blockError)
+              setIsBlocked(false)
+            } else {
+              setIsBlocked(!!blockCheck)
+            }
+          } catch (err) {
+            console.error('[MessengerConversation] Failed to check block status:', err)
+            setIsBlocked(false)
+          }
         }
       } else {
         setPartnerUserId(null)
+        setIsBlocked(false)
       }
 
       // Check if chat is muted (use localStorage as fallback since muted column may not exist)
@@ -495,6 +519,11 @@ export function MessengerConversation({
   // Handle sending message
   const handleSendMessage = async (content: string) => {
     try {
+      // If you've blocked this user, you must unblock before sending
+      if (isBlocked) {
+        throw new Error('This user has been blocked. To send a message, unblock them first.')
+      }
+
       const response = await fetchWithCSRF('/api/chat/send', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -1165,7 +1194,12 @@ export function MessengerConversation({
       {/* Fixed Typing Bar */}
       <MessengerTypingBar
         onSend={handleSendMessage}
-        placeholder="Type a message..."
+        placeholder={
+          isBlocked
+            ? 'This user has been blocked. To send a message, unblock them.'
+            : 'Type a message...'
+        }
+        disabled={isBlocked}
       />
     </div>
   )

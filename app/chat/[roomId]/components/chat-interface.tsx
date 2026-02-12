@@ -113,7 +113,7 @@ export function ChatInterface({ roomId, user, onBack, onToggleRightPane, rightPa
   const [showDeleteDialog, setShowDeleteDialog] = useState(false)
   const [isDeleting, setIsDeleting] = useState(false)
   const [isBlocking, setIsBlocking] = useState(false)
-  // isBlocked = you have blocked the other user in this chat
+  // isBlocked = you have an active block against the other user in this chat
   const [isBlocked, setIsBlocked] = useState(false)
   const [blockedUserId, setBlockedUserId] = useState<string | null>(null)
   const [readRetryQueue, setReadRetryQueue] = useState<Array<{ timestamp: number; attempt: number }>>([])
@@ -782,19 +782,20 @@ export function ChatInterface({ roomId, user, onBack, onToggleRightPane, rightPa
         }
       }
 
-      // For 1-on-1 chats, store the other person's name and check if blocked
+      // For 1-on-1 chats, store the other person's name and check if there's an active block
       if (!roomData.is_group && transformedMembers.length === 1) {
         const otherMember = transformedMembers[0]
         setOtherPersonName(otherMember.name)
         setBlockedUserId(otherMember.id)
 
-        // Check if this user is blocked
+        // Check if this user is currently blocked (active block = ended_at IS NULL)
         try {
           const { data: blockCheck } = await supabase
             .from('match_blocklist')
-            .select('id')
+            .select('id, ended_at')
             .eq('user_id', user.id)
             .eq('blocked_user_id', otherMember.id)
+            .is('ended_at', null)
             .maybeSingle()
 
           setIsBlocked(!!blockCheck)
@@ -3206,7 +3207,11 @@ export function ChatInterface({ roomId, user, onBack, onToggleRightPane, rightPa
                         }
                       }
                     }}
-                    placeholder={isBlocked ? "You cannot send messages to a blocked user" : "Type your message..."}
+                    placeholder={
+                      isBlocked
+                        ? 'This user has been blocked. To send a message, unblock them.'
+                        : 'Type your message...'
+                    }
                     disabled={isSending || isBlocked}
                     inputMode="text"
                     enterKeyHint="send"

@@ -101,6 +101,7 @@ interface WarningNotification {
 
 function WarningBanner({ userId }: { userId?: string }) {
   const [isModalOpen, setIsModalOpen] = useState(false)
+  const [isGuidelinesOpen, setIsGuidelinesOpen] = useState(false)
   const [isAcknowledged, setIsAcknowledged] = useState(false)
   const [isSubmitting, setIsSubmitting] = useState(false)
 
@@ -236,7 +237,17 @@ function WarningBanner({ userId }: { userId?: string }) {
                 htmlFor="warning-acknowledge"
                 className="text-sm text-zinc-800 dark:text-zinc-100 leading-snug cursor-pointer"
               >
-                I understand and acknowledge this warning. I will follow the community guidelines
+                I understand and acknowledge this warning. I will follow the{' '}
+                <button
+                  type="button"
+                  className="underline text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300 font-medium"
+                  onClick={(e) => {
+                    e.stopPropagation()
+                    setIsGuidelinesOpen(true)
+                  }}
+                >
+                  community guidelines
+                </button>{' '}
                 moving forward.
               </Label>
             </div>
@@ -255,6 +266,61 @@ function WarningBanner({ userId }: { userId?: string }) {
               disabled={!isAcknowledged || isSubmitting}
             >
               {isSubmitting ? 'Saving...' : 'Continue'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Community Guidelines Dialog */}
+      <Dialog open={isGuidelinesOpen} onOpenChange={setIsGuidelinesOpen}>
+        <DialogContent className="max-w-3xl max-h-[80vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Domu Match Community Guidelines</DialogTitle>
+            <DialogDescription>
+              These guidelines explain how to use Domu Match safely and appropriately, and what
+              behaviors are not allowed on the platform.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 text-sm text-zinc-800 dark:text-zinc-100">
+            <p>
+              Domu Match exists to help students and young people find safe, compatible roommates
+              and shared housing. By using the platform you agree to:
+            </p>
+            <ul className="list-disc list-inside space-y-1">
+              <li>Use Domu Match only for housing and roommate matching, not dating or hookups.</li>
+              <li>Treat others with respect, avoid harassment, bullying, and hate speech.</li>
+              <li>
+                Follow applicable anti-discrimination and fair housing laws when setting
+                preferences.
+              </li>
+              <li>
+                Never run scams or frauds, including fake listings or asking for money before a
+                legitimate agreement is in place.
+              </li>
+              <li>
+                Keep communication and content free from sexual content, nudity, or exploitative
+                offers (such as rent in exchange for sexual favors).
+              </li>
+              <li>Protect your privacy and that of others; do not share or threaten to share private information.</li>
+              <li>
+                Be honest and accurate in your profile, listings, and communication, and disclose
+                relevant information about the property and living situation.
+              </li>
+            </ul>
+            <p>
+              You should report users, listings, or messages that appear unsafe, abusive,
+              discriminatory, fraudulent, or clearly outside the intended use of Domu Match. Admins
+              may issue warnings, restrict features, or suspend or permanently ban accounts to
+              protect the community.
+            </p>
+            <p className="text-xs text-zinc-500 dark:text-zinc-400">
+              This is a summary. A more detailed version of the Domu Match Community Guidelines is
+              maintained in our policy documentation and may be updated over time.
+            </p>
+          </div>
+          <DialogFooter>
+            <Button type="button" onClick={() => setIsGuidelinesOpen(false)}>
+              Close
             </Button>
           </DialogFooter>
         </DialogContent>
