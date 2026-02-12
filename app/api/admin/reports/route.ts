@@ -73,12 +73,15 @@ export async function GET(request: NextRequest) {
 
     // Fetch profile data for reporter and target users separately
     const userIds = new Set<string>()
+    const reportIds = new Set<string>()
     reports?.forEach((report: any) => {
       if (report.reporter_id) userIds.add(report.reporter_id)
       if (report.target_user_id) userIds.add(report.target_user_id)
+      if (report.id) reportIds.add(report.id)
     })
 
     const userIdsArray = Array.from(userIds)
+    const reportIdsArray = Array.from(reportIds)
     
     // Fetch profiles
     const profilesMap = new Map()
@@ -106,12 +109,41 @@ export async function GET(request: NextRequest) {
       })
     }
 
-    // Enrich reports with profile data and emails
+    // Fetch safety alert notifications for these reports so we can attach acknowledgement status
+    const warningMap = new Map<string, any>()
+    if (userIdsArray.length > 0 && reportIdsArray.length > 0) {
+      const { data: safetyNotifications } = await admin
+        .from('notifications')
+        .select('id, user_id, type, metadata')
+        .eq('type', 'safety_alert')
+        .in('user_id', userIdsArray)
+
+      safetyNotifications?.forEach((notif: any) => {
+        const metadata = notif.metadata || {}
+        if (!metadata) return
+        if (metadata.action !== 'warn') return
+        if (!metadata.report_id) return
+        if (!reportIds.has(metadata.report_id)) return
+
+        // For each report, track the latest warning notification (by created_at if available)
+        const existing = warningMap.get(metadata.report_id)
+        if (!existing) {
+          warningMap.set(metadata.report_id, notif)
+        } else if (notif.created_at && existing.created_at && new Date(notif.created_at) > new Date(existing.created_at)) {
+          warningMap.set(metadata.report_id, notif)
+        }
+      })
+    }
+
+    // Enrich reports with profile data, emails, and warning acknowledgement info
     const enrichedReports = reports?.map((report: any) => {
       const reporterProfile = profilesMap.get(report.reporter_id)
       const targetProfile = profilesMap.get(report.target_user_id)
       const reporterUser = usersMap.get(report.reporter_id)
       const targetUser = usersMap.get(report.target_user_id)
+
+      const warningNotification = warningMap.get(report.id)
+      const warningMetadata = warningNotification?.metadata || {}
       
       return {
         ...report,
@@ -136,7 +168,15 @@ export async function GET(request: NextRequest) {
           first_name: '',
           last_name: '',
           email: targetUser?.email || ''
-        }
+        },
+        warning_notification: warningNotification
+          ? {
+              id: warningNotification.id,
+              acknowledged_checkbox: Boolean(warningMetadata.acknowledged_checkbox),
+              acknowledged_continue: Boolean(warningMetadata.acknowledged_continue),
+              acknowledged_at: warningMetadata.acknowledged_at || null,
+            }
+          : null,
       }
     }) || []
 

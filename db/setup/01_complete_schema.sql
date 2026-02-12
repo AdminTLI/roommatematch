@@ -1318,10 +1318,21 @@ CREATE POLICY "Users can see chat members for their chats" ON chat_members
 -- Messages: Users can see messages in their chats
 CREATE POLICY "Users can see messages in their chats" ON messages
   FOR SELECT USING (
+    -- User must be a member of the chat
     EXISTS (
       SELECT 1 FROM chat_members 
       WHERE chat_members.chat_id = messages.chat_id 
       AND chat_members.user_id = auth.uid()
+    )
+    -- And the message must NOT be from someone this user has blocked
+    AND NOT EXISTS (
+      SELECT 1
+      FROM match_blocklist mb
+      WHERE mb.user_id = auth.uid()
+        AND mb.blocked_user_id = messages.user_id
+        -- Only hide messages sent while the block is active
+        AND mb.created_at <= messages.created_at
+        AND (mb.ended_at IS NULL OR mb.ended_at >= messages.created_at)
     )
   );
 

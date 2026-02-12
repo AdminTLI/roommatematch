@@ -36,6 +36,16 @@ import { Button } from '@/components/ui/button'
 import { DiscoveryCard } from './discovery-card'
 import { EmptyState } from '@/components/ui/empty-state'
 import { Card, CardContent } from '@/components/ui/card'
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
+} from '@/components/ui/dialog'
+import { Checkbox } from '@/components/ui/checkbox'
+import { Label } from '@/components/ui/label'
 import type { DashboardData } from '@/types/dashboard'
 import { createClient } from '@/lib/supabase/client'
 import { logger } from '@/lib/utils/logger'
@@ -77,6 +87,180 @@ interface DashboardContentProps {
     avatar?: string
   }
   firstName?: string
+}
+
+
+interface WarningNotification {
+  id: string
+  title: string
+  message: string
+  metadata?: Record<string, any>
+  created_at?: string
+}
+
+
+function WarningBanner({ userId }: { userId?: string }) {
+  const [isModalOpen, setIsModalOpen] = useState(false)
+  const [isAcknowledged, setIsAcknowledged] = useState(false)
+  const [isSubmitting, setIsSubmitting] = useState(false)
+
+  const fetchUnacknowledgedWarnings = useCallback(async (): Promise<WarningNotification[]> => {
+    if (!userId) return []
+
+    const params = new URLSearchParams({
+      limit: '20',
+      type: 'safety_alert',
+    })
+
+    const response = await fetch(`/api/notifications/my?${params.toString()}`)
+    if (!response.ok) {
+      logger.warn('[WarningBanner] Failed to fetch notifications for warnings', {
+        status: response.status,
+        statusText: response.statusText,
+      })
+      return []
+    }
+
+    const data = await response.json()
+    const notifications = (data.notifications || []) as WarningNotification[]
+
+    // Only consider admin warnings that have not been acknowledged via Continue
+    const unacknowledgedWarnings = notifications.filter((notif: any) => {
+      const metadata = notif.metadata || {}
+      const isWarning = metadata.action === 'warn'
+      const hasContinued = metadata.acknowledged_continue === true
+      return isWarning && !hasContinued
+    })
+
+    return unacknowledgedWarnings
+  }, [userId])
+
+  const { data: warnings = [], isLoading } = useQuery({
+    queryKey: ['dashboard', 'warnings', userId],
+    queryFn: fetchUnacknowledgedWarnings,
+    enabled: !!userId,
+    staleTime: 30_000,
+  })
+
+  useRealtimeInvalidation({
+    table: 'notifications',
+    event: '*',
+    filter: `user_id=eq.${userId}`,
+    queryKeys: ['dashboard', 'warnings', userId],
+    enabled: !!userId,
+  })
+
+  const activeWarning = warnings[0]
+
+  const handleContinue = async () => {
+    if (!activeWarning || !userId) return
+    if (!isAcknowledged) return
+
+    setIsSubmitting(true)
+    try {
+      const response = await fetch('/api/notifications/acknowledge-warning', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ notificationId: activeWarning.id }),
+      })
+
+      if (!response.ok) {
+        logger.error('[WarningBanner] Failed to acknowledge warning', {
+          status: response.status,
+          statusText: response.statusText,
+        })
+        return
+      }
+
+      // Refresh warnings and related activity so the banner disappears
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: ['dashboard', 'warnings', userId] }),
+        queryClient.invalidateQueries({ queryKey: queryKeys.activity(userId) }),
+      ])
+
+      setIsModalOpen(false)
+      setIsAcknowledged(false)
+    } catch (error) {
+      logger.error('[WarningBanner] Error acknowledging warning', error)
+    } finally {
+      setIsSubmitting(false)
+    }
+  }
+
+  if (!userId || isLoading || !activeWarning) {
+    return null
+  }
+
+  return (
+    <>
+      <div
+        className="rounded-2xl border border-amber-400/70 bg-amber-50/90 dark:bg-amber-950/50 px-4 py-3 flex items-start gap-3 cursor-pointer hover:bg-amber-100 dark:hover:bg-amber-900/60 transition-colors"
+        onClick={() => setIsModalOpen(true)}
+      >
+        <div className="mt-0.5">
+          <AlertCircle className="w-5 h-5 text-amber-500" />
+        </div>
+        <div className="flex-1">
+          <p className="text-sm font-semibold text-amber-900 dark:text-amber-100">
+            You have received a warning
+          </p>
+          <p className="text-xs text-amber-800/80 dark:text-amber-200/80">
+            Click here to read and acknowledge this warning.
+          </p>
+        </div>
+      </div>
+
+      <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
+        <DialogContent className="max-w-lg">
+          <DialogHeader>
+            <DialogTitle>Warning from Admin</DialogTitle>
+            <DialogDescription>
+              Please read this warning carefully and acknowledge that you understand it.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-6">
+            <div className="rounded-lg bg-amber-50 dark:bg-amber-900/40 border border-amber-200/80 dark:border-amber-800 px-4 py-3">
+              <p className="text-sm text-amber-900 dark:text-amber-50 whitespace-pre-line">
+                {activeWarning.message}
+              </p>
+            </div>
+            <div className="flex items-start space-x-3">
+              <Checkbox
+                id="warning-acknowledge"
+                checked={isAcknowledged}
+                onCheckedChange={(value) => setIsAcknowledged(Boolean(value))}
+              />
+              <Label
+                htmlFor="warning-acknowledge"
+                className="text-sm text-zinc-800 dark:text-zinc-100 leading-snug cursor-pointer"
+              >
+                I understand and acknowledge this warning. I will follow the community guidelines
+                moving forward.
+              </Label>
+            </div>
+          </div>
+          <DialogFooter className="flex items-center justify-end gap-2">
+            <Button
+              variant="outline"
+              type="button"
+              onClick={() => setIsModalOpen(false)}
+            >
+              Close
+            </Button>
+            <Button
+              type="button"
+              onClick={handleContinue}
+              disabled={!isAcknowledged || isSubmitting}
+            >
+              {isSubmitting ? 'Saving...' : 'Continue'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    </>
+  )
 }
 
 
@@ -1210,6 +1394,9 @@ export function DashboardContent({ hasCompletedQuestionnaire = false, hasPartial
 
   return (
     <div className="space-y-8 pb-24 md:pb-6">
+      {/* Admin Warning Banner */}
+      <WarningBanner userId={user?.id} />
+
       {/* Header Section */}
       <motion.div
         variants={fadeInUp}

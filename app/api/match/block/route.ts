@@ -36,20 +36,20 @@ export async function POST(request: NextRequest) {
 
     const admin = await createAdminClient()
 
-    // Add to blocklist
+    // Add to blocklist (or re-activate an existing block)
     const { error: blockError } = await admin
       .from('match_blocklist')
-      .insert({
-        user_id: user.id,
-        blocked_user_id
-      })
+      .upsert(
+        {
+          user_id: user.id,
+          blocked_user_id,
+          created_at: new Date().toISOString(),
+          ended_at: null
+        },
+        { onConflict: 'user_id,blocked_user_id' }
+      )
 
     if (blockError) {
-      // Check if already blocked
-      if (blockError.code === '23505') {
-        return NextResponse.json({ success: true, message: 'User already blocked' })
-      }
-      
       safeLogger.error('[Block] Failed to block user', blockError)
       return NextResponse.json({ error: 'Failed to block user' }, { status: 500 })
     }

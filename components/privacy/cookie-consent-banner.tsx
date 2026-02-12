@@ -148,18 +148,18 @@ export function CookieConsentBanner({ locale = 'en' }: CookieConsentBannerProps)
   return (
     <div className="fixed bottom-0 left-0 right-0 z-50 p-3 sm:p-4 md:p-6">
       <div className="container mx-auto max-w-4xl">
-        <Card className="bg-white dark:bg-white border-border-subtle dark:border-border-subtle shadow-xl">
+        <Card className="border-border-subtle bg-bg-surface/95 dark:bg-bg-surface/95 shadow-elev-2 backdrop-blur supports-[backdrop-filter]:bg-bg-surface/80 dark:supports-[backdrop-filter]:bg-bg-surface/80">
           <CardContent className="p-4 sm:p-5 md:p-6">
             <div className="flex flex-col sm:flex-row items-start gap-3 sm:gap-4">
-              <Cookie className="h-5 w-5 sm:h-6 sm:w-6 text-text-secondary dark:text-text-secondary mt-0.5 sm:mt-1 flex-shrink-0" />
+              <Cookie className="h-5 w-5 sm:h-6 sm:w-6 text-primary mt-0.5 sm:mt-1 flex-shrink-0" />
               <div className="flex-1 min-w-0">
-                <h3 className="text-base sm:text-lg font-semibold text-gray-900 dark:text-gray-900 mb-1.5 sm:mb-2">
+                <h3 className="text-base sm:text-lg font-semibold text-text-primary mb-1.5 sm:mb-2">
                   {t.title}
                 </h3>
-                <p className="text-xs sm:text-sm text-text-secondary dark:text-text-secondary mb-3 sm:mb-4">
+                <p className="text-xs sm:text-sm text-text-secondary mb-2 sm:mb-3">
                   {t.description}
                 </p>
-                <p className="text-xs text-text-muted dark:text-text-muted mb-3 sm:mb-4">
+                <p className="text-xs text-text-muted mb-3 sm:mb-4">
                   {t.essential}
                 </p>
                 <div className="flex flex-col sm:flex-row flex-wrap gap-2 sm:gap-3">
@@ -175,7 +175,7 @@ export function CookieConsentBanner({ locale = 'en' }: CookieConsentBannerProps)
                     onClick={handleRejectAll}
                     variant="outline"
                     size="sm"
-                    className="w-full sm:w-auto text-gray-900 dark:text-gray-900"
+                    className="w-full sm:w-auto text-text-primary"
                   >
                     {t.rejectAll}
                   </Button>
@@ -183,17 +183,17 @@ export function CookieConsentBanner({ locale = 'en' }: CookieConsentBannerProps)
                     onClick={handleCustomize}
                     variant="ghost"
                     size="sm"
-                    className="flex items-center gap-2 w-full sm:w-auto text-gray-900 dark:text-gray-900"
+                    className="flex items-center gap-2 w-full sm:w-auto text-text-secondary hover:text-text-primary"
                   >
                     <Settings className="h-4 w-4" />
                     {t.customize}
                   </Button>
                 </div>
-                <p className="text-xs text-text-muted dark:text-text-muted mt-3 sm:mt-4">
+                <p className="text-xs text-text-muted mt-3 sm:mt-4">
                   {t.learnMore}{' '}
                   <a 
                     href="/cookies" 
-                    className="text-gray-900 dark:text-gray-900 hover:text-semantic-accent dark:hover:text-semantic-accent hover:underline font-medium"
+                    className="text-primary hover:text-primary/80 transition-colors font-medium"
                     target="_blank"
                     rel="noopener noreferrer"
                   >

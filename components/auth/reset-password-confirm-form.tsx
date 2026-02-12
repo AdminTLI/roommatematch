@@ -2,13 +2,16 @@
 
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
+import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Alert, AlertDescription } from '@/components/ui/alert'
-import { Loader2, Lock, Eye, EyeOff, CheckCircle } from 'lucide-react'
+import { Loader2, Lock, Eye, EyeOff, CheckCircle, ArrowLeft } from 'lucide-react'
 import { createBrowserClient } from '@supabase/ssr'
+
+const glassCardClass =
+  'w-full noise-overlay rounded-2xl border border-white/10 bg-white/5 backdrop-blur-lg shadow-2xl shadow-black/20'
 
 export function ResetPasswordConfirmForm() {
   const [password, setPassword] = useState('')
@@ -150,57 +153,75 @@ export function ResetPasswordConfirmForm() {
 
   if (!isValidSession) {
     return (
-      <Card className="w-full">
-        <CardHeader className="text-center">
-          <CardTitle className="text-2xl">Invalid Reset Link</CardTitle>
-          <CardDescription>
+      <div className={glassCardClass}>
+        <div className="text-center px-4 sm:px-6 pt-6 sm:pt-6">
+          <h2 className="text-xl sm:text-2xl font-semibold tracking-tight text-white">
+            Invalid Reset Link
+          </h2>
+          <p className="mt-1 text-sm sm:text-base text-white/70">
             This password reset link is invalid or has expired.
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-4">
+          </p>
+        </div>
+        <div className="space-y-4 px-4 sm:px-6 pb-6 pt-6">
           {error && (
             <Alert variant="destructive">
               <AlertDescription>{error}</AlertDescription>
             </Alert>
           )}
-          <Button asChild className="w-full">
+          <Button asChild className="w-full min-h-[44px] bg-gradient-to-r from-indigo-500 to-purple-500 text-white border-0 shadow-lg shadow-indigo-500/30 hover:shadow-indigo-500/40 hover:scale-[1.01] transition-all">
             <a href="/auth/reset-password">Request New Reset Link</a>
           </Button>
-        </CardContent>
-      </Card>
+          <p className="text-center text-xs sm:text-sm text-white/70">
+            <Link href="/auth/sign-in" className="inline-flex items-center gap-1 text-white hover:underline">
+              <ArrowLeft className="h-3 w-3" />
+              Back to sign in
+            </Link>
+          </p>
+        </div>
+      </div>
     )
   }
 
   if (success) {
     return (
-      <Card className="w-full">
-        <CardHeader className="text-center">
-          <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-green-100">
-            <CheckCircle className="h-6 w-6 text-green-600" />
+      <div className={glassCardClass}>
+        <div className="text-center px-4 sm:px-6 pt-6 sm:pt-6">
+          <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-emerald-500/20 border border-emerald-400/30">
+            <CheckCircle className="h-6 w-6 text-emerald-400" />
           </div>
-          <CardTitle className="text-2xl">Password Updated</CardTitle>
-          <CardDescription>
+          <h2 className="text-xl sm:text-2xl font-semibold tracking-tight text-white">
+            Password Updated
+          </h2>
+          <p className="mt-1 text-sm sm:text-base text-white/70">
             Your password has been successfully updated.
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <p className="text-sm text-muted-foreground text-center">
+          </p>
+        </div>
+        <div className="space-y-4 px-4 sm:px-6 pb-6 pt-6">
+          <p className="text-sm text-white/70 text-center">
             Redirecting you to sign in...
           </p>
-        </CardContent>
-      </Card>
+          <Button asChild className="w-full min-h-[44px] rounded-2xl border border-white/30 bg-transparent text-white font-medium hover:bg-white/10 transition-all">
+            <Link href="/auth/sign-in">
+              <ArrowLeft className="mr-2 h-4 w-4" />
+              Sign in now
+            </Link>
+          </Button>
+        </div>
+      </div>
     )
   }
 
   return (
-    <Card className="w-full">
-      <CardHeader className="text-center">
-        <CardTitle className="text-2xl">Set New Password</CardTitle>
-        <CardDescription>
+    <div className={glassCardClass}>
+      <div className="text-center px-4 sm:px-6 pt-6 sm:pt-6">
+        <h2 className="text-xl sm:text-2xl font-semibold tracking-tight text-white">
+          Set New Password
+        </h2>
+        <p className="mt-1 text-sm sm:text-base text-white/70">
           Enter your new password below
-        </CardDescription>
-      </CardHeader>
-      <CardContent className="space-y-6">
+        </p>
+      </div>
+      <div className="space-y-4 sm:space-y-6 px-4 sm:px-6 pb-6 sm:pb-6 pt-6">
         {error && (
           <Alert variant="destructive">
             <AlertDescription>{error}</AlertDescription>
@@ -209,51 +230,51 @@ export function ResetPasswordConfirmForm() {
 
         <form onSubmit={handleResetPassword} className="space-y-4">
           <div className="space-y-2">
-            <Label htmlFor="password">New Password</Label>
+            <Label htmlFor="password" className="text-sm sm:text-base text-white">New Password</Label>
             <div className="relative">
-              <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-white/50" />
               <Input
                 id="password"
                 type={showPassword ? 'text' : 'password'}
                 placeholder="Enter new password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="pl-10 pr-10"
+                className="pl-10 pr-10 min-h-[44px] bg-white/10 border-white/15 text-white placeholder:text-white/45 focus-visible:ring-white/30"
                 required
                 autoComplete="new-password"
               />
               <button
                 type="button"
                 onClick={() => setShowPassword(!showPassword)}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                className="absolute right-2.5 top-1/2 -translate-y-1/2 rounded-xl p-2 text-white/60 hover:text-white hover:bg-white/10 transition-colors"
                 aria-label={showPassword ? 'Hide password' : 'Show password'}
               >
                 {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
               </button>
             </div>
-            <p className="text-xs text-muted-foreground">
+            <p className="text-xs text-white/60">
               Must be at least 8 characters with uppercase, lowercase, and a number
             </p>
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="confirmPassword">Confirm Password</Label>
+            <Label htmlFor="confirmPassword" className="text-sm sm:text-base text-white">Confirm Password</Label>
             <div className="relative">
-              <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-white/50" />
               <Input
                 id="confirmPassword"
                 type={showConfirmPassword ? 'text' : 'password'}
                 placeholder="Confirm new password"
                 value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}
-                className="pl-10 pr-10"
+                className="pl-10 pr-10 min-h-[44px] bg-white/10 border-white/15 text-white placeholder:text-white/45 focus-visible:ring-white/30"
                 required
                 autoComplete="new-password"
               />
               <button
                 type="button"
                 onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                className="absolute right-2.5 top-1/2 -translate-y-1/2 rounded-xl p-2 text-white/60 hover:text-white hover:bg-white/10 transition-colors"
                 aria-label={showConfirmPassword ? 'Hide password' : 'Show password'}
               >
                 {showConfirmPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
@@ -261,13 +282,24 @@ export function ResetPasswordConfirmForm() {
             </div>
           </div>
 
-          <Button type="submit" className="w-full" disabled={isLoading}>
+          <Button
+            type="submit"
+            className="w-full min-h-[44px] text-base bg-gradient-to-r from-indigo-500 to-purple-500 text-white border-0 shadow-lg shadow-indigo-500/30 hover:shadow-indigo-500/40 hover:scale-[1.01] transition-all disabled:opacity-70 disabled:hover:scale-100"
+            disabled={isLoading}
+          >
             {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
             Update Password
           </Button>
         </form>
-      </CardContent>
-    </Card>
+
+        <p className="text-center text-xs sm:text-sm text-white/70">
+          <Link href="/auth/sign-in" className="inline-flex items-center gap-1 text-white hover:underline">
+            <ArrowLeft className="h-3 w-3" />
+            Back to sign in
+          </Link>
+        </p>
+      </div>
+    </div>
   )
 }
 

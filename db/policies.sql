@@ -260,10 +260,21 @@ CREATE POLICY "Chat members can manage membership" ON chat_members
 -- Messages: Chat members can read/write
 CREATE POLICY "Chat members can read messages" ON messages
   FOR SELECT USING (
+    -- User must be a member of the chat
     EXISTS (
       SELECT 1 FROM chat_members cm
       WHERE cm.chat_id = messages.chat_id
       AND cm.user_id = auth.uid()
+    )
+    -- And the message must NOT be from someone this user has blocked
+    AND NOT EXISTS (
+      SELECT 1
+      FROM match_blocklist mb
+      WHERE mb.user_id = auth.uid()
+        AND mb.blocked_user_id = messages.user_id
+        -- Only hide messages sent while the block is active
+        AND mb.created_at <= messages.created_at
+        AND (mb.ended_at IS NULL OR mb.ended_at >= messages.created_at)
     )
   );
 

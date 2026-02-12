@@ -110,18 +110,29 @@ export async function POST(request: NextRequest) {
     // Get all unique user IDs (cap to max 200 total members across all chats)
     const allUserIds = [...new Set(chatMembers.slice(0, 200).map(m => m.user_id))]
 
-    // Get user's blocklist to exclude blocked users
+    // Get user's blocklist to exclude profiles they have blocked from their own view
+    // and to anonymize the name of users who have blocked the current user.
     const { data: blocklist, error: blocklistError } = await admin
       .from('match_blocklist')
-      .select('blocked_user_id')
-      .eq('user_id', user.id)
+      .select('user_id, blocked_user_id')
+      .in('user_id', [user.id, ...allUserIds])
 
-    const blockedUserIds = new Set(blocklist?.map(b => b.blocked_user_id) || [])
+    const blockedByCurrentUser = new Set(
+      (blocklist || [])
+        .filter(b => b.user_id === user.id)
+        .map(b => b.blocked_user_id)
+    )
 
-    // Filter out blocked users
-    const allowedUserIds = allUserIds.filter(id => !blockedUserIds.has(id))
+    const blockedCurrentUser = new Set(
+      (blocklist || [])
+        .filter(b => b.blocked_user_id === user.id)
+        .map(b => b.user_id)
+    )
 
-    // Fetch profiles for all chat members (excluding blocked users)
+    // Filter out profiles the current user has blocked (they don't need to see them)
+    const allowedUserIds = allUserIds.filter(id => !blockedByCurrentUser.has(id))
+
+    // Fetch profiles for all allowed chat members
     const { data: profiles, error: profilesError } = await admin
       .from('profiles')
       .select('user_id, first_name, last_name')
@@ -145,8 +156,21 @@ export async function POST(request: NextRequest) {
       )
     }
 
+    // Post-process profiles:
+    // - For users who have blocked the current user, anonymize their name to "User"
+    const safeProfiles = (profiles || []).map((profile: any) => {
+      if (blockedCurrentUser.has(profile.user_id)) {
+        return {
+          ...profile,
+          first_name: 'User',
+          last_name: ''
+        }
+      }
+      return profile
+    })
+
     return NextResponse.json({ 
-      profiles: profiles || []
+      profiles: safeProfiles
     }, {
       headers: {
         'X-RateLimit-Limit': '60',

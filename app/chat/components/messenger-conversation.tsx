@@ -663,15 +663,21 @@ export function MessengerConversation({
     }
   }
 
-  // Handle block user
+  // Handle block / unblock user (compact messenger header)
   const handleBlock = async () => {
     if (!partnerUserId) {
-      showErrorToast('Error', 'Unable to identify user to block.')
+      showErrorToast('Error', 'Unable to identify user to update block status.')
       return
     }
 
     setIsBlocking(true)
     try {
+      if (isBlocking) {
+        // Prevent double-click while request is in-flight
+        return
+      }
+
+      // For this compact view we always treat it as "block"; users can manage unblock in full chat view
       const response = await fetchWithCSRF('/api/match/block', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -679,7 +685,10 @@ export function MessengerConversation({
       })
 
       if (response.ok) {
-        showSuccessToast('User blocked', 'This user has been blocked and you will no longer receive messages from them.')
+        showSuccessToast(
+          'User blocked',
+          'This user has been blocked and you will no longer receive messages from them.'
+        )
         router.push('/chat')
       } else {
         const errorData = await response.json()

@@ -34,6 +34,12 @@ interface Report {
   action_taken?: string
   created_at: string
   updated_at: string
+  warning_notification?: {
+    id: string
+    acknowledged_checkbox?: boolean
+    acknowledged_continue?: boolean
+    acknowledged_at?: string | null
+  } | null
   reporter?: {
     user_id: string
     first_name: string
@@ -266,6 +272,38 @@ export function AdminReportsContent() {
           <Badge className={colors[row.status] || colors.open}>
             {row.status}
           </Badge>
+        )
+      }
+    },
+    {
+      header: 'Warning Acknowledgement',
+      accessor: (row: Report) => {
+        if (!row.warning_notification) {
+          return (
+            <span className="text-xs text-gray-400">
+              No warning acknowledgement
+            </span>
+          )
+        }
+
+        const checkbox = row.warning_notification.acknowledged_checkbox
+        const cont = row.warning_notification.acknowledged_continue
+
+        return (
+          <div className="flex flex-col text-xs">
+            <span>
+              Checkbox:{' '}
+              <span className={checkbox ? 'text-green-600 font-medium' : 'text-gray-500'}>
+                {checkbox ? 'Yes' : 'No'}
+              </span>
+            </span>
+            <span>
+              Continue:{' '}
+              <span className={cont ? 'text-green-600 font-medium' : 'text-gray-500'}>
+                {cont ? 'Yes' : 'No'}
+              </span>
+            </span>
+          </div>
         )
       }
     },

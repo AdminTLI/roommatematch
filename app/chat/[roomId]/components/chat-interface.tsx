@@ -113,6 +113,7 @@ export function ChatInterface({ roomId, user, onBack, onToggleRightPane, rightPa
   const [showDeleteDialog, setShowDeleteDialog] = useState(false)
   const [isDeleting, setIsDeleting] = useState(false)
   const [isBlocking, setIsBlocking] = useState(false)
+  // isBlocked = you have blocked the other user in this chat
   const [isBlocked, setIsBlocked] = useState(false)
   const [blockedUserId, setBlockedUserId] = useState<string | null>(null)
   const [readRetryQueue, setReadRetryQueue] = useState<Array<{ timestamp: number; attempt: number }>>([])
@@ -2484,6 +2485,27 @@ export function ChatInterface({ roomId, user, onBack, onToggleRightPane, rightPa
         return
       }
 
+      // If already blocked, this acts as "unblock"
+      if (isBlocked) {
+        const response = await fetchWithCSRF('/api/match/unblock', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ blocked_user_id: otherUserId })
+        })
+
+        if (response.ok) {
+          showSuccessToast(
+            'User unblocked',
+            'You can now receive new messages from this user. Messages sent while blocked remain hidden.'
+          )
+          setIsBlocked(false)
+        } else {
+          const errorData = await response.json()
+          throw new Error(errorData.error || 'Failed to unblock user')
+        }
+        return
+      }
+
       // Block user via API
       const response = await fetchWithCSRF('/api/match/block', {
         method: 'POST',
@@ -2492,15 +2514,18 @@ export function ChatInterface({ roomId, user, onBack, onToggleRightPane, rightPa
       })
 
       if (response.ok) {
-        showSuccessToast('User blocked', 'This user has been blocked and you will no longer receive messages from them.')
-        router.push('/chat')
+        showSuccessToast(
+          'User blocked',
+          'This user has been blocked and you will no longer receive messages from them.'
+        )
+        setIsBlocked(true)
       } else {
         const errorData = await response.json()
         throw new Error(errorData.error || 'Failed to block user')
       }
     } catch (error: any) {
-      console.error('Failed to block:', error)
-      showErrorToast('Failed to block user', error.message || 'Please try again.')
+      console.error('Failed to update block status:', error)
+      showErrorToast('Failed to update block status', error.message || 'Please try again.')
     } finally {
       setIsBlocking(false)
     }
@@ -2728,7 +2753,7 @@ export function ChatInterface({ roomId, user, onBack, onToggleRightPane, rightPa
                       className="text-semantic-danger focus:text-semantic-danger focus:bg-semantic-danger/10"
                     >
                       <Ban className="h-4 w-4 mr-2" />
-                      {isBlocking ? 'Blocking...' : 'Block User'}
+                      {isBlocking ? (isBlocked ? 'Unblocking...' : 'Blocking...') : (isBlocked ? 'Unblock User' : 'Block User')}
                     </DropdownMenuItem>
                     <DropdownMenuItem
                       onClick={() => setShowReportDialog(true)}
