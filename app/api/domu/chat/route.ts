@@ -15,9 +15,13 @@ export async function POST(request: Request) {
 
     const apiKey = process.env.GEMINI_API_KEY ?? process.env.GOOGLE_API_KEY
     if (!apiKey) {
+      console.error('[Domu AI] Missing GEMINI_API_KEY / GOOGLE_API_KEY.')
       return NextResponse.json(
-        { reply: 'Server error: GEMINI_API_KEY not configured.' },
-        { status: 500 }
+        {
+          reply:
+            "I’m temporarily unavailable due to a configuration issue. Please try again later or contact support if this keeps happening.",
+        },
+        { status: 503 },
       )
     }
 
@@ -46,23 +50,18 @@ export async function POST(request: Request) {
 
     return NextResponse.json({ reply })
   } catch (err) {
+    console.error('[Domu AI] Chat error', err)
+
     const raw = err instanceof Error ? err.message : String(err)
-    // Parse Gemini API error and return user-friendly message
-    let reply = 'Sorry, something went wrong. Please try again.'
-    if (raw.includes('quota') || raw.includes('429') || raw.includes('RESOURCE_EXHAUSTED')) {
-      reply =
-        "I've hit my rate limit for now. Please try again in a minute, or check your Gemini API quota and billing at https://ai.google.dev/gemini-api/docs/rate-limits"
-    } else {
-      try {
-        const parsed = JSON.parse(raw)
-        const apiErr = parsed?.error
-        if (typeof apiErr?.message === 'string') {
-          reply = apiErr.message.split('\n')[0].slice(0, 300) ?? reply
-        }
-      } catch {
-        if (raw && !raw.startsWith('{') && raw.length < 300) reply = raw
-      }
+    let reply =
+      'Sorry, something went wrong on my side. Please try again in a moment.'
+
+    // Rate limits / overload
+    if (raw && (raw.includes('quota') || raw.includes('429') || raw.includes('RESOURCE_EXHAUSTED'))) {
+      reply = "I’m getting a lot of requests right now and need a short break. Please try again in a minute."
     }
+
+    // For all other errors, keep the reply generic and user-friendly.
     return NextResponse.json({ reply }, { status: 500 })
   }
 }

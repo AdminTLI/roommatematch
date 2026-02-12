@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { motion, useMotionValue, animate, useReducedMotion } from 'framer-motion'
-import { ShieldCheck, Heart, Home } from 'lucide-react'
+import { ShieldCheck, Heart, Home, MessageCircle } from 'lucide-react'
 import Container from '@/components/ui/primitives/container'
 import Section from '@/components/ui/primitives/section'
 import { useApp } from '@/app/providers'
@@ -13,31 +13,37 @@ const content = {
     smartMatching: 'Smart Matching',
     compatibility: 'compatibility',
     smartMatchingCopy:
-      "Our algorithm analyzes 40+ factors - quiet hours, cleanliness, study habits, sleep schedules - so you find roommates who actually fit your lifestyle. Universities see fewer disputes and happier students.",
+      "Our algorithm analyzes 40+ factors - quiet hours, cleanliness, study habits, sleep schedules - so you find roommates who actually fit your lifestyle. Plus, you get an AI roommate chatbot that feels like a student best friend and campus tour guide, there for questions and companionship while you live here.",
     idVerified: 'ID Verified',
     idVerifiedCopy:
       "Government ID + selfie verification for every student. No catfish, no scams - universities back it so you can focus on finding the right fit.",
     wellbeingFirst: 'Wellbeing First',
     wellbeingCopy:
       "Compatible homes become micro-support systems. When your living situation fits, you thrive - universities see happier students and better retention.",
+    chatCompanion: 'AI Roommate Companion',
+    chatCompanionCopy:
+      "Meet your personal AI roommate chatbot – part best friend, part campus tour guide. Ask about house rules, Dutch student life, or how things work in your building, any time you need support.",
     antiDropout: 'The Anti-Dropout Engine',
     antiDropoutCopy:
-      "Safe homes create successful students. 47% of dropouts cite housing stress - we reduce incompatibility before move-in so students stay, thrive, and graduate.",
+      "Safe homes create successful students. Research shows that housing stress is one of the biggest reasons students think about dropping out – it crushes focus, grades, and mental health. By reducing incompatibility before move-in, universities cut conflict, protect wellbeing, and keep more students enrolled all the way to graduation.",
   },
   nl: {
     smartMatching: 'Slimme Matching',
     compatibility: 'compatibiliteit',
     smartMatchingCopy:
-      "Ons algoritme analyseert 40+ factoren - stille uren, netheid, studeergewoonten, slaapschema's - zodat je huisgenoten vindt die bij je lifestyle passen. Universiteiten zien minder conflicten en tevredenere studenten.",
+      "Ons algoritme analyseert 40+ factoren - stille uren, netheid, studeergewoonten, slaapschema\'s - zodat je huisgenoten vindt die bij je lifestyle passen. Daarnaast krijg je een AI-huisgenootchatbot die voelt als een beste vriend en gids voor studenten, voor vragen en gezelschap terwijl je hier woont.",
     idVerified: 'ID Geverifieerd',
     idVerifiedCopy:
       "ID- en selfieverificatie voor elke student. Geen catfish, geen oplichting - universiteiten staan erachter zodat je je op de juiste match kunt richten.",
     wellbeingFirst: 'Welzijn Eerst',
     wellbeingCopy:
       "Compatibele woningen worden micro-ondersteuningssystemen. Als je woonsituatie klopt, gedij je - universiteiten zien tevredenere studenten en betere retentie.",
+    chatCompanion: 'AI-huisgenootcompanion',
+    chatCompanionCopy:
+      "Maak kennis met je persoonlijke AI-huisgenootchatbot – een beetje beste vriend, een beetje campusgids. Stel vragen over huisregels, het studentenleven in Nederland of hoe alles in je gebouw werkt, wanneer je maar ondersteuning nodig hebt.",
     antiDropout: 'De Anti-Uitval Motor',
     antiDropoutCopy:
-      "Veilige huizen maken succesvolle studenten. 47% van de uitvallers noemt huisvestingsstress - wij verminderen onverenigbaarheid vóór intrek, zodat studenten blijven, gedijen en afstuderen.",
+      "Veilige woningen maken succesvolle studenten. Onderzoek laat zien dat woonstress een van de grootste redenen is waarom studenten denken aan stoppen – het ondermijnt focus, cijfers en mentale gezondheid. Door onverenigbaarheid al vóór intrek te verminderen, verlagen universiteiten conflicten, beschermen ze welzijn en houden ze meer studenten ingeschreven tot en met hun diploma.",
   },
 }
 
@@ -158,15 +164,29 @@ export function BentoInfrastructure() {
             <p className="text-white/70 text-sm leading-relaxed text-center">{t.wellbeingCopy}</p>
           </motion.div>
 
+          {/* Small: AI Roommate Companion */}
+          <motion.div
+            className={cn('glass noise-overlay p-6 md:p-8 flex flex-col items-center justify-center min-h-[200px]')}
+            variants={itemVariants}
+          >
+            <div className="flex items-center justify-center mb-4">
+              <MessageCircle className="h-7 w-7 text-sky-400" aria-hidden />
+            </div>
+            <h3 className="text-lg font-bold text-white tracking-tight text-center mb-2">
+              {t.chatCompanion}
+            </h3>
+            <p className="text-white/70 text-sm leading-relaxed text-center">{t.chatCompanionCopy}</p>
+          </motion.div>
+
           {/* Wide: Anti-Dropout Engine */}
           <motion.div
-            className={cn('glass noise-overlay md:col-span-3 p-8 md:p-10')}
+            className={cn('glass noise-overlay md:col-span-2 p-8 md:p-10')}
             variants={itemVariants}
           >
             <h3 className="text-xl md:text-2xl font-bold text-white tracking-tight mb-3">
               {t.antiDropout}
             </h3>
-            <p className="text-white/80 text-base md:text-lg leading-relaxed max-w-3xl">
+            <p className="text-white/70 text-sm leading-relaxed max-w-3xl">
               {t.antiDropoutCopy}
             </p>
           </motion.div>

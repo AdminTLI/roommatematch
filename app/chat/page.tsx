@@ -4,6 +4,7 @@ import { redirect } from 'next/navigation'
 import { checkUserVerificationStatus, getVerificationRedirectUrl } from '@/lib/auth/verification-check'
 import { getUserProfile } from '@/lib/auth/user-profile'
 import { MessengerLayout } from './components/messenger-layout'
+import { DomuChatWidget } from '../dashboard/components/domu-chat-widget'
 
 interface ChatPageProps {
   searchParams: Promise<{ chatId?: string }>
@@ -51,21 +52,24 @@ export default async function ChatPage({ searchParams }: ChatPageProps) {
   const initialChatId = params.chatId || null
 
   return (
-    <AppShell 
-      user={userProfile}
-      showQuestionnairePrompt={true}
-    >
-      <div data-chat-page className="w-full h-full">
-        <MessengerLayout
-          user={{
-            ...user,
-            name: userProfile.name || userProfile.first_name || user.email?.split('@')[0] || 'User',
-            email: user.email
-          }}
-          initialChatId={initialChatId}
-        />
-      </div>
-    </AppShell>
+    <>
+      <AppShell 
+        user={userProfile}
+        showQuestionnairePrompt={true}
+      >
+        <div data-chat-page className="w-full h-full">
+          <MessengerLayout
+            user={{
+              ...user,
+              name: userProfile.name || userProfile.first_name || user.email?.split('@')[0] || 'User',
+              email: user.email
+            }}
+            initialChatId={initialChatId}
+          />
+        </div>
+      </AppShell>
+      <DomuChatWidget />
+    </>
   )
 }
 

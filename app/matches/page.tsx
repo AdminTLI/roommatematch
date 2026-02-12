@@ -4,6 +4,7 @@ import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import { getUserProfile } from '@/lib/auth/user-profile'
 import { checkUserVerificationStatus, getVerificationRedirectUrl } from '@/lib/auth/verification-check'
+import { DomuChatWidget } from '../dashboard/components/domu-chat-widget'
 
 export default async function MatchesPage() {
   const supabase = await createClient()
@@ -60,11 +61,14 @@ export default async function MatchesPage() {
   }
 
   return (
-    <AppShell 
-      user={userProfile}
-      showQuestionnairePrompt={true}
-    >
-      <StudentMatchesInterface user={userWithName} />
-    </AppShell>
+    <>
+      <AppShell 
+        user={userProfile}
+        showQuestionnairePrompt={true}
+      >
+        <StudentMatchesInterface user={userWithName} />
+      </AppShell>
+      <DomuChatWidget />
+    </>
   )
 }

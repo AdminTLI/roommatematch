@@ -4,6 +4,7 @@ import { redirect } from 'next/navigation'
 import { SettingsContent } from './components/settings-content'
 import { getUserProfile } from '@/lib/auth/user-profile'
 import { checkUserVerificationStatus, getVerificationRedirectUrl } from '@/lib/auth/verification-check'
+import { DomuChatWidget } from '../dashboard/components/domu-chat-widget'
 
 export default async function SettingsPage() {
   const supabase = await createClient()
@@ -626,13 +627,16 @@ export default async function SettingsPage() {
   }
 
   return (
-    <AppShell user={userProfile}>
-      <SettingsContent 
-        user={user}
-        profile={profile}
-        academic={academicWithStudyYear}
-        progressData={progressData}
-      />
-    </AppShell>
+    <>
+      <AppShell user={userProfile}>
+        <SettingsContent 
+          user={user}
+          profile={profile}
+          academic={academicWithStudyYear}
+          progressData={progressData}
+        />
+      </AppShell>
+      <DomuChatWidget />
+    </>
   )
 }

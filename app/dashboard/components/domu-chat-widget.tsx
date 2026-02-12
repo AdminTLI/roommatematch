@@ -15,7 +15,7 @@ export function DomuChatWidget() {
   const [messages, setMessages] = useState<Message[]>([
     {
       role: 'assistant',
-      text: "Hi! I'm Domu AI. Ask me anything—I can search the web for current info. First message may take 2–3s (cold start)."
+      text: "Hi! I’m your Domu Assistant. 🏠 I can help with platform rules, legal questions, or even find events in cities near you! What’s on your mind?"
     }
   ])
   const [input, setInput] = useState('')

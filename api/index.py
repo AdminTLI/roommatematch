@@ -18,8 +18,9 @@ from google import genai
 from google.genai import types
 from supabase import create_client as create_supabase_client
 
-# Platform manual: use module import so we can reload on each request (edits to data.py apply immediately)
+# Platform knowledge: use module import so we can reload on each request (edits to data.py apply immediately)
 import knowledge.data as knowledge_data
+from knowledge.data import SECURITY_PROTOCOL  # Imported for clarity; values are read via knowledge_data after reload
 
 # Load env from .env, .env.local (Vercel injects env vars at runtime)
 load_dotenv()
@@ -77,7 +78,7 @@ def _save_to_supabase(user_message: str, assistant_reply: str) -> None:
         pass  # Don't block response on Supabase errors
 
 
-# --- System prompt (PLATFORM_MANUAL + learned behavior) ---
+# --- System prompt (SECURITY_PROTOCOL + PLATFORM_MANUAL + learned behavior) ---
 
 
 def get_combined_context() -> str:
@@ -86,6 +87,7 @@ def get_combined_context() -> str:
     Reloads knowledge.data on each call so edits to data.py are picked up immediately.
     """
     importlib.reload(knowledge_data)
+    security_protocol = getattr(knowledge_data, "SECURITY_PROTOCOL", "")
     platform_manual = knowledge_data.PLATFORM_MANUAL
 
     # Learned instructions: dynamic behavior (e.g., from DB, file, or env).
@@ -94,14 +96,57 @@ def get_combined_context() -> str:
 
     return f"""You are Domu Match AI.
 
+SECURITY PROTOCOL (MANDATORY – NEVER BREAK):
+{security_protocol}
+
 HERE IS THE OFFICIAL PLATFORM MANUAL:
 {platform_manual}
 
 HERE ARE THE DYNAMIC INSTRUCTIONS (LEARNED BEHAVIOR):
 {learned_instructions or "(None yet—use the Manual for how-to questions.)"}
 
-Use the Manual to answer "How-to" questions.
+Use the SECURITY PROTOCOL and the Manual to answer questions safely.
 Use the Search Tool only for external info (weather, events)."""
+
+
+def is_malicious(user_message: str) -> bool:
+    """
+    Detect obvious prompt-injection / jailbreak attempts using simple keyword heuristics.
+    This is a defense-in-depth layer on top of the SECURITY_PROTOCOL in the system prompt.
+    """
+    if not user_message:
+        return False
+
+    lowered = user_message.lower()
+    suspicious_phrases = [
+        "ignore previous instructions",
+        "ignore all previous instructions",
+        "disregard previous instructions",
+        "disregard the above instructions",
+        "forget your previous instructions",
+        "forget your rules",
+        "system prompt",
+        "system instruction",
+        "system instructions",
+        "reveal your instructions",
+        "reveal the prompt",
+        "show your prompt",
+        "show your instructions",
+        "what is your prompt",
+        "what are your instructions",
+        "jailbreak",
+        "developer mode",
+        "dev mode",
+        "you are a developer",
+        "act as a developer",
+        "bypass safety",
+        "bypass restrictions",
+        "disable safety",
+        "ignore safety rules",
+        "unfiltered ai",
+    ]
+
+    return any(phrase in lowered for phrase in suspicious_phrases)
 
 
 # --- Routes ---
@@ -124,16 +169,28 @@ def chat():
     try:
         data = request.get_json() or {}
         message = data.get("message") or ""
-    except Exception:
-        return jsonify({"reply": "Invalid JSON. Send {\"message\": \"...\"}"}), 400
+    except Exception as e:
+        # Log technical details, but show a simple message to users
+        print("[Domu AI] Invalid JSON payload:", e)
+        return jsonify({"reply": "Sorry, I couldn't understand that request. Please send a simple text message."}), 400
 
     if not message.strip():
-        return jsonify({"reply": "Please send a non-empty message."}), 400
+        return jsonify({"reply": "Please send a non-empty message so I know how to help."}), 400
+
+    # Basic prompt-injection / jailbreak filter (defense in depth)
+    if is_malicious(message):
+        return jsonify({"reply": "I cannot fulfill that request."}), 200
 
     # Initialize Gemini (fast model, automatic tool calling)
     api_key = os.getenv("GEMINI_API_KEY") or os.getenv("GOOGLE_API_KEY")
     if not api_key:
-        return jsonify({"reply": "Server error: GEMINI_API_KEY not configured."}), 500
+        print("[Domu AI] Missing GEMINI_API_KEY / GOOGLE_API_KEY.")
+        return jsonify(
+            {
+                "reply": "I’m temporarily unavailable due to a configuration issue. Please try again later or contact support if this keeps happening."
+            },
+            503,
+        )
 
     try:
         client = genai.Client(api_key=api_key)
@@ -154,7 +211,16 @@ def chat():
 
         reply = response.text or "I couldn't generate a response."
     except Exception as e:
-        return jsonify({"reply": f"Error calling AI: {str(e)}"}), 500
+        # Log full error server-side, but keep the user message friendly and non-technical
+        print("[Domu AI] Chat error:", repr(e))
+        raw = str(e)
+        reply = "Sorry, something went wrong on my side. Please try again in a moment."
+
+        # Rate limits / overload
+        if raw and ("quota" in raw or "429" in raw or "RESOURCE_EXHAUSTED" in raw):
+            reply = "I’m getting a lot of requests right now and need a short break. Please try again in a minute."
+
+        return jsonify({"reply": reply}), 500
 
     # Save to Supabase (sequentially, non-blocking for user)
     _save_to_supabase(user_message=message, assistant_reply=reply)

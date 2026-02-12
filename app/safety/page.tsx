@@ -2,6 +2,7 @@ import { AppShell } from '@/components/app/shell'
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import { SafetyContent } from './components/safety-content'
+import { DomuChatWidget } from '../dashboard/components/domu-chat-widget'
 
 export default async function SafetyPage() {
   const supabase = await createClient()
@@ -55,16 +56,19 @@ export default async function SafetyPage() {
   }
 
   return (
-    <AppShell user={{
-      id: user.id,
-      email: user.email || '',
-      name: user.user_metadata?.full_name || 'User',
-      avatar: user.user_metadata?.avatar_url
-    }}>
-      <SafetyContent 
-        universitySecurityPhone={universitySecurityPhone}
-        universityName={universityName}
-      />
-    </AppShell>
+    <>
+      <AppShell user={{
+        id: user.id,
+        email: user.email || '',
+        name: user.user_metadata?.full_name || 'User',
+        avatar: user.user_metadata?.avatar_url
+      }}>
+        <SafetyContent 
+          universitySecurityPhone={universitySecurityPhone}
+          universityName={universityName}
+        />
+      </AppShell>
+      <DomuChatWidget />
+    </>
   )
 }

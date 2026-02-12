@@ -4,7 +4,6 @@ import React, { useState, useEffect, useRef, useCallback } from 'react'
 import { createPortal } from 'react-dom'
 import { useRouter } from 'next/navigation'
 import { useQuery } from '@tanstack/react-query'
-import { Plus_Jakarta_Sans } from 'next/font/google'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -26,8 +25,6 @@ import {
   MoreHorizontal,
   X
 } from 'lucide-react'
-
-const plusJakarta = Plus_Jakarta_Sans({ subsets: ['latin'], weight: ['400', '500', '600', '700'] })
 
 // Hook to detect if we're on mobile
 function useIsMobile() {
@@ -335,7 +332,7 @@ export function NotificationDropdown({
         e.stopPropagation()
       }}
     >
-      <div className={`flex items-center gap-2 sm:gap-2.5 flex-1 min-w-0 ${plusJakarta.className}`}>
+      <div className="flex items-center gap-2 sm:gap-2.5 flex-1 min-w-0">
         <Bell className="h-5 w-5 flex-shrink-0 text-violet-600 dark:text-violet-400" />
         <h2 className="text-base font-semibold whitespace-nowrap text-zinc-900 dark:text-white tracking-tight">Notifications</h2>
         {unreadCount > 0 && (
@@ -513,7 +510,7 @@ export function NotificationDropdown({
         <SheetContent
           data-notification-dropdown
           side="right"
-          className={`${plusJakarta.className} w-full p-0 z-[100] bg-white dark:bg-slate-800 border-zinc-200 dark:border-slate-700 flex flex-col`}
+          className="w-full p-0 z-[100] bg-white dark:bg-slate-800 border-zinc-200 dark:border-slate-700 flex flex-col"
           onClick={(e) => {
             // Prevent clicks inside sheet from closing it
             e.stopPropagation()
@@ -570,7 +567,7 @@ export function NotificationDropdown({
           e.stopPropagation()
         }}
       >
-        <Card className={`${plusJakarta.className} shadow-xl overflow-hidden bg-white dark:bg-slate-800 border-zinc-200 dark:border-slate-700 rounded-2xl border`}>
+        <Card className="shadow-xl overflow-hidden bg-white dark:bg-slate-800 border-zinc-200 dark:border-slate-700 rounded-2xl border">
           <CardHeader
             className="pb-3 px-4 pt-4 border-b border-zinc-200 dark:border-slate-700/50 rounded-t-2xl"
             onClick={(e) => {
