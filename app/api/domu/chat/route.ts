@@ -4,10 +4,36 @@ import { createServiceClient } from '@/lib/supabase/service'
 
 export const maxDuration = 30
 
+/** Max number of prior messages to send as context (user + assistant pairs). */
+const MAX_HISTORY_MESSAGES = 20
+
+type HistoryEntry = { role: 'user' | 'assistant'; text: string }
+
+function buildContents(history: HistoryEntry[], currentMessage: string): Array<{ role: 'user' | 'model'; parts: Array<{ text: string }> }> {
+  const contents: Array<{ role: 'user' | 'model'; parts: Array<{ text: string }> }> = []
+  const trimmed = history.slice(-MAX_HISTORY_MESSAGES)
+  for (const entry of trimmed) {
+    const role = entry.role === 'assistant' ? 'model' : 'user'
+    contents.push({ role, parts: [{ text: entry.text }] })
+  }
+  contents.push({ role: 'user', parts: [{ text: currentMessage }] })
+  return contents
+}
+
 export async function POST(request: Request) {
   try {
     const body = await request.json().catch(() => ({}))
     const message = (body?.message ?? '').trim()
+    const rawHistory = body?.history
+    const history: HistoryEntry[] = Array.isArray(rawHistory)
+      ? rawHistory
+          .filter((m: unknown) => m && typeof m === 'object' && 'role' in m && 'text' in m)
+          .map((m: { role: string; text: string }) => ({
+            role: m.role === 'assistant' ? 'assistant' : 'user',
+            text: String(m.text ?? '').trim()
+          }))
+          .filter((m: HistoryEntry) => m.text.length > 0)
+      : []
 
     if (!message) {
       return NextResponse.json({ reply: 'Please send a non-empty message.' }, { status: 400 })
@@ -25,10 +51,12 @@ export async function POST(request: Request) {
       )
     }
 
+    const contents = buildContents(history, message)
+
     const ai = new GoogleGenAI({ apiKey })
     const response = await ai.models.generateContent({
       model: 'gemini-2.0-flash',
-      contents: message,
+      contents,
       config: {
         tools: [{ googleSearch: {} }],
         maxOutputTokens: 2048

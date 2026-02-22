@@ -63,6 +63,7 @@ export function Universities() {
   const [loading, setLoading] = useState(false)
   const [loadingCities, setLoadingCities] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const [selectReady, setSelectReady] = useState(false)
 
   useEffect(() => {
     const fetchCities = async () => {
@@ -109,6 +110,10 @@ export function Universities() {
     fetchUniversities()
   }, [selectedCity])
 
+  useEffect(() => {
+    setSelectReady(true)
+  }, [])
+
   const formatUserCount = (count: number): string => {
     if (count === 0) return `0 ${t.students}`
     if (count === 1) return `1 ${t.student}`
@@ -153,73 +158,75 @@ export function Universities() {
           viewport={{ once: true }}
           transition={{ duration: 0.4, delay: 0.1 }}
         >
-          <Select
-            value={selectedCity || ''}
-            onValueChange={(value) => setSelectedCity(value || null)}
-            disabled={loadingCities}
-          >
-            <SelectTrigger
-              className={cn(
-                'w-full h-12 rounded-xl border border-white/20 bg-white/5 backdrop-blur-sm',
-                '!text-white hover:bg-white/10 hover:border-white/30',
-                'focus:ring-2 focus:ring-indigo-400/50 focus:border-indigo-400/50',
-                '[&>span]:flex-1 [&>span]:text-center [&>span]:!text-white',
-                '[&>span[data-placeholder]]:!text-white/70',
-                '[&_svg]:!text-white [&_svg]:opacity-80'
-              )}
+          {selectReady && (
+            <Select
+              value={selectedCity || ''}
+              onValueChange={(value) => setSelectedCity(value || null)}
+              disabled={loadingCities}
             >
-              <SelectValue placeholder={t.selectCityPlaceholder} />
-            </SelectTrigger>
-            <SelectContent
-              className={cn(
-                'glass noise-overlay border border-white/15 rounded-2xl bg-slate-900/80 backdrop-blur-2xl',
-                'shadow-[0_18px_45px_rgba(15,23,42,0.75)] max-h-[280px] overflow-y-auto px-1 py-2'
-              )}
-              disableScrollLock
-            >
-              {loadingCities ? (
-                <SelectItem
-                  value="loading"
-                  disabled
-                  className="text-white/70 justify-center text-sm px-4 py-2.5"
-                >
-                  {t.loading}
-                </SelectItem>
-              ) : error ? (
-                <SelectItem
-                  value="error"
-                  disabled
-                  className="text-white/70 justify-center text-sm px-4 py-2.5"
-                >
-                  Error loading cities
-                </SelectItem>
-              ) : cities.length === 0 ? (
-                <SelectItem
-                  value="none"
-                  disabled
-                  className="text-white/70 justify-center text-sm px-4 py-2.5"
-                >
-                  No cities available
-                </SelectItem>
-              ) : (
-                cities.map((city) => (
+              <SelectTrigger
+                className={cn(
+                  'w-full h-12 rounded-xl border border-white/20 bg-white/5 backdrop-blur-sm',
+                  '!text-white hover:bg-white/10 hover:border-white/30',
+                  'focus:ring-2 focus:ring-indigo-400/50 focus:border-indigo-400/50',
+                  '[&>span]:flex-1 [&>span]:text-center [&>span]:!text-white',
+                  '[&>span[data-placeholder]]:!text-white/70',
+                  '[&_svg]:!text-white [&_svg]:opacity-80'
+                )}
+              >
+                <SelectValue placeholder={t.selectCityPlaceholder} />
+              </SelectTrigger>
+              <SelectContent
+                className={cn(
+                  'glass noise-overlay border border-white/15 rounded-2xl bg-slate-900/80 backdrop-blur-2xl',
+                  'shadow-[0_18px_45px_rgba(15,23,42,0.75)] max-h-[280px] overflow-y-auto px-1 py-2'
+                )}
+                disableScrollLock
+              >
+                {loadingCities ? (
                   <SelectItem
-                    key={city}
-                    value={city}
-                    className={cn(
-                      'relative text-white text-sm justify-center rounded-xl px-4 py-2.5 cursor-pointer',
-                      'transition-colors duration-150',
-                      'hover:bg-white/10 focus:bg-white/10',
-                      'focus:text-white data-[highlighted]:text-white data-[state=checked]:text-white',
-                      'data-[state=checked]:bg-gradient-to-r data-[state=checked]:from-indigo-500/40 data-[state=checked]:to-purple-500/40'
-                    )}
+                    value="loading"
+                    disabled
+                    className="text-white/70 justify-center text-sm px-4 py-2.5"
                   >
-                    {city}
+                    {t.loading}
                   </SelectItem>
-                ))
-              )}
-            </SelectContent>
-          </Select>
+                ) : error ? (
+                  <SelectItem
+                    value="error"
+                    disabled
+                    className="text-white/70 justify-center text-sm px-4 py-2.5"
+                  >
+                    Error loading cities
+                  </SelectItem>
+                ) : cities.length === 0 ? (
+                  <SelectItem
+                    value="none"
+                    disabled
+                    className="text-white/70 justify-center text-sm px-4 py-2.5"
+                  >
+                    No cities available
+                  </SelectItem>
+                ) : (
+                  cities.map((city) => (
+                    <SelectItem
+                      key={city}
+                      value={city}
+                      className={cn(
+                        'relative text-white text-sm justify-center rounded-xl px-4 py-2.5 cursor-pointer',
+                        'transition-colors duration-150',
+                        'hover:bg-white/10 focus:bg-white/10',
+                        'focus:text-white data-[highlighted]:text-white data-[state=checked]:text-white',
+                        'data-[state=checked]:bg-gradient-to-r data-[state=checked]:from-indigo-500/40 data-[state=checked]:to-purple-500/40'
+                      )}
+                    >
+                      {city}
+                    </SelectItem>
+                  ))
+                )}
+              </SelectContent>
+            </Select>
+          )}
         </motion.div>
 
         {selectedCity && (

@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { useRouter } from 'next/navigation'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import {
@@ -10,12 +11,14 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import { User, FileText, Shield, Settings as SettingsIcon } from 'lucide-react'
+import { User, FileText, Shield, Settings as SettingsIcon, EyeOff, Eye, Loader2 } from 'lucide-react'
 import { ProfileSettings } from './profile-settings'
 import { QuestionnaireSettings } from './questionnaire-settings'
 import { AccountSettings } from './account-settings'
 import { PrivacySettings } from './privacy-settings'
 import { EmailVerification } from './email-verification'
+import { Button } from '@/components/ui/button'
+import { getCSRFHeaders } from '@/lib/utils/csrf-client'
 
 interface SettingsContentProps {
   user: any
@@ -31,8 +34,32 @@ interface SettingsContentProps {
 }
 
 export function SettingsContent({ user, profile, academic, progressData }: SettingsContentProps) {
+  const router = useRouter()
   const [activeTab, setActiveTab] = useState('profile')
   const [mounted, setMounted] = useState(false)
+  const [unhideLoading, setUnhideLoading] = useState(false)
+  const isProfileHidden = profile?.is_visible === false
+
+  const handleMakeVisible = async () => {
+    setUnhideLoading(true)
+    try {
+      const headers = await getCSRFHeaders()
+      const res = await fetch('/api/settings/hide-profile', {
+        method: 'POST',
+        headers,
+        body: JSON.stringify({ hidden: false }),
+      })
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}))
+        throw new Error(data.message || data.error || 'Failed to make profile visible')
+      }
+      router.refresh()
+    } catch (err) {
+      console.error('[Settings] Make visible failed:', err)
+    } finally {
+      setUnhideLoading(false)
+    }
+  }
 
   // Defer Radix UI (Tabs, Popover, Dialog, Tooltip) until after mount to avoid
   // hydration mismatch from server/client ID differences (e.g. aria-labelledby, id).
@@ -56,6 +83,38 @@ export function SettingsContent({ user, profile, academic, progressData }: Setti
         <p className="text-zinc-600 dark:text-zinc-400 mt-2">
           Manage your account settings, profile information, and questionnaire responses.
         </p>
+        {isProfileHidden && (
+          <div className="mt-6 rounded-2xl border border-amber-200 dark:border-amber-500/30 bg-amber-50 dark:bg-amber-500/10 p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center gap-4">
+            <div className="flex items-start gap-3 flex-1">
+              <EyeOff className="w-5 h-5 text-amber-600 dark:text-amber-400 flex-shrink-0 mt-0.5" />
+              <div>
+                <p className="font-medium text-amber-900 dark:text-amber-100">
+                  Your profile is hidden
+                </p>
+                <p className="text-sm text-amber-800 dark:text-amber-200/90 mt-1">
+                  You won&apos;t appear in search or receive match notifications. Your data is kept; you can make your profile visible again anytime.
+                </p>
+              </div>
+            </div>
+            <Button
+              onClick={handleMakeVisible}
+              disabled={unhideLoading}
+              className="shrink-0 bg-amber-600 hover:bg-amber-700 text-white rounded-xl"
+            >
+              {unhideLoading ? (
+                <>
+                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                  Updating...
+                </>
+              ) : (
+                <>
+                  <Eye className="w-4 h-4 mr-2" />
+                  Make visible again
+                </>
+              )}
+            </Button>
+          </div>
+        )}
       </div>
 
       <div className="flex flex-col lg:flex-row gap-8">
@@ -144,7 +203,7 @@ export function SettingsContent({ user, profile, academic, progressData }: Setti
                       <h2 className="text-xl font-semibold text-zinc-900 dark:text-white">Account Settings</h2>
                       <p className="text-sm text-zinc-600 dark:text-zinc-400 mt-1">Manage your account preferences and security settings.</p>
                     </div>
-                    <AccountSettings user={user} />
+                    <AccountSettings user={user} profile={profile} onVisibilityChange={router.refresh} />
                   </div>
                 </TabsContent>
 

@@ -3,6 +3,8 @@
 import { useState, useRef, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { MessageCircle, X, Send, Loader2 } from 'lucide-react'
+import ReactMarkdown from 'react-markdown'
+import remarkGfm from 'remark-gfm'
 
 interface Message {
   role: 'user' | 'assistant'
@@ -39,7 +41,10 @@ export function DomuChatWidget() {
       const res = await fetch('/api/domu/chat', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ message: text })
+        body: JSON.stringify({
+          message: text,
+          history: messages.map((m) => ({ role: m.role, text: m.text }))
+        })
       })
 
       const data = await res.json().catch(() => ({}))
@@ -84,7 +89,7 @@ export function DomuChatWidget() {
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 20, scale: 0.95 }}
             transition={{ type: 'spring', damping: 25, stiffness: 300 }}
-            className="fixed bottom-6 right-6 z-50 flex h-[420px] w-[360px] flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-xl dark:border-slate-700 dark:bg-slate-900"
+            className="fixed bottom-6 right-6 z-50 flex h-[420px] max-h-[80vh] w-[360px] flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-xl dark:border-slate-700 dark:bg-slate-900 md:h-[520px] md:w-[420px]"
           >
             {/* Header */}
             <div className="flex items-center justify-between border-b border-slate-200 bg-slate-50 px-4 py-3 dark:border-slate-700 dark:bg-slate-800">
@@ -122,7 +127,23 @@ export function DomuChatWidget() {
                             : 'bg-slate-100 text-slate-800 dark:bg-slate-700 dark:text-slate-200'
                       }`}
                     >
-                      <span className="whitespace-pre-wrap break-words">{msg.text}</span>
+                      {msg.role === 'assistant' ? (
+                        <div className="prose prose-sm prose-slate dark:prose-invert max-w-none">
+                          <ReactMarkdown
+                            remarkPlugins={[remarkGfm]}
+                            components={{
+                              p: ({ children }) => <p className="mb-2 last:mb-0">{children}</p>,
+                              ul: ({ children }) => <ul className="list-disc pl-4 space-y-1">{children}</ul>,
+                              ol: ({ children }) => <ol className="list-decimal pl-4 space-y-1">{children}</ol>,
+                              li: ({ children }) => <li className="leading-snug">{children}</li>
+                            }}
+                          >
+                            {msg.text}
+                          </ReactMarkdown>
+                        </div>
+                      ) : (
+                        <span className="whitespace-pre-wrap break-words">{msg.text}</span>
+                      )}
                     </div>
                   </motion.div>
                 ))}

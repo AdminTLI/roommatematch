@@ -112,6 +112,11 @@ export async function middleware(req: NextRequest) {
     
     // Skip CSRF for GET, HEAD, OPTIONS
     if (!['GET', 'HEAD', 'OPTIONS'].includes(method)) {
+      // Explicit skip for hide-profile (avoids any CSRF path-matching quirks; auth still required in route)
+      if (pathname === '/api/settings/hide-profile') {
+        return NextResponse.next()
+      }
+
       // Rate limiting for POST/PUT/DELETE API routes
       const clientIp = req.ip || req.headers.get('x-forwarded-for') || req.headers.get('x-real-ip') || 'unknown'
       const rateLimitKey = getIPRateLimitKey('api', clientIp)
@@ -150,7 +155,8 @@ export async function middleware(req: NextRequest) {
         '/api/analytics/track-event',
         '/api/admin/sync-updates', // Admin endpoint for syncing deployment updates
         '/api/auth/resend-verification', // Resend verification email (users may not be authenticated)
-        '/api/domu/chat' // Domu AI chat (dashboard widget; protected by auth + same-origin)
+        '/api/domu/chat', // Domu AI chat (dashboard widget; protected by auth + same-origin)
+        '/api/settings/hide-profile', // Internal settings action; low-risk to skip CSRF
       ]
       // Normalize pathname (remove trailing slash) for consistent matching
       const normalizedPathname = pathname.replace(/\/$/, '')

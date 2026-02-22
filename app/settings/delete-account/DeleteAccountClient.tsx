@@ -18,6 +18,7 @@ import {
   Home,
   Heart
 } from 'lucide-react'
+import { getCSRFHeaders } from '@/lib/utils/csrf-client'
 
 /** Exit survey reason options - matches backend enum/tagging */
 const EXIT_REASONS = [
@@ -48,14 +49,16 @@ export function DeleteAccountClient({
   const [hideLoading, setHideLoading] = useState(false)
   const [deleteLoading, setDeleteLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [redirectCountdown, setRedirectCountdown] = useState<number | null>(null)
 
   const handleHideProfile = async () => {
     setError(null)
     setHideLoading(true)
     try {
+      const headers = await getCSRFHeaders()
       const res = await fetch('/api/settings/hide-profile', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers,
         body: JSON.stringify({ hidden: true }),
       })
       if (!res.ok) {
@@ -85,9 +88,10 @@ export function DeleteAccountClient({
     setDeleteLoading(true)
     setStep('deleting')
     try {
+      const headers = await getCSRFHeaders()
       const res = await fetch('/api/user/delete', {
         method: 'DELETE',
-        headers: { 'Content-Type': 'application/json' },
+        headers,
         body: JSON.stringify({
           survey_reason: surveyReason === 'other' ? `other: ${surveyOther}` : surveyReason,
           survey_comment: surveyComment || undefined,
@@ -95,7 +99,9 @@ export function DeleteAccountClient({
       })
       const data = await res.json().catch(() => ({}))
       if (!res.ok) {
-        throw new Error(data.message || data.error || 'Failed to delete account')
+        // In dev, prefer debug message so we can see the real server error
+        const msg = typeof data.debug === 'string' ? data.debug : (data.message || data.error || 'Failed to delete account')
+        throw new Error(msg)
       }
       setStep('done')
       // Clear local session (auth user already deleted server-side)
@@ -104,6 +110,13 @@ export function DeleteAccountClient({
         process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
       )
       await supabase.auth.signOut()
+      // Stay on confirmation page with visible countdown (5 seconds)
+      const redirectSeconds = 5
+      setRedirectCountdown(redirectSeconds)
+      for (let s = redirectSeconds - 1; s >= 0; s--) {
+        await new Promise((resolve) => setTimeout(resolve, 1000))
+        setRedirectCountdown(s)
+      }
       router.push('/')
       router.refresh()
     } catch (err) {
@@ -289,8 +302,13 @@ export function DeleteAccountClient({
         <Card className="border-zinc-200 dark:border-white/10">
           <CardContent className="py-12 flex flex-col items-center justify-center gap-4">
             <Home className="w-12 h-12 text-zinc-400" />
-            <p className="text-zinc-600 dark:text-zinc-400">
-              Your account has been deleted. Redirecting...
+            <p className="text-zinc-600 dark:text-zinc-400 text-center">
+              Your account has been deleted.
+            </p>
+            <p className="text-sm text-zinc-500 dark:text-zinc-500">
+              {redirectCountdown !== null && redirectCountdown > 0
+                ? `Redirecting to the home page in ${redirectCountdown} second${redirectCountdown === 1 ? '' : 's'}...`
+                : 'Redirecting...'}
             </p>
           </CardContent>
         </Card>

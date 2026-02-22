@@ -14,18 +14,26 @@ import {
   Shield,
   Loader2,
   Check,
-  AlertCircle
+  AlertCircle,
+  EyeOff,
+  Eye
 } from 'lucide-react'
 import { EmailVerification } from './email-verification'
+import { getCSRFHeaders } from '@/lib/utils/csrf-client'
 
 interface AccountSettingsProps {
   user: any
+  profile?: { is_visible?: boolean } | null
+  onVisibilityChange?: () => void
 }
 
-export function AccountSettings({ user }: AccountSettingsProps) {
+export function AccountSettings({ user, profile, onVisibilityChange }: AccountSettingsProps) {
   const [isLoading, setIsLoading] = useState(false)
   const [isSuccess, setIsSuccess] = useState(false)
   const [error, setError] = useState<string | null>(null)
+
+  const [visibilityLoading, setVisibilityLoading] = useState(false)
+  const isProfileHidden = profile?.is_visible === false
 
   const [notifications, setNotifications] = useState({
     emailMatches: true,
@@ -34,6 +42,27 @@ export function AccountSettings({ user }: AccountSettingsProps) {
     pushMatches: true,
     pushMessages: false
   })
+
+  const handleMakeVisible = async () => {
+    setVisibilityLoading(true)
+    try {
+      const headers = await getCSRFHeaders()
+      const res = await fetch('/api/settings/hide-profile', {
+        method: 'POST',
+        headers,
+        body: JSON.stringify({ hidden: false }),
+      })
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}))
+        throw new Error(data.message || data.error || 'Failed to make profile visible')
+      }
+      onVisibilityChange?.()
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to make profile visible')
+    } finally {
+      setVisibilityLoading(false)
+    }
+  }
 
   const handleNotificationChange = (key: string, value: boolean) => {
     setNotifications(prev => ({ ...prev, [key]: value }))
@@ -78,6 +107,52 @@ export function AccountSettings({ user }: AccountSettingsProps) {
             Settings saved successfully!
           </AlertDescription>
         </Alert>
+      )}
+
+      {/* Profile visibility - show when profile exists */}
+      {profile != null && (
+        <div className="space-y-4">
+          <h3 className="text-sm font-medium text-zinc-600 dark:text-zinc-400 uppercase tracking-wider px-1">Profile visibility</h3>
+          <div className="bg-white/80 dark:bg-zinc-900/40 border border-zinc-200 dark:border-white/10 rounded-2xl overflow-hidden divide-y divide-zinc-200 dark:divide-white/5 backdrop-blur-xl">
+            <div className="p-4 flex flex-col sm:flex-row sm:items-center gap-4">
+              <div className="flex items-center gap-3 sm:w-1/3">
+                {isProfileHidden ? (
+                  <EyeOff className="w-4 h-4 text-amber-500 dark:text-amber-400" />
+                ) : (
+                  <Eye className="w-4 h-4 text-emerald-500 dark:text-emerald-400" />
+                )}
+                <Label className="text-zinc-900 dark:text-zinc-100 font-medium">
+                  Search &amp; matches
+                </Label>
+              </div>
+              <div className="flex-1 flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4">
+                <p className="text-sm text-zinc-600 dark:text-zinc-400">
+                  {isProfileHidden
+                    ? 'Your profile is hidden. You won\'t appear in search or receive match notifications.'
+                    : 'Your profile is visible. You appear in search and can receive match notifications.'}
+                </p>
+                {isProfileHidden && (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={handleMakeVisible}
+                    disabled={visibilityLoading}
+                    className="shrink-0 border-amber-300 dark:border-amber-600 text-amber-700 dark:text-amber-300 hover:bg-amber-50 dark:hover:bg-amber-500/10"
+                  >
+                    {visibilityLoading ? (
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                    ) : (
+                      <>
+                        <Eye className="w-4 h-4 mr-1.5" />
+                        Make visible again
+                      </>
+                    )}
+                  </Button>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
       )}
 
       {/* Email Verification Group - Always visible */}
