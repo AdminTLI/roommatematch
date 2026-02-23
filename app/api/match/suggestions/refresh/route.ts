@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createClient, createAdminClient } from '@/lib/supabase/server'
 import { getMatchRepo } from '@/lib/matching/repo.factory'
 import { runMatchingAsSuggestions } from '@/lib/matching/orchestrator'
-import { checkRateLimit, getUserRateLimitKey } from '@/lib/rate-limit'
+import { checkRateLimit, getUserRateLimitKey, buildRateLimitHeaders } from '@/lib/rate-limit'
 import { getDistributedLock } from '@/lib/concurrency-lock'
 import { safeLogger } from '@/lib/utils/logger'
 
@@ -28,24 +28,19 @@ export async function POST(request: NextRequest) {
       }, { status: 403 })
     }
 
-    // Rate limiting: 1 request per 5 minutes per user (prevents spam/DoS)
+    // Rate limiting: 5 refreshes per 15 minutes per user (prevents scraping/DoS)
     const rateLimitKey = getUserRateLimitKey('matching_refresh', user.id)
     const rateLimitResult = await checkRateLimit('matching_refresh', rateLimitKey)
-    
+    const REFRESH_LIMIT = 5
+
     if (!rateLimitResult.allowed) {
       return NextResponse.json(
-        { 
-          error: 'Too many requests. Please wait before refreshing again.',
-          retryAfter: Math.ceil((rateLimitResult.resetTime - Date.now()) / 1000)
+        {
+          error: "You've refreshed your matches too many times recently. Please check back in a few minutes to protect system resources."
         },
-        { 
+        {
           status: 429,
-          headers: {
-            'X-RateLimit-Limit': '1',
-            'X-RateLimit-Remaining': '0',
-            'X-RateLimit-Reset': new Date(rateLimitResult.resetTime).toISOString(),
-            'Retry-After': Math.ceil((rateLimitResult.resetTime - Date.now()) / 1000).toString()
-          }
+          headers: buildRateLimitHeaders(REFRESH_LIMIT, rateLimitResult)
         }
       )
     }

@@ -1,6 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient, createAdminClient } from '@/lib/supabase/server'
+import { checkRateLimit, getUserRateLimitKey, buildRateLimitHeaders } from '@/lib/rate-limit'
 import { safeLogger } from '@/lib/utils/logger'
+
+const CHAT_PROFILES_LIMIT = 60 // 60 profile fetches per minute per user
 
 // GET /api/chat/user-info?chatId=xxx
 export async function GET(request: NextRequest) {
@@ -10,6 +13,19 @@ export async function GET(request: NextRequest) {
     
     if (authError || !user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
+
+    // Rate limiting: 60 profile fetches per minute per user (prevents script scraping)
+    const rateLimitKey = getUserRateLimitKey('chat_profiles', user.id)
+    const rateLimitResult = await checkRateLimit('chat_profiles', rateLimitKey)
+    if (!rateLimitResult.allowed) {
+      return NextResponse.json(
+        { error: 'Too many requests' },
+        {
+          status: 429,
+          headers: buildRateLimitHeaders(CHAT_PROFILES_LIMIT, rateLimitResult)
+        }
+      )
     }
 
     const { searchParams } = new URL(request.url)
@@ -153,6 +169,39 @@ export async function GET(request: NextRequest) {
       )
     }
 
+    // Fetch questionnaire budget (min/max rent) from responses
+    let budgetMin: number | null = null
+    let budgetMax: number | null = null
+    const { data: budgetResponses } = await admin
+      .from('responses')
+      .select('question_key, value')
+      .eq('user_id', targetUserId)
+      .in('question_key', ['budget_min', 'budget_max'])
+    if (budgetResponses?.length) {
+      const toNum = (v: unknown): number | null => {
+        if (typeof v === 'number' && Number.isFinite(v)) return v
+        if (typeof v === 'string') { const n = Number(v); return Number.isFinite(n) ? n : null }
+        return null
+      }
+      for (const r of budgetResponses) {
+        const num = toNum(r.value)
+        if (num == null) continue
+        if (r.question_key === 'budget_min') budgetMin = num
+        if (r.question_key === 'budget_max') budgetMax = num
+      }
+    }
+
+    // Fetch preferred cities from user_housing_preferences (post-onboarding / housing preferences)
+    let preferredCities: string[] = []
+    const { data: housingPrefs } = await admin
+      .from('user_housing_preferences')
+      .select('preferred_cities')
+      .eq('user_id', targetUserId)
+      .maybeSingle()
+    if (housingPrefs?.preferred_cities && Array.isArray(housingPrefs.preferred_cities)) {
+      preferredCities = housingPrefs.preferred_cities.filter((c): c is string => typeof c === 'string')
+    }
+
     // Fetch academic data with joins for university and program info
     const { data: academicData, error: academicError } = await admin
       .from('user_academic')
@@ -197,23 +246,27 @@ export async function GET(request: NextRequest) {
     const degreeLevel = academicData?.degree_level || null
 
     // Return user info
+    const headers: Record<string, string> = {
+      'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate',
+      'Pragma': 'no-cache',
+      'Expires': '0',
+      ...buildRateLimitHeaders(CHAT_PROFILES_LIMIT, rateLimitResult)
+    }
+
     return NextResponse.json({
       first_name: profile.first_name || null,
       last_name: profile.last_name || null,
       bio: profile.bio || null,
       interests: (profile.interests && Array.isArray(profile.interests)) ? profile.interests : [],
       housing_status: (profile.housing_status && Array.isArray(profile.housing_status)) ? profile.housing_status : [],
+      budget_min: budgetMin,
+      budget_max: budgetMax,
+      preferred_cities: preferredCities,
       university_name: universityName,
       programme_name: programName,
       degree_level: degreeLevel,
       study_year: studyYear
-    }, {
-      headers: {
-        'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate',
-        'Pragma': 'no-cache',
-        'Expires': '0'
-      }
-    })
+    }, { headers })
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : String(error)
     const errorStack = error instanceof Error ? error.stack : undefined

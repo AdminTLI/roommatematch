@@ -693,6 +693,16 @@ export function MessengerSidebar({ user, onChatSelect, selectedChatId, onNewChat
             <p className="text-xs text-gray-500 dark:text-gray-400 truncate">Online</p>
           </div>
         </div>
+        {/* New Chat - mobile/tablet only (left of three-dots menu) */}
+        {onNewChat && (
+          <Button
+            onClick={onNewChat}
+            className="lg:hidden flex-shrink-0 mr-2 bg-purple-600 hover:bg-purple-700 text-white"
+            size="sm"
+          >
+            New Chat
+          </Button>
+        )}
         {isMounted ? (
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
@@ -1075,9 +1085,9 @@ export function MessengerSidebar({ user, onChatSelect, selectedChatId, onNewChat
         </div>
       </div>
 
-      {/* New Chat Button */}
+      {/* New Chat Button - desktop only (hidden on mobile/tablet) */}
       {onNewChat && (
-        <div className="flex-shrink-0 p-4 border-t border-gray-200 dark:border-gray-800">
+        <div className="hidden lg:block flex-shrink-0 p-4 border-t border-gray-200 dark:border-gray-800">
           <Button
             onClick={onNewChat}
             className="w-full bg-purple-600 hover:bg-purple-700 text-white"

@@ -53,6 +53,7 @@ import { queryKeys, queryClient } from '@/app/providers'
 import { useRealtimeInvalidation } from '@/hooks/use-realtime-invalidation'
 import { monitorQuery } from '@/lib/utils/query-monitor'
 import { getCompatibilityCacheKey, getCompatibilityStaleTime } from '@/lib/cache/compatibility-cache'
+import { WellnessSurveyModal } from './wellness-survey-modal'
 
 const fadeInUp = {
   initial: { opacity: 0, y: 20 },
@@ -1460,6 +1461,8 @@ export function DashboardContent({ hasCompletedQuestionnaire = false, hasPartial
 
   return (
     <div className="space-y-8 pb-24 md:pb-6">
+      {/* Wellness Check survey (14-day / 30-day) */}
+      <WellnessSurveyModal />
       {/* Admin Warning Banner */}
       <WarningBanner userId={user?.id} />
 

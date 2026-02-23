@@ -1,7 +1,7 @@
 import { NextResponse, NextRequest } from 'next/server'
 import { createServerClient } from '@supabase/ssr'
 import { createCSRFTokenCookie, validateCSRFToken } from '@/lib/csrf'
-import { checkRateLimit, getIPRateLimitKey } from '@/lib/rate-limit'
+import { checkRateLimit, getIPRateLimitKey, getClientIp, buildRateLimitHeaders } from '@/lib/rate-limit'
 import { isFeatureEnabled } from '@/lib/feature-flags'
 import { checkUserVerificationStatus, getVerificationRedirectUrl } from '@/lib/auth/verification-check'
 import { safeLogger } from '@/lib/utils/logger'
@@ -84,10 +84,26 @@ export async function middleware(req: NextRequest) {
 
   // Handle API routes with CSRF and rate limiting
   if (isApiRoute) {
+    // Global IP-based rate limit: 300 requests per minute per IP across /api (DDoS / scraping safety net)
+    const clientIp = getClientIp(req)
+    const apiGlobalKey = getIPRateLimitKey('api_global', clientIp)
+    const apiGlobalResult = await checkRateLimit('api_global', apiGlobalKey)
+    if (!apiGlobalResult.allowed) {
+      return NextResponse.json(
+        {
+          error: 'Too many requests',
+          retryAfter: Math.ceil((apiGlobalResult.resetTime - Date.now()) / 1000)
+        },
+        {
+          status: 429,
+          headers: buildRateLimitHeaders(300, apiGlobalResult)
+        }
+      )
+    }
+
     // Rate limiting for auth endpoints (sign-in, sign-up)
     if (pathname === '/api/auth/sign-in' || pathname === '/api/auth/sign-up' || 
         pathname === '/auth/sign-in' || pathname === '/auth/sign-up') {
-      const clientIp = req.ip || req.headers.get('x-forwarded-for') || req.headers.get('x-real-ip') || 'unknown'
       const rateLimitKey = getIPRateLimitKey('auth', clientIp)
       const rateLimitResult = await checkRateLimit('auth', rateLimitKey)
       
@@ -118,7 +134,6 @@ export async function middleware(req: NextRequest) {
       }
 
       // Rate limiting for POST/PUT/DELETE API routes
-      const clientIp = req.ip || req.headers.get('x-forwarded-for') || req.headers.get('x-real-ip') || 'unknown'
       const rateLimitKey = getIPRateLimitKey('api', clientIp)
       const rateLimitResult = await checkRateLimit('api', rateLimitKey)
 

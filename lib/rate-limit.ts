@@ -320,6 +320,33 @@ function getSharedStore(): RateLimitStore | undefined {
   return sharedStore
 }
 
+// Cache of dynamically configured rate limiters keyed by (limit, window, failClosed)
+const dynamicLimiterCache = new Map<string, RateLimiter>()
+
+function getDynamicRateLimiter(
+  limit: number,
+  windowInSeconds: number,
+  failClosed: boolean = false
+): RateLimiter {
+  const cacheKey = `${limit}:${windowInSeconds}:${failClosed ? '1' : '0'}`
+  const existing = dynamicLimiterCache.get(cacheKey)
+  if (existing) {
+    return existing
+  }
+
+  const limiter = new RateLimiter(
+    {
+      windowMs: windowInSeconds * 1000,
+      maxRequests: limit,
+      failClosed
+    },
+    getSharedStore
+  )
+
+  dynamicLimiterCache.set(cacheKey, limiter)
+  return limiter
+}
+
 // Pre-configured rate limiters for different use cases
 // Critical routes use failClosed: true and shared store
 // Store is initialized lazily on first use (not at module load time)
@@ -328,6 +355,13 @@ export const RATE_LIMITS = {
   api: new RateLimiter({
     windowMs: 15 * 60 * 1000, // 15 minutes
     maxRequests: 100,
+    failClosed: true
+  }, getSharedStore),
+
+  // Global API fallback: 300 requests per IP per minute (DDoS / scraping safety net)
+  api_global: new RateLimiter({
+    windowMs: 60 * 1000, // 1 minute
+    maxRequests: 300,
     failClosed: true
   }, getSharedStore),
 
@@ -410,11 +444,12 @@ export const RATE_LIMITS = {
   }, getSharedStore),
 
   // Matching refresh (fail-closed to prevent DoS)
+  // 5 refreshes per 15 minutes per user/IP to prevent scraping and abuse
   matching_refresh: new RateLimiter({
-    windowMs: 5 * 60 * 1000, // 5 minutes
-    maxRequests: 1,
+    windowMs: 15 * 60 * 1000, // 15 minutes
+    maxRequests: 5,
     failClosed: true
-  }, getSharedStore()),
+  }, getSharedStore),
 
   // Group creation (fail-closed to prevent spam)
   group_creation: new RateLimiter({
@@ -483,6 +518,70 @@ export function getUserRateLimitKey(type: string, userId: string): string {
 // Helper function to get IP-based rate limit key
 export function getIPRateLimitKey(type: string, ip: string): string {
   return generateRateLimitKey(type, ip)
+}
+
+// Helper to build standard rate limit headers for JSON responses
+export function buildRateLimitHeaders(limit: number, result: RateLimitResult): Record<string, string> {
+  const headers: Record<string, string> = {
+    'X-RateLimit-Limit': String(limit),
+    'X-RateLimit-Remaining': String(Math.max(0, result.remaining)),
+    'X-RateLimit-Reset': new Date(result.resetTime).toISOString()
+  }
+
+  if (!result.allowed) {
+    headers['Retry-After'] = Math.ceil((result.resetTime - Date.now()) / 1000).toString()
+  }
+
+  return headers
+}
+
+// Generic rate limit helper for ad-hoc limits:
+// identifier: per-user or per-IP key
+// limit: maximum number of requests
+// windowInSeconds: size of the rolling window in seconds
+export async function checkCustomRateLimit(
+  identifier: string,
+  limit: number,
+  windowInSeconds: number,
+  options?: { failClosed?: boolean }
+): Promise<{ allowed: boolean; result: RateLimitResult; headers: Record<string, string> }> {
+  const limiter = getDynamicRateLimiter(limit, windowInSeconds, options?.failClosed ?? false)
+  const result = await limiter.check(identifier)
+  const headers = buildRateLimitHeaders(limit, result)
+  return { allowed: result.allowed, result, headers }
+}
+
+// Helper to extract client IP from headers (prefers x-forwarded-for)
+export function getClientIpFromHeaders(headers: Headers): string {
+  const xForwardedFor = headers.get('x-forwarded-for')
+  if (xForwardedFor && xForwardedFor.length > 0) {
+    const firstIp = xForwardedFor.split(',')[0]?.trim()
+    if (firstIp) {
+      return firstIp
+    }
+  }
+
+  const realIp = headers.get('x-real-ip')
+  if (realIp && realIp.length > 0) {
+    return realIp
+  }
+
+  return 'unknown'
+}
+
+// Helper to extract client IP from a Next.js request object (NextRequest or API request)
+export function getClientIp(req: { headers: Headers; ip?: string | null }): string {
+  const fromHeaders = getClientIpFromHeaders(req.headers)
+  if (fromHeaders !== 'unknown') {
+    return fromHeaders
+  }
+
+  const anyIp = (req as any).ip
+  if (typeof anyIp === 'string' && anyIp.length > 0) {
+    return anyIp
+  }
+
+  return 'unknown'
 }
 
 // Middleware helper for Next.js API routes

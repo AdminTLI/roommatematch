@@ -29,6 +29,9 @@ interface UserInfoData {
   bio: string | null
   interests: string[]
   housing_status?: HousingStatusKey[]
+  budget_min?: number | null
+  budget_max?: number | null
+  preferred_cities?: string[]
   university_name: string | null
   programme_name: string | null
   degree_level: string | null
@@ -485,15 +488,41 @@ export function MessengerProfilePane({ chatId, isOpen, onClose }: MessengerProfi
               {/* Housing Status */}
               <div>
                 <h3 className="text-sm font-bold text-gray-900 dark:text-white uppercase tracking-wider mb-3">HOUSING STATUS</h3>
-                {userInfo?.housing_status && userInfo.housing_status.length > 0 ? (
-                  <StatusBadgeList
-                    statusKeys={userInfo.housing_status}
-                    variant="secondary"
-                    className="flex-wrap"
-                  />
-                ) : (
-                  <p className="text-xs text-gray-500 dark:text-gray-400 italic">No housing status selected</p>
-                )}
+                <div className="space-y-3">
+                  {userInfo?.housing_status && userInfo.housing_status.length > 0 ? (
+                    <StatusBadgeList
+                      statusKeys={userInfo.housing_status}
+                      variant="secondary"
+                      className="flex-wrap"
+                    />
+                  ) : (
+                    <p className="text-xs text-gray-500 dark:text-gray-400 italic">No housing status selected</p>
+                  )}
+                  {/* Budget (min–max rent from questionnaire) */}
+                  {(userInfo?.budget_min != null || userInfo?.budget_max != null) && (
+                    <div className="text-sm">
+                      <span className="text-gray-600 dark:text-gray-400 font-medium">Budget (rent/month): </span>
+                      <span className="text-gray-900 dark:text-white">
+                        {userInfo.budget_min != null && userInfo.budget_max != null
+                          ? `€${userInfo.budget_min} – €${userInfo.budget_max}`
+                          : userInfo.budget_min != null
+                            ? `€${userInfo.budget_min}+`
+                            : userInfo.budget_max != null
+                              ? `up to €${userInfo.budget_max}`
+                              : ''}
+                      </span>
+                    </div>
+                  )}
+                  {/* Preferred city/cities (from housing preferences / questionnaire) */}
+                  {userInfo?.preferred_cities && userInfo.preferred_cities.length > 0 && (
+                    <div className="text-sm">
+                      <span className="text-gray-600 dark:text-gray-400 font-medium">Preferred city: </span>
+                      <span className="text-gray-900 dark:text-white">
+                        {userInfo.preferred_cities.join(', ')}
+                      </span>
+                    </div>
+                  )}
+                </div>
               </div>
 
               {/* University Data */}

@@ -29,7 +29,7 @@ export default function SignUpPage() {
                 <h1 className="mt-3 text-4xl font-bold tracking-tight text-white">
                   Find{' '}
                   <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 to-purple-400">
-                    your people.
+                    your roommate.
                   </span>
                 </h1>
                 <p className="mt-4 text-lg text-white/75 max-w-md">

@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient, createAdminClient } from '@/lib/supabase/server'
-import { checkRateLimit, getUserRateLimitKey } from '@/lib/rate-limit'
+import { checkRateLimit, getUserRateLimitKey, buildRateLimitHeaders } from '@/lib/rate-limit'
 import { safeLogger } from '@/lib/utils/logger'
 
 export async function POST(request: NextRequest) {
@@ -16,20 +16,13 @@ export async function POST(request: NextRequest) {
     const rateLimitKey = getUserRateLimitKey('chat_profiles', user.id)
     const rateLimitResult = await checkRateLimit('chat_profiles', rateLimitKey)
     
+    const CHAT_PROFILES_LIMIT = 60
     if (!rateLimitResult.allowed) {
       return NextResponse.json(
-        { 
-          error: 'Too many requests',
-          retryAfter: Math.ceil((rateLimitResult.resetTime - Date.now()) / 1000)
-        },
-        { 
+        { error: 'Too many requests' },
+        {
           status: 429,
-          headers: {
-            'X-RateLimit-Limit': '60',
-            'X-RateLimit-Remaining': '0',
-            'X-RateLimit-Reset': new Date(rateLimitResult.resetTime).toISOString(),
-            'Retry-After': Math.ceil((rateLimitResult.resetTime - Date.now()) / 1000).toString()
-          }
+          headers: buildRateLimitHeaders(CHAT_PROFILES_LIMIT, rateLimitResult)
         }
       )
     }
@@ -172,11 +165,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ 
       profiles: safeProfiles
     }, {
-      headers: {
-        'X-RateLimit-Limit': '60',
-        'X-RateLimit-Remaining': (rateLimitResult.remaining - 1).toString(),
-        'X-RateLimit-Reset': new Date(rateLimitResult.resetTime).toISOString()
-      }
+      headers: buildRateLimitHeaders(60, rateLimitResult)
     })
   } catch (error) {
     safeLogger.error('Error fetching chat profiles', error)
