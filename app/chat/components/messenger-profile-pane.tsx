@@ -358,13 +358,23 @@ export function MessengerProfilePane({ chatId, isOpen, onClose }: MessengerProfi
                               <TooltipProvider>
                                 <Tooltip>
                                   <TooltipTrigger asChild>
-                                    <button type="button" className="flex-shrink-0 cursor-help rounded-full p-0.5 text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 focus:outline-none focus:ring-2 focus:ring-indigo-500/50">
+                                    <button
+                                      type="button"
+                                      className="flex-shrink-0 cursor-help rounded-full p-0.5 text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 focus:outline-none focus:ring-2 focus:ring-indigo-500/50"
+                                    >
                                       <Info className="h-3.5 w-3.5" aria-hidden />
                                       <span className="sr-only">What is Context Score?</span>
                                     </button>
                                   </TooltipTrigger>
-                                  <TooltipContent side="top" className="max-w-xs bg-gray-900 dark:bg-gray-800 border-gray-700 text-gray-100 text-xs">
-                                    <p>Measures how similar your academic context is - university, programme, and study year.</p>
+                                  <TooltipContent
+                                    side="top"
+                                    className="max-w-xs bg-gray-900 dark:bg-gray-800 border-gray-700 text-gray-100 text-xs"
+                                  >
+                                    <p>
+                                      Measures how similar your context is – university, programme, study year, and
+                                      overlap in preferred cities. Location is treated as a soft boost, not a
+                                      hard filter.
+                                    </p>
                                   </TooltipContent>
                                 </Tooltip>
                               </TooltipProvider>

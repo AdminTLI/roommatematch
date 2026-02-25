@@ -11,6 +11,7 @@ export type AnswerValue =
   | { kind: 'toggle'; value: boolean }
   | { kind: 'timeRange'; start: string; end: string }
   | { kind: 'number'; value: number }
+  | { kind: 'stringArray'; value: string[] }
 
 export type Answer = { itemId: string; value: AnswerValue; dealBreaker?: boolean }
 
@@ -81,7 +82,13 @@ export const useOnboardingStore = create<OnboardingState>()(
       clearSections: () => set(() => ({ sections: createEmptySections(), lastSavedAt: undefined })),
       countAnsweredInSection: (section) => {
         const answers = get().sections[section]
-        return Object.values(answers).filter((a) => a && a.value != null).length
+        return Object.values(answers).filter((a) => {
+          if (!a || a.value == null) return false
+          if (a.value.kind === 'stringArray') {
+            return Array.isArray(a.value.value) && a.value.value.length > 0
+          }
+          return true
+        }).length
       },
       computeProgress: () => {
         // Dynamic: use 25 required per of the 8 main sections + 1 for location step (min 1 now)

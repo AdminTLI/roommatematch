@@ -56,6 +56,12 @@ export const profileUpdateSchema = z.object({
     )
     .optional()
     .default([]),
+
+  // Optional preferred cities (also used as a soft preference in matching)
+  preferredCities: z.array(z.string().min(1, 'City name cannot be empty'))
+    .max(5, 'You can select up to 5 preferred cities')
+    .optional()
+    .default([]),
 })
 
 export type ProfileUpdateInput = z.infer<typeof profileUpdateSchema>

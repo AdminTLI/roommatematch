@@ -129,6 +129,52 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: error.message }, { status: 500 })
   }
 
+  // When the location-commute section is updated, persist preferred_cities as a soft preference on the profile
+  if (body.section === 'location-commute') {
+    try {
+      // Extract preferred_cities from answers (supports both { value: [...] } and raw [] shapes)
+      const preferredCitiesAnswer: any | undefined = answersToSave.find(
+        (a) => a.itemId === 'preferred_cities'
+      )
+      let preferredCities: string[] = []
+
+      if (preferredCitiesAnswer?.value) {
+        const raw = preferredCitiesAnswer.value
+        if (Array.isArray(raw)) {
+          preferredCities = raw.filter((c) => typeof c === 'string' && c.trim().length > 0)
+        } else if (Array.isArray(raw.value)) {
+          preferredCities = raw.value.filter((c: unknown) => typeof c === 'string' && c.trim().length > 0)
+        }
+      }
+
+      // Clamp to max 5 cities and normalize whitespace
+      preferredCities = preferredCities
+        .map((c) => c.trim().replace(/\s+/g, ' '))
+        .filter(Boolean)
+        .slice(0, 5)
+
+      if (preferredCities.length > 0) {
+        // Use service role client for profile update to avoid RLS issues
+        const { createServiceClient } = await import('@/lib/supabase/service')
+        const serviceSupabase = createServiceClient()
+
+        await serviceSupabase
+          .from('profiles')
+          .upsert(
+            {
+              user_id: user.id,
+              preferred_cities: preferredCities,
+              updated_at: new Date().toISOString(),
+            },
+            { onConflict: 'user_id' }
+          )
+      }
+    } catch (locationError) {
+      // Do not fail the save if we can't persist preferred_cities – treat as best-effort
+      console.error('[Onboarding Save] Failed to persist preferred_cities:', locationError)
+    }
+  }
+
   // When the intro (academic) section is updated, immediately sync user_academic/profile data
   if (body.section === 'intro') {
     try {

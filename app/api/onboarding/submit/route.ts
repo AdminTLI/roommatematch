@@ -105,8 +105,9 @@ export async function POST(request: Request) {
 
       safeLogger.debug('[Submit] Fetched sections:', sections?.length || 0)
 
-      // 2. Find intro section for later processing
+      // 2. Find intro + location sections for later processing
       const introSection = sections?.find((s: any) => s.section === 'intro')
+      const locationSection = sections?.find((s: any) => s.section === 'location-commute')
 
       // 3. Extract submission data and transform responses
       let submissionData = null
@@ -328,6 +329,30 @@ export async function POST(request: Request) {
       // Extract languages from all sections
       const extractedLanguages = extractLanguagesFromSections(sections ?? [])
       safeLogger.debug('[Submit] Extracted languages:', extractedLanguages)
+
+      // Extract preferred_cities from location-commute section for snapshot denormalization
+      let preferredCitiesForSnapshot: string[] = []
+      if (locationSection?.answers && Array.isArray(locationSection.answers)) {
+        const preferredCitiesAnswer: any | undefined = locationSection.answers.find(
+          (a: any) => a.itemId === 'preferred_cities'
+        )
+        if (preferredCitiesAnswer?.value) {
+          const raw = preferredCitiesAnswer.value
+          if (Array.isArray(raw)) {
+            preferredCitiesForSnapshot = raw.filter(
+              (c) => typeof c === 'string' && c.trim().length > 0
+            )
+          } else if (Array.isArray(raw.value)) {
+            preferredCitiesForSnapshot = raw.value.filter(
+              (c: unknown) => typeof c === 'string' && c.trim().length > 0
+            )
+          }
+        }
+        preferredCitiesForSnapshot = preferredCitiesForSnapshot
+          .map((c) => c.trim().replace(/\s+/g, ' '))
+          .filter(Boolean)
+          .slice(0, 5)
+      }
       
       // Transform all answers from all sections
       for (const section of sections ?? []) {
@@ -565,6 +590,7 @@ export async function POST(request: Request) {
             transformed_responses: deduplicatedResponses, // Normalized question_key/value pairs for easy analysis
           },
           submitted_at: new Date().toISOString(),
+          preferred_cities: preferredCitiesForSnapshot,
         }
 
         const { error: submissionError } = await supabase
