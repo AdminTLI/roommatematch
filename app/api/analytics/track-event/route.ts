@@ -71,6 +71,19 @@ export async function POST(request: NextRequest) {
       }
     }
 
+    // Derive basic IP/geolocation information from request headers (best-effort, may be null)
+    const ipAddress =
+      request.headers.get('x-real-ip') ||
+      request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ||
+      // Next.js may expose IP directly in some environments
+      // @ts-ignore - `ip` is not always present in types
+      (request as any).ip ||
+      null
+
+    const geoCountryCode = request.headers.get('x-vercel-ip-country') || null
+    const geoRegion = request.headers.get('x-vercel-ip-country-region') || null
+    const geoCity = request.headers.get('x-vercel-ip-city') || null
+
     // Build base insert object (always include these)
     const baseInsertData: Record<string, any> = {
       user_id: user?.id || null,
@@ -87,7 +100,7 @@ export async function POST(request: NextRequest) {
       event_timestamp: new Date().toISOString()
     }
 
-    // Try inserting with UTM columns first
+    // Try inserting with UTM + geo columns first
     const insertDataWithUTM = {
       ...baseInsertData,
       utm_source: utmParams.utm_source || null,
@@ -95,7 +108,14 @@ export async function POST(request: NextRequest) {
       utm_campaign: utmParams.utm_campaign || null,
       utm_term: utmParams.utm_term || null,
       utm_content: utmParams.utm_content || null,
-      traffic_source: trafficSource
+      traffic_source: trafficSource,
+      // Geographic fields (only populated when available from the platform)
+      ip_address: ipAddress,
+      country_code: geoCountryCode,
+      // We default country_name to null and derive display name in analytics layer
+      country_name: null,
+      city: geoCity,
+      region: geoRegion
     }
 
     // Insert the event - try with UTM columns first

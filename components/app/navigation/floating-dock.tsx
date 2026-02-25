@@ -3,28 +3,41 @@
 import { motion } from 'framer-motion'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { Home, Users, MessageCircle, Shield, Settings } from 'lucide-react'
+import { Home, Users, MessageCircle, Shield, Settings, LayoutDashboard, BarChart3 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
 export function FloatingDock() {
     const pathname = usePathname()
 
-    const tabs = [
-        { id: 'dashboard', label: 'Home', icon: Home, href: '/dashboard' },
-        { id: 'matches', label: 'Connect', icon: Users, href: '/matches' },
-        { id: 'chats', label: 'Chats', icon: MessageCircle, href: '/chat' },
-        { id: 'safety', label: 'Safety', icon: Shield, href: '/safety' },
-        { id: 'settings', label: 'Settings', icon: Settings, href: '/settings' },
-    ]
+    const isAdminRoute = pathname.startsWith('/admin')
 
-    // Check if we are on one of the main tabs to highlight
-    const activeTabId = tabs.find(tab => {
-        // Exact match for dashboard
-        if (tab.href === '/dashboard' && pathname === '/dashboard') return true
-        // Prefix match for others (e.g. /chat/123 should highlight /chat)
-        if (tab.href !== '/dashboard' && pathname.startsWith(tab.href)) return true
-        return false
-    })?.id || ''
+    const tabs = isAdminRoute
+        ? [
+            { id: 'admin-dashboard', label: 'Overview', icon: LayoutDashboard, href: '/admin' },
+            { id: 'admin-users', label: 'Users', icon: Users, href: '/admin/users' },
+            { id: 'admin-matches', label: 'Matches', icon: MessageCircle, href: '/admin/matches' },
+            { id: 'admin-metrics', label: 'Metrics', icon: BarChart3, href: '/admin/metrics' },
+            { id: 'admin-settings', label: 'Settings', icon: Settings, href: '/admin/settings' },
+        ]
+        : [
+            { id: 'dashboard', label: 'Home', icon: Home, href: '/dashboard' },
+            { id: 'matches', label: 'Connect', icon: Users, href: '/matches' },
+            { id: 'chats', label: 'Chats', icon: MessageCircle, href: '/chat' },
+            { id: 'safety', label: 'Safety', icon: Shield, href: '/safety' },
+            { id: 'settings', label: 'Settings', icon: Settings, href: '/settings' },
+        ]
+
+    // Determine active tab based on the best (longest) path match
+    const activeTab = tabs.reduce<{ id: string; href: string } | null>((best, tab) => {
+        if (pathname === tab.href || pathname.startsWith(`${tab.href}/`)) {
+            if (!best || tab.href.length > best.href.length) {
+                return { id: tab.id, href: tab.href }
+            }
+        }
+        return best
+    }, null)
+
+    const activeTabId = activeTab?.id || ''
 
     return (
         <div className="fixed bottom-4 inset-x-0 w-full z-50 pointer-events-none flex justify-center px-4">

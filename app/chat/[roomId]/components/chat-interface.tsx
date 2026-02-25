@@ -60,6 +60,7 @@ import { LockedGroupChat } from '../../components/locked-group-chat'
 import { MessageSkeleton } from '@/components/ui/message-skeleton'
 import { MessageSearch } from './message-search'
 import { MessageReactions } from './message-reactions'
+import { UnmatchDialog } from '../../components/unmatch-dialog'
 
 interface ChatInterfaceProps {
   roomId: string
@@ -112,6 +113,7 @@ export function ChatInterface({ roomId, user, onBack, onToggleRightPane, rightPa
   const [isReportingMessage, setIsReportingMessage] = useState(false)
   const [showDeleteDialog, setShowDeleteDialog] = useState(false)
   const [isDeleting, setIsDeleting] = useState(false)
+  const [showUnmatchDialog, setShowUnmatchDialog] = useState(false)
   const [isBlocking, setIsBlocking] = useState(false)
   // isBlocked = you have an active block against the other user in this chat
   const [isBlocked, setIsBlocked] = useState(false)
@@ -156,6 +158,10 @@ export function ChatInterface({ roomId, user, onBack, onToggleRightPane, rightPa
   const [lastSeenMap, setLastSeenMap] = useState<Map<string, string>>(new Map())
   const [lastReadAt, setLastReadAt] = useState<string | null>(null)
   const firstUnreadMessageRef = useRef<HTMLDivElement>(null)
+
+  const directPartner = !isGroup ? members.find(m => m.id !== user.id) : undefined
+  const directPartnerId = directPartner?.id ?? null
+  const directPartnerName = directPartner?.name ?? ''
 
   // Helper function to scroll container to bottom (prevents page scroll)
   const scrollContainerToBottom = useCallback((behavior: 'auto' | 'smooth' = 'auto') => {
@@ -2769,6 +2775,14 @@ export function ChatInterface({ roomId, user, onBack, onToggleRightPane, rightPa
                     </DropdownMenuItem>
                     <DropdownMenuSeparator />
                     <DropdownMenuItem
+                      onClick={() => setShowUnmatchDialog(true)}
+                      disabled={!directPartnerId}
+                      className="text-semantic-danger focus:text-semantic-danger focus:bg-semantic-danger/10"
+                    >
+                      <Trash2 className="h-4 w-4 mr-2" />
+                      Unmatch
+                    </DropdownMenuItem>
+                    <DropdownMenuItem
                       onClick={() => setShowDeleteDialog(true)}
                       disabled={isDeleting}
                       className="text-semantic-danger focus:text-semantic-danger focus:bg-semantic-danger/10"
@@ -3366,6 +3380,15 @@ export function ChatInterface({ roomId, user, onBack, onToggleRightPane, rightPa
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {directPartnerId && (
+        <UnmatchDialog
+          isOpen={showUnmatchDialog}
+          onClose={() => setShowUnmatchDialog(false)}
+          targetUserId={directPartnerId}
+          targetUserName={directPartnerName || undefined}
+        />
+      )}
 
       {/* Message Search */}
       <MessageSearch

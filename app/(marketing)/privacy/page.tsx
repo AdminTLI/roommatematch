@@ -317,7 +317,12 @@ export default function PrivacyPage() {
                 </p>
                 <ul className="list-disc pl-6 text-slate-400 mb-4 space-y-1">
                   <li>Device type, operating system, browser type.</li>
-                  <li>IP address, timestamps, pages and screens viewed.</li>
+                  <li>
+                    IP address, timestamps, pages and screens viewed, and approximate location
+                    (country and sometimes city/region) derived from your IP address. We use this
+                    for security monitoring and anonymized, aggregated analytics such as geographic
+                    distribution dashboards for universities.
+                  </li>
                   <li>
                     Actions such as starting the questionnaire, sending
                     messages, or updating your profile.

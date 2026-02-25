@@ -54,6 +54,7 @@ import { useRealtimeInvalidation } from '@/hooks/use-realtime-invalidation'
 import { monitorQuery } from '@/lib/utils/query-monitor'
 import { getCompatibilityCacheKey, getCompatibilityStaleTime } from '@/lib/cache/compatibility-cache'
 import { WellnessSurveyModal } from './wellness-survey-modal'
+import { SuccessNpsWidget } from '@/app/(components)/success-nps-widget'
 
 const fadeInUp = {
   initial: { opacity: 0, y: 20 },
@@ -1463,6 +1464,8 @@ export function DashboardContent({ hasCompletedQuestionnaire = false, hasPartial
     <div className="space-y-8 pb-24 md:pb-6">
       {/* Wellness Check survey (14-day / 30-day) */}
       <WellnessSurveyModal />
+      {/* Platform Success & NPS micro-survey widget (floating, non-blocking) */}
+      <SuccessNpsWidget />
       {/* Admin Warning Banner */}
       <WarningBanner userId={user?.id} />
 

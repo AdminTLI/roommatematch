@@ -64,6 +64,34 @@ if (typeof global !== 'undefined') {
 }
 
 export async function middleware(req: NextRequest) {
+  const { pathname } = req.nextUrl
+  const hostHeader = req.headers.get('host') || ''
+  const hostname = hostHeader.split(':')[0]
+  const adminPortalHost = process.env.ADMIN_PORTAL_HOST
+
+  const isAdminPortalLoginRoute =
+    pathname === '/admin-portal/login' || pathname.startsWith('/admin-portal/login/')
+  const isLegacyAdminLoginRoute =
+    pathname === '/admin/login' || pathname.startsWith('/admin/login/')
+
+  // Keep old /admin/login URLs working by redirecting to the standalone admin portal login.
+  if (isLegacyAdminLoginRoute) {
+    const url = req.nextUrl.clone()
+    url.pathname = '/admin-portal/login'
+    return NextResponse.redirect(url)
+  }
+
+  // Restrict the dedicated admin/university login page to a specific domain.
+  // If ADMIN_PORTAL_HOST is not configured, the page remains accessible from any host (useful for local development).
+  if (isAdminPortalLoginRoute && adminPortalHost) {
+    if (hostname !== adminPortalHost) {
+      const url = req.nextUrl.clone()
+      url.pathname = '/auth/sign-in'
+      url.searchParams.set('reason', 'admin_portal_domain_required')
+      return NextResponse.redirect(url)
+    }
+  }
+
   // Allow public routes without checks
   const publicPrefixes = [
     '/auth/sign-in',
@@ -73,12 +101,11 @@ export async function middleware(req: NextRequest) {
     '/auth/reset-password',
     '/rent-calculator',
     '/api/public',
+    '/admin-portal/login',
     '/favicon.ico',
     '/robots.txt',
     '/sitemap.xml'
   ]
-
-  const { pathname } = req.nextUrl
   const isApiRoute = pathname.startsWith('/api')
   const method = req.method.toUpperCase()
 

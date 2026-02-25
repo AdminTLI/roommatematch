@@ -13,6 +13,7 @@ import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group'
 import { Label } from '@/components/ui/label'
 import { Button } from '@/components/ui/button'
 import { Loader2 } from 'lucide-react'
+import { fetchWithCSRF } from '@/lib/utils/fetch-with-csrf'
 
 type TriggerType = 'day_14' | 'day_30' | null
 
@@ -60,7 +61,7 @@ export function WellnessSurveyModal() {
     if (!trigger || !canSubmit || submitting) return
     setSubmitting(true)
     try {
-      const res = await fetch('/api/surveys/wellness', {
+      const res = await fetchWithCSRF('/api/surveys/wellness', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -92,11 +93,11 @@ export function WellnessSurveyModal() {
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogContent
-        className="max-w-lg border-zinc-200 dark:border-white/10 bg-white/80 dark:bg-zinc-900/40 backdrop-blur-xl shadow-elev-2 p-6 sm:p-8 rounded-3xl gap-0"
+        className="max-w-lg sm:max-w-xl p-6 sm:p-7 md:p-8 rounded-3xl gap-0"
         aria-describedby="wellness-description"
       >
         <DialogHeader className="space-y-2 text-left pb-6">
-          <DialogTitle className="text-xl font-bold tracking-tight text-zinc-900 dark:text-white">
+          <DialogTitle className="text-xl font-bold tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-indigo-500 to-purple-500 dark:from-indigo-400 dark:to-purple-400">
             Quick wellness check
           </DialogTitle>
           <DialogDescription
@@ -107,8 +108,8 @@ export function WellnessSurveyModal() {
           </DialogDescription>
         </DialogHeader>
 
-        <div className="space-y-8">
-          <div className="rounded-2xl border border-zinc-200/80 dark:border-white/10 bg-white/50 dark:bg-white/5 backdrop-blur-sm p-5 space-y-4">
+        <div className="space-y-6 sm:space-y-7">
+          <div className="rounded-2xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-900/60 p-5 sm:p-6 space-y-4">
             <Label
               htmlFor="housing-q"
               className="text-base font-medium text-zinc-900 dark:text-zinc-100 leading-snug block"
@@ -122,7 +123,7 @@ export function WellnessSurveyModal() {
                 setFoundHousing(v as 'yes' | 'no')
                 if (v === 'no') setFoundWithMatch(undefined)
               }}
-              className="flex gap-6"
+              className="flex flex-wrap gap-3 sm:gap-6"
             >
               <div className="flex items-center gap-3">
                 <RadioGroupItem value="yes" id="housing-yes" />
@@ -140,7 +141,7 @@ export function WellnessSurveyModal() {
           </div>
 
           {foundHousing === 'yes' && (
-            <div className="rounded-2xl border border-zinc-200/80 dark:border-white/10 bg-white/50 dark:bg-white/5 backdrop-blur-sm p-5 space-y-4">
+            <div className="rounded-2xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-900/60 p-5 sm:p-6 space-y-4">
               <Label
                 htmlFor="match-q"
                 className="text-base font-medium text-zinc-900 dark:text-zinc-100 leading-snug block"
@@ -151,7 +152,7 @@ export function WellnessSurveyModal() {
                 id="match-q"
                 value={foundWithMatch ?? ''}
                 onValueChange={(v) => setFoundWithMatch(v as 'yes' | 'no')}
-                className="flex gap-6"
+                className="flex flex-wrap gap-3 sm:gap-6"
               >
                 <div className="flex items-center gap-3">
                   <RadioGroupItem value="yes" id="match-yes" />
@@ -169,7 +170,7 @@ export function WellnessSurveyModal() {
             </div>
           )}
 
-          <div className="rounded-2xl border border-zinc-200/80 dark:border-white/10 bg-white/50 dark:bg-white/5 backdrop-blur-sm p-5 space-y-4">
+          <div className="rounded-2xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-900/60 p-5 sm:p-6 space-y-4">
             <Label
               htmlFor="stress-q"
               className="text-base font-medium text-zinc-900 dark:text-zinc-100 leading-snug block"

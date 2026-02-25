@@ -24,6 +24,9 @@ import {
   AreaChart
 } from 'recharts'
 import { showErrorToast } from '@/lib/toast'
+import { SuccessNpsCard } from './success-nps-card'
+import { IntegrationMetricsCard } from './integration-metrics-card'
+import { WellbeingIndexCard } from './wellbeing-index-card'
 
 interface Metrics {
   totalUsers: number
@@ -200,6 +203,33 @@ interface GeographicData {
   totalUsers: number
 }
 
+interface WellnessAnalyticsData {
+  overall: {
+    totalResponses: number
+    day14Responses: number
+    day30Responses: number
+    foundHousingRate: number
+    foundWithMatchRate: number
+    reducedStressRate: number
+  }
+  bySurveyType: Array<{
+    surveyType: 'day_14' | 'day_30'
+    label: string
+    totalResponses: number
+    foundHousingRate: number
+    foundWithMatchRate: number | null
+    reducedStressRate: number
+  }>
+  timeSeries: Array<{
+    date: string
+    surveyType: 'day_14' | 'day_30'
+    totalResponses: number
+    foundHousing: number
+    foundWithMatch: number
+    reducedStress: number
+  }>
+}
+
 export function AdminMetricsContent() {
   const [metrics, setMetrics] = useState<Metrics | null>(null)
   const [isLoading, setIsLoading] = useState(true)
@@ -213,6 +243,7 @@ export function AdminMetricsContent() {
   const [trafficSources, setTrafficSources] = useState<TrafficSourcesData | null>(null)
   const [userFlows, setUserFlows] = useState<UserFlowsData | null>(null)
   const [geographic, setGeographic] = useState<GeographicData | null>(null)
+  const [wellness, setWellness] = useState<WellnessAnalyticsData | null>(null)
 
   useEffect(() => {
     loadMetrics()
@@ -248,7 +279,8 @@ export function AdminMetricsContent() {
         realtimeResponse,
         trafficSourcesResponse,
         userFlowsResponse,
-        geographicResponse
+        geographicResponse,
+        wellnessResponse,
       ] = await Promise.all([
         fetch('/api/admin/analytics'),
         fetch('/api/admin/analytics/conversion-funnel'),
@@ -259,7 +291,8 @@ export function AdminMetricsContent() {
         fetch('/api/admin/analytics/realtime'),
         fetch('/api/admin/analytics/traffic-sources'),
         fetch('/api/admin/analytics/user-flows'),
-        fetch('/api/admin/analytics/geographic')
+        fetch('/api/admin/analytics/geographic'),
+        fetch('/api/admin/analytics/wellness'),
       ])
 
       if (metricsResponse.ok) {
@@ -325,6 +358,11 @@ export function AdminMetricsContent() {
         const data = await geographicResponse.json()
         setGeographic(data)
       }
+
+      if (wellnessResponse.ok) {
+        const data = await wellnessResponse.json()
+        setWellness(data)
+      }
     } catch (error) {
       console.error('Failed to load metrics:', error)
       showErrorToast('Failed to load metrics')
@@ -372,6 +410,15 @@ export function AdminMetricsContent() {
   const verificationRate = (metrics.totalUsers ?? 0) > 0 
     ? (((metrics.verifiedUsers ?? 0) / (metrics.totalUsers ?? 1)) * 100).toFixed(1)
     : '0'
+
+  const wellnessComparisonData =
+    wellness?.bySurveyType.map((entry) => ({
+      label: entry.label,
+      foundHousingRate: Number(entry.foundHousingRate.toFixed(1)),
+      reducedStressRate: Number(entry.reducedStressRate.toFixed(1)),
+      foundWithMatchRate:
+        entry.foundWithMatchRate !== null ? Number(entry.foundWithMatchRate.toFixed(1)) : 0,
+    })) || []
 
   return (
     <div className="p-4 md:p-6 space-y-6 md:space-y-8">
@@ -473,6 +520,8 @@ export function AdminMetricsContent() {
             </p>
           </CardContent>
         </Card>
+
+        <WellbeingIndexCard />
       </div>
 
       {/* Verification & Safety Trust Stack */}
@@ -595,6 +644,136 @@ export function AdminMetricsContent() {
           </div>
         </CardContent>
       </Card>
+
+      {/* Placement Success & NPS Micro-Survey */}
+      <SuccessNpsCard />
+      <IntegrationMetricsCard />
+
+      {/* Wellness & Impact Outcomes */}
+      {wellness && wellness.overall.totalResponses > 0 && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <TrendingUp className="h-5 w-5" />
+              Wellness & Impact Outcomes
+            </CardTitle>
+            <CardDescription>
+              Self‑reported housing outcomes and stress reduction at day 14 and day 30
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-6 md:space-y-8">
+              {/* Summary tiles */}
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6">
+                <div className="p-5 bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 rounded-xl border border-blue-200/60 dark:border-blue-800/60 shadow-sm hover:shadow-md transition-shadow">
+                  <p className="text-sm font-medium text-blue-800 dark:text-blue-200 mb-2">
+                    Total Responses
+                  </p>
+                  <p className="text-3xl font-bold text-blue-900 dark:text-blue-100 mb-1">
+                    {wellness.overall.totalResponses.toLocaleString()}
+                  </p>
+                  <p className="text-xs text-blue-700 dark:text-blue-300">
+                    {wellness.overall.day14Responses.toLocaleString()} at day 14 ·{' '}
+                    {wellness.overall.day30Responses.toLocaleString()} at day 30
+                  </p>
+                </div>
+
+                <div className="p-5 bg-gradient-to-br from-emerald-50 to-green-50 dark:from-emerald-900/20 dark:to-green-900/20 rounded-xl border border-emerald-200/60 dark:border-emerald-800/60 shadow-sm hover:shadow-md transition-shadow">
+                  <p className="text-sm font-medium text-emerald-800 dark:text-emerald-200 mb-2">
+                    Found Housing
+                  </p>
+                  <p className="text-3xl font-bold text-emerald-900 dark:text-emerald-100 mb-1">
+                    {wellness.overall.foundHousingRate.toFixed(1)}%
+                  </p>
+                  <p className="text-xs text-emerald-700 dark:text-emerald-300">
+                    Share of respondents who report having found housing
+                  </p>
+                </div>
+
+                <div className="p-5 bg-gradient-to-br from-violet-50 to-fuchsia-50 dark:from-violet-900/20 dark:to-fuchsia-900/20 rounded-xl border border-violet-200/60 dark:border-violet-800/60 shadow-sm hover:shadow-md transition-shadow">
+                  <p className="text-sm font-medium text-violet-800 dark:text-violet-200 mb-2">
+                    Stress Reduction
+                  </p>
+                  <p className="text-3xl font-bold text-violet-900 dark:text-violet-100 mb-1">
+                    {wellness.overall.reducedStressRate.toFixed(1)}%
+                  </p>
+                  <p className="text-xs text-violet-700 dark:text-violet-300">
+                    Respondents who say Domu Match reduced their housing‑search stress
+                  </p>
+                </div>
+              </div>
+
+              {/* Comparison chart: Day 14 vs Day 30 */}
+              {wellnessComparisonData.length > 0 && (
+                <div>
+                  <h4 className="text-base font-semibold mb-4 text-gray-800 dark:text-gray-200">
+                    Outcomes by survey point
+                  </h4>
+                  <div className="w-full" style={{ minHeight: '350px' }}>
+                    <ResponsiveContainer width="100%" height={350}>
+                      <BarChart
+                        data={wellnessComparisonData}
+                        margin={{ top: 20, right: 30, left: 20, bottom: 20 }}
+                      >
+                        <CartesianGrid strokeDasharray="3 3" />
+                        <XAxis dataKey="label" tick={{ fontSize: 12 }} />
+                        <YAxis
+                          label={{ value: 'Share of respondents (%)', angle: -90, position: 'insideLeft' }}
+                          domain={[0, 100]}
+                        />
+                        <Tooltip
+                          formatter={(value: number, name: string) => {
+                            const labels: Record<string, string> = {
+                              foundHousingRate: 'Found housing',
+                              foundWithMatchRate: 'Found housing with Domu Match roommate',
+                              reducedStressRate: 'Reported reduced stress',
+                            }
+                            return [`${value.toFixed(1)}%`, labels[name] || name]
+                          }}
+                          contentStyle={{
+                            backgroundColor: 'rgba(255, 255, 255, 0.96)',
+                            border: '1px solid #e5e7eb',
+                          }}
+                        />
+                        <Legend wrapperStyle={{ paddingTop: 12 }} />
+                        <Bar
+                          dataKey="foundHousingRate"
+                          fill="#10b981"
+                          name="Found housing"
+                          radius={[4, 4, 0, 0]}
+                        />
+                        <Bar
+                          dataKey="foundWithMatchRate"
+                          fill="#6366f1"
+                          name="Found housing with Domu Match roommate"
+                          radius={[4, 4, 0, 0]}
+                        />
+                        <Bar
+                          dataKey="reducedStressRate"
+                          fill="#a855f7"
+                          name="Reported reduced stress"
+                          radius={[4, 4, 0, 0]}
+                        />
+                      </BarChart>
+                    </ResponsiveContainer>
+                  </div>
+                </div>
+              )}
+
+              {/* Narrative for stakeholders */}
+              <div className="mt-4 p-5 bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-900/40 dark:to-slate-900/10 rounded-xl border border-slate-200/70 dark:border-slate-700/70">
+                <p className="text-sm text-slate-800 dark:text-slate-100 leading-relaxed">
+                  These wellness checks quantify how effectively Domu Match supports students beyond simple
+                  usage metrics. Housing outcomes show what proportion of surveyed users have secured housing
+                  by day 14 and day 30, and how often this is through a Domu Match roommate connection. The
+                  stress‑reduction metric captures perceived wellbeing impact during the housing search,
+                  providing a clear, stakeholder‑friendly view of the platform&apos;s real‑world value.
+                </p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
       {/* Traffic Sources */}
       {trafficSources && (
