@@ -8,12 +8,49 @@ import { SuspenseWrapper } from '@/components/questionnaire/SuspenseWrapper'
 import { AutosaveToaster } from '@/components/questionnaire/AutosaveToaster'
 import { useAutosave } from '@/components/questionnaire/useAutosave'
 import { fetchWithCSRF } from '@/lib/utils/fetch-with-csrf'
-import { Input } from '@/components/ui/input'
-import { Badge } from '@/components/ui/badge'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { getDefaultPreferredCitiesFromInstitution, mapInstitutionToCity } from '@/lib/utils/location-mapper'
 
 const MAX_CITIES = 5
-const COMMON_CITIES = ['Amsterdam', 'Rotterdam', 'Utrecht', 'Den Haag', 'Eindhoven', 'Groningen', 'Leiden', 'Nijmegen']
+
+// Canonical list of supported cities (must include all outputs of mapInstitutionToCity)
+const CITY_OPTIONS = [
+  'Amsterdam',
+  'Rotterdam',
+  'Utrecht',
+  'Leiden',
+  'Groningen',
+  'Delft',
+  'Eindhoven',
+  'Enschede',
+  'Heerlen',
+  'Wageningen',
+  'Nijmegen',
+  'Tilburg',
+  'Maastricht',
+  'Arnhem',
+  'Breda',
+  'Ede',
+  'Den Haag',
+  'Helmond',
+  'Gouda',
+  "'s-Hertogenbosch",
+  'Leeuwarden',
+  'Zwolle',
+  'Vlissingen',
+  'Doetinchem',
+  'Apeldoorn',
+]
+
+function normalizeCities(cities: string[]): string[] {
+  return Array.from(
+    new Set(
+      cities
+        .map((c) => c.trim())
+        .filter((c) => c && CITY_OPTIONS.includes(c))
+    )
+  ).slice(0, MAX_CITIES)
+}
 
 function SectionClientContent() {
   const sectionKey = 'location-commute' as const
@@ -32,9 +69,7 @@ function SectionClientContent() {
   const { isSaving, showToast, hasLoaded } = useAutosave(sectionKey)
 
   const [isMounted, setIsMounted] = useState(false)
-  const [preferredCities, setPreferredCities] = useState<string[]>([])
-  const [inputValue, setInputValue] = useState('')
-  const [error, setError] = useState<string | null>(null)
+  const [rows, setRows] = useState<string[]>([''])
   const [initialized, setInitialized] = useState(false)
 
   useEffect(() => {
@@ -60,9 +95,9 @@ function SectionClientContent() {
     if (!hasLoaded || initialized) return
 
     // 1) Prefer any previously saved preferred_cities
-    const existing = extractCitiesFromAnswer()
+    const existing = normalizeCities(extractCitiesFromAnswer())
     if (existing.length > 0) {
-      setPreferredCities(existing)
+      setRows(existing.length < MAX_CITIES ? [...existing, ''] : existing)
       setInitialized(true)
       return
     }
@@ -87,54 +122,48 @@ function SectionClientContent() {
         if (institutionSlug && institutionSlug !== 'other') {
           const mappedCity = mapInstitutionToCity(institutionSlug)
           if (mappedCity) {
-            setPreferredCities(getDefaultPreferredCitiesFromInstitution(institutionSlug))
+            const initial = normalizeCities(getDefaultPreferredCitiesFromInstitution(institutionSlug))
+            if (initial.length > 0) {
+              setRows(initial.length < MAX_CITIES ? [...initial, ''] : initial)
+            }
           }
         }
       } catch {
-        // Silent failure – user can enter cities manually
+        // Silent failure – user can select cities manually
       } finally {
         setInitialized(true)
       }
     })()
   }, [answers, hasLoaded, initialized])
 
-  // Keep onboarding store in sync with local preferredCities so autosave works
+  // Keep onboarding store in sync with current selection so autosave works
   useEffect(() => {
     if (!hasLoaded) return
+    const selected = normalizeCities(rows)
     setAnswer(sectionKey, {
       itemId: 'preferred_cities',
-      value: { kind: 'stringArray', value: preferredCities },
+      value: { kind: 'stringArray', value: selected },
     } as any)
-  }, [preferredCities, hasLoaded, sectionKey, setAnswer])
+  }, [rows, hasLoaded, sectionKey, setAnswer])
 
-  const handleAddCity = (raw: string) => {
-    const trimmed = raw.trim()
-    if (!trimmed) return
-
-    if (preferredCities.length >= MAX_CITIES) {
-      setError(`You can select up to ${MAX_CITIES} cities.`)
-      return
-    }
-
-    const normalized = trimmed.replace(/\s+/g, ' ')
-    const exists = preferredCities.some((c) => c.toLowerCase() === normalized.toLowerCase())
-    if (exists) {
-      setInputValue('')
-      setError(null)
-      return
-    }
-
-    setPreferredCities([...preferredCities, normalized])
-    setInputValue('')
-    setError(null)
+  const handleRowChange = (index: number, city: string) => {
+    const next = [...rows]
+    next[index] = city
+    setRows(next)
   }
 
-  const handleRemoveCity = (city: string) => {
-    setPreferredCities(preferredCities.filter((c) => c !== city))
-    setError(null)
+  const handleAddRow = () => {
+    if (rows.length >= MAX_CITIES) return
+    setRows([...rows, ''])
   }
 
-  const nextDisabled = preferredCities.length === 0 || isSaving
+  const handleRemoveRow = (index: number) => {
+    const next = rows.filter((_, i) => i !== index)
+    setRows(next.length > 0 ? next : [''])
+  }
+
+  const selectedCities = normalizeCities(rows)
+  const nextDisabled = selectedCities.length === 0 || isSaving
 
   const saveSection = async () => {
     try {
@@ -188,76 +217,54 @@ function SectionClientContent() {
           </p>
         </div>
 
-        {/* Chips */}
+        {/* City rows */}
         <div className="space-y-3">
-          <div className="flex flex-wrap gap-2">
-            {preferredCities.length === 0 && (
-              <span className="text-xs text-zinc-500">No cities selected yet.</span>
-            )}
-            {preferredCities.map((city) => (
-              <Badge
-                key={city}
-                variant="secondary"
-                className="flex items-center gap-1.5 bg-indigo-50 text-indigo-800 border-indigo-200"
-              >
-                <span>{city}</span>
-                <button
-                  type="button"
-                  onClick={() => handleRemoveCity(city)}
-                  className="ml-1 text-xs text-indigo-700 hover:text-indigo-900"
-                  aria-label={`Remove ${city}`}
-                >
-                  ×
-                </button>
-              </Badge>
-            ))}
-          </div>
+          {rows.map((value, index) => {
+            const selectedOther = normalizeCities(rows.filter((_, i) => i !== index))
+            return (
+              <div key={index} className="flex items-center gap-3">
+                <div className="flex-1">
+                  <Select
+                    value={value || ''}
+                    onValueChange={(city) => handleRowChange(index, city)}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select a city" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {CITY_OPTIONS.map((city) => (
+                        <SelectItem
+                          key={city}
+                          value={city}
+                          disabled={selectedOther.includes(city)}
+                        >
+                          {city}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                {rows.length > 1 && (
+                  <button
+                    type="button"
+                    onClick={() => handleRemoveRow(index)}
+                    className="text-xs text-zinc-500 hover:text-zinc-800"
+                  >
+                    Remove
+                  </button>
+                )}
+              </div>
+            )
+          })}
 
-          <div className="flex flex-col sm:flex-row gap-3">
-            <Input
-              placeholder="Type a city (e.g. Amsterdam, Leiden) and press Enter"
-              value={inputValue}
-              onChange={(e) => setInputValue(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key === 'Enter') {
-                  e.preventDefault()
-                  handleAddCity(inputValue)
-                }
-              }}
-              className="sm:flex-1"
-            />
-            <button
-              type="button"
-              onClick={() => handleAddCity(inputValue)}
-              className="inline-flex items-center justify-center rounded-lg px-4 py-2 text-sm font-medium bg-indigo-600 text-white hover:bg-indigo-700 disabled:opacity-60 disabled:cursor-not-allowed"
-              disabled={!inputValue.trim() || preferredCities.length >= MAX_CITIES}
-            >
-              Add city
-            </button>
-          </div>
-
-          {error && <p className="text-xs text-rose-600">{error}</p>}
-        </div>
-
-        {/* Common quick-add cities */}
-        <div className="space-y-2">
-          <p className="text-xs font-medium text-zinc-600">Quick add common student cities</p>
-          <div className="flex flex-wrap gap-2">
-            {COMMON_CITIES.map((city) => (
-              <button
-                key={city}
-                type="button"
-                onClick={() => handleAddCity(city)}
-                disabled={
-                  preferredCities.length >= MAX_CITIES ||
-                  preferredCities.some((c) => c.toLowerCase() === city.toLowerCase())
-                }
-                className="inline-flex items-center rounded-full border border-zinc-200 px-3 py-1 text-xs text-zinc-700 hover:bg-zinc-50 disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                {city}
-              </button>
-            ))}
-          </div>
+          <button
+            type="button"
+            onClick={handleAddRow}
+            disabled={rows.length >= MAX_CITIES || selectedCities.length >= MAX_CITIES}
+            className="inline-flex items-center rounded-lg border border-zinc-200 px-3 py-1.5 text-xs font-medium text-zinc-700 hover:bg-zinc-50 disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            + Add city
+          </button>
         </div>
       </div>
     </QuestionnaireLayout>
