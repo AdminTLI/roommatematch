@@ -17,6 +17,26 @@ import { fetchWithCSRF } from '@/lib/utils/fetch-with-csrf'
 
 type TriggerType = 'day_14' | 'day_30' | null
 
+const COMPLETED_STORAGE_PREFIX = 'wellness_survey_completed_'
+
+function hasCompletedSurveyLocally(trigger: TriggerType): boolean {
+  if (!trigger || typeof window === 'undefined') return false
+  try {
+    return localStorage.getItem(`${COMPLETED_STORAGE_PREFIX}${trigger}`) === 'true'
+  } catch {
+    return false
+  }
+}
+
+function markSurveyCompletedLocally(trigger: TriggerType) {
+  if (!trigger || typeof window === 'undefined') return
+  try {
+    localStorage.setItem(`${COMPLETED_STORAGE_PREFIX}${trigger}`, 'true')
+  } catch {
+    // Ignore storage errors (e.g., private mode)
+  }
+}
+
 export function WellnessSurveyModal() {
   const [isOpen, setIsOpen] = useState(false)
   const [trigger, setTrigger] = useState<TriggerType>(null)
@@ -39,8 +59,13 @@ export function WellnessSurveyModal() {
         }
         const data = await res.json()
         const t = data.trigger ?? null
-        setTrigger(t)
-        if (t) setIsOpen(true)
+        // Only show the survey if we haven't already completed this trigger locally.
+        if (t && !hasCompletedSurveyLocally(t)) {
+          setTrigger(t)
+          setIsOpen(true)
+        } else {
+          setTrigger(null)
+        }
       } catch {
         if (!cancelled) setTrigger(null)
       } finally {
@@ -71,10 +96,24 @@ export function WellnessSurveyModal() {
           reduced_stress: reducedStress === 'yes',
         }),
       })
+
+      // If the backend reports this survey was already submitted, treat it as completed
+      // so the modal does not keep reappearing.
+      if (!res.ok && res.status === 409) {
+        markSurveyCompletedLocally(trigger)
+        setIsOpen(false)
+        setTrigger(null)
+        setFoundHousing(undefined)
+        setFoundWithMatch(undefined)
+        setReducedStress(undefined)
+        return
+      }
+
       if (!res.ok) {
         const err = await res.json().catch(() => ({}))
         throw new Error(err.error || 'Failed to submit')
       }
+      markSurveyCompletedLocally(trigger)
       setIsOpen(false)
       setTrigger(null)
       setFoundHousing(undefined)
