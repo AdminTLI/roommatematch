@@ -11,6 +11,7 @@ import Footer from '@/components/site/footer'
 import { MarketingLayoutFix } from './components/marketing-layout-fix'
 import { StatsTicker } from './components/stats-ticker'
 import { MarketingPageBackground } from './components/marketing-page-background'
+import { WolfpackGroupChatsSection } from './components/wolfpack-group-chats-section'
 
 export default function MarketingPage() {
 
@@ -212,6 +213,7 @@ export default function MarketingPage() {
           <StatsTicker />
           <LiveStats />
           <BentoInfrastructure />
+          <WolfpackGroupChatsSection />
           <Universities />
           <Features />
           <Testimonials />

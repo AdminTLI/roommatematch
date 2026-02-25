@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
+import { Separator } from '@/components/ui/separator'
 import { Users, Shield, MessageSquare, TrendingUp, CheckCircle, AlertTriangle, RefreshCw, Activity, Lock, BookOpen, UserCheck, Globe, Network, Radio } from 'lucide-react'
 import { 
   BarChart, 
@@ -27,6 +28,10 @@ import { showErrorToast } from '@/lib/toast'
 import { SuccessNpsCard } from './success-nps-card'
 import { IntegrationMetricsCard } from './integration-metrics-card'
 import { WellbeingIndexCard } from './wellbeing-index-card'
+import { ExecutiveSummaryCards } from './executive-summary-cards'
+import { Separator } from '@/components/ui/separator'
+import { MarketplaceDynamicsCards } from './marketplace-dynamics-cards'
+import { TrustAlgorithmCards } from './trust-algorithm-cards'
 
 interface Metrics {
   totalUsers: number
@@ -435,6 +440,9 @@ export function AdminMetricsContent() {
         </Button>
       </div>
 
+      <ExecutiveSummaryCards />
+      <Separator className="my-4 md:my-6" />
+
       {/* Real-time Activity Card */}
       {realtime && (
         <Card className="border-blue-200 dark:border-blue-800">
@@ -523,6 +531,9 @@ export function AdminMetricsContent() {
 
         <WellbeingIndexCard />
       </div>
+
+      <MarketplaceDynamicsCards />
+      <Separator className="my-8" />
 
       {/* Verification & Safety Trust Stack */}
       <Card>
@@ -644,6 +655,9 @@ export function AdminMetricsContent() {
           </div>
         </CardContent>
       </Card>
+
+      {/* System Trust & Algorithm Health */}
+      <TrustAlgorithmCards />
 
       {/* Placement Success & NPS Micro-Survey */}
       <SuccessNpsCard />
