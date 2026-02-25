@@ -34,6 +34,7 @@ export default async function AdminLayout({
         name: user.user_metadata?.full_name || 'User',
         avatar: user.user_metadata?.avatar_url
       }}
+      context="admin"
     >
       {children}
     </AppShell>

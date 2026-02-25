@@ -17,6 +17,7 @@ export async function GET(request: NextRequest) {
 
     const searchParams = request.nextUrl.searchParams
     const query = searchParams.get('q') || ''
+    const context = searchParams.get('context') || 'user'
 
     if (!query || query.length < 2) {
       return NextResponse.json({ 
@@ -35,6 +36,85 @@ export async function GET(request: NextRequest) {
     const sanitizedQuery = sanitizeSearchInput(query)
     const queryLower = sanitizedQuery.toLowerCase()
     const searchPattern = `%${queryLower}%` // Define searchPattern at top level so it's available everywhere
+
+    const isAdminContext = context === 'admin'
+
+    // Admin/university/partner panels: restrict search to admin tools/pages/features only
+    if (isAdminContext) {
+      const pages: any[] = []
+      const adminPageKeywords: Record<string, { name: string; href: string; icon: string }> = {
+        // Core admin dashboard
+        'admin': { name: 'Admin Dashboard', href: '/admin', icon: 'LayoutDashboard' },
+        'dashboard': { name: 'Admin Dashboard', href: '/admin', icon: 'LayoutDashboard' },
+        'overview': { name: 'Admin Dashboard', href: '/admin', icon: 'LayoutDashboard' },
+        'home': { name: 'Admin Dashboard', href: '/admin', icon: 'LayoutDashboard' },
+
+        // Users & verifications
+        'users': { name: 'Manage Users', href: '/admin/users', icon: 'Users' },
+        'user': { name: 'Manage Users', href: '/admin/users', icon: 'Users' },
+        'verification': { name: 'Verifications', href: '/admin/verifications', icon: 'Users' },
+        'verifications': { name: 'Verifications', href: '/admin/verifications', icon: 'Users' },
+
+        // Matching & matches
+        'matching': { name: 'Matching Controls', href: '/admin/matching', icon: 'Users' },
+        'matches': { name: 'Matches Overview', href: '/admin/matches', icon: 'Users' },
+        'match': { name: 'Matches Overview', href: '/admin/matches', icon: 'Users' },
+
+        // Chats / support
+        'chat': { name: 'Chats', href: '/admin/chats', icon: 'MessageCircle' },
+        'chats': { name: 'Chats', href: '/admin/chats', icon: 'MessageCircle' },
+        'support': { name: 'Support Tickets', href: '/admin/support', icon: 'MessageCircle' },
+        'ticket': { name: 'Support Tickets', href: '/admin/support', icon: 'MessageCircle' },
+        'tickets': { name: 'Support Tickets', href: '/admin/support', icon: 'MessageCircle' },
+
+        // Metrics & analytics
+        'metrics': { name: 'Metrics & Analytics', href: '/admin/metrics', icon: 'LayoutDashboard' },
+        'analytics': { name: 'Metrics & Analytics', href: '/admin/metrics', icon: 'LayoutDashboard' },
+        'stats': { name: 'Metrics & Analytics', href: '/admin/metrics', icon: 'LayoutDashboard' },
+
+        // Reports, security, privacy
+        'report': { name: 'Reports', href: '/admin/reports', icon: 'Settings' },
+        'reports': { name: 'Reports', href: '/admin/reports', icon: 'Settings' },
+        'security': { name: 'Security Center', href: '/admin/security', icon: 'Settings' },
+        'dsar': { name: 'Privacy & DSAR', href: '/admin/dsar', icon: 'Settings' },
+
+        // Settings
+        'setting': { name: 'Platform Settings', href: '/admin/settings', icon: 'Settings' },
+        'settings': { name: 'Platform Settings', href: '/admin/settings', icon: 'Settings' },
+        'configuration': { name: 'Platform Settings', href: '/admin/settings', icon: 'Settings' }
+      }
+
+      const matchedPages = new Map<string, { name: string; href: string; icon: string }>()
+
+      for (const [keyword, pageInfo] of Object.entries(adminPageKeywords)) {
+        if (queryLower.includes(keyword) || keyword.includes(queryLower)) {
+          if (!matchedPages.has(pageInfo.href)) {
+            matchedPages.set(pageInfo.href, pageInfo)
+          }
+        }
+      }
+
+      matchedPages.forEach((pageInfo, href) => {
+        pages.push({
+          id: `admin-page-${href}`,
+          type: 'page',
+          name: pageInfo.name,
+          href,
+          icon: pageInfo.icon
+        })
+      })
+
+      // Limit to top 10 admin page results
+      pages.splice(10)
+
+      return NextResponse.json({
+        matches: [],
+        messages: [],
+        users: [],
+        housing: [],
+        pages
+      })
+    }
 
     // Get user's chats for context
     const { data: chatMembers } = await supabase

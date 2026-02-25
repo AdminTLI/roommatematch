@@ -29,9 +29,16 @@ interface AppShellProps {
   }
   showQuestionnairePrompt?: boolean  // NEW: Control questionnaire modal
   hideVerificationBanner?: boolean  // NEW: Hide verification banner (e.g., on verify page)
+  context?: 'user' | 'admin' | 'partner' | 'university'
 }
 
-export function AppShell({ children, user, showQuestionnairePrompt = false, hideVerificationBanner = false }: AppShellProps) {
+export function AppShell({
+  children,
+  user,
+  showQuestionnairePrompt = false,
+  hideVerificationBanner = false,
+  context = 'user'
+}: AppShellProps) {
   const router = useRouter()
   const pathname = usePathname()
   const [showQuestionnaire, setShowQuestionnaire] = useState(false)
@@ -129,7 +136,7 @@ export function AppShell({ children, user, showQuestionnairePrompt = false, hide
         <div className="flex min-h-screen flex-col">
           {/* Main content area */}
           <div className="flex-1 flex flex-col overflow-hidden relative z-0">
-            <TopNav user={user} />
+            <TopNav user={user} context={context} />
 
             {/* Floating Dock Navigation */}
             <FloatingDock />

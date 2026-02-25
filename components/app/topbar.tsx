@@ -31,6 +31,7 @@ interface TopbarProps {
     name: string
     avatar?: string
   }
+  context?: 'user' | 'admin' | 'partner' | 'university'
 }
 
 interface SearchResult {
@@ -52,7 +53,7 @@ interface SearchResult {
   isGroupChat?: boolean
 }
 
-export function Topbar({ user }: TopbarProps) {
+export function Topbar({ user, context = 'user' }: TopbarProps) {
   const router = useRouter()
   const [searchQuery, setSearchQuery] = useState('')
   const [searchResults, setSearchResults] = useState<SearchResult[]>([])
@@ -61,6 +62,8 @@ export function Topbar({ user }: TopbarProps) {
   const searchRef = useRef<HTMLDivElement>(null)
   const inputRef = useRef<HTMLInputElement>(null)
   const [dropdownPosition, setDropdownPosition] = useState<{ top: number; left: number; width: number } | null>(null)
+
+  const isAdminContext = context === 'admin' || context === 'partner' || context === 'university'
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -121,7 +124,12 @@ export function Topbar({ user }: TopbarProps) {
   const performSearch = async (query: string) => {
     setIsSearching(true)
     try {
-      const response = await fetch(`/api/search?q=${encodeURIComponent(query)}`)
+      const params = new URLSearchParams({ q: query })
+      if (isAdminContext) {
+        params.append('context', 'admin')
+      }
+
+      const response = await fetch(`/api/search?${params.toString()}`)
       const data = await response.json()
 
       if (response.ok) {
@@ -184,9 +192,9 @@ export function Topbar({ user }: TopbarProps) {
         router.push(`/matches?user=${result.id}`)
       }
     } else if (result.type === 'housing') {
-      router.push(`/housing/${result.id}`)
+        router.push(`/housing/${result.id}`)
     } else if (result.type === 'page' && result.href) {
-      router.push(result.href)
+        router.push(result.href)
     }
     setSearchQuery('')
     setShowResults(false)
@@ -220,7 +228,10 @@ export function Topbar({ user }: TopbarProps) {
     >
       <div className="flex items-center w-full px-3 sm:px-4 lg:px-6 py-3 gap-3 md:gap-4 max-w-7xl mx-auto">
         {/* Logo - Visible on all screens now that sidebar is gone */}
-        <Link href="/dashboard" className="flex items-center gap-2 hover:opacity-80 transition-opacity flex-shrink-0">
+        <Link
+          href={isAdminContext ? '/admin' : '/dashboard'}
+          className="flex items-center gap-2 hover:opacity-80 transition-opacity flex-shrink-0"
+        >
           <div className="relative h-8 w-8 flex-shrink-0">
             <Image
               src="/images/logo.png"
@@ -243,7 +254,7 @@ export function Topbar({ user }: TopbarProps) {
             <input
               ref={inputRef}
               type="text"
-              placeholder="Search..."
+              placeholder={isAdminContext ? 'Search admin tools...' : 'Search...'}
               value={searchQuery}
               onChange={(e) => {
                 setSearchQuery(e.target.value)
