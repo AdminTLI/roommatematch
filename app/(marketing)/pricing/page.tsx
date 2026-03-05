@@ -6,7 +6,7 @@ import { Metadata } from 'next'
 
 export const metadata: Metadata = {
   title: 'Partnership & ROI | Domu Match - University Housing',
-  description: 'B2B partnership pricing and ROI for universities. Reduce dropouts and mediation costs with Domu Match. Flexible pilot and campus license options with transparent pricing.',
+  description: 'B2B partnership pricing and ROI for universities. The consumer product is free for both students and young professionals. Reduce dropouts and mediation costs with Domu Match. Flexible pilot and campus license options.',
   keywords: [
     'university housing pricing',
     'roommate matching pricing',

@@ -7,12 +7,13 @@ import { MarketingPageBackground } from '../components/marketing-page-background
 import { Metadata } from 'next'
 
 export const metadata: Metadata = {
-  title: 'How Roommate Matching Works | Domu Match - Student Guide',
-  description: 'Discover how our science-backed roommate matching works in the Netherlands. From sign-up to move-in, learn about our verified student platform and compatibility algorithm.',
+  title: 'How Roommate Matching Works | Domu Match - Guide for Students & Young Professionals',
+  description: 'Discover how our science-backed roommate matching works in the Netherlands. From sign-up to move-in, for verified students and young professionals. Compatibility algorithm, ID verification, separate pools.',
   keywords: [
     'how roommate matching works',
     'student housing process Netherlands',
     'roommate finder process',
+    'young professionals flatmate',
     'housing matching algorithm',
     'how to find roommate Netherlands',
     'student housing platform process',
@@ -20,14 +21,13 @@ export const metadata: Metadata = {
     'verified roommate matching',
     'roommate matching guide',
     'how to use roommate app',
-    'student housing matching process',
     'find roommate step by step',
     'roommate compatibility matching',
-    'verified student platform',
+    'verified platform',
   ],
   openGraph: {
     title: 'How Roommate Matching Works | Domu Match',
-    description: 'Discover how our science-backed roommate matching works in the Netherlands. From sign-up to move-in, learn about our verified student platform.',
+    description: 'Discover how our science-backed roommate matching works in the Netherlands. For verified students and young professionals.',
     type: 'website',
     url: 'https://domumatch.com/how-it-works',
     siteName: 'Domu Match',
@@ -65,7 +65,7 @@ export default function HowItWorksPage() {
             '@type': 'HowToStep',
             position: 1,
             name: 'Sign Up',
-            text: 'Create an account with your university email address',
+            text: 'Create an account with your email. Students use a university email address; young professionals use their email.',
           },
           {
             '@type': 'HowToStep',
@@ -77,7 +77,7 @@ export default function HowItWorksPage() {
             '@type': 'HowToStep',
             position: 3,
             name: 'Complete Compatibility Quiz',
-            text: 'Answer questions about your lifestyle, study habits, and preferences',
+            text: 'Answer questions about your lifestyle, daily rhythms, and preferences',
           },
           {
             '@type': 'HowToStep',

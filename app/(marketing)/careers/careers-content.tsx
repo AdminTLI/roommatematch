@@ -16,16 +16,16 @@ import { ApplyProcessFAQ } from '@/components/marketing/Careers/ApplyProcessFAQ'
 const content = {
   en: {
     hero: {
-      badge: 'Early builder mission: safer, happier student housing',
+      badge: 'Early builder mission: safer, happier shared living',
       title: 'Join our community of builders',
-      body: 'We’re mission-driven to improve roommate safety and trust. Join as an experienced builder or as a student gaining real-world experience—every contribution drives tangible impact.',
+      body: 'We’re mission-driven to improve roommate safety and trust. Join as an experienced builder or as a student gaining real-world experience - every contribution drives tangible impact.',
       primary: 'Explore tracks',
       secondary: 'Meet the community',
-      footnote: 'Collaborate directly with the founder—small, focused projects with clear outcomes.'
+      footnote: 'Collaborate directly with the founder - small, focused projects with clear outcomes.'
     },
     tracks: {
       heading: 'Two ways to join',
-      subheading: 'Choose the path that fits your goals—both contribute directly to our mission.'
+      subheading: 'Choose the path that fits your goals - both contribute directly to our mission.'
     },
     roles: {
       heading: 'Role catalog by capability area',
@@ -39,32 +39,32 @@ const content = {
         { title: 'Matching quality', body: 'Define metrics and improve suggestion relevance.' },
         { title: 'University partnerships', body: 'Shape outreach and partner-facing materials.' }
       ],
-      caption: 'We don’t have a team yet—you’ll be in the builder seat.'
+      caption: 'We don’t have a team yet - you’ll be in the builder seat.'
     },
     benefits: {
       heading: 'Volunteer experience benefits',
-      subheading: 'Grow your skills while contributing to a safety-first student platform.'
+      subheading: 'Grow your skills while contributing to a safety-first platform for students and young professionals.'
     },
     apply: {
       heading: 'Tell us how you want to help',
       description: 'Choose your track, share your skills and time commitment, and we’ll get back to you.',
       note1: 'Founder-led review happens weekly. Once we scope your time, you’ll get a Notion board with project tasks and milestones.',
-      note2: 'We have zero volunteers right now—so you’ll set the tone. We review applications weekly and align on a scoped project before you commit.',
+      note2: 'We have zero volunteers right now - so you’ll set the tone. We review applications weekly and align on a scoped project before you commit.',
       dialogCta: 'Open application form'
     }
   },
   nl: {
     hero: {
-      badge: 'Early builder missie: veiligere, gelukkigere studentenhuisvesting',
+      badge: 'Early builder missie: veiligere, gelukkigere shared living',
       title: 'Word onderdeel van onze builders-community',
-      body: 'We werken missiegedreven aan meer vertrouwen en veiligheid tussen huisgenoten. Sluit je aan als ervaren builder of als student die ervaring wil opdoen—iedere bijdrage heeft directe impact.',
+      body: 'We werken missiegedreven aan meer vertrouwen en veiligheid tussen huisgenoten. Sluit je aan als ervaren builder of als student die ervaring wil opdoen - iedere bijdrage heeft directe impact.',
       primary: 'Bekijk de tracks',
       secondary: 'Ontmoet de community',
-      footnote: 'Werk rechtstreeks met de oprichter—kleine, gefocuste projecten met duidelijke resultaten.'
+      footnote: 'Werk rechtstreeks met de oprichter - kleine, gefocuste projecten met duidelijke resultaten.'
     },
     tracks: {
       heading: 'Twee manieren om mee te doen',
-      subheading: 'Kies het pad dat bij jou past—allebei dragen ze direct bij aan onze missie.'
+      subheading: 'Kies het pad dat bij jou past - allebei dragen ze direct bij aan onze missie.'
     },
     roles: {
       heading: 'Rolcatalogus per domein',
@@ -78,17 +78,17 @@ const content = {
         { title: 'Matchkwaliteit', body: 'Definieer metrics en verbeter de relevantie van suggesties.' },
         { title: 'Universiteitspartners', body: 'Help met outreach en materialen voor partners.' }
       ],
-      caption: 'We hebben nog geen team—jij zit in de builder seat.'
+      caption: 'We hebben nog geen team - jij zit in de builder seat.'
     },
     benefits: {
       heading: 'Voordelen voor vrijwilligers',
-      subheading: 'Groei in je vaardigheden terwijl je bouwt aan een veilige studentencommunity.'
+      subheading: 'Groei in je vaardigheden terwijl je bouwt aan een veilige community voor studenten en young professionals.'
     },
     apply: {
       heading: 'Vertel hoe jij wilt helpen',
       description: 'Kies je track, deel je skills en tijd, en wij nemen contact op.',
       note1: 'We reviewen wekelijks. Na de intake krijg je een Notion-board met taken en milestones.',
-      note2: 'We hebben nu nog nul vrijwilligers—dus jij bepaalt de toon. We stemmen eerst een scoped project af.',
+      note2: 'We hebben nu nog nul vrijwilligers - dus jij bepaalt de toon. We stemmen eerst een scoped project af.',
       dialogCta: 'Open het aanmeldformulier'
     }
   }

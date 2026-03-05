@@ -97,11 +97,11 @@ export function UniversityCityHero({ city }: HeroSectionProps) {
           >
             <div className="flex items-center gap-2">
               <Check className="h-5 w-5 text-emerald-400" aria-hidden />
-              <span>Free for students</span>
+              <span>Free for students & young professionals</span>
             </div>
             <div className="flex items-center gap-2">
               <Check className="h-5 w-5 text-emerald-400" aria-hidden />
-              <span>Verified students only</span>
+              <span>Verified users only</span>
             </div>
             <div className="flex items-center gap-2">
               <Check className="h-5 w-5 text-emerald-400" aria-hidden />

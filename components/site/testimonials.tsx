@@ -24,19 +24,19 @@ const content = {
         icon: Shield,
         title: 'Verified & safe',
         description:
-          'Every student is verified with government ID and selfie verification. You can focus on compatibility, not safety concerns.',
+          'Students and young professionals are verified with government ID and selfie verification. You can focus on compatibility, not safety concerns.',
       },
       {
         icon: Zap,
         title: 'Save time & money',
         description:
-          'Find compatible students in days, not weeks. Prevent conflicts and disputes by connecting with ideal roommates from the start.',
+          'Find compatible roommates in days, not weeks. Prevent conflicts and disputes by connecting with ideal matches from the start.',
       },
       {
         icon: Heart,
         title: 'Find your ideal roommate',
         description:
-          "See exactly why you're compatible with transparent explanations. Connect based on lifestyle, study habits, and values that matter.",
+          "See exactly why you're compatible with transparent explanations. Connect based on lifestyle, habits, and values that matter.",
       },
     ],
   },
@@ -56,19 +56,19 @@ const content = {
         icon: Shield,
         title: 'Geverifieerd en veilig',
         description:
-          'Elke student is geverifieerd met overheids-ID en selfie-verificatie. Je kunt je focussen op compatibiliteit, niet op veiligheidszorgen.',
+          'Studenten en young professionals zijn geverifieerd met overheids-ID en selfie-verificatie. Je kunt je focussen op compatibiliteit, niet op veiligheidszorgen.',
       },
       {
         icon: Zap,
         title: 'Bespaar tijd en geld',
         description:
-          'Vind compatibele studenten in dagen, niet weken. Voorkom conflicten en geschillen door vanaf het begin verbinding te maken met ideale huisgenoten.',
+          'Vind compatibele huisgenoten in dagen, niet weken. Voorkom conflicten en geschillen door vanaf het begin verbinding te maken met ideale matches.',
       },
       {
         icon: Heart,
         title: 'Vind je ideale huisgenoot',
         description:
-          'Zie precies waarom je compatibel bent met transparante uitleg. Verbind op basis van levensstijl, studiegewoonten en waarden die ertoe doen.',
+          'Zie precies waarom je compatibel bent met transparante uitleg. Verbind op basis van levensstijl, gewoonten en waarden die ertoe doen.',
       },
     ],
   },

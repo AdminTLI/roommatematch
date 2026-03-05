@@ -15,12 +15,12 @@ export function ValueProps({ locale = 'en' }: ValuePropsProps) {
   const content = {
     en: {
       title: "Built for trust and safety",
-      subtitle: "Every feature designed to protect students and reduce conflicts",
+      subtitle: "Every feature designed to protect users and reduce conflicts",
       badges: [
         {
           icon: Users,
           title: "Campus-gated (SSO ready)",
-          description: "Only verified university students can join your community",
+          description: "Verified students and young professionals; campus SSO for students where available",
           color: "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200"
         },
         {
@@ -41,7 +41,7 @@ export function ValueProps({ locale = 'en' }: ValuePropsProps) {
         {
           icon: CheckCircle,
           title: "Verified Community",
-          description: "Every member is ID-verified and campus-verified"
+          description: "Every member is ID-verified (and campus-verified for students)"
         },
         {
           icon: Eye,
@@ -57,12 +57,12 @@ export function ValueProps({ locale = 'en' }: ValuePropsProps) {
     },
     nl: {
       title: "Gebouwd voor vertrouwen en veiligheid",
-      subtitle: "Elke functie is ontworpen om studenten te beschermen en conflicten te verminderen",
+      subtitle: "Elke functie is ontworpen om gebruikers te beschermen en conflicten te verminderen",
       badges: [
         {
           icon: Users,
           title: "Campus-beperkt (SSO gereed)",
-          description: "Alleen geverifieerde universiteitsstudenten kunnen zich aansluiten",
+          description: "Geverifieerde studenten en young professionals; campus-SSO voor studenten waar beschikbaar",
           color: "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200"
         },
         {
@@ -83,7 +83,7 @@ export function ValueProps({ locale = 'en' }: ValuePropsProps) {
         {
           icon: CheckCircle,
           title: "Geverifieerde Community",
-          description: "Elk lid is ID-geverifieerd en campus-geverifieerd"
+          description: "Elk lid is ID-geverifieerd (en campus-geverifieerd voor studenten)"
         },
         {
           icon: Eye,

@@ -39,37 +39,44 @@ export async function GET(request: NextRequest) {
   }
 
   try {
-    safeLogger.info('[Cron] Starting scheduled matching run')
+    safeLogger.info('[Cron] Starting scheduled matching run (dual marketplace: student + professional)')
     
     const repo = await getMatchRepo()
-    const runId = `cron_${Date.now()}`
-    
-    // Run matching for all active users
-    const result = await runMatchingAsSuggestions({
-      repo,
-      mode: 'pairs',
-      groupSize: 2,
-      cohort: {
-        onlyActive: true,
-        excludeAlreadyMatched: true
-      },
-      runId
-    })
-    
+    const baseRunId = `cron_${Date.now()}`
+    const admin = await createAdminClient()
+    let totalCreated = 0
+    const allSuggestions: { memberIds: string[]; id: string }[] = []
+
+    // Strict segregation: run matching separately for each user_type (Phase 3)
+    for (const userType of ['student', 'professional'] as const) {
+      const result = await runMatchingAsSuggestions({
+        repo,
+        mode: 'pairs',
+        groupSize: 2,
+        cohort: {
+          onlyActive: true,
+          excludeAlreadyMatched: true,
+          userType
+        },
+        runId: `${baseRunId}_${userType}`
+      })
+      totalCreated += result.created
+      result.suggestions.forEach(s => allSuggestions.push({ id: s.id, memberIds: s.memberIds }))
+      safeLogger.info('[Cron] Cohort complete', { userType, created: result.created })
+    }
+
     safeLogger.info('[Cron] Matching complete', {
-      runId: result.runId,
-      created: result.created,
-      suggestionCount: result.suggestions.length
+      runId: baseRunId,
+      created: totalCreated,
+      suggestionCount: allSuggestions.length
     })
 
     // Create notifications for new suggestions
-    const admin = await createAdminClient()
     let notificationCount = 0
     
-    for (const suggestion of result.suggestions) {
+    for (const suggestion of allSuggestions) {
       try {
         if (suggestion.memberIds.length === 2) {
-          // Pair match - notify both users
           await createMatchNotification(
             suggestion.memberIds[0],
             suggestion.memberIds[1],
@@ -87,8 +94,8 @@ export async function GET(request: NextRequest) {
     
     return NextResponse.json({
       success: true,
-      runId: result.runId,
-      created: result.created,
+      runId: baseRunId,
+      created: totalCreated,
       notificationsSent: notificationCount,
       timestamp: new Date().toISOString()
     })

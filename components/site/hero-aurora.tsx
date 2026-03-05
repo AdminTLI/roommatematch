@@ -3,28 +3,26 @@
 import { useState } from 'react'
 import Link from 'next/link'
 import { motion, useReducedMotion } from 'framer-motion'
-import { User, Building2 } from 'lucide-react'
+import { GraduationCap, Briefcase } from 'lucide-react'
 import Container from '@/components/ui/primitives/container'
 import { useApp } from '@/app/providers'
 import { cn } from '@/lib/utils'
 
 const content = {
   en: {
-    headline: 'From strangers to roommates.',
-    subtext: 'The first compatibility matching platform for students in The Netherlands. Try it for free today!',
-    forStudents: 'For Students',
-    studentsCopy: 'Find a roommate who matches your vibe, not just your budget.',
-    findMyMatch: 'Find My Match',
+    headline: 'Find a roommate you actually want to live with.',
+    subtext: 'The smart matching platform for verified students and young professionals navigating the Dutch housing crisis.',
+    ctaStudent: 'I am a Student',
+    ctaProfessional: 'I am a Professional',
     forEducation: 'For Education',
     educationCopy: 'Reduce dropouts with data-driven wellbeing insights.',
     partnerWithUs: 'Partner With Us',
   },
   nl: {
-    headline: 'Huisvesting is meer dan een dak.',
-    subtext: 'De eerste welzijnsgerichte huisvestingsinfrastructuur voor Nederland.',
-    forStudents: 'Voor Studenten',
-    studentsCopy: 'Vind een huisgenoot die bij je past, niet alleen je budget.',
-    findMyMatch: 'Vind Mijn Match',
+    headline: 'Vind een huisgenoot waar je écht mee wilt wonen.',
+    subtext: 'Het slimme matchingplatform voor geverifieerde studenten en young professionals in de Nederlandse wooncrisis.',
+    ctaStudent: 'Ik ben Student',
+    ctaProfessional: 'Ik ben Professional',
     forEducation: 'Voor Onderwijs',
     educationCopy: 'Minder uitval met data-gedreven welzijnsinzichten.',
     partnerWithUs: 'Partner Met Ons',
@@ -38,7 +36,7 @@ export function HeroAurora() {
   const [hoveredCard, setHoveredCard] = useState<'students' | 'universities' | null>(null)
   const motionConfig = reducedMotion ? { opacity: 1 } : { opacity: 1, y: 0 }
   const motionInitial = reducedMotion ? { opacity: 0 } : { opacity: 0, y: 24 }
-  const motionInitialCards = reducedMotion ? { opacity: 0 } : { opacity: 0, y: 32 }
+  const motionInitialButtons = reducedMotion ? { opacity: 0 } : { opacity: 0, y: 32 }
 
   return (
     <section
@@ -80,9 +78,9 @@ export function HeroAurora() {
           transition={{ duration: reducedMotion ? 0 : 0.6, ease: 'easeOut' }}
         >
           {locale === 'en' ? (
-            <>From <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 to-purple-400">strangers</span> to <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 to-purple-400">roommates.</span></>
+            <>Find a roommate you actually <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 to-purple-400">want to live with.</span></>
           ) : (
-            <>Huisvesting is <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 to-purple-400">meer</span> dan een <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 to-purple-400">dak.</span></>
+            <>Vind een huisgenoot waar je <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 to-purple-400">écht mee wilt wonen.</span></>
           )}
         </motion.h1>
         <motion.p
@@ -94,70 +92,58 @@ export function HeroAurora() {
           {t.subtext}
         </motion.p>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 w-full max-w-4xl">
-          {/* Students card */}
-          <motion.div
+        {/* Dual CTA: Student (primary) + Professional (secondary glass) */}
+        <motion.div
+          className="flex flex-col sm:flex-row gap-4 w-full max-w-2xl justify-center items-center"
+          initial={motionInitialButtons}
+          animate={motionConfig}
+          transition={{ duration: reducedMotion ? 0 : 0.5, delay: reducedMotion ? 0 : 0.2, ease: 'easeOut' }}
+        >
+          <Link
+            href="/auth/sign-up?type=student"
             className={cn(
-              'glass p-8 md:p-10 flex flex-col cursor-pointer transition-all duration-300',
-              'hover:border-white/30 hover:bg-white/15'
+              'inline-flex items-center justify-center gap-2 rounded-xl px-8 py-4 text-base font-semibold w-full sm:w-auto min-h-[52px]',
+              'bg-white/10 backdrop-blur-md border border-white/20 text-white',
+              'bg-gradient-to-r from-indigo-500 to-purple-500 border-0 shadow-lg shadow-indigo-500/30',
+              'hover:scale-[1.02] hover:shadow-indigo-500/40 transition-all duration-200',
+              'focus-visible:outline focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-slate-950'
             )}
-            initial={motionInitialCards}
-            animate={motionConfig}
-            transition={{ duration: reducedMotion ? 0 : 0.5, delay: reducedMotion ? 0 : 0.2 }}
             onMouseEnter={() => setHoveredCard('students')}
             onMouseLeave={() => setHoveredCard(null)}
             onFocus={() => setHoveredCard('students')}
             onBlur={() => setHoveredCard(null)}
           >
-            <div className="mb-6 flex h-14 w-14 items-center justify-center rounded-2xl bg-indigo-500/20 border border-indigo-400/30">
-              <User className="h-7 w-7 text-indigo-400" aria-hidden />
-            </div>
-            <h2 className="text-2xl font-bold text-white tracking-tight mb-3">{t.forStudents}</h2>
-            <p className="text-white/80 text-base md:text-lg mb-8 flex-1">{t.studentsCopy}</p>
-            <Link
-              href="/auth/sign-up"
-              className={cn(
-                'inline-flex items-center justify-center rounded-xl px-6 py-4 text-base font-semibold',
-                'bg-gradient-to-r from-indigo-500 to-purple-500 text-white',
-                'shadow-lg shadow-indigo-500/50 hover:scale-105 transition-all duration-200',
-                'focus-visible:outline focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-slate-950'
-              )}
-            >
-              {t.findMyMatch}
-            </Link>
-          </motion.div>
-
-          {/* Universities card */}
-          <motion.div
+            <GraduationCap className="h-5 w-5" aria-hidden />
+            {t.ctaStudent}
+          </Link>
+          <Link
+            href="/auth/sign-up?type=professional"
             className={cn(
-              'glass p-8 md:p-10 flex flex-col cursor-pointer transition-all duration-300',
-              'hover:border-white/30 hover:bg-white/15'
+              'inline-flex items-center justify-center gap-2 rounded-xl px-8 py-4 text-base font-semibold w-full sm:w-auto min-h-[52px]',
+              'bg-white/10 backdrop-blur-md border border-white/20 text-white',
+              'hover:bg-white/15 hover:border-white/30 transition-all duration-200',
+              'focus-visible:outline focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-slate-950'
             )}
-            initial={motionInitialCards}
-            animate={motionConfig}
-            transition={{ duration: reducedMotion ? 0 : 0.5, delay: reducedMotion ? 0 : 0.3 }}
             onMouseEnter={() => setHoveredCard('universities')}
             onMouseLeave={() => setHoveredCard(null)}
             onFocus={() => setHoveredCard('universities')}
             onBlur={() => setHoveredCard(null)}
           >
-            <div className="mb-6 flex h-14 w-14 items-center justify-center rounded-2xl bg-blue-500/20 border border-blue-400/30">
-              <Building2 className="h-7 w-7 text-blue-300" aria-hidden />
-            </div>
-            <h2 className="text-2xl font-bold text-white tracking-tight mb-3">{t.forEducation}</h2>
-            <p className="text-white/80 text-base md:text-lg mb-8 flex-1">{t.educationCopy}</p>
-            <Link
-              href="/universities"
-              className={cn(
-                'inline-flex items-center justify-center rounded-xl px-6 py-4 text-base font-semibold',
-                'bg-transparent border border-white/30 text-white hover:bg-white/10 transition-all duration-200',
-                'focus-visible:outline focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-slate-950'
-              )}
-            >
-              {t.partnerWithUs}
-            </Link>
-          </motion.div>
-        </div>
+            <Briefcase className="h-5 w-5" aria-hidden />
+            {t.ctaProfessional}
+          </Link>
+        </motion.div>
+
+        <motion.p
+          className="mt-8 text-sm text-white/60 text-center"
+          initial={motionInitialButtons}
+          animate={motionConfig}
+          transition={{ duration: reducedMotion ? 0 : 0.5, delay: reducedMotion ? 0 : 0.3, ease: 'easeOut' }}
+        >
+          <Link href="/universities" className="hover:text-white/80 underline underline-offset-2">
+            {t.forEducation}: {t.partnerWithUs} →
+          </Link>
+        </motion.p>
       </Container>
     </section>
   )

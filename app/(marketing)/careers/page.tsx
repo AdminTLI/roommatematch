@@ -8,10 +8,10 @@ export const metadata: Metadata = {
   keywords: [
     'Domu Match careers',
     'roommate matching jobs',
-    'student housing careers',
+    'shared living careers',
     'volunteer opportunities Netherlands',
     'tech volunteer positions',
-    'student housing platform jobs',
+    'shared living platform jobs',
     'roommate matching company careers',
   ],
   openGraph: {

@@ -6,20 +6,20 @@ import { getCityStructuredData } from '@/components/site/university-city/content
 import { MarketingLayoutFix } from '../components/marketing-layout-fix'
 
 export const metadata: Metadata = {
-  title: 'Find Your Perfect Roommate in Groningen | Domu Match',
+  title: 'Find Roommates in Groningen | Domu Match – Students & Young Professionals',
   description:
-    'Find compatible roommates in Groningen with Domu Match. Connect with verified students from University of Groningen, Hanze UAS. Vibrant student city.',
+    'Find compatible roommates in Groningen with Domu Match. Connect with verified students and young professionals from University of Groningen, Hanze UAS. Science-backed matching for shared living.',
   keywords: [
     'find roommate Groningen',
     'RUG roommate',
     'student housing Groningen',
+    'young professionals Groningen',
     'Hanze roommate',
-    'University of Groningen housing',
     'Groningen accommodation',
   ],
   openGraph: {
-    title: 'Find Your Perfect Roommate in Groningen | Domu Match',
-    description: 'Find compatible roommates in Groningen. RUG and Hanze students. Science-backed matching.',
+    title: 'Find Roommates in Groningen | Domu Match',
+    description: 'Find compatible roommates in Groningen. Verified students and young professionals. RUG and Hanze. Science-backed matching.',
     type: 'website',
     url: 'https://domumatch.com/groningen',
     siteName: 'Domu Match',

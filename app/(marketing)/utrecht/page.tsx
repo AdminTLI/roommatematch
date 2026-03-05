@@ -6,13 +6,14 @@ import { getCityStructuredData } from '@/components/site/university-city/content
 import { MarketingLayoutFix } from '../components/marketing-layout-fix'
 
 export const metadata: Metadata = {
-  title: 'Find Your Perfect Roommate in Utrecht | Domu Match',
+  title: 'Find Roommates in Utrecht | Domu Match – Students & Young Professionals',
   description:
-    'Find compatible roommates in Utrecht with Domu Match. Connect with verified students from Utrecht University, HU, and more. Science-backed matching for Utrecht student housing.',
+    'Find compatible roommates in Utrecht with Domu Match. Connect with verified students and young professionals from Utrecht University, HU, and more. Science-backed matching for shared living in Utrecht.',
   keywords: [
     'find roommate Utrecht',
     'roommate finder Utrecht',
     'student housing Utrecht',
+    'young professionals Utrecht',
     'room share Utrecht',
     'Utrecht University roommate',
     'HU Utrecht housing',

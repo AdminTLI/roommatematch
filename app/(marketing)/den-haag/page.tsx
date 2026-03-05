@@ -6,14 +6,15 @@ import { getCityStructuredData } from '@/components/site/university-city/content
 import { MarketingLayoutFix } from '../components/marketing-layout-fix'
 
 export const metadata: Metadata = {
-  title: 'Find Your Perfect Roommate in The Hague | Domu Match',
+  title: 'Find Roommates in The Hague | Domu Match – Students & Young Professionals',
   description:
-    'Find compatible roommates in The Hague (Den Haag) with Domu Match. Connect with verified students from Leiden University The Hague, The Hague University, and more.',
+    'Find compatible roommates in The Hague (Den Haag) with Domu Match. Connect with verified students and young professionals from Leiden University The Hague, The Hague University, and more.',
   keywords: [
     'find roommate Den Haag',
     'roommate finder The Hague',
     'student housing Den Haag',
-    'The Hague student rooms',
+    'young professionals The Hague',
+    'The Hague shared living',
     'Leiden University The Hague',
     'Den Haag accommodation',
   ],

@@ -1,5 +1,7 @@
 'use client'
 
+import { useState } from 'react'
+import Link from 'next/link'
 import { QuestionnaireLayout } from '@/components/questionnaire/QuestionnaireLayout'
 import { useOnboardingStore } from '@/store/onboarding'
 import itemsJson from '@/data/item-bank.v1.json'
@@ -8,6 +10,7 @@ import { useMemo } from 'react'
 import { useSearchParams } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
+import { Checkbox } from '@/components/ui/checkbox'
 import { FileDown, AlertCircle } from 'lucide-react'
 import jsPDF from 'jspdf'
 import autoTable from 'jspdf-autotable'
@@ -44,6 +47,7 @@ function ReviewClientContent() {
   const sections = useOnboardingStore((s) => s.sections)
   const allItems = itemsJson as Item[]
   const searchParams = useSearchParams()
+  const [isAgreed, setIsAgreed] = useState(false)
   
   // Check edit mode using React hook for proper reactivity
   const isEditMode = searchParams.get('mode') === 'edit'
@@ -412,8 +416,32 @@ function ReviewClientContent() {
       subtitle={isEditMode ? "Review your changes before saving. Submit to update your profile." : "Read-only summary. Submit to finish."}
       onPrev={() => (window.location.href = isEditMode ? '/onboarding/reliability-logistics?mode=edit' : '/onboarding/reliability-logistics')}
       onNext={submit}
+      nextDisabled={!isAgreed}
     >
       <div className="space-y-8">
+        <div className="p-4 rounded-xl border border-white/10 dark:border-white/10 bg-white/5 dark:bg-black/40 backdrop-blur-md flex items-start gap-3">
+          <Checkbox
+            id="beta-terms-consent"
+            checked={isAgreed}
+            onCheckedChange={(checked) => setIsAgreed(checked === true)}
+            className="mt-0.5 border-border data-[state=checked]:bg-primary data-[state=checked]:border-primary"
+          />
+          <label
+            htmlFor="beta-terms-consent"
+            className="text-sm text-foreground cursor-pointer leading-snug"
+          >
+            I agree to the{' '}
+            <Link
+              href="/legal/beta-terms"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-primary hover:underline font-medium"
+            >
+              Beta Terms &amp; Conditions
+            </Link>
+            {' '}and confirm my user status (Student/Professional) is accurate.
+          </label>
+        </div>
         <div className="flex items-center justify-between">
           <div>
             <h2 className="text-xl font-semibold text-gray-900">Your Responses</h2>

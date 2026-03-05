@@ -20,13 +20,14 @@ import { Loader2, Mail, Lock, User, Calendar } from 'lucide-react'
 import { createBrowserClient } from '@supabase/ssr'
 import { useApp } from '@/app/providers'
 import { validateDateOfBirth, getAgeVerificationError } from '@/lib/auth/age-verification'
+import type { UserType } from '@/types/profile'
 
 const glassCardClass =
   'w-full noise-overlay rounded-2xl border border-white/10 bg-white/5 backdrop-blur-lg shadow-2xl shadow-black/20'
 const inputClass =
   'pl-10 min-h-[44px] bg-white/10 border-white/15 text-white placeholder:text-white/45 focus-visible:ring-white/30'
 
-export function SignUpForm() {
+export function SignUpForm({ userType }: { userType?: UserType | null }) {
   const { dictionary } = useApp()
   const t = dictionary.auth.signUp
   const [email, setEmail] = useState('')
@@ -141,6 +142,18 @@ export function SignUpForm() {
         email: data.user.email,
         emailConfirmed: data.user.email_confirmed_at
       })
+
+      if (userType === 'student' || userType === 'professional') {
+        const { error: updateError } = await supabase
+          .from('users')
+          .update({ user_type: userType, updated_at: new Date().toISOString() })
+          .eq('id', data.user.id)
+        if (updateError) {
+          console.error('[SignUp] Failed to save user_type:', updateError)
+        } else {
+          console.log('[SignUp] Saved user_type:', userType)
+        }
+      }
 
       sessionStorage.setItem('verification-email', email)
 

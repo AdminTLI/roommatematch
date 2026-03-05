@@ -24,7 +24,7 @@ export default function PrivacyPage() {
             </p>
 
             <p className="text-slate-400 mb-8 leading-relaxed">
-                Domu Match is designed for university students (typically 17+)
+                Domu Match is designed for students and young professionals
                 who want to find compatible roommates. This Privacy Policy
                 explains in clear language how we use your data and your rights
                 under the GDPR, the Dutch GDPR Implementation Act (UAVG), and
@@ -70,7 +70,7 @@ export default function PrivacyPage() {
                         </td>
                         <td className="px-4 py-3 align-top">
                           Account details, ID verification status, answers to a
-                          200-question lifestyle questionnaire, academic
+                          lifestyle questionnaire, (for students) academic
                           context, and in-app messages.
                         </td>
                         <td className="px-4 py-3 align-top">
@@ -204,10 +204,10 @@ export default function PrivacyPage() {
                   Who this policy is for
                 </h3>
                 <p className="text-slate-400 mb-4">
-                  This policy applies to students and young people (typically
-                  17+) using Domu Match to find roommates, visitors to our
-                  website or app, and students connected through participating
-                  Pilot Universities.
+                  This policy applies to students and young professionals
+                  (typically 17+) using Domu Match to find roommates, visitors to
+                  our website or app, and users (including students) connected
+                  through participating Pilot Universities.
                 </p>
               </section>
 

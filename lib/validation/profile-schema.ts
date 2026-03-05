@@ -2,11 +2,26 @@ import { z } from 'zod'
 import { getUserFriendlyError } from '@/lib/errors/user-friendly-messages'
 import { INTERESTS_LIST } from '@/lib/constants/interests'
 import { getHousingStatusKeys } from '@/lib/constants/housing-status'
+import { USER_TYPES } from '@/types/profile'
+
+/**
+ * Schema for onboarding path selection (required before main flow).
+ * user_type must be one of 'student' | 'professional'.
+ */
+export const pathSelectionSchema = z.object({
+  user_type: z.enum([USER_TYPES[0], USER_TYPES[1]], {
+    required_error: 'Please select whether you are a student or a young professional.',
+    invalid_type_error: 'Invalid selection.',
+  }),
+})
+
+export type PathSelectionInput = z.infer<typeof pathSelectionSchema>
 
 /**
  * Validation schema for profile updates
  */
 export const profileUpdateSchema = z.object({
+  user_type: z.enum([USER_TYPES[0], USER_TYPES[1]]).optional().nullable(),
   firstName: z.string()
     .min(1, 'First name is required')
     .max(100, 'First name must be less than 100 characters')
@@ -63,6 +78,7 @@ export const profileUpdateSchema = z.object({
     .optional()
     .default([]),
 })
+
 
 export type ProfileUpdateInput = z.infer<typeof profileUpdateSchema>
 

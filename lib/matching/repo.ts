@@ -14,6 +14,8 @@ export type CohortFilter = {
   excludeAlreadyMatched?: boolean; // exclude users locked into a match
   excludeUserIds?: string[]; // exclude specific users (for blocklist)
   limit?: number;
+  /** Strict cohort for dual marketplace: only load candidates with this user_type. Required for matching. */
+  userType?: 'student' | 'professional';
 };
 
 export type MatchRecord =
@@ -52,6 +54,8 @@ export interface Candidate {
   vector?: number[];
   isMatched?: boolean;
   createdAt: string;
+  /** Cohort for dual marketplace; required for matching (strict segregation). */
+  userType?: 'student' | 'professional';
 }
 
 export interface MatchRun {

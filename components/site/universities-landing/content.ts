@@ -102,7 +102,7 @@ export const content: Record<Locale, UniversitiesLandingContent> = {
     hero: {
       headline: 'Housing Stability = Student Retention.',
       subheadline:
-        'Reduce dropouts and boost student wellbeing by ensuring your students live in compatible, conflict-free homes.',
+        'Reduce dropouts and boost student wellbeing by ensuring your students live in compatible, conflict-free homes. Domu Match serves students and young professionals in separate pools - your students connect within a verified shared-living ecosystem.',
       ctaPrimary: 'Request a Pilot',
       ctaSecondary: 'Download Impact Report',
       chartLabel: 'Student Satisfaction Index',
@@ -133,7 +133,7 @@ export const content: Record<Locale, UniversitiesLandingContent> = {
       feature1: {
         title: "The 'Safe Search' Ecosystem",
         description:
-          'Stop sending your students to the wild west of Facebook groups. We provide a 100% ID-verified, gated environment where students can connect safely without fear of bots or scams.',
+          'Stop sending your students to the wild west of Facebook groups. We provide a 100% ID-verified, gated environment where students can connect safely without fear of bots or scams. Students and young professionals are matched in separate pools; your students benefit from a larger verified community and clearer positioning.',
       },
       feature2: {
         title: "Living Experience Dashboard",
@@ -190,7 +190,7 @@ export const content: Record<Locale, UniversitiesLandingContent> = {
     savingsCalculator: {
       heading: 'What could better housing mean for your budget?',
       subheading:
-        'Housing conflict is a leading driver of first-year attrition. Retaining even a small percentage of at-risk students can add up to significant revenue—and better outcomes.',
+        'Housing conflict is a leading driver of first-year attrition. Retaining even a small percentage of at-risk students can add up to significant revenue - and better outcomes.',
       stat1Value: '€55.000',
       stat1Label: 'Avg. loss per international dropout',
       stat2Value: 'Top 3',
@@ -202,6 +202,11 @@ export const content: Record<Locale, UniversitiesLandingContent> = {
       cta: 'Calculate your savings',
     },
     faq: [
+      {
+        question: 'Who uses Domu Match? Do you only serve students?',
+        answer:
+          'Domu Match serves both students and young professionals in separate pools. Students match only with students; young professionals only with young professionals. University dashboards and pilots focus on the student segment. Your students benefit from a platform that is part of a broader verified shared-living ecosystem.',
+      },
       {
         question: 'Does this integrate with our existing SIS (Student Information System)?',
         answer:
@@ -239,12 +244,12 @@ export const content: Record<Locale, UniversitiesLandingContent> = {
     hero: {
       headline: 'Huisvestingsstabiliteit = Studentretentie.',
       subheadline:
-        'Verminder uitval en versterk het welzijn van studenten door ervoor te zorgen dat ze in compatibele, conflictvrije woningen wonen.',
+        'Verminder uitval en versterk het welzijn van studenten door ervoor te zorgen dat ze in compatibele, conflictvrije woningen wonen. Domu Match bedient studenten en young professionals in aparte pools - uw studenten verbinden binnen een geverifieerd shared-living ecosysteem.',
       ctaPrimary: 'Vraag een pilot aan',
       ctaSecondary: 'Download impactrapport',
       chartLabel: 'Studenttevredenheidsindex',
       chartCaption:
-        'De kwaliteit van de huisgenotenrelatie daalt in de loop van het academisch jaar—zowel tussen als binnen semesters.\n\nRRS-gemiddelden: okt 3,82 → apr 3,42. Compatibele matching kan helpen deze trend te keren.',
+        'De kwaliteit van de huisgenotenrelatie daalt in de loop van het academisch jaar - zowel tussen als binnen semesters.\n\nRRS-gemiddelden: okt 3,82 → apr 3,42. Compatibele matching kan helpen deze trend te keren.',
       chartSourceUrl: 'https://doi.org/10.3389/fpsyg.2022.960421',
       chartSourceLabel: 'Willis & Lane (2022), Frontiers in Psychology',
     },
@@ -270,7 +275,7 @@ export const content: Record<Locale, UniversitiesLandingContent> = {
       feature1: {
         title: "Het 'Safe Search' ecosysteem",
         description:
-          'Stuur uw studenten niet meer naar de wild west van Facebook-groepen. Wij bieden een 100% ID-geverifieerde, afgeschermde omgeving waar studenten veilig kunnen koppelen zonder angst voor bots of oplichting.',
+          'Stuur uw studenten niet meer naar de wild west van Facebook-groepen. Wij bieden een 100% ID-geverifieerde, afgeschermde omgeving waar studenten veilig kunnen koppelen zonder angst voor bots of oplichting. Studenten en young professionals worden in aparte pools gematcht; uw studenten profiteren van een grotere geverifieerde community en duidelijkere positionering.',
       },
       feature2: {
         title: 'Living Experience Dashboard',
@@ -327,7 +332,7 @@ export const content: Record<Locale, UniversitiesLandingContent> = {
     savingsCalculator: {
       heading: 'Wat kan betere huisvesting betekenen voor uw begroting?',
       subheading:
-        'Huisvestingsconflicten zijn een belangrijke oorzaak van eerstejaarsuitval. Het behouden van zelfs een klein percentage risicostudenten kan uitmonden in aanzienlijke opbrengst—en betere uitkomsten.',
+        'Huisvestingsconflicten zijn een belangrijke oorzaak van eerstejaarsuitval. Het behouden van zelfs een klein percentage risicostudenten kan uitmonden in aanzienlijke opbrengst - en betere uitkomsten.',
       stat1Value: '€55.000',
       stat1Label: 'Gem. verlies per internationale uitval',
       stat2Value: 'Top 3',
@@ -339,6 +344,11 @@ export const content: Record<Locale, UniversitiesLandingContent> = {
       cta: 'Bereken uw besparing',
     },
     faq: [
+      {
+        question: 'Wie gebruikt Domu Match? Alleen studenten?',
+        answer:
+          'Domu Match bedient zowel studenten als young professionals in aparte pools. Studenten matchen alleen met studenten; young professionals alleen met young professionals. Universiteitsdashboards en piloten richten zich op de studentsegment. Uw studenten profiteren van een platform dat deel uitmaakt van een breder geverifieerd shared-living ecosysteem.',
+      },
       {
         question: 'Integreert dit met ons bestaande SIS (studentinformatiesysteem)?',
         answer:

@@ -37,26 +37,26 @@ export function LiveStats({ locale: localeProp }: LiveStatsProps) {
     en: {
       title: 'Live platform stats',
       subtitle:
-        'Real-time insights from our growing community of students finding their perfect roommates',
+        'With a national shortage of over 410,000 homes, shared living is the future. We match you based on deep lifestyle compatibility, not just your budget. Real-time insights from our community of students and young professionals.',
       stats: {
         speedMatch: {
-          label: 'Get a match in <24 hours',
-          description: (d: MarketingStatsResponse) => `and ${d.matchedWithin48hPercent}% within 48 hours`,
+          label: 'Matches in <24h',
+          description: (d: MarketingStatsResponse) => `+ ${d.matchedWithin48hPercent}% in 48h`,
         },
         quality: {
-          label: 'Confirmed match compatibility',
+          label: 'High compatibility',
           description: (d: MarketingStatsResponse) => `vs ${d.avgScoreAllMatches}% across all matches`,
         },
         speedChat: {
-          label: 'Matches that turn into a chat',
-          description: () => 'within the first 24 hours',
+          label: 'Chats started fast',
+          description: () => 'matches that start a chat within 24h',
         },
         verified: {
-          label: 'Verified students',
-          description: () => 'email or ID verified community',
+          label: 'Verified users',
+          description: () => 'students & professionals, ID-verified',
         },
         reach: {
-          label: 'Universities represented',
+          label: 'Universities on Domu Match',
           description: (d: MarketingStatsResponse) =>
             `${d.programmesCount}+ study programmes on Domu Match`,
         },
@@ -65,28 +65,28 @@ export function LiveStats({ locale: localeProp }: LiveStatsProps) {
     nl: {
       title: 'Live platformstatistieken',
       subtitle:
-        'Real-time inzichten van onze groeiende community van studenten die hun perfecte huisgenoten vinden',
+        'Met een nationaal tekort van meer dan 410.000 woningen is gedeeld wonen de toekomst. Wij matchen op basis van diepgaande levensstijlcompatibiliteit, niet alleen je budget. Real-time inzichten van onze community van studenten en young professionals.',
       stats: {
         speedMatch: {
-          label: 'Krijg een match binnen <24 uur',
-          description: (d: MarketingStatsResponse) => `en ${d.matchedWithin48hPercent}% binnen 48 uur`,
+          label: 'Match binnen <24 uur',
+          description: (d: MarketingStatsResponse) => `+ ${d.matchedWithin48hPercent}% binnen 48 uur`,
         },
         quality: {
-          label: 'Compatibiliteit bevestigde matches',
+          label: 'Hoge compatibiliteit',
           description: (d: MarketingStatsResponse) => `vs ${d.avgScoreAllMatches}% over alle matches`,
         },
         speedChat: {
-          label: 'Matches die uitmonden in een chat',
-          description: () => 'binnen de eerste 24 uur',
+          label: 'Matches die snel chatten',
+          description: () => 'starten een chat binnen 24 uur',
         },
         verified: {
-          label: 'Geverifieerde studenten',
-          description: () => 'e-mail of ID geverifieerde community',
+          label: 'Geverifieerde gebruikers',
+          description: () => 'studenten & professionals, ID-gecheckt',
         },
         reach: {
-          label: 'Universiteiten vertegenwoordigd',
+          label: 'Universiteiten op Domu Match',
           description: (d: MarketingStatsResponse) =>
-            `${d.programmesCount}+ studieprogramma's op Domu Match`,
+            `${d.programmesCount}+ opleidingen op Domu Match`,
         },
       },
     },
@@ -214,7 +214,7 @@ export function LiveStats({ locale: localeProp }: LiveStatsProps) {
                     <div className="text-xs md:text-sm font-semibold text-white/90 mb-1 line-clamp-2">
                       {stat.label}
                     </div>
-                    <div className="text-[10px] sm:text-xs text-white/60 leading-tight line-clamp-2 flex-1">
+                    <div className="text-[10px] sm:text-xs text-white/60 leading-tight flex-1">
                       {stat.description}
                     </div>
                   </>

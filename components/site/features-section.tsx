@@ -51,7 +51,7 @@ const content = {
         icon: Shield,
         title: "Verified & Safe Platform",
         subtitle: "Verified. Trusted. Yours.",
-        description: "Every student on Domu Match has passed government ID + selfie verification. No catfish, no fake profiles, no surprises. You can focus on compatibility, not safety.",
+        description: "Every user on Domu Match has passed government ID + selfie verification. No catfish, no fake profiles, no surprises. You can focus on compatibility, not safety.",
         details: [
           "Government ID verification",
           "Selfie matching technology",
@@ -85,7 +85,7 @@ const content = {
       {
         icon: Users,
         title: "Academic Integration",
-        description: "Match students by shared programs, study years, and academic preferences for better compatibility.",
+        description: "Match by lifestyle, preferences, and (for students) shared programs and study context for better compatibility.",
         features: ["Program matching", "Study year consideration", "Faculty integration", "Academic progress tracking", "Shared course detection"]
       },
       {
@@ -145,7 +145,7 @@ const content = {
         icon: Shield,
         title: "Geverifieerd en Veilig Platform",
         subtitle: "Geverifieerd. Vertrouwd. Van Jou.",
-        description: "Elke student op Domu Match heeft overheids-ID + selfie-verificatie doorstaan. Geen catfish, geen nep-profielen, geen verrassingen. Je kunt je focussen op compatibiliteit, niet op veiligheid.",
+        description: "Elke gebruiker op Domu Match heeft overheids-ID + selfie-verificatie doorstaan. Geen catfish, geen nep-profielen, geen verrassingen. Je kunt je focussen op compatibiliteit, niet op veiligheid.",
         details: [
           "Overheids-ID verificatie",
           "Selfie matching technologie",
@@ -179,7 +179,7 @@ const content = {
       {
         icon: Users,
         title: "Academische Integratie",
-        description: "Match studenten op gedeelde programma's, studiejaren en academische voorkeuren voor betere compatibiliteit.",
+        description: "Match op levensstijl, voorkeuren en (voor studenten) gedeelde programma's en studiecontext voor betere compatibiliteit.",
         features: ["Programma-matching", "Studiejaar overweging", "Faculteitsintegratie", "Academische voortgang tracking", "Gedeelde cursusdetectie"]
       },
       {

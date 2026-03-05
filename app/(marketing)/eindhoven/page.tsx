@@ -6,20 +6,20 @@ import { getCityStructuredData } from '@/components/site/university-city/content
 import { MarketingLayoutFix } from '../components/marketing-layout-fix'
 
 export const metadata: Metadata = {
-  title: 'Find Your Perfect Roommate in Eindhoven | Domu Match',
+  title: 'Find Roommates in Eindhoven | Domu Match – Students & Young Professionals',
   description:
-    'Find compatible roommates in Eindhoven with Domu Match. Connect with verified students from TU Eindhoven, Fontys, and more. Tech hub student housing.',
+    'Find compatible roommates in Eindhoven with Domu Match. Connect with verified students and young professionals from TU Eindhoven, Fontys, and more. Science-backed matching for shared living.',
   keywords: [
     'find roommate Eindhoven',
     'TU Eindhoven roommate',
     'student housing Eindhoven',
+    'young professionals Eindhoven',
     'Fontys roommate',
     'Eindhoven accommodation',
-    'tech student housing',
   ],
   openGraph: {
-    title: 'Find Your Perfect Roommate in Eindhoven | Domu Match',
-    description: 'Find compatible roommates in Eindhoven with science-backed matching. TU/e and Fontys students.',
+    title: 'Find Roommates in Eindhoven | Domu Match',
+    description: 'Find compatible roommates in Eindhoven with science-backed matching. Students and young professionals. TU/e and Fontys.',
     type: 'website',
     url: 'https://domumatch.com/eindhoven',
     siteName: 'Domu Match',

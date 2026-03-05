@@ -6,19 +6,19 @@ import { getCityStructuredData } from '@/components/site/university-city/content
 import { MarketingLayoutFix } from '../components/marketing-layout-fix'
 
 export const metadata: Metadata = {
-  title: 'Find Your Perfect Roommate in Leiden | Domu Match',
+  title: 'Find Roommates in Leiden | Domu Match – Students & Young Professionals',
   description:
-    'Find compatible roommates in Leiden with Domu Match. Connect with verified students from Leiden University. Historic university city housing.',
+    'Find compatible roommates in Leiden with Domu Match. Connect with verified students and young professionals from Leiden University. Science-backed matching for shared living.',
   keywords: [
     'find roommate Leiden',
     'Leiden University roommate',
     'student housing Leiden',
+    'young professionals Leiden',
     'Leiden accommodation',
-    'oldest university city',
   ],
   openGraph: {
-    title: 'Find Your Perfect Roommate in Leiden | Domu Match',
-    description: 'Find compatible roommates in Leiden. Leiden University students. Science-backed matching.',
+    title: 'Find Roommates in Leiden | Domu Match',
+    description: 'Find compatible roommates in Leiden. Verified students and young professionals. Science-backed matching.',
     type: 'website',
     url: 'https://domumatch.com/leiden',
     siteName: 'Domu Match',

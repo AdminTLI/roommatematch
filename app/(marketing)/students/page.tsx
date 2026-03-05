@@ -1,3 +1,4 @@
+import Link from 'next/link'
 import { Navbar } from '@/components/site/navbar'
 import Footer from '@/components/site/footer'
 import { FeaturesForStudents } from '@/components/site/features-for-students'
@@ -129,6 +130,15 @@ export default function StudentsPage() {
           <Navbar />
           <div>
             <FeaturesForStudents />
+          </div>
+          <div className="relative z-10 border-t border-white/10 bg-white/5 backdrop-blur-md py-4">
+            <div className="container mx-auto px-4 text-center text-sm text-white/80">
+              We also help{' '}
+              <Link href="/young-professionals" className="text-indigo-300 hover:text-indigo-200 underline underline-offset-2">
+                young professionals
+              </Link>{' '}
+              find compatible flatmates.
+            </div>
           </div>
           <Footer />
         </div>

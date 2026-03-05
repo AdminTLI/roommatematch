@@ -6,9 +6,9 @@ import { MarketingPageBackground } from '../components/marketing-page-background
 import { Metadata } from 'next'
 
 export const metadata: Metadata = {
-  title: 'For Universities | Domu Match - Retention Infrastructure & Student Wellbeing',
+  title: 'For Universities | Domu Match - Retention & Shared Living for Students & Young Professionals',
   description:
-    'Housing stability = student retention. GDPR-compliant Student Wellbeing Dashboard for Dutch universities. Aggregated insights, psychological matching, zero scams. Pilot programme for 2026.',
+    'Housing stability = student retention. GDPR-compliant Student Wellbeing Dashboard for Dutch universities. Platform serves students and young professionals in separate pools. Aggregated insights, psychological matching, zero scams. Pilot programme for 2026.',
   keywords: [
     'university housing',
     'student retention',
@@ -17,14 +17,15 @@ export const metadata: Metadata = {
     'Dutch universities',
     'roommate matching universities',
     'student housing Netherlands',
+    'shared living',
     'aggregated insights',
     'housing coordinator',
     'student success',
   ],
   openGraph: {
-    title: 'For Universities | Domu Match - Retention & Wellbeing',
+    title: 'For Universities | Domu Match - Retention & Shared Living',
     description:
-      'Housing stability = student retention. GDPR-compliant Student Wellbeing Dashboard for Dutch universities. Pilot programme 2026.',
+      'Housing stability = student retention. Platform serves students and young professionals in separate pools. GDPR-compliant Student Wellbeing Dashboard for Dutch universities. Pilot programme 2026.',
     type: 'website',
     url: 'https://domumatch.com/universities',
     siteName: 'Domu Match',
@@ -42,7 +43,7 @@ export const metadata: Metadata = {
     card: 'summary_large_image',
     title: 'For Universities | Domu Match',
     description:
-      'Housing stability = student retention. GDPR-compliant Student Wellbeing Dashboard for Dutch universities.',
+      'Housing stability = student retention. Platform serves students and young professionals. GDPR-compliant Student Wellbeing Dashboard for Dutch universities.',
     images: ['https://domumatch.com/images/logo.png'],
   },
   alternates: {
@@ -54,6 +55,14 @@ const faqSchema = {
   '@context': 'https://schema.org',
   '@type': 'FAQPage',
   mainEntity: [
+    {
+      '@type': 'Question',
+      name: 'Who uses Domu Match? Do you only serve students?',
+      acceptedAnswer: {
+        '@type': 'Answer',
+        text: 'Domu Match serves both students and young professionals in separate pools. Students match only with students; young professionals only with young professionals. University dashboards and pilots focus on the student segment. Your students benefit from a platform that is part of a broader verified shared-living ecosystem.',
+      },
+    },
     {
       '@type': 'Question',
       name: 'Does this integrate with our existing SIS (Student Information System)?',

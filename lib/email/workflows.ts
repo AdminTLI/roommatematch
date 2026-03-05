@@ -5,10 +5,8 @@ import { createClient } from '@supabase/supabase-js'
 import { safeLogger } from '@/lib/utils/logger'
 
 export interface EmailConfig {
-  smtpHost: string
-  smtpPort: number
-  smtpUser: string
-  smtpPass: string
+  /** SendGrid API key (Bearer token). Used for SendGrid API; SMTP_* are not used for sending. */
+  apiKey: string
   fromEmail: string
   fromName: string
 }
@@ -21,26 +19,22 @@ export interface EmailMessage {
 }
 
 /**
- * Get email configuration from environment variables
+ * Get email configuration from environment variables.
+ * Supports SendGrid via SENDGRID_API_KEY or SMTP_PASS (SendGrid API key).
+ * Auth emails (OTP, password reset) are sent by Supabase—configure SMTP in Supabase Dashboard.
  */
 function getEmailConfig(): EmailConfig | null {
-  const smtpHost = process.env.SMTP_HOST
-  const smtpPort = process.env.SMTP_PORT
-  const smtpUser = process.env.SMTP_USER
-  const smtpPass = process.env.SMTP_PASS
+  const apiKey = process.env.SENDGRID_API_KEY || process.env.SMTP_PASS
   const fromEmail = process.env.SMTP_FROM_EMAIL || 'noreply@domumatch.nl'
   const fromName = process.env.SMTP_FROM_NAME || 'Domu Match'
 
-  if (!smtpHost || !smtpPort || !smtpUser || !smtpPass) {
-    safeLogger.warn('Email configuration not found. Email notifications will be disabled.')
+  if (!apiKey || typeof apiKey !== 'string' || !apiKey.trim()) {
+    safeLogger.warn('Email configuration not found (set SENDGRID_API_KEY or SMTP_PASS). App-level email notifications will be disabled.')
     return null
   }
 
   return {
-    smtpHost,
-    smtpPort: parseInt(smtpPort),
-    smtpUser,
-    smtpPass,
+    apiKey: apiKey.trim(),
     fromEmail,
     fromName
   }
@@ -65,7 +59,7 @@ export async function sendEmail(
     const response = await fetch('https://api.sendgrid.com/v3/mail/send', {
       method: 'POST',
       headers: {
-        'Authorization': `Bearer ${config.smtpPass}`,
+        'Authorization': `Bearer ${config.apiKey}`,
         'Content-Type': 'application/json'
       },
       body: JSON.stringify({

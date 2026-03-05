@@ -4,6 +4,8 @@ import { itemIdToQuestionKey } from '@/lib/question-key-mapping'
 import { getInstitutionType } from '@/lib/getInstitutionType'
 import { calculateStudyYearWithMonths } from '@/lib/academic/calculateStudyYear'
 
+import type { UserType } from '@/types/profile'
+
 export interface OnboardingSubmissionData {
   user_id: string
   university_id: string
@@ -20,6 +22,8 @@ export interface OnboardingSubmissionData {
   graduation_month?: number | null
   programme_duration_months?: number
   undecided_program?: boolean
+  /** Cohort for dual marketplace; synced from users if not provided. */
+  user_type?: UserType | null
 }
 
 export function extractSubmissionDataFromIntro(
@@ -409,6 +413,19 @@ export async function upsertProfileAndAcademic(
     verification_status: verificationStatus
   })
 
+  // Resolve user_type: use payload or fall back to users table (set at path selection)
+  let userType: UserType | null = data.user_type ?? null
+  if (userType === null) {
+    const { data: userRow } = await supabase
+      .from('users')
+      .select('user_type')
+      .eq('id', data.user_id)
+      .maybeSingle()
+    if (userRow?.user_type && (userRow.user_type === 'student' || userRow.user_type === 'professional')) {
+      userType = userRow.user_type as UserType
+    }
+  }
+
   const { data: profile, error: profileError } = await supabase
     .from('profiles')
     .upsert({
@@ -421,6 +438,7 @@ export async function upsertProfileAndAcademic(
       languages: data.languages_daily || [],
       date_of_birth: data.date_of_birth ?? null,
       verification_status: verificationStatus,
+      user_type: userType,
       updated_at: new Date().toISOString()
     }, {
       onConflict: 'user_id'

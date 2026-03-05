@@ -21,7 +21,7 @@ export function ResearchCarousel({ locale: localeProp }: ResearchCarouselProps) 
   const content = {
     en: {
       title: "problem",
-      subtitle: "Research-backed insights on roommate compatibility and student housing satisfaction",
+      subtitle: "Research-backed insights on roommate compatibility (from student and shared-living studies)",
       stats: [
         {
           statistic: "47.9%",
@@ -49,7 +49,7 @@ export function ResearchCarousel({ locale: localeProp }: ResearchCarouselProps) 
           issue: "report roommate conflict in first-year university students",
           explanation: "Conflict affects almost half the cohort regardless of gender, emphasizing the unmet need for better matching solutions.",
           source: "Burgos-Calvillo et al., 'Cultural Modes of Conflict Resolution, Roommate Satisfaction & School Belonging' (2024)",
-          solution: "Our ID verification ensures all users are verified students, creating a safe environment. Combined with our compatibility algorithm, we address the root causes of conflict across all demographics.",
+          solution: "Our ID verification ensures all users are verified (students or young professionals), creating a safe environment. Combined with our compatibility algorithm, we address the root causes of conflict across all demographics.",
         },
         {
           statistic: "70%",
@@ -62,7 +62,7 @@ export function ResearchCarousel({ locale: localeProp }: ResearchCarouselProps) 
     },
     nl: {
       title: "probleem",
-      subtitle: "Onderzoek-ondersteunde inzichten over huisgenootcompatibiliteit en studentenhuisvestingstevredenheid",
+      subtitle: "Onderzoek-ondersteunde inzichten over huisgenootcompatibiliteit (uit studenten- en gedeelde woonstudies)",
       stats: [
         {
           statistic: "47,9%",
@@ -90,7 +90,7 @@ export function ResearchCarousel({ locale: localeProp }: ResearchCarouselProps) 
           issue: "meldt huisgenootconflicten bij eerstejaars universiteitsstudenten",
           explanation: "Conflict treft bijna de helft van de cohort ongeacht geslacht, wat de onvervulde behoefte aan betere matchingoplossingen benadrukt.",
           source: "Burgos-Calvillo et al., 'Cultural Modes of Conflict Resolution, Roommate Satisfaction & School Belonging' (2024)",
-          solution: "Onze ID-verificatie zorgt ervoor dat alle gebruikers geverifieerde studenten zijn, wat een veilige omgeving creëert. Gecombineerd met ons compatibiliteitsalgoritme pakken we de oorzaken van conflicten aan in alle demografieën.",
+          solution: "Onze ID-verificatie zorgt ervoor dat alle gebruikers geverifieerd zijn (studenten of young professionals), wat een veilige omgeving creëert. Gecombineerd met ons compatibiliteitsalgoritme pakken we de oorzaken van conflicten aan in alle demografieën.",
         },
         {
           statistic: "70%",

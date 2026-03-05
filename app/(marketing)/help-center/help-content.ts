@@ -42,12 +42,12 @@ export const helpContent: HelpContent = {
           content: `Creating an account on Domu Match is quick and easy:
 
 1. **Visit the Sign Up page** - Click "Sign Up" or "Get Started" on our homepage
-2. **Enter your email** - Use your university email address (e.g., student@university.nl)
+2. **Enter your email** - If you're a **student**, use your university email (e.g., student@university.nl). If you're a **young professional**, use your personal or work email.
 3. **Create a password** - Choose a strong password with at least 8 characters
 4. **Verify your email** - Check your inbox and click the verification link
 5. **Complete your profile** - Fill in basic information about yourself
 
-**Important:** You must use your university email address. Personal email addresses (Gmail, Yahoo, etc.) are not accepted for security reasons.
+**Students:** Use your university email for verification. **Young professionals:** Sign up with your email; we'll verify your account through our young-professional verification flow.
 
 Once your email is verified, you'll be redirected to complete the onboarding questionnaire, which helps us find the best roommate matches for you.`,
           section: 'getting-started',
@@ -59,7 +59,10 @@ Once your email is verified, you'll be redirected to complete the onboarding que
         {
           id: 'email-verification',
           title: 'Email Verification Process',
-          content: `Email verification is required to ensure you're a real student at a partner university.
+          content: `Email verification is required to keep the platform safe and verified.
+
+**If you're a student:** Use your university email; we verify that you're a real student at a partner or supported institution.
+**If you're a young professional:** Sign up with your email; we'll verify your identity and life stage through our young-professional verification flow.
 
 **What happens:**
 1. After signing up, you'll receive a verification email
@@ -68,12 +71,12 @@ Once your email is verified, you'll be redirected to complete the onboarding que
 
 **Didn't receive the email?**
 - Check your spam/junk folder
-- Make sure you used your university email address
+- Students: make sure you used your university email address
 - Click "Resend verification email" on the verification page
 - Wait up to 5 minutes for delivery
 
 **Still having issues?**
-Contact support at support@domumatch.com with your university email address, and we'll help you verify your account.`,
+Contact support at support@domumatch.com with the email you used to sign up, and we'll help you verify your account.`,
           section: 'getting-started',
           tags: ['email', 'verification', 'university'],
           keywords: ['verify email', 'email confirmation', 'verification code'],
@@ -87,7 +90,7 @@ Contact support at support@domumatch.com with your university email address, and
 
 **Questionnaire Sections:**
 1. **Basics** - Personal information (name, date of birth, nationality)
-2. **Academic** - University, program, study year, campus
+2. **Academic** - (If you're a student) University, program, study year, campus
 3. **Logistics** - Housing preferences, budget, move-in dates
 4. **Lifestyle** - Sleep schedule, cleanliness preferences, daily routines
 5. **Social** - Guest preferences, noise tolerance, social activities
@@ -146,35 +149,45 @@ Remember: You're not obligated to accept any match. Take your time to review and
           id: 'faq-signup-requirements',
           title: 'What do I need to sign up?',
           content: `You need:
-- A university email address from a partner institution
+- **Students:** A university email from a partner or supported institution. **Young professionals:** Your personal or work email.
 - To be at least 17 years old
 - A valid government ID for verification (required after signup)
-- About 15-20 minutes to complete the onboarding questionnaire`,
+- About 15-20 minutes to complete the onboarding questionnaire
+
+Students and young professionals are matched in separate pools. Both groups use the platform for free.`,
           section: 'getting-started',
           tags: ['sign up', 'requirements'],
-          keywords: ['requirements', 'what do I need', 'signup'],
+          keywords: ['requirements', 'what do I need', 'signup', 'young professional', 'student'],
           relatedArticles: ['sign-up', 'verification-process'],
+          type: 'faq',
+        },
+        {
+          id: 'faq-only-for-students',
+          title: 'Is Domu Match only for students?',
+          content: `No. Domu Match serves both **students** (17+) and **young professionals**. Each group has its own matching pool - students are only matched with students, and young professionals with young professionals. Sign up with your university email if you're a student, or with your personal/work email if you're a young professional. Both get free access.`,
+          section: 'getting-started',
+          tags: ['students', 'young professionals', 'who can use'],
+          keywords: ['only students', 'young professionals', 'who can use', 'flatmate'],
+          relatedArticles: ['sign-up', 'email-verification'],
           type: 'faq',
         },
         {
           id: 'faq-personal-email',
           title: 'Can I use my personal email address?',
-          content: `No, you must use your university email address. This is required for:
-- Security and verification purposes
-- Ensuring all users are legitimate students
-- University partnerships and integrations
+          content: `**If you're a student:** Use your university email - this is required for verification and university partnerships.
+**If you're a young professional:** Yes, use your personal or work email. We verify young professionals through a separate flow.
 
-If you don't have a university email or are having trouble accessing it, contact support at support@domumatch.com`,
+If you don't have a university email (students) or have trouble with verification, contact support at support@domumatch.com`,
           section: 'getting-started',
           tags: ['email', 'university'],
-          keywords: ['personal email', 'Gmail', 'Yahoo'],
+          keywords: ['personal email', 'Gmail', 'Yahoo', 'young professional'],
           relatedArticles: ['email-verification'],
           type: 'faq',
         },
         {
           id: 'faq-onboarding-time',
           title: 'How long does onboarding take?',
-          content: `Most students complete the onboarding questionnaire in 15-20 minutes. However, you can:
+          content: `Most users complete the onboarding questionnaire in 15-20 minutes. However, you can:
 - Save your progress and return later
 - Take breaks between sections
 - Review and edit your answers anytime

@@ -13,19 +13,19 @@ const content = {
     smartMatching: 'Smart Matching',
     compatibility: 'compatibility',
     smartMatchingCopy:
-      "Our algorithm analyzes 40+ factors - quiet hours, cleanliness, study habits, sleep schedules - so you find roommates who actually fit your lifestyle. Plus, you get an AI roommate chatbot that feels like a student best friend and campus tour guide, there for questions and companionship while you live here.",
+      "With a national shortage of over 410,000 homes, shared living is the future. Our algorithm analyzes 40+ factors - quiet hours, cleanliness, schedules, sleep - so you find roommates who actually fit your lifestyle. Plus, an AI companion for questions and support while you live here.",
     idVerified: 'ID Verified',
     idVerifiedCopy:
-      "Government ID + selfie verification for every student. No catfish, no scams - universities back it so you can focus on finding the right fit.",
+      "Government ID + selfie verification for students and young professionals. No catfish, no scams - so you can focus on finding the right fit.",
     wellbeingFirst: 'Wellbeing First',
     wellbeingCopy:
-      "Compatible homes become micro-support systems. When your living situation fits, you thrive - universities see happier students and better retention.",
+      "Compatible homes become micro-support systems. When your living situation fits, you thrive - whether you're studying or building your career.",
     chatCompanion: 'AI Roommate Companion',
     chatCompanionCopy:
       "Meet your personal AI roommate chatbot - part best friend, part campus tour guide. Ask about house legalities, Dutch student life, or events in your city, any time you need support.",
     antiDropout: 'The Anti-Dropout Engine',
     antiDropoutCopy:
-      "Safe homes create successful students. Research shows that housing stress is one of the biggest reasons students think about dropping out – it crushes focus, grades, and mental health. By reducing incompatibility before move-in, universities cut conflict, protect wellbeing, and keep more students enrolled all the way to graduation.",
+      "Safe, compatible homes reduce stress for everyone. Housing uncertainty affects focus, wellbeing, and success - whether you're in university or early career. By matching on deep compatibility before move-in, we cut conflict and help you build a home that supports you.",
   },
   nl: {
     smartMatching: 'Slimme Matching',
@@ -34,7 +34,7 @@ const content = {
       "Ons algoritme analyseert 40+ factoren - stille uren, netheid, studeergewoonten, slaapschema\'s - zodat je huisgenoten vindt die bij je lifestyle passen. Daarnaast krijg je een AI-huisgenootchatbot die voelt als een beste vriend en gids voor studenten, voor vragen en gezelschap terwijl je hier woont.",
     idVerified: 'ID Geverifieerd',
     idVerifiedCopy:
-      "ID- en selfieverificatie voor elke student. Geen catfish, geen oplichting - universiteiten staan erachter zodat je je op de juiste match kunt richten.",
+      "ID- en selfieverificatie voor studenten en young professionals. Geen catfish, geen oplichting - zodat je je op de juiste match kunt richten.",
     wellbeingFirst: 'Welzijn Eerst',
     wellbeingCopy:
       "Compatibele woningen worden micro-ondersteuningssystemen. Als je woonsituatie klopt, gedij je - universiteiten zien tevredenere studenten en betere retentie.",

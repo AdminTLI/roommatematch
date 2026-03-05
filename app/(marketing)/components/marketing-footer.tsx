@@ -13,6 +13,7 @@ export function MarketingFooter() {
       title: 'Product',
       links: [
         { name: 'For Students', href: '/students' },
+        { name: 'For Young Professionals', href: '/young-professionals' },
         { name: 'How it works', href: '/#how-it-works' },
         { name: 'Safety', href: '/#safety' },
         { name: 'Pricing', href: '/pricing' }
@@ -58,8 +59,8 @@ export function MarketingFooter() {
               <span className="text-2xl font-bold">Domu Match</span>
             </div>
             <p className="text-gray-400 mb-6 max-w-md">
-              From strangers to roommates - the safest way in the Netherlands. 
-              Campus-verified, ID-checked, and compatibility-first.
+              From strangers to roommates - the safest way in the Netherlands.
+              ID-verified, compatibility-first for students and young professionals.
             </p>
             
             {/* Language Switcher */}

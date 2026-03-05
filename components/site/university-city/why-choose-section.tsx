@@ -14,8 +14,8 @@ interface WhyChooseSectionProps {
 const points = [
   {
     icon: Users,
-    title: 'Verified Students Only',
-    description: 'All users verified with university email. Connect safely with fellow students.',
+    title: 'Verified Users Only',
+    description: 'All users verified (university email or young-professional verification). Connect safely with compatible roommates.',
     gradient: 'from-indigo-500/20 to-indigo-600/10 border-indigo-400/30',
     iconColor: 'text-indigo-400',
   },
@@ -29,7 +29,7 @@ const points = [
   {
     icon: Check,
     title: 'Free Forever',
-    description: 'No hidden fees, no premium tiers. Completely free for all students.',
+    description: 'No hidden fees, no premium tiers. Completely free for students and young professionals.',
     gradient: 'from-emerald-500/20 to-emerald-600/10 border-emerald-400/30',
     iconColor: 'text-emerald-400',
   },

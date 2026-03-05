@@ -99,7 +99,7 @@ export const cityContent: Record<CityKey, CityContent> = {
     nameDisplay: 'Amsterdam',
     region: 'Noord-Holland',
     intro:
-      'Connect with compatible students from UvA, VU, HvA, and other Amsterdam universities. Science-backed matching for harmonious living in the capital.',
+      'Connect with compatible students and young professionals from UvA, VU, HvA, and other Amsterdam universities. Science-backed matching for harmonious living in the capital.',
     stats: [
       { value: '4,200+', label: 'Amsterdam students' },
       { value: '€550', label: 'Avg. room price' },
@@ -176,7 +176,7 @@ export const cityContent: Record<CityKey, CityContent> = {
     nameDisplay: 'Rotterdam',
     region: 'Zuid-Holland',
     intro:
-      'Connect with compatible students from Erasmus University, InHolland, and other Rotterdam institutions. Science-backed matching for harmonious living.',
+      'Connect with compatible students and young professionals from Erasmus University, InHolland, and other Rotterdam institutions. Science-backed matching for harmonious living.',
     stats: [
       { value: '2,800+', label: 'Rotterdam students' },
       { value: '€420', label: 'Avg. room price' },
@@ -248,7 +248,7 @@ export const cityContent: Record<CityKey, CityContent> = {
     nameDisplay: 'Utrecht',
     region: 'Utrecht',
     intro:
-      'Connect with verified students from Utrecht University, HU, and other institutions. Science-backed matching in the heart of the Netherlands.',
+      'Connect with verified students and young professionals from Utrecht University, HU, and other institutions. Science-backed matching in the heart of the Netherlands.',
     stats: [
       { value: '3,100+', label: 'Utrecht students' },
       { value: '€520', label: 'Avg. room price' },
@@ -310,7 +310,7 @@ export const cityContent: Record<CityKey, CityContent> = {
     nameDisplay: 'The Hague',
     region: 'Zuid-Holland',
     intro:
-      'Connect with verified students from The Hague University, Leiden University The Hague, and other institutions. Science-backed matching in the international city of peace and justice.',
+      'Connect with verified students and young professionals from The Hague University, Leiden University The Hague, and other institutions. Science-backed matching in the international city of peace and justice.',
     stats: [
       { value: '2,200+', label: 'The Hague students' },
       { value: '€480', label: 'Avg. room price' },
@@ -369,7 +369,7 @@ export const cityContent: Record<CityKey, CityContent> = {
       {
         question: 'Can international students use Domu Match in The Hague?',
         answer:
-          'Yes. The Hague is very international. Domu Match is ideal for international students—you can find roommates who share your lifestyle and make the transition to the city easier.',
+          'Yes. The Hague is very international. Domu Match is ideal for international students - you can find roommates who share your lifestyle and make the transition to the city easier.',
       },
     ],
   },
@@ -378,7 +378,7 @@ export const cityContent: Record<CityKey, CityContent> = {
     nameDisplay: 'Eindhoven',
     region: 'Noord-Brabant',
     intro:
-      'Connect with verified students from TU Eindhoven, Fontys, and other institutions in the Netherlands’ tech hub. Science-backed matching for innovators.',
+      'Connect with verified students and young professionals from TU Eindhoven, Fontys, and other institutions in the Netherlands’ tech hub. Science-backed matching for innovators.',
     stats: [
       { value: '2,500+', label: 'Eindhoven students' },
       { value: '€420', label: 'Avg. room price' },
@@ -440,7 +440,7 @@ export const cityContent: Record<CityKey, CityContent> = {
     nameDisplay: 'Groningen',
     region: 'Groningen',
     intro:
-      'Connect with verified students from University of Groningen (RUG) and Hanze UAS. Experience the ultimate Dutch student city with the highest student-to-population ratio.',
+      'Connect with verified students and young professionals from University of Groningen (RUG) and Hanze UAS. Science-backed matching in a vibrant Dutch city.',
     stats: [
       { value: '2,600+', label: 'Groningen students' },
       { value: '€420', label: 'Avg. room price' },
@@ -453,7 +453,7 @@ export const cityContent: Record<CityKey, CityContent> = {
       averageRent: '€350-€550/month depending on area and type',
       housingType: 'SSH dormitories (furnished, utilities included), private rooms and apartments',
       competition: 'High demand; plan 3–5 months ahead',
-      extra: 'City is compact—cycle across in about 25 minutes; surrounding villages are viable',
+      extra: 'City is compact - cycle across in about 25 minutes; surrounding villages are viable',
     },
     neighborhoods: [
       { name: 'City Centre', description: 'Vibrant, shops, nightlife, near main building', priceRange: '€450-€650/month' },
@@ -502,7 +502,7 @@ export const cityContent: Record<CityKey, CityContent> = {
     nameDisplay: 'Leiden',
     region: 'Zuid-Holland',
     intro:
-      'Connect with verified students from Leiden University. Experience living in the Netherlands’ oldest university city with a rich academic tradition.',
+      'Connect with verified students and young professionals from Leiden University. Experience living in the Netherlands’ oldest university city with a rich academic tradition.',
     stats: [
       { value: '2,400+', label: 'Leiden students' },
       { value: '€480', label: 'Avg. room price' },
@@ -559,7 +559,7 @@ export const cityContent: Record<CityKey, CityContent> = {
     nameDisplay: 'Nijmegen',
     region: 'Gelderland',
     intro:
-      'Connect with verified students from Radboud University and HAN. Experience the Netherlands’ oldest city with a young, green, and vibrant student vibe.',
+      'Connect with verified students and young professionals from Radboud University and HAN. Experience the Netherlands’ oldest city with a young, green, and vibrant student vibe.',
     stats: [
       { value: '2,300+', label: 'Nijmegen students' },
       { value: '€430', label: 'Avg. room price' },

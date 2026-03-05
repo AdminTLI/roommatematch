@@ -13,7 +13,7 @@ const content = {
     subtitle: "Share your skills, time commitment, and the roles you're excited about.",
     note: "Because we're pre‑team, every applicant will work directly with the founder to scope meaningful projects.",
     whyTitle: 'Why your contribution matters',
-    whyDescription: "We're building practical systems for safer, happier student housing. Your work ships fast and shapes how we build.",
+    whyDescription: "We're building practical systems for safer, happier shared living for students and young professionals. Your work ships fast and shapes how we build.",
     currentFocus: 'Current focus',
     focusItems: [
       'Refine onboarding conversion and verification flow',
@@ -21,14 +21,14 @@ const content = {
       'Design campus‑ready growth experiments'
     ],
     opportunity: 'Opportunity',
-    opportunityText: 'You may be the first contributor in your area — set the standard and leave strong references behind you.'
+    opportunityText: 'You may be the first contributor in your area  -  set the standard and leave strong references behind you.'
   },
   nl: {
     title: 'Aanmelden om mee te doen',
     subtitle: 'Deel je vaardigheden, tijdsinzet en de rollen waar je enthousiast over bent.',
     note: 'Omdat we pre-team zijn, werkt elke aanvrager rechtstreeks met de oprichter samen om betekenisvolle projecten af te bakenen.',
     whyTitle: 'Waarom jouw bijdrage ertoe doet',
-    whyDescription: 'We bouwen praktische systemen voor veiligere, gelukkigere studentenhuisvesting. Je werk wordt snel geleverd en vormt hoe we bouwen.',
+    whyDescription: 'We bouwen praktische systemen voor veiligere, gelukkigere shared living voor studenten en young professionals. Je werk wordt snel geleverd en vormt hoe we bouwen.',
     currentFocus: 'Huidige focus',
     focusItems: [
       'Verfijn onboardingconversie en verificatieflow',
@@ -36,7 +36,7 @@ const content = {
       'Ontwerp campusklare groei-experimenten'
     ],
     opportunity: 'Kans',
-    opportunityText: 'Je kunt de eerste contributor in jouw gebied zijn — zet de standaard en laat sterke referenties achter.'
+    opportunityText: 'Je kunt de eerste contributor in jouw gebied zijn  -  zet de standaard en laat sterke referenties achter.'
   }
 }
 

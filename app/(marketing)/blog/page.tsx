@@ -3,22 +3,22 @@ import { Metadata } from 'next'
 import { BlogContent } from './blog-content'
 
 export const metadata: Metadata = {
-  title: 'Blog | Domu Match - Student Housing Insights & Tips',
-  description: 'Explore articles on roommate compatibility, student renter safety, and explainable AI in housing. Your guide to harmonious student living in the Netherlands.',
+  title: 'Blog | Domu Match - Shared Living Insights & Tips',
+  description: 'Explore articles on roommate compatibility, renter safety, and explainable AI in housing. Your guide to harmonious shared living in the Netherlands for students and young professionals.',
   keywords: [
-    'student housing blog',
+    'shared living blog',
     'roommate tips Netherlands',
     'rental safety guide',
     'explainable AI housing',
     'Domu Match blog',
     'Netherlands student life',
     'roommate compatibility tips',
-    'student housing advice',
+    'young professionals flatmate',
     'roommate matching blog',
   ],
   openGraph: {
-    title: 'Blog | Domu Match - Student Housing Insights',
-    description: 'Explore articles on roommate compatibility, student renter safety, and explainable AI in housing. Your guide to harmonious student living.',
+    title: 'Blog | Domu Match - Shared Living Insights',
+    description: 'Explore articles on roommate compatibility, renter safety, and explainable AI in housing. For students and young professionals.',
     type: 'website',
     url: 'https://domumatch.com/blog',
     siteName: 'Domu Match',
@@ -27,15 +27,15 @@ export const metadata: Metadata = {
         url: 'https://domumatch.com/images/logo.png',
         width: 1200,
         height: 630,
-        alt: 'Domu Match Blog - Student Housing Insights',
+        alt: 'Domu Match Blog - Shared Living Insights',
       },
     ],
     locale: 'en_US',
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'Blog | Domu Match - Student Housing Insights',
-    description: 'Explore articles on roommate compatibility, student renter safety, and explainable AI in housing.',
+    title: 'Blog | Domu Match - Shared Living Insights',
+    description: 'Explore articles on roommate compatibility, renter safety, and explainable AI in housing.',
     images: ['https://domumatch.com/images/logo.png'],
   },
   alternates: {

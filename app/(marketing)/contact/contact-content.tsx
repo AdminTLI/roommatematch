@@ -35,7 +35,7 @@ export function ContactContent() {
   const topics =
     locale === 'nl'
       ? [
-          'Gebruik van Domu Match (studenten & huisgenoten)',
+          'Gebruik van Domu Match (studenten & young professionals)',
           'Problemen met account, verificatie of onboarding',
           'Vragen over matches, veiligheid of rapporteren',
           'Universiteitspartnerschap of pilot',
@@ -48,7 +48,7 @@ export function ContactContent() {
           'Algemene feedback of iets anders',
         ]
       : [
-          'Using Domu Match (students & roommates)',
+          'Using Domu Match (students & young professionals)',
           'Account, verification or onboarding issues',
           'Questions about matches, safety or reporting',
           'University partnership or pilot',

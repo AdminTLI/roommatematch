@@ -28,12 +28,17 @@ const content = {
     title: 'Find out how many compatible roommates are waiting for you',
     titleHighlight: 'compatible roommates',
     subtitle:
-      'Select your city to see available universities and how many students are already using Domu Match.',
+      'Select your city to see how many students and young professionals in that city are already using Domu Match.',
     selectCityPlaceholder: 'Select a city',
-    noUniversities: 'No universities found in this city',
-    students: 'students',
-    student: 'student',
-    contactText: 'Interested in bringing Domu Match to your university? Get in touch to learn more.',
+    noUniversities: 'No users found in this city yet',
+    students: 'people',
+    student: 'person',
+    potentialOne: 'potential roommate',
+    potentialMany: 'potential roommates',
+    peopleWord: 'people',
+    cityBody:
+      'are already using Domu Match in this city, a growing pool of potential matches who share your lifestyle, budget, and expectations for shared living.',
+    contactText: 'Interested in bringing Domu Match to your university or city? Get in touch to learn more.',
     buttonText: 'Contact us',
     loading: 'Loading...',
   },
@@ -41,12 +46,17 @@ const content = {
     title: 'Ontdek hoeveel compatibele huisgenoten op je wachten',
     titleHighlight: 'compatibele huisgenoten',
     subtitle:
-      'Selecteer je stad om beschikbare universiteiten te zien en ontdek hoeveel studenten Domu Match al gebruiken.',
+      'Selecteer je stad en zie hoeveel studenten en young professionals in die stad Domu Match al gebruiken.',
     selectCityPlaceholder: 'Selecteer een stad',
-    noUniversities: 'Geen universiteiten gevonden in deze stad',
-    students: 'studenten',
-    student: 'student',
-    contactText: 'Geïnteresseerd om Domu Match naar je universiteit te halen? Neem contact op om meer te weten te komen.',
+    noUniversities: 'Nog geen gebruikers in deze stad',
+    students: 'personen',
+    student: 'persoon',
+    potentialOne: 'potentiële huisgenoot',
+    potentialMany: 'potentiële huisgenoten',
+    peopleWord: 'personen',
+    cityBody:
+      'gebruiken Domu Match al in deze stad, een groeiende groep mogelijke huisgenoten die jouw levensstijl, budget en verwachtingen rond samenwonen delen.',
+    contactText: 'Geïnteresseerd om Domu Match naar jouw universiteit of stad te halen? Neem contact op om meer te weten te komen.',
     buttonText: 'Neem contact op',
     loading: 'Laden...',
   },
@@ -235,41 +245,56 @@ export function Universities() {
               <div className="text-center py-12">
                 <p className="text-white/60">{t.loading}</p>
               </div>
-            ) : universities.length === 0 ? (
-              <div className="text-center py-12">
-                <p className="text-white/60">{t.noUniversities}</p>
-              </div>
             ) : (
-              <motion.div
-                className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-6 max-w-6xl mx-auto"
-                initial="hidden"
-                animate="visible"
-                variants={{ visible: { transition: { staggerChildren: 0.06 } } }}
-              >
-                {universities.map((university, index) => (
+              <>
+                {universities.length === 0 ? (
+                  <div className="text-center py-12">
+                    <p className="text-white/60">{t.noUniversities}</p>
+                  </div>
+                ) : (
                   <motion.div
-                    key={university.id}
-                    className={cn(
-                      'glass noise-overlay p-6 flex flex-col min-h-[140px]',
-                      'transition-all duration-300 hover:border-white/30 hover:bg-white/15'
-                    )}
-                    variants={itemVariants}
-                    custom={index}
-                    whileHover={reducedMotion ? undefined : { scale: 1.02, y: -2 }}
+                    className="max-w-xl mx-auto"
+                    initial="hidden"
+                    animate="visible"
+                    variants={{ visible: { transition: { staggerChildren: 0.06 } } }}
                   >
-                    <h3 className="font-semibold text-white text-lg mb-4 leading-tight text-center flex-1">
-                      {university.name}
-                    </h3>
-                    <div className="mt-auto pt-4 border-t border-white/10 text-center">
-                      <span className="inline-flex items-center justify-center px-4 py-2 rounded-lg bg-indigo-500/20 border border-indigo-400/30">
-                        <span className="font-bold text-lg text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 to-purple-400">
-                          {formatUserCount(university.user_count)}
-                        </span>
-                      </span>
-                    </div>
+                    <motion.div
+                      className={cn(
+                        'glass noise-overlay p-6 md:p-7 flex flex-col items-center text-center min-h-[160px]',
+                        'transition-all duration-300 hover:border-white/30 hover:bg-white/15'
+                      )}
+                      variants={itemVariants}
+                      custom={0}
+                      whileHover={reducedMotion ? undefined : { scale: 1.02, y: -2 }}
+                    >
+                      {(() => {
+                        const totalUsers = universities.reduce(
+                          (sum, uni) => sum + (uni.user_count || 0),
+                          0
+                        )
+                        return (
+                          <>
+                            <div className="mb-5">
+                              <span className="inline-flex items-center justify-center px-5 py-2.5 rounded-xl bg-indigo-500/20 border border-indigo-400/40 shadow-lg shadow-indigo-500/20">
+                                <span className="font-semibold text-base md:text-lg text-transparent bg-clip-text bg-gradient-to-r from-indigo-500 to-purple-500 dark:from-indigo-400 dark:to-purple-400">
+                                  {selectedCity}
+                                </span>
+                              </span>
+                            </div>
+                            <p className="text-2xl md:text-3xl font-semibold text-white mb-3">
+                              {totalUsers.toLocaleString('en-US')}{' '}
+                              {totalUsers === 1 ? t.potentialOne : t.potentialMany}
+                            </p>
+                            <p className="text-sm md:text-base text-white/70 max-w-md">
+                              {t.cityBody}
+                            </p>
+                          </>
+                        )
+                      })()}
+                    </motion.div>
                   </motion.div>
-                ))}
-              </motion.div>
+                )}
+              </>
             )}
           </>
         )}

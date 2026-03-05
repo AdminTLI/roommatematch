@@ -28,6 +28,20 @@ export async function POST(request: NextRequest) {
       }, { status: 403 })
     }
 
+    // Phase 3: Require user_type (completed profile) to refresh matches
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('user_type')
+      .eq('user_id', user.id)
+      .maybeSingle()
+
+    if (!profile?.user_type || (profile.user_type !== 'student' && profile.user_type !== 'professional')) {
+      return NextResponse.json(
+        { error: 'Please complete your profile to view matches.' },
+        { status: 403 }
+      )
+    }
+
     // Rate limiting: 5 refreshes per 15 minutes per user (prevents scraping/DoS)
     const rateLimitKey = getUserRateLimitKey('matching_refresh', user.id)
     const rateLimitResult = await checkRateLimit('matching_refresh', rateLimitKey)
@@ -252,19 +266,14 @@ export async function POST(request: NextRequest) {
         }, { status: 404 })
       }
       
-      // Build cohort filter based on user's profile
-      // Note: 
-      // - institutionId is NOT included - students from different universities can match
-      //   (same university is a bonus in scoring, not a requirement)
-      // - programmeId is NOT included - program matching is a preference/boost in scoring
-      // - campusCity is included to match students in the same city (works across universities)
-      // - degreeLevel is kept as a requirement for similar academic stage matching
+      // Build cohort filter based on user's profile (Phase 3: strict user_type segregation)
       const cohort: any = {
         degreeLevel: currentUser.degreeLevel,
         excludeUserIds: [user.id],
-        onlyActive: true, // Require verified/active profiles for suggestions
+        onlyActive: true,
         excludeAlreadyMatched: true,
-        limit: MAX_COHORT_SIZE // Cap cohort size to prevent DoS
+        limit: MAX_COHORT_SIZE,
+        userType: currentUser.userType || profile.user_type
       }
       
       // Only add campusCity filter if it has a value (city-based matching works across universities)

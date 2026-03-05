@@ -9,7 +9,7 @@ import { useApp } from '@/app/providers'
 
 const content = {
   en: {
-    title: "Discover compatible students",
+    title: "Discover compatible roommates",
     subtitle: "Our AI analyzes hundreds of factors to help you find your ideal roommate",
     buttonText: "Find roommates",
     matches: [
@@ -40,7 +40,7 @@ const content = {
     ]
   },
   nl: {
-    title: "Ontdek compatibele studenten",
+    title: "Ontdek compatibele huisgenoten",
     subtitle: "Onze AI analyseert honderden factoren om je te helpen je ideale huisgenoot te vinden",
     buttonText: "Vind huisgenoten",
     matches: [

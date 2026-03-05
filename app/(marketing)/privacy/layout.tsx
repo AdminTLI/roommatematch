@@ -8,8 +8,8 @@ export const metadata: Metadata = {
     'GDPR compliance',
     'data protection Netherlands',
     'roommate platform privacy',
-    'student data privacy',
-    'privacy policy student housing',
+    'user data privacy',
+    'privacy policy shared living',
   ],
   openGraph: {
     title: 'Privacy Policy | Domu Match',

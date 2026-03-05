@@ -15,14 +15,14 @@ const content = {
     hero: {
       titlePrefix: 'Our Mission:',
       titleHighlight: 'Better Roommate Matches Through Science',
-      description: "We believe finding a compatible roommate shouldn't be a gamble. Domu Match is a science-driven platform that uses compatibility research to help students find roommates they'll actually get along with. Safety, transparency, and evidence-based matching guide everything we do."
+      description: "We believe finding a compatible roommate shouldn't be a gamble. Domu Match is a science-driven platform that uses compatibility research to help students and young professionals find roommates they'll actually get along with. Safety, transparency, and evidence-based matching guide everything we do."
     },
     story: {
       heading: 'Our Story',
       subheading: "How we started, what drives us, and where we're headed.",
       paragraphs: [
         "University is supposed to be the most transformative chapter of your life, yet for millions of students, the excitement of an acceptance letter quickly fades into the anxiety of a housing lottery. We have seen this story play out too many times: brilliant students struggling to pass exams not because the coursework was too hard, but because their home environment was draining their energy. Domu Match was born from this silence - from the realization that while universities were excellent at teaching students what to learn, no one was helping them decide who to live with. We realized that in the high-stakes world of higher education, a compatible roommate isn't just a convenience; they are the difference between feeling isolated and feeling supported.",
-        "We refused to accept that your mental health should be left to chance, so we built the infrastructure to change it. By replacing random assignment with compatibility science, we help students find homes based on shared living values, daily rhythms, and mutual respect rather than just move-in dates. We bridge the gap between strangers, turning the daunting process of \"finding a room\" into the meaningful experience of building a micro-community. Our platform verifies every user and prioritizes privacy by design, ensuring that the technology works quietly in the background to create a foundation of trust before you ever unlock the front door.",
+        "We refused to accept that your mental health should be left to chance, so we built the infrastructure to change it. By replacing random assignment with compatibility science, we help students and young professionals find homes based on shared living values, daily rhythms, and mutual respect rather than just move-in dates. We bridge the gap between strangers, turning the daunting process of \"finding a room\" into the meaningful experience of building a micro-community. Our platform verifies every user and prioritizes privacy by design, ensuring that the technology works quietly in the background to create a foundation of trust before you ever unlock the front door.",
         "This is about more than just a place to sleep; it is about reclaiming your home as a sanctuary. We believe that who you live with determines who you become during these critical years, which is why we are partnering with forward-thinking universities to make wellbeing-focused housing the new standard. Whether you are an international student navigating a new culture or a first-year leaving home for the first time, our mission remains the same: to ensure that when you close your books at the end of the day, you are coming home to a place where you can truly recharge, thrive, and be yourself."
       ],
       founders: [
@@ -41,19 +41,19 @@ const content = {
     ],
     vision: {
       heading: "Where We're Headed",
-      intro: 'Our vision is to make science-backed roommate matching the standard for student housing. Every student deserves compatibility-based matching that considers lifestyle, personality, and academics.',
+      intro: 'Our vision is to make science-backed roommate matching the standard for shared living. Every student and young professional deserves compatibility-based matching that considers lifestyle, personality, and daily rhythms.',
       shortTermTitle: 'Short-term goals',
       shortTerm: [
         'Expand partnerships with universities across the Netherlands',
-        'Build a community of verified students finding better matches',
+        'Build a community of verified students and young professionals finding better matches',
         'Continuously tune the matching model using outcomes and feedback',
-        'Launch student-created group chats to form houses faster',
+        'Launch user-created group chats to form houses faster',
         'Introduce richer profiles with bios, interests, and highlights'
       ],
       longTermTitle: 'Long-term vision',
       longTerm: [
         'Partner with housing agencies to offer compatibility-matched rooms',
-        'Provide in-platform legal contracts students can review and sign',
+        'Provide in-platform legal contracts users can review and sign',
         'Enable roommate agreements to set expectations and accountability',
         'Offer individual and group calling for deeper conversations',
         'Launch mobile apps so Domu Match is accessible everywhere'
@@ -62,12 +62,12 @@ const content = {
     evidence: {
       headingHighlight: 'The Evidence:',
       headingSuffix: 'Why Compatibility Matters',
-      description: "Research shows that compatibility impacts academic performance, retention, and satisfaction. Here's what the data tells us.",
+      description: "Research on students and university housing shows that compatibility impacts academic performance, retention, and satisfaction. Here's what the data tells us.",
       tiles: [
         {
           statistic: '47.9%',
           title: 'Report Roommate Conflict',
-          explanation: 'Nearly half of students face ongoing conflict. Negative peer effects hurt grades, well-being, and retention.',
+          explanation: 'Among students, nearly half face ongoing conflict. Negative peer effects hurt grades, well-being, and retention.',
           source: 'Golding et al., "Negative Roommate Relationships and the Health and Well-being of Undergraduate College Students"',
           solution: "We analyze 40+ factors - study habits, cleanliness, social needs - to prevent conflict before it starts.",
           icon: 'Users' as const
@@ -75,7 +75,7 @@ const content = {
         {
           statistic: '67.6%',
           title: 'Want to Switch Rooms',
-          explanation: 'Bad matches create churn, stress, and extra work for housing teams.',
+          explanation: 'Among students, bad matches create churn, stress, and extra work for housing teams.',
           source: 'Deng (Empirical Study of Dormitory Conflict)',
           solution: 'Transparent matching helps students make informed choices, reducing churn and improving retention.',
           icon: 'TrendingUp' as const
@@ -83,14 +83,14 @@ const content = {
         {
           statistic: '70%',
           title: 'Satisfied When Compatible',
-          explanation: 'Prioritizing compatibility drives housing satisfaction and retention.',
+          explanation: 'Among students, prioritizing compatibility drives housing satisfaction and retention.',
           source: 'InsideHigherEd coverage of SDSU survey (2024)',
           solution: 'Our science-backed approach helps students find roommates as compatible as their best friends.',
           icon: 'Shield' as const
         }
       ],
       insightTitle: 'Why Compatibility Matters: Peer Effects, Retention, and Satisfaction',
-      insightBody: 'Roommate conflicts have real academic and emotional costs. Compatibility compounds over time: strong matches mean better grades, retention, and satisfaction. Poor matches create stress, churn, and lower performance.',
+      insightBody: 'In student and shared-living contexts, roommate conflicts have real academic and emotional costs. Compatibility compounds over time: strong matches mean better grades, retention, and satisfaction. Poor matches create stress, churn, and lower performance.',
       insightSource: 'Cao et al., "Heterogeneous peer effects of college roommates on academic performance" (Nature, 2024)'
     },
     values: {
@@ -98,7 +98,7 @@ const content = {
       headingHighlight: 'Value',
       description: 'These principles guide everything we do, from building our algorithm to partnering with universities.',
       cards: [
-        { title: 'Safety First', body: "Student safety is non-negotiable. We verify every user and prioritize secure, respectful interactions." },
+        { title: 'Safety First', body: "User safety is non-negotiable. We verify every user and prioritize secure, respectful interactions." },
         { title: 'Science-Driven', body: 'Our matching is backed by research - not guesswork. Peer-reviewed compatibility science informs every recommendation.' },
         { title: 'Transparency', body: "No black boxes. We explain how matching works and why you're compatible with each potential roommate." },
         { title: 'University Partnership', body: 'We partner with universities so better matching becomes the housing standard.' }
@@ -106,7 +106,7 @@ const content = {
     },
     cta: {
       heading: 'What Drives Us',
-      description: "We're a mission-led organization focused on making student living safer, happier, and more compatible.",
+      description: "We're a mission-led organization focused on making shared living safer, happier, and more compatible for students and young professionals.",
       bullets: [
         { title: 'Safety above all', text: 'Every user is verified. Every interaction is secure.' },
         { title: 'Science-driven', text: 'Our algorithm is grounded in peer-reviewed compatibility research.' },
@@ -168,7 +168,7 @@ const content = {
     evidence: {
       headingHighlight: 'Het bewijs:',
       headingSuffix: 'Waarom compatibiliteit telt',
-      description: 'Onderzoek laat zien dat compatibiliteit directe impact heeft op prestaties, retentie en welzijn.',
+      description: 'Onderzoek onder studenten en universiteitshuisvesting laat zien dat compatibiliteit directe impact heeft op prestaties, retentie en welzijn.',
       tiles: [
         {
           statistic: '47,9%',
@@ -181,7 +181,7 @@ const content = {
         {
           statistic: '67,6%',
           title: 'Wil verhuizen',
-          explanation: 'Slechte matches zorgen voor onrust, kosten en extra werk voor huisvestingsteams.',
+          explanation: 'Onder studenten zorgen slechte matches voor onrust, kosten en extra werk voor huisvestingsteams.',
           source: 'Deng, Empirical Study of Dormitory Conflict',
           solution: 'Transparante matching helpt studenten bewuste keuzes te maken en vermindert churn.',
           icon: 'TrendingUp' as const
@@ -189,14 +189,14 @@ const content = {
         {
           statistic: '70%',
           title: 'Tevreden bij compatibiliteit',
-          explanation: 'Wanneer compatibiliteit voorop staat, stijgt woon- en studiesucces.',
+          explanation: 'Onder studenten stijgt woon- en studiesucces wanneer compatibiliteit voorop staat.',
           source: 'InsideHigherEd, SDSU-enquête (2024)',
           solution: 'Onze wetenschappelijke aanpak helpt studenten huisgenoten te vinden die voelen als goede vrienden.',
           icon: 'Shield' as const
         }
       ],
       insightTitle: 'Waarom compatibiliteit telt: peereffecten, retentie en tevredenheid',
-      insightBody: 'Conflicten hebben echte academische en emotionele kosten. Goede matches leveren samengestelde voordelen op; slechte matches stapelen stress en uitval op.',
+      insightBody: 'In studenten- en gedeelde wooncontexten hebben conflicten echte academische en emotionele kosten. Goede matches leveren samengestelde voordelen op; slechte matches stapelen stress en uitval op.',
       insightSource: 'Cao e.a., Heterogeneous peer effects of college roommates on academic performance (Nature, 2024)'
     },
     values: {

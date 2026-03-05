@@ -23,7 +23,7 @@ const content = {
   en: {
     title: 'How Domu Match works',
     subtitle:
-      'Sign up, complete a short quiz, and get matched with verified students who share your lifestyle. From profile to move-in in five clear steps.',
+      'Sign up, complete a short quiz, and get matched with verified users who share your lifestyle. Students and young professionals are in separate pools. From profile to move-in in five clear steps.',
     featuresTitle: 'Why our process works',
     featuresSubtitle: 'Built on science, backed by universities, designed for safety',
     ctaTitle: 'Ready to find your perfect match?',
@@ -36,10 +36,10 @@ const content = {
         icon: UserPlus,
         title: 'Sign up & verify',
         description:
-          'Create your account with your university email and verify your identity so everyone on the platform is a real, verified student.',
+          'Create your account and verify your identity so everyone on the platform is real and verified. Students use a university email; young professionals use their email. Both complete government ID verification.',
         details: [
           'Government ID and selfie verification',
-          'University email confirmation',
+          'University email for students, or email for young professionals',
           'Basic profile and privacy settings',
         ],
         gradient: 'from-blue-500/20 to-blue-600/10 border-blue-400/30',
@@ -69,7 +69,7 @@ const content = {
           'We show you compatible roommates with a clear score and reasoning - no black box. You see why you match before you message.',
         details: [
           'Compatibility score and short explanation',
-          'Academic program and study year considered',
+          'Life stage (student or professional) and lifestyle considered',
           'Shared interests and habits highlighted',
         ],
         gradient: 'from-purple-500/20 to-purple-600/10 border-purple-400/30',
@@ -116,9 +116,9 @@ const content = {
       },
       {
         icon: Shield,
-        title: 'Verified students only',
+        title: 'Verified users only',
         description:
-          'Everyone verifies with government ID and selfie. You know you’re talking to real students, not randoms.',
+          'Everyone verifies with government ID and selfie. You know you’re talking to real people in your pool - students or young professionals - not randoms.',
       },
       {
         icon: CheckCircle,
@@ -131,7 +131,7 @@ const content = {
   nl: {
     title: 'Hoe Domu Match werkt',
     subtitle:
-      'Meld je aan, vul een korte quiz in en krijg matches met geverifieerde studenten die bij je levensstijl passen. Van profiel tot verhuizing in vijf duidelijke stappen.',
+      'Meld je aan, vul een korte quiz in en krijg matches met geverifieerde gebruikers die bij je levensstijl passen. Studenten en young professionals zitten in aparte pools. Van profiel tot verhuizing in vijf duidelijke stappen.',
     featuresTitle: 'Waarom ons proces werkt',
     featuresSubtitle: 'Gebouwd op wetenschap, ondersteund door universiteiten, ontworpen voor veiligheid',
     ctaTitle: 'Klaar om je perfecte match te vinden?',
@@ -144,7 +144,7 @@ const content = {
         icon: UserPlus,
         title: 'Aanmelden en verifiëren',
         description:
-          'Maak je account aan met je universiteits-e-mail en verifieer je identiteit, zodat iedereen op het platform een echte, geverifieerde student is.',
+          'Maak je account aan en verifieer je identiteit. Studenten gebruiken een universiteits-e-mail; young professionals hun e-mail. Iedereen verifieert met overheids-ID.',
         details: [
           'Verificatie met overheids-ID en selfie',
           'Bevestiging universiteits-e-mail',
@@ -224,9 +224,9 @@ const content = {
       },
       {
         icon: Shield,
-        title: 'Alleen geverifieerde studenten',
+        title: 'Alleen geverifieerde gebruikers',
         description:
-          'Iedereen verifieert met overheids-ID en selfie. Je weet dat je met echte studenten praat, niet met vreemden.',
+          'Iedereen verifieert met overheids-ID en selfie. Je weet dat je met echte mensen in jouw pool praat - studenten of young professionals - niet met vreemden.',
       },
       {
         icon: CheckCircle,
@@ -279,7 +279,7 @@ export function HowItWorksSection() {
           </p>
         </motion.div>
 
-        {/* Steps — interactive stepper */}
+        {/* Steps  -  interactive stepper */}
         <div className="mb-20">
           <InteractiveSteps steps={t.steps} reducedMotion={reducedMotion} />
         </div>

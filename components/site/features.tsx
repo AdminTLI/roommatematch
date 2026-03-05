@@ -12,31 +12,31 @@ const content = {
     title: 'Everything you need to',
     titleHighlight: 'find your ideal roommate',
     subtitle:
-      'Our comprehensive platform makes finding the right roommate simple and stress-free.',
+      'Our comprehensive platform makes finding the right roommate simple and stress-free for students and young professionals.',
     features: [
       {
         icon: Brain,
         title: 'Smart matching',
         description:
-          'AI-powered compatibility analysis based on lifestyle, study habits, and personality traits to help you connect with ideal roommates.',
+          'AI-powered compatibility analysis based on lifestyle, habits, and personality to connect you with ideal roommates in your cohort.',
       },
       {
         icon: Filter,
         title: 'Advanced filters',
         description:
-          'Filter by university, program, study year, budget, lifestyle preferences, and more to find compatible students.',
+          'Filter by university, program, budget, lifestyle preferences, and more to find compatible students or professionals.',
       },
       {
         icon: MessageSquare,
         title: 'Conversation starters',
         description:
-          'Get personalized ice-breaker questions and compatibility insights to help you start meaningful conversations with potential roommates.',
+          'Get personalized ice-breaker questions and compatibility insights to start meaningful conversations with potential roommates.',
       },
       {
         icon: ShieldCheck,
         title: 'Verified & secure',
         description:
-          'All users are verified through university email and ID verification. Your data is protected with enterprise-grade security.',
+          'Students and professionals are verified; your cohort stays segregated. Your data is protected with enterprise-grade security.',
       },
     ],
   },
@@ -44,7 +44,7 @@ const content = {
     title: 'Alles wat je nodig hebt om',
     titleHighlight: 'je ideale huisgenoot te vinden',
     subtitle:
-      'Ons uitgebreide platform maakt het vinden van de juiste huisgenoot eenvoudig en stressvrij.',
+      'Ons uitgebreide platform maakt het vinden van de juiste huisgenoot eenvoudig en stressvrij voor studenten en young professionals.',
     features: [
       {
         icon: Brain,
@@ -56,7 +56,7 @@ const content = {
         icon: Filter,
         title: 'Geavanceerde filters',
         description:
-          'Filter op universiteit, programma, studiejaar, budget, levensstijlvoorkeuren en meer om compatibele studenten te vinden.',
+          'Filter op universiteit, programma, budget, levensstijlvoorkeuren en meer om compatibele studenten of professionals te vinden.',
       },
       {
         icon: MessageSquare,
@@ -68,7 +68,7 @@ const content = {
         icon: ShieldCheck,
         title: 'Geverifieerd en veilig',
         description:
-          'Alle gebruikers zijn geverifieerd via universiteits-e-mail en ID-verificatie. Je gegevens zijn beschermd met enterprise-grade beveiliging.',
+          'Studenten en professionals zijn geverifieerd (universiteits-e-mail of young-professionalverificatie); je cohort blijft gescheiden. Je gegevens zijn beschermd met enterprise-grade beveiliging.',
       },
     ],
   },

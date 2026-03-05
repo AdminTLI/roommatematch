@@ -23,6 +23,20 @@ export async function GET(request: NextRequest) {
       }, { status: 403 })
     }
 
+    // Phase 3: Require completed profile (user_type) to view matches — strict segregation
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('user_type')
+      .eq('user_id', user.id)
+      .maybeSingle()
+
+    if (!profile?.user_type) {
+      return NextResponse.json(
+        { error: 'Please complete your profile to view matches.' },
+        { status: 403 }
+      )
+    }
+
     try {
       const repo = await getMatchRepo()
       const includeExpired = request.nextUrl.searchParams.get('includeExpired') === 'true'

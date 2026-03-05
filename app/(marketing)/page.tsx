@@ -12,6 +12,7 @@ import { MarketingLayoutFix } from './components/marketing-layout-fix'
 import { StatsTicker } from './components/stats-ticker'
 import { MarketingPageBackground } from './components/marketing-page-background'
 import { WolfpackGroupChatsSection } from './components/wolfpack-group-chats-section'
+import { SegregatedPoolsSection } from './components/segregated-pools-section'
 
 export default function MarketingPage() {
 
@@ -45,7 +46,7 @@ export default function MarketingPage() {
         '@id': 'https://domumatch.com/#website',
         url: 'https://domumatch.com',
         name: 'Domu Match',
-        description: 'Find compatible roommates in the Netherlands with science-backed matching',
+        description: 'Find compatible roommates in the Netherlands. Smart matching for verified students and young professionals.',
         publisher: {
           '@id': 'https://domumatch.com/#organization',
         },
@@ -105,8 +106,8 @@ export default function MarketingPage() {
           },
         ],
         serviceType: 'Roommate Matching Service',
-        description: 'Science-backed roommate matching platform for students in the Netherlands',
-        priceRange: 'Free for students',
+        description: 'AI-driven roommate matching for verified students and young professionals in the Netherlands.',
+        priceRange: 'Free for students and young professionals',
         aggregateRating: {
           '@type': 'AggregateRating',
           ratingValue: '4.8',
@@ -132,10 +133,10 @@ export default function MarketingPage() {
         mainEntity: [
           {
             '@type': 'Question',
-            name: 'Is Domu Match free for students?',
+            name: 'Is Domu Match free for students and young professionals?',
             acceptedAnswer: {
               '@type': 'Answer',
-              text: 'Yes, Domu Match is completely free for students in the Netherlands. Our platform is designed to help students find compatible roommates without any cost.',
+              text: 'Yes. Domu Match is free for both students and young professionals in the Netherlands. Our platform helps you find compatible roommates at no cost.',
             },
           },
           {
@@ -151,15 +152,15 @@ export default function MarketingPage() {
             name: 'Is Domu Match only for students in the Netherlands?',
             acceptedAnswer: {
               '@type': 'Answer',
-              text: 'Yes, currently Domu Match is specifically designed for students studying at Dutch universities and universities of applied sciences. We partner with 50+ institutions across the Netherlands including universities in Amsterdam, Rotterdam, Utrecht, and other major cities.',
+              text: 'Domu Match serves both verified students and young professionals in the Netherlands. Students match only with other students; professionals only with other professionals. We partner with 50+ universities and serve major cities including Amsterdam, Rotterdam, Utrecht, and more.',
             },
           },
           {
             '@type': 'Question',
-            name: 'How do I verify my student status?',
+            name: 'How do I verify my student or young professional status?',
             acceptedAnswer: {
               '@type': 'Answer',
-              text: 'You can verify your student status by signing up with your university email address. All students on our platform are verified to ensure a safe and trustworthy community.',
+              text: 'Students: sign up with your university email to verify. Young professionals: sign up with your email and complete our young-professional verification flow. All users are verified to ensure a safe, trustworthy community.',
             },
           },
           {
@@ -167,7 +168,7 @@ export default function MarketingPage() {
             name: 'What makes Domu Match different from other roommate apps?',
             acceptedAnswer: {
               '@type': 'Answer',
-              text: 'Domu Match uses science-backed compatibility matching with transparent explanations, verified student-only access, integration with Dutch universities, and explainable AI that shows you exactly why matches are compatible. We focus specifically on the Dutch student housing market.',
+              text: 'Domu Match uses science-backed compatibility matching with transparent explanations, verified access for students and young professionals (in separate pools), integration with Dutch universities, and explainable AI that shows you why matches are compatible. We focus on the Dutch shared-living market for both segments.',
             },
           },
         ],
@@ -175,7 +176,7 @@ export default function MarketingPage() {
       {
         '@type': 'Product',
         name: 'Domu Match Roommate Matching Service',
-        description: 'AI-powered roommate matching platform for students in the Netherlands',
+        description: 'AI-powered roommate matching for verified students and young professionals in the Netherlands',
         brand: {
           '@type': 'Brand',
           name: 'Domu Match',
@@ -212,6 +213,7 @@ export default function MarketingPage() {
           <HeroAurora />
           <StatsTicker />
           <LiveStats />
+          <SegregatedPoolsSection />
           <BentoInfrastructure />
           <WolfpackGroupChatsSection />
           <Universities />

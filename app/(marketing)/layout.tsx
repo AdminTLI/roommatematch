@@ -3,17 +3,19 @@ import type { ReactNode } from 'react'
 
 export const metadata: Metadata = {
   title: {
-    default: 'Find Your Perfect Roommate in Netherlands | Domu Match - Verified Student Housing',
+    default: 'Find Your Perfect Roommate in Netherlands | Domu Match - Shared Living for Students & Young Professionals',
     template: '%s | Domu Match',
   },
-  description: 'Find compatible roommates in the Netherlands with science-backed matching. Verified students, safe platform, perfect for Amsterdam, Rotterdam, Utrecht, and all Dutch universities. Start matching today!',
+  description: 'Find compatible roommates in the Netherlands with science-backed matching. Verified students and young professionals, safe platform, perfect for Amsterdam, Rotterdam, Utrecht, and shared living across the Netherlands. Start matching today!',
   keywords: [
     'find roommate Netherlands',
     'student housing Netherlands',
     'roommate matching',
-    'student accommodation',
+    'young professionals flatmate',
+    'shared living Netherlands',
     'find housemate Amsterdam',
     'student room Rotterdam',
+    'flatmate Netherlands',
     'university housing',
     'compatible roommate',
     'student housing Amsterdam',
@@ -52,7 +54,7 @@ export const metadata: Metadata = {
     url: 'https://domumatch.com',
     siteName: 'Domu Match',
     title: 'Find Your Perfect Roommate in Netherlands | Domu Match',
-    description: 'Find compatible roommates in the Netherlands with science-backed matching. Verified students, safe platform, perfect for Dutch universities.',
+    description: 'Find compatible roommates in the Netherlands with science-backed matching. Verified students and young professionals, safe platform, perfect for shared living.',
     images: [
       {
         url: 'https://domumatch.com/images/logo.png',
@@ -65,7 +67,7 @@ export const metadata: Metadata = {
   twitter: {
     card: 'summary_large_image',
     title: 'Find Your Perfect Roommate in Netherlands | Domu Match',
-    description: 'Find compatible roommates in the Netherlands with science-backed matching. Verified students, safe platform.',
+    description: 'Find compatible roommates in the Netherlands with science-backed matching. Verified students and young professionals, safe platform.',
     images: ['https://domumatch.com/images/logo.png'],
     creator: '@domumatch',
   },

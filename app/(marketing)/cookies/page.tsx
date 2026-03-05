@@ -28,7 +28,7 @@ const content = {
     strictlyNecessary: {
       title: 'Category 1: Strictly Necessary (Functional) Cookies',
       description:
-        'These cookies are essential for the platform to work, for secure login via your university and for ID verification. Without them, Domu Match cannot function properly. Because they only support the service you request, they do not require consent, but we want to be transparent about them.',
+        'These cookies are essential for the platform to work, for secure login (e.g. university sign-in for students, email for young professionals) and for ID verification. Without them, Domu Match cannot function properly. Because they only support the service you request, they do not require consent, but we want to be transparent about them.',
       tableCaption: 'Strictly necessary cookies used by Domu Match',
       headers: ['Name', 'Provider', 'Purpose', 'Duration'],
       rows: [
@@ -81,7 +81,7 @@ const content = {
       ],
       privacyMeasures: [
         'IP addresses are truncated (for example by masking the last octet) before they are stored or analysed, in line with Dutch “low-impact analytics” expectations.',
-        'Analytics data is only used in aggregate form (for example statistics per group), not to make decisions about individual students.',
+        'Analytics data is only used in aggregate form (for example statistics per group), not to make decisions about individual users.',
         'Where possible, we remove or pseudonymise identifiers so they cannot easily be linked back to you.'
       ],
       tableCaption: 'Analytical cookies used by Domu Match',
@@ -246,7 +246,7 @@ const content = {
       ],
       privacyMeasures: [
         'IP-adressen worden ingekort (bijvoorbeeld door het laatste octet te maskeren) voordat ze worden opgeslagen of geanalyseerd, in lijn met de Nederlandse verwachtingen voor “laag-impact analytics”.',
-        'Analysedata wordt alleen in geaggregeerde vorm gebruikt (bijvoorbeeld statistieken per groep), niet om beslissingen over individuele studenten te nemen.',
+        'Analysedata wordt alleen in geaggregeerde vorm gebruikt (bijvoorbeeld statistieken per groep), niet om beslissingen over individuele gebruikers te nemen.',
         'Waar mogelijk verwijderen of pseudonimiseren we identificerende gegevens zodat deze niet eenvoudig aan u kunnen worden gekoppeld.'
       ],
       tableCaption: 'Analytische cookies die Domu Match gebruikt',

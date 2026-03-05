@@ -10,7 +10,7 @@ import { useApp } from '@/app/providers'
 const content = {
   en: {
     title: "Housing done right",
-    subtitle: "Our algorithm cuts incompatibility-driven disputes, dropouts, and staff escalations. Intelligent matching means fewer complaints, happier students, better retention.",
+    subtitle: "Our algorithm cuts incompatibility-driven disputes, dropouts, and staff escalations. Intelligent matching means fewer complaints, happier users, better retention.",
     contactButton: "Contact Us",
     startPilot: "Start Free Pilot",
     scheduleDemo: "Schedule Demo",
@@ -19,14 +19,14 @@ const content = {
     viewPricing: "View Pricing",
     stats: [
       { icon: Brain, value: '40+', label: 'Compatibility factors analyzed' },
-      { icon: Shield, value: '100%', label: 'Verified student profiles' },
+      { icon: Shield, value: '100%', label: 'Verified profiles' },
       { icon: Eye, value: '100%', label: 'Transparent matching process' },
       { icon: Clock, value: '10 min', label: 'Quick setup time' },
     ],
     benefits: [
       {
         title: "Science-Backed Matching",
-        description: "Our algorithm analyzes 40+ compatibility factors to prevent conflicts before they start, improving student satisfaction and reducing disputes.",
+        description: "Our algorithm analyzes 40+ compatibility factors to prevent conflicts before they start, improving satisfaction and reducing disputes.",
         icon: Brain,
       },
       {
@@ -36,7 +36,7 @@ const content = {
       },
       {
         title: "Enhance Student Safety",
-        description: "Every student is verified with government ID and selfie verification. All communication is moderated and logged for safety.",
+        description: "Every user is verified with government ID and selfie verification. All communication is moderated and logged for safety.",
         icon: Shield,
       },
       {
@@ -46,11 +46,11 @@ const content = {
       },
     ],
     trustTitle: "Designed for Dutch universities",
-    trustSubtitle: "Built specifically for university housing departments to improve student accommodation experience",
+    trustSubtitle: "Built for university housing departments and the broader shared-living ecosystem (students and young professionals)",
     trustItems: [
       {
         title: "Science-Backed",
-        description: "Our algorithm analyzes 40+ compatibility factors to match students based on lifestyle, study habits, and preferences."
+        description: "Our algorithm analyzes 40+ compatibility factors to match users based on lifestyle, habits, and preferences."
       },
       {
         title: "Transparent Process",
@@ -58,13 +58,13 @@ const content = {
       },
       {
         title: "Safe & Verified",
-        description: "Every student is verified with government ID. All communication is moderated and logged for safety and peace of mind."
+        description: "Every user is verified with government ID. All communication is moderated and logged for safety and peace of mind."
       }
     ]
   },
   nl: {
     title: "Huisvesting goed gedaan",
-    subtitle: "Ons algoritme vermindert geschillen door incompatibiliteit, uitval en escalaties door personeel. Intelligente matching betekent minder klachten, gelukkigere studenten, betere retentie.",
+    subtitle: "Ons algoritme vermindert geschillen door incompatibiliteit, uitval en escalaties door personeel. Intelligente matching betekent minder klachten, gelukkigere gebruikers, betere retentie.",
     contactButton: "Neem Contact Op",
     startPilot: "Start Gratis Pilot",
     scheduleDemo: "Plan Demo",
@@ -73,14 +73,14 @@ const content = {
     viewPricing: "Bekijk Prijzen",
     stats: [
       { icon: Brain, value: '40+', label: 'Geanalyseerde compatibiliteitsfactoren' },
-      { icon: Shield, value: '100%', label: 'Geverifieerde studentprofielen' },
+      { icon: Shield, value: '100%', label: 'Geverifieerde profielen' },
       { icon: Eye, value: '100%', label: 'Transparant matchingproces' },
       { icon: Clock, value: '10 min', label: 'Snelle opzetttijd' },
     ],
     benefits: [
       {
         title: "Wetenschappelijk Onderbouwde Matching",
-        description: "Ons algoritme analyseert 40+ compatibiliteitsfactoren om conflicten te voorkomen voordat ze beginnen, waardoor studenttevredenheid wordt verbeterd en geschillen worden verminderd.",
+        description: "Ons algoritme analyseert 40+ compatibiliteitsfactoren om conflicten te voorkomen voordat ze beginnen, waardoor tevredenheid wordt verbeterd en geschillen worden verminderd.",
         icon: Brain,
       },
       {
@@ -90,7 +90,7 @@ const content = {
       },
       {
         title: "Verbeter Studentveiligheid",
-        description: "Elke student is geverifieerd met overheids-ID en selfie-verificatie. Alle communicatie is gemodereerd en gelogd voor veiligheid.",
+        description: "Elke gebruiker is geverifieerd met overheids-ID en selfie-verificatie. Alle communicatie is gemodereerd en gelogd voor veiligheid.",
         icon: Shield,
       },
       {
@@ -100,11 +100,11 @@ const content = {
       },
     ],
     trustTitle: "Ontworpen voor Nederlandse universiteiten",
-    trustSubtitle: "Speciaal gebouwd voor universiteitshuisvestingsafdelingen om de studentaccommodatie-ervaring te verbeteren",
+    trustSubtitle: "Gebouwd voor universiteitshuisvestingsafdelingen en het bredere shared-living ecosysteem (studenten en young professionals)",
     trustItems: [
       {
         title: "Wetenschappelijk Onderbouwd",
-        description: "Ons algoritme analyseert 40+ compatibiliteitsfactoren om studenten te matchen op basis van levensstijl, studiegewoonten en voorkeuren."
+        description: "Ons algoritme analyseert 40+ compatibiliteitsfactoren om gebruikers te matchen op basis van levensstijl, gewoonten en voorkeuren."
       },
       {
         title: "Transparant Proces",
@@ -112,7 +112,7 @@ const content = {
       },
       {
         title: "Veilig en Geverifieerd",
-        description: "Elke student is geverifieerd met overheids-ID. Alle communicatie is gemodereerd en gelogd voor veiligheid en gemoedsrust."
+        description: "Elke gebruiker is geverifieerd met overheids-ID. Alle communicatie is gemodereerd en gelogd voor veiligheid en gemoedsrust."
       }
     ]
   }

@@ -123,6 +123,7 @@ export default async function DashboardPage() {
           dashboardData={dashboardData}
           user={userProfile}
           firstName={profile?.first_name || ''}
+          userType={profile?.user_type === 'student' || profile?.user_type === 'professional' ? profile.user_type : undefined}
         />
       </AppShell>
       <DomuChatWidget />

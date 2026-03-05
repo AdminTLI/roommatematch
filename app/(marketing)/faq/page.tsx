@@ -10,12 +10,13 @@ import {
 } from '@/components/ui/accordion'
 
 export const metadata: Metadata = {
-  title: 'Frequently Asked Questions | Domu Match - Student Housing FAQ',
-  description: 'Find answers to common questions about Domu Match roommate matching platform. Learn about verification, matching, safety, pricing, and student housing in the Netherlands.',
+  title: 'Frequently Asked Questions | Domu Match - Roommate & Shared Living FAQ',
+  description: 'Find answers to common questions about Domu Match roommate matching platform. Verification, matching, safety, pricing for students and young professionals in the Netherlands.',
   keywords: [
     'Domu Match FAQ',
     'roommate matching questions',
-    'student housing FAQ',
+    'shared living FAQ',
+    'young professionals flatmate',
     'how does roommate matching work',
     'verification questions',
     'Netherlands student housing FAQ',
@@ -51,15 +52,19 @@ const faqData: { category: string; items: FAQItem[] }[] = [
     items: [
       {
         question: 'Is Domu Match really free for students?',
-        answer: 'Yes, Domu Match is completely free for all students in the Netherlands. There are no hidden fees, no premium tiers, and no charges for messaging or viewing matches. We believe finding a compatible roommate should be accessible to everyone.',
+        answer: 'Yes, Domu Match is completely free for all students in the Netherlands. We also offer free access for young professionals. There are no hidden fees, no premium tiers, and no charges for messaging or viewing matches. We believe finding a compatible roommate should be accessible to everyone.',
+      },
+      {
+        question: 'Is Domu Match only for students?',
+        answer: 'No. Domu Match serves both students and young professionals in separate pools. Students match only with other students; young professionals only with other young professionals. You choose your life stage when you sign up.',
       },
       {
         question: 'Who can use Domu Match?',
-        answer: 'Domu Match is available to students aged 17+ who are enrolled at Dutch universities and universities of applied sciences. You need a valid university email address to sign up and verify your student status.',
+        answer: 'Domu Match is available to students aged 17+ enrolled at Dutch universities (sign up with your university email) and to young professionals in the Netherlands (sign up with your email). Both groups are ID-verified and matched in separate pools.',
       },
       {
         question: 'How do I sign up?',
-        answer: 'Simply click "Get Started" on our homepage, create an account with your university email, complete our compatibility questionnaire (takes about 10-15 minutes), and you\'ll start receiving matches immediately.',
+        answer: 'Click "Get Started" on our homepage and create an account. Students use their university email; young professionals use their email. Complete our compatibility questionnaire (about 10-15 minutes) and you\'ll start receiving matches. Both paths require identity verification.',
       },
       {
         question: 'What universities does Domu Match work with?',
@@ -75,8 +80,8 @@ const faqData: { category: string; items: FAQItem[] }[] = [
     category: 'Safety & Verification',
     items: [
       {
-        question: 'How does Domu Match verify students?',
-        answer: 'We verify all users through their university email address. This ensures that only legitimate students can access the platform. We also integrate with Dutch university systems where possible for additional verification.',
+        question: 'How does Domu Match verify users?',
+        answer: 'Every user is government-ID verified through Persona before they can chat. Students also verify their status with a university email address. Young professionals sign up with their email and complete the same ID verification. This keeps the platform safe from bots and scams.',
       },
       {
         question: 'Is my personal information safe?',
@@ -88,11 +93,11 @@ const faqData: { category: string; items: FAQItem[] }[] = [
       },
       {
         question: 'What information is visible to other users?',
-        answer: 'Your first name, university, program, and the information you choose to share in your profile are visible to matches. Your email, phone number, and exact address are never shared unless you choose to share them directly.',
+        answer: 'Your first name, life stage (student or young professional), and the information you choose to share in your profile are visible to matches. For students, university and program may be shown. Your email, phone number, and exact address are never shared unless you choose to share them directly.',
       },
       {
         question: 'Do you conduct background checks?',
-        answer: 'We verify student status through university emails. We do not conduct criminal background checks, but we do have strict community guidelines and remove users who violate our terms of service.',
+        answer: 'We verify identity through government ID (Persona) and, for students, university email. We do not conduct criminal background checks, but we have strict community guidelines and remove users who violate our terms of service.',
       },
     ],
   },
@@ -105,7 +110,7 @@ const faqData: { category: string; items: FAQItem[] }[] = [
       },
       {
         question: 'What is a compatibility score?',
-        answer: 'The compatibility score (0-100%) indicates how well you match with another student based on lifestyle factors. Scores above 70% indicate good compatibility, above 80% indicates excellent compatibility, and above 90% indicates exceptional compatibility.',
+        answer: 'The compatibility score (0-100%) indicates how well you match with another user in your pool (students with students, young professionals with young professionals) based on lifestyle factors. Scores above 70% indicate good compatibility, above 80% excellent, and above 90% exceptional.',
       },
       {
         question: 'Can I see why I was matched with someone?',

@@ -41,7 +41,7 @@ export function DiffGrid({ locale = 'en' }: DiffGridProps) {
         },
         domuMatch: {
           title: "Domu Match",
-          subtitle: "Compatibility-first for campus life",
+          subtitle: "Compatibility-first for shared living",
           description: "Algorithm-driven matching with lifestyle analysis",
           icon: Check,
           color: "text-green-600",
@@ -91,7 +91,7 @@ export function DiffGrid({ locale = 'en' }: DiffGridProps) {
         },
         domuMatch: {
           title: "Domu Match",
-          subtitle: "Compatibiliteit-eerst voor campus leven",
+          subtitle: "Compatibiliteit-eerst voor gedeeld wonen",
           description: "Algoritme-gedreven matching met leefstijl analyse",
           icon: Check,
           color: "text-green-600",

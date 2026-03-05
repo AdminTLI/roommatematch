@@ -39,7 +39,8 @@ export class SupabaseMatchRepo implements MatchRepo {
           university_id,
           degree_level,
           campus,
-          verification_status
+          verification_status,
+          user_type
         ),
         user_academic!inner(
           university_id,
@@ -176,6 +177,10 @@ export class SupabaseMatchRepo implements MatchRepo {
     const academicData = Array.isArray(data.user_academic) ? data.user_academic[0] : data.user_academic
     const profileData = Array.isArray(data.profiles) ? data.profiles[0] : data.profiles
 
+    const userType = profileData?.user_type === 'student' || profileData?.user_type === 'professional'
+      ? profileData.user_type
+      : undefined
+
     return {
       id: data.id,
       email: data.email,
@@ -186,7 +191,8 @@ export class SupabaseMatchRepo implements MatchRepo {
       campusCity: profileData?.campus,
       answers,
       vector: data.user_vectors?.[0]?.vector,
-      createdAt: new Date().toISOString()
+      createdAt: new Date().toISOString(),
+      userType
     }
   }
 
@@ -202,7 +208,8 @@ export class SupabaseMatchRepo implements MatchRepo {
       onlyActive: filter.onlyActive,
       excludeAlreadyMatched: filter.excludeAlreadyMatched,
       excludeUserIds: filter.excludeUserIds,
-      limit: filter.limit
+      limit: filter.limit,
+      userType: filter.userType
     })
 
     // Build query for users with their onboarding data
@@ -219,7 +226,8 @@ export class SupabaseMatchRepo implements MatchRepo {
           degree_level,
           campus,
           verification_status,
-          is_visible
+          is_visible,
+          user_type
         ),
         user_academic(
           university_id,
@@ -241,6 +249,11 @@ export class SupabaseMatchRepo implements MatchRepo {
       `)
 
     // Apply filters
+    if (filter.userType) {
+      query = query.eq('profiles.user_type', filter.userType)
+      safeLogger.debug('[DEBUG] loadCandidates - Applied userType filter (strict segregation)', { userType: filter.userType })
+    }
+
     if (filter.campusCity) {
       query = query.eq('profiles.campus', filter.campusCity)
       safeLogger.debug('[DEBUG] loadCandidates - Applied campusCity filter')
@@ -335,7 +348,7 @@ export class SupabaseMatchRepo implements MatchRepo {
       const adminClient = await this.getSupabase()
       const { data: profileData, error: profileError } = await adminClient
         .from('profiles')
-        .select('user_id, first_name, university_id, degree_level, campus, verification_status')
+        .select('user_id, first_name, university_id, degree_level, campus, verification_status, user_type')
         .in('user_id', usersMissingProfile)
 
       if (!profileError && profileData) {
@@ -364,10 +377,13 @@ export class SupabaseMatchRepo implements MatchRepo {
 
     // Transform the data into Candidate format
     // Exclude hidden profiles (Hide Profile retention flow)
+    // Exclude candidates with NULL user_type (incomplete onboarding) when userType filter is set
     const transformedCandidates = (data || [])
       .filter((user: any) => {
         const profile = user.profiles?.[0] || profileDataMap.get(user.id)
-        return profile?.is_visible !== false
+        if (profile?.is_visible === false) return false
+        if (filter.userType && (profile?.user_type == null || profile?.user_type !== filter.userType)) return false
+        return true
       })
       .map((user: any) => {
         // Try to get profile/academic/vector from join result first, then fallback to separate fetch

@@ -1,12 +1,13 @@
-import { SignUpForm } from '@/components/auth/sign-up-form'
+import { Suspense } from 'react'
 import { Navbar } from '@/components/site/navbar'
 import { MarketingLayoutFix } from '@/app/(marketing)/components/marketing-layout-fix'
 import { MarketingPageBackground } from '@/app/(marketing)/components/marketing-page-background'
+import { SignUpSection } from './sign-up-section'
 import { Metadata } from 'next'
 
 export const metadata: Metadata = {
   title: 'Sign Up | Domu Match',
-  description: 'Create your Domu Match account to find compatible roommates.',
+  description: 'Create your Domu Match account to find compatible roommates. Join as a student or young professional.',
 }
 
 export default function SignUpPage() {
@@ -18,45 +19,9 @@ export default function SignUpPage() {
 
         <div className="relative z-10">
           <Navbar />
-
-          <section className="px-4 sm:px-6 lg:px-8 pt-10 md:pt-14 pb-12">
-            <div className="mx-auto grid w-full max-w-5xl grid-cols-1 items-center gap-10 lg:grid-cols-[1.1fr_0.9fr]">
-              {/* Left: brand/value prop (matches sign-in tone) */}
-              <div className="hidden lg:block">
-                <p className="text-sm font-semibold tracking-wide text-white/70">
-                  Domu Match
-                </p>
-                <h1 className="mt-3 text-4xl font-bold tracking-tight text-white">
-                  Find{' '}
-                  <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 to-purple-400">
-                    your roommate.
-                  </span>
-                </h1>
-                <p className="mt-4 text-lg text-white/75 max-w-md">
-                  Join a verified student community. We match you with roommates who fit your lifestyle, not just your budget.
-                </p>
-                <ul className="mt-8 space-y-3 text-sm text-white/70">
-                  <li className="flex gap-2 items-baseline">
-                    <span className="mt-1.5 h-1.5 w-1.5 flex-shrink-0 rounded-full bg-indigo-300/80" />
-                    <span><strong>Real Humans:</strong> A 100% verified student community.</span>
-                  </li>
-                  <li className="flex gap-2 items-baseline">
-                    <span className="mt-1.5 h-1.5 w-1.5 flex-shrink-0 rounded-full bg-purple-300/80" />
-                    <span><strong>Deeper Connections:</strong> Find people who truly &quot;get&quot; your routine.</span>
-                  </li>
-                  <li className="flex gap-2 items-baseline">
-                    <span className="mt-1.5 h-1.5 w-1.5 flex-shrink-0 rounded-full bg-indigo-200/80" />
-                    <span><strong>Seamless Chat:</strong> Coordinate viewings and meetups instantly.</span>
-                  </li>
-                </ul>
-              </div>
-
-              {/* Right: form */}
-              <div className="mx-auto w-full max-w-md">
-                <SignUpForm />
-              </div>
-            </div>
-          </section>
+          <Suspense fallback={<div className="min-h-[40vh] flex items-center justify-center text-white/60">Loading…</div>}>
+            <SignUpSection />
+          </Suspense>
         </div>
       </main>
     </>

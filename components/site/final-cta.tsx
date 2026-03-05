@@ -12,7 +12,7 @@ const content = {
     title: "Join our",
     titleHighlight: "community of builders",
     subtitle:
-      "We’re still founder-led and pre-team. Every contributor shapes safer student housing, ships real work in weeks, and sets the tone for how we grow.",
+      "We’re still founder-led and pre-team. Every contributor shapes safer shared living for students and young professionals, ships real work in weeks, and sets the tone for how we grow.",
     primary: "See open tracks",
     secondary: "Why volunteer with us",
     points: [
@@ -26,7 +26,7 @@ const content = {
     title: "Word onderdeel van onze",
     titleHighlight: "community van builders",
     subtitle:
-      "We zijn nog founder-led en pre-team. Elke contributor helpt veiliger studentenhuisvesting op te bouwen en levert zichtbaar werk af.",
+      "We zijn nog founder-led en pre-team. Elke contributor helpt veiliger shared living voor studenten en young professionals op te bouwen en levert zichtbaar werk af.",
     primary: "Bekijk de tracks",
     secondary: "Waarom vrijwilligen",
     points: [

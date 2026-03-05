@@ -15,8 +15,8 @@ export function WolfpackGroupChatsSection() {
   const badge = isNl ? 'Groepschats voor huisjacht' : 'Group chats for house hunting'
 
   const description = isNl
-    ? 'In plaats van alleen te scrollen door eindeloze listings, stellen we straks veilige groepschats samen met 3 tot 5 compatibele studenten. Jullie vormen één "wolfpack" dat samen woningen spot, bezichtigingen plant en als één huishouden reageert - met meer kans op een goede match en minder stress.'
-    : 'Instead of doom-scrolling listings alone, we will soon help you form safe group chats with 3 to 5 compatible students. Your "wolfpack" spots listings together, coordinates viewings, and applies as one household - giving you more options, fewer no-replies, and less stress.'
+    ? 'In plaats van alleen te scrollen door eindeloze listings, stellen we straks veilige groepschats samen met 3 tot 5 compatibele huisgenoten. Jullie vormen één "wolfpack" dat samen woningen spot, bezichtigingen plant en als één huishouden reageert - met meer kans op een goede match en minder stress.'
+    : 'Instead of doom-scrolling listings alone, we will soon help you form safe group chats with 3 to 5 compatible roommates. Your "wolfpack" spots listings together, coordinates viewings, and applies as one household - giving you more options, fewer no-replies, and less stress.'
 
   const bullets = isNl
     ? [
@@ -35,41 +35,41 @@ export function WolfpackGroupChatsSection() {
   const cards = isNl
     ? [
         {
-          title: 'Delen met onbekenden is zelden de eerste keuze',
+          title: 'Delen met onbekenden is zelden de droom',
           description:
-            'Een Europees onderzoek onder jonge thuisdelers liet zien dat 52% eigenlijk liever alleen zou wonen, ook al woont bijna de helft nu met huisgenoten samen (HousingAnywhere, 2025). Als je toch moet delen om de huur te kunnen betalen, is het veiliger om als vooraf gematchte groep te reageren dan in te trekken bij willekeurige huisgenoten die je nog nooit hebt ontmoet.',
+            'Een Europees onderzoek onder ruim 3.000 jonge woningdelers liet zien dat 52% eigenlijk liever alleen zou wonen, ook al delen velen nu een huis (HousingAnywhere, 2025). Als je toch moet delen, is het veiliger om als vooraf gematchte groep van studenten en young professionals te reageren dan in te trekken bij willekeurige onbekenden.',
           icon: MapPin,
         },
         {
-          title: 'Een compleet huis is aantrekkelijker dan één losse huurder',
+          title: 'Een compleet huishouden valt sneller op',
           description:
-            'Op de Nederlandse studentenmarkt trokken beschikbare kamers in de zomer van 2024 gemiddeld ongeveer 81 geïnteresseerde huurders per advertentie (Kamernet Rent Report, 2024). Een verhuurder kan dan kiezen voor een compleet, georganiseerd huis dat samen reageert in plaats van losse aanmeldingen van studenten die elkaar nog niet kennen.',
+            'Op de Nederlandse gedeelde huurmarkt trokken gewilde kamers in 2024 rond de 80 geïnteresseerde huurders per advertentie (Kamernet Rent Report, 2024). Verhuurders kiezen dan liever voor één georganiseerd huishouden met een duidelijk verhaal dan voor losse aanmeldingen van mensen die elkaar nog niet kennen.',
           icon: Users,
         },
         {
-          title: 'Extreme schaarste - samen sterk',
+          title: 'Extreme schaarste beloont georganiseerde groepen',
           description:
-            'Bij zulke schaarste letten verhuurders extra op rust in huis. Een groep die elkaar al kent, samen afspraken heeft gemaakt en als één huishouden reageert, voelt veel minder risicovol dan een mix van onbekenden die elkaar nog moeten leren kennen en misschien snel weer vertrekken.',
+            'Bij zo weinig beschikbare woonruimte letten verhuurders extra op rust en stabiliteit. Een groep van jongvolwassenen die elkaar al kent, afspraken heeft gemaakt en als één huishouden reageert, voelt veel minder risicovol dan een mix van onbekenden die elkaar nog moeten leren kennen.',
           icon: ShieldCheck,
         },
       ]
     : [
         {
-          title: 'Sharing with strangers is rarely the first choice',
+          title: 'Sharing with strangers isn’t the dream',
           description:
-            'A 2025 survey of young home sharers in Europe found that 52% would actually prefer to live alone, even though almost half are currently sharing an apartment with others (HousingAnywhere, 2025). If you have to share to afford rent, applying as a pre matched group you already get along with is safer than moving into a house of strangers and hoping the chemistry works.',
+            'A 2025 survey of 3,100 young Europeans found that 52% of home‑sharers would actually prefer to live alone, even though many currently share to afford rent (HousingAnywhere, 2025). If you have to share, joining a pre‑matched group of students and young professionals is safer than moving in with total strangers and hoping the chemistry works.',
           icon: MapPin,
         },
         {
-          title: 'Complete groups are easier to say yes to',
+          title: 'Complete households stand out',
           description:
-            'In the Dutch student market, each available room attracted on average about 81 interested tenants per listing during summer 2024 (Kamernet Rent Report, 2024). When landlords can choose between dozens of individual applicants or one organised group with a clear story and house rules, a ready made pack is often the easier and more convincing option.',
+            'In the Dutch shared housing market, popular rooms attracted around 80 interested tenants per listing in 2024 (Kamernet Rent Report, 2024). When owners can choose between dozens of individual applicants or one organised group with a clear story and house rules, a ready‑made household is often the easier “yes”.',
           icon: Users,
         },
         {
-          title: 'Scarcity means groups stand out',
+          title: 'Scarcity rewards organised groups',
           description:
-            'With that level of scarcity, landlords care a lot about stability in the household. A group that already knows each other, has agreed on basic house rules, and applies as one household feels less risky than a mix of strangers who might clash and move out quickly.',
+            'With this level of scarcity, landlords care a lot about stability at home. A group that already knows each other, has agreed on basic house rules, and applies as one household feels less risky than a mix of strangers who might clash and move out quickly.',
           icon: ShieldCheck,
         },
       ]

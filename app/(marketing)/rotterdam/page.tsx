@@ -6,13 +6,14 @@ import { getCityStructuredData } from '@/components/site/university-city/content
 import { MarketingLayoutFix } from '../components/marketing-layout-fix'
 
 export const metadata: Metadata = {
-  title: 'Find Your Perfect Roommate in Rotterdam | Domu Match',
+  title: 'Find Roommates in Rotterdam | Domu Match – Students & Young Professionals',
   description:
-    'Find compatible roommates in Rotterdam with Domu Match. Connect with verified students from EUR, Erasmus University, InHolland and more. Science-backed matching for Rotterdam student housing.',
+    'Find compatible roommates in Rotterdam with Domu Match. Connect with verified students and young professionals from EUR, Erasmus University, InHolland and more. Science-backed matching for shared living in Rotterdam.',
   keywords: [
     'find roommate Rotterdam',
     'roommate finder Rotterdam',
     'student housing Rotterdam',
+    'young professionals Rotterdam',
     'room share Rotterdam',
     'flatmate Rotterdam',
     'EUR roommate',
@@ -26,7 +27,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: 'Find Your Perfect Roommate in Rotterdam | Domu Match',
     description:
-      'Find compatible roommates in Rotterdam with science-backed matching. Connect with verified students from EUR and other Rotterdam universities.',
+      'Find compatible roommates in Rotterdam with science-backed matching. Connect with verified students and young professionals from EUR and more.',
     type: 'website',
     url: 'https://domumatch.com/rotterdam',
     siteName: 'Domu Match',

@@ -6,26 +6,45 @@ import Image from 'next/image'
 import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import Container from '@/components/ui/primitives/container'
-import { Menu, X, ChevronRight, ArrowRight } from 'lucide-react'
+import { Menu, X, ChevronRight, ArrowRight, ChevronDown } from 'lucide-react'
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu'
 import { LanguageSwitcher } from '@/app/(marketing)/components/language-switcher'
 import { useApp } from '@/app/providers'
 import { cn } from '@/lib/utils'
 
+const whoWeServeContent = {
+  en: {
+    label: 'Who we serve',
+    items: [
+      { name: 'For Students', href: '/students' },
+      { name: 'For Young Professionals', href: '/young-professionals' },
+      { name: 'For Universities', href: '/universities' },
+    ],
+  },
+  nl: {
+    label: 'Voor wie',
+    items: [
+      { name: 'Voor studenten', href: '/students' },
+      { name: 'Voor young professionals', href: '/young-professionals' },
+      { name: 'Voor universiteiten', href: '/universities' },
+    ],
+  },
+}
+
 const navigationContent = {
   en: [
     { name: 'How It Works', href: '/how-it-works' },
-    { name: 'For Students', href: '/students' },
-    { name: 'For Universities', href: '/universities' },
-
     { name: 'About us', href: '/about' },
   ],
   nl: [
     { name: 'Hoe het werkt', href: '/how-it-works' },
-    { name: 'Voor studenten', href: '/students' },
-    { name: 'Voor universiteiten', href: '/universities' },
-
     { name: 'Over ons', href: '/about' },
-  ]
+  ],
 }
 
 const buttonContent = {
@@ -136,21 +155,57 @@ export function Navbar() {
               </span>
             </Link>
 
-            {/* Desktop Navigation */}
-            <div className="hidden lg:flex items-center gap-8 xl:gap-10 2xl:gap-14 h-full flex-1 justify-center min-w-0">
-              {navigation.map((item) => (
-                <Link
-                  key={item.href}
-                  href={item.href}
+            {/* Desktop Navigation: How It Works | Who we serve ▼ | About us */}
+            <div className="hidden lg:flex items-center gap-6 xl:gap-8 2xl:gap-10 h-full flex-1 justify-center min-w-0">
+              <Link
+                href={navigation[0].href}
+                className={cn(
+                  'transition-colors font-medium leading-tight flex items-center h-full py-0 whitespace-nowrap px-1',
+                  isDarkPage ? 'text-white/80 hover:text-white' : 'text-brand-muted hover:text-brand-text'
+                )}
+                suppressHydrationWarning
+              >
+                {navigation[0].name}
+              </Link>
+              <DropdownMenu>
+                <DropdownMenuTrigger
                   className={cn(
-                    'transition-colors font-medium leading-tight flex items-center h-full py-0 whitespace-nowrap px-1',
-                    isDarkPage ? 'text-white/80 hover:text-white' : 'text-brand-muted hover:text-brand-text'
+                    'transition-colors font-medium leading-tight flex items-center h-full py-0 whitespace-nowrap px-1 gap-1 outline-none focus-visible:ring-2 focus-visible:ring-white/50 focus-visible:ring-offset-2 focus-visible:ring-offset-transparent rounded',
+                    isDarkPage ? 'text-white/80 hover:text-white data-[state=open]:text-white' : 'text-brand-muted hover:text-brand-text data-[state=open]:text-brand-text'
                   )}
                   suppressHydrationWarning
                 >
-                  {item.name}
-                </Link>
-              ))}
+                  {mounted ? whoWeServeContent[locale].label : whoWeServeContent.en.label}
+                  <ChevronDown className="h-4 w-4 opacity-70" />
+                </DropdownMenuTrigger>
+                <DropdownMenuContent
+                  align="center"
+                  sideOffset={8}
+                  className="min-w-[220px] rounded-xl border border-white/20 bg-slate-900/95 backdrop-blur-xl shadow-xl shadow-black/20 py-1"
+                >
+                  {whoWeServeContent[mounted ? locale : 'en'].items.map((item) => (
+                    <DropdownMenuItem key={item.href} asChild>
+                      <Link
+                        href={item.href}
+                        className="flex cursor-pointer items-center px-3 py-2.5 text-sm text-white/90 hover:text-white hover:bg-white/10 focus:bg-white/10 focus:text-white outline-none rounded-lg mx-1"
+                        suppressHydrationWarning
+                      >
+                        {item.name}
+                      </Link>
+                    </DropdownMenuItem>
+                  ))}
+                </DropdownMenuContent>
+              </DropdownMenu>
+              <Link
+                href={navigation[1].href}
+                className={cn(
+                  'transition-colors font-medium leading-tight flex items-center h-full py-0 whitespace-nowrap px-1',
+                  isDarkPage ? 'text-white/80 hover:text-white' : 'text-brand-muted hover:text-brand-text'
+                )}
+                suppressHydrationWarning
+              >
+                {navigation[1].name}
+              </Link>
             </div>
 
             {/* Desktop CTA */}
@@ -259,10 +314,13 @@ export function Navbar() {
             </button>
           </div>
 
-          {/* Menu Content */}
+          {/* Menu Content: How It Works, For Students, For Young Professionals, For Universities, About us */}
           <div className="relative px-4 py-6 space-y-1">
-            {/* Navigation Links */}
-            {navigation.map((item) => (
+            {[
+              navigation[0],
+              ...(mounted ? whoWeServeContent[locale] : whoWeServeContent.en).items,
+              navigation[1],
+            ].map((item) => (
               <Link
                 key={item.href}
                 href={item.href}
