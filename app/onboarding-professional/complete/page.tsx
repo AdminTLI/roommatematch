@@ -1,5 +1,5 @@
 import { checkOnboardingRedirect } from '@/lib/onboarding/server-redirect'
-import CompleteClient from '@/app/onboarding/complete/pageClient'
+import CompletePage from '@/app/onboarding/complete/page'
 
 interface PageProps {
   searchParams: Promise<{ mode?: string }>
@@ -11,6 +11,6 @@ export default async function Page({ searchParams }: PageProps) {
     requiredUserType: 'professional',
     mismatchRedirectTo: '/onboarding/complete',
   })
-  return <CompleteClient />
+  return <CompletePage />
 }
 
