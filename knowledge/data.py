@@ -3,7 +3,7 @@ Platform knowledge base for Domu Match.
 VERSION: 2.0 (Student Success & Trust Infrastructure)
 
 Used to inform AI assistants (e.g., Domu AI chat) about platform capabilities
-and how to help users—without exposing confidential or sensitive information.
+and how to help users - without exposing confidential or sensitive information.
 
 This file defines the "Brain" of the Domu AI. It controls:
 1. SEARCH_STRATEGY: How to translate student panic/questions into effective external queries.
@@ -112,7 +112,7 @@ PLATFORM_MANUAL = """
 - Onboarding questionnaire sections: Basics, Academic, Logistics, Lifestyle, Social, Personality, Communication,
   Languages (optional), Dealbreakers.
 - Progress auto-saves; onboarding required before viewing matches.
-- "Why do I have 0 matches?": Likely too many Dealbreakers—relax Program/Year but keep Lifestyle strict.
+- "Why do I have 0 matches?": Likely too many Dealbreakers - relax Program/Year but keep Lifestyle strict.
 - Users can retake the questionnaire once every 30 days.
 - Account deletion via support@domumatch.com (GDPR-compliant).
 
@@ -129,7 +129,7 @@ PLATFORM_MANUAL = """
 - Move-in: Tools for planning move-in.
 - Notifications: In-app + email for matches and messages.
 - Video intros & Reputation system: Available in some rollouts.
-- Admin: For university housing departments—analytics, user management, moderation.
+- Admin: For university housing departments - analytics, user management, moderation.
 
 9. HOUSING TOOLS
 - WWS Rent Check: Helps students check if rent is fair under Dutch law.
@@ -186,7 +186,7 @@ PERSONA_GUIDELINES = """
 
 1. WHO YOU ARE
 - You are the "Older Sibling" or "Savvy Mentor." You've been there, done that.
-- Professional but approachable—like a good Resident Assistant (RA).
+- Professional but approachable - like a good Resident Assistant (RA).
 - NOT a corporate robot, NOT trying-hard-to-be-cool slangy, NOT a cold database.
 
 2. TONE ATTRIBUTES
@@ -210,7 +210,7 @@ Platform knowledge base for Domu Match.
 VERSION: 2.0 (Student Success & Trust Infrastructure)
 
 Used to inform AI assistants (e.g., Domu AI chat) about platform capabilities
-and how to help users—without exposing confidential or sensitive information.
+and how to help users - without exposing confidential or sensitive information.
 
 This file defines the "Brain" of the Domu AI. It controls:
 1. SEARCH_STRATEGY: How to translate student panic/questions into effective external queries.
@@ -361,7 +361,7 @@ DOMU MATCH PLATFORM MANUAL
 - To delete account: You must email support@domumatch.com (for security reasons).
 - Changing answers: You can retake the questionnaire once every 30 days in the "My Match Profile" tab.
 - Settings are organized into tabs: Profile (personal info), Questionnaire (match profile), Account (security, email, notifications), and Privacy (data export, deletion requests).
-- To change email: Contact support@domumatch.com—email changes require verification.
+- To change email: Contact support@domumatch.com - email changes require verification.
 
 3. SAFETY & TRUST
 - All users must verify their student status via university email.
@@ -410,7 +410,7 @@ DOMU MATCH PLATFORM MANUAL
 - Notifications: In-app and email notifications for matches and messages.
 - Video intros: Feature for video introductions (where available).
 - Reputation: Reputation/feedback system (where available).
-- Admin: For university housing departments—analytics, user management, moderation.
+- Admin: For university housing departments - analytics, user management, moderation.
 
 10. UNIVERSITIES & LOCATIONS
 - Platform partners with 50+ Dutch universities.
@@ -504,7 +504,7 @@ Platform knowledge base for Domu Match.
 VERSION: 2.0 (Student Success & Trust Infrastructure)
 
 Used to inform AI assistants (e.g., Domu AI chat) about platform capabilities
-and how to help users—without exposing confidential or sensitive information.
+and how to help users - without exposing confidential or sensitive information.
 
 This file defines the "Brain" of the Domu AI. It controls:
 1. SEARCH_STRATEGY: How to translate student panic/questions into effective external queries.
@@ -655,7 +655,7 @@ DOMU MATCH PLATFORM MANUAL
 - To delete account: You must email support@domumatch.com (for security reasons).
 - Changing answers: You can retake the questionnaire once every 30 days in the "My Match Profile" tab.
 - Settings are organized into tabs: Profile (personal info), Questionnaire (match profile), Account (security, email, notifications), and Privacy (data export, deletion requests).
-- To change email: Contact support@domumatch.com—email changes require verification.
+- To change email: Contact support@domumatch.com - email changes require verification.
 
 3. SAFETY & TRUST
 - All users must verify their student status via university email.
@@ -704,7 +704,7 @@ DOMU MATCH PLATFORM MANUAL
 - Notifications: In-app and email notifications for matches and messages.
 - Video intros: Feature for video introductions (where available).
 - Reputation: Reputation/feedback system (where available).
-- Admin: For university housing departments—analytics, user management, moderation.
+- Admin: For university housing departments - analytics, user management, moderation.
 
 10. UNIVERSITIES & LOCATIONS
 - Platform partners with 50+ Dutch universities.
@@ -799,7 +799,7 @@ Platform knowledge base for Domu Match.
 VERSION: 2.0 (Student Success & Trust Infrastructure)
 
 Used to inform AI assistants (e.g., Domu AI chat) about platform capabilities
-and how to help users—without exposing confidential or sensitive information.
+and how to help users - without exposing confidential or sensitive information.
 
 This file defines the "Brain" of the Domu AI. It controls:
 1. SEARCH_STRATEGY: How to translate student panic/questions into effective external queries.
@@ -950,7 +950,7 @@ DOMU MATCH PLATFORM MANUAL
 - To delete account: You must email support@domumatch.com (for security reasons).
 - Changing answers: You can retake the questionnaire once every 30 days in the "My Match Profile" tab.
 - Settings are organized into tabs: Profile (personal info), Questionnaire (match profile), Account (security, email, notifications), and Privacy (data export, deletion requests).
-- To change email: Contact support@domumatch.com—email changes require verification.
+- To change email: Contact support@domumatch.com - email changes require verification.
 
 3. SAFETY & TRUST
 - All users must verify their student status via university email.
@@ -999,7 +999,7 @@ DOMU MATCH PLATFORM MANUAL
 - Notifications: In-app and email notifications for matches and messages.
 - Video intros: Feature for video introductions (where available).
 - Reputation: Reputation/feedback system (where available).
-- Admin: For university housing departments—analytics, user management, moderation.
+- Admin: For university housing departments - analytics, user management, moderation.
 
 10. UNIVERSITIES & LOCATIONS
 - Platform partners with 50+ Dutch universities.
@@ -1092,7 +1092,7 @@ PERSONA_GUIDELINES = """
 """
 Platform knowledge base for Domu Match.
 Used to inform AI assistants (e.g., Domu AI chat) about platform capabilities
-and how to help users—without exposing confidential or sensitive information.
+and how to help users - without exposing confidential or sensitive information.
 """
 
 SEARCH_STRATEGY = """
@@ -1144,7 +1144,7 @@ DOMU MATCH PLATFORM MANUAL
 - To delete account: You must email support@domumatch.com (for security reasons).
 - Changing answers: You can retake the questionnaire once every 30 days in the "My Match Profile" tab.
 - Settings are organized into tabs: Profile (personal info), Questionnaire (match profile), Account (security, email, notifications), and Privacy (data export, deletion requests).
-- To change email: Contact support@domumatch.com—email changes require verification.
+- To change email: Contact support@domumatch.com - email changes require verification.
 
 3. SAFETY & TRUST
 - All users must verify their student status via university email.
@@ -1193,7 +1193,7 @@ DOMU MATCH PLATFORM MANUAL
 - Notifications: In-app and email notifications for matches and messages.
 - Video intros: Feature for video introductions (where available).
 - Reputation: Reputation/feedback system (where available).
-- Admin: For university housing departments—analytics, user management, moderation.
+- Admin: For university housing departments - analytics, user management, moderation.
 
 10. UNIVERSITIES & LOCATIONS
 - Platform partners with 50+ Dutch universities.

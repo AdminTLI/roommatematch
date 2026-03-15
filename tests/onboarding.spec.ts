@@ -51,7 +51,7 @@ test.describe('Onboarding Questionnaire', () => {
     await page.waitForSelector('[data-testid="program-select"]')
     await page.selectOption('[data-testid="program-select"]', { index: 1 })
     await page.waitForSelector('[data-testid="campus-select"]')
-    await page.selectOption('[data-testid="campus-select"]', { label: 'UvA — Science Park (Amsterdam)' })
+    await page.selectOption('[data-testid="campus-select"]', { label: 'UvA  -  Science Park (Amsterdam)' })
     await page.selectOption('[data-testid="move-in-select"]', { label: 'Immediately' })
     
     // Complete rest of onboarding quickly
@@ -86,7 +86,7 @@ test.describe('Onboarding Questionnaire', () => {
     await page.waitForSelector('[data-testid="program-select"]')
     await page.selectOption('[data-testid="program-select"]', { index: 1 })
     await page.waitForSelector('[data-testid="campus-select"]')
-    await page.selectOption('[data-testid="campus-select"]', { label: 'UvA — Roeterseiland (Amsterdam)' })
+    await page.selectOption('[data-testid="campus-select"]', { label: 'UvA  -  Roeterseiland (Amsterdam)' })
     await page.selectOption('[data-testid="move-in-select"]', { label: 'Within a month' })
     
     // Complete again with different values

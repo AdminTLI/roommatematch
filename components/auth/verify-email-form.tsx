@@ -252,7 +252,7 @@ export function VerifyEmailForm() {
 
   if (isVerified) {
     return (
-      <Card className="w-full">
+      <Card className="w-full glass">
         <CardHeader className="text-center px-4 sm:px-6 pt-6 sm:pt-6">
           <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-green-100">
             <CheckCircle className="h-6 w-6 text-green-600" />
@@ -281,7 +281,7 @@ export function VerifyEmailForm() {
   return (
     <>
       <VerificationFeedback />
-      <Card className="w-full">
+      <Card className="w-full glass">
       <CardHeader className="text-center px-4 sm:px-6 pt-6 sm:pt-6">
         <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-blue-100">
           <Mail className="h-6 w-6 text-blue-600" />

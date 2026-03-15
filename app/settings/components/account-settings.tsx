@@ -1,6 +1,7 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
+import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -16,15 +17,36 @@ import {
   Check,
   AlertCircle,
   EyeOff,
-  Eye
+  Eye,
+  AlertTriangle,
+  Trash2,
+  Clock,
+  ChevronRight
 } from 'lucide-react'
 import { EmailVerification } from './email-verification'
 import { getCSRFHeaders } from '@/lib/utils/csrf-client'
+import Link from 'next/link'
+
+const DEFAULT_NOTIFICATIONS = {
+  emailMatches: true,
+  emailMessages: true,
+  emailUpdates: true,
+  pushMatches: true,
+  pushMessages: true,
+}
 
 interface AccountSettingsProps {
   user: any
-  profile?: { is_visible?: boolean } | null
+  profile?: { is_visible?: boolean; notification_preferences?: Record<string, boolean> } | null
   onVisibilityChange?: () => void
+}
+
+interface DSARRequest {
+  request_type: string
+  status: string
+  processing_metadata?: {
+    deletion_scheduled_at?: string
+  }
 }
 
 export function AccountSettings({ user, profile, onVisibilityChange }: AccountSettingsProps) {
@@ -35,13 +57,20 @@ export function AccountSettings({ user, profile, onVisibilityChange }: AccountSe
   const [visibilityLoading, setVisibilityLoading] = useState(false)
   const isProfileHidden = profile?.is_visible === false
 
-  const [notifications, setNotifications] = useState({
-    emailMatches: true,
-    emailMessages: true,
-    emailUpdates: false,
-    pushMatches: true,
-    pushMessages: false
-  })
+  const [notifications, setNotifications] = useState(DEFAULT_NOTIFICATIONS)
+  const [deletionScheduled, setDeletionScheduled] = useState<string | null>(null)
+
+  // Sync from profile when loaded or after save (router.refresh)
+  useEffect(() => {
+    const prefs = profile?.notification_preferences
+    if (typeof prefs === 'object' && prefs !== null) {
+      setNotifications(prev => ({
+        ...DEFAULT_NOTIFICATIONS,
+        ...prev,
+        ...prefs,
+      }))
+    }
+  }, [profile?.notification_preferences])
 
   const handleMakeVisible = async () => {
     setVisibilityLoading(true)
@@ -68,23 +97,56 @@ export function AccountSettings({ user, profile, onVisibilityChange }: AccountSe
     setNotifications(prev => ({ ...prev, [key]: value }))
   }
 
+  const router = useRouter()
+
   const handleSaveNotifications = async () => {
     setIsLoading(true)
     setError(null)
     setIsSuccess(false)
 
     try {
-      // In a real app, this would save to a user preferences table
-      await new Promise(resolve => setTimeout(resolve, 1000)) // Simulate API call
-
+      const headers = await getCSRFHeaders()
+      const res = await fetch('/api/settings/notifications', {
+        method: 'POST',
+        headers,
+        body: JSON.stringify(notifications),
+      })
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}))
+        throw new Error(data.message || data.error || 'Failed to save')
+      }
       setIsSuccess(true)
       setTimeout(() => setIsSuccess(false), 3000)
+      onVisibilityChange?.()
+      router.refresh()
     } catch (err) {
-      setError('Failed to save notification preferences')
+      setError(err instanceof Error ? err.message : 'Failed to save notification preferences')
     } finally {
       setIsLoading(false)
     }
   }
+
+  useEffect(() => {
+    const fetchDeletionStatus = async () => {
+      try {
+        const response = await fetch('/api/privacy/requests')
+        if (!response.ok) return
+
+        const data = await response.json()
+        const deletionRequest = data.requests?.find(
+          (r: DSARRequest) => r.request_type === 'deletion' && r.status === 'completed'
+        )
+
+        if (deletionRequest) {
+          setDeletionScheduled(deletionRequest.processing_metadata?.deletion_scheduled_at || null)
+        }
+      } catch {
+        // Non-critical, so ignore errors
+      }
+    }
+
+    fetchDeletionStatus()
+  }, [])
 
   const handleChangePassword = () => {
     // In a real app, this would open a password change modal or redirect
@@ -260,6 +322,44 @@ export function AccountSettings({ user, profile, onVisibilityChange }: AccountSe
             'Save Preferences'
           )}
         </Button>
+      </div>
+
+      {/* Danger Zone Group */}
+      <div className="space-y-4 pt-4">
+        <h3 className="text-sm font-medium text-red-600 dark:text-red-500 uppercase tracking-wider px-1">Danger Zone</h3>
+        <div className="bg-red-50/80 dark:bg-red-500/5 border border-red-200 dark:border-red-500/20 rounded-2xl overflow-hidden p-6 space-y-6 backdrop-blur-xl">
+          {deletionScheduled && (
+            <Alert className="bg-orange-500/10 border-orange-500/20 text-orange-600 dark:text-orange-400">
+              <Clock className="h-4 w-4" />
+              <AlertDescription>
+                <strong>Deletion scheduled:</strong> Your account is scheduled for deletion on{' '}
+                {new Date(deletionScheduled).toLocaleDateString()}.
+              </AlertDescription>
+            </Alert>
+          )}
+
+          <div className="flex items-start gap-4">
+            <AlertTriangle className="w-5 h-5 text-red-600 dark:text-red-500 flex-shrink-0 mt-0.5" />
+            <div className="flex-1 min-w-0">
+              <h4 className="font-semibold text-zinc-900 dark:text-white mb-1">Delete Account</h4>
+              <p className="text-xs text-zinc-600 dark:text-zinc-400 leading-relaxed">
+                Permanently delete your profile and all data. You will be asked to confirm and can choose to hide your profile instead.
+              </p>
+            </div>
+          </div>
+
+          <Link href="/settings/delete-account">
+            <Button
+              variant="destructive"
+              disabled={!!deletionScheduled}
+              className="w-full sm:w-auto min-w-[160px] h-11 text-sm bg-red-500 hover:bg-red-600 text-white rounded-xl shadow-lg shadow-red-500/20"
+            >
+              <Trash2 className="w-4 h-4 mr-2" />
+              {deletionScheduled ? 'Deletion Scheduled' : 'Delete My Account'}
+              <ChevronRight className="w-4 h-4 ml-1" />
+            </Button>
+          </Link>
+        </div>
       </div>
     </div>
   )

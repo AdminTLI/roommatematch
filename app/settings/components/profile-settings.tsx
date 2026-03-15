@@ -27,9 +27,10 @@ export function ProfileSettings({ user, profile, academic }: ProfileSettingsProp
   const [isSuccess, setIsSuccess] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
+  // Pre-fill from profile, then from sign-up (user_metadata.first_name/last_name), then full_name
   const [formData, setFormData] = useState({
-    firstName: profile?.first_name || user.user_metadata?.full_name?.split(' ')[0] || '',
-    lastName: profile?.last_name || user.user_metadata?.full_name?.split(' ').slice(1).join(' ') || '',
+    firstName: (profile?.first_name || user.user_metadata?.first_name || user.user_metadata?.full_name?.split(' ')[0] || '').trim(),
+    lastName: (profile?.last_name || user.user_metadata?.last_name || user.user_metadata?.full_name?.split(' ').slice(1).join(' ') || '').trim(),
     email: user.email || '',
     phone: profile?.phone || '',
     bio: profile?.bio || '',

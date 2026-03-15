@@ -23,7 +23,7 @@ export async function GET(request: NextRequest) {
       }, { status: 403 })
     }
 
-    // Phase 3: Require completed profile (user_type) to view matches — strict segregation
+    // Phase 3: Require completed profile (user_type) to view matches  -  strict segregation
     const { data: profile } = await supabase
       .from('profiles')
       .select('user_type')

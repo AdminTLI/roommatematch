@@ -124,7 +124,8 @@ async function main() {
     'VERIFF_API_KEY',
     'PERSONA_API_KEY',
     'ONFIDO_API_KEY',
-    'SMTP_PASS'
+    'MAILJET_API_KEY',
+    'MAILJET_SECRET_KEY'
   ]
 
   console.log('Available secrets to rotate:')

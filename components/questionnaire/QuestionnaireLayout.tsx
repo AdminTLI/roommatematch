@@ -133,51 +133,141 @@ export function QuestionnaireLayout({
   }
 
   return (
-    <div className="min-h-screen flex flex-col">
-      <header className="sticky top-0 z-40 bg-white/80 dark:bg-gray-900/80 backdrop-blur border-b">
-        <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-3">
-          <div className="flex items-center justify-between mb-3 sm:mb-0">
-            <div className="font-semibold text-sm sm:text-base">Domu Match</div>
-            <button
-              className="text-xs sm:text-sm text-gray-600 hover:text-gray-900 underline disabled:opacity-50 disabled:cursor-not-allowed"
-              onClick={handleSaveAndExit}
-              disabled={isSavingAll}
-            >
-              {isSavingAll ? 'Saving...' : 'Save & exit'}
-            </button>
-          </div>
-          <div className="flex items-center gap-2 sm:gap-3">
-            <Progress value={progress} className="h-2 flex-1" />
-            <div className="text-xs sm:text-sm text-gray-600 dark:text-gray-300 whitespace-nowrap">
-              Step {stepIndex + 1} of {totalSteps}
+    <div className="relative min-h-screen overflow-hidden bg-slate-950 text-slate-50">
+      {/* Ambient gradient background to match welcome / dashboard aesthetics */}
+      <div className="pointer-events-none absolute inset-0">
+        <div className="absolute -top-40 -left-32 h-80 w-80 rounded-full bg-indigo-500/25 blur-3xl" />
+        <div className="absolute -bottom-44 -right-10 h-96 w-96 rounded-full bg-purple-500/30 blur-3xl" />
+        <div className="absolute inset-x-0 top-1/3 h-72 bg-gradient-to-r from-sky-500/10 via-transparent to-violet-500/15 blur-3xl" />
+      </div>
+
+      {/* Subtle texture / overlay */}
+      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top,_rgba(148,163,184,0.15),_transparent_60%),radial-gradient(circle_at_bottom,_rgba(59,130,246,0.18),_transparent_55%)] mix-blend-screen" />
+
+      <div className="relative z-10 flex min-h-screen flex-col">
+        {/* Header */}
+        <header className="sticky top-0 z-40 border-b border-white/10 bg-slate-950/80 backdrop-blur-xl">
+          <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-3 sm:px-6 lg:px-8">
+            <div className="flex items-center gap-3">
+              <div className="flex h-8 w-8 items-center justify-center rounded-2xl bg-gradient-to-tr from-indigo-500 via-sky-400 to-purple-500 shadow-lg shadow-indigo-500/40">
+                <span className="text-xs font-semibold tracking-tight text-white">DM</span>
+              </div>
+              <div>
+                <p className="text-sm font-semibold tracking-tight text-slate-50">Domu Match</p>
+                <p className="text-[11px] font-medium uppercase tracking-[0.22em] text-slate-400">
+                  From strangers to roommates
+                </p>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-4">
+              <div className="hidden flex-col items-end gap-1 sm:flex">
+                <span className="text-[11px] font-semibold uppercase tracking-[0.22em] text-slate-300">
+                  Step {stepIndex + 1} of {totalSteps}
+                </span>
+                <div className="flex items-center gap-2">
+                  <div className="w-40">
+                    <Progress value={progress} className="h-1.5 rounded-full bg-slate-800" />
+                  </div>
+                  <span className="text-xs text-slate-300">{progress}%</span>
+                </div>
+              </div>
+              <button
+                className="rounded-full border border-white/15 bg-white/5 px-3 py-1.5 text-xs font-medium text-slate-100 shadow-sm hover:bg-white/10 disabled:opacity-60 disabled:cursor-not-allowed"
+                onClick={handleSaveAndExit}
+                disabled={isSavingAll}
+              >
+                {isSavingAll ? 'Saving…' : 'Save & exit'}
+              </button>
             </div>
           </div>
-        </div>
-      </header>
 
-      <main className="container mx-auto px-4 sm:px-6 lg:px-8 flex-1 py-5 sm:py-6 lg:py-8">
-        <div className="max-w-3xl mx-auto space-y-5 sm:space-y-6">
-          <div>
-            <h1 className="text-xl sm:text-2xl font-semibold">{title}</h1>
-            {subtitle && <p className="text-base sm:text-base text-gray-600 mt-2 sm:mt-1">{subtitle}</p>}
+          {/* Mobile progress bar */}
+          <div className="block border-t border-white/10 px-4 pb-3 pt-2 sm:hidden">
+            <div className="flex items-center justify-between">
+              <span className="text-[11px] font-semibold uppercase tracking-[0.22em] text-slate-300">
+                Step {stepIndex + 1} of {totalSteps}
+              </span>
+              <span className="text-[11px] text-slate-300">{progress}%</span>
+            </div>
+            <div className="mt-2">
+              <Progress value={progress} className="h-1.5 rounded-full bg-slate-800" />
+            </div>
           </div>
-          <Card className="rounded-2xl shadow-sm">
-            <CardContent className="p-5 sm:p-6 space-y-6 sm:space-y-6">{children}</CardContent>
-          </Card>
-        </div>
-      </main>
+        </header>
 
-      <div className="sticky bottom-0 bg-white/90 dark:bg-gray-900/90 backdrop-blur border-t">
-        <div className="container mx-auto px-3 sm:px-4 py-3 sm:py-4">
-          <div className="flex items-center justify-between gap-2 sm:gap-4">
-            <Button variant="outline" onClick={onPrev} disabled={!onPrev} className="min-h-[44px] px-4 sm:px-6 rounded-xl text-sm sm:text-base">
+        {/* Main content */}
+        <main className="flex-1 px-4 py-6 sm:px-6 sm:py-8 lg:px-8">
+          <div className="mx-auto flex max-w-5xl flex-col gap-6 lg:flex-row">
+            {/* Left column: step context */}
+            <section className="flex-1 space-y-4 sm:space-y-5">
+              <div className="space-y-2">
+                <p className="text-xs font-semibold uppercase tracking-[0.22em] text-slate-200">
+                  Match questionnaire
+                </p>
+                <h1 className="text-2xl font-extrabold tracking-tight text-slate-50 sm:text-3xl">
+                  {title}
+                </h1>
+                {subtitle && (
+                  <p className="max-w-md text-sm leading-relaxed text-slate-200">
+                    {subtitle}
+                  </p>
+                )}
+              </div>
+
+              <div className="inline-flex items-center gap-2 rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-xs text-slate-100 backdrop-blur-lg sm:text-sm">
+                <span className="inline-flex h-2 w-2 rounded-full bg-emerald-400" />
+                <span className="font-medium">Progress autosaves while you answer.</span>
+                {lastSavedAt && (
+                  <span className="text-[11px] text-slate-300">
+                    Last saved{' '}
+                    {new Date(lastSavedAt).toLocaleTimeString([], {
+                      hour: '2-digit',
+                      minute: '2-digit',
+                    })}
+                  </span>
+                )}
+              </div>
+            </section>
+
+            {/* Right column: question card */}
+            <section className="flex-1.1 w-full lg:flex-[1.15]">
+              <Card className="rounded-2xl border border-white/10 bg-slate-950/60 shadow-2xl shadow-slate-900/70 backdrop-blur-2xl">
+                <CardContent className="space-y-6 p-5 sm:p-6 lg:p-7">
+                  {children}
+                </CardContent>
+              </Card>
+            </section>
+          </div>
+        </main>
+
+        {/* Bottom navigation */}
+        <div className="sticky bottom-0 border-t border-white/10 bg-slate-950/90 backdrop-blur-xl">
+          <div className="mx-auto flex max-w-5xl items-center justify-between gap-3 px-4 py-3 sm:px-6 sm:py-4">
+            <Button
+              variant="outline"
+              onClick={onPrev}
+              disabled={!onPrev}
+              className="min-h-[44px] rounded-xl border-white/30 bg-transparent px-4 text-sm font-medium text-slate-100 hover:bg-white/10 hover:text-slate-50 disabled:opacity-50"
+            >
               Previous
             </Button>
-            <div className="flex items-center gap-2 sm:gap-4">
+
+            <div className="flex items-center gap-3">
               {lastSavedAt && (
-                <span className="text-xs sm:text-sm text-gray-600 hidden sm:block">Last saved at {new Date(lastSavedAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
+                <span className="hidden text-xs text-slate-300 sm:inline">
+                  Last saved{' '}
+                  {new Date(lastSavedAt).toLocaleTimeString([], {
+                    hour: '2-digit',
+                    minute: '2-digit',
+                  })}
+                </span>
               )}
-              <Button onClick={onNext} disabled={!!nextDisabled} className="min-h-[44px] px-4 sm:px-6 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-sm sm:text-base">
+              <Button
+                onClick={onNext}
+                disabled={!!nextDisabled}
+                className="min-h-[44px] rounded-xl bg-gradient-to-r from-sky-400 via-indigo-500 to-purple-500 px-5 text-sm font-semibold text-slate-50 shadow-md shadow-indigo-500/40 hover:brightness-110 disabled:opacity-60"
+              >
                 Next
               </Button>
             </div>

@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useRef, useCallback } from 'react'
+import { useRouter } from 'next/navigation'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -8,6 +9,7 @@ import { showSuccessToast, showErrorToast } from '@/lib/toast'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Loader2 } from 'lucide-react'
 import { cn } from '@/lib/utils'
+import { fetchWithCSRF } from '@/lib/utils/fetch-with-csrf'
 
 const OTP_LENGTH = 6
 const RESEND_COOLDOWN_SEC = 60
@@ -20,6 +22,7 @@ export interface AcademicVerificationGateProps {
 }
 
 export function AcademicVerificationGate({ onVerified, className }: AcademicVerificationGateProps) {
+  const router = useRouter()
   const [step, setStep] = useState<Step>('email')
   const [email, setEmail] = useState('')
   const [otp, setOtp] = useState<string[]>(Array(OTP_LENGTH).fill(''))
@@ -36,7 +39,7 @@ export function AcademicVerificationGate({ onVerified, className }: AcademicVeri
     }
     setSendLoading(true)
     try {
-      const res = await fetch('/api/auth/verify-academic-email', {
+      const res = await fetchWithCSRF('/api/auth/verify-academic-email', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email: trimmed }),
@@ -77,7 +80,7 @@ export function AcademicVerificationGate({ onVerified, className }: AcademicVeri
     }
     setVerifyLoading(true)
     try {
-      const res = await fetch('/api/auth/confirm-academic-email', {
+      const res = await fetchWithCSRF('/api/auth/confirm-academic-email', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email: email.trim(), token }),
@@ -101,7 +104,7 @@ export function AcademicVerificationGate({ onVerified, className }: AcademicVeri
     if (resendCooldown > 0) return
     setSendLoading(true)
     try {
-      const res = await fetch('/api/auth/verify-academic-email', {
+      const res = await fetchWithCSRF('/api/auth/verify-academic-email', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email: email.trim() }),
@@ -156,12 +159,13 @@ export function AcademicVerificationGate({ onVerified, className }: AcademicVeri
   }
 
   const inputBaseClass =
-    'flex h-11 w-full rounded-xl border border-white/20 bg-white/10 backdrop-blur-md px-3 py-2 text-body-sm text-slate-50 placeholder:text-slate-400 ring-offset-transparent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 focus-visible:ring-offset-2 focus-visible:border-primary/40 transition-colors'
+    'flex h-11 w-full rounded-xl border border-white/20 bg-white/5 backdrop-blur-xl px-3 py-2 text-body-sm text-slate-50 placeholder:text-slate-400/70 ring-offset-transparent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-400/60 focus-visible:ring-offset-2 focus-visible:border-sky-300/50 transition-colors'
 
   return (
     <Card
       className={cn(
-        'rounded-2xl border border-white/20 bg-background/40 backdrop-blur-lg shadow-xl',
+        'rounded-2xl border border-white/15 bg-white/5 backdrop-blur-2xl shadow-[0_24px_80px_rgba(15,23,42,0.85)]',
+        'hover:border-white/30 hover:bg-white/8 transition-colors duration-300',
         className
       )}
     >
@@ -175,10 +179,13 @@ export function AcademicVerificationGate({ onVerified, className }: AcademicVeri
               exit={{ opacity: 0, y: -8 }}
               transition={{ duration: 0.2 }}
             >
-              <CardTitle className="text-xl font-semibold text-slate-50">
-                Verify Your Student Status
+              <CardTitle className="text-xl font-semibold tracking-tight text-slate-50">
+                Verify your{' '}
+                <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 to-purple-400">
+                  student status
+                </span>
               </CardTitle>
-              <CardDescription className="text-slate-300 mt-1">
+              <CardDescription className="text-slate-300/90 mt-2">
                 To keep our campus communities safe, please enter your university email address.
                 We&apos;ll send you a quick 6-digit code.
               </CardDescription>
@@ -215,27 +222,36 @@ export function AcademicVerificationGate({ onVerified, className }: AcademicVeri
             >
               <Input
                 type="email"
-                placeholder="e.g. you@student.avans.nl"
+                placeholder="e.g. you@university.nl"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 onKeyDown={(e) => e.key === 'Enter' && sendCode()}
                 className={cn(inputBaseClass, 'max-w-md')}
                 disabled={sendLoading}
               />
-              <Button
-                onClick={sendCode}
-                disabled={sendLoading}
-                className="min-h-[44px] rounded-xl bg-gradient-to-r from-sky-400 via-indigo-500 to-purple-500 text-slate-50 hover:brightness-110 focus-visible:ring-2 focus-visible:ring-primary/50"
-              >
-                {sendLoading ? (
-                  <>
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    Sending…
-                  </>
-                ) : (
-                  'Send Verification Code'
-                )}
-              </Button>
+              <div className="flex items-center justify-between gap-4">
+                <Button
+                  onClick={sendCode}
+                  disabled={sendLoading}
+                  className="min-h-[44px] rounded-xl bg-gradient-to-r from-sky-400 via-indigo-500 to-purple-500 text-slate-50 hover:brightness-110 focus-visible:ring-2 focus-visible:ring-primary/50"
+                >
+                  {sendLoading ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      Sending…
+                    </>
+                  ) : (
+                    'Send Verification Code'
+                  )}
+                </Button>
+                <button
+                  type="button"
+                  onClick={() => router.back()}
+                  className="text-sm text-slate-400 underline underline-offset-2 hover:text-slate-200"
+                >
+                  Back
+                </button>
+              </div>
             </motion.div>
           ) : (
             <motion.div
@@ -259,7 +275,7 @@ export function AcademicVerificationGate({ onVerified, className }: AcademicVeri
                     onKeyDown={(e) => handleOtpKeyDown(i, e)}
                     className={cn(
                       inputBaseClass,
-                      'h-12 w-11 sm:w-12 text-center text-lg font-semibold tracking-[0.35em] tabular-nums'
+                      'h-12 w-11 sm:w-12 px-0 py-0 text-center text-lg font-semibold tracking-[0.35em] tabular-nums'
                     )}
                   />
                 ))}

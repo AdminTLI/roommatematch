@@ -70,8 +70,8 @@ export default function BetaTermsPage() {
               <p className="text-muted-foreground leading-relaxed">
                 You must accurately represent your <strong>life stage</strong> when using Domu
                 Match. Falsely registering as a &quot;Student&quot; when you are not currently
-                enrolled at a verified educational institution—or falsely registering as a
-                &quot;Young Professional&quot; when you do not meet the applicable criteria—is a
+                enrolled at a verified educational institution - or falsely registering as a
+                &quot;Young Professional&quot; when you do not meet the applicable criteria - is a
                 <strong> material breach</strong> of these terms. Such misrepresentation will
                 result in an <strong>immediate, permanent account ban</strong> and may be
                 reported where required by law or policy.

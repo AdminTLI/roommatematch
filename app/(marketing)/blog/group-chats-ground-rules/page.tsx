@@ -12,7 +12,7 @@ export const metadata: Metadata = {
     title:
       'Group Chats, Ground Rules: Setting House Norms Without Killing the Vibe',
     description:
-      'A practical guide to using clear agreements—not just group chats—to keep shared living healthy, with help from Domu Match.',
+      'A practical guide to using clear agreements - not just group chats - to keep shared living healthy, with help from Domu Match.',
     type: 'article',
     publishedTime: '2026-02-02',
     authors: ['Domu Match Team'],

@@ -103,7 +103,7 @@ HERE IS THE OFFICIAL PLATFORM MANUAL:
 {platform_manual}
 
 HERE ARE THE DYNAMIC INSTRUCTIONS (LEARNED BEHAVIOR):
-{learned_instructions or "(None yet—use the Manual for how-to questions.)"}
+{learned_instructions or "(None yet - use the Manual for how-to questions.)"}
 
 Use the SECURITY PROTOCOL and the Manual to answer questions safely.
 Use the Search Tool only for external info (weather, events)."""

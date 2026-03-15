@@ -105,9 +105,9 @@ export const itemIdToQuestionKey: Record<string, string> = {
   'M3_Q25': 'noise_tolerance',   // "I prefer quiet-hours reminders posted in the hallway."
 
   // Home Operations - Map to existing cleanliness and chores keys
-  'M4_Q1': 'cleanliness_kitchen', // Cleanliness standard — Kitchen
-  'M4_Q2': 'cleanliness_room',    // Cleanliness standard — Bathroom
-  'M4_Q3': 'cleanliness_room',    // Cleanliness standard — Living area
+  'M4_Q1': 'cleanliness_kitchen', // Cleanliness standard  -  Kitchen
+  'M4_Q2': 'cleanliness_room',    // Cleanliness standard  -  Bathroom
+  'M4_Q3': 'cleanliness_room',    // Cleanliness standard  -  Living area
   'M4_Q4': 'cleanliness_kitchen', // Dishes latency (how soon you clear/wash)
   'M4_Q5': 'cleanliness_kitchen', // "No dishes left overnight."
   'M4_Q6': 'cleanliness_kitchen', // "I wipe stove/counters immediately after cooking."

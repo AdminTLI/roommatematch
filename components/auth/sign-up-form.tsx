@@ -125,7 +125,15 @@ export function SignUpForm({ userType }: { userType?: UserType | null }) {
 
       if (error) {
         console.error('[SignUp] Signup error:', error)
-        setError(error.message)
+        // AuthApiError "Error sending confirmation email" = Supabase SMTP not configured (Dashboard → Auth → SMTP)
+        const isEmailSendError =
+          error.message?.toLowerCase().includes('confirmation email') ||
+          error.message?.toLowerCase().includes('sending email')
+        setError(
+          isEmailSendError
+            ? 'We couldn\'t send the confirmation email. This is usually a server configuration issue - please try again later or contact support.'
+            : error.message
+        )
         setIsLoading(false)
         return
       }

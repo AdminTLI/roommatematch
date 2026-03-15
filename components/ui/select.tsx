@@ -19,7 +19,8 @@ const SelectTrigger = React.forwardRef<
   <SelectPrimitive.Trigger
     ref={ref}
     className={cn(
-      "flex h-10 w-full items-center justify-between rounded-xl border border-line bg-bg-surface px-3 py-2 text-body-sm text-gray-900 dark:text-text-primary ring-offset-background placeholder:text-gray-600 dark:placeholder:text-text-muted focus:outline-none focus:ring-2 focus:ring-brand-600 focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 [&>span]:line-clamp-1 [&>span]:text-gray-900 dark:[&>span]:text-text-primary [&>span[data-placeholder]]:text-gray-600 dark:[&>span[data-placeholder]]:text-text-muted",
+      // High-contrast glass field on dark background
+      "flex h-11 w-full items-center justify-between rounded-xl border border-white/40 bg-white/90 px-3 py-2 text-sm text-slate-900 shadow-md shadow-slate-900/40 ring-offset-transparent backdrop-blur-md placeholder:text-slate-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-500/80 focus-visible:ring-offset-0 disabled:cursor-not-allowed disabled:opacity-50 [&>span]:line-clamp-1 [&>span]:text-slate-900 [&>span[data-placeholder]]:text-slate-500",
       className
     )}
     {...props}
@@ -170,7 +171,7 @@ const SelectContent = React.forwardRef<
       <SelectPrimitive.Content
         ref={ref}
         className={cn(
-          "relative z-50 max-h-[calc(100vh-8rem)] min-w-[8rem] max-w-[calc(100vw-2rem)] overflow-y-auto rounded-xl border border-border-subtle bg-bg-surface text-text-primary shadow-elev-2 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2",
+          "relative z-50 max-h-[calc(100vh-8rem)] min-w-[8rem] max-w-[calc(100vw-2rem)] overflow-y-auto rounded-2xl border border-white/20 bg-slate-950/80 text-slate-50 shadow-2xl shadow-slate-900/70 backdrop-blur-2xl data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2",
           position === "popper" &&
             "data-[side=bottom]:translate-y-1 data-[side=left]:-translate-x-1 data-[side=right]:translate-x-1 data-[side=top]:-translate-y-1",
           className
@@ -181,7 +182,7 @@ const SelectContent = React.forwardRef<
         <SelectScrollUpButton />
         <SelectPrimitive.Viewport
           className={cn(
-            "p-1 overflow-y-auto",
+            "p-1 overflow-y-auto scrollbar-visible-dark-gradient",
             position === "popper" &&
               "w-full min-w-[var(--radix-select-trigger-width)] max-h-[min(320px,var(--radix-select-content-available-height,70vh))]"
           )}

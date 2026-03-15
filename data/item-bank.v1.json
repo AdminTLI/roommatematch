@@ -77,9 +77,9 @@
   { "id":"M3_Q24","section":"noise-sensory","kind":"likert","scale":"comfort","label":"I’m comfortable with vacuuming up to 20:00." },
   { "id":"M3_Q25","section":"noise-sensory","kind":"likert","scale":"agreement","label":"I prefer quiet-hours reminders posted in the hallway." },
 
-  { "id":"M4_Q1","section":"home-operations","kind":"mcq","label":"Cleanliness standard — Kitchen","options":[{"value":"low","label":"Low"},{"value":"medium","label":"Medium"},{"value":"high","label":"High"}] },
-  { "id":"M4_Q2","section":"home-operations","kind":"mcq","label":"Cleanliness standard — Bathroom","options":[{"value":"low","label":"Low"},{"value":"medium","label":"Medium"},{"value":"high","label":"High"}] },
-  { "id":"M4_Q3","section":"home-operations","kind":"mcq","label":"Cleanliness standard — Living area","options":[{"value":"low","label":"Low"},{"value":"medium","label":"Medium"},{"value":"high","label":"High"}] },
+  { "id":"M4_Q1","section":"home-operations","kind":"mcq","label":"Cleanliness standard  -  Kitchen","options":[{"value":"low","label":"Low"},{"value":"medium","label":"Medium"},{"value":"high","label":"High"}] },
+  { "id":"M4_Q2","section":"home-operations","kind":"mcq","label":"Cleanliness standard  -  Bathroom","options":[{"value":"low","label":"Low"},{"value":"medium","label":"Medium"},{"value":"high","label":"High"}] },
+  { "id":"M4_Q3","section":"home-operations","kind":"mcq","label":"Cleanliness standard  -  Living area","options":[{"value":"low","label":"Low"},{"value":"medium","label":"Medium"},{"value":"high","label":"High"}] },
   { "id":"M4_Q4","section":"home-operations","kind":"mcq","label":"How soon do you typically wash dishes after using them?","options":[{"value":"same-day","label":"Same day"},{"value":"24h","label":"Within 24h"},{"value":"48h+","label":"Within 48h or more"}] },
   { "id":"M4_Q5","section":"home-operations","kind":"likert","scale":"agreement","dbEligible":true,"label":"No dishes left overnight." },
   { "id":"M4_Q6","section":"home-operations","kind":"likert","scale":"frequency","label":"I wipe stove/counters immediately after cooking." },

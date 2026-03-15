@@ -87,7 +87,7 @@ async function main(): Promise<void> {
         const preMasters = programmeData?.premaster ?? [];
         
         if (preMasters.length > 0) {
-          console.log(`\n🏛️  ${institution.label} (${institution.id}) — ${institution.kind.toUpperCase()}`);
+          console.log(`\n🏛️  ${institution.label} (${institution.id})  -  ${institution.kind.toUpperCase()}`);
           console.log(`   ${preMasters.length} pre-master programme(s):`);
           
           for (const pm of preMasters) {

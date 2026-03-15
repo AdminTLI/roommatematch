@@ -4,7 +4,7 @@ import { useQuery } from '@tanstack/react-query'
 import { motion, useReducedMotion } from 'framer-motion'
 import Container from '@/components/ui/primitives/container'
 import Section from '@/components/ui/primitives/section'
-import { Zap, TrendingUp, MessageCircle, Shield, GraduationCap } from 'lucide-react'
+import { Zap, TrendingUp, BookOpen, Shield, Users } from 'lucide-react'
 import { useApp } from '@/app/providers'
 import type { MarketingStatsResponse } from '@/app/api/marketing/stats/route'
 import { cn } from '@/lib/utils'
@@ -40,25 +40,33 @@ export function LiveStats({ locale: localeProp }: LiveStatsProps) {
         'With a national shortage of over 410,000 homes, shared living is the future. We match you based on deep lifestyle compatibility, not just your budget. Real-time insights from our community of students and young professionals.',
       stats: {
         speedMatch: {
-          label: 'Matches in <24h',
-          description: (d: MarketingStatsResponse) => `+ ${d.matchedWithin48hPercent}% in 48h`,
+          label: 'Get a match within 24 hours',
+          description: (d: MarketingStatsResponse) =>
+            d.matchedWithin48hPercent > d.matchedWithin24hPercent
+              ? `Most users see their first compatible roommate within a day. ${d.matchedWithin48hPercent}% get a match within 48 hours.`
+              : `Most users see their first compatible roommate within a day - no long waiting.`,
         },
         quality: {
-          label: 'High compatibility',
-          description: (d: MarketingStatsResponse) => `vs ${d.avgScoreAllMatches}% across all matches`,
+          label: 'Compatibility score on accepted matches',
+          description: (d: MarketingStatsResponse) =>
+            `When you both accept, the fit is strong - vs ${d.avgScoreAllMatches}% across all suggestions. We show you people you're likely to get along with.`,
         },
-        speedChat: {
-          label: 'Chats started fast',
-          description: () => 'matches that start a chat within 24h',
+        programmes: {
+          label: 'Study programmes on the platform',
+          description: (d: MarketingStatsResponse) =>
+            d.programmesCount > 0
+              ? `Find roommates from your course or campus - ${d.universitiesCount}+ universities.`
+              : `Find roommates from your course or campus.`,
         },
         verified: {
-          label: 'Verified users',
-          description: () => 'students & professionals, ID-verified',
+          label: 'Of users are ID-verified',
+          description: () =>
+            'Students and young professionals you can trust. We verify identity so you can focus on finding the right fit.',
         },
-        reach: {
-          label: 'Universities on Domu Match',
+        community: {
+          label: 'Users finding roommates',
           description: (d: MarketingStatsResponse) =>
-            `${d.programmesCount}+ study programmes on Domu Match`,
+            `Students and young professionals in our community - ${d.universitiesCount}+ universities.`,
         },
       },
     },
@@ -68,25 +76,33 @@ export function LiveStats({ locale: localeProp }: LiveStatsProps) {
         'Met een nationaal tekort van meer dan 410.000 woningen is gedeeld wonen de toekomst. Wij matchen op basis van diepgaande levensstijlcompatibiliteit, niet alleen je budget. Real-time inzichten van onze community van studenten en young professionals.',
       stats: {
         speedMatch: {
-          label: 'Match binnen <24 uur',
-          description: (d: MarketingStatsResponse) => `+ ${d.matchedWithin48hPercent}% binnen 48 uur`,
+          label: 'Krijg een match binnen 24 uur',
+          description: (d: MarketingStatsResponse) =>
+            d.matchedWithin48hPercent > d.matchedWithin24hPercent
+              ? `De meeste gebruikers zien hun eerste passende huisgenoot binnen een dag. ${d.matchedWithin48hPercent}% krijgt een match binnen 48 uur.`
+              : `De meeste gebruikers zien hun eerste passende huisgenoot binnen een dag - geen lange wachttijd.`,
         },
         quality: {
-          label: 'Hoge compatibiliteit',
-          description: (d: MarketingStatsResponse) => `vs ${d.avgScoreAllMatches}% over alle matches`,
+          label: 'Compatibiliteitsscore bij geaccepteerde matches',
+          description: (d: MarketingStatsResponse) =>
+            `Als jullie allebei accepteren, is de match sterk - vs ${d.avgScoreAllMatches}% over alle suggesties. Wij tonen mensen waar je waarschijnlijk goed mee opschiet.`,
         },
-        speedChat: {
-          label: 'Matches die snel chatten',
-          description: () => 'starten een chat binnen 24 uur',
+        programmes: {
+          label: 'Opleidingen op het platform',
+          description: (d: MarketingStatsResponse) =>
+            d.programmesCount > 0
+              ? `Vind huisgenoten uit jouw opleiding of campus - ${d.universitiesCount}+ universiteiten.`
+              : `Vind huisgenoten uit jouw opleiding of campus.`,
         },
         verified: {
-          label: 'Geverifieerde gebruikers',
-          description: () => 'studenten & professionals, ID-gecheckt',
+          label: 'Van de gebruikers is ID-geverifieerd',
+          description: () =>
+            'Studenten en young professionals die je kunt vertrouwen. We verifiëren identiteit zodat jij je kunt richten op de juiste match.',
         },
-        reach: {
-          label: 'Universiteiten op Domu Match',
+        community: {
+          label: 'Gebruikers die huisgenoten zoeken',
           description: (d: MarketingStatsResponse) =>
-            `${d.programmesCount}+ opleidingen op Domu Match`,
+            `Studenten en young professionals in onze community - ${d.universitiesCount}+ universiteiten.`,
         },
       },
     },
@@ -94,14 +110,26 @@ export function LiveStats({ locale: localeProp }: LiveStatsProps) {
 
   const text = content[locale]
 
+  const formatCommunityCount = (n: number): string => {
+    if (n <= 0) return ' - '
+    if (n >= 1000) return `${Math.floor(n / 1000)}k+`
+    if (n >= 100) return `${Math.floor(n / 100) * 100}+`
+    return `${n}+`
+  }
+
+  const formatProgrammesCount = (n: number): string => {
+    if (n <= 0) return ' - '
+    return `${n}+`
+  }
+
   const buildStats = (apiData: MarketingStatsResponse | undefined) => {
     if (!apiData) {
       return [
         { key: 'speedMatch', value: '--', label: text.stats.speedMatch.label, description: '--', icon: Zap },
         { key: 'quality', value: '--', label: text.stats.quality.label, description: '--', icon: TrendingUp },
-        { key: 'speedChat', value: '--', label: text.stats.speedChat.label, description: '--', icon: MessageCircle },
+        { key: 'programmes', value: '--', label: text.stats.programmes.label, description: '--', icon: BookOpen },
         { key: 'verified', value: '--', label: text.stats.verified.label, description: '--', icon: Shield },
-        { key: 'reach', value: '--', label: text.stats.reach.label, description: '--', icon: GraduationCap },
+        { key: 'community', value: '--', label: text.stats.community.label, description: '--', icon: Users },
       ]
     }
     return [
@@ -120,11 +148,11 @@ export function LiveStats({ locale: localeProp }: LiveStatsProps) {
         icon: TrendingUp,
       },
       {
-        key: 'speedChat',
-        value: `${apiData.matchesToChatWithin24hPercent}%`,
-        label: text.stats.speedChat.label,
-        description: text.stats.speedChat.description(),
-        icon: MessageCircle,
+        key: 'programmes',
+        value: formatProgrammesCount(apiData.programmesCount),
+        label: text.stats.programmes.label,
+        description: text.stats.programmes.description(apiData),
+        icon: BookOpen,
       },
       {
         key: 'verified',
@@ -134,11 +162,11 @@ export function LiveStats({ locale: localeProp }: LiveStatsProps) {
         icon: Shield,
       },
       {
-        key: 'reach',
-        value: `${apiData.universitiesCount}`,
-        label: text.stats.reach.label,
-        description: text.stats.reach.description(apiData),
-        icon: GraduationCap,
+        key: 'community',
+        value: formatCommunityCount(apiData.totalUsers),
+        label: text.stats.community.label,
+        description: text.stats.community.description(apiData),
+        icon: Users,
       },
     ]
   }
@@ -187,7 +215,7 @@ export function LiveStats({ locale: localeProp }: LiveStatsProps) {
               <motion.div
                 key={stat.key}
                 className={cn(
-                  'glass noise-overlay p-5 md:p-6 flex flex-col items-center text-center min-h-[180px] md:min-h-[200px]',
+                  'glass noise-overlay p-5 md:p-6 flex flex-col items-center text-center min-h-[200px] md:min-h-[240px]',
                   'transition-all duration-300 hover:border-white/30 hover:bg-white/15',
                   isLast && stats.length === 5 && 'md:col-start-2 md:col-end-3 lg:col-start-auto lg:col-end-auto'
                 )}
@@ -208,15 +236,15 @@ export function LiveStats({ locale: localeProp }: LiveStatsProps) {
                   </>
                 ) : (
                   <>
-                    <div className="text-2xl md:text-3xl lg:text-4xl font-bold text-white mb-1 md:mb-2 tabular-nums">
+                    <div className="text-2xl md:text-3xl lg:text-4xl font-bold text-white mb-2 md:mb-3 tabular-nums">
                       {stat.value}
                     </div>
-                    <div className="text-xs md:text-sm font-semibold text-white/90 mb-1 line-clamp-2">
+                    <p className="text-xs md:text-sm font-semibold text-white/95 mb-2 line-clamp-2" title={stat.label}>
                       {stat.label}
-                    </div>
-                    <div className="text-[10px] sm:text-xs text-white/60 leading-tight flex-1">
+                    </p>
+                    <p className="text-[11px] sm:text-xs text-white/65 leading-snug flex-1 min-h-0">
                       {stat.description}
-                    </div>
+                    </p>
                   </>
                 )}
               </motion.div>

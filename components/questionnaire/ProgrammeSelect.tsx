@@ -1,13 +1,13 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@/components/ui/command'
+import { Command, CommandEmpty, CommandGroup, CommandItem, CommandList } from '@/components/ui/command'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
-import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { cn } from '@/lib/utils'
 import { Programme, DegreeLevel } from '@/types/programme'
 import { ChevronDown, Check } from 'lucide-react'
+import { Input } from '@/components/ui/input'
 
 interface ProgrammeSelectProps {
   institutionId?: string
@@ -37,6 +37,7 @@ export function ProgrammeSelect({
   const [programmes, setProgrammes] = useState<Programme[]>([])
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [query, setQuery] = useState('')
 
   const isEnabled = Boolean(institutionId && level) && !disabled
   const selectedProgramme = programmes.find(p => p.id === value)
@@ -84,8 +85,18 @@ export function ProgrammeSelect({
 
   const handleSelect = (programmeId: string) => {
     onChange(programmeId)
+    // Keep query in sync with selected programme so it appears when editing
+    const selected = programmes.find(p => p.id === programmeId)
+    setQuery(selected?.name ?? '')
     setOpen(false)
   }
+
+  // Whenever the popover opens, seed the query with the current selection so user can edit/backspace
+  useEffect(() => {
+    if (open) {
+      setQuery(selectedProgramme?.name ?? '')
+    }
+  }, [open, selectedProgramme])
 
   const renderProgrammeItem = (programme: Programme) => {
     // Display programme name with optional badges for additional info
@@ -94,7 +105,7 @@ export function ProgrammeSelect({
     if (!hasAdditionalInfo) {
       // Clean name only when no additional info
       return (
-        <span className="font-medium text-gray-900 dark:text-gray-100 leading-tight">
+        <span className="font-medium text-slate-50 leading-tight">
           {programme.name}
         </span>
       );
@@ -104,7 +115,7 @@ export function ProgrammeSelect({
     return (
       <div className="space-y-2">
         <div className="flex items-start justify-between gap-2">
-          <span className="font-medium text-gray-900 dark:text-gray-100 leading-tight">
+          <span className="font-medium text-slate-50 leading-tight">
             {programme.name}
           </span>
           {programme.isVariant && (
@@ -115,7 +126,7 @@ export function ProgrammeSelect({
         </div>
         
         {programme.nameEn && programme.nameEn !== programme.name && (
-          <span className="text-sm text-gray-600 dark:text-gray-400 block">
+          <span className="text-sm text-slate-300 block">
             {programme.nameEn}
           </span>
         )}
@@ -140,103 +151,114 @@ export function ProgrammeSelect({
     );
   }
 
-  const getDisplayText = () => {
-    if (selectedProgramme) {
-      return selectedProgramme.name
-    }
-    if (!isEnabled) {
-      return "Select university and degree level first"
-    }
-    if (loading) {
-      return "Loading programmes..."
-    }
-    if (error) {
-      return "Error loading programmes"
-    }
-    return placeholder
-  }
+  const placeholderText = !isEnabled
+    ? "Select university and degree level first"
+    : loading
+      ? "Loading programmes..."
+      : error
+        ? "Error loading programmes"
+        : placeholder
+
+  const normalizedQuery = query.trim().toLowerCase()
+  const visibleProgrammes = !normalizedQuery
+    ? programmes
+    : programmes.filter((programme) => {
+        const haystack = `${programme.name} ${programme.nameEn || ''} ${programme.discipline || ''} ${
+          programme.modes?.join(' ') || ''
+        }`.toLowerCase()
+        return haystack.includes(normalizedQuery)
+      })
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
-        <Button
-          variant="outline"
-          role="combobox"
-          aria-expanded={open}
-          className={cn(
-            "w-full justify-between h-12 px-4",
-            !isEnabled && "cursor-not-allowed opacity-50"
-          )}
-          disabled={!isEnabled}
-        >
-          <span className="truncate text-left">{getDisplayText()}</span>
-          <ChevronDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-        </Button>
+        <div className="relative w-full">
+          <Input
+            role="combobox"
+            aria-expanded={open}
+            aria-haspopup="dialog"
+            className={cn(
+              "w-full pr-9 rounded-xl border border-white/30 bg-white/10 text-slate-100 shadow-md shadow-slate-900/40 backdrop-blur-md placeholder:text-slate-400",
+              !isEnabled && "cursor-not-allowed opacity-50"
+            )}
+            disabled={!isEnabled}
+            placeholder={placeholderText}
+            value={open ? query : (selectedProgramme?.name || '')}
+            onChange={(e) => {
+              setQuery(e.target.value)
+            }}
+            onFocus={() => {
+              if (isEnabled && !open) setOpen(true)
+            }}
+            onClick={() => {
+              if (isEnabled && !open) setOpen(true)
+            }}
+          />
+          <ChevronDown className="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-300" />
+        </div>
       </PopoverTrigger>
       
       <PopoverContent 
-        className="w-full min-w-[400px] max-w-[600px] p-0" 
+        className="w-[var(--radix-popover-trigger-width)] max-w-[var(--radix-popover-trigger-width)] p-0 rounded-2xl border border-white/20 bg-slate-950/90 shadow-2xl shadow-slate-900/70 backdrop-blur-2xl" 
         align="start"
         side="bottom"
         sideOffset={4}
       >
-        <Command className="rounded-lg border shadow-md" shouldFilter={true}>
-          <CommandInput 
-            placeholder="Search programmes..." 
-            disabled={!isEnabled || loading}
-            className="h-12 px-4 text-base border-b"
-          />
-          <CommandList className="max-h-[400px] overflow-y-auto">
+        <Command
+          className="rounded-2xl bg-transparent text-slate-50 border-0 shadow-none"
+          shouldFilter={true}
+        >
+          <CommandList className="max-h-[400px] overflow-y-auto scrollbar-visible-dark-gradient">
             {loading && (
-              <CommandEmpty className="py-6 text-center text-sm">
+              <CommandEmpty className="py-6 text-center text-sm text-slate-300">
                 Loading programmes...
               </CommandEmpty>
             )}
             
             {error && (
               <CommandEmpty className="py-6 text-center">
-                <p className="text-sm text-red-600 dark:text-red-400">
+                <p className="text-sm text-rose-300">
                   {error}
                 </p>
-                <p className="text-xs text-gray-500 mt-1">
+                <p className="text-xs text-slate-400 mt-1">
                   Please try again later or contact support.
                 </p>
               </CommandEmpty>
             )}
             
-            {!loading && !error && programmes.length === 0 && (
-              <CommandEmpty className="py-6 text-center">
-                <p className="text-sm text-gray-600 dark:text-gray-400">
+            {!loading && !error && visibleProgrammes.length === 0 && (
+              <CommandEmpty className="py-6 text-center space-y-2">
+                <p className="text-sm text-slate-200">
                   No programmes found for this institution and degree level.
                 </p>
-                <p className="text-xs text-gray-500 mt-1">
+                <p className="text-xs text-slate-400">
                   Data temporarily unavailable. This institution may not have programmes available for the selected degree level.
                 </p>
-                <div className="mt-3 p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-800">
-                  <p className="text-xs text-blue-600 dark:text-blue-400 font-medium mb-2">
+                <div className="mt-3 p-3 bg-sky-500/10 rounded-lg border border-sky-400/40">
+                  <p className="text-xs text-sky-300 font-medium mb-2">
                     💡 Institutions with available programmes:
                   </p>
-                  <div className="text-xs text-blue-600 dark:text-blue-400 space-y-1">
+                  <div className="text-xs text-sky-200 space-y-1">
                     <p><strong>WO Universities:</strong> Leiden University, University of Twente, Protestantse Theologische Universiteit, Theologische Universiteit Apeldoorn, Theologische Universiteit Utrecht</p>
                     <p><strong>HBO Institutions:</strong> Aeres Hogeschool, Avans Hogeschool, Design Academy Eindhoven, Gerrit Rietveld Academie, HAS green academy, Hogeschool der Kunsten Den Haag, Hogeschool Inholland, Hogeschool Leiden, Hogeschool Rotterdam, Hogeschool Viaa, Hotelschool The Hague, HZ University of Applied Sciences, Iselinge Hogeschool, Marnix Academie, NHL Stenden Hogeschool, Zuyd Hogeschool</p>
                   </div>
                 </div>
-                <div className="mt-3 p-2 bg-green-50 dark:bg-green-900/20 rounded border border-green-200 dark:border-green-800">
-                  <p className="text-xs text-green-700 dark:text-green-300 font-medium">
+                <div className="mt-3 p-2 bg-emerald-500/10 rounded border border-emerald-400/50">
+                  <p className="text-xs text-emerald-200 font-medium">
                     ✅ No problem! You can still continue by using the "Undecided Program" option below.
                   </p>
                 </div>
               </CommandEmpty>
             )}
             
-            {!loading && !error && programmes.length > 0 && (
+            {!loading && !error && visibleProgrammes.length > 0 && (
               <CommandGroup>
-                {programmes.map((programme) => (
+                {visibleProgrammes.map((programme) => (
                   <CommandItem
                     key={getUniqueProgrammeKey(programme)}
                     value={`${programme.name} ${programme.nameEn || ''} ${programme.discipline || ''} ${programme.modes?.join(' ') || ''}`}
                     onSelect={() => handleSelect(programme.id)}
-                    className="px-4 py-3 cursor-pointer"
+                    className="px-4 py-3 cursor-pointer text-slate-50 hover:bg-white/5 aria-selected:bg-white/10"
                   >
                     <div className="flex items-center space-x-3 w-full">
                       <Check

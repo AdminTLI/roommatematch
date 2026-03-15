@@ -31,7 +31,7 @@ test.describe('Onboarding to Dashboard Flow', () => {
     
     // Wait for campus select to load and select campus
     await page.waitForSelector('[data-testid="campus-select"]')
-    await page.selectOption('[data-testid="campus-select"]', { label: 'UvA — Science Park (Amsterdam)' })
+    await page.selectOption('[data-testid="campus-select"]', { label: 'UvA  -  Science Park (Amsterdam)' })
     
     await page.selectOption('[data-testid="move-in-select"]', { label: 'Immediately' })
     await page.click('[data-testid="next-button"]')
@@ -143,7 +143,7 @@ test.describe('Onboarding to Dashboard Flow', () => {
     await page.waitForSelector('[data-testid="program-select"]')
     await page.selectOption('[data-testid="program-select"]', { index: 1 })
     await page.waitForSelector('[data-testid="campus-select"]')
-    await page.selectOption('[data-testid="campus-select"]', { label: 'UvA — Roeterseiland (Amsterdam)' })
+    await page.selectOption('[data-testid="campus-select"]', { label: 'UvA  -  Roeterseiland (Amsterdam)' })
     await page.selectOption('[data-testid="move-in-select"]', { label: 'Within a month' })
     
     // Fill required fields
@@ -175,7 +175,7 @@ test.describe('Onboarding to Dashboard Flow', () => {
     
     // Note: In a real test environment, you would query the database directly
     // to verify that:
-    // 1. profiles table has campus: 'UvA — Roeterseiland (Amsterdam)'
+    // 1. profiles table has campus: 'UvA  -  Roeterseiland (Amsterdam)'
     // 2. profiles table has languages: ['en', 'de']
     // 3. user_academic table has correct degree_level: 'bachelor'
     // 4. responses table has all expected question keys
@@ -208,7 +208,7 @@ test.describe('Onboarding to Dashboard Flow', () => {
     await page.waitForSelector('[data-testid="program-select"]')
     await page.selectOption('[data-testid="program-select"]', { index: 1 })
     await page.waitForSelector('[data-testid="campus-select"]')
-    await page.selectOption('[data-testid="campus-select"]', { label: 'UvA — Science Park (Amsterdam)' })
+    await page.selectOption('[data-testid="campus-select"]', { label: 'UvA  -  Science Park (Amsterdam)' })
     await page.selectOption('[data-testid="move-in-select"]', { label: 'Immediately' })
     
     // Fill required fields quickly
@@ -243,7 +243,7 @@ test.describe('Onboarding to Dashboard Flow', () => {
     await page.waitForSelector('[data-testid="program-select"]')
     await page.selectOption('[data-testid="program-select"]', { index: 1 })
     await page.waitForSelector('[data-testid="campus-select"]')
-    await page.selectOption('[data-testid="campus-select"]', { label: 'UvA — Roeterseiland (Amsterdam)' }) // Changed campus
+    await page.selectOption('[data-testid="campus-select"]', { label: 'UvA  -  Roeterseiland (Amsterdam)' }) // Changed campus
     await page.selectOption('[data-testid="move-in-select"]', { label: 'Within a month' }) // Changed timing
     
     // Complete quickly again
@@ -294,7 +294,7 @@ test.describe('Onboarding to Dashboard Flow', () => {
     await page.waitForSelector('[data-testid="program-select"]')
     await page.selectOption('[data-testid="program-select"]', { index: 1 })
     await page.waitForSelector('[data-testid="campus-select"]')
-    await page.selectOption('[data-testid="campus-select"]', { label: 'UvA — Science Park (Amsterdam)' })
+    await page.selectOption('[data-testid="campus-select"]', { label: 'UvA  -  Science Park (Amsterdam)' })
     await page.selectOption('[data-testid="move-in-select"]', { label: 'Immediately' })
     
     // Go to dashboard to check progress

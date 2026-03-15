@@ -42,7 +42,7 @@ export function ApplyProcessFAQ() {
             <AccordionItem value="references">
               <AccordionTrigger>Do you provide references?</AccordionTrigger>
               <AccordionContent className="text-muted-foreground">
-                Yes—based on shipped contributions and collaboration, we provide references/letters.
+                Yes - based on shipped contributions and collaboration, we provide references/letters.
               </AccordionContent>
             </AccordionItem>
           </Accordion>

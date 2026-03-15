@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Alert, AlertDescription } from '@/components/ui/alert'
@@ -20,8 +21,16 @@ import {
   ChevronRight
 } from 'lucide-react'
 
+const DEFAULT_PRIVACY = {
+  profileVisible: true,
+  showInMatches: true,
+  allowMessages: true,
+  dataSharing: true,
+}
+
 interface PrivacySettingsProps {
   user: any
+  profile?: { is_visible?: boolean; privacy_settings?: Record<string, boolean> } | null
 }
 
 interface DSARRequest {
@@ -33,20 +42,30 @@ interface DSARRequest {
   completed_at?: string
 }
 
-export function PrivacySettings({ user }: PrivacySettingsProps) {
+export function PrivacySettings({ user, profile }: PrivacySettingsProps) {
+  const router = useRouter()
   const [isLoading, setIsLoading] = useState(false)
   const [isSuccess, setIsSuccess] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [exportLoading, setExportLoading] = useState(false)
+  const [pdfLoading, setPdfLoading] = useState(false)
   const [pendingRequests, setPendingRequests] = useState<DSARRequest[]>([])
   const [deletionScheduled, setDeletionScheduled] = useState<string | null>(null)
 
-  const [privacySettings, setPrivacySettings] = useState({
-    profileVisible: true,
-    showInMatches: true,
-    allowMessages: true,
-    dataSharing: false
-  })
+  const [privacySettings, setPrivacySettings] = useState(DEFAULT_PRIVACY)
+
+  // Sync from profile when loaded or after save (router.refresh)
+  useEffect(() => {
+    if (profile == null) return
+    const ps = profile.privacy_settings
+    const visible = profile.is_visible !== false
+    setPrivacySettings(prev => ({
+      ...DEFAULT_PRIVACY,
+      ...prev,
+      ...(typeof ps === 'object' && ps !== null ? ps : {}),
+      profileVisible: visible,
+    }))
+  }, [profile?.is_visible, profile?.privacy_settings])
 
   const handlePrivacyChange = (key: string, value: boolean) => {
     setPrivacySettings(prev => ({ ...prev, [key]: value }))
@@ -58,13 +77,22 @@ export function PrivacySettings({ user }: PrivacySettingsProps) {
     setIsSuccess(false)
 
     try {
-      // In a real app, this would save to a user preferences table
-      await new Promise(resolve => setTimeout(resolve, 1000)) // Simulate API call
-
+      const { getCSRFHeaders } = await import('@/lib/utils/csrf-client')
+      const headers = await getCSRFHeaders()
+      const res = await fetch('/api/settings/privacy', {
+        method: 'POST',
+        headers,
+        body: JSON.stringify(privacySettings),
+      })
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}))
+        throw new Error(data.message || data.error || 'Failed to save')
+      }
       setIsSuccess(true)
       setTimeout(() => setIsSuccess(false), 3000)
+      router.refresh()
     } catch (err) {
-      setError('Failed to save privacy settings')
+      setError(err instanceof Error ? err.message : 'Failed to save privacy settings')
     } finally {
       setIsLoading(false)
     }
@@ -136,6 +164,46 @@ export function PrivacySettings({ user }: PrivacySettingsProps) {
       setError(err instanceof Error ? err.message : 'Failed to download data')
     } finally {
       setExportLoading(false)
+    }
+  }
+
+  const handleDownloadPdf = async () => {
+    setPdfLoading(true)
+    setError(null)
+
+    try {
+      const response = await fetch('/api/pdf/generate', {
+        method: 'GET',
+      })
+
+      if (!response.ok) {
+        const data = await response.json().catch(() => ({}))
+        if (response.status === 429) {
+          setError(
+            data.message ||
+            'You can only generate a few PDFs per hour. Please try again later.'
+          )
+          return
+        }
+        throw new Error(data.error || data.details || 'Failed to generate PDF')
+      }
+
+      const blob = await response.blob()
+      const url = window.URL.createObjectURL(blob)
+      const a = document.createElement('a')
+      a.href = url
+      a.download = `domu-match-profile-${new Date().toISOString().split('T')[0]}.pdf`
+      document.body.appendChild(a)
+      a.click()
+      window.URL.revokeObjectURL(url)
+      document.body.removeChild(a)
+
+      setIsSuccess(true)
+      setTimeout(() => setIsSuccess(false), 5000)
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to download PDF')
+    } finally {
+      setPdfLoading(false)
     }
   }
 
@@ -225,73 +293,55 @@ export function PrivacySettings({ user }: PrivacySettingsProps) {
             </Alert>
           )}
 
-          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6 p-5 bg-zinc-50 dark:bg-zinc-900/60 rounded-xl border border-zinc-200 dark:border-white/5">
+          <div className="flex flex-col gap-4 p-5 bg-zinc-50 dark:bg-zinc-900/60 rounded-xl border border-zinc-200 dark:border-white/5">
             <div className="flex-1 min-w-0">
               <h4 className="font-semibold text-zinc-900 dark:text-white mb-2">Download Your Data</h4>
               <p className="text-xs text-zinc-600 dark:text-zinc-400 leading-relaxed max-w-lg">
-                Get a copy of all your data in a portable JSON format (GDPR Article 15 - Right of Access).
-                You can request one export per 24 hours.
+                Get a copy of all your data in a portable JSON format (GDPR Article 15 - Right of Access), or a human-readable PDF summary of your profile and compatibility report.
               </p>
             </div>
-            <Button
-              variant="outline"
-              onClick={handleDownloadData}
-              disabled={exportLoading || isLoading || !!getPendingExportRequest()}
-              className="w-full sm:w-auto min-w-[160px] h-11 text-sm border-zinc-200 dark:border-white/10 hover:bg-zinc-100 dark:hover:bg-white/5 text-zinc-900 dark:text-zinc-100 rounded-xl"
-            >
-              {exportLoading ? (
-                <>
-                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                  Exporting...
-                </>
-              ) : (
-                <>
-                  <Download className="w-4 h-4 mr-2" />
-                  Download JSON
-                </>
-              )}
-            </Button>
+            <div className="flex flex-col sm:flex-row gap-3">
+              <Button
+                variant="outline"
+                onClick={handleDownloadData}
+                disabled={exportLoading || isLoading || !!getPendingExportRequest()}
+                className="w-full sm:w-auto min-w-[160px] h-11 text-sm border-zinc-200 dark:border-white/10 hover:bg-zinc-100 dark:hover:bg-white/5 text-zinc-900 dark:text-zinc-100 rounded-xl"
+              >
+                {exportLoading ? (
+                  <>
+                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                    Exporting JSON...
+                  </>
+                ) : (
+                  <>
+                    <Download className="w-4 h-4 mr-2" />
+                    Download JSON
+                  </>
+                )}
+              </Button>
+              <Button
+                variant="outline"
+                onClick={handleDownloadPdf}
+                disabled={pdfLoading || isLoading}
+                className="w-full sm:w-auto min-w-[160px] h-11 text-sm border-zinc-200 dark:border-white/10 hover:bg-zinc-100 dark:hover:bg-white/5 text-zinc-900 dark:text-zinc-100 rounded-xl"
+              >
+                {pdfLoading ? (
+                  <>
+                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                    Generating PDF...
+                  </>
+                ) : (
+                  <>
+                    <Download className="w-4 h-4 mr-2" />
+                    Download PDF
+                  </>
+                )}
+              </Button>
+            </div>
           </div>
         </div>
       </div>
 
-      {/* Danger Zone Group */}
-      <div className="space-y-4">
-        <h3 className="text-sm font-medium text-red-600 dark:text-red-500 uppercase tracking-wider px-1">Danger Zone</h3>
-        <div className="bg-red-50/80 dark:bg-red-500/5 border border-red-200 dark:border-red-500/20 rounded-2xl overflow-hidden p-6 space-y-6 backdrop-blur-xl">
-          {deletionScheduled && (
-            <Alert className="bg-orange-500/10 border-orange-500/20 text-orange-600 dark:text-orange-400">
-              <Clock className="h-4 w-4" />
-              <AlertDescription>
-                <strong>Deletion scheduled:</strong> Your account is scheduled for deletion on{' '}
-                {new Date(deletionScheduled).toLocaleDateString()}.
-              </AlertDescription>
-            </Alert>
-          )}
-
-          <div className="flex items-start gap-4">
-            <AlertTriangle className="w-5 h-5 text-red-600 dark:text-red-500 flex-shrink-0 mt-0.5" />
-            <div className="flex-1 min-w-0">
-              <h4 className="font-semibold text-zinc-900 dark:text-white mb-1">Delete Account</h4>
-              <p className="text-xs text-zinc-600 dark:text-zinc-400 leading-relaxed">
-                Permanently delete your profile and all data. You will be asked to confirm and can choose to hide your profile instead.
-              </p>
-            </div>
-          </div>
-
-          <Link href="/settings/delete-account">
-            <Button
-              variant="destructive"
-              disabled={!!deletionScheduled}
-              className="w-full sm:w-auto min-w-[160px] h-11 text-sm bg-red-500 hover:bg-red-600 text-white rounded-xl shadow-lg shadow-red-500/20"
-            >
-              <Trash2 className="w-4 h-4 mr-2" />
-              {deletionScheduled ? 'Deletion Scheduled' : 'Delete My Account'}
-              <ChevronRight className="w-4 h-4 ml-1" />
-            </Button>
-          </Link>
-        </div>
-      </div>
     </div>
   )
 }

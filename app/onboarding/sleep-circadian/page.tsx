@@ -7,7 +7,10 @@ interface PageProps {
 
 export default async function Page({ searchParams }: PageProps) {
   const params = await searchParams
-  await checkOnboardingRedirect(params)
+  await checkOnboardingRedirect(params, {
+    requiredUserType: 'student',
+    mismatchRedirectTo: '/onboarding-professional/sleep-circadian',
+  })
   return <SectionClient />
 }
 

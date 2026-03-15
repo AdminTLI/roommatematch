@@ -1,21 +1,19 @@
 import { createClient } from '@/lib/supabase/server';
+import { safeLogger } from '@/lib/utils/logger';
 import type { QuestionnaireResult, Section, SectionAnswer } from '@/types/report';
 
-export async function fetchReportData(userId: string): Promise<QuestionnaireResult> {
+export async function fetchReportData(userId: string, userEmail?: string | null): Promise<QuestionnaireResult> {
   const supabase = await createClient();
 
-  // Fetch user profile
+  // Fetch user profile (avoid complex joins that can trigger recursive RLS policies)
   const { data: profile, error: profileError } = await supabase
     .from('profiles')
-    .select(`
-      first_name,
-      users!inner(email)
-    `)
+    .select('first_name')
     .eq('user_id', userId)
-    .single();
+    .maybeSingle();
 
-  if (profileError || !profile) {
-    throw new Error(`Failed to fetch user profile: ${profileError?.message}`);
+  if (profileError) {
+    safeLogger.error('Failed to fetch user profile for PDF', { error: profileError, userId });
   }
 
   // Fetch all responses with question items
@@ -34,7 +32,7 @@ export async function fetchReportData(userId: string): Promise<QuestionnaireResu
     .eq('user_id', userId);
 
   if (responsesError) {
-    throw new Error(`Failed to fetch responses: ${responsesError.message}`);
+    safeLogger.error('Failed to fetch questionnaire responses for PDF', { error: responsesError, userId });
   }
 
   // Group responses by section
@@ -73,8 +71,8 @@ export async function fetchReportData(userId: string): Promise<QuestionnaireResu
   return {
     generatedAtISO: new Date().toISOString(),
     student: {
-      name: profile.first_name,
-      email: profile.users?.email
+      name: profile?.first_name || (userEmail ? userEmail.split('@')[0] : 'Your profile'),
+      email: userEmail ?? undefined
     },
     sections
   };

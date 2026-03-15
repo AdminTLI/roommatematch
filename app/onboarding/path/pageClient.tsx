@@ -5,8 +5,9 @@ import { useRouter } from 'next/navigation'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { GraduationCap, Briefcase } from 'lucide-react'
-import { createClient } from '@/lib/supabase/client'
 import { showErrorToast } from '@/lib/toast'
+import { createClient } from '@/lib/supabase/client'
+import { fetchWithCSRF } from '@/lib/utils/fetch-with-csrf'
 import type { UserType } from '@/types/profile'
 import { pathSelectionSchema } from '@/lib/validation/profile-schema'
 import { motion } from 'framer-motion'
@@ -28,32 +29,42 @@ export default function PathSelectionClient() {
 
     setIsLoading(true)
     try {
-      const { data: { user } } = await supabase.auth.getUser()
-      if (!user?.id) {
+      const {
+        data: { user },
+        error: authError,
+      } = await supabase.auth.getUser()
+
+      if (authError || !user?.id) {
         showErrorToast('Session expired', 'Please sign in again.')
-        setIsLoading(false)
         return
       }
-      const { error } = await supabase
-        .from('users')
-        .update({ user_type: selected, updated_at: new Date().toISOString() })
-        .eq('id', user.id)
 
-      if (error) throw error
+      const response = await fetchWithCSRF('/api/onboarding/path', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ user_id: user.id, user_type: selected }),
+      })
+
+      const data: { ok?: boolean; isVerifiedStudent?: boolean; error?: string } = await response.json().catch(
+        () => ({})
+      )
+
+      if (!response.ok || !data.ok) {
+        const message =
+          data.error ||
+          'We could not save your selection. Please try again. If the problem persists, contact support.'
+        showErrorToast('Could not save selection', message)
+        return
+      }
 
       if (selected === 'professional') {
-        router.push('/onboarding/welcome')
+        router.push('/onboarding-professional/welcome')
         return
       }
 
-      const { data: userRow, error: fetchError } = await supabase
-        .from('users')
-        .select('is_verified_student')
-        .eq('id', user.id)
-        .maybeSingle()
-
-      const isVerified = !fetchError && userRow?.is_verified_student === true
-      if (isVerified) {
+      if (data.isVerifiedStudent) {
         router.push('/onboarding/welcome')
         return
       }
@@ -62,8 +73,10 @@ export default function PathSelectionClient() {
     } catch (e) {
       console.error('[PathSelection] Failed to save user_type:', e)
       showErrorToast(
-        'Could not save selection',
-        'Please try again. If the problem persists, contact support.'
+        'Something went wrong',
+        e instanceof Error && e.message
+          ? e.message
+          : 'Please try again. If the problem persists, contact support.'
       )
     } finally {
       setIsLoading(false)
@@ -116,7 +129,11 @@ export default function PathSelectionClient() {
                 Get started
               </p>
               <h1 className="mt-2 text-3xl font-extrabold tracking-tight text-slate-50 sm:text-4xl">
-                Which best describes your current stage in life?
+                Which best describes{' '}
+                <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-500 to-purple-500 dark:from-indigo-400 dark:to-purple-400">
+                  your current stage
+                </span>{' '}
+                in life?
               </h1>
               <p className="mt-3 text-slate-300">
                 We match you only with people in the same cohort for a safe and relevant experience.
@@ -135,11 +152,11 @@ export default function PathSelectionClient() {
                   onClick={() => setSelected('student')}
                   onKeyDown={(e) => (e.key === 'Enter' || e.key === ' ') && setSelected('student')}
                   className={[
-                    'cursor-pointer transition-all duration-300 rounded-2xl border backdrop-blur-lg',
-                    'bg-background/40 border-border/50 hover:bg-white/10',
+                    'cursor-pointer transition-all duration-300 rounded-2xl border backdrop-blur-xl shadow-[0_18px_60px_rgba(15,23,42,0.85)]',
+                    'bg-white/10 border-white/20 hover:bg-white/16 hover:border-white/40 hover:shadow-[0_22px_80px_rgba(15,23,42,0.95)]',
                     selected === 'student'
-                      ? 'ring-2 ring-primary border-primary/50 bg-white/10 shadow-lg shadow-primary/20'
-                      : 'border-white/20'
+                      ? 'ring-2 ring-primary border-primary/60 bg-white/18 shadow-[0_24px_90px_rgba(56,189,248,0.75)]'
+                      : ''
                   ].join(' ')}
                 >
                   <CardHeader className="space-y-3 pb-2">
@@ -166,11 +183,11 @@ export default function PathSelectionClient() {
                   onClick={() => setSelected('professional')}
                   onKeyDown={(e) => (e.key === 'Enter' || e.key === ' ') && setSelected('professional')}
                   className={[
-                    'cursor-pointer transition-all duration-300 rounded-2xl border backdrop-blur-lg',
-                    'bg-background/40 border-border/50 hover:bg-white/10',
+                    'cursor-pointer transition-all duration-300 rounded-2xl border backdrop-blur-xl shadow-[0_18px_60px_rgba(15,23,42,0.85)]',
+                    'bg-white/10 border-white/20 hover:bg-white/16 hover:border-white/40 hover:shadow-[0_22px_80px_rgba(15,23,42,0.95)]',
                     selected === 'professional'
-                      ? 'ring-2 ring-primary border-primary/50 bg-white/10 shadow-lg shadow-primary/20'
-                      : 'border-white/20'
+                      ? 'ring-2 ring-primary border-primary/60 bg-white/18 shadow-[0_24px_90px_rgba(129,140,248,0.75)]'
+                      : ''
                   ].join(' ')}
                 >
                   <CardHeader className="space-y-3 pb-2">

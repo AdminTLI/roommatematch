@@ -49,7 +49,7 @@ const content = {
         slug: 'night-owl-vs-8am-lecture',
         title: 'Night Owl vs. 8 A.M. Lecture: Matching Sleep Schedules Before They Clash',
         excerpt:
-          'Sleep is your quiet superpower. Learn how mismatched sleep schedules wreck grades — and how Domu Match helps you align on routines.',
+          'Sleep is your quiet superpower. Learn how mismatched sleep schedules wreck grades  -  and how Domu Match helps you align on routines.',
         readTime: '8 min read',
         date: '2026-01-20',
         category: 'Health',
@@ -227,7 +227,7 @@ const content = {
         slug: 'hidden-cost-of-wrong-roommate',
         title: 'De verborgen kosten van de verkeerde huisgenoot',
         excerpt:
-          'Een slechte match kost meer dan alleen huur. Lees hoe contractbreuk, verhuizen en slechtere cijfers samen optellen — en hoe je dat voorkomt.',
+          'Een slechte match kost meer dan alleen huur. Lees hoe contractbreuk, verhuizen en slechtere cijfers samen optellen  -  en hoe je dat voorkomt.',
         readTime: '7 min lezen',
         date: '2025-12-05',
         category: 'Financiën',

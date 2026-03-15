@@ -255,7 +255,7 @@ export function UniversitiesPage() {
                 What could better housing mean for your budget?
               </h2>
               <p className="text-xl text-gray-600 dark:text-gray-300 max-w-2xl mx-auto">
-                Housing conflict is a leading driver of first-year attrition. Retaining even a small percentage of at-risk students can add up to significant revenue—and better outcomes.
+                Housing conflict is a leading driver of first-year attrition. Retaining even a small percentage of at-risk students can add up to significant revenue - and better outcomes.
               </p>
             </div>
 

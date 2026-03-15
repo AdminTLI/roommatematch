@@ -158,7 +158,9 @@ export function AcademicStep({ data, onChange, user, errors = {}, onFieldBlur }:
       {/* University Selection */}
       {hasUniversityFromBasics ? (
         <div className="space-y-2">
-          <Label htmlFor="university">University *</Label>
+          <Label htmlFor="university" className="text-base font-semibold text-slate-100">
+            University *
+          </Label>
           <div className="p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-800">
             <div className="flex items-center gap-2">
               <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
@@ -219,7 +221,9 @@ export function AcademicStep({ data, onChange, user, errors = {}, onFieldBlur }:
               onChange(newData)
             }}
           />
-          <p className="text-sm text-gray-500">Choose your HBO or WO institution. Programs are loaded from our database.</p>
+          <p className="text-sm text-slate-300">
+            Choose your HBO or WO institution. Programs are loaded from our database.
+          </p>
           {(errors.institution_slug || errors.institution_other) && (
             <p className="text-sm text-red-600 dark:text-red-400 mt-1">
               {errors.institution_slug || errors.institution_other}
@@ -228,7 +232,9 @@ export function AcademicStep({ data, onChange, user, errors = {}, onFieldBlur }:
         </div>
       ) : (
         <div className="space-y-2">
-          <Label htmlFor="university">University *</Label>
+          <Label htmlFor="university" className="text-base font-semibold text-slate-100">
+            University *
+          </Label>
           <InstitutionSelect
             value={data.institution_slug}
             onChange={async ({ institutionId, institutionOther, universityDbId }) => {
@@ -276,7 +282,9 @@ export function AcademicStep({ data, onChange, user, errors = {}, onFieldBlur }:
               onChange(newData)
             }}
           />
-          <p className="text-sm text-gray-500">Choose your HBO or WO institution. Programs are loaded from our database.</p>
+          <p className="text-sm text-slate-300">
+            Choose your HBO or WO institution. Programs are loaded from our database.
+          </p>
           {(errors.institution_slug || errors.institution_other) && (
             <p className="text-sm text-red-600 dark:text-red-400 mt-1">
               {errors.institution_slug || errors.institution_other}
@@ -287,7 +295,12 @@ export function AcademicStep({ data, onChange, user, errors = {}, onFieldBlur }:
 
       {/* Degree Level */}
       <div className="space-y-3">
-        <Label htmlFor="degree_level" className="text-base font-medium">Degree Level *</Label>
+        <Label
+          htmlFor="degree_level"
+          className="text-base font-semibold text-slate-100"
+        >
+          Degree Level *
+        </Label>
         <RadioGroup 
           value={data.degree_level || ''} 
           onValueChange={(value) => handleChange('degree_level', value)}
@@ -304,10 +317,21 @@ export function AcademicStep({ data, onChange, user, errors = {}, onFieldBlur }:
           >
             <RadioGroupItem value="bachelor" id="degree_bachelor" className="shrink-0" />
             <div className="flex-1">
-              <Label htmlFor="degree_bachelor" className="text-base font-medium cursor-pointer">
+              <Label
+                htmlFor="degree_bachelor"
+                className={cn(
+                  "text-base font-semibold cursor-pointer",
+                  data.degree_level === 'bachelor' ? "text-slate-900" : "text-slate-100"
+                )}
+              >
                 Bachelor's Degree (BSc/BA)
               </Label>
-              <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
+              <p
+                className={cn(
+                  "text-sm mt-1",
+                  data.degree_level === 'bachelor' ? "text-slate-700" : "text-slate-300"
+                )}
+              >
                 Undergraduate degree, typically 3-4 years
               </p>
             </div>
@@ -324,10 +348,21 @@ export function AcademicStep({ data, onChange, user, errors = {}, onFieldBlur }:
           >
             <RadioGroupItem value="premaster" id="degree_premaster" className="shrink-0" />
             <div className="flex-1">
-              <Label htmlFor="degree_premaster" className="text-base font-medium cursor-pointer">
+              <Label
+                htmlFor="degree_premaster"
+                className={cn(
+                  "text-base font-semibold cursor-pointer",
+                  data.degree_level === 'premaster' ? "text-slate-900" : "text-slate-100"
+                )}
+              >
                 Pre-Master (Schakelprogramma)
               </Label>
-              <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
+              <p
+                className={cn(
+                  "text-sm mt-1",
+                  data.degree_level === 'premaster' ? "text-slate-700" : "text-slate-300"
+                )}
+              >
                 Bridging programme to prepare for Master's degree
               </p>
             </div>
@@ -344,10 +379,21 @@ export function AcademicStep({ data, onChange, user, errors = {}, onFieldBlur }:
           >
             <RadioGroupItem value="master" id="degree_master" className="shrink-0" />
             <div className="flex-1">
-              <Label htmlFor="degree_master" className="text-base font-medium cursor-pointer">
+              <Label
+                htmlFor="degree_master"
+                className={cn(
+                  "text-base font-semibold cursor-pointer",
+                  data.degree_level === 'master' ? "text-slate-900" : "text-slate-100"
+                )}
+              >
                 Master's Degree (MSc/MA)
               </Label>
-              <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
+              <p
+                className={cn(
+                  "text-sm mt-1",
+                  data.degree_level === 'master' ? "text-slate-700" : "text-slate-300"
+                )}
+              >
                 Graduate degree, typically 1-2 years
               </p>
             </div>
@@ -368,7 +414,10 @@ export function AcademicStep({ data, onChange, user, errors = {}, onFieldBlur }:
             checked={data.undecided_program || false}
             onCheckedChange={(checked) => handleChange('undecided_program', checked)}
           />
-          <Label htmlFor="undecided_program" className="text-sm font-normal">
+          <Label
+            htmlFor="undecided_program"
+            className="text-sm font-normal text-slate-100"
+          >
             I haven't decided on a specific programme yet
           </Label>
         </div>
@@ -377,7 +426,12 @@ export function AcademicStep({ data, onChange, user, errors = {}, onFieldBlur }:
       {/* Programme Selection */}
       {!data.undecided_program && (
         <div className="space-y-2">
-          <Label htmlFor="program">Programme *</Label>
+          <Label
+            htmlFor="program"
+            className="text-base font-semibold text-slate-100"
+          >
+            Programme *
+          </Label>
           <ProgrammeSelect
             institutionId={data.institution_slug}
             level={data.degree_level as any}
@@ -386,7 +440,7 @@ export function AcademicStep({ data, onChange, user, errors = {}, onFieldBlur }:
             disabled={!data.institution_slug || !data.degree_level}
             placeholder="Select your programme"
           />
-          <p className="text-sm text-gray-500 dark:text-text-muted">
+          <p className="text-sm text-slate-300">
             {data.institution_slug && data.degree_level
               ? `Select your ${data.degree_level} programme`
               : "Select your university and degree level to see available programmes"
@@ -402,7 +456,12 @@ export function AcademicStep({ data, onChange, user, errors = {}, onFieldBlur }:
 
       {/* Expected Graduation Year */}
       <div className="space-y-2">
-        <Label htmlFor="expected_graduation_year">Expected Graduation Year *</Label>
+        <Label
+          htmlFor="expected_graduation_year"
+          className="text-base font-semibold text-slate-100"
+        >
+          Expected Graduation Year *
+        </Label>
         <Select 
           value={data.expected_graduation_year?.toString() || ''} 
           onValueChange={(value) => handleChange('expected_graduation_year', parseInt(value))}
@@ -443,7 +502,7 @@ export function AcademicStep({ data, onChange, user, errors = {}, onFieldBlur }:
           </div>
         )}
         
-        <p className="text-sm text-gray-500 dark:text-text-muted">
+        <p className="text-sm text-slate-300">
           When do you expect to finish your studies? This helps match you with students at similar academic stages.
         </p>
         {errors.expected_graduation_year && (
@@ -455,7 +514,12 @@ export function AcademicStep({ data, onChange, user, errors = {}, onFieldBlur }:
 
       {/* Study Start Month */}
       <div className="space-y-2">
-        <Label htmlFor="study_start_month">Study Start Month *</Label>
+        <Label
+          htmlFor="study_start_month"
+          className="text-base font-semibold text-slate-100"
+        >
+          Study Start Month *
+        </Label>
         <Select 
           value={data.study_start_month?.toString() || ''} 
           onValueChange={(value) => handleChange('study_start_month', value ? parseInt(value) : null)}
@@ -485,18 +549,23 @@ export function AcademicStep({ data, onChange, user, errors = {}, onFieldBlur }:
           </p>
         )}
         {!data.study_start_month && !errors.study_start_month && (
-          <p className="text-sm text-amber-600 dark:text-amber-400">
+          <p className="text-sm text-amber-300">
             Study start month is required for accurate academic year calculation.
           </p>
         )}
-        <p className="text-sm text-gray-500 dark:text-text-muted">
+        <p className="text-sm text-slate-300">
           When did or will you start your studies? This helps calculate your current academic year more accurately. Academic year typically starts in September (month 9).
         </p>
       </div>
 
       {/* Graduation Month */}
       <div className="space-y-2">
-        <Label htmlFor="graduation_month">Expected Graduation Month *</Label>
+        <Label
+          htmlFor="graduation_month"
+          className="text-base font-semibold text-slate-100"
+        >
+          Expected Graduation Month *
+        </Label>
         <Select 
           value={data.graduation_month?.toString() || ''} 
           onValueChange={(value) => handleChange('graduation_month', value ? parseInt(value) : null)}
@@ -526,11 +595,11 @@ export function AcademicStep({ data, onChange, user, errors = {}, onFieldBlur }:
           </p>
         )}
         {!data.graduation_month && !errors.graduation_month && (
-          <p className="text-sm text-amber-600 dark:text-amber-400">
+          <p className="text-sm text-amber-300">
             Graduation month is required for accurate academic year calculation.
           </p>
         )}
-        <p className="text-sm text-gray-500 dark:text-text-muted">
+        <p className="text-sm text-slate-300">
           In which month do you expect to graduate? This helps us calculate your academic stage accurately. Most students graduate in June (summer).
         </p>
       </div>

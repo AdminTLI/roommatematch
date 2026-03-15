@@ -44,7 +44,7 @@
 ## UVP/USPs & Copy Blocks
 
 ### Core UVP (Headline)
-**"Find roommates as compatible as your best friends—backed by science, verified by universities."**
+**"Find roommates as compatible as your best friends - backed by science, verified by universities."**
 
 Rationale: Emphasizes outcome (friendship-level match), mechanism (algorithmic science), and trust (university + verification).
 
@@ -55,7 +55,7 @@ Rationale: Emphasizes outcome (friendship-level match), mechanism (algorithmic s
 #### 1. **Smart Matching (Not Swiping)**
 **Heading:** "Match on What Matters"  
 **Body:**
-> "We analyze 40+ compatibility factors—from quiet hours and cleanliness to study habits and weekend plans. Our algorithm catches conflicts before they start. No more gambles, no more surprises."
+> "We analyze 40+ compatibility factors - from quiet hours and cleanliness to study habits and weekend plans. Our algorithm catches conflicts before they start. No more gambles, no more surprises."
 
 **Visual:** Comparison cards (Emma vs. Lucas) showing 94% alignment on specific factors (Study schedule, Cleanliness, Noise level, Social life).
 
@@ -100,7 +100,7 @@ Rationale: Emphasizes outcome (friendship-level match), mechanism (algorithmic s
 #### 6. **Free for Students**
 **Heading:** "100% Free for You"  
 **Body:**
-> "Verification, matching, chat, move-in planning—all free. Universities and housing partners fund it. Your only investment is honesty in your profile."
+> "Verification, matching, chat, move-in planning - all free. Universities and housing partners fund it. Your only investment is honesty in your profile."
 
 ---
 
@@ -127,7 +127,7 @@ Rationale: Emphasizes outcome (friendship-level match), mechanism (algorithmic s
 #### 3. **Brand Your Instance**
 **Heading:** "White-Labelled for Your Campus"  
 **Body:**
-> "Your colours, your messaging. Students see 'UniXYZ Housing Match'—official, trusted, integrated into onboarding."
+> "Your colours, your messaging. Students see 'UniXYZ Housing Match' - official, trusted, integrated into onboarding."
 
 ---
 
@@ -172,16 +172,16 @@ Example: ✅ "Reduce housing disputes by 40%." ❌ "Synergize stakeholder alignm
 - "12% dispute rate (vs. 20% industry average)"
 
 ### Testimonial Style (Warm, Specific, Believable)
-> "I was terrified of random roommates. But the matching showed we both preferred quiet evenings and had the same study schedule. Moved in, immediately felt at home. Best housing experience yet." — Emma, TU Delft, Computer Science
+> "I was terrified of random roommates. But the matching showed we both preferred quiet evenings and had the same study schedule. Moved in, immediately felt at home. Best housing experience yet."  -  Emma, TU Delft, Computer Science
 
-> "As a Housing Manager, I used to spend hours on disputes. Now the algorithm catches incompatibilities before move-in. My team has time to focus on real problems." — Dr. Jan, University of Amsterdam Housing
+> "As a Housing Manager, I used to spend hours on disputes. Now the algorithm catches incompatibilities before move-in. My team has time to focus on real problems."  -  Dr. Jan, University of Amsterdam Housing
 
 ---
 
 ## Positioning Matrix
 
 ```
-           AFFORDABLE ←—→ PREMIUM
+           AFFORDABLE ← - → PREMIUM
 SIMPLE      Facebook         Uniplaces
                 ↑              ↑
                 |              |

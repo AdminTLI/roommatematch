@@ -7,7 +7,10 @@ interface WelcomePageProps {
 
 export default async function OnboardingWelcome({ searchParams }: WelcomePageProps) {
   const params = await searchParams
-  await checkOnboardingRedirect(params)
+  await checkOnboardingRedirect(params, {
+    requiredUserType: 'student',
+    mismatchRedirectTo: '/onboarding-professional/welcome',
+  })
   return <OnboardingWelcomePage />
 }
 

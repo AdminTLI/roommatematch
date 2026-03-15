@@ -197,6 +197,15 @@
     position: relative;
   }
 
+  /* Date input styling - ensure white calendar icon on dark backgrounds */
+  #dob {
+    color-scheme: dark;
+  }
+
+  #dob::-webkit-calendar-picker-indicator {
+    filter: invert(1);
+  }
+
   .dark body {
     background: #0f172a;
     /* Solid slate-900 background for consistent contrast */

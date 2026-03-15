@@ -213,7 +213,7 @@ export function SettingsContent({ user, profile, academic, progressData }: Setti
                       <h2 className="text-xl font-semibold text-zinc-900 dark:text-white">Privacy & Data</h2>
                       <p className="text-sm text-zinc-600 dark:text-zinc-400 mt-1">Control your data visibility and privacy settings.</p>
                     </div>
-                    <PrivacySettings user={user} />
+                    <PrivacySettings user={user} profile={profile} />
                   </div>
                 </TabsContent>
               </Tabs>

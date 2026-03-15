@@ -10,7 +10,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: 'The Introvert’s Survival Guide to Shared Living',
     description:
-      'Practical advice for introverted and neurodivergent students on finding roommates who respect alone time, quiet, and emotional bandwidth — with help from Domu Match.',
+      'Practical advice for introverted and neurodivergent students on finding roommates who respect alone time, quiet, and emotional bandwidth  -  with help from Domu Match.',
     type: 'article',
     publishedTime: '2026-01-03',
     authors: ['Domu Match Team'],

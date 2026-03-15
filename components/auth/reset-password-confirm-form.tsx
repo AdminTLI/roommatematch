@@ -30,58 +30,20 @@ export function ResetPasswordConfirmForm() {
   )
 
   useEffect(() => {
-    // Check if there's a code or token in the URL (from password reset email)
-    const urlParams = new URLSearchParams(window.location.search)
-    const code = urlParams.get('code')
-    const token = urlParams.get('token')
-    const type = urlParams.get('type')
-    
     const checkSession = async () => {
-      // If there's a token parameter, we need to go through Supabase's verify endpoint first
-      // This happens when Supabase redirects directly to our page
-      if (token && !code) {
-        console.log('[Reset Password] Found token in URL, need to verify through Supabase first...')
-        // Redirect to Supabase's verify endpoint, which will then redirect back with a code
-        const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
-        const verifyUrl = `${supabaseUrl}/auth/v1/verify?token=${token}&type=${type || 'recovery'}&redirect_to=${encodeURIComponent(window.location.origin + window.location.pathname)}`
-        console.log('[Reset Password] Redirecting to Supabase verify endpoint:', verifyUrl)
-        window.location.href = verifyUrl
-        return
-      }
-      
-      // If there's a code parameter, exchange it for a session
-      if (code) {
-        console.log('[Reset Password] Found code in URL, exchanging for session...', { code: code.substring(0, 10) + '...', type })
-        const { data, error } = await supabase.auth.exchangeCodeForSession(code)
-        
-        if (error) {
-          console.error('[Reset Password] Error exchanging code:', error)
-          setError('Invalid or expired reset link. Please request a new password reset.')
-          setTimeout(() => {
-            router.push('/auth/reset-password')
-          }, 3000)
-          return
-        }
-        
-        console.log('[Reset Password] Code exchanged successfully, session created')
-        // Clear the code from URL
-        window.history.replaceState({}, '', window.location.pathname)
-      }
-      
-      // Check if user has a valid recovery session
+      // At this point the /auth/callback route should already have
+      // exchanged the code for a session and set cookies.
+      // We just need to confirm a session exists.
       const { data: { session } } = await supabase.auth.getSession()
       if (session) {
         console.log('[Reset Password] Valid session found')
         setIsValidSession(true)
       } else {
-        // If no code and no session, show error
-        if (!code && !token) {
-          console.log('[Reset Password] No code, token, or session found')
-          setError('Invalid or expired reset link. Please request a new password reset.')
-          setTimeout(() => {
-            router.push('/auth/reset-password')
-          }, 3000)
-        }
+        console.log('[Reset Password] No valid session found on confirm page')
+        setError('Invalid or expired reset link. Please request a new password reset.')
+        setTimeout(() => {
+          router.push('/auth/reset-password')
+        }, 3000)
       }
     }
     checkSession()

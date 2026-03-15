@@ -46,7 +46,7 @@ export async function POST(request: NextRequest) {
     // 2. Email template is misconfigured
     // 3. Rate limiting (but we'd see an error for that)
     // Check Supabase dashboard → Authentication → Email Templates → "Confirm signup"
-    // And verify SMTP is configured in Settings → Auth → SMTP Settings
+    // And verify SMTP is configured (e.g. Mailjet) in Settings → Auth → SMTP Settings
 
     if (error) {
       console.error('[ResendVerification API] Resend error:', error)
@@ -77,7 +77,7 @@ export async function POST(request: NextRequest) {
 
     // Success - resend() returns { data: null, error: null } when successful
     // Note: This only confirms Supabase accepted the request, not that email was actually sent
-    // In production, ensure SMTP is configured in Supabase dashboard
+    // In production, ensure SMTP (e.g. Mailjet) is configured in Supabase dashboard
     console.log('[ResendVerification API] Successfully queued verification email request')
     return NextResponse.json({ 
       success: true,

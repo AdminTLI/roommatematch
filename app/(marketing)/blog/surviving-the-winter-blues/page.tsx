@@ -25,7 +25,7 @@ export default function SurvivingWinterBluesPage() {
         '@type': 'BlogPosting',
         headline: 'Surviving the Winter Blues: Why Who You Live With Matters',
         description:
-          'An exploration of how winter, low mood and isolation interact with student housing — and how to use Domu Match to build a supportive home.',
+          'An exploration of how winter, low mood and isolation interact with student housing  -  and how to use Domu Match to build a supportive home.',
         image: 'https://domumatch.com/images/logo.png',
         datePublished: '2026-01-10',
         dateModified: '2026-01-10',

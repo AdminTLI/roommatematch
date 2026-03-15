@@ -5,13 +5,13 @@ export const metadata: Metadata = {
   title:
     'The Hidden Cost of the Wrong Roommate (It’s Not Just Rent) | Domu Match',
   description:
-    'Breaking leases, moving mid-year and slipping grades all add up. Learn how the wrong roommate affects your finances, wellbeing and academic performance — and how Domu Match helps you match smarter.',
+    'Breaking leases, moving mid-year and slipping grades all add up. Learn how the wrong roommate affects your finances, wellbeing and academic performance  -  and how Domu Match helps you match smarter.',
   keywords:
     'roommate problems cost, break lease student, student housing Netherlands, academic performance sleep, roommate compatibility Domu Match',
   openGraph: {
     title: 'The Hidden Cost of the Wrong Roommate (It’s Not Just Rent)',
     description:
-      'A breakdown of the financial, academic and emotional costs of bad roommate matches — and why compatibility is worth investing in upfront.',
+      'A breakdown of the financial, academic and emotional costs of bad roommate matches  -  and why compatibility is worth investing in upfront.',
     type: 'article',
     publishedTime: '2025-12-05',
     authors: ['Domu Match Team'],
@@ -27,7 +27,7 @@ export default function HiddenCostWrongRoommatePage() {
         headline:
           'The Hidden Cost of the Wrong Roommate (It’s Not Just Rent)',
         description:
-          'An exploration of how mismatched roommates can lead to broken leases, lost deposits, sleep loss and worse academic outcomes — plus ways to prevent it.',
+          'An exploration of how mismatched roommates can lead to broken leases, lost deposits, sleep loss and worse academic outcomes  -  plus ways to prevent it.',
         image: 'https://domumatch.com/images/logo.png',
         datePublished: '2025-12-05',
         dateModified: '2025-12-05',

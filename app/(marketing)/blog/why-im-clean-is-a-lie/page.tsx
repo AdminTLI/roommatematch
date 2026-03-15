@@ -10,7 +10,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: 'Why "I’m Clean" Is a Lie (And What to Ask Instead)',
     description:
-      'A practical guide to avoiding cleaning wars by focusing on behaviours rather than vague labels — with help from Domu Match’s compatibility questions.',
+      'A practical guide to avoiding cleaning wars by focusing on behaviours rather than vague labels  -  with help from Domu Match’s compatibility questions.',
     type: 'article',
     publishedTime: '2025-12-15',
     authors: ['Domu Match Team'],

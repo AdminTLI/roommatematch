@@ -222,7 +222,9 @@ function WarningBanner({ userId }: { userId?: string }) {
       <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
         <DialogContent className="max-w-lg">
           <DialogHeader>
-            <DialogTitle>Warning from Admin</DialogTitle>
+            <DialogTitle className="text-red-600 dark:text-red-400 font-bold">
+              You have received a warning
+            </DialogTitle>
             <DialogDescription>
               Please read this warning carefully and acknowledge that you understand it.
             </DialogDescription>
@@ -340,6 +342,10 @@ export function DashboardContent({ hasCompletedQuestionnaire = false, hasPartial
   const router = useRouter()
   const supabase = createClient()
 
+  const displayFirstName =
+    firstName ||
+    (user?.name ? user.name.split(' ')[0] : '') ||
+    'Student'
 
   // Helper function for formatting time ago (defined early for use in callbacks)
   const formatTimeAgo = (dateString: string): string => {
@@ -1485,7 +1491,7 @@ export function DashboardContent({ hasCompletedQuestionnaire = false, hasPartial
           <span className="text-sm font-medium uppercase tracking-wider">Discovery Feed</span>
         </div>
         <h1 className="text-4xl md:text-5xl font-extrabold text-zinc-900 dark:text-white tracking-tight">
-          Hello, <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-500 to-purple-500 dark:from-indigo-400 dark:to-purple-400">{firstName || 'Student'}</span>
+          Hello, <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-500 to-purple-500 dark:from-indigo-400 dark:to-purple-400">{displayFirstName}</span>
         </h1>
         <p className="text-zinc-500 dark:text-zinc-400 max-w-lg text-lg font-medium">
           Here are your suggested matches. Complete your profile to discover more potential roommates.

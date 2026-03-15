@@ -36,7 +36,7 @@ const AREAS: Area[] = [
   },
   {
     name: 'Design & Experience',
-    impact: 'Craft an experience students trust—from identity to everyday flows.',
+    impact: 'Craft an experience students trust - from identity to everyday flows.',
     roles: [
       { title: 'Brand designer', why: 'Creates a trustworthy identity across light/dark modes and marketing.', timeframe: 'Design explorations', background: 'Brand systems; accessibility' },
       { title: 'UX researcher', why: 'Learns from students to reduce friction in verification and onboarding.', timeframe: 'Weekly research cadence', background: 'HCD, usability testing', studentFriendly: true },

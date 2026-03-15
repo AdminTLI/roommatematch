@@ -206,10 +206,10 @@ export function RoleCatalogCards() {
                 <div className="mt-3 flex flex-wrap gap-2">
                   <span className="inline-flex items-center gap-1 rounded-full bg-white/8 px-3 py-1 text-[11px] text-white/80 border border-white/15">
                     <Sparkles className="h-3 w-3 text-sky-300" />
-                    <span className={r.commitment ? '' : 'opacity-0'}>{r.commitment || '—'}</span>
+                    <span className={r.commitment ? '' : 'opacity-0'}>{r.commitment || ' - '}</span>
                   </span>
                   <span className="inline-flex items-center gap-1 rounded-full bg-white/8 px-3 py-1 text-[11px] text-white/80 border border-white/15">
-                    <span className={r.background ? '' : 'opacity-0'}>{r.background || '—'}</span>
+                    <span className={r.background ? '' : 'opacity-0'}>{r.background || ' - '}</span>
                   </span>
                 </div>
               </div>

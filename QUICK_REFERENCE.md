@@ -1,4 +1,4 @@
-# Quick Reference — Production Sync Fix
+# Quick Reference  -  Production Sync Fix
 
 ## What Was Wrong
 Production showed old UI. Root cause: **CSS pipeline broken** (PostCSS plugins disabled).

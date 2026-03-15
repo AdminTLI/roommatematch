@@ -5,8 +5,10 @@ import { createClient } from '@supabase/supabase-js'
 import { safeLogger } from '@/lib/utils/logger'
 
 export interface EmailConfig {
-  /** SendGrid API key (Bearer token). Used for SendGrid API; SMTP_* are not used for sending. */
+  /** Mailjet API key (from Account settings → SMTP and SEND API settings) */
   apiKey: string
+  /** Mailjet Secret Key (same page as API key) */
+  secretKey: string
   fromEmail: string
   fromName: string
 }
@@ -20,28 +22,30 @@ export interface EmailMessage {
 
 /**
  * Get email configuration from environment variables.
- * Supports SendGrid via SENDGRID_API_KEY or SMTP_PASS (SendGrid API key).
- * Auth emails (OTP, password reset) are sent by Supabase—configure SMTP in Supabase Dashboard.
+ * Uses Mailjet (MAILJET_API_KEY + MAILJET_SECRET_KEY).
+ * Auth emails (OTP, password reset) are sent by Supabase - configure SMTP in Supabase Dashboard (Mailjet SMTP supported).
  */
 function getEmailConfig(): EmailConfig | null {
-  const apiKey = process.env.SENDGRID_API_KEY || process.env.SMTP_PASS
-  const fromEmail = process.env.SMTP_FROM_EMAIL || 'noreply@domumatch.nl'
-  const fromName = process.env.SMTP_FROM_NAME || 'Domu Match'
+  const apiKey = process.env.MAILJET_API_KEY
+  const secretKey = process.env.MAILJET_SECRET_KEY
+  const fromEmail = process.env.SMTP_FROM_EMAIL || process.env.MAILJET_FROM_EMAIL || 'noreply@domumatch.nl'
+  const fromName = process.env.SMTP_FROM_NAME || process.env.MAILJET_FROM_NAME || 'Domu Match'
 
-  if (!apiKey || typeof apiKey !== 'string' || !apiKey.trim()) {
-    safeLogger.warn('Email configuration not found (set SENDGRID_API_KEY or SMTP_PASS). App-level email notifications will be disabled.')
+  if (!apiKey || !secretKey || typeof apiKey !== 'string' || typeof secretKey !== 'string' || !apiKey.trim() || !secretKey.trim()) {
+    safeLogger.warn('Email configuration not found (set MAILJET_API_KEY and MAILJET_SECRET_KEY). App-level email notifications will be disabled.')
     return null
   }
 
   return {
     apiKey: apiKey.trim(),
+    secretKey: secretKey.trim(),
     fromEmail,
     fromName
   }
 }
 
 /**
- * Send email using SMTP
+ * Send email via Mailjet Send API v3.1
  */
 export async function sendEmail(
   message: EmailMessage
@@ -54,32 +58,25 @@ export async function sendEmail(
       return false
     }
 
-    // For now, we'll use a simple fetch-based email sending
-    // In production, you should use a proper email service like SendGrid, Mailgun, or Nodemailer
-    const response = await fetch('https://api.sendgrid.com/v3/mail/send', {
+    const auth = Buffer.from(`${config.apiKey}:${config.secretKey}`).toString('base64')
+    const response = await fetch('https://api.mailjet.com/v3.1/send', {
       method: 'POST',
       headers: {
-        'Authorization': `Bearer ${config.apiKey}`,
+        Authorization: `Basic ${auth}`,
         'Content-Type': 'application/json'
       },
       body: JSON.stringify({
-        personalizations: [{
-          to: [{ email: message.to }]
-        }],
-        from: {
-          email: config.fromEmail,
-          name: config.fromName
-        },
-        subject: message.subject,
-        content: [
+        Messages: [
           {
-            type: 'text/html',
-            value: message.html
-          },
-          ...(message.text ? [{
-            type: 'text/plain',
-            value: message.text
-          }] : [])
+            From: {
+              Email: config.fromEmail,
+              Name: config.fromName
+            },
+            To: [{ Email: message.to, Name: message.to }],
+            Subject: message.subject,
+            HTMLPart: message.html,
+            ...(message.text ? { TextPart: message.text } : {})
+          }
         ]
       })
     })

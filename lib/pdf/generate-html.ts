@@ -1,6 +1,7 @@
 import type { QuestionnaireResult, Section, SectionAnswer } from '@/types/report';
 import { extractTopSignals, extractDealBreakers, sectionTrafficLight, sectionScore } from './scoring';
 import { deriveTakeaways } from './derive-takeaways';
+import { pdfStyles } from './styles';
 
 export function generateReportHtml(data: QuestionnaireResult): string {
   return `
@@ -10,7 +11,9 @@ export function generateReportHtml(data: QuestionnaireResult): string {
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Roommate Compatibility Report</title>
-  <link rel="stylesheet" href="/pdf-styles.css">
+  <style>
+    ${pdfStyles}
+  </style>
 </head>
 <body>
   <div class="report-container">

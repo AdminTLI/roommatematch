@@ -1,4 +1,4 @@
-# Vercel Production Sync — Action Steps
+# Vercel Production Sync  -  Action Steps
 
 ## Problem Summary
 Production at `https://domumatch.vercel.app/` was showing outdated UI despite the same commit SHA being deployed. Root cause: **`postcss.config.js` had all plugins disabled**, preventing Tailwind CSS from being processed during the build.

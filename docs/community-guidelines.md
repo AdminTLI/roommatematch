@@ -56,7 +56,7 @@ All behavior on Domu Match should follow these principles:
    Respect people of all backgrounds and identities. Follow applicable anti‑discrimination and fair‑housing laws in your region.
 
 5. **Use the platform as intended**  
-   Domu Match is for **roommate and housing matching**—nothing else. Misusing the platform can lead to immediate suspension or removal.
+   Domu Match is for **roommate and housing matching** - nothing else. Misusing the platform can lead to immediate suspension or removal.
 
 ---
 
@@ -80,7 +80,7 @@ Examples of acceptable use include:
 
 ## 5. Strictly Prohibited Uses
 
-The following behaviors and uses are **strictly prohibited**. Violations may result in **warnings, content removal, temporary suspension, or permanent account ban**—without prior notice—at Domu Match’s discretion.
+The following behaviors and uses are **strictly prohibited**. Violations may result in **warnings, content removal, temporary suspension, or permanent account ban** - without prior notice - at Domu Match’s discretion.
 
 ### 5.1 Using Domu Match as a Dating or Hookup Platform
 
@@ -285,7 +285,7 @@ Domu Match encourages users to follow these safety practices:
      - Who you are meeting,
      - When you expect to be back.
    - Arrange viewings in daylight or well‑lit public areas first when feasible.
-   - Trust your instincts—if anything feels “off,” you can leave immediately.
+   - Trust your instincts - if anything feels “off,” you can leave immediately.
 
 3. **Payments and agreements**
    - Do not send deposits or rent before:

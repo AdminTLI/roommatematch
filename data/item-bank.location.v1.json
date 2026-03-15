@@ -5,7 +5,7 @@
     "kind": "mcq",
     "label": "Your institution (HBO/WO, no MBO)",
     "optionsFrom": "nl-institutions",
-    "helperText": "Choose your HBO or WO institution. We never use nationality—only operational factors like city/campus and commute."
+    "helperText": "Choose your HBO or WO institution. We never use nationality - only operational factors like city/campus and commute."
   }
 ]
 

@@ -8,6 +8,28 @@ import { checkRateLimit, getUserRateLimitKey } from '@/lib/rate-limit';
 import { pdfQueue } from '@/lib/pdf/queue';
 import { safeLogger } from '@/lib/utils/logger';
 
+// Ensure this route always runs in a Node.js runtime (required for Puppeteer)
+export const runtime = 'nodejs';
+
+async function withTimeout<T>(promise: Promise<T>, ms: number): Promise<T> {
+  return new Promise<T>((resolve, reject) => {
+    const timer = setTimeout(() => {
+      reject(new Error(`PDF generation timeout after ${ms / 1000} seconds`));
+    }, ms);
+
+    promise.then(
+      (value) => {
+        clearTimeout(timer);
+        resolve(value);
+      },
+      (error) => {
+        clearTimeout(timer);
+        reject(error);
+      }
+    );
+  });
+}
+
 export async function GET(req: NextRequest) {
   try {
     const supabase = await createClient();
@@ -59,17 +81,14 @@ export async function GET(req: NextRequest) {
       });
 
     // Fetch and normalize data
-    const rawData = await fetchReportData(user.id);
+    const rawData = await fetchReportData(user.id, user.email);
     const normalizedData = normalizeSections(rawData);
 
     // Generate HTML using template strings (no JSX)
     const html = generateReportHtml(normalizedData);
 
       // Generate PDF with timeout
-      const pdfBuffer = await Promise.race([
-        renderPdf(html),
-        timeoutPromise
-      ]);
+      const pdfBuffer = await withTimeout(renderPdf(html), 30000);
 
     // Return PDF with proper headers
     return new NextResponse(pdfBuffer, {

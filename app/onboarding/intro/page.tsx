@@ -7,7 +7,10 @@ interface IntroPageProps {
 
 export default async function IntroPage({ searchParams }: IntroPageProps) {
   const params = await searchParams
-  await checkOnboardingRedirect(params)
+  await checkOnboardingRedirect(params, {
+    requiredUserType: 'student',
+    mismatchRedirectTo: '/onboarding-professional/intro',
+  })
   return <IntroClient />
 }
 

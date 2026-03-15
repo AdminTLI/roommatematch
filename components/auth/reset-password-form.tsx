@@ -28,7 +28,10 @@ export function ResetPasswordForm() {
     setError('')
 
     try {
-      const redirectTo = `${window.location.origin}/auth/reset-password/confirm`
+      // IMPORTANT: Use the server-side callback route so it can
+      // exchange the code for a session (avoids PKCE verifier issues),
+      // then redirect to the confirm page.
+      const redirectTo = `${window.location.origin}/auth/callback?redirect=/auth/reset-password/confirm`
 
       console.log('Attempting to send password reset email:', {
         email,

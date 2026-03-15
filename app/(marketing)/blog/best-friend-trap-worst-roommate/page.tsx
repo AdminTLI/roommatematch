@@ -12,7 +12,7 @@ export const metadata: Metadata = {
     title:
       'The "Best Friend" Trap: Why Your Bestie Might Be Your Worst Roommate',
     description:
-      'Why friendship compatibility does not always equal living compatibility — and how to use behavioural questions to protect both your housing and your relationships.',
+      'Why friendship compatibility does not always equal living compatibility  -  and how to use behavioural questions to protect both your housing and your relationships.',
     type: 'article',
     publishedTime: '2025-11-20',
     authors: ['Domu Match Team'],

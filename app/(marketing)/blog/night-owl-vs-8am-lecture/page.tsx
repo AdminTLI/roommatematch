@@ -5,7 +5,7 @@ export const metadata: Metadata = {
   title:
     'Night Owl vs. 8 A.M. Lecture: Matching Sleep Schedules Before They Clash | Domu Match',
   description:
-    'Sleep is critical for academic performance. Learn how mismatched sleep schedules create conflict and worse grades—and how Domu Match helps you align on routines before you move in.',
+    'Sleep is critical for academic performance. Learn how mismatched sleep schedules create conflict and worse grades - and how Domu Match helps you align on routines before you move in.',
   keywords:
     'student sleep roommates, night owl roommate, 8am lectures sleep, academic performance sleep, Domu Match sleep schedule',
   openGraph: {
