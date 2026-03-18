@@ -66,8 +66,19 @@ function SectionClientContent() {
       totalSteps={11}
       title="Home Operations"
       subtitle="Cleanliness standards, chores, kitchen & bathroom habits."
-      onPrev={() => (window.location.href = isEditMode ? '/onboarding/noise-sensory?mode=edit' : '/onboarding/noise-sensory')}
-      onNext={async () => { await saveSection(); window.location.href = isEditMode ? '/onboarding/social-hosting-language?mode=edit' : '/onboarding/social-hosting-language' }}
+      onPrev={() => {
+        const base = typeof window !== 'undefined' && window.location.pathname.includes('onboarding-professional')
+          ? '/onboarding-professional'
+          : '/onboarding'
+        window.location.href = isEditMode ? `${base}/noise-sensory?mode=edit` : `${base}/noise-sensory`
+      }}
+      onNext={async () => {
+        await saveSection()
+        const base = typeof window !== 'undefined' && window.location.pathname.includes('onboarding-professional')
+          ? '/onboarding-professional'
+          : '/onboarding'
+        window.location.href = isEditMode ? `${base}/social-hosting-language?mode=edit` : `${base}/social-hosting-language`
+      }}
       nextDisabled={nextDisabled}
     >
       <AutosaveToaster show={showToast} />

@@ -7,6 +7,7 @@ export type SectionKey =
   | 'communication-conflict'
   | 'privacy-territoriality'
   | 'reliability-logistics'
+  | 'professional-context'
   | 'location-commute'
 
 export type LikertScaleKind = 'agreement' | 'frequency' | 'comfort'

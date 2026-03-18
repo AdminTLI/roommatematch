@@ -91,6 +91,26 @@ export async function POST(request: Request) {
       }
     }
 
+    // Determine cohort early so we can skip student-only academic validation for professionals.
+    const { data: userRowForType, error: userTypeError } = await serviceSupabase
+      .from('users')
+      .select('user_type')
+      .eq('id', userId)
+      .maybeSingle()
+
+    if (userTypeError) {
+      safeLogger.warn('[Submit] Failed to fetch user_type; defaulting to student behavior', {
+        userId,
+        error: userTypeError.message,
+      })
+    }
+
+    const submissionUserType = (userRowForType?.user_type === 'student' || userRowForType?.user_type === 'professional')
+      ? userRowForType.user_type
+      : null
+
+    const isProfessionalSubmission = submissionUserType === 'professional'
+
     // 1. Fetch all sections from onboarding_sections
       safeLogger.debug('[Submit] Fetching sections for user:', userId)
       const { data: sections, error: sectionsError } = await supabase
@@ -113,7 +133,7 @@ export async function POST(request: Request) {
       let submissionData = null
       const responsesToInsert = []
       
-      if (introSection?.answers) {
+      if (!isProfessionalSubmission && introSection?.answers) {
         try {
           submissionData = extractSubmissionDataFromIntro(introSection.answers, user)
           safeLogger.debug('[Submit] Extracted submission data:', submissionData)
@@ -385,8 +405,14 @@ export async function POST(request: Request) {
 
       safeLogger.debug(`[Submit] Deduplicated ${responsesToInsert.length} responses to ${deduplicatedResponses.length} unique keys`)
 
+      // Keep WFH + age in the snapshot/analytics, but never upsert them into the `responses` table.
+      // Those keys are not part of the canonical `question_items` FK set yet.
+      const deduplicatedResponsesForDb = deduplicatedResponses.filter(
+        (r) => r.question_key !== 'wfh_status' && r.question_key !== 'age'
+      )
+
       // 4. Validate we have data to submit
-      if (!submissionData || deduplicatedResponses.length === 0) {
+      if (deduplicatedResponses.length === 0 || (!submissionData && !isProfessionalSubmission)) {
         console.warn('[Submit] No submission data or responses to process', {
           hasSubmissionData: !!submissionData,
           responseCount: deduplicatedResponses.length,
@@ -399,187 +425,145 @@ export async function POST(request: Request) {
       }
 
       // 5. Use consolidated submission helper
-      if (submissionData && deduplicatedResponses.length > 0) {
-        // Validate all required fields before submission
-        // Ensure we have a valid university_id
-        // First check if university_id is in the intro section answers
-        const universityIdAnswer = introSection?.answers?.find((a: any) => a.itemId === 'university_id')
-        if (universityIdAnswer?.value && typeof universityIdAnswer.value === 'string' && universityIdAnswer.value.trim() !== '') {
-          submissionData.university_id = universityIdAnswer.value
-          safeLogger.debug('[Submit] Found university_id in intro section answers:', submissionData.university_id)
-        }
-        
-        if (!submissionData.university_id || submissionData.university_id === '' || submissionData.university_id === null) {
-          // Check if we have institution_slug (might be "other")
-          const institutionSlugAnswer = introSection?.answers?.find((a: any) => a.itemId === 'institution_slug')
-          if (institutionSlugAnswer?.value === 'other') {
-            console.error('[Submit] User selected "other" institution - university_id is required but cannot be set for "other"')
-            return NextResponse.json({ 
-              error: 'University information is incomplete. Please select a valid institution from the list or contact support if your institution is not listed.',
-              title: 'Missing University Information'
+      if (deduplicatedResponses.length > 0) {
+        // 5a) Persist responses (professionals skip academic/profile upsert)
+        // Professional submissions don't have an academic intro; we only persist questionnaire responses.
+        if (isProfessionalSubmission) {
+          const responsesForDb = deduplicatedResponsesForDb.map((r) => ({
+            user_id: userId,
+            question_key: r.question_key,
+            value: r.value
+          }))
+
+          if (responsesForDb.length > 0) {
+            const { error: responsesError } = await serviceSupabase
+              .from('responses')
+              .upsert(responsesForDb, { onConflict: 'user_id,question_key' })
+
+            if (responsesError) {
+              console.error('[Submit] Failed to save professional responses:', responsesError)
+              return NextResponse.json({
+                error: 'Failed to save questionnaire responses. Please try again.',
+                title: 'Submission Error'
+              }, { status: 500 })
+            }
+          }
+        } else if (submissionData) {
+          // Student submissions: validate intro data, upsert profile/academic, then upsert responses.
+
+          // Validate all required fields before submission
+          // Ensure we have a valid university_id
+          // First check if university_id is in the intro section answers
+          const universityIdAnswer = introSection?.answers?.find((a: any) => a.itemId === 'university_id')
+          if (universityIdAnswer?.value && typeof universityIdAnswer.value === 'string' && universityIdAnswer.value.trim() !== '') {
+            submissionData.university_id = universityIdAnswer.value
+            safeLogger.debug('[Submit] Found university_id in intro section answers:', submissionData.university_id)
+          }
+
+          if (!submissionData.university_id || submissionData.university_id === '' || submissionData.university_id === null) {
+            // Check if we have institution_slug (might be "other")
+            const institutionSlugAnswer = introSection?.answers?.find((a: any) => a.itemId === 'institution_slug')
+            if (institutionSlugAnswer?.value === 'other') {
+              console.error('[Submit] User selected "other" institution - university_id is required but cannot be set for "other"')
+              return NextResponse.json({
+                error: 'University information is incomplete. Please select a valid institution from the list or contact support if your institution is not listed.',
+                title: 'Missing University Information'
+              }, { status: 400 })
+            } else {
+              console.error('[Submit] No university_id found after lookup, cannot proceed with submission')
+              console.error('[Submit] Intro section answers:', introSection?.answers?.map((a: any) => ({ itemId: a.itemId, hasValue: !!a.value })))
+              return NextResponse.json({
+                error: 'University information is required. Please go back to the academic information section and ensure you have selected a valid university, then try submitting again.',
+                title: 'Missing University Information'
+              }, { status: 400 })
+            }
+          }
+
+          // Validate study_start_year is present and valid (required by database)
+          if (!submissionData.study_start_year || isNaN(submissionData.study_start_year)) {
+            console.error('[Submit] study_start_year is missing or invalid:', submissionData.study_start_year)
+            return NextResponse.json({
+              error: 'Study start year is required but could not be calculated. Please ensure all academic information is complete, including expected graduation year, degree level, and institution.',
+              title: 'Missing Academic Data'
             }, { status: 400 })
-          } else {
-            console.error('[Submit] No university_id found after lookup, cannot proceed with submission')
-            console.error('[Submit] Intro section answers:', introSection?.answers?.map((a: any) => ({ itemId: a.itemId, hasValue: !!a.value })))
-            return NextResponse.json({ 
-              error: 'University information is required. Please go back to the academic information section and ensure you have selected a valid university, then try submitting again.',
+          }
+
+          // Validate degree_level is present
+          if (!submissionData.degree_level || submissionData.degree_level.trim() === '') {
+            console.error('[Submit] degree_level is missing:', submissionData.degree_level)
+            return NextResponse.json({
+              error: 'Degree level is required. Please complete the academic information section.',
+              title: 'Missing Academic Data'
+            }, { status: 400 })
+          }
+
+          // Final validation: university_id MUST be present and valid before submission
+          if (!submissionData.university_id || typeof submissionData.university_id !== 'string' || submissionData.university_id.trim() === '') {
+            console.error('[Submit] FINAL VALIDATION FAILED: university_id is missing or invalid:', submissionData.university_id)
+            console.error('[Submit] Intro section answers:', introSection?.answers?.map((a: any) => ({ itemId: a.itemId, value: a.value })))
+            return NextResponse.json({
+              error: 'University information is incomplete. Please go back to the academic information section, ensure you have selected a valid university, and try submitting again. The university selection must be saved before you can submit.',
               title: 'Missing University Information'
             }, { status: 400 })
           }
-        }
 
-        // Validate study_start_year is present and valid (required by database)
-        if (!submissionData.study_start_year || isNaN(submissionData.study_start_year)) {
-          console.error('[Submit] study_start_year is missing or invalid:', submissionData.study_start_year)
-          return NextResponse.json({ 
-            error: 'Study start year is required but could not be calculated. Please ensure all academic information is complete, including expected graduation year, degree level, and institution.',
-            title: 'Missing Academic Data'
-          }, { status: 400 })
-        }
-
-        // Validate degree_level is present
-        if (!submissionData.degree_level || submissionData.degree_level.trim() === '') {
-          console.error('[Submit] degree_level is missing:', submissionData.degree_level)
-          return NextResponse.json({ 
-            error: 'Degree level is required. Please complete the academic information section.',
-            title: 'Missing Academic Data'
-          }, { status: 400 })
-        }
-
-        // Final validation: university_id MUST be present and valid before submission
-        if (!submissionData.university_id || typeof submissionData.university_id !== 'string' || submissionData.university_id.trim() === '') {
-          console.error('[Submit] FINAL VALIDATION FAILED: university_id is missing or invalid:', submissionData.university_id)
-          console.error('[Submit] Intro section answers:', introSection?.answers?.map((a: any) => ({ itemId: a.itemId, value: a.value })))
-          return NextResponse.json({ 
-            error: 'University information is incomplete. Please go back to the academic information section, ensure you have selected a valid university, and try submitting again. The university selection must be saved before you can submit.',
-            title: 'Missing University Information'
-          }, { status: 400 })
-        }
-
-        safeLogger.debug('[Submit] All validations passed, proceeding with submission:', {
-          user_id: userId,
-          university_id: submissionData.university_id,
-          degree_level: submissionData.degree_level,
-          study_start_year: submissionData.study_start_year,
-          expected_graduation_year: submissionData.expected_graduation_year
-        })
-        
-        try {
-          // Use service role client for submission to bypass RLS (already created above)
-          const result = await submitCompleteOnboarding(serviceSupabase, {
+          safeLogger.debug('[Submit] All validations passed, proceeding with submission:', {
             user_id: userId,
             university_id: submissionData.university_id,
-            first_name: submissionData.first_name,
             degree_level: submissionData.degree_level,
-            program_id: submissionData.program_id ?? undefined,
-            program: submissionData.program,
-            campus: submissionData.campus,
-            languages_daily: extractedLanguages,
             study_start_year: submissionData.study_start_year,
-            study_start_month: submissionData.study_start_month,
-            expected_graduation_year: submissionData.expected_graduation_year,
-            graduation_month: submissionData.graduation_month,
-            programme_duration_months: submissionData.programme_duration_months,
-            undecided_program: submissionData.undecided_program,
-            responses: deduplicatedResponses
+            expected_graduation_year: submissionData.expected_graduation_year
           })
 
-          if (!result.success) {
-            console.error('[Submit] Consolidated submission failed:', result.error)
-            const mappedError = mapSubmissionError(result.error || 'Unknown error')
-            
-            // In development, include the technical error for debugging
-            const errorMessage = process.env.NODE_ENV === 'development' 
-              ? `${mappedError.message}\n\nTechnical details: ${result.error}`
-              : mappedError.message
-            
-            return NextResponse.json({ 
-              error: errorMessage,
-              title: mappedError.title,
-              technicalError: process.env.NODE_ENV === 'development' ? result.error : undefined
+          try {
+            // Use service role client for submission to bypass RLS (already created above)
+            const result = await submitCompleteOnboarding(serviceSupabase, {
+              user_id: userId,
+              university_id: submissionData.university_id,
+              first_name: submissionData.first_name,
+              degree_level: submissionData.degree_level,
+              program_id: submissionData.program_id ?? undefined,
+              program: submissionData.program,
+              campus: submissionData.campus,
+              languages_daily: extractedLanguages,
+              study_start_year: submissionData.study_start_year,
+              study_start_month: submissionData.study_start_month,
+              expected_graduation_year: submissionData.expected_graduation_year,
+              graduation_month: submissionData.graduation_month,
+              programme_duration_months: submissionData.programme_duration_months,
+              undecided_program: submissionData.undecided_program,
+              responses: deduplicatedResponsesForDb
+            })
+
+            if (!result.success) {
+              console.error('[Submit] Consolidated submission failed:', result.error)
+              const mappedError = mapSubmissionError(result.error || 'Unknown error')
+
+              // In development, include the technical error for debugging
+              const errorMessage = process.env.NODE_ENV === 'development'
+                ? `${mappedError.message}\n\nTechnical details: ${result.error}`
+                : mappedError.message
+
+              return NextResponse.json({
+                error: errorMessage,
+                title: mappedError.title,
+                technicalError: process.env.NODE_ENV === 'development' ? result.error : undefined
+              }, { status: 500 })
+            }
+
+            safeLogger.debug('[Submit] Consolidated submission successful')
+          } catch (submitError) {
+            console.error('[Submit] Error during submission:', submitError)
+            const errorMessage = submitError instanceof Error ? submitError.message : 'Unknown error'
+            const mappedError = mapSubmissionError(errorMessage)
+            return NextResponse.json({
+              error: mappedError.message || `Failed to submit questionnaire: ${errorMessage}`,
+              title: mappedError.title || 'Submission Error'
             }, { status: 500 })
           }
-
-          safeLogger.debug('[Submit] Consolidated submission successful')
-          
-          // Verify user_academic was created/updated using service role client to bypass RLS
-          // Reuse the same serviceSupabase instance that was created earlier
-          const { data: verifyAcademic, error: verifyError } = await serviceSupabase
-            .from('user_academic')
-            .select('user_id, study_start_year, university_id, degree_level')
-            .eq('user_id', userId)
-            .maybeSingle()
-          
-          if (verifyError) {
-            console.error('[Submit] Failed to verify user_academic after submission:', verifyError)
-            // Attempt to backfill from submission data
-            safeLogger.debug('[Submit] Attempting to backfill user_academic from submission data...')
-            try {
-              // Re-extract and upsert academic data using service role client
-              const { upsertProfileAndAcademic } = await import('@/lib/onboarding/submission')
-              await upsertProfileAndAcademic(serviceSupabase, {
-                user_id: userId,
-                university_id: submissionData.university_id,
-                first_name: submissionData.first_name,
-                degree_level: submissionData.degree_level,
-                program_id: submissionData.program_id ?? undefined,
-                program: submissionData.program,
-                campus: submissionData.campus,
-                languages_daily: extractedLanguages,
-                study_start_year: submissionData.study_start_year!,
-                study_start_month: submissionData.study_start_month,
-                expected_graduation_year: submissionData.expected_graduation_year,
-                graduation_month: submissionData.graduation_month,
-                programme_duration_months: submissionData.programme_duration_months,
-                undecided_program: submissionData.undecided_program
-              })
-              safeLogger.debug('[Submit] Successfully backfilled user_academic')
-            } catch (backfillError) {
-              console.error('[Submit] Failed to backfill user_academic:', backfillError)
-              // Log but don't fail - submission was successful
-            }
-          } else if (!verifyAcademic) {
-            console.error('[Submit] CRITICAL: user_academic was not created after successful submission')
-            console.error('[Submit] Attempting to backfill user_academic from submission data...')
-            try {
-              // Re-extract and upsert academic data using service role client
-              const { upsertProfileAndAcademic } = await import('@/lib/onboarding/submission')
-              await upsertProfileAndAcademic(serviceSupabase, {
-                user_id: userId,
-                university_id: submissionData.university_id,
-                first_name: submissionData.first_name,
-                degree_level: submissionData.degree_level,
-                program_id: submissionData.program_id ?? undefined,
-                program: submissionData.program,
-                campus: submissionData.campus,
-                languages_daily: extractedLanguages,
-                study_start_year: submissionData.study_start_year!,
-                study_start_month: submissionData.study_start_month,
-                expected_graduation_year: submissionData.expected_graduation_year,
-                graduation_month: submissionData.graduation_month,
-                programme_duration_months: submissionData.programme_duration_months,
-                undecided_program: submissionData.undecided_program
-              })
-              safeLogger.debug('[Submit] Successfully backfilled user_academic')
-            } catch (backfillError) {
-              console.error('[Submit] Failed to backfill user_academic:', backfillError)
-              // Log but don't fail - submission was successful, but academic data is missing
-              console.error('[Submit] User should have user_academic record but it was not created. Manual intervention may be required.')
-            }
-          } else {
-            safeLogger.debug('[Submit] Verified user_academic was created/updated:', verifyAcademic)
-          }
-        } catch (submitError) {
-          console.error('[Submit] Error during submission:', submitError)
-          const errorMessage = submitError instanceof Error ? submitError.message : 'Unknown error'
-          const mappedError = mapSubmissionError(errorMessage)
-          return NextResponse.json({ 
-            error: mappedError.message || `Failed to submit questionnaire: ${errorMessage}`,
-            title: mappedError.title || 'Submission Error'
-          }, { status: 500 })
         }
 
-        // 5. Save snapshot to onboarding_submissions (only after successful submission)
+        // 5b) Save snapshot to onboarding_submissions (only after successful submission)
         // Store both raw sections (for audit trail) and transformed responses (for analysis)
         // Normalized data avoids needing to recompute transformAnswer for historical analysis
         safeLogger.debug('[Submit] Saving to onboarding_submissions')
@@ -649,8 +633,8 @@ export async function POST(request: Request) {
         try {
           await trackEvent(EVENT_TYPES.QUESTIONNAIRE_COMPLETED, {
             user_id: userId,
-            university_id: submissionData.university_id,
-            program_id: submissionData.program_id,
+            university_id: submissionData?.university_id ?? null,
+            program_id: submissionData?.program_id ?? null,
             response_count: deduplicatedResponses.length,
             vector_generated: vectorGenerated,
             is_edit: isEditMode

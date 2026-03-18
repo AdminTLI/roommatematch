@@ -66,8 +66,19 @@ function SectionClientContent() {
       totalSteps={11}
       title="Social, Hosting & Language"
       subtitle="Guests, gatherings, and common-language norms."
-      onPrev={() => (window.location.href = isEditMode ? '/onboarding/home-operations?mode=edit' : '/onboarding/home-operations')}
-      onNext={async () => { await saveSection(); window.location.href = isEditMode ? '/onboarding/communication-conflict?mode=edit' : '/onboarding/communication-conflict' }}
+      onPrev={() => {
+        const base = typeof window !== 'undefined' && window.location.pathname.includes('onboarding-professional')
+          ? '/onboarding-professional'
+          : '/onboarding'
+        window.location.href = isEditMode ? `${base}/home-operations?mode=edit` : `${base}/home-operations`
+      }}
+      onNext={async () => {
+        await saveSection()
+        const base = typeof window !== 'undefined' && window.location.pathname.includes('onboarding-professional')
+          ? '/onboarding-professional'
+          : '/onboarding'
+        window.location.href = isEditMode ? `${base}/communication-conflict?mode=edit` : `${base}/communication-conflict`
+      }}
       nextDisabled={nextDisabled}
     >
       <AutosaveToaster show={showToast} />

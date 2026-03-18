@@ -252,7 +252,10 @@ export function transformAnswer(answer: any): { question_key: string; value: any
     return null
   }
 
-  const questionKey = itemIdToQuestionKey[answer.itemId]
+  // Professional context answers are stored with raw keys (not in the item bank).
+  // We still want them to appear in onboarding_submissions.snapshot.transformed_responses.
+  const isProfessionalContextKey = answer.itemId === 'wfh_status' || answer.itemId === 'age'
+  const questionKey = isProfessionalContextKey ? answer.itemId : itemIdToQuestionKey[answer.itemId]
   if (!questionKey) {
     console.warn(`[transformAnswer] No mapping found for item ID: ${answer.itemId}`)
     return null

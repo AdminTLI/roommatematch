@@ -65,8 +65,19 @@ function SectionClientContent() {
       totalSteps={11}
       title="Sleep & Circadian"
       subtitle="Daily rhythms and quiet-hour expectations."
-      onPrev={() => (window.location.href = isEditMode ? '/onboarding/personality-values?mode=edit' : '/onboarding/personality-values')}
-      onNext={async () => { await saveSection(); window.location.href = isEditMode ? '/onboarding/noise-sensory?mode=edit' : '/onboarding/noise-sensory' }}
+      onPrev={() => {
+        const base = typeof window !== 'undefined' && window.location.pathname.includes('onboarding-professional')
+          ? '/onboarding-professional'
+          : '/onboarding'
+        window.location.href = isEditMode ? `${base}/personality-values?mode=edit` : `${base}/personality-values`
+      }}
+      onNext={async () => {
+        await saveSection()
+        const base = typeof window !== 'undefined' && window.location.pathname.includes('onboarding-professional')
+          ? '/onboarding-professional'
+          : '/onboarding'
+        window.location.href = isEditMode ? `${base}/noise-sensory?mode=edit` : `${base}/noise-sensory`
+      }}
       nextDisabled={nextDisabled}
     >
       <AutosaveToaster show={showToast} />

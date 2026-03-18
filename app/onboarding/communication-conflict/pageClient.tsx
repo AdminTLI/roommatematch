@@ -66,8 +66,19 @@ function SectionClientContent() {
       totalSteps={11}
       title="Communication & Conflict"
       subtitle="Feedback preferences and how we solve small issues fast."
-      onPrev={() => (window.location.href = isEditMode ? '/onboarding/social-hosting-language?mode=edit' : '/onboarding/social-hosting-language')}
-      onNext={async () => { await saveSection(); window.location.href = isEditMode ? '/onboarding/privacy-territoriality?mode=edit' : '/onboarding/privacy-territoriality' }}
+      onPrev={() => {
+        const base = typeof window !== 'undefined' && window.location.pathname.includes('onboarding-professional')
+          ? '/onboarding-professional'
+          : '/onboarding'
+        window.location.href = isEditMode ? `${base}/social-hosting-language?mode=edit` : `${base}/social-hosting-language`
+      }}
+      onNext={async () => {
+        await saveSection()
+        const base = typeof window !== 'undefined' && window.location.pathname.includes('onboarding-professional')
+          ? '/onboarding-professional'
+          : '/onboarding'
+        window.location.href = isEditMode ? `${base}/privacy-territoriality?mode=edit` : `${base}/privacy-territoriality`
+      }}
       nextDisabled={nextDisabled}
     >
       <AutosaveToaster show={showToast} />

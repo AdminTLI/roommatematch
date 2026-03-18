@@ -101,8 +101,19 @@ function SectionClientContent() {
       totalSteps={11}
       title="Personality & Values"
       subtitle="Reliability, flexibility, and how you prefer the home to ‘feel’."
-      onPrev={() => (window.location.href = isEditMode ? '/onboarding/location-commute?mode=edit' : '/onboarding/location-commute')}
-      onNext={async () => { await saveSection(); window.location.href = isEditMode ? '/onboarding/sleep-circadian?mode=edit' : '/onboarding/sleep-circadian' }}
+      onPrev={() => {
+        const isProfessionalPath = typeof window !== 'undefined' && window.location.pathname.includes('onboarding-professional')
+        if (isProfessionalPath) {
+          window.location.href = isEditMode ? '/onboarding-professional/professional-context?mode=edit' : '/onboarding-professional/professional-context'
+          return
+        }
+        window.location.href = isEditMode ? '/onboarding/location-commute?mode=edit' : '/onboarding/location-commute'
+      }}
+      onNext={async () => {
+        await saveSection()
+        const base = typeof window !== 'undefined' && window.location.pathname.includes('onboarding-professional') ? '/onboarding-professional' : '/onboarding'
+        window.location.href = isEditMode ? `${base}/sleep-circadian?mode=edit` : `${base}/sleep-circadian`
+      }}
       nextDisabled={nextDisabled}
     >
       <AutosaveToaster show={showToast} />

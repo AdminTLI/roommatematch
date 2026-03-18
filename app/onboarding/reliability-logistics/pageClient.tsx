@@ -66,8 +66,19 @@ function SectionClientContent() {
       totalSteps={11}
       title="Reliability & Logistics"
       subtitle="House rules, registration (BRP), pets, and commitments."
-      onPrev={() => (window.location.href = isEditMode ? '/onboarding/privacy-territoriality?mode=edit' : '/onboarding/privacy-territoriality')}
-      onNext={async () => { await saveSection(); window.location.href = isEditMode ? '/onboarding/review?mode=edit' : '/onboarding/review' }}
+      onPrev={() => {
+        const base = typeof window !== 'undefined' && window.location.pathname.includes('onboarding-professional')
+          ? '/onboarding-professional'
+          : '/onboarding'
+        window.location.href = isEditMode ? `${base}/privacy-territoriality?mode=edit` : `${base}/privacy-territoriality`
+      }}
+      onNext={async () => {
+        await saveSection()
+        const base = typeof window !== 'undefined' && window.location.pathname.includes('onboarding-professional')
+          ? '/onboarding-professional'
+          : '/onboarding'
+        window.location.href = isEditMode ? `${base}/review?mode=edit` : `${base}/review`
+      }}
       nextDisabled={nextDisabled}
     >
       <AutosaveToaster show={showToast} />

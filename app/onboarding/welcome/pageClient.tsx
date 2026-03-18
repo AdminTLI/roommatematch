@@ -79,7 +79,8 @@ export default function OnboardingWelcomePage() {
     }
 
     const base = typeof window !== 'undefined' && window.location.pathname.includes('onboarding-professional') ? '/onboarding-professional' : '/onboarding'
-    const nextUrl = isEditMode ? `${base}/intro?mode=edit` : `${base}/intro`
+    const nextStep = base === '/onboarding-professional' ? 'professional-context' : 'intro'
+    const nextUrl = isEditMode ? `${base}/${nextStep}?mode=edit` : `${base}/${nextStep}`
     router.push(nextUrl)
   }
 

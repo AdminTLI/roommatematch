@@ -492,6 +492,7 @@ export function MatchCard({
                     )}
                   </div>
                 </div>
+            </div>
               </div>
             </div>
 

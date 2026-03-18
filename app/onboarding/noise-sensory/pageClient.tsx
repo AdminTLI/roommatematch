@@ -66,8 +66,19 @@ function SectionClientContent() {
       totalSteps={11}
       title="Noise & Sensory"
       subtitle="Sound, light, air, and thermal comfort in shared spaces."
-      onPrev={() => (window.location.href = isEditMode ? '/onboarding/sleep-circadian?mode=edit' : '/onboarding/sleep-circadian')}
-      onNext={async () => { await saveSection(); window.location.href = isEditMode ? '/onboarding/home-operations?mode=edit' : '/onboarding/home-operations' }}
+      onPrev={() => {
+        const base = typeof window !== 'undefined' && window.location.pathname.includes('onboarding-professional')
+          ? '/onboarding-professional'
+          : '/onboarding'
+        window.location.href = isEditMode ? `${base}/sleep-circadian?mode=edit` : `${base}/sleep-circadian`
+      }}
+      onNext={async () => {
+        await saveSection()
+        const base = typeof window !== 'undefined' && window.location.pathname.includes('onboarding-professional')
+          ? '/onboarding-professional'
+          : '/onboarding'
+        window.location.href = isEditMode ? `${base}/home-operations?mode=edit` : `${base}/home-operations`
+      }}
       nextDisabled={nextDisabled}
     >
       <AutosaveToaster show={showToast} />

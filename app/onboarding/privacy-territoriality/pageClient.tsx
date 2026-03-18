@@ -66,8 +66,19 @@ function SectionClientContent() {
       totalSteps={11}
       title="Privacy & Territoriality"
       subtitle="Borrowing, door etiquette, photos, and personal zones."
-      onPrev={() => (window.location.href = isEditMode ? '/onboarding/communication-conflict?mode=edit' : '/onboarding/communication-conflict')}
-      onNext={async () => { await saveSection(); window.location.href = isEditMode ? '/onboarding/reliability-logistics?mode=edit' : '/onboarding/reliability-logistics' }}
+      onPrev={() => {
+        const base = typeof window !== 'undefined' && window.location.pathname.includes('onboarding-professional')
+          ? '/onboarding-professional'
+          : '/onboarding'
+        window.location.href = isEditMode ? `${base}/communication-conflict?mode=edit` : `${base}/communication-conflict`
+      }}
+      onNext={async () => {
+        await saveSection()
+        const base = typeof window !== 'undefined' && window.location.pathname.includes('onboarding-professional')
+          ? '/onboarding-professional'
+          : '/onboarding'
+        window.location.href = isEditMode ? `${base}/reliability-logistics?mode=edit` : `${base}/reliability-logistics`
+      }}
       nextDisabled={nextDisabled}
     >
       <AutosaveToaster show={showToast} />
