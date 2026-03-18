@@ -2,6 +2,34 @@ import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import { createServiceClient } from '@/lib/supabase/service'
 
+/**
+ * Returns the onboarding URL to redirect to if the user has not completed their cohort questionnaire, or null if complete.
+ * Use on dashboard, matches, chat, etc. to send professionals to /onboarding-professional and students to /onboarding.
+ */
+export async function getOnboardingRedirectUrlIfIncomplete(userId: string): Promise<string | null> {
+  const service = createServiceClient()
+  const { data: userRow } = await service
+    .from('users')
+    .select('user_type')
+    .eq('id', userId)
+    .maybeSingle()
+  const userType = (userRow?.user_type === 'student' || userRow?.user_type === 'professional')
+    ? userRow.user_type
+    : null
+  if (!userType) return '/onboarding/path'
+  const { data: submission } = await service
+    .from('onboarding_submissions')
+    .select('user_type')
+    .eq('user_id', userId)
+    .maybeSingle()
+  const complete =
+    userType === 'professional'
+      ? submission?.user_type === 'professional'
+      : submission && (submission.user_type === 'student' || submission.user_type == null)
+  if (complete) return null
+  return userType === 'professional' ? '/onboarding-professional/welcome' : '/onboarding/welcome'
+}
+
 export type CheckOnboardingRedirectOptions = {
   /** When true (default), redirect to /onboarding/path if user_type is not set. Set false on the path page itself. */
   requireUserType?: boolean
@@ -73,7 +101,7 @@ export async function checkOnboardingRedirect(
   if (!isEditMode) {
     const { data: submission, error: submissionFetchError } = await service
       .from('onboarding_submissions')
-      .select('id')
+      .select('id, user_type')
       .eq('user_id', user.id)
       .maybeSingle()
 
@@ -83,8 +111,17 @@ export async function checkOnboardingRedirect(
         submissionFetchError.message ?? submissionFetchError
       )
     }
+
+    // Completion counts only when submission matches the user's cohort (student vs professional)
+    const submissionMatchesCohort =
+      submission &&
+      (userType === 'professional'
+        ? submission.user_type === 'professional'
+        : userType === 'student'
+          ? (submission.user_type === 'student' || submission.user_type == null)
+          : false)
     
-    if (submission) {
+    if (submissionMatchesCohort) {
       redirect('/dashboard')
     }
   }

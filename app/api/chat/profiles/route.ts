@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createClient, createAdminClient } from '@/lib/supabase/server'
 import { checkRateLimit, getUserRateLimitKey, buildRateLimitHeaders } from '@/lib/rate-limit'
 import { safeLogger } from '@/lib/utils/logger'
+import { getUserType } from '@/lib/auth/cohort-visibility'
 
 export async function POST(request: NextRequest) {
   try {
@@ -125,10 +126,10 @@ export async function POST(request: NextRequest) {
     // Filter out profiles the current user has blocked (they don't need to see them)
     const allowedUserIds = allUserIds.filter(id => !blockedByCurrentUser.has(id))
 
-    // Fetch profiles for all allowed chat members
+    // Fetch profiles for all allowed chat members (include user_type for cohort visibility)
     const { data: profiles, error: profilesError } = await admin
       .from('profiles')
-      .select('user_id, first_name, last_name')
+      .select('user_id, first_name, last_name, user_type')
       .in('user_id', allowedUserIds.length > 0 ? allowedUserIds : [])
 
     if (profilesError) {
@@ -149,17 +150,33 @@ export async function POST(request: NextRequest) {
       )
     }
 
+    // Viewer's cohort: only same-role users can see full profile (student/professional)
+    const viewerUserType = await getUserType(user.id)
+
     // Post-process profiles:
     // - For users who have blocked the current user, anonymize their name to "User"
+    // - For users in a different cohort (role), show only "User" so profile data is not visible across cohorts
     const safeProfiles = (profiles || []).map((profile: any) => {
       if (blockedCurrentUser.has(profile.user_id)) {
         return {
-          ...profile,
+          user_id: profile.user_id,
           first_name: 'User',
           last_name: ''
         }
       }
-      return profile
+      const sameCohort = viewerUserType != null && profile.user_type === viewerUserType
+      if (!sameCohort) {
+        return {
+          user_id: profile.user_id,
+          first_name: 'User',
+          last_name: ''
+        }
+      }
+      return {
+        user_id: profile.user_id,
+        first_name: profile.first_name,
+        last_name: profile.last_name ?? ''
+      }
     })
 
     return NextResponse.json({ 

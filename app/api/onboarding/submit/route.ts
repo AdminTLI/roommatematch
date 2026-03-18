@@ -583,8 +583,17 @@ export async function POST(request: Request) {
         // Store both raw sections (for audit trail) and transformed responses (for analysis)
         // Normalized data avoids needing to recompute transformAnswer for historical analysis
         safeLogger.debug('[Submit] Saving to onboarding_submissions')
+        const { data: userRowForType } = await serviceSupabase
+          .from('users')
+          .select('user_type')
+          .eq('id', userId)
+          .maybeSingle()
+        const submissionUserType = (userRowForType?.user_type === 'student' || userRowForType?.user_type === 'professional')
+          ? userRowForType.user_type
+          : null
         const submissionPayload = {
           user_id: userId,
+          user_type: submissionUserType,
           snapshot: {
             raw_sections: sections ?? [], // Raw sections with untransformed answers for audit
             transformed_responses: deduplicatedResponses, // Normalized question_key/value pairs for easy analysis

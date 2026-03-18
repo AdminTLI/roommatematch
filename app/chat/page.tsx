@@ -3,6 +3,7 @@ import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import { checkUserVerificationStatus, getVerificationRedirectUrl } from '@/lib/auth/verification-check'
 import { getUserProfile } from '@/lib/auth/user-profile'
+import { getOnboardingRedirectUrlIfIncomplete } from '@/lib/onboarding/server-redirect'
 import { MessengerLayout } from './components/messenger-layout'
 import { DomuChatWidget } from '../dashboard/components/domu-chat-widget'
 
@@ -32,15 +33,9 @@ export default async function ChatPage({ searchParams }: ChatPageProps) {
     }
   }
 
-  // Check if user has completed onboarding
-  const { data: submission } = await supabase
-    .from('onboarding_submissions')
-    .select('id')
-    .eq('user_id', user.id)
-    .maybeSingle()
-
-  if (!submission) {
-    redirect('/onboarding')
+  const onboardingRedirect = await getOnboardingRedirectUrlIfIncomplete(user.id)
+  if (onboardingRedirect) {
+    redirect(onboardingRedirect)
   }
 
   // Get user profile with proper name

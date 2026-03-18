@@ -177,7 +177,10 @@ export function transformFormData(data: Record<string, any>): Record<string, any
   return transformed
 }
 
-export async function checkQuestionnaireCompletion(userId: string): Promise<{
+export async function checkQuestionnaireCompletion(
+  userId: string,
+  options?: { userType?: 'student' | 'professional' | null }
+): Promise<{
   isComplete: boolean;
   missingKeys: string[];
   responseCount: number;
@@ -186,14 +189,23 @@ export async function checkQuestionnaireCompletion(userId: string): Promise<{
   const { createClient } = await import('@/lib/supabase/server');
   const supabase = await createClient();
 
-  // Check if submission exists - this is the primary source of truth
+  // Check if submission exists and optionally match cohort (student vs professional)
   const { data: submission } = await supabase
     .from('onboarding_submissions')
-    .select('id')
+    .select('id, user_type')
     .eq('user_id', userId)
     .maybeSingle();
 
   const hasSubmission = !!submission;
+  const userType = options?.userType ?? null;
+  const submissionMatchesCohort = submission && (
+    userType === 'professional'
+      ? submission.user_type === 'professional'
+      : userType === 'student'
+        ? (submission.user_type === 'student' || submission.user_type == null)
+        : hasSubmission
+  );
+  const isComplete = userType != null ? submissionMatchesCohort : hasSubmission;
 
   // Get all responses for this user (for progress tracking)
   const { data: responses } = await supabase
@@ -208,16 +220,11 @@ export async function checkQuestionnaireCompletion(userId: string): Promise<{
   const requiredKeys = Object.keys(questionSchemas);
   const missingKeys = requiredKeys.filter(key => !responseKeys.has(key));
 
-  // Completion is primarily based on submission existence
-  // If user has submission, they are considered complete regardless of response count
-  // This handles legacy users who may have fewer responses due to schema changes
-  const isComplete = hasSubmission;
-
   return {
     isComplete,
     missingKeys,
     responseCount,
-    hasSubmission
+    hasSubmission: !!submission
   };
 }
 

@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createClient, createAdminClient } from '@/lib/supabase/server'
 import { checkRateLimit, getUserRateLimitKey, buildRateLimitHeaders } from '@/lib/rate-limit'
 import { safeLogger } from '@/lib/utils/logger'
+import { canViewCohortProfile } from '@/lib/auth/cohort-visibility'
 
 const CHAT_PROFILES_LIMIT = 60 // 60 profile fetches per minute per user
 
@@ -143,6 +144,15 @@ export async function GET(request: NextRequest) {
       })
       return NextResponse.json(
         { error: 'You can only view info for matched users' },
+        { status: 403 }
+      )
+    }
+
+    // Profile/settings data is only visible to users of the same role (student vs professional)
+    const allowed = await canViewCohortProfile(user.id, targetUserId)
+    if (!allowed) {
+      return NextResponse.json(
+        { error: 'Profile information is only visible to users in the same cohort' },
         { status: 403 }
       )
     }

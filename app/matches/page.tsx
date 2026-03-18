@@ -4,6 +4,7 @@ import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import { getUserProfile } from '@/lib/auth/user-profile'
 import { checkUserVerificationStatus, getVerificationRedirectUrl } from '@/lib/auth/verification-check'
+import { getOnboardingRedirectUrlIfIncomplete } from '@/lib/onboarding/server-redirect'
 import { DomuChatWidget } from '../dashboard/components/domu-chat-widget'
 
 export default async function MatchesPage() {
@@ -14,15 +15,9 @@ export default async function MatchesPage() {
     redirect('/auth/sign-in')
   }
 
-  // Check if user has completed onboarding
-  const { data: submission } = await supabase
-    .from('onboarding_submissions')
-    .select('id')
-    .eq('user_id', user.id)
-    .maybeSingle()
-
-  if (!submission) {
-    redirect('/onboarding')
+  const onboardingRedirect = await getOnboardingRedirectUrlIfIncomplete(user.id)
+  if (onboardingRedirect) {
+    redirect(onboardingRedirect)
   }
 
   // Check verification status (backup check - middleware also enforces this)

@@ -493,6 +493,18 @@ export default async function SettingsPage() {
     console.log('[Settings] Found user_academic:', academic)
   }
 
+  // Resolve user_type: questionnaire completion only counts for students; professionals use a separate flow
+  const { data: userRow } = await supabase
+    .from('users')
+    .select('user_type')
+    .eq('id', user.id)
+    .maybeSingle()
+  const userType = (profile?.user_type === 'student' || profile?.user_type === 'professional')
+    ? profile.user_type
+    : (userRow?.user_type === 'student' || userRow?.user_type === 'professional'
+      ? userRow.user_type
+      : null)
+
   // Check questionnaire progress
   const { data: sections } = await supabase
     .from('onboarding_sections')
@@ -542,29 +554,32 @@ export default async function SettingsPage() {
     'reliability-logistics'
   ]
 
-  // Count only the required sections that are completed
-  const completedRequiredSections = sections?.filter(s => 
-    requiredSections.includes(s.section)
-  ) || []
+  // Questionnaire completion is only applicable to students (student flow). Professionals and users without a role
+  // use the young professionals flow and have not been assigned that questionnaire yet, so we show "not filled".
+  const isStudent = userType === 'student'
+  const completedRequiredSections = isStudent
+    ? (sections?.filter(s => requiredSections.includes(s.section)) || [])
+    : []
 
   console.log('[Settings] All sections from database:', sections?.map(s => s.section))
   console.log('[Settings] Required sections:', requiredSections)
+  console.log('[Settings] userType:', userType, 'isStudent:', isStudent)
   console.log('[Settings] Completed required sections:', completedRequiredSections.map(s => s.section))
   
   console.log('[Settings] Progress calculation:', {
     totalSections: sections?.length,
     requiredSections: requiredSections.length,
     completedRequired: completedRequiredSections.length,
-    isSubmitted: !!submission,
+    isSubmitted: isStudent && !!submission,
     allSections: sections?.map(s => s.section)
   })
 
   const progressData = {
     completedSections: completedRequiredSections.map(s => s.section),
     totalSections: requiredSections.length, // Should be 9
-    isFullySubmitted: !!submission,
-    lastUpdated: sections?.[0]?.updated_at || null,
-    submittedAt: submission?.submitted_at || null
+    isFullySubmitted: isStudent && !!submission,
+    lastUpdated: isStudent ? (sections?.[0]?.updated_at || null) : null,
+    submittedAt: isStudent ? (submission?.submitted_at || null) : null
   }
 
   // Get user profile with proper name
@@ -634,6 +649,7 @@ export default async function SettingsPage() {
           profile={profile}
           academic={academicWithStudyYear}
           progressData={progressData}
+          userType={userType}
         />
       </AppShell>
       <DomuChatWidget />

@@ -31,9 +31,11 @@ interface SettingsContentProps {
     lastUpdated: string | null
     submittedAt: string | null
   }
+  /** 'student' | 'professional' | null - used to show correct questionnaire routes and completion */
+  userType?: 'student' | 'professional' | null
 }
 
-export function SettingsContent({ user, profile, academic, progressData }: SettingsContentProps) {
+export function SettingsContent({ user, profile, academic, progressData, userType }: SettingsContentProps) {
   const router = useRouter()
   const [activeTab, setActiveTab] = useState('profile')
   const [mounted, setMounted] = useState(false)
@@ -193,6 +195,7 @@ export function SettingsContent({ user, profile, academic, progressData }: Setti
                     </div>
                     <QuestionnaireSettings
                       progressData={progressData}
+                      userType={userType}
                     />
                   </div>
                 </TabsContent>

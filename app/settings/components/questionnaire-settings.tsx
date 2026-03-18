@@ -26,19 +26,23 @@ interface QuestionnaireSettingsProps {
     lastUpdated: string | null
     submittedAt: string | null
   }
+  /** 'student' | 'professional' | null - used for edit/retake routes (professional → onboarding-professional) */
+  userType?: 'student' | 'professional' | null
 }
 
-export function QuestionnaireSettings({ progressData }: QuestionnaireSettingsProps) {
+export function QuestionnaireSettings({ progressData, userType }: QuestionnaireSettingsProps) {
   const router = useRouter()
   const [isResetting, setIsResetting] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [success, setSuccess] = useState<string | null>(null)
 
   const { completedSections, totalSections, isFullySubmitted, lastUpdated, submittedAt } = progressData
-  const progressPercentage = Math.round((completedSections.length / totalSections) * 100)
+  const progressPercentage = totalSections > 0 ? Math.round((completedSections.length / totalSections) * 100) : 0
+  const isProfessional = userType === 'professional'
+  const onboardingBase = isProfessional ? '/onboarding-professional' : '/onboarding'
 
   const handleEditAnswers = () => {
-    router.push('/onboarding/welcome?mode=edit')
+    router.push(`${onboardingBase}/welcome?mode=edit`)
   }
 
   const handleRetakeQuestionnaire = async () => {
@@ -61,7 +65,7 @@ export function QuestionnaireSettings({ progressData }: QuestionnaireSettingsPro
 
       setSuccess('Questionnaire reset successfully! You can now retake it.')
       setTimeout(() => {
-        router.push('/onboarding')
+        router.push(isProfessional ? '/onboarding-professional' : '/onboarding')
       }, 2000)
     } catch (err) {
       setError(err instanceof Error ? err.message : 'An error occurred')
@@ -98,19 +102,20 @@ export function QuestionnaireSettings({ progressData }: QuestionnaireSettingsPro
   }
 
   const getSectionRoute = (section: string) => {
+    const base = onboardingBase
     const routes: Record<string, string> = {
-      'intro': '/onboarding/intro',
-      'location-commute': '/onboarding/location-commute',
-      'personality-values': '/onboarding/personality-values',
-      'sleep-circadian': '/onboarding/sleep-circadian',
-      'noise-sensory': '/onboarding/noise-sensory',
-      'home-operations': '/onboarding/home-operations',
-      'social-hosting-language': '/onboarding/social-hosting-language',
-      'communication-conflict': '/onboarding/communication-conflict',
-      'privacy-territoriality': '/onboarding/privacy-territoriality',
-      'reliability-logistics': '/onboarding/reliability-logistics'
+      'intro': `${base}/intro`,
+      'location-commute': `${base}/location-commute`,
+      'personality-values': `${base}/personality-values`,
+      'sleep-circadian': `${base}/sleep-circadian`,
+      'noise-sensory': `${base}/noise-sensory`,
+      'home-operations': `${base}/home-operations`,
+      'social-hosting-language': `${base}/social-hosting-language`,
+      'communication-conflict': `${base}/communication-conflict`,
+      'privacy-territoriality': `${base}/privacy-territoriality`,
+      'reliability-logistics': `${base}/reliability-logistics`
     }
-    return routes[section] || '/onboarding'
+    return routes[section] || base
   }
 
   const handleEditSection = (section: string) => {

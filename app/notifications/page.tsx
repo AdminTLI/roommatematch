@@ -2,6 +2,7 @@ import { NotificationsPage } from './components/notifications-page'
 import { AppShell } from '@/components/app/shell'
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
+import { getOnboardingRedirectUrlIfIncomplete } from '@/lib/onboarding/server-redirect'
 
 export default async function NotificationsPageWrapper() {
   const supabase = await createClient()
@@ -11,15 +12,9 @@ export default async function NotificationsPageWrapper() {
     redirect('/auth/sign-in')
   }
 
-  // Check if user has completed onboarding
-  const { data: submission } = await supabase
-    .from('onboarding_submissions')
-    .select('id')
-    .eq('user_id', user.id)
-    .maybeSingle()
-
-  if (!submission) {
-    redirect('/onboarding')
+  const onboardingRedirect = await getOnboardingRedirectUrlIfIncomplete(user.id)
+  if (onboardingRedirect) {
+    redirect(onboardingRedirect)
   }
 
   return (

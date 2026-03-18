@@ -4,6 +4,7 @@ import { safeLogger } from '@/lib/utils/logger'
 import { generatePersonalizedExplanation } from '@/lib/matching/personalized-explanation'
 import { toStudent } from '@/lib/matching/answer-map'
 import type { StudentProfile } from '@/lib/matching/answer-map'
+import { canViewCohortProfile } from '@/lib/auth/cohort-visibility'
 
 // GET /api/chat/compatibility?chatId=xxx or ?otherUserId=xxx
 export async function GET(request: NextRequest) {
@@ -113,6 +114,15 @@ export async function GET(request: NextRequest) {
       return NextResponse.json(
         { error: 'Could not determine target user' },
         { status: 400 }
+      )
+    }
+
+    // Compatibility and profile-derived data only visible to same cohort (student vs professional)
+    const allowed = await canViewCohortProfile(user.id, targetUserId)
+    if (!allowed) {
+      return NextResponse.json(
+        { error: 'Compatibility information is only available for users in the same cohort' },
+        { status: 403 }
       )
     }
 

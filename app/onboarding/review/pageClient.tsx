@@ -394,13 +394,12 @@ function ReviewClientContent() {
         localStorage.setItem('demo-questionnaire-completed', 'true')
       }
       
-      // Navigate based on mode
+      // Navigate based on mode and cohort (student vs young professional)
       if (isEditMode) {
-        // In edit mode, return to settings after successful submission
         window.location.href = '/settings'
       } else {
-        // Normal flow, go to completion page
-        window.location.href = '/onboarding/complete'
+        const isProfessionalPath = typeof window !== 'undefined' && window.location.pathname.includes('onboarding-professional')
+        window.location.href = isProfessionalPath ? '/onboarding-professional/complete' : '/onboarding/complete'
       }
     } catch (error) {
       console.error('Submit error:', error)
@@ -414,7 +413,10 @@ function ReviewClientContent() {
       totalSteps={11}
       title={isEditMode ? "Review your updated answers" : "Review your answers"}
       subtitle={isEditMode ? "Review your changes before saving. Submit to update your profile." : "Read-only summary. Submit to finish."}
-      onPrev={() => (window.location.href = isEditMode ? '/onboarding/reliability-logistics?mode=edit' : '/onboarding/reliability-logistics')}
+      onPrev={() => {
+        const base = typeof window !== 'undefined' && window.location.pathname.includes('onboarding-professional') ? '/onboarding-professional' : '/onboarding'
+        window.location.href = isEditMode ? `${base}/reliability-logistics?mode=edit` : `${base}/reliability-logistics`
+      }}
       onNext={submit}
       nextDisabled={!isAgreed}
     >

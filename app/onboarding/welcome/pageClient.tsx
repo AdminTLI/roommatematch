@@ -78,7 +78,8 @@ export default function OnboardingWelcomePage() {
       console.error('[OnboardingWelcome] Failed to save demographics selection', error)
     }
 
-    const nextUrl = isEditMode ? '/onboarding/intro?mode=edit' : '/onboarding/intro'
+    const base = typeof window !== 'undefined' && window.location.pathname.includes('onboarding-professional') ? '/onboarding-professional' : '/onboarding'
+    const nextUrl = isEditMode ? `${base}/intro?mode=edit` : `${base}/intro`
     router.push(nextUrl)
   }
 

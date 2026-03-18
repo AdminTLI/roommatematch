@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createClient, createAdminClient } from '@/lib/supabase/server'
 import { safeLogger } from '@/lib/utils/logger'
 import { recalculateGroupCompatibility } from '@/lib/group-compatibility/calculator'
+import { getUserType } from '@/lib/auth/cohort-visibility'
 
 // GET /api/chat/invitations/pending - Get pending invitations for current user
 export async function GET(request: NextRequest) {
@@ -64,7 +65,7 @@ export async function GET(request: NextRequest) {
         .eq('chat_id', chatId)
         .maybeSingle()
 
-      // Get other members (for preview)
+      // Get other members (for preview). Include user_type for cohort visibility.
       const { data: members } = await supabase
         .from('chat_members')
         .select(`
@@ -74,6 +75,7 @@ export async function GET(request: NextRequest) {
             first_name,
             last_name,
             program,
+            user_type,
             universities!profiles_university_id_fkey (
               name
             )
@@ -82,18 +84,26 @@ export async function GET(request: NextRequest) {
         .eq('chat_id', chatId)
         .neq('user_id', user.id)
 
+      const viewerUserType = await getUserType(user.id)
+      const otherMembers = members?.map((m: any) => {
+        const sameCohort = viewerUserType != null && m.profiles?.user_type === viewerUserType
+        return {
+          user_id: m.user_id,
+          status: m.status,
+          name: sameCohort
+            ? [m.profiles?.first_name, m.profiles?.last_name].filter(Boolean).join(' ') || 'User'
+            : 'User',
+          program: sameCohort ? (m.profiles?.program || 'Program') : '',
+          university: sameCohort ? (m.profiles?.universities?.name || 'University') : ''
+        }
+      }) ?? []
+
       return NextResponse.json({
         invitation: {
           ...invitation,
           inviter: inviterProfile,
           compatibility,
-          other_members: members?.map(m => ({
-            user_id: m.user_id,
-            status: m.status,
-            name: [m.profiles?.first_name, m.profiles?.last_name].filter(Boolean).join(' ') || 'User',
-            program: m.profiles?.program || 'Program',
-            university: m.profiles?.universities?.name || 'University'
-          }))
+          other_members: otherMembers
         }
       })
     } else {

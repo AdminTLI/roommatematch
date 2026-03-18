@@ -44,8 +44,32 @@ export default async function DashboardPage() {
     }
   }
 
-  // Check questionnaire completion status using the helper
-  const completionStatus = await checkQuestionnaireCompletion(user.id)
+  // Cohort questionnaire gate: professionals must complete young professionals flow before dashboard
+  const { data: userRow } = await supabase
+    .from('users')
+    .select('user_type')
+    .eq('id', user.id)
+    .maybeSingle()
+  const userType = (userRow?.user_type === 'student' || userRow?.user_type === 'professional')
+    ? userRow.user_type
+    : null
+  if (userType === 'professional') {
+    const { data: submission } = await supabase
+      .from('onboarding_submissions')
+      .select('id, user_type')
+      .eq('user_id', user.id)
+      .maybeSingle()
+    const hasProfessionalSubmission = submission?.user_type === 'professional'
+    if (!hasProfessionalSubmission) {
+      redirect('/onboarding-professional/welcome')
+    }
+  }
+  if (!userType) {
+    redirect('/onboarding/path')
+  }
+
+  // Check questionnaire completion status using the helper (cohort-aware)
+  const completionStatus = await checkQuestionnaireCompletion(user.id, { userType })
   const hasCompletedQuestionnaire = completionStatus.isComplete
   const hasPartialProgress = completionStatus.responseCount > 0 && !hasCompletedQuestionnaire
   const progressCount = completionStatus.responseCount
