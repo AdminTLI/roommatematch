@@ -18,10 +18,11 @@ type Step = 'email' | 'otp'
 
 export interface AcademicVerificationGateProps {
   onVerified?: () => void
+  onBack?: () => void
   className?: string
 }
 
-export function AcademicVerificationGate({ onVerified, className }: AcademicVerificationGateProps) {
+export function AcademicVerificationGate({ onVerified, onBack, className }: AcademicVerificationGateProps) {
   const router = useRouter()
   const [step, setStep] = useState<Step>('email')
   const [email, setEmail] = useState('')
@@ -246,7 +247,15 @@ export function AcademicVerificationGate({ onVerified, className }: AcademicVeri
                 </Button>
                 <button
                   type="button"
-                  onClick={() => router.back()}
+                  onClick={() => {
+                    // Prefer returning to the onboarding step that opened this gate.
+                    // Falling back to browser history keeps the component usable elsewhere.
+                    if (onBack) {
+                      onBack()
+                      return
+                    }
+                    router.back()
+                  }}
                   className="text-sm text-slate-400 underline underline-offset-2 hover:text-slate-200"
                 >
                   Back

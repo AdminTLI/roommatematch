@@ -120,7 +120,10 @@ export default function PathSelectionClient() {
           <div className="mx-auto max-w-4xl">
             {showStudentGate ? (
               <div className="max-w-md mx-auto">
-                <AcademicVerificationGate onVerified={handleStudentVerified} />
+                <AcademicVerificationGate
+                  onVerified={handleStudentVerified}
+                  onBack={() => setShowStudentGate(false)}
+                />
               </div>
             ) : (
               <>
@@ -206,6 +209,7 @@ export default function PathSelectionClient() {
 
             <div className="mt-8 flex justify-center">
               <Button
+                type="button"
                 onClick={handleNext}
                 disabled={!selected || isLoading}
                 className="min-h-[48px] rounded-xl px-8 bg-gradient-to-r from-sky-400 via-indigo-500 to-purple-500 text-slate-50 hover:brightness-110 disabled:opacity-50 disabled:pointer-events-none"
