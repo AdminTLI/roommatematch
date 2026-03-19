@@ -47,6 +47,10 @@ interface MatchCardProps {
   university: string
   program: string
   degreeLevel: string
+  userType?: 'student' | 'professional'
+  age?: number | null
+  wfhStatus?: string | null
+  workSchedule?: string | null
   budgetBand: string
   compatibility: number
   compatibilityBreakdown: CompatibilityScore
@@ -125,6 +129,10 @@ export function MatchCard({
   university,
   program,
   degreeLevel,
+  userType = 'student',
+  age = null,
+  wfhStatus = null,
+  workSchedule = null,
   budgetBand,
   compatibility,
   compatibilityBreakdown,
@@ -312,6 +320,19 @@ export function MatchCard({
 
   const compatibilityHighlights = generateCompatibilityHighlights()
 
+  const formatWfhStatus = (value: string | null) => {
+    switch (value) {
+      case 'fully_remote':
+        return 'Fully Remote'
+      case 'hybrid':
+        return 'Hybrid (mix of home/office)'
+      case 'fully_office':
+        return 'Fully in Office'
+      default:
+        return value || null
+    }
+  }
+
   // Four distinct colors: Amazing=emerald, Great=indigo, Good=violet, Low=amber
   const getDiscoveryScoreColor = (score: number) => {
     const percent = Math.round(score * 100)
@@ -446,7 +467,15 @@ export function MatchCard({
                     {isGroup ? `${groupMembers.length} compatible roommates` : name}
                   </h3>
                   <p className="text-sm text-slate-400 mb-2">
-                    {university} • {program} • {degreeLevel}
+                    {userType === 'professional'
+                      ? [
+                          age != null ? `${age} Years Old` : null,
+                          formatWfhStatus(wfhStatus),
+                          workSchedule || null
+                        ]
+                        .filter(Boolean)
+                        .join(' • ')
+                      : `${university} • ${program} • ${degreeLevel}`}
                   </p>
                   <div className="flex items-center gap-2 flex-wrap">
                     <Badge variant="outline" className="text-xs border-slate-600 bg-slate-700/50 text-slate-200">
@@ -465,30 +494,46 @@ export function MatchCard({
                       Verified
                     </Badge>
                     
-                    {/* Academic Affinity Badges */}
-                    {academicBonuses && (
+                    {/* Context Badges */}
+                    {userType === 'professional' ? (
                       <>
-                        {academicBonuses.program_affinity && (
-                          <Badge variant="default" className="text-xs bg-blue-600 hover:bg-blue-700 text-white">
-                            Same Programme
+                        {wfhStatus && (
+                          <Badge variant="default" className="text-xs bg-indigo-600 hover:bg-indigo-700 text-white">
+                            Matching WFH Schedule
                           </Badge>
                         )}
-                        {academicBonuses.university_affinity && !academicBonuses.program_affinity && (
-                          <Badge variant="default" className="text-xs bg-green-600 hover:bg-green-700 text-white">
-                            Same University
-                          </Badge>
-                        )}
-                        {academicBonuses.faculty_affinity && !academicBonuses.program_affinity && (
-                          <Badge variant="default" className="text-xs bg-purple-600 hover:bg-purple-700 text-white">
-                            Same Faculty
-                          </Badge>
-                        )}
-                        {academicBonuses.study_year_gap && academicBonuses.study_year_gap > 4 && (
-                          <Badge variant="outline" className="text-xs border-orange-700 text-orange-300 bg-orange-950/30">
-                            Different study stages ({academicBonuses.study_year_gap} year gap)
+                        {age != null && (
+                          <Badge variant="outline" className="text-xs border-emerald-700 text-emerald-300 bg-emerald-950/30">
+                            Similar Age
                           </Badge>
                         )}
                       </>
+                    ) : (
+                      /* Academic Affinity Badges */
+                      academicBonuses && (
+                        <>
+                          {academicBonuses.program_affinity && (
+                            <Badge variant="default" className="text-xs bg-blue-600 hover:bg-blue-700 text-white">
+                              Same Programme
+                            </Badge>
+                          )}
+                          {academicBonuses.university_affinity && !academicBonuses.program_affinity && (
+                            <Badge variant="default" className="text-xs bg-green-600 hover:bg-green-700 text-white">
+                              Same University
+                            </Badge>
+                          )}
+                          {academicBonuses.faculty_affinity && !academicBonuses.program_affinity && (
+                            <Badge variant="default" className="text-xs bg-purple-600 hover:bg-purple-700 text-white">
+                              Same Faculty
+                            </Badge>
+                          )}
+                          {academicBonuses.study_year_gap && academicBonuses.study_year_gap > 4 && (
+                            <Badge variant="outline" className="text-xs border-orange-700 text-orange-300 bg-orange-950/30">
+                              Different study stages ({academicBonuses.study_year_gap} year gap)
+                            </Badge>
+                          )}
+                        </>
+                      )
                     )}
                   </div>
                 </div>

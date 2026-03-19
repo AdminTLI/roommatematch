@@ -16,7 +16,7 @@ import {
   DialogTitle
 } from '@/components/ui/dialog'
 import { createClient } from '@/lib/supabase/client'
-import { useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { Loader2, Mail, Lock, Eye, EyeOff, CheckCircle, Calendar } from 'lucide-react'
 import { validateDateOfBirth, getAgeVerificationError } from '@/lib/auth/age-verification'
 
@@ -36,6 +36,8 @@ export function SignUpForm() {
   const [showUnderageModal, setShowUnderageModal] = useState(false)
 
   const router = useRouter()
+  const searchParams = useSearchParams()
+  const userType = searchParams.get('type')
   const supabase = createClient()
 
   const validatePassword = (password: string) => {
@@ -122,7 +124,9 @@ export function SignUpForm() {
         options: {
           emailRedirectTo: `${window.location.origin}/auth/callback`,
           data: {
-            date_of_birth: dateOfBirth
+            date_of_birth: dateOfBirth,
+            // Comes from URLs like: /auth/sign-up?type=professional
+            ...(userType ? { user_type: userType } : {})
           }
         }
       })

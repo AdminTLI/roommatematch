@@ -11,6 +11,10 @@ interface UserInfoData {
   last_name: string | null
   bio: string | null
   interests: string[]
+  user_type?: 'student' | 'professional' | null
+  age?: number | null
+  wfh_status?: string | null
+  work_schedule?: string | null
   university_name: string | null
   programme_name: string | null
   degree_level: string | null
@@ -98,41 +102,75 @@ export function UserInfoPanel({
                 </CardContent>
               </Card>
 
-              {/* University Information Section */}
-              {(userInfo.university_name || userInfo.programme_name || userInfo.degree_level || userInfo.study_year !== null) && (
+              {/* Context Section */}
+              {userInfo.user_type === 'professional' ? (
                 <Card className="border border-gray-200 dark:border-gray-700">
                   <CardContent className="p-6">
-                    <h3 className="text-lg font-semibold text-text-primary mb-4">University Information</h3>
+                    <h3 className="text-lg font-semibold text-text-primary mb-4">PROFESSIONAL LIFESTYLE</h3>
                     <div className="space-y-2">
-                      {userInfo.university_name && (
-                        <div>
-                          <span className="text-sm font-medium text-text-secondary">University: </span>
-                          <span className="text-base text-text-primary">{userInfo.university_name}</span>
-                        </div>
-                      )}
-                      {userInfo.programme_name && (
-                        <div>
-                          <span className="text-sm font-medium text-text-secondary">Programme: </span>
-                          <span className="text-base text-text-primary">{userInfo.programme_name}</span>
-                        </div>
-                      )}
-                      {userInfo.degree_level && (
-                        <div>
-                          <span className="text-sm font-medium text-text-secondary">Degree Level: </span>
-                          <span className="text-base text-text-primary">
-                            {userInfo.degree_level.charAt(0).toUpperCase() + userInfo.degree_level.slice(1).replace('_', '-')}
-                          </span>
-                        </div>
-                      )}
-                      {userInfo.study_year !== null && (
-                        <div>
-                          <span className="text-sm font-medium text-text-secondary">Current Year: </span>
-                          <span className="text-base text-text-primary">Year {userInfo.study_year}</span>
-                        </div>
-                      )}
+                      <div>
+                        <span className="text-sm font-medium text-text-secondary">WFH: </span>
+                        <span className="text-base text-text-primary">
+                          {userInfo.wfh_status === 'fully_remote'
+                            ? 'Fully Remote'
+                            : userInfo.wfh_status === 'hybrid'
+                              ? 'Hybrid (mix of home/office)'
+                              : userInfo.wfh_status === 'fully_office'
+                                ? 'Fully in Office'
+                                : userInfo.wfh_status || 'Not provided'}
+                        </span>
+                      </div>
+                      <div>
+                        <span className="text-sm font-medium text-text-secondary">Age: </span>
+                        <span className="text-base text-text-primary">
+                          {userInfo.age != null ? `${userInfo.age} years old` : 'Not provided'}
+                        </span>
+                      </div>
+                      <div>
+                        <span className="text-sm font-medium text-text-secondary">Schedule: </span>
+                        <span className="text-base text-text-primary">
+                          {userInfo.work_schedule || 'Not provided'}
+                        </span>
+                      </div>
                     </div>
                   </CardContent>
                 </Card>
+              ) : (
+                (userInfo.university_name || userInfo.programme_name || userInfo.degree_level || userInfo.study_year !== null) && (
+                  <Card className="border border-gray-200 dark:border-gray-700">
+                    <CardContent className="p-6">
+                      <h3 className="text-lg font-semibold text-text-primary mb-4">UNIVERSITY</h3>
+                      <div className="space-y-2">
+                        {userInfo.university_name && (
+                          <div>
+                            <span className="text-sm font-medium text-text-secondary">University: </span>
+                            <span className="text-base text-text-primary">{userInfo.university_name}</span>
+                          </div>
+                        )}
+                        {userInfo.programme_name && (
+                          <div>
+                            <span className="text-sm font-medium text-text-secondary">Programme: </span>
+                            <span className="text-base text-text-primary">{userInfo.programme_name}</span>
+                          </div>
+                        )}
+                        {userInfo.degree_level && (
+                          <div>
+                            <span className="text-sm font-medium text-text-secondary">Degree Level: </span>
+                            <span className="text-base text-text-primary">
+                              {userInfo.degree_level.charAt(0).toUpperCase() + userInfo.degree_level.slice(1).replace('_', '-')}
+                            </span>
+                          </div>
+                        )}
+                        {userInfo.study_year !== null && (
+                          <div>
+                            <span className="text-sm font-medium text-text-secondary">Current Year: </span>
+                            <span className="text-base text-text-primary">Year {userInfo.study_year}</span>
+                          </div>
+                        )}
+                      </div>
+                    </CardContent>
+                  </Card>
+                )
               )}
 
               {/* Bio Section */}

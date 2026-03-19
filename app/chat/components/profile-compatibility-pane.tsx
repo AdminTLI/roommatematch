@@ -56,6 +56,10 @@ interface UserInfoData {
   bio: string | null
   interests: string[]
   housing_status?: HousingStatusKey[]
+  user_type?: 'student' | 'professional' | null
+  age?: number | null
+  wfh_status?: string | null
+  work_schedule?: string | null
   university_name: string | null
   programme_name: string | null
   degree_level: string | null
@@ -82,6 +86,19 @@ const getCompatibilityLabel = (score: number) => {
   if (score >= 0.7) return 'Great'
   if (score >= 0.55) return 'Good'
   return 'Low'
+}
+
+const formatWfhStatus = (wfhStatus?: string | null) => {
+  switch (wfhStatus) {
+    case 'fully_remote':
+      return 'Fully Remote'
+    case 'hybrid':
+      return 'Hybrid (mix of home/office)'
+    case 'fully_office':
+      return 'Fully in Office'
+    default:
+      return wfhStatus || 'Not provided'
+  }
 }
 
 const dimensionConfig: { [key: string]: { label: string; description: string; icon: any } } = {
@@ -434,41 +451,66 @@ export function ProfileCompatibilityPane({ chatId, userId, isOpen, onClose }: Pr
                 )}
               </div>
 
-              {/* University Details - Always show */}
-              <div>
-                <h3 className="text-sm font-bold text-gray-900 dark:text-white uppercase tracking-wider mb-3">UNIVERSITY</h3>
-                <div className="space-y-2 text-sm">
-                  {userInfo?.university_name ? (
+              {userInfo?.user_type === 'professional' ? (
+                <div>
+                  <h3 className="text-sm font-bold text-gray-900 dark:text-white uppercase tracking-wider mb-3">
+                    PROFESSIONAL LIFESTYLE
+                  </h3>
+                  <div className="space-y-2 text-sm">
                     <div>
-                      <span className="text-gray-600 dark:text-gray-400 font-medium">University: </span>
-                      <span className="text-gray-900 dark:text-white">{userInfo.university_name}</span>
+                      <span className="text-gray-600 dark:text-gray-400 font-medium">WFH: </span>
+                      <span className="text-gray-900 dark:text-white">{formatWfhStatus(userInfo?.wfh_status)}</span>
                     </div>
-                  ) : null}
-                  {userInfo?.programme_name ? (
                     <div>
-                      <span className="text-gray-600 dark:text-gray-400 font-medium">Programme: </span>
-                      <span className="text-gray-900 dark:text-white">{userInfo.programme_name}</span>
+                      <span className="text-gray-600 dark:text-gray-400 font-medium">Age: </span>
+                      <span className="text-gray-900 dark:text-white">
+                        {userInfo?.age != null ? `${userInfo.age} years old` : 'Not provided'}
+                      </span>
                     </div>
-                  ) : null}
-                  {userInfo?.study_year !== null && userInfo?.study_year !== undefined ? (
                     <div>
-                      <span className="text-gray-600 dark:text-gray-400 font-medium">Year: </span>
-                      <span className="text-gray-900 dark:text-white">{userInfo.study_year}</span>
+                      <span className="text-gray-600 dark:text-gray-400 font-medium">Schedule: </span>
+                      <span className="text-gray-900 dark:text-white">
+                        {userInfo?.work_schedule || 'Not provided'}
+                      </span>
                     </div>
-                  ) : null}
-                  {userInfo?.degree_level ? (
-                    <div>
-                      <span className="text-gray-600 dark:text-gray-400 font-medium">Degree Level: </span>
-                      <span className="text-gray-900 dark:text-white">{userInfo.degree_level}</span>
-                    </div>
-                  ) : null}
-                  {(!userInfo?.university_name && !userInfo?.programme_name && userInfo?.study_year === null && !userInfo?.degree_level) && (
-                    <p className="text-xs text-gray-500 dark:text-gray-400 italic">
-                      No university information available
-                    </p>
-                  )}
+                  </div>
                 </div>
-              </div>
+              ) : (
+                <div>
+                  <h3 className="text-sm font-bold text-gray-900 dark:text-white uppercase tracking-wider mb-3">UNIVERSITY</h3>
+                  <div className="space-y-2 text-sm">
+                    {userInfo?.university_name ? (
+                      <div>
+                        <span className="text-gray-600 dark:text-gray-400 font-medium">University: </span>
+                        <span className="text-gray-900 dark:text-white">{userInfo.university_name}</span>
+                      </div>
+                    ) : null}
+                    {userInfo?.programme_name ? (
+                      <div>
+                        <span className="text-gray-600 dark:text-gray-400 font-medium">Programme: </span>
+                        <span className="text-gray-900 dark:text-white">{userInfo.programme_name}</span>
+                      </div>
+                    ) : null}
+                    {userInfo?.study_year !== null && userInfo?.study_year !== undefined ? (
+                      <div>
+                        <span className="text-gray-600 dark:text-gray-400 font-medium">Year: </span>
+                        <span className="text-gray-900 dark:text-white">{userInfo.study_year}</span>
+                      </div>
+                    ) : null}
+                    {userInfo?.degree_level ? (
+                      <div>
+                        <span className="text-gray-600 dark:text-gray-400 font-medium">Degree Level: </span>
+                        <span className="text-gray-900 dark:text-white">{userInfo.degree_level}</span>
+                      </div>
+                    ) : null}
+                    {(!userInfo?.university_name && !userInfo?.programme_name && userInfo?.study_year === null && !userInfo?.degree_level) && (
+                      <p className="text-xs text-gray-500 dark:text-gray-400 italic">
+                        No university information available
+                      </p>
+                    )}
+                  </div>
+                </div>
+              )}
             </>
           )}
         </div>

@@ -6,6 +6,8 @@ import { canViewCohortProfile } from '@/lib/auth/cohort-visibility'
 
 const CHAT_PROFILES_LIMIT = 60 // 60 profile fetches per minute per user
 
+type UserType = 'student' | 'professional' | null
+
 // GET /api/chat/user-info?chatId=xxx
 export async function GET(request: NextRequest) {
   try {
@@ -157,6 +159,28 @@ export async function GET(request: NextRequest) {
       )
     }
 
+    // Determine target user's cohort (student vs professional) so UI can render correct context.
+    // We don't rely solely on academic table presence because professionals store lifecycle context in onboarding answers.
+    let targetUserType: UserType = null
+    const { data: targetProfilesRow } = await admin
+      .from('profiles')
+      .select('user_type')
+      .eq('user_id', targetUserId)
+      .maybeSingle()
+
+    if (targetProfilesRow?.user_type === 'student' || targetProfilesRow?.user_type === 'professional') {
+      targetUserType = targetProfilesRow.user_type
+    } else {
+      const { data: targetUsersRow } = await admin
+        .from('users')
+        .select('user_type')
+        .eq('id', targetUserId)
+        .maybeSingle()
+      if (targetUsersRow?.user_type === 'student' || targetUsersRow?.user_type === 'professional') {
+        targetUserType = targetUsersRow.user_type
+      }
+    }
+
     // Fetch profile data
     const { data: profile, error: profileError } = await admin
       .from('profiles')
@@ -213,47 +237,118 @@ export async function GET(request: NextRequest) {
     }
 
     // Fetch academic data with joins for university and program info
-    const { data: academicData, error: academicError } = await admin
-      .from('user_academic')
-      .select(`
-        university_id,
-        degree_level,
-        program_id,
-        study_start_year,
-        universities!user_academic_university_id_fkey (
-          name,
-          common_name
-        ),
-        programs!user_academic_program_id_fkey (
-          name,
-          name_en
-        )
-      `)
-      .eq('user_id', targetUserId)
-      .maybeSingle()
-
-    // Fetch study year from view
+    // Student fields (academic context). For professionals, these should be null.
+    let universityName: string | null = null
+    let programName: string | null = null
+    let degreeLevel: string | null = null
     let studyYear: number | null = null
-    if (academicData) {
-      const { data: studyYearData, error: studyYearError } = await admin
-        .from('user_study_year_v')
-        .select('study_year')
+
+    if (targetUserType === 'student') {
+      const { data: academicData } = await admin
+        .from('user_academic')
+        .select(`
+          university_id,
+          degree_level,
+          program_id,
+          study_start_year,
+          universities!user_academic_university_id_fkey (
+            name,
+            common_name
+          ),
+          programs!user_academic_program_id_fkey (
+            name,
+            name_en
+          )
+        `)
         .eq('user_id', targetUserId)
         .maybeSingle()
 
-      if (!studyYearError && studyYearData) {
-        studyYear = studyYearData.study_year
-      } else if (academicData.study_start_year) {
-        // Fallback: calculate from study_start_year
-        const currentYear = new Date().getFullYear()
-        studyYear = currentYear - academicData.study_start_year
+      // Fetch study year from view
+      if (academicData) {
+        const { data: studyYearData, error: studyYearError } = await admin
+          .from('user_study_year_v')
+          .select('study_year')
+          .eq('user_id', targetUserId)
+          .maybeSingle()
+
+        if (!studyYearError && studyYearData) {
+          studyYear = studyYearData.study_year
+        } else if (academicData.study_start_year) {
+          // Fallback: calculate from study_start_year
+          const currentYear = new Date().getFullYear()
+          studyYear = currentYear - academicData.study_start_year
+        }
       }
+
+      // Extract university and program names
+      universityName = academicData?.universities?.name || academicData?.universities?.common_name || null
+      programName = academicData?.programs?.name_en || academicData?.programs?.name || null
+      degreeLevel = academicData?.degree_level || null
     }
 
-    // Extract university and program names
-    const universityName = academicData?.universities?.name || academicData?.universities?.common_name || null
-    const programName = academicData?.programs?.name_en || academicData?.programs?.name || null
-    const degreeLevel = academicData?.degree_level || null
+    // Professional fields (lifestyle context).
+    // We source this from `resolve_user_preferences()` so we can read values stored in onboarding answers.
+    let wfhStatus: string | null = null
+    let age: number | null = null
+    let workSchedule: string | null = null
+
+    if (targetUserType === 'professional') {
+      try {
+        const resolvedPrefsResult = await admin.rpc('resolve_user_preferences', {
+          p_user_id: targetUserId
+        })
+
+        const prefs = resolvedPrefsResult?.data as Record<string, any> | null
+
+        const rawAge = prefs?.age
+        if (typeof rawAge === 'number' && Number.isFinite(rawAge)) {
+          age = rawAge
+        } else if (typeof rawAge === 'string' && rawAge.trim() !== '') {
+          const parsed = Number(rawAge)
+          if (Number.isFinite(parsed)) age = parsed
+        }
+
+        const rawWfh = prefs?.wfh_status
+        if (typeof rawWfh === 'string' && rawWfh.trim() !== '') {
+          wfhStatus = rawWfh
+        }
+
+        // Derive a "general schedule" string from sleep/circadian preferences.
+        const deriveWorkSchedule = (): string | null => {
+          const direct = prefs?.work_schedule
+          if (typeof direct === 'string' && direct.trim() !== '') return direct
+
+          // Prefer explicit timeRange window: M2_Q2 (weeknights) typically stores { start, end }.
+          const weeknight = prefs?.M2_Q2
+          if (weeknight && typeof weeknight === 'object') {
+            const start = typeof (weeknight as any).start === 'string' ? (weeknight as any).start : null
+            const end = typeof (weeknight as any).end === 'string' ? (weeknight as any).end : null
+            if (start && end) return `${start}–${end}`
+          }
+
+          // Quiet-hours start/end (MCQ time values)
+          const quietStart = prefs?.M2_Q13
+          const quietEnd = prefs?.M2_Q14
+          if (typeof quietStart === 'string' && typeof quietEnd === 'string' && quietStart && quietEnd) {
+            return `${quietStart}–${quietEnd}`
+          }
+
+          const weekendQuietEnd = prefs?.M2_Q15
+          if (typeof quietStart === 'string' && typeof weekendQuietEnd === 'string' && quietStart && weekendQuietEnd) {
+            return `${quietStart}–${weekendQuietEnd}`
+          }
+
+          return null
+        }
+
+        workSchedule = deriveWorkSchedule()
+      } catch (e) {
+        safeLogger.warn('[chat/user-info] Failed to resolve professional context', {
+          targetUserId,
+          error: e instanceof Error ? e.message : String(e)
+        })
+      }
+    }
 
     // Return user info
     const headers: Record<string, string> = {
@@ -272,6 +367,10 @@ export async function GET(request: NextRequest) {
       budget_min: budgetMin,
       budget_max: budgetMax,
       preferred_cities: preferredCities,
+      user_type: targetUserType,
+      wfh_status: wfhStatus,
+      work_schedule: workSchedule,
+      age,
       university_name: universityName,
       programme_name: programName,
       degree_level: degreeLevel,
