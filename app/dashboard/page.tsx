@@ -1,5 +1,6 @@
 import { AppShell } from '@/components/app/shell'
 import { createClient } from '@/lib/supabase/server'
+import { createServiceClient } from '@/lib/supabase/service'
 import { redirect } from 'next/navigation'
 import { DashboardContent } from './components/dashboard-content'
 import { DomuChatWidget } from './components/domu-chat-widget'
@@ -12,6 +13,7 @@ import matchModeConfig from '@/config/match-mode.json'
 
 export default async function DashboardPage() {
   const supabase = await createClient()
+  const service = createServiceClient()
   
   // Force refresh the user session to get latest auth state
   const { data: { user }, error: userError } = await supabase.auth.getUser()
@@ -45,16 +47,15 @@ export default async function DashboardPage() {
   }
 
   // Cohort questionnaire gate: professionals must complete young professionals flow before dashboard
-  const { data: userRow } = await supabase
+  const { data: userRow } = await service
     .from('users')
     .select('user_type')
     .eq('id', user.id)
     .maybeSingle()
-  const userType = (userRow?.user_type === 'student' || userRow?.user_type === 'professional')
-    ? userRow.user_type
-    : null
+  const userType =
+    userRow?.user_type === 'student' || userRow?.user_type === 'professional' ? userRow.user_type : null
   if (userType === 'professional') {
-    const { data: submission } = await supabase
+    const { data: submission } = await service
       .from('onboarding_submissions')
       .select('id, user_type')
       .eq('user_id', user.id)
