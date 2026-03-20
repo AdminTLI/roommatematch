@@ -26,7 +26,7 @@ export async function GET(request: NextRequest) {
     // Phase 3: Require completed profile (user_type) to view matches  -  strict segregation
     const { data: profile } = await supabase
       .from('profiles')
-      .select('user_type')
+      .select('user_type, is_visible, privacy_settings')
       .eq('user_id', user.id)
       .maybeSingle()
 
@@ -36,6 +36,11 @@ export async function GET(request: NextRequest) {
         { status: 403 }
       )
     }
+
+    const isGhost = profile?.is_visible === false
+    const showInMatchesSetting = profile?.privacy_settings?.showInMatches
+    const showInMatches = typeof showInMatchesSetting === 'boolean' ? showInMatchesSetting : true
+    const hideSuggestedAndPending = isGhost || showInMatches === false
 
     try {
       const repo = await getMatchRepo()
@@ -57,7 +62,21 @@ export async function GET(request: NextRequest) {
       const suggestions = await repo.listSuggestionsForUser(user.id, includeExpired, limit, offset)
       
       // Filter by minFitIndex (client-side filtering for now)
-      const filteredSuggestions = (suggestions || []).filter(s => s.fitIndex >= minFitIndex)
+      let filteredSuggestions = (suggestions || []).filter(s => s.fitIndex >= minFitIndex)
+
+      // If privacy settings disable matching suggestions, only keep confirmed/history items
+      // so the UI never shows "Suggested" or "Pending".
+      if (hideSuggestedAndPending) {
+        filteredSuggestions = filteredSuggestions.filter(s => {
+          if (s.status === 'declined') return true
+          if (s.status === 'confirmed') return true
+          if (s.status === 'accepted' && Array.isArray(s.memberIds) && Array.isArray(s.acceptedBy)) {
+            const allAccepted = s.acceptedBy.includes(user.id) && s.acceptedBy.length === s.memberIds.length
+            return allAccepted
+          }
+          return false
+        })
+      }
       
       // Calculate pagination metadata
       // Note: totalCount is approximate (before minFitIndex filter), but close enough for pagination

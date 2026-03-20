@@ -163,12 +163,14 @@ export function ProfileCompatibilityPane({ chatId, userId, isOpen, onClose }: Pr
   const [userInfo, setUserInfo] = useState<UserInfoData | null>(null)
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [privacyDisabled, setPrivacyDisabled] = useState(false)
   const [showDimensions, setShowDimensions] = useState(false)
 
   const fetchData = useCallback(async () => {
     if (!isOpen) return
 
     setIsLoading(true)
+    setPrivacyDisabled(false)
     setError(null)
     setCompatibility(null)
     setUserInfo(null)
@@ -193,6 +195,28 @@ export function ProfileCompatibilityPane({ chatId, userId, isOpen, onClose }: Pr
           }
         })
       ])
+
+      // Privacy mode: if the backend blocks due to ghost/privacy settings (403 with reason),
+      // replace the entire pane with an enable-settings prompt.
+      if (compatResponse.status === 403 || userInfoResponse.status === 403) {
+        let reason: string | null = null
+
+        if (compatResponse.status === 403) {
+          const data = await compatResponse.clone().json().catch(() => null)
+          reason = data?.reason ?? reason
+        }
+
+        if (!reason && userInfoResponse.status === 403) {
+          const data = await userInfoResponse.clone().json().catch(() => null)
+          reason = data?.reason ?? reason
+        }
+
+        if (reason === 'privacy_disabled') {
+          setPrivacyDisabled(true)
+          setError('Enable "Make Profile Visible" to see compatibility + profile details.')
+          return
+        }
+      }
 
       if (compatResponse.ok) {
         const compatData = await compatResponse.json()
@@ -263,6 +287,12 @@ export function ProfileCompatibilityPane({ chatId, userId, isOpen, onClose }: Pr
                   </div>
                 ))}
               </div>
+            </div>
+          ) : privacyDisabled ? (
+            <div className="text-center py-12 px-4">
+              <p className="text-sm text-gray-600 dark:text-gray-400">
+                {error}
+              </p>
             </div>
           ) : error ? (
             <div className="text-center py-12">

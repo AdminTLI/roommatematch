@@ -87,12 +87,17 @@ export function SignInForm() {
 
         // Check for specific error types
         const errorMsgLower = signInError.message.toLowerCase()
+        const errorDescLower = ((signInError as any).error_description ?? '').toString().toLowerCase()
         
         // Email not confirmed
         const isEmailNotConfirmed = 
           errorMsgLower.includes('email not confirmed') ||
           errorMsgLower.includes('email_not_confirmed') ||
-          errorMsgLower.includes('email confirmation')
+          errorMsgLower.includes('email confirmation') ||
+          errorDescLower.includes('email not confirmed') ||
+          errorDescLower.includes('email_not_confirmed') ||
+          errorDescLower.includes('email confirmation') ||
+          (errorDescLower.includes('not confirmed') && errorDescLower.includes('email'))
 
         if (isEmailNotConfirmed) {
           // Clear any existing session/cookies to prevent stale sessions

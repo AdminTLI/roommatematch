@@ -118,6 +118,31 @@ export async function GET(request: NextRequest) {
     }
 
     // Compatibility and profile-derived data only visible to same cohort (student vs professional)
+    // Privacy: ghost mode disables compatibility + profile info.
+    const { data: privacyProfiles, error: privacyError } = await admin
+      .from('profiles')
+      .select('user_id, is_visible')
+      .in('user_id', [user.id, targetUserId])
+
+    if (privacyError) {
+      safeLogger.error('Failed to fetch privacy state for compatibility', { error: privacyError, userId: user.id, targetUserId })
+      return NextResponse.json(
+        { error: 'Failed to fetch privacy state' },
+        { status: 500 }
+      )
+    }
+
+    const viewerGhost = (privacyProfiles || []).some(p => p.user_id === user.id && p.is_visible === false)
+    const targetGhost = (privacyProfiles || []).some(p => p.user_id === targetUserId && p.is_visible === false)
+
+    if (viewerGhost || targetGhost) {
+      safeLogger.info('[compatibility] Privacy disabled (ghost mode)', { viewerGhost, targetGhost, chatId, userId: user.id, targetUserId })
+      return NextResponse.json(
+        { error: 'This feature is disabled by privacy settings.', reason: 'privacy_disabled' },
+        { status: 403 }
+      )
+    }
+
     const allowed = await canViewCohortProfile(user.id, targetUserId)
     if (!allowed) {
       return NextResponse.json(

@@ -169,6 +169,31 @@ export async function POST(request: NextRequest) {
         details: 'The suggestion may have been updated or you may not have access to it.'
       }, { status: 403 })
     }
+
+    // Privacy gate for accepting new matches:
+    // - If user is a ghost (Make Profile Visible OFF), block accepting
+    // - If Show in Matches is OFF, block accepting
+    if (action === 'accept') {
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('is_visible, privacy_settings')
+        .eq('user_id', user.id)
+        .maybeSingle()
+
+      const isGhost = profile?.is_visible === false
+      const showInMatchesSetting = profile?.privacy_settings?.showInMatches
+      const showInMatches = typeof showInMatchesSetting === 'boolean' ? showInMatchesSetting : true
+
+      if (isGhost || showInMatches === false) {
+        return NextResponse.json(
+          {
+            error: 'Match requests are disabled for your privacy settings.',
+            reason: 'privacy_disabled'
+          },
+          { status: 403 }
+        )
+      }
+    }
     
     // Allow declined suggestions to be re-opened if needed (matches don't expire)
     // Only block if already declined by this user

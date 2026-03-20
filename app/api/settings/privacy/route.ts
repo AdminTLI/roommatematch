@@ -6,6 +6,7 @@
 
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
+import { withdrawConsent } from '@/lib/privacy/cookie-consent-server'
 
 const DEFAULT_PRIVACY = {
   profileVisible: true,
@@ -79,6 +80,21 @@ export async function POST(req: NextRequest) {
       { error: 'Failed to save privacy settings', message: error.message },
       { status: 500 }
     )
+  }
+
+  // GDPR/Dutch-law minimization:
+  // When Data Sharing is turned OFF, withdraw non-essential cookie consents
+  // so analytics/tracking stop via existing consent gating.
+  if (privacy_settings.dataSharing === false) {
+    const consentTypes = ['analytics', 'error_tracking', 'session_replay', 'marketing'] as const
+    try {
+      await Promise.all(
+        consentTypes.map((type) => withdrawConsent(type, user.id))
+      )
+    } catch (e) {
+      // Don't block privacy save if consent withdrawal fails; analytics gating is best-effort.
+      console.error('[settings/privacy] Failed to withdraw cookie consents:', e)
+    }
   }
 
   return NextResponse.json({

@@ -141,6 +141,76 @@ export async function POST(request: NextRequest) {
       }, { status: 403 })
     }
 
+    // Privacy gate:
+    // - Ghost users (profiles.is_visible=false) cannot message
+    // - Users with profiles.privacy_settings.allowMessages=false cannot message
+    // - For individual chats, enforce for both sender and receiver
+    const admin = await createAdminClient()
+    const { data: chatRow } = await admin
+      .from('chats')
+      .select('is_group')
+      .eq('id', chat_id)
+      .maybeSingle()
+
+    if (chatRow?.is_group === false) {
+      const { data: memberRows } = await admin
+        .from('chat_members')
+        .select('user_id')
+        .eq('chat_id', chat_id)
+
+      const memberIds = (memberRows || []).map(r => r.user_id).filter(Boolean)
+      const otherUserId = memberIds.find(id => id !== user.id)
+
+      if (!otherUserId) {
+        return NextResponse.json(
+          { error: getUserFriendlyError('Failed to verify chat membership'), reason: 'missing_recipient' },
+          { status: 403 }
+        )
+      }
+
+      const { data: profiles } = await admin
+        .from('profiles')
+        .select('user_id, is_visible, privacy_settings')
+        .in('user_id', [user.id, otherUserId])
+
+      const senderProfile = (profiles || []).find(p => p.user_id === user.id)
+      const receiverProfile = (profiles || []).find(p => p.user_id === otherUserId)
+
+      const senderGhost = senderProfile?.is_visible === false
+      const receiverGhost = receiverProfile?.is_visible === false
+
+      const senderAllowSetting = senderProfile?.privacy_settings?.allowMessages
+      const senderAllow = typeof senderAllowSetting === 'boolean' ? senderAllowSetting : true
+
+      const receiverAllowSetting = receiverProfile?.privacy_settings?.allowMessages
+      const receiverAllow = typeof receiverAllowSetting === 'boolean' ? receiverAllowSetting : true
+
+      if (senderGhost || receiverGhost || senderAllow === false || receiverAllow === false) {
+        return NextResponse.json(
+          { error: 'Messaging is disabled by privacy settings.', reason: 'privacy_disabled_messaging' },
+          { status: 403 }
+        )
+      }
+    } else {
+      // Group chats (best-effort): enforce for the sender only.
+      const { data: senderProfile } = await admin
+        .from('profiles')
+        .select('is_visible, privacy_settings')
+        .eq('user_id', user.id)
+        .maybeSingle()
+
+      const senderGhost = senderProfile?.is_visible === false
+      const senderAllowSetting = senderProfile?.privacy_settings?.allowMessages
+      const senderAllow = typeof senderAllowSetting === 'boolean' ? senderAllowSetting : true
+
+      if (senderGhost || senderAllow === false) {
+        return NextResponse.json(
+          { error: 'Messaging is disabled by privacy settings.', reason: 'privacy_disabled_messaging' },
+          { status: 403 }
+        )
+      }
+    }
+
     safeLogger.info('Inserting message', {
       userId: user.id,
       chatId: chat_id,

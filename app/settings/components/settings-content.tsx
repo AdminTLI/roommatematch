@@ -24,6 +24,9 @@ interface SettingsContentProps {
   user: any
   profile: any
   academic: any
+  professionalContext?: {
+    wfh_status?: string | null
+  } | null
   progressData: {
     completedSections: string[]
     totalSections: number
@@ -35,7 +38,7 @@ interface SettingsContentProps {
   userType?: 'student' | 'professional' | null
 }
 
-export function SettingsContent({ user, profile, academic, progressData, userType }: SettingsContentProps) {
+export function SettingsContent({ user, profile, academic, professionalContext, progressData, userType }: SettingsContentProps) {
   const router = useRouter()
   const [activeTab, setActiveTab] = useState('profile')
   const [mounted, setMounted] = useState(false)
@@ -183,6 +186,8 @@ export function SettingsContent({ user, profile, academic, progressData, userTyp
                       user={user}
                       profile={profile}
                       academic={academic}
+                      userType={userType}
+                      professionalContext={professionalContext}
                     />
                   </div>
                 </TabsContent>

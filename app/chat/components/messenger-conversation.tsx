@@ -104,6 +104,7 @@ export function MessengerConversation({
   const [isBlocking, setIsBlocking] = useState(false)
   // isBlocked = current user has an active block against the partner in this chat
   const [isBlocked, setIsBlocked] = useState(false)
+  const [isMessagingDisabledByPrivacy, setIsMessagingDisabledByPrivacy] = useState(false)
   const [isDeleting, setIsDeleting] = useState(false)
   const [isMuting, setIsMuting] = useState(false)
   const [isArchiving, setIsArchiving] = useState(false)
@@ -286,6 +287,7 @@ export function MessengerConversation({
         const otherMember = chatMembers.find(m => m.user_id !== user.id)
         if (otherMember) {
           setPartnerUserId(otherMember.user_id)
+          setIsMessagingDisabledByPrivacy(false)
           
           // Update partner name and avatar from loaded profiles
           const partnerProfile = newProfilesMap.get(otherMember.user_id)
@@ -321,6 +323,7 @@ export function MessengerConversation({
       } else {
         setPartnerUserId(null)
         setIsBlocked(false)
+        setIsMessagingDisabledByPrivacy(false)
       }
 
       // Check if chat is muted (use localStorage as fallback since muted column may not exist)
@@ -532,8 +535,9 @@ export function MessengerConversation({
 
       if (!response.ok) {
         let errorMessage = 'Failed to send message'
+        let errorData: any = null
         try {
-          const errorData = await response.json()
+          errorData = await response.json()
           errorMessage = errorData.error || errorMessage
         } catch {
           // If response isn't JSON, try to get text
@@ -544,6 +548,13 @@ export function MessengerConversation({
             errorMessage = `Server error: ${response.status} ${response.statusText}`
           }
         }
+
+        if (response.status === 403 && errorData?.reason === 'privacy_disabled_messaging') {
+          setIsMessagingDisabledByPrivacy(true)
+          showErrorToast('Messaging disabled', errorMessage)
+          return
+        }
+
         console.error('[MessengerConversation] Failed to send message:', {
           status: response.status,
           statusText: response.statusText,
@@ -1197,9 +1208,11 @@ export function MessengerConversation({
         placeholder={
           isBlocked
             ? 'This user has been blocked. To send a message, unblock them.'
-            : 'Type a message...'
+            : isMessagingDisabledByPrivacy
+              ? 'Messaging is disabled by privacy settings.'
+              : 'Type a message...'
         }
-        disabled={isBlocked}
+        disabled={isBlocked || isMessagingDisabledByPrivacy}
       />
     </div>
   )

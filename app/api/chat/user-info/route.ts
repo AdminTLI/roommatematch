@@ -98,6 +98,29 @@ export async function GET(request: NextRequest) {
 
     const targetUserId = otherMember.user_id
 
+    // Privacy: If either participant is a ghost (Make Profile Visible OFF),
+    // disable access to detailed profile info.
+    const { data: privacyProfiles, error: privacyError } = await admin
+      .from('profiles')
+      .select('user_id, is_visible')
+      .in('user_id', [user.id, targetUserId])
+
+    if (privacyError) {
+      safeLogger.error('Failed to fetch privacy state for user-info', { error: privacyError, chatId, targetUserId })
+      return NextResponse.json({ error: 'Failed to fetch privacy state' }, { status: 500 })
+    }
+
+    const viewerGhost = (privacyProfiles || []).some(p => p.user_id === user.id && p.is_visible === false)
+    const targetGhost = (privacyProfiles || []).some(p => p.user_id === targetUserId && p.is_visible === false)
+
+    if (viewerGhost || targetGhost) {
+      safeLogger.info('[chat/user-info] Privacy disabled (ghost mode)', { chatId, viewerGhost, targetGhost })
+      return NextResponse.json(
+        { error: 'This feature is disabled by privacy settings.', reason: 'privacy_disabled' },
+        { status: 403 }
+      )
+    }
+
     // Verify match relationship
     // Check match_suggestions table first
     // Query for matches where the user is involved, then filter in memory for the target user

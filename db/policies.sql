@@ -24,10 +24,95 @@ ALTER TABLE verifications ENABLE ROW LEVEL SECURITY;
 ALTER TABLE verification_webhooks ENABLE ROW LEVEL SECURITY;
 ALTER TABLE admin_actions ENABLE ROW LEVEL SECURITY;
 
+-- Idempotency guard:
+-- This script can be re-run during local/dev iterations. PostgreSQL errors if
+-- we attempt to CREATE POLICY with a policy name that already exists.
+-- We proactively DROP any of the policies defined below (if they already exist),
+-- then re-create them.
+DO $$
+DECLARE
+  r record;
+BEGIN
+  -- Drop only the specific policy names used in this script.
+  -- (We keep the identifiers qualified via pg_policies to avoid table name drift.)
+  FOR r IN
+    SELECT schemaname, tablename, policyname
+    FROM pg_policies
+    WHERE schemaname = 'public'
+      AND policyname IN (
+        'Universities are readable by everyone',
+        'Universities are writable by admins only',
+        'Users can read their own data',
+        'Users can update their own data',
+        'Admins can read users in their university',
+        'Admins can read admin data',
+        'Super admins can manage admins',
+        'Users can read their own profile',
+        'Users can update their own profile',
+        'Users can insert their own profile',
+        'Minimal public profiles visible to university members',
+        'Full profiles visible with accepted matches',
+        'Admins can read profiles in their university',
+        'Question items are readable by everyone',
+        'Question items are writable by admins only',
+        'Users can manage their own responses',
+        'Admins can read analytics responses',
+        'Users can manage their own vectors',
+        'System can read vectors for matching',
+        'Users can read their matches',
+        'Users can update their matches',
+        'Admins can read anonymized matches',
+        'Group members can read their suggestions',
+        'Group members can update their suggestions',
+        'Admins can read group suggestions',
+        'Chat members can read chats',
+        'Chat members can update chats',
+        'Users can create chats',
+        'Chat members can manage membership',
+        'Chat members can read messages',
+        'Chat members can send messages',
+        'Users can manage their read receipts',
+        'Chat members can read read receipts',
+        'Users can create reports',
+        'Users can read their own reports',
+        'Admins can manage reports',
+        'University members can read announcements',
+        'Admins can manage announcements',
+        'University members can read eligibility rules',
+        'Admins can manage eligibility rules',
+        'University members can read forum posts',
+        'Verified users can create forum posts',
+        'Authors can update their forum posts',
+        'Admins can manage forum posts',
+        'University members can read forum comments',
+        'Verified users can create forum comments',
+        'Authors can update their forum comments',
+        'Admins can manage forum comments',
+        'Users can create their own events',
+        'Admins can read all events',
+        'Users can view own notifications',
+        'Users can update own notifications',
+        'System can insert notifications',
+        'Users can read own verifications',
+        'Service role can manage verifications',
+        'Admins can read verifications in university',
+        'Service role can manage webhooks',
+        'Admins can read webhooks',
+        'Admins can read admin actions',
+        'Service role can insert admin actions'
+      )
+  LOOP
+    EXECUTE format('DROP POLICY IF EXISTS %I ON %I.%I', r.policyname, r.schemaname, r.tablename);
+  END LOOP;
+END;
+$$;
+
 -- Universities: Read by anyone, write by admins only
+DROP POLICY IF EXISTS "Universities are readable by everyone" ON universities;
 CREATE POLICY "Universities are readable by everyone" ON universities
   FOR SELECT USING (is_active = true);
 
+DROP POLICY IF EXISTS "Universities are writable by admins only" ON universities;
 CREATE POLICY "Universities are writable by admins only" ON universities
   FOR ALL USING (
     EXISTS (
@@ -284,7 +369,45 @@ CREATE POLICY "Chat members can send messages" ON messages
     EXISTS (
       SELECT 1 FROM chat_members cm
       WHERE cm.chat_id = messages.chat_id
-      AND cm.user_id = auth.uid()
+        AND cm.user_id = auth.uid()
+    ) AND
+    -- Sender privacy gate: sender must not be a ghost and must allow messages
+    NOT EXISTS (
+      SELECT 1
+      FROM profiles p
+      WHERE p.user_id = auth.uid()
+        AND (
+          p.is_visible = false OR
+          COALESCE((p.privacy_settings->>'allowMessages')::boolean, true) = false
+        )
+    ) AND
+    (
+      -- Individual chat: receiver must also not be a ghost and must allow messages
+      (
+        EXISTS (
+          SELECT 1 FROM chats c
+          WHERE c.id = messages.chat_id
+            AND c.is_group = false
+        )
+        AND NOT EXISTS (
+          SELECT 1
+          FROM chat_members cmr
+          JOIN profiles pr ON pr.user_id = cmr.user_id
+          WHERE cmr.chat_id = messages.chat_id
+            AND cmr.user_id <> auth.uid()
+            AND (
+              pr.is_visible = false OR
+              COALESCE((pr.privacy_settings->>'allowMessages')::boolean, true) = false
+            )
+        )
+      )
+      OR
+      -- Group chats: skip receiver gate; enforce sender-only
+      EXISTS (
+        SELECT 1 FROM chats c
+        WHERE c.id = messages.chat_id
+          AND c.is_group = true
+      )
     )
   );
 

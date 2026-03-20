@@ -4,6 +4,7 @@ import { redirect } from 'next/navigation'
 import { SettingsContent } from './components/settings-content'
 import { getUserProfile } from '@/lib/auth/user-profile'
 import { checkUserVerificationStatus, getVerificationRedirectUrl } from '@/lib/auth/verification-check'
+import { getUserType } from '@/lib/auth/cohort-visibility'
 import { DomuChatWidget } from '../dashboard/components/domu-chat-widget'
 
 export default async function SettingsPage() {
@@ -493,17 +494,40 @@ export default async function SettingsPage() {
     console.log('[Settings] Found user_academic:', academic)
   }
 
-  // Resolve user_type: questionnaire completion only counts for students; professionals use a separate flow
-  const { data: userRow } = await supabase
-    .from('users')
-    .select('user_type')
-    .eq('id', user.id)
+  // Resolve cohort for correct Settings rendering (students vs young professionals).
+  // Use service role to avoid RLS-related nulls on the `users` table.
+  const userType = await getUserType(user.id)
+
+  // Young-professional equivalent of "Academic Info": work arrangement (WFH).
+  // We fetch this regardless of `userType` because some accounts may have
+  // `user_type` unset/null even after completing the professional flow.
+  let professionalContext: { wfh_status?: string | null } | null = null
+  const { data: professionalSection } = await supabase
+    .from('onboarding_sections')
+    .select('answers')
+    .eq('user_id', user.id)
+    .eq('section', 'professional-context')
     .maybeSingle()
-  const userType = (profile?.user_type === 'student' || profile?.user_type === 'professional')
-    ? profile.user_type
-    : (userRow?.user_type === 'student' || userRow?.user_type === 'professional'
-      ? userRow.user_type
-      : null)
+
+  const answers: any[] = professionalSection?.answers ?? []
+  const hasAnyAnswers = Array.isArray(answers) && answers.length > 0
+  if (hasAnyAnswers) {
+    const byId = answers.reduce<Record<string, any>>((acc, a) => {
+      if (a?.itemId) acc[a.itemId] = a.value
+      return acc
+    }, {})
+
+    let wfhStatus: string | null = null
+    const rawWfh = byId['wfh_status']
+    if (typeof rawWfh === 'string') {
+      wfhStatus = rawWfh
+    } else if (rawWfh && typeof rawWfh === 'object' && 'value' in rawWfh && typeof (rawWfh as any).value === 'string') {
+      // Defensive: handle nested value objects, if they exist.
+      wfhStatus = (rawWfh as any).value
+    }
+
+    professionalContext = { wfh_status: wfhStatus }
+  }
 
   // Check questionnaire progress
   const { data: sections } = await supabase
@@ -650,6 +674,7 @@ export default async function SettingsPage() {
           academic={academicWithStudyYear}
           progressData={progressData}
           userType={userType}
+          professionalContext={professionalContext}
         />
       </AppShell>
       <DomuChatWidget />

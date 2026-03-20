@@ -31,7 +31,7 @@ export async function POST(request: NextRequest) {
     // Phase 3: Require user_type (completed profile) to refresh matches
     const { data: profile } = await supabase
       .from('profiles')
-      .select('user_type')
+      .select('user_type, is_visible, privacy_settings')
       .eq('user_id', user.id)
       .maybeSingle()
 
@@ -40,6 +40,21 @@ export async function POST(request: NextRequest) {
         { error: 'Please complete your profile to view matches.' },
         { status: 403 }
       )
+    }
+
+    // Privacy short-circuit:
+    // - Ghost users (Make Profile Visible OFF) should not generate new match suggestions
+    // - Users with Show in Matches OFF should not generate new match suggestions
+    const isGhost = profile?.is_visible === false
+    const showInMatchesSetting = profile?.privacy_settings?.showInMatches
+    const showInMatches = typeof showInMatchesSetting === 'boolean' ? showInMatchesSetting : true
+    if (isGhost || showInMatches === false) {
+      return NextResponse.json({
+        runId: `refresh_${Date.now()}`,
+        created: 0,
+        suggestions: [],
+        message: 'Match suggestions are disabled for your account privacy settings.'
+      })
     }
 
     // Rate limiting: 5 refreshes per 15 minutes per user (prevents scraping/DoS)

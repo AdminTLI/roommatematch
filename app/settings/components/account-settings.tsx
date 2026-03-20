@@ -21,11 +21,13 @@ import {
   AlertTriangle,
   Trash2,
   Clock,
-  ChevronRight
+  ChevronRight,
+  RefreshCw
 } from 'lucide-react'
 import { EmailVerification } from './email-verification'
 import { getCSRFHeaders } from '@/lib/utils/csrf-client'
 import Link from 'next/link'
+import { OTPInput } from '@/components/auth/otp-input'
 
 const DEFAULT_NOTIFICATIONS = {
   emailMatches: true,
@@ -59,6 +61,17 @@ export function AccountSettings({ user, profile, onVisibilityChange }: AccountSe
 
   const [notifications, setNotifications] = useState(DEFAULT_NOTIFICATIONS)
   const [deletionScheduled, setDeletionScheduled] = useState<string | null>(null)
+
+  // Email change (OTP confirmation + 30-day cooldown).
+  const [emailChangeStep, setEmailChangeStep] = useState<'idle' | 'input' | 'otp'>('idle')
+  const [emailChangeNewEmail, setEmailChangeNewEmail] = useState('')
+  const [emailChangePendingEmail, setEmailChangePendingEmail] = useState('')
+  const [emailChangeOtp, setEmailChangeOtp] = useState('')
+  const [emailChangeIsSendingCode, setEmailChangeIsSendingCode] = useState(false)
+  const [emailChangeIsConfirmingCode, setEmailChangeIsConfirmingCode] = useState(false)
+  const [emailChangeError, setEmailChangeError] = useState<string | null>(null)
+  const [emailChangeSuccess, setEmailChangeSuccess] = useState<string | null>(null)
+  const [emailChangeCooldownNextAllowedAt, setEmailChangeCooldownNextAllowedAt] = useState<string | null>(null)
 
   // Sync from profile when loaded or after save (router.refresh)
   useEffect(() => {
@@ -98,6 +111,91 @@ export function AccountSettings({ user, profile, onVisibilityChange }: AccountSe
   }
 
   const router = useRouter()
+
+  const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+
+  const resetEmailChangeUI = () => {
+    setEmailChangeStep('idle')
+    setEmailChangeNewEmail('')
+    setEmailChangePendingEmail('')
+    setEmailChangeOtp('')
+    setEmailChangeIsSendingCode(false)
+    setEmailChangeIsConfirmingCode(false)
+    setEmailChangeError(null)
+    setEmailChangeSuccess(null)
+    setEmailChangeCooldownNextAllowedAt(null)
+  }
+
+  const handleRequestEmailChangeCode = async (targetEmail: string) => {
+    setEmailChangeIsSendingCode(true)
+    setEmailChangeError(null)
+    setEmailChangeCooldownNextAllowedAt(null)
+    setEmailChangeSuccess(null)
+    setEmailChangeOtp('')
+
+    try {
+      const headers = await getCSRFHeaders()
+      const res = await fetch('/api/auth/request-email-change', {
+        method: 'POST',
+        headers,
+        body: JSON.stringify({ newEmail: targetEmail }),
+      })
+
+      const data = await res.json().catch(() => ({}))
+      if (!res.ok) {
+        if (res.status === 429) {
+          setEmailChangeCooldownNextAllowedAt(data.next_allowed_at || null)
+          throw new Error(data.error || 'Email can only be changed once every 30 days.')
+        }
+        throw new Error(data.error || 'Failed to send verification code')
+      }
+
+      setEmailChangePendingEmail(targetEmail)
+      setEmailChangeStep('otp')
+    } catch (err) {
+      setEmailChangeError(err instanceof Error ? err.message : 'Failed to send verification code')
+    } finally {
+      setEmailChangeIsSendingCode(false)
+    }
+  }
+
+  const handleConfirmEmailChangeCode = async (otpCode: string) => {
+    if (!emailChangePendingEmail) return
+
+    setEmailChangeIsConfirmingCode(true)
+    setEmailChangeError(null)
+    setEmailChangeCooldownNextAllowedAt(null)
+    setEmailChangeSuccess(null)
+
+    try {
+      const headers = await getCSRFHeaders()
+      const res = await fetch('/api/auth/confirm-email-change', {
+        method: 'POST',
+        headers,
+        body: JSON.stringify({ newEmail: emailChangePendingEmail, token: otpCode }),
+      })
+
+      const data = await res.json().catch(() => ({}))
+      if (!res.ok) {
+        if (res.status === 429) {
+          setEmailChangeCooldownNextAllowedAt(data.next_allowed_at || null)
+          throw new Error(data.error || 'Email can only be changed once every 30 days.')
+        }
+        throw new Error(data.error || 'Failed to confirm email change')
+      }
+
+      setEmailChangeSuccess(data.message || 'Email updated successfully.')
+      setEmailChangeStep('idle')
+      setEmailChangeNewEmail('')
+      setEmailChangePendingEmail('')
+      setEmailChangeOtp('')
+      router.refresh()
+    } catch (err) {
+      setEmailChangeError(err instanceof Error ? err.message : 'Failed to confirm email change')
+    } finally {
+      setEmailChangeIsConfirmingCode(false)
+    }
+  }
 
   const handleSaveNotifications = async () => {
     setIsLoading(true)
@@ -233,11 +331,182 @@ export function AccountSettings({ user, profile, onVisibilityChange }: AccountSe
               <Mail className="w-4 h-4 text-zinc-400 dark:text-zinc-500" />
               <Label className="text-zinc-600 dark:text-zinc-400 font-medium">Email Address</Label>
             </div>
-            <div className="flex-1 text-sm text-zinc-600 dark:text-zinc-400 px-0 sm:px-3">
-              {user.email}
-              <p className="text-xs text-zinc-500 dark:text-zinc-500 mt-1">
-                Contact support to change
-              </p>
+            <div className="flex-1 px-0 sm:px-3">
+              {emailChangeSuccess && (
+                <Alert className="bg-emerald-500/10 border-emerald-500/20 text-emerald-600 dark:text-emerald-400 mb-3">
+                  <Check className="h-4 w-4" />
+                  <AlertDescription>{emailChangeSuccess}</AlertDescription>
+                </Alert>
+              )}
+
+              {emailChangeStep === 'idle' && (
+                <div className="text-sm text-zinc-600 dark:text-zinc-400 space-y-2">
+                  <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+                    <div className="break-all">{user.email}</div>
+                    <Button
+                      variant="ghost"
+                      className="h-8 px-3 text-xs font-medium text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 hover:bg-zinc-100 dark:hover:bg-white/5"
+                      onClick={() => {
+                        setEmailChangeError(null)
+                        setEmailChangeSuccess(null)
+                        setEmailChangeCooldownNextAllowedAt(null)
+                        setEmailChangeOtp('')
+                        setEmailChangeStep('input')
+                        setEmailChangeNewEmail('')
+                      }}
+                    >
+                      Change
+                    </Button>
+                  </div>
+                  <p className="text-xs text-zinc-500 dark:text-zinc-500">
+                    You can change your email once every 30 days. Changes require a 6-digit OTP sent to your new email address.
+                  </p>
+                </div>
+              )}
+
+              {emailChangeStep === 'input' && (
+                <div className="space-y-3">
+                  {emailChangeError && (
+                    <Alert variant="destructive" className="bg-red-500/10 border-red-500/20 text-red-600 dark:text-red-400">
+                      <AlertDescription>{emailChangeError}</AlertDescription>
+                    </Alert>
+                  )}
+                  {emailChangeCooldownNextAllowedAt && (
+                    <p className="text-xs text-amber-600 dark:text-amber-400">
+                      Next allowed change: {new Date(emailChangeCooldownNextAllowedAt).toLocaleDateString()}
+                    </p>
+                  )}
+
+                  <div className="space-y-2">
+                    <Label htmlFor="emailChangeNewEmail" className="text-xs text-zinc-600 dark:text-zinc-400">
+                      New email address
+                    </Label>
+                    <Input
+                      id="emailChangeNewEmail"
+                      value={emailChangeNewEmail}
+                      onChange={(e) => setEmailChangeNewEmail(e.target.value)}
+                      placeholder="Enter new email"
+                      inputMode="email"
+                      autoComplete="email"
+                      className="bg-zinc-50 dark:bg-white/5 border-zinc-200 dark:border-white/10 focus-visible:ring-2 focus-visible:ring-blue-500/20 h-10 text-zinc-900 dark:text-zinc-100 placeholder:text-zinc-400 dark:placeholder:text-zinc-500 rounded-lg"
+                      disabled={emailChangeIsSendingCode}
+                    />
+                  </div>
+
+                  <div className="flex flex-col sm:flex-row gap-2 sm:items-center">
+                    <Button
+                      onClick={() => {
+                        const trimmed = emailChangeNewEmail.trim().toLowerCase()
+                        setEmailChangeNewEmail(trimmed)
+                        setEmailChangeError(null)
+                        setEmailChangeCooldownNextAllowedAt(null)
+                        if (!EMAIL_REGEX.test(trimmed)) {
+                          setEmailChangeError('Please enter a valid email address.')
+                          return
+                        }
+                        handleRequestEmailChangeCode(trimmed)
+                      }}
+                      disabled={emailChangeIsSendingCode}
+                      className="w-full sm:w-auto min-w-[160px] h-11 text-base bg-blue-500 hover:bg-blue-600 text-white rounded-xl shadow-lg shadow-blue-500/20"
+                    >
+                      {emailChangeIsSendingCode ? (
+                        <>
+                          <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                          Sending...
+                        </>
+                      ) : (
+                        'Send code'
+                      )}
+                    </Button>
+
+                    <Button
+                      variant="outline"
+                      onClick={resetEmailChangeUI}
+                      disabled={emailChangeIsSendingCode}
+                      className="w-full sm:w-auto h-11"
+                    >
+                      Cancel
+                    </Button>
+                  </div>
+
+                  <p className="text-xs text-zinc-500 dark:text-zinc-400">
+                    You&apos;ll receive a 6-digit OTP to confirm the email change. OTPs expire quickly; if it expires, use Resend.
+                  </p>
+                </div>
+              )}
+
+              {emailChangeStep === 'otp' && (
+                <div className="space-y-3">
+                  {emailChangeError && (
+                    <Alert variant="destructive" className="bg-red-500/10 border-red-500/20 text-red-600 dark:text-red-400">
+                      <AlertDescription>{emailChangeError}</AlertDescription>
+                    </Alert>
+                  )}
+                  {emailChangeCooldownNextAllowedAt && (
+                    <p className="text-xs text-amber-600 dark:text-amber-400">
+                      Next allowed change: {new Date(emailChangeCooldownNextAllowedAt).toLocaleDateString()}
+                    </p>
+                  )}
+
+                  <p className="text-xs text-zinc-500 dark:text-zinc-400">
+                    Enter the 6-digit code sent to{' '}
+                    <span className="font-medium text-zinc-700 dark:text-zinc-200">{emailChangePendingEmail}</span>
+                  </p>
+
+                  <OTPInput
+                    length={6}
+                    disabled={emailChangeIsSendingCode || emailChangeIsConfirmingCode}
+                    error={!!emailChangeError}
+                    onInput={(v) => setEmailChangeOtp(v)}
+                    onComplete={(v) => setEmailChangeOtp(v)}
+                  />
+
+                  <div className="flex flex-col sm:flex-row gap-2 sm:items-center">
+                    <Button
+                      onClick={() => handleConfirmEmailChangeCode(emailChangeOtp)}
+                      disabled={emailChangeOtp.length !== 6 || emailChangeIsSendingCode || emailChangeIsConfirmingCode}
+                      className="w-full sm:w-auto min-w-[160px] h-11 text-base bg-blue-500 hover:bg-blue-600 text-white rounded-xl shadow-lg shadow-blue-500/20"
+                    >
+                      {emailChangeIsConfirmingCode ? (
+                        <>
+                          <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                          Confirming...
+                        </>
+                      ) : (
+                        'Confirm email'
+                      )}
+                    </Button>
+
+                    <Button
+                      variant="ghost"
+                      onClick={() => handleRequestEmailChangeCode(emailChangePendingEmail)}
+                      disabled={emailChangeIsSendingCode || emailChangeIsConfirmingCode}
+                      className="w-full sm:w-auto h-11 text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white hover:bg-zinc-100 dark:hover:bg-white/5"
+                    >
+                      {emailChangeIsSendingCode ? (
+                        <>
+                          <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                          Resending...
+                        </>
+                      ) : (
+                        <>
+                          <RefreshCw className="w-4 h-4 mr-2" />
+                          Resend code
+                        </>
+                      )}
+                    </Button>
+                  </div>
+
+                  <Button
+                    variant="outline"
+                    onClick={resetEmailChangeUI}
+                    disabled={emailChangeIsSendingCode || emailChangeIsConfirmingCode}
+                    className="w-full h-10"
+                  >
+                    Cancel
+                  </Button>
+                </div>
+              )}
             </div>
           </div>
 

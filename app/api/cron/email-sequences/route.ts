@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server'
 import { processOnboardingEmailSequence, getUsersNeedingEmailReminders, sendVerificationReminderEmail } from '@/lib/email/onboarding-sequences'
+import { sendNotificationDigestEmails } from '@/lib/email/notification-digests'
 import { createClient } from '@supabase/supabase-js'
 import { safeLogger } from '@/lib/utils/logger'
 
@@ -53,7 +54,8 @@ export async function GET(request: Request) {
     const results = {
       verificationReminders: 0,
       onboardingReminders: 0,
-      errors: 0
+      errors: 0,
+      notificationDigests: { sent: 0, success: false },
     }
 
     // Send verification reminder emails
@@ -94,10 +96,21 @@ export async function GET(request: Request) {
       }
     }
 
+    // Notification digests (matches/messages/platform updates)
+    // Runs hourly, but the sender only actually sends during the Amsterdam 9-11 local window
+    // and only for users due for a digest (tracked in notification_email_digest_state).
+    try {
+      const digestResult = await sendNotificationDigestEmails()
+      results.notificationDigests = { success: digestResult.success, sent: digestResult.sent ?? 0 }
+    } catch (error) {
+      safeLogger.error('[Cron][EmailSequences] Notification digests failed (non-fatal)', { error })
+    }
+
     safeLogger.info('[Cron] Email sequence processing complete', {
       verificationReminders: results.verificationReminders,
       onboardingReminders: results.onboardingReminders,
-      errors: results.errors
+      errors: results.errors,
+      notificationDigests: results.notificationDigests,
     })
 
     return NextResponse.json({
@@ -106,7 +119,8 @@ export async function GET(request: Request) {
       results: {
         verificationReminders: results.verificationReminders,
         onboardingReminders: results.onboardingReminders,
-        errors: results.errors
+        errors: results.errors,
+        notificationDigests: results.notificationDigests,
       },
       timestamp: new Date().toISOString()
     })

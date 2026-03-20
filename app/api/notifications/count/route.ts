@@ -1,5 +1,33 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
+import { NotificationType } from '@/lib/notifications/types';
+
+const DEFAULT_NOTIFICATION_PREFS = {
+  emailMatches: true,
+  emailMessages: true,
+  emailUpdates: true,
+  pushMatches: true,
+  pushMessages: true,
+} as const
+
+const ALL_NOTIFICATION_TYPES: NotificationType[] = [
+  'match_created',
+  'match_accepted',
+  'match_confirmed',
+  'chat_message',
+  'group_invitation',
+  'profile_updated',
+  'questionnaire_completed',
+  'verification_status',
+  'housing_update',
+  'agreement_update',
+  'safety_alert',
+  'system_announcement',
+  'admin_alert',
+]
+
+const MATCH_NOTIFICATION_TYPES: NotificationType[] = ['match_created', 'match_accepted', 'match_confirmed']
+const MESSAGE_NOTIFICATION_TYPES: NotificationType[] = ['chat_message']
 
 export async function GET(request: NextRequest) {
   try {
@@ -10,11 +38,44 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
+    // Gate in-app notifications based on the user's push toggles.
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('notification_preferences')
+      .eq('user_id', user.id)
+      .maybeSingle()
+
+    const prefs = profile?.notification_preferences
+    const mergedPrefs =
+      typeof prefs === 'object' && prefs !== null
+        ? { ...DEFAULT_NOTIFICATION_PREFS, ...(prefs as Record<string, unknown>) }
+        : DEFAULT_NOTIFICATION_PREFS
+
+    const pushMatchesEnabled = (mergedPrefs as any).pushMatches !== false
+    const pushMessagesEnabled = (mergedPrefs as any).pushMessages !== false
+
+    let allowedTypes = ALL_NOTIFICATION_TYPES
+    if (!pushMatchesEnabled) {
+      allowedTypes = allowedTypes.filter((t) => !MATCH_NOTIFICATION_TYPES.includes(t))
+    }
+    if (!pushMessagesEnabled) {
+      allowedTypes = allowedTypes.filter((t) => !MESSAGE_NOTIFICATION_TYPES.includes(t))
+    }
+
+    if (allowedTypes.length === 0) {
+      return NextResponse.json({
+        total: 0,
+        unread: 0,
+        by_type: {},
+      })
+    }
+
     // Get total count
     const { count: totalCount, error: totalError } = await supabase
       .from('notifications')
       .select('*', { count: 'exact', head: true })
-      .eq('user_id', user.id);
+      .eq('user_id', user.id)
+      .in('type', allowedTypes);
 
     if (totalError) {
       console.error('Failed to fetch total notification count:', totalError);
@@ -26,7 +87,8 @@ export async function GET(request: NextRequest) {
       .from('notifications')
       .select('*', { count: 'exact', head: true })
       .eq('user_id', user.id)
-      .eq('is_read', false);
+      .eq('is_read', false)
+      .in('type', allowedTypes);
 
     if (unreadError) {
       console.error('Failed to fetch unread notification count:', unreadError);
@@ -37,7 +99,8 @@ export async function GET(request: NextRequest) {
     const { data: typeCounts, error: typeError } = await supabase
       .from('notifications')
       .select('type, is_read')
-      .eq('user_id', user.id);
+      .eq('user_id', user.id)
+      .in('type', allowedTypes);
 
     if (typeError) {
       console.error('Failed to fetch notification type counts:', typeError);

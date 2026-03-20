@@ -129,7 +129,7 @@ export async function POST(request: NextRequest) {
     // Fetch profiles for all allowed chat members (include user_type for cohort visibility)
     const { data: profiles, error: profilesError } = await admin
       .from('profiles')
-      .select('user_id, first_name, last_name, user_type')
+      .select('user_id, first_name, last_name, user_type, is_visible')
       .in('user_id', allowedUserIds.length > 0 ? allowedUserIds : [])
 
     if (profilesError) {
@@ -164,6 +164,16 @@ export async function POST(request: NextRequest) {
           last_name: ''
         }
       }
+
+      // Ghost mode: users with Make Profile Visible OFF should appear as "User" to everyone else.
+      if (profile.is_visible === false && profile.user_id !== user.id) {
+        return {
+          user_id: profile.user_id,
+          first_name: 'User',
+          last_name: ''
+        }
+      }
+
       const sameCohort = viewerUserType != null && profile.user_type === viewerUserType
       if (!sameCohort) {
         return {

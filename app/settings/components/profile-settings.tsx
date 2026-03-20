@@ -20,12 +20,33 @@ interface ProfileSettingsProps {
   user: any
   profile: any
   academic: any
+  userType?: 'student' | 'professional' | null
+  professionalContext?: {
+    wfh_status?: string | null
+  } | null
 }
 
-export function ProfileSettings({ user, profile, academic }: ProfileSettingsProps) {
+export function ProfileSettings({ user, profile, academic, userType, professionalContext }: ProfileSettingsProps) {
   const [isLoading, setIsLoading] = useState(false)
   const [isSuccess, setIsSuccess] = useState(false)
   const [error, setError] = useState<string | null>(null)
+
+  // Prefer `userType`, but fall back to detecting professional-context answers.
+  // This prevents young-professional accounts with unset user_type from seeing "Academic Info".
+  const isProfessional = userType === 'professional' || professionalContext != null
+
+  const formatWfhStatus = (value: string | null | undefined) => {
+    switch (value) {
+      case 'fully_remote':
+        return 'Fully Remote'
+      case 'hybrid':
+        return 'Hybrid (1-3 days WFH)'
+      case 'fully_office':
+        return 'Fully in Office'
+      default:
+        return null
+    }
+  }
 
   // Pre-fill from profile, then from sign-up (user_metadata.first_name/last_name), then full_name
   const [formData, setFormData] = useState({
@@ -239,7 +260,7 @@ export function ProfileSettings({ user, profile, academic }: ProfileSettingsProp
                           <div className="flex items-start gap-2">
                             <CheckCircle className="w-4 h-4 text-blue-500 dark:text-blue-400 mt-0.5 flex-shrink-0" />
                             <div className="text-xs text-zinc-700 dark:text-zinc-300">
-                              <span className="font-medium">Include:</span> lifestyle preferences, living habits, study schedule, hobbies, what you're looking for in a roommate
+                              <span className="font-medium">Include:</span> lifestyle preferences, living habits, your work/study routine, hobbies, what you're looking for in a roommate
                             </div>
                           </div>
                           
@@ -289,31 +310,70 @@ export function ProfileSettings({ user, profile, academic }: ProfileSettingsProp
         </div>
       </div>
 
-      {/* Academic Information Group */}
-      <div className="space-y-4">
-        <h3 className="text-sm font-medium text-zinc-600 dark:text-zinc-400 uppercase tracking-wider px-1">Academic Info</h3>
-        <div className="bg-white/80 dark:bg-zinc-900/40 border border-zinc-200 dark:border-white/10 rounded-2xl overflow-hidden divide-y divide-zinc-200 dark:divide-white/5 backdrop-blur-xl shadow-sm">
-          {[
-            { label: 'University', value: academic?.universities?.name || academic?.university_id, icon: GraduationCap },
-            { label: 'Degree Level', value: academic?.degree_level ? academic.degree_level.charAt(0).toUpperCase() + academic.degree_level.slice(1) : null, icon: GraduationCap },
-            { label: 'Program', value: (academic?.undecided_program && !profile?.program) ? 'Undecided' : (academic?.programs?.name || profile?.program), icon: GraduationCap },
-            { label: 'Graduation', value: academic?.expected_graduation_year ? `Class of ${academic.expected_graduation_year}` : null, icon: GraduationCap },
-          ].map((item, i) => (
-            <div key={i} className="p-4 flex flex-col sm:flex-row sm:items-center gap-4 bg-zinc-50 dark:bg-zinc-900/60">
-              <div className="flex items-center gap-3 sm:w-1/3">
-                <item.icon className="w-4 h-4 text-zinc-400 dark:text-zinc-500" />
-                <Label className="text-zinc-600 dark:text-zinc-400 font-medium">{item.label}</Label>
+      {isProfessional ? (
+        /* Work Context Group (young professionals) */
+        <div className="space-y-4">
+          <h3 className="text-sm font-medium text-zinc-600 dark:text-zinc-400 uppercase tracking-wider px-1">Work Context</h3>
+          <div className="bg-white/80 dark:bg-zinc-900/40 border border-zinc-200 dark:border-white/10 rounded-2xl overflow-hidden divide-y divide-zinc-200 dark:divide-white/5 backdrop-blur-xl shadow-sm">
+            {[
+              {
+                label: 'WFH Arrangement',
+                value: formatWfhStatus(professionalContext?.wfh_status),
+                icon: Info,
+              },
+            ].map((item, i) => (
+              <div key={i} className="p-4 flex flex-col sm:flex-row sm:items-center gap-4 bg-zinc-50 dark:bg-zinc-900/60">
+                <div className="flex items-center gap-3 sm:w-1/3">
+                  <item.icon className="w-4 h-4 text-zinc-400 dark:text-zinc-500" />
+                  <Label className="text-zinc-600 dark:text-zinc-400 font-medium">{item.label}</Label>
+                </div>
+                <div className="flex-1 text-sm text-zinc-600 dark:text-zinc-400 px-0 sm:px-3">
+                  {item.value || 'Not specified'}
+                </div>
               </div>
-              <div className="flex-1 text-sm text-zinc-600 dark:text-zinc-400 px-0 sm:px-3">
-                {item.value || 'Not specified'}
-              </div>
-            </div>
-          ))}
+            ))}
+          </div>
+          <p className="text-xs text-zinc-500 dark:text-zinc-400 px-1 mt-2">
+            To update your work arrangement, please edit your questionnaire responses.
+          </p>
         </div>
-        <p className="text-xs text-zinc-500 dark:text-zinc-400 px-1 mt-2">
-          To update your academic information, please edit your questionnaire responses.
-        </p>
-      </div>
+      ) : (
+        /* Academic Information Group (students) */
+        <div className="space-y-4">
+          <h3 className="text-sm font-medium text-zinc-600 dark:text-zinc-400 uppercase tracking-wider px-1">Academic Info</h3>
+          <div className="bg-white/80 dark:bg-zinc-900/40 border border-zinc-200 dark:border-white/10 rounded-2xl overflow-hidden divide-y divide-zinc-200 dark:divide-white/5 backdrop-blur-xl shadow-sm">
+            {[
+              { label: 'University', value: academic?.universities?.name || academic?.university_id, icon: GraduationCap },
+              {
+                label: 'Degree Level',
+                value: academic?.degree_level
+                  ? academic.degree_level.charAt(0).toUpperCase() + academic.degree_level.slice(1)
+                  : null,
+                icon: GraduationCap,
+              },
+              {
+                label: 'Program',
+                value: (academic?.undecided_program && !profile?.program) ? 'Undecided' : (academic?.programs?.name || profile?.program),
+                icon: GraduationCap,
+              },
+              { label: 'Graduation', value: academic?.expected_graduation_year ? `Class of ${academic.expected_graduation_year}` : null, icon: GraduationCap },
+            ].map((item, i) => (
+              <div key={i} className="p-4 flex flex-col sm:flex-row sm:items-center gap-4 bg-zinc-50 dark:bg-zinc-900/60">
+                <div className="flex items-center gap-3 sm:w-1/3">
+                  <item.icon className="w-4 h-4 text-zinc-400 dark:text-zinc-500" />
+                  <Label className="text-zinc-600 dark:text-zinc-400 font-medium">{item.label}</Label>
+                </div>
+                <div className="flex-1 text-sm text-zinc-600 dark:text-zinc-400 px-0 sm:px-3">
+                  {item.value || 'Not specified'}
+                </div>
+              </div>
+            ))}
+          </div>
+          <p className="text-xs text-zinc-500 dark:text-zinc-400 px-1 mt-2">
+            To update your academic information, please edit your questionnaire responses.
+          </p>
+        </div>
+      )}
 
       <div className="flex justify-end pt-6">
         <Button

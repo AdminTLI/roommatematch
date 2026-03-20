@@ -40,7 +40,9 @@ export class SupabaseMatchRepo implements MatchRepo {
           degree_level,
           campus,
           verification_status,
-          user_type
+          user_type,
+          is_visible,
+          privacy_settings
         ),
         user_academic!inner(
           university_id,
@@ -181,6 +183,16 @@ export class SupabaseMatchRepo implements MatchRepo {
       ? profileData.user_type
       : undefined
 
+    // Privacy gating for matching:
+    // - Ghost users (profiles.is_visible=false) are not eligible for matching
+    // - Users with privacy_settings.showInMatches=false are not eligible for matching
+    const isGhost = profileData?.is_visible === false
+    const showInMatchesSetting = profileData?.privacy_settings?.showInMatches
+    const showInMatches = typeof showInMatchesSetting === 'boolean' ? showInMatchesSetting : true
+    if (isGhost || showInMatches === false) {
+      return null
+    }
+
     return {
       id: data.id,
       email: data.email,
@@ -227,6 +239,7 @@ export class SupabaseMatchRepo implements MatchRepo {
           campus,
           verification_status,
           is_visible,
+          privacy_settings,
           user_type
         ),
         user_academic(
@@ -348,7 +361,7 @@ export class SupabaseMatchRepo implements MatchRepo {
       const adminClient = await this.getSupabase()
       const { data: profileData, error: profileError } = await adminClient
         .from('profiles')
-        .select('user_id, first_name, university_id, degree_level, campus, verification_status, user_type')
+        .select('user_id, first_name, university_id, degree_level, campus, verification_status, is_visible, privacy_settings, user_type')
         .in('user_id', usersMissingProfile)
 
       if (!profileError && profileData) {
@@ -382,6 +395,9 @@ export class SupabaseMatchRepo implements MatchRepo {
       .filter((user: any) => {
         const profile = user.profiles?.[0] || profileDataMap.get(user.id)
         if (profile?.is_visible === false) return false
+        const showInMatchesSetting = profile?.privacy_settings?.showInMatches
+        const showInMatches = typeof showInMatchesSetting === 'boolean' ? showInMatchesSetting : true
+        if (showInMatches === false) return false
         if (filter.userType && (profile?.user_type == null || profile?.user_type !== filter.userType)) return false
         return true
       })
