@@ -88,7 +88,7 @@ export default function PathSelectionClient() {
   }
 
   return (
-    <div className="relative min-h-screen overflow-hidden bg-slate-950 text-slate-50">
+    <div className="relative min-h-screen overflow-hidden bg-bg-body text-text-primary">
       <div className="pointer-events-none absolute inset-0">
         <div className="absolute -top-40 -left-40 h-80 w-80 rounded-full bg-indigo-500/20 blur-3xl" />
         <div className="absolute -bottom-40 -right-20 h-96 w-96 rounded-full bg-purple-500/25 blur-3xl" />
@@ -97,20 +97,20 @@ export default function PathSelectionClient() {
       <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top,_rgba(148,163,184,0.15),_transparent_60%),radial-gradient(circle_at_bottom,_rgba(59,130,246,0.15),_transparent_55%)] mix-blend-screen" />
 
       <div className="relative z-10 flex min-h-screen flex-col">
-        <header className="border-b border-white/10 bg-gradient-to-r from-slate-950/80 via-slate-950/60 to-slate-950/80 backdrop-blur-xl">
+        <header className="border-b border-border-subtle/40 bg-gradient-to-r from-bg-surface-alt/80 via-bg-surface-alt/60 to-bg-surface-alt/80 backdrop-blur-xl">
           <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-4 sm:px-6 lg:px-8">
             <div className="flex items-center gap-2">
               <div className="flex h-8 w-8 items-center justify-center rounded-2xl bg-gradient-to-tr from-indigo-500 via-sky-400 to-purple-500 shadow-lg shadow-indigo-500/30">
                 <span className="text-xs font-semibold tracking-tight text-white">DM</span>
               </div>
               <div>
-                <p className="text-sm font-semibold tracking-tight text-slate-50">Domu Match</p>
-                <p className="text-[11px] font-medium uppercase tracking-[0.22em] text-slate-400">
+                <p className="text-sm font-semibold tracking-tight text-text-primary">Domu Match</p>
+                <p className="text-[11px] font-medium uppercase tracking-[0.22em] text-text-secondary">
                   Compatibility first, flatmates second
                 </p>
               </div>
             </div>
-            <div className="hidden text-xs font-medium text-slate-400 sm:block">
+            <div className="hidden text-xs font-medium text-text-secondary sm:block">
               Step 0 · Choose your path
             </div>
           </div>
@@ -128,17 +128,17 @@ export default function PathSelectionClient() {
             ) : (
               <>
             <div className="mb-8 text-center">
-              <p className="text-xs font-semibold uppercase tracking-[0.22em] text-slate-200">
+              <p className="text-xs font-semibold uppercase tracking-[0.22em] text-text-secondary">
                 Get started
               </p>
-              <h1 className="mt-2 text-3xl font-extrabold tracking-tight text-slate-50 sm:text-4xl">
+              <h1 className="mt-2 text-3xl font-extrabold tracking-tight text-text-primary sm:text-4xl">
                 Which best describes{' '}
                 <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-500 to-purple-500 dark:from-indigo-400 dark:to-purple-400">
                   your current stage
                 </span>{' '}
                 in life?
               </h1>
-              <p className="mt-3 text-slate-300">
+              <p className="mt-3 text-text-secondary">
                 We match you only with people in the same cohort for a safe and relevant experience.
               </p>
             </div>
@@ -156,9 +156,9 @@ export default function PathSelectionClient() {
                   onKeyDown={(e) => (e.key === 'Enter' || e.key === ' ') && setSelected('student')}
                   className={[
                     'cursor-pointer transition-all duration-300 rounded-2xl border backdrop-blur-xl shadow-[0_18px_60px_rgba(15,23,42,0.85)]',
-                    'bg-white/10 border-white/20 hover:bg-white/16 hover:border-white/40 hover:shadow-[0_22px_80px_rgba(15,23,42,0.95)]',
+                    'bg-bg-surface-alt/20 border-border-subtle/40 hover:bg-bg-surface-alt/40 hover:border-border-subtle/70 hover:shadow-[0_22px_80px_rgba(15,23,42,0.95)]',
                     selected === 'student'
-                      ? 'ring-2 ring-primary border-primary/60 bg-white/18 shadow-[0_24px_90px_rgba(56,189,248,0.75)]'
+                      ? 'ring-2 ring-primary border-primary/60 bg-bg-surface-alt/50 shadow-[0_24px_90px_rgba(56,189,248,0.75)]'
                       : ''
                   ].join(' ')}
                 >
@@ -166,8 +166,8 @@ export default function PathSelectionClient() {
                     <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-sky-500/20 text-sky-400">
                       <GraduationCap className="h-6 w-6" />
                     </div>
-                    <CardTitle className="text-xl text-slate-50">I am a Student</CardTitle>
-                    <CardDescription className="text-slate-300">
+                    <CardTitle className="text-xl text-text-primary">I am a Student</CardTitle>
+                    <CardDescription className="text-text-secondary">
                       Match exclusively with other students and unlock university-specific features.
                     </CardDescription>
                   </CardHeader>
@@ -187,9 +187,9 @@ export default function PathSelectionClient() {
                   onKeyDown={(e) => (e.key === 'Enter' || e.key === ' ') && setSelected('professional')}
                   className={[
                     'cursor-pointer transition-all duration-300 rounded-2xl border backdrop-blur-xl shadow-[0_18px_60px_rgba(15,23,42,0.85)]',
-                    'bg-white/10 border-white/20 hover:bg-white/16 hover:border-white/40 hover:shadow-[0_22px_80px_rgba(15,23,42,0.95)]',
+                    'bg-bg-surface-alt/20 border-border-subtle/40 hover:bg-bg-surface-alt/40 hover:border-border-subtle/70 hover:shadow-[0_22px_80px_rgba(15,23,42,0.95)]',
                     selected === 'professional'
-                      ? 'ring-2 ring-primary border-primary/60 bg-white/18 shadow-[0_24px_90px_rgba(129,140,248,0.75)]'
+                      ? 'ring-2 ring-primary border-primary/60 bg-bg-surface-alt/50 shadow-[0_24px_90px_rgba(129,140,248,0.75)]'
                       : ''
                   ].join(' ')}
                 >
@@ -197,8 +197,8 @@ export default function PathSelectionClient() {
                     <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-indigo-500/20 text-indigo-400">
                       <Briefcase className="h-6 w-6" />
                     </div>
-                    <CardTitle className="text-xl text-slate-50">I am a Young Professional</CardTitle>
-                    <CardDescription className="text-slate-300">
+                    <CardTitle className="text-xl text-text-primary">I am a Young Professional</CardTitle>
+                    <CardDescription className="text-text-secondary">
                       Match with other working professionals and graduates.
                     </CardDescription>
                   </CardHeader>
@@ -212,7 +212,7 @@ export default function PathSelectionClient() {
                 type="button"
                 onClick={handleNext}
                 disabled={!selected || isLoading}
-                className="min-h-[48px] rounded-xl px-8 bg-gradient-to-r from-sky-400 via-indigo-500 to-purple-500 text-slate-50 hover:brightness-110 disabled:opacity-50 disabled:pointer-events-none"
+                className="min-h-[48px] rounded-xl px-8 bg-gradient-to-r from-sky-400 via-indigo-500 to-purple-500 text-text-primary hover:brightness-110 disabled:opacity-50 disabled:pointer-events-none"
               >
                 {isLoading ? 'Saving…' : 'Next'}
               </Button>

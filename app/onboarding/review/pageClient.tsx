@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { QuestionnaireLayout } from '@/components/questionnaire/QuestionnaireLayout'
 import { useOnboardingStore } from '@/store/onboarding'
@@ -11,12 +11,11 @@ import { useSearchParams } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Checkbox } from '@/components/ui/checkbox'
-import { FileDown, AlertCircle } from 'lucide-react'
-import jsPDF from 'jspdf'
-import autoTable from 'jspdf-autotable'
+import { FileDown, AlertCircle, ShieldCheck } from 'lucide-react'
 import { SuspenseWrapper } from '@/components/questionnaire/SuspenseWrapper'
 import { fetchWithCSRF } from '@/lib/utils/fetch-with-csrf'
 import { showErrorToast } from '@/lib/toast'
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion'
 
 const scaleAnchors = {
   agreement: ['Strongly disagree', 'Disagree', 'Neutral', 'Agree', 'Strongly agree'],
@@ -48,6 +47,10 @@ function ReviewClientContent() {
   const allItems = itemsJson as Item[]
   const searchParams = useSearchParams()
   const [isAgreed, setIsAgreed] = useState(false)
+  const [isDownloadingPdf, setIsDownloadingPdf] = useState(false)
+  const [reviewQuery, setReviewQuery] = useState('')
+  const [dealbreakersOnly, setDealbreakersOnly] = useState(false)
+  const [openSectionValues, setOpenSectionValues] = useState<string[]>([])
   
   // Check edit mode using React hook for proper reactivity
   const isEditMode = searchParams.get('mode') === 'edit'
@@ -60,286 +63,106 @@ function ReviewClientContent() {
     return bySection
   }, [allItems])
 
-  const sectionDescriptions: Record<string, {title: string, description: string, importance: string}> = {
-    'location-commute': {
-      title: 'Location & Commute',
-      description: 'Your preferred living locations and commute preferences.',
-      importance: 'Ensures you find housing in convenient areas that match your lifestyle and daily routine.'
-    },
-    'personality-values': {
-      title: 'Personality & Values',
-      description: 'Your core personality traits and fundamental values.',
-      importance: 'Helps match you with compatible roommates who share similar approaches to life and living together.'
-    },
-    'sleep-circadian': {
-      title: 'Sleep & Circadian Rhythms',
-      description: 'Your sleep schedule, quiet hours, and circadian preferences.',
-      importance: 'Critical for avoiding conflicts around noise levels and establishing mutually respectful schedules.'
-    },
-    'noise-sensory': {
-      title: 'Noise & Sensory Preferences',
-      description: 'Your sensitivity to noise, light, temperature, and environmental factors.',
-      importance: 'Ensures comfort in shared spaces by aligning environmental preferences and sensitivities.'
-    },
-    'home-operations': {
-      title: 'Home Operations',
-      description: 'Cleanliness standards, chores, and household management preferences.',
-      importance: 'Establishes clear expectations for maintaining shared spaces and preventing common roommate conflicts.'
-    },
-    'social-hosting-language': {
-      title: 'Social Life & Hosting',
-      description: 'Guest policies, social preferences, and communication language.',
-      importance: 'Sets boundaries for social activities and creates a comfortable home environment for all.'
-    },
-    'communication-conflict': {
-      title: 'Communication & Conflict Resolution',
-      description: 'How you prefer to communicate and resolve disagreements.',
-      importance: 'Foundation for healthy roommate relationships and addressing issues constructively.'
-    },
-    'privacy-territoriality': {
-      title: 'Privacy & Boundaries',
-      description: 'Personal space needs and territorial boundaries.',
-      importance: 'Respects individual privacy needs while fostering a comfortable shared living arrangement.'
-    },
-    'reliability-logistics': {
-      title: 'Reliability & Logistics',
-      description: 'Commitments, financial reliability, and practical living arrangements.',
-      importance: 'Ensures all roommates are dependable and aligned on practical living requirements.'
-    }
-  }
+  const normalizedQuery = reviewQuery.trim().toLowerCase()
+  const hasActiveFilters = normalizedQuery.length > 0 || dealbreakersOnly
 
-  const downloadPreview = () => {
-    const doc = new jsPDF()
-    const pageWidth = doc.internal.pageSize.getWidth()
-    const pageHeight = doc.internal.pageSize.getHeight()
-    
-    // ============ COVER PAGE ============
-    doc.setFillColor(99, 102, 241) // Indigo
-    doc.rect(0, 0, pageWidth, pageHeight, 'F')
-    
-    doc.setTextColor(255, 255, 255)
-    doc.setFontSize(36)
-    doc.setFont('helvetica', 'bold')
-    doc.text('Roommate Agreement', pageWidth / 2, 100, { align: 'center' })
-    
-    doc.setFontSize(18)
-    doc.setFont('helvetica', 'normal')
-    doc.text('Compatibility Profile', pageWidth / 2, 120, { align: 'center' })
-    
-    doc.setFontSize(12)
-    const today = new Date().toLocaleDateString('en-US', { 
-      year: 'numeric', 
-      month: 'long', 
-      day: 'numeric' 
-    })
-    doc.text(today, pageWidth / 2, 250, { align: 'center' })
-    
-    doc.setFontSize(10)
-    doc.text('Generated by Domu Match', pageWidth / 2, 270, { align: 'center' })
-    
-    // ============ INTRODUCTION PAGE ============
-    doc.addPage()
-    doc.setTextColor(0, 0, 0)
-    doc.setFontSize(24)
-    doc.setFont('helvetica', 'bold')
-    doc.text('About This Agreement', 20, 30)
-    
-    doc.setFontSize(11)
-    doc.setFont('helvetica', 'normal')
-    const introText = [
-      'This Roommate Agreement serves as a comprehensive compatibility profile based on your',
-      'responses to our questionnaire. It covers essential aspects of shared living to help ensure',
-      'a harmonious and respectful living environment.',
-      '',
-      'Why These Sections Matter:',
-      '',
-      'Each section addresses critical factors that impact roommate compatibility. By being',
-      'honest and thorough in your responses, you help us match you with compatible roommates',
-      'and establish clear expectations from the start.',
-      '',
-      'Deal Breakers:',
-      '',
-      'Items marked as "Deal Breakers" represent non-negotiable requirements for you. These are',
-      'given special consideration during the matching process to ensure fundamental compatibility.',
-      '',
-      'Sections Overview:'
-    ]
-    
-    let yPos = 50
-    introText.forEach(line => {
-      doc.text(line, 20, yPos)
-      yPos += 6
-    })
-    
-    // Add section summaries
-    yPos += 5
-    doc.setFontSize(10)
-    Object.entries(sectionDescriptions).forEach(([key, info]) => {
-      if (yPos > 260) {
-        doc.addPage()
-        yPos = 20
-      }
-      doc.setFont('helvetica', 'bold')
-      doc.text(`• ${info.title}:`, 25, yPos)
-      doc.setFont('helvetica', 'normal')
-      yPos += 5
-      doc.text(info.importance, 30, yPos, { maxWidth: 150 })
-      yPos += 10
-    })
-    
-    // ============ SECTION PAGES ============
-    Object.entries(grouped).forEach(([section, items]) => {
-      const answeredItems = items.filter(it => sections[section]?.[it.id])
-      if (answeredItems.length === 0) return
-      
-      doc.addPage()
-      
-      // Section Header with colored background
-      doc.setFillColor(99, 102, 241)
-      doc.rect(0, 0, pageWidth, 35, 'F')
-      
-      doc.setTextColor(255, 255, 255)
-      doc.setFontSize(20)
-      doc.setFont('helvetica', 'bold')
-      const sectionInfo = sectionDescriptions[section] || {
-        title: section.replace(/-/g, ' ').toUpperCase(),
-        description: ''
-      }
-      doc.text(sectionInfo.title, 20, 22)
-      
-      // Section description
-      doc.setTextColor(0, 0, 0)
-      doc.setFontSize(10)
-      doc.setFont('helvetica', 'italic')
-      doc.text(sectionInfo.description, 20, 45)
-      
-      // Separate regular items from deal breakers
-      const regularItems = answeredItems.filter(it => !sections[section]?.[it.id]?.dealBreaker)
-      const dealBreakerItems = answeredItems.filter(it => sections[section]?.[it.id]?.dealBreaker)
-      
-      // Set default font for consistency
-      doc.setFont('helvetica', 'normal')
-      
-      // Regular questions table
-      if (regularItems.length > 0) {
-        const tableData = regularItems.map((it) => {
+  const filteredSectionEntries = useMemo(() => {
+    return Object.entries(grouped)
+      .map(([section, items]) => {
+        const answeredItems = items.filter((it) => sections[section]?.[it.id])
+        if (answeredItems.length === 0) return null
+
+        const dealBreakerCount = answeredItems.filter(
+          (it) => sections[section]?.[it.id]?.dealBreaker
+        ).length
+
+        const visibleItems = answeredItems.filter((it) => {
           const ans = sections[section]?.[it.id]
-          return [it.label, humanize(it, ans.value)]
+          if (!ans) return false
+
+          if (dealbreakersOnly && !ans.dealBreaker) return false
+          if (!normalizedQuery) return true
+
+          const labelMatch = it.label.toLowerCase().includes(normalizedQuery)
+          const valueMatch = humanize(it, ans.value).toLowerCase().includes(normalizedQuery)
+          return labelMatch || valueMatch
         })
-        
-        autoTable(doc, {
-          startY: 55,
-          head: [['Question', 'Your Answer']],
-          body: tableData,
-          headStyles: {
-            fillColor: [99, 102, 241],
-            textColor: [255, 255, 255],
-            fontSize: 11,
-            fontStyle: 'bold',
-            halign: 'left',
-            cellPadding: 5
-          },
-          bodyStyles: {
-            fontSize: 10,
-            fontStyle: 'normal',
-            font: 'helvetica',
-            textColor: [31, 41, 55],
-            cellPadding: 5,
-            lineColor: [229, 231, 235],
-            lineWidth: 0.1
-          },
-          columnStyles: {
-            0: { 
-              cellWidth: 90, 
-              fontStyle: 'normal', 
-              fontSize: 10,
-              font: 'helvetica'
-            },
-            1: { 
-              cellWidth: 85, 
-              fontSize: 10,
-              font: 'helvetica',
-              fontStyle: 'normal'
-            }
-          },
-          alternateRowStyles: {
-            fillColor: [249, 250, 251]
-          },
-          margin: { left: 20, right: 20 }
-        })
+
+        return {
+          section,
+          answeredCount: answeredItems.length,
+          dealBreakerCount,
+          visibleItems,
+        }
+      })
+      .filter(Boolean) as Array<{
+        section: string
+        answeredCount: number
+        dealBreakerCount: number
+        visibleItems: Item[]
+      }>
+  }, [grouped, sections, dealbreakersOnly, normalizedQuery])
+
+  const matchingSectionValues = useMemo(
+    () => filteredSectionEntries.filter((e) => e.visibleItems.length > 0).map((e) => e.section),
+    [filteredSectionEntries]
+  )
+
+  useEffect(() => {
+    // When filters are active, auto-open the sections that have matches.
+    // When filters are cleared, collapse back into an overview.
+    if (!hasActiveFilters) {
+      setOpenSectionValues([])
+      return
+    }
+    setOpenSectionValues(matchingSectionValues)
+  }, [hasActiveFilters, matchingSectionValues])
+  const downloadPreview = async () => {
+    setIsDownloadingPdf(true)
+
+    try {
+      const response = await fetch('/api/pdf/generate-onboarding-preview', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ sections }),
+      })
+
+      if (!response.ok) {
+        const data = (await response.json().catch(() => ({}))) as {
+          error?: string
+          details?: string
+          retryAfter?: number
+        }
+
+        const message =
+          data.error ||
+          data.details ||
+          (response.status === 429 ? 'Please try again later.' : 'Failed to generate PDF.')
+
+        showErrorToast('PDF generation failed', message)
+        return
       }
-      
-      // Deal breakers section (if any)
-      if (dealBreakerItems.length > 0) {
-        const yPos = (doc as any).lastAutoTable?.finalY + 15 || 100
-        
-        // Deal Breakers Header
-        doc.setFillColor(220, 38, 38)
-        doc.rect(20, yPos, pageWidth - 40, 8, 'F')
-        doc.setTextColor(255, 255, 255)
-        doc.setFontSize(11)
-        doc.setFont('helvetica', 'bold')
-        doc.text('⚠ DEAL BREAKERS', 25, yPos + 5.5)
-        
-        const dbTableData = dealBreakerItems.map((it) => {
-          const ans = sections[section]?.[it.id]
-          return [it.label, humanize(it, ans.value)]
-        })
-        
-        autoTable(doc, {
-          startY: yPos + 10,
-          head: [['Question', 'Your Answer']],
-          body: dbTableData,
-          headStyles: {
-            fillColor: [220, 38, 38],
-            textColor: [255, 255, 255],
-            fontSize: 11,
-            fontStyle: 'bold',
-            halign: 'left',
-            cellPadding: 5
-          },
-          bodyStyles: {
-            fontSize: 10,
-            fontStyle: 'normal',
-            font: 'helvetica',
-            textColor: [31, 41, 55],
-            cellPadding: 5,
-            lineColor: [229, 231, 235],
-            lineWidth: 0.1
-          },
-          columnStyles: {
-            0: { 
-              cellWidth: 90, 
-              fontStyle: 'normal', 
-              fontSize: 10,
-              font: 'helvetica'
-            },
-            1: { 
-              cellWidth: 85, 
-              fontSize: 10,
-              font: 'helvetica',
-              fontStyle: 'normal'
-            }
-          },
-          alternateRowStyles: {
-            fillColor: [254, 242, 242]
-          },
-          margin: { left: 20, right: 20 }
-        })
-      }
-      
-      // Footer with page number
-      doc.setFontSize(9)
-      doc.setTextColor(100, 100, 100)
-      doc.text(
-        `Page ${doc.internal.pages.length - 1}`,
-        pageWidth / 2,
-        pageHeight - 10,
-        { align: 'center' }
+
+      const blob = await response.blob()
+      const url = window.URL.createObjectURL(blob)
+      const a = document.createElement('a')
+      a.href = url
+      a.download = `domu-match-onboarding-agreement-${new Date().toISOString().split('T')[0]}.pdf`
+      document.body.appendChild(a)
+      a.click()
+      window.URL.revokeObjectURL(url)
+      document.body.removeChild(a)
+    } catch (error) {
+      console.error('[Review] PDF generation failed:', error)
+      showErrorToast(
+        'PDF generation failed',
+        error instanceof Error ? error.message : 'Unable to generate PDF. Please try again.'
       )
-    })
-    
-    doc.save('roommate-agreement-preview.pdf')
+    } finally {
+      setIsDownloadingPdf(false)
+    }
   }
 
   const submit = async () => {
@@ -352,7 +175,18 @@ function ReviewClientContent() {
       console.log('[Review] Submitting questionnaire...')
       
       // Submit directly - the API will read sections from database
-      const response = await fetchWithCSRF('/api/onboarding/submit', { method: 'POST' })
+      const isProfessionalPath =
+        typeof window !== 'undefined' && window.location.pathname.includes('onboarding-professional')
+      const betaUserTypeConfirmed = isProfessionalPath ? 'professional' : 'student'
+
+      const response = await fetchWithCSRF('/api/onboarding/submit', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          beta_terms_consent: isAgreed,
+          beta_user_type_confirmed: betaUserTypeConfirmed
+        })
+      })
       const result = await response.json()
       
       if (!response.ok) {
@@ -398,7 +232,6 @@ function ReviewClientContent() {
       if (isEditMode) {
         window.location.href = '/settings'
       } else {
-        const isProfessionalPath = typeof window !== 'undefined' && window.location.pathname.includes('onboarding-professional')
         window.location.href = isProfessionalPath ? '/onboarding-professional/complete' : '/onboarding/complete'
       }
     } catch (error) {
@@ -420,86 +253,214 @@ function ReviewClientContent() {
       onNext={submit}
       nextDisabled={!isAgreed}
     >
-      <div className="space-y-8">
-        <div className="p-4 rounded-xl border border-white/10 dark:border-white/10 bg-white/5 dark:bg-black/40 backdrop-blur-md flex items-start gap-3">
-          <Checkbox
-            id="beta-terms-consent"
-            checked={isAgreed}
-            onCheckedChange={(checked) => setIsAgreed(checked === true)}
-            className="mt-0.5 border-border data-[state=checked]:bg-primary data-[state=checked]:border-primary"
-          />
-          <label
-            htmlFor="beta-terms-consent"
-            className="text-sm text-foreground cursor-pointer leading-snug"
-          >
-            I agree to the{' '}
-            <Link
-              href="/legal/beta-terms"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-primary hover:underline font-medium"
-            >
-              Beta Terms &amp; Conditions
-            </Link>
-            {' '}and confirm my user status (Student/Professional) is accurate.
-          </label>
-        </div>
-        <div className="flex items-center justify-between">
-          <div>
-            <h2 className="text-xl font-semibold text-gray-900">Your Responses</h2>
-            <p className="text-sm text-gray-600 mt-1">Review your answers before submitting. Deal-breakers are highlighted.</p>
-          </div>
-          <Button onClick={downloadPreview} size="lg">
-            <FileDown className="mr-2 h-4 w-4" />
-            Download PDF
-          </Button>
-        </div>
-
-        {Object.entries(grouped).map(([section, items]) => {
-          const answeredItems = items.filter(it => sections[section]?.[it.id])
-          if (answeredItems.length === 0) return null
-          
-          return (
-            <div key={section} className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
-              {/* Section Header */}
-              <div className="bg-gradient-to-r from-indigo-50 to-blue-50 px-6 py-4 border-b border-gray-200">
-                <h3 className="text-lg font-semibold text-gray-900 capitalize">
-                  {section.replace(/-/g, ' ')}
-                </h3>
-                <p className="text-sm text-gray-600 mt-1">
-                  {answeredItems.length} {answeredItems.length === 1 ? 'response' : 'responses'}
+      <div className="space-y-6">
+        <div className="grid gap-4 lg:grid-cols-1">
+          <div className="rounded-2xl border border-border-subtle/30 bg-bg-surface-alt/55 backdrop-blur-xl p-4 sm:p-5">
+            <div className="flex items-start justify-between gap-4">
+              <div>
+                <h2 className="text-lg font-semibold text-text-primary">Your Responses</h2>
+                <p className="text-sm text-text-secondary mt-1">
+                  Review your answers before submitting. Deal-breakers are highlighted.
                 </p>
               </div>
-              
-              {/* Questions & Answers */}
-              <div className="divide-y divide-gray-100">
-                {answeredItems.map((it) => {
-                  const ans = sections[section]?.[it.id]
-                  return (
-                    <div key={it.id} className="px-6 py-4 hover:bg-gray-50 transition-colors">
-                      <div className="flex items-start gap-4">
-                        <div className="flex-1 min-w-0">
-                          <p className="text-sm font-medium text-gray-900 mb-2">{it.label}</p>
-                          <div className="flex items-center gap-2">
-                            <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-indigo-100 text-indigo-800">
-                              {humanize(it, ans.value)}
-                            </span>
-                            {ans.dealBreaker && (
-                              <Badge variant="destructive" className="flex items-center gap-1">
-                                <AlertCircle className="h-3 w-3" />
-                                Deal Breaker
-                              </Badge>
-                            )}
-                          </div>
-                        </div>
+
+              <Button onClick={downloadPreview} size="lg" disabled={isDownloadingPdf}>
+                <FileDown className="mr-2 h-4 w-4" />
+                {isDownloadingPdf ? 'Generating PDF...' : 'Download PDF'}
+              </Button>
+            </div>
+
+            <div className="mt-4 space-y-3">
+              <div className="flex items-center gap-3">
+                <div className="relative w-full">
+                  <input
+                    value={reviewQuery}
+                    onChange={(e) => setReviewQuery(e.target.value)}
+                    placeholder="Search questions or answers…"
+                    className="w-full rounded-xl border border-border-subtle/30 bg-bg-surface-alt/60 px-3 py-2 text-sm text-text-primary placeholder:text-text-secondary/90 shadow-sm outline-none focus-visible:ring-2 focus-visible:ring-primary/60 focus-visible:ring-offset-0"
+                  />
+                </div>
+              </div>
+
+              <label className="flex items-center gap-3 cursor-pointer">
+                <Checkbox
+                  id="dealbreakers-only"
+                  checked={dealbreakersOnly}
+                  onCheckedChange={(checked) => setDealbreakersOnly(checked === true)}
+                  className="border-border data-[state=checked]:bg-primary data-[state=checked]:border-primary"
+                />
+                <span className="text-sm text-text-primary leading-relaxed">
+                  Deal-breakers only
+                </span>
+              </label>
+
+              <div className="flex flex-wrap items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => setOpenSectionValues(filteredSectionEntries.map((e) => e.section))}
+                  className="inline-flex items-center rounded-xl border border-border-subtle/30 bg-bg-surface-alt/60 px-3 py-2 text-xs font-semibold text-text-primary hover:bg-bg-surface-alt/80"
+                >
+                  Expand all sections
+                </button>
+                {hasActiveFilters && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setReviewQuery('')
+                      setDealbreakersOnly(false)
+                    }}
+                    className="inline-flex items-center rounded-xl border border-border-subtle/30 bg-bg-surface-alt/60 px-3 py-2 text-xs font-semibold text-text-primary hover:bg-bg-surface-alt/80"
+                  >
+                    Clear filters
+                  </button>
+                )}
+              </div>
+
+            </div>
+          </div>
+        </div>
+
+        <Accordion
+          type="multiple"
+          collapsible
+          value={openSectionValues}
+          onValueChange={(values) => setOpenSectionValues(values as string[])}
+          className="space-y-3"
+        >
+          {filteredSectionEntries.map(({ section, answeredCount, dealBreakerCount, visibleItems }) => {
+            const sectionTitle = section.replace(/-/g, ' ')
+            const shownCount = visibleItems.length
+            const showCountText =
+              hasActiveFilters && shownCount !== answeredCount
+                ? `${shownCount}/${answeredCount} responses`
+                : `${answeredCount} ${answeredCount === 1 ? 'response' : 'responses'}`
+
+            return (
+              <AccordionItem
+                key={section}
+                value={section}
+                className="border-b-0 rounded-xl border border-border-subtle/30 overflow-hidden bg-bg-surface-alt/75"
+              >
+                <AccordionTrigger className="px-5 hover:no-underline">
+                  <div className="flex-1 flex items-center justify-between gap-3 min-w-0">
+                    <div className="flex flex-col gap-0.5 min-w-0">
+                      <div className="text-base font-semibold text-text-primary capitalize truncate leading-tight text-left">
+                        {sectionTitle}
+                      </div>
+                      <div className="text-xs text-text-secondary leading-tight whitespace-nowrap overflow-hidden text-ellipsis text-left">
+                        {showCountText}
+                        {dealBreakerCount > 0 ? ` • ${dealBreakerCount} deal-breaker${dealBreakerCount === 1 ? '' : 's'}` : ''}
                       </div>
                     </div>
-                  )
-                })}
-              </div>
+
+                    {/* Reserve right-side space so the title/count never drift visually */}
+                    <span
+                      className={[
+                        'inline-flex items-center justify-center rounded-full border px-3 py-1 text-xs font-semibold bg-bg-surface-alt/75',
+                        'border-border-subtle/30 text-text-secondary self-center whitespace-nowrap',
+                        hasActiveFilters && shownCount === 0 ? 'opacity-100' : 'opacity-0',
+                        'w-[110px]',
+                      ].join(' ')}
+                      aria-hidden={!(hasActiveFilters && shownCount === 0)}
+                    >
+                      No matches
+                    </span>
+                  </div>
+                </AccordionTrigger>
+
+                <AccordionContent className="px-0">
+                  <div className="border-t border-border-subtle/30">
+                    {visibleItems.length === 0 ? (
+                      <div className="px-5 py-4 text-sm text-text-secondary">
+                        No matching answers in this section.
+                      </div>
+                    ) : (
+                      <div className="divide-y divide-border-subtle/30">
+                        {visibleItems.map((it) => {
+                          const ans = sections[section]?.[it.id]
+                          if (!ans) return null
+
+                          return (
+                            <div key={it.id} className="px-5 py-4 hover:bg-bg-surface-alt/80 transition-colors">
+                              <div className="flex items-start gap-4">
+                                <div className="flex-1 min-w-0">
+                                  <p className="text-sm font-medium text-text-primary mb-2">{it.label}</p>
+                                  <div className="flex items-center gap-2 flex-wrap">
+                                    <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-indigo-500/35 text-indigo-950">
+                                      {humanize(it, ans.value)}
+                                    </span>
+                                    {ans.dealBreaker && (
+                                      <Badge variant="destructive" className="flex items-center gap-1">
+                                        <AlertCircle className="h-3 w-3" />
+                                        Deal Breaker
+                                      </Badge>
+                                    )}
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+                          )
+                        })}
+                      </div>
+                    )}
+                  </div>
+                </AccordionContent>
+              </AccordionItem>
+            )
+          })}
+        </Accordion>
+
+        <div className="rounded-2xl border border-border-subtle/30 bg-bg-surface-alt/70 backdrop-blur-xl p-4 sm:p-5 flex flex-col">
+          <div className="flex items-start gap-3">
+            <div className="mt-0.5 inline-flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10 ring-1 ring-primary/25">
+              <ShieldCheck className="h-5 w-5 text-primary" />
             </div>
-          )
-        })}
+            <div className="min-w-0">
+              <h2 className="text-base font-semibold text-text-primary">
+                Beta terms & status confirmation
+              </h2>
+              <p className="mt-1 text-sm text-text-secondary">
+                Required to submit your compatibility profile.
+              </p>
+            </div>
+          </div>
+
+          <div className="mt-4 flex-1">
+            <label
+              htmlFor="beta-terms-consent"
+              className="flex cursor-pointer items-start gap-3"
+            >
+              <Checkbox
+                id="beta-terms-consent"
+                checked={isAgreed}
+                onCheckedChange={(checked) => setIsAgreed(!!checked)}
+                className="mt-0.5 border-border data-[state=checked]:bg-primary data-[state=checked]:border-primary"
+              />
+              <span className="text-sm leading-relaxed text-text-primary">
+                I agree to the{' '}
+                <Link
+                  href="/legal/beta-terms"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="font-medium text-primary hover:underline underline-offset-4"
+                >
+                  Beta Terms &amp; Conditions
+                </Link>
+                {' '}and confirm my user status (Student/Professional) is accurate.
+              </span>
+            </label>
+
+            <div className="mt-auto pt-4">
+              <Button
+                onClick={submit}
+                disabled={!isAgreed}
+                className="w-full min-h-[44px] rounded-xl"
+              >
+                {isEditMode ? 'Save & finish' : 'Submit & finish'}
+              </Button>
+            </div>
+          </div>
+        </div>
       </div>
     </QuestionnaireLayout>
   )

@@ -37,6 +37,21 @@ export function QuestionnaireSettings({ progressData, userType }: QuestionnaireS
   const [success, setSuccess] = useState<string | null>(null)
 
   const { completedSections, totalSections, isFullySubmitted, lastUpdated, submittedAt } = progressData
+  // "Last updated" should reflect whichever happened more recently:
+  // - last save & exit (lastUpdated)
+  // - final submission (submittedAt)
+  const getMostRecentDateString = (a: string | null, b: string | null) => {
+    if (!a && !b) return null
+    if (!a) return b
+    if (!b) return a
+    const aMs = new Date(a).getTime()
+    const bMs = new Date(b).getTime()
+    if (Number.isNaN(aMs)) return b
+    if (Number.isNaN(bMs)) return a
+    return bMs >= aMs ? b : a
+  }
+
+  const lastUpdatedMostRecent = getMostRecentDateString(lastUpdated, submittedAt)
   const progressPercentage = totalSections > 0 ? Math.round((completedSections.length / totalSections) * 100) : 0
   const isProfessional = userType === 'professional'
   const onboardingBase = isProfessional ? '/onboarding-professional' : '/onboarding'
@@ -76,12 +91,14 @@ export function QuestionnaireSettings({ progressData, userType }: QuestionnaireS
 
   const formatDate = (dateString: string | null) => {
     if (!dateString) return 'Never'
-    return new Date(dateString).toLocaleDateString('en-US', {
+    // Use toLocaleString (not toLocaleDateString) so we can reliably control time output (24h vs 12h).
+    return new Date(dateString).toLocaleString('en-US', {
       year: 'numeric',
       month: 'long',
       day: 'numeric',
       hour: '2-digit',
-      minute: '2-digit'
+      minute: '2-digit',
+      hour12: false
     })
   }
 
@@ -177,7 +194,7 @@ export function QuestionnaireSettings({ progressData, userType }: QuestionnaireS
           <div className="grid grid-cols-2 gap-8 pt-4 border-t border-zinc-200 dark:border-white/5">
             <div className="space-y-1">
               <p className="text-xs font-medium text-zinc-600 dark:text-zinc-400">Last updated</p>
-              <p className="text-sm text-zinc-900 dark:text-zinc-100">{formatDate(lastUpdated)}</p>
+              <p className="text-sm text-zinc-900 dark:text-zinc-100">{formatDate(lastUpdatedMostRecent)}</p>
             </div>
             {submittedAt && (
               <div className="space-y-1 text-right">

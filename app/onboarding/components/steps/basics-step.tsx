@@ -163,7 +163,7 @@ export function BasicsStep({ data, onChange, user }: BasicsStepProps) {
             handleChange('sector', prog.sector)
           }}
         />
-        <p className="text-sm text-gray-500">
+        <p className="text-sm text-text-muted">
           What are you studying? This helps us find roommates with similar academic interests.
         </p>
       </div>
@@ -190,7 +190,7 @@ export function BasicsStep({ data, onChange, user }: BasicsStepProps) {
             ))}
           </SelectContent>
         </Select>
-        <p className="text-sm text-gray-500">
+        <p className="text-sm text-text-muted">
           {campuses.length === 2 && campuses[0].value === 'main-campus' 
             ? 'Select "Main Campus" if your specific campus isn\'t listed, or choose "Other Campus" to specify a different location.'
             : 'Which campus will you primarily study at?'}
@@ -214,7 +214,7 @@ export function BasicsStep({ data, onChange, user }: BasicsStepProps) {
             ))}
           </SelectContent>
         </Select>
-        <p className="text-sm text-gray-500">
+        <p className="text-sm text-text-muted">
           Optional: Helps match with students at similar academic stages.
         </p>
       </div>
@@ -235,7 +235,7 @@ export function BasicsStep({ data, onChange, user }: BasicsStepProps) {
             <SelectItem value="flexible">Flexible</SelectItem>
           </SelectContent>
         </Select>
-        <p className="text-sm text-gray-500">
+        <p className="text-sm text-text-muted">
           This helps match you with people looking for similar timing.
         </p>
       </div>

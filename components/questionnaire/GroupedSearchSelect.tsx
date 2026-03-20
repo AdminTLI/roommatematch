@@ -57,17 +57,22 @@ export function GroupedSearchSelect({ placeholder, groups, value, onChange, allo
               (placeholder || 'Select')}
         </Button>
       </PopoverTrigger>
-      <PopoverContent className="w-[420px] p-3">
-        <Input placeholder="Search…" value={query} onChange={(e) => setQuery(e.target.value)} className="mb-3" />
+      <PopoverContent className="w-[420px] p-3 rounded-2xl border border-border-subtle/30 bg-bg-surface-alt/70 backdrop-blur-xl shadow-lg shadow-black/20">
+        <Input
+          placeholder="Search…"
+          value={query}
+          onChange={(e) => setQuery(e.target.value)}
+          className="mb-3 bg-bg-surface-alt/20 border-border-subtle/50 text-text-primary placeholder:text-text-muted"
+        />
         <div className="max-h-64 overflow-auto space-y-3">
           {filtered.map((g) => (
             <div key={g.group}>
-              <div className="text-xs font-medium text-gray-500 mb-1">{g.group}</div>
+              <div className="text-xs font-medium text-text-secondary mb-1">{g.group}</div>
               <ul className="space-y-1">
                 {g.options.map((o) => (
                   <li key={o.value}>
                     <button
-                      className="w-full text-left px-2 py-1 rounded hover:bg-gray-50"
+                      className="w-full text-left px-2 py-1 rounded hover:bg-bg-surface-alt/60 text-text-primary"
                       onClick={() => {
                         onChange(o.value)
                         setOpen(false)
@@ -81,9 +86,14 @@ export function GroupedSearchSelect({ placeholder, groups, value, onChange, allo
             </div>
           ))}
           {allowOther && (
-            <div className="mt-2 border-t pt-2">
-              <div className="text-xs font-medium text-gray-500 mb-1">{otherLabel}</div>
-              <Input value={other} onChange={(e) => handleOtherInput(e.target.value)} placeholder="Type institution name" />
+            <div className="mt-2 border-t border-border-subtle/30 pt-2">
+              <div className="text-xs font-medium text-text-secondary mb-1">{otherLabel}</div>
+              <Input
+                value={other}
+                onChange={(e) => handleOtherInput(e.target.value)}
+                placeholder="Type institution name"
+                className="bg-bg-surface-alt/20 border-border-subtle/50 text-text-primary placeholder:text-text-muted"
+              />
               {mboHint && <div className="text-xs text-rose-600 mt-1">{mboHint}</div>}
               <div className="mt-2 flex justify-end">
                 <Button size="sm" onClick={() => {

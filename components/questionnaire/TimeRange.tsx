@@ -52,7 +52,7 @@ export function TimeRange({ id, label, start, end, onChange }: Props) {
           </Select>
         </div>
       </div>
-      <p className="text-xs sm:text-xs text-gray-500 mt-3 sm:mt-2">End should be after start.</p>
+      <p className="text-xs sm:text-xs text-text-muted mt-3 sm:mt-2">End should be after start.</p>
     </div>
   )
 }

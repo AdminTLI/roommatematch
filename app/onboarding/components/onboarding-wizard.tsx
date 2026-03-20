@@ -352,18 +352,18 @@ export function OnboardingWizard({ user }: OnboardingWizardProps) {
       <div className="mb-8">
         <div className="flex items-center justify-between mb-4">
           <div>
-            <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white">
+            <h1 className="text-2xl sm:text-3xl font-bold text-text-primary">
               Welcome to Domu Match
             </h1>
-            <p className="text-gray-600 dark:text-gray-300 mt-2">
+            <p className="text-text-secondary mt-2">
               Let's get to know you better to go from strangers to roommates
             </p>
           </div>
           <div className="text-right">
-            <div className="text-sm text-gray-500 dark:text-gray-400">
+            <div className="text-sm text-text-muted">
               Step {currentStep + 1} of {steps.length}
             </div>
-            <div className="text-xs text-gray-400 mt-1">
+            <div className="text-xs text-text-muted mt-1">
               {lastSaved && `Last saved: ${lastSaved.toLocaleTimeString()}`}
             </div>
           </div>
@@ -371,19 +371,19 @@ export function OnboardingWizard({ user }: OnboardingWizardProps) {
         
         <Progress value={progress} className="h-2" />
         
-        <div className="flex justify-between mt-2 text-xs text-gray-500">
+        <div className="flex justify-between mt-2 text-xs text-text-muted">
           {steps.map((step, index) => (
             <div 
               key={step.id} 
               className={`flex items-center gap-1 ${
-                index <= currentStep ? 'text-primary' : 'text-gray-400'
+                index <= currentStep ? 'text-primary' : 'text-text-muted'
               }`}
             >
               {index < currentStep ? (
                 <CheckCircle className="h-3 w-3" />
               ) : (
                 <div className={`w-3 h-3 rounded-full border ${
-                  index === currentStep ? 'border-primary bg-primary' : 'border-gray-300'
+                  index === currentStep ? 'border-primary bg-primary' : 'border-border-subtle/60'
                 }`} />
               )}
               <span className="hidden sm:inline">{step.title}</span>
@@ -422,7 +422,7 @@ export function OnboardingWizard({ user }: OnboardingWizardProps) {
 
         <div className="flex items-center gap-3">
           {isSaving && (
-            <div className="flex items-center gap-2 text-sm text-gray-500">
+            <div className="flex items-center gap-2 text-sm text-text-muted">
               <Save className="h-4 w-4 animate-pulse" />
               Saving...
             </div>

@@ -85,7 +85,7 @@ export default function OnboardingWelcomePage() {
   }
 
   return (
-    <div className="relative min-h-screen overflow-hidden bg-slate-950 text-slate-50">
+    <div className="relative min-h-screen overflow-hidden bg-bg-body text-text-primary">
       {/* Soft gradient background, similar to dashboard discovery feed */}
       <div className="pointer-events-none absolute inset-0">
         <div className="absolute -top-40 -left-40 h-80 w-80 rounded-full bg-indigo-500/20 blur-3xl" />
@@ -98,20 +98,20 @@ export default function OnboardingWelcomePage() {
 
       <div className="relative z-10 flex min-h-screen flex-col">
         {/* Keep header styling / brand exactly as is */}
-        <header className="border-b border-white/10 bg-gradient-to-r from-slate-950/80 via-slate-950/60 to-slate-950/80 backdrop-blur-xl">
+        <header className="border-b border-border-subtle/40 bg-gradient-to-r from-bg-surface-alt/80 via-bg-surface-alt/60 to-bg-surface-alt/80 backdrop-blur-xl">
           <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-4 sm:px-6 lg:px-8">
             <div className="flex items-center gap-2">
               <div className="flex h-8 w-8 items-center justify-center rounded-2xl bg-gradient-to-tr from-indigo-500 via-sky-400 to-purple-500 shadow-lg shadow-indigo-500/30">
                 <span className="text-xs font-semibold tracking-tight text-white">DM</span>
               </div>
               <div>
-                <p className="text-sm font-semibold tracking-tight text-slate-50">Domu Match</p>
-                <p className="text-[11px] font-medium uppercase tracking-[0.22em] text-slate-400">
+                <p className="text-sm font-semibold tracking-tight text-text-primary">Domu Match</p>
+                <p className="text-[11px] font-medium uppercase tracking-[0.22em] text-text-secondary">
                   Compatibility first, flatmates second
                 </p>
               </div>
             </div>
-            <div className="hidden text-xs font-medium text-slate-400 sm:block">
+            <div className="hidden text-xs font-medium text-text-secondary sm:block">
               Step 0 of 8 · Welcome &amp; guidelines
             </div>
           </div>
@@ -123,10 +123,10 @@ export default function OnboardingWelcomePage() {
             {/* Left column: hero + quick stats + what's inside + honesty */}
             <section className="flex-1 space-y-5 sm:space-y-6">
               <div className="space-y-3">
-                <p className="text-xs font-semibold uppercase tracking-[0.22em] text-slate-200">
+                <p className="text-xs font-semibold uppercase tracking-[0.22em] text-text-secondary">
                   Welcome &amp; guidelines
                 </p>
-                <h1 className="text-3xl font-extrabold tracking-tight text-slate-50 sm:text-4xl">
+                <h1 className="text-3xl font-extrabold tracking-tight text-text-primary sm:text-4xl">
                   <span className="block">Let&apos;s set you up</span>
                   <span className="block text-transparent bg-clip-text bg-gradient-to-r from-sky-400 via-emerald-300 to-purple-400">
                     for a great roommate match
@@ -135,34 +135,34 @@ export default function OnboardingWelcomePage() {
               </div>
 
               {/* Card 1: Quick stats */}
-              <Card className="border-white/10 bg-white/5 backdrop-blur-2xl rounded-2xl">
+              <Card className="border-border-subtle/30 bg-bg-surface-alt/50 backdrop-blur-2xl rounded-2xl">
                 <CardContent className="space-y-5 p-5 sm:p-6">
                   <div className="grid gap-4 sm:grid-cols-3">
                     <div className="flex items-start gap-3">
-                      <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-slate-900/70 text-slate-50">
+                      <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-bg-surface-alt/70 text-text-primary">
                         <Clock className="h-4 w-4" />
                       </div>
                       <div className="space-y-1">
-                        <p className="text-sm font-semibold text-slate-50">⏱ Time</p>
-                        <p className="text-sm leading-relaxed text-slate-200">~10–15 mins (Grab a coffee!)</p>
+                        <p className="text-sm font-semibold text-text-primary">⏱ Time</p>
+                        <p className="text-sm leading-relaxed text-text-primary">~10–15 mins (Grab a coffee!)</p>
                       </div>
                     </div>
                     <div className="flex items-start gap-3">
-                      <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-slate-900/70 text-slate-50">
+                      <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-bg-surface-alt/70 text-text-primary">
                         <LayoutGrid className="h-4 w-4" />
                       </div>
                       <div className="space-y-1">
-                        <p className="text-sm font-semibold text-slate-50">🧩 Format</p>
-                        <p className="text-sm leading-relaxed text-slate-200">8 short blocks</p>
+                        <p className="text-sm font-semibold text-text-primary">🧩 Format</p>
+                        <p className="text-sm leading-relaxed text-text-primary">8 short blocks</p>
                       </div>
                     </div>
                     <div className="flex items-start gap-3">
-                      <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-slate-900/70 text-slate-50">
+                      <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-bg-surface-alt/70 text-text-primary">
                         <Target className="h-4 w-4" />
                       </div>
                       <div className="space-y-1">
-                        <p className="text-sm font-semibold text-slate-50">🎯 Goal</p>
-                        <p className="text-sm leading-relaxed text-slate-200">Your perfect roommate match</p>
+                        <p className="text-sm font-semibold text-text-primary">🎯 Goal</p>
+                        <p className="text-sm leading-relaxed text-text-primary">Your perfect roommate match</p>
                       </div>
                     </div>
                   </div>
@@ -170,82 +170,82 @@ export default function OnboardingWelcomePage() {
               </Card>
 
               {/* Card 2: The 8 Match Blocks */}
-              <Card className="border-white/10 bg-white/5 backdrop-blur-2xl rounded-2xl">
+              <Card className="border-border-subtle/30 bg-bg-surface-alt/50 backdrop-blur-2xl rounded-2xl">
                 <CardContent className="space-y-4 p-5 sm:p-6">
-                  <h2 className="text-lg font-semibold text-slate-50">The 8 Match Blocks</h2>
+                  <h2 className="text-lg font-semibold text-text-primary">The 8 Match Blocks</h2>
                   <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                     <div className="flex items-start gap-3">
-                      <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-slate-900/50 text-sky-400">
+                      <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-bg-surface-alt/50 text-sky-400">
                         <Home className="h-4 w-4" />
                       </div>
                       <div className="space-y-1">
-                        <p className="text-sm font-semibold text-slate-50">Logistics</p>
-                        <p className="text-sm leading-relaxed text-slate-200">Budget, locations &amp; lease types</p>
+                        <p className="text-sm font-semibold text-text-primary">Logistics</p>
+                        <p className="text-sm leading-relaxed text-text-primary">Budget, locations &amp; lease types</p>
                       </div>
                     </div>
                     <div className="flex items-start gap-3">
-                      <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-slate-900/50 text-sky-400">
+                      <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-bg-surface-alt/50 text-sky-400">
                         <Moon className="h-4 w-4" />
                       </div>
                       <div className="space-y-1">
-                        <p className="text-sm font-semibold text-slate-50">Routines</p>
-                        <p className="text-sm leading-relaxed text-slate-200">Sleep schedules &amp; morning alarms</p>
+                        <p className="text-sm font-semibold text-text-primary">Routines</p>
+                        <p className="text-sm leading-relaxed text-text-primary">Sleep schedules &amp; morning alarms</p>
                       </div>
                     </div>
                     <div className="flex items-start gap-3">
-                      <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-slate-900/50 text-sky-400">
+                      <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-bg-surface-alt/50 text-sky-400">
                         <Sparkles className="h-4 w-4" />
                       </div>
                       <div className="space-y-1">
-                        <p className="text-sm font-semibold text-slate-50">Cleanliness</p>
-                        <p className="text-sm leading-relaxed text-slate-200">Chore division &amp; mess tolerance</p>
+                        <p className="text-sm font-semibold text-text-primary">Cleanliness</p>
+                        <p className="text-sm leading-relaxed text-text-primary">Chore division &amp; mess tolerance</p>
                       </div>
                     </div>
                     <div className="flex items-start gap-3">
-                      <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-slate-900/50 text-sky-400">
+                      <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-bg-surface-alt/50 text-sky-400">
                         <Battery className="h-4 w-4" />
                       </div>
                       <div className="space-y-1">
-                        <p className="text-sm font-semibold text-slate-50">Social Battery</p>
-                        <p className="text-sm leading-relaxed text-slate-200">Guests, parties &amp; quiet time</p>
+                        <p className="text-sm font-semibold text-text-primary">Social Battery</p>
+                        <p className="text-sm leading-relaxed text-text-primary">Guests, parties &amp; quiet time</p>
                       </div>
                     </div>
                     <div className="flex items-start gap-3">
-                      <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-slate-900/50 text-sky-400">
+                      <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-bg-surface-alt/50 text-sky-400">
                         <Coffee className="h-4 w-4" />
                       </div>
                       <div className="space-y-1">
-                        <p className="text-sm font-semibold text-slate-50">Lifestyle</p>
-                        <p className="text-sm leading-relaxed text-slate-200">Diet, smoking &amp; drinking habits</p>
+                        <p className="text-sm font-semibold text-text-primary">Lifestyle</p>
+                        <p className="text-sm leading-relaxed text-text-primary">Diet, smoking &amp; drinking habits</p>
                       </div>
                     </div>
                     <div className="flex items-start gap-3">
-                      <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-slate-900/50 text-sky-400">
+                      <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-bg-surface-alt/50 text-sky-400">
                         <BookOpen className="h-4 w-4" />
                       </div>
                       <div className="space-y-1">
-                        <p className="text-sm font-semibold text-slate-50">Study Habits</p>
-                        <p className="text-sm leading-relaxed text-slate-200">Home vs. library &amp; noise levels</p>
+                        <p className="text-sm font-semibold text-text-primary">Study Habits</p>
+                        <p className="text-sm leading-relaxed text-text-primary">Home vs. library &amp; noise levels</p>
                       </div>
                     </div>
                     <div className="flex items-start gap-3">
-                      <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-slate-900/50 text-sky-400">
+                      <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-bg-surface-alt/50 text-sky-400">
                         <MessageCircle className="h-4 w-4" />
                       </div>
                       <div className="space-y-1">
-                        <p className="text-sm font-semibold text-slate-50">Communication</p>
-                        <p className="text-sm leading-relaxed text-slate-200">
+                        <p className="text-sm font-semibold text-text-primary">Communication</p>
+                        <p className="text-sm leading-relaxed text-text-primary">
                           Conflict resolution &amp; shared expenses
                         </p>
                       </div>
                     </div>
                     <div className="flex items-start gap-3">
-                      <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-slate-900/50 text-sky-400">
+                      <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-bg-surface-alt/50 text-sky-400">
                         <ShieldAlert className="h-4 w-4" />
                       </div>
                       <div className="space-y-1">
-                        <p className="text-sm font-semibold text-slate-50">Dealbreakers</p>
-                        <p className="text-sm leading-relaxed text-slate-200">Your absolute non-negotiables</p>
+                        <p className="text-sm font-semibold text-text-primary">Dealbreakers</p>
+                        <p className="text-sm leading-relaxed text-text-primary">Your absolute non-negotiables</p>
                       </div>
                     </div>
                   </div>
@@ -253,7 +253,7 @@ export default function OnboardingWelcomePage() {
               </Card>
 
               {/* Honesty rule callout */}
-              <div className="flex gap-3 rounded-2xl border border-amber-400/30 bg-amber-500/20 p-4 text-sm text-amber-50">
+              <div className="flex gap-3 rounded-2xl border border-amber-400/30 bg-amber-500/20 p-4 text-sm text-text-primary">
                 <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-amber-500/90">
                   <AlertTriangle className="h-4 w-4" />
                 </div>
@@ -267,18 +267,18 @@ export default function OnboardingWelcomePage() {
             {/* Right column: demographic selection + consents */}
             <section className="flex-1 space-y-5 sm:space-y-6">
               {/* Card 2: Demographic selection */}
-              <Card className="border-white/10 bg-white/5 backdrop-blur-2xl rounded-2xl">
+              <Card className="border-border-subtle/30 bg-bg-surface-alt/50 backdrop-blur-2xl rounded-2xl">
                 <CardContent className="space-y-5 p-5 sm:p-6">
                   <div className="space-y-1">
-                    <h2 className="text-lg font-semibold text-slate-50">Your study context</h2>
-                    <p className="text-sm leading-relaxed text-slate-200">
+                    <h2 className="text-lg font-semibold text-text-primary">Your study context</h2>
+                    <p className="text-sm leading-relaxed text-text-primary">
                       Just a bit of context so we can better understand your situation.
                     </p>
                   </div>
 
                   <fieldset className="space-y-3">
-                    <legend className="text-sm font-semibold text-slate-50">Student origin</legend>
-                    <p className="text-xs text-slate-300">
+                    <legend className="text-sm font-semibold text-text-primary">Student origin</legend>
+                    <p className="text-xs text-text-primary">
                       Please choose one option that best describes you.
                     </p>
                     <div className="grid gap-3 sm:grid-cols-2">
@@ -287,14 +287,14 @@ export default function OnboardingWelcomePage() {
                         onClick={() => setStudentOrigin('dutch')}
                         className={[
                           'flex flex-col items-start rounded-xl border px-4 py-3 text-left text-sm transition',
-                          'hover:border-sky-400/80 hover:bg-slate-900/60',
+                          'hover:border-sky-400/80 hover:bg-bg-surface-alt/60',
                           studentOrigin === 'dutch'
-                            ? 'border-sky-400 bg-slate-900/80 shadow-lg shadow-sky-500/30'
-                            : 'border-white/15 bg-slate-900/50'
+                            ? 'border-sky-400 bg-bg-surface-alt/80 shadow-lg shadow-sky-500/30'
+                            : 'border-border-subtle/30 bg-bg-surface-alt/50'
                         ].join(' ')}
                       >
-                        <span className="text-sm font-semibold text-slate-50">Dutch student</span>
-                        <span className="mt-1 text-sm leading-relaxed text-slate-200">
+                        <span className="text-sm font-semibold text-text-primary">Dutch student</span>
+                        <span className="mt-1 text-sm leading-relaxed text-text-primary">
                           You mainly grew up and/or studied within the Netherlands.
                         </span>
                       </button>
@@ -304,14 +304,14 @@ export default function OnboardingWelcomePage() {
                         onClick={() => setStudentOrigin('international')}
                         className={[
                           'flex flex-col items-start rounded-xl border px-4 py-3 text-left text-sm transition',
-                          'hover:border-sky-400/80 hover:bg-slate-900/60',
+                          'hover:border-sky-400/80 hover:bg-bg-surface-alt/60',
                           studentOrigin === 'international'
-                            ? 'border-sky-400 bg-slate-900/80 shadow-lg shadow-sky-500/30'
-                            : 'border-white/15 bg-slate-900/50'
+                            ? 'border-sky-400 bg-bg-surface-alt/80 shadow-lg shadow-sky-500/30'
+                            : 'border-border-subtle/30 bg-bg-surface-alt/50'
                         ].join(' ')}
                       >
-                        <span className="text-sm font-semibold text-slate-50">International student</span>
-                        <span className="mt-1 text-sm leading-relaxed text-slate-200">
+                        <span className="text-sm font-semibold text-text-primary">International student</span>
+                        <span className="mt-1 text-sm leading-relaxed text-text-primary">
                           You&apos;re a non-Dutch / non-EEA student who moved here to study.
                         </span>
                       </button>
@@ -319,8 +319,8 @@ export default function OnboardingWelcomePage() {
                   </fieldset>
 
                   <fieldset className="space-y-3">
-                    <legend className="text-sm font-semibold text-slate-50">Study programme</legend>
-                    <p className="text-xs text-slate-300">
+                    <legend className="text-sm font-semibold text-text-primary">Study programme</legend>
+                    <p className="text-xs text-text-primary">
                       Please choose one option that best matches your main degree.
                     </p>
                     <div className="grid gap-3 sm:grid-cols-2">
@@ -329,14 +329,14 @@ export default function OnboardingWelcomePage() {
                         onClick={() => setStudyProgramType('dutch_taught')}
                         className={[
                           'flex flex-col items-start rounded-xl border px-4 py-3 text-left text-sm transition',
-                          'hover:border-indigo-400/80 hover:bg-slate-900/60',
+                          'hover:border-indigo-400/80 hover:bg-bg-surface-alt/60',
                           studyProgramType === 'dutch_taught'
-                            ? 'border-indigo-400 bg-slate-900/80 shadow-lg shadow-indigo-500/30'
-                            : 'border-white/15 bg-slate-900/50'
+                            ? 'border-indigo-400 bg-bg-surface-alt/80 shadow-lg shadow-indigo-500/30'
+                            : 'border-border-subtle/30 bg-bg-surface-alt/50'
                         ].join(' ')}
                       >
-                        <span className="text-sm font-semibold text-slate-50">Dutch-taught programme</span>
-                        <span className="mt-1 text-sm leading-relaxed text-slate-200">
+                        <span className="text-sm font-semibold text-text-primary">Dutch-taught programme</span>
+                        <span className="mt-1 text-sm leading-relaxed text-text-primary">
                           Your main programme is primarily taught in Dutch.
                         </span>
                       </button>
@@ -346,16 +346,16 @@ export default function OnboardingWelcomePage() {
                         onClick={() => setStudyProgramType('english_taught')}
                         className={[
                           'flex flex-col items-start rounded-xl border px-4 py-3 text-left text-sm transition',
-                          'hover:border-indigo-400/80 hover:bg-slate-900/60',
+                          'hover:border-indigo-400/80 hover:bg-bg-surface-alt/60',
                           studyProgramType === 'english_taught'
-                            ? 'border-indigo-400 bg-slate-900/80 shadow-lg shadow-indigo-500/30'
-                            : 'border-white/15 bg-slate-900/50'
+                            ? 'border-indigo-400 bg-bg-surface-alt/80 shadow-lg shadow-indigo-500/30'
+                            : 'border-border-subtle/30 bg-bg-surface-alt/50'
                         ].join(' ')}
                       >
-                        <span className="text-sm font-semibold text-slate-50">
+                        <span className="text-sm font-semibold text-text-primary">
                           International / English-taught programme
                         </span>
-                        <span className="mt-1 text-sm leading-relaxed text-slate-200">
+                        <span className="mt-1 text-sm leading-relaxed text-text-primary">
                           Your main programme is part of an international or English-taught track.
                         </span>
                       </button>
@@ -365,11 +365,11 @@ export default function OnboardingWelcomePage() {
               </Card>
 
               {/* Card 3: Privacy & consents */}
-              <Card className="border-white/10 bg-white/5 backdrop-blur-2xl rounded-2xl">
-                <CardContent className="space-y-4 p-5 sm:p-6 text-sm text-slate-200">
+              <Card className="border-border-subtle/30 bg-bg-surface-alt/50 backdrop-blur-2xl rounded-2xl">
+                <CardContent className="space-y-4 p-5 sm:p-6 text-sm text-text-primary">
                   <div className="space-y-1">
-                    <h2 className="text-lg font-semibold text-slate-50">Privacy &amp; consent</h2>
-                    <p className="text-sm leading-relaxed text-slate-200">
+                    <h2 className="text-lg font-semibold text-text-primary">Privacy &amp; consent</h2>
+                    <p className="text-sm leading-relaxed text-text-primary">
                       Short version: your answers power the matching algorithm, not public profiles.
                     </p>
                   </div>
@@ -379,14 +379,14 @@ export default function OnboardingWelcomePage() {
                       <Checkbox
                         checked={privacyConsent}
                         onCheckedChange={(checked) => setPrivacyConsent(!!checked)}
-                        className="h-4 w-4 shrink-0 rounded border-slate-400/70 bg-slate-900/80 data-[state=checked]:bg-sky-400 data-[state=checked]:border-sky-400 focus-visible:ring-sky-500"
+                        className="h-4 w-4 shrink-0 rounded border-border-subtle bg-bg-surface-alt/80 data-[state=checked]:bg-sky-400 data-[state=checked]:border-sky-400 focus-visible:ring-sky-500"
                       />
-                      <p className="text-sm leading-relaxed text-slate-100">
+                      <p className="text-sm leading-relaxed text-text-primary">
                         I agree to the{' '}
                         <button
                           type="button"
                           onClick={() => setShowLegalModal(true)}
-                          className="underline underline-offset-4 text-sky-300 hover:text-sky-200"
+                          className="underline underline-offset-4 text-sky-400 hover:text-sky-300"
                         >
                           Terms &amp; Privacy Policy
                         </button>
@@ -398,9 +398,9 @@ export default function OnboardingWelcomePage() {
                       <Checkbox
                         checked={dealbreakerConsent}
                         onCheckedChange={(checked) => setDealbreakerConsent(!!checked)}
-                        className="h-4 w-4 shrink-0 rounded border-slate-400/70 bg-slate-900/80 data-[state=checked]:bg-sky-400 data-[state=checked]:border-sky-400 focus-visible:ring-sky-500"
+                        className="h-4 w-4 shrink-0 rounded border-border-subtle bg-bg-surface-alt/80 data-[state=checked]:bg-sky-400 data-[state=checked]:border-sky-400 focus-visible:ring-sky-500"
                       />
-                      <p className="text-sm leading-relaxed text-slate-100">
+                      <p className="text-sm leading-relaxed text-text-primary">
                         I consent to Domu Match using my lifestyle and dealbreaker answers strictly for the matching algorithm.
                         (Your data is secure and NEVER shared publicly or with universities).
                       </p>
@@ -415,8 +415,8 @@ export default function OnboardingWelcomePage() {
 
           {/* CTA spanning full width under both columns */}
           <div className="mt-6 w-full">
-            <div className="mx-auto max-w-5xl rounded-2xl border border-white/10 bg-slate-950/60 p-4 text-slate-50 backdrop-blur-2xl flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-              <p className="text-sm leading-relaxed text-slate-100">
+            <div className="mx-auto max-w-5xl rounded-2xl border border-border-subtle/30 bg-bg-surface-alt/60 p-4 text-text-primary backdrop-blur-2xl flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+              <p className="text-sm leading-relaxed text-text-primary">
                 When you&apos;re ready, start the first block and know you can review and edit your answers before anything is final.
               </p>
               <Button
@@ -425,7 +425,7 @@ export default function OnboardingWelcomePage() {
                 disabled={!canStart}
                 className={[
                   'mt-1 inline-flex min-h-[44px] items-center justify-center rounded-xl px-6 text-xs sm:text-sm font-semibold tracking-tight whitespace-normal break-words text-center',
-                  'bg-gradient-to-r from-sky-400 via-indigo-500 to-purple-500 text-slate-50',
+                  'bg-gradient-to-r from-sky-400 via-indigo-500 to-purple-500 text-text-primary',
                   !canStart ? 'cursor-not-allowed opacity-50' : 'hover:brightness-110'
                 ].join(' ')}
               >
@@ -443,28 +443,28 @@ export default function OnboardingWelcomePage() {
             </DialogHeader>
             <Tabs defaultValue="terms" className="mt-2 w-full">
               <div className="w-full flex justify-center">
-                <TabsList className="mb-3 w-full max-w-[720px] bg-slate-800/90 border border-slate-700 rounded-full p-1 overflow-hidden">
+                <TabsList className="mb-3 w-full max-w-[720px] bg-bg-surface-alt/80 border border-border-subtle/60 rounded-full p-1 overflow-hidden">
                   <TabsTrigger
                     value="terms"
-                    className="flex-1 rounded-full px-4 py-2 text-xs sm:text-sm font-semibold data-[state=active]:bg-sky-400 data-[state=active]:text-slate-950 data-[state=inactive]:bg-transparent data-[state=inactive]:text-slate-200"
+                    className="flex-1 rounded-full px-4 py-2 text-xs sm:text-sm font-semibold data-[state=active]:bg-sky-400 data-[state=active]:text-slate-950 data-[state=inactive]:bg-transparent data-[state=inactive]:text-text-secondary"
                   >
                     Terms
                   </TabsTrigger>
                   <TabsTrigger
                     value="privacy"
-                    className="flex-1 rounded-full px-4 py-2 text-xs sm:text-sm font-semibold data-[state=active]:bg-sky-400 data-[state=active]:text-slate-950 data-[state=inactive]:bg-transparent data-[state=inactive]:text-slate-200"
+                    className="flex-1 rounded-full px-4 py-2 text-xs sm:text-sm font-semibold data-[state=active]:bg-sky-400 data-[state=active]:text-slate-950 data-[state=inactive]:bg-transparent data-[state=inactive]:text-text-secondary"
                   >
                     Privacy Policy
                   </TabsTrigger>
                 </TabsList>
               </div>
               <TabsContent value="terms">
-                <div className="mt-2 h-[60vh] w-full max-w-[720px] mx-auto overflow-y-auto rounded-xl border border-slate-800 bg-slate-950 p-4 [&_nav]:hidden">
+                <div className="mt-2 h-[60vh] w-full max-w-[720px] mx-auto overflow-y-auto rounded-xl border border-border-subtle/40 bg-bg-surface-alt p-4 [&_nav]:hidden">
                   <TermsPage />
                 </div>
               </TabsContent>
               <TabsContent value="privacy">
-                <div className="mt-2 h-[60vh] w-full max-w-[720px] mx-auto overflow-y-auto rounded-xl border border-slate-800 bg-slate-950 p-4 [&_nav]:hidden">
+                <div className="mt-2 h-[60vh] w-full max-w-[720px] mx-auto overflow-y-auto rounded-xl border border-border-subtle/40 bg-bg-surface-alt p-4 [&_nav]:hidden">
                   <PrivacyPage />
                 </div>
               </TabsContent>

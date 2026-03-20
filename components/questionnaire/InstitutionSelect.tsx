@@ -58,7 +58,7 @@ export function InstitutionSelect({ value, onChange }: Props) {
         }}
       />
       {other && (
-        <div className="text-xs text-gray-600">We'll review this institution. For now, your selection will be stored as "Other".</div>
+        <div className="text-xs text-text-secondary">We'll review this institution. For now, your selection will be stored as "Other".</div>
       )}
     </div>
   )

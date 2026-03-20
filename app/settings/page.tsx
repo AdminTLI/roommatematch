@@ -665,6 +665,73 @@ export default async function SettingsPage() {
     }
   }
 
+  // If programme FK resolution failed during onboarding submission, `user_academic.program_id`
+  // can end up NULL and the UI shows "Undecided" even though the user picked a programme.
+  // For display purposes, derive the programme name from the onboarding submission snapshot.
+  if (
+    academicWithStudyYear?.undecided_program === true &&
+    (!profile?.program || (typeof profile?.program === 'string' && profile.program.trim() === ''))
+  ) {
+    try {
+      const { data: submissionSnapshot } = await supabase
+        .from('onboarding_submissions')
+        .select('snapshot')
+        .eq('user_id', user.id)
+        .maybeSingle()
+
+      const introSection = submissionSnapshot?.snapshot?.raw_sections?.find(
+        (s: any) => s?.section === 'intro',
+      )
+      const answers: any[] = Array.isArray(introSection?.answers) ? introSection.answers : []
+
+      const programAnswer = answers.find((a: any) => a?.itemId === 'program_id')
+      const rawProgramId = programAnswer?.value
+      const programId =
+        typeof rawProgramId === 'string'
+          ? rawProgramId
+          : rawProgramId?.value
+            ? String(rawProgramId.value)
+            : rawProgramId != null
+              ? String(rawProgramId)
+              : ''
+
+      if (programId && programId.trim() !== '') {
+        // Try matching against programmes table fields; programme selection can be by rio_code or id.
+        const { data: byRio } = await serviceSupabase
+          .from('programmes')
+          .select('name')
+          .eq('rio_code', programId)
+          .maybeSingle()
+
+        const { data: byId } = byRio
+          ? { data: null }
+          : await serviceSupabase
+              .from('programmes')
+              .select('name')
+              .eq('id', programId)
+              .maybeSingle()
+
+        const { data: byCrohoCode } = byRio || byId
+          ? { data: null }
+          : await serviceSupabase
+              .from('programmes')
+              .select('name')
+              .eq('croho_code', programId)
+              .maybeSingle()
+
+        const programmeName = byRio?.name || byId?.name || byCrohoCode?.name
+        if (programmeName) {
+          profile = {
+            ...profile,
+            program: programmeName,
+          }
+        }
+      }
+    } catch (e) {
+      console.warn('[Settings] Failed deriving program name from snapshot:', e)
+    }
+  }
+
   return (
     <>
       <AppShell user={userProfile}>

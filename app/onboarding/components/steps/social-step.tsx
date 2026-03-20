@@ -53,7 +53,7 @@ export function SocialStep({ data, onChange, user }: SocialStepProps) {
               step={1}
               className="w-full"
             />
-            <div className="text-center text-sm text-gray-500">
+            <div className="text-center text-sm text-text-muted">
               {data.social_level ? `${data.social_level}/10` : '5/10'}
             </div>
           </div>
@@ -74,7 +74,7 @@ export function SocialStep({ data, onChange, user }: SocialStepProps) {
               step={1}
               className="w-full"
             />
-            <div className="text-center text-sm text-gray-500">
+            <div className="text-center text-sm text-text-muted">
               {data.guests_frequency ? `${data.guests_frequency}/10` : '5/10'}
             </div>
           </div>
@@ -132,7 +132,7 @@ export function SocialStep({ data, onChange, user }: SocialStepProps) {
               step={1}
               className="w-full"
             />
-            <div className="text-center text-sm text-gray-500">
+            <div className="text-center text-sm text-text-muted">
               {data.noise_preference ? `${data.noise_preference}/10` : '5/10'}
             </div>
           </div>
@@ -177,7 +177,7 @@ export function SocialStep({ data, onChange, user }: SocialStepProps) {
               step={1}
               className="w-full"
             />
-            <div className="text-center text-sm text-gray-500">
+            <div className="text-center text-sm text-text-muted">
               {data.food_sharing ? `${data.food_sharing}/10` : '5/10'}
             </div>
           </div>
@@ -198,7 +198,7 @@ export function SocialStep({ data, onChange, user }: SocialStepProps) {
               step={1}
               className="w-full"
             />
-            <div className="text-center text-sm text-gray-500">
+            <div className="text-center text-sm text-text-muted">
               {data.utensils_sharing ? `${data.utensils_sharing}/10` : '5/10'}
             </div>
           </div>

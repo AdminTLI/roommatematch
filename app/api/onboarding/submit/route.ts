@@ -15,6 +15,14 @@ export async function POST(request: Request) {
   // Check if this is edit mode
   const url = new URL(request.url)
   const isEditMode = url.searchParams.get('mode') === 'edit'
+
+  // Beta terms consent is required proof that the user agreed & confirmed status.
+  // We require it server-side so it cannot be bypassed via UI tampering.
+  const requestBody = await request.json().catch(() => null) as
+    | { beta_terms_consent?: unknown; beta_user_type_confirmed?: unknown }
+    | null
+  const betaTermsConsent = requestBody?.beta_terms_consent
+  const betaUserTypeConfirmed = requestBody?.beta_user_type_confirmed
   
   safeLogger.debug('[Submit] User:', sanitizeUserId(user?.id), 'isDemo:', !user, 'isEditMode:', isEditMode)
   
@@ -44,6 +52,13 @@ export async function POST(request: Request) {
       return NextResponse.json({ 
         error: 'Please complete identity verification before submitting the questionnaire. Go to Settings to complete verification.' 
       }, { status: 403 })
+    }
+
+    if (betaTermsConsent !== true) {
+      return NextResponse.json(
+        { error: 'Please agree to the Beta Terms & Conditions (and confirm your user status) before submitting.' },
+        { status: 400 }
+      )
     }
 
     // Check if user exists in users table using SERVICE ROLE (bypass RLS)
@@ -575,14 +590,30 @@ export async function POST(request: Request) {
         const submissionUserType = (userRowForType?.user_type === 'student' || userRowForType?.user_type === 'professional')
           ? userRowForType.user_type
           : null
+        const submittedAt = new Date().toISOString()
         const submissionPayload = {
           user_id: userId,
           user_type: submissionUserType,
           snapshot: {
             raw_sections: sections ?? [], // Raw sections with untransformed answers for audit
             transformed_responses: deduplicatedResponses, // Normalized question_key/value pairs for easy analysis
+            beta_terms_consent: {
+              agreed: true,
+              // Prefer what the client was in when they checked the box; fall back to server-known cohort.
+              confirmed_user_type:
+                betaUserTypeConfirmed === 'student' || betaUserTypeConfirmed === 'professional'
+                  ? betaUserTypeConfirmed
+                  : submissionUserType,
+              confirmed_user_type_from_client:
+                betaUserTypeConfirmed === 'student' || betaUserTypeConfirmed === 'professional'
+                  ? betaUserTypeConfirmed
+                  : null,
+              confirmed_user_type_from_server: submissionUserType,
+              agreed_at: submittedAt,
+              source: 'onboarding_review_checkbox'
+            }
           },
-          submitted_at: new Date().toISOString(),
+          submitted_at: submittedAt,
           preferred_cities: preferredCitiesForSnapshot,
         }
 

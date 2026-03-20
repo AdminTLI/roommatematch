@@ -13,7 +13,7 @@ interface ProgrammeSelectProps {
   institutionId?: string
   level?: DegreeLevel
   value?: string
-  onChange: (programmeId: string) => void
+  onChange: (programmeId: string, programmeName?: string) => void
   disabled?: boolean
   placeholder?: string
 }
@@ -84,9 +84,9 @@ export function ProgrammeSelect({
   }, [institutionId, level, isEnabled])
 
   const handleSelect = (programmeId: string) => {
-    onChange(programmeId)
     // Keep query in sync with selected programme so it appears when editing
     const selected = programmes.find(p => p.id === programmeId)
+    onChange(programmeId, selected?.name)
     setQuery(selected?.name ?? '')
     setOpen(false)
   }
@@ -105,7 +105,7 @@ export function ProgrammeSelect({
     if (!hasAdditionalInfo) {
       // Clean name only when no additional info
       return (
-        <span className="font-medium text-slate-50 leading-tight">
+        <span className="font-medium text-text-primary leading-tight">
           {programme.name}
         </span>
       );
@@ -115,7 +115,7 @@ export function ProgrammeSelect({
     return (
       <div className="space-y-2">
         <div className="flex items-start justify-between gap-2">
-          <span className="font-medium text-slate-50 leading-tight">
+          <span className="font-medium text-text-primary leading-tight">
             {programme.name}
           </span>
           {programme.isVariant && (
@@ -126,7 +126,7 @@ export function ProgrammeSelect({
         </div>
         
         {programme.nameEn && programme.nameEn !== programme.name && (
-          <span className="text-sm text-slate-300 block">
+          <span className="text-sm text-text-secondary block">
             {programme.nameEn}
           </span>
         )}
@@ -178,7 +178,7 @@ export function ProgrammeSelect({
             aria-expanded={open}
             aria-haspopup="dialog"
             className={cn(
-              "w-full pr-9 rounded-xl border border-white/30 bg-white/10 text-slate-100 shadow-md shadow-slate-900/40 backdrop-blur-md placeholder:text-slate-400",
+              "w-full pr-9 rounded-xl border border-border-subtle/40 bg-bg-surface-alt/20 text-text-primary shadow-md shadow-black/20 backdrop-blur-md placeholder:text-text-muted",
               !isEnabled && "cursor-not-allowed opacity-50"
             )}
             disabled={!isEnabled}
@@ -194,23 +194,23 @@ export function ProgrammeSelect({
               if (isEnabled && !open) setOpen(true)
             }}
           />
-          <ChevronDown className="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-300" />
+          <ChevronDown className="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-text-secondary" />
         </div>
       </PopoverTrigger>
       
       <PopoverContent 
-        className="w-[var(--radix-popover-trigger-width)] max-w-[var(--radix-popover-trigger-width)] p-0 rounded-2xl border border-white/20 bg-slate-950/90 shadow-2xl shadow-slate-900/70 backdrop-blur-2xl" 
+        className="w-[var(--radix-popover-trigger-width)] max-w-[var(--radix-popover-trigger-width)] p-0 rounded-2xl border border-border-subtle/30 bg-bg-surface-alt/80 shadow-2xl shadow-black/20 backdrop-blur-2xl" 
         align="start"
         side="bottom"
         sideOffset={4}
       >
         <Command
-          className="rounded-2xl bg-transparent text-slate-50 border-0 shadow-none"
+          className="rounded-2xl bg-transparent text-text-primary border-0 shadow-none"
           shouldFilter={true}
         >
           <CommandList className="max-h-[400px] overflow-y-auto scrollbar-visible-dark-gradient">
             {loading && (
-              <CommandEmpty className="py-6 text-center text-sm text-slate-300">
+              <CommandEmpty className="py-6 text-center text-sm text-text-secondary">
                 Loading programmes...
               </CommandEmpty>
             )}
@@ -220,7 +220,7 @@ export function ProgrammeSelect({
                 <p className="text-sm text-rose-300">
                   {error}
                 </p>
-                <p className="text-xs text-slate-400 mt-1">
+                <p className="text-xs text-text-muted mt-1">
                   Please try again later or contact support.
                 </p>
               </CommandEmpty>
@@ -228,10 +228,10 @@ export function ProgrammeSelect({
             
             {!loading && !error && visibleProgrammes.length === 0 && (
               <CommandEmpty className="py-6 text-center space-y-2">
-                <p className="text-sm text-slate-200">
+                <p className="text-sm text-text-primary">
                   No programmes found for this institution and degree level.
                 </p>
-                <p className="text-xs text-slate-400">
+                <p className="text-xs text-text-muted">
                   Data temporarily unavailable. This institution may not have programmes available for the selected degree level.
                 </p>
                 <div className="mt-3 p-3 bg-sky-500/10 rounded-lg border border-sky-400/40">
@@ -258,7 +258,7 @@ export function ProgrammeSelect({
                     key={getUniqueProgrammeKey(programme)}
                     value={`${programme.name} ${programme.nameEn || ''} ${programme.discipline || ''} ${programme.modes?.join(' ') || ''}`}
                     onSelect={() => handleSelect(programme.id)}
-                    className="px-4 py-3 cursor-pointer text-slate-50 hover:bg-white/5 aria-selected:bg-white/10"
+                    className="px-4 py-3 cursor-pointer text-text-primary hover:bg-bg-surface-alt/50 aria-selected:bg-bg-surface-alt/70"
                   >
                     <div className="flex items-center space-x-3 w-full">
                       <Check

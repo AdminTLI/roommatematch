@@ -81,7 +81,7 @@ export function LogisticsStep({ data, onChange, user }: LogisticsStepProps) {
             <SelectItem value="90">90 minutes</SelectItem>
           </SelectContent>
         </Select>
-        <p className="text-sm text-gray-500">
+        <p className="text-sm text-text-muted">
           How long are you willing to commute to campus?
         </p>
       </div>
@@ -103,7 +103,7 @@ export function LogisticsStep({ data, onChange, user }: LogisticsStepProps) {
             <SelectItem value="flexible">Flexible</SelectItem>
           </SelectContent>
         </Select>
-        <p className="text-sm text-gray-500">
+        <p className="text-sm text-text-muted">
           How long do you want to commit to a lease?
         </p>
       </div>
@@ -111,7 +111,7 @@ export function LogisticsStep({ data, onChange, user }: LogisticsStepProps) {
       {/* Room Type */}
       <div className="space-y-3">
         <Label>Preferred Room Type *</Label>
-        <p className="text-sm text-gray-500">Select all that apply</p>
+        <p className="text-sm text-text-muted">Select all that apply</p>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
           {[
             { value: 'single', label: 'Single Room' },

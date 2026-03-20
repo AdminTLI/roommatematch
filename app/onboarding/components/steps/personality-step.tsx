@@ -23,7 +23,7 @@ export function PersonalityStep({ data, onChange, user }: PersonalityStepProps) 
       {/* Big Five Personality Traits */}
       <div className="space-y-6">
         <h3 className="text-lg font-semibold">Personality Traits (Big Five)</h3>
-        <p className="text-sm text-gray-600 dark:text-gray-300">
+        <p className="text-sm text-text-secondary">
           Rate yourself on these personality dimensions. Be honest - this helps us find compatible roommates!
         </p>
         
@@ -43,7 +43,7 @@ export function PersonalityStep({ data, onChange, user }: PersonalityStepProps) 
               step={1}
               className="w-full"
             />
-            <div className="text-center text-sm text-gray-500">
+            <div className="text-center text-sm text-text-muted">
               {data.extraversion ? `${data.extraversion}/10` : '5/10'}
             </div>
           </div>
@@ -65,7 +65,7 @@ export function PersonalityStep({ data, onChange, user }: PersonalityStepProps) 
               step={1}
               className="w-full"
             />
-            <div className="text-center text-sm text-gray-500">
+            <div className="text-center text-sm text-text-muted">
               {data.agreeableness ? `${data.agreeableness}/10` : '5/10'}
             </div>
           </div>
@@ -87,7 +87,7 @@ export function PersonalityStep({ data, onChange, user }: PersonalityStepProps) 
               step={1}
               className="w-full"
             />
-            <div className="text-center text-sm text-gray-500">
+            <div className="text-center text-sm text-text-muted">
               {data.conscientiousness ? `${data.conscientiousness}/10` : '5/10'}
             </div>
           </div>
@@ -109,7 +109,7 @@ export function PersonalityStep({ data, onChange, user }: PersonalityStepProps) 
               step={1}
               className="w-full"
             />
-            <div className="text-center text-sm text-gray-500">
+            <div className="text-center text-sm text-text-muted">
               {data.neuroticism ? `${data.neuroticism}/10` : '5/10'}
             </div>
           </div>
@@ -131,7 +131,7 @@ export function PersonalityStep({ data, onChange, user }: PersonalityStepProps) 
               step={1}
               className="w-full"
             />
-            <div className="text-center text-sm text-gray-500">
+            <div className="text-center text-sm text-text-muted">
               {data.openness ? `${data.openness}/10` : '5/10'}
             </div>
           </div>
@@ -157,7 +157,7 @@ export function PersonalityStep({ data, onChange, user }: PersonalityStepProps) 
               step={1}
               className="w-full"
             />
-            <div className="text-center text-sm text-gray-500">
+            <div className="text-center text-sm text-text-muted">
               {data.conflict_style ? `${data.conflict_style}/10` : '5/10'}
             </div>
           </div>
@@ -178,7 +178,7 @@ export function PersonalityStep({ data, onChange, user }: PersonalityStepProps) 
               step={1}
               className="w-full"
             />
-            <div className="text-center text-sm text-gray-500">
+            <div className="text-center text-sm text-text-muted">
               {data.communication_preference ? `${data.communication_preference}/10` : '5/10'}
             </div>
           </div>

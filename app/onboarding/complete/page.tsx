@@ -36,26 +36,26 @@ export default function CompletePage() {
   }
   
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-indigo-50 to-white">
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-bg-surface-alt/60 to-bg-body text-text-primary">
       <div className="text-center space-y-8 px-4">
         {/* Success Icon */}
         <div className="flex justify-center">
-          <div className="rounded-full bg-green-100 p-6">
-            <CheckCircle className="h-16 w-16 text-green-600" />
+          <div className="rounded-full bg-semantic-success/20 p-6">
+            <CheckCircle className="h-16 w-16 text-semantic-success" />
           </div>
         </div>
         
         {/* Main Message */}
         <div className="space-y-3">
-          <h1 className="text-4xl font-bold text-gray-900">All set!</h1>
-          <p className="text-lg text-gray-600">
+          <h1 className="text-4xl font-bold text-text-primary">All set!</h1>
+          <p className="text-lg text-text-secondary">
             Your questionnaire has been submitted successfully.
           </p>
         </div>
         
         {/* Countdown Message */}
         <div className="space-y-4">
-          <p className="text-sm text-gray-500">
+          <p className="text-sm text-text-muted">
             Redirecting to your dashboard in {countdown} second{countdown !== 1 ? 's' : ''}...
           </p>
           
@@ -71,8 +71,8 @@ export default function CompletePage() {
         </div>
         
         {/* Additional Info */}
-        <div className="pt-8 border-t border-gray-200 max-w-md mx-auto">
-          <p className="text-sm text-gray-600">
+        <div className="pt-8 border-t border-border-subtle/30 max-w-md mx-auto">
+          <p className="text-sm text-text-secondary">
             We'll use your responses to find compatible roommates. 
             You can update your preferences anytime from your profile.
           </p>

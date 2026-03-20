@@ -207,11 +207,11 @@ function SectionClientContent() {
 
       <div className="space-y-6 sm:space-y-5">
         <div className="space-y-2">
-          <p className="text-sm text-zinc-700">
+          <p className="text-sm text-text-secondary">
             Start with your university city (we’ll pre-fill it when we can), then optionally add up
             to {MAX_CITIES - 1} nearby or alternative cities you’d happily live in.
           </p>
-          <p className="text-xs text-zinc-500">
+          <p className="text-xs text-text-muted">
             We treat location as a soft preference. Sharing at least one city gives a strong boost,
             but great harmony matches can still connect even without overlap.
           </p>
@@ -248,7 +248,7 @@ function SectionClientContent() {
                   <button
                     type="button"
                     onClick={() => handleRemoveRow(index)}
-                    className="text-xs text-zinc-500 hover:text-zinc-800"
+                    className="text-xs text-text-muted hover:text-text-primary"
                   >
                     Remove
                   </button>
@@ -261,7 +261,7 @@ function SectionClientContent() {
             type="button"
             onClick={handleAddRow}
             disabled={rows.length >= MAX_CITIES || selectedCities.length >= MAX_CITIES}
-            className="inline-flex items-center rounded-lg border border-zinc-200 px-3 py-1.5 text-xs font-medium text-zinc-700 hover:bg-zinc-50 disabled:opacity-50 disabled:cursor-not-allowed"
+            className="inline-flex items-center rounded-lg border border-border-subtle/50 px-3 py-1.5 text-xs font-medium text-text-secondary hover:bg-bg-surface-alt/40 disabled:opacity-50 disabled:cursor-not-allowed"
           >
             + Add city
           </button>

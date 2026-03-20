@@ -133,7 +133,7 @@ export function QuestionnaireLayout({
   }
 
   return (
-    <div className="relative min-h-screen overflow-hidden bg-slate-950 text-slate-50">
+    <div className="relative min-h-screen overflow-hidden bg-bg-body text-text-primary">
       {/* Ambient gradient background to match welcome / dashboard aesthetics */}
       <div className="pointer-events-none absolute inset-0">
         <div className="absolute -top-40 -left-32 h-80 w-80 rounded-full bg-indigo-500/25 blur-3xl" />
@@ -146,80 +146,70 @@ export function QuestionnaireLayout({
 
       <div className="relative z-10 flex min-h-screen flex-col">
         {/* Header */}
-        <header className="sticky top-0 z-40 border-b border-white/10 bg-slate-950/80 backdrop-blur-xl">
-          <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-3 sm:px-6 lg:px-8">
-            <div className="flex items-center gap-3">
-              <div className="flex h-8 w-8 items-center justify-center rounded-2xl bg-gradient-to-tr from-indigo-500 via-sky-400 to-purple-500 shadow-lg shadow-indigo-500/40">
-                <span className="text-xs font-semibold tracking-tight text-white">DM</span>
-              </div>
-              <div>
-                <p className="text-sm font-semibold tracking-tight text-slate-50">Domu Match</p>
-                <p className="text-[11px] font-medium uppercase tracking-[0.22em] text-slate-400">
-                  From strangers to roommates
-                </p>
+        <header className="sticky top-0 z-40 border-b border-transparent bg-transparent backdrop-blur-xl">
+          <div className="mx-auto grid max-w-6xl grid-cols-[1fr_auto_1fr] items-center px-4 py-3 sm:px-6 lg:px-8">
+            {/* Left spacer intentionally empty so the step counter can be truly centered */}
+            <div />
+
+            <div className="hidden flex-col items-center gap-1 sm:flex justify-self-center">
+              <span className="text-[11px] font-semibold uppercase tracking-[0.22em] text-text-secondary">
+                Step {stepIndex + 1} of {totalSteps}
+              </span>
+              <div className="flex items-center gap-2">
+                <div className="w-40">
+                  <Progress value={progress} className="h-1.5 rounded-full bg-border-subtle/60" />
+                </div>
+                <span className="text-xs text-text-secondary">{progress}%</span>
               </div>
             </div>
 
-            <div className="flex items-center gap-4">
-              <div className="hidden flex-col items-end gap-1 sm:flex">
-                <span className="text-[11px] font-semibold uppercase tracking-[0.22em] text-slate-300">
-                  Step {stepIndex + 1} of {totalSteps}
-                </span>
-                <div className="flex items-center gap-2">
-                  <div className="w-40">
-                    <Progress value={progress} className="h-1.5 rounded-full bg-slate-800" />
-                  </div>
-                  <span className="text-xs text-slate-300">{progress}%</span>
-                </div>
-              </div>
-              <button
-                className="rounded-full border border-white/15 bg-white/5 px-3 py-1.5 text-xs font-medium text-slate-100 shadow-sm hover:bg-white/10 disabled:opacity-60 disabled:cursor-not-allowed"
-                onClick={handleSaveAndExit}
-                disabled={isSavingAll}
-              >
-                {isSavingAll ? 'Saving…' : 'Save & exit'}
-              </button>
-            </div>
+            <button
+              className="justify-self-end rounded-full border border-border-subtle/30 bg-bg-surface-alt/50 px-3 py-1.5 text-xs font-medium text-text-primary shadow-sm hover:bg-bg-surface-alt/70 disabled:opacity-60 disabled:cursor-not-allowed"
+              onClick={handleSaveAndExit}
+              disabled={isSavingAll}
+            >
+              {isSavingAll ? 'Saving…' : 'Save & exit'}
+            </button>
           </div>
 
           {/* Mobile progress bar */}
-          <div className="block border-t border-white/10 px-4 pb-3 pt-2 sm:hidden">
+          <div className="block border-t border-border-subtle/40 px-4 pb-3 pt-2 sm:hidden">
             <div className="flex items-center justify-between">
-              <span className="text-[11px] font-semibold uppercase tracking-[0.22em] text-slate-300">
+              <span className="text-[11px] font-semibold uppercase tracking-[0.22em] text-text-secondary">
                 Step {stepIndex + 1} of {totalSteps}
               </span>
-              <span className="text-[11px] text-slate-300">{progress}%</span>
+              <span className="text-[11px] text-text-secondary">{progress}%</span>
             </div>
             <div className="mt-2">
-              <Progress value={progress} className="h-1.5 rounded-full bg-slate-800" />
+              <Progress value={progress} className="h-1.5 rounded-full bg-border-subtle/60" />
             </div>
           </div>
         </header>
 
         {/* Main content */}
         <main className="flex-1 px-4 py-6 sm:px-6 sm:py-8 lg:px-8">
-          <div className="mx-auto flex max-w-5xl flex-col gap-6 lg:flex-row">
-            {/* Left column: step context */}
-            <section className="flex-1 space-y-4 sm:space-y-5">
+          <div className="mx-auto w-full flex max-w-7xl flex-col gap-6">
+            {/* Step context */}
+            <section className="space-y-4 sm:space-y-5">
               <div className="space-y-2">
-                <p className="text-xs font-semibold uppercase tracking-[0.22em] text-slate-200">
+                <p className="text-xs font-semibold uppercase tracking-[0.22em] text-text-secondary">
                   Match questionnaire
                 </p>
-                <h1 className="text-2xl font-extrabold tracking-tight text-slate-50 sm:text-3xl">
+                <h1 className="text-2xl font-extrabold tracking-tight text-text-primary sm:text-3xl">
                   {title}
                 </h1>
                 {subtitle && (
-                  <p className="max-w-md text-sm leading-relaxed text-slate-200">
+                  <p className="max-w-md text-sm leading-relaxed text-text-secondary">
                     {subtitle}
                   </p>
                 )}
               </div>
 
-              <div className="inline-flex items-center gap-2 rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-xs text-slate-100 backdrop-blur-lg sm:text-sm">
+              <div className="inline-flex items-center gap-2 rounded-xl border border-border-subtle/30 bg-bg-surface-alt/50 px-3 py-2 text-xs text-text-primary backdrop-blur-lg sm:text-sm">
                 <span className="inline-flex h-2 w-2 rounded-full bg-emerald-400" />
                 <span className="font-medium">Progress autosaves while you answer.</span>
                 {lastSavedAt && (
-                  <span className="text-[11px] text-slate-300">
+                  <span className="text-[11px] text-text-secondary">
                     Last saved{' '}
                     {new Date(lastSavedAt).toLocaleTimeString([], {
                       hour: '2-digit',
@@ -230,9 +220,9 @@ export function QuestionnaireLayout({
               </div>
             </section>
 
-            {/* Right column: question card */}
-            <section className="flex-1.1 w-full lg:flex-[1.15]">
-              <Card className="rounded-2xl border border-white/10 bg-slate-950/60 shadow-2xl shadow-slate-900/70 backdrop-blur-2xl">
+            {/* Question card */}
+            <section className="w-full">
+              <Card className="rounded-2xl border border-border-subtle/30 bg-bg-surface-alt/55 shadow-2xl shadow-black/20 backdrop-blur-2xl">
                 <CardContent className="space-y-6 p-5 sm:p-6 lg:p-7">
                   {children}
                 </CardContent>
@@ -242,20 +232,20 @@ export function QuestionnaireLayout({
         </main>
 
         {/* Bottom navigation */}
-        <div className="sticky bottom-0 border-t border-white/10 bg-slate-950/90 backdrop-blur-xl">
-          <div className="mx-auto flex max-w-5xl items-center justify-between gap-3 px-4 py-3 sm:px-6 sm:py-4">
+        <div className="sticky bottom-0 border-t border-border-subtle/40 bg-bg-surface-alt/90 backdrop-blur-xl">
+          <div className="mx-auto flex max-w-7xl items-center justify-between gap-3 px-4 py-3 sm:px-6 sm:py-4">
             <Button
               variant="outline"
               onClick={onPrev}
               disabled={!onPrev}
-              className="min-h-[44px] rounded-xl border-white/30 bg-transparent px-4 text-sm font-medium text-slate-100 hover:bg-white/10 hover:text-slate-50 disabled:opacity-50"
+              className="min-h-[44px] rounded-xl bg-transparent px-4 text-sm font-medium text-text-primary hover:bg-bg-surface-alt/60 hover:text-text-primary disabled:opacity-50"
             >
               Previous
             </Button>
 
             <div className="flex items-center gap-3">
               {lastSavedAt && (
-                <span className="hidden text-xs text-slate-300 sm:inline">
+                <span className="hidden text-xs text-text-secondary sm:inline">
                   Last saved{' '}
                   {new Date(lastSavedAt).toLocaleTimeString([], {
                     hour: '2-digit',
@@ -266,7 +256,7 @@ export function QuestionnaireLayout({
               <Button
                 onClick={onNext}
                 disabled={!!nextDisabled}
-                className="min-h-[44px] rounded-xl bg-gradient-to-r from-sky-400 via-indigo-500 to-purple-500 px-5 text-sm font-semibold text-slate-50 shadow-md shadow-indigo-500/40 hover:brightness-110 disabled:opacity-60"
+                className="min-h-[44px] rounded-xl bg-gradient-to-r from-sky-400 via-indigo-500 to-purple-500 px-5 text-sm font-semibold text-primary-foreground shadow-md shadow-indigo-500/40 hover:brightness-110 disabled:opacity-60"
               >
                 Next
               </Button>

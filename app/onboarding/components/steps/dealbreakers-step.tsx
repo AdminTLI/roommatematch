@@ -24,7 +24,7 @@ export function DealBreakersStep({ data, onChange, user }: DealBreakersStepProps
       {/* Hard Constraints */}
       <div className="space-y-4">
         <h3 className="text-lg font-semibold">Hard Constraints</h3>
-        <p className="text-sm text-gray-600 dark:text-gray-300">
+        <p className="text-sm text-text-secondary">
           These are absolute requirements that cannot be compromised.
         </p>
         
@@ -64,7 +64,7 @@ export function DealBreakersStep({ data, onChange, user }: DealBreakersStepProps
       {/* Frequency Limits */}
       <div className="space-y-4">
         <h3 className="text-lg font-semibold">Frequency Limits</h3>
-        <p className="text-sm text-gray-600 dark:text-gray-300">
+        <p className="text-sm text-text-secondary">
           Set maximum acceptable frequencies for social activities.
         </p>
         
@@ -83,7 +83,7 @@ export function DealBreakersStep({ data, onChange, user }: DealBreakersStepProps
               step={1}
               className="w-full"
             />
-            <div className="text-center text-sm text-gray-500">
+            <div className="text-center text-sm text-text-muted">
               {data.parties_max ? `${data.parties_max}/10` : '5/10'}
             </div>
           </div>
@@ -104,7 +104,7 @@ export function DealBreakersStep({ data, onChange, user }: DealBreakersStepProps
               step={1}
               className="w-full"
             />
-            <div className="text-center text-sm text-gray-500">
+            <div className="text-center text-sm text-text-muted">
               {data.guests_max ? `${data.guests_max}/10` : '5/10'}
             </div>
           </div>

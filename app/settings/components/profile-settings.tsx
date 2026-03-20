@@ -353,7 +353,7 @@ export function ProfileSettings({ user, profile, academic, userType, professiona
               },
               {
                 label: 'Program',
-                value: (academic?.undecided_program && !profile?.program) ? 'Undecided' : (academic?.programs?.name || profile?.program),
+                value: academic?.programs?.name || academic?.program_id || profile?.program || (academic?.undecided_program ? 'Undecided' : null),
                 icon: GraduationCap,
               },
               { label: 'Graduation', value: academic?.expected_graduation_year ? `Class of ${academic.expected_graduation_year}` : null, icon: GraduationCap },

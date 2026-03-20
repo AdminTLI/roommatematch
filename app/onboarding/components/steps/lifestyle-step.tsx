@@ -87,7 +87,7 @@ export function LifestyleStep({ data, onChange, user }: LifestyleStepProps) {
               step={1}
               className="w-full"
             />
-            <div className="text-center text-sm text-gray-500">
+            <div className="text-center text-sm text-text-muted">
               {data.study_intensity ? `${data.study_intensity}/10` : '5/10'}
             </div>
           </div>
@@ -113,7 +113,7 @@ export function LifestyleStep({ data, onChange, user }: LifestyleStepProps) {
               step={1}
               className="w-full"
             />
-            <div className="text-center text-sm text-gray-500">
+            <div className="text-center text-sm text-text-muted">
               {data.cleanliness_room ? `${data.cleanliness_room}/10` : '5/10'}
             </div>
           </div>
@@ -134,7 +134,7 @@ export function LifestyleStep({ data, onChange, user }: LifestyleStepProps) {
               step={1}
               className="w-full"
             />
-            <div className="text-center text-sm text-gray-500">
+            <div className="text-center text-sm text-text-muted">
               {data.cleanliness_kitchen ? `${data.cleanliness_kitchen}/10` : '5/10'}
             </div>
           </div>
@@ -160,7 +160,7 @@ export function LifestyleStep({ data, onChange, user }: LifestyleStepProps) {
               step={1}
               className="w-full"
             />
-            <div className="text-center text-sm text-gray-500">
+            <div className="text-center text-sm text-text-muted">
               {data.noise_tolerance ? `${data.noise_tolerance}/10` : '5/10'}
             </div>
           </div>
@@ -186,7 +186,7 @@ export function LifestyleStep({ data, onChange, user }: LifestyleStepProps) {
               step={1}
               className="w-full"
             />
-            <div className="text-center text-sm text-gray-500">
+            <div className="text-center text-sm text-text-muted">
               {data.guests_frequency ? `${data.guests_frequency}/10` : '5/10'}
             </div>
           </div>
@@ -207,7 +207,7 @@ export function LifestyleStep({ data, onChange, user }: LifestyleStepProps) {
               step={1}
               className="w-full"
             />
-            <div className="text-center text-sm text-gray-500">
+            <div className="text-center text-sm text-text-muted">
               {data.parties_frequency ? `${data.parties_frequency}/10` : '5/10'}
             </div>
           </div>
@@ -233,7 +233,7 @@ export function LifestyleStep({ data, onChange, user }: LifestyleStepProps) {
               step={1}
               className="w-full"
             />
-            <div className="text-center text-sm text-gray-500">
+            <div className="text-center text-sm text-text-muted">
               {data.chores_preference ? `${data.chores_preference}/10` : '5/10'}
             </div>
           </div>
@@ -291,7 +291,7 @@ export function LifestyleStep({ data, onChange, user }: LifestyleStepProps) {
               step={1}
               className="w-full"
             />
-            <div className="text-center text-sm text-gray-500">
+            <div className="text-center text-sm text-text-muted">
               {data.alcohol_at_home ? `${data.alcohol_at_home}/10` : '5/10'}
             </div>
           </div>
@@ -312,7 +312,7 @@ export function LifestyleStep({ data, onChange, user }: LifestyleStepProps) {
               step={1}
               className="w-full"
             />
-            <div className="text-center text-sm text-gray-500">
+            <div className="text-center text-sm text-text-muted">
               {data.pets_tolerance ? `${data.pets_tolerance}/10` : '5/10'}
             </div>
           </div>

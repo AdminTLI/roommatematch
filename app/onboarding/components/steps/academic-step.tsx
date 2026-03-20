@@ -7,12 +7,14 @@ import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group'
 import { InstitutionSelect } from '@/components/questionnaire/InstitutionSelect'
 import { ProgrammeSelect } from '@/components/questionnaire/ProgrammeSelect'
 import { Checkbox } from '@/components/ui/checkbox'
+import { Separator } from '@/components/ui/separator'
 import { User } from '@supabase/supabase-js'
 import { cn } from '@/lib/utils'
 import { createClient } from '@/lib/supabase/client'
 import { getInstitutionType } from '@/lib/getInstitutionType'
 import { getInstitutionLabel } from '@/lib/loadInstitutions'
 import { calculateStudyYearWithMonths, getStudyYearStatus } from '@/lib/academic/calculateStudyYear'
+import { GraduationCap, Sparkles } from 'lucide-react'
 
 interface AcademicStepProps {
   data: Record<string, any>
@@ -29,6 +31,7 @@ export function AcademicStep({ data, onChange, user, errors = {}, onFieldBlur }:
   const supabase = createClient()
   const [universityName, setUniversityName] = useState<string | null>(null)
   const [hasUniversityFromBasics, setHasUniversityFromBasics] = useState(false)
+  const [selectedProgrammeName, setSelectedProgrammeName] = useState<string | null>(null)
   
   // Check if university was already selected in basics step
   useEffect(() => {
@@ -124,6 +127,31 @@ export function AcademicStep({ data, onChange, user, errors = {}, onFieldBlur }:
   }
 
   const currentYearStatus = calculateCurrentYearStatus()
+  
+  const institutionLabel =
+    getInstitutionLabel(data.institution_slug) ??
+    universityName ??
+    (data.institution_slug && data.institution_slug !== 'other'
+      ? data.institution_slug
+          .replace(/-/g, ' ')
+          .replace(/\b\w/g, (c: string) => c.toUpperCase())
+      : data.institution_other) ??
+    'Not specified'
+
+  const degreeLevelLabel =
+    data.degree_level === 'bachelor'
+      ? "Bachelor's"
+      : data.degree_level === 'master'
+        ? "Master's"
+        : data.degree_level === 'premaster'
+          ? 'Pre-Master'
+          : 'Not specified'
+
+  const graduationMonthLabel =
+    data.graduation_month === 6 ? 'June' : `Month ${data.graduation_month}`
+
+  const studyStartMonthLabel =
+    data.study_start_month === 9 ? 'September' : `Month ${data.study_start_month}`
 
   const handleChange = (field: string, value: any) => {
     const newData = { ...data, [field]: value }
@@ -136,6 +164,37 @@ export function AcademicStep({ data, onChange, user, errors = {}, onFieldBlur }:
     
     onChange(newData)
   }
+
+  // Programme summary is stored as an id (UUID), but the UI displays the programme name.
+  // We fetch the programme list and resolve the id -> name for the summary card.
+  useEffect(() => {
+    const instSlug = data.institution_slug || data.university_slug
+
+    if (!instSlug || !data.degree_level || !data.program_id || data.undecided_program) {
+      setSelectedProgrammeName(null)
+      return
+    }
+
+    const controller = new AbortController()
+
+    const resolveProgrammeName = async () => {
+      try {
+        const res = await fetch(`/api/programmes?inst=${instSlug}&level=${data.degree_level}`, {
+          signal: controller.signal,
+        })
+        if (!res.ok) return
+        const payload = await res.json()
+        const programmes = payload?.programmes || []
+        const match = programmes.find((p: { id: string }) => p.id === data.program_id)
+        setSelectedProgrammeName(match?.name || null)
+      } catch {
+        // Ignore resolution failures; we can still show the id as a fallback.
+      }
+    }
+
+    resolveProgrammeName()
+    return () => controller.abort()
+  }, [data.institution_slug, data.university_slug, data.degree_level, data.program_id, data.undecided_program])
 
 
   return (
@@ -158,7 +217,7 @@ export function AcademicStep({ data, onChange, user, errors = {}, onFieldBlur }:
       {/* University Selection */}
       {hasUniversityFromBasics ? (
         <div className="space-y-2">
-          <Label htmlFor="university" className="text-base font-semibold text-slate-100">
+          <Label htmlFor="university" className="text-base font-semibold text-text-primary">
             University *
           </Label>
           <div className="p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-800">
@@ -221,7 +280,7 @@ export function AcademicStep({ data, onChange, user, errors = {}, onFieldBlur }:
               onChange(newData)
             }}
           />
-          <p className="text-sm text-slate-300">
+          <p className="text-sm text-text-secondary">
             Choose your HBO or WO institution. Programs are loaded from our database.
           </p>
           {(errors.institution_slug || errors.institution_other) && (
@@ -232,7 +291,7 @@ export function AcademicStep({ data, onChange, user, errors = {}, onFieldBlur }:
         </div>
       ) : (
         <div className="space-y-2">
-          <Label htmlFor="university" className="text-base font-semibold text-slate-100">
+          <Label htmlFor="university" className="text-base font-semibold text-text-primary">
             University *
           </Label>
           <InstitutionSelect
@@ -282,7 +341,7 @@ export function AcademicStep({ data, onChange, user, errors = {}, onFieldBlur }:
               onChange(newData)
             }}
           />
-          <p className="text-sm text-slate-300">
+          <p className="text-sm text-text-secondary">
             Choose your HBO or WO institution. Programs are loaded from our database.
           </p>
           {(errors.institution_slug || errors.institution_other) && (
@@ -297,7 +356,7 @@ export function AcademicStep({ data, onChange, user, errors = {}, onFieldBlur }:
       <div className="space-y-3">
         <Label
           htmlFor="degree_level"
-          className="text-base font-semibold text-slate-100"
+          className="text-base font-semibold text-text-primary"
         >
           Degree Level *
         </Label>
@@ -321,7 +380,7 @@ export function AcademicStep({ data, onChange, user, errors = {}, onFieldBlur }:
                 htmlFor="degree_bachelor"
                 className={cn(
                   "text-base font-semibold cursor-pointer",
-                  data.degree_level === 'bachelor' ? "text-slate-900" : "text-slate-100"
+                  data.degree_level === 'bachelor' ? "text-text-primary" : "text-text-primary"
                 )}
               >
                 Bachelor's Degree (BSc/BA)
@@ -329,7 +388,7 @@ export function AcademicStep({ data, onChange, user, errors = {}, onFieldBlur }:
               <p
                 className={cn(
                   "text-sm mt-1",
-                  data.degree_level === 'bachelor' ? "text-slate-700" : "text-slate-300"
+                  data.degree_level === 'bachelor' ? "text-text-secondary" : "text-text-secondary"
                 )}
               >
                 Undergraduate degree, typically 3-4 years
@@ -352,7 +411,7 @@ export function AcademicStep({ data, onChange, user, errors = {}, onFieldBlur }:
                 htmlFor="degree_premaster"
                 className={cn(
                   "text-base font-semibold cursor-pointer",
-                  data.degree_level === 'premaster' ? "text-slate-900" : "text-slate-100"
+                  data.degree_level === 'premaster' ? "text-text-primary" : "text-text-primary"
                 )}
               >
                 Pre-Master (Schakelprogramma)
@@ -360,7 +419,7 @@ export function AcademicStep({ data, onChange, user, errors = {}, onFieldBlur }:
               <p
                 className={cn(
                   "text-sm mt-1",
-                  data.degree_level === 'premaster' ? "text-slate-700" : "text-slate-300"
+                  data.degree_level === 'premaster' ? "text-text-secondary" : "text-text-secondary"
                 )}
               >
                 Bridging programme to prepare for Master's degree
@@ -383,7 +442,7 @@ export function AcademicStep({ data, onChange, user, errors = {}, onFieldBlur }:
                 htmlFor="degree_master"
                 className={cn(
                   "text-base font-semibold cursor-pointer",
-                  data.degree_level === 'master' ? "text-slate-900" : "text-slate-100"
+                  data.degree_level === 'master' ? "text-text-primary" : "text-text-primary"
                 )}
               >
                 Master's Degree (MSc/MA)
@@ -391,7 +450,7 @@ export function AcademicStep({ data, onChange, user, errors = {}, onFieldBlur }:
               <p
                 className={cn(
                   "text-sm mt-1",
-                  data.degree_level === 'master' ? "text-slate-700" : "text-slate-300"
+                  data.degree_level === 'master' ? "text-text-secondary" : "text-text-secondary"
                 )}
               >
                 Graduate degree, typically 1-2 years
@@ -416,7 +475,7 @@ export function AcademicStep({ data, onChange, user, errors = {}, onFieldBlur }:
           />
           <Label
             htmlFor="undecided_program"
-            className="text-sm font-normal text-slate-100"
+            className="text-sm font-normal text-text-primary"
           >
             I haven't decided on a specific programme yet
           </Label>
@@ -428,7 +487,7 @@ export function AcademicStep({ data, onChange, user, errors = {}, onFieldBlur }:
         <div className="space-y-2">
           <Label
             htmlFor="program"
-            className="text-base font-semibold text-slate-100"
+            className="text-base font-semibold text-text-primary"
           >
             Programme *
           </Label>
@@ -436,11 +495,19 @@ export function AcademicStep({ data, onChange, user, errors = {}, onFieldBlur }:
             institutionId={data.institution_slug}
             level={data.degree_level as any}
             value={data.program_id}
-            onChange={(programmeId) => handleChange('program_id', programmeId)}
+            onChange={(programmeId, programmeName) => {
+              // Store both the program_id (for DB resolution) and the display name (for profile rendering)
+              onChange({
+                ...data,
+                program_id: programmeId,
+                program: programmeName ?? data.program,
+                undecided_program: false,
+              })
+            }}
             disabled={!data.institution_slug || !data.degree_level}
             placeholder="Select your programme"
           />
-          <p className="text-sm text-slate-300">
+          <p className="text-sm text-text-secondary">
             {data.institution_slug && data.degree_level
               ? `Select your ${data.degree_level} programme`
               : "Select your university and degree level to see available programmes"
@@ -458,7 +525,7 @@ export function AcademicStep({ data, onChange, user, errors = {}, onFieldBlur }:
       <div className="space-y-2">
         <Label
           htmlFor="expected_graduation_year"
-          className="text-base font-semibold text-slate-100"
+          className="text-base font-semibold text-text-primary"
         >
           Expected Graduation Year *
         </Label>
@@ -502,7 +569,7 @@ export function AcademicStep({ data, onChange, user, errors = {}, onFieldBlur }:
           </div>
         )}
         
-        <p className="text-sm text-slate-300">
+        <p className="text-sm text-text-secondary">
           When do you expect to finish your studies? This helps match you with students at similar academic stages.
         </p>
         {errors.expected_graduation_year && (
@@ -516,7 +583,7 @@ export function AcademicStep({ data, onChange, user, errors = {}, onFieldBlur }:
       <div className="space-y-2">
         <Label
           htmlFor="study_start_month"
-          className="text-base font-semibold text-slate-100"
+          className="text-base font-semibold text-text-primary"
         >
           Study Start Month *
         </Label>
@@ -553,7 +620,7 @@ export function AcademicStep({ data, onChange, user, errors = {}, onFieldBlur }:
             Study start month is required for accurate academic year calculation.
           </p>
         )}
-        <p className="text-sm text-slate-300">
+        <p className="text-sm text-text-secondary">
           When did or will you start your studies? This helps calculate your current academic year more accurately. Academic year typically starts in September (month 9).
         </p>
       </div>
@@ -562,7 +629,7 @@ export function AcademicStep({ data, onChange, user, errors = {}, onFieldBlur }:
       <div className="space-y-2">
         <Label
           htmlFor="graduation_month"
-          className="text-base font-semibold text-slate-100"
+          className="text-base font-semibold text-text-primary"
         >
           Expected Graduation Month *
         </Label>
@@ -599,7 +666,7 @@ export function AcademicStep({ data, onChange, user, errors = {}, onFieldBlur }:
             Graduation month is required for accurate academic year calculation.
           </p>
         )}
-        <p className="text-sm text-slate-300">
+        <p className="text-sm text-text-secondary">
           In which month do you expect to graduate? This helps us calculate your academic stage accurately. Most students graduate in June (summer).
         </p>
       </div>
@@ -624,23 +691,103 @@ export function AcademicStep({ data, onChange, user, errors = {}, onFieldBlur }:
       {/* Academic Summary */}
       {data.institution_slug && data.degree_level && (data.program_id || data.undecided_program) && 
        data.expected_graduation_year && data.study_start_month && data.graduation_month && (
-        <div className="p-4 bg-green-50 dark:bg-green-900/20 rounded-lg border border-green-200 dark:border-green-800">
-          <h4 className="font-medium text-green-800 dark:text-green-200 mb-2">
-            Academic Profile Summary
-          </h4>
-          <div className="text-sm text-green-700 dark:text-green-300 space-y-1">
-            <div><strong>Institution:</strong> {getInstitutionLabel(data.institution_slug) ?? universityName ?? (data.institution_slug && data.institution_slug !== 'other' ? data.institution_slug.replace(/-/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase()) : data.institution_other) ?? 'Not specified'}</div>
-            <div><strong>Degree Level:</strong> {
-              data.degree_level === 'bachelor' ? "Bachelor's" :
-              data.degree_level === 'master' ? "Master's" :
-              data.degree_level === 'premaster' ? "Pre-Master" : ''
-            }</div>
-            <div><strong>Programme:</strong> {
-              data.undecided_program ? "Undecided" : "Selected"
-            }</div>
-            <div><strong>Expected Graduation:</strong> {data.expected_graduation_year} ({data.graduation_month === 6 ? 'June' : `Month ${data.graduation_month}`})</div>
-            <div><strong>Study Start:</strong> {data.study_start_month === 9 ? 'September' : `Month ${data.study_start_month}`} {data.study_start_year ? `(${data.study_start_year})` : ''}</div>
-            {currentYearStatus && <div><strong>Current Status:</strong> {currentYearStatus}</div>}
+        <div className="relative overflow-hidden rounded-2xl border border-green-200/70 dark:border-green-800/70 bg-gradient-to-br from-green-50/70 via-green-50/30 to-transparent dark:from-green-900/40 dark:via-green-900/10 shadow-elev-1">
+          <div className="pointer-events-none absolute -top-10 -right-10 h-44 w-44 rounded-full bg-green-200/60 dark:bg-green-800/30 blur-2xl" />
+          <div className="pointer-events-none absolute -bottom-14 -left-10 h-56 w-56 rounded-full bg-green-100/50 dark:bg-green-800/20 blur-2xl" />
+
+          <div className="relative p-5 sm:p-6">
+            <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+              <div className="flex items-start gap-3">
+                <div className="mt-0.5 flex h-11 w-11 items-center justify-center rounded-xl border border-green-200/70 bg-green-100/60 dark:border-green-800/70 dark:bg-green-900/30">
+                  <GraduationCap className="h-5 w-5 text-green-700 dark:text-green-300" />
+                </div>
+                <div>
+                  <p className="text-xs font-medium uppercase tracking-wide text-green-800/80 dark:text-green-200/80">
+                    Academic Profile
+                  </p>
+                  <h4 className="text-lg sm:text-xl font-semibold text-text-primary">
+                    Summary
+                  </h4>
+                  <p className="text-sm text-text-secondary mt-1">
+                    Used to match you with students at a similar stage.
+                  </p>
+                </div>
+              </div>
+
+              <div className="inline-flex items-center gap-2 self-start rounded-full border border-green-200/70 bg-green-50/60 px-3 py-1 text-xs font-medium text-green-800 dark:border-green-800/70 dark:bg-green-900/30 dark:text-green-200">
+                <Sparkles className="h-3.5 w-3.5" />
+                Ready for matching
+              </div>
+            </div>
+
+            <Separator className="mt-4 bg-green-200/70 dark:bg-green-800/60" />
+
+            <div className="grid grid-cols-1 gap-x-6 gap-y-3 sm:grid-cols-2 mt-4">
+              <div className="flex items-start gap-3">
+                <div className="mt-1 h-2 w-2 rounded-full bg-green-500 dark:bg-green-400" />
+                <div className="min-w-0">
+                  <div className="text-xs font-medium text-text-secondary">Institution</div>
+                  <div className="text-sm font-semibold text-text-primary truncate">
+                    {institutionLabel}
+                  </div>
+                </div>
+              </div>
+
+              <div className="flex items-start gap-3">
+                <div className="mt-1 h-2 w-2 rounded-full bg-green-500 dark:bg-green-400" />
+                <div className="min-w-0">
+                  <div className="text-xs font-medium text-text-secondary">Degree level</div>
+                  <div className="text-sm font-semibold text-text-primary">
+                    {degreeLevelLabel}
+                  </div>
+                </div>
+              </div>
+
+              <div className="flex items-start gap-3">
+                <div className="mt-1 h-2 w-2 rounded-full bg-green-500 dark:bg-green-400" />
+                <div className="min-w-0">
+                  <div className="text-xs font-medium text-text-secondary">Programme</div>
+                  <div className="text-sm font-semibold text-text-primary">
+                    {data.undecided_program
+                      ? 'Undecided'
+                      : (selectedProgrammeName || data.program_id || 'Selected')}
+                  </div>
+                </div>
+              </div>
+
+              <div className="flex items-start gap-3">
+                <div className="mt-1 h-2 w-2 rounded-full bg-green-500 dark:bg-green-400" />
+                <div className="min-w-0">
+                  <div className="text-xs font-medium text-text-secondary">Expected graduation</div>
+                  <div className="text-sm font-semibold text-text-primary">
+                    {data.expected_graduation_year} ({graduationMonthLabel})
+                  </div>
+                </div>
+              </div>
+
+              <div className="flex items-start gap-3">
+                <div className="mt-1 h-2 w-2 rounded-full bg-green-500 dark:bg-green-400" />
+                <div className="min-w-0">
+                  <div className="text-xs font-medium text-text-secondary">Study start</div>
+                  <div className="text-sm font-semibold text-text-primary">
+                    {studyStartMonthLabel}{' '}
+                    {data.study_start_year ? `(${data.study_start_year})` : ''}
+                  </div>
+                </div>
+              </div>
+
+              {currentYearStatus ? (
+                <div className="flex items-start gap-3">
+                  <div className="mt-1 h-2 w-2 rounded-full bg-green-500 dark:bg-green-400" />
+                  <div className="min-w-0">
+                    <div className="text-xs font-medium text-text-secondary">Current status</div>
+                    <div className="text-sm font-semibold text-text-primary">
+                      {currentYearStatus}
+                    </div>
+                  </div>
+                </div>
+              ) : null}
+            </div>
           </div>
         </div>
       )}
