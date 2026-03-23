@@ -489,7 +489,8 @@ export async function runMatchingAsSuggestions({
           try {
             // Find best matches for this student using DB optimization
             // This returns top ~20 matches already filtered and scored
-            const matches = await repo.findBestMatchesV2(student.id, 20)
+            const minScore = Math.max(0, Math.min(1, minFitIndex / 100))
+            const matches = await repo.findBestMatchesV2(student.id, 20, minScore)
 
             for (const match of matches) {
               const studentB = students.find(s => s.id === match.user_id)

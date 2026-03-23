@@ -14,6 +14,7 @@ import { cn } from '@/lib/utils'
 interface MessengerLayoutProps {
   user: User & { name?: string; email?: string }
   initialChatId?: string | null
+  initialOtherUserId?: string | null
   onNewChat?: () => void
 }
 
@@ -23,7 +24,7 @@ interface ChatInfo {
   partnerAvatar?: string
 }
 
-export function MessengerLayout({ user, initialChatId, onNewChat }: MessengerLayoutProps) {
+export function MessengerLayout({ user, initialChatId, initialOtherUserId, onNewChat }: MessengerLayoutProps) {
   const [selectedChatId, setSelectedChatId] = useState<string | null>(initialChatId || null)
   const [rightPaneOpen, setRightPaneOpen] = useState(false)
   const [chatInfo, setChatInfo] = useState<ChatInfo | null>(null)
@@ -66,6 +67,35 @@ export function MessengerLayout({ user, initialChatId, onNewChat }: MessengerLay
       setSelectedChatId(initialChatId)
     }
   }, [initialChatId])
+
+  // If we arrive from a notification without a chatId, resolve/create a direct chat from userId.
+  useEffect(() => {
+    const resolveChatFromOtherUser = async () => {
+      if (!initialOtherUserId || initialOtherUserId === user.id || selectedChatId) {
+        return
+      }
+
+      try {
+        const response = await fetchWithCSRF('/api/chat/get-or-create', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ other_user_id: initialOtherUserId }),
+        })
+
+        if (!response.ok) return
+
+        const data = await response.json()
+        if (data?.chat_id) {
+          setSelectedChatId(data.chat_id)
+          queryClient.invalidateQueries({ queryKey: queryKeys.chats(user.id) })
+        }
+      } catch (error) {
+        console.error('Failed to resolve chat from user id:', error)
+      }
+    }
+
+    resolveChatFromOtherUser()
+  }, [initialOtherUserId, selectedChatId, user.id])
 
   // Fetch chat info when chat is selected (without profiles API - MessengerConversation handles profiles)
   useEffect(() => {

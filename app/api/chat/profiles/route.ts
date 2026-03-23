@@ -108,17 +108,24 @@ export async function POST(request: NextRequest) {
     // and to anonymize the name of users who have blocked the current user.
     const { data: blocklist, error: blocklistError } = await admin
       .from('match_blocklist')
-      .select('user_id, blocked_user_id')
+      .select('user_id, blocked_user_id, ended_at')
       .in('user_id', [user.id, ...allUserIds])
 
+    const nowMs = Date.now()
+    const activeBlocklist = (blocklist || []).filter((entry: any) => {
+      if (!entry?.ended_at) return true
+      const endedAtMs = new Date(entry.ended_at).getTime()
+      return !Number.isNaN(endedAtMs) && endedAtMs > nowMs
+    })
+
     const blockedByCurrentUser = new Set(
-      (blocklist || [])
+      activeBlocklist
         .filter(b => b.user_id === user.id)
         .map(b => b.blocked_user_id)
     )
 
     const blockedCurrentUser = new Set(
-      (blocklist || [])
+      activeBlocklist
         .filter(b => b.blocked_user_id === user.id)
         .map(b => b.user_id)
     )

@@ -87,6 +87,22 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Failed to update read status' }, { status: 500 })
     }
 
+    // Keep notification center in sync with chat reads:
+    // when this chat is opened, mark unread chat-message notifications
+    // for this chat as read for the current user.
+    const { error: notificationsError } = await supabase
+      .from('notifications')
+      .update({ is_read: true, updated_at: new Date().toISOString() })
+      .eq('user_id', user.id)
+      .eq('type', 'chat_message')
+      .eq('metadata->chat_id', chat_id)
+      .eq('is_read', false)
+
+    if (notificationsError) {
+      // Non-blocking: chat read receipts have already been updated.
+      console.warn('Failed to mark chat notifications as read:', notificationsError)
+    }
+
     return NextResponse.json({ success: true }, { status: 200 })
 
   } catch (error) {

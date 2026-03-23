@@ -4,7 +4,7 @@ import { safeLogger } from '@/lib/utils/logger'
 import { checkRateLimit, getUserRateLimitKey } from '@/lib/rate-limit'
 import { getUserFriendlyError } from '@/lib/errors/user-friendly-messages'
 import { filterContent, getViolationErrorMessage } from '@/lib/utils/content-filter'
-import { createNotificationsForUsers } from '@/lib/notifications/create'
+import { createNotificationsForUsers, createChatMessageNotification } from '@/lib/notifications/create'
 
 export async function POST(request: NextRequest) {
   try {
@@ -141,10 +141,8 @@ export async function POST(request: NextRequest) {
       }, { status: 403 })
     }
 
-    // Privacy gate:
-    // - Ghost users (profiles.is_visible=false) cannot message
-    // - Users with profiles.privacy_settings.allowMessages=false cannot message
-    // - For individual chats, enforce for both sender and receiver
+    // Blocklist gate:
+    // For 1-on-1 chats, prevent sending if either participant currently blocks the other.
     const admin = await createAdminClient()
     const { data: chatRow } = await admin
       .from('chats')
@@ -152,6 +150,55 @@ export async function POST(request: NextRequest) {
       .eq('id', chat_id)
       .maybeSingle()
 
+    if (chatRow?.is_group === false) {
+      const { data: memberRows } = await admin
+        .from('chat_members')
+        .select('user_id')
+        .eq('chat_id', chat_id)
+
+      const memberIds = (memberRows || []).map(r => r.user_id).filter(Boolean)
+      const otherUserId = memberIds.find(id => id !== user.id)
+
+      if (!otherUserId) {
+        return NextResponse.json(
+          { error: getUserFriendlyError('Failed to verify chat membership'), reason: 'missing_recipient' },
+          { status: 403 }
+        )
+      }
+
+      const { data: activeBlocks, error: blockError } = await admin
+        .from('match_blocklist')
+        .select('user_id, blocked_user_id')
+        .is('ended_at', null)
+        .or(
+          `and(user_id.eq.${user.id},blocked_user_id.eq.${otherUserId}),and(user_id.eq.${otherUserId},blocked_user_id.eq.${user.id})`
+        )
+
+      if (blockError) {
+        safeLogger.error('Failed to verify blocklist status for message send', {
+          error: blockError,
+          userId: user.id,
+          chatId: chat_id,
+          otherUserId
+        })
+        return NextResponse.json({ error: getUserFriendlyError('Failed to send message') }, { status: 500 })
+      }
+
+      if ((activeBlocks || []).length > 0) {
+        return NextResponse.json(
+          {
+            error: 'Messaging is blocked for this conversation.',
+            reason: 'conversation_blocked'
+          },
+          { status: 403 }
+        )
+      }
+    }
+
+    // Privacy gate:
+    // - Ghost users (profiles.is_visible=false) cannot message
+    // - Users with profiles.privacy_settings.allowMessages=false cannot message
+    // - For individual chats, enforce for both sender and receiver
     if (chatRow?.is_group === false) {
       const { data: memberRows } = await admin
         .from('chat_members')
@@ -398,6 +445,75 @@ export async function POST(request: NextRequest) {
 
     // Use message with profile if available, otherwise use the basic inserted message
     const message = messageWithProfile || insertedMessage
+
+    // Create chat message notifications for other chat members.
+    // Pop-up notifications subscribe to inserts in `notifications`, so this must
+    // happen server-side for recipients who are not currently in the chat page.
+    try {
+      const notifyAdmin = await createAdminClient()
+      const { data: chatMembers, error: chatMembersError } = await notifyAdmin
+        .from('chat_members')
+        .select('user_id')
+        .eq('chat_id', chat_id)
+
+      if (chatMembersError) {
+        safeLogger.warn('Failed to load chat members for message notification', {
+          error: chatMembersError,
+          chatId: chat_id,
+          messageId: insertedMessage.id
+        })
+      } else {
+        const recipientIds = (chatMembers || [])
+          .map((member) => member.user_id)
+          .filter((memberId): memberId is string => !!memberId && memberId !== user.id)
+
+        if (recipientIds.length > 0) {
+          const senderProfile = (messageWithProfile as any)?.profiles
+          let senderName = senderProfile
+            ? [senderProfile.first_name, senderProfile.last_name].filter(Boolean).join(' ') || 'User'
+            : 'User'
+
+          if (senderName === 'User') {
+            const { data: senderProfileFallback, error: senderProfileFallbackError } = await notifyAdmin
+              .from('profiles')
+              .select('first_name, last_name')
+              .eq('user_id', user.id)
+              .maybeSingle()
+
+            if (senderProfileFallbackError) {
+              safeLogger.warn('Failed to fetch sender profile fallback for notifications', {
+                error: senderProfileFallbackError,
+                senderId: user.id,
+                chatId: chat_id,
+                messageId: insertedMessage.id
+              })
+            } else if (senderProfileFallback) {
+              senderName =
+                [senderProfileFallback.first_name, senderProfileFallback.last_name]
+                  .filter(Boolean)
+                  .join(' ')
+                  .trim() || 'User'
+            }
+          }
+
+          const messagePreview = trimmedContent.length > 120 ? `${trimmedContent.slice(0, 120)}...` : trimmedContent
+
+          await Promise.all(
+            recipientIds.map((recipientId) =>
+              createChatMessageNotification(recipientId, senderName, chat_id, messagePreview, user.id)
+            )
+          )
+        }
+      }
+    } catch (notificationError) {
+      // Don't fail message send if notification insert fails.
+      safeLogger.error('Failed to create chat message notifications', {
+        error: notificationError,
+        chatId: chat_id,
+        messageId: insertedMessage.id,
+        senderId: user.id
+      })
+    }
 
     // Update chat's updated_at timestamp
     // NOTE: Temporarily commented out due to trigger function issue with public.now()

@@ -59,7 +59,7 @@ export function QuestionnaireSettings({ progressData, userType }: QuestionnaireS
   const onboardingBase = isProfessional ? '/onboarding-professional' : '/onboarding'
 
   const handleEditAnswers = () => {
-    router.push(`${onboardingBase}/welcome?mode=edit`)
+    router.push(`${onboardingBase}/welcome?edit=1`)
   }
 
   const handleRetakeQuestionnaire = async () => {
@@ -180,7 +180,7 @@ export function QuestionnaireSettings({ progressData, userType }: QuestionnaireS
 
   const handleEditSection = (section: string) => {
     const route = getSectionRoute(section)
-    router.push(`${route}?mode=edit`)
+    router.push(`${route}?edit=1`)
   }
 
   return (

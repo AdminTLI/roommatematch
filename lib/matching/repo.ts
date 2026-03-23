@@ -103,5 +103,5 @@ export interface MatchRepo {
   addToBlocklist(userId: string, otherId: string): Promise<void>;
 
   // Optimization V2
-  findBestMatchesV2(userId: string, limit?: number): Promise<any[]>;
+  findBestMatchesV2(userId: string, limit?: number, minScore?: number): Promise<any[]>;
 }

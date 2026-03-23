@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -17,6 +17,7 @@ import {
 } from '@/components/ui/dialog'
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs'
 import { Checkbox } from '@/components/ui/checkbox'
+import { fetchWithCSRF } from '@/lib/utils/fetch-with-csrf'
 
 type StudentOrigin = 'dutch' | 'international' | ''
 type StudyProgramType = 'dutch_taught' | 'english_taught' | ''
@@ -24,8 +25,7 @@ type StudyProgramType = 'dutch_taught' | 'english_taught' | ''
 export default function OnboardingWelcomePage() {
   const router = useRouter()
   const searchParams = useSearchParams()
-  const mode = searchParams.get('mode')
-  const isEditMode = mode === 'edit'
+  const isEditMode = searchParams.get('edit') === '1' || searchParams.get('mode') === 'edit'
   const supabase = createClient()
 
   const [studentOrigin, setStudentOrigin] = useState<StudentOrigin>('')
@@ -34,6 +34,48 @@ export default function OnboardingWelcomePage() {
   const [dealbreakerConsent, setDealbreakerConsent] = useState(false)
   const [specialCategoryConsent, setSpecialCategoryConsent] = useState(false)
   const [showLegalModal, setShowLegalModal] = useState(false)
+
+  useEffect(() => {
+    const loadSavedSelections = async () => {
+      try {
+        const loadResponse = await fetch('/api/onboarding/load?section=intro')
+        if (!loadResponse.ok) return
+
+        const { answers } = await loadResponse.json()
+        if (!Array.isArray(answers)) return
+
+        const byId = answers.reduce<Record<string, unknown>>((acc, answer: any) => {
+          if (answer?.itemId) acc[String(answer.itemId)] = answer.value
+          return acc
+        }, {})
+
+        const savedOrigin = byId.student_origin
+        const savedProgram = byId.study_program_type
+
+        if (savedOrigin === 'dutch' || savedOrigin === 'international') {
+          setStudentOrigin(savedOrigin)
+        }
+
+        if (savedProgram === 'dutch_taught' || savedProgram === 'english_taught') {
+          setStudyProgramType(savedProgram)
+        }
+
+        if (typeof byId.accepted_terms_and_privacy === 'boolean') {
+          setPrivacyConsent(byId.accepted_terms_and_privacy)
+        }
+        if (typeof byId.accepted_dealbreaker_consent === 'boolean') {
+          setDealbreakerConsent(byId.accepted_dealbreaker_consent)
+        }
+        if (typeof byId.accepted_special_category_consent === 'boolean') {
+          setSpecialCategoryConsent(byId.accepted_special_category_consent)
+        }
+      } catch (error) {
+        console.error('[OnboardingWelcome] Failed to load saved demographics selection', error)
+      }
+    }
+
+    loadSavedSelections()
+  }, [supabase])
 
   const canStart =
     studentOrigin !== '' &&
@@ -45,8 +87,38 @@ export default function OnboardingWelcomePage() {
   const handleStart = async () => {
     if (!canStart) return
 
-    // Persist demographic selections + legal consents for future algorithmic use and audit trail
+    // Persist selections to intro section so they survive revisit/edit flows.
     try {
+      const loadResponse = await fetch('/api/onboarding/load?section=intro')
+      const existingAnswers = loadResponse.ok ? ((await loadResponse.json()).answers ?? []) : []
+      const existingById = new Map<string, any>()
+      for (const answer of existingAnswers) {
+        if (answer?.itemId) {
+          existingById.set(String(answer.itemId), answer)
+        }
+      }
+
+      const welcomeAnswers = [
+        { itemId: 'student_origin', value: studentOrigin },
+        { itemId: 'study_program_type', value: studyProgramType },
+        { itemId: 'accepted_terms_and_privacy', value: privacyConsent },
+        { itemId: 'accepted_dealbreaker_consent', value: dealbreakerConsent },
+        { itemId: 'accepted_special_category_consent', value: specialCategoryConsent },
+      ]
+
+      for (const answer of welcomeAnswers) {
+        existingById.set(answer.itemId, answer)
+      }
+
+      await fetchWithCSRF('/api/onboarding/save', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          section: 'intro',
+          answers: Array.from(existingById.values()),
+        }),
+      })
+
       const {
         data: { user },
       } = await supabase.auth.getUser()
@@ -65,7 +137,6 @@ export default function OnboardingWelcomePage() {
         created_at: new Date().toISOString(),
       })
     } catch (error) {
-      // Failing to save demographics should never block onboarding
       console.error('[OnboardingWelcome] Failed to save demographics selection', error)
     }
 
@@ -358,7 +429,7 @@ export default function OnboardingWelcomePage() {
                 disabled={!canStart}
                 className={[
                   'inline-flex min-h-[48px] shrink-0 items-center justify-center rounded-2xl px-8 text-sm font-semibold tracking-tight sm:min-w-[11rem]',
-                  'bg-gradient-to-r from-sky-400 via-indigo-500 to-purple-500 text-text-primary',
+                  'bg-gradient-to-r from-sky-400 via-indigo-500 to-purple-500 text-white',
                   !canStart ? 'cursor-not-allowed opacity-50' : 'hover:brightness-110',
                 ].join(' ')}
               >

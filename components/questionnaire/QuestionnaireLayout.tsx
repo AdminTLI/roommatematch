@@ -20,6 +20,7 @@ interface Props {
   title: string
   subtitle?: string
   hideSaveAndExit?: boolean
+  prevButtonClassName?: string
 }
 
 export function QuestionnaireLayout({
@@ -32,6 +33,7 @@ export function QuestionnaireLayout({
   title,
   subtitle,
   hideSaveAndExit = false,
+  prevButtonClassName,
 }: Props) {
   const progress = Math.round(((stepIndex + 1) / totalSteps) * 100)
   const router = useRouter()
@@ -225,7 +227,7 @@ export function QuestionnaireLayout({
         </main>
 
         {/* Bottom navigation */}
-        <div className="sticky bottom-0 z-40 border-t border-border-subtle/30 bg-bg-body/90 backdrop-blur-xl">
+        <div className="sticky bottom-0 z-40 border-t border-transparent bg-transparent">
           <div
             className={
               onNext
@@ -238,7 +240,10 @@ export function QuestionnaireLayout({
                 variant="outline"
                 onClick={onPrev}
                 disabled={!onPrev}
-                className="min-h-[44px] rounded-xl bg-transparent px-4 text-sm font-medium text-text-primary hover:bg-bg-surface-alt/60 hover:text-text-primary disabled:opacity-50"
+                className={[
+                  'min-h-[44px] rounded-xl bg-transparent px-4 text-sm font-medium text-text-primary hover:bg-bg-surface-alt/60 hover:text-text-primary disabled:opacity-50',
+                  prevButtonClassName ?? '',
+                ].join(' ')}
               >
                 Previous
               </Button>

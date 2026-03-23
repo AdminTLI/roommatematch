@@ -256,6 +256,7 @@ function ReviewClientContent() {
       }}
       onNext={undefined}
       hideSaveAndExit
+      prevButtonClassName="bg-white text-gray-700 border-transparent hover:bg-white/95 hover:text-gray-700 dark:bg-white dark:text-gray-700 dark:hover:bg-white/95 dark:hover:text-gray-700"
     >
       <div className="space-y-6">
         <div className="grid gap-4 lg:grid-cols-1">

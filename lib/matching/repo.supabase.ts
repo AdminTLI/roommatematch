@@ -303,7 +303,8 @@ export class SupabaseMatchRepo implements MatchRepo {
     }
 
     // Exclude hidden profiles (Hide Profile / Snooze retention flow)
-    query = query.or('profiles.is_visible.is.null,profiles.is_visible.eq.true')
+    // For joined tables, OR filters must target the foreign table explicitly.
+    query = query.or('is_visible.is.null,is_visible.eq.true', { foreignTable: 'profiles' })
 
     if (filter.excludeUserIds?.length) {
       query = query.not('id', 'in', `(${filter.excludeUserIds.join(',')})`)
@@ -1365,13 +1366,13 @@ export class SupabaseMatchRepo implements MatchRepo {
   }
 
   // Optimization V2
-  async findBestMatchesV2(userId: string, limit = 20): Promise<any[]> {
+  async findBestMatchesV2(userId: string, limit = 20, minScore = 0.3): Promise<any[]> {
     const supabase = await this.getSupabase()
     const { data, error } = await supabase.rpc('find_best_matches_v2', {
       p_user_id: userId,
       p_limit: limit,
       p_candidates_limit: 200,
-      p_min_score: 0.6
+      p_min_score: minScore
     })
 
     if (error) {

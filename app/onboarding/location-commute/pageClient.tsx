@@ -40,7 +40,7 @@ const CITY_OPTIONS = [
   'Vlissingen',
   'Doetinchem',
   'Apeldoorn',
-]
+].sort((a, b) => a.localeCompare(b))
 
 function normalizeCities(cities: string[]): string[] {
   return Array.from(
@@ -55,26 +55,17 @@ function normalizeCities(cities: string[]): string[] {
 function SectionClientContent() {
   const sectionKey = 'location-commute' as const
   const setAnswer = useOnboardingStore((s) => s.setAnswer)
-  const countAnswered = useOnboardingStore((s) => s.countAnsweredInSection)
   const answers = useOnboardingStore((s) => s.sections[sectionKey])
   const searchParams = useSearchParams()
 
   // Check edit mode using React hook for proper reactivity
-  const isEditMode = searchParams.get('mode') === 'edit'
-
-  const total = 1
-  const answered = countAnswered(sectionKey)
+  const isEditMode = searchParams.get('edit') === '1' || searchParams.get('mode') === 'edit'
 
   // Initialize autosave hook first (before effects that depend on hasLoaded)
   const { isSaving, showToast, hasLoaded } = useAutosave(sectionKey)
 
-  const [isMounted, setIsMounted] = useState(false)
   const [rows, setRows] = useState<string[]>([''])
   const [initialized, setInitialized] = useState(false)
-
-  useEffect(() => {
-    setIsMounted(true)
-  }, [])
 
   // Helper to extract cities from existing answer (handles legacy shapes defensively)
   const extractCitiesFromAnswer = () => {
@@ -102,7 +93,7 @@ function SectionClientContent() {
       return
     }
 
-    // 2) Otherwise, derive first city from intro section's institution_slug
+    // 2) Otherwise, derive first city from intro section's institution_slug / university_id
     ;(async () => {
       try {
         const res = await fetch('/api/onboarding/load?section=intro')
@@ -118,14 +109,38 @@ function SectionClientContent() {
           return acc
         }, {})
 
-        const institutionSlug = introData.institution_slug || introData.university_slug
+        let institutionSlug = introData.institution_slug || introData.university_slug
+        let preferredCity = institutionSlug ? mapInstitutionToCity(institutionSlug) : null
+
+        // Resolve via server-side endpoint to avoid client-side RLS failures.
+        if (!preferredCity && typeof introData.university_id === 'string' && introData.university_id.trim()) {
+          const uniRes = await fetch(
+            `/api/onboarding/university-city?universityId=${encodeURIComponent(introData.university_id)}`
+          )
+          if (uniRes.ok) {
+            const uniData = await uniRes.json()
+            institutionSlug = institutionSlug || uniData.slug || null
+            preferredCity = (typeof uniData.city === 'string' && uniData.city.trim()) || null
+          }
+        }
+
+        if (!preferredCity && institutionSlug && institutionSlug !== 'other') {
+          const uniRes = await fetch(
+            `/api/onboarding/university-city?slug=${encodeURIComponent(institutionSlug)}`
+          )
+          if (uniRes.ok) {
+            const uniData = await uniRes.json()
+            preferredCity = (typeof uniData.city === 'string' && uniData.city.trim()) || null
+          }
+        }
+
         if (institutionSlug && institutionSlug !== 'other') {
-          const mappedCity = mapInstitutionToCity(institutionSlug)
-          if (mappedCity) {
-            const initial = normalizeCities(getDefaultPreferredCitiesFromInstitution(institutionSlug))
-            if (initial.length > 0) {
-              setRows(initial.length < MAX_CITIES ? [...initial, ''] : initial)
-            }
+          const initialFromSlug = getDefaultPreferredCitiesFromInstitution(institutionSlug)
+          const initial = normalizeCities(
+            preferredCity ? [preferredCity, ...initialFromSlug] : initialFromSlug
+          )
+          if (initial.length > 0) {
+            setRows(initial.length < MAX_CITIES ? [...initial, ''] : initial)
           }
         }
       } catch {
@@ -196,14 +211,6 @@ function SectionClientContent() {
       nextDisabled={nextDisabled}
     >
       <AutosaveToaster show={showToast} />
-      {/* Progress counter - only render after mount to avoid hydration mismatch */}
-      {isMounted && (
-        <div className="flex justify-end mb-4">
-          <div className="inline-flex items-center px-3 py-1.5 rounded-lg bg-indigo-50 border border-indigo-200 text-sm font-medium text-indigo-700">
-            {answered}/{total} answered
-          </div>
-        </div>
-      )}
 
       <div className="space-y-6 sm:space-y-5">
         <div className="space-y-2">

@@ -316,11 +316,12 @@ export async function createChatMessageNotification(
   recipientId: string,
   senderName: string,
   chatId: string,
-  messagePreview: string
+  messagePreview: string,
+  senderId?: string
 ): Promise<void> {
   const title = 'New Message';
   const message = `${senderName}: ${messagePreview}`;
-  const metadata = { chat_id: chatId, sender_name: senderName };
+  const metadata = { chat_id: chatId, sender_name: senderName, ...(senderId ? { sender_id: senderId } : {}) };
 
   await createNotification({
     user_id: recipientId,

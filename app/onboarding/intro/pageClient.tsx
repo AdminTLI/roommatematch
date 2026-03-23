@@ -16,6 +16,7 @@ import { showErrorToast } from '@/lib/toast'
 
 function IntroClientContent() {
   const [academicData, setAcademicData] = useState<Record<string, any>>({})
+  const [welcomeContextAnswers, setWelcomeContextAnswers] = useState<Array<{ itemId: string; value: any }>>([])
   const [isValid, setIsValid] = useState(false)
   const [isLoading, setIsLoading] = useState(true)
   const [isSaving, setIsSaving] = useState(false)
@@ -26,7 +27,7 @@ function IntroClientContent() {
   const searchParams = useSearchParams()
 
   // Check edit mode using React hook for proper reactivity
-  const isEditMode = searchParams.get('mode') === 'edit'
+  const isEditMode = searchParams.get('edit') === '1' || searchParams.get('mode') === 'edit'
 
   console.log('[IntroClient] Edit mode:', isEditMode, 'URL:', searchParams.toString())
 
@@ -85,6 +86,18 @@ function IntroClientContent() {
         if (response.ok) {
           const { answers } = await response.json()
           if (answers && answers.length > 0) {
+            const welcomeContextIds = new Set([
+              'student_origin',
+              'study_program_type',
+              'accepted_terms_and_privacy',
+              'accepted_dealbreaker_consent',
+              'accepted_special_category_consent',
+            ])
+            const preservedWelcomeAnswers = answers.filter(
+              (answer: any) => answer?.itemId && welcomeContextIds.has(String(answer.itemId))
+            )
+            setWelcomeContextAnswers(preservedWelcomeAnswers)
+
             // Convert answers array back to object format
             const savedData = answers.reduce((acc: any, answer: any) => {
               acc[answer.itemId] = answer.value
@@ -228,6 +241,12 @@ function IntroClientContent() {
           itemId,
           value
         }))
+        const answerIds = new Set(answers.map((a) => a.itemId))
+        for (const preserved of welcomeContextAnswers) {
+          if (!answerIds.has(preserved.itemId)) {
+            answers.push(preserved)
+          }
+        }
 
         const response = await fetchWithCSRF('/api/onboarding/save', {
           method: 'POST',

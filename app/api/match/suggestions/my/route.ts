@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createClient } from '@/lib/supabase/server'
+import { createClient, createAdminClient } from '@/lib/supabase/server'
 import { getMatchRepo } from '@/lib/matching/repo.factory'
 import matchModeConfig from '@/config/match-mode.json'
 import { getUserFriendlyError } from '@/lib/errors/user-friendly-messages'
@@ -60,9 +60,44 @@ export async function GET(request: NextRequest) {
       
       // Get paginated suggestions
       const suggestions = await repo.listSuggestionsForUser(user.id, includeExpired, limit, offset)
+
+      // Keep stored fit_index in sync with latest compatibility score so UI and DB match.
+      // This prevents drift between "stored fit index" and "live score" shown elsewhere.
+      const admin = await createAdminClient()
+      const syncedSuggestions = await Promise.all(
+        (suggestions || []).map(async (s) => {
+          try {
+            const otherUserId = s.memberIds?.find(id => id !== user.id)
+            if (!otherUserId) return s
+
+            const { data: scoreRows, error: scoreError } = await admin.rpc('compute_compatibility_score', {
+              user_a_id: user.id,
+              user_b_id: otherUserId
+            })
+
+            if (scoreError || !Array.isArray(scoreRows) || scoreRows.length === 0) {
+              return s
+            }
+
+            const latestFitIndex = Math.round((Number(scoreRows[0]?.compatibility_score) || 0) * 100)
+            if (!Number.isFinite(latestFitIndex)) return s
+            if (latestFitIndex === s.fitIndex) return s
+
+            // Best-effort persistence: keep DB snapshot aligned with latest score.
+            await admin
+              .from('match_suggestions')
+              .update({ fit_index: latestFitIndex, fit_score: latestFitIndex / 100 })
+              .eq('id', s.id)
+
+            return { ...s, fitIndex: latestFitIndex }
+          } catch {
+            return s
+          }
+        })
+      )
       
       // Filter by minFitIndex (client-side filtering for now)
-      let filteredSuggestions = (suggestions || []).filter(s => s.fitIndex >= minFitIndex)
+      let filteredSuggestions = syncedSuggestions.filter(s => s.fitIndex >= minFitIndex)
 
       // If privacy settings disable matching suggestions, only keep confirmed/history items
       // so the UI never shows "Suggested" or "Pending".

@@ -61,14 +61,32 @@ const INSTITUTION_CITY_MAP: Record<string, string> = {
   zuyd: 'Maastricht',
 }
 
+const INSTITUTION_SLUG_ALIASES: Record<string, string> = {
+  // Common slug variants used in db seeds/imports
+  'tilburg-university': 'tilburg',
+  tiu: 'tilburg',
+  'university-of-tilburg': 'tilburg',
+  'tu-delft': 'tud',
+  'erasmus-university-rotterdam': 'eur',
+  'university-of-amsterdam': 'uva',
+  'vrije-universiteit-amsterdam': 'vu',
+  'utrecht-university': 'uu',
+  'maastricht-university': 'um',
+  'radboud-university': 'ru',
+  'wageningen-university': 'wur',
+  'university-of-twente': 'utwente',
+  'open-universiteit': 'ou',
+}
+
 /**
  * Map an institution slug (from nl-institutions.v1.json / intro step) to its primary city.
  * Returns null when we don't have a confident mapping.
  */
 export function mapInstitutionToCity(institutionSlug: string | null | undefined): string | null {
   if (!institutionSlug) return null
-  const key = institutionSlug.toLowerCase()
-  return INSTITUTION_CITY_MAP[key] ?? null
+  const key = institutionSlug.toLowerCase().trim()
+  const canonical = INSTITUTION_SLUG_ALIASES[key] ?? key
+  return INSTITUTION_CITY_MAP[canonical] ?? null
 }
 
 /**

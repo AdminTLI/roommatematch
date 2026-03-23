@@ -414,7 +414,7 @@ export async function POST(request: NextRequest) {
               const avgScore = stats.scoreStats?.avg || 0
               diagnosticInfo.possibleReasons.push(`${stats.belowThreshold} pairs passed deal-breakers but scored below 30% threshold (average: ${avgScore}%)`)
             }
-            if (stats.passedDealBreakers === 0 && stats.dealBreakerBlocks === stats.totalPairs) {
+            if (stats.totalPairs > 0 && stats.passedDealBreakers === 0 && stats.dealBreakerBlocks === stats.totalPairs) {
               diagnosticInfo.possibleReasons.push('All potential matches were blocked by deal-breakers. Consider adjusting your preferences.')
             }
           } else {

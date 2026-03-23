@@ -325,7 +325,8 @@ export function DiscoveryCard({ profile, onSkip, onConnect, connectButtonText = 
                           Context score may be lower
                         </p>
                         <p className="text-xs text-amber-300/90 leading-relaxed">
-                          This match could be stronger than the score suggests. The other person hasn&apos;t fully filled out their university details (missing university, programme, start year, or selected &quot;I haven&apos;t selected a programme yet&quot;), so our context algorithm has less information to compare. The compatibility score could improve once they complete their profile.
+                          This score may be lower because they haven&apos;t completed key university details yet.
+                          It can improve once they finish their profile.
                         </p>
                       </div>
                     </div>

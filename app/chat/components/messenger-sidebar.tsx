@@ -21,6 +21,7 @@ import { fetchWithCSRF } from '@/lib/utils/fetch-with-csrf'
 import { queryKeys, queryClient } from '@/app/providers'
 import { cn } from '@/lib/utils'
 import { showSuccessToast, showErrorToast } from '@/lib/toast'
+import { useRealtimeInvalidation } from '@/hooks/use-realtime-invalidation'
 
 interface ChatRoom {
   id: string
@@ -580,6 +581,14 @@ export function MessengerSidebar({ user, onChatSelect, selectedChatId, onNewChat
     queryKey: queryKeys.chats(user.id),
     queryFn: fetchChats,
     staleTime: 10_000
+  })
+
+  // Keep sidebar chat list fresh when new messages arrive.
+  useRealtimeInvalidation({
+    table: 'messages',
+    event: 'INSERT',
+    queryKeys: queryKeys.chats(user.id),
+    enabled: !!user.id,
   })
 
   // Extract online users from chats (legacy - for "Online Now" carousel)

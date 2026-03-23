@@ -8,7 +8,7 @@ import { MessengerLayout } from './components/messenger-layout'
 import { DomuChatWidget } from '../dashboard/components/domu-chat-widget'
 
 interface ChatPageProps {
-  searchParams: Promise<{ chatId?: string }>
+  searchParams: Promise<{ chatId?: string; userId?: string }>
 }
 
 export default async function ChatPage({ searchParams }: ChatPageProps) {
@@ -45,6 +45,7 @@ export default async function ChatPage({ searchParams }: ChatPageProps) {
   }
 
   const initialChatId = params.chatId || null
+  const initialOtherUserId = params.userId || null
 
   return (
     <>
@@ -60,6 +61,7 @@ export default async function ChatPage({ searchParams }: ChatPageProps) {
               email: user.email
             }}
             initialChatId={initialChatId}
+            initialOtherUserId={initialOtherUserId}
           />
         </div>
       </AppShell>

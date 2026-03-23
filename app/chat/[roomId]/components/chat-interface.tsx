@@ -90,6 +90,11 @@ interface Message {
   is_system_message?: boolean
 }
 
+interface BlockWindow {
+  start: string
+  end: string | null
+}
+
 export function ChatInterface({ roomId, user, onBack, onToggleRightPane, rightPaneOpen = false }: ChatInterfaceProps) {
   const router = useRouter()
   const supabase = createClient()
@@ -118,6 +123,7 @@ export function ChatInterface({ roomId, user, onBack, onToggleRightPane, rightPa
   // isBlocked = you have an active block against the other user in this chat
   const [isBlocked, setIsBlocked] = useState(false)
   const [blockedUserId, setBlockedUserId] = useState<string | null>(null)
+  const [blockWindows, setBlockWindows] = useState<BlockWindow[]>([])
   const [readRetryQueue, setReadRetryQueue] = useState<Array<{ timestamp: number; attempt: number }>>([])
   const [readFailureCount, setReadFailureCount] = useState(0)
   const [readError, setReadError] = useState<string | null>(null)
@@ -162,6 +168,22 @@ export function ChatInterface({ roomId, user, onBack, onToggleRightPane, rightPa
   const directPartner = !isGroup ? members.find(m => m.id !== user.id) : undefined
   const directPartnerId = directPartner?.id ?? null
   const directPartnerName = directPartner?.name ?? ''
+
+  const isMessageHiddenByBlockWindow = useCallback((message: Message) => {
+    if (!blockedUserId || message.sender_id !== blockedUserId) return false
+
+    const messageTime = new Date(message.created_at).getTime()
+    if (Number.isNaN(messageTime)) return false
+
+    return blockWindows.some((window) => {
+      const startTime = new Date(window.start).getTime()
+      const endTime = window.end ? new Date(window.end).getTime() : Number.POSITIVE_INFINITY
+      if (Number.isNaN(startTime) || Number.isNaN(endTime)) return false
+      return messageTime >= startTime && messageTime <= endTime
+    })
+  }, [blockedUserId, blockWindows])
+
+  const visibleMessages = messages.filter((message) => !isMessageHiddenByBlockWindow(message))
 
   // Helper function to scroll container to bottom (prevents page scroll)
   const scrollContainerToBottom = useCallback((behavior: 'auto' | 'smooth' = 'auto') => {
@@ -794,20 +816,27 @@ export function ChatInterface({ roomId, user, onBack, onToggleRightPane, rightPa
         setOtherPersonName(otherMember.name)
         setBlockedUserId(otherMember.id)
 
-        // Check if this user is currently blocked (active block = ended_at IS NULL)
+        // Load block windows for this pair and derive active blocked state.
         try {
-          const { data: blockCheck } = await supabase
+          const { data: blockRows, error: blockError } = await supabase
             .from('match_blocklist')
-            .select('id, ended_at')
+            .select('created_at, ended_at')
             .eq('user_id', user.id)
             .eq('blocked_user_id', otherMember.id)
-            .is('ended_at', null)
-            .maybeSingle()
+            .order('created_at', { ascending: true })
 
-          setIsBlocked(!!blockCheck)
+          if (blockError) throw blockError
+
+          const windows: BlockWindow[] = (blockRows || []).map((row: any) => ({
+            start: row.created_at,
+            end: row.ended_at ?? null
+          }))
+          setBlockWindows(windows)
+          setIsBlocked(windows.some((window) => window.end === null))
         } catch (err) {
           safeLogger.error('[Chat] Failed to check block status:', err)
           setIsBlocked(false)
+          setBlockWindows([])
         }
 
         // Check verification status for the other user
@@ -828,6 +857,7 @@ export function ChatInterface({ roomId, user, onBack, onToggleRightPane, rightPa
         setOtherPersonName('')
         setBlockedUserId(null)
         setIsBlocked(false)
+        setBlockWindows([])
         setOtherUserVerificationStatus(null)
       }
 
@@ -2368,10 +2398,10 @@ export function ChatInterface({ roomId, user, onBack, onToggleRightPane, rightPa
     }
   }
 
-  const shouldShowDateSeparator = (currentIndex: number) => {
+  const shouldShowDateSeparator = (currentIndex: number, messageList: Message[] = messages) => {
     if (currentIndex === 0) return true
-    const currentMessage = messages[currentIndex]
-    const previousMessage = messages[currentIndex - 1]
+    const currentMessage = messageList[currentIndex]
+    const previousMessage = messageList[currentIndex - 1]
 
     if (!currentMessage || !previousMessage) return false
 
@@ -2505,11 +2535,19 @@ export function ChatInterface({ roomId, user, onBack, onToggleRightPane, rightPa
         })
 
         if (response.ok) {
+          const unblockedAtIso = new Date().toISOString()
           showSuccessToast(
             'User unblocked',
             'You can now receive new messages from this user. Messages sent while blocked remain hidden.'
           )
           setIsBlocked(false)
+          setBlockWindows(prev =>
+            prev.map((window, index) =>
+              index === prev.length - 1 && window.end === null
+                ? { ...window, end: unblockedAtIso }
+                : window
+            )
+          )
         } else {
           const errorData = await response.json()
           throw new Error(errorData.error || 'Failed to unblock user')
@@ -2525,11 +2563,13 @@ export function ChatInterface({ roomId, user, onBack, onToggleRightPane, rightPa
       })
 
       if (response.ok) {
+        const blockedAtIso = new Date().toISOString()
         showSuccessToast(
           'User blocked',
           'This user has been blocked and you will no longer receive messages from them.'
         )
         setIsBlocked(true)
+        setBlockWindows(prev => [...prev, { start: blockedAtIso, end: null }])
       } else {
         const errorData = await response.json()
         throw new Error(errorData.error || 'Failed to block user')
@@ -2952,10 +2992,9 @@ export function ChatInterface({ roomId, user, onBack, onToggleRightPane, rightPa
                     </Button>
                   </div>
                 )}
-                {messages
-                  .filter(message => !isBlocked || message.sender_id !== blockedUserId)
+                {visibleMessages
                   .map((message, index) => {
-                    const showDateSeparator = shouldShowDateSeparator(index)
+                    const showDateSeparator = shouldShowDateSeparator(index, visibleMessages)
 
                     // Check if this is the first unread message
                     const isFirstUnread = (() => {
@@ -2970,9 +3009,7 @@ export function ChatInterface({ roomId, user, onBack, onToggleRightPane, rightPa
                       if (!isUnread) return false
 
                       // Check if this is the first unread (all previous messages are read)
-                      const previousMessages = messages.slice(0, index).filter(m =>
-                        !isBlocked || m.sender_id !== blockedUserId
-                      )
+                      const previousMessages = visibleMessages.slice(0, index)
                       const hasPreviousUnread = previousMessages.some(m => {
                         if (m.is_system_message || m.is_own) return false
                         const mTime = new Date(m.created_at).getTime()

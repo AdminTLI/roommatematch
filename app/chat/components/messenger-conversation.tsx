@@ -56,6 +56,11 @@ interface MessageReaction {
   userReactions: string[]
 }
 
+interface BlockWindow {
+  start: string
+  end: string | null
+}
+
 interface MessengerConversationProps {
   chatId: string
   user: User
@@ -104,6 +109,7 @@ export function MessengerConversation({
   const [isBlocking, setIsBlocking] = useState(false)
   // isBlocked = current user has an active block against the partner in this chat
   const [isBlocked, setIsBlocked] = useState(false)
+  const [blockWindows, setBlockWindows] = useState<BlockWindow[]>([])
   const [isMessagingDisabledByPrivacy, setIsMessagingDisabledByPrivacy] = useState(false)
   const [isDeleting, setIsDeleting] = useState(false)
   const [isMuting, setIsMuting] = useState(false)
@@ -111,6 +117,22 @@ export function MessengerConversation({
   const [isClearing, setIsClearing] = useState(false)
   const [isMarkingUnread, setIsMarkingUnread] = useState(false)
   const [otherMembersCount, setOtherMembersCount] = useState(1)
+
+  const isMessageHiddenByBlockWindow = useCallback((message: Message) => {
+    if (!partnerUserId || message.sender_id !== partnerUserId) return false
+
+    const messageTime = new Date(message.created_at).getTime()
+    if (Number.isNaN(messageTime)) return false
+
+    return blockWindows.some((window) => {
+      const startTime = new Date(window.start).getTime()
+      const endTime = window.end ? new Date(window.end).getTime() : Number.POSITIVE_INFINITY
+      if (Number.isNaN(startTime) || Number.isNaN(endTime)) return false
+      return messageTime >= startTime && messageTime <= endTime
+    })
+  }, [partnerUserId, blockWindows])
+
+  const visibleMessages = messages.filter((message) => !isMessageHiddenByBlockWindow(message))
 
   // Auto-scroll to bottom (prevents page scroll)
   const scrollToBottom = useCallback((force = false) => {
@@ -299,30 +321,37 @@ export function MessengerConversation({
             setDisplayPartnerAvatar(partnerProfile.avatar_url || undefined)
           }
 
-          // Check if the current user has an active block against this partner (ended_at IS NULL)
+          // Load block windows for this pair and derive active blocked state.
           try {
-            const { data: blockCheck, error: blockError } = await supabase
+            const { data: blockRows, error: blockError } = await supabase
               .from('match_blocklist')
-              .select('id, ended_at')
+              .select('created_at, ended_at')
               .eq('user_id', user.id)
               .eq('blocked_user_id', otherMember.user_id)
-              .is('ended_at', null)
-              .maybeSingle()
+              .order('created_at', { ascending: true })
 
             if (blockError) {
               console.error('[MessengerConversation] Failed to check block status:', blockError)
               setIsBlocked(false)
+              setBlockWindows([])
             } else {
-              setIsBlocked(!!blockCheck)
+              const windows: BlockWindow[] = (blockRows || []).map((row: any) => ({
+                start: row.created_at,
+                end: row.ended_at ?? null
+              }))
+              setBlockWindows(windows)
+              setIsBlocked(windows.some((window) => window.end === null))
             }
           } catch (err) {
             console.error('[MessengerConversation] Failed to check block status:', err)
             setIsBlocked(false)
+            setBlockWindows([])
           }
         }
       } else {
         setPartnerUserId(null)
         setIsBlocked(false)
+        setBlockWindows([])
         setIsMessagingDisabledByPrivacy(false)
       }
 
@@ -640,11 +669,11 @@ export function MessengerConversation({
   }
 
   // Group messages by date
-  const shouldShowDateSeparator = (index: number) => {
+  const shouldShowDateSeparator = (index: number, messageList: Message[] = messages) => {
     if (index === 0) return true
 
-    const currentMsg = messages[index]
-    const previousMsg = messages[index - 1]
+    const currentMsg = messageList[index]
+    const previousMsg = messageList[index - 1]
 
     if (!currentMsg || !previousMsg) return false
 
@@ -719,26 +748,44 @@ export function MessengerConversation({
         return
       }
 
-      // For this compact view we always treat it as "block"; users can manage unblock in full chat view
-      const response = await fetchWithCSRF('/api/match/block', {
+      const endpoint = isBlocked ? '/api/match/unblock' : '/api/match/block'
+      const response = await fetchWithCSRF(endpoint, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ blocked_user_id: partnerUserId })
       })
 
       if (response.ok) {
-        showSuccessToast(
-          'User blocked',
-          'This user has been blocked and you will no longer receive messages from them.'
-        )
-        router.push('/chat')
+        if (isBlocked) {
+          const unblockedAtIso = new Date().toISOString()
+          setIsBlocked(false)
+          setBlockWindows(prev =>
+            prev.map((window, index) =>
+              index === prev.length - 1 && window.end === null
+                ? { ...window, end: unblockedAtIso }
+                : window
+            )
+          )
+          showSuccessToast(
+            'User unblocked',
+            'You can now message this user again. Messages sent while blocked remain hidden.'
+          )
+        } else {
+          const blockedAtIso = new Date().toISOString()
+          setIsBlocked(true)
+          setBlockWindows(prev => [...prev, { start: blockedAtIso, end: null }])
+          showSuccessToast(
+            'User blocked',
+            'This user has been blocked and you will no longer receive messages from them.'
+          )
+        }
       } else {
         const errorData = await response.json()
-        throw new Error(errorData.error || 'Failed to block user')
+        throw new Error(errorData.error || 'Failed to update block status')
       }
     } catch (error: any) {
       console.error('Failed to block:', error)
-      showErrorToast('Failed to block user', error.message || 'Please try again.')
+      showErrorToast('Failed to update block status', error.message || 'Please try again.')
     } finally {
       setIsBlocking(false)
     }
@@ -972,7 +1019,7 @@ export function MessengerConversation({
                   </DropdownMenuItem>
                   <DropdownMenuItem onClick={handleBlock} disabled={isBlocking}>
                     <Ban className="mr-2 h-4 w-4" />
-                    {isBlocking ? 'Blocking...' : 'Block user'}
+                    {isBlocking ? (isBlocked ? 'Unblocking...' : 'Blocking...') : (isBlocked ? 'Unblock user' : 'Block user')}
                   </DropdownMenuItem>
                   <DropdownMenuSeparator />
                 </>
@@ -1168,9 +1215,9 @@ export function MessengerConversation({
           </div>
         ) : (
           <div className="space-y-4">
-            {messages.map((message, index) => (
+            {visibleMessages.map((message, index) => (
               <div key={message.id}>
-                {shouldShowDateSeparator(index) && (
+                {shouldShowDateSeparator(index, visibleMessages) && (
                   <div className="flex justify-center my-6">
                     <div className="bg-gray-100 dark:bg-gray-800 px-4 py-2 rounded-full">
                       <span className="text-xs text-gray-600 dark:text-gray-400 font-medium">
@@ -1191,7 +1238,7 @@ export function MessengerConversation({
                   readBy={message.read_by}
                   reactions={messageReactions.get(message.id) || []}
                   currentUserId={user.id}
-                  showSenderName={!message.is_own && index > 0 && messages[index - 1]?.sender_id !== message.sender_id}
+                  showSenderName={!message.is_own && index > 0 && visibleMessages[index - 1]?.sender_id !== message.sender_id}
                   onReactionChange={() => handleReactionChange(message.id)}
                   otherMembersCount={otherMembersCount}
                 />

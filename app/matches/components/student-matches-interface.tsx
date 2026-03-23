@@ -639,44 +639,9 @@ export function StudentMatchesInterface({ user }: StudentMatchesInterfaceProps) 
 
         // Check for diagnostic information if no suggestions
         if (data.diagnostic && data.suggestions?.length === 0) {
-          const diagnostic = data.diagnostic
-          const reasons = diagnostic.possibleReasons || []
-          const counts = diagnostic.candidateCounts || {}
-          const matchingStats = diagnostic.matchingStats || null
-
-          // Show informative message with diagnostic details
-          let message = 'No matches found. '
-          if (reasons.length > 0) {
-            message += reasons[0]
-            if (reasons.length > 1) {
-              message += ` ${reasons[1]}`
-            }
-          } else {
-            message += 'Please check back later or try adjusting your preferences.'
-          }
-
-          // Log detailed diagnostic info to console for debugging
-          console.log('[Matching] Detailed diagnostic info:', {
-            candidateCounts: {
-              totalEligible: counts.totalEligible,
-              sameDegreeLevel: counts.sameDegreeLevel,
-              inCohort: counts.inCohort
-            },
-            matchingStats: matchingStats,
-            fullDiagnostic: diagnostic,
-            reasons
-          })
-
-          // Also log the raw response to see what we're getting
-          console.log('[Matching] Full API response:', data)
-          console.log('[Matching] Diagnostic from API:', data.diagnostic)
-          console.log('[Matching] MatchingStats from diagnostic:', data.diagnostic?.matchingStats)
-
-          toast.info(message, {
-            duration: 10000,
-            description: matchingStats
-              ? `${matchingStats.totalPairs} pairs checked, ${matchingStats.dealBreakerBlocks} blocked by deal-breakers, ${matchingStats.belowThreshold} below threshold`
-              : undefined
+          toast.info('No matches available right now.', {
+            duration: 6000,
+            description: 'Please try again later.'
           })
         } else if (data.suggestions && data.suggestions.length > 0) {
           // Only show success message if we actually have suggestions for this user
@@ -696,7 +661,6 @@ export function StudentMatchesInterface({ user }: StudentMatchesInterfaceProps) 
         // Read the error response to show helpful message
         const errorData = await response.json().catch(() => ({ error: 'Failed to refresh suggestions' }))
         const errorMessage = errorData.error || 'Failed to refresh suggestions'
-        const errorDetails = errorData.details || ''
         const retryAfter = errorData.retryAfter
         const requiresOnboarding = errorData.requiresOnboarding
 
@@ -715,28 +679,28 @@ export function StudentMatchesInterface({ user }: StudentMatchesInterfaceProps) 
           })
         } else if (response.status === 404 && requiresOnboarding) {
           // Handle profile/onboarding incomplete errors
-          toast.error(errorMessage, {
-            description: errorDetails || 'Please complete your profile and questionnaire to get matches.',
+          toast.error('Profile setup required', {
+            description: 'Please complete your profile to continue.',
             duration: 8000,
           })
         } else if (retryAfter && retryAfter > 0) {
           // Show error toast with retry information
           const minutes = Math.ceil(retryAfter / 60)
-          toast.error(errorMessage, {
+          toast.error('Please try again soon', {
             description: `Please try again in ${minutes} minute${minutes !== 1 ? 's' : ''}.`,
             duration: 7000,
           })
         } else {
-          toast.error(errorMessage, {
-            description: errorDetails || undefined,
+          toast.error('Unable to refresh matches', {
+            description: 'Please try again later.',
             duration: 5000,
           })
         }
       }
     } catch (error) {
       console.error('Error refreshing suggestions:', error)
-      toast.error('Failed to refresh suggestions', {
-        description: error instanceof Error ? error.message : 'An unexpected error occurred',
+      toast.error('Unable to refresh matches', {
+        description: 'Please try again later.',
         duration: 5000,
       })
     }

@@ -231,6 +231,30 @@ export function NotificationDropdown({
     },
   })
 
+  const getChatHref = (metadata: Record<string, any>) => {
+    if (metadata.chat_id) return `/chat?chatId=${metadata.chat_id}`
+    if (metadata.sender_id) return `/chat?userId=${metadata.sender_id}`
+    return '/chat'
+  }
+
+  const resolveChatHref = async (notification: Notification) => {
+    try {
+      const { fetchWithCSRF } = await import('@/lib/utils/fetch-with-csrf')
+      const response = await fetchWithCSRF('/api/notifications/open-chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ notificationId: notification.id }),
+      })
+      if (response.ok) {
+        const data = await response.json()
+        if (typeof data?.href === 'string' && data.href.length > 0) return data.href
+      }
+    } catch (error) {
+      logger.warn('[NotificationDropdown] Failed to resolve chat href from notification', error)
+    }
+    return getChatHref(notification.metadata || {})
+  }
+
   const handleNotificationClick = async (notification: Notification) => {
     // Mark as read if not already read
     if (!notification.is_read) {
@@ -246,20 +270,17 @@ export function NotificationDropdown({
       case 'match_accepted':
       case 'match_confirmed':
         if (metadata.chat_id) {
-          router.push(`/chat/${metadata.chat_id}`)
+          router.push(getChatHref(metadata))
         } else if (metadata.match_id) {
           router.push('/matches')
         }
         break
       case 'chat_message':
-        if (metadata.chat_id) {
-          router.push(`/chat`)
-        }
+        router.push(await resolveChatHref(notification))
         break
       case 'group_invitation':
         if (metadata.chat_id) {
-          // Navigate to chat page - the invitation will be shown there
-          router.push(`/chat`)
+          router.push(getChatHref(metadata))
         }
         break
       case 'profile_updated':

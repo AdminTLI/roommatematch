@@ -44,7 +44,7 @@ export type CheckOnboardingRedirectOptions = {
  * Checks if user is authenticated, has selected cohort (user_type), and if they already have a submission
  */
 export async function checkOnboardingRedirect(
-  searchParams?: { mode?: string },
+  searchParams?: { mode?: string; edit?: string },
   options: CheckOnboardingRedirectOptions = {}
 ) {
   const { requireUserType = true, requiredUserType, mismatchRedirectTo } = options
@@ -96,7 +96,7 @@ export async function checkOnboardingRedirect(
   }
   
   // Check if this is edit mode - allow editing even if submission exists
-  const isEditMode = searchParams?.mode === 'edit'
+  const isEditMode = searchParams?.edit === '1' || searchParams?.mode === 'edit'
   
   if (!isEditMode) {
     const { data: submission, error: submissionFetchError } = await service
