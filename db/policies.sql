@@ -140,24 +140,51 @@ CREATE POLICY "Admins can read users in their university" ON users
   );
 
 -- Admins: Only admins can read admin data
+CREATE OR REPLACE FUNCTION public.is_super_admin()
+RETURNS BOOLEAN
+SECURITY DEFINER
+STABLE
+SET search_path = public
+AS $$
+BEGIN
+  RETURN EXISTS (
+    SELECT 1
+    FROM admins
+    WHERE user_id = auth.uid()
+      AND role = 'super_admin'
+  );
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE OR REPLACE FUNCTION public.is_admin_in_university(target_university_id UUID)
+RETURNS BOOLEAN
+SECURITY DEFINER
+STABLE
+SET search_path = public
+AS $$
+BEGIN
+  RETURN EXISTS (
+    SELECT 1
+    FROM admins
+    WHERE user_id = auth.uid()
+      AND university_id = target_university_id
+      AND role IN ('super_admin', 'university_admin')
+  );
+END;
+$$ LANGUAGE plpgsql;
+
+GRANT EXECUTE ON FUNCTION public.is_super_admin() TO authenticated;
+GRANT EXECUTE ON FUNCTION public.is_admin_in_university(UUID) TO authenticated;
+
 CREATE POLICY "Admins can read admin data" ON admins
   FOR SELECT USING (
-    user_id = auth.uid() OR
-    EXISTS (
-      SELECT 1 FROM admins a2
-      WHERE a2.user_id = auth.uid()
-      AND a2.university_id = admins.university_id
-      AND a2.role IN ('super_admin', 'university_admin')
-    )
+    user_id = auth.uid()
+    OR is_admin_in_university(university_id)
   );
 
 CREATE POLICY "Super admins can manage admins" ON admins
   FOR ALL USING (
-    EXISTS (
-      SELECT 1 FROM admins a
-      WHERE a.user_id = auth.uid()
-      AND a.role = 'super_admin'
-    )
+    is_super_admin()
   );
 
 -- Profiles: Users can read their own, minimal public data by university members, full data only with accepted matches
@@ -170,15 +197,31 @@ CREATE POLICY "Users can update their own profile" ON profiles
 CREATE POLICY "Users can insert their own profile" ON profiles
   FOR INSERT WITH CHECK (user_id = auth.uid());
 
+-- Helper function used by profile visibility policy.
+-- SECURITY DEFINER avoids RLS recursion on profiles.
+CREATE OR REPLACE FUNCTION public.can_view_minimal_profile(target_university_id UUID)
+RETURNS BOOLEAN
+SECURITY DEFINER
+STABLE
+SET search_path = public
+AS $$
+BEGIN
+  RETURN EXISTS (
+    SELECT 1
+    FROM user_academic
+    WHERE user_id = auth.uid()
+      AND university_id = target_university_id
+  );
+END;
+$$ LANGUAGE plpgsql;
+
+GRANT EXECUTE ON FUNCTION public.can_view_minimal_profile(UUID) TO authenticated;
+
 -- Minimal public profile data (for match cards) - visible to university members
 CREATE POLICY "Minimal public profiles visible to university members" ON profiles
   FOR SELECT USING (
     minimal_public = true AND
-    EXISTS (
-      SELECT 1 FROM profiles p2
-      WHERE p2.user_id = auth.uid()
-      AND p2.university_id = profiles.university_id
-    )
+    can_view_minimal_profile(university_id)
   );
 
 -- Full profile data - only visible with accepted matches or in same group
@@ -195,8 +238,11 @@ CREATE POLICY "Full profiles visible with accepted matches" ON profiles
     ) OR
     EXISTS (
       SELECT 1 FROM group_suggestions gs
-      JOIN profiles p2 ON p2.user_id = auth.uid()
-      WHERE gs.university_id = p2.university_id
+      WHERE gs.university_id IN (
+        SELECT ua.university_id
+        FROM user_academic ua
+        WHERE ua.user_id = auth.uid()
+      )
       AND profiles.user_id = ANY(gs.member_ids)
       AND auth.uid() = ANY(gs.member_ids)
       AND gs.status = 'accepted'
@@ -282,10 +328,23 @@ CREATE POLICY "Users can update their matches" ON matches
 CREATE POLICY "Admins can read anonymized matches" ON matches
   FOR SELECT USING (
     EXISTS (
-      SELECT 1 FROM profiles p
-      JOIN admins a ON a.university_id = p.university_id
-      WHERE (p.user_id = matches.a_user OR p.user_id = matches.b_user)
-      AND a.user_id = auth.uid()
+      SELECT 1
+      FROM admins a
+      WHERE a.user_id = auth.uid()
+        AND (
+          EXISTS (
+            SELECT 1
+            FROM user_academic ua
+            WHERE ua.user_id = matches.a_user
+              AND ua.university_id = a.university_id
+          )
+          OR EXISTS (
+            SELECT 1
+            FROM user_academic ua
+            WHERE ua.user_id = matches.b_user
+              AND ua.university_id = a.university_id
+          )
+        )
     )
   );
 
@@ -310,22 +369,49 @@ CREATE POLICY "Admins can read group suggestions" ON group_suggestions
   );
 
 -- Chats: Members can read/write
+CREATE OR REPLACE FUNCTION public.user_is_chat_member(target_chat_id UUID)
+RETURNS BOOLEAN
+SECURITY DEFINER
+STABLE
+SET search_path = public
+AS $$
+BEGIN
+  RETURN EXISTS (
+    SELECT 1
+    FROM chat_members
+    WHERE chat_id = target_chat_id
+      AND user_id = auth.uid()
+  );
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE OR REPLACE FUNCTION public.is_chat_owner(target_chat_id UUID)
+RETURNS BOOLEAN
+SECURITY DEFINER
+STABLE
+SET search_path = public
+AS $$
+BEGIN
+  RETURN EXISTS (
+    SELECT 1
+    FROM chats
+    WHERE id = target_chat_id
+      AND created_by = auth.uid()
+  );
+END;
+$$ LANGUAGE plpgsql;
+
+GRANT EXECUTE ON FUNCTION public.user_is_chat_member(UUID) TO authenticated;
+GRANT EXECUTE ON FUNCTION public.is_chat_owner(UUID) TO authenticated;
+
 CREATE POLICY "Chat members can read chats" ON chats
   FOR SELECT USING (
-    EXISTS (
-      SELECT 1 FROM chat_members cm
-      WHERE cm.chat_id = chats.id
-      AND cm.user_id = auth.uid()
-    )
+    user_is_chat_member(chats.id)
   );
 
 CREATE POLICY "Chat members can update chats" ON chats
   FOR UPDATE USING (
-    EXISTS (
-      SELECT 1 FROM chat_members cm
-      WHERE cm.chat_id = chats.id
-      AND cm.user_id = auth.uid()
-    )
+    user_is_chat_member(chats.id)
   );
 
 CREATE POLICY "Users can create chats" ON chats
@@ -334,12 +420,13 @@ CREATE POLICY "Users can create chats" ON chats
 -- Chat members: Members can manage membership
 CREATE POLICY "Chat members can manage membership" ON chat_members
   FOR ALL USING (
-    user_id = auth.uid() OR
-    EXISTS (
-      SELECT 1 FROM chats c
-      WHERE c.id = chat_members.chat_id
-      AND c.created_by = auth.uid()
-    )
+    user_id = auth.uid()
+    OR user_is_chat_member(chat_id)
+    OR is_chat_owner(chat_id)
+  )
+  WITH CHECK (
+    user_id = auth.uid()
+    OR is_chat_owner(chat_id)
   );
 
 -- Messages: Chat members can read/write
