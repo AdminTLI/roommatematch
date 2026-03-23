@@ -19,6 +19,7 @@ interface Props {
   nextDisabled?: boolean
   title: string
   subtitle?: string
+  hideSaveAndExit?: boolean
 }
 
 export function QuestionnaireLayout({
@@ -30,6 +31,7 @@ export function QuestionnaireLayout({
   nextDisabled,
   title,
   subtitle,
+  hideSaveAndExit = false,
 }: Props) {
   const progress = Math.round(((stepIndex + 1) / totalSteps) * 100)
   const router = useRouter()
@@ -37,45 +39,41 @@ export function QuestionnaireLayout({
   const sections = useOnboardingStore((s) => s.sections)
   const [isSavingAll, setIsSavingAll] = useState(false)
 
-  // Save all sections before navigating to dashboard
   const handleSaveAndExit = async () => {
     setIsSavingAll(true)
     try {
-      // Get all sections that have answers
       const allSections = Object.keys(sections) as SectionKey[]
-      const sectionsWithAnswers = allSections.filter(sectionKey => {
+      const sectionsWithAnswers = allSections.filter((sectionKey) => {
         const sectionAnswers = sections[sectionKey]
         return sectionAnswers && Object.keys(sectionAnswers).length > 0
       })
 
       if (sectionsWithAnswers.length === 0) {
-        // No sections to save, navigate directly
         router.push('/dashboard')
         return
       }
 
-      // Save all sections that have answers and track results
       const saveResults = await Promise.allSettled(
         sectionsWithAnswers.map(async (sectionKey) => {
           const sectionAnswers = sections[sectionKey]
           const answersArray = Object.values(sectionAnswers)
-          
+
           if (answersArray.length === 0) {
             return { sectionKey, success: true }
           }
-          
+
           try {
             const res = await fetchWithCSRF('/api/onboarding/save', {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify({ section: sectionKey, answers: answersArray }),
             })
-            
+
             if (!res.ok) {
               const errorData = await res.json().catch(() => ({}))
               throw new Error(errorData.error || `Failed to save ${sectionKey}`)
             }
-            
+
             return { sectionKey, success: true }
           } catch (error) {
             const errorMessage = error instanceof Error ? error.message : `Failed to save ${sectionKey}`
@@ -83,50 +81,41 @@ export function QuestionnaireLayout({
           }
         })
       )
-      
-      // Process results: extract failures
+
       const failures: Array<{ section: string; error: string }> = []
       saveResults.forEach((result, index) => {
         if (result.status === 'rejected') {
           failures.push({
             section: sectionsWithAnswers[index],
-            error: result.reason?.message || 'Unknown error'
+            error: result.reason?.message || 'Unknown error',
           })
         } else if (result.value && !result.value.success) {
           failures.push({
             section: result.value.sectionKey,
-            error: result.value.error || 'Save failed'
+            error: result.value.error || 'Save failed',
           })
         }
       })
-      
-      // If any saves failed, show error and stay on page
+
       if (failures.length > 0) {
-        const failedSections = failures.map(f => f.section).join(', ')
+        const failedSections = failures.map((f) => f.section).join(', ')
         showErrorToast(
           'Failed to save some sections',
           `Could not save: ${failedSections}. Please try again or contact support if the problem persists.`
         )
         setIsSavingAll(false)
-        return // Don't navigate - keep user on page
+        return
       }
-      
-      // All saves succeeded
+
       showSuccessToast('All sections saved', 'Your progress has been saved successfully.')
-      
-      // Small delay to ensure database has processed the saves
-      await new Promise(resolve => setTimeout(resolve, 200))
-      
-      // Navigate to dashboard only after all saves succeeded
+      await new Promise((resolve) => setTimeout(resolve, 200))
       router.push('/dashboard')
     } catch (error) {
-      // Unexpected error during save process
       const errorMessage = error instanceof Error ? error.message : 'An unexpected error occurred'
       showErrorToast(
         'Failed to save progress',
         `${errorMessage}. Please try again or contact support if the problem persists.`
       )
-      // Don't navigate - keep user on page to retry
     } finally {
       setIsSavingAll(false)
     }
@@ -163,13 +152,17 @@ export function QuestionnaireLayout({
               </div>
             </div>
 
-            <button
-              className="justify-self-end rounded-full border border-border-subtle/30 bg-bg-surface-alt/50 px-3 py-1.5 text-xs font-medium text-text-primary shadow-sm hover:bg-bg-surface-alt/70 disabled:opacity-60 disabled:cursor-not-allowed"
-              onClick={handleSaveAndExit}
-              disabled={isSavingAll}
-            >
-              {isSavingAll ? 'Saving…' : 'Save & exit'}
-            </button>
+            {!hideSaveAndExit && (
+              <Button
+                type="button"
+                variant="outline"
+                onClick={handleSaveAndExit}
+                disabled={isSavingAll}
+                className="justify-self-end rounded-full border-border-subtle/50 bg-white/75 px-3 py-1.5 text-xs font-semibold text-slate-900 shadow-sm backdrop-blur hover:bg-white/90 dark:bg-bg-surface-alt/70 dark:text-text-primary dark:hover:bg-bg-surface-alt/85"
+              >
+                {isSavingAll ? 'Saving...' : 'Save & exit'}
+              </Button>
+            )}
           </div>
 
           {/* Mobile progress bar */}
@@ -232,35 +225,45 @@ export function QuestionnaireLayout({
         </main>
 
         {/* Bottom navigation */}
-        <div className="sticky bottom-0 border-t border-border-subtle/40 bg-bg-surface-alt/90 backdrop-blur-xl">
-          <div className="mx-auto flex max-w-7xl items-center justify-between gap-3 px-4 py-3 sm:px-6 sm:py-4">
-            <Button
-              variant="outline"
-              onClick={onPrev}
-              disabled={!onPrev}
-              className="min-h-[44px] rounded-xl bg-transparent px-4 text-sm font-medium text-text-primary hover:bg-bg-surface-alt/60 hover:text-text-primary disabled:opacity-50"
-            >
-              Previous
-            </Button>
-
-            <div className="flex items-center gap-3">
-              {lastSavedAt && (
-                <span className="hidden text-xs text-text-secondary sm:inline">
-                  Last saved{' '}
-                  {new Date(lastSavedAt).toLocaleTimeString([], {
-                    hour: '2-digit',
-                    minute: '2-digit',
-                  })}
-                </span>
-              )}
+        <div className="sticky bottom-0 z-40 border-t border-border-subtle/30 bg-bg-body/90 backdrop-blur-xl">
+          <div
+            className={
+              onNext
+                ? 'mx-auto flex max-w-7xl items-center justify-end gap-3 px-4 py-3 sm:px-6 sm:py-4'
+                : 'mx-auto flex max-w-7xl items-center justify-center gap-3 px-4 py-3 sm:px-6 sm:py-4'
+            }
+          >
+            {!onNext && (
               <Button
-                onClick={onNext}
-                disabled={!!nextDisabled}
-                className="min-h-[44px] rounded-xl bg-gradient-to-r from-sky-400 via-indigo-500 to-purple-500 px-5 text-sm font-semibold text-primary-foreground shadow-md shadow-indigo-500/40 hover:brightness-110 disabled:opacity-60"
+                variant="outline"
+                onClick={onPrev}
+                disabled={!onPrev}
+                className="min-h-[44px] rounded-xl bg-transparent px-4 text-sm font-medium text-text-primary hover:bg-bg-surface-alt/60 hover:text-text-primary disabled:opacity-50"
               >
-                Next
+                Previous
               </Button>
-            </div>
+            )}
+
+            {onNext && (
+              <div className="flex items-center gap-3">
+                {lastSavedAt && (
+                  <span className="hidden text-xs text-text-secondary sm:inline">
+                    Last saved{' '}
+                    {new Date(lastSavedAt).toLocaleTimeString([], {
+                      hour: '2-digit',
+                      minute: '2-digit',
+                    })}
+                  </span>
+                )}
+                <Button
+                  onClick={onNext}
+                  disabled={!!nextDisabled}
+                  className="min-h-[44px] rounded-xl bg-gradient-to-r from-sky-400 via-indigo-500 to-purple-500 px-5 text-sm font-semibold text-primary-foreground shadow-md shadow-indigo-500/40 hover:brightness-110 disabled:opacity-60"
+                >
+                  Next
+                </Button>
+              </div>
+            )}
           </div>
         </div>
       </div>

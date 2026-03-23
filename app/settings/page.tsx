@@ -538,7 +538,7 @@ export default async function SettingsPage() {
 
   const { data: submission } = await supabase
     .from('onboarding_submissions')
-    .select('submitted_at')
+    .select('submitted_at, user_type')
     .eq('user_id', user.id)
     .maybeSingle()
   
@@ -565,9 +565,11 @@ export default async function SettingsPage() {
     }
   }
 
-  // Define the actual required sections (9 total, excluding 'intro')
-  const requiredSections = [
-    'location-commute',
+  // Define cohort-specific required sections.
+  // Both cohorts have 8 core compatibility sections in the current UX.
+  // Note: `location-commute` is useful context for students but no longer
+  // part of the core "match blocks" completion indicator in Settings.
+  const studentRequiredSections = [
     'personality-values',
     'sleep-circadian',
     'noise-sensory',
@@ -575,35 +577,62 @@ export default async function SettingsPage() {
     'social-hosting-language',
     'communication-conflict',
     'privacy-territoriality',
-    'reliability-logistics'
-  ]
+    'reliability-logistics',
+  ] as const
 
-  // Questionnaire completion is only applicable to students (student flow). Professionals and users without a role
-  // use the young professionals flow and have not been assigned that questionnaire yet, so we show "not filled".
-  const isStudent = userType === 'student'
-  const completedRequiredSections = isStudent
-    ? (sections?.filter(s => requiredSections.includes(s.section)) || [])
-    : []
+  const professionalRequiredSections = [
+    'personality-values',
+    'sleep-circadian',
+    'noise-sensory',
+    'home-operations',
+    'social-hosting-language',
+    'communication-conflict',
+    'privacy-territoriality',
+    'reliability-logistics',
+  ] as const
+
+  // Fallback inference for legacy/null user_type: professional flow stores
+  // `professional-context` and does not use `location-commute`.
+  const hasProfessionalContext = (sections ?? []).some((s) => s.section === 'professional-context')
+  const hasLocationCommute = (sections ?? []).some((s) => s.section === 'location-commute')
+  const effectiveUserType: 'student' | 'professional' =
+    userType === 'professional' || (userType == null && hasProfessionalContext && !hasLocationCommute)
+      ? 'professional'
+      : 'student'
+
+  const requiredSections =
+    effectiveUserType === 'professional' ? professionalRequiredSections : studentRequiredSections
+  const requiredSectionSet = new Set<string>(requiredSections)
+
+  const completedRequiredSections = (sections?.filter((s) => requiredSectionSet.has(s.section)) || [])
+  const hasCohortMatchedSubmission =
+    !!submission &&
+    (effectiveUserType === 'professional'
+      ? (submission.user_type === 'professional' || submission.user_type == null)
+      : (submission.user_type === 'student' || submission.user_type == null))
+  const completedSectionKeys = hasCohortMatchedSubmission
+    ? [...requiredSections]
+    : completedRequiredSections.map((s) => s.section)
 
   console.log('[Settings] All sections from database:', sections?.map(s => s.section))
   console.log('[Settings] Required sections:', requiredSections)
-  console.log('[Settings] userType:', userType, 'isStudent:', isStudent)
+  console.log('[Settings] userType:', userType, 'effectiveUserType:', effectiveUserType)
   console.log('[Settings] Completed required sections:', completedRequiredSections.map(s => s.section))
   
   console.log('[Settings] Progress calculation:', {
     totalSections: sections?.length,
     requiredSections: requiredSections.length,
     completedRequired: completedRequiredSections.length,
-    isSubmitted: isStudent && !!submission,
+    isSubmitted: hasCohortMatchedSubmission,
     allSections: sections?.map(s => s.section)
   })
 
   const progressData = {
-    completedSections: completedRequiredSections.map(s => s.section),
-    totalSections: requiredSections.length, // Should be 9
-    isFullySubmitted: isStudent && !!submission,
-    lastUpdated: isStudent ? (sections?.[0]?.updated_at || null) : null,
-    submittedAt: isStudent ? (submission?.submitted_at || null) : null
+    completedSections: completedSectionKeys,
+    totalSections: requiredSections.length,
+    isFullySubmitted: hasCohortMatchedSubmission,
+    lastUpdated: sections?.[0]?.updated_at || null,
+    submittedAt: submission?.submitted_at || null
   }
 
   // Get user profile with proper name

@@ -1,0 +1,238 @@
+[
+  {
+    "id": "M6_Q1",
+    "section": "communication-conflict",
+    "kind": "mcq",
+    "specialCategory": true,
+    "label": "When a household disagreement occurs, do you prefer to address and resolve it immediately, or do you require a 24-hour 'cool-down' period before discussing it?",
+    "options": [
+      { "value": "address-immediately", "label": "Address immediately" },
+      { "value": "require-time-to-process", "label": "Require time to process" }
+    ]
+  },
+  {
+    "id": "M6_Q2",
+    "section": "communication-conflict",
+    "kind": "likert",
+    "scale": "agreement",
+    "label": "I'd rather address issues 1-to-1 before the group chat."
+  },
+  {
+    "id": "M6_Q3",
+    "section": "communication-conflict",
+    "kind": "likert",
+    "scale": "agreement",
+    "specialCategory": true,
+    "label": "I prefer not to engage in serious household or financial discussions immediately after walking through the door from a long workday."
+  },
+  {
+    "id": "M6_Q4",
+    "section": "communication-conflict",
+    "kind": "bipolar",
+    "bipolarLabels": {
+      "left": "Unnecessary and overly corporate",
+      "right": "Highly valuable for maintaining structure"
+    },
+    "label": "What is your stance on scheduling formal, monthly 'house meetings' to discuss finances, chores, and apartment logistics?"
+  },
+  {
+    "id": "M6_Q5",
+    "section": "communication-conflict",
+    "kind": "bipolar",
+    "bipolarLabels": {
+      "left": "Highly blunt, efficient, and direct",
+      "right": "Highly tactful, softened, and diplomatic"
+    },
+    "label": "How would you describe your natural style when delivering criticism or household feedback?"
+  },
+  {
+    "id": "M6_Q6",
+    "section": "communication-conflict",
+    "kind": "likert",
+    "scale": "agreement",
+    "label": "If tension rises, I suggest a short break then resume calmly."
+  },
+  {
+    "id": "M6_Q7",
+    "section": "communication-conflict",
+    "kind": "likert",
+    "scale": "agreement",
+    "specialCategory": true,
+    "label": "When I am dissatisfied with a housemate's actions but haven't brought it up yet, I tend to limit my communication to strict necessities rather than maintaining normal social chat."
+  },
+  {
+    "id": "M6_Q8",
+    "section": "communication-conflict",
+    "kind": "mcq",
+    "label": "If a shared, high-value item (e.g., a €200 vacuum cleaner) breaks while your housemate is using it, what is your default expectation?",
+    "options": [
+      { "value": "user-pays", "label": "The person who was using it when it broke pays to replace it" },
+      { "value": "split-50-50", "label": "We split the replacement cost 50/50, as it is a shared household asset" },
+      { "value": "negotiate-fair", "label": "We assess the situation and negotiate a fair split." }
+    ]
+  },
+  {
+    "id": "M6_Q9",
+    "section": "communication-conflict",
+    "kind": "mcq",
+    "label": "If you need to address a recurring issue (e.g., the kitchen not being cleaned properly), how do you prefer to communicate it?",
+    "options": [
+      { "value": "face-to-face", "label": "Face-to-face, as soon as we are both in the common area" },
+      { "value": "group-whatsapp", "label": "Via a polite but direct message in the house WhatsApp group" },
+      { "value": "wait-casual", "label": "I prefer to wait and bring it up casually when the mood is relaxed." }
+    ]
+  },
+  {
+    "id": "M6_Q10",
+    "section": "communication-conflict",
+    "kind": "mcq",
+    "label": "If a housemate continuously violates a hard rule in the lease (e.g., smoking indoors), do you prefer to handle it entirely internally, or would you escalate it to the landlord/agency?",
+    "options": [
+      { "value": "handle-internally", "label": "Handle strictly internally" },
+      { "value": "escalate-landlord", "label": "Escalate to landlord" }
+    ]
+  },
+  {
+    "id": "M6_Q11",
+    "section": "communication-conflict",
+    "kind": "likert",
+    "scale": "agreement",
+    "label": "I'm okay using a shared board/app for chores/issues."
+  },
+  {
+    "id": "M6_Q12",
+    "section": "communication-conflict",
+    "kind": "likert",
+    "scale": "agreement",
+    "specialCategory": true,
+    "label": "Comfortable saying no to last-minute plans at home."
+  },
+  {
+    "id": "M6_Q13",
+    "section": "communication-conflict",
+    "kind": "likert",
+    "scale": "agreement",
+    "label": "I find it important to talk over every issue the housemates have with each other, even minimal ones."
+  },
+  {
+    "id": "M6_Q14",
+    "section": "communication-conflict",
+    "kind": "mcq",
+    "label": "If a housemate makes a mistake that inconveniences you, what do you require to consider the issue resolved?",
+    "options": [
+      {
+        "value": "clear-verbal-apology",
+        "label": "A clear verbal apology"
+      },
+      {
+        "value": "clear-action-plan",
+        "label": "A clear action plan to prevent repeat issues"
+      },
+      {
+        "value": "behavior-change-immediately",
+        "label": "No apology needed if behavior changes immediately"
+      }
+    ]
+  },
+  {
+    "id": "M6_Q15",
+    "section": "communication-conflict",
+    "kind": "bipolar",
+    "bipolarLabels": {
+      "left": "Text before knock",
+      "right": "Knock before text"
+    },
+    "label": "Door etiquette for getting attention."
+  },
+  {
+    "id": "M6_Q16",
+    "section": "communication-conflict",
+    "kind": "mcq",
+    "label": "Response time in house chat",
+    "options": [
+      { "value": "1h", "label": "Within 1h" },
+      { "value": "3h", "label": "Within 3h" },
+      { "value": "same-day", "label": "Same day" },
+      { "value": "next-day", "label": "Next day" }
+    ]
+  },
+  {
+    "id": "M6_Q17",
+    "section": "communication-conflict",
+    "kind": "mcq",
+    "label": "If you forget to pay your share of the internet bill, how would you prefer your housemate to remind you?",
+    "options": [
+      { "value": "direct-payment-request", "label": "A direct payment request (e.g., Tikkie) with no explanation needed" },
+      { "value": "quick-text", "label": "A quick text message reminding me" },
+      { "value": "verbal-reminder", "label": "A verbal reminder the next time they see me" }
+    ]
+  },
+  {
+    "id": "M6_Q18",
+    "section": "communication-conflict",
+    "kind": "bipolar",
+    "bipolarLabels": {
+      "left": "Strictly state the problem",
+      "right": "Always use the sandwich method"
+    },
+    "specialCategory": true,
+    "label": "When giving critical feedback, do you prefer to 'sandwich' it between positive comments, or do you prefer to strictly state the problem?"
+  },
+  {
+    "id": "M6_Q19",
+    "section": "communication-conflict",
+    "kind": "likert",
+    "scale": "agreement",
+    "label": "I am willing to accept different schedules/ways of doing household chores than how I would usually do it."
+  },
+  {
+    "id": "M6_Q20",
+    "section": "communication-conflict",
+    "kind": "likert",
+    "scale": "agreement",
+    "label": "I welcome unsolicited advice from my housemate on how to better organize shared spaces or manage household routines."
+  },
+  {
+    "id": "M6_Q21",
+    "section": "communication-conflict",
+    "kind": "likert",
+    "scale": "agreement",
+    "label": "I'm okay with an anonymous suggestion form for house issues."
+  },
+  {
+    "id": "M6_Q22",
+    "section": "communication-conflict",
+    "kind": "mcq",
+    "specialCategory": true,
+    "label": "If your housemate's guest is being disruptive in the living room while your housemate is in the bathroom, how do you handle it?",
+    "options": [
+      { "value": "ask-guest-directly", "label": "Ask the guest directly to quiet down" },
+      { "value": "wait-text-housemate", "label": "Wait and text the housemate privately" }
+    ]
+  },
+  {
+    "id": "M6_Q23",
+    "section": "communication-conflict",
+    "kind": "likert",
+    "scale": "agreement",
+    "label": "I'm fine with agenda + notes for house meetings and a summary shared (e.g via WhatsApp groupchat)."
+  },
+  {
+    "id": "M6_Q24",
+    "section": "communication-conflict",
+    "kind": "mcq",
+    "label": "If you have politely asked a housemate to complete their chore twice, and it is still not done, what is your next step?",
+    "options": [
+      { "value": "do-it-myself-frustrated", "label": "I will just do it myself to get it out of the way, but feel frustrated" },
+      { "value": "confront-insist-immediately", "label": "I will confront them directly and insist they do it immediately" },
+      { "value": "renegotiate-system", "label": "I will propose we renegotiate the chore system entirely" }
+    ]
+  },
+  {
+    "id": "M6_Q25",
+    "section": "communication-conflict",
+    "kind": "likert",
+    "scale": "agreement",
+    "label": "I'm comfortable owning mistakes in the chat publicly."
+  }
+]

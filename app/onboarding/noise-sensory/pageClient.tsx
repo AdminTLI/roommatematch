@@ -95,6 +95,7 @@ function SectionClientContent() {
           <QuestionRow
             key={item.id}
             label={item.label}
+            specialCategory={!!item.specialCategory}
             showDealBreaker={!!item.dbEligible}
             dealBreaker={answers[item.id]?.dealBreaker}
             onDealBreakerChange={(v) => setDealBreaker(sectionKey, item.id, v)}

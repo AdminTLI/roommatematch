@@ -436,6 +436,20 @@ export const RATE_LIMITS = {
     failClosed: true
   }, getSharedStore),
 
+  // Onboarding autosave (fail-closed; higher limit to support frequent questionnaire saves)
+  onboarding_save: new RateLimiter({
+    windowMs: 15 * 60 * 1000, // 15 minutes
+    maxRequests: 300,
+    failClosed: true
+  }, getSharedStore),
+
+  // Final onboarding submission (fail-closed; enough headroom for retries)
+  onboarding_submit: new RateLimiter({
+    windowMs: 15 * 60 * 1000, // 15 minutes
+    maxRequests: 20,
+    failClosed: true
+  }, getSharedStore),
+
   // Chat creation (fail-closed to prevent spam)
   chat_creation: new RateLimiter({
     windowMs: 60 * 60 * 1000, // 1 hour

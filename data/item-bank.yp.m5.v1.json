@@ -1,0 +1,269 @@
+[
+  {
+    "id": "M5_Q1",
+    "section": "social-hosting-language",
+    "kind": "bipolar",
+    "bipolarLabels": {
+      "left": "Quiet and low-social",
+      "right": "Social and active"
+    },
+    "label": "What kind of home atmosphere do you prefer?"
+  },
+  {
+    "id": "M5_Q2",
+    "section": "social-hosting-language",
+    "kind": "likert",
+    "scale": "agreement",
+    "label": "I prefer a quiet home (rare group hangs)."
+  },
+  {
+    "id": "M5_Q3",
+    "section": "social-hosting-language",
+    "kind": "mcq",
+    "label": "How many guests do you expect to have per week?",
+    "options": [
+      { "value": "0-2", "label": "0-2" },
+      { "value": "3-5", "label": "3-5" },
+      { "value": "6-10", "label": "6-10" },
+      { "value": "10+", "label": "10+" }
+    ]
+  },
+  {
+    "id": "M5_Q4",
+    "section": "social-hosting-language",
+    "kind": "mcq",
+    "label": "Excluding rare events like birthdays, what is the maximum number of people that should be in the apartment at any given time before it feels overwhelming?",
+    "options": [
+      {
+        "value": "max-4",
+        "label": "Just us and maybe 1-2 partners (Max 4 people)"
+      },
+      {
+        "value": "max-6-8",
+        "label": "A small dinner party size (Max 6-8 people)"
+      },
+      {
+        "value": "max-10-plus",
+        "label": "The more the merrier (10+ people is fine)"
+      }
+    ]
+  },
+  {
+    "id": "M5_Q5",
+    "section": "social-hosting-language",
+    "kind": "mcq",
+    "label": "What is your maximum acceptable limit for a housemate's romantic partner sleeping over during the workweek?",
+    "options": [
+      { "value": "0-1-night", "label": "0-1 night per week" },
+      { "value": "2-3-nights", "label": "2-3 nights per week" },
+      { "value": "4-plus-nights", "label": "4+ nights per week" }
+    ]
+  },
+  {
+    "id": "M5_Q6",
+    "section": "social-hosting-language",
+    "kind": "mcq",
+    "specialCategory": true,
+    "label": "When your housemate has friends over in the living room, how do you prefer to handle the situation?",
+    "options": [
+      {
+        "value": "brief-hello-retreat",
+        "label": "I briefly say hello and then retreat to my room to give them space"
+      },
+      {
+        "value": "hang-briefly-then-own-thing",
+        "label": "I hang out for a drink or chat, then do my own thing"
+      },
+      {
+        "value": "actively-join-all",
+        "label": "I actively want to be included and hang out with them the whole time"
+      }
+    ]
+  },
+  {
+    "id": "M5_Q7",
+    "section": "social-hosting-language",
+    "kind": "mcq",
+    "label": "Do you prefer to keep your friend group strictly separate from your housemate's friend group, or do you actively want to merge social lives?",
+    "options": [
+      { "value": "strictly-separate", "label": "Keep strictly separate" },
+      { "value": "actively-merge", "label": "Actively merge social lives" }
+    ]
+  },
+  {
+    "id": "M5_Q8",
+    "section": "social-hosting-language",
+    "kind": "mcq",
+    "label": "Latest gathering end (weeknights)",
+    "options": [
+      { "value": "21:00", "label": "21:00" },
+      { "value": "22:00", "label": "22:00" },
+      { "value": "23:00", "label": "23:00" },
+      { "value": "00:00", "label": "00:00" },
+      { "value": "01:00+", "label": "01:00+" }
+    ]
+  },
+  {
+    "id": "M5_Q9",
+    "section": "social-hosting-language",
+    "kind": "mcq",
+    "label": "How do you feel about hosting daytime events (e.g., Sunday brunches, watching sports) on the weekends?",
+    "options": [
+      {
+        "value": "not-a-fan",
+        "label": "Not a fan; weekends are my quiet recovery time"
+      },
+      {
+        "value": "once-in-a-while",
+        "label": "Once in a while is great, with advance notice"
+      },
+      {
+        "value": "love-it-highly-social",
+        "label": "I love it; weekends should be highly social and active"
+      }
+    ]
+  },
+  {
+    "id": "M5_Q10",
+    "section": "social-hosting-language",
+    "kind": "bipolar",
+    "bipolarLabels": {
+      "left": "Small, intimate gatherings (2-4 people)",
+      "right": "Large gatherings/house parties (10+ people)"
+    },
+    "label": "When hosting events at the apartment, what is your preferred scale?"
+  },
+  {
+    "id": "M5_Q11",
+    "section": "social-hosting-language",
+    "kind": "likert",
+    "scale": "agreement",
+    "label": "I require advance notice (e.g., a text in the group chat) if guests will be in the common areas during weekday evenings."
+  },
+  {
+    "id": "M5_Q12",
+    "section": "social-hosting-language",
+    "kind": "likert",
+    "scale": "agreement",
+    "label": "I'm willing to switch to the common language when someone joins."
+  },
+  {
+    "id": "M5_Q13",
+    "section": "social-hosting-language",
+    "kind": "likert",
+    "scale": "agreement",
+    "label": "I believe there should be a strict limit on how many nights per week a romantic partner or guest can stay over before they must contribute to household expenses/utilities."
+  },
+  {
+    "id": "M5_Q14",
+    "section": "social-hosting-language",
+    "kind": "likert",
+    "scale": "agreement",
+    "label": "I am comfortable with my housemate having out-of-town friends or family sleep on the living room couch for a weekend."
+  },
+  {
+    "id": "M5_Q15",
+    "section": "social-hosting-language",
+    "kind": "mcq",
+    "label": "If you want to invite 2-3 friends over for dinner on a Tuesday night, what is the protocol?",
+    "options": [
+      {
+        "value": "ask-24h",
+        "label": "Ask for explicit permission at least 24 hours in advance"
+      },
+      {
+        "value": "heads-up-same-day",
+        "label": "Give a heads-up via text earlier that day"
+      },
+      {
+        "value": "no-notice",
+        "label": "Just bring them over; no notice required"
+      }
+    ]
+  },
+  {
+    "id": "M5_Q16",
+    "section": "social-hosting-language",
+    "kind": "mcq",
+    "label": "What is the maximum duration an out-of-town guest should be allowed to stay continuously in the apartment?",
+    "options": [
+      { "value": "1-2-nights", "label": "1-2 nights max." },
+      { "value": "3-5-nights", "label": "3-5 nights (long weekend)" },
+      { "value": "1-2-weeks", "label": "1-2 weeks (as long as they are respectful)" }
+    ]
+  },
+  {
+    "id": "M5_Q17",
+    "section": "social-hosting-language",
+    "kind": "toggle",
+    "label": "I prefer a no smoking or vaping household. Smoking and vaping should only happen outside and away from windows."
+  },
+  {
+    "id": "M5_Q18",
+    "section": "social-hosting-language",
+    "kind": "likert",
+    "scale": "agreement",
+    "specialCategory": true,
+    "label": "What role does alcohol/drinking play in your ideal home environment?"
+  },
+  {
+    "id": "M5_Q19",
+    "section": "social-hosting-language",
+    "kind": "likert",
+    "scale": "agreement",
+    "label": "I plan to frequently host colleagues, clients, or professional contacts at the apartment for dinners or meetings."
+  },
+  {
+    "id": "M5_Q20",
+    "section": "social-hosting-language",
+    "kind": "likert",
+    "scale": "agreement",
+    "label": "It bothers me if a housemate's partner is frequently hanging out in the shared living room while my housemate is not home (e.g., they are at work or at the gym)"
+  },
+  {
+    "id": "M5_Q21",
+    "section": "social-hosting-language",
+    "kind": "mcq",
+    "label": "If a housemate's partner stays over regularly, do you expect them to start contributing to household utilities or rent?",
+    "options": [
+      {
+        "value": "yes-financial-boundaries",
+        "label": "Yes, financial boundaries must be set"
+      },
+      {
+        "value": "no-they-are-guest",
+        "label": "No, they are a guest"
+      }
+    ]
+  },
+  {
+    "id": "M5_Q22",
+    "section": "social-hosting-language",
+    "kind": "likert",
+    "scale": "agreement",
+    "specialCategory": true,
+    "label": "If my housemate has guests who speak a language I do not understand, I expect them to switch to a shared language (e.g., English) when I enter the room."
+  },
+  {
+    "id": "M5_Q23",
+    "section": "social-hosting-language",
+    "kind": "likert",
+    "scale": "agreement",
+    "label": "After gatherings, quiet hours apply immediately."
+  },
+  {
+    "id": "M5_Q24",
+    "section": "social-hosting-language",
+    "kind": "likert",
+    "scale": "agreement",
+    "label": "When my bedroom door is closed, it means I am completely off-limits for social interaction, regardless of the time of day."
+  },
+  {
+    "id": "M5_Q25",
+    "section": "social-hosting-language",
+    "kind": "likert",
+    "scale": "agreement",
+    "specialCategory": true,
+    "label": "I believe it is perfectly acceptable to give a spare key to my romantic partner or best friend so they can let themselves in when I am not home."
+  }
+]

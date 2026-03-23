@@ -7,7 +7,7 @@ import { useOnboardingStore } from '@/store/onboarding'
 import itemsJson from '@/data/item-bank.v1.json'
 import type { Item } from '@/types/questionnaire'
 import { useMemo } from 'react'
-import { useSearchParams } from 'next/navigation'
+import { usePathname, useSearchParams } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Checkbox } from '@/components/ui/checkbox'
@@ -45,7 +45,11 @@ function humanize(item: Item, value: any): string {
 function ReviewClientContent() {
   const sections = useOnboardingStore((s) => s.sections)
   const allItems = itemsJson as Item[]
+  const pathname = usePathname()
   const searchParams = useSearchParams()
+  const isProfessionalReview =
+    pathname === '/onboarding-professional/review' ||
+    pathname?.startsWith('/onboarding-professional/review/')
   const [isAgreed, setIsAgreed] = useState(false)
   const [isDownloadingPdf, setIsDownloadingPdf] = useState(false)
   const [reviewQuery, setReviewQuery] = useState('')
@@ -250,13 +254,13 @@ function ReviewClientContent() {
         const base = typeof window !== 'undefined' && window.location.pathname.includes('onboarding-professional') ? '/onboarding-professional' : '/onboarding'
         window.location.href = isEditMode ? `${base}/reliability-logistics?mode=edit` : `${base}/reliability-logistics`
       }}
-      onNext={submit}
-      nextDisabled={!isAgreed}
+      onNext={undefined}
+      hideSaveAndExit
     >
       <div className="space-y-6">
         <div className="grid gap-4 lg:grid-cols-1">
           <div className="rounded-2xl border border-border-subtle/30 bg-bg-surface-alt/55 backdrop-blur-xl p-4 sm:p-5">
-            <div className="flex items-start justify-between gap-4">
+            <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
               <div>
                 <h2 className="text-lg font-semibold text-text-primary">Your Responses</h2>
                 <p className="text-sm text-text-secondary mt-1">
@@ -264,7 +268,12 @@ function ReviewClientContent() {
                 </p>
               </div>
 
-              <Button onClick={downloadPreview} size="lg" disabled={isDownloadingPdf}>
+              <Button
+                onClick={downloadPreview}
+                size="lg"
+                disabled={isDownloadingPdf}
+                className="w-full min-h-[44px] whitespace-nowrap sm:w-auto"
+              >
                 <FileDown className="mr-2 h-4 w-4" />
                 {isDownloadingPdf ? 'Generating PDF...' : 'Download PDF'}
               </Button>
@@ -322,7 +331,6 @@ function ReviewClientContent() {
 
         <Accordion
           type="multiple"
-          collapsible
           value={openSectionValues}
           onValueChange={(values) => setOpenSectionValues(values as string[])}
           className="space-y-3"

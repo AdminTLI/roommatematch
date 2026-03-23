@@ -97,7 +97,7 @@ export default function PathSelectionClient() {
       <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top,_rgba(148,163,184,0.15),_transparent_60%),radial-gradient(circle_at_bottom,_rgba(59,130,246,0.15),_transparent_55%)] mix-blend-screen" />
 
       <div className="relative z-10 flex min-h-screen flex-col">
-        <header className="border-b border-border-subtle/40 bg-gradient-to-r from-bg-surface-alt/80 via-bg-surface-alt/60 to-bg-surface-alt/80 backdrop-blur-xl">
+        <header className="border-b border-transparent bg-transparent">
           <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-4 sm:px-6 lg:px-8">
             <div className="flex items-center gap-2">
               <div className="flex h-8 w-8 items-center justify-center rounded-2xl bg-gradient-to-tr from-indigo-500 via-sky-400 to-purple-500 shadow-lg shadow-indigo-500/30">

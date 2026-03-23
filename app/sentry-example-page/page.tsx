@@ -13,6 +13,7 @@ class SentryExampleFrontendError extends Error {
 
 export default function Page() {
   const [hasSentError, setHasSentError] = useState(false)
+  const [hasSentLog, setHasSentLog] = useState(false)
   const [isConnected, setIsConnected] = useState(true)
 
   useEffect(() => {
@@ -62,6 +63,24 @@ export default function Page() {
           </a>
           .
         </p>
+
+        <button
+          type="button"
+          onClick={() => {
+            Sentry.logger.info('User triggered test log', {
+              log_source: 'sentry_test',
+            })
+            setHasSentLog(true)
+          }}
+        >
+          <span>Send test log</span>
+        </button>
+
+        {hasSentLog ? (
+          <p className="success">Test log sent — check Sentry Logs.</p>
+        ) : (
+          <div className="success_placeholder" />
+        )}
 
         <button
           type="button"

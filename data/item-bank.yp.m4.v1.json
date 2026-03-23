@@ -1,0 +1,226 @@
+[
+  {
+    "id": "M4_Q1",
+    "section": "home-operations",
+    "kind": "mcq",
+    "label": "Do you prefer hiring a professional cleaning service for the apartment rather than doing the deep cleaning ourselves?",
+    "options": [
+      { "value": "yes-hire-cleaner", "label": "Yes, hire a cleaner" },
+      { "value": "no-do-ourselves", "label": "No, do it ourselves" }
+    ]
+  },
+  {
+    "id": "M4_Q2",
+    "section": "home-operations",
+    "kind": "likert",
+    "scale": "agreement",
+    "label": "I wipe down the shower/sink and ensure no hair or water pools are left behind immediately after every use."
+  },
+  {
+    "id": "M4_Q3",
+    "section": "home-operations",
+    "kind": "likert",
+    "scale": "agreement",
+    "label": "I strictly separate all my waste (glass, paper, plastic, compost) and expect my housemates to do the same."
+  },
+  {
+    "id": "M4_Q4",
+    "section": "home-operations",
+    "kind": "mcq",
+    "label": "After cooking a meal in the evening, what is your standard protocol for cleaning the kitchen?",
+    "options": [
+      { "value": "clean-as-i-go", "label": "Clean as I go, and the kitchen is spotless before I sit down to eat" },
+      { "value": "clean-before-bed", "label": "Leave the pots/pans while I eat, but everything is cleaned before I go to bed" },
+      { "value": "leave-to-soak", "label": "Leave it to soak; I will deal with it the next morning or afternoon" }
+    ]
+  },
+  {
+    "id": "M4_Q5",
+    "section": "home-operations",
+    "kind": "likert",
+    "scale": "agreement",
+    "label": "I proactively empty the dishwasher as soon as it's clean, rather than picking clean dishes out of it one by one."
+  },
+  {
+    "id": "M4_Q6",
+    "section": "home-operations",
+    "kind": "bipolar",
+    "bipolarLabels": {
+      "left": "\"See it, do it\" (natural, flexible initiative)",
+      "right": "A highly strict, documented weekly roster"
+    },
+    "label": "If we are not hiring a cleaner, how should household chores be managed?"
+  },
+  {
+    "id": "M4_Q7",
+    "section": "home-operations",
+    "kind": "bipolar",
+    "bipolarLabels": {
+      "left": "Fluid and communal; put things wherever they fit",
+      "right": "Rigid and territorial; strict assigned shelves per person"
+    },
+    "label": "How do you manage space inside the shared refrigerator?"
+  },
+  {
+    "id": "M4_Q8",
+    "section": "home-operations",
+    "kind": "mcq",
+    "label": "Which best describes your ideal approach to food and groceries?",
+    "options": [
+      { "value": "highly-integrated", "label": "Highly integrated: We share most groceries and frequently cook for each other" },
+      { "value": "semi-integrated", "label": "Semi-integrated: We share basics (milk, butter, spices) but buy our own main meals" },
+      { "value": "strictly-separated", "label": "Strictly separated: We have our own shelves and never use each other's food" }
+    ]
+  },
+  {
+    "id": "M4_Q9",
+    "section": "home-operations",
+    "kind": "likert",
+    "scale": "agreement",
+    "label": "Prefer separate cookware."
+  },
+  {
+    "id": "M4_Q10",
+    "section": "home-operations",
+    "kind": "likert",
+    "scale": "agreement",
+    "label": "It bothers me when personal items (e.g., laptops, mail, shoes, jackets) are left sitting in the shared living room for multiple days."
+  },
+  {
+    "id": "M4_Q11",
+    "section": "home-operations",
+    "kind": "bipolar",
+    "bipolarLabels": { "left": "Shoes-off indoors", "right": "Shoes-on okay" },
+    "label": "Do you prefer shoes on or off indoors?"
+  },
+  {
+    "id": "M4_Q12",
+    "section": "home-operations",
+    "kind": "likert",
+    "scale": "agreement",
+    "label": "I regularly notice when household supplies are running low and replace them before they run out entirely."
+  },
+  {
+    "id": "M4_Q13",
+    "section": "home-operations",
+    "kind": "likert",
+    "scale": "agreement",
+    "label": "If I miss my chore, I do it within 24h without prompts."
+  },
+  {
+    "id": "M4_Q14",
+    "section": "home-operations",
+    "kind": "likert",
+    "scale": "agreement",
+    "label": "Okay with a monthly deep-clean day."
+  },
+  {
+    "id": "M4_Q15",
+    "section": "home-operations",
+    "kind": "mcq",
+    "label": "How do you prefer to handle the purchase of shared basics (e.g., toilet paper, olive oil, cleaning supplies)?",
+    "options": [
+      { "value": "shared-pot", "label": "A shared household bank account/pot that we both contribute to monthly" },
+      { "value": "track-and-split", "label": "One person buys, and we meticulously track and split it on an app (e.g., Splitwise/WieBetaaltWat)" },
+      { "value": "fully-separate", "label": "We each just buy our own separate supplies to avoid any financial coordination" }
+    ]
+  },
+  {
+    "id": "M4_Q16",
+    "section": "home-operations",
+    "kind": "bipolar",
+    "bipolarLabels": {
+      "left": "It is strictly for my personal use",
+      "right": "It is fully communal for the house to use"
+    },
+    "label": "If you own a high-end appliance (e.g., a €500 espresso machine or Vitamix), how do you treat it?"
+  },
+  {
+    "id": "M4_Q17",
+    "section": "home-operations",
+    "kind": "mcq",
+    "label": "If the internet goes down or the sink starts leaking, what is your natural reaction?",
+    "options": [
+      { "value": "take-charge", "label": "I immediately take charge, call the provider/landlord, and fix it" },
+      { "value": "message-group", "label": "I will message the house group chat to see who has time to handle it" },
+      { "value": "rely-on-housemate", "label": "I am usually too busy with work; I rely on my housemates to handle house administration" }
+    ]
+  },
+  {
+    "id": "M4_Q18",
+    "section": "home-operations",
+    "kind": "bipolar",
+    "bipolarLabels": {
+      "left": "It is an absolute burden; do not ask me",
+      "right": "I am totally happy to help out"
+    },
+    "label": "If your housemate travels for work for a week, how do you feel about watering their plants or feeding their cat/dog?"
+  },
+  {
+    "id": "M4_Q19",
+    "section": "home-operations",
+    "kind": "likert",
+    "scale": "agreement",
+    "label": "Guests can use my cookware if they clean it after use."
+  },
+  {
+    "id": "M4_Q20",
+    "section": "home-operations",
+    "kind": "mcq",
+    "label": "When the living room needs a new piece of furniture (e.g., a sofa or TV), do you prefer to split the cost 50/50, or should one person buy and own it outright?",
+    "options": [
+      { "value": "split-5050", "label": "Split 50/50 (Communal)" },
+      { "value": "buy-own", "label": "Buy and own outright (Individual)" }
+    ]
+  },
+  {
+    "id": "M4_Q21",
+    "section": "home-operations",
+    "kind": "likert",
+    "scale": "agreement",
+    "label": "If someone repeatedly misses their chores, there should be agreed-upon consequences."
+  },
+  {
+    "id": "M4_Q22",
+    "section": "home-operations",
+    "kind": "mcq",
+    "label": "Do you want to co-decorate the living room with your personal art, plants, and photos, or should the common areas remain neutral?",
+    "options": [
+      { "value": "co-decorate", "label": "Co-decorate and personalize" },
+      { "value": "neutral-minimalist", "label": "Keep it neutral and minimalist" }
+    ]
+  },
+  {
+    "id": "M4_Q23",
+    "section": "home-operations",
+    "kind": "mcq",
+    "label": "In your opinion, how often does a shared bathroom need a comprehensive 'deep clean' (scrubbing tiles, mopping floors)?",
+    "options": [
+      { "value": "once-a-week", "label": "Once a week" },
+      { "value": "once-every-two-weeks", "label": "Once every two weeks" },
+      { "value": "once-a-month", "label": "Once a month" },
+      { "value": "less-than-monthly", "label": "Less than once a month" }
+    ]
+  },
+  {
+    "id": "M4_Q24",
+    "section": "home-operations",
+    "kind": "bipolar",
+    "bipolarLabels": {
+      "left": "We need a strict, agreed-upon morning shower schedule to ensure everyone gets to work on time",
+      "right": "Flexible morning usage is fine"
+    },
+    "label": "Morning bathroom logistics."
+  },
+  {
+    "id": "M4_Q25",
+    "section": "home-operations",
+    "kind": "mcq",
+    "label": "If you host a dinner party on a Saturday night, when is the kitchen and living room fully cleaned and restored?",
+    "options": [
+      { "value": "same-night", "label": "That same night before I go to sleep" },
+      { "value": "next-morning-1100", "label": "The next morning by 11:00 AM" },
+      { "value": "sunday-afternoon", "label": "Sometime on Sunday afternoon when I have energy" }
+    ]
+  }
+]

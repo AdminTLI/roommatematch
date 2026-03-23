@@ -18,9 +18,9 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
-  // Rate limiting: 100 requests per 15 minutes per user
-  const rateLimitKey = getUserRateLimitKey('api', user.id)
-  const rateLimitResult = await checkRateLimit('api', rateLimitKey)
+  // Rate limiting: dedicated autosave bucket (higher throughput for questionnaire UX)
+  const rateLimitKey = getUserRateLimitKey('onboarding_save', user.id)
+  const rateLimitResult = await checkRateLimit('onboarding_save', rateLimitKey)
   
   if (!rateLimitResult.allowed) {
     const retryAfter = Math.ceil((rateLimitResult.resetTime - Date.now()) / 1000)
@@ -37,7 +37,7 @@ export async function POST(request: Request) {
       { 
         status: 429,
         headers: {
-          'X-RateLimit-Limit': '100',
+          'X-RateLimit-Limit': '300',
           'X-RateLimit-Remaining': '0',
           'X-RateLimit-Reset': new Date(rateLimitResult.resetTime).toISOString(),
           'Retry-After': retryAfter.toString()

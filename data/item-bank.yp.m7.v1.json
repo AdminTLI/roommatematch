@@ -1,0 +1,223 @@
+[
+  {
+    "id": "M7_Q1",
+    "section": "privacy-territoriality",
+    "kind": "bipolar",
+    "bipolarLabels": { "left": "Open-door when free", "right": "Closed-door unless invited" },
+    "label": "Do you prefer bedroom doors open or closed?"
+  },
+  {
+    "id": "M7_Q2",
+    "section": "privacy-territoriality",
+    "kind": "likert",
+    "scale": "agreement",
+    "label": "I need daily alone time at home to recharge."
+  },
+  {
+    "id": "M7_Q3",
+    "section": "privacy-territoriality",
+    "kind": "bipolar",
+    "bipolarLabels": {
+      "left": "I leave my monitors/papers set up permanently",
+      "right": "I completely pack away all work items every evening"
+    },
+    "label": "If you work from home using the shared dining/living room table, how do you manage your equipment at the end of the workday?"
+  },
+  {
+    "id": "M7_Q4",
+    "section": "privacy-territoriality",
+    "kind": "likert",
+    "scale": "agreement",
+    "label": "Common areas for socializing, bedrooms for privacy."
+  },
+  {
+    "id": "M7_Q5",
+    "section": "privacy-territoriality",
+    "kind": "likert",
+    "scale": "agreement",
+    "label": "Quiet reading in living room while others chat softly is okay."
+  },
+  {
+    "id": "M7_Q6",
+    "section": "privacy-territoriality",
+    "kind": "mcq",
+    "label": "What is your default policy on housemates borrowing everyday household items (e.g., phone chargers, a splash of milk, basic tools) without asking first?",
+    "options": [
+      {
+        "value": "always-ask-first",
+        "label": "Strictly ask first, every single time"
+      },
+      {
+        "value": "emergency-then-tell",
+        "label": "Take it if it's an emergency, but tell me immediately after"
+      },
+      {
+        "value": "whats-mine-yours",
+        "label": "What's mine is yours; no need to ask for basics"
+      }
+    ]
+  },
+  {
+    "id": "M7_Q7",
+    "section": "privacy-territoriality",
+    "kind": "likert",
+    "scale": "agreement",
+    "label": "I want my own fridge/pantry shelf clearly marked."
+  },
+  {
+    "id": "M7_Q8",
+    "section": "privacy-territoriality",
+    "kind": "likert",
+    "scale": "agreement",
+    "label": "Comfortable pooling spices/condiments in a shared bin."
+  },
+  {
+    "id": "M7_Q9",
+    "section": "privacy-territoriality",
+    "kind": "mcq",
+    "label": "If you own expensive kitchen equipment (e.g., a Le Creuset pan or high-end Japanese knives), do you allow your housemate to use them?",
+    "options": [
+      { "value": "yes-communal", "label": "Yes, they are communal" },
+      { "value": "no-personal-use", "label": "No, they are strictly for my personal use" }
+    ]
+  },
+  {
+    "id": "M7_Q10",
+    "section": "privacy-territoriality",
+    "kind": "bipolar",
+    "bipolarLabels": {
+      "left": "Always wide open (inviting interaction)",
+      "right": "Always fully closed (protecting privacy)"
+    },
+    "label": "When you are home and awake in your bedroom, what is the default state of your door?"
+  },
+  {
+    "id": "M7_Q11",
+    "section": "privacy-territoriality",
+    "kind": "likert",
+    "scale": "agreement",
+    "specialCategory": true,
+    "label": "I would be uncomfortable if my housemate placed an always-listening smart speaker (e.g., Amazon Echo, Google Home) in the shared living room or kitchen."
+  },
+  {
+    "id": "M7_Q12",
+    "section": "privacy-territoriality",
+    "kind": "likert",
+    "scale": "agreement",
+    "specialCategory": true,
+    "label": "I expect my housemate to ask for my explicit permission before posting any photos or videos on social media that show the inside of our shared apartment."
+  },
+  {
+    "id": "M7_Q13",
+    "section": "privacy-territoriality",
+    "kind": "likert",
+    "scale": "agreement",
+    "label": "Quiet calls in living room during day are okay."
+  },
+  {
+    "id": "M7_Q14",
+    "section": "privacy-territoriality",
+    "kind": "toggle",
+    "label": "Do you intend to store large personal equipment (e.g., an expensive road bike, golf clubs, large musical instruments) inside the shared living areas rather than a basement or shed?"
+  },
+  {
+    "id": "M7_Q15",
+    "section": "privacy-territoriality",
+    "kind": "bipolar",
+    "bipolarLabels": {
+      "left": "Highly dynamic; anyone can move furniture or add art at any time",
+      "right": "Highly static; no changes should be made without a joint discussion"
+    },
+    "label": "How do you view the layout and decoration of the shared living room?"
+  },
+  {
+    "id": "M7_Q16",
+    "section": "privacy-territoriality",
+    "kind": "likert",
+    "scale": "agreement",
+    "label": "If I go on a 3-week vacation or work trip, I believe it is okay to temporarily sublet my room to cover my rent."
+  },
+  {
+    "id": "M7_Q17",
+    "section": "privacy-territoriality",
+    "kind": "likert",
+    "scale": "agreement",
+    "label": "Prefer decor in common areas discussed first."
+  },
+  {
+    "id": "M7_Q18",
+    "section": "privacy-territoriality",
+    "kind": "bipolar",
+    "bipolarLabels": {
+      "left": "Highly relaxed (e.g., walking around in underwear/towel is fine)",
+      "right": "Highly modest (e.g., always fully dressed or in a thick robe)"
+    },
+    "label": "What is your standard for visual modesty when walking between the bathroom and your bedroom in the mornings or evenings?"
+  },
+  {
+    "id": "M7_Q19",
+    "section": "privacy-territoriality",
+    "kind": "likert",
+    "scale": "agreement",
+    "label": "Comfortable with shared parcel handling (sign/collect)."
+  },
+  {
+    "id": "M7_Q20",
+    "section": "privacy-territoriality",
+    "kind": "likert",
+    "scale": "agreement",
+    "specialCategory": true,
+    "label": "I am completely comfortable with my housemate installing a video doorbell (e.g., Ring) or an indoor security camera pointing at the front door."
+  },
+  {
+    "id": "M7_Q21",
+    "section": "privacy-territoriality",
+    "kind": "mcq",
+    "label": "How do you prefer to manage personal toiletries (shampoo, skincare, toothbrush) in a shared bathroom?",
+    "options": [
+      {
+        "value": "dedicated-shelf",
+        "label": "Keep everything stored in the bathroom on my dedicated shelf"
+      },
+      {
+        "value": "few-basics-shower",
+        "label": "Leave a few basics in the shower, but store personal items in my room"
+      },
+      {
+        "value": "shower-caddy",
+        "label": "Use a shower caddy and bring everything back to my room after every use"
+      }
+    ]
+  },
+  {
+    "id": "M7_Q22",
+    "section": "privacy-territoriality",
+    "kind": "likert",
+    "scale": "agreement",
+    "label": "I require my housemate to notify me immediately if the landlord, a plumber, or any maintenance worker is scheduled to enter the apartment, even if I am not home."
+  },
+  {
+    "id": "M7_Q23",
+    "section": "privacy-territoriality",
+    "kind": "likert",
+    "scale": "agreement",
+    "label": "If my bedroom door is closed, I expect my housemate to knock/text me and explicitly wait for a verbal invitation before opening the door, even in urgent situations."
+  },
+  {
+    "id": "M7_Q24",
+    "section": "privacy-territoriality",
+    "kind": "bipolar",
+    "bipolarLabels": {
+      "left": "Fluid; items can overflow into other shelves if needed",
+      "right": "Rigid; crossing into my assigned shelf is a violation of space"
+    },
+    "label": "How strictly do you enforce the boundaries of assigned shelves in the refrigerator or pantry?"
+  },
+  {
+    "id": "M7_Q25",
+    "section": "privacy-territoriality",
+    "kind": "likert",
+    "scale": "agreement",
+    "label": "I want clearly defined personal zones in the living room (shelves/desk)."
+  }
+]

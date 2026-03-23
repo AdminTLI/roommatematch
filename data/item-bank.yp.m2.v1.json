@@ -1,0 +1,208 @@
+[
+  {
+    "id": "M2_Q1",
+    "section": "sleep-circadian",
+    "kind": "bipolar",
+    "bipolarLabels": { "left": "Night-owl", "right": "Morning-lark" },
+    "label": "Are you more of a night owl or morning person?"
+  },
+  {
+    "id": "M2_Q2",
+    "section": "sleep-circadian",
+    "kind": "mcq",
+    "label": "If a housemate accidentally wakes you up once during the workweek (e.g., dropping a pan in the kitchen), how do you typically handle it?",
+    "options": [
+      { "value": "brush-it-off", "label": "Brush it off; accidents happen" },
+      { "value": "mention-next-day", "label": "Mention it the next day to ensure it doesn't become a habit" },
+      { "value": "address-immediately", "label": "Address it immediately; my sleep is strictly protected" }
+    ]
+  },
+  {
+    "id": "M2_Q3",
+    "section": "sleep-circadian",
+    "kind": "likert",
+    "scale": "agreement",
+    "specialCategory": true,
+    "label": "My ability to function effectively at my job is severely compromised if my specific sleep routine is disrupted."
+  },
+  {
+    "id": "M2_Q4",
+    "section": "sleep-circadian",
+    "kind": "mcq",
+    "label": "Which best describes your morning alarm routine?",
+    "options": [
+      { "value": "one-alarm", "label": "One alarm, I wake up immediately" },
+      {
+        "value": "multiple-low-volume",
+        "label": "Multiple alarms, but I keep the volume low or use a wearable device (e.g., Apple Watch)"
+      },
+      { "value": "multiple-loud-snooze", "label": "Multiple loud alarms with several snooze cycles." }
+    ]
+  },
+  {
+    "id": "M2_Q5",
+    "section": "sleep-circadian",
+    "kind": "toggle",
+    "label": "Do you require immediate, scheduled access to the bathroom at a specific time every morning for your work commute?"
+  },
+  {
+    "id": "M2_Q6",
+    "section": "sleep-circadian",
+    "kind": "likert",
+    "scale": "agreement",
+    "specialCategory": true,
+    "label": "I require absolute darkness to sleep and am easily disturbed by hallway lights shining under my door."
+  },
+  {
+    "id": "M2_Q7",
+    "section": "sleep-circadian",
+    "kind": "likert",
+    "scale": "agreement",
+    "specialCategory": true,
+    "label": "I am a very light sleeper and require the house to be completely silent once I go to bed."
+  },
+  {
+    "id": "M2_Q8",
+    "section": "sleep-circadian",
+    "kind": "bipolar",
+    "bipolarLabels": { "left": "Ambient bedroom light", "right": "Blackout darkness" },
+    "label": "What's your preference for bedroom lighting at night?"
+  },
+  {
+    "id": "M2_Q9",
+    "section": "sleep-circadian",
+    "kind": "likert",
+    "scale": "agreement",
+    "label": "I am fully capable of getting ready in the morning (showering, making breakfast) in near-complete silence if my housemates are still asleep."
+  },
+  {
+    "id": "M2_Q10",
+    "section": "sleep-circadian",
+    "kind": "likert",
+    "scale": "agreement",
+    "specialCategory": true,
+    "label": "When working from home or on weekends, I regularly require a quiet environment during the afternoon for a nap or deep rest."
+  },
+  {
+    "id": "M2_Q11",
+    "section": "sleep-circadian",
+    "kind": "toggle",
+    "specialCategory": true,
+    "label": "Do you frequently take long showers or baths past 11:00 PM?"
+  },
+  {
+    "id": "M2_Q12",
+    "section": "sleep-circadian",
+    "kind": "bipolar",
+    "bipolarLabels": { "left": "Always use headphones", "right": "I play it aloud through speakers" },
+    "label": "How do you consume media (TV, music, podcasts) in your room after 10:00 PM?"
+  },
+  {
+    "id": "M2_Q13",
+    "section": "sleep-circadian",
+    "kind": "mcq",
+    "label": "On a typical weeknight (Sunday-Thursday), what time do you expect the household to transition to 'quiet hours'?",
+    "options": [
+      { "value": "by-2200", "label": "By 10:00 PM" },
+      { "value": "by-2330", "label": "By 11:30 PM" },
+      { "value": "after-midnight", "label": "After midnight / I don't require strict quiet hours" }
+    ]
+  },
+  {
+    "id": "M2_Q14",
+    "section": "sleep-circadian",
+    "kind": "likert",
+    "scale": "agreement",
+    "label": "I am highly conscious of sound traveling through shared bedroom walls (e.g., taking calls or watching TV in bed) late at night."
+  },
+  {
+    "id": "M2_Q15",
+    "section": "sleep-circadian",
+    "kind": "mcq",
+    "label": "On a weeknight, what time should visiting friends or guests leave the apartment?",
+    "options": [
+      { "value": "by-2130", "label": "By 21:30" },
+      { "value": "by-2300", "label": "By 23:00" },
+      { "value": "by-midnight", "label": "By midnight" },
+      { "value": "no-limit-quiet", "label": "Guests can stay as late as they want as long as they are quiet." }
+    ]
+  },
+  {
+    "id": "M2_Q16",
+    "section": "sleep-circadian",
+    "kind": "bipolar",
+    "bipolarLabels": { "left": "Very cold/windows open", "right": "Very warm/heating on" },
+    "label": "How do you prefer the household temperature during the night?"
+  },
+  {
+    "id": "M2_Q17",
+    "section": "sleep-circadian",
+    "kind": "bipolar",
+    "bipolarLabels": {
+      "left": "Same sleep schedule every day",
+      "right": "Very different sleep schedule on weekends"
+    },
+    "specialCategory": true,
+    "label": "How drastically does your sleep schedule change between workdays and weekends?"
+  },
+  {
+    "id": "M2_Q18",
+    "section": "sleep-circadian",
+    "kind": "likert",
+    "scale": "agreement",
+    "label": "It bothers me significantly if a housemate's partner wakes up at a different, earlier time than the rest of the house and uses the common spaces."
+  },
+  {
+    "id": "M2_Q19",
+    "section": "sleep-circadian",
+    "kind": "mcq",
+    "label": "What are your expectations for household noise on Saturday and Sunday mornings?",
+    "options": [
+      { "value": "quiet-until-1000", "label": "Quiet until at least 10:00 AM (Rest and recovery)" },
+      { "value": "standard-by-0800", "label": "Standard volume is fine by 8:00 AM" },
+      { "value": "no-rules-weekends", "label": "No rules, weekends are for living freely" }
+    ]
+  },
+  {
+    "id": "M2_Q20",
+    "section": "sleep-circadian",
+    "kind": "likert",
+    "scale": "agreement",
+    "label": "No loud calls/gaming in common areas after quiet hours."
+  },
+  {
+    "id": "M2_Q21",
+    "section": "sleep-circadian",
+    "kind": "likert",
+    "scale": "agreement",
+    "label": "I frequently cook meals, run the dishwasher, or use loud appliances (e.g., blenders) after 10:00 PM."
+  },
+  {
+    "id": "M2_Q22",
+    "section": "sleep-circadian",
+    "kind": "likert",
+    "scale": "agreement",
+    "label": "I prefer living with people who naturally go to sleep and wake up at the exact same time as I do, rather than operating on different timelines."
+  },
+  {
+    "id": "M2_Q23",
+    "section": "sleep-circadian",
+    "kind": "bipolar",
+    "bipolarLabels": { "left": "Zero interaction/silent existence", "right": "Warm greetings and light conversation" },
+    "label": "What is your preferred level of interaction with housemates before leaving for work?"
+  },
+  {
+    "id": "M2_Q24",
+    "section": "sleep-circadian",
+    "kind": "likert",
+    "scale": "agreement",
+    "label": "I would be perfectly fine living with someone who works night shifts or irregular hours, provided they are respectful of my schedule."
+  },
+  {
+    "id": "M2_Q25",
+    "section": "sleep-circadian",
+    "kind": "likert",
+    "scale": "agreement",
+    "label": "I frequently have very early morning departures (e.g., 4:00 AM) for business travel or specific work commitments."
+  }
+]

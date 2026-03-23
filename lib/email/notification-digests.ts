@@ -7,11 +7,12 @@ const MATCH_NOTIFICATION_TYPES: NotificationType[] = ['match_created', 'match_ac
 const MESSAGE_DIGEST_HOURS = 24
 const MATCH_DIGEST_HOURS = 72
 
-// Email engagement guidance generally favors weekday mornings; we use a small
-// local-time window in Amsterdam (DST-aware via Intl).
+// Email engagement guidance generally favors weekday mornings; optional
+// local-time gating in Amsterdam (DST-aware via Intl) can be enabled by env.
 const SEND_WINDOW_AMS_START_HOUR = 9
 const SEND_WINDOW_AMS_END_HOUR_EXCLUSIVE = 11
 const AMSTERDAM_TZ = 'Europe/Amsterdam'
+const EMAIL_DIGEST_SEND_WINDOW_ENABLED = process.env.EMAIL_DIGEST_SEND_WINDOW_ENABLED === 'true'
 
 function getHourInTimeZone(date: Date, timeZone: string): number {
   const hourStr = new Intl.DateTimeFormat('en-CA', {
@@ -59,21 +60,38 @@ export function buildMatchesDigestEmail(params: {
   const link = `${appUrl}/matches`
 
   const html = `
-    <div>
-      <h2 style="margin:0 0 12px;">Your match radar is buzzing</h2>
-      <p style="margin:0 0 12px;">Hey ${escapeHtml(niceName)},</p>
-      <p style="margin:0 0 12px;">
-        You have <strong>${matchesCountStr} new ${escapeHtml(matchesNoun)}</strong> in the last 72 hours.
-        It’s time to say hi and turn “maybe” into “we’ll meet.”
-      </p>
-      <a href="${escapeHtml(link)}" style="display:inline-block;padding:10px 14px;background:#2563eb;color:white;text-decoration:none;border-radius:10px;">
-        Check your matches
-      </a>
-      <p style="margin:14px 0 0;color:#555;font-size:13px;">
-        Tip: first messages that ask about real plans tend to get replies.
-      </p>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Your match radar is buzzing - Domu Match</title>
+</head>
+<body style="margin: 0; padding: 0; background-color: #f9fafb; font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;">
+    <div style="background-color: #f9fafb; padding: 40px 20px;">
+        <div style="max-width: 500px; margin: 0 auto; background-color: #ffffff; border-radius: 16px; padding: 40px; border: 1px solid #e5e7eb;">
+            <div style="text-align: center; margin-bottom: 32px;">
+                <h1 style="color: #7c3aed; margin: 0; font-size: 24px; font-weight: 800;">Domu Match</h1>
+            </div>
+            <h2 style="color: #111827; font-size: 20px; font-weight: 700; margin-bottom: 16px; text-align: center;">Your match radar is buzzing</h2>
+            <p style="color: #4b5563; font-size: 16px; line-height: 24px; margin-bottom: 16px;">Hey ${escapeHtml(niceName)},</p>
+            <p style="color: #4b5563; font-size: 16px; line-height: 24px; margin-bottom: 32px;">
+                You have <strong>${matchesCountStr} new ${escapeHtml(matchesNoun)}</strong> in the last 72 hours. It’s time to say hi and turn “maybe” into “we’ll meet.”
+            </p>
+            <div style="text-align: center; margin-bottom: 32px;">
+                <a href="${escapeHtml(link)}" style="background-color: #2563eb; color: #ffffff; padding: 14px 32px; text-decoration: none; border-radius: 12px; font-weight: 600; font-size: 16px; display: inline-block;">Check your matches</a>
+            </div>
+            <div style="background-color: #f3f4f6; padding: 16px; border-radius: 12px; text-align: center;">
+                <p style="color: #6b7280; font-size: 13px; margin: 0;">💡 <strong>Tip:</strong> First messages that ask about real plans tend to get replies.</p>
+            </div>
+        </div>
+        <div style="text-align: center; margin-top: 24px;">
+            <p style="color: #9ca3af; font-size: 12px; margin: 0;">&copy; ${new Date().getFullYear()} Domu Match. All rights reserved.</p>
+        </div>
     </div>
-  `
+</body>
+</html>
+  `;
 
   const text = `Hey ${niceName},\n\nYou have ${matchesCountStr} new ${matchesNoun} in the last 72 hours.\nIt’s time to say hi and turn “maybe” into “we’ll meet.”\n\nCheck your matches: ${link}\n`
 
@@ -92,21 +110,38 @@ export function buildMessagesDigestEmail(params: {
   const link = `${appUrl}/chat`
 
   const html = `
-    <div>
-      <h2 style="margin:0 0 12px;">You’ve got messages waiting</h2>
-      <p style="margin:0 0 12px;">Hey ${escapeHtml(niceName)},</p>
-      <p style="margin:0 0 12px;">
-        Good timing: you have <strong>${escapeHtml(String(count))} ${escapeHtml(noun)}</strong> in the last 24 hours.
-        Don’t let the conversation cool—pop into your inbox and reply when you’re ready.
-      </p>
-      <a href="${escapeHtml(link)}" style="display:inline-block;padding:10px 14px;background:#7c3aed;color:white;text-decoration:none;border-radius:10px;">
-        Open messages
-      </a>
-      <p style="margin:14px 0 0;color:#555;font-size:13px;">
-        Quick replies are the secret to fast connections.
-      </p>
-    </div>
-  `
+  <!DOCTYPE html>
+  <html lang="en">
+  <head>
+      <meta charset="UTF-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <title>You've got messages waiting - Domu Match</title>
+  </head>
+  <body style="margin: 0; padding: 0; background-color: #f9fafb; font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;">
+      <div style="background-color: #f9fafb; padding: 40px 20px;">
+          <div style="max-width: 500px; margin: 0 auto; background-color: #ffffff; border-radius: 16px; padding: 40px; border: 1px solid #e5e7eb;">
+              <div style="text-align: center; margin-bottom: 32px;">
+                  <h1 style="color: #7c3aed; margin: 0; font-size: 24px; font-weight: 800;">Domu Match</h1>
+              </div>
+              <h2 style="color: #111827; font-size: 20px; font-weight: 700; margin-bottom: 16px; text-align: center;">You’ve got messages waiting</h2>
+              <p style="color: #4b5563; font-size: 16px; line-height: 24px; margin-bottom: 16px;">Hey ${escapeHtml(niceName)},</p>
+              <p style="color: #4b5563; font-size: 16px; line-height: 24px; margin-bottom: 32px;">
+                  Good timing: you have <strong>${escapeHtml(String(count))} ${escapeHtml(noun)}</strong> in the last 24 hours. Don’t let the conversation cool—pop into your inbox and reply when you’re ready.
+              </p>
+              <div style="text-align: center; margin-bottom: 32px;">
+                  <a href="${escapeHtml(link)}" style="background-color: #7c3aed; color: #ffffff; padding: 14px 32px; text-decoration: none; border-radius: 12px; font-weight: 600; font-size: 16px; display: inline-block;">Open messages</a>
+              </div>
+              <div style="background-color: #f3f4f6; padding: 16px; border-radius: 12px; text-align: center;">
+                  <p style="color: #6b7280; font-size: 13px; margin: 0;">💬 <strong>Tip:</strong> Quick replies are the secret to fast connections.</p>
+              </div>
+          </div>
+          <div style="text-align: center; margin-top: 24px;">
+              <p style="color: #9ca3af; font-size: 12px; margin: 0;">&copy; ${new Date().getFullYear()} Domu Match. All rights reserved.</p>
+          </div>
+      </div>
+  </body>
+  </html>
+    `;
 
   const text = `Hey ${niceName},\n\nYou have ${count} ${noun} in the last 24 hours.\nOpen your messages: ${link}\n`
 
@@ -249,7 +284,10 @@ async function sendMatchesDigestEmail(params: {
 }) {
   const { toEmail, toName, appUrl, count } = params
   const { subject, html, text } = buildMatchesDigestEmail({ toName, appUrl, count })
-  await sendEmail({ to: toEmail, subject, html, text })
+  const sent = await sendEmail({ to: toEmail, subject, html, text })
+  if (!sent) {
+    throw new Error('Failed to send matches digest email')
+  }
 }
 
 async function sendMessagesDigestEmail(params: {
@@ -260,7 +298,10 @@ async function sendMessagesDigestEmail(params: {
 }) {
   const { toEmail, toName, appUrl, count } = params
   const { subject, html, text } = buildMessagesDigestEmail({ toName, appUrl, count })
-  await sendEmail({ to: toEmail, subject, html, text })
+  const sent = await sendEmail({ to: toEmail, subject, html, text })
+  if (!sent) {
+    throw new Error('Failed to send messages digest email')
+  }
 }
 
 async function sendPlatformUpdatesDigestEmail(params: {
@@ -279,16 +320,20 @@ async function sendPlatformUpdatesDigestEmail(params: {
     announcementBody,
     actionUrl,
   })
-  await sendEmail({ to: toEmail, subject, html, text })
+  const sent = await sendEmail({ to: toEmail, subject, html, text })
+  if (!sent) {
+    throw new Error('Failed to send platform updates digest email')
+  }
 }
 
 export async function sendNotificationDigestEmails() {
   const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'
   const now = new Date()
 
-  if (!isWithinSendWindowAmsterdam(now)) {
+  if (EMAIL_DIGEST_SEND_WINDOW_ENABLED && !isWithinSendWindowAmsterdam(now)) {
     safeLogger.info('[EmailDigest] Skipping digest send (outside Amsterdam send window)', {
       amsterdamHour: getHourInTimeZone(now, AMSTERDAM_TZ),
+      sendWindowEnabled: EMAIL_DIGEST_SEND_WINDOW_ENABLED,
     })
     return { success: true, skipped: 'outside_send_window' as const }
   }

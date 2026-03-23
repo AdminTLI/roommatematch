@@ -2,12 +2,14 @@
 
 import { ReactNode } from 'react'
 import { DealBreakerToggle } from './DealBreakerToggle'
+import { SpecialCategoryBadge } from './SpecialCategoryBadge'
 
 interface Props {
   label: string
   helperText?: string
   errorText?: string
   children: ReactNode
+  specialCategory?: boolean
   showDealBreaker?: boolean
   dealBreaker?: boolean
   onDealBreakerChange?: (v: boolean) => void
@@ -18,6 +20,7 @@ export function QuestionRow({
   helperText,
   errorText,
   children,
+  specialCategory,
   showDealBreaker,
   dealBreaker,
   onDealBreakerChange,
@@ -26,8 +29,11 @@ export function QuestionRow({
     <div className="space-y-5 sm:space-y-4 pb-8 sm:pb-6 last:pb-0">
       <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3 sm:gap-4">
         <div className="flex-1 min-w-0">
-          <div className="text-xl sm:text-lg font-semibold text-text-primary mb-2 sm:mb-1 break-words leading-tight">
-            {label}
+          <div className="mb-2 flex flex-wrap items-center gap-2 sm:mb-1">
+            {specialCategory && <SpecialCategoryBadge />}
+            <div className="text-xl sm:text-lg font-semibold text-text-primary break-words leading-tight">
+              {label}
+            </div>
           </div>
           {helperText && (
             <div className="text-base sm:text-sm text-text-secondary/90 break-words">

@@ -341,11 +341,26 @@ function WarningBanner({ userId }: { userId?: string }) {
 export function DashboardContent({ hasCompletedQuestionnaire = false, hasPartialProgress = false, progressCount = 0, profileCompletion = 0, questionnaireProgress, dashboardData, user, firstName = '', userType }: DashboardContentProps) {
   const router = useRouter()
   const supabase = createClient()
+  const [timeGreeting, setTimeGreeting] = useState('Good evening')
 
   const displayFirstName =
     firstName ||
     (user?.name ? user.name.split(' ')[0] : '') ||
     'Student'
+
+  useEffect(() => {
+    const computeGreeting = () => {
+      // Use the browser's local time (and therefore user access location/timezone)
+      const now = new Date()
+      const hour = now.getHours()
+
+      if (hour >= 4 && hour < 12) return 'Good morning'
+      if (hour >= 12 && hour < 18) return 'Good afternoon'
+      return 'Good evening'
+    }
+
+    setTimeGreeting(computeGreeting())
+  }, [])
 
   // Helper function for formatting time ago (defined early for use in callbacks)
   const formatTimeAgo = (dateString: string): string => {
@@ -1491,7 +1506,7 @@ export function DashboardContent({ hasCompletedQuestionnaire = false, hasPartial
           <span className="text-sm font-medium uppercase tracking-wider">Discovery Feed</span>
         </div>
         <h1 className="text-4xl md:text-5xl font-extrabold text-zinc-900 dark:text-white tracking-tight">
-          Hello, <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-500 to-purple-500 dark:from-indigo-400 dark:to-purple-400">{displayFirstName}</span>
+          {timeGreeting} <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-500 to-purple-500 dark:from-indigo-400 dark:to-purple-400">{displayFirstName}</span>
         </h1>
         <p className="text-zinc-500 dark:text-zinc-400 max-w-lg text-lg font-medium">
           Here are your suggested matches. Complete your profile to discover more potential roommates.

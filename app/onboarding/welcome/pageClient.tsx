@@ -2,22 +2,10 @@
 
 import { useState } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
-import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card'
+import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import {
-  Clock,
-  LayoutGrid,
-  Target,
-  AlertTriangle,
-  Home,
-  Moon,
-  Sparkles,
-  Battery,
-  Coffee,
-  BookOpen,
-  MessageCircle,
-  ShieldAlert,
-} from 'lucide-react'
+import { Clock, LayoutGrid, Target, AlertTriangle, CircleAlert } from 'lucide-react'
+import { WelcomeMatchBlocksCard } from '@/app/onboarding/components/welcome-match-blocks-card'
 import TermsPage from '@/app/(marketing)/terms/page'
 import PrivacyPage from '@/app/(marketing)/privacy/page'
 import { createClient } from '@/lib/supabase/client'
@@ -44,13 +32,15 @@ export default function OnboardingWelcomePage() {
   const [studyProgramType, setStudyProgramType] = useState<StudyProgramType>('')
   const [privacyConsent, setPrivacyConsent] = useState(false)
   const [dealbreakerConsent, setDealbreakerConsent] = useState(false)
+  const [specialCategoryConsent, setSpecialCategoryConsent] = useState(false)
   const [showLegalModal, setShowLegalModal] = useState(false)
 
   const canStart =
     studentOrigin !== '' &&
     studyProgramType !== '' &&
     privacyConsent &&
-    dealbreakerConsent
+    dealbreakerConsent &&
+    specialCategoryConsent
 
   const handleStart = async () => {
     if (!canStart) return
@@ -69,6 +59,7 @@ export default function OnboardingWelcomePage() {
           study_program_type: studyProgramType,
           accepted_terms_and_privacy: privacyConsent,
           accepted_dealbreaker_consent: dealbreakerConsent,
+          accepted_special_category_consent: specialCategoryConsent,
           source: 'welcome_page',
         },
         created_at: new Date().toISOString(),
@@ -98,8 +89,8 @@ export default function OnboardingWelcomePage() {
 
       <div className="relative z-10 flex min-h-screen flex-col">
         {/* Keep header styling / brand exactly as is */}
-        <header className="border-b border-border-subtle/40 bg-gradient-to-r from-bg-surface-alt/80 via-bg-surface-alt/60 to-bg-surface-alt/80 backdrop-blur-xl">
-          <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-4 sm:px-6 lg:px-8">
+        <header className="border-b border-transparent bg-transparent">
+          <div className="mx-auto flex w-full max-w-6xl items-center justify-between px-5 py-5 sm:px-8 sm:py-6 lg:px-12">
             <div className="flex items-center gap-2">
               <div className="flex h-8 w-8 items-center justify-center rounded-2xl bg-gradient-to-tr from-indigo-500 via-sky-400 to-purple-500 shadow-lg shadow-indigo-500/30">
                 <span className="text-xs font-semibold tracking-tight text-white">DM</span>
@@ -117,171 +108,77 @@ export default function OnboardingWelcomePage() {
           </div>
         </header>
 
-        {/* Main content */}
-        <main className="flex-1 px-4 py-6 sm:px-6 sm:py-10 lg:px-8">
-          <div className="mx-auto flex max-w-5xl flex-col gap-8 lg:flex-row">
-            {/* Left column: hero + quick stats + what's inside + honesty */}
-            <section className="flex-1 space-y-5 sm:space-y-6">
-              <div className="space-y-3">
-                <p className="text-xs font-semibold uppercase tracking-[0.22em] text-text-secondary">
-                  Welcome &amp; guidelines
-                </p>
-                <h1 className="text-3xl font-extrabold tracking-tight text-text-primary sm:text-4xl">
-                  <span className="block">Let&apos;s set you up</span>
-                  <span className="block text-transparent bg-clip-text bg-gradient-to-r from-sky-400 via-emerald-300 to-purple-400">
-                    for a great roommate match
-                  </span>
-                </h1>
-              </div>
+        <main className="flex-1 px-5 py-10 sm:px-8 sm:py-12 lg:px-12 lg:py-16">
+          <div className="mx-auto flex w-full max-w-6xl flex-col gap-12 sm:gap-14 lg:gap-16">
+            <div className="max-w-3xl space-y-4">
+              <p className="text-xs font-semibold uppercase tracking-[0.22em] text-text-secondary">Welcome &amp; guidelines</p>
+              <h1 className="text-3xl font-extrabold tracking-tight text-text-primary sm:text-4xl lg:text-[2.75rem] lg:leading-[1.1]">
+                <span className="block">Let&apos;s set you up</span>
+                <span className="mt-1 block bg-gradient-to-r from-sky-400 via-emerald-300 to-purple-400 bg-clip-text text-transparent">
+                  for a great roommate match
+                </span>
+              </h1>
+            </div>
 
-              {/* Card 1: Quick stats */}
-              <Card className="border-border-subtle/30 bg-bg-surface-alt/50 backdrop-blur-2xl rounded-2xl">
-                <CardContent className="space-y-5 p-5 sm:p-6">
-                  <div className="grid gap-4 sm:grid-cols-3">
-                    <div className="flex items-start gap-3">
-                      <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-bg-surface-alt/70 text-text-primary">
-                        <Clock className="h-4 w-4" />
-                      </div>
-                      <div className="space-y-1">
-                        <p className="text-sm font-semibold text-text-primary">⏱ Time</p>
-                        <p className="text-sm leading-relaxed text-text-primary">~10–15 mins (Grab a coffee!)</p>
-                      </div>
+            <Card className="rounded-3xl border-border-subtle/25 bg-bg-surface-alt/40 backdrop-blur-xl">
+              <CardContent className="p-5 sm:p-6 lg:p-7">
+                <div className="grid gap-6 md:grid-cols-3 md:gap-8 lg:gap-10">
+                  <div className="flex items-start gap-4">
+                    <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-bg-surface-alt/60 text-text-primary ring-1 ring-white/5">
+                      <Clock className="h-4 w-4" />
                     </div>
-                    <div className="flex items-start gap-3">
-                      <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-bg-surface-alt/70 text-text-primary">
-                        <LayoutGrid className="h-4 w-4" />
-                      </div>
-                      <div className="space-y-1">
-                        <p className="text-sm font-semibold text-text-primary">🧩 Format</p>
-                        <p className="text-sm leading-relaxed text-text-primary">8 short blocks</p>
-                      </div>
-                    </div>
-                    <div className="flex items-start gap-3">
-                      <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-bg-surface-alt/70 text-text-primary">
-                        <Target className="h-4 w-4" />
-                      </div>
-                      <div className="space-y-1">
-                        <p className="text-sm font-semibold text-text-primary">🎯 Goal</p>
-                        <p className="text-sm leading-relaxed text-text-primary">Your perfect roommate match</p>
-                      </div>
+                    <div className="space-y-1">
+                      <p className="text-sm font-semibold text-text-primary">⏱ Time</p>
+                      <p className="text-sm leading-relaxed text-text-primary/90">~10 - 15 mins (Grab a coffee!)</p>
                     </div>
                   </div>
-                </CardContent>
-              </Card>
-
-              {/* Card 2: The 8 Match Blocks */}
-              <Card className="border-border-subtle/30 bg-bg-surface-alt/50 backdrop-blur-2xl rounded-2xl">
-                <CardContent className="space-y-4 p-5 sm:p-6">
-                  <h2 className="text-lg font-semibold text-text-primary">The 8 Match Blocks</h2>
-                  <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                    <div className="flex items-start gap-3">
-                      <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-bg-surface-alt/50 text-sky-400">
-                        <Home className="h-4 w-4" />
-                      </div>
-                      <div className="space-y-1">
-                        <p className="text-sm font-semibold text-text-primary">Logistics</p>
-                        <p className="text-sm leading-relaxed text-text-primary">Budget, locations &amp; lease types</p>
-                      </div>
+                  <div className="flex items-start gap-4">
+                    <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-bg-surface-alt/60 text-text-primary ring-1 ring-white/5">
+                      <LayoutGrid className="h-4 w-4" />
                     </div>
-                    <div className="flex items-start gap-3">
-                      <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-bg-surface-alt/50 text-sky-400">
-                        <Moon className="h-4 w-4" />
-                      </div>
-                      <div className="space-y-1">
-                        <p className="text-sm font-semibold text-text-primary">Routines</p>
-                        <p className="text-sm leading-relaxed text-text-primary">Sleep schedules &amp; morning alarms</p>
-                      </div>
-                    </div>
-                    <div className="flex items-start gap-3">
-                      <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-bg-surface-alt/50 text-sky-400">
-                        <Sparkles className="h-4 w-4" />
-                      </div>
-                      <div className="space-y-1">
-                        <p className="text-sm font-semibold text-text-primary">Cleanliness</p>
-                        <p className="text-sm leading-relaxed text-text-primary">Chore division &amp; mess tolerance</p>
-                      </div>
-                    </div>
-                    <div className="flex items-start gap-3">
-                      <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-bg-surface-alt/50 text-sky-400">
-                        <Battery className="h-4 w-4" />
-                      </div>
-                      <div className="space-y-1">
-                        <p className="text-sm font-semibold text-text-primary">Social Battery</p>
-                        <p className="text-sm leading-relaxed text-text-primary">Guests, parties &amp; quiet time</p>
-                      </div>
-                    </div>
-                    <div className="flex items-start gap-3">
-                      <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-bg-surface-alt/50 text-sky-400">
-                        <Coffee className="h-4 w-4" />
-                      </div>
-                      <div className="space-y-1">
-                        <p className="text-sm font-semibold text-text-primary">Lifestyle</p>
-                        <p className="text-sm leading-relaxed text-text-primary">Diet, smoking &amp; drinking habits</p>
-                      </div>
-                    </div>
-                    <div className="flex items-start gap-3">
-                      <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-bg-surface-alt/50 text-sky-400">
-                        <BookOpen className="h-4 w-4" />
-                      </div>
-                      <div className="space-y-1">
-                        <p className="text-sm font-semibold text-text-primary">Study Habits</p>
-                        <p className="text-sm leading-relaxed text-text-primary">Home vs. library &amp; noise levels</p>
-                      </div>
-                    </div>
-                    <div className="flex items-start gap-3">
-                      <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-bg-surface-alt/50 text-sky-400">
-                        <MessageCircle className="h-4 w-4" />
-                      </div>
-                      <div className="space-y-1">
-                        <p className="text-sm font-semibold text-text-primary">Communication</p>
-                        <p className="text-sm leading-relaxed text-text-primary">
-                          Conflict resolution &amp; shared expenses
-                        </p>
-                      </div>
-                    </div>
-                    <div className="flex items-start gap-3">
-                      <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-bg-surface-alt/50 text-sky-400">
-                        <ShieldAlert className="h-4 w-4" />
-                      </div>
-                      <div className="space-y-1">
-                        <p className="text-sm font-semibold text-text-primary">Dealbreakers</p>
-                        <p className="text-sm leading-relaxed text-text-primary">Your absolute non-negotiables</p>
-                      </div>
+                    <div className="space-y-1">
+                      <p className="text-sm font-semibold text-text-primary">🧩 Format</p>
+                      <p className="text-sm leading-relaxed text-text-primary/90">8 short blocks</p>
                     </div>
                   </div>
-                </CardContent>
-              </Card>
-
-              {/* Honesty rule callout */}
-              <div className="flex gap-3 rounded-2xl border border-amber-400/30 bg-amber-500/20 p-4 text-sm text-text-primary">
-                <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-amber-500/90">
-                  <AlertTriangle className="h-4 w-4" />
+                  <div className="flex items-start gap-4">
+                    <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-bg-surface-alt/60 text-text-primary ring-1 ring-white/5">
+                      <Target className="h-4 w-4" />
+                    </div>
+                    <div className="space-y-1">
+                      <p className="text-sm font-semibold text-text-primary">🎯 Goal</p>
+                      <p className="text-sm leading-relaxed text-text-primary/90">Your perfect roommate match</p>
+                    </div>
+                  </div>
                 </div>
-                <p className="leading-relaxed">
-                  <span className="font-semibold">The Golden Rule: Be brutally honest.</span> Our algorithm matches you based on
-                  your real habits. If you fake your answers, you&apos;ll match with the wrong roommate.
-                </p>
+              </CardContent>
+            </Card>
+
+            <WelcomeMatchBlocksCard heading="The 8 match blocks" />
+
+            <div className="flex gap-4 rounded-3xl border border-amber-400/25 bg-amber-500/[0.12] p-6 text-sm text-text-primary backdrop-blur-sm sm:p-8">
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-amber-500/90">
+                <AlertTriangle className="h-4 w-4" />
               </div>
-            </section>
+              <p className="max-w-4xl leading-relaxed">
+                <span className="font-semibold">The Golden Rule: Be brutally honest.</span> Our algorithm matches you based on
+                your real habits. If you fake your answers, you&apos;ll match with the wrong roommate.
+              </p>
+            </div>
 
-            {/* Right column: demographic selection + consents */}
-            <section className="flex-1 space-y-5 sm:space-y-6">
-              {/* Card 2: Demographic selection */}
-              <Card className="border-border-subtle/30 bg-bg-surface-alt/50 backdrop-blur-2xl rounded-2xl">
-                <CardContent className="space-y-5 p-5 sm:p-6">
-                  <div className="space-y-1">
-                    <h2 className="text-lg font-semibold text-text-primary">Your study context</h2>
-                    <p className="text-sm leading-relaxed text-text-primary">
-                      Just a bit of context so we can better understand your situation.
-                    </p>
-                  </div>
+            <Card className="rounded-3xl border-border-subtle/25 bg-bg-surface-alt/40 backdrop-blur-xl">
+              <CardContent className="space-y-6 p-5 sm:p-6 lg:p-7">
+                <div className="max-w-2xl space-y-2">
+                  <h2 className="text-xl font-semibold tracking-tight text-text-primary sm:text-2xl">Your study context</h2>
+                  <p className="text-sm leading-relaxed text-text-primary/90 sm:text-base">
+                    Just a bit of context so we can better understand your situation.
+                  </p>
+                </div>
 
-                  <fieldset className="space-y-3">
-                    <legend className="text-sm font-semibold text-text-primary">Student origin</legend>
-                    <p className="text-xs text-text-primary">
-                      Please choose one option that best describes you.
-                    </p>
-                    <div className="grid gap-3 sm:grid-cols-2">
+                <fieldset className="space-y-3">
+                  <legend className="text-sm font-semibold text-text-primary">Student origin</legend>
+                  <p className="text-xs text-text-primary/90">Please choose one option that best describes you.</p>
+                  <div className="grid gap-4 sm:grid-cols-2 lg:gap-6">
                       <button
                         type="button"
                         onClick={() => setStudentOrigin('dutch')}
@@ -320,10 +217,10 @@ export default function OnboardingWelcomePage() {
 
                   <fieldset className="space-y-3">
                     <legend className="text-sm font-semibold text-text-primary">Study programme</legend>
-                    <p className="text-xs text-text-primary">
+                    <p className="text-xs text-text-primary/90">
                       Please choose one option that best matches your main degree.
                     </p>
-                    <div className="grid gap-3 sm:grid-cols-2">
+                    <div className="grid gap-4 sm:grid-cols-2 lg:gap-6">
                       <button
                         type="button"
                         onClick={() => setStudyProgramType('dutch_taught')}
@@ -364,69 +261,105 @@ export default function OnboardingWelcomePage() {
                 </CardContent>
               </Card>
 
-              {/* Card 3: Privacy & consents */}
-              <Card className="border-border-subtle/30 bg-bg-surface-alt/50 backdrop-blur-2xl rounded-2xl">
-                <CardContent className="space-y-4 p-5 sm:p-6 text-sm text-text-primary">
-                  <div className="space-y-1">
-                    <h2 className="text-lg font-semibold text-text-primary">Privacy &amp; consent</h2>
-                    <p className="text-sm leading-relaxed text-text-primary">
-                      Short version: your answers power the matching algorithm, not public profiles.
-                    </p>
-                  </div>
+            <Card className="rounded-3xl border-border-subtle/25 bg-bg-surface-alt/40 backdrop-blur-xl">
+              <CardContent className="space-y-5 p-5 text-text-primary sm:p-6 lg:p-7">
+                <div className="max-w-2xl space-y-2">
+                  <h2 className="text-xl font-semibold tracking-tight sm:text-2xl">Privacy &amp; consent</h2>
+                  <p className="text-sm leading-relaxed text-text-primary/90 sm:text-base">
+                    Short version: your answers power the matching algorithm, not public profiles.
+                  </p>
+                </div>
 
-                  <div className="space-y-3">
-                    <label className="flex items-center gap-3 cursor-pointer">
+                <div className="space-y-3">
+                  <label className="flex cursor-pointer items-start gap-3 text-sm">
+                    <span className="mt-0.5 flex size-4 shrink-0 items-center justify-center self-start">
                       <Checkbox
                         checked={privacyConsent}
                         onCheckedChange={(checked) => setPrivacyConsent(!!checked)}
-                        className="h-4 w-4 shrink-0 rounded border-border-subtle bg-bg-surface-alt/80 data-[state=checked]:bg-sky-400 data-[state=checked]:border-sky-400 focus-visible:ring-sky-500"
+                        className="rounded border-border-subtle bg-bg-surface-alt/80 data-[state=checked]:border-sky-400 data-[state=checked]:bg-sky-400 focus-visible:ring-sky-500"
                       />
-                      <p className="text-sm leading-relaxed text-text-primary">
-                        I agree to the{' '}
-                        <button
-                          type="button"
-                          onClick={() => setShowLegalModal(true)}
-                          className="underline underline-offset-4 text-sky-400 hover:text-sky-300"
-                        >
-                          Terms &amp; Privacy Policy
-                        </button>
-                        .
-                      </p>
-                    </label>
+                    </span>
+                    <p className="m-0 min-w-0 flex-1 leading-relaxed sm:text-[15px]">
+                      I agree to the{' '}
+                      <button
+                        type="button"
+                        onClick={() => setShowLegalModal(true)}
+                        className="text-sky-400 underline underline-offset-4 hover:text-sky-300"
+                      >
+                        Terms &amp; Privacy Policy
+                      </button>
+                      .
+                    </p>
+                  </label>
 
-                    <label className="flex items-center gap-3 cursor-pointer">
+                  <label className="flex cursor-pointer items-start gap-3 text-sm">
+                    <span className="mt-0.5 flex size-4 shrink-0 items-center justify-center self-start">
                       <Checkbox
                         checked={dealbreakerConsent}
                         onCheckedChange={(checked) => setDealbreakerConsent(!!checked)}
-                        className="h-4 w-4 shrink-0 rounded border-border-subtle bg-bg-surface-alt/80 data-[state=checked]:bg-sky-400 data-[state=checked]:border-sky-400 focus-visible:ring-sky-500"
+                        className="rounded border-border-subtle bg-bg-surface-alt/80 data-[state=checked]:border-sky-400 data-[state=checked]:bg-sky-400 focus-visible:ring-sky-500"
                       />
-                      <p className="text-sm leading-relaxed text-text-primary">
-                        I consent to Domu Match using my lifestyle and dealbreaker answers strictly for the matching algorithm.
-                        (Your data is secure and NEVER shared publicly or with universities).
-                      </p>
-                    </label>
-                  </div>
-                </CardContent>
-              </Card>
+                    </span>
+                    <p className="m-0 min-w-0 flex-1 leading-relaxed sm:text-[15px]">
+                      I consent to Domu Match using my lifestyle and dealbreaker answers strictly for the matching algorithm.
+                      (Your data is secure and NEVER shared publicly or with universities).
+                    </p>
+                  </label>
+                </div>
+              </CardContent>
+            </Card>
 
-              {/* CTA now moved below both columns */}
-            </section>
-          </div>
+            <Card className="rounded-3xl border-amber-400/30 bg-amber-500/[0.12] backdrop-blur-xl">
+              <CardContent className="space-y-5 p-5 text-text-primary sm:p-6 lg:p-7">
+                <div className="max-w-3xl space-y-2">
+                  <h2 className="text-xl font-semibold tracking-tight sm:text-2xl">Special category data questions</h2>
+                  <p className="text-sm leading-relaxed text-text-primary/90 sm:text-base">
+                    Some questions show a{' '}
+                    <span className="inline-flex items-center gap-1 rounded-full border border-amber-300 bg-amber-100 px-2 py-0.5 text-xs font-semibold text-amber-900">
+                      <CircleAlert className="h-3.5 w-3.5" />
+                      Sensitive
+                    </span>{' '}
+                    icon. These are classed as special category data.
+                  </p>
+                  <p className="text-sm leading-relaxed text-text-primary/90 sm:text-base">
+                    We ask these only to improve matching accuracy and compatibility. We do not use this information
+                    for advertising, and we do not show it publicly.
+                  </p>
+                </div>
 
-          {/* CTA spanning full width under both columns */}
-          <div className="mt-6 w-full">
-            <div className="mx-auto max-w-5xl rounded-2xl border border-border-subtle/30 bg-bg-surface-alt/60 p-4 text-text-primary backdrop-blur-2xl flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-              <p className="text-sm leading-relaxed text-text-primary">
-                When you&apos;re ready, start the first block and know you can review and edit your answers before anything is final.
+                <label className="flex cursor-pointer items-start gap-3 text-sm">
+                  <span className="mt-0.5 flex size-4 shrink-0 items-center justify-center self-start">
+                    <Checkbox
+                      checked={specialCategoryConsent}
+                      onCheckedChange={(checked) => setSpecialCategoryConsent(!!checked)}
+                      className="rounded border-border-subtle bg-bg-surface-alt/80 data-[state=checked]:border-sky-400 data-[state=checked]:bg-sky-400 focus-visible:ring-sky-500"
+                    />
+                  </span>
+                  <p className="m-0 min-w-0 flex-1 leading-relaxed sm:text-[15px]">
+                    I understand what the{' '}
+                    <span className="inline-flex items-center gap-1 rounded-full border border-amber-300 bg-amber-100 px-2 py-0.5 text-xs font-semibold text-amber-900">
+                      <CircleAlert className="h-3.5 w-3.5" />
+                      Sensitive
+                    </span>{' '}
+                    icon means and I consent to Domu Match processing those answers strictly for roommate matching.
+                  </p>
+                </label>
+              </CardContent>
+            </Card>
+
+            <div className="flex flex-col gap-6 rounded-3xl border border-border-subtle/25 bg-bg-surface-alt/50 p-6 backdrop-blur-xl sm:flex-row sm:items-center sm:justify-between sm:gap-10 sm:p-8 lg:p-10">
+              <p className="max-w-3xl text-sm leading-relaxed text-text-primary/95 sm:text-base">
+                When you&apos;re ready, start the first block and know you can review and edit your answers before
+                anything is final.
               </p>
               <Button
                 type="button"
                 onClick={handleStart}
                 disabled={!canStart}
                 className={[
-                  'mt-1 inline-flex min-h-[44px] items-center justify-center rounded-xl px-6 text-xs sm:text-sm font-semibold tracking-tight whitespace-normal break-words text-center',
+                  'inline-flex min-h-[48px] shrink-0 items-center justify-center rounded-2xl px-8 text-sm font-semibold tracking-tight sm:min-w-[11rem]',
                   'bg-gradient-to-r from-sky-400 via-indigo-500 to-purple-500 text-text-primary',
-                  !canStart ? 'cursor-not-allowed opacity-50' : 'hover:brightness-110'
+                  !canStart ? 'cursor-not-allowed opacity-50' : 'hover:brightness-110',
                 ].join(' ')}
               >
                 Let&apos;s Begin

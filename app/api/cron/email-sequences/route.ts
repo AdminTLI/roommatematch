@@ -97,8 +97,8 @@ export async function GET(request: Request) {
     }
 
     // Notification digests (matches/messages/platform updates)
-    // Runs hourly, but the sender only actually sends during the Amsterdam 9-11 local window
-    // and only for users due for a digest (tracked in notification_email_digest_state).
+    // Runs hourly and sends for users due for a digest (tracked in notification_email_digest_state).
+    // Optional send-window gating can be enabled via EMAIL_DIGEST_SEND_WINDOW_ENABLED.
     try {
       const digestResult = await sendNotificationDigestEmails()
       results.notificationDigests = { success: digestResult.success, sent: digestResult.sent ?? 0 }

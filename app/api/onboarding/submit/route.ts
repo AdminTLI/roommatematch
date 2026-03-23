@@ -7,6 +7,7 @@ import { trackEvent, EVENT_TYPES } from '@/lib/events'
 import { checkUserVerificationStatus } from '@/lib/auth/verification-check'
 import { getUserFriendlyError } from '@/lib/errors/user-friendly-messages'
 import { sanitizeEmail, sanitizeUserId } from '@/lib/utils/sanitize-logs'
+import { checkRateLimit, getUserRateLimitKey } from '@/lib/rate-limit'
 
 export async function POST(request: Request) {
   const supabase = await createClient()
@@ -35,6 +36,29 @@ export async function POST(request: Request) {
   }
   
   const userId = user.id
+
+  // Route-scoped limit for final submission to prevent abuse without blocking normal retries.
+  const submitRateLimitKey = getUserRateLimitKey('onboarding_submit', userId)
+  const submitRateLimitResult = await checkRateLimit('onboarding_submit', submitRateLimitKey)
+  if (!submitRateLimitResult.allowed) {
+    const retryAfter = Math.ceil((submitRateLimitResult.resetTime - Date.now()) / 1000)
+    return NextResponse.json(
+      {
+        error: 'Too many submission attempts. Please try again shortly.',
+        retryAfter,
+        title: 'Rate Limit Exceeded',
+      },
+      {
+        status: 429,
+        headers: {
+          'X-RateLimit-Limit': '20',
+          'X-RateLimit-Remaining': '0',
+          'X-RateLimit-Reset': new Date(submitRateLimitResult.resetTime).toISOString(),
+          'Retry-After': retryAfter.toString(),
+        },
+      }
+    )
+  }
   
   try {
     // Check verification status (email and Persona)

@@ -2,6 +2,7 @@
 // The config you add here will be used whenever a users loads a page in their browser.
 // https://docs.sentry.io/platforms/javascript/guides/nextjs/
 
+import type { Integration } from '@sentry/core'
 import * as Sentry from '@sentry/nextjs'
 import { getClientConsents } from '@/lib/privacy/cookie-consent-client'
 
@@ -62,7 +63,11 @@ function hasPIIConsent(): boolean {
 
 // Only initialize Sentry if allowed (prod or explicitly enabled) AND user consented
 if (isClientSentryEnabled && hasErrorTrackingConsent()) {
-  const integrations: Sentry.Integration[] = []
+  const integrations: Integration[] = []
+
+  integrations.push(
+    Sentry.consoleLoggingIntegration({ levels: ['log', 'warn', 'error'] })
+  )
 
   // Only add replay integration if user has consented
   if (hasSessionReplayConsent()) {
@@ -76,14 +81,14 @@ if (isClientSentryEnabled && hasErrorTrackingConsent()) {
     // Add optional integrations for additional features
     integrations,
 
+    // Enable logs to be sent to Sentry
+    enableLogs: true,
+
     // Adjust this value in production, or use tracesSampler for greater control
     tracesSampleRate: process.env.NODE_ENV === 'production' ? 0.1 : 1.0,
 
     // Setting this option to true will print useful information to the console while you're setting up Sentry.
     debug: false,
-
-    // Capture unhandled promise rejections
-    captureUnhandledRejections: true,
 
     // Filter out sensitive data
     beforeSend(event, hint) {

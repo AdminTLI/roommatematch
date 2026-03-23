@@ -30,7 +30,16 @@ export async function getUserDisplayName(userId: string): Promise<string> {
 
   // Fallback to auth metadata
   const { data: { user } } = await supabase.auth.getUser()
-  return user?.user_metadata?.full_name || 'User'
+  const meta = (user?.user_metadata || {}) as Record<string, unknown>
+
+  // Supabase sign-up in this repo stores `first_name` / `last_name` (not necessarily `full_name`)
+  const fullName = (typeof meta.full_name === 'string' && meta.full_name.trim()) ? meta.full_name : null
+  const firstName = (typeof meta.first_name === 'string' && meta.first_name.trim()) ? meta.first_name : null
+  const lastName = (typeof meta.last_name === 'string' && meta.last_name.trim()) ? meta.last_name : null
+
+  if (fullName) return fullName
+  if (firstName) return lastName ? `${firstName} ${lastName}`.trim() : firstName
+  return 'User'
 }
 
 /**
@@ -58,8 +67,17 @@ export async function getUserProfile(userId: string): Promise<UserProfile | null
     displayName = profile.last_name 
       ? `${profile.first_name} ${profile.last_name}`.trim()
       : profile.first_name
-  } else if (user.user_metadata?.full_name) {
-    displayName = user.user_metadata.full_name
+  } else {
+    const meta = (user.user_metadata || {}) as Record<string, unknown>
+    const fullName = (typeof meta.full_name === 'string' && meta.full_name.trim()) ? meta.full_name : null
+    const firstName = (typeof meta.first_name === 'string' && meta.first_name.trim()) ? meta.first_name : null
+    const lastName = (typeof meta.last_name === 'string' && meta.last_name.trim()) ? meta.last_name : null
+
+    if (fullName) {
+      displayName = fullName
+    } else if (firstName) {
+      displayName = lastName ? `${firstName} ${lastName}`.trim() : firstName
+    }
   }
 
   return {
@@ -82,7 +100,11 @@ export async function syncProfileNameToAuth(userId: string, firstName: string, l
   // Update auth metadata
   const { error } = await supabase.auth.updateUser({
     data: {
-      full_name: fullName
+      // Keep both naming schemes in sync since different parts of the app
+      // read from different metadata keys.
+      full_name: fullName,
+      first_name: firstName,
+      last_name: lastName || null
     }
   })
 

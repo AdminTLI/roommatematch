@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef, useCallback } from 'react'
 import {
   Dialog,
   DialogContent,
@@ -18,6 +18,39 @@ import { fetchWithCSRF } from '@/lib/utils/fetch-with-csrf'
 type TriggerType = 'day_14' | 'day_30' | null
 
 const COMPLETED_STORAGE_PREFIX = 'wellness_survey_completed_'
+const SNOOZE_STORAGE_PREFIX = 'wellness_survey_snooze_until_'
+const SNOOZE_MS = 7 * 24 * 60 * 60 * 1000
+
+function isSnoozed(trigger: Exclude<TriggerType, null>): boolean {
+  if (typeof window === 'undefined') return false
+  try {
+    const raw = localStorage.getItem(`${SNOOZE_STORAGE_PREFIX}${trigger}`)
+    if (!raw) return false
+    const until = Number.parseInt(raw, 10)
+    if (!Number.isFinite(until)) return false
+    return Date.now() < until
+  } catch {
+    return false
+  }
+}
+
+function snoozeSurvey(trigger: Exclude<TriggerType, null>) {
+  if (typeof window === 'undefined') return
+  try {
+    localStorage.setItem(`${SNOOZE_STORAGE_PREFIX}${trigger}`, String(Date.now() + SNOOZE_MS))
+  } catch {
+    // Ignore storage errors (e.g., private mode)
+  }
+}
+
+function clearSurveySnooze(trigger: TriggerType) {
+  if (!trigger || typeof window === 'undefined') return
+  try {
+    localStorage.removeItem(`${SNOOZE_STORAGE_PREFIX}${trigger}`)
+  } catch {
+    // Ignore
+  }
+}
 
 function hasCompletedSurveyLocally(trigger: TriggerType): boolean {
   if (!trigger || typeof window === 'undefined') return false
@@ -42,6 +75,9 @@ export function WellnessSurveyModal() {
   const [trigger, setTrigger] = useState<TriggerType>(null)
   const [loading, setLoading] = useState(true)
   const [submitting, setSubmitting] = useState(false)
+  const skipSnoozeOnNextClose = useRef(false)
+  const triggerRef = useRef<TriggerType>(null)
+  triggerRef.current = trigger
 
   const [foundHousing, setFoundHousing] = useState<'yes' | 'no' | undefined>(undefined)
   const [foundWithMatch, setFoundWithMatch] = useState<'yes' | 'no' | undefined>(undefined)
@@ -59,8 +95,8 @@ export function WellnessSurveyModal() {
         }
         const data = await res.json()
         const t = data.trigger ?? null
-        // Only show the survey if we haven't already completed this trigger locally.
-        if (t && !hasCompletedSurveyLocally(t)) {
+        if (t && !hasCompletedSurveyLocally(t) && !isSnoozed(t)) {
+          skipSnoozeOnNextClose.current = false
           setTrigger(t)
           setIsOpen(true)
         } else {
@@ -74,6 +110,24 @@ export function WellnessSurveyModal() {
     }
     check()
     return () => { cancelled = true }
+  }, [])
+
+  const handleOpenChange = useCallback((open: boolean) => {
+    if (open) {
+      skipSnoozeOnNextClose.current = false
+      setIsOpen(true)
+      return
+    }
+    const current = triggerRef.current
+    if (!skipSnoozeOnNextClose.current && current) {
+      snoozeSurvey(current)
+    }
+    skipSnoozeOnNextClose.current = false
+    setTrigger(null)
+    setFoundHousing(undefined)
+    setFoundWithMatch(undefined)
+    setReducedStress(undefined)
+    setIsOpen(false)
   }, [])
 
   const canSubmit =
@@ -100,7 +154,9 @@ export function WellnessSurveyModal() {
       // If the backend reports this survey was already submitted, treat it as completed
       // so the modal does not keep reappearing.
       if (!res.ok && res.status === 409) {
+        skipSnoozeOnNextClose.current = true
         markSurveyCompletedLocally(trigger)
+        clearSurveySnooze(trigger)
         setIsOpen(false)
         setTrigger(null)
         setFoundHousing(undefined)
@@ -113,7 +169,9 @@ export function WellnessSurveyModal() {
         const err = await res.json().catch(() => ({}))
         throw new Error(err.error || 'Failed to submit')
       }
+      skipSnoozeOnNextClose.current = true
       markSurveyCompletedLocally(trigger)
+      clearSurveySnooze(trigger)
       setIsOpen(false)
       setTrigger(null)
       setFoundHousing(undefined)
@@ -130,7 +188,7 @@ export function WellnessSurveyModal() {
   if (loading) return null
 
   return (
-    <Dialog open={isOpen} onOpenChange={setIsOpen}>
+    <Dialog open={isOpen} onOpenChange={handleOpenChange}>
       <DialogContent
         className="max-w-lg sm:max-w-xl p-6 sm:p-7 md:p-8 rounded-3xl gap-0"
         aria-describedby="wellness-description"
@@ -242,7 +300,7 @@ export function WellnessSurveyModal() {
           <Button
             variant="outline"
             type="button"
-            onClick={() => setIsOpen(false)}
+            onClick={() => handleOpenChange(false)}
             disabled={submitting}
             className="rounded-xl"
           >

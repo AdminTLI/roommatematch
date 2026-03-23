@@ -1,0 +1,238 @@
+[
+  {
+    "id": "M1_Q1",
+    "section": "personality-values",
+    "kind": "likert",
+    "scale": "agreement",
+    "label": "I view my home primarily as a quiet sanctuary to recover from work, rather than a lively hub for social engagement."
+  },
+  {
+    "id": "M1_Q2",
+    "section": "personality-values",
+    "kind": "mcq",
+    "label": "Which of these best describes your ideal relationship with a young professional housemate?",
+    "options": [
+      {
+        "value": "friendly-acquaintance",
+        "label": "A friendly acquaintance I chat with in the kitchen"
+      },
+      {
+        "value": "close-friend-social-life",
+        "label": "A close friend and an active part of my social life."
+      }
+    ]
+  },
+  {
+    "id": "M1_Q3",
+    "section": "personality-values",
+    "kind": "bipolar",
+    "bipolarLabels": {
+      "left": "Highly spontaneous and flexible",
+      "right": "Highly structured and predictable"
+    },
+    "label": "How do you prefer your weekly domestic life to unfold?"
+  },
+  {
+    "id": "M1_Q4",
+    "section": "personality-values",
+    "kind": "likert",
+    "scale": "agreement",
+    "label": "When I am experiencing a highly stressful week, my natural tendency is to withdraw and isolate myself at home."
+  },
+  {
+    "id": "M1_Q5",
+    "section": "personality-values",
+    "kind": "bipolar",
+    "bipolarLabels": {
+      "left": "Flexible guidelines that adapt to our schedules",
+      "right": "Strict commitments that must be followed"
+    },
+    "label": "When it comes to agreed-upon household rules (e.g., cleaning days, guest notice), how do you view them?"
+  },
+  {
+    "id": "M1_Q6",
+    "section": "personality-values",
+    "kind": "bipolar",
+    "bipolarLabels": {
+      "left": "Home as social hub",
+      "right": "Home as quiet retreat"
+    },
+    "label": "How do you prefer your home to feel?"
+  },
+  {
+    "id": "M1_Q7",
+    "section": "personality-values",
+    "kind": "likert",
+    "scale": "agreement",
+    "label": "I am generally willing to compromise on my personal daily routines if it maintains a peaceful atmosphere in the house."
+  },
+  {
+    "id": "M1_Q8",
+    "section": "personality-values",
+    "kind": "mcq",
+    "label": "Do you prefer a household where everyone lives highly independent, parallel lives, or one where housemates actively integrate their lives (e.g., cooking together)?",
+    "options": [
+      {
+        "value": "independent",
+        "label": "Independent"
+      },
+      {
+        "value": "integrated",
+        "label": "Integrated"
+      }
+    ]
+  },
+  {
+    "id": "M1_Q9",
+    "section": "personality-values",
+    "kind": "likert",
+    "scale": "agreement",
+    "label": "I find it extremely important that the household plans for the week (e.g., who is working from home, who is having guests) are clear."
+  },
+  {
+    "id": "M1_Q10",
+    "section": "personality-values",
+    "kind": "likert",
+    "scale": "agreement",
+    "label": "After a typical workday, my 'social battery' for interacting with housemates is usually completely drained."
+  },
+  {
+    "id": "M1_Q11",
+    "section": "personality-values",
+    "kind": "likert",
+    "scale": "agreement",
+    "label": "It is important to me that my housemates are equally as ambitious and career-focused as I am."
+  },
+  {
+    "id": "M1_Q12",
+    "section": "personality-values",
+    "kind": "likert",
+    "scale": "agreement",
+    "label": "Living in a highly curated, visually organized, and 'adult' space is critical to my mental well-being."
+  },
+  {
+    "id": "M1_Q13",
+    "section": "personality-values",
+    "kind": "bipolar",
+    "bipolarLabels": {
+      "left": "Highly direct, blunt, and to the point",
+      "right": "Highly tactful, cautious, and diplomatic"
+    },
+    "label": "In your general day-to-day life, how do you communicate your needs?"
+  },
+  {
+    "id": "M1_Q14",
+    "section": "personality-values",
+    "kind": "likert",
+    "scale": "agreement",
+    "label": "I value a highly organized living space to maintain my daily routine."
+  },
+  {
+    "id": "M1_Q15",
+    "section": "personality-values",
+    "kind": "likert",
+    "scale": "agreement",
+    "label": "I adapt easily and without bother when my housemate suddenly changes their routine or brings unexpected energy into the home."
+  },
+  {
+    "id": "M1_Q16",
+    "section": "personality-values",
+    "kind": "bipolar",
+    "bipolarLabels": {
+      "left": "Adapting to whoever has the most time/capacity that week",
+      "right": "A strict, 50/50 equal division of labor and costs at all times"
+    },
+    "label": "How do you define 'fairness' in an adult household?"
+  },
+  {
+    "id": "M1_Q17",
+    "section": "personality-values",
+    "kind": "mcq",
+    "label": "When you walk through the front door after work, what energy do you usually bring into the house?",
+    "options": [
+      {
+        "value": "quiet-reserved",
+        "label": "Quiet and reserved; I head straight to my room"
+      },
+      {
+        "value": "warm-brief",
+        "label": "Warm but brief; I say hello and then decompress"
+      },
+      {
+        "value": "talkative-engaged",
+        "label": "Talkative and engaged; I'm ready to debrief my day"
+      }
+    ]
+  },
+  {
+    "id": "M1_Q18",
+    "section": "personality-values",
+    "kind": "likert",
+    "scale": "agreement",
+    "label": "I establish clear boundaries between my professional work and my personal life in shared living spaces."
+  },
+  {
+    "id": "M1_Q19",
+    "section": "personality-values",
+    "kind": "likert",
+    "scale": "agreement",
+    "label": "If I work from home, I require a structured and quiet atmosphere during business hours."
+  },
+  {
+    "id": "M1_Q20",
+    "section": "personality-values",
+    "kind": "likert",
+    "scale": "agreement",
+    "label": "I actively want to create shared memories and traditions (e.g., Sunday brunches, movie nights) with my housemates."
+  },
+  {
+    "id": "M1_Q21",
+    "section": "personality-values",
+    "kind": "bipolar",
+    "bipolarLabels": {
+      "left": "A transient space I pass through",
+      "right": "The primary space where I live, work, and relax"
+    },
+    "label": "How do you treat the common areas (living room, kitchen)?"
+  },
+  {
+    "id": "M1_Q22",
+    "section": "personality-values",
+    "kind": "likert",
+    "scale": "agreement",
+    "label": "I'm okay borrowing/lending small items with explicit permission."
+  },
+  {
+    "id": "M1_Q23",
+    "section": "personality-values",
+    "kind": "toggle",
+    "label": "Do you have strict lifestyle values (e.g., veganism, zero-waste, eco-conscious) that you expect your housemates to respect and participate in?"
+  },
+  {
+    "id": "M1_Q24",
+    "section": "personality-values",
+    "kind": "likert",
+    "scale": "agreement",
+    "label": "I deliberately schedule and fiercely protect my 'me time' while in the apartment, and expect it not to be interrupted."
+  },
+  {
+    "id": "M1_Q25",
+    "section": "personality-values",
+    "kind": "mcq",
+    "label": "If you had to describe the ideal 'vibe' of your home on a Tuesday evening, what would it be?",
+    "options": [
+      {
+        "value": "library-quiet",
+        "label": "Library quiet: Everyone is in their rooms resting or working"
+      },
+      {
+        "value": "low-key-communal",
+        "label": "Low-key communal: We are quietly co-existing in the living room doing our own things"
+      },
+      {
+        "value": "active-communal",
+        "label": "Active communal: We are cooking together, playing music, or chatting"
+      }
+    ]
+  }
+]

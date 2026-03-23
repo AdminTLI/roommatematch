@@ -1,0 +1,219 @@
+[
+  {
+    "id": "M3_Q1",
+    "section": "noise-sensory",
+    "kind": "likert",
+    "scale": "agreement",
+    "specialCategory": true,
+    "label": "I'm more sensitive to sudden than steady noises."
+  },
+  {
+    "id": "M3_Q2",
+    "section": "noise-sensory",
+    "kind": "bipolar",
+    "bipolarLabels": {
+      "left": "Dim, warm, and atmospheric (e.g., low lamps)",
+      "right": "Bright, cool, and fully illuminated (e.g., overhead lights)"
+    },
+    "label": "During the evening, what is your preferred lighting environment in the living room?"
+  },
+  {
+    "id": "M3_Q3",
+    "section": "noise-sensory",
+    "kind": "bipolar",
+    "bipolarLabels": {
+      "left": "Always use headphones",
+      "right": "Always play audio aloud through the phone speaker"
+    },
+    "label": "When consuming media (TikTok, Instagram, voice notes) in common areas, what is your standard behavior?"
+  },
+  {
+    "id": "M3_Q4",
+    "section": "noise-sensory",
+    "kind": "mcq",
+    "label": "If we are both working from home, what is your expectation for the general acoustic environment of the apartment?",
+    "options": [
+      { "value": "library-rules", "label": "Library rules: Absolute silence is required" },
+      { "value": "cafe-vibe", "label": "Cafe vibe: Low-level background noise or quiet chatting is fine" },
+      { "value": "normal-living", "label": "Normal living: I can tune out normal household activity" }
+    ]
+  },
+  {
+    "id": "M3_Q5",
+    "section": "noise-sensory",
+    "kind": "likert",
+    "scale": "comfort",
+    "specialCategory": true,
+    "label": "I'm comfortable when living-room conversations are faintly audible in my room."
+  },
+  {
+    "id": "M3_Q6",
+    "section": "noise-sensory",
+    "kind": "likert",
+    "scale": "agreement",
+    "specialCategory": true,
+    "label": "I find it highly distracting if two audio sources are playing simultaneously (e.g., the TV is on, and someone is watching a video on their phone)."
+  },
+  {
+    "id": "M3_Q7",
+    "section": "noise-sensory",
+    "kind": "likert",
+    "scale": "comfort",
+    "label": "I expect a quiet environment during standard working hours (9-to-5) to accommodate working from home."
+  },
+  {
+    "id": "M3_Q8",
+    "section": "noise-sensory",
+    "kind": "toggle",
+    "label": "Do you prefer having the TV or music playing continuously as 'background noise' throughout the day, even if you aren't actively paying attention to it?"
+  },
+  {
+    "id": "M3_Q9",
+    "section": "noise-sensory",
+    "kind": "likert",
+    "scale": "agreement",
+    "specialCategory": true,
+    "label": "I frequently cook meals that involve deep frying, strong spices, or ingredients that leave lingering odors in the kitchen for hours."
+  },
+  {
+    "id": "M3_Q10",
+    "section": "noise-sensory",
+    "kind": "mcq",
+    "label": "If your housemate is playing music slightly too loud while you are trying to read, how do you handle it?",
+    "options": [
+      { "value": "ask-turn-down", "label": "I immediately ask them to turn it down" },
+      { "value": "headphones-or-move", "label": "I put on my own headphones or move to another room" },
+      { "value": "wait-frustrated", "label": "I wait to see if it stops, but feel increasingly frustrated" }
+    ]
+  },
+  {
+    "id": "M3_Q11",
+    "section": "noise-sensory",
+    "kind": "likert",
+    "scale": "agreement",
+    "specialCategory": true,
+    "label": "I regularly use scented candles, incense, or strong room sprays to alter the smell of the apartment."
+  },
+  {
+    "id": "M3_Q12",
+    "section": "noise-sensory",
+    "kind": "likert",
+    "scale": "agreement",
+    "specialCategory": true,
+    "label": "Even if a space is technically clean, having too many personal items or visual clutter left out in the living room prevents me from relaxing."
+  },
+  {
+    "id": "M3_Q13",
+    "section": "noise-sensory",
+    "kind": "likert",
+    "scale": "agreement",
+    "specialCategory": true,
+    "label": "Immediately after returning home from a long workday, I require at least 30 minutes of total silence before engaging in conversation or household activities."
+  },
+  {
+    "id": "M3_Q14",
+    "section": "noise-sensory",
+    "kind": "bipolar",
+    "bipolarLabels": {
+      "left": "Keep the heating low and wear thick sweaters",
+      "right": "Keep the heating high enough to wear t-shirts indoors"
+    },
+    "label": "During the winter months, how do you prefer to manage the indoor climate?"
+  },
+  {
+    "id": "M3_Q15",
+    "section": "noise-sensory",
+    "kind": "mcq",
+    "label": "Do you strongly prefer keeping windows open for fresh air, even if it means the apartment gets noticeably cold or drafts occur?",
+    "options": [
+      { "value": "yes-prioritize-fresh-air", "label": "Yes, prioritize fresh air" },
+      { "value": "no-prioritize-temperature", "label": "No, prioritize temperature control" }
+    ]
+  },
+  {
+    "id": "M3_Q16",
+    "section": "noise-sensory",
+    "kind": "likert",
+    "scale": "agreement",
+    "label": "I make a highly conscious effort to walk softly and close doors gently if I know someone is resting or working in the next room."
+  },
+  {
+    "id": "M3_Q17",
+    "section": "noise-sensory",
+    "kind": "mcq",
+    "label": "In the common areas, do you prefer keeping the blinds/curtains wide open for maximum sunlight, or drawn closed for maximum privacy?",
+    "options": [
+      { "value": "open-for-sunlight", "label": "Open for sunlight" },
+      { "value": "closed-for-privacy", "label": "Closed for privacy" }
+    ]
+  },
+  {
+    "id": "M3_Q18",
+    "section": "noise-sensory",
+    "kind": "bipolar",
+    "bipolarLabels": { "left": "Soft/lamps lighting", "right": "Bright overhead lighting" },
+    "label": "How do you prefer lighting in shared spaces?"
+  },
+  {
+    "id": "M3_Q19",
+    "section": "noise-sensory",
+    "kind": "likert",
+    "scale": "agreement",
+    "specialCategory": true,
+    "label": "I am easily distracted from my work or relaxation if I can hear muffled conversation from another room."
+  },
+  {
+    "id": "M3_Q20",
+    "section": "noise-sensory",
+    "kind": "likert",
+    "scale": "comfort",
+    "specialCategory": true,
+    "label": "I'm comfortable with loud media, lively dinners, or voice calls in the living room during the evening before quiet hours."
+  },
+  {
+    "id": "M3_Q21",
+    "section": "noise-sensory",
+    "kind": "likert",
+    "scale": "agreement",
+    "label": "I regularly watch TV or listen to music without headphones in my bedroom late at night, assuming the walls will block the sound."
+  },
+  {
+    "id": "M3_Q22",
+    "section": "noise-sensory",
+    "kind": "mcq",
+    "label": "Do you play a musical instrument at home?",
+    "options": [
+      { "value": "no-instruments", "label": "No, I do not play any instruments" },
+      { "value": "headphones-only", "label": "Yes, but exclusively with headphones (e.g., electric keyboard/guitar)" },
+      { "value": "acoustic-day-practice", "label": "Yes, an acoustic/amplified instrument, and I expect to practice during the day" }
+    ]
+  },
+  {
+    "id": "M3_Q23",
+    "section": "noise-sensory",
+    "kind": "likert",
+    "scale": "agreement",
+    "label": "I feel comfortable taking work or personal calls from the shared living room while my housemate is home."
+  },
+  {
+    "id": "M3_Q24",
+    "section": "noise-sensory",
+    "kind": "mcq",
+    "label": "What is your approach to running loud appliances (washing machines, blenders, vacuums)?",
+    "options": [
+      { "value": "whenever-convenient", "label": "I run them whenever it is convenient for my schedule" },
+      { "value": "generally-when-awake", "label": "I try to run them only when my housemate is awake, but I don't strictly plan around them" },
+      { "value": "strictly-coordinate", "label": "I strictly coordinate appliance use to ensure it doesn't disturb my housemate's rest or WFH schedule" }
+    ]
+  },
+  {
+    "id": "M3_Q25",
+    "section": "noise-sensory",
+    "kind": "bipolar",
+    "bipolarLabels": {
+      "left": "Naturally soft-spoken and quiet",
+      "right": "Naturally loud, expressive, and booming"
+    },
+    "label": "How would you describe your natural speaking volume and expressiveness when relaxing at home?"
+  }
+]

@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react'
 import { useRouter } from 'next/navigation'
+import { motion } from 'framer-motion'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Alert, AlertDescription } from '@/components/ui/alert'
@@ -12,9 +13,21 @@ import {
   AlertCircle, 
   Shield, 
   Clock,
-  RefreshCw
+  RefreshCw,
+  Sparkles,
+  Loader2
 } from 'lucide-react'
 import { VerificationFeedback } from '@/components/auth/verification-feedback'
+import { cn } from '@/lib/utils'
+
+const fadeInUp = {
+  initial: { opacity: 0, y: 20 },
+  animate: { opacity: 1, y: 0 },
+  transition: { duration: 0.5, ease: [0.2, 0.8, 0.2, 1] as const }
+}
+
+const verifyCardClass =
+  'bg-background/40 dark:bg-white/5 backdrop-blur-lg border-border/50 shadow-xl overflow-hidden'
 
 // Declare Persona types for TypeScript
 declare global {
@@ -498,12 +511,14 @@ export function VerifyInterface({ user }: VerifyInterfaceProps) {
 
   if (isLoading) {
     return (
-      <div className="max-w-4xl mx-auto">
-        <Card>
-          <CardContent className="pt-6">
-            <div className="text-center space-y-4">
-              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
-              <p className="text-gray-600 dark:text-gray-300">Loading verification service...</p>
+      <div className="max-w-3xl mx-auto w-full space-y-8 pb-24 md:pb-6">
+        <Card className={cn(verifyCardClass)}>
+          <CardContent className="pt-8 pb-8">
+            <div className="flex flex-col items-center justify-center gap-4 text-center">
+              <Loader2 className="h-10 w-10 animate-spin text-indigo-500" aria-hidden />
+              <p className="text-zinc-600 dark:text-zinc-400 font-medium">
+                Loading verification service...
+              </p>
             </div>
           </CardContent>
         </Card>
@@ -514,15 +529,13 @@ export function VerifyInterface({ user }: VerifyInterfaceProps) {
   // Hide background content when Persona is active
   if (isPersonaActive) {
     return (
-      <div className="max-w-4xl mx-auto">
-        {/* Minimal UI when Persona is active - just show error if any */}
+      <div className="max-w-3xl mx-auto w-full space-y-8 pb-24 md:pb-6">
         {error && (
-          <Alert className="mb-6" variant="destructive">
+          <Alert className="rounded-2xl border-destructive/50" variant="destructive">
             <AlertCircle className="h-4 w-4" />
             <AlertDescription>{error}</AlertDescription>
           </Alert>
         )}
-        {/* Persona popup will overlay everything */}
       </div>
     )
   }
@@ -530,228 +543,234 @@ export function VerifyInterface({ user }: VerifyInterfaceProps) {
   return (
     <>
       <VerificationFeedback />
-      <div className="max-w-4xl mx-auto">
-      {/* Header */}
-      <div className="mb-8 text-center">
-        <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-4">
-          Verify Your Identity
-        </h1>
-        <p className="text-gray-600 dark:text-gray-300 max-w-2xl mx-auto">
-          To ensure a safe and secure platform, we need to verify your identity using our secure verification partner.
-        </p>
-      </div>
-
-      {/* Error Alert */}
-      {error && (
-        <Alert className="mb-6" variant="destructive">
-          <AlertCircle className="h-4 w-4" />
-          <AlertDescription>{error}</AlertDescription>
-        </Alert>
-      )}
-
-      {/* Status Card */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            {status === 'verified' && <CheckCircle className="h-5 w-5 text-green-600" />}
-            {status === 'pending' && <Clock className="h-5 w-5 text-blue-600" />}
-            {status === 'failed' && <AlertCircle className="h-5 w-5 text-red-600" />}
-            {status === 'unverified' && <Shield className="h-5 w-5" />}
-            
-            {status === 'verified' && 'Identity Verified'}
-            {status === 'pending' && 'Verification Pending'}
-            {status === 'failed' && 'Verification Failed'}
-            {status === 'unverified' && 'Identity Not Verified'}
-          </CardTitle>
-          <CardDescription>
-            {status === 'verified' && 'Your identity has been successfully verified. Redirecting to onboarding...'}
-            {status === 'pending' && 'Your verification is being processed. This may take a few minutes.'}
-            {status === 'failed' && 'Your verification was not successful. Please try again.'}
-            {status === 'unverified' && 'Start the verification process to continue to your profile setup.'}
-          </CardDescription>
-        </CardHeader>
-
-        <CardContent className="space-y-6">
-          {/* Verified State */}
-          {(() => {
-            if (status === 'verified') {
-              console.log('[Verify] Rendering verified state, status:', status, 'statusRef:', statusRef.current)
-            }
-            return null
-          })()}
-          {status === 'verified' && (
-            <div className="text-center space-y-4">
-              <div className="mx-auto w-16 h-16 bg-green-100 dark:bg-green-900/20 rounded-full flex items-center justify-center">
-                <CheckCircle className="h-8 w-8 text-green-600" />
-              </div>
-              <div>
-                <h3 className="text-xl font-medium text-green-900 dark:text-green-200 mb-2">
-                  Verification Complete!
-                </h3>
-                <p className="text-gray-600 dark:text-gray-300">
-                  Your identity has been verified. Click the button below to continue to your profile setup.
-                </p>
-              </div>
-              <Button 
-                onClick={(e) => {
-                  e.preventDefault()
-                  e.stopPropagation()
-                  console.log('[Verify] Continue button clicked, navigating to onboarding...', {
-                    currentPath: window.location.pathname,
-                    status: status,
-                    statusRef: statusRef.current
-                  })
-                  
-                  // Use window.location.href immediately to bypass Next.js router
-                  // This avoids any caching or redirect loop issues
-                  try {
-                    console.log('[Verify] Setting window.location.href...')
-                    window.location.href = '/onboarding/welcome'
-                    console.log('[Verify] window.location.href set, navigation should happen')
-                  } catch (error) {
-                    console.error('[Verify] Error setting window.location.href:', error)
-                    // Fallback: try router.push
-                    router.push('/onboarding/welcome')
-                  }
-                }} 
-                className="w-full"
-                type="button"
-              >
-                Continue to Profile Setup
-              </Button>
-            </div>
-          )}
-
-          {/* Pending State */}
-          {status === 'pending' && (
-            <div className="text-center space-y-4">
-              <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-blue-600 mx-auto"></div>
-              <div>
-                <h3 className="text-lg font-medium">Verification in Progress</h3>
-                <p className="text-gray-600 dark:text-gray-300">
-                  Your verification is being processed. This page will update automatically when complete.
-                </p>
-              </div>
-            </div>
-          )}
-
-          {/* Failed State */}
-          {status === 'failed' && (
-            <div className="text-center space-y-4">
-              <div className="mx-auto w-16 h-16 bg-red-100 dark:bg-red-900/20 rounded-full flex items-center justify-center">
-                <AlertCircle className="h-8 w-8 text-red-600" />
-              </div>
-              <div>
-                <h3 className="text-xl font-medium text-red-900 dark:text-red-200 mb-2">
-                  Verification Failed
-                </h3>
-                <p className="text-gray-600 dark:text-gray-300">
-                  Please try again or contact support if you continue to experience issues.
-                </p>
-              </div>
-              <Button onClick={retryVerification} disabled={isStarting} className="w-full">
-                <RefreshCw className={`h-4 w-4 mr-2 ${isStarting ? 'animate-spin' : ''}`} />
-                {isStarting ? 'Starting...' : 'Retry Verification'}
-              </Button>
-            </div>
-          )}
-
-          {/* Unverified State */}
-          {status === 'unverified' && (
-            <div className="text-center space-y-6">
-              <div className="mx-auto w-16 h-16 bg-blue-100 dark:bg-blue-900/20 rounded-full flex items-center justify-center">
-                <Shield className="h-8 w-8 text-blue-600" />
-              </div>
-              
-              <div>
-                <h3 className="text-xl font-medium mb-2">
-                  Start Verification
-                </h3>
-                <p className="text-gray-600 dark:text-gray-300 mb-4">
-                  Complete identity verification to continue setting up your profile. 
-                  This typically takes just a few minutes.
-                </p>
-              </div>
-
-              <p className="text-sm text-zinc-500 dark:text-zinc-400">
-                Already verified?{' '}
-                <button
-                  type="button"
-                  onClick={async () => {
-                    try {
-                      const tokenRes = await fetch('/api/csrf-token', { credentials: 'include' })
-                      const { token } = tokenRes.ok ? await tokenRes.json() : {}
-                      const headers: HeadersInit = { 'Content-Type': 'application/json' }
-                      if (token) headers['x-csrf-token'] = token
-                      const res = await fetch('/api/verification/sync', { method: 'POST', headers })
-                      const data = await res.json()
-                      if (data.synced) {
-                        window.location.href = '/onboarding/welcome'
-                      } else {
-                        setError(data.message || 'No verified record found.')
-                      }
-                    } catch (e) {
-                      setError('Failed to sync. Please try again.')
-                    }
-                  }}
-                  className="underline hover:no-underline text-brand-primary"
-                >
-                  Sync my verification status
-                </button>
-              </p>
-
-              <div className="bg-blue-50 dark:bg-blue-900/20 rounded-lg p-4 text-left">
-                <h4 className="font-medium text-blue-900 dark:text-blue-200 mb-2">
-                  What you'll need:
-                </h4>
-                <ul className="text-sm text-blue-800 dark:text-blue-300 space-y-1">
-                  <li>• Government-issued photo ID (passport, driver's license, or national ID)</li>
-                  <li>• A device with a camera for a selfie</li>
-                  <li>• Good lighting</li>
-                </ul>
-              </div>
-
-              <Button 
-                onClick={startVerification} 
-                disabled={isStarting || !personaClientRef.current}
-                size="lg"
-                className="w-full"
-              >
-                {isStarting ? (
-                  <>
-                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-                    Starting...
-                  </>
-                ) : (
-                  <>
-                    Start Verification
-                  </>
-                )}
-              </Button>
-            </div>
-          )}
-        </CardContent>
-      </Card>
-
-      {/* Security Notice */}
-      <Card className="mt-6">
-        <CardContent className="pt-6">
-          <div className="flex items-start gap-3">
-            <Shield className="h-5 w-5 text-blue-600 mt-0.5" />
-            <div>
-              <h4 className="font-medium text-blue-900 dark:text-blue-200 mb-1">
-                Your Privacy & Security
-              </h4>
-              <p className="text-sm text-blue-800 dark:text-blue-300">
-                Verification is handled by Persona, our trusted partner who complies with GDPR and Dutch privacy regulations. 
-                We never store your raw documents - verification data is retained by Persona according to their 
-                retention policy. Your information is encrypted and used solely for identity verification purposes.
-              </p>
-            </div>
+      <div className="max-w-3xl mx-auto w-full space-y-8 pb-24 md:pb-6">
+        <motion.div {...fadeInUp} className="flex flex-col gap-2">
+          <div className="flex items-center gap-2 text-indigo-400 mb-1">
+            <Sparkles className="w-5 h-5" aria-hidden />
+            <span className="text-sm font-medium uppercase tracking-wider">Identity verification</span>
           </div>
-        </CardContent>
-      </Card>
-    </div>
+          <h1 className="text-4xl md:text-5xl font-extrabold text-zinc-900 dark:text-white tracking-tight">
+            Verify your{' '}
+            <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-500 to-purple-500 dark:from-indigo-400 dark:to-purple-400">
+              identity
+            </span>
+          </h1>
+          <p className="text-zinc-500 dark:text-zinc-400 max-w-lg text-lg font-medium">
+            Complete a quick check so everyone on Domu Match can trust they are connecting with real people.
+          </p>
+        </motion.div>
+
+        {error && (
+          <Alert className="rounded-2xl border-destructive/50" variant="destructive">
+            <AlertCircle className="h-4 w-4" />
+            <AlertDescription>{error}</AlertDescription>
+          </Alert>
+        )}
+
+        <motion.div {...fadeInUp}>
+          <Card className={cn(verifyCardClass)}>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-3 text-xl font-bold text-zinc-900 dark:text-white">
+                {status === 'verified' && (
+                  <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-emerald-500/10 border border-emerald-500/20">
+                    <CheckCircle className="h-5 w-5 text-emerald-600 dark:text-emerald-400" />
+                  </span>
+                )}
+                {status === 'pending' && (
+                  <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-indigo-500/10 border border-indigo-500/20">
+                    <Clock className="h-5 w-5 text-indigo-600 dark:text-indigo-400" />
+                  </span>
+                )}
+                {status === 'failed' && (
+                  <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-red-500/10 border border-red-500/20">
+                    <AlertCircle className="h-5 w-5 text-red-600 dark:text-red-400" />
+                  </span>
+                )}
+                {status === 'unverified' && (
+                  <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-indigo-500/10 border border-indigo-500/20">
+                    <Shield className="h-5 w-5 text-indigo-600 dark:text-indigo-400" />
+                  </span>
+                )}
+                <span>
+                  {status === 'verified' && 'Identity verified'}
+                  {status === 'pending' && 'Verification pending'}
+                  {status === 'failed' && 'Verification failed'}
+                  {status === 'unverified' && 'Not verified yet'}
+                </span>
+              </CardTitle>
+              <CardDescription className="text-base text-zinc-500 dark:text-zinc-400 pt-1">
+                {status === 'verified' &&
+                  'Your identity has been confirmed. You can continue to profile setup when you are ready.'}
+                {status === 'pending' && 'We are processing your verification. This usually takes a few minutes.'}
+                {status === 'failed' && 'Something did not pass the check. You can try again below.'}
+                {status === 'unverified' && 'Start verification to unlock onboarding and matching.'}
+              </CardDescription>
+            </CardHeader>
+
+            <CardContent className="space-y-6">
+              {status === 'verified' && (
+                <div className="text-center space-y-5">
+                  <div className="mx-auto flex h-20 w-20 items-center justify-center rounded-2xl border border-emerald-500/20 bg-emerald-500/10">
+                    <CheckCircle className="h-10 w-10 text-emerald-600 dark:text-emerald-400" />
+                  </div>
+                  <div>
+                    <h3 className="text-xl font-bold text-zinc-900 dark:text-white mb-2">
+                      You are all set
+                    </h3>
+                    <p className="text-zinc-600 dark:text-zinc-400 leading-relaxed">
+                      Your identity is verified. Continue to finish setting up your profile.
+                    </p>
+                  </div>
+                  <Button
+                    onClick={(e) => {
+                      e.preventDefault()
+                      e.stopPropagation()
+                      try {
+                        window.location.href = '/onboarding/welcome'
+                      } catch (error) {
+                        console.error('[Verify] Error setting window.location.href:', error)
+                        router.push('/onboarding/welcome')
+                      }
+                    }}
+                    className="w-full"
+                    type="button"
+                  >
+                    Continue to profile setup
+                  </Button>
+                </div>
+              )}
+
+              {status === 'pending' && (
+                <div className="text-center space-y-5 py-2">
+                  <Loader2 className="h-14 w-14 animate-spin text-indigo-500 mx-auto" aria-hidden />
+                  <div>
+                    <h3 className="text-lg font-bold text-zinc-900 dark:text-white">
+                      Verification in progress
+                    </h3>
+                    <p className="text-zinc-600 dark:text-zinc-400 mt-2 leading-relaxed">
+                      This page updates automatically when your check is complete.
+                    </p>
+                  </div>
+                </div>
+              )}
+
+              {status === 'failed' && (
+                <div className="text-center space-y-5">
+                  <div className="mx-auto flex h-20 w-20 items-center justify-center rounded-2xl border border-red-500/20 bg-red-500/10">
+                    <AlertCircle className="h-10 w-10 text-red-600 dark:text-red-400" />
+                  </div>
+                  <div>
+                    <h3 className="text-xl font-bold text-zinc-900 dark:text-white mb-2">
+                      Could not verify
+                    </h3>
+                    <p className="text-zinc-600 dark:text-zinc-400 leading-relaxed">
+                      Try again or contact support if this keeps happening.
+                    </p>
+                  </div>
+                  <Button onClick={retryVerification} disabled={isStarting} className="w-full">
+                    <RefreshCw className={cn('h-4 w-4 mr-2', isStarting && 'animate-spin')} />
+                    {isStarting ? 'Starting...' : 'Retry verification'}
+                  </Button>
+                </div>
+              )}
+
+              {status === 'unverified' && (
+                <div className="space-y-6">
+                  <div className="flex flex-col items-center text-center space-y-4">
+                    <div className="flex h-20 w-20 items-center justify-center rounded-2xl border border-indigo-500/20 bg-indigo-500/10">
+                      <Shield className="h-10 w-10 text-indigo-600 dark:text-indigo-400" />
+                    </div>
+                    <div>
+                      <h3 className="text-xl font-bold text-zinc-900 dark:text-white mb-2">
+                        Start verification
+                      </h3>
+                      <p className="text-zinc-600 dark:text-zinc-400 leading-relaxed">
+                        Most people finish in a few minutes. You will need your ID and a quick selfie.
+                      </p>
+                    </div>
+                  </div>
+
+                  <p className="text-center text-sm text-zinc-500 dark:text-zinc-400">
+                    Already verified?{' '}
+                    <button
+                      type="button"
+                      onClick={async () => {
+                        try {
+                          const tokenRes = await fetch('/api/csrf-token', { credentials: 'include' })
+                          const { token } = tokenRes.ok ? await tokenRes.json() : {}
+                          const headers: HeadersInit = { 'Content-Type': 'application/json' }
+                          if (token) headers['x-csrf-token'] = token
+                          const res = await fetch('/api/verification/sync', { method: 'POST', headers })
+                          const data = await res.json()
+                          if (data.synced) {
+                            window.location.href = '/onboarding/welcome'
+                          } else {
+                            setError(data.message || 'No verified record found.')
+                          }
+                        } catch (e) {
+                          setError('Failed to sync. Please try again.')
+                        }
+                      }}
+                      className="font-medium text-indigo-600 underline-offset-4 hover:underline dark:text-indigo-400"
+                    >
+                      Sync my verification status
+                    </button>
+                  </p>
+
+                  <div className="rounded-2xl border border-indigo-500/20 bg-indigo-500/5 dark:bg-indigo-500/10 p-5 text-left">
+                    <h4 className="font-semibold text-zinc-900 dark:text-white mb-3">
+                      What you will need
+                    </h4>
+                    <ul className="text-sm text-zinc-600 dark:text-zinc-300 space-y-2 list-disc list-inside marker:text-indigo-500">
+                      <li>Government-issued photo ID (passport, driver&apos;s license, or national ID)</li>
+                      <li>A device with a camera for a selfie</li>
+                      <li>Good lighting</li>
+                    </ul>
+                  </div>
+
+                  <Button
+                    onClick={startVerification}
+                    disabled={isStarting || !personaClientRef.current}
+                    size="lg"
+                    className="w-full"
+                  >
+                    {isStarting ? (
+                      <>
+                        <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                        Starting...
+                      </>
+                    ) : (
+                      'Start verification'
+                    )}
+                  </Button>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </motion.div>
+
+        <motion.div {...fadeInUp}>
+          <Card className={cn(verifyCardClass, 'border-zinc-200/80 dark:border-white/10')}>
+            <CardContent className="pt-6">
+              <div className="flex items-start gap-4">
+                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-indigo-500/10 border border-indigo-500/20">
+                  <Shield className="h-5 w-5 text-indigo-600 dark:text-indigo-400" />
+                </div>
+                <div>
+                  <h4 className="font-semibold text-zinc-900 dark:text-white mb-2">
+                    Privacy and security
+                  </h4>
+                  <p className="text-sm text-zinc-600 dark:text-zinc-400 leading-relaxed">
+                    Verification is handled by Persona, our trusted partner, in line with GDPR and Dutch privacy
+                    rules. We do not store your raw documents; Persona retains verification data under their policy.
+                    Your information is encrypted and used only for identity verification.
+                  </p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </motion.div>
+      </div>
     </>
   )
 }

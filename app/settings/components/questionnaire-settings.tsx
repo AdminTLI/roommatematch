@@ -9,6 +9,7 @@ import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Badge } from '@/components/ui/badge'
 import {
   FileText,
+  FileDown,
   Edit,
   RotateCcw,
   CheckCircle,
@@ -33,6 +34,7 @@ interface QuestionnaireSettingsProps {
 export function QuestionnaireSettings({ progressData, userType }: QuestionnaireSettingsProps) {
   const router = useRouter()
   const [isResetting, setIsResetting] = useState(false)
+  const [isDownloadingPdf, setIsDownloadingPdf] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [success, setSuccess] = useState<string | null>(null)
 
@@ -86,6 +88,47 @@ export function QuestionnaireSettings({ progressData, userType }: QuestionnaireS
       setError(err instanceof Error ? err.message : 'An error occurred')
     } finally {
       setIsResetting(false)
+    }
+  }
+
+  const handleDownloadResponsesPdf = async () => {
+    setIsDownloadingPdf(true)
+    setError(null)
+    setSuccess(null)
+
+    try {
+      // The endpoint will generate a PDF from saved onboarding sections.
+      const response = await fetchWithCSRF('/api/pdf/generate-onboarding-preview', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({}),
+      })
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}))
+        const errorMessage =
+          errorData?.error ||
+          errorData?.details ||
+          (response.status === 429 ? 'Too many PDF requests. Please try again in a few minutes.' : 'Failed to generate PDF')
+        throw new Error(errorMessage)
+      }
+
+      const blob = await response.blob()
+      const url = window.URL.createObjectURL(blob)
+      const anchor = document.createElement('a')
+      anchor.href = url
+      anchor.download = `domu-match-responses-${new Date().toISOString().split('T')[0]}.pdf`
+      document.body.appendChild(anchor)
+      anchor.click()
+      window.URL.revokeObjectURL(url)
+      document.body.removeChild(anchor)
+      setSuccess('Responses PDF downloaded successfully.')
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Unable to download PDF')
+    } finally {
+      setIsDownloadingPdf(false)
     }
   }
 
@@ -241,20 +284,39 @@ export function QuestionnaireSettings({ progressData, userType }: QuestionnaireS
       <div className="space-y-4">
         <h3 className="text-sm font-medium text-zinc-600 dark:text-zinc-400 uppercase tracking-wider px-1">Quick Actions</h3>
         <div className="bg-white/80 dark:bg-zinc-900/40 border border-zinc-200 dark:border-white/10 rounded-2xl p-6 space-y-6 backdrop-blur-xl">
-          <div className="flex flex-col sm:flex-row gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             <Button
               onClick={handleEditAnswers}
-              className="flex-1 h-12 bg-blue-500 hover:bg-blue-600 text-white rounded-xl shadow-lg shadow-blue-500/20 font-semibold"
+              className="h-12 bg-blue-500 hover:bg-blue-600 text-white rounded-xl shadow-lg shadow-blue-500/20 font-semibold"
             >
               <Edit className="w-4 h-4 mr-2" />
               Edit Responses
             </Button>
 
             <Button
+              onClick={handleDownloadResponsesPdf}
+              variant="outline"
+              disabled={isDownloadingPdf}
+              className="h-12 border-zinc-200 dark:border-white/10 hover:bg-zinc-100 dark:hover:bg-white/5 text-zinc-900 dark:text-zinc-100 rounded-xl"
+            >
+              {isDownloadingPdf ? (
+                <>
+                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                  Generating PDF...
+                </>
+              ) : (
+                <>
+                  <FileDown className="w-4 h-4 mr-2" />
+                  Download Responses PDF
+                </>
+              )}
+            </Button>
+
+            <Button
               onClick={handleRetakeQuestionnaire}
               variant="outline"
               disabled={isResetting}
-              className="flex-1 h-12 border-zinc-200 dark:border-white/10 hover:bg-zinc-100 dark:hover:bg-white/5 text-zinc-900 dark:text-zinc-100 rounded-xl"
+              className="h-12 border-zinc-200 dark:border-white/10 hover:bg-zinc-100 dark:hover:bg-white/5 text-zinc-900 dark:text-zinc-100 rounded-xl"
             >
               {isResetting ? (
                 <>
@@ -276,6 +338,9 @@ export function QuestionnaireSettings({ progressData, userType }: QuestionnaireS
             </p>
             <p className="text-xs leading-relaxed text-zinc-600 dark:text-zinc-400">
               <strong className="text-zinc-900 dark:text-zinc-100">Retake All:</strong> This will archive your current responses and start the matching process from scratch.
+            </p>
+            <p className="text-xs leading-relaxed text-zinc-600 dark:text-zinc-400">
+              <strong className="text-zinc-900 dark:text-zinc-100">Download Responses PDF:</strong> Export your latest questionnaire answers as a PDF document.
             </p>
           </div>
         </div>

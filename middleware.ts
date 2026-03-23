@@ -155,31 +155,39 @@ export async function middleware(req: NextRequest) {
     
     // Skip CSRF for GET, HEAD, OPTIONS
     if (!['GET', 'HEAD', 'OPTIONS'].includes(method)) {
+      const routeScopedRateLimitedPaths = new Set([
+        '/api/onboarding/save',
+        '/api/onboarding/submit',
+        '/api/pdf/generate-onboarding-preview',
+      ])
+
       // Explicit skip for hide-profile (avoids any CSRF path-matching quirks; auth still required in route)
       if (pathname === '/api/settings/hide-profile') {
         return NextResponse.next()
       }
 
       // Rate limiting for POST/PUT/DELETE API routes
-      const rateLimitKey = getIPRateLimitKey('api', clientIp)
-      const rateLimitResult = await checkRateLimit('api', rateLimitKey)
+      if (!routeScopedRateLimitedPaths.has(pathname)) {
+        const rateLimitKey = getIPRateLimitKey('api', clientIp)
+        const rateLimitResult = await checkRateLimit('api', rateLimitKey)
 
-      if (!rateLimitResult.allowed) {
-        return NextResponse.json(
-          {
-            error: 'Too many requests',
-            retryAfter: Math.ceil((rateLimitResult.resetTime - Date.now()) / 1000)
-          },
-          {
-            status: 429,
-            headers: {
-              'X-RateLimit-Limit': '100',
-              'X-RateLimit-Remaining': '0',
-              'X-RateLimit-Reset': new Date(rateLimitResult.resetTime).toISOString(),
-              'Retry-After': Math.ceil((rateLimitResult.resetTime - Date.now()) / 1000).toString()
+        if (!rateLimitResult.allowed) {
+          return NextResponse.json(
+            {
+              error: 'Too many requests',
+              retryAfter: Math.ceil((rateLimitResult.resetTime - Date.now()) / 1000)
+            },
+            {
+              status: 429,
+              headers: {
+                'X-RateLimit-Limit': '100',
+                'X-RateLimit-Remaining': '0',
+                'X-RateLimit-Reset': new Date(rateLimitResult.resetTime).toISOString(),
+                'Retry-After': Math.ceil((rateLimitResult.resetTime - Date.now()) / 1000).toString()
+              }
             }
-          }
-        )
+          )
+        }
       }
 
       // CSRF validation for state-changing requests

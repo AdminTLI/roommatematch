@@ -19,6 +19,7 @@ export type Item = {
   label: string
   scale?: LikertScaleKind
   dbEligible?: boolean
+  specialCategory?: boolean
   options?: { value: string; label: string }[]
   bipolarLabels?: { left: string; right: string }
   min?: number

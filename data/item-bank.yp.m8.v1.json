@@ -1,0 +1,288 @@
+[
+  {
+    "id": "M8_Q1",
+    "section": "reliability-logistics",
+    "kind": "mcq",
+    "label": "When signing a lease for a premium apartment, what is your preferred legal structure?",
+    "options": [
+      {
+        "value": "individual-contracts",
+        "label": "Strictly individual contracts; I am only liable for my own room"
+      },
+      {
+        "value": "joint-lease-internal-contract",
+        "label": "A joint lease (solidary liability), but with a strict internal contract between us"
+      },
+      {
+        "value": "joint-lease-trust",
+        "label": "I don't mind a joint lease if I trust the person I am moving in with"
+      }
+    ]
+  },
+  {
+    "id": "M8_Q2",
+    "section": "reliability-logistics",
+    "kind": "likert",
+    "scale": "agreement",
+    "label": "I would like to use a shared expenses app (e.g., Splitwise)."
+  },
+  {
+    "id": "M8_Q3",
+    "section": "reliability-logistics",
+    "kind": "mcq",
+    "label": "Are you comfortable securely storing a spare apartment key with a trusted neighbor or nearby family member in case of lockouts?",
+    "options": [
+      { "value": "yes", "label": "Yes" },
+      { "value": "no-security-risk", "label": "No, too much security risk" }
+    ]
+  },
+  {
+    "id": "M8_Q4",
+    "section": "reliability-logistics",
+    "kind": "mcq",
+    "label": "If we split the cost of a €800 living room sofa 50/50, and I move out after two years, what happens to the sofa?",
+    "options": [
+      {
+        "value": "buyout-depreciated",
+        "label": "You buy me out of my half based on its depreciated value"
+      },
+      {
+        "value": "sell-and-split",
+        "label": "We sell it online and split the cash"
+      },
+      {
+        "value": "leave-it",
+        "label": "I just leave it; the hassle of calculating depreciation isn't worth it"
+      }
+    ]
+  },
+  {
+    "id": "M8_Q5",
+    "section": "reliability-logistics",
+    "kind": "bipolar",
+    "bipolarLabels": {
+      "left": "I have no idea how to do these things; I call someone",
+      "right": "I am highly handy and take care of all physical maintenance myself"
+    },
+    "label": "How do you handle routine apartment maintenance (e.g., bleeding radiators, replacing complex light fixtures, unclogging drains)?"
+  },
+  {
+    "id": "M8_Q6",
+    "section": "reliability-logistics",
+    "kind": "likert",
+    "scale": "agreement",
+    "label": "I separate waste/recycling as required."
+  },
+  {
+    "id": "M8_Q7",
+    "section": "reliability-logistics",
+    "kind": "likert",
+    "scale": "agreement",
+    "label": "I'm comfortable with energy-saving practices (lights off, shorter showers)."
+  },
+  {
+    "id": "M8_Q8",
+    "section": "reliability-logistics",
+    "kind": "mcq",
+    "label": "Even if the landlord allows it, do you require a strict rule that no smoking (of any kind) occurs anywhere inside the accommodation, including leaning out windows?",
+    "options": [
+      {
+        "value": "strict-outdoor-only",
+        "label": "Yes, strict outdoor smoking only"
+      },
+      {
+        "value": "indoor-negotiable",
+        "label": "No, indoor smoking is negotiable"
+      }
+    ]
+  },
+  {
+    "id": "M8_Q9",
+    "section": "reliability-logistics",
+    "kind": "mcq",
+    "label": "If a shared essential appliance (e.g., the washing machine) breaks and the landlord is not responsible, how do you handle a sudden €400 replacement cost?",
+    "options": [
+      {
+        "value": "split-immediately",
+        "label": "I expect us to split it and pay for a new one immediately that same day"
+      },
+      {
+        "value": "need-time-to-budget",
+        "label": "I would need a few weeks to budget for my half of the cost"
+      },
+      {
+        "value": "buy-second-hand",
+        "label": "I prefer it if we buy a cheap second-hand option to avoid high sudden costs."
+      }
+    ]
+  },
+  {
+    "id": "M8_Q10",
+    "section": "reliability-logistics",
+    "kind": "likert",
+    "scale": "agreement",
+    "label": "I am highly meticulous about following strict building rules (e.g., exactly when to take out trash, not leaving bikes in the hallway, balcony regulations)."
+  },
+  {
+    "id": "M8_Q11",
+    "section": "reliability-logistics",
+    "kind": "bipolar",
+    "bipolarLabels": {
+      "left": "Subletting empty rooms can be useful",
+      "right": "No subletting under any circumstances"
+    },
+    "label": "I expect a strict policy against subletting our rooms in any way or form."
+  },
+  {
+    "id": "M8_Q12",
+    "section": "reliability-logistics",
+    "kind": "bipolar",
+    "bipolarLabels": {
+      "left": "I pay manually each month when I remember",
+      "right": "Everything is set up via strict automated bank transfers"
+    },
+    "label": "How do you handle your core monthly financial obligations (rent, major utilities)?"
+  },
+  {
+    "id": "M8_Q13",
+    "section": "reliability-logistics",
+    "kind": "toggle",
+    "label": "I agree to share basic emergency contact with housemates."
+  },
+  {
+    "id": "M8_Q14",
+    "section": "reliability-logistics",
+    "kind": "mcq",
+    "label": "What is your current status and intent regarding pets in the apartment?",
+    "options": [
+      {
+        "value": "have-pet-require-friendly",
+        "label": "I have a pet and require a pet-friendly lease"
+      },
+      {
+        "value": "no-pet-dont-mind",
+        "label": "I do not have a pet, but don't mind them"
+      },
+      {
+        "value": "prefer-pet-free",
+        "label": "I do not have pets and prefer a pet-free apartment"
+      }
+    ]
+  },
+  {
+    "id": "M8_Q15",
+    "section": "reliability-logistics",
+    "kind": "mcq",
+    "label": "If the landlord deducts €300 from our joint security deposit because your housemate damaged the flooring in the living room, what is your stance?",
+    "options": [
+      {
+        "value": "housemate-reimburse",
+        "label": "The housemate must reimburse me for the deduction completely"
+      },
+      {
+        "value": "split-50-50",
+        "label": "We split the loss 50/50, as we share the common spaces"
+      },
+      {
+        "value": "let-it-go",
+        "label": "I let it go; wear and tear is part of renting."
+      }
+    ]
+  },
+  {
+    "id": "M8_Q16",
+    "section": "reliability-logistics",
+    "kind": "mcq",
+    "label": "If you decide to leave a joint lease, how much internal notice do you believe you owe your housemate to find a replacement?",
+    "options": [
+      { "value": "1-month", "label": "1 month (the legal minimum)" },
+      { "value": "2-months", "label": "2 months (standard courtesy)" },
+      { "value": "3-plus-months", "label": "3+ months (maximum stability and planning time)" }
+    ]
+  },
+  {
+    "id": "M8_Q17",
+    "section": "reliability-logistics",
+    "kind": "likert",
+    "scale": "agreement",
+    "label": "I am highly organized and completely willing to have the main internet, water, and energy contracts registered in my personal name."
+  },
+  {
+    "id": "M8_Q18",
+    "section": "reliability-logistics",
+    "kind": "mcq",
+    "label": "Do you legally require the ability to formally register yourself at this address with the municipality (Basisregistratie Personen)?",
+    "options": [
+      { "value": "yes-mandatory", "label": "Yes, mandatory" },
+      { "value": "no-not-required", "label": "No, not required" }
+    ]
+  },
+  {
+    "id": "M8_Q19",
+    "section": "reliability-logistics",
+    "kind": "toggle",
+    "label": "Do you intend to register a freelance business or LLC (e.g., KVK registration) at your home address?"
+  },
+  {
+    "id": "M8_Q20",
+    "section": "reliability-logistics",
+    "kind": "bipolar",
+    "bipolarLabels": {
+      "left": "Keep the house warm and split the high bill equally",
+      "right": "Strictly monitor usage, turn down heating, and confront housemates who waste energy"
+    },
+    "label": "How do you prefer to handle high gas/electricity prices in a shared apartment?"
+  },
+  {
+    "id": "M8_Q21",
+    "section": "reliability-logistics",
+    "kind": "bipolar",
+    "bipolarLabels": {
+      "left": "The leaving person finds a replacement entirely on their own",
+      "right": "The staying person interviews and selects the replacement"
+    },
+    "label": "If one of us moves out, how is the replacement process handled?"
+  },
+  {
+    "id": "M8_Q22",
+    "section": "reliability-logistics",
+    "kind": "mcq",
+    "label": "If a replacement roommate is needed, how much decision power should the remaining housemate have?",
+    "options": [
+      { "value": "remaining-housemate-final", "label": "Final decision by remaining housemate" },
+      { "value": "joint-mutual-veto", "label": "Joint decision (mutual veto)" },
+      { "value": "leaving-housemate-final", "label": "Final decision by the person leaving" }
+    ]
+  },
+  {
+    "id": "M8_Q23",
+    "section": "reliability-logistics",
+    "kind": "mcq",
+    "label": "What is your intended timeline for living in your next apartment?",
+    "options": [
+      {
+        "value": "short-term",
+        "label": "Short-term (6-12 months, e.g., a stepping stone)"
+      },
+      { "value": "medium-term", "label": "Medium-term (1-2 years)" },
+      { "value": "long-term", "label": "Long-term settlement (2+ years)" }
+    ]
+  },
+  {
+    "id": "M8_Q24",
+    "section": "reliability-logistics",
+    "kind": "mcq",
+    "label": "Do you believe the household should invest in shared liability/renter's insurance to protect our personal property in common areas?",
+    "options": [
+      { "value": "yes-necessary", "label": "Yes, it is necessary" },
+      { "value": "no-individual-fine", "label": "No, individual insurance is fine" }
+    ]
+  },
+  {
+    "id": "M8_Q25",
+    "section": "reliability-logistics",
+    "kind": "likert",
+    "scale": "agreement",
+    "label": "I am fully comfortable and capable of providing the standard income proofs (e.g., employer statements, salary slips showing 3x rent) required by premium housing agencies."
+  }
+]

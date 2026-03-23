@@ -90,13 +90,11 @@ export async function POST(req: NextRequest) {
     }
 
     const body = (await req.json().catch(() => ({}))) as OnboardingPdfRequestBody
-    if (!body.sections) {
-      return NextResponse.json({ error: 'Missing onboarding sections' }, { status: 400 })
-    }
 
-    // Rate limiting: 5 PDFs per hour per user
-    const rateLimitKey = getUserRateLimitKey('pdf_generation', user.id)
-    const rateLimitResult = await checkRateLimit('pdf_generation', rateLimitKey)
+    const isProduction = process.env.NODE_ENV === 'production'
+    const rateLimitResult = isProduction
+      ? await checkRateLimit('pdf_generation', getUserRateLimitKey('pdf_generation', user.id))
+      : { allowed: true, remaining: 5, resetTime: Date.now() + 60 * 60 * 1000, totalHits: 0 }
 
     if (!rateLimitResult.allowed) {
       return NextResponse.json(
@@ -140,9 +138,45 @@ export async function POST(req: NextRequest) {
           const studentName =
             profile?.first_name || (user.email ? user.email.split('@')[0] : 'Your profile')
 
+          let onboardingSections = body.sections
+          if (!onboardingSections) {
+            const { data: dbSections, error: sectionsError } = await supabase
+              .from('onboarding_sections')
+              .select('section, answers')
+              .eq('user_id', user.id)
+
+            if (sectionsError) {
+              throw new Error(`Failed to load saved onboarding sections: ${sectionsError.message}`)
+            }
+
+            onboardingSections = (dbSections ?? []).reduce<Record<string, Record<string, { value: any; dealBreaker?: boolean }>>>(
+              (acc, row) => {
+                const sectionKey = row.section
+                if (typeof sectionKey !== 'string' || !Array.isArray(row.answers)) return acc
+
+                const normalizedAnswers = row.answers.reduce<Record<string, { value: any; dealBreaker?: boolean }>>(
+                  (answerAcc, answer) => {
+                    if (answer?.itemId && typeof answer.itemId === 'string') {
+                      answerAcc[answer.itemId] = {
+                        value: answer.value,
+                        dealBreaker: answer.dealBreaker === true,
+                      }
+                    }
+                    return answerAcc
+                  },
+                  {}
+                )
+
+                acc[sectionKey] = normalizedAnswers
+                return acc
+              },
+              {}
+            ) as OnboardingPdfRequestBody['sections']
+          }
+
           const sections = buildOnboardingPdfSections({
             items: itemsJson as Item[],
-            onboardingSections: body.sections,
+            onboardingSections: onboardingSections ?? {},
             sectionMeta,
           })
 

@@ -38,9 +38,14 @@ export function useAutosave(section: SectionKey) {
   const lastSavedAnswersRef = useRef<Answer[]>([])
   const isInitialLoadRef = useRef(true)
   const retryTimeoutRef = useRef<NodeJS.Timeout | null>(null)
+  const loadedSectionRef = useRef<SectionKey | null>(null)
 
   // Load existing answers on mount
   useEffect(() => {
+    // Guard against re-running initial hydration on each local answer update.
+    if (loadedSectionRef.current === section) return
+    loadedSectionRef.current = section
+
     let cancelled = false
     ;(async () => {
       try {
@@ -76,7 +81,7 @@ export function useAutosave(section: SectionKey) {
           for (const a of answers) {
             // Validate answer has a valid value before loading
             if (a && a.itemId && a.value) {
-              const existing = sectionAnswers[a.itemId]
+              const existing = useOnboardingStore.getState().sections[section]?.[a.itemId]
               if (!existing || !data.lastSavedAt || data.lastSavedAt > (existing as any).savedAt) {
                 setAnswer(section, a)
               }
@@ -102,7 +107,7 @@ export function useAutosave(section: SectionKey) {
     return () => {
       cancelled = true
     }
-  }, [section, setAnswer, setLastSavedAt, sectionAnswers, clearSections])
+  }, [section, setAnswer, setLastSavedAt, clearSections])
 
   const answersArray = useMemo(() => toArrayRecord(sectionAnswers), [sectionAnswers])
 
