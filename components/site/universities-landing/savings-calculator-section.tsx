@@ -11,6 +11,9 @@ import { cn } from '@/lib/utils'
 
 const statIcons = [Euro, TrendingUp, Users]
 
+const GLASS =
+  'bg-white/60 backdrop-blur-xl border border-white/50 shadow-[0_8px_30px_rgb(0,0,0,0.04)] rounded-3xl'
+
 export function SavingsCalculatorSection() {
   const { locale } = useApp()
   const t = content[locale].savingsCalculator
@@ -30,20 +33,32 @@ export function SavingsCalculatorSection() {
           className="max-w-4xl mx-auto"
         >
           <div className="text-center mb-12">
-            <div className="inline-flex items-center justify-center p-3 rounded-full bg-indigo-500/20 border border-indigo-400/30 mb-6">
-              <Calculator className="h-10 w-10 text-indigo-400" aria-hidden />
+            <div className="inline-flex items-center justify-center p-3 rounded-full bg-indigo-50/80 border border-indigo-200/80 mb-6">
+              <Calculator className="h-10 w-10 text-indigo-700" aria-hidden />
             </div>
             <h2
               id="savings-calculator-heading"
-              className="text-2xl sm:text-3xl md:text-4xl font-bold text-white tracking-tight mb-4"
+              className="text-2xl sm:text-3xl md:text-4xl font-bold text-slate-800 tracking-tight mb-4"
             >
               {locale === 'en' ? (
-                <>What could <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 to-purple-400">better housing</span> mean for your budget?</>
+                <>
+                  What could{' '}
+                  <span className="text-slate-800">
+                    better housing
+                  </span>{' '}
+                  mean for your budget?
+                </>
               ) : (
-                <>Wat zou <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 to-purple-400">betere huisvesting</span> voor je budget kunnen betekenen?</>
+                <>
+                  Wat zou{' '}
+                  <span className="text-slate-800">
+                    betere huisvesting
+                  </span>{' '}
+                  voor je budget kunnen betekenen?
+                </>
               )}
             </h2>
-            <p className="text-white/70 max-w-2xl mx-auto leading-relaxed">{t.subheading}</p>
+            <p className="text-slate-600 max-w-2xl mx-auto leading-relaxed">{t.subheading}</p>
           </div>
 
           <div className="grid sm:grid-cols-3 gap-6 mb-10">
@@ -61,30 +76,31 @@ export function SavingsCalculatorSection() {
                   viewport={{ once: true }}
                   transition={{ duration: 0.4, delay: i * 0.1 }}
                   className={cn(
-                    'glass noise-overlay p-6 md:p-8 rounded-2xl text-center',
-                    'transition-all duration-300 hover:border-indigo-400/30 hover:bg-white/10'
+                    GLASS,
+                    'p-6 md:p-8 rounded-2xl text-center',
+                    'transition-all duration-300 hover:bg-white/75'
                   )}
                 >
-                  <div className="mx-auto mb-3 p-2.5 rounded-xl bg-indigo-500/20 border border-indigo-400/30 w-fit">
-                    <Icon className="h-6 w-6 text-indigo-400" aria-hidden />
+                  <div className="mx-auto mb-3 p-2.5 rounded-xl bg-indigo-50/80 border border-indigo-200/80 w-fit">
+                    <Icon className="h-6 w-6 text-indigo-700" aria-hidden />
                   </div>
-                  <p className="text-xl md:text-2xl font-bold text-indigo-400">{stat.value}</p>
-                  <p className="text-sm text-white/60 mt-1">{stat.label}</p>
+                  <p className="text-xl md:text-2xl font-bold text-slate-900">{stat.value}</p>
+                  <p className="text-sm text-slate-600 mt-1">{stat.label}</p>
                 </motion.div>
               )
             })}
           </div>
 
           <div className="text-center">
-            <p className="text-white/60 mb-6 max-w-xl mx-auto">{t.ctaSubtext}</p>
+            <p className="text-slate-600 mb-6 max-w-xl mx-auto">{t.ctaSubtext}</p>
             <Link
               href="/pricing"
               aria-label={t.cta}
               className={cn(
-                'inline-flex items-center justify-center gap-2 rounded-xl px-8 py-4 min-h-[48px] text-base font-semibold',
-                'bg-gradient-to-r from-indigo-500 to-purple-500 text-white',
-                'shadow-lg shadow-indigo-500/50 hover:scale-105 transition-all duration-200',
-                'focus-visible:outline focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-slate-950'
+                'inline-flex items-center justify-center gap-2 rounded-2xl px-8 py-4 min-h-[48px] text-base font-semibold',
+                'bg-slate-900 text-white hover:bg-slate-900/90',
+                'shadow-[0_12px_30px_rgba(15,23,42,0.18)] hover:scale-105 transition-all duration-200',
+                'focus-visible:outline focus-visible:ring-2 focus-visible:ring-slate-900/20 focus-visible:ring-offset-2 focus-visible:ring-offset-transparent'
               )}
             >
               {t.cta}

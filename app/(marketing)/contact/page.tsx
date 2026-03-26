@@ -1,4 +1,4 @@
-import { MarketingSubpageWrapper } from '../components/marketing-subpage-wrapper'
+import { MarketingSubpageWrapperLight } from '../components/marketing-subpage-wrapper-light'
 import { ContactContent } from './contact-content'
 import { Metadata } from 'next'
 
@@ -66,9 +66,9 @@ export default function ContactPage() {
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }}
       />
-      <MarketingSubpageWrapper>
+      <MarketingSubpageWrapperLight>
         <ContactContent />
-      </MarketingSubpageWrapper>
+      </MarketingSubpageWrapperLight>
     </>
   )
 }

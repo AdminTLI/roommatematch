@@ -145,47 +145,47 @@ export function RoleCatalogCards() {
       {groups.map((group, gi) => (
         <Card
           key={gi}
-          className="border border-white/15 bg-white/5 backdrop-blur-xl shadow-[0_18px_45px_rgba(15,23,42,0.9)] rounded-2xl"
+          className="border border-white/60 bg-white/45 backdrop-blur-xl shadow-[0_18px_50px_rgba(15,23,42,0.08)] rounded-3xl"
         >
           <CardHeader className="pb-3">
-            <CardTitle className="text-lg sm:text-xl text-white">
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 to-purple-400">
+            <CardTitle className="text-lg sm:text-xl text-slate-900">
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-700 to-violet-700">
                 {group.header}
               </span>{' '}
-              <span className="text-white/60">– {group.sub}</span>
+              <span className="text-slate-600">– {group.sub}</span>
             </CardTitle>
           </CardHeader>
           <CardContent className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
             {group.roles.map((r, ri) => (
               <div
                 key={ri}
-                className="rounded-xl border border-white/15 bg-white/5 h-full flex flex-col p-5 text-white/90 backdrop-blur-md"
+                className="rounded-3xl border border-white/60 bg-white/55 h-full flex flex-col p-5 text-slate-900 backdrop-blur-xl"
               >
                 {/* Removed decorative circle icon for cleaner look */}
                 {/* Title */}
-                <div className="text-base font-semibold text-white">{r.title}</div>
+                <div className="text-base font-semibold text-slate-900">{r.title}</div>
                 {/* Badge directly under title */}
                 <div className="mt-1 flex items-center gap-2">
                   {r.dualFriendly ? (
                     <>
                       <Badge
                         variant="secondary"
-                        className="border border-white/20 bg-white/10 text-[11px] text-white/90 rounded-full px-2.5 py-0.5"
+                        className="border border-white/70 bg-white/60 text-[11px] text-slate-700 rounded-full px-2.5 py-0.5"
                       >
                         {badges.experienced}
                       </Badge>
-                      <Badge className="border border-white/20 bg-emerald-500/15 text-[11px] text-emerald-100 rounded-full px-2.5 py-0.5">
+                      <Badge className="border border-emerald-200 bg-emerald-50 text-[11px] text-emerald-800 hover:bg-emerald-100 rounded-full px-2.5 py-0.5 focus:ring-emerald-600/30">
                         {badges.studentFriendly}
                       </Badge>
                     </>
                   ) : r.studentFriendly ? (
-                    <Badge className="border border-white/20 bg-emerald-500/15 text-[11px] text-emerald-100 rounded-full px-2.5 py-0.5">
+                    <Badge className="border border-emerald-200 bg-emerald-50 text-[11px] text-emerald-800 hover:bg-emerald-100 rounded-full px-2.5 py-0.5 focus:ring-emerald-600/30">
                       {badges.studentFriendly}
                     </Badge>
                   ) : (
                     <Badge
                       variant="secondary"
-                      className="border border-white/20 bg-white/10 text-[11px] text-white/90 rounded-full px-2.5 py-0.5"
+                      className="border border-white/70 bg-white/60 text-[11px] text-slate-700 rounded-full px-2.5 py-0.5"
                     >
                       {badges.experienced}
                     </Badge>
@@ -193,22 +193,22 @@ export function RoleCatalogCards() {
                 </div>
                 {/* Details as one coherent, human tone paragraph */}
                 {r.blurb && (
-                  <p className="mt-3 text-xs text-white/70 leading-relaxed">
+                  <p className="mt-3 text-xs text-slate-700 leading-relaxed">
                     {r.blurb}
                   </p>
                 )}
-                <Separator className="my-3 border-white/10" />
+                <Separator className="my-3 bg-white/70" />
                 {/* Impact statement moved to bottom (no truncation) */}
-                <p className="italic text-sm text-white/70">
+                <p className="italic text-sm text-slate-700">
                   {r.impact}
                 </p>
                 {/* Chips row at very bottom for alignment */}
                 <div className="mt-3 flex flex-wrap gap-2">
-                  <span className="inline-flex items-center gap-1 rounded-full bg-white/8 px-3 py-1 text-[11px] text-white/80 border border-white/15">
-                    <Sparkles className="h-3 w-3 text-sky-300" />
+                  <span className="inline-flex items-center gap-1 rounded-full bg-white/60 px-3 py-1 text-[11px] text-slate-700 border border-white/70">
+                    <Sparkles className="h-3 w-3 text-blue-700" />
                     <span className={r.commitment ? '' : 'opacity-0'}>{r.commitment || ' - '}</span>
                   </span>
-                  <span className="inline-flex items-center gap-1 rounded-full bg-white/8 px-3 py-1 text-[11px] text-white/80 border border-white/15">
+                  <span className="inline-flex items-center gap-1 rounded-full bg-white/60 px-3 py-1 text-[11px] text-slate-700 border border-white/70">
                     <span className={r.background ? '' : 'opacity-0'}>{r.background || ' - '}</span>
                   </span>
                 </div>

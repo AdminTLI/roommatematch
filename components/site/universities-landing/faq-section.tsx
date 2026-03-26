@@ -12,6 +12,9 @@ import { useApp } from '@/app/providers'
 import { content } from './content'
 import { cn } from '@/lib/utils'
 
+const GLASS =
+  'bg-white/60 backdrop-blur-xl border border-white/50 shadow-[0_8px_30px_rgb(0,0,0,0.04)] rounded-3xl'
+
 export function FAQSection() {
   const { locale } = useApp()
   const faqs = content[locale].faq
@@ -25,33 +28,34 @@ export function FAQSection() {
       <Container className="relative z-10">
         <h2
           id="faq-heading"
-          className="text-3xl md:text-4xl font-bold text-white text-center tracking-tight mb-8 md:mb-10"
+          className="text-3xl md:text-4xl font-bold text-slate-800 text-center tracking-tight mb-8 md:mb-10"
         >
-          Frequently asked questions
+          {locale === 'nl' ? 'Veelgestelde vragen' : 'Frequently asked questions'}
         </h2>
         <div className="max-w-3xl mx-auto space-y-3">
           {faqs.map((faq, index) => (
             <Collapsible key={index}>
               <div
                 className={cn(
-                  'glass noise-overlay rounded-2xl overflow-hidden',
-                  'transition-all duration-300 hover:border-white/30 hover:bg-white/15'
+                  GLASS,
+                  'rounded-2xl overflow-hidden',
+                  'transition-all duration-300 hover:bg-white/75'
                 )}
               >
                 <CollapsibleTrigger className="w-full min-h-[44px] group">
                   <div className="flex items-center justify-between gap-4 p-4 sm:p-6 text-left">
-                    <span className="text-base sm:text-lg font-semibold text-white">
+                    <span className="text-base sm:text-lg font-semibold text-slate-800">
                       {faq.question}
                     </span>
                     <ChevronDown
-                      className="h-5 w-5 text-indigo-400 shrink-0 transition-transform duration-200 group-data-[state=open]:rotate-180"
+                      className="h-5 w-5 text-slate-600 shrink-0 transition-transform duration-200 group-data-[state=open]:rotate-180"
                       aria-hidden
                     />
                   </div>
                 </CollapsibleTrigger>
                 <CollapsibleContent>
                   <div className="pt-0 px-4 sm:px-6 pb-4 sm:pb-6">
-                    <p className="text-sm sm:text-base text-white/70 leading-relaxed">
+                    <p className="text-sm sm:text-base text-slate-600 leading-relaxed">
                       {faq.answer}
                     </p>
                   </div>

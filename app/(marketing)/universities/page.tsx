@@ -1,8 +1,5 @@
-import { Navbar } from '@/components/site/navbar'
-import Footer from '@/components/site/footer'
 import { UniversitiesLanding } from '@/components/site/universities-landing'
-import { MarketingLayoutFix } from '../components/marketing-layout-fix'
-import { MarketingPageBackground } from '../components/marketing-page-background'
+import { MarketingSubpageWrapperLight } from '../components/marketing-subpage-wrapper-light'
 import { Metadata } from 'next'
 
 export const metadata: Metadata = {
@@ -112,7 +109,6 @@ const breadcrumbSchema = {
 export default function UniversitiesPage() {
   return (
     <>
-      <MarketingLayoutFix />
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbSchema) }}
@@ -121,19 +117,11 @@ export default function UniversitiesPage() {
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }}
       />
-      <main
-        id="main-content"
-        className="relative pt-16 md:pt-20 overflow-hidden"
-      >
-        <MarketingPageBackground />
-        <div className="relative z-10">
-          <Navbar />
-          <div>
-            <UniversitiesLanding />
-          </div>
-          <Footer />
+      <MarketingSubpageWrapperLight>
+        <div>
+          <UniversitiesLanding />
         </div>
-      </main>
+      </MarketingSubpageWrapperLight>
     </>
   )
 }

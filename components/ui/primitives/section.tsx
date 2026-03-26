@@ -1,13 +1,13 @@
 import { cn } from "@/lib/utils"
 
-interface SectionProps {
-  children: React.ReactNode
-  className?: string
-}
+type SectionProps = React.ComponentPropsWithoutRef<'section'>
 
-export default function Section({ className = '', children }: SectionProps) {
+export default function Section({ className = '', children, ...props }: SectionProps) {
   return (
-    <section className={`relative z-0 py-9 md:py-12 lg:py-[72px] ${className}`}>
+    <section
+      {...props}
+      className={cn('relative z-0 py-9 md:py-12 lg:py-[72px]', className)}
+    >
       {children}
     </section>
   )

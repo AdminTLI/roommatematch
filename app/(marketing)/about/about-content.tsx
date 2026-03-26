@@ -10,6 +10,9 @@ import Link from 'next/link'
 import { motion, useReducedMotion } from 'framer-motion'
 import { cn } from '@/lib/utils'
 
+const GLASS =
+  'bg-white/60 backdrop-blur-xl border border-white/50 shadow-[0_8px_30px_rgb(0,0,0,0.04)] rounded-3xl'
+
 const content = {
   en: {
     hero: {
@@ -34,7 +37,7 @@ const content = {
       { title: 'The Problem Identified', description: "We recognized that nearly half of all students face roommate conflicts that impact well-being and academic performance. Random assignment wasn't working.", date: '2025 August' },
       { title: 'Research Phase', description: 'We analyzed peer-reviewed studies on compatibility, peer effects, and student housing satisfaction from Nature and other leading sources.', date: '2025 September' },
       { title: 'Algorithm Development', description: 'We built a science-driven algorithm that analyzes 40+ lifestyle and academic factors, informed by social compatibility research.', date: '2025 October' },
-      { title: 'First Version Complete', description: "The first version of Domu Match's user interface was put together and its basic functionality features fully built.", date: '2025 November' },
+      { title: 'First Version Complete', description: "The first version of Domu Match's user interface was put together, its core functionality was built, and we finalized the weightings for our matching algorithm.", date: '2025 November' },
       { title: 'Debugging and Error Testing', description: 'The platform is currently undergoing several changes to debug multiple errors and ensure that during the soft launch, users have a seamless experience. This will allow beta testers to provide more feedback on introducing the right features for the platform.', date: '2026 January' },
       { title: 'Beta Testing Soft Launch', description: 'The platform will be launched to a small group of students in Breda and Tilburg. We will work together to ensure that we have the most important and wanted features that users expect working properly before our full planned launch.', date: '2026 March' },
       { title: 'Full Launch Planned', description: 'We are expected to launch the platform for our first students in May. Students will be able to finally use our science-backed matching algorithm to connect with and find compatible roommates for the first time ever in The Netherlands.', date: '2026 May' }
@@ -106,7 +109,7 @@ const content = {
     },
     cta: {
       heading: 'What Drives Us',
-      description: "We're a mission-led organization focused on making shared living safer, happier, and more compatible for students and young professionals.",
+      description: "We are a mission-led startup focused on making shared living safer, happier, and more compatible for students and young professionals.",
       bullets: [
         { title: 'Safety above all', text: 'Every user is verified. Every interaction is secure.' },
         { title: 'Science-driven', text: 'Our algorithm is grounded in peer-reviewed compatibility research.' },
@@ -247,11 +250,13 @@ export function AboutContent() {
             animate={reducedMotion ? false : { opacity: 1, y: 0 }}
             transition={{ duration: 0.6, ease: 'easeOut' }}
           >
-            <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-white mb-6 leading-tight tracking-tight">
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 to-purple-400">{t.hero.titlePrefix}</span>{' '}
+            <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-slate-800 mb-6 leading-tight tracking-tight">
+              <span className="text-slate-800">
+                {t.hero.titlePrefix}
+              </span>{' '}
               {t.hero.titleHighlight}
             </h1>
-            <p className="text-lg md:text-xl text-white/80 max-w-3xl mx-auto leading-relaxed">
+            <p className="text-lg md:text-xl text-slate-600 max-w-3xl mx-auto leading-relaxed">
               {t.hero.description}
             </p>
           </motion.div>
@@ -266,10 +271,12 @@ export function AboutContent() {
               className="text-center mb-16 md:mb-20"
               {...fadeIn}
             >
-              <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-white mb-4 tracking-tight">
-                <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 to-purple-400">{t.story.heading}</span>
+              <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-slate-800 mb-4 tracking-tight">
+                <span className="text-slate-800">
+                  {t.story.heading}
+                </span>
               </h2>
-              <p className="text-lg text-white/70 max-w-3xl mx-auto">
+              <p className="text-lg text-slate-600 max-w-3xl mx-auto">
                 {t.story.subheading}
               </p>
             </motion.div>
@@ -277,8 +284,8 @@ export function AboutContent() {
             <div className="grid lg:grid-cols-3 gap-12 mb-20">
               <motion.div
                 className="lg:col-span-2 space-y-6"
-                initial={reducedMotion ? false : { opacity: 0, y: 20 }}
-                whileInView={reducedMotion ? false : { opacity: 1, y: 0 }}
+                initial={reducedMotion ? undefined : { opacity: 0, y: 20 }}
+                whileInView={reducedMotion ? undefined : { opacity: 1, y: 0 }}
                 viewport={{ once: true }}
                 transition={{ duration: 0.5, delay: 0.1 }}
               >
@@ -286,8 +293,8 @@ export function AboutContent() {
                   <p
                     key={index}
                     className={cn(
-                      'text-lg text-white/70 leading-relaxed',
-                      index === t.story.paragraphs.length - 1 && 'font-medium text-white/90'
+                      'text-lg text-slate-600 leading-relaxed',
+                      index === t.story.paragraphs.length - 1 && 'font-medium text-slate-800'
                     )}
                   >
                     {paragraph}
@@ -295,29 +302,29 @@ export function AboutContent() {
                 ))}
               </motion.div>
               <motion.div
-                initial={reducedMotion ? false : { opacity: 0, y: 20 }}
-                whileInView={reducedMotion ? false : { opacity: 1, y: 0 }}
+                initial={reducedMotion ? undefined : { opacity: 0, y: 20 }}
+                whileInView={reducedMotion ? undefined : { opacity: 1, y: 0 }}
                 viewport={{ once: true }}
                 transition={{ duration: 0.5, delay: 0.2 }}
               >
-                <div className="glass noise-overlay p-6 md:p-8 transition-all duration-300 hover:border-white/30 hover:bg-white/15">
+                <div className={cn(GLASS, 'p-6 md:p-8 transition-all duration-300 hover:bg-white/75')}>
                   <div className="space-y-6">
                     {t.story.founders.map((founder, index) => (
                       <div key={founder.name}>
                         <div className="flex items-center gap-3 mb-4">
-                          <div className="h-12 w-12 min-h-12 min-w-12 flex-shrink-0 rounded-full bg-indigo-500/20 border border-indigo-400/30 flex items-center justify-center">
-                            <User className="h-6 w-6 flex-shrink-0 text-indigo-400" aria-hidden />
+                          <div className="h-12 w-12 min-h-12 min-w-12 flex-shrink-0 rounded-full bg-indigo-50/80 border border-indigo-200/80 flex items-center justify-center">
+                            <User className="h-6 w-6 flex-shrink-0 text-indigo-700" aria-hidden />
                           </div>
                           <div>
-                            <h3 className="text-lg font-semibold text-white">{founder.name}</h3>
-                            <p className="text-sm text-white/60">{founder.title}</p>
+                            <h3 className="text-lg font-semibold text-slate-800">{founder.name}</h3>
+                            <p className="text-sm text-slate-600">{founder.title}</p>
                           </div>
                         </div>
-                        <p className="text-sm text-white/70 leading-relaxed">
+                        <p className="text-sm text-slate-600 leading-relaxed">
                           &ldquo;{founder.quote}&rdquo;
                         </p>
                         {index < t.story.founders.length - 1 && (
-                          <hr className="mt-6 border-white/20" aria-hidden />
+                          <hr className="mt-6 border-white/60" aria-hidden />
                         )}
                       </div>
                     ))}
@@ -328,12 +335,12 @@ export function AboutContent() {
 
             <motion.div
               className="mb-20"
-              initial={reducedMotion ? false : { opacity: 0 }}
-              whileInView={reducedMotion ? false : { opacity: 1 }}
+              initial={reducedMotion ? undefined : { opacity: 0 }}
+              whileInView={reducedMotion ? undefined : { opacity: 1 }}
               viewport={{ once: true }}
               transition={{ duration: 0.5 }}
             >
-              <h3 className="text-2xl font-bold text-white mb-12 text-center tracking-tight">
+              <h3 className="text-2xl font-bold text-slate-800 mb-12 text-center tracking-tight">
                 {locale === 'nl' ? 'Onze reis' : 'Our Journey'}
               </h3>
               <Timeline items={t.timeline} />
@@ -343,29 +350,29 @@ export function AboutContent() {
               className="mt-20"
               {...fadeIn}
             >
-              <h3 className="text-2xl font-bold text-white mb-8 text-center tracking-tight">{t.vision.heading}</h3>
+              <h3 className="text-2xl font-bold text-slate-800 mb-8 text-center tracking-tight">{t.vision.heading}</h3>
               <div className="max-w-3xl mx-auto space-y-8">
-                <p className="text-lg text-white/70 leading-relaxed text-center">
+                <p className="text-lg text-slate-600 leading-relaxed text-center">
                   {t.vision.intro}
                 </p>
                 <div className="grid md:grid-cols-2 gap-12">
-                  <div className="glass noise-overlay p-6 md:p-8 transition-all duration-300 hover:border-white/30 hover:bg-white/15">
-                    <h4 className="font-semibold text-white mb-4 text-lg">{t.vision.shortTermTitle}</h4>
-                    <ul className="space-y-3 text-white/70">
+                  <div className={cn(GLASS, 'p-6 md:p-8 transition-all duration-300 hover:bg-white/75')}>
+                    <h4 className="font-semibold text-slate-800 mb-4 text-lg">{t.vision.shortTermTitle}</h4>
+                    <ul className="space-y-3 text-slate-600">
                       {t.vision.shortTerm.map((item, index) => (
                         <li key={index} className="flex items-start gap-2">
-                          <CheckCircle2 className="h-5 w-5 text-indigo-400 flex-shrink-0 mt-0.5" />
+                          <CheckCircle2 className="h-5 w-5 text-indigo-700 flex-shrink-0 mt-0.5" />
                           <span>{item}</span>
                         </li>
                       ))}
                     </ul>
                   </div>
-                  <div className="glass noise-overlay p-6 md:p-8 transition-all duration-300 hover:border-white/30 hover:bg-white/15">
-                    <h4 className="font-semibold text-white mb-4 text-lg">{t.vision.longTermTitle}</h4>
-                    <ul className="space-y-3 text-white/70">
+                  <div className={cn(GLASS, 'p-6 md:p-8 transition-all duration-300 hover:bg-white/75')}>
+                    <h4 className="font-semibold text-slate-800 mb-4 text-lg">{t.vision.longTermTitle}</h4>
+                    <ul className="space-y-3 text-slate-600">
                       {t.vision.longTerm.map((item, index) => (
                         <li key={index} className="flex items-start gap-2">
-                          <CheckCircle2 className="h-5 w-5 text-indigo-400 flex-shrink-0 mt-0.5" />
+                          <CheckCircle2 className="h-5 w-5 text-indigo-700 flex-shrink-0 mt-0.5" />
                           <span>{item}</span>
                         </li>
                       ))}
@@ -386,11 +393,11 @@ export function AboutContent() {
               className="text-center mb-16 md:mb-20"
               {...fadeIn}
             >
-              <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-white mb-4 tracking-tight">
-                <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 to-purple-400">{t.evidence.headingHighlight}</span>{' '}
+              <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-slate-800 mb-4 tracking-tight">
+                <span className="text-slate-800">{t.evidence.headingHighlight}</span>{' '}
                 {t.evidence.headingSuffix}
               </h2>
-              <p className="text-lg text-white/70 max-w-3xl mx-auto">
+              <p className="text-lg text-slate-600 max-w-3xl mx-auto">
                 {t.evidence.description}
               </p>
             </motion.div>
@@ -408,24 +415,24 @@ export function AboutContent() {
             </motion.div>
 
             <motion.div
-              className="glass noise-overlay p-8 md:p-10 transition-all duration-300 hover:border-white/30 hover:bg-white/15"
-              initial={reducedMotion ? false : { opacity: 0, y: 20 }}
-              whileInView={reducedMotion ? false : { opacity: 1, y: 0 }}
+              className={cn(GLASS, 'p-8 md:p-10 transition-all duration-300 hover:bg-white/75')}
+              initial={reducedMotion ? undefined : { opacity: 0, y: 20 }}
+              whileInView={reducedMotion ? undefined : { opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ duration: 0.5 }}
             >
               <div className="flex items-start gap-4">
                 <div className="flex-shrink-0">
-                  <Lightbulb className="h-6 w-6 text-indigo-400" />
+                  <Lightbulb className="h-6 w-6 text-indigo-700" />
                 </div>
                 <div>
-                  <h3 className="text-xl font-semibold text-white mb-4">
+                  <h3 className="text-xl font-semibold text-slate-800 mb-4">
                     {t.evidence.insightTitle}
                   </h3>
-                  <p className="text-white/70 leading-relaxed mb-4">
+                  <p className="text-slate-600 leading-relaxed mb-4">
                     {t.evidence.insightBody}
                   </p>
-                  <p className="text-xs text-white/50 italic">{t.evidence.insightSource}</p>
+                  <p className="text-xs text-slate-500 italic">{t.evidence.insightSource}</p>
                 </div>
               </div>
             </motion.div>
@@ -438,25 +445,25 @@ export function AboutContent() {
         <Container className="relative z-10">
           <motion.div
             className="max-w-4xl mx-auto text-center"
-            initial={reducedMotion ? false : { opacity: 0, y: 20 }}
-            whileInView={reducedMotion ? false : { opacity: 1, y: 0 }}
+            initial={reducedMotion ? undefined : { opacity: 0, y: 20 }}
+            whileInView={reducedMotion ? undefined : { opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 0.6 }}
           >
-            <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-white mb-6 tracking-tight">
+            <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-slate-800 mb-6 tracking-tight">
               {t.cta.heading}
             </h2>
-            <p className="text-lg text-white/80 mb-10 max-w-2xl mx-auto leading-relaxed">
+            <p className="text-lg text-slate-600 mb-10 max-w-2xl mx-auto leading-relaxed">
               {t.cta.description}
             </p>
 
-            <div className="glass noise-overlay rounded-2xl p-8 mb-10 max-w-2xl mx-auto border-white/20 bg-white/5">
-              <ul className="text-left space-y-4 text-white/90">
+            <div className={cn(GLASS, 'rounded-2xl p-8 mb-10 max-w-2xl mx-auto')}>
+              <ul className="text-left space-y-4 text-slate-800">
                 {t.cta.bullets.map((item, index) => (
                   <li key={index} className="flex items-start gap-3">
-                    <CheckCircle2 className="h-5 w-5 text-indigo-400 flex-shrink-0 mt-0.5" />
+                    <CheckCircle2 className="h-5 w-5 text-indigo-700 flex-shrink-0 mt-0.5" />
                     <span>
-                      <strong className="text-white">{item.title}:</strong> {item.text}
+                      <strong className="text-slate-900">{item.title}:</strong> {item.text}
                     </span>
                   </li>
                 ))}
@@ -467,9 +474,9 @@ export function AboutContent() {
               href="/contact"
               className={cn(
                 'inline-flex items-center justify-center rounded-xl px-6 py-4 text-base font-semibold',
-                'bg-gradient-to-r from-indigo-500 to-purple-500 text-white',
-                'shadow-lg shadow-indigo-500/50 hover:scale-105 transition-all duration-200',
-                'focus-visible:outline focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-slate-950'
+                'bg-slate-900 text-white hover:bg-slate-900/90',
+                'shadow-[0_12px_30px_rgba(15,23,42,0.18)] hover:scale-105 transition-all duration-200',
+                'focus-visible:outline focus-visible:ring-2 focus-visible:ring-slate-900/20 focus-visible:ring-offset-2 focus-visible:ring-offset-transparent'
               )}
             >
               {t.cta.button}

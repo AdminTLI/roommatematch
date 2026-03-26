@@ -172,7 +172,7 @@ export const content: Record<Locale, UniversitiesLandingContent> = {
         },
         {
           label: 'Zero Risk',
-          detail: '6-Month Free Trial for the first 3 partners.',
+          detail: '12-Month Free Trial for the first 3 partners.',
         },
       ],
       trustPrefix: 'Enterprise-grade security powered by:',

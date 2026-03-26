@@ -13,14 +13,10 @@ export function UniversityCityStats({ city }: StatsSectionProps) {
   const reducedMotion = useReducedMotion()
 
   return (
-    <Section className="relative overflow-hidden bg-slate-950/80 py-12 md:py-16 border-y border-white/10">
-      <div
-        className="absolute inset-0 bg-gradient-to-b from-indigo-950/20 via-transparent to-purple-950/20 pointer-events-none"
-        aria-hidden
-      />
+    <Section className="relative overflow-hidden py-10 md:py-12">
       <Container className="relative z-10">
         <motion.div
-          className="grid grid-cols-2 md:grid-cols-4 gap-8 max-w-4xl mx-auto"
+          className="grid grid-cols-2 md:grid-cols-4 gap-6 max-w-4xl mx-auto rounded-3xl border border-white/60 bg-white/45 backdrop-blur-xl shadow-[0_18px_50px_rgba(15,23,42,0.08)] p-6 md:p-8"
           initial={reducedMotion ? false : { opacity: 0, y: 16 }}
           whileInView={reducedMotion ? false : { opacity: 1, y: 0 }}
           viewport={{ once: true }}
@@ -28,10 +24,10 @@ export function UniversityCityStats({ city }: StatsSectionProps) {
         >
           {city.stats.map((stat, i) => (
             <div key={i} className="text-center">
-              <div className="text-3xl md:text-4xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 to-purple-400">
+              <div className="text-3xl md:text-4xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-700 to-violet-700">
                 {stat.value}
               </div>
-              <div className="text-sm text-white/70 mt-2">{stat.label}</div>
+              <div className="text-sm text-slate-700 mt-2">{stat.label}</div>
             </div>
           ))}
         </motion.div>

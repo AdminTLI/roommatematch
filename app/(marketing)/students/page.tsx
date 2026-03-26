@@ -1,9 +1,6 @@
 import Link from 'next/link'
-import { Navbar } from '@/components/site/navbar'
-import Footer from '@/components/site/footer'
 import { FeaturesForStudents } from '@/components/site/features-for-students'
-import { MarketingLayoutFix } from '../components/marketing-layout-fix'
-import { MarketingPageBackground } from '../components/marketing-page-background'
+import { MarketingSubpageWrapperLight } from '../components/marketing-subpage-wrapper-light'
 import { Metadata } from 'next'
 
 export const metadata: Metadata = {
@@ -112,7 +109,6 @@ const breadcrumbSchema = {
 export default function StudentsPage() {
   return (
     <>
-      <MarketingLayoutFix />
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbSchema) }}
@@ -121,28 +117,23 @@ export default function StudentsPage() {
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }}
       />
-      <main
-        id="main-content"
-        className="relative pt-16 md:pt-20 overflow-hidden"
-      >
-        <MarketingPageBackground />
-        <div className="relative z-10">
-          <Navbar />
-          <div>
-            <FeaturesForStudents />
-          </div>
-          <div className="relative z-10 border-t border-white/10 bg-white/5 backdrop-blur-md py-4">
-            <div className="container mx-auto px-4 text-center text-sm text-white/80">
-              We also help{' '}
-              <Link href="/young-professionals" className="text-indigo-300 hover:text-indigo-200 underline underline-offset-2">
-                young professionals
-              </Link>{' '}
-              find compatible flatmates.
-            </div>
-          </div>
-          <Footer />
+      <MarketingSubpageWrapperLight>
+        <div>
+          <FeaturesForStudents />
         </div>
-      </main>
+        <div className="relative z-10 border-t border-white/60 bg-white/35 backdrop-blur-xl py-4">
+          <div className="container mx-auto px-4 text-center text-sm text-slate-700">
+            We also help{' '}
+            <Link
+              href="/young-professionals"
+              className="text-slate-900 font-semibold underline underline-offset-2 hover:opacity-80"
+            >
+              young professionals
+            </Link>{' '}
+            find compatible flatmates.
+          </div>
+        </div>
+      </MarketingSubpageWrapperLight>
     </>
   )
 }

@@ -10,9 +10,13 @@ import { useApp } from '@/app/providers'
 import { content } from './content'
 import { toast } from 'sonner'
 import { cn } from '@/lib/utils'
+import { CheckCircle2 } from 'lucide-react'
 
 const inputBase =
-  'bg-white/5 border border-white/20 rounded-xl text-white placeholder:text-white/50 focus:border-indigo-400/50 focus:ring-2 focus:ring-indigo-400/20 focus:outline-none transition-colors'
+  'bg-white/60 border border-white/70 rounded-xl text-slate-900 placeholder:text-slate-400 focus:border-slate-900/20 focus:ring-2 focus:ring-slate-900/10 focus:outline-none transition-colors'
+
+const GLASS =
+  'bg-white/60 backdrop-blur-xl border border-white/50 shadow-[0_8px_30px_rgb(0,0,0,0.04)] rounded-3xl'
 
 export function RequestDemoSection() {
   const { locale } = useApp()
@@ -70,32 +74,44 @@ export function RequestDemoSection() {
         <div className="max-w-2xl mx-auto">
           <h2
             id="request-demo-heading"
-            className="text-3xl md:text-4xl font-bold text-white text-center tracking-tight mb-2"
+            className="text-3xl md:text-4xl font-bold text-slate-800 text-center tracking-tight mb-2"
           >
             {t.heading}
           </h2>
-          <p className="text-white/70 text-center mb-8">{t.subheading}</p>
+          <p className="text-slate-600 text-center mb-8">{t.subheading}</p>
           {submitted ? (
             <div
               className={cn(
-                'glass noise-overlay p-8 rounded-2xl text-center',
-                'border border-emerald-400/30 bg-emerald-500/10'
+                GLASS,
+                'p-8 md:p-10 text-center',
+                'border border-white/60 bg-white/55 shadow-[0_18px_50px_rgba(15,23,42,0.08)]'
               )}
               role="status"
             >
-              <p className="text-white/90">{t.successMessage}</p>
+              <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-emerald-50 border border-emerald-200 shadow-[0_10px_24px_rgba(15,23,42,0.08)]">
+                <CheckCircle2 className="h-6 w-6 text-emerald-700" aria-hidden />
+              </div>
+              <p className="text-base sm:text-lg font-semibold text-slate-900">
+                {t.successMessage}
+              </p>
+              <p className="mt-2 text-sm text-slate-600">
+                {locale === 'nl'
+                  ? 'We reageren meestal binnen 1-2 werkdagen.'
+                  : 'We typically respond within 1-2 business days.'}
+              </p>
             </div>
           ) : (
             <form
               onSubmit={handleSubmit}
               className={cn(
-                'space-y-4 glass noise-overlay p-6 md:p-8 rounded-2xl',
-                'transition-all duration-300 hover:border-white/30 hover:bg-white/15'
+                GLASS,
+                'space-y-4 p-6 md:p-8 rounded-2xl',
+                'transition-all duration-300 hover:bg-white/75'
               )}
               noValidate
             >
               <div>
-                <Label htmlFor="demo-name" className="text-white/90">
+                <Label htmlFor="demo-name" className="text-slate-800">
                   {t.nameLabel}
                 </Label>
                 <Input
@@ -109,7 +125,7 @@ export function RequestDemoSection() {
                 />
               </div>
               <div>
-                <Label htmlFor="demo-email" className="text-white/90">
+                <Label htmlFor="demo-email" className="text-slate-800">
                   {t.emailLabel}
                 </Label>
                 <Input
@@ -123,7 +139,7 @@ export function RequestDemoSection() {
                 />
               </div>
               <div>
-                <Label htmlFor="demo-institution" className="text-white/90">
+                <Label htmlFor="demo-institution" className="text-slate-800">
                   {t.institutionLabel}
                 </Label>
                 <Input
@@ -136,7 +152,7 @@ export function RequestDemoSection() {
                 />
               </div>
               <div>
-                <Label htmlFor="demo-role" className="text-white/90">
+                <Label htmlFor="demo-role" className="text-slate-800">
                   {t.roleLabel}
                 </Label>
                 <Input
@@ -149,7 +165,7 @@ export function RequestDemoSection() {
                 />
               </div>
               <div>
-                <Label htmlFor="demo-message" className="text-white/90">
+                <Label htmlFor="demo-message" className="text-slate-800">
                   {t.messageLabel}
                 </Label>
                 <Textarea
@@ -171,9 +187,9 @@ export function RequestDemoSection() {
                 disabled={loading}
                 className={cn(
                   'w-full sm:w-auto inline-flex items-center justify-center rounded-xl px-8 py-4 min-h-[48px] text-base font-semibold',
-                  'bg-gradient-to-r from-indigo-500 to-purple-500 text-white',
-                  'shadow-lg shadow-indigo-500/50 hover:scale-[1.02] transition-all duration-200 disabled:opacity-70 disabled:cursor-not-allowed disabled:hover:scale-100',
-                  'focus-visible:outline focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-slate-950'
+                  'bg-slate-900 text-white hover:bg-slate-900/90',
+                  'shadow-[0_12px_30px_rgba(15,23,42,0.18)] hover:scale-[1.02] transition-all duration-200 disabled:opacity-70 disabled:cursor-not-allowed disabled:hover:scale-100',
+                  'focus-visible:outline focus-visible:ring-2 focus-visible:ring-slate-900/20 focus-visible:ring-offset-2 focus-visible:ring-offset-transparent'
                 )}
               >
                 {loading

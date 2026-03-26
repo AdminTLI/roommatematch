@@ -15,13 +15,9 @@ export function UniversityCityUniversities({ city }: UniversitiesSectionProps) {
 
   return (
     <Section
-      className="relative overflow-hidden bg-slate-950/90 py-16 md:py-24 border-y border-white/10"
+      className="relative overflow-hidden py-12 md:py-16 lg:py-20"
       aria-labelledby="universities-heading"
     >
-      <div
-        className="absolute inset-0 bg-gradient-to-b from-indigo-950/20 via-transparent to-purple-950/20 pointer-events-none"
-        aria-hidden
-      />
       <Container className="relative z-10">
         <div className="max-w-5xl mx-auto space-y-10">
           <motion.div
@@ -33,11 +29,11 @@ export function UniversityCityUniversities({ city }: UniversitiesSectionProps) {
           >
             <h2
               id="universities-heading"
-              className="text-3xl md:text-4xl font-bold text-white tracking-tight"
+              className="text-3xl md:text-4xl font-bold text-slate-900 tracking-tight"
             >
               {city.nameDisplay} Universities
             </h2>
-            <p className="text-lg text-white/80">
+            <p className="text-lg text-slate-700">
               We work with all major universities and institutions in {city.nameDisplay}
             </p>
           </motion.div>
@@ -47,18 +43,18 @@ export function UniversityCityUniversities({ city }: UniversitiesSectionProps) {
               <motion.div
                 key={i}
                 className={cn(
-                  'glass noise-overlay p-6 rounded-2xl',
-                  'transition-all duration-300 hover:border-white/30'
+                  'p-6 rounded-3xl border border-white/60 bg-white/45 backdrop-blur-xl shadow-[0_18px_50px_rgba(15,23,42,0.08)]',
+                  'transition-all duration-300 hover:bg-white/60'
                 )}
                 initial={reducedMotion ? false : { opacity: 0, y: 20 }}
                 whileInView={reducedMotion ? false : { opacity: 1, y: 0 }}
                 viewport={{ once: true }}
                 transition={{ duration: 0.5, delay: i * 0.05 }}
               >
-                <h3 className="text-xl font-semibold text-white mb-2">{uni.name}</h3>
-                <p className="text-white/80 mb-4">{uni.description}</p>
+                <h3 className="text-xl font-semibold text-slate-900 mb-2">{uni.name}</h3>
+                <p className="text-slate-700 mb-4">{uni.description}</p>
                 {uni.programs && (
-                  <p className="text-sm text-white/60">{uni.programs}</p>
+                  <p className="text-sm text-slate-600">{uni.programs}</p>
                 )}
               </motion.div>
             ))}

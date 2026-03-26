@@ -8,6 +8,9 @@ import { useApp } from '@/app/providers'
 import { content } from './content'
 import { cn } from '@/lib/utils'
 
+const GLASS =
+  'bg-white/60 backdrop-blur-xl border border-white/50 shadow-[0_8px_30px_rgb(0,0,0,0.04)] rounded-3xl'
+
 const icons = [Music, Droplets, Ghost]
 
 export function WhySection() {
@@ -29,9 +32,9 @@ export function WhySection() {
   }
 
   const iconStyles = [
-    'bg-blue-500/20 border-blue-400/30 text-blue-400',
-    'bg-amber-500/20 border-amber-400/30 text-amber-400',
-    'bg-violet-500/20 border-violet-400/30 text-violet-400',
+    'bg-blue-50/80 border-blue-200/80 text-blue-700',
+    'bg-amber-50/80 border-amber-200/80 text-amber-700',
+    'bg-violet-50/80 border-violet-200/80 text-violet-700',
   ]
 
   return (
@@ -43,7 +46,7 @@ export function WhySection() {
       <Container className="relative z-10">
         <motion.h2
           id="why-heading"
-          className="text-3xl md:text-4xl lg:text-5xl font-bold text-white text-center mb-12 md:mb-14 tracking-tight max-w-3xl mx-auto"
+          className="text-3xl md:text-4xl lg:text-5xl font-bold text-slate-800 text-center mb-12 md:mb-14 tracking-tight max-w-3xl mx-auto"
           initial={{ opacity: 0, y: 16 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
@@ -64,8 +67,9 @@ export function WhySection() {
               <motion.div
                 key={index}
                 className={cn(
-                  'glass noise-overlay p-6 md:p-8 flex flex-col min-h-[180px]',
-                  'transition-all duration-300 hover:border-white/30 hover:bg-white/15'
+                  GLASS,
+                  'p-6 md:p-8 flex flex-col min-h-[180px]',
+                  'transition-all duration-300 hover:bg-white/75'
                 )}
                 variants={itemVariants}
                 custom={index}
@@ -82,10 +86,10 @@ export function WhySection() {
                     <Icon className="h-6 w-6" />
                   </div>
                   <div className="flex-1 min-w-0">
-                    <h3 className="text-lg font-semibold text-white tracking-tight mb-2">
+                    <h3 className="text-lg font-semibold text-slate-800 tracking-tight mb-2">
                       {point.title}
                     </h3>
-                    <p className="text-white/70 leading-relaxed">
+                    <p className="text-slate-600 leading-relaxed">
                       {point.description}
                     </p>
                   </div>

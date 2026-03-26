@@ -17,6 +17,41 @@ Sentry.init({
   // Enable logs to be sent to Sentry
   enableLogs: true,
 
+  beforeSend(event, hint) {
+    // In local/dev, Next's dev server can throw `write EIO` when stdout is unavailable
+    // (e.g. terminals/PTY closed). This isn't actionable for the app.
+    if (process.env.NODE_ENV !== "production") {
+      const original: any = hint?.originalException;
+      const originalMessage =
+        typeof original?.message === "string" ? original.message : undefined;
+      const eventMessage =
+        event?.exception?.values?.[0]?.value ||
+        event?.logentry?.message ||
+        undefined;
+
+      const code =
+        original?.code ||
+        (event as any)?.contexts?.node_system_error?.code ||
+        undefined;
+      const syscall =
+        original?.syscall ||
+        (event as any)?.contexts?.node_system_error?.syscall ||
+        undefined;
+
+      const message = String(originalMessage || eventMessage || "");
+      const isWriteEio =
+        code === "EIO" &&
+        syscall === "write" &&
+        message.toLowerCase().includes("write eio");
+
+      if (isWriteEio) {
+        return null;
+      }
+    }
+
+    return event;
+  },
+
   // Disable sending user PII by default (GDPR compliance)
   // PII is only sent if user has explicitly consented (checked client-side)
   // https://docs.sentry.io/platforms/javascript/guides/nextjs/configuration/options/#sendDefaultPii

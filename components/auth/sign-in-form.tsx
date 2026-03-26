@@ -177,12 +177,12 @@ export function SignInForm() {
   }
 
   return (
-    <div className="w-full noise-overlay rounded-2xl border border-white/10 bg-white/5 backdrop-blur-lg shadow-2xl shadow-black/20">
+    <div className="w-full">
       <div className="text-center px-4 sm:px-6 pt-6 sm:pt-6">
-        <h2 className="text-xl sm:text-2xl font-semibold tracking-tight text-white">
+        <h2 className="text-xl sm:text-2xl font-semibold tracking-tight text-slate-900">
           Welcome back
         </h2>
-        <p className="mt-1 text-sm sm:text-base text-white/70">
+        <p className="mt-1 text-sm sm:text-base text-slate-700">
           Sign in to your Domu Match account
         </p>
       </div>
@@ -195,16 +195,16 @@ export function SignInForm() {
 
         <form onSubmit={handleEmailSignIn} className="space-y-4">
           <div className="space-y-2">
-            <Label htmlFor="email" className="text-sm sm:text-base text-white">Email</Label>
-            <div className="relative">
-              <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-white/50" />
+            <Label htmlFor="email" className="text-sm sm:text-base text-slate-800">Email</Label>
+            <div className="relative group">
+              <Mail className="pointer-events-none absolute left-3 top-1/2 z-10 -translate-y-1/2 h-4 w-4 text-slate-600 group-focus-within:text-slate-800 transition-colors" />
               <Input
                 id="email"
                 type="email"
                 placeholder="Enter your email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="pl-10 min-h-[44px] bg-white/10 border-white/15 text-white placeholder:text-white/45 focus-visible:ring-white/30"
+                className="pl-10 min-h-[44px] bg-white/60 border-white/70 text-slate-900 placeholder:text-slate-500 focus-visible:ring-slate-900/20"
                 required
                 autoComplete="email"
               />
@@ -212,23 +212,23 @@ export function SignInForm() {
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="password" className="text-sm sm:text-base text-white">Password</Label>
-            <div className="relative">
-              <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-white/50" />
+            <Label htmlFor="password" className="text-sm sm:text-base text-slate-800">Password</Label>
+            <div className="relative group">
+              <Lock className="pointer-events-none absolute left-3 top-1/2 z-10 -translate-y-1/2 h-4 w-4 text-slate-600 group-focus-within:text-slate-800 transition-colors" />
               <Input
                 id="password"
                 type={showPassword ? 'text' : 'password'}
                 placeholder="Enter your password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="pl-10 pr-10 min-h-[44px] bg-white/10 border-white/15 text-white placeholder:text-white/45 focus-visible:ring-white/30"
+                className="pl-10 pr-10 min-h-[44px] bg-white/60 border-white/70 text-slate-900 placeholder:text-slate-500 focus-visible:ring-slate-900/20"
                 required
                 autoComplete="current-password"
               />
               <button
                 type="button"
                 onClick={() => setShowPassword((v) => !v)}
-                className="absolute right-2.5 top-1/2 -translate-y-1/2 rounded-xl p-2 text-white/60 hover:text-white hover:bg-white/10 transition-colors"
+                className="absolute right-2.5 top-1/2 -translate-y-1/2 rounded-xl p-2 text-slate-600 hover:text-slate-900 hover:bg-white/60 transition-colors"
                 aria-label={showPassword ? 'Hide password' : 'Show password'}
               >
                 {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
@@ -239,7 +239,7 @@ export function SignInForm() {
           <div className="flex items-center justify-between">
             <Link
               href="/auth/reset-password"
-              className="text-xs sm:text-sm text-white/75 hover:text-white hover:underline py-2"
+              className="text-xs sm:text-sm text-slate-700 hover:text-slate-900 hover:underline py-2"
             >
               Forgot password?
             </Link>
@@ -247,7 +247,7 @@ export function SignInForm() {
 
           <Button
             type="submit"
-            className="w-full min-h-[44px] text-base bg-gradient-to-r from-indigo-500 to-purple-500 text-white border-0 shadow-lg shadow-indigo-500/30 hover:shadow-indigo-500/40 hover:scale-[1.01] transition-all disabled:opacity-70 disabled:hover:scale-100"
+            className="w-full min-h-[44px] text-base bg-slate-900 text-white border-0 shadow-[0_12px_30px_rgba(15,23,42,0.16)] hover:bg-slate-900/90 transition-colors disabled:opacity-70"
             disabled={isLoading}
           >
             {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
@@ -255,9 +255,9 @@ export function SignInForm() {
           </Button>
         </form>
 
-        <p className="text-center text-xs sm:text-sm text-white/70">
+        <p className="text-center text-xs sm:text-sm text-slate-700">
           Don't have an account?{' '}
-          <Link href="/auth/sign-up" className="text-white hover:underline">
+          <Link href="/auth/sign-up" className="text-blue-700 font-semibold hover:underline">
             Sign up
           </Link>
         </p>

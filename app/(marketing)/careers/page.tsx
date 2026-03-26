@@ -1,5 +1,5 @@
 import { Metadata } from 'next'
-import { MarketingSubpageWrapper } from '../components/marketing-subpage-wrapper'
+import { MarketingSubpageWrapperLight } from '../components/marketing-subpage-wrapper-light'
 import { CareersContent } from './careers-content'
 
 export const metadata: Metadata = {
@@ -67,9 +67,9 @@ export default function CareersPage() {
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }}
       />
-      <MarketingSubpageWrapper>
+      <MarketingSubpageWrapperLight>
         <CareersContent />
-      </MarketingSubpageWrapper>
+      </MarketingSubpageWrapperLight>
     </>
   )
 }

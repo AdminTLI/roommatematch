@@ -1,6 +1,6 @@
 'use client'
 
-import { MarketingSubpageWrapper } from '../components/marketing-subpage-wrapper'
+import { MarketingSubpageWrapperLight } from '../components/marketing-subpage-wrapper-light'
 import Container from '@/components/ui/primitives/container'
 import Section from '@/components/ui/primitives/section'
 import { useApp } from '@/app/providers'
@@ -12,18 +12,19 @@ export default function PrivacyPage() {
   )
 
   return (
-    <MarketingSubpageWrapper>
-      <Section className="bg-slate-950">
+    <MarketingSubpageWrapperLight>
+      <Section className="py-12 md:py-16 lg:py-20">
         <Container>
           <div className="max-w-4xl mx-auto">
-            <h1 className="text-3xl md:text-4xl font-bold text-white mb-4">
-              Privacy Policy
-            </h1>
-            <p className="text-slate-500 mb-8">
-              Last updated: {lastUpdated}
-            </p>
+            <div className="rounded-3xl border border-white/15 bg-slate-950/80 backdrop-blur-xl shadow-[0_18px_55px_rgba(15,23,42,0.35)] p-6 sm:p-10">
+              <h1 className="text-3xl md:text-4xl font-bold text-white mb-4">
+                Privacy Policy
+              </h1>
+              <p className="text-slate-500 mb-8">
+                Last updated: {lastUpdated}
+              </p>
 
-            <p className="text-slate-400 mb-8 leading-relaxed">
+              <p className="text-slate-400 mb-8 leading-relaxed">
                 Domu Match is designed for students and young professionals
                 who want to find compatible roommates. This Privacy Policy
                 explains in clear language how we use your data and your rights
@@ -774,9 +775,10 @@ export default function PrivacyPage() {
                 </dl>
               </section>
             </div>
-          </Container>
-        </Section>
-    </MarketingSubpageWrapper>
+          </div>
+        </Container>
+      </Section>
+    </MarketingSubpageWrapperLight>
   )
 }
 

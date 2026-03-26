@@ -3,7 +3,7 @@ import { z } from 'zod'
 import { sendEmail } from '@/lib/email/workflows'
 import { safeLogger } from '@/lib/utils/logger'
 
-const DEMO_INBOX = process.env.UNIVERSITIES_DEMO_INBOX || 'domumatch@gmail.com'
+const DEMO_INBOX = 'domumatch@gmail.com'
 
 const RequestDemoSchema = z.object({
   name: z.string().min(1, 'Name is required'),
@@ -67,11 +67,21 @@ export async function POST(request: Request) {
       subject,
       html,
       text,
+      replyTo: data.email,
     })
 
     if (!sent) {
-      safeLogger.warn('[Universities Request Demo] Email send failed (SMTP may not be configured)')
-      // Still return success - the submission was received; email is best-effort
+      safeLogger.error('[Universities Request Demo] Email send failed', {
+        to: DEMO_INBOX,
+        replyTo: data.email,
+      })
+      return NextResponse.json(
+        {
+          error:
+            'We received your request, but failed to send the notification email. Please try again or email us directly.',
+        },
+        { status: 500 }
+      )
     }
 
     safeLogger.info('[Universities Request Demo] Demo request received', {

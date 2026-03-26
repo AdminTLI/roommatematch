@@ -73,45 +73,35 @@ export async function GET(req: NextRequest) {
     await pdfQueue.acquire();
 
     try {
-      // Set timeout: kill Puppeteer after 30 seconds
-      const timeoutPromise = new Promise<never>((_, reject) => {
-        setTimeout(() => {
-          reject(new Error('PDF generation timeout after 30 seconds'));
-        }, 30000);
-      });
+      // Fetch and normalize data
+      const rawData = await fetchReportData(user.id, user.email);
+      const normalizedData = normalizeSections(rawData);
 
-    // Fetch and normalize data
-    const rawData = await fetchReportData(user.id, user.email);
-    const normalizedData = normalizeSections(rawData);
-
-    // Generate HTML using template strings (no JSX)
-    const html = generateReportHtml(normalizedData);
+      // Generate HTML using template strings (no JSX)
+      const html = generateReportHtml(normalizedData);
 
       // Generate PDF with timeout
-      const pdfBuffer = await withTimeout(renderPdf(html), 30000);
+      const pdfBuffer = await withTimeout(renderPdf(html, { timeoutMs: 30000 }), 30000);
 
-    // Return PDF with proper headers
-    return new NextResponse(pdfBuffer, {
-      headers: {
-        'Content-Type': 'application/pdf',
-        'Content-Disposition': `attachment; filename="roommate-profile-${user.id.slice(0, 8)}.pdf"`,
-        'Cache-Control': 'no-cache, no-store, must-revalidate',
-        'Pragma': 'no-cache',
+      // Return PDF with proper headers
+      return new NextResponse(pdfBuffer, {
+        headers: {
+          'Content-Type': 'application/pdf',
+          'Content-Disposition': `attachment; filename="roommate-profile-${user.id.slice(0, 8)}.pdf"`,
+          'Cache-Control': 'no-cache, no-store, must-revalidate',
+          'Pragma': 'no-cache',
           'Expires': '0',
           'X-RateLimit-Limit': '5',
           'X-RateLimit-Remaining': (rateLimitResult.remaining - 1).toString(),
           'X-RateLimit-Reset': new Date(rateLimitResult.resetTime).toISOString()
-      }
-    });
+        }
+      });
     } finally {
       // Always release queue slot
       pdfQueue.release();
     }
 
   } catch (error) {
-    // Release queue slot on error
-    pdfQueue.release();
-    
     safeLogger.error('PDF generation error', error);
     
     if (error instanceof Error && error.message.includes('timeout')) {

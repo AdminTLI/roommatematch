@@ -73,18 +73,9 @@ WHERE n1.type = 'match_created'
   AND n1.metadata->>'other_user_id' IS NOT NULL
   AND n1.id NOT IN (SELECT id FROM duplicates_to_keep);
 
--- Step 2: Verify no duplicates remain (for debugging - can be removed)
--- This query should return 0 rows
--- SELECT user_id, metadata->>'other_user_id', COUNT(*) 
--- FROM notifications 
--- WHERE type = 'match_created' AND metadata->>'other_user_id' IS NOT NULL
--- GROUP BY user_id, metadata->>'other_user_id' 
--- HAVING COUNT(*) > 1;
-
 -- Step 3: Create a new unique index based on user pair (user_id + other_user_id)
 -- This prevents duplicate notifications for the same user pair regardless of match_id/suggestion_id
--- Note: This will fail if duplicates still exist, so we ensure Step 1 removes them first
-CREATE UNIQUE INDEX idx_notifications_unique_user_pair
+CREATE UNIQUE INDEX IF NOT EXISTS idx_notifications_unique_user_pair
 ON notifications (user_id, type, (metadata->>'other_user_id'))
 WHERE type = 'match_created' AND metadata->>'other_user_id' IS NOT NULL;
 

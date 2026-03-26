@@ -25,7 +25,7 @@ export interface TrustContent {
   badge: string
   copy: string
   verifiedLabel: string
-  usedBy: string
+  proofLine: string
 }
 
 export interface InvestmentContent {
@@ -83,9 +83,21 @@ export const content: Record<Locale, FeaturesForYoungProfessionalsContent> = {
     why: {
       title: "Shared living shouldn't be a lottery.",
       painPoints: [
-        { title: 'Work vs. Party Schedules', description: "You need sleep before a 9 AM meeting. They're hosting until 2 AM." },
-        { title: 'The Cleanliness Gap', description: "Your kitchen shouldn't feel like a shared lab." },
-        { title: 'The Stranger Risk', description: "Moving in with someone you've never really vetted." },
+        {
+          title: 'The WFH Reality Check',
+          description:
+            'You have calls, deadlines, and a home office. They treat weekdays like the weekend. Your apartment becomes a coworking nightmare.',
+        },
+        {
+          title: 'The Bills and Boundaries Problem',
+          description:
+            'Energy spikes, subscriptions pile up, and “I’ll pay you later” becomes a habit. Money tension kills a home fast.',
+        },
+        {
+          title: 'The Lifestyle Mismatch',
+          description:
+            'You want calm evenings and predictable routines. They want spontaneous guests, constant noise, and chaos. Same rent, different lives.',
+        },
       ],
     },
     solution: {
@@ -102,7 +114,8 @@ export const content: Record<Locale, FeaturesForYoungProfessionalsContent> = {
       badge: 'Powered by Persona™ Identity Verification',
       copy: 'No bots. No fake profiles. No scams. Every user is government-ID verified before they can chat. Young professionals get the same safe, gated environment as students - in a separate pool.',
       verifiedLabel: 'Verified User',
-      usedBy: 'Trusted by young professionals across Amsterdam, Rotterdam, Utrecht and more.',
+      proofLine:
+        'Persona is trusted by leading companies (e.g. OpenAI, Coursera, and Brex) for identity verification - so you’re matching with real people, not fake profiles.',
     },
     investment: {
       heading: '15 Minutes for a Year of Peace.',
@@ -117,7 +130,8 @@ export const content: Record<Locale, FeaturesForYoungProfessionalsContent> = {
         },
         {
           question: 'Is Domu Match free for young professionals?',
-          answer: 'Yes. Domu Match is free for young professionals. There are no hidden fees for messaging or viewing matches.',
+          answer:
+            'Right now, Domu Match is free for young professionals. In the future, access may move to a paid annual subscription model. Either way: no hidden fees, and you’ll always see the price upfront.',
         },
         {
           question: 'How do young professionals verify?',
@@ -164,9 +178,21 @@ export const content: Record<Locale, FeaturesForYoungProfessionalsContent> = {
     why: {
       title: "Samenwonen zou geen loterij moeten zijn.",
       painPoints: [
-        { title: 'Werk vs. Feest schema\'s', description: "Jij moet slapen voor een meeting om 9 uur. Zij hosten tot 2 uur." },
-        { title: 'De schoonmaakkloof', description: "Je keuken hoort geen gedeeld lab te zijn." },
-        { title: 'Het vreemdenrisico', description: "Intrekken bij iemand die je nooit echt hebt gecontroleerd." },
+        {
+          title: 'De Thuiswerk Realiteit',
+          description:
+            'Jij hebt calls, deadlines en een thuiswerkplek. Zij doen doordeweeks alsof het weekend is. Je huis wordt een stressvolle werkplek.',
+        },
+        {
+          title: 'Rekeningen en Grenzen',
+          description:
+            'De energiekosten schieten omhoog, abonnementen stapelen zich op en “ik betaal later” wordt een patroon. Geldgedoe sloopt de sfeer.',
+        },
+        {
+          title: 'De Lifestyle Mismatch',
+          description:
+            'Jij wilt rustige avonden en voorspelbare routines. Zij willen spontane gasten, veel geluid en chaos. Zelfde huur, ander leven.',
+        },
       ],
     },
     solution: {
@@ -183,7 +209,8 @@ export const content: Record<Locale, FeaturesForYoungProfessionalsContent> = {
       badge: 'Mede mogelijk gemaakt door Persona™ Identity Verification',
       copy: 'Geen bots. Geen nep-profielen. Geen oplichting. Elke gebruiker is geverifieerd met overheids-ID voordat ze kunnen chatten. Young professionals krijgen dezelfde veilige omgeving als studenten - in een aparte pool.',
       verifiedLabel: 'Geverifieerde Gebruiker',
-      usedBy: 'Vertrouwd door young professionals in Amsterdam, Rotterdam, Utrecht en meer.',
+      proofLine:
+        'Persona wordt gebruikt door toonaangevende bedrijven (bijv. OpenAI, Coursera en Brex) voor identiteitsverificatie - zodat jij met echte mensen matcht, niet met nep-profielen.',
     },
     investment: {
       heading: '15 minuten voor een jaar vrede.',
@@ -198,7 +225,8 @@ export const content: Record<Locale, FeaturesForYoungProfessionalsContent> = {
         },
         {
           question: 'Is Domu Match gratis voor young professionals?',
-          answer: 'Ja. Domu Match is gratis voor young professionals. Er zijn geen verborgen kosten voor berichten of matches bekijken.',
+          answer:
+            'Op dit moment is Domu Match gratis voor young professionals. In de toekomst kan toegang overgaan naar een betaald jaarlijks abonnementsmodel. Hoe dan ook: geen verborgen kosten, en je ziet de prijs altijd vooraf.',
         },
         {
           question: 'Hoe verifiëren young professionals?',

@@ -8,6 +8,14 @@ import { createNotificationsForUsers, createChatMessageNotification } from '@/li
 
 export async function POST(request: NextRequest) {
   try {
+    if (process.env.NODE_ENV === 'development') {
+      safeLogger.info('[ChatSend] Supabase env', {
+        supabaseUrl: process.env.NEXT_PUBLIC_SUPABASE_URL,
+        hasAnonKey: !!process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
+        hasServiceKey: !!process.env.SUPABASE_SERVICE_ROLE_KEY,
+      })
+    }
+
     const supabase = await createClient()
     const { data: { user }, error: authError } = await supabase.auth.getUser()
 

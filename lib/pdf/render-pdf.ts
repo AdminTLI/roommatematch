@@ -1,6 +1,11 @@
 import puppeteer from 'puppeteer';
 
-export async function renderPdf(html: string): Promise<Buffer> {
+type RenderPdfOptions = {
+  timeoutMs?: number;
+};
+
+export async function renderPdf(html: string, options: RenderPdfOptions = {}): Promise<Buffer> {
+  const timeoutMs = options.timeoutMs ?? 30000;
   const browser = await puppeteer.launch({
     headless: true,
     args: [
@@ -13,7 +18,19 @@ export async function renderPdf(html: string): Promise<Buffer> {
   });
 
   try {
+    let timer: NodeJS.Timeout | undefined;
+    let timedOut = false;
+    const timeoutPromise = new Promise<never>((_, reject) => {
+      timer = setTimeout(() => {
+        timedOut = true;
+        // Attempt to abort in-flight operations; close may itself fail in some environments.
+        browser.close().catch(() => {});
+        reject(new Error(`PDF generation timeout after ${Math.round(timeoutMs / 1000)} seconds`));
+      }, timeoutMs);
+    });
+
     const page = await browser.newPage();
+    page.setDefaultTimeout(timeoutMs);
 
     // Set viewport for consistent rendering
     await page.setViewport({
@@ -22,47 +39,57 @@ export async function renderPdf(html: string): Promise<Buffer> {
       deviceScaleFactor: 1,
     });
 
-    // Set content and wait for fonts to load
-    await page.setContent(html, {
-      waitUntil: 'networkidle0',
-      timeout: 30000,
-    });
-
-    // Wait for fonts to be loaded (ignore in environments without document.fonts)
-    try {
-      await page.evaluate(() => {
-        if (typeof document !== 'undefined' && 'fonts' in document) {
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          return (document as any).fonts.ready;
-        }
-        return null;
+    const work = (async () => {
+      // Set content and wait for fonts to load
+      await page.setContent(html, {
+        waitUntil: 'networkidle0',
+        timeout: timeoutMs,
       });
-    } catch {
-      // Non-fatal in dev / constrained environments
+
+      // Wait for fonts to be loaded (ignore in environments without document.fonts)
+      try {
+        await page.evaluate(() => {
+          if (typeof document !== 'undefined' && 'fonts' in document) {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            return (document as any).fonts.ready;
+          }
+          return null;
+        });
+      } catch {
+        // Non-fatal in dev / constrained environments
+      }
+
+      return await page.pdf({
+        format: 'A4',
+        printBackground: true,
+        preferCSSPageSize: true,
+        displayHeaderFooter: true,
+        headerTemplate: '<div></div>',
+        footerTemplate: `
+          <div style="width:100%; font-size:8px; color:#444; padding:0 16px; display:flex; justify-content:space-between; font-family: 'Inter', sans-serif;">
+            <span class="section"></span>
+            <span><span class="pageNumber"></span> / <span class="totalPages"></span></span>
+            <span>${new Date().toISOString().slice(0,10)}</span>
+          </div>
+        `,
+        margin: {
+          top: '12mm',
+          right: '12mm',
+          bottom: '16mm',
+          left: '12mm',
+        },
+      });
+    })();
+
+    try {
+      return await Promise.race([work, timeoutPromise]);
+    } finally {
+      if (timer) clearTimeout(timer);
+      if (timedOut) {
+        // Ensure any late rejection from `work` doesn't become unhandled.
+        work.catch(() => {});
+      }
     }
-
-    const pdf = await page.pdf({
-      format: 'A4',
-      printBackground: true,
-      preferCSSPageSize: true,
-      displayHeaderFooter: true,
-      headerTemplate: '<div></div>',
-      footerTemplate: `
-        <div style="width:100%; font-size:8px; color:#444; padding:0 16px; display:flex; justify-content:space-between; font-family: 'Inter', sans-serif;">
-          <span class="section"></span>
-          <span><span class="pageNumber"></span> / <span class="totalPages"></span></span>
-          <span>${new Date().toISOString().slice(0,10)}</span>
-        </div>
-      `,
-      margin: {
-        top: '12mm',
-        right: '12mm',
-        bottom: '16mm',
-        left: '12mm',
-      },
-    });
-
-    return pdf;
   } finally {
     await browser.close();
   }

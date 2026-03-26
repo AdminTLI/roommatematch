@@ -1,6 +1,6 @@
 'use client'
 
-import { MarketingSubpageWrapper } from '../../components/marketing-subpage-wrapper'
+import { MarketingSubpageWrapperLight } from '../../components/marketing-subpage-wrapper-light'
 import Container from '@/components/ui/primitives/container'
 import Section from '@/components/ui/primitives/section'
 import { ApplyForm } from '@/components/marketing/Careers/ApplyForm'
@@ -45,51 +45,49 @@ export default function CareersApplyPage() {
   const t = content[locale]
 
   return (
-    <MarketingSubpageWrapper className="relative overflow-hidden">
-      <Section className="relative overflow-hidden bg-slate-950">
-        <div aria-hidden className="pointer-events-none absolute inset-0">
-          <div className="absolute inset-0 bg-gradient-to-br from-slate-950 via-indigo-950/40 via-purple-950/35 to-slate-950" />
-          <div className="absolute -top-24 -left-24 h-72 w-72 rounded-full bg-indigo-500/18 blur-3xl" />
-          <div className="absolute -bottom-24 -right-24 h-72 w-72 rounded-full bg-purple-500/18 blur-3xl" />
-        </div>
+    <MarketingSubpageWrapperLight className="relative overflow-hidden">
+      <Section className="relative overflow-hidden py-12 md:py-16 lg:py-20">
         <Container className="relative z-10">
-          <div className="mx-auto max-w-5xl text-center py-10 sm:py-12 space-y-4">
-            <h1 className="text-3xl sm:text-4xl font-bold tracking-tight text-white">
+          <div className="mx-auto max-w-5xl text-center space-y-4">
+            <div className="mx-auto inline-flex items-center gap-2 rounded-full border border-white/70 bg-white/55 px-4 py-1.5 text-xs font-semibold text-slate-700 shadow-[0_10px_24px_rgba(15,23,42,0.08)] backdrop-blur-xl">
+              <span className="h-1.5 w-1.5 rounded-full bg-blue-600/70" aria-hidden />
+              Domu Match
+            </div>
+            <h1 className="text-3xl sm:text-4xl font-bold tracking-tight text-slate-900">
               {t.title}
             </h1>
-            <p className="text-base text-white/75 max-w-2xl mx-auto">
+            <p className="text-base text-slate-700 max-w-2xl mx-auto">
               {t.subtitle}
             </p>
-            <p className="text-sm text-white/65 max-w-2xl mx-auto">
+            <p className="text-sm text-slate-600 max-w-2xl mx-auto">
               {t.note}
             </p>
           </div>
 
-          
-          <div className="mx-auto max-w-6xl space-y-6">
-            <Card className="rounded-2xl border border-white/15 bg-white/5 backdrop-blur-xl shadow-[0_18px_45px_rgba(15,23,42,0.9)]">
+          <div className="mx-auto mt-10 max-w-6xl space-y-6">
+            <Card className="rounded-3xl border border-white/60 bg-white/45 backdrop-blur-xl shadow-[0_18px_50px_rgba(15,23,42,0.08)]">
               <CardHeader className="pb-2">
-                <CardTitle className="text-xl text-center text-white tracking-tight">
+                <CardTitle className="text-xl text-center text-slate-900 tracking-tight">
                   {t.whyTitle}
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-5 text-sm leading-relaxed">
-                <p className="text-white/75 max-w-2xl mx-auto text-center">
+                <p className="text-slate-700 max-w-2xl mx-auto text-center">
                   {t.whyDescription}
                 </p>
                 <div className="space-y-2 max-w-2xl mx-auto">
-                  <div className="text-sm font-medium text-center text-white">
+                  <div className="text-sm font-semibold text-center text-slate-900">
                     {t.currentFocus}
                   </div>
-                  <ul className="list-disc pl-5 space-y-1.5 text-white/75 text-left">
+                  <ul className="list-disc pl-5 space-y-1.5 text-slate-700 text-left">
                     {t.focusItems.map((item, idx) => (
                       <li key={idx}>{item}</li>
                     ))}
                   </ul>
                 </div>
-                <div className="rounded-xl border border-white/15 bg-white/5 p-3 text-xs text-center max-w-2xl mx-auto">
-                  <div className="font-medium text-white mb-1">{t.opportunity}</div>
-                  <p className="text-white/75 leading-relaxed">
+                <div className="rounded-2xl border border-white/70 bg-white/60 p-4 text-xs text-center max-w-2xl mx-auto">
+                  <div className="font-semibold text-slate-900 mb-1">{t.opportunity}</div>
+                  <p className="text-slate-700 leading-relaxed">
                     {t.opportunityText}
                   </p>
                 </div>
@@ -100,10 +98,9 @@ export default function CareersApplyPage() {
               <ApplyForm />
             </div>
           </div>
-
         </Container>
       </Section>
-    </MarketingSubpageWrapper>
+    </MarketingSubpageWrapperLight>
   )
 }
 

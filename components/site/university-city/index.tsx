@@ -25,7 +25,7 @@ export function UniversityCityPage({ cityKey }: UniversityCityPageProps) {
       <UniversityCityUniversities city={city} />
       <UniversityCityWhyChoose city={city} />
       <UniversityCityFAQ city={city} />
-      <FinalCTA variant="dark" />
+      <FinalCTA />
     </>
   )
 }

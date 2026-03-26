@@ -68,10 +68,9 @@ export async function POST(request: Request) {
     
     safeLogger.debug('[Careers Apply] Successfully inserted application:', insertedData?.[0]?.id)
 
-    const inbox = process.env.CAREERS_INBOX || process.env.SUPPORT_INBOX
-    if (inbox) {
-      // Best-effort notification
-      await sendEmail({
+    const inbox = 'domumatch@gmail.com'
+    // Best-effort notification
+    await sendEmail({
         to: inbox,
         subject: `New ${data.track} volunteer application – ${data.name}`,
         html: `
@@ -106,7 +105,6 @@ ${data.exampleProject}
 ${data.notes ? `Notes:\n${data.notes}\n` : ''}
         `.trim(),
       }).catch(() => null)
-    }
 
     return NextResponse.json({ success: true })
   } catch (err) {

@@ -1,4 +1,4 @@
-import { MarketingSubpageWrapper } from '../components/marketing-subpage-wrapper'
+import { MarketingSubpageWrapperLight } from '../components/marketing-subpage-wrapper-light'
 import { Metadata } from 'next'
 import { BlogContent } from './blog-content'
 
@@ -138,9 +138,9 @@ export default function BlogPage() {
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }}
       />
-      <MarketingSubpageWrapper>
+      <MarketingSubpageWrapperLight>
         <BlogContent />
-      </MarketingSubpageWrapper>
+      </MarketingSubpageWrapperLight>
     </>
   )
 }

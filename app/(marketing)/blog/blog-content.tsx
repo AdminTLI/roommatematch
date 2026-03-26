@@ -301,24 +301,23 @@ export function BlogContent() {
 
   return (
     <>
-      {/* Hero section - matching About/How it works style */}
-      <Section className="relative overflow-hidden pt-16 md:pt-24 pb-20 md:pb-28">
-        <div className="absolute inset-0 bg-gradient-to-b from-indigo-950/30 via-transparent to-purple-950/20 pointer-events-none" aria-hidden />
-        <div className="absolute top-1/4 left-1/4 w-[500px] h-[500px] rounded-full bg-indigo-500/15 blur-[100px] pointer-events-none" aria-hidden />
-        <div className="absolute bottom-1/4 right-1/4 w-[400px] h-[400px] rounded-full bg-purple-500/10 blur-[80px] pointer-events-none" aria-hidden />
-
+      {/* Hero section (light, homepage-aligned) */}
+      <Section className="relative overflow-hidden pt-14 md:pt-20 pb-10 md:pb-14">
         <Container className="relative z-10">
           <motion.div
-            className="max-w-4xl mx-auto text-center"
-            initial={reducedMotion ? false : { opacity: 0, y: 24 }}
+            className="mx-auto max-w-4xl text-center"
+            initial={reducedMotion ? false : { opacity: 0, y: 18 }}
             animate={reducedMotion ? false : { opacity: 1, y: 0 }}
             transition={{ duration: 0.6, ease: 'easeOut' }}
           >
-            <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-white mb-6 leading-tight tracking-tight">
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 to-purple-400">{t.title}</span>{' '}
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 to-purple-400">{t.titleHighlight}</span>
+            <div className="mx-auto inline-flex items-center gap-2 rounded-full border border-white/70 bg-white/55 px-4 py-1.5 text-xs font-semibold text-slate-700 shadow-[0_10px_24px_rgba(15,23,42,0.08)] backdrop-blur-xl">
+              <span className="h-1.5 w-1.5 rounded-full bg-blue-600/70" aria-hidden />
+              Domu Match Blog
+            </div>
+            <h1 className="mt-5 text-4xl md:text-5xl lg:text-6xl font-bold leading-tight tracking-tight text-slate-900">
+              <span className="text-slate-900">{t.title}</span>
             </h1>
-            <p className="text-lg md:text-xl text-slate-200 max-w-3xl mx-auto leading-relaxed">
+            <p className="mt-4 text-lg md:text-xl text-slate-700 max-w-3xl mx-auto leading-relaxed">
               {t.subtitle}
             </p>
           </motion.div>
@@ -326,9 +325,7 @@ export function BlogContent() {
       </Section>
 
       {/* Blog post cards */}
-      <Section className="relative overflow-hidden py-16 md:py-24">
-        <div className="absolute inset-0 bg-gradient-to-b from-indigo-950/15 via-transparent to-purple-950/15 pointer-events-none" aria-hidden />
-
+      <Section className="relative overflow-hidden pb-16 md:pb-24">
         <Container className="relative z-10">
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
             {t.posts.map((post, index) => {
@@ -342,37 +339,38 @@ export function BlogContent() {
               return (
                 <motion.div
                   key={post.slug}
-                  initial={reducedMotion ? false : { opacity: 0, y: 24 }}
-                  whileInView={reducedMotion ? false : { opacity: 1, y: 0 }}
+                  initial={reducedMotion ? undefined : { opacity: 0, y: 24 }}
+                  whileInView={reducedMotion ? undefined : { opacity: 1, y: 0 }}
                   viewport={{ once: true }}
                   transition={{ duration: 0.5, delay: index * 0.1 }}
                 >
                   <Link href={`/blog/${post.slug}`} className="block h-full group">
                     <div
                       className={cn(
-                        'glass noise-overlay h-full flex flex-col p-6 md:p-8 transition-all duration-300',
-                        'hover:border-white/30 hover:bg-white/15'
+                        'h-full flex flex-col p-6 md:p-8 transition-all duration-300',
+                        'rounded-3xl border border-white/60 bg-white/45 backdrop-blur-xl shadow-[0_18px_50px_rgba(15,23,42,0.08)]',
+                        'hover:bg-white/60 hover:shadow-[0_22px_60px_rgba(15,23,42,0.10)]'
                       )}
                     >
                       <div className="flex items-center gap-3 mb-4">
-                        <div className="h-12 w-12 rounded-xl bg-indigo-500/20 border border-indigo-400/30 flex items-center justify-center group-hover:bg-indigo-500/30 transition-colors">
-                          <Icon className="h-6 w-6 text-indigo-400" />
+                        <div className="h-12 w-12 rounded-2xl bg-white/60 border border-white/70 flex items-center justify-center group-hover:bg-white/75 transition-colors shadow-[0_10px_24px_rgba(15,23,42,0.08)]">
+                          <Icon className="h-6 w-6 text-blue-700" />
                         </div>
-                        <span className="text-xs font-semibold text-indigo-400 uppercase tracking-wide">
+                        <span className="text-xs font-semibold text-slate-700 uppercase tracking-wide">
                           {post.category}
                         </span>
                       </div>
 
-                      <h2 className="text-xl md:text-2xl font-bold text-white mb-3 group-hover:text-indigo-300 transition-colors">
+                      <h2 className="text-xl md:text-2xl font-bold text-slate-900 mb-3 group-hover:text-slate-800 transition-colors">
                         {post.title}
                       </h2>
 
-                      <p className="text-slate-200 mb-6 flex-1 leading-relaxed">
+                      <p className="text-slate-700 mb-6 flex-1 leading-relaxed">
                         {post.excerpt}
                       </p>
 
-                      <div className="flex items-center justify-between pt-4 border-t border-white/20">
-                        <div className="flex items-center gap-4 text-xs text-slate-400">
+                      <div className="flex items-center justify-between pt-4 border-t border-white/60">
+                        <div className="flex items-center gap-4 text-xs text-slate-600">
                           <div className="flex items-center gap-1.5">
                             <Calendar className="h-3.5 w-3.5" />
                             <span>{dateFormatter.format(new Date(post.date))}</span>
@@ -382,7 +380,7 @@ export function BlogContent() {
                             <span>{post.readTime}</span>
                           </div>
                         </div>
-                        <span className="inline-flex items-center text-sm font-medium text-indigo-400 group-hover:text-indigo-300 transition-colors">
+                        <span className="inline-flex items-center text-sm font-semibold text-blue-700 group-hover:text-blue-800 transition-colors">
                           {t.readArticle}
                           <ArrowRight className="ml-2 h-4 w-4 group-hover:translate-x-1 transition-transform" />
                         </span>

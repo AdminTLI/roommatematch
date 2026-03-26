@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { MarketingSubpageWrapper } from '../components/marketing-subpage-wrapper'
+import { MarketingSubpageWrapperLight } from '../components/marketing-subpage-wrapper-light'
 import Container from '@/components/ui/primitives/container'
 import Section from '@/components/ui/primitives/section'
 import { Button } from '@/components/ui/button'
@@ -54,38 +54,67 @@ export default function QuestionnairePage() {
   }
 
   return (
-    <MarketingSubpageWrapper>
-      <Section className="bg-slate-950">
+    <MarketingSubpageWrapperLight>
+      <Section className="py-10 md:py-14 lg:py-16">
         <Container>
-          <h1 className="text-4xl font-bold mb-6 text-white">{t.title}</h1>
-          <p className="text-slate-400 mb-8 max-w-2xl">{t.description}</p>
-
-          <div className="grid gap-6 max-w-2xl">
-            {t.questions.map(q => (
-              <div key={q.key}>
-                <label className="block text-sm font-medium text-slate-200 mb-2">{q.label}</label>
-                <div className="flex flex-wrap gap-2">
-                  {q.options.map(o => (
-                    <button
-                      key={o}
-                      type="button"
-                      onClick={() => setAnswer(q.key, o)}
-                      className={`px-4 py-2 rounded-lg border transition-colors ${answers[q.key] === o ? 'bg-violet-600 text-white border-violet-600' : 'bg-slate-800/50 border-slate-600 text-slate-200 hover:border-slate-500'}`}
-                    >
-                      {o}
-                    </button>
-                  ))}
-                </div>
+          <div className="mx-auto max-w-3xl">
+            <div className="mb-8">
+              <div className="inline-flex items-center gap-2 rounded-full border border-white/70 bg-white/55 px-4 py-1.5 text-xs font-semibold text-slate-700 shadow-[0_10px_24px_rgba(15,23,42,0.08)] backdrop-blur-xl">
+                <span className="h-1.5 w-1.5 rounded-full bg-blue-600/70" aria-hidden />
+                Domu Match
               </div>
-            ))}
-          </div>
+              <h1 className="mt-4 text-3xl sm:text-4xl font-bold tracking-tight text-slate-900">
+                {t.title}
+              </h1>
+              <p className="mt-3 text-slate-700 max-w-2xl">
+                {t.description}
+              </p>
+            </div>
 
-          <div className="mt-8">
-            <Button onClick={handleSubmit} className="bg-violet-600 hover:bg-violet-500 text-white">{t.continue}</Button>
+            <div className="rounded-3xl border border-white/60 bg-white/45 backdrop-blur-xl shadow-[0_18px_50px_rgba(15,23,42,0.08)] p-6 sm:p-8">
+              <div className="grid gap-6">
+                {t.questions.map((q) => (
+                  <div key={q.key}>
+                    <label className="block text-sm font-semibold text-slate-800 mb-2">
+                      {q.label}
+                    </label>
+                    <div className="flex flex-wrap gap-2">
+                      {q.options.map((o) => {
+                        const selected = answers[q.key] === o
+                        return (
+                          <button
+                            key={o}
+                            type="button"
+                            onClick={() => setAnswer(q.key, o)}
+                            className={[
+                              'px-4 py-2 rounded-2xl border text-sm font-semibold transition-colors',
+                              selected
+                                ? 'bg-slate-900 text-white border-slate-900 shadow-[0_12px_30px_rgba(15,23,42,0.18)]'
+                                : 'bg-white/60 border-white/70 text-slate-800 hover:bg-white/75',
+                            ].join(' ')}
+                          >
+                            {o}
+                          </button>
+                        )
+                      })}
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              <div className="mt-8">
+                <Button
+                  onClick={handleSubmit}
+                  className="h-11 rounded-2xl bg-slate-900 text-white hover:bg-slate-900/90 shadow-[0_12px_30px_rgba(15,23,42,0.16)]"
+                >
+                  {t.continue}
+                </Button>
+              </div>
+            </div>
           </div>
         </Container>
       </Section>
-    </MarketingSubpageWrapper>
+    </MarketingSubpageWrapperLight>
   )
 }
 

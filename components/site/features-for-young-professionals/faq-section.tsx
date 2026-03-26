@@ -13,6 +13,9 @@ import { useApp } from '@/app/providers'
 import { content } from './content'
 import { cn } from '@/lib/utils'
 
+const GLASS =
+  'bg-white/60 backdrop-blur-xl border border-white/50 shadow-[0_8px_30px_rgb(0,0,0,0.04)] rounded-3xl'
+
 export function FAQSection() {
   const { locale } = useApp()
   const t = content[locale].faq
@@ -26,7 +29,7 @@ export function FAQSection() {
       <Container className="relative z-10">
         <motion.h2
           id="faq-heading"
-          className="text-3xl md:text-4xl font-bold text-white text-center mb-10 md:mb-12 tracking-tight"
+          className="text-3xl md:text-4xl font-bold text-slate-800 text-center mb-10 md:mb-12 tracking-tight"
           initial={{ opacity: 0, y: 16 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
@@ -47,15 +50,16 @@ export function FAQSection() {
                 key={index}
                 value={`faq-${index}`}
                 className={cn(
-                  'glass noise-overlay border-0 rounded-2xl overflow-hidden',
-                  'transition-all duration-300 hover:border-white/30',
-                  '[&[data-state=open]]:border-white/30 [&[data-state=open]]:bg-white/10'
+                  GLASS,
+                  'border-0 overflow-hidden',
+                  'transition-all duration-300 hover:bg-white/75',
+                  '[&[data-state=open]]:bg-white/75'
                 )}
               >
-                <AccordionTrigger className="text-left text-base sm:text-lg font-medium text-white hover:text-indigo-300 hover:no-underline py-5 px-4 sm:px-6 [&>svg]:text-white/70">
+                <AccordionTrigger className="text-left text-base sm:text-lg font-medium text-slate-800 hover:no-underline py-5 px-4 sm:px-6 [&>svg]:text-slate-500">
                   {item.question}
                 </AccordionTrigger>
-                <AccordionContent className="text-white/70 leading-relaxed pb-5 px-4 sm:px-6 pt-0">
+                <AccordionContent className="text-slate-600 leading-relaxed pb-5 px-4 sm:px-6 pt-0">
                   {item.answer}
                 </AccordionContent>
               </AccordionItem>

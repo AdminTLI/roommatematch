@@ -8,6 +8,9 @@ import { useApp } from '@/app/providers'
 import { content } from './content'
 import { cn } from '@/lib/utils'
 
+const GLASS =
+  'bg-white/60 backdrop-blur-xl border border-white/50 shadow-[0_8px_30px_rgb(0,0,0,0.04)] rounded-3xl'
+
 const icons = [HelpCircle, Percent, EyeOff]
 
 export function SolutionSection() {
@@ -29,9 +32,9 @@ export function SolutionSection() {
   }
 
   const iconStyles = [
-    'bg-blue-500/20 border-blue-400/30 text-blue-400',
-    'bg-emerald-500/20 border-emerald-400/30 text-emerald-400',
-    'bg-violet-500/20 border-violet-400/30 text-violet-400',
+    'bg-blue-50/80 border-blue-200/80 text-blue-700',
+    'bg-emerald-50/80 border-emerald-200/80 text-emerald-700',
+    'bg-violet-50/80 border-violet-200/80 text-violet-700',
   ]
 
   return (
@@ -48,20 +51,32 @@ export function SolutionSection() {
           viewport={{ once: true }}
           transition={{ duration: 0.5 }}
         >
-          <p className="text-indigo-400 font-semibold text-sm uppercase tracking-wider mb-2">
+          <p className="text-slate-600 font-semibold text-sm uppercase tracking-wider mb-2">
             {t.blueprintLabel}
           </p>
           <h2
             id="solution-heading"
-            className="text-3xl md:text-4xl lg:text-5xl font-bold text-white mb-3 tracking-tight max-w-3xl mx-auto"
+            className="text-3xl md:text-4xl lg:text-5xl font-bold text-slate-800 mb-3 tracking-tight max-w-3xl mx-auto"
           >
             {locale === 'en' ? (
-              <>The <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 to-purple-400">Compatibility</span> Blueprint</>
+              <>
+                The{' '}
+                <span className="text-slate-800">
+                  Compatibility
+                </span>{' '}
+                Blueprint
+              </>
             ) : (
-              <>Het <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 to-purple-400">Compatibiliteits</span>plan</>
+              <>
+                Het{' '}
+                <span className="text-slate-800">
+                  Compatibiliteits
+                </span>
+                plan
+              </>
             )}
           </h2>
-          <p className="text-lg text-white/70 max-w-2xl mx-auto">
+          <p className="text-lg text-slate-600 max-w-2xl mx-auto">
             {t.subtitle}
           </p>
         </motion.div>
@@ -79,8 +94,9 @@ export function SolutionSection() {
               <motion.div
                 key={index}
                 className={cn(
-                  'glass noise-overlay p-6 md:p-8 flex flex-col min-h-[200px]',
-                  'transition-all duration-300 hover:border-white/30 hover:bg-white/15'
+                  GLASS,
+                  'p-6 md:p-8 flex flex-col min-h-[200px]',
+                  'transition-all duration-300 hover:bg-white/75'
                 )}
                 variants={itemVariants}
                 custom={index}
@@ -96,11 +112,11 @@ export function SolutionSection() {
                   >
                     <Icon className="h-6 w-6" />
                   </div>
-                  <h3 className="text-xl font-bold text-white tracking-tight">
+                  <h3 className="text-xl font-bold text-slate-800 tracking-tight">
                     {feature.title}
                   </h3>
                 </div>
-                <p className="text-white/70 leading-relaxed flex-1">
+                <p className="text-slate-600 leading-relaxed flex-1">
                   {feature.description}
                 </p>
               </motion.div>

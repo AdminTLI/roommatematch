@@ -78,12 +78,14 @@ export function LanguageSwitcher({
 
   if (variant === 'minimal') {
     const isSelected = (code: Locale) => locale === code
-    const selectedStyles = context === 'glass'
-      ? 'bg-white/10 border border-white/20 text-white focus:ring-white/50'
-      : 'bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-white ring-1 ring-inset ring-gray-200/60 dark:ring-gray-600/60 focus:ring-brand-primary'
-    const unselectedStyles = context === 'glass'
-      ? 'text-white/70 hover:text-white hover:bg-white/5 border border-transparent focus:ring-white/50'
-      : 'text-gray-600 hover:text-gray-900 dark:text-gray-300 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-800 focus:ring-brand-primary'
+    const selectedStyles =
+      context === 'glass'
+        ? 'bg-white/10 border border-white/20 text-white focus:ring-white/50'
+        : 'bg-white/85 text-slate-900 ring-1 ring-inset ring-white/60 shadow-sm focus:ring-brand-primary'
+    const unselectedStyles =
+      context === 'glass'
+        ? 'text-white/70 hover:text-white hover:bg-white/5 border border-transparent focus:ring-white/50'
+        : 'text-slate-700 hover:text-slate-900 focus:ring-brand-primary'
 
     return (
       <div className="flex items-center gap-1" role="group" aria-label={dictionary.nav?.language || 'Language'}>

@@ -8,14 +8,17 @@ import { useApp } from '@/app/providers'
 import { content } from './content'
 import { cn } from '@/lib/utils'
 
+const GLASS =
+  'bg-white/60 backdrop-blur-xl border border-white/50 shadow-[0_8px_30px_rgb(0,0,0,0.04)] rounded-3xl'
+
 export function ComparisonTableSection() {
   const { locale } = useApp()
   const t = content[locale].comparison
   const Cell = ({ value }: { value: boolean }) =>
     value ? (
-      <Check className="h-5 w-5 text-emerald-400 mx-auto" aria-hidden />
+      <Check className="h-5 w-5 text-emerald-600 mx-auto" aria-hidden />
     ) : (
-      <X className="h-5 w-5 text-white/30 mx-auto" aria-hidden />
+      <X className="h-5 w-5 text-slate-300 mx-auto" aria-hidden />
     )
 
   return (
@@ -34,15 +37,15 @@ export function ComparisonTableSection() {
         >
           <h2
             id="comparison-heading"
-            className="text-3xl md:text-4xl font-bold text-white mb-3 tracking-tight"
+            className="text-3xl md:text-4xl font-bold text-slate-800 mb-3 tracking-tight"
           >
             {t.title}
           </h2>
-          <p className="text-white/70">{t.subtitle}</p>
+          <p className="text-slate-600">{t.subtitle}</p>
         </motion.div>
 
         <motion.div
-          className="overflow-x-auto -mx-4 sm:mx-0 rounded-2xl border border-white/20 overflow-hidden"
+          className={cn('overflow-x-auto -mx-4 sm:mx-0 overflow-hidden', GLASS)}
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
@@ -54,10 +57,10 @@ export function ComparisonTableSection() {
             aria-label={t.title}
           >
             <thead>
-              <tr className="bg-white/5">
+              <tr className="bg-white/50">
                 <th
                   scope="col"
-                  className="text-left py-4 px-4 font-semibold text-white border-b border-white/10"
+                  className="text-left py-4 px-4 font-semibold text-slate-800 border-b border-white/60"
                 >
                   {locale === 'nl' ? 'Functie' : 'Feature'}
                 </th>
@@ -66,10 +69,10 @@ export function ComparisonTableSection() {
                     key={name}
                     scope="col"
                     className={cn(
-                      'py-4 px-4 font-semibold text-center border-b border-white/10',
+                      'py-4 px-4 font-semibold text-center border-b border-white/60',
                       name === 'Domu Match'
-                        ? 'text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 to-purple-400'
-                        : 'text-white/90'
+                        ? 'text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 to-violet-600'
+                        : 'text-slate-800'
                     )}
                   >
                     {name}
@@ -82,14 +85,14 @@ export function ComparisonTableSection() {
                 <tr
                   key={index}
                   className={cn(
-                    'border-b border-white/5 last:border-b-0 transition-colors',
-                    'hover:bg-white/5'
+                    'border-b border-white/60 last:border-b-0 transition-colors',
+                    'hover:bg-white/35'
                   )}
                 >
-                  <td className="py-4 px-4 text-sm text-white/90 align-middle">
+                  <td className="py-4 px-4 text-sm text-slate-800 align-middle">
                     {row.feature}
                   </td>
-                  <td className="py-4 px-4 text-center align-middle bg-indigo-500/5">
+                  <td className="py-4 px-4 text-center align-middle bg-indigo-500/10">
                     <Cell value={row.domu} />
                   </td>
                   <td className="py-4 px-4 text-center align-middle">
@@ -108,7 +111,7 @@ export function ComparisonTableSection() {
         </motion.div>
 
         <motion.p
-          className="text-xs text-white/50 text-center mt-6 max-w-2xl mx-auto"
+          className="text-xs text-slate-500 text-center mt-6 max-w-2xl mx-auto"
           initial={{ opacity: 0 }}
           whileInView={{ opacity: 1 }}
           viewport={{ once: true }}

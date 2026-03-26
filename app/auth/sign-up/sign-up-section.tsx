@@ -49,28 +49,28 @@ export function SignUpSection() {
       <div className="mx-auto grid w-full max-w-5xl grid-cols-1 items-center gap-10 lg:grid-cols-[1.1fr_0.9fr]">
         {/* Left: brand / welcome (dynamic by type) */}
         <div className="hidden lg:block">
-          <p className="text-sm font-semibold tracking-wide text-white/70">
+          <p className="text-sm font-semibold tracking-wide text-slate-700">
             {leftColumnDefault.brand}
           </p>
-          <h1 className="mt-3 text-4xl font-bold tracking-tight text-white">
+          <h1 className="mt-3 text-4xl font-bold tracking-tight text-slate-900">
             {userType ? (
               welcomeCopy[userType].title
             ) : (
               <>
                 Find{' '}
-                <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 to-purple-400">
+                <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-700 to-violet-700">
                   {leftColumnDefault.headlineHighlight}
                 </span>
               </>
             )}
           </h1>
-          <p className="mt-4 text-lg text-white/75 max-w-md">
+          <p className="mt-4 text-lg text-slate-700 max-w-md">
             {leftSubtitle}
           </p>
-          <ul className="mt-8 space-y-3 text-sm text-white/70">
+          <ul className="mt-8 space-y-3 text-sm text-slate-700">
             {leftColumnDefault.bullets.map((b, i) => (
               <li key={i} className="flex gap-2 items-baseline">
-                <span className="mt-1.5 h-1.5 w-1.5 flex-shrink-0 rounded-full bg-indigo-300/80" />
+                <span className="mt-1.5 h-1.5 w-1.5 flex-shrink-0 rounded-full bg-blue-600/70" />
                 <span><strong>{b.strong}</strong> {b.text}</span>
               </li>
             ))}
@@ -81,7 +81,7 @@ export function SignUpSection() {
         <div className="mx-auto w-full max-w-md">
           {showPathSelection ? (
             <div className="space-y-6">
-              <p className="text-center text-sm text-white/70">
+              <p className="text-center text-sm text-slate-700">
                 Choose your path to get started. You’ll only match with others in the same cohort.
               </p>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -91,14 +91,14 @@ export function SignUpSection() {
                     tabIndex={0}
                     onClick={() => setSelectedType('student')}
                     onKeyDown={(e) => (e.key === 'Enter' || e.key === ' ') && setSelectedType('student')}
-                    className="cursor-pointer rounded-2xl border border-white/20 bg-white/10 backdrop-blur-md hover:bg-white/15 hover:border-white/30 transition-all duration-300"
+                    className="cursor-pointer rounded-3xl border border-white/60 bg-white/45 backdrop-blur-xl hover:bg-white/60 transition-all duration-300 shadow-[0_18px_50px_rgba(15,23,42,0.08)]"
                   >
                     <CardHeader className="space-y-2 pb-2">
-                      <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-sky-500/20 text-sky-400">
+                      <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-white/70 border border-white/80 text-blue-700 shadow-[0_10px_24px_rgba(15,23,42,0.08)]">
                         <GraduationCap className="h-6 w-6" />
                       </div>
-                      <CardTitle className="text-lg text-white">I am a Student</CardTitle>
-                      <CardDescription className="text-white/70 text-sm">
+                      <CardTitle className="text-lg text-slate-900">I am a Student</CardTitle>
+                      <CardDescription className="text-slate-700 text-sm">
                         Match with other verified students.
                       </CardDescription>
                     </CardHeader>
@@ -111,14 +111,14 @@ export function SignUpSection() {
                     tabIndex={0}
                     onClick={() => setSelectedType('professional')}
                     onKeyDown={(e) => (e.key === 'Enter' || e.key === ' ') && setSelectedType('professional')}
-                    className="cursor-pointer rounded-2xl border border-white/20 bg-white/10 backdrop-blur-md hover:bg-white/15 hover:border-white/30 transition-all duration-300"
+                    className="cursor-pointer rounded-3xl border border-white/60 bg-white/45 backdrop-blur-xl hover:bg-white/60 transition-all duration-300 shadow-[0_18px_50px_rgba(15,23,42,0.08)]"
                   >
                     <CardHeader className="space-y-2 pb-2">
-                      <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-indigo-500/20 text-indigo-400">
+                      <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-white/70 border border-white/80 text-blue-700 shadow-[0_10px_24px_rgba(15,23,42,0.08)]">
                         <Briefcase className="h-6 w-6" />
                       </div>
-                      <CardTitle className="text-lg text-white">I am a Professional</CardTitle>
-                      <CardDescription className="text-white/70 text-sm">
+                      <CardTitle className="text-lg text-slate-900">I am a Professional</CardTitle>
+                      <CardDescription className="text-slate-700 text-sm">
                         Match with other young professionals.
                       </CardDescription>
                     </CardHeader>

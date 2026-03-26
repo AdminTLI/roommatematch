@@ -8,6 +8,9 @@ import { useApp } from '@/app/providers'
 import { content } from './content'
 import { cn } from '@/lib/utils'
 
+const GLASS =
+  'bg-white/60 backdrop-blur-xl border border-white/50 shadow-[0_8px_30px_rgb(0,0,0,0.04)] rounded-3xl'
+
 export function PrivacyGdprSection() {
   const { locale } = useApp()
   const t = content[locale].privacy
@@ -22,9 +25,10 @@ export function PrivacyGdprSection() {
       <Container className="relative z-10">
         <motion.div
           className={cn(
-            'glass noise-overlay p-8 md:p-12 rounded-2xl',
+            GLASS,
+            'p-8 md:p-12 rounded-2xl',
             'flex flex-col md:flex-row md:items-start md:justify-between gap-8',
-            'transition-all duration-300 hover:border-white/30 hover:bg-white/15'
+            'transition-all duration-300 hover:bg-white/75'
           )}
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
@@ -33,21 +37,21 @@ export function PrivacyGdprSection() {
         >
           <div className="flex-1">
             <div className="flex items-center gap-3 mb-6">
-              <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-indigo-500/20 border border-indigo-400/30">
-                <Shield className="h-6 w-6 text-indigo-400" aria-hidden />
+              <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-indigo-50/80 border border-indigo-200/80">
+                <Shield className="h-6 w-6 text-indigo-700" aria-hidden />
               </div>
               <h2
                 id="privacy-heading"
-                className="text-2xl sm:text-3xl font-bold text-white tracking-tight"
+                className="text-2xl sm:text-3xl font-bold text-slate-800 tracking-tight"
               >
                 {t.heading}
               </h2>
             </div>
-            <ul className="space-y-3 text-white/70">
+            <ul className="space-y-3 text-slate-600">
               {t.bullets.map((bullet, i) => (
                 <li key={i} className="flex items-start gap-2">
                   <Lock
-                    className="h-4 w-4 text-indigo-400 shrink-0 mt-0.5"
+                    className="h-4 w-4 text-indigo-700 shrink-0 mt-0.5"
                     aria-hidden
                   />
                   <span>{bullet}</span>
@@ -59,7 +63,7 @@ export function PrivacyGdprSection() {
             <div
               className={cn(
                 'inline-flex items-center gap-2 rounded-xl px-4 py-3 text-sm font-semibold',
-                'bg-emerald-500/20 border border-emerald-400/30 text-emerald-400'
+                'bg-emerald-50/80 border border-emerald-200/80 text-emerald-700'
               )}
             >
               <Lock className="h-4 w-4" aria-hidden />

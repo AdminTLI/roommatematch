@@ -17,6 +17,8 @@ import { Users, AlertCircle, Mail, Shield, ArrowRight } from 'lucide-react'
 import { MessageNotificationPopup } from '@/app/(components)/notifications/message-notification-popup'
 import { usePathname } from 'next/navigation'
 import { AppFooter } from './app-footer'
+import { QueryClientProvider } from '@tanstack/react-query'
+import { queryClient } from '@/app/providers'
 
 interface AppShellProps {
   children: React.ReactNode
@@ -131,105 +133,107 @@ export function AppShell({
   const showVerificationBanner = !hideVerificationBanner && !isVerifyPage && !isLoadingVerification && (needsEmailVerification || needsPersonaVerification)
 
   return (
-    <ThemeProvider>
-      <div className="min-h-screen bg-transparent safe-area-inset">
-        <div className="flex min-h-screen flex-col">
-          {/* Main content area */}
-          <div className="flex-1 flex flex-col overflow-hidden relative z-0">
-            <TopNav user={user} context={context} />
+    <QueryClientProvider client={queryClient}>
+      <ThemeProvider>
+        <div className="min-h-screen bg-transparent safe-area-inset">
+          <div className="flex min-h-screen flex-col">
+            {/* Main content area */}
+            <div className="flex-1 flex flex-col overflow-hidden relative z-0">
+              <TopNav user={user} context={context} />
 
-            {/* Floating Dock Navigation */}
-            <FloatingDock />
+              {/* Floating Dock Navigation */}
+              <FloatingDock />
 
-            {/* Verification Banner */}
-            {showVerificationBanner && (
-              <div className="px-4 pt-4 pb-0 w-full max-w-full overflow-hidden relative z-10">
-                <Alert variant="destructive" className="w-full border-amber-300 bg-amber-50 dark:bg-amber-900/20">
-                  <AlertCircle className="h-4 w-4 text-amber-600" />
-                  <AlertDescription className="text-amber-900 dark:text-amber-200">
-                    <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
-                      <div className="flex-1 min-w-0">
-                        <p className="font-semibold mb-1">
-                          {needsEmailVerification ? 'Email verification required' : 'Identity verification required'}
-                        </p>
-                        <p className="text-sm">
-                          {needsEmailVerification
-                            ? 'Please verify your email address to access all features.'
-                            : 'Please complete identity verification to access all features.'}
-                        </p>
+              {/* Verification Banner */}
+              {showVerificationBanner && (
+                <div className="px-4 pt-4 pb-0 w-full max-w-full overflow-hidden relative z-10">
+                  <Alert variant="destructive" className="w-full border-amber-300 bg-amber-50 dark:bg-amber-900/20">
+                    <AlertCircle className="h-4 w-4 text-amber-600" />
+                    <AlertDescription className="text-amber-900 dark:text-amber-200">
+                      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+                        <div className="flex-1 min-w-0">
+                          <p className="font-semibold mb-1">
+                            {needsEmailVerification ? 'Email verification required' : 'Identity verification required'}
+                          </p>
+                          <p className="text-sm">
+                            {needsEmailVerification
+                              ? 'Please verify your email address to access all features.'
+                              : 'Please complete identity verification to access all features.'}
+                          </p>
+                        </div>
+                        <Button
+                          onClick={needsEmailVerification ? handleCompleteEmailVerification : handleCompletePersonaVerification}
+                          className="bg-amber-600 hover:bg-amber-700 text-white shrink-0 min-h-[44px] w-full sm:w-auto"
+                          size="sm"
+                        >
+                          {needsEmailVerification ? (
+                            <>
+                              <Mail className="mr-2 h-4 w-4" />
+                              Verify Email
+                            </>
+                          ) : (
+                            <>
+                              <Shield className="mr-2 h-4 w-4" />
+                              Verify Identity
+                            </>
+                          )}
+                          <ArrowRight className="ml-2 h-4 w-4" />
+                        </Button>
                       </div>
-                      <Button
-                        onClick={needsEmailVerification ? handleCompleteEmailVerification : handleCompletePersonaVerification}
-                        className="bg-amber-600 hover:bg-amber-700 text-white shrink-0 min-h-[44px] w-full sm:w-auto"
-                        size="sm"
-                      >
-                        {needsEmailVerification ? (
-                          <>
-                            <Mail className="mr-2 h-4 w-4" />
-                            Verify Email
-                          </>
-                        ) : (
-                          <>
-                            <Shield className="mr-2 h-4 w-4" />
-                            Verify Identity
-                          </>
-                        )}
-                        <ArrowRight className="ml-2 h-4 w-4" />
-                      </Button>
+                    </AlertDescription>
+                  </Alert>
+                </div>
+              )}
+              <div className="flex-1 flex flex-col overflow-hidden relative">
+                <main className="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8 pb-24 md:pb-40 chat-page-main">
+                  <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.4, ease: [0.2, 0.8, 0.2, 1] }}
+                    className="max-w-7xl mx-auto h-full"
+                  >
+                    {children}
+                    <div className="mt-6 sm:mt-8">
+                      <AppFooter />
                     </div>
-                  </AlertDescription>
-                </Alert>
+                  </motion.div>
+                </main>
               </div>
-            )}
-            <div className="flex-1 flex flex-col overflow-hidden relative">
-              <main className="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8 pb-24 md:pb-40 chat-page-main">
-                <motion.div
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.4, ease: [0.2, 0.8, 0.2, 1] }}
-                  className="max-w-7xl mx-auto h-full"
-                >
-                  {children}
-                  <div className="mt-6 sm:mt-8">
-                    <AppFooter />
-                  </div>
-                </motion.div>
-              </main>
             </div>
           </div>
+
+          {/* Message Notification Popup */}
+          <MessageNotificationPopup userId={user.id} />
+
+          {/* Questionnaire modal - gated by auth + only if never filled */}
+          <Dialog open={showQuestionnaire} onOpenChange={setShowQuestionnaire}>
+            <DialogContent>
+              <DialogHeader>
+                <DialogTitle>Complete your compatibility profile</DialogTitle>
+                <DialogDescription>
+                  Answer a few questions to enable accurate matching. You can update answers later.
+                </DialogDescription>
+              </DialogHeader>
+              <div className="mt-6 flex flex-col sm:flex-row gap-3">
+                <Button
+                  variant="primary"
+                  onClick={() => { window.location.href = '/onboarding' }}
+                  className="w-full sm:w-auto"
+                >
+                  Start now
+                </Button>
+                <Button
+                  variant="outline"
+                  onClick={() => setShowQuestionnaire(false)}
+                  className="w-full sm:w-auto"
+                >
+                  Later
+                </Button>
+              </div>
+            </DialogContent>
+          </Dialog>
         </div>
-
-        {/* Message Notification Popup */}
-        <MessageNotificationPopup userId={user.id} />
-
-        {/* Questionnaire modal - gated by auth + only if never filled */}
-        <Dialog open={showQuestionnaire} onOpenChange={setShowQuestionnaire}>
-          <DialogContent>
-            <DialogHeader>
-              <DialogTitle>Complete your compatibility profile</DialogTitle>
-              <DialogDescription>
-                Answer a few questions to enable accurate matching. You can update answers later.
-              </DialogDescription>
-            </DialogHeader>
-            <div className="mt-6 flex flex-col sm:flex-row gap-3">
-              <Button
-                variant="primary"
-                onClick={() => { window.location.href = '/onboarding' }}
-                className="w-full sm:w-auto"
-              >
-                Start now
-              </Button>
-              <Button
-                variant="outline"
-                onClick={() => setShowQuestionnaire(false)}
-                className="w-full sm:w-auto"
-              >
-                Later
-              </Button>
-            </div>
-          </DialogContent>
-        </Dialog>
-      </div>
-    </ThemeProvider>
+      </ThemeProvider>
+    </QueryClientProvider>
   )
 }

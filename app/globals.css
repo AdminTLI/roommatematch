@@ -218,6 +218,13 @@
     min-height: 0; /* allow page to end at footer; base body has min-h-screen */
   }
 
+  /* Redesigned marketing homepage: light background */
+  html:has(body.marketing-page-light),
+  body.marketing-page-light {
+    background: #f8fafc;
+    min-height: 0;
+  }
+
   /* Prevent scroll lock on marketing page when Select dropdown is open */
   body.marketing-page[data-scroll-locked] {
     overflow: visible !important;
@@ -618,6 +625,40 @@ body:has([data-chat-page]) [class*="border-t"][class*="shadow-2xl"] {
 
   .pt-safe-top {
     padding-top: calc(1rem + env(safe-area-inset-top));
+  }
+
+  /* Domu Match: light landing page mesh motion (reduced-motion handled in components) */
+  @keyframes dmMeshDrift1 {
+    0% { transform: translate3d(0, 0, 0) scale(1); }
+    50% { transform: translate3d(60px, 30px, 0) scale(1.05); }
+    100% { transform: translate3d(0, 0, 0) scale(1); }
+  }
+  @keyframes dmMeshDrift2 {
+    0% { transform: translate3d(0, 0, 0) scale(1); }
+    50% { transform: translate3d(-70px, 40px, 0) scale(1.06); }
+    100% { transform: translate3d(0, 0, 0) scale(1); }
+  }
+  @keyframes dmMeshDrift3 {
+    0% { transform: translate3d(-50%, 0, 0) scale(1); }
+    50% { transform: translate3d(calc(-50% + 55px), -35px, 0) scale(1.05); }
+    100% { transform: translate3d(-50%, 0, 0) scale(1); }
+  }
+  @keyframes dmMeshDrift4 {
+    0% { transform: translate3d(-50%, -50%, 0) scale(1); }
+    50% { transform: translate3d(calc(-50% + 40px), calc(-50% - 30px), 0) scale(1.04); }
+    100% { transform: translate3d(-50%, -50%, 0) scale(1); }
+  }
+
+  .dm-mesh-drift-1 { animation: dmMeshDrift1 16s ease-in-out infinite; }
+  .dm-mesh-drift-2 { animation: dmMeshDrift2 18s ease-in-out infinite; }
+  .dm-mesh-drift-3 { animation: dmMeshDrift3 20s ease-in-out infinite; }
+  .dm-mesh-drift-4 { animation: dmMeshDrift4 22s ease-in-out infinite; }
+
+  .dm-noise-soft {
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+    opacity: 0.035;
+    pointer-events: none;
+    mix-blend-mode: soft-light;
   }
 
   /* Hide scrollbar but keep functionality */

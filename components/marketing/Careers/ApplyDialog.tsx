@@ -81,7 +81,12 @@ export function ApplyDialog({ cta = 'Apply now' }: { cta?: string }) {
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button size="lg">{cta}</Button>
+        <Button
+          size="lg"
+          className="rounded-2xl bg-slate-900 text-white shadow-lg shadow-slate-900/15 hover:bg-slate-800 hover:scale-105 transition-all"
+        >
+          {cta}
+        </Button>
       </DialogTrigger>
       <DialogContent className="sm:max-w-lg max-h-[90vh] overflow-y-auto">
         <DialogHeader className="pb-2 sm:pb-4">

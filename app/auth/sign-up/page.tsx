@@ -1,7 +1,5 @@
 import { Suspense } from 'react'
-import { Navbar } from '@/components/site/navbar'
-import { MarketingLayoutFix } from '@/app/(marketing)/components/marketing-layout-fix'
-import { MarketingPageBackground } from '@/app/(marketing)/components/marketing-page-background'
+import { AuthWrapperLight } from '@/app/auth/components/auth-wrapper-light'
 import { SignUpSection } from './sign-up-section'
 import { Metadata } from 'next'
 
@@ -12,18 +10,16 @@ export const metadata: Metadata = {
 
 export default function SignUpPage() {
   return (
-    <>
-      <MarketingLayoutFix />
-      <main id="main-content" className="relative pt-16 md:pt-20 overflow-hidden min-h-screen">
-        <MarketingPageBackground />
-
-        <div className="relative z-10">
-          <Navbar />
-          <Suspense fallback={<div className="min-h-[40vh] flex items-center justify-center text-white/60">Loading…</div>}>
-            <SignUpSection />
-          </Suspense>
-        </div>
-      </main>
-    </>
+    <AuthWrapperLight>
+      <Suspense
+        fallback={
+          <div className="min-h-[40vh] flex items-center justify-center text-slate-600">
+            Loading…
+          </div>
+        }
+      >
+        <SignUpSection />
+      </Suspense>
+    </AuthWrapperLight>
   )
 }

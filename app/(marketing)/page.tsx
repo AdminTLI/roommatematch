@@ -1,18 +1,15 @@
 'use client'
 
-import { Navbar } from '@/components/site/navbar'
-import { HeroAurora } from '@/components/site/hero-aurora'
-import { LiveStats } from './components/live-stats'
-import { BentoInfrastructure } from '@/components/site/bento-infrastructure'
-import { Universities } from '@/components/site/universities'
-import { Features } from '@/components/site/features'
-import { Testimonials } from '@/components/site/testimonials'
+import { MarketingNavbarLight } from '@/components/site/marketing-navbar-light'
+import { SocialHero } from '@/components/site/social-hero'
+import { LifestyleFeatures } from '@/components/site/lifestyle-features'
+import { PlatformPreview } from '@/components/site/platform-preview'
+import { StatusQuoSection } from '@/components/site/status-quo-section'
+import { SocialProof } from '@/components/site/social-proof'
+import { SocialFinalCTA } from '@/components/site/social-final-cta'
 import Footer from '@/components/site/footer'
-import { MarketingLayoutFix } from './components/marketing-layout-fix'
-import { StatsTicker } from './components/stats-ticker'
-import { MarketingPageBackground } from './components/marketing-page-background'
-import { WolfpackGroupChatsSection } from './components/wolfpack-group-chats-section'
-import { SegregatedPoolsSection } from './components/segregated-pools-section'
+import { MarketingLayoutFixLight } from './components/marketing-layout-fix-light'
+import { PastelMeshBackground } from '@/components/site/pastel-mesh-background'
 
 export default function MarketingPage() {
 
@@ -144,7 +141,7 @@ export default function MarketingPage() {
             name: 'How does the roommate matching work?',
             acceptedAnswer: {
               '@type': 'Answer',
-              text: 'Our AI-powered algorithm analyzes 40+ factors including lifestyle habits, study schedules, cleanliness preferences, and personality traits to match you with compatible roommates. The system uses science-backed compatibility scoring to prevent conflicts before they start.',
+              text: 'Domu Match helps you find compatible roommates by matching on real profile context and compatibility signals, so you can skip awkward interviews and avoid housing-lottery living.',
             },
           },
           {
@@ -168,7 +165,7 @@ export default function MarketingPage() {
             name: 'What makes Domu Match different from other roommate apps?',
             acceptedAnswer: {
               '@type': 'Answer',
-              text: 'Domu Match uses science-backed compatibility matching with transparent explanations, verified access for students and young professionals (in separate pools), integration with Dutch universities, and explainable AI that shows you why matches are compatible. We focus on the Dutch shared-living market for both segments.',
+              text: 'Domu Match is built around verification, deep compatibility, and emotional safety. You see why you match, and you connect with verified students and young professionals in the Netherlands.',
             },
           },
         ],
@@ -201,24 +198,34 @@ export default function MarketingPage() {
 
   return (
     <>
-      <MarketingLayoutFix />
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(homepageStructuredData) }}
       />
       <main id="main-content" className="relative pt-16 md:pt-20 overflow-hidden">
-        <MarketingPageBackground />
+        <PastelMeshBackground />
         <div className="relative z-10">
-          <Navbar />
-          <HeroAurora />
-          <StatsTicker />
-          <LiveStats />
-          <SegregatedPoolsSection />
-          <BentoInfrastructure />
-          <WolfpackGroupChatsSection />
-          <Universities />
-          <Features />
-          <Testimonials />
+          <MarketingLayoutFixLight />
+          <MarketingNavbarLight />
+
+          {/* Section 1 */}
+          <SocialHero />
+
+          {/* Section 2 */}
+          <StatusQuoSection />
+
+          {/* Section 3 */}
+          <LifestyleFeatures />
+
+          {/* Section 4 */}
+          <PlatformPreview />
+
+          {/* Section 5 */}
+          <SocialProof />
+
+          {/* Section 6 */}
+          <SocialFinalCTA />
+
           <Footer />
         </div>
       </main>

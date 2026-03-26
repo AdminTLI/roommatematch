@@ -1,4 +1,4 @@
-import { MarketingSubpageWrapper } from '../components/marketing-subpage-wrapper'
+import { MarketingSubpageWrapperLight } from '../components/marketing-subpage-wrapper-light'
 import { HelpCenterContent } from './help-center-content'
 import { Metadata } from 'next'
 import { helpContent } from './help-content'
@@ -89,11 +89,11 @@ export default function HelpCenterPage() {
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }}
       />
-      <MarketingSubpageWrapper>
-        <Suspense fallback={<div className="min-h-[60vh] bg-slate-950" />}>
+      <MarketingSubpageWrapperLight>
+        <Suspense fallback={<div className="min-h-[60vh]" />}>
           <HelpCenterContent />
         </Suspense>
-      </MarketingSubpageWrapper>
+      </MarketingSubpageWrapperLight>
     </>
   )
 }

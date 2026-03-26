@@ -56,21 +56,21 @@ export function StickyCTA() {
       aria-label={t.button}
       className={cn(
         'fixed bottom-0 left-0 right-0 z-40 py-3 safe-bottom',
-        'bg-slate-950/95 backdrop-blur-lg',
-        'shadow-[0_-4px_24px_rgba(0,0,0,0.3)]'
+        'bg-white/65 backdrop-blur-xl',
+        'border-t border-white/60 shadow-[0_-10px_30px_rgba(15,23,42,0.10)]'
       )}
     >
       <Container className="flex flex-col sm:flex-row items-center justify-between gap-4">
-        <p className="text-base font-medium text-white text-center sm:text-left">
+        <p className="text-base font-medium text-slate-800 text-center sm:text-left">
           {t.copy.replace('{count}', displayCount)}
         </p>
         <button
           onClick={handleGetStarted}
           className={cn(
             'inline-flex items-center justify-center rounded-xl px-6 py-4 text-base font-semibold min-h-[44px] w-full sm:w-auto shrink-0',
-            'bg-gradient-to-r from-indigo-500 to-purple-500 text-white',
-            'shadow-lg shadow-indigo-500/50 hover:scale-105 transition-all duration-200',
-            'focus-visible:outline focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-slate-950'
+            'bg-slate-900 text-white hover:bg-slate-900/90',
+            'shadow-[0_12px_30px_rgba(15,23,42,0.18)] hover:scale-105 transition-all duration-200',
+            'focus-visible:outline focus-visible:ring-2 focus-visible:ring-slate-900/20 focus-visible:ring-offset-2 focus-visible:ring-offset-transparent'
           )}
         >
           {t.button}

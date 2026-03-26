@@ -104,8 +104,8 @@ export function FinalCTA({ variant = 'light' }: FinalCTAProps) {
                 className={cn(
                   'inline-flex items-center justify-center rounded-xl px-6 py-4 text-base font-semibold transition-all duration-200 focus-visible:outline focus-visible:ring-2 focus-visible:ring-offset-2',
                   isDark
-                    ? 'bg-gradient-to-r from-indigo-500 to-purple-500 text-white shadow-lg shadow-indigo-500/50 hover:scale-105 focus-visible:ring-white focus-visible:ring-offset-slate-950'
-                    : 'bg-brand-primary text-white hover:bg-brand-primaryHover focus-visible:ring-brand-primary'
+                    ? 'bg-slate-900 text-white shadow-lg shadow-slate-900/25 hover:bg-slate-800 hover:scale-105 focus-visible:ring-white focus-visible:ring-offset-slate-950'
+                    : 'bg-slate-900 text-white shadow-lg shadow-slate-900/15 hover:bg-slate-800 hover:scale-105 focus-visible:ring-slate-900/20 focus-visible:ring-offset-transparent'
                 )}
               >
                 {t.primary}
@@ -116,7 +116,7 @@ export function FinalCTA({ variant = 'light' }: FinalCTAProps) {
                 className={cn(
                   'inline-flex items-center justify-center rounded-xl px-6 py-4 text-base font-semibold transition-all duration-200 focus-visible:outline focus-visible:ring-2 focus-visible:ring-offset-2',
                   isDark
-                    ? 'bg-transparent border border-white/30 text-white hover:bg-white/10 focus-visible:ring-white focus-visible:ring-offset-slate-950'
+                    ? 'bg-white text-slate-900 border border-white/70 hover:bg-white/90 focus-visible:ring-white focus-visible:ring-offset-slate-950'
                     : 'border border-brand-border text-brand-text hover:bg-muted focus-visible:ring-brand-primary'
                 )}
               >

@@ -1,6 +1,6 @@
 'use client'
 
-import { MarketingSubpageWrapper } from '../components/marketing-subpage-wrapper'
+import { MarketingSubpageWrapperLight } from '../components/marketing-subpage-wrapper-light'
 import Container from '@/components/ui/primitives/container'
 import Section from '@/components/ui/primitives/section'
 import { useApp } from '@/app/providers'
@@ -344,18 +344,19 @@ export default function CookiePolicyPage() {
   const t = content[locale]
 
   return (
-    <MarketingSubpageWrapper>
-      <Section className="bg-slate-950">
+    <MarketingSubpageWrapperLight>
+      <Section className="py-12 md:py-16 lg:py-20">
         <Container>
           <div className="max-w-4xl mx-auto">
-            <div className="flex items-center gap-3 mb-4">
-              <Cookie className="h-8 w-8 text-violet-400" />
-              <h1 className="text-4xl font-bold text-white">{t.title}</h1>
-            </div>
-            <p className="text-slate-500 mb-8">
-                {t.lastUpdatedLabel}:{' '}
-                {new Date('2026-01-06').toLocaleDateString(locale === 'nl' ? 'nl-NL' : 'en-US')}
-              </p>
+            <div className="rounded-3xl border border-white/15 bg-slate-950/80 backdrop-blur-xl shadow-[0_18px_55px_rgba(15,23,42,0.35)] p-6 sm:p-10">
+              <div className="flex items-center gap-3 mb-4">
+                <Cookie className="h-8 w-8 text-violet-400" />
+                <h1 className="text-4xl font-bold text-white">{t.title}</h1>
+              </div>
+              <p className="text-slate-500 mb-8">
+                  {t.lastUpdatedLabel}:{' '}
+                  {new Date('2026-01-06').toLocaleDateString(locale === 'nl' ? 'nl-NL' : 'en-US')}
+                </p>
 
               {/* Introduction */}
               <p className="text-slate-400 mb-12 leading-relaxed">{t.introduction}</p>
@@ -573,9 +574,10 @@ export default function CookiePolicyPage() {
                 <p className="text-slate-400">{t.contact.email}</p>
               </section>
             </div>
-          </Container>
-        </Section>
-    </MarketingSubpageWrapper>
+          </div>
+        </Container>
+      </Section>
+    </MarketingSubpageWrapperLight>
   )
 }
 

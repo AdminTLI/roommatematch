@@ -19,6 +19,9 @@ import {
 import { useApp } from '@/app/providers'
 import { cn } from '@/lib/utils'
 
+const GLASS =
+  'bg-white/60 backdrop-blur-xl border border-white/50 shadow-[0_8px_30px_rgb(0,0,0,0.04)] rounded-3xl'
+
 const content = {
   en: {
     title: 'How Domu Match works',
@@ -51,9 +54,9 @@ const content = {
         icon: FileText,
         title: 'Complete the compatibility quiz',
         description:
-          'Answer questions about how you study, live, and relax. Your answers shape your profile so we can match you with people who fit.',
+          'Answer questions about how you study or work, live, and unwind. Your answers shape your profile so we can match you with people who truly fit.',
         details: [
-          '40+ factors: study schedule, cleanliness, social style',
+          '40+ factors: study/work schedule, cleanliness, social style',
           'Quiet hours, guests, and lifestyle preferences',
           'Takes about 15 minutes',
         ],
@@ -159,9 +162,9 @@ const content = {
         icon: FileText,
         title: 'Voltooi de compatibiliteitsquiz',
         description:
-          'Beantwoord vragen over hoe je studeert, leeft en ontspant. Je antwoorden bepalen je profiel zodat we je kunnen matchen met mensen die bij je passen.',
+          'Beantwoord vragen over hoe je studeert of werkt, leeft en ontspant. Je antwoorden vormen je profiel zodat we je kunnen matchen met mensen die echt bij je passen.',
         details: [
-          '40+ factoren: studierooster, netheid, sociale stijl',
+          '40+ factoren: studie/werkschema, netheid, sociale stijl',
           'Stilte-uren, gasten en levensstijlvoorkeuren',
           'Duurt ongeveer 15 minuten',
         ],
@@ -267,14 +270,26 @@ export function HowItWorksSection() {
           viewport={{ once: true }}
           transition={{ duration: 0.5 }}
         >
-          <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-white tracking-tight mb-6 max-w-4xl mx-auto">
+          <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-slate-800 tracking-tight mb-6 max-w-4xl mx-auto">
             {locale === 'en' ? (
-              <>How <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 to-purple-400">Domu Match</span> Works</>
+              <>
+                How{' '}
+                <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 to-violet-600">
+                  Domu Match
+                </span>{' '}
+                Works
+              </>
             ) : (
-              <>Hoe <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 to-purple-400">Domu Match</span> Werkt</>
+              <>
+                Hoe{' '}
+                <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 to-violet-600">
+                  Domu Match
+                </span>{' '}
+                Werkt
+              </>
             )}
           </h1>
-          <p className="text-lg md:text-xl text-white/80 max-w-3xl mx-auto leading-relaxed">
+          <p className="text-lg md:text-xl text-slate-600 max-w-3xl mx-auto leading-relaxed">
             {t.subtitle}
           </p>
         </motion.div>
@@ -293,10 +308,24 @@ export function HowItWorksSection() {
           transition={{ duration: 0.5 }}
         >
           <div className="text-center mb-12">
-            <h2 className="text-3xl md:text-4xl font-bold text-white tracking-tight mb-4">
-              Why our <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 to-purple-400">process works</span>
+            <h2 className="text-3xl md:text-4xl font-bold text-slate-800 tracking-tight mb-4">
+              {locale === 'nl' ? (
+                <>
+                  Waarom ons{' '}
+                  <span className="text-slate-800">
+                    proces werkt
+                  </span>
+                </>
+              ) : (
+                <>
+                  Why our{' '}
+                  <span className="text-slate-800">
+                    process works
+                  </span>
+                </>
+              )}
             </h2>
-            <p className="text-lg text-white/70 max-w-2xl mx-auto">
+            <p className="text-lg text-slate-600 max-w-2xl mx-auto">
               {t.featuresSubtitle}
             </p>
           </div>
@@ -308,8 +337,9 @@ export function HowItWorksSection() {
                 <motion.div
                   key={index}
                   className={cn(
-                    'glass noise-overlay p-6 md:p-8 flex flex-col text-center transition-all duration-300',
-                    'hover:border-white/30 hover:bg-white/15'
+                    GLASS,
+                    'p-6 md:p-8 flex flex-col text-center transition-all duration-300',
+                    'hover:bg-white/75'
                   )}
                   initial="hidden"
                   whileInView="visible"
@@ -317,13 +347,13 @@ export function HowItWorksSection() {
                   variants={itemVariants}
                   custom={index}
                 >
-                  <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-indigo-500/20 border border-indigo-400/30">
-                    <Icon className="h-7 w-7 text-indigo-400" aria-hidden />
+                  <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-indigo-50/80 border border-indigo-200/80">
+                    <Icon className="h-7 w-7 text-indigo-700" aria-hidden />
                   </div>
-                  <h3 className="text-xl font-semibold text-white tracking-tight mb-2">
+                  <h3 className="text-xl font-semibold text-slate-800 tracking-tight mb-2">
                     {feature.title}
                   </h3>
-                  <p className="text-white/70 text-sm md:text-base leading-relaxed">
+                  <p className="text-slate-600 text-sm md:text-base leading-relaxed">
                     {feature.description}
                   </p>
                 </motion.div>
@@ -340,19 +370,35 @@ export function HowItWorksSection() {
           viewport={{ once: true }}
           transition={{ duration: 0.5 }}
         >
-          <h2 className="text-2xl md:text-3xl font-bold text-white tracking-tight mb-4">
-            Ready to find your <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 to-purple-400">perfect match?</span>
+          <h2 className="text-2xl md:text-3xl font-bold text-slate-800 tracking-tight mb-4">
+            {locale === 'nl' ? (
+              <>
+                Klaar om je{' '}
+                <span className="text-slate-800">
+                  perfecte match
+                </span>{' '}
+                te vinden?
+              </>
+            ) : (
+              <>
+                Ready to find your{' '}
+                <span className="text-slate-800">
+                  perfect match
+                </span>
+                ?
+              </>
+            )}
           </h2>
-          <p className="text-base md:text-lg text-white/80 mb-8 max-w-2xl mx-auto">
+          <p className="text-base md:text-lg text-slate-600 mb-8 max-w-2xl mx-auto">
             {t.ctaSubtitle}
           </p>
           <Link
             href="/auth/sign-up"
             className={cn(
-              'inline-flex items-center justify-center rounded-xl px-8 py-4 text-base font-semibold',
-              'bg-gradient-to-r from-indigo-500 to-purple-500 text-white',
-              'shadow-lg shadow-indigo-500/50 hover:scale-105 transition-all duration-200',
-              'focus-visible:outline focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-slate-950'
+              'inline-flex items-center justify-center font-medium transition-all',
+              'px-6 text-base h-10 rounded-full bg-blue-600 text-white hover:bg-blue-700',
+              'shadow-[0_12px_30px_rgba(15,23,42,0.16)] active:translate-y-[1px]',
+              'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:opacity-60 disabled:pointer-events-none'
             )}
           >
             {t.ctaButton}
@@ -390,7 +436,7 @@ function InteractiveSteps({ steps, reducedMotion }: InteractiveStepsProps) {
           className="pointer-events-none absolute left-[1.5rem] top-6 bottom-6 hidden md:block"
           aria-hidden
         >
-          <div className="h-full w-px bg-gradient-to-b from-white/30 via-white/10 to-transparent" />
+          <div className="h-full w-px bg-gradient-to-b from-slate-900/20 via-slate-900/10 to-transparent" />
         </div>
 
         {steps.map((step, index) => {
@@ -404,13 +450,13 @@ function InteractiveSteps({ steps, reducedMotion }: InteractiveStepsProps) {
                 onClick={() => setActiveIndex(index)}
                 className={cn(
                   'group relative flex w-full items-center gap-4 rounded-2xl border px-4 py-3 text-left transition-all duration-200',
-                  'backdrop-blur-md',
+                  'backdrop-blur-xl',
                   isActive
-                    ? 'border-white/70 bg-white/12 shadow-[0_0_0_1px_rgba(255,255,255,0.35)]'
-                    : 'border-white/10 bg-white/4 hover:border-white/40 hover:bg-white/8'
+                    ? 'border-white/80 bg-white/70 shadow-[0_0_0_1px_rgba(255,255,255,0.65)]'
+                    : 'border-white/55 bg-white/40 hover:border-white/80 hover:bg-white/60'
                 )}
               >
-                <span className="relative z-10 flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-white/40 bg-slate-950/60 text-xs font-semibold text-white/80 tabular-nums">
+                <span className="relative z-10 flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-white/70 bg-white/70 text-xs font-semibold text-slate-800 tabular-nums">
                   {step.step}
                 </span>
 
@@ -418,12 +464,12 @@ function InteractiveSteps({ steps, reducedMotion }: InteractiveStepsProps) {
                   <div className="flex items-center gap-2">
                     <Icon
                       className={cn(
-                        'h-4 w-4 flex-shrink-0 text-white/60 transition-colors duration-200',
+                        'h-4 w-4 flex-shrink-0 text-slate-600 transition-colors duration-200',
                         isActive && step.iconColor
                       )}
                       aria-hidden
                     />
-                    <p className="truncate text-sm font-semibold text-white/90 md:text-base">
+                    <p className="truncate text-sm font-semibold text-slate-800 md:text-base">
                       {step.title}
                     </p>
                   </div>
@@ -431,8 +477,8 @@ function InteractiveSteps({ steps, reducedMotion }: InteractiveStepsProps) {
 
                 <ArrowRight
                   className={cn(
-                    'hidden h-4 w-4 flex-shrink-0 text-white/50 transition-transform duration-200 md:block',
-                    isActive && 'translate-x-0.5 text-white'
+                    'hidden h-4 w-4 flex-shrink-0 text-slate-500 transition-transform duration-200 md:block',
+                    isActive && 'translate-x-0.5 text-slate-800'
                   )}
                   aria-hidden
                 />
@@ -457,7 +503,8 @@ function InteractiveSteps({ steps, reducedMotion }: InteractiveStepsProps) {
         <motion.div
           key={activeStep.step}
           className={cn(
-            'glass noise-overlay relative h-full overflow-hidden rounded-2xl border px-6 py-6 md:px-8 md:py-8',
+            GLASS,
+            'relative h-full overflow-hidden rounded-2xl border px-6 py-6 md:px-8 md:py-8',
             'flex flex-col justify-between'
           )}
           initial={
@@ -483,7 +530,7 @@ function InteractiveSteps({ steps, reducedMotion }: InteractiveStepsProps) {
             <div className="mb-6 flex flex-wrap items-center gap-4">
               <div
                 className={cn(
-                  'flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl border bg-slate-950/70',
+                  'flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl border border-white/70 bg-white/70',
                   activeStep.iconBg
                 )}
               >
@@ -494,13 +541,13 @@ function InteractiveSteps({ steps, reducedMotion }: InteractiveStepsProps) {
               </div>
 
               <div className="flex flex-col gap-1">
-                <h2 className="text-xl font-semibold tracking-tight text-white md:text-2xl">
+                <h2 className="text-xl font-semibold tracking-tight text-slate-800 md:text-2xl">
                   {activeStep.title}
                 </h2>
               </div>
             </div>
 
-            <p className="mb-5 text-sm text-white/85 md:text-base md:leading-relaxed">
+            <p className="mb-5 text-sm text-slate-700 md:text-base md:leading-relaxed">
               {activeStep.description}
             </p>
 
@@ -508,10 +555,10 @@ function InteractiveSteps({ steps, reducedMotion }: InteractiveStepsProps) {
               {activeStep.details.map((detail, index) => (
                 <li
                   key={index}
-                  className="flex items-start gap-2 text-sm text-white/90 md:text-base"
+                  className="flex items-start gap-2 text-sm text-slate-800 md:text-base"
                 >
                   <CheckCircle
-                    className="mt-0.5 h-4 w-4 flex-shrink-0 text-emerald-300"
+                    className="mt-0.5 h-4 w-4 flex-shrink-0 text-emerald-600"
                     aria-hidden
                   />
                   <span>{detail}</span>
@@ -520,7 +567,7 @@ function InteractiveSteps({ steps, reducedMotion }: InteractiveStepsProps) {
             </ul>
           </div>
 
-          <div className="relative z-10 mt-6 flex items-center text-xs text-white/60 md:text-sm">
+          <div className="relative z-10 mt-6 flex items-center text-xs text-slate-500 md:text-sm">
             <span>
               {activeIndex + 1} of {steps.length}{' '}
               {steps.length === 1 ? 'step' : 'steps'}

@@ -1,9 +1,7 @@
 import { Metadata } from 'next'
-import { Navbar } from '@/components/site/navbar'
-import Footer from '@/components/site/footer'
 import { UniversityCityPage } from '@/components/site/university-city'
 import { getCityStructuredData } from '@/components/site/university-city/content'
-import { MarketingLayoutFix } from '../components/marketing-layout-fix'
+import { MarketingSubpageWrapperLight } from '../components/marketing-subpage-wrapper-light'
 
 export const metadata: Metadata = {
   title: 'Find Roommates in Amsterdam | Domu Match – Students & Young Professionals',
@@ -56,16 +54,13 @@ export default function AmsterdamPage() {
 
   return (
     <>
-      <MarketingLayoutFix />
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }}
       />
-      <main id="main-content" className="bg-slate-950 pt-16 md:pt-20">
-        <Navbar />
+      <MarketingSubpageWrapperLight>
         <UniversityCityPage cityKey="amsterdam" />
-        <Footer />
-      </main>
+      </MarketingSubpageWrapperLight>
     </>
   )
 }

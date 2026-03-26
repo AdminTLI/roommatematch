@@ -40,18 +40,14 @@ export function UniversityCityWhyChoose({ city }: WhyChooseSectionProps) {
 
   return (
     <Section
-      className="relative overflow-hidden bg-slate-950 py-16 md:py-24"
+      className="relative overflow-hidden py-12 md:py-16 lg:py-20"
       aria-labelledby="why-choose-heading"
     >
-      <div
-        className="absolute inset-0 bg-gradient-to-b from-purple-950/15 via-transparent to-indigo-950/15 pointer-events-none"
-        aria-hidden
-      />
       <Container className="relative z-10">
         <div className="max-w-5xl mx-auto space-y-10">
           <motion.h2
             id="why-choose-heading"
-            className="text-3xl md:text-4xl font-bold text-white text-center tracking-tight"
+            className="text-3xl md:text-4xl font-bold text-slate-900 text-center tracking-tight"
             initial={reducedMotion ? false : { opacity: 0, y: 16 }}
             whileInView={reducedMotion ? false : { opacity: 1, y: 0 }}
             viewport={{ once: true }}
@@ -65,8 +61,8 @@ export function UniversityCityWhyChoose({ city }: WhyChooseSectionProps) {
               <motion.div
                 key={i}
                 className={cn(
-                  'glass noise-overlay p-6 md:p-8 text-center space-y-4',
-                  'transition-all duration-300 hover:border-white/30'
+                  'p-6 md:p-8 text-center space-y-4 rounded-3xl border border-white/60 bg-white/45 backdrop-blur-xl shadow-[0_18px_50px_rgba(15,23,42,0.08)]',
+                  'transition-all duration-300 hover:bg-white/60'
                 )}
                 initial={reducedMotion ? false : { opacity: 0, y: 20 }}
                 whileInView={reducedMotion ? false : { opacity: 1, y: 0 }}
@@ -75,14 +71,13 @@ export function UniversityCityWhyChoose({ city }: WhyChooseSectionProps) {
               >
                 <div
                   className={cn(
-                    'w-14 h-14 mx-auto rounded-2xl border bg-gradient-to-br flex items-center justify-center',
-                    item.gradient
+                    'w-14 h-14 mx-auto rounded-2xl border border-white/80 bg-white/70 flex items-center justify-center shadow-[0_10px_24px_rgba(15,23,42,0.08)]'
                   )}
                 >
-                  <item.icon className={cn('h-7 w-7', item.iconColor)} aria-hidden />
+                  <item.icon className="h-7 w-7 text-blue-700" aria-hidden />
                 </div>
-                <h3 className="text-xl font-semibold text-white">{item.title}</h3>
-                <p className="text-white/80 text-sm md:text-base">{item.description}</p>
+                <h3 className="text-xl font-semibold text-slate-900">{item.title}</h3>
+                <p className="text-slate-700 text-sm md:text-base">{item.description}</p>
               </motion.div>
             ))}
           </div>

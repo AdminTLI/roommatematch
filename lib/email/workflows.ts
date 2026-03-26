@@ -18,6 +18,8 @@ export interface EmailMessage {
   subject: string
   html: string
   text?: string
+  /** Optional Reply-To address (e.g. form submitter) */
+  replyTo?: string
 }
 
 /**
@@ -28,7 +30,7 @@ export interface EmailMessage {
 function getEmailConfig(): EmailConfig | null {
   const apiKey = process.env.MAILJET_API_KEY
   const secretKey = process.env.MAILJET_SECRET_KEY
-  const fromEmail = process.env.SMTP_FROM_EMAIL || process.env.MAILJET_FROM_EMAIL || 'noreply@domumatch.nl'
+  const fromEmail = process.env.SMTP_FROM_EMAIL || process.env.MAILJET_FROM_EMAIL || 'info@domumatch.com'
   const fromName = process.env.SMTP_FROM_NAME || process.env.MAILJET_FROM_NAME || 'Domu Match'
 
   if (!apiKey || !secretKey || typeof apiKey !== 'string' || typeof secretKey !== 'string' || !apiKey.trim() || !secretKey.trim()) {
@@ -73,6 +75,7 @@ export async function sendEmail(
               Name: config.fromName
             },
             To: [{ Email: message.to, Name: message.to }],
+            ...(message.replyTo ? { ReplyTo: { Email: message.replyTo } } : {}),
             Subject: message.subject,
             HTMLPart: message.html,
             ...(message.text ? { TextPart: message.text } : {})

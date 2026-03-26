@@ -1,4 +1,5 @@
-import { MarketingSubpageWrapper } from '../components/marketing-subpage-wrapper'
+import { MarketingSubpageWrapperLight } from '../components/marketing-subpage-wrapper-light'
+import { PricingPlansOverview } from '@/components/site/pricing/plans-overview'
 import { PartnershipROIContent } from './partnership-roi-content'
 import { FAQ } from '@/components/site/faq'
 import { FinalCTA } from '@/components/site/final-cta'
@@ -72,13 +73,14 @@ export default function PricingPage() {
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }}
       />
-      <MarketingSubpageWrapper>
+      <MarketingSubpageWrapperLight>
         <div>
+          <PricingPlansOverview />
           <PartnershipROIContent />
           <FAQ />
-          <FinalCTA variant="dark" />
+          <FinalCTA />
         </div>
-      </MarketingSubpageWrapper>
+      </MarketingSubpageWrapperLight>
     </>
   )
 }

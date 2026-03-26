@@ -30,6 +30,7 @@ export interface SolutionContent {
 export interface TrustContent {
   badge: string
   copy: string
+  proofLine: string
   verifiedLabel: string
 }
 
@@ -96,16 +97,17 @@ export const content: Record<Locale, FeaturesForStudentsContent> = {
         {
           title: 'The Party vs. Study Conflict',
           description:
-            "You have an exam at 8 AM. They have a DJ set at 2 AM.",
+            "You’ve got an 8 AM exam. Their ‘quick pre-drink’ turns into a 2 AM afterparty. Sleep, focus, peace - gone.",
         },
         {
           title: 'The Cleanliness War',
-          description: "Your sink shouldn't be a science experiment.",
+          description:
+            "Plates stack up, the bin overflows, and somehow you’re the one scrubbing. Resentment builds fast in a tiny kitchen.",
         },
         {
           title: 'The Ghost',
           description:
-            "Moving in with someone you never see or speak to.",
+            "You share a home with someone you barely see - until bills, chores, or guests become a fight.",
         },
       ],
     },
@@ -134,6 +136,8 @@ export const content: Record<Locale, FeaturesForStudentsContent> = {
     trust: {
       badge: 'Powered by Persona™ Identity Verification',
       copy: 'No bots. No AI profiles. No Scams. Every user is government-ID verified before they can chat.',
+      proofLine:
+        'Persona is trusted by leading companies (e.g. Robinhood and DoorDash) for identity verification - so you’re matching with real people, not fake profiles.',
       verifiedLabel: 'Verified User',
     },
     investment: {
@@ -151,7 +155,7 @@ export const content: Record<Locale, FeaturesForStudentsContent> = {
         {
           question: 'Is Domu Match free for students?',
           answer:
-            'Yes, Domu Match is completely free for all students in the Netherlands. There are no hidden fees, no premium tiers, and no charges for messaging or viewing matches. We believe finding a compatible roommate should be accessible to everyone.',
+            'Right now, Domu Match is free for students in the Netherlands. In the future, access may move to a subscription model for students whose universities are not subscribed with us. Either way: no hidden fees, and you’ll always see the price upfront.',
         },
         {
           question: "Can I find a roommate if I don't have a room yet?",
@@ -206,16 +210,17 @@ export const content: Record<Locale, FeaturesForStudentsContent> = {
         {
           title: 'Het Feest vs. Studie Conflict',
           description:
-            "Jij hebt een tentamen om 8 uur. Zij hebben een DJ-set om 2 uur 's nachts.",
+            "Jij hebt om 8:00 een tentamen. Hun ‘even een drankje’ wordt een afterparty om 2:00. Slaap, focus, rust - weg.",
         },
         {
           title: 'De Schoonmaakoorlog',
-          description: "Je gootsteen hoort geen wetenschappelijk experiment te zijn.",
+          description:
+            "Borden stapelen zich op, de prullenbak zit vol en jij staat te schrobben. In een kleine keuken groeit irritatie razendsnel.",
         },
         {
           title: 'De Geest',
           description:
-            "Intrekken bij iemand die je nooit ziet of spreekt.",
+            "Je woont samen met iemand die je amper ziet—totdat rekeningen, chores of gasten ineens gedoe worden.",
         },
       ],
     },
@@ -244,6 +249,8 @@ export const content: Record<Locale, FeaturesForStudentsContent> = {
     trust: {
       badge: 'Mede mogelijk gemaakt door Persona™ Identity Verification',
       copy: 'Geen bots. Geen AI-profielen. Geen oplichting. Elke gebruiker is geverifieerd met overheids-ID voordat ze kunnen chatten.',
+      proofLine:
+        'Persona wordt gebruikt door toonaangevende bedrijven (bijv. Robinhood en DoorDash) voor identiteitsverificatie - zodat jij met echte mensen matcht, niet met nep-profielen.',
       verifiedLabel: 'Geverifieerde Gebruiker',
     },
     investment: {
@@ -261,7 +268,7 @@ export const content: Record<Locale, FeaturesForStudentsContent> = {
         {
           question: 'Is Domu Match gratis voor studenten?',
           answer:
-            'Ja, Domu Match is volledig gratis voor alle studenten in Nederland. Er zijn geen verborgen kosten, geen premium tiers en geen kosten voor berichten of het bekijken van matches. Wij geloven dat het vinden van een compatibele huisgenoot voor iedereen toegankelijk moet zijn.',
+            'Op dit moment is Domu Match gratis voor studenten in Nederland. In de toekomst kan toegang overgaan naar een abonnementsmodel voor studenten van universiteiten die niet bij ons zijn aangesloten. Hoe dan ook: geen verborgen kosten, en je ziet de prijs altijd vooraf.',
         },
         {
           question: 'Kan ik een huisgenoot vinden als ik nog geen kamer heb?',
