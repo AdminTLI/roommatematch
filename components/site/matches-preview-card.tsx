@@ -201,24 +201,31 @@ export function MatchesPreviewCard({
   return (
     <div
       className={cn('w-full', heightClassName, className, !interactive && 'select-none')}
-      style={{ perspective: '1000px' }}
+      style={{ perspective: '1000px', WebkitPerspective: '1000px' }}
     >
       <motion.div
         className="relative w-full h-full ease-in-out"
-        style={{ transformStyle: 'preserve-3d' }}
-        animate={{
-          rotateY: isFlipped ? 180 : 0,
-          y: reducedMotion || !float ? 0 : [0, -10, 0],
-        }}
-        transition={{
-          rotateY: { duration: reducedMotion ? 0 : 0.65, ease: 'easeInOut' },
-          y: reducedMotion || !float ? undefined : { duration: 7.5, ease: 'easeInOut', repeat: Infinity },
-        }}
+        animate={{ y: reducedMotion || !float ? 0 : [0, -10, 0] }}
+        transition={{ y: reducedMotion || !float ? undefined : { duration: 7.5, ease: 'easeInOut', repeat: Infinity } }}
       >
+        <motion.div
+          className="relative w-full h-full ease-in-out"
+          style={{
+            transformStyle: 'preserve-3d',
+            WebkitTransformStyle: 'preserve-3d',
+            willChange: 'transform',
+          }}
+          animate={{ rotateY: isFlipped ? 180 : 0 }}
+          transition={{ rotateY: { duration: reducedMotion ? 0 : 0.65, ease: 'easeInOut' } }}
+        >
         {/* Front */}
         <div
           className="absolute inset-0 w-full h-full"
-          style={{ backfaceVisibility: 'hidden', WebkitBackfaceVisibility: 'hidden' }}
+          style={{
+            backfaceVisibility: 'hidden',
+            WebkitBackfaceVisibility: 'hidden',
+            transform: 'translateZ(1px)',
+          }}
         >
           <motion.div
             whileHover={
@@ -451,7 +458,8 @@ export function MatchesPreviewCard({
           style={{
             backfaceVisibility: 'hidden',
             WebkitBackfaceVisibility: 'hidden',
-            transform: 'rotateY(180deg)',
+            transform: 'rotateY(180deg) translateZ(1px)',
+            WebkitTransform: 'rotateY(180deg) translateZ(1px)',
           }}
         >
           <div className={cn(isMatchScreen ? APP_SURFACE : GLASS, 'p-6 sm:p-8 h-full overflow-hidden')}>
@@ -649,6 +657,7 @@ export function MatchesPreviewCard({
             )}
           </div>
         </div>
+        </motion.div>
       </motion.div>
     </div>
   )

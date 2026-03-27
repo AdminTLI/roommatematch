@@ -1,6 +1,7 @@
  'use client'
  
 import { useMemo, useState, type ElementType } from 'react'
+import Link from 'next/link'
  import {
    Heart,
    Info,
@@ -194,20 +195,29 @@ const CONTEXT_TOOLTIP =
    const harmonyPercent = Math.max(0, Math.min(100, Math.round(data.harmonyPercent)))
    const contextPercent = Math.max(0, Math.min(100, Math.round(data.contextPercent)))
  
-   return (
-    <div className={cn('w-full', heightClassName, className, 'select-none')} style={{ perspective: '1000px' }}>
+  return (
+   <div
+     className={cn('w-full', heightClassName, className, 'select-none')}
+     style={{ perspective: '1000px', WebkitPerspective: '1000px' }}
+   >
       <div
         className="relative w-full h-full ease-in-out"
         style={{
           transformStyle: 'preserve-3d',
+          WebkitTransformStyle: 'preserve-3d',
           transform: showDetails ? 'rotateY(180deg)' : 'rotateY(0deg)',
           transition: 'transform 0.6s ease-in-out',
+          willChange: 'transform',
         }}
       >
         {/* Front */}
         <div
           className="absolute inset-0 w-full h-full"
-          style={{ backfaceVisibility: 'hidden', WebkitBackfaceVisibility: 'hidden' }}
+          style={{
+            backfaceVisibility: 'hidden',
+            WebkitBackfaceVisibility: 'hidden',
+            transform: 'translateZ(1px)',
+          }}
         >
           <div
             className={cn(
@@ -332,12 +342,12 @@ const CONTEXT_TOOLTIP =
 
             {/* Chat button placeholder */}
             <div className="pt-4">
-              <div
-                className="w-full rounded-2xl py-3 text-center font-semibold text-white shadow-[0_14px_40px_rgba(124,58,237,0.22)] bg-gradient-to-r from-violet-600 via-purple-600 to-indigo-600"
-                aria-hidden
+              <Button
+                asChild
+                className="w-full rounded-2xl py-3 h-auto text-center font-semibold text-white shadow-[0_14px_40px_rgba(124,58,237,0.22)] bg-gradient-to-r from-violet-600 via-purple-600 to-indigo-600 hover:opacity-95"
               >
-                {locale === 'nl' ? 'Chat' : 'Chat'}
-              </div>
+                <Link href="/auth/sign-up">{locale === 'nl' ? 'Chat' : 'Chat'}</Link>
+              </Button>
             </div>
           </div>
         </div>
@@ -348,7 +358,8 @@ const CONTEXT_TOOLTIP =
           style={{
             backfaceVisibility: 'hidden',
             WebkitBackfaceVisibility: 'hidden',
-            transform: 'rotateY(180deg)',
+            transform: 'rotateY(180deg) translateZ(1px)',
+            WebkitTransform: 'rotateY(180deg) translateZ(1px)',
           }}
         >
           <div

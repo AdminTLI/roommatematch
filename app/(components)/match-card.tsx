@@ -351,21 +351,24 @@ export function MatchCard({
   }
 
   return (
-    <div className="w-full" style={{ perspective: '1000px' }}>
+    <div className="w-full" style={{ perspective: '1000px', WebkitPerspective: '1000px' }}>
       <div
         className="relative w-full h-full ease-in-out"
         style={{
           transformStyle: 'preserve-3d',
+          WebkitTransformStyle: 'preserve-3d',
           transform: isFlipped ? 'rotateY(180deg)' : 'rotateY(0deg)',
-          transition: 'transform 0.6s ease-in-out'
+          transition: 'transform 0.6s ease-in-out',
+          willChange: 'transform'
         }}
       >
         {/* Front Face */}
         <div
-          className="w-full"
+          className="absolute inset-0 w-full"
           style={{
             backfaceVisibility: 'hidden',
-            WebkitBackfaceVisibility: 'hidden'
+            WebkitBackfaceVisibility: 'hidden',
+            transform: 'translateZ(1px)'
           }}
         >
           <div className="w-full overflow-hidden rounded-2xl bg-slate-800 border border-slate-700 shadow-xl transition-all duration-300 hover:shadow-2xl hover:border-slate-600">
@@ -793,7 +796,8 @@ export function MatchCard({
           style={{
             backfaceVisibility: 'hidden',
             WebkitBackfaceVisibility: 'hidden',
-            transform: 'rotateY(180deg)'
+            transform: 'rotateY(180deg) translateZ(1px)',
+            WebkitTransform: 'rotateY(180deg) translateZ(1px)'
           }}
         >
           <div className="w-full overflow-hidden rounded-2xl bg-slate-800 border border-slate-700 shadow-xl h-full flex flex-col p-5 sm:p-6">

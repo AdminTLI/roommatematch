@@ -32,6 +32,29 @@ export async function POST(request: NextRequest) {
       }, { status: 401 })
     }
 
+    if (process.env.NODE_ENV === 'development') {
+      try {
+        const admin = await createAdminClient()
+        const { error: rolesProbeError } = await admin
+          .from('user_roles')
+          .select('user_id')
+          .limit(1)
+
+        if (rolesProbeError) {
+          safeLogger.error('[ChatSend] user_roles probe failed', {
+            code: (rolesProbeError as any).code,
+            message: (rolesProbeError as any).message,
+            details: (rolesProbeError as any).details,
+            hint: (rolesProbeError as any).hint,
+          })
+        } else {
+          safeLogger.info('[ChatSend] user_roles probe ok')
+        }
+      } catch (e) {
+        safeLogger.error('[ChatSend] user_roles probe threw', { error: e })
+      }
+    }
+
     // Rate limiting: 30 messages per 5 minutes per user
     const rateLimitKey = getUserRateLimitKey('messages', user.id)
     const rateLimitResult = await checkRateLimit('messages', rateLimitKey)
@@ -298,6 +321,36 @@ export async function POST(request: NextRequest) {
       .single()
 
     if (insertError) {
+      if (
+        process.env.NODE_ENV === 'development' &&
+        (insertError.message || '').includes('user_roles')
+      ) {
+        try {
+          const admin = await createAdminClient()
+          const { data: roleRow, error: roleErr } = await admin
+            .from('user_roles')
+            .select('user_id, role')
+            .eq('user_id', user.id)
+            .maybeSingle()
+          safeLogger.error('[ChatSend] Insert failed; user_roles probe', {
+            insertCode: (insertError as any).code,
+            insertMessage: (insertError as any).message,
+            userRolesProbeOk: !roleErr,
+            userRolesProbeError: roleErr
+              ? {
+                  code: (roleErr as any).code,
+                  message: (roleErr as any).message,
+                  details: (roleErr as any).details,
+                  hint: (roleErr as any).hint,
+                }
+              : null,
+            userRolesProbeRow: roleRow ? { user_id: roleRow.user_id, role: roleRow.role } : null,
+          })
+        } catch (e) {
+          safeLogger.error('[ChatSend] Insert failed; user_roles probe threw', { error: e })
+        }
+      }
+
       // Check if it's an RLS error specifically
       if (insertError.code === '42501') {
         safeLogger.error('RLS policy violation when inserting message', {

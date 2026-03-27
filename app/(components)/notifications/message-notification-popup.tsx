@@ -186,7 +186,7 @@ export function MessageNotificationPopup({ userId }: MessageNotificationPopupPro
   }
 
   return (
-    <div className="fixed top-20 right-4 z-50 space-y-2">
+    <div className="fixed top-20 right-6 z-50 space-y-2">
       <AnimatePresence>
         {notifications.map((notification) => {
           return (
@@ -196,7 +196,7 @@ export function MessageNotificationPopup({ userId }: MessageNotificationPopupPro
               animate={{ opacity: 1, x: 0, scale: 1 }}
               exit={{ opacity: 0, scale: 0.95, transition: { duration: 0.2 } }}
               transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
-              className="max-w-sm w-80 rounded-2xl border border-white/15 bg-white/10 p-4 shadow-[0_16px_50px_-22px_rgba(15,23,42,0.45)] backdrop-blur-lg supports-[backdrop-filter]:bg-white/8 dark:border-white/8 dark:bg-gray-900/12 dark:supports-[backdrop-filter]:bg-gray-900/10"
+              className="relative max-w-sm w-80 rounded-2xl border border-black/10 bg-white/70 p-4 shadow-[0_1px_0_rgba(255,255,255,0.9)_inset,0_12px_28px_rgba(15,23,42,0.14),0_3px_10px_rgba(15,23,42,0.10)] ring-1 ring-black/5 backdrop-blur-xl backdrop-saturate-150 supports-[backdrop-filter]:bg-white/60 dark:border-white/10 dark:bg-gray-900/55 dark:shadow-[0_1px_0_rgba(255,255,255,0.06)_inset,0_16px_34px_rgba(0,0,0,0.55),0_4px_12px_rgba(0,0,0,0.35)] dark:ring-white/10 dark:supports-[backdrop-filter]:bg-gray-900/45"
             >
               <div className="flex flex-row gap-3">
                 <div

@@ -140,7 +140,7 @@ import { useEffect, useMemo, useRef, useState, type ElementType } from 'react'
    float?: boolean
  }) {
    const reducedMotion = useReducedMotion()
-   const [isFlipped, setIsFlipped] = useState(false)
+  const [isFlipped, setIsFlipped] = useState(false)
   const dimensionsListRef = useRef<HTMLDivElement>(null)
  
    useEffect(() => {
@@ -178,32 +178,53 @@ import { useEffect, useMemo, useRef, useState, type ElementType } from 'react'
    const contextPercent = Math.max(0, Math.min(100, Math.round(data.contextPercent)))
  
    return (
-     <div className={cn('w-full', heightClassName, className, 'select-none')} style={{ perspective: '1000px' }}>
+    <div
+      className={cn('w-full', heightClassName, className, 'select-none')}
+      style={{ perspective: '1000px', WebkitPerspective: '1000px' }}
+    >
        <motion.div
          className="relative w-full h-full ease-in-out"
-         style={{ transformStyle: 'preserve-3d' }}
          animate={{
-           rotateY: isFlipped ? 180 : 0,
            y: reducedMotion || !float ? 0 : [0, -10, 0],
          }}
          transition={{
-           rotateY: { duration: reducedMotion ? 0 : 0.65, ease: 'easeInOut' },
            y:
              reducedMotion || !float
                ? undefined
                : { duration: 7.5, ease: 'easeInOut', repeat: Infinity },
          }}
        >
-         {/* Front */}
-         <div className="absolute inset-0 w-full h-full" style={{ backfaceVisibility: 'hidden', WebkitBackfaceVisibility: 'hidden' }}>
-           <motion.div
-             transition={{ duration: 0.2 }}
-             className={cn(
-               APP_SURFACE,
-              'p-6 sm:p-8 h-full overflow-hidden flex flex-col',
-               'bg-[radial-gradient(circle_at_30%_0%,rgba(99,102,241,0.10),transparent_55%),radial-gradient(circle_at_80%_20%,rgba(168,85,247,0.10),transparent_55%),radial-gradient(circle_at_40%_95%,rgba(251,146,60,0.10),transparent_55%)]'
-             )}
-           >
+        <motion.div
+          className="relative w-full h-full ease-in-out"
+          style={{
+            transformStyle: 'preserve-3d',
+            WebkitTransformStyle: 'preserve-3d',
+            willChange: 'transform',
+          }}
+          animate={{
+            rotateY: isFlipped ? 180 : 0,
+          }}
+          transition={{
+            rotateY: { duration: reducedMotion ? 0 : 0.65, ease: 'easeInOut' },
+          }}
+        >
+          {/* Front */}
+          <div
+            className="absolute inset-0 w-full h-full"
+            style={{
+              backfaceVisibility: 'hidden',
+              WebkitBackfaceVisibility: 'hidden',
+              transform: 'translateZ(1px)',
+            }}
+          >
+            <motion.div
+              transition={{ duration: 0.2 }}
+              className={cn(
+                APP_SURFACE,
+                'p-6 sm:p-8 h-full overflow-hidden flex flex-col',
+                'bg-[radial-gradient(circle_at_30%_0%,rgba(99,102,241,0.10),transparent_55%),radial-gradient(circle_at_80%_20%,rgba(168,85,247,0.10),transparent_55%),radial-gradient(circle_at_40%_95%,rgba(251,146,60,0.10),transparent_55%)]'
+              )}
+            >
             {/* Match score header */}
             <div className="text-center">
               <div className="inline-flex items-center gap-2 text-xs font-extrabold uppercase tracking-[0.28em] text-slate-600">
@@ -299,25 +320,26 @@ import { useEffect, useMemo, useRef, useState, type ElementType } from 'react'
                 {locale === 'nl' ? 'Chat' : 'Chat'}
               </div>
             </div>
-           </motion.div>
-         </div>
+            </motion.div>
+          </div>
  
          {/* Back */}
-         <div
-           className="absolute inset-0 w-full h-full"
-           style={{
-             backfaceVisibility: 'hidden',
-             WebkitBackfaceVisibility: 'hidden',
-             transform: 'rotateY(180deg)',
-           }}
-         >
           <div
-            className={cn(
-              APP_SURFACE,
-              'p-6 sm:p-8 h-full overflow-hidden',
-              'bg-[radial-gradient(circle_at_30%_0%,rgba(99,102,241,0.08),transparent_55%),radial-gradient(circle_at_80%_20%,rgba(168,85,247,0.08),transparent_55%),radial-gradient(circle_at_40%_95%,rgba(251,146,60,0.08),transparent_55%)]'
-            )}
+            className="absolute inset-0 w-full h-full"
+            style={{
+              backfaceVisibility: 'hidden',
+              WebkitBackfaceVisibility: 'hidden',
+              transform: 'rotateY(180deg) translateZ(1px)',
+              WebkitTransform: 'rotateY(180deg) translateZ(1px)',
+            }}
           >
+            <div
+              className={cn(
+                APP_SURFACE,
+                'p-6 sm:p-8 h-full overflow-hidden',
+                'bg-[radial-gradient(circle_at_30%_0%,rgba(99,102,241,0.08),transparent_55%),radial-gradient(circle_at_80%_20%,rgba(168,85,247,0.08),transparent_55%),radial-gradient(circle_at_40%_95%,rgba(251,146,60,0.08),transparent_55%)]'
+              )}
+            >
             <div className="flex flex-col h-full">
               <div className="text-2xl font-bold text-slate-900">
                 {locale === 'nl' ? 'User details' : 'User Details'}
@@ -393,9 +415,10 @@ import { useEffect, useMemo, useRef, useState, type ElementType } from 'react'
                 </div>
               </div>
             </div>
+            </div>
           </div>
-         </div>
-       </motion.div>
+        </motion.div>
+      </motion.div>
      </div>
    )
  }

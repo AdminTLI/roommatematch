@@ -84,7 +84,7 @@ export function SocialHero() {
               <Button
                 variant="outline"
                 size="lg"
-                className="bg-white/90 backdrop-blur-2xl border-white/80 text-slate-900 hover:bg-white rounded-full px-8 py-4 shadow-sm"
+                className="bg-white/90 backdrop-blur-2xl border-white/80 text-slate-900 hover:bg-white dark:bg-white/90 dark:hover:bg-white dark:text-slate-900 dark:border-white/80 rounded-full px-8 py-4 shadow-sm"
                 asChild
               >
                 <Link href="/how-it-works">{t.ctaSecondary}</Link>
