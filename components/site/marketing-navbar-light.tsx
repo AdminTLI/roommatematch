@@ -5,7 +5,6 @@ import Link from 'next/link'
 import Image from 'next/image'
 import { usePathname, useRouter } from 'next/navigation'
 import { ChevronDown, Menu, X, ArrowRight } from 'lucide-react'
-import Container from '@/components/ui/primitives/container'
 import { Button } from '@/components/ui/button'
 import { LanguageSwitcher } from '@/app/(marketing)/components/language-switcher'
 import { useApp } from '@/app/providers'
@@ -22,11 +21,13 @@ const navigationContent = {
     { name: 'Home', href: '/' },
     { name: 'How It Works', href: '/how-it-works' },
     { name: 'About Us', href: '/about' },
+    { name: 'Beta', href: '/beta' },
   ],
   nl: [
     { name: 'Home', href: '/' },
     { name: 'Hoe het werkt', href: '/how-it-works' },
     { name: 'Over ons', href: '/about' },
+    { name: 'Bèta', href: '/beta' },
   ],
 }
 
@@ -113,11 +114,11 @@ export function MarketingNavbarLight() {
             'border-b border-white/20'
           )}
         />
-        <Container className="relative h-full">
-          <div className="flex flex-nowrap items-center justify-between h-full gap-4 md:gap-6">
+        <div className="relative flex h-full w-full min-w-0 items-center justify-center px-4 sm:px-6 lg:px-8">
+          <div className="flex max-w-full min-w-0 flex-nowrap items-center gap-3 md:gap-4 lg:gap-6">
             <Link
               href="/"
-              className="flex items-center gap-2.5 hover:opacity-80 transition-opacity min-w-0"
+              className="flex shrink-0 items-center gap-2.5 hover:opacity-80 transition-opacity max-w-[min(100%,14rem)] sm:max-w-none"
               onClick={closeMobileMenu}
             >
               <div className="relative h-8 w-8 md:h-10 md:w-10 flex-shrink-0">
@@ -135,16 +136,16 @@ export function MarketingNavbarLight() {
               </span>
             </Link>
 
-            <div className="hidden md:flex flex-1 justify-center min-w-0 px-2">
-              <div className="flex max-w-full items-center gap-2 rounded-full bg-white/25 px-2.5 py-1.5 shadow-[0_10px_22px_rgba(15,23,42,0.08)] overflow-x-auto whitespace-nowrap [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+            <div className="hidden shrink-0 items-center md:flex">
+              <div className="flex w-max min-w-0 max-w-[calc(100vw-2rem)] items-center justify-between gap-2 md:gap-3 lg:gap-5 rounded-full bg-white/25 p-1.5 shadow-[0_10px_22px_rgba(15,23,42,0.08)] overflow-x-auto whitespace-nowrap [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden overscroll-x-contain md:max-w-[calc(100vw-3rem)] lg:max-w-[calc(100vw-4rem)]">
                 {navigation.map((item) => {
                   if (item.href === '/about') {
                     return (
-                      <div key="who-we-serve-and-about" className="flex items-center gap-2">
+                      <div key="who-we-serve-and-about" className="flex items-center gap-2 md:gap-3 shrink-0">
                         <DropdownMenu>
                           <DropdownMenuTrigger
                             className={cn(
-                              'inline-flex items-center justify-center h-9 px-4 rounded-full',
+                              'inline-flex items-center justify-center h-9 px-4 rounded-full shrink-0',
                               'text-sm font-semibold transition-colors outline-none',
                               'focus-visible:ring-2 focus-visible:ring-slate-900/20 focus-visible:ring-offset-2 focus-visible:ring-offset-transparent',
                               isWhoWeServeActive
@@ -184,7 +185,7 @@ export function MarketingNavbarLight() {
                           href={item.href}
                           aria-current={isActiveHref(item.href) ? 'page' : undefined}
                           className={cn(
-                            'relative inline-flex items-center justify-center h-9 px-4 rounded-full',
+                            'relative inline-flex items-center justify-center h-9 px-4 rounded-full shrink-0',
                             'text-sm font-semibold transition-colors',
                             isActiveHref(item.href)
                               ? 'bg-slate-900 text-white'
@@ -206,7 +207,7 @@ export function MarketingNavbarLight() {
                       href={item.href}
                       aria-current={active ? 'page' : undefined}
                       className={cn(
-                        'relative inline-flex items-center justify-center h-9 px-4 rounded-full',
+                        'relative inline-flex items-center justify-center h-9 px-4 rounded-full shrink-0',
                         'text-sm font-semibold transition-colors',
                         active
                           ? 'bg-slate-900 text-white'
@@ -221,7 +222,7 @@ export function MarketingNavbarLight() {
               </div>
             </div>
 
-            <div className="flex flex-none items-center gap-3">
+            <div className="flex shrink-0 items-center gap-3">
               <div className="hidden md:flex items-center">
                 <LanguageSwitcher variant="minimal" context="default" />
               </div>
@@ -238,35 +239,36 @@ export function MarketingNavbarLight() {
               </button>
               <Button
                 size="lg"
-                className="h-10 rounded-full bg-blue-600 text-white hover:bg-blue-700 shadow-[0_12px_30px_rgba(15,23,42,0.16)]"
+                className="h-10 shrink-0 rounded-full bg-blue-600 text-white hover:bg-blue-700 shadow-[0_12px_30px_rgba(15,23,42,0.16)]"
                 onClick={() => router.push('/auth/sign-up')}
               >
                 <span suppressHydrationWarning>{buttons.getStarted}</span>
               </Button>
-
-              {/* Mobile / tablet: hamburger opens full menu incl. Sign In */}
-              <button
-                type="button"
-                onClick={toggleMobileMenu}
-                className={cn(
-                  'md:hidden inline-flex items-center justify-center rounded-full h-10 w-10',
-                  'bg-white/60 text-slate-900',
-                  'hover:bg-white/80 transition-colors shadow-[0_10px_26px_rgba(15,23,42,0.10)]',
-                  'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-900/20 focus-visible:ring-offset-2 focus-visible:ring-offset-transparent'
-                )}
-                aria-expanded={isMobileMenuOpen}
-                aria-controls="marketing-mobile-menu"
-                aria-label="Open menu"
-              >
-                {isMobileMenuOpen ? (
-                  <X className="h-5 w-5" aria-hidden />
-                ) : (
-                  <Menu className="h-5 w-5" aria-hidden />
-                )}
-              </button>
             </div>
           </div>
-        </Container>
+
+          {/* Outside the centered cluster so logo→Get Started midpoint matches screen center */}
+          <button
+            type="button"
+            onClick={toggleMobileMenu}
+            className={cn(
+              'absolute right-4 top-1/2 z-10 -translate-y-1/2 sm:right-6 lg:right-8',
+              'md:hidden inline-flex items-center justify-center rounded-full h-10 w-10',
+              'bg-white/60 text-slate-900',
+              'hover:bg-white/80 transition-colors shadow-[0_10px_26px_rgba(15,23,42,0.10)]',
+              'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-900/20 focus-visible:ring-offset-2 focus-visible:ring-offset-transparent'
+            )}
+            aria-expanded={isMobileMenuOpen}
+            aria-controls="marketing-mobile-menu"
+            aria-label="Open menu"
+          >
+            {isMobileMenuOpen ? (
+              <X className="h-5 w-5" aria-hidden />
+            ) : (
+              <Menu className="h-5 w-5" aria-hidden />
+            )}
+          </button>
+        </div>
       </nav>
 
       {/* Mobile menu backdrop */}
@@ -314,10 +316,9 @@ export function MarketingNavbarLight() {
 
           <div className="px-3 py-3 overflow-y-auto [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
             {[
-              navigation[0],
-              navigation[1],
+              ...navigation.slice(0, 2),
               ...whoWeServe,
-              navigation[2],
+              ...navigation.slice(2),
             ].map((item) => {
               const active = isActiveHref(item.href)
               return (
