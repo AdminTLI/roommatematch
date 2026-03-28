@@ -9,12 +9,7 @@ import { safeLogger } from '@/lib/utils/logger'
 import { cn } from '@/lib/utils'
 import { type HousingStatusKey } from '@/lib/constants/housing-status'
 import { createClient } from '@/lib/supabase/client'
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from '@/components/ui/tooltip'
+import { ScoreInfoPopover } from '@/components/compatibility/score-info-popover'
 
 interface CompatibilityData {
   compatibility_score: number
@@ -255,7 +250,10 @@ export function MessengerProfilePane({ chatId, isOpen, onClose }: MessengerProfi
           flex: '1 1 0%'
         }}
       >
-        <div className="px-6 py-6 space-y-6 bg-white dark:bg-gray-900" style={{ minHeight: 'min-content' }}>
+        <div
+          className="space-y-6 bg-white px-6 py-6 pb-8 dark:bg-gray-900 max-lg:pb-[calc(var(--chat-bottom-offset,7.5rem)+1.25rem)]"
+          style={{ minHeight: 'min-content' }}
+        >
           {isLoading ? (
             <div className="space-y-6">
               <div className="h-32 bg-gray-200 dark:bg-gray-800 rounded-lg animate-pulse"></div>
@@ -343,19 +341,11 @@ export function MessengerProfilePane({ chatId, isOpen, onClose }: MessengerProfi
                           <div className="p-3 rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800">
                             <div className="flex flex-nowrap items-center gap-1.5 mb-1 min-w-0">
                               <span className="text-xs text-gray-600 dark:text-gray-400 whitespace-nowrap">Harmony Score</span>
-                              <TooltipProvider>
-                                <Tooltip>
-                                  <TooltipTrigger asChild>
-                                    <button type="button" className="flex-shrink-0 cursor-help rounded-full p-0.5 text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 focus:outline-none focus:ring-2 focus:ring-indigo-500/50">
-                                      <Info className="h-3.5 w-3.5" aria-hidden />
-                                      <span className="sr-only">What is Harmony Score?</span>
-                                    </button>
-                                  </TooltipTrigger>
-                                  <TooltipContent side="top" className="max-w-xs bg-gray-900 dark:bg-gray-800 border-gray-700 text-gray-100 text-xs">
-                                    <p>Measures how well your day-to-day living preferences align - cleanliness, sleep, noise, guests, shared spaces, substances, study/social balance, and home vibe.</p>
-                                  </TooltipContent>
-                                </Tooltip>
-                              </TooltipProvider>
+                              <ScoreInfoPopover
+                                title="Harmony score"
+                                description="Measures how well your day-to-day living preferences align — cleanliness, sleep, noise, guests, shared spaces, substances, study/social balance, and home vibe."
+                                triggerClassName="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300"
+                              />
                             </div>
                             <div className="text-2xl font-bold text-gray-900 dark:text-white">
                               {Math.round(compatibility.harmony_score * 100)}%
@@ -372,29 +362,11 @@ export function MessengerProfilePane({ chatId, isOpen, onClose }: MessengerProfi
                           <div className="p-3 rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800">
                             <div className="flex flex-nowrap items-center gap-1.5 mb-1 min-w-0">
                               <span className="text-xs text-gray-600 dark:text-gray-400 whitespace-nowrap">Context Score</span>
-                              <TooltipProvider>
-                                <Tooltip>
-                                  <TooltipTrigger asChild>
-                                    <button
-                                      type="button"
-                                      className="flex-shrink-0 cursor-help rounded-full p-0.5 text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 focus:outline-none focus:ring-2 focus:ring-indigo-500/50"
-                                    >
-                                      <Info className="h-3.5 w-3.5" aria-hidden />
-                                      <span className="sr-only">What is Context Score?</span>
-                                    </button>
-                                  </TooltipTrigger>
-                                  <TooltipContent
-                                    side="top"
-                                    className="max-w-xs bg-gray-900 dark:bg-gray-800 border-gray-700 text-gray-100 text-xs"
-                                  >
-                                    <p>
-                                      Measures how similar your context is – university, programme, study year, and
-                                      overlap in preferred cities. Location is treated as a soft boost, not a
-                                      hard filter.
-                                    </p>
-                                  </TooltipContent>
-                                </Tooltip>
-                              </TooltipProvider>
+                              <ScoreInfoPopover
+                                title="Context score"
+                                description="Measures how similar your context is — university, programme, study year, and overlap in preferred cities. Location is treated as a soft boost, not a hard filter."
+                                triggerClassName="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300"
+                              />
                             </div>
                             <div className="text-2xl font-bold text-gray-900 dark:text-white">
                               {Math.round(compatibility.context_score * 100)}%
@@ -440,16 +412,15 @@ export function MessengerProfilePane({ chatId, isOpen, onClose }: MessengerProfi
                                           {label}
                                         </span>
                                         {description && (
-                                          <TooltipProvider>
-                                            <Tooltip>
-                                              <TooltipTrigger asChild>
-                                                <Info className="w-3 h-3 text-gray-400 dark:text-gray-500 cursor-help flex-shrink-0" />
-                                              </TooltipTrigger>
-                                              <TooltipContent className="bg-gray-800 dark:bg-gray-700 border-gray-700 dark:border-gray-600 max-w-xs">
-                                                <p className="text-xs text-gray-200 dark:text-gray-300">{description}</p>
-                                              </TooltipContent>
-                                            </Tooltip>
-                                          </TooltipProvider>
+                                          <ScoreInfoPopover title={label} description={description}>
+                                            <button
+                                              type="button"
+                                              className="flex-shrink-0 rounded p-0.5 text-gray-400 hover:text-gray-600 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 dark:text-gray-500 dark:hover:text-gray-300"
+                                              aria-label={`${label} definition`}
+                                            >
+                                              <Info className="h-3 w-3" aria-hidden />
+                                            </button>
+                                          </ScoreInfoPopover>
                                         )}
                                       </div>
                                       <span className={cn('text-xs font-bold ml-2 flex-shrink-0', getScoreColor(dimensionScore))}>

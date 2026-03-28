@@ -3,7 +3,6 @@
 import { motion, AnimatePresence } from 'framer-motion'
 import { TopNav } from './TopNav'
 import { FloatingDock } from './navigation/floating-dock'
-import { BottomTabBar } from './BottomTabBar'
 import { useState } from 'react'
 import { useEffect } from 'react'
 import { useRouter } from 'next/navigation'

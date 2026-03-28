@@ -75,7 +75,7 @@ export function DomuChatWidget() {
           opacity: isOpen ? 0 : 1,
           transition: { duration: 0.2 }
         }}
-        className="fixed bottom-6 right-6 z-50 flex h-14 w-14 items-center justify-center rounded-full bg-[var(--brand-primary)] text-white shadow-lg transition-shadow hover:shadow-xl"
+        className="fixed right-4 z-[55] flex h-14 w-14 items-center justify-center rounded-full bg-[var(--brand-primary)] text-white shadow-lg transition-shadow hover:shadow-xl md:bottom-6 md:right-6 bottom-[calc(6.25rem+env(safe-area-inset-bottom,0px))]"
         aria-label="Open Domu AI chat"
       >
         <MessageCircle className="h-6 w-6" />
@@ -89,7 +89,7 @@ export function DomuChatWidget() {
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 20, scale: 0.95 }}
             transition={{ type: 'spring', damping: 25, stiffness: 300 }}
-            className="fixed bottom-6 right-6 z-50 flex h-[420px] max-h-[80vh] w-[360px] flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-xl dark:border-slate-700 dark:bg-slate-900 md:h-[520px] md:w-[420px]"
+            className="fixed right-4 z-[55] flex h-[min(420px,72vh)] max-h-[80vh] w-[min(100vw-2rem,360px)] flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-xl dark:border-slate-700 dark:bg-slate-900 md:bottom-6 md:right-6 md:h-[520px] md:w-[420px] bottom-[calc(6.25rem+env(safe-area-inset-bottom,0px))]"
           >
             {/* Header */}
             <div className="flex items-center justify-between border-b border-slate-200 bg-slate-50 px-4 py-3 dark:border-slate-700 dark:bg-slate-800">

@@ -40,7 +40,7 @@ export function FloatingDock() {
     const activeTabId = activeTab?.id || ''
 
     return (
-        <div className="fixed bottom-4 inset-x-0 w-full z-50 pointer-events-none flex justify-center px-4">
+        <div className="fixed bottom-4 inset-x-0 z-40 flex w-full justify-center px-4 pb-[env(safe-area-inset-bottom,0px)] pointer-events-none">
             <motion.div
                 initial={{ y: 100, opacity: 0 }}
                 animate={{ y: 0, opacity: 1 }}

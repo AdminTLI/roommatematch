@@ -15,16 +15,10 @@ import { NotificationItem } from './notification-item'
 import { Notification, NotificationCounts } from '@/lib/notifications/types'
 import { createClient } from '@/lib/supabase/client'
 import { logger } from '@/lib/utils/logger'
+import { cn } from '@/lib/utils'
 import { queryKeys } from '@/app/providers'
 import { useRealtimeInvalidation } from '@/hooks/use-realtime-invalidation'
-import { 
-  Bell, 
-  Settings, 
-  CheckCheck, 
-  Eye,
-  MoreHorizontal,
-  X
-} from 'lucide-react'
+import { Bell, CheckCheck, Eye, X } from 'lucide-react'
 
 // Hook to detect if we're on mobile
 function useIsMobile() {
@@ -345,30 +339,17 @@ export function NotificationDropdown({
     }
   }
 
-  const HeaderContent = ({ isMobile = false }: { isMobile?: boolean }) => (
-    <div 
-      className={`flex items-center justify-between ${isMobile ? 'gap-2' : 'gap-4'}`}
-      onClick={(e) => {
-        // Prevent clicks in header from closing dropdown
-        e.stopPropagation()
-      }}
-    >
-      <div className="flex items-center gap-2 sm:gap-2.5 flex-1 min-w-0">
-        <Bell className="h-5 w-5 flex-shrink-0 text-violet-600 dark:text-violet-400" />
-        <h2 className="text-base font-semibold whitespace-nowrap text-zinc-900 dark:text-white tracking-tight">Notifications</h2>
-        {unreadCount > 0 && (
-          <Badge variant="destructive" className="ml-1 flex-shrink-0 text-[10px] h-4 px-1.5 rounded-full bg-violet-600 hover:bg-violet-500 dark:bg-violet-600 dark:hover:bg-violet-500 border-0 leading-none">
-            {unreadCount}
-          </Badge>
+  const HeaderContent = ({ isMobile = false }: { isMobile?: boolean }) => {
+    const btnClass =
+      'h-10 w-10 shrink-0 p-0 sm:h-9 sm:w-9 hover:bg-zinc-100 dark:hover:bg-slate-700 text-zinc-600 dark:text-slate-300 hover:text-zinc-900 dark:hover:text-white disabled:opacity-40'
+
+    const actions = (
+      <div
+        className={cn(
+          'flex shrink-0 items-center',
+          isMobile ? 'w-full justify-between gap-2' : 'justify-end gap-1',
         )}
-      </div>
-      
-      <div 
-        className="flex items-center justify-end gap-2 flex-shrink-0"
-        onClick={(e) => {
-          // Prevent button clicks from bubbling
-          e.stopPropagation()
-        }}
+        onClick={(e) => e.stopPropagation()}
       >
         <Button
           variant="ghost"
@@ -380,14 +361,14 @@ export function NotificationDropdown({
             handleMarkAllClick(e)
           }}
           disabled={unreadCount === 0}
-          className="h-9 w-9 p-0 min-w-[36px] hover:bg-zinc-100 dark:hover:bg-slate-700 text-zinc-600 dark:text-slate-300 hover:text-zinc-900 dark:hover:text-white disabled:opacity-40"
+          className={btnClass}
           title="Mark all as read"
           type="button"
         >
           <CheckCheck className="h-4 w-4 flex-shrink-0" />
           <span className="sr-only">Mark all as read</span>
         </Button>
-        
+
         <Button
           variant="ghost"
           size="sm"
@@ -395,41 +376,67 @@ export function NotificationDropdown({
             logger.log('[NotificationDropdown] View all button clicked!')
             e.preventDefault()
             e.stopPropagation()
-            // Use window.location for reliable navigation from portal
-            // Don't close dropdown here - let navigation handle it
             setTimeout(() => {
               window.location.href = '/notifications'
             }, 0)
           }}
-          className="h-9 w-9 p-0 min-w-[36px] hover:bg-zinc-100 dark:hover:bg-slate-700 text-zinc-600 dark:text-slate-300 hover:text-zinc-900 dark:hover:text-white"
+          className={btnClass}
           title="View all notifications"
           type="button"
         >
           <Eye className="h-4 w-4 flex-shrink-0" />
           <span className="sr-only">View all notifications</span>
         </Button>
-        
-        {/* Only show X button on desktop - mobile Sheet has built-in close button */}
-        {!isMobile && (
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={(e) => {
-              e.preventDefault()
-              e.stopPropagation()
-              onClose()
-            }}
-            className="h-9 w-9 p-0 min-w-[36px] hover:bg-zinc-100 dark:hover:bg-slate-700 text-zinc-600 dark:text-slate-300 hover:text-zinc-900 dark:hover:text-white"
-            title="Close notifications"
-            type="button"
-          >
-            <X className="h-4 w-4 flex-shrink-0" />
-            <span className="sr-only">Close</span>
-          </Button>
+
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={(e) => {
+            e.preventDefault()
+            e.stopPropagation()
+            onClose()
+          }}
+          className={btnClass}
+          title="Close notifications"
+          type="button"
+        >
+          <X className="h-4 w-4 flex-shrink-0" />
+          <span className="sr-only">Close</span>
+        </Button>
+      </div>
+    )
+
+    return (
+      <div
+        className={cn(
+          'flex w-full',
+          isMobile ? 'flex-col items-stretch gap-3' : 'flex-row items-center justify-between gap-3',
+        )}
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div className="flex min-w-0 flex-1 items-center gap-2 sm:gap-2.5">
+          <Bell className="h-5 w-5 flex-shrink-0 text-violet-600 dark:text-violet-400" />
+          <h2 className="truncate text-base font-semibold tracking-tight text-zinc-900 dark:text-white">
+            Notifications
+          </h2>
+          {unreadCount > 0 && (
+            <Badge
+              variant="destructive"
+              className="ml-1 h-5 flex-shrink-0 rounded-full border-0 bg-violet-600 px-1.5 text-[10px] leading-none hover:bg-violet-500 dark:bg-violet-600 dark:hover:bg-violet-500"
+            >
+              {unreadCount}
+            </Badge>
+          )}
+        </div>
+
+        {isMobile ? (
+          <div className="border-t border-zinc-200 pt-3 dark:border-slate-700/80">{actions}</div>
+        ) : (
+          actions
         )}
       </div>
-    </div>
-  )
+    )
+  }
 
   const NotificationList = () => {
     // Filter notifications based on active tab (client-side filtering as backup)
@@ -537,22 +544,12 @@ export function NotificationDropdown({
             e.stopPropagation()
           }}
         >
-          <SheetHeader 
-            className="mb-0 pr-12 px-4 pt-4 flex-shrink-0"
-            onClick={(e) => {
-              // Prevent header clicks from closing sheet
-              e.stopPropagation()
-            }}
+          <SheetHeader
+            className="mb-0 flex-shrink-0 space-y-0 border-b border-zinc-200 px-4 pb-4 pt-4 dark:border-slate-700/50"
+            onClick={(e) => e.stopPropagation()}
           >
-            <SheetTitle 
-              className="pr-0"
-              onClick={(e) => {
-                // Prevent title clicks from closing sheet
-                e.stopPropagation()
-              }}
-            >
-              <HeaderContent isMobile={true} />
-            </SheetTitle>
+            <SheetTitle className="sr-only">Notifications</SheetTitle>
+            <HeaderContent isMobile />
           </SheetHeader>
           <div className="flex-1 min-h-0 flex flex-col overflow-hidden">
             <NotificationList />

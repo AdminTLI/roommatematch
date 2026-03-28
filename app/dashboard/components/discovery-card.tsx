@@ -3,14 +3,9 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { motion } from 'framer-motion'
-import { X, UserPlus, Zap, Heart, Users, MessageCircle, LucideIcon, Info, Droplets, Volume2, Moon, Coffee, BookOpen, Home, Sparkles, GraduationCap } from 'lucide-react'
+import { X, UserPlus, Zap, Heart, Users, MessageCircle, LucideIcon, Droplets, Volume2, Moon, Coffee, BookOpen, Home, Sparkles, GraduationCap } from 'lucide-react'
 import { Button } from '@/components/ui/button'
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from '@/components/ui/tooltip'
+import { ScoreInfoPopover } from '@/components/compatibility/score-info-popover'
 
 interface DiscoveryCardProps {
     profile: {
@@ -132,9 +127,12 @@ export function DiscoveryCard({ profile, onSkip, onConnect, connectButtonText = 
     }
 
     return (
-        <div className="w-full h-full" style={{ perspective: '1000px', WebkitPerspective: '1000px' }}>
+        <div
+          className="w-full min-h-[28rem] sm:min-h-[30rem]"
+          style={{ perspective: '1000px', WebkitPerspective: '1000px' }}
+        >
           <div
-            className="relative w-full h-full ease-in-out"
+            className="relative min-h-[28rem] w-full sm:min-h-[30rem] ease-in-out"
             style={{
               transformStyle: 'preserve-3d',
               WebkitTransformStyle: 'preserve-3d',
@@ -155,7 +153,7 @@ export function DiscoveryCard({ profile, onSkip, onConnect, connectButtonText = 
               <motion.div
                 whileHover={{ y: -4, scale: 1.01 }}
                 transition={{ duration: 0.2 }}
-                className="group relative flex flex-col overflow-hidden rounded-2xl bg-slate-800 border border-slate-700 shadow-xl h-full"
+                className="group relative flex min-h-[28rem] flex-col overflow-hidden rounded-2xl border border-slate-700 bg-slate-800 shadow-xl sm:min-h-[30rem]"
               >
             {/* Hero Match Score Section */}
             <div className="relative p-6 pb-4 text-center bg-gradient-to-b from-violet-600/20 to-transparent">
@@ -185,19 +183,10 @@ export function DiscoveryCard({ profile, onSkip, onConnect, connectButtonText = 
                         <div className="flex flex-nowrap items-center gap-2 min-w-0">
                             <Heart className="w-4 h-4 text-pink-400 flex-shrink-0" />
                             <span className="text-sm font-medium text-slate-300 whitespace-nowrap">Harmony</span>
-                            <TooltipProvider>
-                              <Tooltip>
-                                <TooltipTrigger asChild>
-                                  <button type="button" className="flex-shrink-0 cursor-help rounded-full p-0.5 text-slate-400 hover:text-slate-300 focus:outline-none focus:ring-2 focus:ring-indigo-500/50">
-                                    <Info className="h-3.5 w-3.5" aria-hidden />
-                                    <span className="sr-only">What is Harmony Score?</span>
-                                  </button>
-                                </TooltipTrigger>
-                                <TooltipContent side="top" className="max-w-xs bg-slate-900 dark:bg-slate-800 border-slate-700 text-slate-100 text-xs">
-                                  <p>Measures how well your day-to-day living preferences align - cleanliness, sleep, noise, guests, shared spaces, substances, study/social balance, and home vibe.</p>
-                                </TooltipContent>
-                              </Tooltip>
-                            </TooltipProvider>
+                            <ScoreInfoPopover
+                              title="Harmony score"
+                              description="Measures how well your day-to-day living preferences align — cleanliness, sleep, noise, guests, shared spaces, substances, study/social balance, and home vibe."
+                            />
                         </div>
                         <span className={`text-sm font-bold flex-shrink-0 ${getScoreColor(harmonyScore)}`}>
                             {harmonyScore}%
@@ -219,19 +208,10 @@ export function DiscoveryCard({ profile, onSkip, onConnect, connectButtonText = 
                         <div className="flex flex-nowrap items-center gap-2 min-w-0">
                             <Users className="w-4 h-4 text-blue-400 flex-shrink-0" />
                             <span className="text-sm font-medium text-slate-300 whitespace-nowrap">Context</span>
-                            <TooltipProvider>
-                              <Tooltip>
-                                <TooltipTrigger asChild>
-                                  <button type="button" className="flex-shrink-0 cursor-help rounded-full p-0.5 text-slate-400 hover:text-slate-300 focus:outline-none focus:ring-2 focus:ring-indigo-500/50">
-                                    <Info className="h-3.5 w-3.5" aria-hidden />
-                                    <span className="sr-only">What is Context Score?</span>
-                                  </button>
-                                </TooltipTrigger>
-                                <TooltipContent side="top" className="max-w-xs bg-slate-900 dark:bg-slate-800 border-slate-700 text-slate-100 text-xs">
-                                  <p>Measures how similar your academic context is - university, programme, and study year.</p>
-                                </TooltipContent>
-                              </Tooltip>
-                            </TooltipProvider>
+                            <ScoreInfoPopover
+                              title="Context score"
+                              description="Measures how similar your academic context is — university, programme, and study year."
+                            />
                         </div>
                         <span className={`text-sm font-bold flex-shrink-0 ${getScoreColor(contextScore)}`}>
                             {contextScore}%
@@ -310,7 +290,7 @@ export function DiscoveryCard({ profile, onSkip, onConnect, connectButtonText = 
                 WebkitTransform: 'rotateY(180deg) translateZ(1px)'
               }}
             >
-              <div className="w-full h-full overflow-hidden rounded-2xl bg-slate-800 border border-slate-700 shadow-xl flex flex-col p-5 sm:p-6">
+              <div className="flex min-h-[28rem] w-full flex-col overflow-hidden rounded-2xl border border-slate-700 bg-slate-800 p-5 shadow-xl sm:min-h-[30rem] sm:p-6">
                 {/* User Details Heading */}
                 <div className="mb-4">
                   <h3 className="text-xl font-semibold text-slate-100 mb-1">User Details</h3>
@@ -346,19 +326,10 @@ export function DiscoveryCard({ profile, onSkip, onConnect, connectButtonText = 
                           <div className="flex flex-nowrap items-center gap-2 min-w-0">
                             <Heart className="w-4 h-4 text-pink-400 flex-shrink-0" />
                             <span className="text-sm font-medium text-slate-300 whitespace-nowrap">Harmony</span>
-                            <TooltipProvider>
-                              <Tooltip>
-                                <TooltipTrigger asChild>
-                                  <button type="button" className="flex-shrink-0 cursor-help rounded-full p-0.5 text-slate-400 hover:text-slate-300 focus:outline-none focus:ring-2 focus:ring-indigo-500/50">
-                                    <Info className="h-3.5 w-3.5" aria-hidden />
-                                    <span className="sr-only">What is Harmony Score?</span>
-                                  </button>
-                                </TooltipTrigger>
-                                <TooltipContent side="top" className="max-w-xs bg-slate-900 dark:bg-slate-800 border-slate-700 text-slate-100 text-xs">
-                                  <p>Measures how well your day-to-day living preferences align - cleanliness, sleep, noise, guests, shared spaces, substances, study/social balance, and home vibe.</p>
-                                </TooltipContent>
-                              </Tooltip>
-                            </TooltipProvider>
+                            <ScoreInfoPopover
+                              title="Harmony score"
+                              description="Measures how well your day-to-day living preferences align — cleanliness, sleep, noise, guests, shared spaces, substances, study/social balance, and home vibe."
+                            />
                           </div>
                           <span className={`text-sm font-semibold flex-shrink-0 ${getScoreColor(harmonyScore)}`}>
                             {harmonyScore}%
@@ -379,19 +350,10 @@ export function DiscoveryCard({ profile, onSkip, onConnect, connectButtonText = 
                           <div className="flex flex-nowrap items-center gap-2 min-w-0">
                             <Users className="w-4 h-4 text-blue-400 flex-shrink-0" />
                             <span className="text-sm font-medium text-slate-300 whitespace-nowrap">Context</span>
-                            <TooltipProvider>
-                              <Tooltip>
-                                <TooltipTrigger asChild>
-                                  <button type="button" className="flex-shrink-0 cursor-help rounded-full p-0.5 text-slate-400 hover:text-slate-300 focus:outline-none focus:ring-2 focus:ring-indigo-500/50">
-                                    <Info className="h-3.5 w-3.5" aria-hidden />
-                                    <span className="sr-only">What is Context Score?</span>
-                                  </button>
-                                </TooltipTrigger>
-                                <TooltipContent side="top" className="max-w-xs bg-slate-900 dark:bg-slate-800 border-slate-700 text-slate-100 text-xs">
-                                  <p>Measures how similar your academic context is - university, programme, and study year.</p>
-                                </TooltipContent>
-                              </Tooltip>
-                            </TooltipProvider>
+                            <ScoreInfoPopover
+                              title="Context score"
+                              description="Measures how similar your academic context is — university, programme, and study year."
+                            />
                           </div>
                           <span className={`text-sm font-semibold flex-shrink-0 ${getScoreColor(contextScore)}`}>
                             {contextScore}%
@@ -433,18 +395,15 @@ export function DiscoveryCard({ profile, onSkip, onConnect, connectButtonText = 
                         >
                           <div className="flex items-center justify-between mb-2 gap-2">
                             <div className="flex items-center gap-2 flex-1 min-w-0">
-                              <TooltipProvider>
-                                <Tooltip>
-                                  <TooltipTrigger asChild>
-                                    <button className="flex-shrink-0 cursor-help">
-                                      <Icon className="w-4 h-4 text-slate-400 hover:text-slate-300 transition-colors" />
-                                    </button>
-                                  </TooltipTrigger>
-                                  <TooltipContent className="bg-slate-800 border-slate-700 max-w-xs">
-                                    <p className="text-xs text-slate-200">{description}</p>
-                                  </TooltipContent>
-                                </Tooltip>
-                              </TooltipProvider>
+                              <ScoreInfoPopover title={label} description={description}>
+                                <button
+                                  type="button"
+                                  className="flex-shrink-0 rounded p-0.5 text-slate-400 transition-colors hover:text-slate-300 focus:outline-none focus:ring-2 focus:ring-indigo-500/50"
+                                  aria-label={`${label} definition`}
+                                >
+                                  <Icon className="h-4 w-4" aria-hidden />
+                                </button>
+                              </ScoreInfoPopover>
                               <span className="text-sm font-medium text-slate-100 truncate whitespace-nowrap">
                                 {label}
                               </span>

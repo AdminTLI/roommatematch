@@ -247,15 +247,17 @@ export function PrivacySettings({ user, profile }: PrivacySettingsProps) {
             { id: 'allowMessages', label: 'Allow Messages', desc: 'Let other users send you messages' },
             { id: 'dataSharing', label: 'Data Sharing', desc: 'Allow anonymized data to be used for research' },
           ].map((item) => (
-            <div key={item.id} className="py-4 flex items-center justify-between gap-4">
-              <div className="flex-1 min-w-0">
-                <Label className="text-zinc-900 dark:text-zinc-100 block mb-0.5 font-medium">{item.label}</Label>
-                <p className="text-xs text-zinc-600 dark:text-zinc-400 truncate">{item.desc}</p>
+            <div key={item.id} className="flex flex-col gap-3 py-4 sm:flex-row sm:items-center sm:justify-between sm:gap-4">
+              <div className="min-w-0 flex-1 pr-0 sm:pr-2">
+                <Label className="mb-0.5 block font-medium text-zinc-900 dark:text-zinc-100">{item.label}</Label>
+                <p className="text-pretty text-xs leading-relaxed text-zinc-600 dark:text-zinc-400 break-words">
+                  {item.desc}
+                </p>
               </div>
               <Switch
                 checked={privacySettings[item.id as keyof typeof privacySettings]}
                 onCheckedChange={(checked) => handlePrivacyChange(item.id, checked)}
-                className="data-[state=checked]:bg-blue-500"
+                className="shrink-0 self-start data-[state=checked]:bg-blue-500 sm:self-center"
               />
             </div>
           ))}

@@ -339,11 +339,11 @@ body:has([data-chat-page]) .safe-area-inset > div {
   overflow: hidden !important;
 }
 
-/* On mobile, adjust for floating dock + safe area */
+/* On mobile, adjust for floating dock + safe area (dock ~72px + bottom-4 + gap) */
 @media (max-width: 768px) {
   body.chat-page,
   body:has([data-chat-page]) {
-    --chat-bottom-offset: calc(96px + env(safe-area-inset-bottom, 0px));
+    --chat-bottom-offset: calc(7.5rem + env(safe-area-inset-bottom, 0px));
   }
 
   body.chat-page main,

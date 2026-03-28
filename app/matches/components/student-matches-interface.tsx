@@ -863,7 +863,7 @@ export function StudentMatchesInterface({ user }: StudentMatchesInterfaceProps) 
   const firstName = user.firstName || (user.name ? user.name.split(' ')[0] : 'Student')
 
   return (
-    <div className="space-y-8 pb-24 md:pb-6 px-4 sm:px-6 lg:px-8 py-4 sm:py-6">
+    <div className="space-y-8 px-4 py-4 pb-[calc(7rem+env(safe-area-inset-bottom,0px))] sm:px-6 sm:py-6 md:pb-6 lg:px-8">
       {/* Header */}
       <div className="mb-5 sm:mb-8">
         <div className="flex items-center gap-2 text-indigo-400 mb-1">

@@ -97,7 +97,10 @@ export function MessengerTypingBar({
 
   return (
     <div 
-      className={cn('flex-shrink-0 border-t border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 p-1 rounded-b-lg', className)}
+      className={cn(
+        'relative z-[60] flex-shrink-0 rounded-b-lg border-t border-gray-200 bg-white p-1 shadow-[0_-4px_24px_rgba(0,0,0,0.06)] dark:border-gray-700 dark:bg-gray-900',
+        className,
+      )}
       style={{
         flexShrink: 0,
         flexGrow: 0,

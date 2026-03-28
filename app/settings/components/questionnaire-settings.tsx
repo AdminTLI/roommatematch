@@ -203,25 +203,27 @@ export function QuestionnaireSettings({ progressData, userType }: QuestionnaireS
       <div className="space-y-4">
         <h3 className="text-sm font-medium text-zinc-600 dark:text-zinc-400 uppercase tracking-wider px-1">Progress Overview</h3>
         <div className="bg-white/80 dark:bg-zinc-900/40 border border-zinc-200 dark:border-white/10 rounded-2xl overflow-hidden p-6 space-y-6 backdrop-blur-xl">
-          <div className="flex items-end justify-between">
-            <div className="space-y-1">
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between sm:gap-4">
+            <div className="min-w-0 space-y-1">
               <p className="text-sm text-zinc-600 dark:text-zinc-400">Overall Completion</p>
-              <div className="flex items-baseline gap-2">
+              <div className="flex flex-wrap items-baseline gap-x-2 gap-y-1">
                 <span className="text-4xl font-bold text-zinc-900 dark:text-white">{progressPercentage}%</span>
-                <span className="text-xs text-zinc-500 dark:text-zinc-400 uppercase tracking-widest font-semibold pb-1">
+                <span className="text-xs font-semibold uppercase tracking-widest text-zinc-500 dark:text-zinc-400">
                   {completedSections.length} / {totalSections} Sections
                 </span>
               </div>
             </div>
-            {isFullySubmitted ? (
-              <Badge className="bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20 px-3 py-1 rounded-full text-[10px] uppercase font-bold tracking-wider">
-                Completed
-              </Badge>
-            ) : (
-              <Badge className="bg-blue-500/10 text-blue-600 dark:text-blue-400 border-blue-500/20 px-3 py-1 rounded-full text-[10px] uppercase font-bold tracking-wider">
-                In Progress
-              </Badge>
-            )}
+            <div className="flex shrink-0 self-start sm:self-auto">
+              {isFullySubmitted ? (
+                <Badge className="whitespace-nowrap rounded-full border border-emerald-500/20 bg-emerald-500/10 px-3 py-1.5 text-[10px] font-bold uppercase tracking-wider text-emerald-600 dark:text-emerald-400">
+                  Completed
+                </Badge>
+              ) : (
+                <Badge className="whitespace-nowrap rounded-full border border-blue-500/20 bg-blue-500/10 px-3 py-1.5 text-[10px] font-bold uppercase tracking-wider text-blue-600 dark:text-blue-400">
+                  In Progress
+                </Badge>
+              )}
+            </div>
           </div>
 
           <div className="space-y-2">
