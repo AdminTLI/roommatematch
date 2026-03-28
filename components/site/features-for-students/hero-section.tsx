@@ -13,6 +13,9 @@ import { cn } from '@/lib/utils'
 const GLASS =
   'bg-white/60 backdrop-blur-xl border border-white/50 shadow-[0_8px_30px_rgb(0,0,0,0.04)] rounded-3xl'
 
+const headlineGradientClass =
+  'text-transparent bg-clip-text bg-gradient-to-r from-blue-700 to-violet-700'
+
 export function HeroSection() {
   const router = useRouter()
   const { locale } = useApp()
@@ -44,23 +47,9 @@ export function HeroSection() {
               animate={motionConfig}
               transition={{ duration: reducedMotion ? 0 : 0.6, ease: 'easeOut' }}
             >
-              {locale === 'en' ? (
-                <>
-                  Don&apos;t let a bad{' '}
-                  <span className="text-slate-800">
-                    roommate
-                  </span>{' '}
-                  ruin your year.
-                </>
-              ) : (
-                <>
-                  Laat een slechte{' '}
-                  <span className="text-slate-800">
-                    huisgenoot
-                  </span>{' '}
-                  je jaar niet verpesten.
-                </>
-              )}
+              <span className="text-slate-800">{t.headlineBefore}</span>
+              <span className={headlineGradientClass}>{t.headlineGradient}</span>
+              <span className="text-slate-800">{t.headlineAfter}</span>
             </motion.h1>
             <motion.p
               className="text-base sm:text-lg text-slate-600 max-w-xl mx-auto lg:mx-0 leading-relaxed"
@@ -103,7 +92,7 @@ export function HeroSection() {
           </div>
 
           {/* Right: Split comparison visual - glass cards */}
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
             {/* The Old Way */}
             <motion.div
               className={cn(

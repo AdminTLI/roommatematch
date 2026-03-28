@@ -18,7 +18,7 @@ export function AppFooter() {
             href="/terms" 
             className="text-foreground/70 dark:text-foreground/70 hover:text-foreground dark:hover:text-foreground transition-colors whitespace-nowrap"
           >
-            Terms
+            Terms of Service
           </a>
           <a 
             href="/accessibility" 

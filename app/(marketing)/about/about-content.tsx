@@ -16,9 +16,11 @@ const GLASS =
 const content = {
   en: {
     hero: {
-      titlePrefix: 'Our Mission:',
-      titleHighlight: 'Better Roommate Matches Through Science',
-      description: "We believe finding a compatible roommate shouldn't be a gamble. Domu Match is a science-driven platform that uses compatibility research to help students and young professionals find roommates they'll actually get along with. Safety, transparency, and evidence-based matching guide everything we do."
+      titleBeforeGradient: 'Better ',
+      titleGradient: 'Roommate Matches',
+      titleAfterGradient: ' Through Science',
+      description:
+        "Our mission is to deliver better roommate matches through science. We believe finding a compatible roommate shouldn't be a gamble. Domu Match is a science-driven platform that uses compatibility research to help students and young professionals find roommates they'll actually get along with. Safety, transparency, and evidence-based matching guide everything we do.",
     },
     story: {
       heading: 'Our Story',
@@ -39,8 +41,14 @@ const content = {
       { title: 'Algorithm Development', description: 'We built a science-driven algorithm that analyzes 40+ lifestyle and academic factors, informed by social compatibility research.', date: '2025 October' },
       { title: 'First Version Complete', description: "The first version of Domu Match's user interface was put together, its core functionality was built, and we finalized the weightings for our matching algorithm.", date: '2025 November' },
       { title: 'Debugging and Error Testing', description: 'The platform is currently undergoing several changes to debug multiple errors and ensure that during the soft launch, users have a seamless experience. This will allow beta testers to provide more feedback on introducing the right features for the platform.', date: '2026 January' },
-      { title: 'Beta Testing Soft Launch', description: 'The platform will be launched to a small group of students in Breda and Tilburg. We will work together to ensure that we have the most important and wanted features that users expect working properly before our full planned launch.', date: '2026 March' },
-      { title: 'Full Launch Planned', description: 'We are expected to launch the platform for our first students in May. Students will be able to finally use our science-backed matching algorithm to connect with and find compatible roommates for the first time ever in The Netherlands.', date: '2026 May' }
+      {
+        title: 'Expanding Beyond Students',
+        description:
+          'Domu Match began with students at the center. In March we pivoted to welcome young professionals too: early feedback and demand showed that finding a compatible roommate is not only a student problem. We refocused the product, messaging, and matching priorities so both audiences are first-class - same science-backed approach, tailored to how each group lives and searches for housing.',
+        date: '2026 March',
+      },
+      { title: 'Beta Testing Soft Launch', description: 'The platform will be launched to a small group of students and young professionals in Breda and Tilburg. We will work together to ensure that we have the most important and wanted features that users expect working properly before our full planned launch.', date: '2026 April' },
+      { title: 'Full Launch Planned', description: 'We are expected to launch the platform for our first students and young professionals in June. They will finally be able to use our science-backed matching algorithm to connect with and find compatible roommates for the first time ever in The Netherlands.', date: '2026 June' }
     ],
     vision: {
       heading: "Where We're Headed",
@@ -121,9 +129,11 @@ const content = {
   },
   nl: {
     hero: {
-      titlePrefix: 'Onze missie:',
-      titleHighlight: 'Betere huisgenootmatches met wetenschap',
-      description: 'Een huisgenoot vinden mag geen gok zijn. Domu Match gebruikt compatibiliteitsonderzoek om studenten te koppelen op basis van levensstijl, persoonlijkheid en studie. Veiligheid, transparantie en wetenschap sturen elke keuze.'
+      titleBeforeGradient: 'Betere ',
+      titleGradient: 'huisgenootmatches',
+      titleAfterGradient: ' met wetenschap',
+      description:
+        'Onze missie is betere huisgenootmatches via wetenschap. Een huisgenoot vinden mag geen gok zijn. Domu Match gebruikt compatibiliteitsonderzoek om studenten te koppelen op basis van levensstijl, persoonlijkheid en studie. Veiligheid, transparantie en wetenschap sturen elke keuze.',
     },
     story: {
       heading: 'Ons verhaal',
@@ -145,8 +155,14 @@ const content = {
       { title: 'Algoritmeontwikkeling', description: 'We bouwden een algoritme dat meer dan 40 factoren weegt, geïnspireerd op sociale wetenschappen en best practices.', date: '2025 oktober' },
       { title: 'Eerste versie voltooid', description: 'De eerste versie van Domu Match werd volledig gebouwd en onderging uitgebreide debugging- en fouttestprocessen om betrouwbaarheid en kwaliteit te waarborgen.', date: '2025 november' },
       { title: 'Bètatestfase', description: 'We bevinden ons momenteel in de bètatestfase, verzamelen feedback en verfijnen het platform om de best mogelijke ervaring voor studenten te garanderen.', date: '2026 januari' },
-      { title: 'Bètatest Soft Launch', description: 'Het platform wordt gelanceerd voor een kleine groep studenten in Breda en Tilburg. Samen zorgen we ervoor dat de belangrijkste en meest gewenste functies correct werken voordat we de volledige lancering plannen.', date: '2026 maart' },
-      { title: 'Volledige lancering gepland', description: 'We verwachten het platform in mei te lanceren voor onze eerste studenten. Studenten kunnen dan eindelijk ons wetenschappelijk onderbouwde matchingalgoritme gebruiken om compatibele huisgenoten te vinden - voor het eerst in Nederland.', date: '2026 mei' }
+      {
+        title: 'Uitbreiding naar jonge professionals',
+        description:
+          'Domu Match startte met studenten als focus. In maart hebben we gepivoteerd om ook jonge professionals uit te nodigen: uit feedback en vraag bleek dat het vinden van een passende huisgenoot niet alleen een studententhema is. We hebben product, positionering en matching bijgesteld zodat beide groepen gelijkwaardig zijn - dezelfde wetenschappelijke basis, afgestemd op hoe elke groep woont en zoekt.',
+        date: '2026 maart',
+      },
+      { title: 'Bètatest Soft Launch', description: 'Het platform wordt gelanceerd voor een kleine groep studenten en jonge professionals in Breda en Tilburg. Samen zorgen we ervoor dat de belangrijkste en meest gewenste functies correct werken voordat we de volledige lancering plannen.', date: '2026 april' },
+      { title: 'Volledige lancering gepland', description: 'We verwachten het platform in juni te lanceren voor onze eerste studenten en jonge professionals. Zij kunnen dan eindelijk ons wetenschappelijk onderbouwde matchingalgoritme gebruiken om compatibele huisgenoten te vinden - voor het eerst in Nederland.', date: '2026 juni' }
     ],
     vision: {
       heading: 'Waar we naartoe werken',
@@ -251,10 +267,11 @@ export function AboutContent() {
             transition={{ duration: 0.6, ease: 'easeOut' }}
           >
             <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-slate-800 mb-6 leading-tight tracking-tight">
-              <span className="text-slate-800">
-                {t.hero.titlePrefix}
-              </span>{' '}
-              {t.hero.titleHighlight}
+              <span className="text-slate-800">{t.hero.titleBeforeGradient}</span>
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-700 to-violet-700">
+                {t.hero.titleGradient}
+              </span>
+              <span className="text-slate-800">{t.hero.titleAfterGradient}</span>
             </h1>
             <p className="text-lg md:text-xl text-slate-600 max-w-3xl mx-auto leading-relaxed">
               {t.hero.description}

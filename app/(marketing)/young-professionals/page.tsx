@@ -5,7 +5,7 @@ import { Metadata } from 'next'
 export const metadata: Metadata = {
   title: 'For Young Professionals | Domu Match - Science-Backed Flatmate Matching',
   description:
-    'Find compatible flatmates in the Netherlands. ID-verified, lifestyle matching, separate pool from students. No scams. Perfect for young professionals in Amsterdam, Rotterdam, Utrecht and beyond.',
+    'Build your career with flatmates who fit your rhythm. ID-verified lifestyle matching in the Netherlands, separate pool from students, no scams. Amsterdam, Rotterdam, Utrecht and beyond.',
   keywords: [
     'flatmate Netherlands',
     'young professional housing',

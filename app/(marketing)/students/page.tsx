@@ -6,7 +6,7 @@ import { Metadata } from 'next'
 export const metadata: Metadata = {
   title: 'For Students | Domu Match - Science-Backed Roommate Matching',
   description:
-    "Don't let a bad roommate ruin your year. The only student platform that matches you on lifestyle, sleep schedules, and study habits. 100% ID Verified. Zero Scams. Perfect for international students.",
+    'Your best years deserve the right roommates. Science-backed matching on lifestyle, sleep, and study habits. 100% ID verified. Built for students and internationals in the Netherlands.',
   keywords: [
     'student roommate matching',
     'international student housing',

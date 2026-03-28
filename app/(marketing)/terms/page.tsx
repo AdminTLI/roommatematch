@@ -28,7 +28,7 @@ const content: Record<
   }
 > = {
   en: {
-    title: 'Terms and Conditions',
+    title: 'Terms of Service',
     lastUpdatedLabel: 'Last updated',
     lastUpdatedValue: LAST_UPDATED,
     preamble:

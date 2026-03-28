@@ -1,7 +1,12 @@
 export type Locale = 'en' | 'nl'
 
 export interface HeroContent {
-  headline: string
+  /** Plain text before the gradient phrase */
+  headlineBefore: string
+  /** 2–3 positive words highlighted with the brand gradient */
+  headlineGradient: string
+  /** Plain text after the gradient phrase */
+  headlineAfter: string
   subheadline: string
   oldWay: string
   domuWay: string
@@ -83,7 +88,9 @@ export interface FeaturesForStudentsContent {
 export const content: Record<Locale, FeaturesForStudentsContent> = {
   en: {
     hero: {
-      headline: "Don't let a bad roommate ruin your year.",
+      headlineBefore: 'Your ',
+      headlineGradient: 'best years',
+      headlineAfter: ' deserve the right roommates.',
       subheadline:
         "The only student platform that matches you based on lifestyle, sleep schedules, and study habits. 100% ID Verified. Zero Scams.",
       oldWay: 'The Old Way',
@@ -196,7 +203,9 @@ export const content: Record<Locale, FeaturesForStudentsContent> = {
   },
   nl: {
     hero: {
-      headline: "Laat een slechte huisgenoot je jaar niet verpesten.",
+      headlineBefore: 'Jouw ',
+      headlineGradient: 'beste jaren',
+      headlineAfter: ' verdienen de juiste huisgenoten.',
       subheadline:
         "Het enige studentenplatform dat je matcht op basis van levensstijl, slaapschema's en studiegewoonten. 100% ID-geverifieerd. Geen oplichting.",
       oldWay: 'De Oude Manier',

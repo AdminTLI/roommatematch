@@ -49,9 +49,13 @@ const whoWeServeContent = {
 }
 
 const buttonContent = {
-  en: { signIn: 'Sign In', getStarted: 'Get Started' },
-  nl: { signIn: 'Inloggen', getStarted: 'Aan de slag' },
+  en: { signIn: 'Sign In', getStarted: 'Get Started', skipToMain: 'Skip to main content' },
+  nl: { signIn: 'Inloggen', getStarted: 'Aan de slag', skipToMain: 'Ga naar hoofdinhoud' },
 }
+
+/** Inactive Beta nav label — matches landing headline gradient, bolder than other links */
+const betaNavInactiveLabelClass =
+  'text-transparent bg-clip-text bg-gradient-to-r from-blue-700 to-violet-700 font-bold'
 
 export function MarketingNavbarLight() {
   const router = useRouter()
@@ -103,7 +107,7 @@ export function MarketingNavbarLight() {
         href="#main-content"
         className="sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 z-50 bg-slate-900 text-white px-4 py-2 rounded-md"
       >
-        Skip to main content
+        <span suppressHydrationWarning>{buttons.skipToMain}</span>
       </a>
 
       <nav className="fixed top-0 left-0 right-0 z-50 h-16 md:h-20 shadow-[0_18px_50px_rgba(15,23,42,0.10)]">
@@ -114,8 +118,59 @@ export function MarketingNavbarLight() {
             'border-b border-white/20'
           )}
         />
-        <div className="relative flex h-full w-full min-w-0 items-center justify-center px-4 sm:px-6 lg:px-8">
-          <div className="flex max-w-full min-w-0 flex-nowrap items-center gap-3 md:gap-4 lg:gap-6">
+        <div className="relative flex h-full w-full min-w-0 items-center px-4 sm:px-6 lg:px-8 md:justify-center">
+          {/* Mobile: logo and actions share the row so the menu never overlaps CTAs */}
+          <div className="flex md:hidden w-full min-w-0 items-center justify-between gap-2">
+            <Link
+              href="/"
+              className="flex min-w-0 max-w-[min(100%,calc(100%-11rem))] items-center gap-2 hover:opacity-80 transition-opacity"
+              onClick={closeMobileMenu}
+            >
+              <div className="relative h-8 w-8 shrink-0">
+                <Image
+                  src="/images/logo.png"
+                  alt="Domu Match"
+                  fill
+                  className="object-contain rounded-lg"
+                  priority
+                  sizes="32px"
+                />
+              </div>
+              <span className="truncate text-base font-bold text-slate-800 drop-shadow-sm">
+                Domu Match
+              </span>
+            </Link>
+            <div className="flex shrink-0 items-center gap-2">
+              <Button
+                size="lg"
+                className="h-9 max-sm:px-3 max-sm:text-sm rounded-full bg-blue-600 text-white hover:bg-blue-700 shadow-[0_12px_30px_rgba(15,23,42,0.16)]"
+                onClick={() => router.push('/auth/sign-up')}
+              >
+                <span suppressHydrationWarning>{buttons.getStarted}</span>
+              </Button>
+              <button
+                type="button"
+                onClick={toggleMobileMenu}
+                className={cn(
+                  'inline-flex shrink-0 items-center justify-center rounded-full h-10 w-10',
+                  'bg-white/60 text-slate-900',
+                  'hover:bg-white/80 transition-colors shadow-[0_10px_26px_rgba(15,23,42,0.10)]',
+                  'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-900/20 focus-visible:ring-offset-2 focus-visible:ring-offset-transparent'
+                )}
+                aria-expanded={isMobileMenuOpen}
+                aria-controls="marketing-mobile-menu"
+                aria-label="Open menu"
+              >
+                {isMobileMenuOpen ? (
+                  <X className="h-5 w-5" aria-hidden />
+                ) : (
+                  <Menu className="h-5 w-5" aria-hidden />
+                )}
+              </button>
+            </div>
+          </div>
+
+          <div className="hidden md:flex max-w-full min-w-0 flex-nowrap items-center gap-3 md:gap-4 lg:gap-6">
             <Link
               href="/"
               className="flex shrink-0 items-center gap-2.5 hover:opacity-80 transition-opacity max-w-[min(100%,14rem)] sm:max-w-none"
@@ -200,6 +255,7 @@ export function MarketingNavbarLight() {
                   }
 
                   const active = isActiveHref(item.href)
+                  const isBeta = item.href === '/beta'
 
                   return (
                     <Link
@@ -208,14 +264,20 @@ export function MarketingNavbarLight() {
                       aria-current={active ? 'page' : undefined}
                       className={cn(
                         'relative inline-flex items-center justify-center h-9 px-4 rounded-full shrink-0',
-                        'text-sm font-semibold transition-colors',
+                        'text-sm transition-colors',
                         active
-                          ? 'bg-slate-900 text-white'
-                          : 'text-slate-700 hover:text-slate-900 hover:bg-white/40'
+                          ? 'bg-slate-900 text-white font-semibold'
+                          : isBeta
+                            ? 'hover:bg-white/40'
+                            : 'font-semibold text-slate-700 hover:text-slate-900 hover:bg-white/40'
                       )}
                       suppressHydrationWarning
                     >
-                      {item.name}
+                      {isBeta && !active ? (
+                        <span className={betaNavInactiveLabelClass}>{item.name}</span>
+                      ) : (
+                        item.name
+                      )}
                     </Link>
                   )
                 })}
@@ -246,28 +308,6 @@ export function MarketingNavbarLight() {
               </Button>
             </div>
           </div>
-
-          {/* Outside the centered cluster so logo→Get Started midpoint matches screen center */}
-          <button
-            type="button"
-            onClick={toggleMobileMenu}
-            className={cn(
-              'absolute right-4 top-1/2 z-10 -translate-y-1/2 sm:right-6 lg:right-8',
-              'md:hidden inline-flex items-center justify-center rounded-full h-10 w-10',
-              'bg-white/60 text-slate-900',
-              'hover:bg-white/80 transition-colors shadow-[0_10px_26px_rgba(15,23,42,0.10)]',
-              'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-900/20 focus-visible:ring-offset-2 focus-visible:ring-offset-transparent'
-            )}
-            aria-expanded={isMobileMenuOpen}
-            aria-controls="marketing-mobile-menu"
-            aria-label="Open menu"
-          >
-            {isMobileMenuOpen ? (
-              <X className="h-5 w-5" aria-hidden />
-            ) : (
-              <Menu className="h-5 w-5" aria-hidden />
-            )}
-          </button>
         </div>
       </nav>
 
@@ -321,6 +361,7 @@ export function MarketingNavbarLight() {
               ...navigation.slice(2),
             ].map((item) => {
               const active = isActiveHref(item.href)
+              const isBeta = item.href === '/beta'
               return (
                 <Link
                   key={item.href}
@@ -329,14 +370,22 @@ export function MarketingNavbarLight() {
                   onClick={closeMobileMenu}
                   className={cn(
                     'group flex items-center justify-between rounded-xl px-3.5 py-3',
-                    'text-base font-semibold transition-colors',
+                    'text-base transition-colors',
                     active
-                      ? 'bg-slate-900 text-white'
-                      : 'text-slate-800 hover:bg-white/70'
+                      ? 'bg-slate-900 text-white font-semibold'
+                      : isBeta
+                        ? 'font-semibold hover:bg-white/70'
+                        : 'text-slate-800 font-semibold hover:bg-white/70'
                   )}
                   suppressHydrationWarning
                 >
-                  <span suppressHydrationWarning>{item.name}</span>
+                  <span suppressHydrationWarning>
+                    {isBeta && !active ? (
+                      <span className={betaNavInactiveLabelClass}>{item.name}</span>
+                    ) : (
+                      item.name
+                    )}
+                  </span>
                   <ArrowRight
                     className={cn(
                       'h-4 w-4 transition-transform',

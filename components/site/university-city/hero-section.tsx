@@ -7,12 +7,16 @@ import Container from '@/components/ui/primitives/container'
 import Section from '@/components/ui/primitives/section'
 import { cn } from '@/lib/utils'
 import type { CityContent } from './content'
+import { useApp } from '@/app/providers'
+import { cityPageUi } from './city-page-ui'
 
 interface HeroSectionProps {
   city: CityContent
 }
 
 export function UniversityCityHero({ city }: HeroSectionProps) {
+  const { locale } = useApp()
+  const u = cityPageUi[locale]
   const reducedMotion = useReducedMotion()
   const motionConfig = reducedMotion ? { opacity: 1 } : { opacity: 1, y: 0 }
   const motionInitial = reducedMotion ? { opacity: 0 } : { opacity: 0, y: 24 }
@@ -31,10 +35,11 @@ export function UniversityCityHero({ city }: HeroSectionProps) {
             animate={motionConfig}
             transition={{ duration: reducedMotion ? 0 : 0.6, ease: 'easeOut' }}
           >
-            Find Your Perfect Roommate in{' '}
+            {u.heroTitleBefore}{' '}
             <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-700 to-violet-700">
               {city.nameDisplay}
             </span>
+            {u.heroTitleAfter ? ` ${u.heroTitleAfter}` : ''}
           </motion.h1>
           <motion.p
             className="text-lg sm:text-xl text-slate-700 max-w-2xl mx-auto"
@@ -59,7 +64,7 @@ export function UniversityCityHero({ city }: HeroSectionProps) {
                 'focus-visible:outline focus-visible:ring-2 focus-visible:ring-slate-900/20 focus-visible:ring-offset-2 focus-visible:ring-offset-transparent'
               )}
             >
-              Get Started Free
+              {u.getStarted}
             </Link>
             <Link
               href="/how-it-works"
@@ -69,7 +74,7 @@ export function UniversityCityHero({ city }: HeroSectionProps) {
                 'focus-visible:outline focus-visible:ring-2 focus-visible:ring-slate-900/20 focus-visible:ring-offset-2 focus-visible:ring-offset-transparent'
               )}
             >
-              How It Works
+              {u.howItWorks}
             </Link>
           </motion.div>
           <motion.div
@@ -80,15 +85,15 @@ export function UniversityCityHero({ city }: HeroSectionProps) {
           >
             <div className="flex items-center gap-2">
               <Check className="h-5 w-5 text-emerald-700" aria-hidden />
-              <span>Free for students & young professionals</span>
+              <span>{u.trust1}</span>
             </div>
             <div className="flex items-center gap-2">
               <Check className="h-5 w-5 text-emerald-700" aria-hidden />
-              <span>Verified users only</span>
+              <span>{u.trust2}</span>
             </div>
             <div className="flex items-center gap-2">
               <Check className="h-5 w-5 text-emerald-700" aria-hidden />
-              <span>Science-backed matching</span>
+              <span>{u.trust3}</span>
             </div>
           </motion.div>
         </div>

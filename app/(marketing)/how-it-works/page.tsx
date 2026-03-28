@@ -1,12 +1,8 @@
 import { HowItWorksSection } from '@/components/site/how-it-works-section'
 import { SocialFinalCTA } from '@/components/site/social-final-cta'
 import { MarketingSubpageWrapperLight } from '../components/marketing-subpage-wrapper-light'
+import { HowItWorksSafetyBand } from './how-it-works-safety-band'
 import { Metadata } from 'next'
-import Section from '@/components/ui/primitives/section'
-import Container from '@/components/ui/primitives/container'
-import { Button } from '@/components/ui/button'
-import Link from 'next/link'
-import { ShieldCheck } from 'lucide-react'
 
 export const metadata: Metadata = {
   title: 'How Roommate Matching Works | Domu Match - Guide for Students & Young Professionals',
@@ -124,43 +120,7 @@ export default function HowItWorksPage() {
       <MarketingSubpageWrapperLight>
         <div>
           <HowItWorksSection />
-          <Section className="py-10 md:py-14 lg:py-16">
-            <Container className="relative z-10">
-              <div className="bg-white/60 backdrop-blur-xl border border-white/50 shadow-[0_8px_30px_rgb(0,0,0,0.04)] rounded-3xl p-8 sm:p-10">
-                <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-6">
-                  <div className="max-w-2xl">
-                    <div className="inline-flex items-center gap-2 rounded-full border border-white/70 bg-white/60 px-3 py-1 text-xs font-semibold text-slate-700">
-                      <ShieldCheck className="h-4 w-4 text-emerald-600" aria-hidden />
-                      Safety built in
-                    </div>
-                    <h2 className="mt-4 text-2xl sm:text-3xl font-bold tracking-tight text-slate-800">
-                      Verified people. Calm, safe chat.
-                    </h2>
-                    <p className="mt-3 text-slate-600">
-                      Everyone is government‑ID verified before they can chat. You can always block or report, and you stay in your life‑stage pool (students with students, professionals with professionals).
-                    </p>
-                  </div>
-                  <div className="flex flex-col sm:flex-row gap-3 md:justify-end">
-                    <Button
-                      size="lg"
-                      className="bg-slate-900 text-white hover:bg-slate-900/90 shadow-[0_12px_30px_rgba(15,23,42,0.18)] rounded-2xl"
-                      asChild
-                    >
-                      <Link href="/auth/sign-up">Get started</Link>
-                    </Button>
-                    <Button
-                      variant="outline"
-                      size="lg"
-                      className="bg-white/50 backdrop-blur-xl border-white/60 text-slate-800 hover:bg-white/70 rounded-2xl"
-                      asChild
-                    >
-                      <Link href="/safety">Safety</Link>
-                    </Button>
-                  </div>
-                </div>
-              </div>
-            </Container>
-          </Section>
+          <HowItWorksSafetyBand />
           <SocialFinalCTA />
         </div>
       </MarketingSubpageWrapperLight>

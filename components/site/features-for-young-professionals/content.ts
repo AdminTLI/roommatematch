@@ -1,7 +1,9 @@
 export type Locale = 'en' | 'nl'
 
 export interface HeroContent {
-  headline: string
+  headlineBefore: string
+  headlineGradient: string
+  headlineAfter: string
   subheadline: string
   oldWay: string
   domuWay: string
@@ -29,7 +31,6 @@ export interface TrustContent {
 }
 
 export interface InvestmentContent {
-  heading: string
   copy: string
 }
 
@@ -72,7 +73,9 @@ export interface FeaturesForYoungProfessionalsContent {
 export const content: Record<Locale, FeaturesForYoungProfessionalsContent> = {
   en: {
     hero: {
-      headline: "Find a flatmate who actually fits your life.",
+      headlineBefore: 'Build your career with ',
+      headlineGradient: 'flatmates who fit',
+      headlineAfter: ' your rhythm.',
       subheadline:
         "Lifestyle compatibility matching for young professionals. 100% ID verified. Separate pool from students. Zero scams.",
       oldWay: 'The Old Way',
@@ -118,7 +121,6 @@ export const content: Record<Locale, FeaturesForYoungProfessionalsContent> = {
         'Persona is trusted by leading companies (e.g. OpenAI, Coursera, and Brex) for identity verification - so you’re matching with real people, not fake profiles.',
     },
     investment: {
-      heading: '15 Minutes for a Year of Peace.',
       copy: "Our quiz is detailed. Trade 15 minutes now to avoid months of conflict with the wrong flatmate.",
     },
     faq: {
@@ -167,7 +169,9 @@ export const content: Record<Locale, FeaturesForYoungProfessionalsContent> = {
   },
   nl: {
     hero: {
-      headline: "Vind een huisgenoot die bij je leven past.",
+      headlineBefore: 'Bouw je carrière met ',
+      headlineGradient: 'huisgenoten die passen',
+      headlineAfter: ' bij je ritme.',
       subheadline:
         "Levensstijl-compatibiliteitsmatching voor young professionals. 100% ID-geverifieerd. Aparte pool van studenten. Geen oplichting.",
       oldWay: 'De Oude Manier',
@@ -213,7 +217,6 @@ export const content: Record<Locale, FeaturesForYoungProfessionalsContent> = {
         'Persona wordt gebruikt door toonaangevende bedrijven (bijv. OpenAI, Coursera en Brex) voor identiteitsverificatie - zodat jij met echte mensen matcht, niet met nep-profielen.',
     },
     investment: {
-      heading: '15 minuten voor een jaar vrede.',
       copy: "Onze quiz is uitgebreid. Ruil 15 minuten nu in om maanden conflict met de verkeerde huisgenoot te voorkomen.",
     },
     faq: {

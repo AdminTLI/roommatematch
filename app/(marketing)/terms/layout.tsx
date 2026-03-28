@@ -1,10 +1,10 @@
 import { Metadata } from 'next'
 
 export const metadata: Metadata = {
-  title: 'Terms and Conditions | Domu Match',
-  description: 'Domu Match Terms and Conditions for student users. Learn about eligibility, verification, matching disclaimers, WWS calculator disclaimer, prohibited conduct, liability limits, dispute resolution, and change notice.',
+  title: 'Terms of Service | Domu Match',
+  description: 'Domu Match Terms of Service for student users. Learn about eligibility, verification, matching disclaimers, WWS calculator disclaimer, prohibited conduct, liability limits, dispute resolution, and change notice.',
   keywords: [
-    'Domu Match terms and conditions',
+    'Domu Match terms of service',
     'user agreement',
     'roommate platform terms',
     'student housing terms',

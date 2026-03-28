@@ -11,25 +11,35 @@ import { cn } from '@/lib/utils'
 const GLASS =
   'bg-white/60 backdrop-blur-xl border border-white/50 shadow-[0_8px_30px_rgb(0,0,0,0.04)] rounded-3xl'
 
+const featureTh =
+  'sticky left-0 z-30 box-border border-b border-r border-slate-200/90 bg-white py-4 pl-3 pr-2 text-left align-bottom text-sm font-semibold text-slate-800 shadow-[4px_0_12px_-4px_rgba(15,23,42,0.1)] sm:pl-4 sm:text-base'
+
+const featureTd =
+  'sticky left-0 z-20 box-border border-b border-r border-slate-200/80 bg-white px-3 py-3 text-left align-top text-sm text-slate-800 shadow-[4px_0_12px_-4px_rgba(15,23,42,0.06)] break-words [overflow-wrap:anywhere] sm:px-4'
+
+const iconTd =
+  'box-border border-b border-white/60 px-2 py-3 text-center align-middle sm:px-3'
+
 export function ComparisonTableSection() {
   const { locale } = useApp()
   const t = content[locale].comparison
+
   const Cell = ({ value }: { value: boolean }) =>
     value ? (
-      <Check className="h-5 w-5 text-emerald-600 mx-auto" aria-hidden />
+      <Check className="mx-auto h-5 w-5 text-emerald-600" aria-hidden />
     ) : (
-      <X className="h-5 w-5 text-slate-300 mx-auto" aria-hidden />
+      <X className="mx-auto h-5 w-5 text-slate-300" aria-hidden />
     )
 
   return (
     <Section
       id="comparison"
-      className="relative overflow-hidden py-16 md:py-24"
+      className="relative overflow-x-clip py-16 md:py-24"
       aria-labelledby="comparison-heading"
     >
       <Container className="relative z-10">
         <motion.div
-          className="text-center mb-10 md:mb-12"
+          className="mb-10 text-center md:mb-12"
           initial={{ opacity: 0, y: 16 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
@@ -37,81 +47,85 @@ export function ComparisonTableSection() {
         >
           <h2
             id="comparison-heading"
-            className="text-3xl md:text-4xl font-bold text-slate-800 mb-3 tracking-tight"
+            className="mb-3 text-3xl font-bold tracking-tight text-slate-800 md:text-4xl"
           >
             {t.title}
           </h2>
           <p className="text-slate-600">{t.subtitle}</p>
         </motion.div>
 
-        <motion.div
-          className={cn('overflow-x-auto -mx-4 sm:mx-0 overflow-hidden', GLASS)}
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.5, delay: 0.1 }}
-        >
-          <table
-            className="w-full min-w-[640px] border-collapse"
-            role="grid"
-            aria-label={t.title}
+        <div className="w-full">
+          <div
+            className={cn(
+              GLASS,
+              'min-w-0 w-full max-w-full overflow-x-auto overscroll-x-contain'
+            )}
           >
-            <thead>
-              <tr className="bg-white/50">
-                <th
-                  scope="col"
-                  className="text-left py-4 px-4 font-semibold text-slate-800 border-b border-white/60"
-                >
-                  {locale === 'nl' ? 'Functie' : 'Feature'}
-                </th>
-                {t.competitors.map((name) => (
-                  <th
-                    key={name}
-                    scope="col"
-                    className={cn(
-                      'py-4 px-4 font-semibold text-center border-b border-white/60',
-                      name === 'Domu Match'
-                        ? 'text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 to-violet-600'
-                        : 'text-slate-800'
-                    )}
-                  >
-                    {name}
+            <table
+              className="w-full min-w-[640px] border-separate border-spacing-0 table-fixed"
+              role="grid"
+              aria-label={t.title}
+            >
+              <colgroup>
+                <col style={{ width: 'min(42vw, 14rem)' }} />
+                <col />
+                <col />
+                <col />
+                <col />
+              </colgroup>
+              <thead>
+                <tr className="bg-white">
+                  <th scope="col" className={featureTh}>
+                    {locale === 'nl' ? 'Functie' : 'Feature'}
                   </th>
-                ))}
-              </tr>
-            </thead>
-            <tbody>
-              {t.rows.map((row, index) => (
-                <tr
-                  key={index}
-                  className={cn(
-                    'border-b border-white/60 last:border-b-0 transition-colors',
-                    'hover:bg-white/35'
-                  )}
-                >
-                  <td className="py-4 px-4 text-sm text-slate-800 align-middle">
-                    {row.feature}
-                  </td>
-                  <td className="py-4 px-4 text-center align-middle bg-indigo-500/10">
-                    <Cell value={row.domu} />
-                  </td>
-                  <td className="py-4 px-4 text-center align-middle">
-                    <Cell value={row.kamernet} />
-                  </td>
-                  <td className="py-4 px-4 text-center align-middle">
-                    <Cell value={row.roomster} />
-                  </td>
-                  <td className="py-4 px-4 text-center align-middle">
-                    <Cell value={row.roomnl} />
-                  </td>
+                  {t.competitors.map((name) => (
+                    <th
+                      key={name}
+                      scope="col"
+                      className={cn(
+                        'box-border border-b border-white/60 px-1 py-4 text-center align-bottom text-xs font-semibold sm:px-2 sm:text-sm',
+                        name === 'Domu Match' ? 'bg-indigo-100/90' : 'bg-white'
+                      )}
+                    >
+                      {name === 'Domu Match' ? (
+                        <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 to-violet-600">
+                          {name}
+                        </span>
+                      ) : (
+                        <span className="text-slate-800">{name}</span>
+                      )}
+                    </th>
+                  ))}
                 </tr>
-              ))}
-            </tbody>
-          </table>
-        </motion.div>
+              </thead>
+              <tbody>
+                {t.rows.map((row, index) => (
+                  <tr
+                    key={index}
+                    className="bg-white transition-colors hover:bg-zinc-50/70"
+                  >
+                    <td className={featureTd}>{row.feature}</td>
+                    <td className={cn(iconTd, 'bg-indigo-100/70')}>
+                      <Cell value={row.domu} />
+                    </td>
+                    <td className={cn(iconTd, 'bg-white')}>
+                      <Cell value={row.kamernet} />
+                    </td>
+                    <td className={cn(iconTd, 'bg-white')}>
+                      <Cell value={row.roomster} />
+                    </td>
+                    <td className={cn(iconTd, 'bg-white')}>
+                      <Cell value={row.roomnl} />
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
 
         <motion.p
-          className="text-xs text-slate-500 text-center mt-6 max-w-2xl mx-auto"
+          className="mx-auto mt-6 max-w-2xl text-center text-xs text-slate-500"
           initial={{ opacity: 0 }}
           whileInView={{ opacity: 1 }}
           viewport={{ once: true }}

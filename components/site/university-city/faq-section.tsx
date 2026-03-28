@@ -11,12 +11,16 @@ import {
 } from '@/components/ui/accordion'
 import { cn } from '@/lib/utils'
 import type { CityContent } from './content'
+import { useApp } from '@/app/providers'
+import { cityPageUi } from './city-page-ui'
 
 interface FAQSectionProps {
   city: CityContent
 }
 
 export function UniversityCityFAQ({ city }: FAQSectionProps) {
+  const { locale } = useApp()
+  const u = cityPageUi[locale]
   const reducedMotion = useReducedMotion()
 
   return (
@@ -33,7 +37,7 @@ export function UniversityCityFAQ({ city }: FAQSectionProps) {
           viewport={{ once: true }}
           transition={{ duration: 0.5 }}
         >
-          Frequently Asked Questions
+          {u.faqTitle}
         </motion.h2>
         <motion.div
           className="max-w-3xl mx-auto"

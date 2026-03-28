@@ -5,12 +5,16 @@ import Container from '@/components/ui/primitives/container'
 import Section from '@/components/ui/primitives/section'
 import { cn } from '@/lib/utils'
 import type { CityContent } from './content'
+import { useApp } from '@/app/providers'
+import { cityPageUi } from './city-page-ui'
 
 interface UniversitiesSectionProps {
   city: CityContent
 }
 
 export function UniversityCityUniversities({ city }: UniversitiesSectionProps) {
+  const { locale } = useApp()
+  const u = cityPageUi[locale]
   const reducedMotion = useReducedMotion()
 
   return (
@@ -31,11 +35,9 @@ export function UniversityCityUniversities({ city }: UniversitiesSectionProps) {
               id="universities-heading"
               className="text-3xl md:text-4xl font-bold text-slate-900 tracking-tight"
             >
-              {city.nameDisplay} Universities
+              {u.universitiesHeading(city.nameDisplay)}
             </h2>
-            <p className="text-lg text-slate-700">
-              We work with all major universities and institutions in {city.nameDisplay}
-            </p>
+            <p className="text-lg text-slate-700">{u.universitiesSub(city.nameDisplay)}</p>
           </motion.div>
 
           <div className="grid md:grid-cols-2 gap-6">

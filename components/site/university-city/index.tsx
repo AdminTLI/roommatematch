@@ -8,13 +8,16 @@ import { UniversityCityWhyChoose } from './why-choose-section'
 import { UniversityCityFAQ } from './faq-section'
 import { FinalCTA } from '@/components/site/final-cta'
 import { cityContent, type CityKey } from './content'
+import { cityContentNl } from './city-content-nl'
+import { useApp } from '@/app/providers'
 
 interface UniversityCityPageProps {
   cityKey: CityKey
 }
 
 export function UniversityCityPage({ cityKey }: UniversityCityPageProps) {
-  const city = cityContent[cityKey]
+  const { locale } = useApp()
+  const city = locale === 'nl' ? cityContentNl[cityKey] : cityContent[cityKey]
   if (!city) return null
 
   return (

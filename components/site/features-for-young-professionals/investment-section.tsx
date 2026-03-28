@@ -12,6 +12,9 @@ import { cn } from '@/lib/utils'
 const GLASS =
   'bg-white/60 backdrop-blur-xl border border-white/50 shadow-[0_8px_30px_rgb(0,0,0,0.04)] rounded-3xl'
 
+const headlineGradientClass =
+  'text-transparent bg-clip-text bg-gradient-to-r from-blue-700 to-violet-700'
+
 export function InvestmentSection() {
   const router = useRouter()
   const { locale } = useApp()
@@ -51,7 +54,17 @@ export function InvestmentSection() {
             id="investment-heading"
             className="text-2xl sm:text-3xl md:text-4xl font-bold text-slate-800 mb-4 tracking-tight"
           >
-            {t.heading}
+            {locale === 'en' ? (
+              <>
+                15 Minutes for{' '}
+                <span className={headlineGradientClass}>a Year of Peace</span>.
+              </>
+            ) : (
+              <>
+                15 minuten voor{' '}
+                <span className={headlineGradientClass}>een jaar vrede</span>.
+              </>
+            )}
           </h2>
           <p className="text-lg text-slate-600 max-w-2xl mx-auto mb-8 leading-relaxed">
             {t.copy}

@@ -6,12 +6,16 @@ import Container from '@/components/ui/primitives/container'
 import Section from '@/components/ui/primitives/section'
 import { cn } from '@/lib/utils'
 import type { CityContent } from './content'
+import { useApp } from '@/app/providers'
+import { cityPageUi } from './city-page-ui'
 
 interface HousingSectionProps {
   city: CityContent
 }
 
 export function UniversityCityHousing({ city }: HousingSectionProps) {
+  const { locale } = useApp()
+  const u = cityPageUi[locale]
   const reducedMotion = useReducedMotion()
   const m = city.marketOverview
 
@@ -33,7 +37,7 @@ export function UniversityCityHousing({ city }: HousingSectionProps) {
               id="housing-heading"
               className="text-3xl md:text-4xl font-bold text-slate-900 tracking-tight"
             >
-              Student Housing in {city.nameDisplay}
+              {u.housingHeading(city.nameDisplay)}
             </h2>
             <p className="text-lg text-slate-700 max-w-2xl mx-auto">
               {city.housingIntro}
@@ -53,21 +57,21 @@ export function UniversityCityHousing({ city }: HousingSectionProps) {
             >
               <h3 className="text-xl font-semibold text-slate-900 flex items-center gap-3">
                 <TrendingUp className="h-6 w-6 text-blue-700" aria-hidden />
-                Market Overview
+                {u.marketOverview}
               </h3>
               <div className="space-y-3 text-slate-700 text-sm md:text-base">
                 <p>
-                  <strong className="text-slate-900">Average Rent:</strong> {m.averageRent}
+                  <strong className="text-slate-900">{u.avgRent}</strong> {m.averageRent}
                 </p>
                 <p>
-                  <strong className="text-slate-900">Housing Type:</strong> {m.housingType}
+                  <strong className="text-slate-900">{u.housingType}</strong> {m.housingType}
                 </p>
                 <p>
-                  <strong className="text-slate-900">Competition:</strong> {m.competition}
+                  <strong className="text-slate-900">{u.competition}</strong> {m.competition}
                 </p>
                 {m.extra && (
                   <p>
-                    <strong className="text-slate-900">Contracts:</strong> {m.extra}
+                    <strong className="text-slate-900">{u.contracts}</strong> {m.extra}
                   </p>
                 )}
               </div>
@@ -85,7 +89,7 @@ export function UniversityCityHousing({ city }: HousingSectionProps) {
             >
               <h3 className="text-xl font-semibold text-slate-900 flex items-center gap-3">
                 <Home className="h-6 w-6 text-blue-700" aria-hidden />
-                Popular Neighborhoods
+                {u.popularNeighborhoods}
               </h3>
               <ul className="space-y-3 text-slate-700 text-sm md:text-base">
                 {city.neighborhoods.map((n, i) => (
