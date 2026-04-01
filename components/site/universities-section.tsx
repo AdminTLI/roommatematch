@@ -139,7 +139,7 @@ export function UniversitiesSection() {
               className="bg-brand-primary hover:bg-brand-primary/90"
               asChild
             >
-              <a href="mailto:info@domumatch.com">
+              <a href="mailto:domumatch@gmail.com">
                 {t.contactButton}
               </a>
             </Button>

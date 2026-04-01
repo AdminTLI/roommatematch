@@ -16,12 +16,12 @@ const content = {
     eyebrow: 'Skip the awkward part',
     title: 'Stop treating home like a housing lottery.',
     subtitle:
-      'Skip the chaotic Facebook groups and awkward interviews. We match verified students and professionals based on the lifestyle habits that actually make a home work.',
+      'Skip the chaotic unverified group chats and awkward interviews. We match verified students and professionals based on the lifestyle habits that actually make a home work.',
     oldWay: {
       title: 'The Old Way',
       items: ['Awkward interviews', 'Random group chats', 'Ghosting & catfish'],
       label: 'Old-school roommate hunt',
-      chips: ['Facebook groups', 'Friends-of-friends', 'Viewing roulette'],
+      chips: ['Unverified groups', 'Friends-of-friends', 'Viewing roulette'],
     },
     domuWay: {
       title: 'The Domu Way',
@@ -38,7 +38,7 @@ const content = {
       title: 'De oude manier',
       items: ['Awkward interviews', 'Random groepschats', 'Ghosting & catfish'],
       label: 'Ouderwets huisgenoten zoeken',
-      chips: ['Facebook-groepen', 'Via-via', 'Bezichtigingsroulette'],
+      chips: ['Ongeverifieerde groepen', 'Via-via', 'Bezichtigingsroulette'],
     },
     domuWay: {
       title: 'De Domu manier',

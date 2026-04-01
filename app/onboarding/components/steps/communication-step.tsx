@@ -41,7 +41,7 @@ export function CommunicationStep({ data, onChange, user }: CommunicationStepPro
           <Label>How do you prefer to communicate with roommates? *</Label>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
             {[
-              'In-person conversations', 'Text messages', 'WhatsApp', 'Email',
+              'In-person conversations', 'Text messages', 'Messaging app', 'Email',
               'House group chat', 'Notes/whiteboard', 'Voice messages'
             ].map((method) => (
               <div key={method} className="flex items-center space-x-2">

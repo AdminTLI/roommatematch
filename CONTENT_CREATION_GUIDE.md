@@ -5,7 +5,7 @@ This guide provides templates and instructions for creating the remaining SEO co
 ## 📸 Open Graph Images
 
 ### What Are OG Images?
-Open Graph images appear when your pages are shared on social media (Facebook, LinkedIn, Twitter) and messaging apps (WhatsApp, Slack). Good OG images increase click-through rates by 2-3x.
+Open Graph images appear when your pages are shared on social platforms and messaging apps. Good OG images increase click-through rates by 2-3x.
 
 ### Specifications
 - **Size**: 1200x630px (required)
@@ -17,7 +17,7 @@ Open Graph images appear when your pages are shared on social media (Facebook, L
 
 **Free Tools**:
 1. **Canva** (recommended) - https://canva.com
-   - Use template: "Facebook Post" (1200x630px)
+   - Use template: "Social Post" (1200x630px)
    - Free OG image templates available
 
 2. **Figma** - https://figma.com
@@ -220,7 +220,7 @@ images: [
 6. **Update RSS feed**: Add post to `app/blog/rss.xml/route.ts`
 7. **Update sitemap**: Add URL to `app/sitemap.ts`
 8. **Notify search engines**: Call `/api/indexnow` with new URL
-9. **Share on social media**: LinkedIn, Instagram
+9. **Share on social media**: Use your preferred channels
 
 ---
 

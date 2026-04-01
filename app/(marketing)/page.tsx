@@ -30,7 +30,7 @@ export default function MarketingPage() {
         },
         contactPoint: {
           '@type': 'ContactPoint',
-          email: 'info@domumatch.com',
+          email: 'domumatch@gmail.com',
           contactType: 'Customer Service',
         },
         sameAs: [

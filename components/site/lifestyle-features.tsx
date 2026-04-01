@@ -34,6 +34,7 @@ const content = {
         key: 'matchMatters',
         title: 'Match on what matters',
         copy: 'Match on the things that actually shape day-to-day living.',
+        badge: 'Personality & Compatibility',
         chipsTitle: 'What you’ll see',
         chips: ['Interests', 'Housing status', 'Preferred city', 'Budget range', 'University / WFH'],
         previewTitle: 'Profile snapshot',
@@ -46,6 +47,7 @@ const content = {
         key: 'explainable',
         title: 'Shared vibes',
         copy: 'See exactly why you click before you even say hello.',
+        badge: 'Tailored Matching Algorithm',
         whyTitle: 'Why you match',
         why: ['Shared interests', 'Similar context', 'Compatible home vibe'],
         previewTitle: 'Match preview',
@@ -61,7 +63,7 @@ const content = {
         key: 'verified',
         title: 'Geverifieerd & veilig',
         copy: '100% geverifieerde studenten en professionals. Geen uitzonderingen.',
-        badge: 'ID & Photo Verification',
+        badge: 'ID- & fotoverificatie',
         previewTitle: 'Wat je krijgt',
         preview: [
           'ID- & fotoverificatie',
@@ -76,6 +78,7 @@ const content = {
         key: 'matchMatters',
         title: 'Match op wat ertoe doet',
         copy: 'Match op wat het dagelijkse leven écht bepaalt.',
+        badge: 'Persoonlijkheid & compatibiliteit',
         chipsTitle: 'Wat je ziet',
         chips: ['Interesses', 'Woonstatus', 'Voorkeursstad', 'Budget', 'Universiteit / WFH'],
         previewTitle: 'Profiel snapshot',
@@ -88,6 +91,7 @@ const content = {
         key: 'explainable',
         title: 'Gedeelde vibes',
         copy: 'Zie precies waarom je klikt, nog vóór je hallo zegt.',
+        badge: 'Matching op maat',
         whyTitle: 'Waarom het klikt',
         why: ['Gedeelde interesses', 'Vergelijkbare context', 'Fijne huisvibe'],
         previewTitle: 'Match preview',
@@ -164,21 +168,12 @@ export function LifestyleFeatures() {
   const [active, setActive] = useState<'verified' | 'matchMatters' | 'explainable'>('verified')
 
   const items = useMemo(() => {
-    const base = [
+    return [
       { id: 'verified' as const, icon: IdCard, label: t.cards.verified.badge },
-      {
-        id: 'matchMatters' as const,
-        icon: ListChecks,
-        label: locale === 'nl' ? 'Personality & Compatability' : 'Personality & Compatability',
-      },
-      {
-        id: 'explainable' as const,
-        icon: Sparkles,
-        label: locale === 'nl' ? 'Tailored Matching Algorithm' : 'Tailored Matching Algorithm',
-      },
+      { id: 'matchMatters' as const, icon: ListChecks, label: t.cards.matchMatters.badge },
+      { id: 'explainable' as const, icon: Sparkles, label: t.cards.explainable.badge },
     ]
-    return base
-  }, [locale, t.cards.explainable.badge, t.cards.verified.badge])
+  }, [t.cards.explainable.badge, t.cards.matchMatters.badge, t.cards.verified.badge])
 
   const activeCard =
     active === 'verified'
@@ -240,15 +235,11 @@ export function LifestyleFeatures() {
               </div>
               {'previewScore' in activeCard && activeCard.previewScore ? (
                 <div className="rounded-full border border-white/70 bg-white/60 px-3 py-1 text-xs font-semibold text-slate-700">
-                  Tailored Matching Algorithm
+                  {activeCard.badge}
                 </div>
               ) : (
                 <div className="rounded-full border border-white/70 bg-white/60 px-3 py-1 text-xs font-semibold text-slate-700">
-                  {active === 'verified'
-                    ? activeCard.badge
-                    : locale === 'nl'
-                      ? 'Personality & Compatability'
-                      : 'Personality & Compatability'}
+                  {activeCard.badge}
                 </div>
               )}
             </div>

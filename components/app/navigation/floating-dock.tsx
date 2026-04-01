@@ -5,9 +5,15 @@ import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { Home, Users, MessageCircle, Shield, Settings, LayoutDashboard, BarChart3 } from 'lucide-react'
 import { cn } from '@/lib/utils'
+import { useMobileChatChrome } from '@/components/app/mobile-chat-chrome-context'
 
 export function FloatingDock() {
     const pathname = usePathname()
+    const { activeMobileConversation } = useMobileChatChrome()
+
+    if (activeMobileConversation) {
+        return null
+    }
 
     const isAdminRoute = pathname.startsWith('/admin')
 

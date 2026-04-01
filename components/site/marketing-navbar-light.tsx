@@ -49,8 +49,22 @@ const whoWeServeContent = {
 }
 
 const buttonContent = {
-  en: { signIn: 'Sign In', getStarted: 'Get Started', skipToMain: 'Skip to main content' },
-  nl: { signIn: 'Inloggen', getStarted: 'Aan de slag', skipToMain: 'Ga naar hoofdinhoud' },
+  en: {
+    signIn: 'Sign In',
+    getStarted: 'Get Started',
+    skipToMain: 'Skip to main content',
+    openMenu: 'Open menu',
+    closeMenu: 'Close menu',
+    menu: 'Menu',
+  },
+  nl: {
+    signIn: 'Inloggen',
+    getStarted: 'Aan de slag',
+    skipToMain: 'Ga naar hoofdinhoud',
+    openMenu: 'Menu openen',
+    closeMenu: 'Menu sluiten',
+    menu: 'Menu',
+  },
 }
 
 /** Inactive Beta nav label — matches landing headline gradient, bolder than other links */
@@ -159,7 +173,7 @@ export function MarketingNavbarLight() {
                 )}
                 aria-expanded={isMobileMenuOpen}
                 aria-controls="marketing-mobile-menu"
-                aria-label="Open menu"
+                aria-label={isMobileMenuOpen ? buttons.closeMenu : buttons.openMenu}
               >
                 {isMobileMenuOpen ? (
                   <X className="h-5 w-5" aria-hidden />
@@ -336,7 +350,9 @@ export function MarketingNavbarLight() {
         >
           <div className="px-4 py-4 border-b border-white/30 flex items-center justify-between">
             <div className="min-w-0">
-              <p className="text-sm font-semibold text-slate-700">Menu</p>
+              <p className="text-sm font-semibold text-slate-700">
+                <span suppressHydrationWarning>{buttons.menu}</span>
+              </p>
               <p className="text-xs text-slate-600 truncate">
                 <span className="font-medium text-slate-700">Domu Match</span>
               </p>
@@ -347,7 +363,7 @@ export function MarketingNavbarLight() {
                 type="button"
                 onClick={closeMobileMenu}
                 className="inline-flex items-center justify-center rounded-xl h-9 w-9 text-slate-700 hover:text-slate-900 hover:bg-white/60 transition-colors"
-                aria-label="Close menu"
+                aria-label={buttons.closeMenu}
               >
                 <X className="h-5 w-5" aria-hidden />
               </button>

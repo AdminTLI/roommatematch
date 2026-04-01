@@ -13,6 +13,7 @@ import { ToggleYesNo } from '@/components/questionnaire/ToggleYesNo'
 import { TimeRange } from '@/components/questionnaire/TimeRange'
 import { NumberInput } from '@/components/questionnaire/NumberInput'
 import { useOnboardingStore } from '@/store/onboarding'
+import { isAnswerValueComplete, typedAnswer } from '@/lib/questionnaire/is-answer-complete'
 import { SuspenseWrapper } from '@/components/questionnaire/SuspenseWrapper'
 import { AutosaveToaster } from '@/components/questionnaire/AutosaveToaster'
 import { useAutosave } from '@/components/questionnaire/useAutosave'
@@ -23,6 +24,7 @@ function SectionClientContent() {
   const items = useMemo(() => (itemsJson as Item[]).filter((i) => i.section === sectionKey), [])
   const setAnswer = useOnboardingStore((s) => s.setAnswer)
   const setDealBreaker = useOnboardingStore((s) => s.setDealBreaker)
+  const setMarksImportant = useOnboardingStore((s) => s.setMarksImportant)
   const countAnswered = useOnboardingStore((s) => s.countAnsweredInSection)
   const answers = useOnboardingStore((s) => s.sections[sectionKey])
   const searchParams = useSearchParams()
@@ -85,18 +87,22 @@ function SectionClientContent() {
         {items.map((item) => (
           <QuestionRow
             key={item.id}
+            itemId={item.id}
             label={item.label}
             specialCategory={!!item.specialCategory}
             showDealBreaker={!!item.dbEligible}
             dealBreaker={answers[item.id]?.dealBreaker}
             onDealBreakerChange={(v) => setDealBreaker(sectionKey, item.id, v)}
+            marksImportant={!!answers[item.id]?.marksImportant}
+            importanceDisabled={!isAnswerValueComplete(answers[item.id]?.value)}
+            onMarksImportantChange={(v) => setMarksImportant(sectionKey, item.id, v)}
           >
             {item.kind === 'likert' && (
               <LikertScale
                 id={item.id}
                 label={item.label}
                 scaleType={item.scale as any}
-                value={answers[item.id]?.value?.value}
+                value={typedAnswer(answers[item.id], 'likert')?.value}
                 onChange={(v) => handleChange(item, { kind: 'likert', value: v })}
               />
             )}
@@ -105,7 +111,7 @@ function SectionClientContent() {
                 id={item.id}
                 leftLabel={item.bipolarLabels?.left || ''}
                 rightLabel={item.bipolarLabels?.right || ''}
-                value={answers[item.id]?.value?.value}
+                value={typedAnswer(answers[item.id], 'bipolar')?.value}
                 onChange={(v) => handleChange(item, { kind: 'bipolar', value: v })}
               />
             )}
@@ -114,7 +120,7 @@ function SectionClientContent() {
                 id={item.id}
                 label={item.label}
                 options={item.options}
-                value={answers[item.id]?.value?.value}
+                value={typedAnswer(answers[item.id], 'mcq')?.value}
                 onChange={(v) => handleChange(item, { kind: 'mcq', value: v })}
               />
             )}
@@ -122,7 +128,7 @@ function SectionClientContent() {
               <ToggleYesNo
                 id={item.id}
                 label={item.label}
-                checked={answers[item.id]?.value?.value}
+                checked={typedAnswer(answers[item.id], 'toggle')?.value}
                 onChange={(v) => handleChange(item, { kind: 'toggle', value: v })}
               />
             )}
@@ -130,8 +136,8 @@ function SectionClientContent() {
               <TimeRange
                 id={item.id}
                 label={item.label}
-                start={answers[item.id]?.value?.start}
-                end={answers[item.id]?.value?.end}
+                start={typedAnswer(answers[item.id], 'timeRange')?.start}
+                end={typedAnswer(answers[item.id], 'timeRange')?.end}
                 onChange={(s, e) => handleChange(item, { kind: 'timeRange', start: s, end: e })}
               />
             )}
@@ -139,7 +145,7 @@ function SectionClientContent() {
               <NumberInput
                 id={item.id}
                 label={item.label}
-                value={answers[item.id]?.value?.value}
+                value={typedAnswer(answers[item.id], 'number')?.value}
                 min={item.min}
                 max={item.max}
                 onChange={(v) => handleChange(item, v == null ? v : { kind: 'number', value: v })}

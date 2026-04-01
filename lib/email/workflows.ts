@@ -30,7 +30,7 @@ export interface EmailMessage {
 function getEmailConfig(): EmailConfig | null {
   const apiKey = process.env.MAILJET_API_KEY
   const secretKey = process.env.MAILJET_SECRET_KEY
-  const fromEmail = process.env.SMTP_FROM_EMAIL || process.env.MAILJET_FROM_EMAIL || 'info@domumatch.com'
+  const fromEmail = process.env.SMTP_FROM_EMAIL || process.env.MAILJET_FROM_EMAIL || 'domumatch@gmail.com'
   const fromName = process.env.SMTP_FROM_NAME || process.env.MAILJET_FROM_NAME || 'Domu Match'
 
   if (!apiKey || !secretKey || typeof apiKey !== 'string' || typeof secretKey !== 'string' || !apiKey.trim() || !secretKey.trim()) {

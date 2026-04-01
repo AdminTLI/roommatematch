@@ -11,9 +11,16 @@ export type AnswerValue =
   | { kind: 'toggle'; value: boolean }
   | { kind: 'timeRange'; start: string; end: string }
   | { kind: 'number'; value: number }
+  | { kind: 'date'; value: string }
   | { kind: 'stringArray'; value: string[] }
 
-export type Answer = { itemId: string; value: AnswerValue; dealBreaker?: boolean }
+export type Answer = {
+  itemId: string
+  value: AnswerValue
+  dealBreaker?: boolean
+  /** User signal: question matters to them (research only; not used for matching). */
+  marksImportant?: boolean
+}
 
 type SectionAnswers = Record<string, Answer>
 
@@ -23,6 +30,7 @@ export interface OnboardingState {
   lastSavedAt?: string
   setAnswer: (section: SectionKey, a: Answer) => void
   setDealBreaker: (section: SectionKey, itemId: string, isDB: boolean) => void
+  setMarksImportant: (section: SectionKey, itemId: string, v: boolean) => void
   setLastSavedAt: (iso: string | undefined) => void
   computeProgress: () => number
   countAnsweredInSection: (section: SectionKey) => number
@@ -55,15 +63,26 @@ export const useOnboardingStore = create<OnboardingState>()(
       sections: createEmptySections(),
       lastSavedAt: undefined,
       setAnswer: (section, a) =>
-        set((state) => ({
-          sections: {
-            ...state.sections,
-            [section]: {
-              ...state.sections[section],
-              [a.itemId]: a,
+        set((state) => {
+          const prev = state.sections[section][a.itemId]
+          const merged: Answer = {
+            itemId: a.itemId,
+            value: a.value,
+          }
+          const dealBreaker = 'dealBreaker' in a ? a.dealBreaker : prev?.dealBreaker
+          const marksImportant = 'marksImportant' in a ? a.marksImportant : prev?.marksImportant
+          if (dealBreaker !== undefined) merged.dealBreaker = dealBreaker
+          if (marksImportant !== undefined) merged.marksImportant = marksImportant
+          return {
+            sections: {
+              ...state.sections,
+              [section]: {
+                ...state.sections[section],
+                [a.itemId]: merged,
+              },
             },
-          },
-        })),
+          }
+        }),
       setDealBreaker: (section, itemId, isDB) =>
         set((state) => {
           const existing = state.sections[section][itemId]
@@ -78,6 +97,20 @@ export const useOnboardingStore = create<OnboardingState>()(
             },
           }
         }),
+      setMarksImportant: (section, itemId, v) =>
+        set((state) => {
+          const existing = state.sections[section][itemId]
+          if (!existing) return state
+          return {
+            sections: {
+              ...state.sections,
+              [section]: {
+                ...state.sections[section],
+                [itemId]: { ...existing, marksImportant: v },
+              },
+            },
+          }
+        }),
       setLastSavedAt: (iso) => set(() => ({ lastSavedAt: iso })),
       clearSections: () => set(() => ({ sections: createEmptySections(), lastSavedAt: undefined })),
       countAnsweredInSection: (section) => {
@@ -87,6 +120,12 @@ export const useOnboardingStore = create<OnboardingState>()(
           if (a.value.kind === 'stringArray') {
             return Array.isArray(a.value.value) && a.value.value.length > 0
           }
+          if (a.value.kind === 'date') {
+            return typeof a.value.value === 'string' && a.value.value.length > 0
+          }
+          if (a.value.kind === 'number') {
+            return typeof a.value.value === 'number' && !Number.isNaN(a.value.value)
+          }
           return true
         }).length
       },
@@ -94,6 +133,7 @@ export const useOnboardingStore = create<OnboardingState>()(
         // Dynamic: use 25 required per of the 8 main sections + 1 for location step (min 1 now)
         const perSectionRequired: Record<SectionKey, number> = {
           'location-commute': 1,
+          'professional-context': 0,
           'personality-values': 25,
           'sleep-circadian': 25,
           'noise-sensory': 25,

@@ -5,7 +5,7 @@
 ### Problem Statement
 **For Students:**
 - 47% of students report poor roommate compatibility leads to housing stress, dropping out, or moving mid-year
-- Finding compatible roommates relies on Facebook groups, Instagram stalking, or random allocation
+- Finding compatible roommates relies on unverified group chats, social media stalking, or random allocation
 - No structured way to assess values, lifestyles, study habits before committing to shared housing
 - Fear of discrimination, miscommunication, or incompatibility costs €500-2000+ per bad match
 - Moving costs, lost deposits, emotional toll from failed roommate situations
@@ -25,7 +25,7 @@
 | **SpareRoom** | Large listing pool, flexible search | Passive matching; text-heavy; older UX | General roommate search, UK-centric |
 | **Roomi** | AI-driven personality matching, chat, verification | Requires sign-up before explore; US-only; paywall features | US students/young professionals |
 | **Uniplaces** | University partnerships, verified landlords, insurance | Housing only; no matching; expensive | EU gap-year/Erasmus students |
-| **Facebook Groups** | Free, large communities, trusted peers | Zero verification, chaotic, no matchmaking, safety risks | Most students still use this |
+| **Unverified group chats** | Free, large communities, trusted peers | Zero verification, chaotic, no matchmaking, safety risks | Most students still use this |
 | **University Housing** | Official, secure, affordable | Algorithmic (not intelligent), limited choice, poor UX | Freshmen, risk-averse |
 
 ### Unique Position: Domu Match
@@ -182,7 +182,7 @@ Example: ✅ "Reduce housing disputes by 40%." ❌ "Synergize stakeholder alignm
 
 ```
            AFFORDABLE ← - → PREMIUM
-SIMPLE      Facebook         Uniplaces
+SIMPLE      Group chats      Uniplaces
                 ↑              ↑
                 |              |
              Badi           Roomi

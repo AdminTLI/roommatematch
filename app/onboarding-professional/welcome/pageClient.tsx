@@ -6,6 +6,7 @@ import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Clock, LayoutGrid, Target, AlertTriangle, CircleAlert } from 'lucide-react'
 import { WelcomeMatchBlocksCard } from '@/app/onboarding/components/welcome-match-blocks-card'
+import { WelcomeLensOnFutureCallout } from '@/app/onboarding/components/welcome-lens-on-future-callout'
 import TermsPage from '@/app/(marketing)/terms/page'
 import PrivacyPage from '@/app/(marketing)/privacy/page'
 import { createClient } from '@/lib/supabase/client'
@@ -362,6 +363,8 @@ export default function OnboardingProfessionalWelcomeClient() {
                     We use these answers only to improve roommate matching accuracy. They are not used for
                     advertising and are not shown publicly.
                   </p>
+
+                  <WelcomeLensOnFutureCallout />
                 </div>
 
                 <label className="flex cursor-pointer items-start gap-3 text-sm">

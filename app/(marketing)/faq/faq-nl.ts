@@ -182,7 +182,7 @@ export const faqMarketingNl: FaqMarketingCategory[] = [
       {
         question: 'Mijn universiteitsmail is veranderd. Wat nu?',
         answer:
-          'Mail support@domumatch.com met je oude en nieuwe adres. We verifiëren beide en werken je account binnen 24–48 uur bij.',
+          'Mail domumatch@gmail.com met je oude en nieuwe adres. We verifiëren beide en werken je account binnen 24–48 uur bij.',
       },
     ],
   },
@@ -202,7 +202,7 @@ export const faqMarketingNl: FaqMarketingCategory[] = [
       {
         question: 'Mijn universiteit staat niet in jullie lijst. Kan ik tóch aanmelden?',
         answer:
-          'Met een geldig Nederlands universiteitsdomein (@*.nl) kun je je meestal gewoon aanmelden. Mail info@domumatch.com voor een officiële partnership met jouw instelling.',
+          'Met een geldig Nederlands universiteitsdomein (@*.nl) kun je je meestal gewoon aanmelden. Mail domumatch@gmail.com voor een officiële partnership met jouw instelling.',
       },
     ],
   },
@@ -227,7 +227,7 @@ export const faqMarketingNl: FaqMarketingCategory[] = [
       {
         question: 'Hoe bereik ik support?',
         answer:
-          'Mail support@domumatch.com of gebruik het helpcentrum in de app. Op werkdagen reageren we binnen 24 uur.',
+          'Mail domumatch@gmail.com of gebruik het helpcentrum in de app. Op werkdagen reageren we binnen 24 uur.',
       },
     ],
   },

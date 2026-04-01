@@ -183,7 +183,7 @@ export const faqMarketingEn: FaqMarketingCategory[] = [
       {
         question: 'My university email changed. How do I update it?',
         answer:
-          'Contact support at support@domumatch.com with your old and new university email. We\'ll verify both emails and update your account within 24-48 hours.',
+          "Contact support at domumatch@gmail.com with your old and new university email. We'll verify both emails and update your account within 24-48 hours.",
       },
     ],
   },
@@ -203,7 +203,7 @@ export const faqMarketingEn: FaqMarketingCategory[] = [
       {
         question: "My university isn't listed. Can I still use Domu Match?",
         answer:
-          'If you have a Dutch university email address (@*.nl), you can sign up. Contact us at info@domumatch.com to request official partnership with your institution.',
+          'If you have a Dutch university email address (@*.nl), you can sign up. Contact us at domumatch@gmail.com to request official partnership with your institution.',
       },
     ],
   },
@@ -228,7 +228,7 @@ export const faqMarketingEn: FaqMarketingCategory[] = [
       {
         question: 'How do I contact support?',
         answer:
-          'Email support@domumatch.com or use the in-app help center. We respond to all inquiries within 24 hours during business days.',
+          'Email domumatch@gmail.com or use the in-app help center. We respond to all inquiries within 24 hours during business days.',
       },
     ],
   },

@@ -169,7 +169,7 @@ const content = {
       title: 'Questions or feedback',
       description:
         'If you have questions about this Cookie Statement or how Domu Match uses cookies, please contact us. We are happy to explain our approach in more detail.',
-      email: 'Email: info@domumatch.com'
+      email: 'Email: domumatch@gmail.com'
     }
   },
   nl: {
@@ -334,7 +334,7 @@ const content = {
       title: 'Vragen of feedback',
       description:
         'Als u vragen heeft over deze Cookieverklaring of over hoe Domu Match cookies gebruikt, neem dan gerust contact met ons op. We leggen onze aanpak graag verder uit.',
-      email: 'E-mail: info@domumatch.com'
+      email: 'E-mail: domumatch@gmail.com'
     }
   }
 }

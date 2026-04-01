@@ -110,33 +110,16 @@ function checkItemConflict(itemId: string, valueA: any, valueB: any): string | n
   
   // Check for specific deal-breaker conflicts
   switch (itemId) {
-    case 'M2_Q20': // No loud calls/gaming in common areas after quiet hours
-      if (valueA === 'strongly_disagree' && valueB === 'strongly_agree') {
-        return 'Quiet hours conflict: one needs silence, other is noisy'
-      }
-      break
-      
-    case 'M3_Q15': // Smoking tolerance
-      if (valueA === 'no_smoking' && valueB === 'smoking_ok') {
-        return 'Smoking conflict: one is non-smoker, other is smoker'
-      }
-      break
-      
-    case 'M4_Q8': // Pet tolerance
-      if (valueA === 'no_pets' && valueB === 'pets_ok') {
-        return 'Pet conflict: one doesn\'t want pets, other has/wants pets'
-      }
-      break
-      
-    case 'M5_Q12': // Party frequency
-      if ((valueA === 'never' || valueA === 'rarely') && valueB === 'frequently') {
-        return 'Social conflict: one is quiet, other is very social'
-      }
-      break
-      
-    case 'M6_Q18': // Alcohol at home
-      if (valueA === 'no_alcohol' && valueB === 'alcohol_ok') {
-        return 'Alcohol conflict: one doesn\'t want alcohol at home, other is okay with it'
+    case 'M5_Q11': // Big parties (10+) frequency
+      {
+        const lowParty = (v: string) => v === 'party_never' || v === 'party_rarely'
+        const highParty = (v: string) => v === 'party_weekly'
+        if (lowParty(valueA) && highParty(valueB)) {
+          return 'Social conflict: very different comfort with house parties'
+        }
+        if (lowParty(valueB) && highParty(valueA)) {
+          return 'Social conflict: very different comfort with house parties'
+        }
       }
       break
   }

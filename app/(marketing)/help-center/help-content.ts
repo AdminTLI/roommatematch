@@ -76,7 +76,7 @@ Once your email is verified, you'll be redirected to complete the onboarding que
 - Wait up to 5 minutes for delivery
 
 **Still having issues?**
-Contact support at support@domumatch.com with the email you used to sign up, and we'll help you verify your account.`,
+Contact support at domumatch@gmail.com with the email you used to sign up, and we'll help you verify your account.`,
           section: 'getting-started',
           tags: ['email', 'verification', 'university'],
           keywords: ['verify email', 'email confirmation', 'verification code'],
@@ -177,7 +177,7 @@ Students and young professionals are matched in separate pools. Both groups use 
           content: `**If you're a student:** Use your university email - this is required for verification and university partnerships.
 **If you're a young professional:** Yes, use your personal or work email. We verify young professionals through a separate flow.
 
-If you don't have a university email (students) or have trouble with verification, contact support at support@domumatch.com`,
+If you don't have a university email (students) or have trouble with verification, contact support at domumatch@gmail.com`,
           section: 'getting-started',
           tags: ['email', 'university'],
           keywords: ['personal email', 'Gmail', 'Yahoo', 'young professional'],
@@ -716,7 +716,7 @@ To prevent spam and harassment, there's a limit of 30 messages per 5 minutes. Th
 **Getting Help:**
 If you feel unsafe or need immediate assistance:
 - Use the report button
-- Contact our safety team at safety@domumatch.com
+- Contact our safety team at domumatch@gmail.com
 - In emergencies, contact local authorities`,
           section: 'chat',
           tags: ['safety', 'reporting', 'blocking'],
@@ -1016,7 +1016,7 @@ Saved searches help you stay updated on new opportunities without manually check
 **What to Do If You Feel Unsafe:**
 1. Use the report button immediately
 2. Block the user if needed
-3. Contact safety@domumatch.com
+3. Contact domumatch@gmail.com
 4. In emergencies, contact local authorities (112 in Netherlands)
 
 **Remember:**
@@ -1159,7 +1159,7 @@ As a user in the EU, you have the right to:
 - Go to Settings > Privacy
 - Use the data export feature
 - Request deletion from account settings
-- Contact privacy@domumatch.com for assistance
+- Contact domumatch@gmail.com for assistance
 
 **Data Retention:**
 - Verification documents: 4 weeks (Dutch law requirement)
@@ -1201,7 +1201,7 @@ Your data is never shared with other users or sold to third parties.`,
 - You'll receive an email update on the outcome
 - All reports are taken seriously and investigated
 
-If you need immediate assistance, contact safety@domumatch.com.`,
+If you need immediate assistance, contact domumatch@gmail.com.`,
           section: 'safety',
           tags: ['report', 'response time'],
           keywords: ['report review', 'how long', 'response time'],
@@ -1221,7 +1221,7 @@ Note: Some data may be retained for legal compliance:
 - Verification documents: 4 weeks (Dutch law)
 - Certain records for safety/legal purposes
 
-Contact privacy@domumatch.com if you have questions.`,
+Contact domumatch@gmail.com if you have questions.`,
           section: 'safety',
           tags: ['delete account', 'data deletion'],
           keywords: ['delete account', 'remove data', 'account deletion'],
@@ -1264,7 +1264,7 @@ Contact privacy@domumatch.com if you have questions.`,
 - Verify your account is fully verified
 
 **Contact Support:**
-If you've tried everything and still have no matches after a week, contact support@domumatch.com with:
+If you've tried everything and still have no matches after a week, contact domumatch@gmail.com with:
 - Your account email
 - When you completed onboarding
 - What you've already tried`,
@@ -1305,7 +1305,7 @@ If you've tried everything and still have no matches after a week, contact suppo
 - Try a different browser
 - Use a different device if possible
 - Ensure stable internet connection
-- Contact support@domumatch.com for assistance`,
+- Contact domumatch@gmail.com for assistance`,
           section: 'troubleshooting',
           tags: ['verification', 'troubleshooting'],
           keywords: ['verification failed', 'verification error', 'can\'t verify'],
@@ -1344,7 +1344,7 @@ If you've tried everything and still have no matches after a week, contact suppo
 - Try incognito/private mode
 
 **Still Not Working?**
-Contact support@domumatch.com with:
+Contact domumatch@gmail.com with:
 - What specifically isn't working
 - Your browser and device
 - Any error messages
@@ -1396,7 +1396,7 @@ Contact support@domumatch.com with:
 - Check for app updates
 
 **Still Having Issues?**
-Contact support@domumatch.com with:
+Contact domumatch@gmail.com with:
 - Description of the issue
 - Steps to reproduce
 - Browser/device information
@@ -1446,7 +1446,7 @@ Contact support@domumatch.com with:
 - Contact support for account recovery
 
 **Contact Support:**
-For account access issues, contact support@domumatch.com with:
+For account access issues, contact domumatch@gmail.com with:
 - Your university email address
 - Description of the issue
 - When you last successfully logged in`,
@@ -1462,11 +1462,11 @@ For account access issues, contact support@domumatch.com with:
           id: 'faq-contact-support',
           title: 'How do I contact support?',
           content: `You can contact support:
-- Email: support@domumatch.com
+- Email: domumatch@gmail.com
 - Use the contact form on the website
 - Report issues through the help center
-- For safety issues: safety@domumatch.com
-- For privacy: privacy@domumatch.com
+- For safety issues: domumatch@gmail.com
+- For privacy: domumatch@gmail.com
 
 Include as much detail as possible for faster resolution.`,
           section: 'troubleshooting',
@@ -1514,7 +1514,7 @@ We aim to respond as quickly as possible. Complex issues may take longer.`,
 **Traditional Methods vs. Domu Match:**
 
 **Traditional Methods:**
-- Facebook groups (unverified users, scams common)
+- Unverified group chats (unverified users, scams common)
 - Student housing websites (no compatibility matching)
 - University housing offices (limited options)
 - Word of mouth (limited network)

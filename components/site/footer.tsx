@@ -74,7 +74,7 @@ export default function Footer() {
             </p>
             <div className="flex items-center gap-3">
               <a
-                aria-label="Twitter"
+                aria-label="Social profile"
                 href="https://twitter.com/domumatch"
                 target="_blank"
                 rel="noopener noreferrer"
@@ -83,7 +83,7 @@ export default function Footer() {
                 <Twitter size={18} />
               </a>
               <a
-                aria-label="LinkedIn"
+                aria-label="Social profile"
                 href="https://www.linkedin.com/company/domu-match/?viewAsMember=true"
                 target="_blank"
                 rel="noopener noreferrer"
@@ -92,7 +92,7 @@ export default function Footer() {
                 <Linkedin size={18} />
               </a>
               <a
-                aria-label="Instagram"
+                aria-label="Social profile"
                 href="https://www.instagram.com/domumatch"
                 target="_blank"
                 rel="noopener noreferrer"

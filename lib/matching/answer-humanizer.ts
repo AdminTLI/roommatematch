@@ -71,6 +71,10 @@ export function humanizeAnswer(itemId: string, value: any): string {
       return String(rawValue)
     }
 
+    case 'date': {
+      return typeof rawValue === 'string' ? rawValue : String(rawValue)
+    }
+
     default:
       return String(rawValue)
   }

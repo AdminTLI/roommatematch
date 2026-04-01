@@ -6,6 +6,7 @@ import { getUserProfile } from '@/lib/auth/user-profile'
 import { getOnboardingRedirectUrlIfIncomplete } from '@/lib/onboarding/server-redirect'
 import { MessengerLayout } from './components/messenger-layout'
 import { DomuChatWidget } from '../dashboard/components/domu-chat-widget'
+import { ChatRouteChrome } from './_components/chat-route-chrome'
 
 interface ChatPageProps {
   searchParams: Promise<{ chatId?: string; userId?: string }>
@@ -48,8 +49,8 @@ export default async function ChatPage({ searchParams }: ChatPageProps) {
   const initialOtherUserId = params.userId || null
 
   return (
-    <>
-      <AppShell 
+    <ChatRouteChrome>
+      <AppShell
         user={userProfile}
         showQuestionnairePrompt={true}
       >
@@ -66,7 +67,7 @@ export default async function ChatPage({ searchParams }: ChatPageProps) {
         </div>
       </AppShell>
       <DomuChatWidget />
-    </>
+    </ChatRouteChrome>
   )
 }
 

@@ -2,6 +2,7 @@
 
 import { ReactNode } from 'react'
 import { DealBreakerToggle } from './DealBreakerToggle'
+import { QuestionImportanceStrip } from './QuestionImportanceStrip'
 import { SpecialCategoryBadge } from './SpecialCategoryBadge'
 
 interface Props {
@@ -9,10 +10,16 @@ interface Props {
   helperText?: string
   errorText?: string
   children: ReactNode
+  /** Item id for importance checkbox (e.g. same as questionnaire item id). */
+  itemId: string
   specialCategory?: boolean
   showDealBreaker?: boolean
   dealBreaker?: boolean
   onDealBreakerChange?: (v: boolean) => void
+  showImportance?: boolean
+  marksImportant?: boolean
+  importanceDisabled?: boolean
+  onMarksImportantChange?: (v: boolean) => void
 }
 
 export function QuestionRow({
@@ -20,10 +27,15 @@ export function QuestionRow({
   helperText,
   errorText,
   children,
+  itemId,
   specialCategory,
   showDealBreaker,
   dealBreaker,
   onDealBreakerChange,
+  showImportance = true,
+  marksImportant,
+  importanceDisabled,
+  onMarksImportantChange,
 }: Props) {
   return (
     <div className="space-y-5 sm:space-y-4 pb-8 sm:pb-6 last:pb-0">
@@ -49,6 +61,14 @@ export function QuestionRow({
       </div>
       <div className="mt-5 sm:mt-4 rounded-2xl border border-border-subtle/25 bg-bg-surface-alt/25 px-4 py-3 sm:px-5 sm:py-4 shadow-sm shadow-black/10 backdrop-blur-lg">
         {children}
+        {showImportance && onMarksImportantChange && (
+          <QuestionImportanceStrip
+            id={itemId}
+            checked={!!marksImportant}
+            disabled={importanceDisabled}
+            onCheckedChange={onMarksImportantChange}
+          />
+        )}
       </div>
       {errorText && <div className="text-sm text-semantic-danger mt-2">{errorText}</div>}
     </div>

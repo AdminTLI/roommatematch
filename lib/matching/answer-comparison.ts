@@ -16,6 +16,70 @@ export interface AnswerAlignment {
   humanizedB: string
 }
 
+function unwrapAnswerPayload(raw: any): any {
+  if (raw && typeof raw === 'object' && 'value' in raw && (raw as any).value !== undefined) {
+    return (raw as any).value
+  }
+  return raw
+}
+
+function likert1to5(raw: any): number | null {
+  const v = unwrapAnswerPayload(raw)
+  return typeof v === 'number' && v >= 1 && v <= 5 ? v : null
+}
+
+function getTimeRangeBounds(raw: any): { start: string; end: string } | null {
+  const v = unwrapAnswerPayload(raw)
+  if (v && typeof v === 'object' && typeof (v as any).start === 'string' && typeof (v as any).end === 'string') {
+    return { start: (v as any).start, end: (v as any).end }
+  }
+  return null
+}
+
+function pushTimeRangeAlignment(
+  itemId: string,
+  rawA: any,
+  rawB: any,
+  alignments: AnswerAlignment[],
+  labels: { exactDescription: string; closeDescription: string }
+) {
+  const a = getTimeRangeBounds(rawA)
+  const b = getTimeRangeBounds(rawB)
+  if (!a || !b) return
+
+  const startA = parseTime(a.start)
+  const endA = parseTime(a.end)
+  const startB = parseTime(b.start)
+  const endB = parseTime(b.end)
+
+  const startDiff = Math.abs(startA - startB)
+  const endDiff = Math.abs(endA - endB)
+
+  if (startDiff <= 1 && endDiff <= 1) {
+    alignments.push({
+      itemId,
+      category: 'schedule',
+      strength: 'exact_match',
+      description: labels.exactDescription,
+      valueA: rawA,
+      valueB: rawB,
+      humanizedA: formatTimeRangeForDisplay(a),
+      humanizedB: formatTimeRangeForDisplay(b),
+    })
+  } else if (startDiff <= 2 && endDiff <= 2) {
+    alignments.push({
+      itemId,
+      category: 'schedule',
+      strength: 'close_match',
+      description: labels.closeDescription,
+      valueA: rawA,
+      valueB: rawB,
+      humanizedA: formatTimeRangeForDisplay(a),
+      humanizedB: formatTimeRangeForDisplay(b),
+    })
+  }
+}
+
 /**
  * Compare specific answers between two students
  */
@@ -51,68 +115,15 @@ function compareSleepSchedules(
   studentB: StudentProfile,
   alignments: AnswerAlignment[]
 ) {
-  // Compare chronotype (M2_Q1)
-  const chronoA = studentA.raw['M2_Q1']
-  const chronoB = studentB.raw['M2_Q1']
-  if (chronoA !== undefined && chronoA !== null && chronoB !== undefined && chronoB !== null) {
-    const valueA = typeof chronoA === 'object' && chronoA !== null && 'value' in chronoA ? chronoA.value : chronoA
-    const valueB = typeof chronoB === 'object' && chronoB !== null && 'value' in chronoB ? chronoB.value : chronoB
-    if (typeof valueA === 'number' && typeof valueB === 'number' && Math.abs(valueA - valueB) <= 1) {
-      alignments.push({
-        itemId: 'M2_Q1',
-        category: 'schedule',
-        strength: 'exact_match',
-        description: 'Similar chronotype preferences',
-        valueA: chronoA,
-        valueB: chronoB,
-        humanizedA: describeBipolarValue('M2_Q1', chronoA),
-        humanizedB: describeBipolarValue('M2_Q1', chronoB)
-      })
-    }
-  }
-
-  // Compare sleep times (M2_Q2 - weeknight)
-  const sleepA = studentA.raw['M2_Q2']
-  const sleepB = studentB.raw['M2_Q2']
-  if (sleepA && sleepB) {
-    const valueA = typeof sleepA === 'object' ? sleepA : sleepA
-    const valueB = typeof sleepB === 'object' ? sleepB : sleepB
-    
-    if (typeof valueA === 'object' && typeof valueB === 'object' && 
-        'start' in valueA && 'end' in valueA && 'start' in valueB && 'end' in valueB) {
-      const startA = parseTime(valueA.start)
-      const endA = parseTime(valueA.end)
-      const startB = parseTime(valueB.start)
-      const endB = parseTime(valueB.end)
-      
-      const startDiff = Math.abs(startA - startB)
-      const endDiff = Math.abs(endA - endB)
-      
-      if (startDiff <= 1 && endDiff <= 1) {
-        alignments.push({
-          itemId: 'M2_Q2',
-          category: 'schedule',
-          strength: 'exact_match',
-          description: 'Similar sleep schedules',
-          valueA: sleepA,
-          valueB: sleepB,
-          humanizedA: formatTimeRangeForDisplay(valueA),
-          humanizedB: formatTimeRangeForDisplay(valueB)
-        })
-      } else if (startDiff <= 2 && endDiff <= 2) {
-        alignments.push({
-          itemId: 'M2_Q2',
-          category: 'schedule',
-          strength: 'close_match',
-          description: 'Similar sleep schedules',
-          valueA: sleepA,
-          valueB: sleepB,
-          humanizedA: formatTimeRangeForDisplay(valueA),
-          humanizedB: formatTimeRangeForDisplay(valueB)
-        })
-      }
-    }
-  }
+  // Compare sleep windows (M2_Q1 Sun–Thu, M2_Q2 Fri–Sat)
+  pushTimeRangeAlignment('M2_Q1', studentA.raw['M2_Q1'], studentB.raw['M2_Q1'], alignments, {
+    exactDescription: 'Similar Sun–Thu sleep windows',
+    closeDescription: 'Close Sun–Thu sleep windows',
+  })
+  pushTimeRangeAlignment('M2_Q2', studentA.raw['M2_Q2'], studentB.raw['M2_Q2'], alignments, {
+    exactDescription: 'Similar Fri–Sat sleep windows',
+    closeDescription: 'Close Fri–Sat sleep windows',
+  })
 
   // Compare quiet hours (M2_Q13)
   const quietA = studentA.raw['M2_Q13']
@@ -136,72 +147,108 @@ function compareSleepSchedules(
 }
 
 /**
- * Compare cleanliness standards
+ * Compare cleanliness / home-operations alignment (student M4)
  */
 function compareCleanliness(
   studentA: StudentProfile,
   studentB: StudentProfile,
   alignments: AnswerAlignment[]
 ) {
-  // Compare kitchen cleanliness (M4_Q1)
-  const kitchenA = studentA.raw['M4_Q1']
-  const kitchenB = studentB.raw['M4_Q1']
-  if (kitchenA && kitchenB) {
-    const valueA = typeof kitchenA === 'object' ? kitchenA.value : kitchenA
-    const valueB = typeof kitchenB === 'object' ? kitchenB.value : kitchenB
-    if (valueA === valueB) {
+  const pushScaleClose = (
+    itemId: string,
+    rawA: any,
+    rawB: any,
+    exactDescription: string,
+    closeDescription: string,
+    humanize: (id: string, v: any) => string
+  ) => {
+    if (!rawA || !rawB) return
+    const a = likert1to5(rawA)
+    const b = likert1to5(rawB)
+    if (a == null || b == null) return
+    if (a === b) {
       alignments.push({
-        itemId: 'M4_Q1',
+        itemId,
         category: 'lifestyle',
         strength: 'exact_match',
-        description: 'Same kitchen cleanliness standard',
-        valueA: kitchenA,
-        valueB: kitchenB,
-        humanizedA: humanizeAnswer('M4_Q1', kitchenA),
-        humanizedB: humanizeAnswer('M4_Q1', kitchenB)
+        description: exactDescription,
+        valueA: rawA,
+        valueB: rawB,
+        humanizedA: humanize(itemId, rawA),
+        humanizedB: humanize(itemId, rawB)
+      })
+    } else if (Math.abs(a - b) <= 1) {
+      alignments.push({
+        itemId,
+        category: 'lifestyle',
+        strength: 'close_match',
+        description: closeDescription,
+        valueA: rawA,
+        valueB: rawB,
+        humanizedA: humanize(itemId, rawA),
+        humanizedB: humanize(itemId, rawB)
       })
     }
   }
 
-  // Compare bathroom cleanliness (M4_Q2)
-  const bathroomA = studentA.raw['M4_Q2']
-  const bathroomB = studentB.raw['M4_Q2']
-  if (bathroomA && bathroomB) {
-    const valueA = typeof bathroomA === 'object' ? bathroomA.value : bathroomA
-    const valueB = typeof bathroomB === 'object' ? bathroomB.value : bathroomB
+  const pushMcqExact = (itemId: string, rawA: any, rawB: any, description: string) => {
+    if (!rawA || !rawB) return
+    const valueA = unwrapAnswerPayload(rawA)
+    const valueB = unwrapAnswerPayload(rawB)
     if (valueA === valueB) {
       alignments.push({
-        itemId: 'M4_Q2',
+        itemId,
         category: 'lifestyle',
         strength: 'exact_match',
-        description: 'Same bathroom cleanliness standard',
-        valueA: bathroomA,
-        valueB: bathroomB,
-        humanizedA: humanizeAnswer('M4_Q2', bathroomA),
-        humanizedB: humanizeAnswer('M4_Q2', bathroomB)
+        description,
+        valueA: rawA,
+        valueB: rawB,
+        humanizedA: humanizeAnswer(itemId, rawA),
+        humanizedB: humanizeAnswer(itemId, rawB)
       })
     }
   }
 
-  // Compare shoes policy (M4_Q11)
-  const shoesA = studentA.raw['M4_Q11']
-  const shoesB = studentB.raw['M4_Q11']
-  if (shoesA && shoesB) {
-    const valueA = typeof shoesA === 'object' ? shoesA.value : shoesA
-    const valueB = typeof shoesB === 'object' ? shoesB.value : shoesB
-    if (valueA === valueB) {
-      alignments.push({
-        itemId: 'M4_Q11',
-        category: 'lifestyle',
-        strength: 'exact_match',
-        description: 'Same shoes policy',
-        valueA: shoesA,
-        valueB: shoesB,
-        humanizedA: describeBipolarValue('M4_Q11', shoesA),
-        humanizedB: describeBipolarValue('M4_Q11', shoesB)
-      })
-    }
-  }
+  pushScaleClose(
+    'M4_Q1',
+    studentA.raw['M4_Q1'],
+    studentB.raw['M4_Q1'],
+    'Same expectation for how tidy shared living areas should feel',
+    'Similar expectation for how tidy shared living areas should feel',
+    humanizeAnswer
+  )
+
+  pushMcqExact(
+    'M4_Q2',
+    studentA.raw['M4_Q2'],
+    studentB.raw['M4_Q2'],
+    'Same preferred timing for cleaning up after cooking'
+  )
+
+  pushScaleClose(
+    'M4_Q3',
+    studentA.raw['M4_Q3'],
+    studentB.raw['M4_Q3'],
+    'Same diligence about wiping down the bathroom after use',
+    'Similar diligence about wiping down the bathroom after use',
+    humanizeAnswer
+  )
+
+  pushScaleClose(
+    'M4_Q4',
+    studentA.raw['M4_Q4'],
+    studentB.raw['M4_Q4'],
+    'Same view on personal items in shared living space',
+    'Similar view on personal items in shared living space',
+    humanizeAnswer
+  )
+
+  pushMcqExact(
+    'M4_Q5',
+    studentA.raw['M4_Q5'],
+    studentB.raw['M4_Q5'],
+    'Same shoes-in-the-house preference'
+  )
 }
 
 /**
@@ -225,7 +272,7 @@ function compareNoiseTolerance(
           itemId: 'M3_Q1',
           category: 'lifestyle',
           strength: 'close_match',
-          description: 'Similar noise sensitivity',
+          description: 'Similar calm-home / predictability preference',
           valueA: noiseA,
           valueB: noiseB,
           humanizedA: humanizeAnswer('M3_Q1', noiseA),
@@ -287,25 +334,107 @@ function compareSocialPreferences(
     }
   }
 
-  // Compare guest frequency (M5_Q3)
-  const guestsA = studentA.raw['M5_Q3']
-  const guestsB = studentB.raw['M5_Q3']
-  if (guestsA && guestsB) {
-    const valueA = typeof guestsA === 'object' ? guestsA.value : guestsA
-    const valueB = typeof guestsB === 'object' ? guestsB.value : guestsB
-    if (valueA === valueB) {
+  const pushSocialMcqExact = (
+    itemId: string,
+    rawA: any,
+    rawB: any,
+    description: string
+  ) => {
+    if (!rawA || !rawB) return
+    if (unwrapAnswerPayload(rawA) === unwrapAnswerPayload(rawB)) {
       alignments.push({
-        itemId: 'M5_Q3',
+        itemId,
         category: 'social',
         strength: 'exact_match',
-        description: 'Similar guest frequency preference',
-        valueA: guestsA,
-        valueB: guestsB,
-        humanizedA: humanizeAnswer('M5_Q3', guestsA),
-        humanizedB: humanizeAnswer('M5_Q3', guestsB)
+        description,
+        valueA: rawA,
+        valueB: rawB,
+        humanizedA: humanizeAnswer(itemId, rawA),
+        humanizedB: humanizeAnswer(itemId, rawB)
       })
     }
   }
+
+  const pushSocialScaleClose = (
+    itemId: string,
+    rawA: any,
+    rawB: any,
+    exactDescription: string,
+    closeDescription: string
+  ) => {
+    if (!rawA || !rawB) return
+    const a = likert1to5(rawA)
+    const b = likert1to5(rawB)
+    if (a == null || b == null) return
+    if (a === b) {
+      alignments.push({
+        itemId,
+        category: 'social',
+        strength: 'exact_match',
+        description: exactDescription,
+        valueA: rawA,
+        valueB: rawB,
+        humanizedA: humanizeAnswer(itemId, rawA),
+        humanizedB: humanizeAnswer(itemId, rawB)
+      })
+    } else if (Math.abs(a - b) <= 1) {
+      alignments.push({
+        itemId,
+        category: 'social',
+        strength: 'close_match',
+        description: closeDescription,
+        valueA: rawA,
+        valueB: rawB,
+        humanizedA: humanizeAnswer(itemId, rawA),
+        humanizedB: humanizeAnswer(itemId, rawB)
+      })
+    }
+  }
+
+  pushSocialScaleClose(
+    'M5_Q1',
+    studentA.raw['M5_Q1'],
+    studentB.raw['M5_Q1'],
+    'Same view of shared living/kitchen as social vs private space',
+    'Similar view of shared living/kitchen as social vs private space'
+  )
+
+  pushSocialMcqExact(
+    'M5_Q3',
+    studentA.raw['M5_Q3'],
+    studentB.raw['M5_Q3'],
+    'Same preference for shared meals vs cooking independently'
+  )
+
+  pushSocialScaleClose(
+    'M5_Q4',
+    studentA.raw['M5_Q4'],
+    studentB.raw['M5_Q4'],
+    'Same weekend rhythm with housemates vs solo plans',
+    'Similar weekend rhythm with housemates vs solo plans'
+  )
+
+  pushSocialMcqExact(
+    'M5_Q11',
+    studentA.raw['M5_Q11'],
+    studentB.raw['M5_Q11'],
+    'Same comfort level with large house parties'
+  )
+
+  pushSocialMcqExact(
+    'M5_Q21',
+    studentA.raw['M5_Q21'],
+    studentB.raw['M5_Q21'],
+    'Same preferred household language for rules and day-to-day chat'
+  )
+
+  pushSocialScaleClose(
+    'M5_Q13',
+    studentA.raw['M5_Q13'],
+    studentB.raw['M5_Q13'],
+    'Same view on weeknight guests after 22:00',
+    'Similar view on weeknight guests after 22:00'
+  )
 }
 
 /**
@@ -316,26 +445,23 @@ function comparePersonalityTraits(
   studentB: StudentProfile,
   alignments: AnswerAlignment[]
 ) {
-  // Compare feedback style (M1_Q7)
-  const feedbackA = studentA.raw['M1_Q7']
-  const feedbackB = studentB.raw['M1_Q7']
-  if (feedbackA && feedbackB) {
-    const valueA = typeof feedbackA === 'object' ? feedbackA.value : feedbackA
-    const valueB = typeof feedbackB === 'object' ? feedbackB.value : feedbackB
-    if (typeof valueA === 'number' && typeof valueB === 'number') {
-      const diff = Math.abs(valueA - valueB)
-      if (diff <= 1) {
-        alignments.push({
-          itemId: 'M1_Q7',
-          category: 'personality',
-          strength: 'close_match',
-          description: 'Similar communication style',
-          valueA: feedbackA,
-          valueB: feedbackB,
-          humanizedA: describeBipolarValue('M1_Q7', feedbackA),
-          humanizedB: describeBipolarValue('M1_Q7', feedbackB)
-        })
-      }
+  // Compare household organization role (M1_Q7)
+  const roleA = studentA.raw['M1_Q7']
+  const roleB = studentB.raw['M1_Q7']
+  if (roleA && roleB) {
+    const valueA = typeof roleA === 'object' ? roleA.value : roleA
+    const valueB = typeof roleB === 'object' ? roleB.value : roleB
+    if (valueA === valueB) {
+      alignments.push({
+        itemId: 'M1_Q7',
+        category: 'personality',
+        strength: 'exact_match',
+        description: 'Similar household organization style',
+        valueA: roleA,
+        valueB: roleB,
+        humanizedA: humanizeAnswer('M1_Q7', roleA),
+        humanizedB: humanizeAnswer('M1_Q7', roleB)
+      })
     }
   }
 

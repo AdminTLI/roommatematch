@@ -339,11 +339,17 @@ body:has([data-chat-page]) .safe-area-inset > div {
   overflow: hidden !important;
 }
 
-/* On mobile, adjust for floating dock + safe area (dock ~72px + bottom-4 + gap) */
-@media (max-width: 768px) {
+/* Below lg: reserve space for floating dock + safe area on the chat list */
+@media (max-width: 1023px) {
   body.chat-page,
   body:has([data-chat-page]) {
     --chat-bottom-offset: calc(7.5rem + env(safe-area-inset-bottom, 0px));
+  }
+
+  /* Open thread only: dock + Domu hidden — composer uses bottom + safe area */
+  body.chat-page.mobile-chat-active-conversation,
+  body:has([data-chat-page]).mobile-chat-active-conversation {
+    --chat-bottom-offset: calc(0.5rem + env(safe-area-inset-bottom, 0px)) !important;
   }
 
   body.chat-page main,

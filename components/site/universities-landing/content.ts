@@ -133,7 +133,7 @@ export const content: Record<Locale, UniversitiesLandingContent> = {
       feature1: {
         title: "The 'Safe Search' Ecosystem",
         description:
-          'Stop sending your students to the wild west of Facebook groups. We provide a 100% ID-verified, gated environment where students can connect safely without fear of bots or scams. Students and young professionals are matched in separate pools; your students benefit from a larger verified community and clearer positioning.',
+          'Stop sending your students to the wild west of unverified group chats. We provide a 100% ID-verified, gated environment where students can connect safely without fear of bots or scams. Students and young professionals are matched in separate pools; your students benefit from a larger verified community and clearer positioning.',
       },
       feature2: {
         title: "Living Experience Dashboard",
@@ -275,7 +275,7 @@ export const content: Record<Locale, UniversitiesLandingContent> = {
       feature1: {
         title: "Het 'Safe Search' ecosysteem",
         description:
-          'Stuur uw studenten niet meer naar de wild west van Facebook-groepen. Wij bieden een 100% ID-geverifieerde, afgeschermde omgeving waar studenten veilig kunnen koppelen zonder angst voor bots of oplichting. Studenten en young professionals worden in aparte pools gematcht; uw studenten profiteren van een grotere geverifieerde community en duidelijkere positionering.',
+          'Stuur uw studenten niet meer naar de wild west van ongeverifieerde groepschats. Wij bieden een 100% ID-geverifieerde, afgeschermde omgeving waar studenten veilig kunnen koppelen zonder angst voor bots of oplichting. Studenten en young professionals worden in aparte pools gematcht; uw studenten profiteren van een grotere geverifieerde community en duidelijkere positionering.',
       },
       feature2: {
         title: 'Living Experience Dashboard',

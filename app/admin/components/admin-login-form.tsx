@@ -140,7 +140,7 @@ export function AdminLoginForm() {
               Forgot password?
             </Link>
             <a
-              href="mailto:support@domumatch.com?subject=Admin%20portal:%20Forgot%20username"
+              href="mailto:domumatch@gmail.com?subject=Admin%20portal:%20Forgot%20username"
               className="text-xs text-indigo-200 hover:text-white hover:underline"
             >
               Forgot username?

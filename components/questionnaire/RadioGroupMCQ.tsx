@@ -21,9 +21,11 @@ export function RadioGroupMCQ({ id, label, helperText, options, value, onChange 
       <RadioGroup value={value} onValueChange={onChange} aria-labelledby={`${id}-legend`}>
         <div className="grid gap-3 sm:gap-2">
           {options.map((opt) => (
-            <div key={opt.value} className="flex items-center gap-3 sm:gap-2">
-              <RadioGroupItem id={`${id}-${opt.value}`} value={opt.value} className="mt-0.5" />
-              <Label htmlFor={`${id}-${opt.value}`} className="text-base sm:text-sm break-words cursor-pointer text-text-primary">{opt.label}</Label>
+            <div key={opt.value} className="flex items-start gap-3 sm:gap-2">
+              <RadioGroupItem id={`${id}-${opt.value}`} value={opt.value} className="mt-0.5 shrink-0" />
+              <Label htmlFor={`${id}-${opt.value}`} className="min-w-0 flex-1 text-base sm:text-sm break-words cursor-pointer text-text-primary leading-snug">
+                {opt.label}
+              </Label>
             </div>
           ))}
         </div>

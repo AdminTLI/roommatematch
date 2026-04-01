@@ -82,7 +82,7 @@ const copy: Record<
         icon: Rocket,
         title: 'Shape the Future (And your CV).',
         description:
-          "Work directly with our founders to dictate what features we build next. Active testers receive a personalized LinkedIn Endorsement for 'Product Advisory'.",
+          "Work directly with our founders to dictate what features we build next. Active testers receive a personalized professional endorsement for 'Product Advisory'.",
       },
     ],
     finePrintEyebrow: 'The fine print',
@@ -155,7 +155,7 @@ const copy: Record<
         icon: Rocket,
         title: 'Bepaal de toekomst (én je CV).',
         description:
-          'Werk direct met de founders aan de volgende features. Actieve testers krijgen een persoonlijke LinkedIn-aanbeveling voor productadvies.',
+          'Werk direct met de founders aan de volgende features. Actieve testers krijgen een persoonlijke professionele aanbeveling voor productadvies.',
       },
     ],
     finePrintEyebrow: 'Kleine lettertjes',

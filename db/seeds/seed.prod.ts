@@ -169,7 +169,34 @@ async function seedProduction() {
       { key: 'smoking', section: 'deal_breakers', type: 'boolean', options: null, weight: 1.0, is_hard: true },
       { key: 'pets_allowed', section: 'deal_breakers', type: 'boolean', options: null, weight: 1.0, is_hard: true },
       { key: 'parties_max', section: 'deal_breakers', type: 'slider', options: '{"min": 0, "max": 10, "step": 1}', weight: 1.0, is_hard: true },
-      { key: 'guests_max', section: 'deal_breakers', type: 'slider', options: '{"min": 0, "max": 10, "step": 1}', weight: 1.0, is_hard: true }
+      { key: 'guests_max', section: 'deal_breakers', type: 'slider', options: '{"min": 0, "max": 10, "step": 1}', weight: 1.0, is_hard: true },
+
+      // Reliability & logistics (student M8; see data/item-bank.v1.json)
+      { key: 'm8_q01', section: 'logistics', type: 'text', options: null, weight: 0, is_hard: false },
+      { key: 'm8_q02', section: 'logistics', type: 'single', options: null, weight: 0, is_hard: false },
+      { key: 'm8_q03', section: 'logistics', type: 'text', options: null, weight: 0, is_hard: false },
+      { key: 'm8_q04', section: 'logistics', type: 'single', options: null, weight: 0, is_hard: false },
+      { key: 'm8_q05', section: 'logistics', type: 'text', options: null, weight: 0, is_hard: false },
+      { key: 'm8_q06', section: 'logistics', type: 'single', options: null, weight: 0, is_hard: false },
+      { key: 'm8_q07', section: 'logistics', type: 'slider', options: '{"min": 1, "max": 5, "step": 1}', weight: 0, is_hard: false },
+      { key: 'm8_q08', section: 'logistics', type: 'single', options: null, weight: 0, is_hard: false },
+      { key: 'm8_q09', section: 'logistics', type: 'single', options: null, weight: 0, is_hard: false },
+      { key: 'm8_q10', section: 'logistics', type: 'slider', options: '{"min": 1, "max": 5, "step": 1}', weight: 0, is_hard: false },
+      { key: 'm8_q11', section: 'logistics', type: 'single', options: null, weight: 0, is_hard: false },
+      { key: 'm8_q12', section: 'logistics', type: 'slider', options: '{"min": 1, "max": 5, "step": 1}', weight: 0, is_hard: false },
+      { key: 'm8_q13', section: 'logistics', type: 'slider', options: '{"min": 1, "max": 5, "step": 1}', weight: 0, is_hard: false },
+      { key: 'm8_q14', section: 'logistics', type: 'slider', options: '{"min": 1, "max": 5, "step": 1}', weight: 0, is_hard: false },
+      { key: 'm8_q15', section: 'logistics', type: 'single', options: null, weight: 0, is_hard: false },
+      { key: 'm8_q16', section: 'logistics', type: 'slider', options: '{"min": 1, "max": 5, "step": 1}', weight: 0, is_hard: false },
+      { key: 'm8_q17', section: 'logistics', type: 'slider', options: '{"min": 1, "max": 5, "step": 1}', weight: 0, is_hard: false },
+      { key: 'm8_q18', section: 'logistics', type: 'single', options: null, weight: 0, is_hard: false },
+      { key: 'm8_q19', section: 'logistics', type: 'slider', options: '{"min": 1, "max": 5, "step": 1}', weight: 0, is_hard: false },
+      { key: 'm8_q20', section: 'logistics', type: 'single', options: null, weight: 0, is_hard: false },
+      { key: 'm8_q21', section: 'logistics', type: 'slider', options: '{"min": 1, "max": 5, "step": 1}', weight: 0, is_hard: false },
+      { key: 'm8_q22', section: 'logistics', type: 'single', options: null, weight: 0, is_hard: false },
+      { key: 'm8_q23', section: 'logistics', type: 'single', options: null, weight: 0, is_hard: false },
+      { key: 'm8_q24', section: 'logistics', type: 'single', options: null, weight: 0, is_hard: false },
+      { key: 'm8_q25', section: 'logistics', type: 'slider', options: '{"min": 1, "max": 5, "step": 1}', weight: 0, is_hard: false }
     ]
 
     for (const item of questionItems) {

@@ -10,6 +10,7 @@ import { createClient } from '@/lib/supabase/client'
 import { fetchWithCSRF } from '@/lib/utils/fetch-with-csrf'
 import { queryClient, queryKeys } from '@/app/providers'
 import { cn } from '@/lib/utils'
+import { useMobileChatChrome } from '@/components/app/mobile-chat-chrome-context'
 
 interface MessengerLayoutProps {
   user: User & { name?: string; email?: string }
@@ -31,6 +32,7 @@ export function MessengerLayout({ user, initialChatId, initialOtherUserId, onNew
   const [isNewChatModalOpen, setIsNewChatModalOpen] = useState(false)
   const [isDesktop, setIsDesktop] = useState(true)
   const supabase = createClient()
+  const { setActiveMobileConversation } = useMobileChatChrome()
 
   useEffect(() => {
     const root = document.documentElement
@@ -43,6 +45,22 @@ export function MessengerLayout({ user, initialChatId, initialOtherUserId, onNew
       body.classList.remove('chat-page')
     }
   }, [])
+
+  // Below lg: hide floating dock + Domu while in a thread; restore when back to chat list.
+  useEffect(() => {
+    const body = document.body
+    const active = !isDesktop && !!selectedChatId
+    setActiveMobileConversation(active)
+    if (active) {
+      body.classList.add('mobile-chat-active-conversation')
+    } else {
+      body.classList.remove('mobile-chat-active-conversation')
+    }
+    return () => {
+      setActiveMobileConversation(false)
+      body.classList.remove('mobile-chat-active-conversation')
+    }
+  }, [isDesktop, selectedChatId, setActiveMobileConversation])
 
   useEffect(() => {
     if (typeof window === 'undefined') return

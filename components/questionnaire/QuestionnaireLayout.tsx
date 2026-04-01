@@ -138,11 +138,12 @@ export function QuestionnaireLayout({
       <div className="relative z-10 flex min-h-screen flex-col">
         {/* Header */}
         <header className="sticky top-0 z-40 border-b border-transparent bg-transparent backdrop-blur-xl">
-          <div className="mx-auto grid max-w-6xl grid-cols-[1fr_auto_1fr] items-center px-4 py-3 sm:px-6 lg:px-8">
+          {/* sm+: step + progress centered, Save & exit top-right */}
+          <div className="mx-auto hidden max-w-6xl grid-cols-[1fr_auto_1fr] items-center px-4 py-3 sm:grid sm:px-6 lg:px-8">
             {/* Left spacer intentionally empty so the step counter can be truly centered */}
             <div />
 
-            <div className="hidden flex-col items-center gap-1 sm:flex justify-self-center">
+            <div className="flex flex-col items-center gap-1 justify-self-center">
               <span className="text-[11px] font-semibold uppercase tracking-[0.22em] text-text-secondary">
                 Step {stepIndex + 1} of {totalSteps}
               </span>
@@ -167,8 +168,8 @@ export function QuestionnaireLayout({
             )}
           </div>
 
-          {/* Mobile progress bar */}
-          <div className="block border-t border-border-subtle/40 px-4 pb-3 pt-2 sm:hidden">
+          {/* Mobile: progress first, then Save & exit underneath */}
+          <div className="border-border-subtle/40 px-4 pb-3 pt-3 sm:hidden">
             <div className="flex items-center justify-between">
               <span className="text-[11px] font-semibold uppercase tracking-[0.22em] text-text-secondary">
                 Step {stepIndex + 1} of {totalSteps}
@@ -178,6 +179,17 @@ export function QuestionnaireLayout({
             <div className="mt-2">
               <Progress value={progress} className="h-1.5 rounded-full bg-border-subtle/60" />
             </div>
+            {!hideSaveAndExit && (
+              <Button
+                type="button"
+                variant="outline"
+                onClick={handleSaveAndExit}
+                disabled={isSavingAll}
+                className="mt-3 w-full min-h-[44px] rounded-full border-border-subtle/50 bg-white/75 px-3 py-2 text-xs font-semibold text-slate-900 shadow-sm backdrop-blur hover:bg-white/90 dark:bg-bg-surface-alt/70 dark:text-text-primary dark:hover:bg-bg-surface-alt/85"
+              >
+                {isSavingAll ? 'Saving...' : 'Save & exit'}
+              </Button>
+            )}
           </div>
         </header>
 
@@ -231,7 +243,7 @@ export function QuestionnaireLayout({
           <div
             className={
               onNext
-                ? 'mx-auto flex max-w-7xl items-center justify-end gap-3 px-4 py-3 sm:px-6 sm:py-4'
+                ? 'mx-auto flex max-w-7xl items-center justify-between gap-3 px-4 py-3 sm:px-6 sm:py-4'
                 : 'mx-auto flex max-w-7xl items-center justify-center gap-3 px-4 py-3 sm:px-6 sm:py-4'
             }
           >
@@ -241,7 +253,7 @@ export function QuestionnaireLayout({
                 onClick={onPrev}
                 disabled={!onPrev}
                 className={[
-                  'min-h-[44px] rounded-xl bg-transparent px-4 text-sm font-medium text-text-primary hover:bg-bg-surface-alt/60 hover:text-text-primary disabled:opacity-50',
+                  'min-h-[44px] rounded-xl bg-white px-4 text-sm font-medium text-text-primary hover:bg-neutral-100 hover:text-text-primary disabled:opacity-50',
                   prevButtonClassName ?? '',
                 ].join(' ')}
               >
@@ -250,24 +262,38 @@ export function QuestionnaireLayout({
             )}
 
             {onNext && (
-              <div className="flex items-center gap-3">
-                {lastSavedAt && (
-                  <span className="hidden text-xs text-text-secondary sm:inline">
-                    Last saved{' '}
-                    {new Date(lastSavedAt).toLocaleTimeString([], {
-                      hour: '2-digit',
-                      minute: '2-digit',
-                    })}
-                  </span>
-                )}
+              <>
                 <Button
-                  onClick={onNext}
-                  disabled={!!nextDisabled}
-                  className="min-h-[44px] rounded-xl bg-gradient-to-r from-sky-400 via-indigo-500 to-purple-500 px-5 text-sm font-semibold text-primary-foreground shadow-md shadow-indigo-500/40 hover:brightness-110 disabled:opacity-60"
+                  type="button"
+                  variant="outline"
+                  onClick={onPrev}
+                  disabled={!onPrev}
+                  className={[
+                    'min-h-[44px] shrink-0 rounded-xl bg-white px-4 text-sm font-medium text-text-primary hover:bg-neutral-100 hover:text-text-primary disabled:opacity-50',
+                    prevButtonClassName ?? '',
+                  ].join(' ')}
                 >
-                  Next
+                  Back
                 </Button>
-              </div>
+                <div className="flex min-w-0 flex-1 items-center justify-end gap-3">
+                  {lastSavedAt && (
+                    <span className="hidden truncate text-xs text-text-secondary sm:inline">
+                      Last saved{' '}
+                      {new Date(lastSavedAt).toLocaleTimeString([], {
+                        hour: '2-digit',
+                        minute: '2-digit',
+                      })}
+                    </span>
+                  )}
+                  <Button
+                    onClick={onNext}
+                    disabled={!!nextDisabled}
+                    className="min-h-[44px] shrink-0 rounded-xl bg-gradient-to-r from-sky-400 via-indigo-500 to-purple-500 px-5 text-sm font-semibold text-primary-foreground shadow-md shadow-indigo-500/40 hover:brightness-110 disabled:opacity-60"
+                  >
+                    Next
+                  </Button>
+                </div>
+              </>
             )}
           </div>
         </div>

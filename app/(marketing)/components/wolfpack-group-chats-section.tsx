@@ -25,7 +25,7 @@ export function WolfpackGroupChatsSection() {
         'Plan bezichtigingen als één huis in plaats van vier losse aanmeldingen.',
       ]
     : [
-        'Match with your pack first - not random strangers from a Facebook thread.',
+        'Match with your pack first - not random strangers from an unverified group thread.',
         'Share listings, photos, and red flags in one safe group chat.',
         'Coordinate viewings and apply as a single, organised household.',
       ]

@@ -120,7 +120,7 @@ curl -I https://domumatch.vercel.app
 - features.png
 - faq.png
 
-**Tool**: Use Canva (free) - search for "Open Graph" or "Facebook Post" templates
+**Tool**: Use Canva (free) - search for "Open Graph" or "social post" templates
 
 **Full guide with templates**: See `CONTENT_CREATION_GUIDE.md`
 

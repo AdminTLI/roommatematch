@@ -5,12 +5,13 @@ WITH required_questions AS (
   SELECT question_key, dimension FROM (
     VALUES 
       ('M4_Q1', 'cleanliness'), ('M4_Q2', 'cleanliness'), ('M4_Q3', 'cleanliness'),
+      ('M4_Q4', 'cleanliness'), ('M4_Q5', 'cleanliness'), ('M4_Q13', 'cleanliness'), ('M4_Q23', 'cleanliness'),
       ('M3_Q1', 'noise'), ('M3_Q2', 'noise'), ('M3_Q4', 'noise'),
-      ('M5_Q3', 'guests'), ('M5_Q4', 'guests'),
+      ('M5_Q6', 'guests'), ('M5_Q9', 'guests'), ('M5_Q11', 'guests'), ('M5_Q16', 'guests'), ('M5_Q20', 'guests'),
       ('M2_Q1', 'sleep'), ('M2_Q2', 'sleep'),
       ('M7_Q1', 'shared_spaces'), ('M7_Q3', 'shared_spaces'), ('M7_Q4', 'shared_spaces'),
-      ('M5_Q18', 'substances'), ('M5_Q19', 'substances'),
-      ('M1_Q13', 'study_social'), ('M5_Q1', 'study_social'), ('M5_Q2', 'study_social'),
+      ('M5_Q7', 'substances'), ('M5_Q11', 'substances'),
+      ('M1_Q14', 'study_social'), ('M5_Q1', 'study_social'), ('M5_Q2', 'study_social'),
       ('M1_Q6', 'home_vibe')
   ) AS t(question_key, dimension)
 ),

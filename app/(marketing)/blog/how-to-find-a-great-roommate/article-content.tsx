@@ -235,7 +235,7 @@ const content = {
         <h2>Technologie als extra check</h2>
 
         <p>
-          Traditionele methoden - Facebookgroepen, prikborden, mond-tot-mond - leunen op toeval. Moderne matchingplatformen analyseren tientallen factoren tegelijk en vergroten de kans op een goede klik.
+          Traditionele methoden - ongeverifieerde groepschats, prikborden, mond-tot-mond - leunen op toeval. Moderne matchingplatformen analyseren tientallen factoren tegelijk en vergroten de kans op een goede klik.
         </p>
 
         <p>

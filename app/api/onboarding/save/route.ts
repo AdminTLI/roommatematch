@@ -5,6 +5,7 @@ import { checkRateLimit, getUserRateLimitKey } from '@/lib/rate-limit'
 import { trackEvent, EVENT_TYPES } from '@/lib/events'
 import { extractSubmissionDataFromIntro, upsertProfileAndAcademic } from '@/lib/onboarding/submission'
 import { safeLogger } from '@/lib/utils/logger'
+import { syncQuestionImportanceTicks } from '@/lib/onboarding/sync-question-importance-ticks'
 
 type SaveBody = { section: SectionKey; answers: any[] }
 
@@ -112,6 +113,13 @@ export async function POST(request: Request) {
     }
   }
 
+  const { data: priorSection } = await supabase
+    .from('onboarding_sections')
+    .select('answers')
+    .eq('user_id', user.id)
+    .eq('section', body.section)
+    .maybeSingle()
+
   // Save the section with potentially updated answers (including university_id)
   const { error } = await supabase
     .from('onboarding_sections')
@@ -127,6 +135,12 @@ export async function POST(request: Request) {
 
   if (error) {
     return NextResponse.json({ error: error.message }, { status: 500 })
+  }
+
+  try {
+    await syncQuestionImportanceTicks(supabase, user.id, priorSection?.answers, answersToSave)
+  } catch (importanceErr) {
+    console.error('[Onboarding Save] question importance sync failed:', importanceErr)
   }
 
   // When the location-commute section is updated, persist preferred_cities as a soft preference on the profile

@@ -146,8 +146,8 @@ export function MarketingFooter() {
 
             <div className="flex items-center gap-2 text-gray-400">
               <Mail className="h-4 w-4" />
-              <a href="mailto:info@domumatch.com" className="hover:text-white transition-colors">
-                info@domumatch.com
+              <a href="mailto:domumatch@gmail.com" className="hover:text-white transition-colors">
+                domumatch@gmail.com
               </a>
             </div>
           </div>

@@ -4,13 +4,13 @@
 WITH required_questions AS (
   SELECT question_key FROM (
     VALUES 
-      ('M4_Q1'), ('M4_Q2'), ('M4_Q3'),  -- Cleanliness
+      ('M4_Q1'), ('M4_Q2'), ('M4_Q3'), ('M4_Q4'), ('M4_Q5'), ('M4_Q13'), ('M4_Q23'),  -- Cleanliness dimension inputs
       ('M3_Q1'), ('M3_Q2'), ('M3_Q4'),  -- Noise
-      ('M5_Q3'), ('M5_Q4'),  -- Guests
+      ('M5_Q6'), ('M5_Q9'), ('M5_Q11'), ('M5_Q16'), ('M5_Q20'),  -- Guests dimension (new M5)
       ('M2_Q1'), ('M2_Q2'),  -- Sleep
-      ('M4_Q5'), ('M4_Q7'), ('M4_Q8'),  -- Shared spaces
-      ('M5_Q1'), ('M5_Q2'),  -- Substances
-      ('M1_Q6'), ('M1_Q10'), ('M5_Q5')  -- Study/social, home vibe
+      ('M4_Q6'), ('M4_Q7'), ('M4_Q8'),  -- Chores / home ops (mapped keys)
+      ('M5_Q7'), ('M5_Q11'),  -- Substances proxy (pre-drinks + party frequency)
+      ('M1_Q6'), ('M1_Q10'), ('M1_Q14'), ('M5_Q1'), ('M5_Q2')  -- Study/social + home vibe
   ) AS t(question_key)
 ),
 resolved_prefs AS (

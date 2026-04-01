@@ -8,6 +8,7 @@ import { SuspenseWrapper } from '@/components/questionnaire/SuspenseWrapper'
 import { AutosaveToaster } from '@/components/questionnaire/AutosaveToaster'
 import { useAutosave } from '@/components/questionnaire/useAutosave'
 import { fetchWithCSRF } from '@/lib/utils/fetch-with-csrf'
+import { QuestionImportanceStrip } from '@/components/questionnaire/QuestionImportanceStrip'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { getDefaultPreferredCitiesFromInstitution, mapInstitutionToCity } from '@/lib/utils/location-mapper'
 
@@ -55,6 +56,7 @@ function normalizeCities(cities: string[]): string[] {
 function SectionClientContent() {
   const sectionKey = 'location-commute' as const
   const setAnswer = useOnboardingStore((s) => s.setAnswer)
+  const setMarksImportant = useOnboardingStore((s) => s.setMarksImportant)
   const answers = useOnboardingStore((s) => s.sections[sectionKey])
   const searchParams = useSearchParams()
 
@@ -273,6 +275,13 @@ function SectionClientContent() {
             + Add city
           </button>
         </div>
+
+        <QuestionImportanceStrip
+          id="preferred_cities"
+          checked={!!answers.preferred_cities?.marksImportant}
+          disabled={selectedCities.length === 0}
+          onCheckedChange={(v) => setMarksImportant(sectionKey, 'preferred_cities', v)}
+        />
       </div>
     </QuestionnaireLayout>
   )

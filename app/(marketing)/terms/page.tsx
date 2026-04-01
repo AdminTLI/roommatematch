@@ -10,11 +10,15 @@ type SectionItem = {
   title: string
   description?: string
   quote?: string
+  table?: {
+    headers?: [string, string]
+    rows: { left: string; right: string }[]
+  }
   bullets?: string[]
   note?: string
 }
 
-const LAST_UPDATED = '6 January 2026'
+const LAST_UPDATED = 'March 2026'
 
 const content: Record<
   'en' | 'nl',
@@ -32,189 +36,283 @@ const content: Record<
     lastUpdatedLabel: 'Last updated',
     lastUpdatedValue: LAST_UPDATED,
     preamble:
-      'These Terms of Service (including our Acceptable Use Policy and Rules of Engagement) govern your use of Domu Match. By creating an account or using the platform you agree to them. If you do not agree, do not use Domu Match.',
+      'These Terms of Service govern your use of Domu Match.',
     languageNote:
       'English is the primary language. If a Dutch translation is provided, the Dutch version will prevail in case of conflict.',
     sections: [
       {
         id: 'tldr',
-        title: '0. TL;DR (not legally binding)',
+        title: '0. TL;DR — Summary (not legally binding)',
         description:
-          'This is a friendly summary of what matters most. It is not legally binding; the detailed sections below are.',
-        bullets: [
-          'Domu Match helps students (17+) and young professionals find compatible roommates and understand their rent, using Harmony (lifestyle) and Context scores plus a WWS calculator. Students and young professionals are matched in separate pools.',
-          'You must be at least 17, accurately represent your life stage (student or young professional), and complete mandatory Persona ID verification. No fake, ghost, or AI-generated profiles.',
-          'The matching algorithm weighs Harmony (~75%) and Context (~25%) to suggest matches, but you always make the final “Active Choice” about who you chat with or live with.',
-          'You are responsible for what you post (profiles, photos, chat). No discrimination, harassment, scams, or use of Domu Match for commercial purposes.',
-          'The WWS calculator is for information and empowerment only and is not legal advice or a decision of the Huurcommissie.',
-          'Domu Match cannot guarantee offline behaviour or your physical safety. Roommate disputes and housing contracts are mainly between you, your roommates, and your landlord.',
-        ],
+          'This is a friendly overview. The numbered sections below are the legally binding terms.',
+        table: {
+          headers: ['Topic', 'Short Answer'],
+          rows: [
+            {
+              left: 'What is Domu Match?',
+              right: 'A roommate-matching platform for students (17+) and young professionals in the Netherlands.',
+            },
+            {
+              left: 'Is this a finished product?',
+              right:
+                'No. Domu Match is in public beta. Features may be unstable, data may be reset, and the service may change frequently.',
+            },
+            {
+              left: 'Who can use it?',
+              right:
+                'Students (17+) and young professionals who complete mandatory identity verification via Persona.',
+            },
+            {
+              left: 'Is it free?',
+              right:
+                'Yes, for users during the beta. Domu Match is currently funded by the co-founders, and universities may subsidise student access in the future.',
+            },
+            {
+              left: 'Can I share what I see?',
+              right:
+                'Please do not. Beta features are confidential (see Section 3).',
+            },
+            {
+              left: 'What if I find a bug?',
+              right:
+                'Please report it. Bug reports are welcome and covered by Section 3.',
+            },
+            {
+              left: 'Can I rely on matches?',
+              right:
+                'No. Scores are guidance only and you make the final decision. Domu Match is not a party to any tenancy.',
+            },
+            {
+              left: 'What about my data?',
+              right:
+                'See the Privacy Policy at domumatch.com/privacy, including the beta-specific section.',
+            },
+          ],
+        },
       },
       {
         id: 'service-scope',
-        title: '1. About Domu Match & Service Scope',
+        title: '1. About Domu Match and Service Scope',
         description:
-          'Domu Match is a science-backed roommate matching platform for students and young professionals, operated from the Netherlands.',
+          'Domu Match is a science-backed roommate matching platform for students and young professionals, operated from the Netherlands by DMS Enterprise.',
         bullets: [
-          'Purpose: help students and young professionals find lifestyle-compatible roommates using Harmony and Context scores and other inputs. Each group is matched within its own pool.',
+          'Purpose: help users find lifestyle-compatible roommates using Harmony and Context scores.',
           'Status: Domu Match is not a landlord, rental agency, housing provider, or law firm.',
-          'Revenue: Students and young professionals use Domu Match for free; the platform is funded via university or institutional licence fees.',
-          'Informational tools: WWS rent calculator and document templates are provided for guidance only (see Section 6).',
+          'Tools: the WWS rent calculator and document templates are informational only (see Section 8).',
+          'Legal form: Domu Match is a handelsnaam of DMS Enterprise (eenmanszaak), KvK 97573337.',
         ],
       },
       {
         id: 'eligibility',
-        title: '2. Eligibility (students and young professionals)',
-        description: 'Domu Match is for students (17+) and young professionals. Each group is matched only with others in the same group.',
+        title: '2. Eligibility',
         bullets: [
           'You must be at least 17 years old.',
-          'You must accurately represent your life stage: either a current student (e.g., university, hogeschool, MBO, or other recognised institution) or a young professional. Proof may be requested. Misrepresentation is a material breach (see Beta Terms).',
+          'You must accurately represent your life stage: student (university, hogeschool, MBO, or similar) or young professional.',
+          'Students and young professionals are matched within their own separate pools.',
+          'Proof of life stage may be requested. Misrepresentation is a material breach and grounds for immediate termination.',
           'Using Domu Match outside the Netherlands: you remain responsible for compliance with local law.',
         ],
       },
       {
+        id: 'beta',
+        title: '3. Beta Program Terms',
+        description:
+          'This section applies specifically to the public beta period and supersedes or supplements the standard service terms where indicated.',
+      },
+      {
+        id: 'beta-nature',
+        title: '3.1 Nature of the Beta',
+        bullets: [
+          'The beta is a pre-release version of Domu Match. It is provided “as-is” for testing and feedback purposes.',
+          'Features, interfaces, and matching logic may change without notice during the beta.',
+          'The service may experience outages, data resets, or be discontinued at any time.',
+          'Domu Match makes no guarantees about the availability, reliability, or accuracy of any beta feature.',
+        ],
+      },
+      {
+        id: 'beta-data',
+        title: '3.2 Beta Data and What Happens at the End',
+        table: {
+          headers: ['Scenario', 'What happens'],
+          rows: [
+            {
+              left: 'Beta ends, product launches',
+              right: 'Profile and account data carries over. Beta-specific logs deleted within 90 days.',
+            },
+            {
+              left: 'Beta discontinued (no launch)',
+              right: 'Minimum 30 days’ notice. Data export available. All data deleted/anonymized within 60 days.',
+            },
+            {
+              left: 'In-beta data reset',
+              right: 'Minimum 7 days’ in-app notice where possible. Matches and scores may be wiped for technical reasons.',
+            },
+          ],
+        },
+      },
+      {
+        id: 'beta-feedback',
+        title: '3.3 Feedback License',
+        description:
+          'By submitting bug reports, suggestions, usability feedback, or other input through the platform or any feedback channels (including email, forms, surveys, or private group chats), you grant DMS Enterprise a perpetual, irrevocable, royalty-free, worldwide license to use, adapt, and incorporate that feedback into our products and services, without any obligation to compensate you.',
+        note:
+          'This does not affect your ownership of any other content you post on the platform (profiles, chat messages).',
+      },
+      {
+        id: 'beta-confidentiality',
+        title: '3.4 Confidentiality Request',
+        description:
+          'The beta contains unreleased features, design concepts, and matching logic that are not yet public. We ask that you:',
+        bullets: [
+          'Refrain from publicly sharing screenshots, recordings, or detailed descriptions of beta features.',
+          'Do not share your beta invite link with third parties unless we have explicitly said you may.',
+          'Let us know if you accidentally disclose anything — we won’t hold it against you.',
+        ],
+        note:
+          'This is a courtesy request, not a binding NDA. We appreciate your discretion.',
+      },
+      {
+        id: 'beta-bugs',
+        title: '3.5 Bug Reporting',
+        description:
+          'If you encounter bugs or unexpected behaviour, please report them via the in-app feedback tool, a private group chat (where applicable), or at domumatch@gmail.com. Responsible disclosure of any security issues to domumatch@gmail.com is greatly appreciated and is handled with priority.',
+      },
+      {
+        id: 'beta-termination-notice',
+        title: '3.6 Beta Termination Notice',
+        description:
+          'If we decide to end the beta, we will give you at least 30 days’ notice by email and/or in-app notification. For urgent technical or legal reasons, this period may be shorter; we will explain why.',
+      },
+      {
         id: 'account',
-        title: '3. Account Registration & Accuracy',
+        title: '4. Account Registration and Accuracy',
         bullets: [
           'Provide accurate, current information and keep it updated.',
-          'Do not share your account or credentials; you are responsible for all activity on your account.',
-          'Notify us promptly if you suspect unauthorised access.',
+          'Do not share your account credentials; you are responsible for all activity on your account.',
+          'Notify us promptly at domumatch@gmail.com if you suspect unauthorised access.',
+          'One account per person. Duplicate or impersonation accounts will be terminated.',
         ],
       },
       {
         id: 'verification',
-        title: '4. Mandatory Identity & Verification (Persona)',
-        description: 'Safety depends on trusted identities.',
+        title: '5. Mandatory Identity Verification (Persona)',
         bullets: [
-          'ID verification is mandatory. Domu Match uses a third-party provider (currently Persona) to review documents and perform liveness checks.',
-          'Domu Match does not store raw ID documents or biometric templates; we receive verification results/attributes only. Persona may store raw documents as our processor.',
-          'Verification may include government ID, selfie/video checks, and (for students) proof of student status. Refusing or failing verification may limit features or lead to suspension/termination.',
-          'Data is processed under the GDPR and our Privacy Policy. Core purpose: confirm age (17+), identity, and (where applicable) life stage (student or young professional), and link verification to your account.',
-          'No ghost or AI-generated profiles: you may not use AI faces, avatars, or borrowed identities to pass verification or create deceptive accounts.',
+          'ID verification is mandatory. We use Persona to review documents and perform liveness checks.',
+          'Domu Match does not store raw ID images or biometric templates; we receive only the verification outcome and limited attributes.',
+          'Verification may include government ID, selfie/video, and (for students) proof of student status.',
+          'Refusing or failing verification may limit features or lead to suspension.',
+          'No ghost, AI-generated, or borrowed identities — using AI faces or another person’s documents is a material breach.',
         ],
       },
       {
         id: 'matching',
-        title: '5. Matching Algorithm, Parameters & No Guarantee',
+        title: '6. The Matching Algorithm',
         bullets: [
-          'Inputs: questionnaire responses, lifestyle/preferences, Harmony and Context scores, recency of activity, location/budget filters, and safety signals (e.g., repeated reports).',
-          'Weighting: Harmony (lifestyle) is weighted around 75% and Context (academic and practical context) around 25% in the matching logic, subject to iterative improvements.',
-          'User control: where available, you can adjust preferences/filters; the interface explains how these affect recommendations.',
-          'No perfect match: scores and recommendations are guidance only. Human judgment and your own due diligence remain essential.',
-          'No responsibility for roommate behaviour: Domu Match is not a party to any tenancy, sublease, or co-living agreement and is not liable for conflicts between users.',
-          'Active choice: recommendations are suggestions only. You always decide whom to contact, meet, or live with; no automated system binds you to a contract.',
+          'Inputs: questionnaire answers, Harmony and Context scores, location/budget filters, recency, safety signals.',
+          'Harmony (Lifestyle) and Context (academic/practical) scores are used to find compatibility. These scores may change during the beta.',
+          'Scores and recommendations are guidance only. Human judgment remains essential.',
+          'Active choice: you always decide who to contact, meet, or live with. No automated system binds you to a contract.',
+          'Domu Match is not a party to any tenancy, sublease, or co-living arrangement and is not liable for disputes between users.',
         ],
       },
       {
         id: 'ugc',
-        title: '6. User-Generated Content (profiles, photos & chat)',
-        description:
-          'You are responsible for the content you provide on Domu Match, including profiles, photos, room descriptions, and chat messages.',
+        title: '7. User-Generated Content',
         bullets: [
-          'Ensure your content is lawful, honest, and does not infringe the rights of others (e.g., privacy, copyright, portrait rights).',
-          'Profile photos should reasonably represent you; do not use AI-generated faces or heavily edited images that mislead others about your identity.',
-          'You may not upload pornographic, sexually explicit, or sexually exploitative images, or images containing hate symbols or extremist content.',
-          'Chat must remain respectful and relevant to shared living. No threats, bullying, hate speech, spam, phishing links, or pressure to share excessive personal or financial data.',
-          'We may use automated tools and human review to detect certain high-risk patterns (e.g., spam, obvious illegal content) in line with the DSA and privacy laws.',
+          'Content must be lawful, honest, and must not infringe others’ rights (privacy, copyright, portrait rights).',
+          'Profile photos must reasonably represent you. No AI-generated faces or heavily misleading edits.',
+          'No pornographic, sexually explicit, hate-symbol, or extremist content.',
+          'Chat must remain respectful and relevant to shared living. No threats, harassment, spam, phishing, or pressure to share financial data.',
+          'We may use automated tools and human review to detect high-risk patterns in line with the DSA.',
         ],
       },
       {
         id: 'wws',
-        title: '7. WWS Calculator & Legal Templates (Informational Only)',
-        description: 'These tools are informational and educational only.',
+        title: '8. WWS Calculator and Legal Templates (Informational Only)',
+        description: 'These tools are educational and informational only.',
         quote:
-          'Domu Match is not a law firm or a rental agency. Users must verify all calculations with the Huurcommissie.',
+          'Important: Domu Match is not a law firm. Always validate rent points and contract terms with the Huurcommissie or qualified counsel.',
         bullets: [
-          'Rules can change; outcomes depend on your specific facts. Do not rely solely on our tools.',
-          'Always validate rent points, amounts, and contract terms with the Huurcommissie or qualified counsel before acting.',
-          'The WWS calculator is not a formal decision or advice from the Huurcommissie or any authority and does not replace independent legal advice.',
+          'Rules can change; outcomes depend on your specific circumstances.',
+          'Do not rely solely on our tools for legal or financial decisions.',
         ],
       },
       {
         id: 'acceptable-use',
-        title: '8. Acceptable Use & Prohibited Conduct',
+        title: '9. Acceptable Use and Prohibited Conduct',
         bullets: [
-          'No fake profiles, impersonation, or misrepresenting age or life stage (student/young professional); no use of another person’s documents.',
-          'No scraping, harvesting, automated access, or commercial use of user data; do not build competitive datasets or models from platform data.',
-          'No harassment, stalking, discrimination, hate speech, threats, or abusive conduct on or off platform when connected to Domu Match.',
-          'No discrimination based on protected characteristics such as gender, sex, sexual orientation, gender identity or expression, race, ethnic origin, nationality, religion or belief, disability, or age, in line with Dutch non-discrimination law.',
-          'No illegal content, malware, fraud, or attempts to bypass security, probe systems, or disrupt service integrity.',
-          'No scams or misleading schemes (including fake housing offers, deposit scams, or using Domu Match primarily as a dating, escort, or MLM/marketing platform).',
-          'Personal, non-commercial use only. Do not market, advertise, or solicit on Domu Match without written consent.',
+          'No fake profiles, impersonation, or misrepresentation of age or life stage.',
+          'No scraping, data harvesting, automated access, or building competitive datasets from platform data.',
+          'No harassment, stalking, discrimination, hate speech, threats, or abusive conduct.',
+          'No illegal content, malware, fraud, or attempts to bypass/probe security systems.',
+          'No scams (fake housing offers, deposit scams) or use of Domu Match as a dating/escort/MLM platform.',
+          'Personal, non-commercial use only. No marketing or soliciting without written consent.',
         ],
       },
       {
         id: 'fees',
-        title: '9. Pricing & Payment',
+        title: '10. Pricing and Payment',
         bullets: [
           'Students and young professionals: access is free.',
-          'Universities/partners: platform funded via institutional licensing (separate agreements may apply).',
+          'Universities/partners: funded via institutional licensing under separate agreements.',
+          'Beta access is free and does not create any commitment to paid tiers at launch.',
         ],
       },
       {
         id: 'liability',
-        title: '10. Limitation of Liability',
+        title: '11. Limitation of Liability',
         bullets: [
-          'Mandatory rights: Nothing limits liability where this is not allowed under Dutch/EU law (e.g., death/personal injury by intent or gross negligence, fraud, or non-excludable consumer rights).',
-          'Roommate and housing risks: Domu Match is not liable for personal injury, property damage, financial loss, or disputes arising from roommate matches, meetings, or housing/lease arrangements, except where liability cannot be limited by law.',
-          'Third parties: We do not control roommates, landlords, universities, or other third parties and are not responsible for their actions or properties.',
-          'Service continuity: We do not guarantee uninterrupted or error-free service. Maintenance/security downtime may occur.',
-          'Cap: If liability arises despite the above, total aggregate liability is capped at €100 or the amount (if any) received from your institution specifically for your use in the past 12 months, whichever is higher, unless mandatory law requires more.',
+          'Mandatory rights: Nothing limits liability where Dutch/EU law does not allow it (e.g., intent/gross negligence, fraud, non-excludable consumer rights).',
+          'Roommate and housing risks: Domu Match is not liable for personal injury, property damage, financial loss, or disputes from roommate matches or housing arrangements, except where liability cannot be limited by law.',
+          'Beta disclaimer: during the beta, the service is provided “as-is”. We make no warranties about uninterrupted access or accuracy of matching scores.',
+          'Third parties: we are not responsible for the actions of roommates, landlords, universities, or other third parties.',
+          'Cap: total aggregate liability is capped at €100 or the amount received from your institution for your use in the past 12 months, whichever is higher, unless mandatory law requires more.',
         ],
       },
       {
         id: 'termination',
-        title: '11. Suspension & Termination',
+        title: '12. Suspension and Termination',
         bullets: [
-          'We may suspend, restrict, or terminate accounts for safety risks, policy breaches, false identity or life-stage (student/young professional), failed/refused verification, fraud, or legal/authority requirements.',
-          'Content may be removed or restricted if reasonably believed illegal or violating these Terms.',
+          'We may suspend, restrict, or terminate accounts for safety risks, policy breaches, false identity or life stage, failed/refused verification, fraud, or legal/authority requirements.',
+          'Content may be removed if reasonably believed illegal or in violation of these terms.',
           'Where required and feasible, we will notify you of significant enforcement actions and provide an appeal route.',
-        ],
-      },
-      {
-        id: 'founder-liability',
-        title: '12. Founder Liability & Company Structure',
-        bullets: [
-          'Domu Match may operate as a VOF, BV, or other Dutch legal form; we will disclose the current legal form and registration details in our imprint/legal information.',
-          'Domu Match provides a digital platform and tools only. Roommate relationships, rental contracts, and in-house disputes are primarily between you, your roommates, and your landlord.',
-          'The personal liability of founders, shareholders, and directors is limited in accordance with the applicable legal form and mandatory Dutch law.',
-          'Nothing in these Terms excludes liability that cannot be limited under Dutch/EU law, including where caused by intentional misconduct or gross negligence by Domu Match.',
+          'You may delete your account at any time via Settings. Data deletion follows the Privacy Policy timelines.',
         ],
       },
       {
         id: 'changes',
         title: '13. Changes to These Terms',
         bullets: [
-          'Significant changes: at least 15 days’ advance notice (e.g., email or in-app), unless shorter notice is required by law or for urgent legal/safety reasons.',
+          'Significant changes: at least 15 days’ advance notice by email and/or in-app notification.',
           'If you disagree with updates, stop using Domu Match and request account deletion. Continued use after the effective date means acceptance.',
         ],
       },
       {
         id: 'law',
-        title: '14. Governing Law & Disputes',
+        title: '14. Governing Law and Disputes',
         bullets: [
-          'Dutch law governs, subject to any mandatory consumer protections in your EU/EEA country of residence.',
-          'Disputes go to the competent courts of the Netherlands. Consumers in the EU/EEA may bring claims in their home forum where mandatory law allows.',
-          'Please contact us first at info@domumatch.com to try informal resolution.',
+          'Dutch law governs, subject to mandatory consumer protections in your EU/EEA country of residence.',
+          'Disputes go to the competent courts of the Netherlands. EU/EEA consumers may bring claims in their home forum where mandatory law allows.',
+          'Please contact us first at domumatch@gmail.com to try informal resolution.',
         ],
       },
       {
         id: 'dsa',
-        title: '15. DSA Notice & Reporting',
+        title: '15. DSA Notice and Reporting',
         bullets: [
-          'Report illegal content or abuse via in-app tools (where available) or email info@domumatch.com with details, links, or screenshots.',
-          'We review notices diligently and act in line with the EU Digital Services Act and Dutch law, including acknowledging certain notices, assessing them within a reasonable time, and taking proportionate action.',
-          'Actions may include no action, content removal or restriction, feature limitations, temporary suspension, or account termination. Where required, we provide a brief statement of reasons and an appeal route.',
+          'Report illegal content or abuse via in-app tools or email domumatch@gmail.com with details, links, or screenshots.',
+          'We review notices diligently under the EU Digital Services Act and take proportionate action.',
         ],
       },
       {
         id: 'contact',
-        title: '16. Contact & Legal Inquiries',
+        title: '16. Contact and Legal Inquiries',
         bullets: [
-          'Support and DSA notices: info@domumatch.com',
-          'Address: Breda, The Netherlands (no KVK number available yet).',
-          'Legal and AI/DSA inquiries: legal@domumatch.com (or another designated legal contact address).',
-          'If a Dutch translation is provided, it prevails if there is a conflict with this English text.',
+          'Support and DSA notices: domumatch@gmail.com',
+          'Privacy / DPO: domumatch@gmail.com',
+          'Legal and AI/DSA inquiries: domumatch@gmail.com',
+          'Beta feedback: domumatch@gmail.com or the in-app feedback tool',
+          'Address: DMS Enterprise (handelend onder de naam Domu Match), Breda, The Netherlands · KvK 97573337',
         ],
       },
     ],
@@ -252,6 +350,7 @@ const content: Record<
           'Status: Domu Match is geen verhuurder, makelaar, woningaanbieder of advocatenkantoor.',
           'Verdienmodel: studenten en young professionals gebruiken het gratis; financiering loopt via licenties met onderwijsinstellingen.',
           'Informatieve tools: WWS-calculator en templates zijn puur ter informatie (zie paragraaf 6).',
+          'Rechtsvorm: Domu Match is een handelsnaam van DMS Enterprise (eenmanszaak), KvK 97573337.',
         ],
       },
       {
@@ -387,14 +486,14 @@ const content: Record<
         bullets: [
           'Nederlands recht geldt, met inachtneming van dwingende consumentenbescherming in jouw EU/EER-land.',
           'Geschillen naar de bevoegde Nederlandse rechter; EU/EER-consumenten kunnen in hun eigen forum procederen waar dwingend recht dat toestaat.',
-          'Neem eerst contact op via info@domumatch.com voor een informele oplossing.',
+          'Neem eerst contact op via domumatch@gmail.com voor een informele oplossing.',
         ],
       },
       {
         id: 'dsa',
         title: '15. DSA-meldingen & rapportage',
         bullets: [
-          'Meld illegale content/misbruik via in-app tools (indien beschikbaar) of e-mail info@domumatch.com met details/links/screenshots.',
+          'Meld illegale content/misbruik via in-app tools (indien beschikbaar) of e-mail domumatch@gmail.com met details/links/screenshots.',
           'We beoordelen meldingen zorgvuldig en handelen volgens de EU Digital Services Act en Nederlands recht, inclusief het bevestigen van bepaalde meldingen, een redelijke beoordelingstermijn en proportionele maatregelen.',
           'Maatregelen kunnen zijn: geen actie, verwijdering/beperking van content, functielimieten, tijdelijke opschorting of beëindiging van accounts. Waar vereist geven we een korte motivering en een bezwaar-/beroepsmogelijkheid.',
         ],
@@ -403,9 +502,9 @@ const content: Record<
         id: 'contact',
         title: '16. Contact & juridische vragen',
         bullets: [
-          'Support en DSA-meldingen: info@domumatch.com',
-          'Adres: Breda, Nederland (geen KVK-nummer beschikbaar).',
-          'Juridische en AI/DSA-vragen: legal@domumatch.com (of een ander aangewezen juridisch contactadres).',
+          'Support en DSA-meldingen: domumatch@gmail.com',
+          'Adres: DMS Enterprise (handelend onder de naam Domu Match), Breda, Nederland · KvK 97573337',
+          'Juridische en AI/DSA-vragen: domumatch@gmail.com',
           'Als er een Nederlandse vertaling is, gaat die voor bij verschillen met de Engelse tekst.',
         ],
       },
@@ -427,6 +526,16 @@ export default function TermsPage() {
               <p className="text-slate-600 mb-2">
                 {t.lastUpdatedLabel}: {t.lastUpdatedValue}
               </p>
+
+              <div className="mb-10 mt-6 rounded-xl border border-amber-400/40 bg-amber-50 p-4">
+                <p className="text-amber-900 font-semibold mb-1">Beta Notice</p>
+                <p className="text-amber-900/90 leading-relaxed">
+                  You are using a pre-release (beta) version of Domu Match. This means features may change, data
+                  may be reset, and additional data collection (such as bug reports and session logs) may be done
+                  to help us improve the product. This policy explains all of that clearly below.
+                </p>
+              </div>
+
               <p className="text-slate-700 mb-4">{t.languageNote}</p>
               <p className="text-slate-700 mb-10 leading-relaxed">
                 {t.preamble}
@@ -441,6 +550,37 @@ export default function TermsPage() {
                   {section.quote && (
                     <div className="border-l-4 border-slate-900 bg-white/60 px-4 py-3 mb-3 text-slate-800 rounded-r">
                       {section.quote}
+                    </div>
+                  )}
+                  {section.table && (
+                    <div className="overflow-x-auto mb-4">
+                      <table className="w-full border border-slate-200 bg-white/60 rounded-lg overflow-hidden text-left">
+                        {section.table.headers && (
+                          <thead className="bg-slate-900 text-white">
+                            <tr>
+                              <th className="px-4 py-3 text-sm font-semibold">
+                                {section.table.headers[0]}
+                              </th>
+                              <th className="px-4 py-3 text-sm font-semibold">
+                                {section.table.headers[1]}
+                              </th>
+                            </tr>
+                          </thead>
+                        )}
+                        <tbody className="text-slate-700">
+                          {section.table.rows.map((row, idx) => (
+                            <tr
+                              key={idx}
+                              className={idx % 2 === 0 ? 'bg-white/40' : 'bg-transparent'}
+                            >
+                              <td className="px-4 py-3 align-top font-medium text-slate-900">
+                                {row.left}
+                              </td>
+                              <td className="px-4 py-3 align-top">{row.right}</td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
                     </div>
                   )}
                   {section.bullets && (

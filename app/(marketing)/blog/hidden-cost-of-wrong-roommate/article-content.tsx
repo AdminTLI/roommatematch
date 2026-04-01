@@ -184,7 +184,7 @@ const content = {
 
         <p>
           You can see those compatibility patterns clearly in your matches, instead of hoping a stranger from
-          a Facebook group will magically share your habits. Learn more about what we measure on our{' '}
+          an unverified group chat will magically share your habits. Learn more about what we measure on our{' '}
           <Link href="/how-it-works">
             how it works
           </Link>{' '}

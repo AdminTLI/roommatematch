@@ -171,7 +171,7 @@ export default function AccessibilityPage() {
               </p>
               <div className="mt-4 p-4 bg-slate-800/50 rounded-lg">
                 <p className="text-slate-300">
-                  <strong>Email:</strong> info@domumatch.com<br />
+                  <strong>Email:</strong> domumatch@gmail.com<br />
                   <strong>Phone:</strong> +31 (0) 20 123 4567<br />
                   <strong>Response time:</strong> We aim to respond within 48 hours
                 </p>

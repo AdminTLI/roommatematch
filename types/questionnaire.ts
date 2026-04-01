@@ -15,7 +15,7 @@ export type LikertScaleKind = 'agreement' | 'frequency' | 'comfort'
 export type Item = {
   id: string
   section: SectionKey
-  kind: 'likert' | 'bipolar' | 'mcq' | 'toggle' | 'timeRange' | 'number'
+  kind: 'likert' | 'bipolar' | 'mcq' | 'toggle' | 'timeRange' | 'number' | 'date'
   label: string
   scale?: LikertScaleKind
   dbEligible?: boolean
@@ -24,6 +24,7 @@ export type Item = {
   bipolarLabels?: { left: string; right: string }
   min?: number
   max?: number
+  step?: number
   optionsFrom?: 'nl-institutions' | 'nl-campuses'
 }
 

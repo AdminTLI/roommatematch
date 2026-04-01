@@ -5,6 +5,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { MessageCircle, X, Send, Loader2 } from 'lucide-react'
 import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
+import { useMobileChatChrome } from '@/components/app/mobile-chat-chrome-context'
 
 interface Message {
   role: 'user' | 'assistant'
@@ -13,6 +14,7 @@ interface Message {
 }
 
 export function DomuChatWidget() {
+  const { activeMobileConversation } = useMobileChatChrome()
   const [isOpen, setIsOpen] = useState(false)
   const [messages, setMessages] = useState<Message[]>([
     {
@@ -62,6 +64,10 @@ export function DomuChatWidget() {
     } finally {
       setIsLoading(false)
     }
+  }
+
+  if (activeMobileConversation) {
+    return null
   }
 
   return (

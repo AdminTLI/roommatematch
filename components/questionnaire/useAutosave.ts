@@ -21,6 +21,7 @@ function answersEqual(a1: Answer[], a2: Answer[]): boolean {
     if (ans1.itemId !== ans2.itemId) return false
     if (JSON.stringify(ans1.value) !== JSON.stringify(ans2.value)) return false
     if (ans1.dealBreaker !== ans2.dealBreaker) return false
+    if (ans1.marksImportant !== ans2.marksImportant) return false
   }
   return true
 }

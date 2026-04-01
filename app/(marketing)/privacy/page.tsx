@@ -7,180 +7,334 @@ import { useApp } from '@/app/providers'
 
 export default function PrivacyPage() {
   const { locale } = useApp()
-  const lastUpdated = new Date().toLocaleDateString(
-    locale === 'nl' ? 'nl-NL' : 'en-US',
-  )
+  const lastUpdated = 'March 2026'
 
   return (
     <MarketingSubpageWrapperLight>
       <Section className="py-12 md:py-16 lg:py-20">
         <Container>
           <div className="max-w-4xl mx-auto">
-            <div className="rounded-3xl border border-white/15 bg-slate-950/80 backdrop-blur-xl shadow-[0_18px_55px_rgba(15,23,42,0.35)] p-6 sm:p-10">
-              <h1 className="text-3xl md:text-4xl font-bold text-white mb-4">
+            <div className="rounded-3xl border border-white/60 bg-white/45 backdrop-blur-xl shadow-[0_18px_50px_rgba(15,23,42,0.08)] p-6 sm:p-10">
+              <h1 className="text-3xl md:text-4xl font-bold text-slate-900 mb-4">
                 Privacy Policy
               </h1>
-              <p className="text-slate-500 mb-8">
+              <p className="text-slate-600 mb-8">
                 Last updated: {lastUpdated}
               </p>
 
-              <p className="text-slate-400 mb-8 leading-relaxed">
-                Domu Match is designed for students and young professionals
-                who want to find compatible roommates. This Privacy Policy
-                explains in clear language how we use your data and your rights
-                under the GDPR, the Dutch GDPR Implementation Act (UAVG), and
-                the EU AI Act transparency rules.
+              <div className="mb-10 rounded-xl border border-amber-400/40 bg-amber-50 p-4">
+                <p className="text-amber-900 font-semibold mb-1">Beta Notice</p>
+                <p className="text-amber-900/90 leading-relaxed">
+                  You are using a pre-release (beta) version of Domu Match. This means features may change, data
+                  may be reset, and additional data collection (such as bug reports and session logs) may be done
+                  to help us improve the product. This policy explains all of that clearly below.
+                </p>
+              </div>
+
+              <p className="text-slate-700 mb-8 leading-relaxed">
+                Domu Match is designed for students and young professionals who want to find compatible roommates.
+                This Privacy Policy explains in clear language how we use your data and your rights under the GDPR,
+                the Dutch GDPR Implementation Act (UAVG), and EU AI transparency obligations.
               </p>
 
-              {/* Privacy at a Glance */}
+              {/* 1. Privacy at a Glance */}
               <section className="mb-12">
-                <h2 className="text-2xl font-semibold text-white mb-4">
-                  Privacy at a Glance
+                <h2 className="text-2xl font-semibold text-slate-900 mb-4">
+                  1. Privacy at a Glance
                 </h2>
-                <div className="overflow-x-auto rounded-lg border border-slate-700 overflow-hidden">
-                  <table className="min-w-full text-left text-sm text-slate-200">
-                    <thead className="bg-slate-800">
+                <p className="text-slate-700 mb-4">
+                  Below is a quick summary. The full detail follows in each numbered section.
+                </p>
+                <div className="overflow-x-auto rounded-lg border border-slate-200 overflow-hidden bg-white/60">
+                  <table className="min-w-full text-left text-sm text-slate-700">
+                    <thead className="bg-slate-900 text-white">
                       <tr>
-                        <th className="px-4 py-3 font-semibold text-slate-200">
-                          Topic
-                        </th>
-                        <th className="px-4 py-3 font-semibold text-slate-200">
-                          Short answer
-                        </th>
-                        <th className="px-4 py-3 font-semibold text-slate-200">
-                          Read more
-                        </th>
+                        <th className="px-4 py-3 font-semibold">Topic</th>
+                        <th className="px-4 py-3 font-semibold">Short Answer</th>
+                        <th className="px-4 py-3 font-semibold">Section</th>
                       </tr>
                     </thead>
-                    <tbody className="divide-y divide-slate-700">
+                    <tbody className="divide-y divide-slate-200">
                       <tr>
+                        <td className="px-4 py-3 align-top">Who controls your data?</td>
                         <td className="px-4 py-3 align-top">
-                          Who is responsible?
+                          DMS Enterprise (eenmanszaak), trading as Domu Match (handelsnaam), Netherlands.
+                        </td>
+                        <td className="px-4 py-3 align-top">§ Who We Are</td>
+                      </tr>
+                      <tr>
+                        <td className="px-4 py-3 align-top">What do we collect?</td>
+                        <td className="px-4 py-3 align-top">
+                          Account info, lifestyle answers, ID verification status, messages, beta feedback & logs.
+                        </td>
+                        <td className="px-4 py-3 align-top">§ Data We Collect</td>
+                      </tr>
+                      <tr>
+                        <td className="px-4 py-3 align-top">Why?</td>
+                        <td className="px-4 py-3 align-top">
+                          To match you, keep the platform safe, run the beta, and improve the product.
+                        </td>
+                        <td className="px-4 py-3 align-top">§ Purposes & Legal Bases</td>
+                      </tr>
+                      <tr>
+                        <td className="px-4 py-3 align-top">Legal basis (GDPR)</td>
+                        <td className="px-4 py-3 align-top">
+                          Contract, consent (lifestyle & beta feedback), legitimate interest (security).
+                        </td>
+                        <td className="px-4 py-3 align-top">§ Purposes & Legal Bases</td>
+                      </tr>
+                      <tr>
+                        <td className="px-4 py-3 align-top">Do we store your ID?</td>
+                        <td className="px-4 py-3 align-top">
+                          No. Persona processes it; we only receive a verification result.
+                        </td>
+                        <td className="px-4 py-3 align-top">§ ID Verification</td>
+                      </tr>
+                      <tr>
+                        <td className="px-4 py-3 align-top">Who else sees your data?</td>
+                        <td className="px-4 py-3 align-top">
+                          Persona, EU cloud providers, anonymized stats to Pilot Universities only.
+                        </td>
+                        <td className="px-4 py-3 align-top">§ Third-Party Disclosures</td>
+                      </tr>
+                      <tr>
+                        <td className="px-4 py-3 align-top">How long do we keep it?</td>
+                        <td className="px-4 py-3 align-top">
+                          While your account is active; 1 year inactivity triggers deletion.
+                        </td>
+                        <td className="px-4 py-3 align-top">§ Data Retention</td>
+                      </tr>
+                      <tr>
+                        <td className="px-4 py-3 align-top">What happens after beta?</td>
+                        <td className="px-4 py-3 align-top">
+                          We will notify you at least 30 days in advance of any data wipe or migration.
+                        </td>
+                        <td className="px-4 py-3 align-top">§ Beta-Specific Data</td>
+                      </tr>
+                      <tr>
+                        <td className="px-4 py-3 align-top">Your rights?</td>
+                        <td className="px-4 py-3 align-top">
+                          Access, rectify, delete, port, withdraw consent, object.
+                        </td>
+                        <td className="px-4 py-3 align-top">§ Your Rights</td>
+                      </tr>
+                      <tr>
+                        <td className="px-4 py-3 align-top">Data breach?</td>
+                        <td className="px-4 py-3 align-top">
+                          We notify affected users and the Dutch DPA within 72 hours of confirmed breach.
+                        </td>
+                        <td className="px-4 py-3 align-top">§ Security</td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </section>
+
+              {/* 2. Who We Are and Scope */}
+              <section className="mb-12">
+                <h2 className="text-2xl font-semibold text-slate-900 mb-4">
+                  2. Who We Are and Scope
+                </h2>
+                <h3 className="text-xl font-semibold text-slate-900 mb-2">Controller</h3>
+                <p className="text-slate-700 mb-4">
+                  The controller responsible for your personal data is Domu Match, a trade name (handelsnaam)
+                  registered to DMS Enterprise (eenmanszaak) in the Netherlands with KVK number 97573337. Contact
+                  details are in Section 13.
+                </p>
+                <h3 className="text-xl font-semibold text-slate-900 mb-2">Who this policy applies to</h3>
+                <ul className="list-disc pl-6 text-slate-700 mb-4 space-y-1">
+                  <li>Students (17+) and young professionals using Domu Match to find roommates.</li>
+                  <li>Visitors to our website or app.</li>
+                  <li>Beta testers who registered via domumatch.com/beta or an invite link.</li>
+                  <li>Users connected through Pilot Universities.</li>
+                </ul>
+              </section>
+
+              {/* 3. Data We Collect */}
+              <section className="mb-12">
+                <h2 className="text-2xl font-semibold text-slate-900 mb-4">
+                  3. Data We Collect
+                </h2>
+                <h3 className="text-xl font-semibold text-slate-900 mb-2">3.1 Account and Profile Data</h3>
+                <ul className="list-disc pl-6 text-slate-700 mb-6 space-y-1">
+                  <li>Name, email address, and password.</li>
+                  <li>University name, study programme, year of study, general schedule.</li>
+                  <li>Housing preferences (location, budget, room type, move-in date).</li>
+                  <li>Optional Profile Picture</li>
+                </ul>
+
+                <h3 className="text-xl font-semibold text-slate-900 mb-2">
+                  3.2 Lifestyle and Behavioural Data (Harmony Questionnaire)
+                </h3>
+                <p className="text-slate-700 mb-3">
+                  To improve roommate matching, we offer a lifestyle questionnaire covering:
+                </p>
+                <ul className="list-disc pl-6 text-slate-700 mb-4 space-y-1">
+                  <li>Daily rhythms (wake/sleep times, noise tolerance).</li>
+                  <li>Tidiness and use of shared spaces.</li>
+                  <li>Social habits (visitors, parties, introvert/extrovert preferences).</li>
+                  <li>Study/social balance.</li>
+                </ul>
+                <p className="text-slate-700 mb-6">
+                  <span className="font-semibold">Sensitive data:</span> Some answers may indirectly hint and/or reveal
+                  data about topics such as your health, religion and sexual orientation. We only process this data
+                  with your explicit consent.
+                </p>
+
+                <h3 className="text-xl font-semibold text-slate-900 mb-2">
+                  3.3 Beta-Specific Data (additional to normal use)
+                </h3>
+                <p className="text-slate-700 mb-3">
+                  This section applies only during the beta period and would not apply once the full product
+                  launches.
+                </p>
+                <ul className="list-disc pl-6 text-slate-700 mb-6 space-y-1">
+                  <li>Crash reports and error logs (automatically captured when something breaks).</li>
+                  <li>
+                    Session recordings or heatmaps (if enabled) — you will be informed at sign-up and can opt out
+                    in Settings.
+                  </li>
+                  <li>In-app feedback submissions and bug reports you submit voluntarily.</li>
+                  <li>Usability survey responses.</li>
+                  <li>
+                    Feature interaction logs (e.g., which screens you visit, how long you spend on steps).
+                  </li>
+                </ul>
+                <p className="text-slate-700 mb-6">
+                  We use this data solely to fix bugs, improve the product, and to inform us on design decisions.
+                </p>
+
+                <h3 className="text-xl font-semibold text-slate-900 mb-2">3.4 ID Verification (Persona)</h3>
+                <ul className="list-disc pl-6 text-slate-700 mb-6 space-y-1">
+                  <li>Persona processes your government ID and a selfie/liveness check.</li>
+                  <li>Domu Match does not store raw ID images or biometric templates.</li>
+                  <li>
+                    We receive only: verification status (verified / not verified), full name, date of birth, and
+                    issuing country.
+                  </li>
+                </ul>
+
+                <h3 className="text-xl font-semibold text-slate-900 mb-2">3.5 Communication and Chat</h3>
+                <ul className="list-disc pl-6 text-slate-700 mb-6 space-y-1">
+                  <li>Messages you send and receive, plus metadata (timestamps, read status).</li>
+                  <li>Your real identity is hidden from other users by default; you control when to reveal it.</li>
+                </ul>
+
+                <h3 className="text-xl font-semibold text-slate-900 mb-2">3.6 Usage and Technical Data</h3>
+                <ul className="list-disc pl-6 text-slate-700 mb-4 space-y-1">
+                  <li>Device type, OS, browser type, IP address, timestamps, pages viewed.</li>
+                  <li>
+                    Approximate location (country/region) derived from IP — used for security and anonymized
+                    analytics only.
+                  </li>
+                </ul>
+              </section>
+
+              {/* 4. Purposes and Legal Bases */}
+              <section className="mb-12">
+                <h2 className="text-2xl font-semibold text-slate-900 mb-4">
+                  4. Purposes and Legal Bases (Art. 6 GDPR)
+                </h2>
+                <div className="overflow-x-auto rounded-lg border border-slate-200 overflow-hidden bg-white/60">
+                  <table className="min-w-full text-left text-sm text-slate-700">
+                    <thead className="bg-slate-900 text-white">
+                      <tr>
+                        <th className="px-4 py-3 font-semibold">Purpose</th>
+                        <th className="px-4 py-3 font-semibold">Examples</th>
+                        <th className="px-4 py-3 font-semibold">Legal Basis (GDPR Art. 6)</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-slate-200">
+                      <tr>
+                        <td className="px-4 py-3 align-top">Account &amp; matching</td>
+                        <td className="px-4 py-3 align-top">
+                          Create account, suggesting roommates, enabling chat
+                        </td>
+                        <td className="px-4 py-3 align-top">Art. 6(1)(b) — Contract</td>
+                      </tr>
+                      <tr>
+                        <td className="px-4 py-3 align-top">Deep lifestyle profiling</td>
+                        <td className="px-4 py-3 align-top">
+                          200-questionnaire — Harmony/Context scores
+                        </td>
+                        <td className="px-4 py-3 align-top">Art. 6(1)(a) + Art. 9(2)(a) — Consent</td>
+                      </tr>
+                      <tr>
+                        <td className="px-4 py-3 align-top">Beta testing &amp; product improvement</td>
+                        <td className="px-4 py-3 align-top">
+                          Bug logs, crash reports, session data, feedback forms, usability surveys
+                        </td>
+                        <td className="px-4 py-3 align-top">Art. 6(1)(a) — Consent (at sign-up)</td>
+                      </tr>
+                      <tr>
+                        <td className="px-4 py-3 align-top">Platform security &amp; fraud prevention</td>
+                        <td className="px-4 py-3 align-top">
+                          ID verification, abuse reporting, incident logs
+                        </td>
+                        <td className="px-4 py-3 align-top">Art. 6(1)(f) — Legitimate interest</td>
+                      </tr>
+                      <tr>
+                        <td className="px-4 py-3 align-top">University analytics</td>
+                        <td className="px-4 py-3 align-top">
+                          Anonymized housing/matching statistics for Pilot Universities
                         </td>
                         <td className="px-4 py-3 align-top">
-                          Domu Match B.V. is the controller responsible for
-                          your personal data.
-                        </td>
-                        <td className="px-4 py-3 align-top">
-                          See “Who We Are and Scope”.
+                          Anonymized = not personal data; pre-anonymization steps: legitimate interest
                         </td>
                       </tr>
                       <tr>
+                        <td className="px-4 py-3 align-top">Legal compliance</td>
                         <td className="px-4 py-3 align-top">
-                          What data do we collect?
+                          Responding to lawful authority requests, record-keeping obligations
                         </td>
+                        <td className="px-4 py-3 align-top">Art. 6(1)(c) — Legal obligation</td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+                <p className="text-slate-700 mt-4">
+                  You can withdraw consent for the lifestyle questionnaire or beta data collection at any time in
+                  Settings. We will stop using those data for new purposes and delete or anonymize them within a
+                  reasonable period.
+                </p>
+              </section>
+
+              {/* 5. Beta-Specific Data */}
+              <section className="mb-12">
+                <h2 className="text-2xl font-semibold text-slate-900 mb-4">
+                  5. Beta-Specific Data: What Happens After Beta
+                </h2>
+                <p className="text-slate-700 mb-4">
+                  This is one of the most important sections for beta testers to understand.
+                </p>
+                <div className="overflow-x-auto rounded-lg border border-slate-200 overflow-hidden bg-white/60">
+                  <table className="min-w-full text-left text-sm text-slate-700">
+                    <thead className="bg-slate-900 text-white">
+                      <tr>
+                        <th className="px-4 py-3 font-semibold">Event</th>
+                        <th className="px-4 py-3 font-semibold">What happens to your data</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-slate-200">
+                      <tr>
+                        <td className="px-4 py-3 align-top">Beta ends, product launches</td>
                         <td className="px-4 py-3 align-top">
-                          Account details, ID verification status, answers to a
-                          lifestyle questionnaire, (for students) academic
-                          context, and in-app messages.
-                        </td>
-                        <td className="px-4 py-3 align-top">
-                          See “Data We Collect”.
+                          Your account and profile data carry over unless you delete them. Beta-specific logs and
+                          session recordings are deleted within 90 days of launch.
                         </td>
                       </tr>
                       <tr>
+                        <td className="px-4 py-3 align-top">Beta is discontinued (no launch)</td>
                         <td className="px-4 py-3 align-top">
-                          Why do we collect it?
-                        </td>
-                        <td className="px-4 py-3 align-top">
-                          To match you with potential roommates, keep the
-                          platform safe, and provide anonymized “Student
-                          Success” analytics to universities.
-                        </td>
-                        <td className="px-4 py-3 align-top">
-                          See “Purposes and Legal Bases”.
+                          We will give you at least 30 days’ notice. You may export your questionnaire data. All
+                          personal data will be deleted or anonymized within 60 days of shutdown.
                         </td>
                       </tr>
                       <tr>
+                        <td className="px-4 py-3 align-top">Data reset during beta</td>
                         <td className="px-4 py-3 align-top">
-                          Legal basis (GDPR)
-                        </td>
-                        <td className="px-4 py-3 align-top">
-                          Contract (to run the service), your consent (for deep
-                          lifestyle data), and our legitimate interest (for
-                          security and reporting).
-                        </td>
-                        <td className="px-4 py-3 align-top">
-                          See “Purposes and Legal Bases (Art. 6 GDPR)”.
-                        </td>
-                      </tr>
-                      <tr>
-                        <td className="px-4 py-3 align-top">
-                          How does matching work?
-                        </td>
-                        <td className="px-4 py-3 align-top">
-                          The algorithm combines a Harmony score (≈75%,
-                          lifestyle) and a Context score (≈25%, academic and
-                          practical info) to suggest, not decide, matches.
-                        </td>
-                        <td className="px-4 py-3 align-top">
-                          See “Automated Decision-Making and Profiling”.
-                        </td>
-                      </tr>
-                      <tr>
-                        <td className="px-4 py-3 align-top">
-                          Do we store your ID?
-                        </td>
-                        <td className="px-4 py-3 align-top">
-                          ID checks are done by Persona. Domu Match does not
-                          store your raw ID images or biometric templates. We
-                          receive only a verification result and limited ID
-                          data.
-                        </td>
-                        <td className="px-4 py-3 align-top">
-                          See “ID Verification with Persona”.
-                        </td>
-                      </tr>
-                      <tr>
-                        <td className="px-4 py-3 align-top">
-                          Who else sees your data?
-                        </td>
-                        <td className="px-4 py-3 align-top">
-                          Persona (ID checks), EU cloud hosting providers, and
-                          Pilot Universities (only anonymized and aggregated
-                          data).
-                        </td>
-                        <td className="px-4 py-3 align-top">
-                          See “Third-Party Disclosures”.
-                        </td>
-                      </tr>
-                      <tr>
-                        <td className="px-4 py-3 align-top">
-                          How long do we keep it?
-                        </td>
-                        <td className="px-4 py-3 align-top">
-                          While your account is active. If your account is
-                          inactive for 1 year, we delete or anonymize your
-                          personal data.
-                        </td>
-                        <td className="px-4 py-3 align-top">
-                          See “Data Retention (Storage Limitation)”.
-                        </td>
-                      </tr>
-                      <tr>
-                        <td className="px-4 py-3 align-top">
-                          What are your rights?
-                        </td>
-                        <td className="px-4 py-3 align-top">
-                          You can access, correct, delete, and download your
-                          data, withdraw consent for the questionnaire, and
-                          object to certain uses.
-                        </td>
-                        <td className="px-4 py-3 align-top">
-                          See “Your Rights as a Student”.
-                        </td>
-                      </tr>
-                      <tr>
-                        <td className="px-4 py-3 align-top">
-                          How do we protect your data?
-                        </td>
-                        <td className="px-4 py-3 align-top">
-                          Encryption in transit (TLS) and at rest, access
-                          controls, and compliance with 2026 Cybersecurity Act
-                          (Cbw) principles.
-                        </td>
-                        <td className="px-4 py-3 align-top">
-                          See “Security Measures”.
+                          We may reset certain test data (e.g., matches, scores) for technical reasons. We will
+                          notify you in-app at least 7 days in advance where possible.
                         </td>
                       </tr>
                     </tbody>
@@ -188,591 +342,271 @@ export default function PrivacyPage() {
                 </div>
               </section>
 
-              {/* Who We Are and Scope */}
+              {/* 6. Automated Decision-Making and Profiling */}
               <section className="mb-12">
-                <h2 className="text-2xl font-semibold text-white mb-4">
-                  Who We Are and Scope
+                <h2 className="text-2xl font-semibold text-slate-900 mb-4">
+                  6. Automated Decision-Making and Profiling (Art. 22 GDPR)
                 </h2>
-                <h3 className="text-xl font-semibold text-white mb-2">
-                  Controller
-                </h3>
-                <p className="text-slate-400 mb-4">
-                  The controller responsible for your personal data is Domu
-                  Match B.V., registered in the Netherlands. You will find our
-                  contact details in the “Contact and Complaints” section.
+                <h3 className="text-xl font-semibold text-slate-900 mb-2">How the matching algorithm works</h3>
+                <ul className="list-disc pl-6 text-slate-700 mb-4 space-y-1">
+                  <li>Harmony score — based on lifestyle answers.</li>
+                  <li>Context score — based on academic/practical context.</li>
+                  <li>These combine into a compatibility score used to rank suggested profiles.</li>
+                </ul>
+                <p className="text-slate-700 mb-4">
+                  <span className="font-semibold">No binding decisions:</span> The algorithm only suggests matches.
+                  You always choose who to contact and live with. No automated system produces legal or similarly
+                  significant effects about you.
                 </p>
-                <h3 className="text-xl font-semibold text-white mb-2">
-                  Who this policy is for
-                </h3>
-                <p className="text-slate-400 mb-4">
-                  This policy applies to students and young professionals
-                  (typically 17+) using Domu Match to find roommates, visitors to
-                  our website or app, and users (including students) connected
-                  through participating Pilot Universities.
+                <h3 className="text-xl font-semibold text-slate-900 mb-2">EU AI Act transparency</h3>
+                <p className="text-slate-700">
+                  In line with EU AI Act transparency obligations, we disclose that we use automated systems for
+                  matching, explain the main factors, and regularly review the system to reduce unfair bias. Contact
+                  us if you believe the system treats you unfairly.
                 </p>
               </section>
 
-              {/* Data We Collect */}
+              {/* 7. Third-Party Disclosures */}
               <section className="mb-12">
-                <h2 className="text-2xl font-semibold text-white mb-4">
-                  Data We Collect
+                <h2 className="text-2xl font-semibold text-slate-900 mb-4">
+                  7. Third-Party Disclosures
                 </h2>
-                <h3 className="text-xl font-semibold text-white mb-2">
-                  Account and profile data
-                </h3>
-                <p className="text-slate-400 mb-2">
-                  We collect basic account and profile details, such as:
-                </p>
-                <ul className="list-disc pl-6 text-slate-400 mb-4 space-y-1">
-                  <li>Name, email address, and hashed password.</li>
-                  <li>
-                    University name, study programme, year of study, and
-                    general schedule.
-                  </li>
-                  <li>
-                    Housing preferences (location, budget, room type, move-in
-                    date).
-                  </li>
-                  <li>Optional profile picture.</li>
+                <h3 className="text-xl font-semibold text-slate-900 mb-2">Persona (ID Verification)</h3>
+                <ul className="list-disc pl-6 text-slate-700 mb-6 space-y-1">
+                  <li>Processes your government ID and selfie/video as our data processor.</li>
+                  <li>We receive only the verification outcome and limited attributes.</li>
                 </ul>
 
-                <h3 className="text-xl font-semibold text-white mb-2">
-                  Lifestyle and behavioural data (Harmony questionnaire)
-                </h3>
-                <p className="text-slate-400 mb-2">
-                  To improve roommate matching, we offer a 200-question
-                  lifestyle questionnaire (8 blocks of 25 questions). It covers
-                  for example:
-                </p>
-                <ul className="list-disc pl-6 text-slate-400 mb-4 space-y-1">
-                  <li>Daily rhythms (wake-up time, sleep time, noise level).</li>
-                  <li>
-                    Tidiness and use of shared spaces (cleaning habits,
-                    organisation).
-                  </li>
-                  <li>
-                    Social habits (visitors, parties, shared meals, introvert /
-                    extrovert preferences).
-                  </li>
-                  <li>
-                    Study vs. social balance (how you like to spend weekdays and
-                    weekends).
-                  </li>
-                </ul>
-                <p className="text-slate-400 mb-4">
-                  Some answers may indirectly reveal sensitive data (for
-                  example, about your health, religion, or sexual orientation).
-                  You are never forced to share this: you can skip such
-                  questions or answer in a neutral way. We only process this
-                  deep lifestyle data with your explicit consent.
-                </p>
-
-                <h3 className="text-xl font-semibold text-white mb-2">
-                  ID Verification with Persona
-                </h3>
-                <p className="text-slate-400 mb-2">
-                  To reduce fraud and impersonation, we use Persona as our ID
-                  verification provider:
-                </p>
-                <ul className="list-disc pl-6 text-slate-400 mb-4 space-y-1">
-                  <li>
-                    During verification, Persona processes images or scans of
-                    your government ID and, where needed, a selfie or video for
-                    biometric comparison.
-                  </li>
-                  <li>
-                    Domu Match does not store your raw ID images or biometric
-                    templates.
-                  </li>
-                  <li>
-                    We receive only a verification status (for example:
-                    verified / not verified) and limited ID data (such as full
-                    name, date of birth, issuing country) needed to link the
-                    verification to your account.
-                  </li>
+                <h3 className="text-xl font-semibold text-slate-900 mb-2">Cloud Hosting Providers</h3>
+                <ul className="list-disc pl-6 text-slate-700 mb-6 space-y-1">
+                  <li>We use EU-based servers (e.g., AWS/Azure/Google Cloud EU regions) under data processing agreements.</li>
+                  <li>Providers may not use your data for their own marketing.</li>
                 </ul>
 
-                <h3 className="text-xl font-semibold text-white mb-2">
-                  Communication and chat
+                <h3 className="text-xl font-semibold text-slate-900 mb-2">
+                  Beta Tooling (e.g., crash reporting, session recording tools)
                 </h3>
-                <p className="text-slate-400 mb-2">
-                  When you use our internal chat, we process:
-                </p>
-                <ul className="list-disc pl-6 text-slate-400 mb-4 space-y-1">
-                  <li>Messages you send and receive.</li>
-                  <li>Message metadata such as timestamps and read status.</li>
+                <ul className="list-disc pl-6 text-slate-700 mb-6 space-y-1">
+                  <li>
+                    Where third-party tools are used for beta monitoring (e.g., Sentry, or similar), these act as
+                    data processors under GDPR-compliant agreements.
+                  </li>
+                  <li>We will list active beta tools in our Cookie/Tracking Notice.</li>
                 </ul>
-                <p className="text-slate-400 mb-4">
-                  By default, your real identity (full name and contact
-                  details) is concealed from other users. You control when and
-                  whether to mutually reveal your identity or share contact
-                  details.
-                </p>
 
-                <h3 className="text-xl font-semibold text-white mb-2">
-                  Usage and technical data
-                </h3>
-                <p className="text-slate-400 mb-2">
-                  We collect device and technical data to run and secure the
-                  platform, such as:
-                </p>
-                <ul className="list-disc pl-6 text-slate-400 mb-4 space-y-1">
-                  <li>Device type, operating system, browser type.</li>
-                  <li>
-                    IP address, timestamps, pages and screens viewed, and approximate location
-                    (country and sometimes city/region) derived from your IP address. We use this
-                    for security monitoring and anonymized, aggregated analytics such as geographic
-                    distribution dashboards for universities.
-                  </li>
-                  <li>
-                    Actions such as starting the questionnaire, sending
-                    messages, or updating your profile.
-                  </li>
+                <h3 className="text-xl font-semibold text-slate-900 mb-2">Pilot Universities</h3>
+                <ul className="list-disc pl-6 text-slate-700 mb-4 space-y-1">
+                  <li>Receive only anonymized and aggregated data (cannot identify you).</li>
+                  <li>Any research needing more detailed data requires your explicit consent.</li>
                 </ul>
               </section>
 
-              {/* Purposes and Legal Bases */}
+              <p className="text-slate-900 font-semibold mb-6">
+                We do not sell your personal data to any third party, ever.
+              </p>
+
+              {/* 8. Data Retention */}
               <section className="mb-12">
-                <h2 className="text-2xl font-semibold text-white mb-4">
-                  Purposes and Legal Bases (Art. 6 GDPR)
+                <h2 className="text-2xl font-semibold text-slate-900 mb-4">
+                  8. Data Retention
                 </h2>
-                <p className="text-slate-400 mb-4">
-                  We must have a clear legal basis for each way we use your
-                  data. Below is an overview of what we do and why we are
-                  allowed to do it.
+                <ul className="list-disc pl-6 text-slate-700 mb-4 space-y-1">
+                  <li>Most personal data: kept while your account is active.</li>
+                  <li>Inactivity: accounts inactive for 1 year are deleted or anonymized (Dutch DPA guidance).</li>
+                  <li>
+                    Lifestyle questionnaire data: deleted/anonymized when you withdraw consent or delete your
+                    account.
+                  </li>
+                  <li>
+                    Beta logs and session data: deleted within 90 days of beta end or your account deletion,
+                    whichever comes first.
+                  </li>
+                  <li>Security/incident logs: may be kept longer where required by law or for ongoing investigations.</li>
+                </ul>
+              </section>
+
+              {/* 9. Data Breach Notification */}
+              <section className="mb-12">
+                <h2 className="text-2xl font-semibold text-slate-900 mb-4">
+                  9. Data Breach Notification
+                </h2>
+                <p className="text-slate-700 mb-3">
+                  In the event of a personal data breach that is likely to result in a risk to your rights and
+                  freedoms, we will:
                 </p>
-                <div className="overflow-x-auto rounded-lg border border-slate-700 overflow-hidden mb-6">
-                  <table className="min-w-full text-left text-sm text-slate-200">
-                    <thead className="bg-slate-800">
+                <ul className="list-disc pl-6 text-slate-700 mb-4 space-y-1">
+                  <li>Notify the Autoriteit Persoonsgegevens (Dutch DPA) within 72 hours of becoming aware.</li>
+                  <li>
+                    Notify affected users without undue delay if the breach is likely to result in a high risk to
+                    you personally.
+                  </li>
+                  <li>Describe the nature of the breach, data affected, likely consequences, and measures taken.</li>
+                </ul>
+              </section>
+
+              {/* 10. Your Rights */}
+              <section className="mb-12">
+                <h2 className="text-2xl font-semibold text-slate-900 mb-4">
+                  10. Your Rights
+                </h2>
+                <p className="text-slate-700 mb-4">
+                  Under the GDPR and UAVG, you have the following rights, typically exercisable through Settings or
+                  by contacting us:
+                </p>
+                <div className="overflow-x-auto rounded-lg border border-slate-200 overflow-hidden bg-white/60">
+                  <table className="min-w-full text-left text-sm text-slate-700">
+                    <thead className="bg-slate-900 text-white">
                       <tr>
-                        <th className="px-4 py-3 font-semibold text-slate-200">
-                          Purpose
-                        </th>
-                        <th className="px-4 py-3 font-semibold text-slate-200">
-                          Examples
-                        </th>
-                        <th className="px-4 py-3 font-semibold text-slate-200">
-                          Legal basis
-                        </th>
+                        <th className="px-4 py-3 font-semibold">Right</th>
+                        <th className="px-4 py-3 font-semibold">What it means</th>
                       </tr>
                     </thead>
-                    <tbody className="divide-y divide-slate-700">
+                    <tbody className="divide-y divide-slate-200">
                       <tr>
+                        <td className="px-4 py-3 align-top">Access</td>
+                        <td className="px-4 py-3 align-top">Request a copy of all data we hold about you.</td>
+                      </tr>
+                      <tr>
+                        <td className="px-4 py-3 align-top">Rectification</td>
+                        <td className="px-4 py-3 align-top">Correct inaccurate or incomplete data.</td>
+                      </tr>
+                      <tr>
+                        <td className="px-4 py-3 align-top">Erasure</td>
                         <td className="px-4 py-3 align-top">
-                          Run your account and provide matching
-                        </td>
-                        <td className="px-4 py-3 align-top">
-                          Creating your account, suggesting compatible
-                          roommates, enabling chat.
-                        </td>
-                        <td className="px-4 py-3 align-top">
-                          Contractual necessity (Art. 6(1)(b) GDPR).
+                          Request deletion of your account and personal data (subject to legal exceptions).
                         </td>
                       </tr>
                       <tr>
+                        <td className="px-4 py-3 align-top">Withdraw consent</td>
                         <td className="px-4 py-3 align-top">
-                          Deep lifestyle/profiling data
-                        </td>
-                        <td className="px-4 py-3 align-top">
-                          Using your 200-question lifestyle answers to compute
-                          Harmony scores.
-                        </td>
-                        <td className="px-4 py-3 align-top">
-                          Your explicit consent (Art. 6(1)(a), and Art. 9(2)(a)
-                          for any special-category aspects).
+                          Withdraw consent for lifestyle questionnaire or beta data collection at any time.
                         </td>
                       </tr>
                       <tr>
+                        <td className="px-4 py-3 align-top">Data portability</td>
                         <td className="px-4 py-3 align-top">
-                          Platform security and reporting
-                        </td>
-                        <td className="px-4 py-3 align-top">
-                          ID verification, fraud prevention, abuse reporting,
-                          logs.
-                        </td>
-                        <td className="px-4 py-3 align-top">
-                          Legitimate interest (Art. 6(1)(f)) and, where
-                          applicable, legal obligations.
+                          Download your questionnaire responses and key data in a portable format.
                         </td>
                       </tr>
                       <tr>
+                        <td className="px-4 py-3 align-top">Object</td>
+                        <td className="px-4 py-3 align-top">Object to processing based on legitimate interest.</td>
+                      </tr>
+                      <tr>
+                        <td className="px-4 py-3 align-top">Restriction</td>
                         <td className="px-4 py-3 align-top">
-                          Student Success analytics for universities
-                        </td>
-                        <td className="px-4 py-3 align-top">
-                          Sharing anonymized statistics about housing and
-                          matching outcomes with Pilot Universities.
-                        </td>
-                        <td className="px-4 py-3 align-top">
-                          Anonymized data is no longer personal data; any
-                          necessary pre-anonymization steps rely on legitimate
-                          interest with safeguards.
+                          Ask us to temporarily restrict processing while we review a request.
                         </td>
                       </tr>
                     </tbody>
                   </table>
                 </div>
-                <p className="text-slate-400 mb-4">
-                  For the lifestyle questionnaire, you can always withdraw your
-                  consent. We will then stop using your lifestyle responses for
-                  new matches and delete or properly anonymize them (unless we
-                  must keep a small amount for legal reasons).
+                <p className="text-slate-700 mt-4">
+                  We may verify your identity before acting on a request. We aim to respond within one month as
+                  required by law.
+                </p>
+                <p className="text-slate-700 mt-3">
+                  You also have the right to lodge a complaint with the Autoriteit Persoonsgegevens:{' '}
+                  <a href="https://autoriteitpersoonsgegevens.nl" className="text-violet-600 underline">
+                    https://autoriteitpersoonsgegevens.nl
+                  </a>
                 </p>
               </section>
 
-              {/* Data Minimization and Purpose Limitation */}
+              {/* 11. Minors */}
               <section className="mb-12">
-                <h2 className="text-2xl font-semibold text-white mb-4">
-                  Data Minimization and Purpose Limitation
+                <h2 className="text-2xl font-semibold text-slate-900 mb-4">
+                  11. Minors (Age 17–18)
                 </h2>
-                <p className="text-slate-400 mb-4">
-                  We carefully design our questions and data fields so that we
-                  only ask for what we truly need. Our main purposes are:
-                </p>
-                <ul className="list-disc pl-6 text-slate-400 mb-4 space-y-1">
-                  <li>Roommate matching and related communication.</li>
-                  <li>
-                    Platform safety, fraud prevention, and responding to
-                    reports.
-                  </li>
-                  <li>
-                    Anonymized, high-level “Student Success” analytics for
-                    universities.
-                  </li>
-                </ul>
-                <p className="text-slate-400 mb-4">
-                  We do not use your personal data for unrelated advertising,
-                  and we do not sell your personal data to commercial third
-                  parties. If we ever want to use your data for a new purpose
-                  that is not compatible with these, we will tell you first and
-                  ask for consent where required.
+                <p className="text-slate-700">
+                  Domu Match is open to users aged 17 and above. Users under 18 are permitted, but we encourage
+                  parents or guardians to review this policy. If you are under 18 and based in the Netherlands, you
+                  may use our platform without parental consent under Dutch law, as Domu Match is a practical
+                  housing service. We do not use data of under-18 users for any purpose other than operating the
+                  service.
                 </p>
               </section>
 
-              {/* Automated Decision-Making and Profiling */}
+              {/* 12. Security Measures */}
               <section className="mb-12">
-                <h2 className="text-2xl font-semibold text-white mb-4">
-                  Automated Decision-Making and Profiling (Art. 22 GDPR)
+                <h2 className="text-2xl font-semibold text-slate-900 mb-4">
+                  12. Security Measures
                 </h2>
-                <h3 className="text-xl font-semibold text-white mb-2">
-                  How the matching algorithm works
-                </h3>
-                <p className="text-slate-400 mb-3">
-                  Domu Match uses automated processing to suggest potential
-                  roommates:
-                </p>
-                <ul className="list-disc pl-6 text-slate-400 mb-4 space-y-1">
+                <ul className="list-disc pl-6 text-slate-700 mb-4 space-y-1">
+                  <li>Encryption in transit (TLS/HTTPS) and at rest for all databases and storage.</li>
                   <li>
-                    <span className="font-semibold">Harmony score (≈75%)</span>{' '}
-                    – based mostly on your lifestyle answers (daily rhythms,
-                    tidiness, social habits, routines).
+                    Strict access controls — only authorized personnel with genuine need can access personal data.
                   </li>
-                  <li>
-                    <span className="font-semibold">Context score (≈25%)</span>{' '}
-                    – based on your academic and practical context (programme,
-                    year, schedule, budget).
-                  </li>
-                  <li>
-                    These two scores are combined into an overall compatibility
-                    score which we use to rank profiles you might be interested
-                    in.
-                  </li>
+                  <li>Regular updates, monitoring, and incident response procedures.</li>
+                  <li>Security by design and by default, in line with the 2026 Cybersecurity Act (Cbw).</li>
                 </ul>
-
-                <h3 className="text-xl font-semibold text-white mb-2">
-                  No solely automated legal or similarly significant decisions
-                </h3>
-                <p className="text-slate-400 mb-4">
-                  Our system only suggests possible roommates. It does not
-                  decide where you may live, your academic results, or any
-                  legal or financial outcome. You always choose who to contact,
-                  who to chat with, and who to live with. This means you are
-                  not subject to decisions with legal or similarly significant
-                  effects made solely by our algorithm.
-                </p>
-
-                <h3 className="text-xl font-semibold text-white mb-2">
-                  EU AI Act transparency
-                </h3>
-                <p className="text-slate-400 mb-4">
-                  In line with the EU AI Act transparency rules, we clearly
-                  inform you that we use automated systems for matching,
-                  explain the main factors (Harmony ≈ 75%, Context ≈ 25%), and
-                  regularly review the system to reduce unfair bias. You can
-                  contact us if you think the system treats you unfairly.
+                <p className="text-slate-700">
+                  No system is perfectly secure. We will notify you promptly if a breach affects you (see Section
+                  9).
                 </p>
               </section>
 
-              {/* Third-Party Disclosures */}
+              {/* 13. Contact and Complaints */}
               <section className="mb-12">
-                <h2 className="text-2xl font-semibold text-white mb-4">
-                  Third-Party Disclosures
+                <h2 className="text-2xl font-semibold text-slate-900 mb-4">
+                  13. Contact and Complaints
                 </h2>
-                <h3 className="text-xl font-semibold text-white mb-2">
-                  Persona (ID verification)
-                </h3>
-                <p className="text-slate-400 mb-3">
-                  We use Persona to perform identity checks:
-                </p>
-                <ul className="list-disc pl-6 text-slate-400 mb-4 space-y-1">
-                  <li>
-                    Persona may process your government ID and selfie/video and
-                    create biometric templates to confirm that the ID belongs to
-                    you.
-                  </li>
-                  <li>
-                    Domu Match does not store these raw images or biometric
-                    templates. We only receive the verification outcome and
-                    limited ID data linked to your account.
-                  </li>
+                <ul className="list-disc pl-6 text-slate-700 mb-4 space-y-1">
+                  <li>Privacy contact / DPO: domumatch@gmail.com</li>
+                  <li>Website: domumatch.com/contact</li>
                 </ul>
-
-                <h3 className="text-xl font-semibold text-white mb-2">
-                  Cloud hosting providers
-                </h3>
-                <p className="text-slate-400 mb-3">
-                  We host Domu Match using reputable cloud providers with
-                  servers in the EU (for example, AWS, Azure, or Google Cloud
-                  EU regions). These providers act as processors under data
-                  processing agreements and may only use your data to run the
-                  infrastructure, not for their own marketing.
-                </p>
-
-                <h3 className="text-xl font-semibold text-white mb-2">
-                  Pilot Universities (anonymized analytics)
-                </h3>
-                <p className="text-slate-400 mb-3">
-                  We may share anonymized and aggregated data with Pilot
-                  Universities to understand how housing and roommate matching
-                  relate to student success. Universities cannot identify you
-                  from these datasets. If a specific research project needs
-                  more detailed data, we will apply strict safeguards and, if
-                  necessary, ask for your consent.
-                </p>
-              </section>
-
-              {/* Data Retention */}
-              <section className="mb-12">
-                <h2 className="text-2xl font-semibold text-white mb-4">
-                  Data Retention (Storage Limitation)
-                </h2>
-                <p className="text-slate-400 mb-4">
-                  We keep your data only as long as we reasonably need it for
-                  the purposes described above or as required by law.
-                </p>
-                <ul className="list-disc pl-6 text-slate-400 mb-4 space-y-1">
-                  <li>
-                    We keep most of your personal data while your Domu Match
-                    account is active.
-                  </li>
-                  <li>
-                    If your account is inactive for 1 year, we delete or
-                    irreversibly anonymize your personal data, following Dutch
-                    Data Protection Authority guidance.
-                  </li>
-                  <li>
-                    Lifestyle questionnaire data is kept and used only while you
-                    keep your consent and your account is active; if you
-                    withdraw consent or delete your account, we delete or
-                    anonymize it within a reasonable period.
-                  </li>
-                  <li>
-                    Certain logs or security-related records may be kept for a
-                    bit longer where necessary to investigate incidents or meet
-                    legal requirements.
-                  </li>
-                </ul>
-              </section>
-
-              {/* Your Rights */}
-              <section className="mb-12">
-                <h2 className="text-2xl font-semibold text-white mb-4">
-                  Your Rights as a Student
-                </h2>
-                <p className="text-slate-400 mb-4">
-                  Under the GDPR and UAVG, you have several important rights.
-                  You can usually exercise them through your account settings or
-                  by contacting us.
-                </p>
-                <ul className="list-disc pl-6 text-slate-400 mb-4 space-y-1">
-                  <li>
-                    <span className="font-semibold">
-                      Right of access and information:
-                    </span>{' '}
-                    you can ask what data we hold about you and receive a copy.
-                  </li>
-                  <li>
-                    <span className="font-semibold">
-                      Right to rectification:
-                    </span>{' '}
-                    you can correct inaccurate or incomplete data.
-                  </li>
-                  <li>
-                    <span className="font-semibold">
-                      Right to erasure (“right to be forgotten”):
-                    </span>{' '}
-                    you can request deletion of your account and personal data,
-                    subject to limited legal exceptions.
-                  </li>
-                  <li>
-                    <span className="font-semibold">
-                      Right to withdraw consent:
-                    </span>{' '}
-                    you can withdraw your consent for the lifestyle
-                    questionnaire at any time, and we will stop using those
-                    data for new matches.
-                  </li>
-                  <li>
-                    <span className="font-semibold">
-                      Right to data portability:
-                    </span>{' '}
-                    you can download your questionnaire results and other key
-                    data in a portable format, where technically feasible.
-                  </li>
-                  <li>
-                    <span className="font-semibold">
-                      Right to object and to restriction:
-                    </span>{' '}
-                    you can object to certain processing based on legitimate
-                    interest and ask us to temporarily restrict processing
-                    while we review your request.
-                  </li>
-                </ul>
-                <p className="text-slate-400 mb-4">
-                  We may ask you to verify your identity before we handle your
-                  request. We aim to respond within one month, as required by
-                  law.
-                </p>
-              </section>
-
-              {/* Security Measures */}
-              <section className="mb-12">
-                <h2 className="text-2xl font-semibold text-white mb-4">
-                  Security Measures
-                </h2>
-                <p className="text-slate-400 mb-4">
-                  We use technical and organizational measures to protect your
-                  data, including:
-                </p>
-                <ul className="list-disc pl-6 text-slate-400 mb-4 space-y-1">
-                  <li>
-                    Encryption in transit (TLS/HTTPS) and encryption at rest for
-                    our databases and storage.
-                  </li>
-                  <li>
-                    Strict access controls: only authorized staff with a real
-                    need can access personal data.
-                  </li>
-                  <li>
-                    Regular updates, monitoring, and incident response
-                    procedures.
-                  </li>
-                </ul>
-                <p className="text-slate-400 mb-4">
-                  We design Domu Match in line with the principles of the 2026
-                  Cybersecurity Act (Cbw), focusing on digital resilience and
-                  security by design and by default. No system is perfectly
-                  secure, but we work hard to minimize risks.
-                </p>
-              </section>
-
-              {/* Contact and Complaints */}
-              <section className="mb-12">
-                <h2 className="text-2xl font-semibold text-white mb-4">
-                  Contact and Complaints
-                </h2>
-                <p className="text-slate-400 mb-3">
-                  If you have questions or want to exercise your rights, you
-                  can contact our privacy contact / Data Protection Officer
-                  (DPO):
-                </p>
-                <ul className="list-disc pl-6 text-slate-400 mb-4 space-y-1">
-                  <li>Name: DPO Domu Match</li>
-                  <li>Email: privacy@domumatch.example</li>
-                  <li>
-                    Postal address: Domu Match B.V., [Street and number], [ZIP
-                    code] [City], The Netherlands
-                  </li>
-                </ul>
-                <p className="text-slate-400 mb-3">
-                  You also have the right to lodge a complaint with your local
-                  data protection authority. In the Netherlands, this is the
-                  Autoriteit Persoonsgegevens (Dutch Data Protection Authority)
-                  at{' '}
-                  <a
-                    href="https://autoriteitpersoonsgegevens.nl"
-                    className="text-violet-400 underline"
-                  >
+                <p className="text-slate-700">
+                  If you would like to, you may contact the Autoriteit Persoonsgegevens at{' '}
+                  <a href="https://autoriteitpersoonsgegevens.nl" className="text-violet-600 underline">
                     https://autoriteitpersoonsgegevens.nl
                   </a>
                   .
                 </p>
               </section>
 
-              {/* Definitions */}
+              {/* 14. Definitions */}
               <section className="mb-16">
-                <h2 className="text-2xl font-semibold text-white mb-4">
-                  Definitions
+                <h2 className="text-2xl font-semibold text-slate-900 mb-4">
+                  14. Definitions
                 </h2>
-                <dl className="space-y-4 text-slate-400">
+                <dl className="space-y-4 text-slate-700">
                   <div>
-                    <dt className="font-semibold text-white">
-                      Personal data
-                    </dt>
+                    <dt className="font-semibold text-slate-900">Personal data</dt>
+                    <dd>Any information relating to an identified or identifiable person.</dd>
+                  </div>
+                  <div>
+                    <dt className="font-semibold text-slate-900">Special category data</dt>
                     <dd>
-                      Any information that relates to an identified or
-                      identifiable person (for example, your name, email, user
-                      ID, or a combination of lifestyle answers that can be
-                      linked to you).
+                      Particularly sensitive data (health, racial/ethnic origin, religion, sexual orientation)
+                      requiring extra protection and explicit consent.
                     </dd>
                   </div>
                   <div>
-                    <dt className="font-semibold text-white">
-                      Special category data
-                    </dt>
+                    <dt className="font-semibold text-slate-900">Biometric data</dt>
                     <dd>
-                      Particularly sensitive data such as health information,
-                      data about racial or ethnic origin, religious or
-                      philosophical beliefs, or sexual orientation. These
-                      require extra protection and usually explicit consent.
+                      Data from technical processing of physical characteristics that allows unique identification.
+                      Persona may create biometric templates during ID checks; Domu Match does not store these.
                     </dd>
                   </div>
                   <div>
-                    <dt className="font-semibold text-white">
-                      Biometric data
-                    </dt>
+                    <dt className="font-semibold text-slate-900">Profiling</dt>
                     <dd>
-                      Personal data resulting from technical processing of
-                      physical or behavioural characteristics (like facial
-                      images) that allow or confirm unique identification. For
-                      Domu Match, Persona may create biometric templates during
-                      ID verification, but Domu Match itself does not store
-                      those templates or raw ID images.
+                      Automated processing to evaluate personal aspects (preferences, behaviour). For Domu Match this
+                      means computing Harmony and Context scores.
                     </dd>
                   </div>
                   <div>
-                    <dt className="font-semibold text-white">Profiling</dt>
+                    <dt className="font-semibold text-slate-900">Beta tester</dt>
                     <dd>
-                      Any automated processing of personal data to evaluate
-                      personal aspects, such as behaviour, preferences, or
-                      interests. For Domu Match, profiling mainly means using
-                      your lifestyle and context data to calculate Harmony and
-                      Context scores for roommate matching.
-                    </dd>
-                  </div>
-                  <div>
-                    <dt className="font-semibold text-white">
-                      Automated decision-making
-                    </dt>
-                    <dd>
-                      Decisions made only by machines, without human
-                      involvement, that produce legal or similarly significant
-                      effects. Domu Match does not make this type of decision
-                      about you; our system only suggests possible matches, and
-                      you stay in control.
+                      A user who registered during the public beta period to trial the product before full launch.
                     </dd>
                   </div>
                 </dl>
+                <p className="text-slate-600 mt-10">
+                  This document was last reviewed and updated in {lastUpdated}. Domu Match reserves the right to
+                  update this policy; material changes will be notified by email or in-app notification with at
+                  least 15 days’ notice.
+                </p>
               </section>
             </div>
           </div>
