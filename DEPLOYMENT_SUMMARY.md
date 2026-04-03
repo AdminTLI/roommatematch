@@ -98,8 +98,8 @@ NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key_here
 SUPABASE_SERVICE_ROLE_KEY=your_supabase_service_role_key_here
 
 # Demo Account
-DEMO_USER_EMAIL=demo@account.com
-DEMO_USER_PASSWORD=Testing123
+DEMO_USER_EMAIL=your_whitelist_account@example.com
+DEMO_USER_PASSWORD=your_strong_demo_password_here
 
 # Optional
 ADMIN_SEED_TOKEN=your_secure_random_token_here
@@ -110,7 +110,7 @@ ALLOW_DEV_SEED=false
 
 The complete demo flow now works end-to-end:
 
-1. **Authentication** ✅ - Demo account (`demo@account.com` / `Testing123`)
+1. **Authentication** ✅ - Demo account (`DEMO_USER_EMAIL` / `DEMO_USER_PASSWORD`)
 2. **Onboarding** ✅ - All data persists correctly to database
 3. **Matching** ✅ - Algorithm works with real user data
 4. **Chat** ✅ - Real-time messaging functional

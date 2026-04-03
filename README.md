@@ -9,13 +9,9 @@ A modern, AI-powered roommate matching platform designed specifically for studen
 ![Supabase](https://img.shields.io/badge/Supabase-2.75-green?style=for-the-badge&logo=supabase)
 ![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-3.3-38B2AC?style=for-the-badge&logo=tailwind-css)
 
-## 🎯 Demo Account
+## 🎯 Whitelist / demo-style account
 
-For testing and demonstration purposes, use:
-- **Email**: `demo@account.com`
-- **Password**: `Testing123`
-
-This is the only whitelisted demo account in the system. All other users must sign up through the application.
+If you use a preserved demo or QA account, configure it only via environment variables (`DEMO_USER_EMAIL`, `DEMO_USER_PASSWORD` in `.env.local`). Do not commit real credentials. See `env.example`. All normal users sign up through the application.
 
 ## 📋 Current Implementation Status
 
@@ -330,8 +326,8 @@ Domu Match is fully compliant with GDPR (General Data Protection Regulation) and
 
 ### Common Issues
 
-**Q: Demo account not working?**
-A: Make sure you're using the exact credentials: `demo@account.com` / `Testing123`
+**Q: Whitelist / demo login not working?**
+A: Confirm `DEMO_USER_EMAIL` and `DEMO_USER_PASSWORD` in `.env.local` match the user you created (e.g. via the admin seed route or seed scripts), and that the account exists in Supabase Auth.
 
 **Q: Onboarding form not saving?**
 A: Check that all required fields are filled and try refreshing the page. The form auto-saves as you progress.
@@ -349,7 +345,7 @@ A: Verify your Supabase credentials in `.env.local` and ensure the database is p
 
 1. Check the [Issues](https://github.com/YOUR_USERNAME/domu-match/issues) page
 2. Review the [Documentation](docs/)
-3. Contact support at domumatch@gmail.com
+3. Contact support at contact@your-domain.example
 
 ## 🤝 Contributing
 
@@ -377,9 +373,9 @@ This project is licensed under the MIT License - see the [LICENSE](./LICENSE) fi
 
 - **Documentation**: [docs.domumatch.nl](https://docs.domumatch.nl)
 - **Issues**: [GitHub Issues](https://github.com/YOUR_USERNAME/domu-match/issues)
-- **Email**: domumatch@gmail.com
-- **Privacy**: domumatch@gmail.com
-- **DPO**: domumatch@gmail.com
+- **Email**: contact@your-domain.example
+- **Privacy**: contact@your-domain.example
+- **DPO**: contact@your-domain.example
 
 ## 📋 GDPR Compliance Documentation
 

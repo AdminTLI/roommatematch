@@ -54,7 +54,7 @@ This migration adds the `last_read_at` column to the `chat_members` table, which
 If you have Supabase CLI installed and configured:
 
 ```bash
-cd "/Users/danishsamsudin/Domu Match"
+cd /path/to/your/repository
 supabase db push
 ```
 

@@ -348,17 +348,16 @@ ORDER BY
 -- 18. DEMO USER CHECK (if exists)
 -- ============================================
 
--- Check if demo user exists in auth.users
-SELECT 'Demo User Check' as check_type,
+-- Whitelist user check (replace REPLACE_WITH_DEMO_USER_EMAIL with your DEMO_USER_EMAIL from .env)
+SELECT 'Whitelist user check' as check_type,
        id,
        email,
        email_confirmed_at,
        created_at
 FROM auth.users 
-WHERE email = 'demo@account.com';
+WHERE email = 'REPLACE_WITH_DEMO_USER_EMAIL';
 
--- Check if demo user has profile
-SELECT 'Demo User Profile Check' as check_type,
+SELECT 'Whitelist user profile check' as check_type,
        p.id,
        p.first_name,
        p.university_id,
@@ -367,13 +366,12 @@ SELECT 'Demo User Profile Check' as check_type,
 FROM profiles p
 JOIN universities u ON p.university_id = u.id
 JOIN auth.users au ON p.user_id = au.id
-WHERE au.email = 'demo@account.com';
+WHERE au.email = 'REPLACE_WITH_DEMO_USER_EMAIL';
 
--- Check demo user questionnaire responses
-SELECT 'Demo User Responses Check' as check_type,
+SELECT 'Whitelist user responses check' as check_type,
        COUNT(*) as response_count,
        COUNT(DISTINCT qi.section) as sections_completed
 FROM responses r
 JOIN auth.users au ON r.user_id = au.id
 JOIN question_items qi ON r.question_key = qi.key
-WHERE au.email = 'demo@account.com';
+WHERE au.email = 'REPLACE_WITH_DEMO_USER_EMAIL';

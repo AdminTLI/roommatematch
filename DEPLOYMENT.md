@@ -14,7 +14,7 @@ Before starting, ensure you have:
 
 ### 1.1 Initialize Git Repository (if not already done)
 ```bash
-cd "/Users/danishsamsudin/Domu Match"
+cd /path/to/your/repository
 git init
 git add .
 git commit -m "Initial commit: Domu Match platform"

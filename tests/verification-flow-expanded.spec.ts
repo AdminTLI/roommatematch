@@ -33,7 +33,7 @@ test.describe('Verification Flow - Expanded Tests', () => {
           contentType: 'application/json',
           body: JSON.stringify({
             sessionId: 'veriff-session-123',
-            clientToken: 'veriff-token-456',
+            clientToken: 'stub-veriff-client-token',
             provider: 'veriff',
             status: 'pending'
           })
@@ -162,7 +162,8 @@ test.describe('Verification Flow - Expanded Tests', () => {
 
   test.describe('Webhook Handling', () => {
     test('should verify Veriff webhook signature', async ({ request }) => {
-      const secret = 'test-webhook-secret'
+      test.skip(!process.env.VERIFF_WEBHOOK_SECRET, 'Set VERIFF_WEBHOOK_SECRET (must match dev server env)')
+      const secret = process.env.VERIFF_WEBHOOK_SECRET!
       const payload = JSON.stringify({ verification: { id: 'test-123', status: 'success' } })
       const signature = crypto
         .createHmac('sha256', secret)
@@ -197,7 +198,8 @@ test.describe('Verification Flow - Expanded Tests', () => {
     })
 
     test('should handle Veriff webhook payload', async ({ request }) => {
-      const secret = process.env.VERIFF_WEBHOOK_SECRET || 'test-secret'
+      test.skip(!process.env.VERIFF_WEBHOOK_SECRET, 'Set VERIFF_WEBHOOK_SECRET (must match dev server env)')
+      const secret = process.env.VERIFF_WEBHOOK_SECRET!
       const payload = JSON.stringify({
         verification: {
           id: 'veriff-session-123',
@@ -222,7 +224,8 @@ test.describe('Verification Flow - Expanded Tests', () => {
     })
 
     test('should handle Persona webhook payload', async ({ request }) => {
-      const secret = process.env.PERSONA_WEBHOOK_SECRET || 'test-secret'
+      test.skip(!process.env.PERSONA_WEBHOOK_SECRET, 'Set PERSONA_WEBHOOK_SECRET (must match dev server env)')
+      const secret = process.env.PERSONA_WEBHOOK_SECRET!
       const payload = JSON.stringify({
         data: {
           id: 'persona-inquiry-123',
@@ -248,7 +251,8 @@ test.describe('Verification Flow - Expanded Tests', () => {
     })
 
     test('should handle Onfido webhook payload', async ({ request }) => {
-      const secret = process.env.ONFIDO_WEBHOOK_SECRET || 'test-secret'
+      test.skip(!process.env.ONFIDO_WEBHOOK_SECRET, 'Set ONFIDO_WEBHOOK_SECRET (must match dev server env)')
+      const secret = process.env.ONFIDO_WEBHOOK_SECRET!
       const payload = JSON.stringify({
         payload: {
           resource_id: 'onfido-check-123',
@@ -272,9 +276,8 @@ test.describe('Verification Flow - Expanded Tests', () => {
     })
 
     test('should handle duplicate webhook processing', async ({ request }) => {
-      // This test would require setting up a verification record first
-      // For now, we test the endpoint structure
-      const secret = 'test-secret'
+      test.skip(!process.env.VERIFF_WEBHOOK_SECRET, 'Set VERIFF_WEBHOOK_SECRET (must match dev server env)')
+      const secret = process.env.VERIFF_WEBHOOK_SECRET!
       const payload = JSON.stringify({ verification: { id: 'test-123', status: 'success' } })
       const signature = crypto
         .createHmac('sha256', secret)
@@ -463,7 +466,8 @@ test.describe('Verification Flow - Expanded Tests', () => {
     })
 
     test('should handle missing verification record', async ({ request }) => {
-      const secret = 'test-secret'
+      test.skip(!process.env.VERIFF_WEBHOOK_SECRET, 'Set VERIFF_WEBHOOK_SECRET (must match dev server env)')
+      const secret = process.env.VERIFF_WEBHOOK_SECRET!
       const payload = JSON.stringify({
         verification: {
           id: 'non-existent-session',

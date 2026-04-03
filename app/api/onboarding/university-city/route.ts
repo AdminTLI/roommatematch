@@ -1,5 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
+import { assertSupabaseRestProjectUrl } from '@/lib/supabase/assert-rest-project-url'
+
+export const revalidate = 3600
 
 export async function GET(request: NextRequest) {
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
@@ -8,6 +11,8 @@ export async function GET(request: NextRequest) {
   if (!supabaseUrl || !serviceRoleKey) {
     return NextResponse.json({ error: 'Server configuration error' }, { status: 500 })
   }
+
+  assertSupabaseRestProjectUrl(supabaseUrl, 'NEXT_PUBLIC_SUPABASE_URL')
 
   const { searchParams } = new URL(request.url)
   const universityId = searchParams.get('universityId')
@@ -34,10 +39,12 @@ export async function GET(request: NextRequest) {
   }
 
   if (!data) {
-    return NextResponse.json({ id: null, slug: null, city: null }, { status: 200 })
+    const res = NextResponse.json({ id: null, slug: null, city: null }, { status: 200 })
+    res.headers.set('Cache-Control', 'public, max-age=3600, stale-while-revalidate=86400')
+    return res
   }
 
-  return NextResponse.json(
+  const res = NextResponse.json(
     {
       id: data.id ?? null,
       slug: data.slug ?? null,
@@ -45,4 +52,6 @@ export async function GET(request: NextRequest) {
     },
     { status: 200 }
   )
+  res.headers.set('Cache-Control', 'public, max-age=3600, stale-while-revalidate=86400')
+  return res
 }

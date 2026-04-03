@@ -1,4 +1,8 @@
 import { defineConfig, devices } from '@playwright/test'
+import { config as loadEnv } from 'dotenv'
+
+loadEnv({ path: '.env.test' })
+loadEnv({ path: '.env.local' })
 
 /**
  * See https://playwright.dev/docs/test-configuration.

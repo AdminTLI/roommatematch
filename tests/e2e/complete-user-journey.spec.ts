@@ -1,4 +1,7 @@
 import { test, expect } from '@playwright/test'
+import { getE2eTestPassword } from '../helpers/e2e-credentials'
+
+const E2E_PASSWORD = getE2eTestPassword()
 
 /**
  * Complete End-to-End User Journey Test
@@ -8,7 +11,7 @@ test.describe('Complete User Journey', () => {
   test('complete user journey from signup to chat', async ({ page, context }) => {
     const timestamp = Date.now()
     const testEmail = `test-${timestamp}@example.com`
-    const testPassword = 'TestPassword123!'
+    const testPassword = E2E_PASSWORD
 
     // Step 1: Sign up
     await test.step('Sign up new user', async () => {
@@ -102,7 +105,7 @@ test.describe('Complete User Journey', () => {
   test('user journey with error handling', async ({ page }) => {
     const timestamp = Date.now()
     const testEmail = `error-test-${timestamp}@example.com`
-    const testPassword = 'TestPassword123!'
+    const testPassword = E2E_PASSWORD
 
     // Test signup with invalid data
     await test.step('Handle signup errors', async () => {
@@ -119,7 +122,7 @@ test.describe('Complete User Journey', () => {
     await test.step('Handle signin errors', async () => {
       await page.goto('/auth/sign-in')
       await page.fill('input[name="email"]', testEmail)
-      await page.fill('input[name="password"]', 'WrongPassword123!')
+      await page.fill('input[name="password"]', `wrong-${Date.now()}`)
       await page.click('button[type="submit"]')
       
       // Should show error message

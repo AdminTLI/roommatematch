@@ -61,8 +61,12 @@ function hasPIIConsent(): boolean {
   return consents.error_tracking === true
 }
 
-// Only initialize Sentry if allowed (prod or explicitly enabled) AND user consented
-if (isClientSentryEnabled && hasErrorTrackingConsent()) {
+// Only initialize Sentry if DSN is set, allowed (prod or explicitly enabled), and user consented
+if (
+  isClientSentryEnabled &&
+  hasErrorTrackingConsent() &&
+  process.env.NEXT_PUBLIC_SENTRY_DSN
+) {
   const integrations: Integration[] = []
 
   integrations.push(
@@ -75,7 +79,7 @@ if (isClientSentryEnabled && hasErrorTrackingConsent()) {
   }
 
   Sentry.init({
-    dsn: process.env.NEXT_PUBLIC_SENTRY_DSN || 'https://9b5230729711b3133aaa42487105a217@o4510329648906240.ingest.de.sentry.io/4510330161070160',
+    dsn: process.env.NEXT_PUBLIC_SENTRY_DSN,
     environment: process.env.NEXT_PUBLIC_SENTRY_ENVIRONMENT || process.env.NODE_ENV || 'development',
 
     // Add optional integrations for additional features

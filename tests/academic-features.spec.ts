@@ -1,13 +1,12 @@
 import { test, expect } from '@playwright/test'
+import { getE2eTestEmail, getE2eTestPassword } from './helpers/e2e-credentials'
 
 test.describe('Academic Features', () => {
   test.beforeEach(async ({ page }) => {
-    // Navigate to the app and sign in
     await page.goto('/auth/sign-in')
     
-    // Fill in test credentials (adjust based on your test setup)
-    await page.fill('[data-testid="email"]', 'test@example.com')
-    await page.fill('[data-testid="password"]', 'testpassword')
+    await page.fill('[data-testid="email"]', getE2eTestEmail())
+    await page.fill('[data-testid="password"]', getE2eTestPassword())
     await page.click('[data-testid="sign-in-button"]')
     
     // Wait for redirect to onboarding or matches

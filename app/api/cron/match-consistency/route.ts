@@ -1,3 +1,4 @@
+import { timingSafeEqual } from 'crypto'
 import { NextRequest, NextResponse } from 'next/server'
 import { createAdminClient } from '@/lib/supabase/server'
 import { safeLogger } from '@/lib/utils/logger'
@@ -6,40 +7,49 @@ import { sendAlert } from '@/lib/monitoring/alerts'
 export const maxDuration = 300 // 5 minutes
 export const dynamic = 'force-dynamic'
 
+function cronSecretMatches(provided: string, expected: string): boolean {
+  if (provided.length !== expected.length) {
+    return false
+  }
+  try {
+    return timingSafeEqual(Buffer.from(provided, 'utf8'), Buffer.from(expected, 'utf8'))
+  } catch {
+    return false
+  }
+}
+
 /**
- * GET /api/cron/match-consistency
+ * GET /api/cron/match-consistency?secret=...
  * Periodic cron job to check and fix match_suggestions data consistency
  * Runs daily to ensure data integrity and prevent issues like the confirmed matches bug
  */
 export async function GET(request: NextRequest) {
   try {
-    // Verify cron secret for security - REQUIRED in production
-    const authHeader = request.headers.get('authorization')
-    const cronSecret = process.env.CRON_SECRET || process.env.VERCEL_CRON_SECRET
+    const expectedSecret =
+      process.env.CRON_SECRET?.trim() || process.env.VERCEL_CRON_SECRET?.trim() || ''
+    const isProd = process.env.NODE_ENV === 'production' || Boolean(process.env.VERCEL_ENV)
+    const querySecret = request.nextUrl.searchParams.get('secret') ?? ''
 
-    // Require secret in production
-    if (process.env.NODE_ENV === 'production' || process.env.VERCEL_ENV) {
-      if (!cronSecret) {
-        safeLogger.error('[Cron] CRON_SECRET or VERCEL_CRON_SECRET is required in production')
-        return NextResponse.json(
-          { error: 'Cron secret not configured' },
-          { status: 500 }
-        )
+    if (isProd) {
+      if (!expectedSecret) {
+        safeLogger.error('[Cron] CRON_SECRET is required in production')
+        return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
       }
-    }
-
-    // Verify authorization header matches secret
-    if (cronSecret && authHeader !== `Bearer ${cronSecret}`) {
-      safeLogger.warn('[Cron] Unauthorized match-consistency request attempt', {
-        hasHeader: !!authHeader,
-        hasSecret: !!cronSecret
-      })
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-    }
-
-    // If no secret configured in development, warn but allow (for local testing)
-    if (!cronSecret && (process.env.NODE_ENV !== 'production' && !process.env.VERCEL_ENV)) {
-      safeLogger.warn('[Cron] No cron secret configured - allowing request in development only')
+      if (!querySecret || !cronSecretMatches(querySecret, expectedSecret)) {
+        safeLogger.warn('[Cron] Unauthorized match-consistency request attempt', {
+          hasQuerySecret: querySecret.length > 0,
+        })
+        return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+      }
+    } else if (expectedSecret) {
+      if (!querySecret || !cronSecretMatches(querySecret, expectedSecret)) {
+        safeLogger.warn('[Cron] Unauthorized match-consistency request attempt (dev)', {
+          hasQuerySecret: querySecret.length > 0,
+        })
+        return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+      }
+    } else {
+      safeLogger.warn('[Cron] No CRON_SECRET configured - allowing request in development only')
     }
 
     safeLogger.info('[Cron] Starting match consistency check')

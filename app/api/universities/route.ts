@@ -10,6 +10,10 @@
 
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
+import { assertSupabaseRestProjectUrl } from '@/lib/supabase/assert-rest-project-url'
+
+/** ISR-style cache for this public GET handler (see Next.js Route Segment Config). */
+export const revalidate = 3600
 
 /**
  * GET /api/universities
@@ -38,6 +42,8 @@ export async function GET(request: NextRequest) {
         { status: 500 }
       )
     }
+
+    assertSupabaseRestProjectUrl(supabaseUrl, 'NEXT_PUBLIC_SUPABASE_URL')
 
     // Create client with service role key - this bypasses RLS completely
     const supabase = createClient(supabaseUrl, supabaseServiceKey, {

@@ -246,8 +246,8 @@ Set up alerts for:
 ## Support Contacts
 
 - **Technical Issues**: Check logs and runbooks first
-- **Security Issues**: domumatch@gmail.com
-- **User Support**: domumatch@gmail.com
+- **Security Issues**: contact@your-domain.example
+- **User Support**: contact@your-domain.example
 - **Emergency**: Use on-call rotation
 
 **Last Updated**: December 2024

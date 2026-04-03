@@ -358,17 +358,17 @@ export const RATE_LIMITS = {
     failClosed: true
   }, getSharedStore),
 
-  // Global API fallback: 300 requests per IP per minute (DDoS / scraping safety net)
+  // Global API fallback (legacy key; middleware uses @upstash/ratelimit — see lib/middleware-rate-limit.ts)
   api_global: new RateLimiter({
     windowMs: 60 * 1000, // 1 minute
-    maxRequests: 300,
+    maxRequests: 100,
     failClosed: true
   }, getSharedStore),
 
-  // Authentication (fail-closed for security)
+  // Authentication (legacy; middleware enforces /api/auth/* via middleware-rate-limit)
   auth: new RateLimiter({
-    windowMs: 15 * 60 * 1000, // 15 minutes
-    maxRequests: 10,
+    windowMs: 10 * 60 * 1000, // 10 minutes
+    maxRequests: 5,
     failClosed: true
   }, getSharedStore),
 
@@ -565,19 +565,42 @@ export async function checkCustomRateLimit(
   return { allowed: result.allowed, result, headers }
 }
 
-// Helper to extract client IP from headers (prefers x-forwarded-for)
+function parseFirstForwardedIp(value: string | null): string | null {
+  if (!value || value.length === 0) return null
+  const first = value.split(',')[0]?.trim()
+  return first && first.length > 0 ? first : null
+}
+
+function isVercelDeployment(): boolean {
+  return process.env.VERCEL === '1'
+}
+
+/**
+ * Client IP for rate limiting and abuse controls.
+ *
+ * On Vercel, only trust platform-controlled values:
+ * - `x-vercel-forwarded-for` (first hop is the client; not spoofable like `x-forwarded-for`)
+ * - `x-real-ip`
+ *
+ * We never read `x-forwarded-for` on Vercel — clients can send it and it must not affect limits.
+ * Off Vercel (local, tests), `x-forwarded-for` is used after the trusted headers are absent.
+ */
 export function getClientIpFromHeaders(headers: Headers): string {
-  const xForwardedFor = headers.get('x-forwarded-for')
-  if (xForwardedFor && xForwardedFor.length > 0) {
-    const firstIp = xForwardedFor.split(',')[0]?.trim()
-    if (firstIp) {
-      return firstIp
-    }
+  const vercelForwarded = parseFirstForwardedIp(headers.get('x-vercel-forwarded-for'))
+  if (vercelForwarded) {
+    return vercelForwarded
   }
 
-  const realIp = headers.get('x-real-ip')
+  const realIp = headers.get('x-real-ip')?.trim()
   if (realIp && realIp.length > 0) {
     return realIp
+  }
+
+  if (!isVercelDeployment()) {
+    const fromXff = parseFirstForwardedIp(headers.get('x-forwarded-for'))
+    if (fromXff) {
+      return fromXff
+    }
   }
 
   return 'unknown'
@@ -590,9 +613,12 @@ export function getClientIp(req: { headers: Headers; ip?: string | null }): stri
     return fromHeaders
   }
 
-  const anyIp = (req as any).ip
-  if (typeof anyIp === 'string' && anyIp.length > 0) {
-    return anyIp
+  // Do not use `req.ip` on Vercel: it can align with forwarded headers and would reintroduce spoofing risk.
+  if (!isVercelDeployment()) {
+    const anyIp = (req as { ip?: string | null }).ip
+    if (typeof anyIp === 'string' && anyIp.length > 0) {
+      return anyIp
+    }
   }
 
   return 'unknown'

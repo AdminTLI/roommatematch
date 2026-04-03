@@ -59,20 +59,19 @@ curl -X POST \
   https://your-app.vercel.app/api/admin/seed-demo-user
 ```
 
-#### Option B: Create Demo User Manually
+#### Option B: Create a whitelist / QA user manually
 1. Go to Supabase Dashboard → Authentication → Users
 2. Click "Add user"
-3. Email: `demo@account.com`
-4. Password: `Testing123`
-5. Check "Auto Confirm User"
-6. Click "Create user"
+3. Email and password: use the same values as `DEMO_USER_EMAIL` and `DEMO_USER_PASSWORD` in your environment (see `env.example`). Do not commit real credentials.
+4. Check "Auto Confirm User"
+5. Click "Create user"
 
 #### Option C: Add Demo User Data Manually
 After creating the demo user:
 
 1. Get the user ID:
 ```sql
-SELECT id FROM auth.users WHERE email = 'demo@account.com';
+SELECT id FROM auth.users WHERE email = '<your DEMO_USER_EMAIL>';
 ```
 
 2. Replace `[DEMO_USER_ID]` in `db/setup/02_seed_demo_data.sql` with the actual ID
@@ -96,27 +95,27 @@ SELECT id FROM auth.users WHERE email = 'demo@account.com';
 
 ### 7. Test the Setup
 
-#### Test Demo User Login
-1. Go to your app's signifies page
-2. Use credentials: `demo@account.com` / `Testing123`
-3. Should successfully log in
+#### Test whitelist / QA user login
+1. Go to your app’s sign-in page
+2. Sign in with `DEMO_USER_EMAIL` and `DEMO_USER_PASSWORD` from `.env.local`
+3. You should log in successfully if the user exists and is confirmed
 
 #### Test Database Queries
 Run these test queries in the SQL Editor:
 
 ```sql
--- Test 1: Check if demo user can be found
+-- Test 1: Check if whitelist user can be found (substitute your DEMO_USER_EMAIL)
 SELECT u.id, u.email, p.first_name, p.verification_status
 FROM auth.users u
 LEFT JOIN profiles p ON u.id = p.user_id
-WHERE u.email = 'demo@account.com';
+WHERE u.email = '<your DEMO_USER_EMAIL>';
 
 -- Test 2: Check questionnaire responses
 SELECT qi.section, qi.key, qi.type, r.value
 FROM responses r
 JOIN question_items qi ON r.question_key = qi.key
 JOIN auth.users u ON r.user_id = u.id
-WHERE u.email = 'demo@account.com'
+WHERE u.email = '<your DEMO_USER_EMAIL>'
 ORDER BY qi.section, qi.key;
 
 -- Test 3: Check housing listings
@@ -169,13 +168,13 @@ ORDER BY u.name, p.name;
 - Use the service role key for administrative operations
 - For user operations, ensure the user is authenticated
 
-#### 5. Demo User Not Found
-**Error**: Demo user login fails
+#### 5. Whitelist / QA user not found
+**Error**: Login fails for your configured whitelist user
 
 **Solution**: 
 1. Verify the user was created in Supabase Auth
 2. Check that the user is confirmed (not pending)
-3. Ensure the password is exactly `Testing123`
+3. Ensure the password matches `DEMO_USER_PASSWORD` in your environment
 4. Check that the user profile was created
 
 ### Verification Checklist

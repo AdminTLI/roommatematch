@@ -39,8 +39,8 @@ curl -X POST \
 ## Step 4: Test Login
 
 Use these credentials:
-- Email: `demo@account.com`
-- Password: `Testing123`
+- Email: `DEMO_USER_EMAIL`
+- Password: `DEMO_USER_PASSWORD`
 
 ## Alternative: Manual User Creation
 
@@ -48,7 +48,7 @@ If you prefer to create the user manually in Supabase:
 
 1. Go to Supabase Dashboard → Authentication → Users
 2. Click "Add user"
-3. Email: `demo@account.com`
-4. Password: `Testing123`
+3. Email: `DEMO_USER_EMAIL`
+4. Password: `DEMO_USER_PASSWORD`
 5. Check "Auto Confirm User"
 6. Click "Create user"

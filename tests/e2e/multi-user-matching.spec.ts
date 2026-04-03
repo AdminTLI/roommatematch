@@ -1,4 +1,7 @@
 import { test, expect } from '@playwright/test'
+import { getE2eTestPassword } from '../helpers/e2e-credentials'
+
+const E2E_PASSWORD = getE2eTestPassword()
 
 /**
  * Multi-User Matching Test
@@ -7,9 +10,9 @@ import { test, expect } from '@playwright/test'
 test.describe('Multi-User Matching', () => {
   test('create multiple users and verify matching', async ({ browser }) => {
     const users = [
-      { email: `user1-${Date.now()}@example.com`, password: 'TestPassword123!' },
-      { email: `user2-${Date.now()}@example.com`, password: 'TestPassword123!' },
-      { email: `user3-${Date.now()}@example.com`, password: 'TestPassword123!' }
+      { email: `user1-${Date.now()}@example.com`, password: E2E_PASSWORD },
+      { email: `user2-${Date.now()}@example.com`, password: E2E_PASSWORD },
+      { email: `user3-${Date.now()}@example.com`, password: E2E_PASSWORD }
     ]
 
     const contexts = await Promise.all(

@@ -6,6 +6,8 @@
  * Uses Redis SETNX (SET if Not eXists) with TTL for automatic expiration.
  */
 
+import { getUpstashRedisRestCredentials } from './upstash-env'
+
 /**
  * Distributed lock using Upstash Redis
  * Implements SETNX pattern with TTL for automatic lock expiration
@@ -15,8 +17,9 @@ export class DistributedLock {
   private token: string
 
   constructor() {
-    this.baseUrl = process.env.UPSTASH_REDIS_REST_URL || ''
-    this.token = process.env.UPSTASH_REDIS_REST_TOKEN || ''
+    const creds = getUpstashRedisRestCredentials()
+    this.baseUrl = creds?.url ?? ''
+    this.token = creds?.token ?? ''
 
     // Don't validate during build - only validate at runtime when actually used
     // Check if we're in runtime (Vercel sets VERCEL_ENV)
@@ -35,6 +38,7 @@ export class DistributedLock {
           '3. Add these environment variables to your deployment platform:\n' +
           '   - UPSTASH_REDIS_REST_URL (e.g., https://your-instance.upstash.io)\n' +
           '   - UPSTASH_REDIS_REST_TOKEN (your API token)\n' +
+          '   (Vercel may also expose KV_REST_API_URL / KV_REST_API_TOKEN — both work.)\n' +
           '4. Redeploy your application\n\n' +
           'See env.example for more details.'
         )

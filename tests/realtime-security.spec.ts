@@ -1,5 +1,10 @@
 import { test, expect } from '@playwright/test'
 import { createClient } from '@supabase/supabase-js'
+import {
+  getE2eTestEmail,
+  getE2eTestPassword,
+  getE2eRealtimeUserAEmail,
+} from './helpers/e2e-credentials'
 
 /**
  * Phase 7: Integration tests for realtime security and data isolation
@@ -13,6 +18,10 @@ import { createClient } from '@supabase/supabase-js'
 
 const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL || ''
 const SUPABASE_ANON_KEY = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || ''
+
+const E2E_PASSWORD = getE2eTestPassword()
+const E2E_EMAIL = getE2eTestEmail()
+const E2E_EMAIL_A = getE2eRealtimeUserAEmail()
 
 test.describe('Realtime Security - Phase 7', () => {
   test.describe('Authentication and Authorization', () => {
@@ -64,8 +73,8 @@ test.describe('Realtime Security - Phase 7', () => {
 
       // Sign in as user A
       await page.goto('/auth/sign-in')
-      await page.fill('[data-testid="email"]', 'test-user-a@example.com')
-      await page.fill('[data-testid="password"]', 'testpassword')
+      await page.fill('[data-testid="email"]', E2E_EMAIL_A)
+      await page.fill('[data-testid="password"]', E2E_PASSWORD)
       await page.click('[data-testid="sign-in-button"]')
       await page.waitForURL(/\/dashboard|\/onboarding/, { timeout: 10000 })
 
@@ -100,8 +109,8 @@ test.describe('Realtime Security - Phase 7', () => {
       // We'll test this by checking console logs for security violations
 
       await page.goto('/auth/sign-in')
-      await page.fill('[data-testid="email"]', 'test-user-a@example.com')
-      await page.fill('[data-testid="password"]', 'testpassword')
+      await page.fill('[data-testid="email"]', E2E_EMAIL_A)
+      await page.fill('[data-testid="password"]', E2E_PASSWORD)
       await page.click('[data-testid="sign-in-button"]')
       await page.waitForURL(/\/dashboard|\/onboarding/, { timeout: 10000 })
 
@@ -126,8 +135,8 @@ test.describe('Realtime Security - Phase 7', () => {
   test.describe('Lifecycle Cleanup', () => {
     test('subscriptions are cleaned up on route change', async ({ page }) => {
       await page.goto('/auth/sign-in')
-      await page.fill('[data-testid="email"]', 'test@example.com')
-      await page.fill('[data-testid="password"]', 'testpassword')
+      await page.fill('[data-testid="email"]', E2E_EMAIL)
+      await page.fill('[data-testid="password"]', E2E_PASSWORD)
       await page.click('[data-testid="sign-in-button"]')
       await page.waitForURL(/\/dashboard|\/onboarding/, { timeout: 10000 })
 
@@ -154,8 +163,8 @@ test.describe('Realtime Security - Phase 7', () => {
 
     test('subscriptions are cleaned up on page reload', async ({ page }) => {
       await page.goto('/auth/sign-in')
-      await page.fill('[data-testid="email"]', 'test@example.com')
-      await page.fill('[data-testid="password"]', 'testpassword')
+      await page.fill('[data-testid="email"]', E2E_EMAIL)
+      await page.fill('[data-testid="password"]', E2E_PASSWORD)
       await page.click('[data-testid="sign-in-button"]')
       await page.waitForURL(/\/dashboard|\/onboarding/, { timeout: 10000 })
 
@@ -173,8 +182,8 @@ test.describe('Realtime Security - Phase 7', () => {
 
     test('subscriptions are cleaned up on tab close simulation', async ({ page }) => {
       await page.goto('/auth/sign-in')
-      await page.fill('[data-testid="email"]', 'test@example.com')
-      await page.fill('[data-testid="password"]', 'testpassword')
+      await page.fill('[data-testid="email"]', E2E_EMAIL)
+      await page.fill('[data-testid="password"]', E2E_PASSWORD)
       await page.click('[data-testid="sign-in-button"]')
       await page.waitForURL(/\/dashboard|\/onboarding/, { timeout: 10000 })
 
@@ -198,8 +207,8 @@ test.describe('Realtime Security - Phase 7', () => {
   test.describe('Reconnection and Backoff', () => {
     test('reconnection uses exponential backoff', async ({ page }) => {
       await page.goto('/auth/sign-in')
-      await page.fill('[data-testid="email"]', 'test@example.com')
-      await page.fill('[data-testid="password"]', 'testpassword')
+      await page.fill('[data-testid="email"]', E2E_EMAIL)
+      await page.fill('[data-testid="password"]', E2E_PASSWORD)
       await page.click('[data-testid="sign-in-button"]')
       await page.waitForURL(/\/dashboard|\/onboarding/, { timeout: 10000 })
 
@@ -233,8 +242,8 @@ test.describe('Realtime Security - Phase 7', () => {
       // We'll check the implementation rather than timing actual delays
 
       await page.goto('/auth/sign-in')
-      await page.fill('[data-testid="email"]', 'test@example.com')
-      await page.fill('[data-testid="password"]', 'testpassword')
+      await page.fill('[data-testid="email"]', E2E_EMAIL)
+      await page.fill('[data-testid="password"]', E2E_PASSWORD)
       await page.click('[data-testid="sign-in-button"]')
       await page.waitForTimeout(1000)
 
@@ -256,6 +265,11 @@ test.describe('Realtime Security - Phase 7', () => {
   test.describe('Data Isolation', () => {
     test('user A does not receive user B notifications', async ({ page, context }) => {
       test.skip(!SUPABASE_URL || !SUPABASE_ANON_KEY, 'Supabase credentials not configured')
+      test.skip(
+        !process.env.E2E_REALTIME_USER_B_EMAIL,
+        'Set E2E_REALTIME_USER_B_EMAIL for two-user realtime tests'
+      )
+      const emailB = process.env.E2E_REALTIME_USER_B_EMAIL!
 
       // Create two browser contexts (simulating two users)
       const userAPage = await context.newPage()
@@ -264,15 +278,15 @@ test.describe('Realtime Security - Phase 7', () => {
       try {
         // Sign in as user A
         await userAPage.goto('/auth/sign-in')
-        await userAPage.fill('[data-testid="email"]', 'test-user-a@example.com')
-        await userAPage.fill('[data-testid="password"]', 'testpassword')
+        await userAPage.fill('[data-testid="email"]', E2E_EMAIL_A)
+        await userAPage.fill('[data-testid="password"]', E2E_PASSWORD)
         await userAPage.click('[data-testid="sign-in-button"]')
         await userAPage.waitForURL(/\/dashboard|\/onboarding/, { timeout: 10000 })
 
         // Sign in as user B
         await userBPage.goto('/auth/sign-in')
-        await userBPage.fill('[data-testid="email"]', 'test-user-b@example.com')
-        await userBPage.fill('[data-testid="password"]', 'testpassword')
+        await userBPage.fill('[data-testid="email"]', emailB)
+        await userBPage.fill('[data-testid="password"]', E2E_PASSWORD)
         await userBPage.click('[data-testid="sign-in-button"]')
         await userBPage.waitForURL(/\/dashboard|\/onboarding/, { timeout: 10000 })
 
@@ -336,8 +350,8 @@ test.describe('Realtime Security - Phase 7', () => {
 
     test('handles subscription errors with retry', async ({ page }) => {
       await page.goto('/auth/sign-in')
-      await page.fill('[data-testid="email"]', 'test@example.com')
-      await page.fill('[data-testid="password"]', 'testpassword')
+      await page.fill('[data-testid="email"]', E2E_EMAIL)
+      await page.fill('[data-testid="password"]', E2E_PASSWORD)
       await page.click('[data-testid="sign-in-button"]')
       await page.waitForURL(/\/dashboard|\/onboarding/, { timeout: 10000 })
 

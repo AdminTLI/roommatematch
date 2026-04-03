@@ -30,7 +30,7 @@ test.describe('Verification Flow', () => {
         contentType: 'application/json',
         body: JSON.stringify({
           sessionId: 'test-session-id',
-          clientToken: 'test-token',
+          clientToken: 'stub-client-token',
           provider: 'veriff',
           status: 'pending'
         })

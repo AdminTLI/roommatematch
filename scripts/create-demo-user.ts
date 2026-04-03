@@ -7,15 +7,25 @@
 
 import { createClient } from '@supabase/supabase-js'
 
-// You'll need to replace these with your actual Supabase credentials
-const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://demo.supabase.co'
-const SUPABASE_SERVICE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY || 'demo_service_key'
+const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL
+const SUPABASE_SERVICE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY
+const email = process.env.DEMO_USER_EMAIL
+const password = process.env.DEMO_USER_PASSWORD
+
+if (!SUPABASE_URL || !SUPABASE_SERVICE_KEY) {
+  console.error('Missing NEXT_PUBLIC_SUPABASE_URL or SUPABASE_SERVICE_ROLE_KEY')
+  process.exit(1)
+}
+if (!email || !password) {
+  console.error('Missing DEMO_USER_EMAIL or DEMO_USER_PASSWORD')
+  process.exit(1)
+}
 
 const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_KEY)
 
 const DEMO_USER = {
-  email: 'demo@account.com',
-  password: 'Testing123',
+  email,
+  password,
   full_name: 'Demo Student',
   university: 'University of Amsterdam',
   program: 'Computer Science',
@@ -32,7 +42,7 @@ async function createDemoUser() {
     
     console.log('📧 Demo User Details:')
     console.log(`   Email: ${DEMO_USER.email}`)
-    console.log(`   Password: ${DEMO_USER.password}`)
+    console.log('   Password: (from DEMO_USER_PASSWORD — not printed)')
     console.log(`   Name: ${DEMO_USER.full_name}`)
     console.log(`   University: ${DEMO_USER.university}`)
     console.log(`   Program: ${DEMO_USER.program}`)

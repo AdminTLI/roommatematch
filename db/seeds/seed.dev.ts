@@ -35,6 +35,13 @@ if (!SUPABASE_URL || !SUPABASE_SERVICE_KEY) {
   process.exit(1)
 }
 
+const DEV_SEED_USER_PASSWORD = process.env.DEV_SEED_USER_PASSWORD
+if (!DEV_SEED_USER_PASSWORD) {
+  console.error('❌ DEV_SEED_USER_PASSWORD is required when ALLOW_DEV_SEED=true')
+  console.error('   Set a strong dev-only password in .env.local (never use production passwords).')
+  process.exit(1)
+}
+
 const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_KEY, {
   auth: {
     autoRefreshToken: false,
@@ -54,8 +61,8 @@ async function seedDevelopment() {
     
     const testUsers = [
       {
-        email: 'test.student1@student.uva.nl',
-        password: 'TestPassword123',
+        email: 'seed-local-1@example.com',
+        password: DEV_SEED_USER_PASSWORD,
         metadata: { full_name: 'Test Student 1' },
         profile: {
           university_id: '550e8400-e29b-41d4-a716-446655440001',
@@ -68,8 +75,8 @@ async function seedDevelopment() {
         }
       },
       {
-        email: 'test.student2@student.uva.nl',
-        password: 'TestPassword123',
+        email: 'seed-local-2@example.com',
+        password: DEV_SEED_USER_PASSWORD,
         metadata: { full_name: 'Test Student 2' },
         profile: {
           university_id: '550e8400-e29b-41d4-a716-446655440001',
@@ -82,8 +89,8 @@ async function seedDevelopment() {
         }
       },
       {
-        email: 'test.student3@student.tudelft.nl',
-        password: 'TestPassword123',
+        email: 'seed-local-3@example.com',
+        password: DEV_SEED_USER_PASSWORD,
         metadata: { full_name: 'Test Student 3' },
         profile: {
           university_id: '550e8400-e29b-41d4-a716-446655440002',
@@ -136,7 +143,7 @@ async function seedDevelopment() {
     console.log('\n✅ Development seed completed!')
     console.log('\n📋 Test Accounts Created:')
     testUsers.forEach(u => {
-      console.log(`   - ${u.email} / TestPassword123`)
+      console.log(`   - ${u.email} (password from DEV_SEED_USER_PASSWORD)`)
     })
     console.log('\n⚠️  Remember: These are FAKE accounts for testing only.')
     console.log('   Run cleanup script before deploying to production.')

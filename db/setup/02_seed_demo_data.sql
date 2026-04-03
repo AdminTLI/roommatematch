@@ -104,7 +104,7 @@ ON CONFLICT (key) DO NOTHING;
 
 -- Demo user entry in users table (replace with actual demo user ID from auth.users)
 -- INSERT INTO users (id, email, is_active) VALUES
---   ('[DEMO_USER_ID]', 'demo@account.com', true);
+--   ('[DEMO_USER_ID]', '<same email as DEMO_USER_EMAIL>', true);
 
 -- Demo user profile (replace with actual demo user ID)
 -- INSERT INTO profiles (user_id, university_id, first_name, degree_level, program, campus, languages, verification_status) VALUES
@@ -370,13 +370,13 @@ ON CONFLICT (id) DO NOTHING;
 -- INSTRUCTIONS FOR DEMO USER SETUP
 -- ============================================
 
--- After creating the demo user in Supabase Auth (demo@account.com / Testing123),
+-- After creating the whitelist user in Supabase Auth (use DEMO_USER_EMAIL / DEMO_USER_PASSWORD from env),
 -- you need to:
 -- 1. Get the user ID from the auth.users table
 -- 2. Replace all instances of '[DEMO_USER_ID]' in this file with the actual user ID
 -- 3. Run the INSERT statements for the demo user data
 
 -- To get the demo user ID, run this query in Supabase SQL Editor:
--- SELECT id FROM auth.users WHERE email = 'demo@account.com';
+-- SELECT id FROM auth.users WHERE email = 'REPLACE_WITH_DEMO_USER_EMAIL';
 
 -- Then update this file and run the INSERT statements for the demo user.

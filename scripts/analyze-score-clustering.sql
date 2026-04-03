@@ -21,7 +21,7 @@ CROSS JOIN auth.users user_b
 CROSS JOIN LATERAL public.compute_compatibility_score(user_a.id, user_b.id) cs
 WHERE user_a.id != user_b.id
   AND cs.is_valid_match = true
-  AND user_a.id = '2763f0a1-91fd-482c-81ed-f830327b2c2c'::uuid
+  AND user_a.id = '11111111-1111-4111-8111-111111111101'::uuid
 GROUP BY 
   ROUND(cs.harmony_score::numeric * 100, 1),
   ROUND(cs.context_score::numeric * 100, 1),

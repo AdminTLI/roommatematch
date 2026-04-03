@@ -25,16 +25,16 @@ This document details the comprehensive cleanup of demo/fake data from the Domu 
 ## Whitelisted Demo Account
 
 ### Credentials
-- **Email**: `demo@account.com`
-- **Password**: `Testing123`
+- **Email**: `DEMO_USER_EMAIL`
+- **Password**: `DEMO_USER_PASSWORD`
 - **Purpose**: Single allowed demo account for testing and access
 
 ### Protection Mechanisms
 
 1. **Environment Variables** (`env.example`):
    ```bash
-   DEMO_USER_EMAIL=demo@account.com
-   DEMO_USER_PASSWORD=Testing123
+   DEMO_USER_EMAIL=your_whitelist_account@example.com
+   DEMO_USER_PASSWORD=your_strong_demo_password_here
    ```
 
 2. **Seed Scripts** (`db/seeds/seed.prod.ts`):
@@ -44,11 +44,11 @@ This document details the comprehensive cleanup of demo/fake data from the Domu 
 
 3. **Cleanup Script** (`scripts/cleanup-demo-data.ts`):
    - Explicit skip logic for demo user
-   - WHERE clauses exclude `demo@account.com`
+   - WHERE clauses exclude `DEMO_USER_EMAIL`
    - Verification step confirms preservation
 
 4. **Scanner Allowlist** (`scripts/scan-demo-data.ts`):
-   - Exact match for `demo@account.com`
+   - Exact match for `DEMO_USER_EMAIL`
    - Prevents false positives in CI
 
 ---
@@ -145,7 +145,7 @@ All pages now require proper authentication and redirect to `/auth/sign-in` if n
 2. **`scripts/scan-demo-data.ts`**
    - Scans codebase for suspicious patterns
    - Detects: lorem ipsum, fake names, demo references, test emails
-   - Allowlist for legitimate uses (demo@account.com)
+   - Allowlist for legitimate uses (DEMO_USER_EMAIL)
    - Fails CI if violations found (exit code 1)
 
 3. **`db/seeds/seed.prod.ts`**
@@ -212,8 +212,8 @@ All pages now require proper authentication and redirect to `/auth/sign-in` if n
 ### Added to `env.example`:
 ```bash
 # Whitelisted Demo Account (preserved during cleanup operations)
-DEMO_USER_EMAIL=demo@account.com
-DEMO_USER_PASSWORD=Testing123
+DEMO_USER_EMAIL=your_whitelist_account@example.com
+DEMO_USER_PASSWORD=your_strong_demo_password_here
 
 # Development seed data (set to true only in local development)
 ALLOW_DEV_SEED=false
@@ -239,7 +239,7 @@ ALLOW_DEV_SEED=false
    - Verification step confirms preservation
 
 3. **`scripts/scan-demo-data.ts`** (line 30)
-   - Allowlist array includes `demo@account.com`
+   - Allowlist array includes `DEMO_USER_EMAIL`
    - Prevents false positives
 
 ---
@@ -287,7 +287,7 @@ jobs:
 
 - [x] `npm run scan:demo` passes with 0 violations
 - [x] Fresh prod DB → app loads with zero states
-- [x] Demo user (`demo@account.com`) can log in
+- [x] Demo user (`DEMO_USER_EMAIL`) can log in
 - [x] Sign up real account → only real data appears
 - [x] No API returns static arrays
 - [x] No migrations auto-insert demo entities (except whitelisted user)
@@ -404,7 +404,7 @@ npm run scan:demo
 - 2 mock admin reports
 
 ### Whitelisted Account: 1
-- Email: `demo@account.com`
+- Email: `DEMO_USER_EMAIL`
 - Protected in: 3 scripts
 - Documented in: 4 files
 

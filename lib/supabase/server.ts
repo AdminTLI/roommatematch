@@ -1,5 +1,11 @@
 import { createServerClient } from '@supabase/ssr'
 import { cookies } from 'next/headers'
+import { assertSupabaseRestProjectUrl } from '@/lib/supabase/assert-rest-project-url'
+
+/**
+ * Server Supabase clients use the same HTTPS project URL as the browser: PostgREST + Auth + Realtime over HTTP.
+ * Transaction pooling (Supavisor, port 6543) applies to DATABASE_URL for direct Postgres only — not to supabase-js.
+ */
 
 export async function createClient() {
   const cookieStore = await cookies()
@@ -12,6 +18,8 @@ export async function createClient() {
       'Missing required Supabase environment variables: NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY must be set'
     )
   }
+
+  assertSupabaseRestProjectUrl(supabaseUrl, 'NEXT_PUBLIC_SUPABASE_URL')
 
   return createServerClient(
     supabaseUrl,
@@ -47,6 +55,8 @@ export function createAdminClient() {
     )
   }
 
+  assertSupabaseRestProjectUrl(supabaseUrl, 'NEXT_PUBLIC_SUPABASE_URL')
+
   return createServerClient(
     supabaseUrl,
     supabaseServiceKey,
@@ -57,53 +67,6 @@ export function createAdminClient() {
         },
         setAll() {
           // No-op for admin client
-        },
-      },
-    }
-  )
-}
-
-/**
- * Create a Supabase client with connection pooling (for read-heavy operations)
- * Uses connection pooler URL if available (Pro Plan feature)
- * This provides better concurrency for SELECT queries
- */
-export async function createPooledClient() {
-  const cookieStore = await cookies()
-  
-  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
-  const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
-  
-  // Use pooler URL if available (Pro Plan feature)
-  // The pooler URL is the same as regular URL but uses connection pooling automatically
-  const poolerUrl = process.env.SUPABASE_POOLER_URL
-  
-  if (!supabaseUrl || !supabaseKey) {
-    throw new Error('Missing required Supabase environment variables')
-  }
-  
-  // Use pooler URL for better concurrency (transaction mode)
-  // If pooler URL is not set, fall back to regular URL
-  const url = poolerUrl || supabaseUrl
-  
-  return createServerClient(
-    url,
-    supabaseKey,
-    {
-      cookies: {
-        getAll() {
-          return cookieStore.getAll()
-        },
-        setAll(cookiesToSet) {
-          try {
-            cookiesToSet.forEach(({ name, value, options }) =>
-              cookieStore.set(name, value, options)
-            )
-          } catch {
-            // The `setAll` method was called from a Server Component.
-            // This can be ignored if you have middleware refreshing
-            // user sessions.
-          }
         },
       },
     }

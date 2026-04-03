@@ -28,7 +28,7 @@
 ### Step 1: GitHub Repository
 ```bash
 # 1. Initialize git (if not already done)
-cd "/Users/danishsamsudin/Domu Match"
+cd /path/to/your/repository
 git init
 
 # 2. Add all files

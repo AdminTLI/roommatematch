@@ -14,7 +14,7 @@ WITH required_questions AS (
   ) AS t(question_key)
 ),
 resolved_prefs AS (
-  SELECT public.resolve_user_preferences('2763f0a1-91fd-482c-81ed-f830327b2c2c'::uuid) as resolved
+  SELECT public.resolve_user_preferences('11111111-1111-4111-8111-111111111101'::uuid) as resolved
 )
 SELECT 
   rq.question_key,

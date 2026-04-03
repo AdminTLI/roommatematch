@@ -22,9 +22,9 @@
     "kind": "mcq",
     "label": "How many guests do you expect to have per week?",
     "options": [
-      { "value": "0-2", "label": "0-2" },
-      { "value": "3-5", "label": "3-5" },
-      { "value": "6-10", "label": "6-10" },
+      { "value": "0-2", "label": "0 - 2" },
+      { "value": "3-5", "label": "3 - 5" },
+      { "value": "6-10", "label": "6 - 10" },
       { "value": "10+", "label": "10+" }
     ]
   },
@@ -36,11 +36,11 @@
     "options": [
       {
         "value": "max-4",
-        "label": "Just us and maybe 1-2 partners (Max 4 people)"
+        "label": "Just us and maybe 1 - 2 partners (Max 4 people)"
       },
       {
         "value": "max-6-8",
-        "label": "A small dinner party size (Max 6-8 people)"
+        "label": "A small dinner party size (Max 6 - 8 people)"
       },
       {
         "value": "max-10-plus",
@@ -54,8 +54,8 @@
     "kind": "mcq",
     "label": "What is your maximum acceptable limit for a housemate's romantic partner sleeping over during the workweek?",
     "options": [
-      { "value": "0-1-night", "label": "0-1 night per week" },
-      { "value": "2-3-nights", "label": "2-3 nights per week" },
+      { "value": "0-1-night", "label": "0 - 1 night per week" },
+      { "value": "2-3-nights", "label": "2 - 3 nights per week" },
       { "value": "4-plus-nights", "label": "4+ nights per week" }
     ]
   },
@@ -128,7 +128,7 @@
     "section": "social-hosting-language",
     "kind": "bipolar",
     "bipolarLabels": {
-      "left": "Small, intimate gatherings (2-4 people)",
+      "left": "Small, intimate gatherings (2 - 4 people)",
       "right": "Large gatherings/house parties (10+ people)"
     },
     "label": "When hosting events at the apartment, what is your preferred scale?"
@@ -165,7 +165,7 @@
     "id": "M5_Q15",
     "section": "social-hosting-language",
     "kind": "mcq",
-    "label": "If you want to invite 2-3 friends over for dinner on a Tuesday night, what is the protocol?",
+    "label": "If you want to invite 2 - 3 friends over for dinner on a Tuesday night, what is the protocol?",
     "options": [
       {
         "value": "ask-24h",
@@ -187,9 +187,9 @@
     "kind": "mcq",
     "label": "What is the maximum duration an out-of-town guest should be allowed to stay continuously in the apartment?",
     "options": [
-      { "value": "1-2-nights", "label": "1-2 nights max." },
-      { "value": "3-5-nights", "label": "3-5 nights (long weekend)" },
-      { "value": "1-2-weeks", "label": "1-2 weeks (as long as they are respectful)" }
+      { "value": "1-2-nights", "label": "1 - 2 nights max." },
+      { "value": "3-5-nights", "label": "3 - 5 nights (long weekend)" },
+      { "value": "1-2-weeks", "label": "1 - 2 weeks (as long as they are respectful)" }
     ]
   },
   {

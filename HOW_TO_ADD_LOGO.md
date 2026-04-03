@@ -24,19 +24,19 @@ Your logo isn't showing because the actual image file (`logo.png`) hasn't been a
 
 2. **Using Finder (Mac)**:
    - Open Finder
-   - Navigate to: `/Users/danishsamsudin/Roommate Match/public/images/`
+   - Navigate to your clone, then `public/images/`
    - Drag and drop your `logo.png` file into this folder
 
 3. **Using Terminal**:
    ```bash
-   # Copy your logo file to the images directory
-   cp /path/to/your/logo.png "/Users/danishsamsudin/Roommate Match/public/images/logo.png"
+   # From your repository root
+   cp /path/to/your/logo.png public/images/logo.png
    ```
 
 ### Step 3: Verify the File
 
 ```bash
-cd "/Users/danishsamsudin/Roommate Match"
+cd /path/to/your/repository
 ls -la public/images/logo.png
 ```
 
@@ -45,7 +45,7 @@ You should see the file listed.
 ### Step 4: Commit and Push
 
 ```bash
-cd "/Users/danishsamsudin/Roommate Match"
+cd /path/to/your/repository
 git add public/images/logo.png
 git commit -m "Add Domu Match logo image"
 git push origin main

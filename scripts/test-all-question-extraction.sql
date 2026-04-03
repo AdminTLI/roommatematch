@@ -8,7 +8,7 @@ SELECT
   resolved->jsonb_object_keys(resolved) as value,
   jsonb_typeof(resolved->jsonb_object_keys(resolved)) as value_type
 FROM (
-  SELECT public.resolve_user_preferences('2763f0a1-91fd-482c-81ed-f830327b2c2c'::uuid) as resolved
+  SELECT public.resolve_user_preferences('11111111-1111-4111-8111-111111111101'::uuid) as resolved
 ) t
 WHERE jsonb_object_keys(resolved) IN (
   'M4_Q1', 'M4_Q2', 'M4_Q3',  -- Cleanliness
@@ -22,66 +22,66 @@ LIMIT 20;
 SELECT 
   'M4_Q1' as question,
   public.get_dimension_value(
-    '2763f0a1-91fd-482c-81ed-f830327b2c2c'::uuid,
+    '11111111-1111-4111-8111-111111111101'::uuid,
     'M4_Q1',
-    public.resolve_user_preferences('2763f0a1-91fd-482c-81ed-f830327b2c2c'::uuid)
+    public.resolve_user_preferences('11111111-1111-4111-8111-111111111101'::uuid)
   ) as raw_value,
   jsonb_typeof(
     public.get_dimension_value(
-      '2763f0a1-91fd-482c-81ed-f830327b2c2c'::uuid,
+      '11111111-1111-4111-8111-111111111101'::uuid,
       'M4_Q1',
-      public.resolve_user_preferences('2763f0a1-91fd-482c-81ed-f830327b2c2c'::uuid)
+      public.resolve_user_preferences('11111111-1111-4111-8111-111111111101'::uuid)
     )
   ) as type,
   public.normalize_mcq_value(
     public.get_dimension_value(
-      '2763f0a1-91fd-482c-81ed-f830327b2c2c'::uuid,
+      '11111111-1111-4111-8111-111111111101'::uuid,
       'M4_Q1',
-      public.resolve_user_preferences('2763f0a1-91fd-482c-81ed-f830327b2c2c'::uuid)
+      public.resolve_user_preferences('11111111-1111-4111-8111-111111111101'::uuid)
     )
   ) as normalized
 UNION ALL
 SELECT 
   'M3_Q1' as question,
   public.get_dimension_value(
-    '2763f0a1-91fd-482c-81ed-f830327b2c2c'::uuid,
+    '11111111-1111-4111-8111-111111111101'::uuid,
     'M3_Q1',
-    public.resolve_user_preferences('2763f0a1-91fd-482c-81ed-f830327b2c2c'::uuid)
+    public.resolve_user_preferences('11111111-1111-4111-8111-111111111101'::uuid)
   ) as raw_value,
   jsonb_typeof(
     public.get_dimension_value(
-      '2763f0a1-91fd-482c-81ed-f830327b2c2c'::uuid,
+      '11111111-1111-4111-8111-111111111101'::uuid,
       'M3_Q1',
-      public.resolve_user_preferences('2763f0a1-91fd-482c-81ed-f830327b2c2c'::uuid)
+      public.resolve_user_preferences('11111111-1111-4111-8111-111111111101'::uuid)
     )
   ) as type,
   public.normalize_likert_value(
     public.get_dimension_value(
-      '2763f0a1-91fd-482c-81ed-f830327b2c2c'::uuid,
+      '11111111-1111-4111-8111-111111111101'::uuid,
       'M3_Q1',
-      public.resolve_user_preferences('2763f0a1-91fd-482c-81ed-f830327b2c2c'::uuid)
+      public.resolve_user_preferences('11111111-1111-4111-8111-111111111101'::uuid)
     )
   ) as normalized
 UNION ALL
 SELECT 
   'M2_Q1' as question,
   public.get_dimension_value(
-    '2763f0a1-91fd-482c-81ed-f830327b2c2c'::uuid,
+    '11111111-1111-4111-8111-111111111101'::uuid,
     'M2_Q1',
-    public.resolve_user_preferences('2763f0a1-91fd-482c-81ed-f830327b2c2c'::uuid)
+    public.resolve_user_preferences('11111111-1111-4111-8111-111111111101'::uuid)
   ) as raw_value,
   jsonb_typeof(
     public.get_dimension_value(
-      '2763f0a1-91fd-482c-81ed-f830327b2c2c'::uuid,
+      '11111111-1111-4111-8111-111111111101'::uuid,
       'M2_Q1',
-      public.resolve_user_preferences('2763f0a1-91fd-482c-81ed-f830327b2c2c'::uuid)
+      public.resolve_user_preferences('11111111-1111-4111-8111-111111111101'::uuid)
     )
   ) as type,
   public.normalize_bipolar_value(
     public.get_dimension_value(
-      '2763f0a1-91fd-482c-81ed-f830327b2c2c'::uuid,
+      '11111111-1111-4111-8111-111111111101'::uuid,
       'M2_Q1',
-      public.resolve_user_preferences('2763f0a1-91fd-482c-81ed-f830327b2c2c'::uuid)
+      public.resolve_user_preferences('11111111-1111-4111-8111-111111111101'::uuid)
     )
   ) as normalized;
 
@@ -104,7 +104,7 @@ FROM auth.users user_a
 CROSS JOIN auth.users user_b
 CROSS JOIN LATERAL public.compute_compatibility_score(user_a.id, user_b.id) cs
 WHERE user_a.id != user_b.id
-  AND user_a.id = '2763f0a1-91fd-482c-81ed-f830327b2c2c'::uuid
+  AND user_a.id = '11111111-1111-4111-8111-111111111101'::uuid
 ORDER BY cs.compatibility_score DESC
 LIMIT 10;
 

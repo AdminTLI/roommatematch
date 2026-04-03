@@ -2,7 +2,12 @@ import { NextResponse } from 'next/server'
 import { GoogleGenAI } from '@google/genai'
 import { createServiceClient } from '@/lib/supabase/service'
 
-export const maxDuration = 30
+/** Align with Vercel Hobby serverless limit. */
+export const maxDuration = 10
+
+const GEMINI_MODEL = 'gemini-1.5-flash' as const
+const MAX_OUTPUT_TOKENS = 350
+const GEMINI_TIMEOUT_MS = 8000
 
 /** Max number of prior messages to send as context (user + assistant pairs). */
 const MAX_HISTORY_MESSAGES = 20
@@ -53,15 +58,24 @@ export async function POST(request: Request) {
 
     const contents = buildContents(history, message)
 
+    const controller = new AbortController()
+    const timeoutId = setTimeout(() => controller.abort(), GEMINI_TIMEOUT_MS)
+
     const ai = new GoogleGenAI({ apiKey })
-    const response = await ai.models.generateContent({
-      model: 'gemini-2.0-flash',
-      contents,
-      config: {
-        tools: [{ googleSearch: {} }],
-        maxOutputTokens: 2048
-      }
-    })
+    let response
+    try {
+      response = await ai.models.generateContent({
+        model: GEMINI_MODEL,
+        contents,
+        config: {
+          tools: [{ googleSearch: {} }],
+          maxOutputTokens: MAX_OUTPUT_TOKENS,
+          abortSignal: controller.signal,
+        },
+      })
+    } finally {
+      clearTimeout(timeoutId)
+    }
 
     const reply = response.text ?? "I couldn't generate a response."
 
@@ -81,8 +95,16 @@ export async function POST(request: Request) {
     console.error('[Domu AI] Chat error', err)
 
     const raw = err instanceof Error ? err.message : String(err)
+    const name = err instanceof Error ? err.name : ''
     let reply =
       'Sorry, something went wrong on my side. Please try again in a moment.'
+
+    if (name === 'AbortError' || /aborted|timeout|deadline|DEADLINE_EXCEEDED|504/i.test(raw)) {
+      return NextResponse.json({
+        reply:
+          'That took too long to answer. Please try again with a shorter question, or try again in a moment.',
+      })
+    }
 
     // Rate limits / overload
     if (raw && (raw.includes('quota') || raw.includes('429') || raw.includes('RESOURCE_EXHAUSTED'))) {

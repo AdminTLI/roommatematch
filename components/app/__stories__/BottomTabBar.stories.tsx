@@ -11,7 +11,7 @@ type Story = StoryObj<typeof BottomTabBar>
 
 export const Default: Story = {
   args: {
-    user: { id: 'demo-user-id', email: 'demo@example.com', name: 'Demo User' },
+    user: { id: 'story-user-id', email: 'user@example.com', name: 'Story User' },
   },
 }
 

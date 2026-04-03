@@ -15,8 +15,14 @@ export async function POST(request: NextRequest) {
 
   const admin = createClient(url, serviceRoleKey)
 
-  const email = 'demo@account.com'
-  const password = 'Testing123'
+  const email = process.env.DEMO_USER_EMAIL
+  const password = process.env.DEMO_USER_PASSWORD
+  if (!email || !password) {
+    return NextResponse.json(
+      { error: 'DEMO_USER_EMAIL and DEMO_USER_PASSWORD must be set' },
+      { status: 500 }
+    )
+  }
 
   // Check if exists
   const { data: existing, error: listErr } = await admin.auth.admin.listUsers({

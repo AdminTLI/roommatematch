@@ -48,7 +48,11 @@ if (!supabaseUrl || !supabaseServiceKey) {
 }
 
 const supabase = createClient(supabaseUrl, supabaseServiceKey)
-const DEMO_USER_EMAIL = 'demo@account.com'
+const DEMO_USER_EMAIL = process.env.DEMO_USER_EMAIL
+if (!DEMO_USER_EMAIL) {
+  console.error('Missing DEMO_USER_EMAIL')
+  process.exit(1)
+}
 
 async function fixDemoAccount() {
   console.log('🔧 Fixing demo account...\n')

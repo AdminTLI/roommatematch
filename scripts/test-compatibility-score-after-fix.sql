@@ -20,7 +20,7 @@ SELECT
   ROUND(harmony_score::numeric * 100, 1) as harmony_percent,
   ROUND(context_score::numeric * 100, 1) as context_percent
 FROM public.compute_compatibility_score(
-  '2763f0a1-91fd-482c-81ed-f830327b2c2c'::uuid,
-  '39288c03-775f-4c7f-a27c-6dd5ddc6e5db'::uuid
+  '11111111-1111-4111-8111-111111111101'::uuid,
+  '11111111-1111-4111-8111-111111111102'::uuid
 );
 

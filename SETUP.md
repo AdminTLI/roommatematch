@@ -16,7 +16,7 @@ Create a `.env.local` file in the project root with these temporary values:
 # Temporary values for testing the UI
 NEXT_PUBLIC_SUPABASE_URL=https://demo.supabase.co
 NEXT_PUBLIC_SUPABASE_ANON_KEY=demo_key
-SUPABASE_SERVICE_ROLE_KEY=demo_service_key
+SUPABASE_SERVICE_ROLE_KEY=your_supabase_service_role_key
 NODE_ENV=development
 ```
 

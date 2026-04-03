@@ -26,9 +26,14 @@ if (!supabaseUrl || !supabaseServiceKey) {
 
 const supabase = createClient(supabaseUrl, supabaseServiceKey)
 
-// Demo user data
-const DEMO_USER_EMAIL = 'demo@account.com'
-const DEMO_USER_PASSWORD = 'Testing123'
+const DEMO_USER_EMAIL = process.env.DEMO_USER_EMAIL
+const DEMO_USER_PASSWORD = process.env.DEMO_USER_PASSWORD
+if (!DEMO_USER_EMAIL || !DEMO_USER_PASSWORD) {
+  console.error('Missing required environment variables:')
+  console.error('- DEMO_USER_EMAIL')
+  console.error('- DEMO_USER_PASSWORD')
+  process.exit(1)
+}
 
 // University and program IDs (these should exist from the schema setup)
 const UVA_ID = '550e8400-e29b-41d4-a716-446655440001'
@@ -328,7 +333,7 @@ async function createDemoUser() {
     // First, create some other demo users for matching
     const otherUsers = [
       {
-        email: 'demo2@account.com',
+        email: 'seed-peer-a@example.com',
         name: 'Alex Johnson',
         program: 'Psychology',
         responses: [
@@ -339,7 +344,7 @@ async function createDemoUser() {
         ]
       },
       {
-        email: 'demo3@account.com', 
+        email: 'seed-peer-b@example.com', 
         name: 'Sam Chen',
         program: 'Biology',
         responses: [
@@ -444,7 +449,7 @@ async function createDemoUser() {
     console.log('🎉 Demo user setup completed successfully!')
     console.log('')
     console.log('📧 Email:', DEMO_USER_EMAIL)
-    console.log('🔑 Password:', DEMO_USER_PASSWORD)
+    console.log('🔑 Password: (set via DEMO_USER_PASSWORD — not printed)')
     console.log('🆔 User ID:', userId)
     console.log('')
     console.log('You can now test the full application flow with this demo account.')

@@ -49,7 +49,7 @@
   - `app/api/match/suggestions/respond/route.ts` - Added demo user blocking in chat creation
 
 - **Changes:**
-  - Demo users (`demo@account.com`) are blocked from accessing real chat rooms in production
+  - Demo users (`DEMO_USER_EMAIL`) are blocked from accessing real chat rooms in production
   - Demo users cannot be matched with real users in production
   - Chat creation checks prevent demo users from being added to chats with real users
 

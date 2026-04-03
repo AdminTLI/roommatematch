@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server'
+import { hasUpstashRedisRestEnv } from '@/lib/upstash-env'
 
 export async function GET() {
   // Only allow in development
@@ -6,11 +7,21 @@ export async function GET() {
     return NextResponse.json({ error: 'Not available in production' }, { status: 403 })
   }
 
+  const upstashViaStandard =
+    !!process.env.UPSTASH_REDIS_REST_URL && !!process.env.UPSTASH_REDIS_REST_TOKEN
+  const upstashViaKv =
+    !!process.env.KV_REST_API_URL && !!process.env.KV_REST_API_TOKEN
+
   return NextResponse.json({
     hasSupabaseUrl: !!process.env.NEXT_PUBLIC_SUPABASE_URL,
     hasAnonKey: !!process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
     hasServiceRoleKey: !!process.env.SUPABASE_SERVICE_ROLE_KEY,
     nodeEnv: process.env.NODE_ENV,
+    hasUpstashRedisRest: hasUpstashRedisRestEnv(),
+    upstashEnvDetail: {
+      hasUpstashNamedVars: upstashViaStandard,
+      hasKvNamedVars: upstashViaKv,
+    },
     // Persona environment check
     personaEnvironmentId: process.env.NEXT_PUBLIC_PERSONA_ENVIRONMENT_ID || 'NOT SET (using fallback)',
     personaTemplateId: process.env.NEXT_PUBLIC_PERSONA_TEMPLATE_ID || 'NOT SET (using fallback)',

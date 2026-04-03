@@ -2,9 +2,18 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createClient, createAdminClient } from '@/lib/supabase/server'
 import { safeLogger } from '@/lib/utils/logger'
 import { generatePersonalizedExplanation } from '@/lib/matching/personalized-explanation'
+import {
+  canonicalUserPair,
+  generateMatchExplanationWithGemini,
+  getCachedMatchExplanation,
+  saveCachedMatchExplanation,
+} from '@/lib/matching/match-explanation-ai'
 import { toStudent } from '@/lib/matching/answer-map'
 import type { StudentProfile } from '@/lib/matching/answer-map'
 import { canViewCohortProfile } from '@/lib/auth/cohort-visibility'
+
+/** Hobby / Free tier friendly ceiling (Gemini + RPC + DB). */
+export const maxDuration = 10
 
 // GET /api/chat/compatibility?chatId=xxx or ?otherUserId=xxx
 export async function GET(request: NextRequest) {
@@ -296,28 +305,47 @@ export async function GET(request: NextRequest) {
 
       // Generate personalized explanation if we have both profiles
       if (userAProfile && userBProfile) {
-        try {
-          const sectionScores = {
-            personality: Number(score.personality_score) || 0,
-            schedule: Number(score.schedule_score) || 0,
-            lifestyle: Number(score.lifestyle_score) || 0,
-            social: Number(score.social_score) || 0,
-            academic: Number(score.academic_bonus) || 0
-          }
-
-          const matchId = `${user.id}-${targetUserId}`
-          personalizedExplanation = generatePersonalizedExplanation({
+        const sectionScores = {
+          personality: Number(score.personality_score) || 0,
+          schedule: Number(score.schedule_score) || 0,
+          lifestyle: Number(score.lifestyle_score) || 0,
+          social: Number(score.social_score) || 0,
+          academic: Number(score.academic_bonus) || 0
+        }
+        const matchId = `${user.id}-${targetUserId}`
+        const templateExplanation = () =>
+          generatePersonalizedExplanation({
             studentA: userAProfile,
             studentB: userBProfile,
             sectionScores,
             matchId
           })
+
+        try {
+          const [userLow, userHigh] = canonicalUserPair(user.id, targetUserId)
+          const cached = await getCachedMatchExplanation(admin, userLow, userHigh)
+          if (cached) {
+            personalizedExplanation = cached
+          } else {
+            const aiText = await generateMatchExplanationWithGemini(score)
+            if (aiText) {
+              personalizedExplanation = aiText
+              await saveCachedMatchExplanation(admin, userLow, userHigh, aiText)
+            } else {
+              personalizedExplanation = templateExplanation()
+            }
+          }
         } catch (explanationError) {
-          safeLogger.warn('Failed to generate personalized explanation', { 
+          safeLogger.warn('Failed to generate personalized explanation', {
             error: explanationError,
             message: explanationError instanceof Error ? explanationError.message : 'Unknown error'
           })
-          // Continue without personalized explanation
+          try {
+            personalizedExplanation = templateExplanation()
+          } catch {
+            personalizedExplanation =
+              'You have overlapping lifestyle signals in our questionnaire—worth a conversation to see if day-to-day habits line up.'
+          }
         }
       } else {
         safeLogger.debug('Skipping personalized explanation - missing user profiles', {

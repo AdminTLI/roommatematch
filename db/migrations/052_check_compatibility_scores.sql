@@ -2,20 +2,20 @@
 -- Run this to see what scores are being calculated
 
 -- Check compatibility scores for the current user with different other users
--- Replace '2763f0a1-91fd-482c-81ed-f830327b2c2c' with your actual user ID if different
+-- Replace '11111111-1111-4111-8111-111111111101' with your actual user ID if different
 
 WITH user_pairs AS (
   SELECT DISTINCT
-    '2763f0a1-91fd-482c-81ed-f830327b2c2c'::UUID AS user_a_id,
+    '11111111-1111-4111-8111-111111111101'::UUID AS user_a_id,
     cm2.user_id AS user_b_id
   FROM chat_members cm1
   JOIN chat_members cm2 ON cm1.chat_id = cm2.chat_id
-  WHERE cm1.user_id = '2763f0a1-91fd-482c-81ed-f830327b2c2c'::UUID
-    AND cm2.user_id != '2763f0a1-91fd-482c-81ed-f830327b2c2c'::UUID
+  WHERE cm1.user_id = '11111111-1111-4111-8111-111111111101'::UUID
+    AND cm2.user_id != '11111111-1111-4111-8111-111111111101'::UUID
     AND cm1.chat_id IN (
       SELECT chat_id 
       FROM chat_members 
-      WHERE user_id = '2763f0a1-91fd-482c-81ed-f830327b2c2c'::UUID
+      WHERE user_id = '11111111-1111-4111-8111-111111111101'::UUID
       LIMIT 5
     )
 )
@@ -39,25 +39,25 @@ ORDER BY cs.compatibility_score DESC;
 
 -- Also check dimension values directly for these users
 SELECT 
-  'User A (2763f0a1...)' AS user_label,
-  get_cleanliness_dimension('2763f0a1-91fd-482c-81ed-f830327b2c2c'::UUID) AS cleanliness,
-  get_noise_dimension('2763f0a1-91fd-482c-81ed-f830327b2c2c'::UUID) AS noise,
-  get_guests_dimension('2763f0a1-91fd-482c-81ed-f830327b2c2c'::UUID) AS guests,
-  get_sleep_dimension('2763f0a1-91fd-482c-81ed-f830327b2c2c'::UUID) AS sleep
+  'User A (doc placeholder UUID)' AS user_label,
+  get_cleanliness_dimension('11111111-1111-4111-8111-111111111101'::UUID) AS cleanliness,
+  get_noise_dimension('11111111-1111-4111-8111-111111111101'::UUID) AS noise,
+  get_guests_dimension('11111111-1111-4111-8111-111111111101'::UUID) AS guests,
+  get_sleep_dimension('11111111-1111-4111-8111-111111111101'::UUID) AS sleep
 UNION ALL
 SELECT 
-  'User B (2652953c...)' AS user_label,
-  get_cleanliness_dimension('2652953c-7365-4ebf-8be9-b443a7c9f182'::UUID) AS cleanliness,
-  get_noise_dimension('2652953c-7365-4ebf-8be9-b443a7c9f182'::UUID) AS noise,
-  get_guests_dimension('2652953c-7365-4ebf-8be9-b443a7c9f182'::UUID) AS guests,
-  get_sleep_dimension('2652953c-7365-4ebf-8be9-b443a7c9f182'::UUID) AS sleep
+  'User B (doc placeholder UUID)' AS user_label,
+  get_cleanliness_dimension('11111111-1111-4111-8111-111111111104'::UUID) AS cleanliness,
+  get_noise_dimension('11111111-1111-4111-8111-111111111104'::UUID) AS noise,
+  get_guests_dimension('11111111-1111-4111-8111-111111111104'::UUID) AS guests,
+  get_sleep_dimension('11111111-1111-4111-8111-111111111104'::UUID) AS sleep
 UNION ALL
 SELECT 
-  'User C (2a90afca...)' AS user_label,
-  get_cleanliness_dimension('2a90afca-dbf3-433b-a968-cb0f7f6deca3'::UUID) AS cleanliness,
-  get_noise_dimension('2a90afca-dbf3-433b-a968-cb0f7f6deca3'::UUID) AS noise,
-  get_guests_dimension('2a90afca-dbf3-433b-a968-cb0f7f6deca3'::UUID) AS guests,
-  get_sleep_dimension('2a90afca-dbf3-433b-a968-cb0f7f6deca3'::UUID) AS sleep;
+  'User C (doc placeholder UUID)' AS user_label,
+  get_cleanliness_dimension('11111111-1111-4111-8111-111111111103'::UUID) AS cleanliness,
+  get_noise_dimension('11111111-1111-4111-8111-111111111103'::UUID) AS noise,
+  get_guests_dimension('11111111-1111-4111-8111-111111111103'::UUID) AS guests,
+  get_sleep_dimension('11111111-1111-4111-8111-111111111103'::UUID) AS sleep;
 
 
 

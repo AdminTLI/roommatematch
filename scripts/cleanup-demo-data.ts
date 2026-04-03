@@ -4,7 +4,7 @@
  * Demo Data Cleanup Script
  * 
  * Purges all demo/fake entities from the database while preserving:
- * - The whitelisted demo user (demo@account.com)
+ * - The whitelisted account (DEMO_USER_EMAIL — never commit real values)
  * - All real user data
  * - System configuration data
  * 
@@ -16,12 +16,17 @@ import * as readline from 'readline'
 
 const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL
 const SUPABASE_SERVICE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY
-const DEMO_USER_EMAIL = process.env.DEMO_USER_EMAIL || 'demo@account.com'
+const DEMO_USER_EMAIL = process.env.DEMO_USER_EMAIL
 
 if (!SUPABASE_URL || !SUPABASE_SERVICE_KEY) {
   console.error('❌ Missing required environment variables:')
   console.error('   NEXT_PUBLIC_SUPABASE_URL')
   console.error('   SUPABASE_SERVICE_ROLE_KEY')
+  process.exit(1)
+}
+
+if (!DEMO_USER_EMAIL) {
+  console.error('❌ Missing required environment variable: DEMO_USER_EMAIL')
   process.exit(1)
 }
 
@@ -55,7 +60,7 @@ async function cleanupDemoData() {
   console.log('   - All real user accounts and their data')
   console.log('   - System configuration (universities, programs, questions)')
   console.log('\n❌ WILL BE DELETED:')
-  console.log('   - Test users (test.student*, student1@*, etc.)')
+  console.log('   - Users matching fake/test email patterns (see script source)')
   console.log('   - Fake profiles and responses')
   console.log('   - Demo chats and messages')
   console.log('   - Sample forum posts and events')
@@ -98,11 +103,18 @@ async function cleanupDemoData() {
     // ============================================
     console.log('\n2️⃣  Identifying fake/test users...')
     
+    const [demoLocal, demoDomain = ''] = DEMO_USER_EMAIL.toLowerCase().split('@')
+    const escapedDomain = demoDomain.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+    const demoAtOtherHost =
+      demoLocal === 'demo' && escapedDomain
+        ? new RegExp(`^demo@(?!${escapedDomain}$)`, 'i')
+        : /^demo@/i
+
     const fakeUserPatterns = [
       /^test\./i,
       /^student\d+@/i,
       /^admin@(uva|tudelft|eur)\.nl$/i,
-      /^demo@(?!account\.com)/i, // demo@ but not demo@account.com
+      demoAtOtherHost,
       /^fake/i,
       /^sample/i
     ]

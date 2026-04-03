@@ -1,4 +1,7 @@
 import { test, expect } from '@playwright/test'
+import { getE2eTestPassword } from './helpers/e2e-credentials'
+
+const E2E_PASSWORD = getE2eTestPassword()
 
 test.describe('Onboarding to Dashboard Flow', () => {
   test('should complete full onboarding flow and verify dashboard state', async ({ page }) => {
@@ -11,8 +14,8 @@ test.describe('Onboarding to Dashboard Flow', () => {
     
     // Fill signup form
     await page.fill('[data-testid="email-input"]', testEmail)
-    await page.fill('[data-testid="password-input"]', 'TestPassword123!')
-    await page.fill('[data-testid="confirm-password-input"]', 'TestPassword123!')
+    await page.fill('[data-testid="password-input"]', E2E_PASSWORD)
+    await page.fill('[data-testid="confirm-password-input"]', E2E_PASSWORD)
     await page.click('[data-testid="signup-button"]')
     
     // Wait for email confirmation or redirect to onboarding
@@ -131,8 +134,8 @@ test.describe('Onboarding to Dashboard Flow', () => {
     const testEmail = `dbtest-${timestamp}@student.uva.nl`
     
     await page.fill('[data-testid="email-input"]', testEmail)
-    await page.fill('[data-testid="password-input"]', 'TestPassword123!')
-    await page.fill('[data-testid="confirm-password-input"]', 'TestPassword123!')
+    await page.fill('[data-testid="password-input"]', E2E_PASSWORD)
+    await page.fill('[data-testid="confirm-password-input"]', E2E_PASSWORD)
     await page.click('[data-testid="signup-button"]')
     
     await page.waitForURL('/onboarding', { timeout: 10000 })
@@ -196,8 +199,8 @@ test.describe('Onboarding to Dashboard Flow', () => {
     const testEmail = `retest-${timestamp}@student.uva.nl`
     
     await page.fill('[data-testid="email-input"]', testEmail)
-    await page.fill('[data-testid="password-input"]', 'TestPassword123!')
-    await page.fill('[data-testid="confirm-password-input"]', 'TestPassword123!')
+    await page.fill('[data-testid="password-input"]', E2E_PASSWORD)
+    await page.fill('[data-testid="confirm-password-input"]', E2E_PASSWORD)
     await page.click('[data-testid="signup-button"]')
     
     await page.waitForURL('/onboarding', { timeout: 10000 })
@@ -282,8 +285,8 @@ test.describe('Onboarding to Dashboard Flow', () => {
     const testEmail = `progresstest-${timestamp}@student.uva.nl`
     
     await page.fill('[data-testid="email-input"]', testEmail)
-    await page.fill('[data-testid="password-input"]', 'TestPassword123!')
-    await page.fill('[data-testid="confirm-password-input"]', 'TestPassword123!')
+    await page.fill('[data-testid="password-input"]', E2E_PASSWORD)
+    await page.fill('[data-testid="confirm-password-input"]', E2E_PASSWORD)
     await page.click('[data-testid="signup-button"]')
     
     await page.waitForURL('/onboarding', { timeout: 10000 })

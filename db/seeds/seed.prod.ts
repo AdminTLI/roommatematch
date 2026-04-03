@@ -13,13 +13,20 @@ import { createClient } from '@supabase/supabase-js'
 
 const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL
 const SUPABASE_SERVICE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY
-const DEMO_USER_EMAIL = process.env.DEMO_USER_EMAIL || 'demo@account.com'
-const DEMO_USER_PASSWORD = process.env.DEMO_USER_PASSWORD || 'Testing123'
+const DEMO_USER_EMAIL = process.env.DEMO_USER_EMAIL
+const DEMO_USER_PASSWORD = process.env.DEMO_USER_PASSWORD
 
 if (!SUPABASE_URL || !SUPABASE_SERVICE_KEY) {
   console.error('❌ Missing required environment variables:')
   console.error('   NEXT_PUBLIC_SUPABASE_URL')
   console.error('   SUPABASE_SERVICE_ROLE_KEY')
+  process.exit(1)
+}
+
+if (!DEMO_USER_EMAIL || !DEMO_USER_PASSWORD) {
+  console.error('❌ Missing required environment variables:')
+  console.error('   DEMO_USER_EMAIL')
+  console.error('   DEMO_USER_PASSWORD')
   process.exit(1)
 }
 

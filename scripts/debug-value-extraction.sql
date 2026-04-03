@@ -7,7 +7,7 @@ SELECT
   jsonb_array_length(answers) as array_length,
   answers->0 as first_answer_sample
 FROM public.onboarding_sections 
-WHERE user_id = '2763f0a1-91fd-482c-81ed-f830327b2c2c'::uuid
+WHERE user_id = '11111111-1111-4111-8111-111111111101'::uuid
 LIMIT 5;
 
 -- Test 2: Check what resolve_user_preferences extracts for M4_Q1 specifically
@@ -16,34 +16,34 @@ SELECT
   resolved->'M4_Q1' as m4_q1_value,
   jsonb_typeof(resolved->'M4_Q1') as value_type
 FROM (
-  SELECT public.resolve_user_preferences('2763f0a1-91fd-482c-81ed-f830327b2c2c'::uuid) as resolved
+  SELECT public.resolve_user_preferences('11111111-1111-4111-8111-111111111101'::uuid) as resolved
 ) t;
 
 -- Test 3: Check what get_dimension_value returns vs what resolve_user_preferences returns
 SELECT 
   'get_dimension_value M4_Q1' as test,
   public.get_dimension_value(
-    '2763f0a1-91fd-482c-81ed-f830327b2c2c'::uuid,
+    '11111111-1111-4111-8111-111111111101'::uuid,
     'M4_Q1',
     NULL  -- Don't pass resolved prefs, let it look up itself
   ) as value_from_function,
-  (SELECT resolved->'M4_Q1' FROM (SELECT public.resolve_user_preferences('2763f0a1-91fd-482c-81ed-f830327b2c2c'::uuid) as resolved) t) as value_from_resolved;
+  (SELECT resolved->'M4_Q1' FROM (SELECT public.resolve_user_preferences('11111111-1111-4111-8111-111111111101'::uuid) as resolved) t) as value_from_resolved;
 
 -- Test 4: Check multiple questions to see which ones are missing
 SELECT 
   question_key,
   CASE 
     WHEN public.get_dimension_value(
-      '2763f0a1-91fd-482c-81ed-f830327b2c2c'::uuid,
+      '11111111-1111-4111-8111-111111111101'::uuid,
       question_key,
-      public.resolve_user_preferences('2763f0a1-91fd-482c-81ed-f830327b2c2c'::uuid)
+      public.resolve_user_preferences('11111111-1111-4111-8111-111111111101'::uuid)
     ) IS NULL THEN 'NULL (missing)'
     ELSE 'Has value'
   END as status,
   public.get_dimension_value(
-    '2763f0a1-91fd-482c-81ed-f830327b2c2c'::uuid,
+    '11111111-1111-4111-8111-111111111101'::uuid,
     question_key,
-    public.resolve_user_preferences('2763f0a1-91fd-482c-81ed-f830327b2c2c'::uuid)
+    public.resolve_user_preferences('11111111-1111-4111-8111-111111111101'::uuid)
   ) as value
 FROM (
   SELECT 'M4_Q1' as question_key

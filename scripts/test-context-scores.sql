@@ -5,24 +5,24 @@ SELECT
   user_b.id::text as user_b_id,
   ROUND(
     public.calculate_context_score(
-      (SELECT university_id FROM public.user_academic WHERE user_id = '2763f0a1-91fd-482c-81ed-f830327b2c2c'::uuid),
+      (SELECT university_id FROM public.user_academic WHERE user_id = '11111111-1111-4111-8111-111111111101'::uuid),
       ua.university_id,
-      (SELECT program_id FROM public.user_academic WHERE user_id = '2763f0a1-91fd-482c-81ed-f830327b2c2c'::uuid),
+      (SELECT program_id FROM public.user_academic WHERE user_id = '11111111-1111-4111-8111-111111111101'::uuid),
       ua.program_id,
-      (SELECT p.faculty FROM public.user_academic ua2 LEFT JOIN public.programs p ON ua2.program_id = p.id WHERE ua2.user_id = '2763f0a1-91fd-482c-81ed-f830327b2c2c'::uuid),
+      (SELECT p.faculty FROM public.user_academic ua2 LEFT JOIN public.programs p ON ua2.program_id = p.id WHERE ua2.user_id = '11111111-1111-4111-8111-111111111101'::uuid),
       (SELECT p.faculty FROM public.user_academic ua2 LEFT JOIN public.programs p ON ua2.program_id = p.id WHERE ua2.user_id = u.id),
-      (SELECT COALESCE(usy.study_year, 1) FROM public.user_study_year_v usy WHERE usy.user_id = '2763f0a1-91fd-482c-81ed-f830327b2c2c'::uuid),
+      (SELECT COALESCE(usy.study_year, 1) FROM public.user_study_year_v usy WHERE usy.user_id = '11111111-1111-4111-8111-111111111101'::uuid),
       COALESCE(usy.study_year, 1),
-      (SELECT (COALESCE(ua2.undecided_program, false) OR ua2.program_id IS NULL) FROM public.user_academic ua2 WHERE ua2.user_id = '2763f0a1-91fd-482c-81ed-f830327b2c2c'::uuid),
+      (SELECT (COALESCE(ua2.undecided_program, false) OR ua2.program_id IS NULL) FROM public.user_academic ua2 WHERE ua2.user_id = '11111111-1111-4111-8111-111111111101'::uuid),
       (COALESCE(ua.undecided_program, false) OR ua.program_id IS NULL)
     )::numeric * 100, 1
   ) as context_percent,
-  ua.university_id = (SELECT university_id FROM public.user_academic WHERE user_id = '2763f0a1-91fd-482c-81ed-f830327b2c2c'::uuid) as same_university,
-  ua.program_id = (SELECT program_id FROM public.user_academic WHERE user_id = '2763f0a1-91fd-482c-81ed-f830327b2c2c'::uuid) as same_program
+  ua.university_id = (SELECT university_id FROM public.user_academic WHERE user_id = '11111111-1111-4111-8111-111111111101'::uuid) as same_university,
+  ua.program_id = (SELECT program_id FROM public.user_academic WHERE user_id = '11111111-1111-4111-8111-111111111101'::uuid) as same_program
 FROM auth.users u
 JOIN public.user_academic ua ON u.id = ua.user_id
 LEFT JOIN public.user_study_year_v usy ON u.id = usy.user_id
-WHERE u.id != '2763f0a1-91fd-482c-81ed-f830327b2c2c'::uuid
+WHERE u.id != '11111111-1111-4111-8111-111111111101'::uuid
   AND EXISTS (SELECT 1 FROM public.profiles WHERE user_id = u.id AND verification_status = 'verified')
 LIMIT 10;
 

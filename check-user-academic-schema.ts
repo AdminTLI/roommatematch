@@ -11,7 +11,7 @@ async function checkSchema() {
     .from('onboarding_sections')
     .select('answers')
     .eq('section', 'intro')
-    .eq('user_id', '2652953c-7365-4ebf-8be9-b443a7c9f182')
+    .eq('user_id', '11111111-1111-4111-8111-111111111104')
     .maybeSingle()
   
   console.log('Intro data for failing user:')
@@ -21,8 +21,8 @@ async function checkSchema() {
   const { error } = await supabase
     .from('user_academic')
     .insert({
-      user_id: '2652953c-7365-4ebf-8be9-b443a7c9f182',
-      university_id: '68ea8834-3a46-4c76-a82f-3e3cd73eae9b',
+      user_id: '11111111-1111-4111-8111-111111111104',
+      university_id: '550e8400-e29b-41d4-a716-446655440001', // example UvA id from seed fixtures — replace for your DB
       degree_level: 'bachelor',
       program_id: null,
       undecided_program: true,

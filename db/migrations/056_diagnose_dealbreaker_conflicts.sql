@@ -3,8 +3,8 @@
 
 WITH user_pair AS (
   SELECT 
-    '2763f0a1-91fd-482c-81ed-f830327b2c2c'::UUID AS user_a_id,  -- Replace with your user ID
-    '39288c03-775f-4c7f-a27c-6dd5ddc6e5db'::UUID AS user_b_id   -- Replace with other user ID
+    '11111111-1111-4111-8111-111111111101'::UUID AS user_a_id,  -- Replace with your user ID
+    '11111111-1111-4111-8111-111111111102'::UUID AS user_b_id   -- Replace with other user ID
 ),
 prefs AS (
   SELECT 

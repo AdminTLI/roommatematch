@@ -9,11 +9,15 @@ export class MockIDVProvider extends BaseIDVProvider {
   constructor() {
     super({
       provider: 'mock',
-      apiKey: 'mock_api_key',
-      apiSecret: 'mock_api_secret',
-      webhookSecret: 'mock_webhook_secret',
+      apiKey: '',
+      apiSecret: '',
+      webhookSecret: '',
       environment: 'sandbox'
     })
+  }
+
+  protected validateConfig(): void {
+    // Mock provider does not call external APIs; credentials are unused.
   }
 
   async startVerification(sessionData: IDVSessionData): Promise<IDVSession> {

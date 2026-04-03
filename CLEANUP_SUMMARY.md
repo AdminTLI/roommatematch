@@ -8,7 +8,7 @@
 
 ## 🎯 Mission Accomplished
 
-Successfully removed all hard-coded demo data from the Domu Match codebase while preserving a single whitelisted demo account (`demo@account.com`) for testing and access.
+Successfully removed all hard-coded demo data from the Domu Match codebase while preserving a single whitelisted demo account (`DEMO_USER_EMAIL`) for testing and access.
 
 ---
 
@@ -32,8 +32,8 @@ Successfully removed all hard-coded demo data from the Domu Match codebase while
 - ✅ 10+ demo user bypasses in page components
 
 ### Whitelisted Account: **1**
-- Email: `demo@account.com`
-- Password: `Testing123`
+- Email: `DEMO_USER_EMAIL`
+- Password: `DEMO_USER_PASSWORD`
 - Protected in: 3 scripts + scanner allowlist
 
 ---
@@ -113,7 +113,7 @@ Creates test users for local development. Never runs in production.
 ```bash
 npm run cleanup:demo
 ```
-Removes all fake users while preserving demo@account.com. Interactive confirmation.
+Removes all fake users while preserving the user defined by `DEMO_USER_EMAIL`. Interactive confirmation.
 
 ### Scan for Demo Data
 ```bash
@@ -127,8 +127,8 @@ Scans codebase for suspicious patterns. Use in CI/CD. Exit code 1 if violations 
 
 ### 1. Environment-Driven Allowlist
 ```bash
-DEMO_USER_EMAIL=demo@account.com
-DEMO_USER_PASSWORD=Testing123
+DEMO_USER_EMAIL=your_whitelist_account@example.com
+DEMO_USER_PASSWORD=your_strong_demo_password_here
 ```
 
 ### 2. Production Seed Protection
@@ -142,7 +142,7 @@ DEMO_USER_PASSWORD=Testing123
 - Interactive confirmation prompt
 
 ### 4. Scanner Allowlist
-- Exact match for `demo@account.com`
+- Exact match for `DEMO_USER_EMAIL`
 - Prevents false positives
 - Fails CI if violations found
 
@@ -233,7 +233,7 @@ DEMO_USER_PASSWORD=Testing123
 ```
 🔍 Scanning codebase for demo data...
 📁 Scanning directories: app, components, lib, types
-✅ Allowlist: demo@account.com, example.com, example@example.com
+✅ Allowlist: `DEMO_USER_EMAIL`, example.com, example@example.com
 📊 Scan completed in 206ms
 ✅ No demo data violations found!
 💡 Your codebase is clean and ready for production.
@@ -241,7 +241,7 @@ DEMO_USER_PASSWORD=Testing123
 
 ### Manual Checks:
 - ✅ All pages redirect to `/auth/sign-in` when not authenticated
-- ✅ Demo user (`demo@account.com`) can log in
+- ✅ Demo user (`DEMO_USER_EMAIL`) can log in
 - ✅ No hard-coded arrays in production code
 - ✅ Empty states render correctly
 - ✅ Real database queries in place
@@ -259,8 +259,8 @@ DEMO_USER_PASSWORD=Testing123
 ### Deployment Steps:
 1. Set environment variables in Vercel:
    ```
-   DEMO_USER_EMAIL=demo@account.com
-   DEMO_USER_PASSWORD=Testing123
+   DEMO_USER_EMAIL=your_whitelist_account@example.com
+   DEMO_USER_PASSWORD=your_strong_demo_password_here
    ```
 
 2. Deploy to Vercel:

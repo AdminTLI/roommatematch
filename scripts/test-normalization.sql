@@ -19,16 +19,16 @@ SELECT
 -- Test 4: Test the full flow - what does get_cleanliness_dimension actually return?
 SELECT 
   'get_cleanliness_dimension' as test,
-  public.get_cleanliness_dimension('2763f0a1-91fd-482c-81ed-f830327b2c2c'::uuid) as result;
+  public.get_cleanliness_dimension('11111111-1111-4111-8111-111111111101'::uuid) as result;
 
 -- Test 5: Test what normalize_mcq_value gets from get_dimension_value
 SELECT 
   'normalize on actual extracted value' as test,
   public.normalize_mcq_value(
     public.get_dimension_value(
-      '2763f0a1-91fd-482c-81ed-f830327b2c2c'::uuid,
+      '11111111-1111-4111-8111-111111111101'::uuid,
       'M4_Q1',
-      public.resolve_user_preferences('2763f0a1-91fd-482c-81ed-f830327b2c2c'::uuid)
+      public.resolve_user_preferences('11111111-1111-4111-8111-111111111101'::uuid)
     )
   ) as normalized_value;
 
@@ -36,45 +36,45 @@ SELECT
 SELECT 
   'M4_Q1' as question,
   public.get_dimension_value(
-    '2763f0a1-91fd-482c-81ed-f830327b2c2c'::uuid,
+    '11111111-1111-4111-8111-111111111101'::uuid,
     'M4_Q1',
-    public.resolve_user_preferences('2763f0a1-91fd-482c-81ed-f830327b2c2c'::uuid)
+    public.resolve_user_preferences('11111111-1111-4111-8111-111111111101'::uuid)
   ) as raw_value,
   public.normalize_mcq_value(
     public.get_dimension_value(
-      '2763f0a1-91fd-482c-81ed-f830327b2c2c'::uuid,
+      '11111111-1111-4111-8111-111111111101'::uuid,
       'M4_Q1',
-      public.resolve_user_preferences('2763f0a1-91fd-482c-81ed-f830327b2c2c'::uuid)
+      public.resolve_user_preferences('11111111-1111-4111-8111-111111111101'::uuid)
     )
   ) as normalized_value
 UNION ALL
 SELECT 
   'M4_Q2' as question,
   public.get_dimension_value(
-    '2763f0a1-91fd-482c-81ed-f830327b2c2c'::uuid,
+    '11111111-1111-4111-8111-111111111101'::uuid,
     'M4_Q2',
-    public.resolve_user_preferences('2763f0a1-91fd-482c-81ed-f830327b2c2c'::uuid)
+    public.resolve_user_preferences('11111111-1111-4111-8111-111111111101'::uuid)
   ) as raw_value,
   public.normalize_mcq_value(
     public.get_dimension_value(
-      '2763f0a1-91fd-482c-81ed-f830327b2c2c'::uuid,
+      '11111111-1111-4111-8111-111111111101'::uuid,
       'M4_Q2',
-      public.resolve_user_preferences('2763f0a1-91fd-482c-81ed-f830327b2c2c'::uuid)
+      public.resolve_user_preferences('11111111-1111-4111-8111-111111111101'::uuid)
     )
   ) as normalized_value
 UNION ALL
 SELECT 
   'M4_Q3' as question,
   public.get_dimension_value(
-    '2763f0a1-91fd-482c-81ed-f830327b2c2c'::uuid,
+    '11111111-1111-4111-8111-111111111101'::uuid,
     'M4_Q3',
-    public.resolve_user_preferences('2763f0a1-91fd-482c-81ed-f830327b2c2c'::uuid)
+    public.resolve_user_preferences('11111111-1111-4111-8111-111111111101'::uuid)
   ) as raw_value,
   public.normalize_mcq_value(
     public.get_dimension_value(
-      '2763f0a1-91fd-482c-81ed-f830327b2c2c'::uuid,
+      '11111111-1111-4111-8111-111111111101'::uuid,
       'M4_Q3',
-      public.resolve_user_preferences('2763f0a1-91fd-482c-81ed-f830327b2c2c'::uuid)
+      public.resolve_user_preferences('11111111-1111-4111-8111-111111111101'::uuid)
     )
   ) as normalized_value;
 

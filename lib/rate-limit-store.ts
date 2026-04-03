@@ -4,21 +4,25 @@
  */
 
 import type { RateLimitStore, RateLimitEntry } from './rate-limit'
+import { getUpstashRedisRestCredentials, hasUpstashRedisRestEnv } from './upstash-env'
 
 /**
  * Upstash Redis store for production rate limiting
- * Requires UPSTASH_REDIS_REST_URL and UPSTASH_REDIS_REST_TOKEN environment variables
+ * Requires REST URL + token (UPSTASH_* or KV_REST_* — see lib/upstash-env.ts).
  */
 export class UpstashRateLimitStore implements RateLimitStore {
   private baseUrl: string
   private token: string
 
   constructor(requireCredentials: boolean = false) {
-    this.baseUrl = process.env.UPSTASH_REDIS_REST_URL || ''
-    this.token = process.env.UPSTASH_REDIS_REST_TOKEN || ''
+    const creds = getUpstashRedisRestCredentials()
+    this.baseUrl = creds?.url ?? ''
+    this.token = creds?.token ?? ''
 
     if (requireCredentials && (!this.baseUrl || !this.token)) {
-      throw new Error('[RateLimit] Upstash Redis credentials are required but not configured. Set UPSTASH_REDIS_REST_URL and UPSTASH_REDIS_REST_TOKEN environment variables.')
+      throw new Error(
+        '[RateLimit] Upstash Redis credentials are required but not configured. Set UPSTASH_REDIS_REST_URL and UPSTASH_REDIS_REST_TOKEN (or KV_REST_API_URL and KV_REST_API_TOKEN).'
+      )
     }
 
     if (!this.baseUrl || !this.token) {
@@ -147,7 +151,7 @@ export function getRateLimitStore(): RateLimitStore | undefined {
   // If credentials are missing, return undefined
   // Validation will happen when store is actually used at runtime
   
-  if (!process.env.UPSTASH_REDIS_REST_URL || !process.env.UPSTASH_REDIS_REST_TOKEN) {
+  if (!hasUpstashRedisRestEnv()) {
     // No credentials available - return undefined
     // This allows build to complete
     // Runtime validation happens in RateLimiter.getStore()

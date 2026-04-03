@@ -16,7 +16,7 @@ This document outlines compliance with DUO (Dutch Ministry of Education) data li
 **Format:** CSV  
 **License:** Open Data (with reuse restrictions)
 
-**URL:** https://onderwijsdata.duo.nl/dataset/bb07cc6e-00fe-4100-9528-a0c5fd27d2fb
+**URL:** Use the [DUO onderwijsdata catalog](https://onderwijsdata.duo.nl/) and open the current “Overzicht Erkenningen hoger onderwijs” dataset (IDs may change when DUO republishes).
 
 ### Secondary Source: Studiekeuzedatabase
 
@@ -145,8 +145,8 @@ This document outlines compliance with DUO (Dutch Ministry of Education) data li
 ## Contact
 
 For questions about DUO data usage:
-- **Technical:** domumatch@gmail.com
-- **Legal:** domumatch@gmail.com
+- **Technical:** contact@your-domain.example
+- **Legal:** contact@your-domain.example
 - **DUO Contact:** [DUO contact information]
 
 ## References

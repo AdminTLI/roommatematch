@@ -10,8 +10,8 @@ This document provides a complete inventory of all personal data processing acti
 ## 1. Controller Information
 
 - **Name:** Domu Match
-- **Contact:** domumatch@gmail.com
-- **Data Protection Officer:** domumatch@gmail.com
+- **Contact:** contact@your-domain.example
+- **Data Protection Officer:** contact@your-domain.example
 - **Address:** [Business Address]
 
 ## 2. Processing Activities
@@ -206,7 +206,7 @@ This document provides a complete inventory of all personal data processing acti
 
 ### 4.2 DSAR Process
 
-- **Request Channel:** Privacy settings UI, email (domumatch@gmail.com)
+- **Request Channel:** Privacy settings UI, email (contact@your-domain.example)
 - **Tracking:** DSAR requests table with SLA deadlines
 - **Automation:** Automated reminders, admin dashboard
 - **Response Format:** JSON export, machine-readable

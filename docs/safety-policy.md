@@ -133,7 +133,7 @@ Users have the right to:
 
 For safety concerns or GDPR requests:
 
-- **Email**: domumatch@gmail.com
+- **Email**: contact@your-domain.example
 - **Response Time**: Within 48 hours for urgent safety issues
 - **GDPR Requests**: Processed within 30 days
 

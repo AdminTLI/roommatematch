@@ -11,6 +11,8 @@ import { NextRequest, NextResponse } from 'next/server';
 import { DegreeLevel } from '@/types/programme';
 import { getProgrammesByInstitutionAndLevel, getAllProgrammesForInstitution } from '@/lib/programmes/repo';
 
+export const revalidate = 3600;
+
 /**
  * GET /api/programmes
  * 

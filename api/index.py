@@ -200,14 +200,27 @@ def chat():
                 parts=[types.Part(text=system_prompt)]
             ),
             tools=[search_internet],
-            max_output_tokens=2048,
+            max_output_tokens=350,
         )
 
-        response = client.models.generate_content(
-            model="gemini-2.0-flash",
-            contents=message,
-            config=config,
-        )
+        def _do_generate():
+            return client.models.generate_content(
+                model="gemini-1.5-flash",
+                contents=message,
+                config=config,
+            )
+
+        # Cap wall time for Vercel Hobby (~10s function budget after cold start).
+        with ThreadPoolExecutor(max_workers=1) as ex:
+            future = ex.submit(_do_generate)
+            try:
+                response = future.result(timeout=8)
+            except FuturesTimeoutError:
+                return jsonify(
+                    {
+                        "reply": "That took too long to answer. Please try again with a shorter question, or try again in a moment."
+                    }
+                ), 200
 
         reply = response.text or "I couldn't generate a response."
     except Exception as e:
@@ -215,6 +228,14 @@ def chat():
         print("[Domu AI] Chat error:", repr(e))
         raw = str(e)
         reply = "Sorry, something went wrong on my side. Please try again in a moment."
+
+        if raw and (
+            "deadline" in raw.lower()
+            or "timeout" in raw.lower()
+            or "504" in raw
+            or "DEADLINE_EXCEEDED" in raw
+        ):
+            reply = "That took too long to answer. Please try again with a shorter question, or try again in a moment."
 
         # Rate limits / overload
         if raw and ("quota" in raw or "429" in raw or "RESOURCE_EXHAUSTED" in raw):

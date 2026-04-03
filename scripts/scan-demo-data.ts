@@ -6,7 +6,7 @@
  * Scans the codebase for suspicious demo/fake data patterns.
  * Fails CI if violations are found (exit code 1).
  * 
- * Allowlist: demo@account.com (the whitelisted demo user)
+ * Allowlist: DEMO_USER_EMAIL when set, plus common example strings
  */
 
 import * as fs from 'fs'
@@ -32,11 +32,11 @@ const SUSPICIOUS_PATTERNS = [
   { pattern: /test\.student\d+@/gi, name: 'Test student emails' }
 ]
 
-// Exact strings that are allowed (case-insensitive)
+// Exact strings that are allowed (case-insensitive). Include DEMO_USER_EMAIL when set (e.g. in CI).
 const ALLOWLIST = [
-  'demo@account.com', // The whitelisted demo user
-  'example.com', // Common in documentation
-  'example@example.com' // Common in examples
+  ...(process.env.DEMO_USER_EMAIL ? [process.env.DEMO_USER_EMAIL] : []),
+  'example.com',
+  'example@example.com'
 ]
 
 // Directories to scan

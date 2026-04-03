@@ -1,5 +1,8 @@
 -- Matching Engine Functions for Domu Match
 -- These functions implement the matching algorithm using pgvector and academic affinity
+--
+-- Ops note: Schedule heavy cron-driven matching or compatibility recomputation during off-peak hours
+-- (e.g. 03:00 CET/Amsterdam) to avoid overlapping spikes with interactive traffic on Vercel + Supabase.
 
 -- Function to compute user compatibility score
 CREATE OR REPLACE FUNCTION compute_compatibility_score(

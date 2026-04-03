@@ -1,11 +1,16 @@
 // Housing Listings API
 // GET /api/housing/listings with comprehensive filtering and sorting
+//
+// `revalidate` applies when the route can be fully static; this handler uses cookies/session,
+// so Next may still treat it as dynamic — HTTP Cache-Control below is the main lever for anonymous traffic.
 
 import { NextRequest, NextResponse } from 'next/server'
 import { z } from 'zod'
 import { createClient } from '@/lib/supabase/server'
 import { FiltersState, ListingsResponse, Listing } from '@/types/housing'
 import { getSortComparator } from '@/lib/housing/sorting'
+
+export const revalidate = 3600
 
 // Zod schema for query parameters
 const ListingsQuerySchema = z.object({
@@ -329,11 +334,13 @@ export async function GET(request: NextRequest) {
       pageSize
     }
     
-    // Add cache headers
     const headers = new Headers()
-    headers.set('Cache-Control', 'public, max-age=60, stale-while-revalidate=300')
-    headers.set('ETag', `"${Date.now()}"`)
-    
+    if (isAuthenticated) {
+      headers.set('Cache-Control', 'private, max-age=60, stale-while-revalidate=300')
+    } else {
+      headers.set('Cache-Control', 'public, max-age=3600, stale-while-revalidate=86400')
+    }
+
     return NextResponse.json(response, { headers })
     
   } catch (error) {

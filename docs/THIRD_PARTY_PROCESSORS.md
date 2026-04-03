@@ -176,8 +176,8 @@ Users can:
 ## Contact
 
 For questions about third-party processors:
-- **Email:** domumatch@gmail.com
-- **DPO:** domumatch@gmail.com
+- **Email:** contact@your-domain.example
+- **DPO:** contact@your-domain.example
 
 **Last Updated:** January 2025
 

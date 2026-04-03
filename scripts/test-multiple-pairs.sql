@@ -10,14 +10,14 @@ SELECT id, email FROM auth.users LIMIT 5;
 -- Test Pair 1: Your original pair
 SELECT 
   'Pair 1' as pair_label,
-  '2763f0a1-91fd-482c-81ed-f830327b2c2c'::uuid as user_a,
-  '39288c03-775f-4c7f-a27c-6dd5ddc6e5db'::uuid as user_b,
+  '11111111-1111-4111-8111-111111111101'::uuid as user_a,
+  '11111111-1111-4111-8111-111111111102'::uuid as user_b,
   compatibility_score,
   harmony_score,
   context_score
 FROM compute_compatibility_score(
-  '2763f0a1-91fd-482c-81ed-f830327b2c2c'::uuid,
-  '39288c03-775f-4c7f-a27c-6dd5ddc6e5db'::uuid
+  '11111111-1111-4111-8111-111111111101'::uuid,
+  '11111111-1111-4111-8111-111111111102'::uuid
 )
 
 UNION ALL
@@ -39,19 +39,19 @@ FROM compute_compatibility_score(
 -- This will show if users have different answers
 SELECT 
   'User A' as user_label,
-  get_cleanliness_dimension('2763f0a1-91fd-482c-81ed-f830327b2c2c'::uuid) as cleanliness,
-  get_noise_dimension('2763f0a1-91fd-482c-81ed-f830327b2c2c'::uuid) as noise,
-  get_guests_dimension('2763f0a1-91fd-482c-81ed-f830327b2c2c'::uuid) as guests,
-  get_sleep_dimension('2763f0a1-91fd-482c-81ed-f830327b2c2c'::uuid) as sleep
+  get_cleanliness_dimension('11111111-1111-4111-8111-111111111101'::uuid) as cleanliness,
+  get_noise_dimension('11111111-1111-4111-8111-111111111101'::uuid) as noise,
+  get_guests_dimension('11111111-1111-4111-8111-111111111101'::uuid) as guests,
+  get_sleep_dimension('11111111-1111-4111-8111-111111111101'::uuid) as sleep
 
 UNION ALL
 
 SELECT 
   'User B' as user_label,
-  get_cleanliness_dimension('39288c03-775f-4c7f-a27c-6dd5ddc6e5db'::uuid) as cleanliness,
-  get_noise_dimension('39288c03-775f-4c7f-a27c-6dd5ddc6e5db'::uuid) as noise,
-  get_guests_dimension('39288c03-775f-4c7f-a27c-6dd5ddc6e5db'::uuid) as guests,
-  get_sleep_dimension('39288c03-775f-4c7f-a27c-6dd5ddc6e5db'::uuid) as sleep;
+  get_cleanliness_dimension('11111111-1111-4111-8111-111111111102'::uuid) as cleanliness,
+  get_noise_dimension('11111111-1111-4111-8111-111111111102'::uuid) as noise,
+  get_guests_dimension('11111111-1111-4111-8111-111111111102'::uuid) as guests,
+  get_sleep_dimension('11111111-1111-4111-8111-111111111102'::uuid) as sleep;
 
 
 

@@ -6,7 +6,6 @@
  */
 
 import { createClient } from '@/lib/supabase/client'
-import { createClient as createServerClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/server'
 import type { Programme, DegreeLevel, ProgrammesByLevel } from '@/types/programme'
 
@@ -95,7 +94,7 @@ export async function getProgrammesByInstitutionAndLevel(
   level: DegreeLevel,
   useServerClient: boolean = false
 ): Promise<Programme[]> {
-  const supabase = useServerClient ? await createServerClient() : createClient()
+  const supabase = useServerClient ? createAdminClient() : createClient()
   
   const { data, error } = await supabase
     .from('programmes')
@@ -123,7 +122,7 @@ export async function getAllProgrammesForInstitution(
   institutionSlug: string,
   useServerClient: boolean = false
 ): Promise<ProgrammesByLevel> {
-  const supabase = useServerClient ? await createServerClient() : createClient()
+  const supabase = useServerClient ? createAdminClient() : createClient()
   
   const { data, error } = await supabase
     .from('programmes')
@@ -157,7 +156,7 @@ export async function getProgrammeByRioCode(
   rioCode: string,
   useServerClient: boolean = false
 ): Promise<Programme | null> {
-  const supabase = useServerClient ? await createServerClient() : createClient()
+  const supabase = useServerClient ? createAdminClient() : createClient()
   
   const { data, error } = await supabase
     .from('programmes')
@@ -190,7 +189,7 @@ export async function searchProgrammes(
   },
   useServerClient: boolean = false
 ): Promise<Programme[]> {
-  const supabase = useServerClient ? await createServerClient() : createClient()
+  const supabase = useServerClient ? createAdminClient() : createClient()
   
   let dbQuery = supabase
     .from('programmes')
@@ -302,7 +301,7 @@ export async function upsertProgrammesForInstitution(
 export async function getProgrammeCountsByInstitution(
   useServerClient: boolean = true
 ): Promise<Record<string, { bachelor: number; premaster: number; master: number }>> {
-  const supabase = useServerClient ? await createServerClient() : createClient()
+  const supabase = useServerClient ? createAdminClient() : createClient()
   
   const { data, error } = await supabase
     .from('programmes')
@@ -502,7 +501,7 @@ export async function getProgrammesBySource(
   },
   useServerClient: boolean = true
 ): Promise<Programme[]> {
-  const supabase = useServerClient ? await createServerClient() : createClient()
+  const supabase = useServerClient ? createAdminClient() : createClient()
   
   let query = supabase.from('programmes').select('*')
   
@@ -558,7 +557,7 @@ export async function getUnenrichedProgrammes(
   institutionSlug?: string,
   useServerClient: boolean = true
 ): Promise<Programme[]> {
-  const supabase = useServerClient ? await createServerClient() : createClient()
+  const supabase = useServerClient ? createAdminClient() : createClient()
   
   let query = supabase
     .from('programmes')
@@ -592,7 +591,7 @@ export async function getProgrammeByCrohoCode(
   crohoCode: string,
   useServerClient: boolean = true
 ): Promise<Programme | null> {
-  const supabase = useServerClient ? await createServerClient() : createClient()
+  const supabase = useServerClient ? createAdminClient() : createClient()
   
   const { data, error } = await supabase
     .from('programmes')
@@ -623,7 +622,7 @@ export async function findProgrammesByNameAndInstitution(
   level: DegreeLevel,
   useServerClient: boolean = true
 ): Promise<Programme[]> {
-  const supabase = useServerClient ? await createServerClient() : createClient()
+  const supabase = useServerClient ? createAdminClient() : createClient()
   
   // Normalize name for matching (lowercase, trim)
   const normalizedName = name.toLowerCase().trim()

@@ -2,6 +2,7 @@ import { NextResponse, NextRequest } from 'next/server'
 import { createServerClient } from '@supabase/ssr'
 import { createCSRFTokenCookie, validateCSRFToken } from '@/lib/csrf'
 import { checkRateLimit, getIPRateLimitKey, getClientIp, buildRateLimitHeaders } from '@/lib/rate-limit'
+import { enforceMiddlewareApiRateLimits } from '@/lib/middleware-rate-limit'
 import { isFeatureEnabled } from '@/lib/feature-flags'
 import { checkUserVerificationStatus, getVerificationRedirectUrl } from '@/lib/auth/verification-check'
 import { safeLogger } from '@/lib/utils/logger'
@@ -111,48 +112,12 @@ export async function middleware(req: NextRequest) {
 
   // Handle API routes with CSRF and rate limiting
   if (isApiRoute) {
-    // Global IP-based rate limit: 300 requests per minute per IP across /api (DDoS / scraping safety net)
     const clientIp = getClientIp(req)
-    const apiGlobalKey = getIPRateLimitKey('api_global', clientIp)
-    const apiGlobalResult = await checkRateLimit('api_global', apiGlobalKey)
-    if (!apiGlobalResult.allowed) {
-      return NextResponse.json(
-        {
-          error: 'Too many requests',
-          retryAfter: Math.ceil((apiGlobalResult.resetTime - Date.now()) / 1000)
-        },
-        {
-          status: 429,
-          headers: buildRateLimitHeaders(300, apiGlobalResult)
-        }
-      )
+    const tieredLimitResponse = await enforceMiddlewareApiRateLimits(req)
+    if (tieredLimitResponse) {
+      return tieredLimitResponse
     }
 
-    // Rate limiting for auth endpoints (sign-in, sign-up)
-    if (pathname === '/api/auth/sign-in' || pathname === '/api/auth/sign-up' || 
-        pathname === '/auth/sign-in' || pathname === '/auth/sign-up') {
-      const rateLimitKey = getIPRateLimitKey('auth', clientIp)
-      const rateLimitResult = await checkRateLimit('auth', rateLimitKey)
-      
-      if (!rateLimitResult.allowed) {
-        return NextResponse.json(
-          {
-            error: 'Too many authentication attempts',
-            retryAfter: Math.ceil((rateLimitResult.resetTime - Date.now()) / 1000)
-          },
-          {
-            status: 429,
-            headers: {
-              'X-RateLimit-Limit': '10',
-              'X-RateLimit-Remaining': '0',
-              'X-RateLimit-Reset': new Date(rateLimitResult.resetTime).toISOString(),
-              'Retry-After': Math.ceil((rateLimitResult.resetTime - Date.now()) / 1000).toString()
-            }
-          }
-        )
-      }
-    }
-    
     // Skip CSRF for GET, HEAD, OPTIONS
     if (!['GET', 'HEAD', 'OPTIONS'].includes(method)) {
       const routeScopedRateLimitedPaths = new Set([

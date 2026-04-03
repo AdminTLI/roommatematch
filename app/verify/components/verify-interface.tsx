@@ -177,17 +177,16 @@ export function VerifyInterface({ user }: VerifyInterfaceProps) {
   }, [status])
 
   const initializePersona = () => {
-    const templateId = process.env.NEXT_PUBLIC_PERSONA_TEMPLATE_ID || 'itmpl_8XHCzE9HWCT7fFm2qwUie3fNicGw'
-    const environmentId = process.env.NEXT_PUBLIC_PERSONA_ENVIRONMENT_ID || 'env_xx8qopwH2mtfVV7ZHYxXFnjW1YDA'
+    const templateId = process.env.NEXT_PUBLIC_PERSONA_TEMPLATE_ID
+    const environmentId = process.env.NEXT_PUBLIC_PERSONA_ENVIRONMENT_ID
 
-    // Debug logging to help identify environment issues (using warn so it shows in production)
-    console.warn('[Verify] Persona initialization:', {
-      templateId,
-      environmentId,
-      hasEnvVar: !!process.env.NEXT_PUBLIC_PERSONA_ENVIRONMENT_ID,
-      envVarValue: process.env.NEXT_PUBLIC_PERSONA_ENVIRONMENT_ID || 'NOT SET (using fallback)',
-      isFallback: !process.env.NEXT_PUBLIC_PERSONA_ENVIRONMENT_ID
-    })
+    if (!templateId || !environmentId) {
+      setError(
+        'Identity verification is not configured. Set NEXT_PUBLIC_PERSONA_TEMPLATE_ID and NEXT_PUBLIC_PERSONA_ENVIRONMENT_ID.'
+      )
+      setIsLoading(false)
+      return
+    }
 
     if (!window.Persona) {
       setError('Persona verification service not available. Please refresh the page.')
@@ -196,14 +195,6 @@ export function VerifyInterface({ user }: VerifyInterfaceProps) {
     }
 
     try {
-      // Log the actual values being passed to Persona (using warn so it shows in production)
-      console.warn('[Verify] Creating Persona client with:', {
-        templateId,
-        environmentId,
-        environmentIdLength: environmentId?.length,
-        environmentIdPrefix: environmentId?.substring(0, 10)
-      })
-      
       const client = new window.Persona.Client({
         templateId,
         environmentId,

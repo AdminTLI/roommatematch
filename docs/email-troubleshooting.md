@@ -26,7 +26,7 @@ Supabase’s built-in mailer is rate-limited and unreliable. You must configure 
    - **Port:** `587` (recommended; supports STARTTLS)
    - **Username:** Your **Mailjet API Key** (from Mailjet → Account settings → SMTP and SEND API settings)
    - **Password:** Your **Mailjet Secret Key** (same page; shown only once at creation - regenerate if lost)
-   - **Sender email:** Must be a validated sender in Mailjet (e.g. `domumatch@gmail.com`). In Mailjet: **Sender addresses & domains** → add/verify your sender and ensure the From address is allowed.
+   - **Sender email:** Must be a validated sender in Mailjet (e.g. `contact@your-domain.example`). In Mailjet: **Sender addresses & domains** → add/verify your sender and ensure the From address is allowed.
    - **Sender name:** e.g. `Domu Match`
 
 Without this, auth emails may not send or may be delayed/blocked. [Mailjet SMTP reference](https://documentation.mailjet.com/hc/en-us/articles/360043229473-How-can-I-configure-my-SMTP-parameters).

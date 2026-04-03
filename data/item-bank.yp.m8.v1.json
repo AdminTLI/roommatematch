@@ -262,9 +262,9 @@
     "options": [
       {
         "value": "short-term",
-        "label": "Short-term (6-12 months, e.g., a stepping stone)"
+        "label": "Short-term (6 - 12 months, e.g., a stepping stone)"
       },
-      { "value": "medium-term", "label": "Medium-term (1-2 years)" },
+      { "value": "medium-term", "label": "Medium-term (1 - 2 years)" },
       { "value": "long-term", "label": "Long-term settlement (2+ years)" }
     ]
   },

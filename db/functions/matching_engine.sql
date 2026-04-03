@@ -1,4 +1,9 @@
 -- Matching Engine RPC Functions
+--
+-- Ops note: Any heavy batch jobs or crons that invoke matching/compatibility SQL at scale should be scheduled
+-- during off-peak hours (e.g. 03:00 Europe/Amsterdam) so database compute does not spike alongside user traffic
+-- (Vercel serverless + Supabase). Align Vercel Cron schedules accordingly.
+--
 -- ⚠️ WARNING: This file contains PLACEHOLDER functions with hardcoded values.
 -- DO NOT APPLY THIS FILE - it will overwrite the production implementation!
 -- The production implementation is in: db/migrations/049_compatibility_algorithm_v1.sql
