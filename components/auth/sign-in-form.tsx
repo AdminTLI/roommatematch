@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
@@ -9,8 +9,14 @@ import { Label } from '@/components/ui/label'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Loader2, Mail, Lock, Eye, EyeOff } from 'lucide-react'
 import { createBrowserClient } from '@supabase/ssr'
+import { toast } from 'sonner'
+import { signOutOtherSessions } from '@/lib/auth/sign-out-other-sessions'
+import {
+  SESSION_TERMINATED_ERROR_PARAM,
+  SESSION_TERMINATED_MESSAGE,
+} from '@/lib/auth/session-terminated'
 
-export function SignInForm() {
+export function SignInForm({ initialErrorCode }: { initialErrorCode?: string | null }) {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [showPassword, setShowPassword] = useState(false)
@@ -21,6 +27,14 @@ export function SignInForm() {
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
   )
+
+  useEffect(() => {
+    if (initialErrorCode !== SESSION_TERMINATED_ERROR_PARAM) return
+    toast.error(SESSION_TERMINATED_MESSAGE)
+    if (typeof window !== 'undefined') {
+      window.history.replaceState(null, '', '/auth/sign-in')
+    }
+  }, [initialErrorCode])
 
   const handleEmailSignIn = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -152,6 +166,8 @@ export function SignInForm() {
         setIsLoading(false)
         return
       }
+
+      await signOutOtherSessions(supabase)
 
       // Sign-in successful - check verification status as backup
       const { data: { user } } = await supabase.auth.getUser()

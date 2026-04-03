@@ -14,6 +14,7 @@ import {
 import { Settings, LogOut, User } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
+import { markIntentionalSignOut } from '@/lib/auth/intentional-sign-out'
 
 interface UserDropdownProps {
   user: {
@@ -34,6 +35,7 @@ export function UserDropdown({ user }: UserDropdownProps) {
   }, [])
 
   const handleSignOut = async () => {
+    markIntentionalSignOut()
     await supabase.auth.signOut()
     router.push('/')
   }

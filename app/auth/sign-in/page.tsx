@@ -7,7 +7,12 @@ export const metadata: Metadata = {
   description: 'Sign in to your Domu Match account to find compatible roommates.',
 }
 
-export default function SignInPage() {
+export default async function SignInPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ error?: string }>
+}) {
+  const sp = await searchParams
   return (
     <AuthWrapperLight>
       <section className="px-4 sm:px-6 lg:px-8 pt-10 md:pt-14 pb-12">
@@ -45,7 +50,7 @@ export default function SignInPage() {
           {/* Right: form */}
           <div className="mx-auto w-full max-w-md">
             <div className="rounded-3xl border border-white/60 bg-white/50 backdrop-blur-xl shadow-[0_18px_50px_rgba(15,23,42,0.08)] p-6 sm:p-8">
-              <SignInForm />
+              <SignInForm initialErrorCode={sp.error} />
             </div>
           </div>
         </div>

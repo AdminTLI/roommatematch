@@ -7,16 +7,7 @@ import { isFeatureEnabled } from '@/lib/feature-flags'
 import { checkUserVerificationStatus, getVerificationRedirectUrl } from '@/lib/auth/verification-check'
 import { safeLogger } from '@/lib/utils/logger'
 import { createAdminClient } from '@/lib/supabase/server'
-import type { User } from '@supabase/supabase-js'
-
-// In-memory cache for user lookups with TTL
-interface CachedUser {
-  user: User | null
-  expiresAt: number
-}
-
-const userCache = new Map<string, CachedUser>()
-const CACHE_TTL_MS = 60 * 1000 // 60 seconds
+import { SESSION_TERMINATED_ERROR_PARAM } from '@/lib/auth/session-terminated'
 
 // Admin check cache (for feature flags) - 30 seconds TTL
 interface CachedAdminCheck {
@@ -41,16 +32,15 @@ function getCacheKey(req: NextRequest): string {
   return sessionCookie
 }
 
+function requestHasSupabaseAuthCookies(request: NextRequest): boolean {
+  return request.cookies.getAll().some(({ name }) => name.startsWith('sb-'))
+}
+
 // Clean up expired cache entries periodically
 if (typeof global !== 'undefined') {
   // Only run cleanup in Node.js environment
   setInterval(() => {
     const now = Date.now()
-    for (const [key, cached] of userCache.entries()) {
-      if (cached.expiresAt < now) {
-        userCache.delete(key)
-      }
-    }
     for (const [key, cached] of adminCheckCache.entries()) {
       if (cached.expiresAt < now) {
         adminCheckCache.delete(key)
@@ -237,25 +227,28 @@ export async function middleware(req: NextRequest) {
     }
   )
 
-  // Get user with caching
   const cacheKey = getCacheKey(req)
-  const cachedUser = userCache.get(cacheKey)
   const now = Date.now()
 
-  let user: User | null = null
+  // Always validate with Supabase (no user cache) so revoked sessions are detected on the next request.
+  const {
+    data: { user },
+    error: authError,
+  } = await supabase.auth.getUser()
 
-  if (cachedUser && cachedUser.expiresAt > now) {
-    // Cache hit
-    user = cachedUser.user
-  } else {
-    // Cache miss - fetch user
-    const { data } = await supabase.auth.getUser()
-    user = data.user
-    // Cache the result
-    userCache.set(cacheKey, {
-      user,
-      expiresAt: now + CACHE_TTL_MS,
+  if (authError && requestHasSupabaseAuthCookies(req)) {
+    safeLogger.warn('[Middleware] Session invalid or refresh failed', {
+      message: authError.message,
+      pathname,
     })
+    const url = req.nextUrl.clone()
+    url.pathname = '/auth/sign-in'
+    url.searchParams.set('error', SESSION_TERMINATED_ERROR_PARAM)
+    const redirectRes = NextResponse.redirect(url)
+    res.cookies.getAll().forEach((c) => {
+      redirectRes.cookies.set(c)
+    })
+    return redirectRes
   }
 
   // Set CSRF token cookie for authenticated users (only if missing or expired)
@@ -377,16 +370,19 @@ export async function middleware(req: NextRequest) {
     const isAdminOrSuperAdmin = role === 'admin' || role === 'super_admin'
     
     // Fallback: Check admins table for backward compatibility (any admin role grants access)
-    const { data: adminRecord, error: adminError } = await adminClient
+    const { data: adminData, error: adminError } = await adminClient
       .from('admins')
       .select('id, role')
       .eq('user_id', user.id)
       .maybeSingle()
-    
+
     if (adminError) {
       safeLogger.warn('[Middleware] Error checking admins table', { error: adminError.message })
     }
-    
+
+    // No generated Database generic — `.from('admins')` infers `data` as `never`; assert row shape for runtime use.
+    const adminRecord: { id: string; role: string | null } | null =
+      adminData as unknown as { id: string; role: string | null } | null
     const isAdminFromAdminsTable = !!adminRecord
     
     // Allow admins via metadata fallback if explicit admin row is missing (production convenience)
@@ -394,7 +390,9 @@ export async function middleware(req: NextRequest) {
       String(user.user_metadata.role).toLowerCase() === 'admin' || 
       String(user.user_metadata.role).toLowerCase() === 'super_admin'
     )
-    
+
+    const adminsTableRoleForLog = adminRecord?.role ?? 'none'
+
     if (!isAdminOrSuperAdmin && !isAdminFromAdminsTable && !isMetadataAdmin) {
       // Not an admin - redirect to dashboard
       const url = req.nextUrl.clone()
@@ -405,7 +403,7 @@ export async function middleware(req: NextRequest) {
         path: pathname,
         userRole: role || 'none',
         hasAdminRecord: !!adminRecord,
-        adminRecordRole: adminRecord?.role || 'none',
+        adminRecordRole: adminsTableRoleForLog,
         metadataRole: user?.user_metadata?.role || 'none',
         userRoleError: userRoleError?.message,
         adminError: adminError?.message

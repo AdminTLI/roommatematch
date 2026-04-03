@@ -8,6 +8,7 @@ import { initializeEventTracker } from '@/lib/events'
 import { DEFAULT_LOCALE, getDictionary, type Locale } from '@/lib/i18n'
 import { ReactQueryDevtools } from './(components)/devtools/react-query-devtools-wrapper'
 import { SessionTrackerProvider } from '@/components/analytics/session-tracker-provider'
+import { AuthSessionTerminationListener } from '@/components/auth/auth-session-termination-listener'
 
 // Query key factory for consistent keys
 export const queryKeys = {
@@ -130,6 +131,7 @@ export function Providers({ children }: { children: React.ReactNode }) {
           }}
         >
           <SessionTrackerProvider>
+            <AuthSessionTerminationListener />
             {children}
           </SessionTrackerProvider>
         </AppContext.Provider>

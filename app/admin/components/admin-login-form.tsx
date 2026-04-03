@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { createBrowserClient } from '@supabase/ssr'
+import { signOutOtherSessions } from '@/lib/auth/sign-out-other-sessions'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -51,6 +52,8 @@ export function AdminLoginForm() {
         setIsLoading(false)
         return
       }
+
+      await signOutOtherSessions(supabase)
 
       // Successful sign-in – send admins to the admin home.
       router.push('/admin')

@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { createBrowserClient } from '@supabase/ssr'
+import { markIntentionalSignOut } from '@/lib/auth/intentional-sign-out'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { Label } from '@/components/ui/label'
@@ -109,6 +110,7 @@ export function DeleteAccountClient({
         process.env.NEXT_PUBLIC_SUPABASE_URL!,
         process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
       )
+      markIntentionalSignOut()
       await supabase.auth.signOut()
       // Stay on confirmation page with visible countdown (5 seconds)
       const redirectSeconds = 5

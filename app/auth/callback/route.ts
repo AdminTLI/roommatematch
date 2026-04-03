@@ -1,6 +1,7 @@
 import { createServerClient } from '@supabase/ssr'
 import { cookies } from 'next/headers'
 import { NextRequest, NextResponse } from 'next/server'
+import { signOutOtherSessions } from '@/lib/auth/sign-out-other-sessions'
 
 export async function GET(request: NextRequest) {
   const requestUrl = new URL(request.url)
@@ -39,6 +40,10 @@ export async function GET(request: NextRequest) {
       console.error('Error exchanging code for session:', error)
       // Redirect to sign-in with error
       return NextResponse.redirect(`${requestUrl.origin}/auth/sign-in?error=${encodeURIComponent(error.message)}`)
+    }
+
+    if (data.session) {
+      await signOutOtherSessions(supabase)
     }
 
     // Get session after exchange to check for recovery state

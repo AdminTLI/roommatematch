@@ -5,6 +5,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { LanguageSwitcher } from '@/app/(marketing)/components/language-switcher'
 // Removed useApp import - using default locale
 import { createClient } from '@/lib/supabase/client'
+import { markIntentionalSignOut } from '@/lib/auth/intentional-sign-out'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import Image from 'next/image'
@@ -47,6 +48,7 @@ export function AppHeader({ user }: AppHeaderProps) {
   const isAdmin = useIsAdmin()
 
   const handleSignOut = async () => {
+    markIntentionalSignOut()
     await supabase.auth.signOut()
     router.push('/')
   }
