@@ -21,20 +21,12 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog'
-import { Label } from '@/components/ui/label'
-import { Textarea } from '@/components/ui/textarea'
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select'
 import { createClient } from '@/lib/supabase/client'
 import { fetchWithCSRF } from '@/lib/utils/fetch-with-csrf'
 import { showSuccessToast, showErrorToast } from '@/lib/toast'
 import { MessengerMessageBubble } from './messenger-message-bubble'
 import { MessengerTypingBar } from './messenger-typing-bar'
+import { ReportUserDialog } from './report-user-dialog'
 import { cn } from '@/lib/utils'
 import { queryClient, queryKeys } from '@/app/providers'
 import { useVisualViewportKeyboardInset } from '@/hooks/use-visual-viewport-keyboard-inset'
@@ -108,9 +100,6 @@ export function MessengerConversation({
   const [showReportDialog, setShowReportDialog] = useState(false)
   const [showDeleteDialog, setShowDeleteDialog] = useState(false)
   const [showClearHistoryDialog, setShowClearHistoryDialog] = useState(false)
-  const [reportCategory, setReportCategory] = useState<string>('')
-  const [reportDetails, setReportDetails] = useState<string>('')
-  const [isReporting, setIsReporting] = useState(false)
   const [isBlocking, setIsBlocking] = useState(false)
   // isBlocked = current user has an active block against the partner in this chat
   const [isBlocked, setIsBlocked] = useState(false)
@@ -715,42 +704,6 @@ export function MessengerConversation({
     }
   }
 
-  // Handle report user
-  const handleReport = async () => {
-    if (!partnerUserId || !reportCategory || !reportDetails.trim()) {
-      showErrorToast('Missing information', 'Please select a category and provide details.')
-      return
-    }
-
-    setIsReporting(true)
-    try {
-      const response = await fetchWithCSRF('/api/chat/report', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          target_user_id: partnerUserId,
-          category: reportCategory,
-          details: reportDetails.trim()
-        })
-      })
-
-      if (response.ok) {
-        showSuccessToast('Report submitted', 'Thank you for reporting. We will review this issue.')
-        setShowReportDialog(false)
-        setReportCategory('')
-        setReportDetails('')
-      } else {
-        const errorData = await response.json()
-        throw new Error(errorData.error || 'Failed to submit report')
-      }
-    } catch (error: any) {
-      console.error('Failed to report:', error)
-      showErrorToast('Failed to submit report', error.message || 'Please try again.')
-    } finally {
-      setIsReporting(false)
-    }
-  }
-
   // Handle block / unblock user (compact messenger header)
   const handleBlock = async () => {
     if (!partnerUserId) {
@@ -1140,70 +1093,16 @@ export function MessengerConversation({
         </div>
       </div>
 
-      {/* Report Dialog */}
-      <Dialog open={showReportDialog} onOpenChange={setShowReportDialog}>
-        <DialogContent className="sm:max-w-md">
-          <DialogHeader>
-            <DialogTitle className="flex items-center gap-2">
-              <Flag className="h-5 w-5 text-red-600" />
-              Report User
-            </DialogTitle>
-            <DialogDescription>
-              Help us keep the platform safe by reporting this user: {displayPartnerName}
-            </DialogDescription>
-          </DialogHeader>
-          <div className="space-y-4 py-4">
-            <div className="space-y-2">
-              <Label htmlFor="category">Reason for reporting</Label>
-              <Select value={reportCategory} onValueChange={setReportCategory}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Select a reason..." />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="spam">Spam</SelectItem>
-                  <SelectItem value="harassment">Harassment</SelectItem>
-                  <SelectItem value="inappropriate">Inappropriate content</SelectItem>
-                  <SelectItem value="other">Other</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="details">Additional details (required)</Label>
-              <Textarea
-                id="details"
-                placeholder="Please provide specific details about why you're reporting this user..."
-                value={reportDetails}
-                onChange={(e) => setReportDetails(e.target.value)}
-                rows={4}
-                className="resize-none"
-                maxLength={500}
-              />
-              <div className="text-xs text-gray-500">
-                {reportDetails.length}/500 characters
-              </div>
-            </div>
-          </div>
-          <DialogFooter>
-            <Button
-              variant="outline"
-              onClick={() => {
-                setShowReportDialog(false)
-                setReportCategory('')
-                setReportDetails('')
-              }}
-            >
-              Cancel
-            </Button>
-            <Button
-              onClick={handleReport}
-              disabled={isReporting || !reportCategory || !reportDetails.trim()}
-              className="bg-red-600 hover:bg-red-700"
-            >
-              {isReporting ? 'Submitting...' : 'Submit Report'}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+      {partnerUserId && (
+        <ReportUserDialog
+          open={showReportDialog}
+          onOpenChange={setShowReportDialog}
+          chatId={chatId}
+          targetUserId={partnerUserId}
+          targetDisplayName={displayPartnerName}
+          variant="user"
+        />
+      )}
 
       {/* Delete Conversation Dialog */}
       <Dialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
@@ -1310,6 +1209,7 @@ export function MessengerConversation({
                   showSenderName={isFirstInOtherSenderGroup(index, visibleMessages)}
                   onReactionChange={() => handleReactionChange(message.id)}
                   otherMembersCount={otherMembersCount}
+                  chatId={chatId}
                 />
               </div>
             ))}

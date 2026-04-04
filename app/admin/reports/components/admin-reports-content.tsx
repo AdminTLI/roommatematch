@@ -18,13 +18,22 @@ import {
 } from '@/components/ui/dialog'
 import { AlertTriangle, CheckCircle, XCircle, Ban, MessageSquare, Eye, RefreshCw } from 'lucide-react'
 import { showSuccessToast, showErrorToast } from '@/lib/toast'
+import { CHAT_REPORT_CATEGORY_LABELS, type ChatReportCategory } from '@/lib/chat/report-categories'
+
+interface ChatContextMessage {
+  id: string
+  user_id: string
+  content: string
+  created_at: string
+  is_reporter?: boolean
+}
 
 interface Report {
   id: string
   reporter_id: string
   target_user_id: string
   message_id?: string
-  category: 'spam' | 'harassment' | 'inappropriate' | 'other'
+  category: ChatReportCategory | string
   reason: string
   details?: string
   attachments?: any[]
@@ -32,6 +41,9 @@ interface Report {
   auto_blocked: boolean
   admin_id?: string
   action_taken?: string
+  consent_read_recent_messages?: boolean
+  consent_read_recent_messages_at?: string | null
+  chat_context_snapshot?: ChatContextMessage[] | null
   created_at: string
   updated_at: string
   warning_notification?: {
@@ -242,15 +254,41 @@ export function AdminReportsContent() {
       header: 'Category',
       accessor: (row: Report) => {
         const colors: Record<string, string> = {
-          spam: 'bg-yellow-100 text-yellow-800',
-          harassment: 'bg-red-100 text-red-800',
-          inappropriate: 'bg-orange-100 text-orange-800',
-          other: 'bg-gray-100 text-gray-800'
+          spam: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/40 dark:text-yellow-200',
+          harassment: 'bg-red-100 text-red-800 dark:bg-red-900/40 dark:text-red-200',
+          inappropriate: 'bg-orange-100 text-orange-800 dark:bg-orange-900/40 dark:text-orange-200',
+          swearing: 'bg-rose-100 text-rose-900 dark:bg-rose-900/40 dark:text-rose-200',
+          account_misuse: 'bg-violet-100 text-violet-900 dark:bg-violet-900/40 dark:text-violet-200',
+          impersonation: 'bg-fuchsia-100 text-fuchsia-900 dark:bg-fuchsia-900/40 dark:text-fuchsia-200',
+          threats: 'bg-red-100 text-red-900 dark:bg-red-950/50 dark:text-red-200',
+          scam_or_fraud: 'bg-amber-100 text-amber-900 dark:bg-amber-900/40 dark:text-amber-200',
+          hate_or_discrimination: 'bg-purple-100 text-purple-900 dark:bg-purple-900/40 dark:text-purple-200',
+          other: 'bg-gray-100 text-gray-800 dark:bg-zinc-800 dark:text-zinc-200'
         }
+        const label =
+          CHAT_REPORT_CATEGORY_LABELS[row.category as ChatReportCategory] || row.category
         return (
           <Badge className={colors[row.category] || colors.other}>
-            {row.category}
+            {label}
           </Badge>
+        )
+      }
+    },
+    {
+      header: 'Recent msgs consent',
+      accessor: (row: Report) => {
+        if (!row.consent_read_recent_messages) {
+          return <span className="text-xs text-gray-400">No</span>
+        }
+        return (
+          <div className="flex flex-col text-xs">
+            <span className="font-medium text-green-700 dark:text-green-400">Yes</span>
+            {row.consent_read_recent_messages_at && (
+              <span className="text-gray-500 dark:text-gray-400">
+                {new Date(row.consent_read_recent_messages_at).toLocaleString()}
+              </span>
+            )}
+          </div>
         )
       }
     },
@@ -469,8 +507,14 @@ export function AdminReportsContent() {
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="all">All</SelectItem>
-                      <SelectItem value="spam">Spam</SelectItem>
                       <SelectItem value="harassment">Harassment</SelectItem>
+                      <SelectItem value="swearing">Swearing</SelectItem>
+                      <SelectItem value="account_misuse">Account misuse</SelectItem>
+                      <SelectItem value="impersonation">Impersonation</SelectItem>
+                      <SelectItem value="threats">Threats</SelectItem>
+                      <SelectItem value="scam_or_fraud">Scam / fraud</SelectItem>
+                      <SelectItem value="hate_or_discrimination">Hate / discrimination</SelectItem>
+                      <SelectItem value="spam">Spam</SelectItem>
                       <SelectItem value="inappropriate">Inappropriate</SelectItem>
                       <SelectItem value="other">Other</SelectItem>
                     </SelectContent>
@@ -599,16 +643,67 @@ export function AdminReportsContent() {
                 <div className="space-y-4 mt-4">
                   <div>
                     <strong>Report Details:</strong>
-                    <div className="mt-2 p-3 bg-gray-50 rounded">
-                      <p><strong>Category:</strong> {selectedReport.category}</p>
+                    <div className="mt-2 space-y-3 rounded-xl border border-white/40 bg-white/60 p-3 shadow-sm backdrop-blur-md dark:border-white/10 dark:bg-zinc-900/60">
+                      <p>
+                        <strong>Category:</strong>{' '}
+                        {CHAT_REPORT_CATEGORY_LABELS[selectedReport.category as ChatReportCategory] ||
+                          selectedReport.category}
+                      </p>
                       <p><strong>Reason:</strong> {selectedReport.reason}</p>
                       {selectedReport.details && (
                         <p><strong>Details:</strong> {selectedReport.details}</p>
                       )}
+                      <div className="rounded-lg border border-white/30 bg-white/50 p-2 dark:border-white/10 dark:bg-zinc-950/50">
+                        <p className="text-sm font-semibold text-gray-900 dark:text-gray-100">
+                          Consent to read recent messages
+                        </p>
+                        <p className="text-sm text-gray-700 dark:text-gray-300">
+                          Recorded:{' '}
+                          {selectedReport.consent_read_recent_messages ? (
+                            <>
+                              <span className="font-medium text-green-700 dark:text-green-400">Yes</span>
+                              {selectedReport.consent_read_recent_messages_at && (
+                                <span className="block text-xs text-gray-500 dark:text-gray-400">
+                                  {new Date(selectedReport.consent_read_recent_messages_at).toLocaleString()}
+                                </span>
+                              )}
+                            </>
+                          ) : (
+                            <span className="text-amber-800 dark:text-amber-200">No (legacy report)</span>
+                          )}
+                        </p>
+                      </div>
+                      {selectedReport.chat_context_snapshot &&
+                        selectedReport.chat_context_snapshot.length > 0 && (
+                          <div>
+                            <strong className="text-gray-900 dark:text-gray-100">
+                              Last messages in chat (up to 10, with consent)
+                            </strong>
+                            <div className="mt-2 max-h-64 space-y-2 overflow-y-auto rounded-lg border border-white/30 bg-white/40 p-2 backdrop-blur-md dark:border-white/10 dark:bg-zinc-950/40">
+                              {selectedReport.chat_context_snapshot.map((m) => (
+                                <div
+                                  key={m.id}
+                                  className="rounded-md border border-gray-200/80 bg-white/70 px-2 py-1.5 text-sm dark:border-zinc-700 dark:bg-zinc-900/70"
+                                >
+                                  <div className="flex flex-wrap items-center justify-between gap-1 text-xs text-gray-500 dark:text-gray-400">
+                                    <span>
+                                      {m.is_reporter ? 'Reporter' : 'Participant'} ·{' '}
+                                      {m.user_id.slice(0, 8)}…
+                                    </span>
+                                    <span>{new Date(m.created_at).toLocaleString()}</span>
+                                  </div>
+                                  <p className="mt-1 whitespace-pre-wrap break-words text-gray-900 dark:text-gray-100">
+                                    {m.content}
+                                  </p>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        )}
                       {selectedReport.message && (
                         <div className="mt-2">
-                          <strong>Message Context:</strong>
-                          <div className="p-2 bg-white rounded border mt-1">
+                          <strong>Flagged message (legacy):</strong>
+                          <div className="mt-1 rounded border border-gray-200 bg-white p-2 dark:border-zinc-700 dark:bg-zinc-950">
                             <p className="text-sm">{selectedReport.message.content}</p>
                             <p className="text-xs text-gray-500 mt-1">
                               {new Date(selectedReport.message.created_at).toLocaleString()}

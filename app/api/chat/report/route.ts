@@ -3,6 +3,14 @@ import { createClient, createAdminClient } from '@/lib/supabase/server'
 import { safeLogger } from '@/lib/utils/logger'
 import { checkRateLimit, getUserRateLimitKey } from '@/lib/rate-limit'
 import { createNotificationsForUsers } from '@/lib/notifications/create'
+import { CHAT_REPORT_CATEGORY_LABELS, isValidChatReportCategory } from '@/lib/chat/report-categories'
+
+type ChatContextRow = {
+  id: string
+  user_id: string
+  content: string
+  created_at: string
+}
 
 export async function POST(request: NextRequest) {
   try {
@@ -13,31 +21,115 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    // Rate limiting: 5 reports per hour per user
     const rateLimitKey = getUserRateLimitKey('report', user.id)
     const rateLimitResult = await checkRateLimit('report', rateLimitKey)
-    
+
     if (!rateLimitResult.allowed) {
       return NextResponse.json(
         { error: 'Too many reports. Please wait before submitting another.' },
-        { status: 429 }
+        { status: 429 },
       )
     }
 
-    const { target_user_id, message_id, category, details } = await request.json()
+    const body = await request.json()
+    const {
+      target_user_id,
+      message_id,
+      chat_id,
+      category,
+      details,
+      consent_read_recent_messages,
+    } = body as {
+      target_user_id?: string
+      message_id?: string
+      chat_id?: string
+      category?: string
+      details?: string
+      consent_read_recent_messages?: boolean
+    }
 
     if (!target_user_id || !category) {
       return NextResponse.json({ error: 'Missing required fields' }, { status: 400 })
     }
 
-    const validCategories = ['spam', 'harassment', 'inappropriate', 'other']
-    if (!validCategories.includes(category)) {
+    if (!isValidChatReportCategory(category)) {
       return NextResponse.json({ error: 'Invalid category' }, { status: 400 })
+    }
+
+    if (consent_read_recent_messages !== true) {
+      return NextResponse.json(
+        { error: 'You must agree to let moderators review recent messages to submit a report.' },
+        { status: 400 },
+      )
+    }
+
+    if (!chat_id || typeof chat_id !== 'string') {
+      return NextResponse.json({ error: 'Chat context is required for this report.' }, { status: 400 })
     }
 
     const admin = await createAdminClient()
 
-    // Check for repeated reports (auto-block if 3+ reports in 24 hours)
+    const { data: membership, error: memError } = await admin
+      .from('chat_members')
+      .select('user_id')
+      .eq('chat_id', chat_id)
+      .eq('user_id', user.id)
+      .maybeSingle()
+
+    if (memError || !membership) {
+      return NextResponse.json({ error: 'You are not a member of this chat.' }, { status: 403 })
+    }
+
+    let resolvedChatId = chat_id
+
+    if (message_id) {
+      const { data: msg, error: msgErr } = await admin
+        .from('messages')
+        .select('id, chat_id, user_id')
+        .eq('id', message_id)
+        .maybeSingle()
+
+      if (msgErr || !msg) {
+        return NextResponse.json({ error: 'Message not found.' }, { status: 404 })
+      }
+
+      if (msg.chat_id !== chat_id) {
+        return NextResponse.json({ error: 'Message does not belong to this chat.' }, { status: 400 })
+      }
+
+      if (msg.user_id !== target_user_id) {
+        return NextResponse.json(
+          { error: 'Reported user must be the sender of the selected message.' },
+          { status: 400 },
+        )
+      }
+
+      resolvedChatId = msg.chat_id
+    }
+
+    const { data: recentRaw, error: recentErr } = await admin
+      .from('messages')
+      .select('id, user_id, content, created_at')
+      .eq('chat_id', resolvedChatId)
+      .order('created_at', { ascending: false })
+      .limit(10)
+
+    if (recentErr) {
+      safeLogger.error('[Report] Failed to load chat context', recentErr)
+      return NextResponse.json({ error: 'Failed to load chat context' }, { status: 500 })
+    }
+
+    const rows = (recentRaw || []) as ChatContextRow[]
+    const chat_context_snapshot = [...rows].reverse().map((m) => ({
+      id: m.id,
+      user_id: m.user_id,
+      content: m.content,
+      created_at: m.created_at,
+      is_reporter: m.user_id === user.id,
+    }))
+
+    const consentAt = new Date().toISOString()
+
     const oneDayAgo = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString()
     const { count: recentReports } = await admin
       .from('reports')
@@ -45,9 +137,8 @@ export async function POST(request: NextRequest) {
       .eq('target_user_id', target_user_id)
       .gte('created_at', oneDayAgo)
 
-    const autoBlocked = (recentReports || 0) >= 2 // 3rd report triggers auto-block
+    const autoBlocked = (recentReports || 0) >= 2
 
-    // Create report
     const { data: report, error: reportError } = await admin
       .from('reports')
       .insert({
@@ -56,9 +147,12 @@ export async function POST(request: NextRequest) {
         message_id: message_id || null,
         category,
         reason: category,
-        details: details || null,
+        details: typeof details === 'string' && details.trim() ? details.trim() : null,
         status: 'open',
-        auto_blocked: autoBlocked
+        auto_blocked: autoBlocked,
+        consent_read_recent_messages: true,
+        consent_read_recent_messages_at: consentAt,
+        chat_context_snapshot,
       })
       .select()
       .single()
@@ -68,34 +162,27 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Failed to create report' }, { status: 500 })
     }
 
-    // Auto-block if threshold reached
     if (autoBlocked) {
       await admin
         .from('match_blocklist')
         .insert({
           user_id: user.id,
-          blocked_user_id: target_user_id
+          blocked_user_id: target_user_id,
         })
-        .catch(() => {
-          // Ignore if already blocked
-        })
+        .catch(() => {})
 
       safeLogger.warn('[Report] Auto-blocked user due to repeated reports', {
         targetUserId: target_user_id,
-        reportCount: (recentReports || 0) + 1
+        reportCount: (recentReports || 0) + 1,
       })
     }
 
-    // Notify all admins about the new report
     try {
-      const { data: admins } = await admin
-        .from('admins')
-        .select('user_id')
+      const { data: admins } = await admin.from('admins').select('user_id')
 
       if (admins && admins.length > 0) {
-        const adminUserIds = admins.map(a => a.user_id)
-        
-        // Get reporter and target user names for notification
+        const adminUserIds = admins.map((a) => a.user_id)
+
         const { data: reporterProfile } = await admin
           .from('profiles')
           .select('first_name, last_name')
@@ -108,55 +195,48 @@ export async function POST(request: NextRequest) {
           .eq('user_id', target_user_id)
           .maybeSingle()
 
-        const reporterName = reporterProfile 
+        const reporterName = reporterProfile
           ? [reporterProfile.first_name, reporterProfile.last_name].filter(Boolean).join(' ') || 'User'
           : 'User'
-        
+
         const targetName = targetProfile
           ? [targetProfile.first_name, targetProfile.last_name].filter(Boolean).join(' ') || 'User'
           : 'User'
 
-        const categoryLabels: Record<string, string> = {
-          spam: 'Spam',
-          harassment: 'Harassment',
-          inappropriate: 'Inappropriate Content',
-          other: 'Other'
-        }
+        const categoryLabel = CHAT_REPORT_CATEGORY_LABELS[category] || category
 
         await createNotificationsForUsers(
           adminUserIds,
           'system_announcement',
           'New User Report',
-          `${reporterName} reported ${targetName} for ${categoryLabels[category] || category}.${autoBlocked ? ' User auto-blocked due to repeated reports.' : ''}`,
+          `${reporterName} reported ${targetName} for ${categoryLabel}.${autoBlocked ? ' User auto-blocked due to repeated reports.' : ''}`,
           {
             report_id: report.id,
             reporter_id: user.id,
-            target_user_id: target_user_id,
+            target_user_id,
             category,
             auto_blocked: autoBlocked,
             link: `/admin/reports`,
-            type: 'user_report'
-          }
+            type: 'user_report',
+          },
         )
 
         safeLogger.info('[Report] Notified admins', {
           reportId: report.id,
-          adminCount: adminUserIds.length
+          adminCount: adminUserIds.length,
         })
       }
     } catch (notifyError) {
-      // Don't fail the report creation if notification fails
       safeLogger.error('[Report] Failed to notify admins', notifyError)
     }
 
-    return NextResponse.json({ 
-      success: true, 
+    return NextResponse.json({
+      success: true,
       reportId: report.id,
-      autoBlocked 
+      autoBlocked,
     })
   } catch (error) {
     safeLogger.error('[Report] Error', error)
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
 }
-

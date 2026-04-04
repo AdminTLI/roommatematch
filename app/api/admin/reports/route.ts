@@ -40,6 +40,9 @@ export async function GET(request: NextRequest) {
         auto_blocked,
         admin_id,
         action_taken,
+        consent_read_recent_messages,
+        consent_read_recent_messages_at,
+        chat_context_snapshot,
         created_at,
         updated_at
       `)

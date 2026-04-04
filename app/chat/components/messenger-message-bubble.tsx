@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Check, CheckCheck, Flag } from 'lucide-react'
 import { EmojiPicker } from './emoji-picker'
+import { ReportUserDialog } from './report-user-dialog'
 import { fetchWithCSRF } from '@/lib/utils/fetch-with-csrf'
 import { cn } from '@/lib/utils'
 import {
@@ -13,7 +14,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
-import { showSuccessToast, showErrorToast } from '@/lib/toast'
+import { showSuccessToast } from '@/lib/toast'
 
 interface MessageReaction {
   emoji: string
@@ -36,6 +37,7 @@ interface MessengerMessageBubbleProps {
   showSenderName?: boolean
   onReactionChange?: () => void
   otherMembersCount?: number
+  chatId: string
 }
 
 export function MessengerMessageBubble({
@@ -53,40 +55,11 @@ export function MessengerMessageBubble({
   showSenderName = true,
   onReactionChange,
   otherMembersCount = 1,
+  chatId,
 }: MessengerMessageBubbleProps) {
   const [showReactionPicker, setShowReactionPicker] = useState(false)
   const [isReacting, setIsReacting] = useState(false)
-  const [isReporting, setIsReporting] = useState(false)
-
-  const handleReport = async () => {
-    if (isReporting) return
-    setIsReporting(true)
-    try {
-      const response = await fetchWithCSRF('/api/chat/report', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          target_user_id: senderId,
-          message_id: id,
-          category: 'inappropriate',
-          details: 'Reported via message context menu',
-        }),
-      })
-
-      if (!response.ok) {
-        const errorData = await response.json()
-        throw new Error(errorData.error || 'Failed to submit report')
-      }
-
-      showSuccessToast('Report submitted', 'Thank you for your report. We will review it shortly.')
-    } catch (error: unknown) {
-      const err = error as { message?: string }
-      console.error('Failed to report message:', error)
-      showErrorToast('Failed to submit report', err.message || 'Please try again.')
-    } finally {
-      setIsReporting(false)
-    }
-  }
+  const [reportOpen, setReportOpen] = useState(false)
 
   const formatTime = (timestamp: string) => {
     const date = new Date(timestamp)
@@ -139,7 +112,7 @@ export function MessengerMessageBubble({
     const otherReaders = readBy.filter((rid) => rid !== currentUserId)
 
     if (otherReaders.length === otherMembersCount && otherMembersCount > 0) {
-      return <CheckCheck className="h-3.5 w-3.5 text-sky-500 dark:text-sky-400" aria-hidden />
+      return <CheckCheck className="h-3.5 w-3.5 text-sky-600 dark:text-sky-200" aria-hidden />
     }
 
     const messageTime = new Date(createdAt).getTime()
@@ -147,18 +120,18 @@ export function MessengerMessageBubble({
     const isJustSent = timeSinceSent < 2000
 
     if (isJustSent && otherReaders.length === 0) {
-      return <Check className="h-3.5 w-3.5 text-zinc-400 dark:text-zinc-500" aria-hidden />
+      return <Check className="h-3.5 w-3.5 text-zinc-500 dark:text-white/70" aria-hidden />
     }
 
     if (otherReaders.length > 0 && otherReaders.length < otherMembersCount) {
-      return <CheckCheck className="h-3.5 w-3.5 text-zinc-400 dark:text-zinc-500" aria-hidden />
+      return <CheckCheck className="h-3.5 w-3.5 text-zinc-500 dark:text-white/70" aria-hidden />
     }
 
     if (otherReaders.length === 0) {
-      return <CheckCheck className="h-3.5 w-3.5 text-zinc-400 dark:text-zinc-500" aria-hidden />
+      return <CheckCheck className="h-3.5 w-3.5 text-zinc-500 dark:text-white/70" aria-hidden />
     }
 
-    return <Check className="h-3.5 w-3.5 text-zinc-400 dark:text-zinc-500" aria-hidden />
+    return <Check className="h-3.5 w-3.5 text-zinc-500 dark:text-white/70" aria-hidden />
   }
 
   if (isSystem) {
@@ -172,10 +145,11 @@ export function MessengerMessageBubble({
   }
 
   const bubbleGlass = isOwn
-    ? 'border-white/70 bg-white/65 text-zinc-900 shadow-[0_1px_12px_rgba(0,0,0,0.06)] dark:border-white/20 dark:bg-white/18 dark:text-zinc-100 dark:shadow-[0_1px_16px_rgba(0,0,0,0.35)]'
+    ? 'border-white/70 bg-white/65 text-zinc-900 shadow-[0_1px_12px_rgba(0,0,0,0.06)] dark:border-purple-400/35 dark:bg-purple-600 dark:text-white dark:shadow-[0_1px_16px_rgba(0,0,0,0.35)]'
     : 'border-zinc-300/50 bg-zinc-200/45 text-zinc-900 shadow-[0_1px_12px_rgba(0,0,0,0.08)] dark:border-white/10 dark:bg-zinc-950/35 dark:text-zinc-100 dark:shadow-[0_1px_16px_rgba(0,0,0,0.4)]'
 
   return (
+    <>
     <div className={cn('group flex gap-2', isOwn ? 'justify-end' : 'justify-start')}>
       {!isOwn && (
         <Avatar className="h-8 w-8 flex-shrink-0">
@@ -213,7 +187,14 @@ export function MessengerMessageBubble({
                   <p className="m-0 max-w-full min-w-[max(0px,calc(100%-5.5rem))] flex-[1_1_auto] text-left text-[15px] leading-snug break-words sm:min-w-[max(0px,calc(100%-6rem))]">
                     {content}
                   </p>
-                  <span className="ml-auto inline-flex shrink-0 items-center gap-1 pb-px text-[11px] leading-none tabular-nums text-zinc-500 dark:text-zinc-400">
+                  <span
+                    className={cn(
+                      'ml-auto inline-flex shrink-0 items-center gap-1 pb-px text-[11px] leading-none tabular-nums',
+                      isOwn
+                        ? 'text-zinc-500 dark:text-white/75'
+                        : 'text-zinc-500 dark:text-zinc-400',
+                    )}
+                  >
                     {formatTime(createdAt)}
                     {isOwn && <span className="inline-flex items-center">{getReadStatus()}</span>}
                   </span>
@@ -233,12 +214,11 @@ export function MessengerMessageBubble({
                 <>
                   <DropdownMenuSeparator />
                   <DropdownMenuItem
-                    onClick={handleReport}
-                    disabled={isReporting}
+                    onClick={() => setReportOpen(true)}
                     className="text-semantic-danger focus:bg-semantic-danger/10 focus:text-semantic-danger"
                   >
                     <Flag className="mr-2 h-4 w-4" />
-                    {isReporting ? 'Reporting...' : 'Report Message'}
+                    Report message
                   </DropdownMenuItem>
                 </>
               )}
@@ -287,6 +267,19 @@ export function MessengerMessageBubble({
           </div>
         )}
       </div>
+
     </div>
+    {!isOwn && (
+      <ReportUserDialog
+        open={reportOpen}
+        onOpenChange={setReportOpen}
+        chatId={chatId}
+        targetUserId={senderId}
+        messageId={id}
+        targetDisplayName={senderName}
+        variant="message"
+      />
+    )}
+    </>
   )
 }
