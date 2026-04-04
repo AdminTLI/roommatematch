@@ -351,6 +351,36 @@ body:has([data-chat-page]) .safe-area-inset {
   }
 }
 
+/* Mobile: `100dvh` can still extend under overlaid URL/toolbars; sync to Visual Viewport API via
+   `--chat-visual-vh` (set from useChatVisualViewportHeight on /chat). */
+@media (max-width: 1023px) {
+  html.chat-page,
+  html:has([data-chat-page]),
+  body.chat-page,
+  body:has([data-chat-page]) {
+    height: var(--chat-visual-vh, 100vh) !important;
+    max-height: var(--chat-visual-vh, 100vh) !important;
+  }
+
+  body.chat-page .safe-area-inset,
+  body:has([data-chat-page]) .safe-area-inset {
+    height: 100% !important;
+    max-height: 100% !important;
+  }
+}
+
+@supports (height: 100dvh) {
+  @media (max-width: 1023px) {
+    html.chat-page,
+    html:has([data-chat-page]),
+    body.chat-page,
+    body:has([data-chat-page]) {
+      height: var(--chat-visual-vh, 100dvh) !important;
+      max-height: var(--chat-visual-vh, 100dvh) !important;
+    }
+  }
+}
+
 body.chat-page .safe-area-inset > div,
 body:has([data-chat-page]) .safe-area-inset > div {
   height: 100% !important;

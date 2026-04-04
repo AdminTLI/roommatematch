@@ -35,6 +35,17 @@ export function useVisualViewportKeyboardInset(
     const el = containerRef.current
     if (!el || typeof window === 'undefined' || !window.visualViewport) return
 
+    // Chat route sizes html/body to visualViewport.height via --chat-visual-vh; extra padding here
+    // would double-compensate and shrink the message area / composer band.
+    if (document.documentElement.style.getPropertyValue('--chat-visual-vh').trim()) {
+      if (hadInsetRef.current) {
+        hadInsetRef.current = false
+        resetMobileViewportScroll()
+      }
+      el.style.removeProperty('padding-bottom')
+      return
+    }
+
     if (!enabled) {
       if (hadInsetRef.current) {
         hadInsetRef.current = false
