@@ -2,7 +2,6 @@
 
 import { useState } from 'react'
 import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Alert, AlertDescription } from '@/components/ui/alert'
@@ -48,12 +47,12 @@ export function ProfileSettings({ user, profile, academic, userType, professiona
     }
   }
 
-  // Pre-fill from profile, then from sign-up (user_metadata.first_name/last_name), then full_name
+  const displayFirstName = (profile?.first_name || user.user_metadata?.first_name || user.user_metadata?.full_name?.split(' ')[0] || '').trim()
+  const displayLastName = (profile?.last_name || user.user_metadata?.last_name || user.user_metadata?.full_name?.split(' ').slice(1).join(' ') || '').trim()
+  const displayEmail = user.email || ''
+  const displayPhone = profile?.phone || ''
+
   const [formData, setFormData] = useState({
-    firstName: (profile?.first_name || user.user_metadata?.first_name || user.user_metadata?.full_name?.split(' ')[0] || '').trim(),
-    lastName: (profile?.last_name || user.user_metadata?.last_name || user.user_metadata?.full_name?.split(' ').slice(1).join(' ') || '').trim(),
-    email: user.email || '',
-    phone: profile?.phone || '',
     bio: profile?.bio || '',
     interests: (profile?.interests && Array.isArray(profile.interests)) ? profile.interests : [],
     housingStatus: (profile?.housing_status && Array.isArray(profile.housing_status)) ? profile.housing_status as HousingStatusKey[] : [],
@@ -103,9 +102,6 @@ export function ProfileSettings({ user, profile, academic, userType, professiona
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          firstName: formData.firstName,
-          lastName: formData.lastName,
-          phone: formData.phone,
           bio: formData.bio,
           interests: formData.interests,
           housingStatus: formData.housingStatus
@@ -123,9 +119,6 @@ export function ProfileSettings({ user, profile, academic, userType, professiona
 
       // Track profile update activity
       const changes: string[] = []
-      if (formData.firstName !== (profile?.first_name || '')) changes.push('first name')
-      if (formData.lastName !== (profile?.last_name || '')) changes.push('last name')
-      if (formData.phone !== (profile?.phone || '')) changes.push('phone')
       if (formData.bio !== (profile?.bio || '')) changes.push('bio')
       const existingInterests = (profile?.interests && Array.isArray(profile.interests)) ? profile.interests : []
       if (JSON.stringify(formData.interests.sort()) !== JSON.stringify(existingInterests.sort())) {
@@ -166,63 +159,57 @@ export function ProfileSettings({ user, profile, academic, userType, professiona
         </Alert>
       )}
 
-      {/* Personal Information Group */}
+      {/* Personal Information Group — PII is read-only; changes go through support */}
       <div className="space-y-4">
         <h3 className="text-sm font-medium text-zinc-600 dark:text-zinc-400 uppercase tracking-wider px-1">Personal Information</h3>
+        <p className="text-xs text-zinc-500 dark:text-zinc-400 px-1 leading-relaxed">
+          For safety and privacy, your name, phone number, and email cannot be changed in the app. To update any of these,{' '}
+          <a
+            href="mailto:domumatch@gmail.com?subject=Request%20to%20update%20account%20information"
+            className="text-blue-600 dark:text-blue-400 underline underline-offset-2 hover:text-blue-700 dark:hover:text-blue-300"
+          >
+            email us
+          </a>
+          .
+        </p>
         <div className="bg-white/80 dark:bg-zinc-900/40 border border-zinc-200 dark:border-white/10 rounded-2xl overflow-hidden divide-y divide-zinc-200 dark:divide-white/5 backdrop-blur-xl shadow-sm">
-          {/* First Name */}
-          <div className="p-4 flex flex-col sm:flex-row sm:items-center gap-4">
+          <div className="p-4 flex flex-col sm:flex-row sm:items-center gap-4 bg-zinc-50 dark:bg-zinc-900/60">
             <div className="flex items-center gap-3 sm:w-1/3">
-              <User className="w-4 h-4 text-zinc-500 dark:text-zinc-400" />
-              <Label htmlFor="firstName" className="text-zinc-900 dark:text-zinc-100 font-medium">First Name</Label>
+              <User className="w-4 h-4 text-zinc-400 dark:text-zinc-500" />
+              <Label className="text-zinc-600 dark:text-zinc-400 font-medium">First Name</Label>
             </div>
-            <Input
-              id="firstName"
-              value={formData.firstName}
-              onChange={(e) => handleInputChange('firstName', e.target.value)}
-              placeholder="First Name"
-              className="flex-1 bg-zinc-50 dark:bg-white/5 border-zinc-200 dark:border-white/10 focus-visible:ring-2 focus-visible:ring-blue-500/20 h-10 text-zinc-900 dark:text-zinc-100 placeholder:text-zinc-400 dark:placeholder:text-zinc-500 rounded-lg"
-            />
+            <div className="flex-1 text-sm text-zinc-600 dark:text-zinc-400 px-0 sm:px-3">
+              {displayFirstName || '—'}
+            </div>
           </div>
 
-          {/* Last Name */}
-          <div className="p-4 flex flex-col sm:flex-row sm:items-center gap-4">
+          <div className="p-4 flex flex-col sm:flex-row sm:items-center gap-4 bg-zinc-50 dark:bg-zinc-900/60">
             <div className="flex items-center gap-3 sm:w-1/3">
-              <User className="w-4 h-4 text-zinc-500 dark:text-zinc-400" />
-              <Label htmlFor="lastName" className="text-zinc-900 dark:text-zinc-100 font-medium">Last Name</Label>
+              <User className="w-4 h-4 text-zinc-400 dark:text-zinc-500" />
+              <Label className="text-zinc-600 dark:text-zinc-400 font-medium">Last Name</Label>
             </div>
-            <Input
-              id="lastName"
-              value={formData.lastName}
-              onChange={(e) => handleInputChange('lastName', e.target.value)}
-              placeholder="Last Name"
-              className="flex-1 bg-zinc-50 dark:bg-white/5 border-zinc-200 dark:border-white/10 focus-visible:ring-2 focus-visible:ring-blue-500/20 h-10 text-zinc-900 dark:text-zinc-100 placeholder:text-zinc-400 dark:placeholder:text-zinc-500 rounded-lg"
-            />
+            <div className="flex-1 text-sm text-zinc-600 dark:text-zinc-400 px-0 sm:px-3">
+              {displayLastName || '—'}
+            </div>
           </div>
 
-          {/* Phone */}
-          <div className="p-4 flex flex-col sm:flex-row sm:items-center gap-4">
+          <div className="p-4 flex flex-col sm:flex-row sm:items-center gap-4 bg-zinc-50 dark:bg-zinc-900/60">
             <div className="flex items-center gap-3 sm:w-1/3">
-              <Phone className="w-4 h-4 text-zinc-500 dark:text-zinc-400" />
-              <Label htmlFor="phone" className="text-zinc-900 dark:text-zinc-100 font-medium">Phone</Label>
+              <Phone className="w-4 h-4 text-zinc-400 dark:text-zinc-500" />
+              <Label className="text-zinc-600 dark:text-zinc-400 font-medium">Phone</Label>
             </div>
-            <Input
-              id="phone"
-              value={formData.phone}
-              onChange={(e) => handleInputChange('phone', e.target.value)}
-              placeholder="Phone Number"
-              className="flex-1 bg-zinc-50 dark:bg-white/5 border-zinc-200 dark:border-white/10 focus-visible:ring-2 focus-visible:ring-blue-500/20 h-10 text-zinc-900 dark:text-zinc-100 placeholder:text-zinc-400 dark:placeholder:text-zinc-500 rounded-lg"
-            />
+            <div className="flex-1 text-sm text-zinc-600 dark:text-zinc-400 px-0 sm:px-3">
+              {displayPhone || '—'}
+            </div>
           </div>
 
-          {/* Email (Read-only) */}
           <div className="p-4 flex flex-col sm:flex-row sm:items-center gap-4 bg-zinc-50 dark:bg-zinc-900/60">
             <div className="flex items-center gap-3 sm:w-1/3">
               <Mail className="w-4 h-4 text-zinc-400 dark:text-zinc-500" />
               <Label className="text-zinc-600 dark:text-zinc-400 font-medium">Email</Label>
             </div>
-            <div className="flex-1 text-sm text-zinc-600 dark:text-zinc-400 px-0 sm:px-3">
-              {formData.email}
+            <div className="flex-1 text-sm text-zinc-600 dark:text-zinc-400 px-0 sm:px-3 break-all">
+              {displayEmail || '—'}
             </div>
           </div>
         </div>

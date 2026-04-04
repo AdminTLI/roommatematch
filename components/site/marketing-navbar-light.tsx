@@ -9,6 +9,7 @@ import { Button } from '@/components/ui/button'
 import { LanguageSwitcher } from '@/app/(marketing)/components/language-switcher'
 import { useApp } from '@/app/providers'
 import { cn } from '@/lib/utils'
+import { BETA_SIGNUP_GOOGLE_FORM_URL } from '@/lib/marketing/beta-signup'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -158,9 +159,11 @@ export function MarketingNavbarLight() {
               <Button
                 size="lg"
                 className="h-9 max-sm:px-3 max-sm:text-sm rounded-full bg-blue-600 text-white hover:bg-blue-700 shadow-[0_12px_30px_rgba(15,23,42,0.16)]"
-                onClick={() => router.push('/auth/sign-up')}
+                asChild
               >
-                <span suppressHydrationWarning>{buttons.getStarted}</span>
+                <a href={BETA_SIGNUP_GOOGLE_FORM_URL}>
+                  <span suppressHydrationWarning>{buttons.getStarted}</span>
+                </a>
               </Button>
               <button
                 type="button"
@@ -316,9 +319,11 @@ export function MarketingNavbarLight() {
               <Button
                 size="lg"
                 className="h-10 shrink-0 rounded-full bg-blue-600 text-white hover:bg-blue-700 shadow-[0_12px_30px_rgba(15,23,42,0.16)]"
-                onClick={() => router.push('/auth/sign-up')}
+                asChild
               >
-                <span suppressHydrationWarning>{buttons.getStarted}</span>
+                <a href={BETA_SIGNUP_GOOGLE_FORM_URL}>
+                  <span suppressHydrationWarning>{buttons.getStarted}</span>
+                </a>
               </Button>
             </div>
           </div>
@@ -432,12 +437,9 @@ export function MarketingNavbarLight() {
                 <span suppressHydrationWarning>{buttons.signIn}</span>
               </button>
 
-              <button
-                type="button"
-                onClick={() => {
-                  closeMobileMenu()
-                  router.push('/auth/sign-up')
-                }}
+              <a
+                href={BETA_SIGNUP_GOOGLE_FORM_URL}
+                onClick={closeMobileMenu}
                 className={cn(
                   'inline-flex items-center justify-center rounded-2xl h-12 px-5 text-base font-semibold',
                   'bg-blue-600 text-white hover:bg-blue-700 transition-colors',
@@ -445,7 +447,7 @@ export function MarketingNavbarLight() {
                 )}
               >
                 <span suppressHydrationWarning>{buttons.getStarted}</span>
-              </button>
+              </a>
             </div>
           </div>
         </div>

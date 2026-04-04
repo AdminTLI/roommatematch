@@ -923,7 +923,9 @@ export function MessengerConversation({
     showErrorToast('Search feature', 'Search functionality will be implemented soon.')
   }
 
-  const syncKeyboardInset = useVisualViewportKeyboardInset(conversationRootRef)
+  const syncKeyboardInset = useVisualViewportKeyboardInset(conversationRootRef, {
+    enabled: !hideComposer,
+  })
 
   const handleComposerFocus = useCallback(() => {
     // Replying usually means the user wants the latest messages in view; keyboard inset reflow
@@ -967,12 +969,6 @@ export function MessengerConversation({
     window.setTimeout(syncKeyboardInset, 80)
     window.setTimeout(syncKeyboardInset, 320)
   }, [syncKeyboardInset])
-
-  useEffect(() => {
-    if (hideComposer) {
-      conversationRootRef.current?.style.removeProperty('padding-bottom')
-    }
-  }, [hideComposer])
 
   return (
     <div

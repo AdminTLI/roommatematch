@@ -1,9 +1,35 @@
 import { NextResponse } from 'next/server'
+import type { User } from '@supabase/supabase-js'
 import { createClient } from '@/lib/supabase/server'
-import { syncProfileNameToAuth } from '@/lib/auth/user-profile'
 import { safeLogger } from '@/lib/utils/logger'
-import { profileUpdateSchema, getUserFriendlyError } from '@/lib/validation/profile-schema'
+import { profileUpdateSchema } from '@/lib/validation/profile-schema'
 import { getUserFriendlyError as getFriendlyError } from '@/lib/errors/user-friendly-messages'
+
+/** Name and phone on the profile row are not updated via this endpoint (support-only). */
+function preservedProfileIdentity(user: User, existing: { first_name: string | null; last_name: string | null; phone: string | null } | null) {
+  if (existing?.first_name != null && String(existing.first_name).trim() !== '') {
+    return {
+      first_name: existing.first_name.trim(),
+      last_name: existing.last_name?.trim() || null,
+      phone: existing.phone?.trim() || null,
+    }
+  }
+  const meta = user.user_metadata || {}
+  const full = typeof meta.full_name === 'string' ? meta.full_name.trim() : ''
+  const firstFromFull = full.split(/\s+/)[0] || ''
+  const first =
+    (typeof meta.first_name === 'string' && meta.first_name.trim()) ||
+    firstFromFull ||
+    'Member'
+  const lastFromMeta = typeof meta.last_name === 'string' ? meta.last_name.trim() : ''
+  const lastFromFull = full.split(/\s+/).slice(1).join(' ').trim()
+  const last = lastFromMeta || lastFromFull || null
+  return {
+    first_name: first,
+    last_name: last,
+    phone: existing?.phone?.trim() || null,
+  }
+}
 
 export async function POST(request: Request) {
   const supabase = await createClient()
@@ -33,7 +59,7 @@ export async function POST(request: Request) {
       }, { status: 400 })
     }
     
-    const { firstName, lastName, phone, bio, interests, housingStatus } = validationResult.data
+    const { bio, interests, housingStatus } = validationResult.data
 
     // Check if user exists in users table using SERVICE ROLE (bypass RLS)
     const { createServiceClient } = await import('@/lib/supabase/service')
@@ -101,17 +127,25 @@ export async function POST(request: Request) {
       academicData = { university_id: null, degree_level: null } as any
     }
 
-    // Update or create profile
+    const { data: existingProfile } = await serviceSupabase
+      .from('profiles')
+      .select('first_name, last_name, phone')
+      .eq('user_id', user.id)
+      .maybeSingle()
+
+    const identity = preservedProfileIdentity(user, existingProfile)
+
+    // Update or create profile (PII fields preserved server-side only)
     safeLogger.debug('[Profile] Attempting profile upsert')
-    
+
     const { error: profileError } = await supabase
       .from('profiles')
       .upsert({
         user_id: user.id,
         university_id: academicData.university_id,
-        first_name: firstName,
-        last_name: lastName || null,
-        phone: phone || null,
+        first_name: identity.first_name,
+        last_name: identity.last_name,
+        phone: identity.phone,
         bio: bio || null,
         interests: interests && Array.isArray(interests) ? interests : [],
         housing_status: housingStatus && Array.isArray(housingStatus) ? housingStatus : [],
@@ -130,9 +164,6 @@ export async function POST(request: Request) {
         error: `Failed to update profile: ${profileError.message}` 
       }, { status: 500 })
     }
-
-    // Sync profile name to auth metadata
-    await syncProfileNameToAuth(user.id, firstName, lastName)
 
     return NextResponse.json({ 
       success: true,

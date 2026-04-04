@@ -12,23 +12,41 @@ function resetMobileViewportScroll() {
   document.querySelector('main')?.scrollTo(0, 0)
 }
 
+export type VisualViewportInsetOptions = {
+  /** When false, padding is cleared (e.g. composer hidden behind a full-screen sheet). */
+  enabled?: boolean
+}
+
 /**
- * Keeps bottom padding on `containerRef` for the obscured strip below the visual viewport
- * while the software keyboard is open. Clears when the keyboard is dismissed; iOS Chrome often
- * omits a reliable final visualViewport resize, so we also use heuristics (viewport height ratio).
+ * Bottom padding on `containerRef` equal to the strip of the *layout* viewport that sits below
+ * the visual viewport (iOS/Android browser toolbars, home indicator overlap, software keyboard).
+ *
+ * Previously we cleared this whenever the keyboard “looked” closed, which left the composer under
+ * Chrome’s bottom URL bar. We always apply the visual-viewport gap on mobile when it is meaningful.
  */
 export function useVisualViewportKeyboardInset(
-  containerRef: RefObject<HTMLElement | null>
+  containerRef: RefObject<HTMLElement | null>,
+  options?: VisualViewportInsetOptions
 ): () => void {
-  const hadKeyboardPaddingRef = useRef(false)
+  const enabled = options?.enabled ?? true
+  const hadInsetRef = useRef(false)
 
   const sync = useCallback(() => {
     const el = containerRef.current
     if (!el || typeof window === 'undefined' || !window.visualViewport) return
 
+    if (!enabled) {
+      if (hadInsetRef.current) {
+        hadInsetRef.current = false
+        resetMobileViewportScroll()
+      }
+      el.style.removeProperty('padding-bottom')
+      return
+    }
+
     if (!window.matchMedia(`(max-width: ${MOBILE_MAX_WIDTH}px)`).matches) {
-      if (hadKeyboardPaddingRef.current) {
-        hadKeyboardPaddingRef.current = false
+      if (hadInsetRef.current) {
+        hadInsetRef.current = false
         resetMobileViewportScroll()
       }
       el.style.removeProperty('padding-bottom')
@@ -36,45 +54,50 @@ export function useVisualViewportKeyboardInset(
     }
 
     const vv = window.visualViewport
-    // clientHeight often tracks the layout viewport more predictably than innerHeight on iOS Chrome
-    // when the URL bar / keyboard chrome is in flux.
-    const layoutH =
+    // innerHeight tracks the layout viewport height; pair it with visualViewport for a stable
+    // “obscured bottom” value across Safari, Chrome iOS, and Android.
+    const innerH = window.innerHeight || 1
+    const clientH =
       document.documentElement?.clientHeight && document.documentElement.clientHeight > 0
         ? document.documentElement.clientHeight
-        : window.innerHeight || 1
-
-    const rawInset = Math.max(0, Math.round(layoutH - vv.offsetTop - vv.height))
+        : innerH
+    // Use the larger of the two "obscured bottom" estimates — Chrome iOS sometimes disagrees between
+    // innerHeight and clientHeight relative to visualViewport.
+    const insetInner = Math.max(0, Math.round(innerH - vv.offsetTop - vv.height))
+    const insetClient = Math.max(0, Math.round(clientH - vv.offsetTop - vv.height))
+    const rawInset = Math.max(insetInner, insetClient)
+    const layoutH = Math.max(innerH, clientH)
     const heightRatio = vv.height / layoutH
 
-    // Keyboard dismissed (or never open): visual viewport again fills most of the layout height.
-    const keyboardLikelyClosed =
-      rawInset < 48 || (heightRatio > 0.82 && vv.offsetTop <= 20)
+    // Large inset: usually keyboard; iOS Chrome sometimes over-reports — bias down slightly.
+    const keyboardHeavy =
+      rawInset >= 110 || (rawInset >= 56 && heightRatio < 0.58 && vv.offsetTop > 8)
 
-    if (keyboardLikelyClosed) {
-      if (hadKeyboardPaddingRef.current) {
-        hadKeyboardPaddingRef.current = false
+    let applied = rawInset
+    if (keyboardHeavy) {
+      applied = Math.max(0, Math.round(rawInset * 0.88 - 16))
+    }
+
+    const maxPad = Math.round(layoutH * 0.5)
+    applied = Math.min(applied, maxPad)
+
+    // Ignore sub-pixel noise; tiny values look like a glitchy strip.
+    if (applied < 6) {
+      if (hadInsetRef.current) {
+        hadInsetRef.current = false
         resetMobileViewportScroll()
       }
       el.style.removeProperty('padding-bottom')
       return
     }
 
-    // iOS Chrome sometimes over-reports obscured height (dead band above the keyboard). Bias down
-    // slightly; cap so we never reserve more than ~46% of layout height (large phones + keyboard).
-    const scaled = Math.max(0, Math.round(rawInset * 0.84 - 28))
-    const maxPad = Math.round(layoutH * 0.46)
-    const applied = Math.min(scaled, maxPad)
-
     el.style.paddingBottom = `${applied}px`
-    hadKeyboardPaddingRef.current = true
-  }, [containerRef])
+    hadInsetRef.current = true
+  }, [containerRef, enabled])
 
   useEffect(() => {
     const el = containerRef.current
     if (!el || typeof window === 'undefined' || !window.visualViewport) return
-
-    const mq = window.matchMedia(`(max-width: ${MOBILE_MAX_WIDTH}px)`)
-    if (!mq.matches) return
 
     const vv = window.visualViewport
 
@@ -88,7 +111,7 @@ export function useVisualViewportKeyboardInset(
       vv.removeEventListener('resize', sync)
       vv.removeEventListener('scroll', sync)
       window.removeEventListener('resize', sync)
-      hadKeyboardPaddingRef.current = false
+      hadInsetRef.current = false
       el.style.removeProperty('padding-bottom')
     }
   }, [containerRef, sync])

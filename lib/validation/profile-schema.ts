@@ -18,29 +18,12 @@ export const pathSelectionSchema = z.object({
 export type PathSelectionInput = z.infer<typeof pathSelectionSchema>
 
 /**
- * Validation schema for profile updates
+ * Validation schema for profile updates from Settings.
+ * Personal identifiers (name, phone, email) are not accepted here; they are updated only via support.
  */
 export const profileUpdateSchema = z.object({
   user_type: z.enum([USER_TYPES[0], USER_TYPES[1]]).optional().nullable(),
-  firstName: z.string()
-    .min(1, 'First name is required')
-    .max(100, 'First name must be less than 100 characters')
-    .trim(),
-  
-  lastName: z.string()
-    .max(100, 'Last name must be less than 100 characters')
-    .trim()
-    .optional()
-    .or(z.literal('')),
-  
-  phone: z.string()
-    .regex(
-      /^\+?[1-9]\d{1,14}$/,
-      'Please enter a valid phone number (international format)'
-    )
-    .optional()
-    .or(z.literal('')),
-  
+
   bio: z.string()
     .max(500, 'Bio must be less than 500 characters')
     .trim()

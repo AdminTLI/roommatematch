@@ -15,6 +15,7 @@ import {
   SESSION_TERMINATED_ERROR_PARAM,
   SESSION_TERMINATED_MESSAGE,
 } from '@/lib/auth/session-terminated'
+import { BETA_SIGNUP_GOOGLE_FORM_URL } from '@/lib/marketing/beta-signup'
 
 export function SignInForm({ initialErrorCode }: { initialErrorCode?: string | null }) {
   const [email, setEmail] = useState('')
@@ -273,9 +274,12 @@ export function SignInForm({ initialErrorCode }: { initialErrorCode?: string | n
 
         <p className="text-center text-xs sm:text-sm text-slate-700">
           Don't have an account?{' '}
-          <Link href="/auth/sign-up" className="text-blue-700 font-semibold hover:underline">
+          <a
+            href={BETA_SIGNUP_GOOGLE_FORM_URL}
+            className="text-blue-700 font-semibold hover:underline"
+          >
             Sign up
-          </Link>
+          </a>
         </p>
       </div>
     </div>

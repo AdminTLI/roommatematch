@@ -30,6 +30,8 @@ export const viewport = {
   userScalable: true,
   viewportFit: 'cover',
   themeColor: '#7a3bb6',
+  /** Resize the layout viewport when the virtual keyboard opens (Android Chrome + modern browsers). */
+  interactiveWidget: 'resizes-content' as const,
 }
 
 export default function RootLayout({

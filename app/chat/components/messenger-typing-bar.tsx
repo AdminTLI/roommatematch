@@ -143,7 +143,15 @@ export function MessengerTypingBar({
                 validateContent(value)
                 handleInput()
               }}
-              onFocus={onComposerFocus}
+              onFocus={(e) => {
+                onComposerFocus?.()
+                // Nudge the visual viewport on iOS so the focused field stays above browser/keyboard chrome.
+                requestAnimationFrame(() => {
+                  requestAnimationFrame(() => {
+                    e.currentTarget.scrollIntoView({ block: 'nearest', inline: 'nearest' })
+                  })
+                })
+              }}
               onBlur={onComposerBlur}
               onKeyDown={handleKeyDown}
               placeholder={placeholder}

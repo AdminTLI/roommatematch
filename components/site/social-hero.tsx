@@ -1,8 +1,8 @@
 'use client'
 
 import Link from 'next/link'
-import { useRouter } from 'next/navigation'
 import { useMemo } from 'react'
+import { BETA_SIGNUP_GOOGLE_FORM_URL } from '@/lib/marketing/beta-signup'
 import Container from '@/components/ui/primitives/container'
 import Section from '@/components/ui/primitives/section'
 import { Button } from '@/components/ui/button'
@@ -30,7 +30,6 @@ const content = {
 }
 
 export function SocialHero() {
-  const router = useRouter()
   const { locale } = useApp()
   const t = content[locale]
 
@@ -77,9 +76,9 @@ export function SocialHero() {
               <Button
                 size="lg"
                 className="bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-full px-8 py-4 shadow-lg transition-transform hover:-translate-y-1"
-                onClick={() => router.push('/auth/sign-up')}
+                asChild
               >
-                {t.ctaPrimary}
+                <a href={BETA_SIGNUP_GOOGLE_FORM_URL}>{t.ctaPrimary}</a>
               </Button>
               <Button
                 variant="outline"
