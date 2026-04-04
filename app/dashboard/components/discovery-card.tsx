@@ -134,29 +134,37 @@ export function DiscoveryCard({ profile, onSkip, onConnect, connectButtonText = 
     return (
         <div
           className={`w-full min-h-[28rem] sm:min-h-[30rem] ${mobileCardShellClass}`}
-          style={{ perspective: '1000px', WebkitPerspective: '1000px' }}
+          style={{ perspective: '1200px', WebkitPerspective: '1200px' }}
         >
+          {/*
+            perspective lives on this shell; the flipper is the next child only.
+            Never put overflow:hidden between perspective and preserve-3d — WebKit then
+            fails backface-visibility and shows a mirrored front instead of the back.
+          */}
           <div
-            className={`relative min-h-[28rem] w-full sm:min-h-[30rem] max-md:h-full max-md:min-h-0 max-md:overflow-hidden ease-in-out`}
+            className="relative h-full min-h-[28rem] w-full sm:min-h-[30rem] max-md:min-h-0 max-md:h-full"
             style={{
               transformStyle: 'preserve-3d',
               WebkitTransformStyle: 'preserve-3d',
               transform: isFlipped ? 'rotateY(180deg)' : 'rotateY(0deg)',
               transition: 'transform 0.6s ease-in-out',
-              willChange: 'transform'
+              willChange: 'transform',
             }}
           >
             {/* Front Face */}
             <div
-              className="absolute inset-0 h-full w-full max-md:overflow-hidden"
+              className={cn(
+                'absolute inset-0 h-full w-full',
+                isFlipped && 'pointer-events-none',
+              )}
               style={{
-                backfaceVisibility: 'hidden',
                 WebkitBackfaceVisibility: 'hidden',
-                transform: 'translateZ(2px) rotateY(0deg)',
-                WebkitTransform: 'translateZ(2px) rotateY(0deg)',
+                backfaceVisibility: 'hidden',
+                transform: 'translateZ(6px)',
+                WebkitTransform: 'translateZ(6px)',
               }}
+              aria-hidden={isFlipped}
             >
-              {/* Plain div (no Framer hover transform) so iOS keeps preserve-3d and the back face shows correctly */}
               <div className="group relative flex h-full min-h-[28rem] max-md:min-h-0 flex-col overflow-y-auto overscroll-y-contain rounded-2xl border border-slate-700 bg-slate-800 shadow-xl md:overflow-hidden sm:min-h-[30rem]">
             {/* Hero Match Score Section */}
             <div className="relative shrink-0 p-6 pb-4 text-center bg-gradient-to-b from-violet-600/20 to-transparent">
@@ -308,13 +316,17 @@ export function DiscoveryCard({ profile, onSkip, onConnect, connectButtonText = 
 
             {/* Back Face */}
             <div
-              className="absolute inset-0 h-full w-full max-md:overflow-hidden"
+              className={cn(
+                'absolute inset-0 h-full w-full',
+                !isFlipped && 'pointer-events-none',
+              )}
               style={{
-                backfaceVisibility: 'hidden',
                 WebkitBackfaceVisibility: 'hidden',
-                transform: 'rotateY(180deg) translateZ(2px)',
-                WebkitTransform: 'rotateY(180deg) translateZ(2px)',
+                backfaceVisibility: 'hidden',
+                transform: 'rotateY(180deg) translateZ(6px)',
+                WebkitTransform: 'rotateY(180deg) translateZ(6px)',
               }}
+              aria-hidden={!isFlipped}
             >
               <div className="flex h-full w-full min-h-[28rem] max-md:min-h-0 flex-col overflow-y-auto overscroll-y-contain rounded-2xl border border-slate-700 bg-slate-800 p-5 shadow-xl md:overflow-hidden sm:min-h-[30rem] sm:p-6">
                 {/* User Details Heading */}

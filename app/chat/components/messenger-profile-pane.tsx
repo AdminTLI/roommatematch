@@ -9,7 +9,11 @@ import { safeLogger } from '@/lib/utils/logger'
 import { cn } from '@/lib/utils'
 import { type HousingStatusKey } from '@/lib/constants/housing-status'
 import { createClient } from '@/lib/supabase/client'
-import { ScoreInfoPopover, scoreInfoIconTriggerBaseClass } from '@/components/compatibility/score-info-popover'
+import {
+  ScoreInfoPopover,
+  scoreInfoIconTriggerBarAlignClass,
+  scoreInfoIconTriggerBarAlignCompactClass,
+} from '@/components/compatibility/score-info-popover'
 
 interface CompatibilityData {
   compatibility_score: number
@@ -238,20 +242,21 @@ export function MessengerProfilePane({ chatId, isOpen, onClose }: MessengerProfi
         )}
       </div>
 
-      {/* Scrollable Content */}
-      <div 
-        className="flex-1 overflow-y-auto overflow-x-hidden min-h-0 scrollbar-visible"
+      {/* Scrollable Content — bottom padding on lg- must clear mobile browser chrome (not just safe-area) */}
+      <div
+        data-profile-pane-scroll
+        className="min-h-0 flex-1 overflow-x-hidden overflow-y-auto overscroll-y-contain scrollbar-visible touch-pan-y"
         style={{
           overflowY: 'auto',
           overflowX: 'hidden',
           WebkitOverflowScrolling: 'touch',
           scrollbarWidth: 'thin',
-          height: 0, // Force flex-1 to work properly
-          flex: '1 1 0%'
+          height: 0,
+          flex: '1 1 0%',
         }}
       >
         <div
-          className="space-y-6 bg-white px-6 py-6 dark:bg-gray-900 max-lg:pb-[max(2rem,calc(1.25rem+env(safe-area-inset-bottom,0px)))] lg:pb-8"
+          className="space-y-6 bg-white px-6 py-6 pb-8 dark:bg-gray-900 max-lg:pb-[calc(8.5rem+env(safe-area-inset-bottom,0px))]"
           style={{ minHeight: 'min-content' }}
         >
           {isLoading ? (
@@ -339,7 +344,7 @@ export function MessengerProfilePane({ chatId, isOpen, onClose }: MessengerProfi
                       <div className="grid grid-cols-2 gap-3">
                         {compatibility.harmony_score !== null && (
                           <div className="p-3 rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800">
-                            <div className="mb-1 flex min-w-0 items-center gap-1">
+                            <div className="mb-1 flex min-w-0 items-center justify-start gap-1">
                               <ScoreInfoPopover
                                 title="Harmony score"
                                 description="Measures how well your day-to-day living preferences align — cleanliness, sleep, noise, guests, shared spaces, substances, study/social balance, and home vibe."
@@ -347,7 +352,7 @@ export function MessengerProfilePane({ chatId, isOpen, onClose }: MessengerProfi
                                 <button
                                   type="button"
                                   className={cn(
-                                    scoreInfoIconTriggerBaseClass,
+                                    scoreInfoIconTriggerBarAlignCompactClass,
                                     'text-pink-500 transition-colors hover:bg-gray-200/80 hover:text-pink-600 dark:text-pink-400 dark:hover:bg-gray-700/80 dark:hover:text-pink-300',
                                   )}
                                   aria-label="What is the Harmony score? Opens explanation."
@@ -355,7 +360,9 @@ export function MessengerProfilePane({ chatId, isOpen, onClose }: MessengerProfi
                                   <Heart className="h-3.5 w-3.5" aria-hidden />
                                 </button>
                               </ScoreInfoPopover>
-                              <span className="min-w-0 truncate pl-0.5 text-xs text-gray-600 dark:text-gray-400">Harmony Score</span>
+                              <span className="min-w-0 shrink truncate text-left text-xs text-gray-600 dark:text-gray-400">
+                                Harmony Score
+                              </span>
                             </div>
                             <div className="text-2xl font-bold text-gray-900 dark:text-white">
                               {Math.round(compatibility.harmony_score * 100)}%
@@ -370,7 +377,7 @@ export function MessengerProfilePane({ chatId, isOpen, onClose }: MessengerProfi
                         )}
                         {compatibility.context_score !== null && (
                           <div className="p-3 rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800">
-                            <div className="mb-1 flex min-w-0 items-center gap-1">
+                            <div className="mb-1 flex min-w-0 items-center justify-start gap-1">
                               <ScoreInfoPopover
                                 title="Context score"
                                 description="Measures how similar your context is — university, programme, study year, and overlap in preferred cities. Location is treated as a soft boost, not a hard filter."
@@ -378,7 +385,7 @@ export function MessengerProfilePane({ chatId, isOpen, onClose }: MessengerProfi
                                 <button
                                   type="button"
                                   className={cn(
-                                    scoreInfoIconTriggerBaseClass,
+                                    scoreInfoIconTriggerBarAlignCompactClass,
                                     'text-blue-500 transition-colors hover:bg-gray-200/80 hover:text-blue-600 dark:text-blue-400 dark:hover:bg-gray-700/80 dark:hover:text-blue-300',
                                   )}
                                   aria-label="What is the Context score? Opens explanation."
@@ -386,7 +393,9 @@ export function MessengerProfilePane({ chatId, isOpen, onClose }: MessengerProfi
                                   <Users className="h-3.5 w-3.5" aria-hidden />
                                 </button>
                               </ScoreInfoPopover>
-                              <span className="min-w-0 truncate pl-0.5 text-xs text-gray-600 dark:text-gray-400">Context Score</span>
+                              <span className="min-w-0 shrink truncate text-left text-xs text-gray-600 dark:text-gray-400">
+                                Context Score
+                              </span>
                             </div>
                             <div className="text-2xl font-bold text-gray-900 dark:text-white">
                               {Math.round(compatibility.context_score * 100)}%
@@ -433,14 +442,14 @@ export function MessengerProfilePane({ chatId, isOpen, onClose }: MessengerProfi
                                     key={dimensionKey} 
                                     className="p-3 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
                                   >
-                                    <div className="flex items-start justify-between mb-1.5">
-                                      <div className="flex min-w-0 flex-1 items-center gap-1">
+                                    <div className="mb-1.5 flex items-center justify-between gap-2">
+                                      <div className="flex min-w-0 flex-1 items-center gap-1.5">
                                         {description ? (
                                           <ScoreInfoPopover title={label} description={description}>
                                             <button
                                               type="button"
                                               className={cn(
-                                                scoreInfoIconTriggerBaseClass,
+                                                scoreInfoIconTriggerBarAlignClass,
                                                 'text-gray-500 transition-colors hover:bg-gray-100 hover:text-gray-800 dark:text-gray-400 dark:hover:bg-gray-800 dark:hover:text-gray-200',
                                               )}
                                               aria-label={`${label}: open explanation`}
@@ -449,13 +458,18 @@ export function MessengerProfilePane({ chatId, isOpen, onClose }: MessengerProfi
                                             </button>
                                           </ScoreInfoPopover>
                                         ) : (
-                                          <Icon className="h-3.5 w-3.5 flex-shrink-0 text-gray-500 dark:text-gray-400" aria-hidden />
+                                          <Icon className="h-3.5 w-3.5 shrink-0 text-gray-500 dark:text-gray-400" aria-hidden />
                                         )}
-                                        <span className="min-w-0 truncate pl-0.5 text-xs font-medium text-gray-900 dark:text-white">
+                                        <span className="min-w-0 truncate text-xs font-medium leading-snug text-gray-900 dark:text-white">
                                           {label}
                                         </span>
                                       </div>
-                                      <span className={cn('text-xs font-bold ml-2 flex-shrink-0', getScoreColor(dimensionScore))}>
+                                      <span
+                                        className={cn(
+                                          'shrink-0 text-xs font-bold tabular-nums leading-snug',
+                                          getScoreColor(dimensionScore),
+                                        )}
+                                      >
                                         {Math.round(dimensionScore * 100)}%
                                       </span>
                                     </div>

@@ -36,14 +36,19 @@ export function useVisualViewportKeyboardInset(
     }
 
     const vv = window.visualViewport
-    const ih = window.innerHeight || 1
-    const inset = Math.max(0, Math.round(ih - vv.offsetTop - vv.height))
-    const heightRatio = vv.height / ih
+    // clientHeight often tracks the layout viewport more predictably than innerHeight on iOS Chrome
+    // when the URL bar / keyboard chrome is in flux.
+    const layoutH =
+      document.documentElement?.clientHeight && document.documentElement.clientHeight > 0
+        ? document.documentElement.clientHeight
+        : window.innerHeight || 1
+
+    const rawInset = Math.max(0, Math.round(layoutH - vv.offsetTop - vv.height))
+    const heightRatio = vv.height / layoutH
 
     // Keyboard dismissed (or never open): visual viewport again fills most of the layout height.
-    // Rely on ratio + inset so stale post-dismiss values do not keep a full-keyboard pad.
     const keyboardLikelyClosed =
-      inset < 48 || (heightRatio > 0.82 && vv.offsetTop <= 20)
+      rawInset < 48 || (heightRatio > 0.82 && vv.offsetTop <= 20)
 
     if (keyboardLikelyClosed) {
       if (hadKeyboardPaddingRef.current) {
@@ -54,7 +59,13 @@ export function useVisualViewportKeyboardInset(
       return
     }
 
-    el.style.paddingBottom = `${inset}px`
+    // iOS Chrome sometimes over-reports obscured height (dead band above the keyboard). Bias down
+    // slightly; cap so we never reserve more than ~46% of layout height (large phones + keyboard).
+    const scaled = Math.max(0, Math.round(rawInset * 0.84 - 28))
+    const maxPad = Math.round(layoutH * 0.46)
+    const applied = Math.min(scaled, maxPad)
+
+    el.style.paddingBottom = `${applied}px`
     hadKeyboardPaddingRef.current = true
   }, [containerRef])
 

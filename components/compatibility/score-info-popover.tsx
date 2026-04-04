@@ -12,6 +12,22 @@ export const scoreInfoIconTriggerBaseClass = cn(
   'focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500/50',
 )
 
+/** Same hit target, but icon is left-aligned inside the box so it lines up with full-width progress bars. */
+export const scoreInfoIconTriggerBarAlignClass = cn(
+  scoreInfoIconTriggerBaseClass,
+  'justify-start pl-0 pr-0.5',
+)
+
+/**
+ * Narrower width than `size-8` so the label can sit closer to the glyph while keeping full bar alignment
+ * (icon’s left edge still matches the bar). Use on tight cards e.g. harmony / context in a 2-col grid.
+ */
+export const scoreInfoIconTriggerBarAlignCompactClass = cn(
+  'inline-flex h-8 w-6 shrink-0 items-center justify-start rounded-md p-0 pl-0 pr-0.5',
+  'touch-manipulation [-webkit-tap-highlight-color:transparent]',
+  'focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500/50',
+)
+
 interface ScoreInfoPopoverProps {
   title?: string
   description: string

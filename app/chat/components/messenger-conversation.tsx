@@ -973,13 +973,41 @@ export function MessengerConversation({
   const syncKeyboardInset = useVisualViewportKeyboardInset(conversationRootRef)
 
   const handleComposerFocus = useCallback(() => {
+    // Replying usually means the user wants the latest messages in view; keyboard inset reflow
+    // can leave the list scrolled to a stale position without this.
+    setUserScrolledUp(false)
+    userScrolledUpRef.current = false
+    setShouldAutoScroll(true)
+
+    const flushMessagesToEnd = () => {
+      const c = messagesContainerRef.current
+      if (c) {
+        c.scrollTop = c.scrollHeight
+      }
+    }
+
+    flushMessagesToEnd()
     syncKeyboardInset()
     requestAnimationFrame(() => {
+      flushMessagesToEnd()
       syncKeyboardInset()
-      requestAnimationFrame(syncKeyboardInset)
+      requestAnimationFrame(() => {
+        flushMessagesToEnd()
+        syncKeyboardInset()
+      })
     })
-    window.setTimeout(syncKeyboardInset, 50)
-    window.setTimeout(syncKeyboardInset, 200)
+    window.setTimeout(() => {
+      flushMessagesToEnd()
+      syncKeyboardInset()
+    }, 50)
+    window.setTimeout(() => {
+      flushMessagesToEnd()
+      syncKeyboardInset()
+    }, 200)
+    window.setTimeout(() => {
+      flushMessagesToEnd()
+      syncKeyboardInset()
+    }, 450)
   }, [syncKeyboardInset])
 
   const handleComposerBlur = useCallback(() => {

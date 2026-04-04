@@ -64,6 +64,13 @@ const fadeInUp = {
   transition: { duration: 0.6, ease: [0.2, 0.8, 0.2, 1] }
 }
 
+/** Opacity-only: no translateY — ancestor transforms break 3D flip / backface-visibility in WebKit. */
+const fadeInOpacity = {
+  initial: { opacity: 0 },
+  animate: { opacity: 1 },
+  transition: { duration: 0.6, ease: [0.2, 0.8, 0.2, 1] },
+}
+
 const staggerChildren = {
   animate: {
     transition: {
@@ -1536,7 +1543,7 @@ export function DashboardContent({ hasCompletedQuestionnaire = false, hasPartial
               })
             }
             return (
-              <motion.div key={match.id} variants={fadeInUp} className="h-full">
+              <motion.div key={match.id} variants={fadeInOpacity} className="h-full">
                 <DiscoveryCard
                   profile={{
                     id: match.userId || match.id,

@@ -292,7 +292,8 @@ export function MessengerLayout({ user, initialChatId, initialOtherUserId, onNew
       {!isDesktop && selectedChatId && rightPaneOpen && (
         <div className="fixed inset-0 z-[100] lg:hidden bg-black/50" onClick={handleToggleRightPane}>
           <div
-            className="absolute inset-0 flex min-h-0 w-full flex-col bg-gradient-to-br from-purple-950 via-indigo-950 to-blue-950 dark:from-purple-950 dark:via-indigo-950 dark:to-blue-950"
+            data-mobile-profile-sheet
+            className="absolute inset-0 flex min-h-0 w-full max-h-[100dvh] flex-col overflow-hidden bg-gradient-to-br from-purple-950 via-indigo-950 to-blue-950 dark:from-purple-950 dark:via-indigo-950 dark:to-blue-950"
             onClick={(e) => e.stopPropagation()}
           >
             <MessengerProfilePane
