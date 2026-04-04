@@ -381,6 +381,19 @@ body:has([data-chat-page]) .safe-area-inset {
   }
 }
 
+/* Mobile composer: fixed to layout viewport; shift up by pixels hidden under overlaid browser UI */
+@media (max-width: 1023px) {
+  body.chat-page [data-messenger-composer],
+  body:has([data-chat-page]) [data-messenger-composer] {
+    bottom: var(--chat-layout-bottom-obscured, 0px);
+  }
+
+  body.chat-page [data-messenger-messages],
+  body:has([data-chat-page]) [data-messenger-messages] {
+    padding-bottom: calc(5.5rem + var(--chat-layout-bottom-obscured, 0px));
+  }
+}
+
 body.chat-page .safe-area-inset > div,
 body:has([data-chat-page]) .safe-area-inset > div {
   height: 100% !important;

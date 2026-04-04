@@ -1163,8 +1163,9 @@ export function MessengerConversation({
       {/* Message Feed - Scrollable */}
       <div
         ref={messagesContainerRef}
+        data-messenger-messages
         onScroll={handleScroll}
-        className="flex-1 overflow-y-auto min-h-0 px-4 py-4 scrollbar-visible"
+        className="flex-1 overflow-y-auto min-h-0 px-4 pt-4 pb-4 max-lg:pb-0 scrollbar-visible"
       >
         {isLoading ? (
           <div className="flex items-center justify-center h-full">
