@@ -106,9 +106,6 @@ export function MessengerTypingBar({
       data-messenger-composer
       className={cn(
         'relative z-[60] flex-shrink-0 rounded-b-lg border-t border-gray-200 bg-white p-1 shadow-[0_-4px_24px_rgba(0,0,0,0.06)] dark:border-gray-700 dark:bg-gray-900',
-        /* Pin above iOS/Android overlaid URL bars; --chat-layout-bottom-obscured from useChatVisualViewportHeight */
-        'max-lg:fixed max-lg:left-0 max-lg:right-0 max-lg:z-[70] max-lg:rounded-b-none max-lg:border-gray-200 dark:max-lg:border-gray-700 max-lg:pb-[max(env(safe-area-inset-bottom,0px),2px)]',
-        'lg:relative lg:left-auto lg:right-auto lg:bottom-auto lg:z-[60] lg:rounded-b-lg lg:pb-1',
         className,
       )}
       style={{

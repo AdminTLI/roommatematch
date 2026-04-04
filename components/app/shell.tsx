@@ -131,6 +131,10 @@ export function AppShell({
   const needsPersonaVerification = verificationStatus?.needsPersonaVerification ?? false
   const showVerificationBanner = !hideVerificationBanner && !isVerifyPage && !isLoadingVerification && (needsEmailVerification || needsPersonaVerification)
 
+  // Framer Motion's translateY creates a containing block: `position:fixed` (chat composer) would
+  // anchor to this wrapper instead of the viewport, hiding the input under mobile browser chrome.
+  const isChatRoute = pathname === '/chat' || Boolean(pathname?.startsWith('/chat/'))
+
   return (
     <QueryClientProvider client={queryClient}>
       <ThemeProvider>
@@ -185,17 +189,26 @@ export function AppShell({
               )}
               <div className="flex-1 flex flex-col overflow-hidden relative">
                 <main className="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8 pb-24 md:pb-40 chat-page-main">
-                  <motion.div
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.4, ease: [0.2, 0.8, 0.2, 1] }}
-                    className="max-w-7xl mx-auto h-full"
-                  >
-                    {children}
-                    <div className="mt-6 sm:mt-8">
-                      <AppFooter />
+                  {isChatRoute ? (
+                    <div className="mx-auto flex h-full min-h-0 w-full max-w-7xl flex-col">
+                      {children}
+                      <div className="mt-6 sm:mt-8">
+                        <AppFooter />
+                      </div>
                     </div>
-                  </motion.div>
+                  ) : (
+                    <motion.div
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ duration: 0.4, ease: [0.2, 0.8, 0.2, 1] }}
+                      className="max-w-7xl mx-auto h-full"
+                    >
+                      {children}
+                      <div className="mt-6 sm:mt-8">
+                        <AppFooter />
+                      </div>
+                    </motion.div>
+                  )}
                 </main>
               </div>
             </div>
