@@ -683,6 +683,18 @@ export function MessengerConversation({
     return currentDate !== previousDate
   }
 
+  /** First bubble in a run from this sender (others only): show name inside bubble */
+  const isFirstInOtherSenderGroup = (index: number, messageList: Message[]) => {
+    const message = messageList[index]
+    if (!message || message.is_own || message.is_system_message) return false
+    if (index === 0) return true
+    const prev = messageList[index - 1]
+    if (!prev) return true
+    if (prev.is_system_message) return true
+    if (shouldShowDateSeparator(index, messageList)) return true
+    return prev.sender_id !== message.sender_id
+  }
+
   const formatDate = (timestamp: string) => {
     const date = new Date(timestamp)
     const today = new Date()
@@ -959,7 +971,7 @@ export function MessengerConversation({
       className="flex flex-col h-full w-full bg-white dark:bg-gray-900 overflow-hidden rounded-lg border border-gray-200 dark:border-gray-800"
     >
       {/* Fixed Header */}
-      <div className="flex-shrink-0 px-4 py-3 border-b border-gray-200 dark:border-gray-800 flex items-center justify-between bg-white dark:bg-gray-900 rounded-t-lg">
+      <div className="flex max-w-full flex-shrink-0 items-center justify-between border-b border-gray-200 bg-white px-4 dark:border-gray-800 dark:bg-gray-900 max-lg:pb-3 max-lg:pt-safe-top lg:rounded-t-lg lg:py-3">
         <div className="flex items-center gap-2 flex-1 min-w-0">
           {onBack && (
             <Button
@@ -1238,7 +1250,7 @@ export function MessengerConversation({
                   readBy={message.read_by}
                   reactions={messageReactions.get(message.id) || []}
                   currentUserId={user.id}
-                  showSenderName={!message.is_own && index > 0 && visibleMessages[index - 1]?.sender_id !== message.sender_id}
+                  showSenderName={isFirstInOtherSenderGroup(index, visibleMessages)}
                   onReactionChange={() => handleReactionChange(message.id)}
                   otherMembersCount={otherMembersCount}
                 />

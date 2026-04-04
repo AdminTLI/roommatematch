@@ -172,7 +172,7 @@ export function DomuChatWidget() {
                   onChange={e => setInput(e.target.value)}
                   placeholder="Type a message…"
                   disabled={isLoading}
-                  className="flex-1 rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm placeholder:text-slate-400 focus:border-[var(--brand-primary)] focus:outline-none focus:ring-1 focus:ring-[var(--brand-primary)] disabled:opacity-60 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100"
+                  className="min-h-[44px] flex-1 rounded-xl border border-slate-200 bg-white px-3 py-2 text-base placeholder:text-base placeholder:text-slate-400 focus:border-[var(--brand-primary)] focus:outline-none focus:ring-1 focus:ring-[var(--brand-primary)] disabled:opacity-60 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100 touch-manipulation"
                 />
                 <button
                   type="submit"

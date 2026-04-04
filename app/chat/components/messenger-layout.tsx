@@ -291,11 +291,7 @@ export function MessengerLayout({ user, initialChatId, initialOtherUserId, onNew
       {!isDesktop && selectedChatId && rightPaneOpen && (
         <div className="fixed inset-0 z-50 lg:hidden bg-black/50" onClick={handleToggleRightPane}>
           <div
-            className="absolute inset-x-0 top-0 w-full flex flex-col bg-gradient-to-br from-purple-950 via-indigo-950 to-blue-950 dark:from-purple-950 dark:via-indigo-950 dark:to-blue-950"
-            style={{
-              height: 'calc(100vh - var(--chat-bottom-offset, 96px))',
-              maxHeight: 'calc(100vh - var(--chat-bottom-offset, 96px))'
-            }}
+            className="mobile-profile-sheet-height absolute inset-x-0 top-0 flex w-full flex-col bg-gradient-to-br from-purple-950 via-indigo-950 to-blue-950 dark:from-purple-950 dark:via-indigo-950 dark:to-blue-950"
             onClick={(e) => e.stopPropagation()}
           >
             <MessengerProfilePane

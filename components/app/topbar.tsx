@@ -23,6 +23,9 @@ import { UserDropdown } from './user-dropdown'
 import { Card, CardContent } from '@/components/ui/card'
 import Image from 'next/image'
 import Link from 'next/link'
+import { usePathname } from 'next/navigation'
+import { useMobileChatChrome } from '@/components/app/mobile-chat-chrome-context'
+import { cn } from '@/lib/utils'
 
 interface TopbarProps {
   user: {
@@ -55,6 +58,8 @@ interface SearchResult {
 
 export function Topbar({ user, context = 'user' }: TopbarProps) {
   const router = useRouter()
+  const pathname = usePathname()
+  const { activeMobileConversation } = useMobileChatChrome()
   const [searchQuery, setSearchQuery] = useState('')
   const [searchResults, setSearchResults] = useState<SearchResult[]>([])
   const [isSearching, setIsSearching] = useState(false)
@@ -64,6 +69,11 @@ export function Topbar({ user, context = 'user' }: TopbarProps) {
   const [dropdownPosition, setDropdownPosition] = useState<{ top: number; left: number; width: number } | null>(null)
 
   const isAdminContext = context === 'admin' || context === 'partner' || context === 'university'
+
+  const isChatThreadRoute =
+    pathname === '/chat' || (pathname?.startsWith('/chat/') ?? false)
+  const hideTopBarOnMobileForChat =
+    !isAdminContext && activeMobileConversation && isChatThreadRoute
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -224,7 +234,10 @@ export function Topbar({ user, context = 'user' }: TopbarProps) {
       initial={{ opacity: 0, y: -20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.4 }}
-      className="sticky top-0 z-40 bg-white/70 dark:bg-bg-body backdrop-blur-xl pt-safe-top"
+      className={cn(
+        'sticky top-0 z-40 bg-white/70 pt-safe-top backdrop-blur-xl dark:bg-bg-body',
+        hideTopBarOnMobileForChat && 'max-lg:hidden',
+      )}
     >
       <div className="flex items-center w-full px-3 sm:px-4 lg:px-6 py-3 gap-3 md:gap-4 max-w-7xl mx-auto">
         {/* Logo - Visible on all screens now that sidebar is gone */}

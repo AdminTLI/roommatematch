@@ -12,6 +12,11 @@ interface ScoreInfoPopoverProps {
   children?: React.ReactNode
   triggerClassName?: string
   side?: 'top' | 'right' | 'bottom' | 'left'
+  /**
+   * Modal popover uses a dismiss layer so taps outside close reliably on touch devices.
+   * Non-modal popovers often flash closed on mobile when the same gesture is treated as an outside click.
+   */
+  modal?: boolean
 }
 
 /**
@@ -22,16 +27,17 @@ export function ScoreInfoPopover({
   description,
   children,
   triggerClassName,
-  side = 'top',
+  side = 'bottom',
+  modal = true,
 }: ScoreInfoPopoverProps) {
   return (
-    <Popover>
+    <Popover modal={modal}>
       <PopoverTrigger asChild>
         {children ?? (
           <button
             type="button"
             className={cn(
-              'flex-shrink-0 rounded-full p-0.5 text-slate-400 transition-colors hover:text-slate-300 focus:outline-none focus:ring-2 focus:ring-indigo-500/50',
+              'flex-shrink-0 touch-manipulation rounded-full p-0.5 text-slate-400 transition-colors hover:text-slate-300 focus:outline-none focus:ring-2 focus:ring-indigo-500/50',
               triggerClassName,
             )}
             aria-label={title || 'More information'}
@@ -43,7 +49,7 @@ export function ScoreInfoPopover({
       <PopoverContent
         side={side}
         sideOffset={8}
-        align="start"
+        align="center"
         className="z-[400] w-[min(100vw-2rem,18rem)] border-slate-700 bg-slate-900 p-3 text-slate-100 shadow-xl"
         onOpenAutoFocus={(e) => e.preventDefault()}
       >

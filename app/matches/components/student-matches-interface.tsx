@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useCallback, useRef } from 'react'
+import { useState, useEffect, useCallback, useRef, useMemo } from 'react'
 import { useRouter } from 'next/navigation'
 import { useMutation, useQuery } from '@tanstack/react-query'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
@@ -8,12 +8,15 @@ import { toast } from 'sonner'
 import { showErrorToast } from '@/lib/toast'
 import { EmptyMatchesState } from './empty-matches-state'
 import { Button } from '@/components/ui/button'
-import { Clock, Sparkles, MessageCircle, LucideIcon } from 'lucide-react'
+import { Clock, Sparkles, MessageCircle, LucideIcon, ChevronLeft, ChevronRight, LayoutGrid, SquareStack } from 'lucide-react'
 import { DiscoveryCard } from '@/app/dashboard/components/discovery-card'
 import { motion } from 'framer-motion'
 import { fetchWithCSRF } from '@/lib/utils/fetch-with-csrf'
 import type { MatchSuggestion } from '@/lib/matching/types'
 import { queryKeys, queryClient } from '@/app/providers'
+
+/** Shown per page in the UI (desktop grid + mobile pager). API fetches in multiples of this. */
+const MATCHES_CARDS_PER_PAGE = 12
 
 interface StudentMatchesInterfaceProps {
   user: {
@@ -163,6 +166,12 @@ export function StudentMatchesInterface({ user }: StudentMatchesInterfaceProps) 
   const [pagination, setPagination] = useState<{ limit: number; offset: number; total: number; has_more: boolean } | null>(null)
   const [isLoadingMore, setIsLoadingMore] = useState(false)
 
+  /** UI pagination (12 cards per page); separate from API offset/load-more. */
+  const [matchesPageIndex, setMatchesPageIndex] = useState(0)
+  /** Hybrid mobile: browse one card at a time within the current page. */
+  const [mobileCardIndex, setMobileCardIndex] = useState(0)
+  const [mobileShowAllOnPage, setMobileShowAllOnPage] = useState(false)
+
   // Track locally processed suggestions to filter them out even if API returns stale data
   // Use localStorage to persist across page navigations
   const STORAGE_KEY = `processed_suggestions_${user.id}`
@@ -240,7 +249,7 @@ export function StudentMatchesInterface({ user }: StudentMatchesInterfaceProps) 
         setIsLoading(true)
       }
 
-      const limit = 20
+      const limit = MATCHES_CARDS_PER_PAGE * 5
       const offset = loadMore && pagination ? pagination.offset + pagination.limit : 0
       const url = includeExpired
         ? `/api/match/suggestions/my?includeExpired=true&limit=${limit}&offset=${offset}`
@@ -706,6 +715,41 @@ export function StudentMatchesInterface({ user }: StudentMatchesInterfaceProps) 
     }
   }
 
+  const filteredSuggestions = useMemo(() => {
+    switch (activeTab) {
+      case 'suggested':
+        return suggestions
+      case 'pending':
+        return pendingSuggestions
+      case 'confirmed':
+        return confirmedMatches
+      case 'history':
+        return historyMatches
+      default:
+        return []
+    }
+  }, [activeTab, suggestions, pendingSuggestions, confirmedMatches, historyMatches])
+
+  const totalMatchPages = Math.max(
+    1,
+    Math.ceil(filteredSuggestions.length / MATCHES_CARDS_PER_PAGE)
+  )
+
+  const pageSlice = useMemo(() => {
+    const start = matchesPageIndex * MATCHES_CARDS_PER_PAGE
+    return filteredSuggestions.slice(start, start + MATCHES_CARDS_PER_PAGE)
+  }, [filteredSuggestions, matchesPageIndex])
+
+  useEffect(() => {
+    const tp = Math.max(1, Math.ceil(filteredSuggestions.length / MATCHES_CARDS_PER_PAGE))
+    setMatchesPageIndex((pi) => Math.min(Math.max(0, pi), tp - 1))
+  }, [filteredSuggestions.length])
+
+  useEffect(() => {
+    const len = pageSlice.length
+    setMobileCardIndex((i) => (len === 0 ? 0 : Math.min(i, len - 1)))
+  }, [pageSlice.length])
+
   // Load suggestions on mount
   useEffect(() => {
     fetchSuggestions()
@@ -720,7 +764,15 @@ export function StudentMatchesInterface({ user }: StudentMatchesInterfaceProps) 
     }
     // Clear selection when switching tabs
     setSelectedMatches(new Set())
+    setMatchesPageIndex(0)
+    setMobileCardIndex(0)
+    setMobileShowAllOnPage(false)
   }, [activeTab])
+
+  useEffect(() => {
+    setMobileCardIndex(0)
+    setMobileShowAllOnPage(false)
+  }, [matchesPageIndex])
 
   // Handle match selection toggle
   const handleToggleSelection = (suggestionId: string) => {
@@ -834,23 +886,53 @@ export function StudentMatchesInterface({ user }: StudentMatchesInterfaceProps) 
     }
   }
 
-  // Filter suggestions by tab
-  const getFilteredSuggestions = () => {
-    switch (activeTab) {
-      case 'suggested':
-        return suggestions
-      case 'pending':
-        return pendingSuggestions
-      case 'confirmed':
-        return confirmedMatches
-      case 'history':
-        return historyMatches
-      default:
-        return []
-    }
-  }
+  const renderMatchCard = (suggestion: MatchWithStatus) => {
+    const otherUserId = suggestion.memberIds.find((id) => id !== user.id)
+    let onSkip: (() => void) | undefined
+    let onConnect: (() => void) | undefined
 
-  const filteredSuggestions = getFilteredSuggestions()
+    if (activeTab === 'suggested') {
+      onSkip = () => handleRespond(suggestion.id, 'decline')
+      onConnect = () => handleRespond(suggestion.id, 'accept')
+    } else if (activeTab === 'pending') {
+      onSkip = undefined
+      onConnect = undefined
+    } else if (activeTab === 'confirmed') {
+      onSkip = undefined
+      onConnect = async () => {
+        if (otherUserId) {
+          try {
+            const response = await fetchWithCSRF('/api/chat/get-or-create', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ otherUserId }),
+            })
+            if (response.ok) {
+              const { chat_id } = await response.json()
+              router.push(`/chat?chatId=${chat_id}`)
+            }
+          } catch (error) {
+            console.error('Error creating chat:', error)
+          }
+        }
+      }
+    } else {
+      onSkip = undefined
+      onConnect = undefined
+    }
+
+    return (
+      <DiscoveryCardWrapper
+        suggestion={suggestion}
+        otherUserId={otherUserId || ''}
+        currentUserId={user.id}
+        onSkip={onSkip}
+        onConnect={onConnect}
+        connectButtonText={activeTab === 'confirmed' ? 'Chat' : undefined}
+        connectButtonIcon={activeTab === 'confirmed' ? MessageCircle : undefined}
+      />
+    )
+  }
 
   const tabs = [
     { id: 'suggested' as TabType, label: 'Suggested', count: suggestions.length },
@@ -971,65 +1053,120 @@ export function StudentMatchesInterface({ user }: StudentMatchesInterfaceProps) 
         )
       ) : (
         <>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
-            {filteredSuggestions.map((suggestion) => {
-              const otherUserId = suggestion.memberIds.find(id => id !== user.id)
-              
-              // Determine actions based on tab
-              let onSkip: (() => void) | undefined
-              let onConnect: (() => void) | undefined
-              
-              if (activeTab === 'suggested') {
-                // Suggested: allow accept/decline
-                onSkip = () => handleRespond(suggestion.id, 'decline')
-                onConnect = () => handleRespond(suggestion.id, 'accept')
-              } else if (activeTab === 'pending') {
-                // Pending: no actions (waiting for response)
-                onSkip = undefined
-                onConnect = undefined
-              } else if (activeTab === 'confirmed') {
-                // Confirmed: navigate to chat (but handle selection for group chat separately)
-                // For now, navigate to individual chat
-                onSkip = undefined
-                onConnect = async () => {
-                  if (otherUserId) {
-                    try {
-                      const response = await fetchWithCSRF('/api/chat/get-or-create', {
-                        method: 'POST',
-                        headers: {
-                          'Content-Type': 'application/json',
-                        },
-                        body: JSON.stringify({ otherUserId }),
-                      })
-                      if (response.ok) {
-                        const { chat_id } = await response.json()
-                        router.push(`/chat?chatId=${chat_id}`)
-                      }
-                    } catch (error) {
-                      console.error('Error creating chat:', error)
-                    }
-                  }
-                }
-              } else if (activeTab === 'history') {
-                // History: no actions or view only
-                onSkip = undefined
-                onConnect = undefined
-              }
-              
-              return (
-                <DiscoveryCardWrapper
-                  key={suggestion.id}
-                  suggestion={suggestion}
-                  otherUserId={otherUserId || ''}
-                  currentUserId={user.id}
-                  onSkip={onSkip}
-                  onConnect={onConnect}
-                  connectButtonText={activeTab === 'confirmed' ? 'Chat' : undefined}
-                  connectButtonIcon={activeTab === 'confirmed' ? MessageCircle : undefined}
-                />
-              )
-            })}
+          {/* Desktop / tablet: max 12 per page, 3 columns (md) / 4 columns (xl) */}
+          <div className="hidden md:grid md:grid-cols-3 xl:grid-cols-4 gap-6 mb-4">
+            {pageSlice.map((suggestion) => (
+              <div key={suggestion.id} className="min-w-0">
+                {renderMatchCard(suggestion)}
+              </div>
+            ))}
           </div>
+
+          {/* Mobile (viewport < md): hybrid — one focused card with in-page navigation, or browse all on page */}
+          <div className="md:hidden space-y-4 mb-4">
+            {pageSlice.length > 0 && (
+              <div className="flex flex-col gap-3 rounded-2xl border border-zinc-200/80 dark:border-white/10 bg-zinc-50/80 dark:bg-white/5 p-3">
+                {pageSlice.length > 1 && (
+                  <div className="flex items-center justify-between gap-2">
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      className="min-h-11 shrink-0"
+                      disabled={mobileCardIndex <= 0}
+                      onClick={() => setMobileCardIndex((i) => Math.max(0, i - 1))}
+                      aria-label="Previous match on this page"
+                    >
+                      <ChevronLeft className="h-4 w-4 sm:mr-1" />
+                      <span className="hidden sm:inline">Prev</span>
+                    </Button>
+                    <span className="text-sm text-center text-zinc-600 dark:text-zinc-300 tabular-nums px-1">
+                      Match {mobileCardIndex + 1} of {pageSlice.length}
+                    </span>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      className="min-h-11 shrink-0"
+                      disabled={mobileCardIndex >= pageSlice.length - 1}
+                      onClick={() =>
+                        setMobileCardIndex((i) => Math.min(pageSlice.length - 1, i + 1))
+                      }
+                      aria-label="Next match on this page"
+                    >
+                      <span className="hidden sm:inline mr-1">Next</span>
+                      <ChevronRight className="h-4 w-4" />
+                    </Button>
+                  </div>
+                )}
+                {!mobileShowAllOnPage ? (
+                  <div className="min-w-0">{renderMatchCard(pageSlice[mobileCardIndex]!)}</div>
+                ) : (
+                  <div className="grid grid-cols-1 gap-6 pt-1">
+                    {pageSlice.map((suggestion) => (
+                      <div key={suggestion.id} className="min-w-0">
+                        {renderMatchCard(suggestion)}
+                      </div>
+                    ))}
+                  </div>
+                )}
+                {pageSlice.length > 1 && (
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    className="w-full min-h-11 text-zinc-700 dark:text-zinc-200"
+                    onClick={() => setMobileShowAllOnPage((v) => !v)}
+                  >
+                    {mobileShowAllOnPage ? (
+                      <>
+                        <SquareStack className="mr-2 h-4 w-4 shrink-0" />
+                        Focus one card
+                      </>
+                    ) : (
+                      <>
+                        <LayoutGrid className="mr-2 h-4 w-4 shrink-0" />
+                        Browse all on this page ({pageSlice.length})
+                      </>
+                    )}
+                  </Button>
+                )}
+              </div>
+            )}
+          </div>
+
+          {totalMatchPages > 1 && (
+            <div
+              className="flex flex-col sm:flex-row items-stretch sm:items-center justify-center gap-3 sm:gap-4 mb-6"
+              role="navigation"
+              aria-label="Match pages"
+            >
+              <Button
+                type="button"
+                variant="outline"
+                className="min-h-11 w-full sm:w-auto"
+                disabled={matchesPageIndex <= 0}
+                onClick={() => setMatchesPageIndex((p) => Math.max(0, p - 1))}
+              >
+                <ChevronLeft className="mr-1 h-4 w-4" />
+                Previous page
+              </Button>
+              <p className="text-sm text-zinc-600 dark:text-zinc-300 tabular-nums whitespace-nowrap text-center self-center">
+                Page {matchesPageIndex + 1} of {totalMatchPages}
+                <span className="text-text-secondary"> ({filteredSuggestions.length} total)</span>
+              </p>
+              <Button
+                type="button"
+                variant="outline"
+                className="min-h-11 w-full sm:w-auto"
+                disabled={matchesPageIndex >= totalMatchPages - 1}
+                onClick={() => setMatchesPageIndex((p) => Math.min(totalMatchPages - 1, p + 1))}
+              >
+                Next page
+                <ChevronRight className="ml-1 h-4 w-4" />
+              </Button>
+            </div>
+          )}
 
           {/* Load More button for suggested tab */}
           {activeTab === 'suggested' && pagination?.has_more && (

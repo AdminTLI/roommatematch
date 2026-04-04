@@ -339,13 +339,20 @@ export function MessengerProfilePane({ chatId, isOpen, onClose }: MessengerProfi
                       <div className="grid grid-cols-2 gap-3">
                         {compatibility.harmony_score !== null && (
                           <div className="p-3 rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800">
-                            <div className="flex flex-nowrap items-center gap-1.5 mb-1 min-w-0">
-                              <span className="text-xs text-gray-600 dark:text-gray-400 whitespace-nowrap">Harmony Score</span>
+                            <div className="mb-1 flex min-w-0 items-center gap-1.5">
                               <ScoreInfoPopover
                                 title="Harmony score"
                                 description="Measures how well your day-to-day living preferences align — cleanliness, sleep, noise, guests, shared spaces, substances, study/social balance, and home vibe."
-                                triggerClassName="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300"
-                              />
+                              >
+                                <button
+                                  type="button"
+                                  className="flex-shrink-0 touch-manipulation rounded-lg p-1 text-pink-500 transition-colors hover:bg-gray-200/80 hover:text-pink-600 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 dark:text-pink-400 dark:hover:bg-gray-700/80 dark:hover:text-pink-300"
+                                  aria-label="What is the Harmony score? Opens explanation."
+                                >
+                                  <Heart className="h-3.5 w-3.5" aria-hidden />
+                                </button>
+                              </ScoreInfoPopover>
+                              <span className="truncate text-xs text-gray-600 dark:text-gray-400">Harmony Score</span>
                             </div>
                             <div className="text-2xl font-bold text-gray-900 dark:text-white">
                               {Math.round(compatibility.harmony_score * 100)}%
@@ -360,13 +367,20 @@ export function MessengerProfilePane({ chatId, isOpen, onClose }: MessengerProfi
                         )}
                         {compatibility.context_score !== null && (
                           <div className="p-3 rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800">
-                            <div className="flex flex-nowrap items-center gap-1.5 mb-1 min-w-0">
-                              <span className="text-xs text-gray-600 dark:text-gray-400 whitespace-nowrap">Context Score</span>
+                            <div className="mb-1 flex min-w-0 items-center gap-1.5">
                               <ScoreInfoPopover
                                 title="Context score"
                                 description="Measures how similar your context is — university, programme, study year, and overlap in preferred cities. Location is treated as a soft boost, not a hard filter."
-                                triggerClassName="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300"
-                              />
+                              >
+                                <button
+                                  type="button"
+                                  className="flex-shrink-0 touch-manipulation rounded-lg p-1 text-blue-500 transition-colors hover:bg-gray-200/80 hover:text-blue-600 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 dark:text-blue-400 dark:hover:bg-gray-700/80 dark:hover:text-blue-300"
+                                  aria-label="What is the Context score? Opens explanation."
+                                >
+                                  <Users className="h-3.5 w-3.5" aria-hidden />
+                                </button>
+                              </ScoreInfoPopover>
+                              <span className="truncate text-xs text-gray-600 dark:text-gray-400">Context Score</span>
                             </div>
                             <div className="text-2xl font-bold text-gray-900 dark:text-white">
                               {Math.round(compatibility.context_score * 100)}%
@@ -380,6 +394,11 @@ export function MessengerProfilePane({ chatId, isOpen, onClose }: MessengerProfi
                           </div>
                         )}
                       </div>
+                      {(compatibility.harmony_score !== null || compatibility.context_score !== null) && (
+                        <p className="mb-3 text-[11px] leading-snug text-gray-500 dark:text-gray-400">
+                          Tap the heart or people icons for score details. Tap outside the popup to close it.
+                        </p>
+                      )}
 
                       {/* Detailed Dimension Scores */}
                       {compatibility.dimension_scores_json && typeof compatibility.dimension_scores_json === 'object' && Object.keys(compatibility.dimension_scores_json).length > 0 && (
@@ -389,6 +408,9 @@ export function MessengerProfilePane({ chatId, isOpen, onClose }: MessengerProfi
                               <Sparkles className="w-4 h-4 text-indigo-600 dark:text-indigo-400" />
                               Dimension Scores
                             </h4>
+                            <p className="mt-1.5 text-[11px] leading-snug text-gray-500 dark:text-gray-400">
+                              Tap each row&apos;s icon for what that dimension measures.
+                            </p>
                           </div>
                           <div className="px-4 pb-4 pt-3">
                             <div className="grid grid-cols-1 gap-3">
@@ -407,21 +429,22 @@ export function MessengerProfilePane({ chatId, isOpen, onClose }: MessengerProfi
                                   >
                                     <div className="flex items-start justify-between mb-1.5">
                                       <div className="flex items-center gap-1.5 flex-1 min-w-0">
-                                        <Icon className="w-3.5 h-3.5 text-gray-500 dark:text-gray-400 flex-shrink-0" />
-                                        <span className="text-xs font-medium text-gray-900 dark:text-white truncate">
-                                          {label}
-                                        </span>
-                                        {description && (
+                                        {description ? (
                                           <ScoreInfoPopover title={label} description={description}>
                                             <button
                                               type="button"
-                                              className="flex-shrink-0 rounded p-0.5 text-gray-400 hover:text-gray-600 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 dark:text-gray-500 dark:hover:text-gray-300"
-                                              aria-label={`${label} definition`}
+                                              className="flex-shrink-0 touch-manipulation rounded-lg p-0.5 text-gray-500 transition-colors hover:bg-gray-100 hover:text-gray-800 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 dark:text-gray-400 dark:hover:bg-gray-800 dark:hover:text-gray-200"
+                                              aria-label={`${label}: open explanation`}
                                             >
-                                              <Info className="h-3 w-3" aria-hidden />
+                                              <Icon className="h-3.5 w-3.5" aria-hidden />
                                             </button>
                                           </ScoreInfoPopover>
+                                        ) : (
+                                          <Icon className="h-3.5 w-3.5 flex-shrink-0 text-gray-500 dark:text-gray-400" aria-hidden />
                                         )}
+                                        <span className="text-xs font-medium text-gray-900 dark:text-white truncate">
+                                          {label}
+                                        </span>
                                       </div>
                                       <span className={cn('text-xs font-bold ml-2 flex-shrink-0', getScoreColor(dimensionScore))}>
                                         {Math.round(dimensionScore * 100)}%

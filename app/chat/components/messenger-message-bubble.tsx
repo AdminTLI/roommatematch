@@ -52,7 +52,7 @@ export function MessengerMessageBubble({
   currentUserId,
   showSenderName = true,
   onReactionChange,
-  otherMembersCount = 1
+  otherMembersCount = 1,
 }: MessengerMessageBubbleProps) {
   const [showReactionPicker, setShowReactionPicker] = useState(false)
   const [isReacting, setIsReacting] = useState(false)
@@ -69,8 +69,8 @@ export function MessengerMessageBubble({
           target_user_id: senderId,
           message_id: id,
           category: 'inappropriate',
-          details: 'Reported via message context menu'
-        })
+          details: 'Reported via message context menu',
+        }),
       })
 
       if (!response.ok) {
@@ -79,9 +79,10 @@ export function MessengerMessageBubble({
       }
 
       showSuccessToast('Report submitted', 'Thank you for your report. We will review it shortly.')
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const err = error as { message?: string }
       console.error('Failed to report message:', error)
-      showErrorToast('Failed to submit report', error.message || 'Please try again.')
+      showErrorToast('Failed to submit report', err.message || 'Please try again.')
     } finally {
       setIsReporting(false)
     }
@@ -102,14 +103,12 @@ export function MessengerMessageBubble({
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           message_id: id,
-          emoji
-        })
+          emoji,
+        }),
       })
 
       if (!response.ok) {
-        // Handle 429 rate limit errors gracefully - don't log as errors
         if (response.status === 429) {
-          // Rate limited - silently skip
           return
         }
         throw new Error('Failed to add reaction')
@@ -119,9 +118,9 @@ export function MessengerMessageBubble({
         onReactionChange()
       }
       setShowReactionPicker(false)
-    } catch (error: any) {
-      // Only log non-rate-limit errors
-      if (error?.status !== 429 && error?.response?.status !== 429) {
+    } catch (error: unknown) {
+      const err = error as { status?: number; response?: { status?: number } }
+      if (err?.status !== 429 && err?.response?.status !== 429) {
         console.error('Failed to add reaction:', error)
       }
     } finally {
@@ -130,97 +129,95 @@ export function MessengerMessageBubble({
   }
 
   const hasUserReacted = (emoji: string) => {
-    const group = reactions.find(r => r.emoji === emoji)
+    const group = reactions.find((r) => r.emoji === emoji)
     return group ? group.userReactions.includes(currentUserId) : false
   }
 
   const getReadStatus = () => {
     if (!isOwn) return null
-    
-    // Filter out the current user (sender) from readBy array
-    const otherReaders = readBy.filter(id => id !== currentUserId)
-    
-    // If all other members have read the message, show blue double check (read)
+
+    const otherReaders = readBy.filter((rid) => rid !== currentUserId)
+
     if (otherReaders.length === otherMembersCount && otherMembersCount > 0) {
-      return <CheckCheck className="w-3 h-3 text-blue-400" />
+      return <CheckCheck className="h-3.5 w-3.5 text-sky-500 dark:text-sky-400" aria-hidden />
     }
-    
-    // Check if message was just sent (within last 2 seconds)
+
     const messageTime = new Date(createdAt).getTime()
-    const now = Date.now()
-    const timeSinceSent = now - messageTime
-    const isJustSent = timeSinceSent < 2000 // 2 seconds
-    
-    // If message was just sent (within 2 seconds), show single tick
+    const timeSinceSent = Date.now() - messageTime
+    const isJustSent = timeSinceSent < 2000
+
     if (isJustSent && otherReaders.length === 0) {
-      return <Check className="w-3 h-3 text-gray-400 dark:text-gray-500" />
+      return <Check className="h-3.5 w-3.5 text-zinc-400 dark:text-zinc-500" aria-hidden />
     }
-    
-    // If some but not all other members have read, show gray double check (delivered/partially read)
+
     if (otherReaders.length > 0 && otherReaders.length < otherMembersCount) {
-      return <CheckCheck className="w-3 h-3 text-gray-400 dark:text-gray-500" />
+      return <CheckCheck className="h-3.5 w-3.5 text-zinc-400 dark:text-zinc-500" aria-hidden />
     }
-    
-    // If no other members have read yet but message is older than 2 seconds, show double gray check (delivered but not read)
+
     if (otherReaders.length === 0) {
-      return <CheckCheck className="w-3 h-3 text-gray-400 dark:text-gray-500" />
+      return <CheckCheck className="h-3.5 w-3.5 text-zinc-400 dark:text-zinc-500" aria-hidden />
     }
-    
-    // Fallback: single check for sent state
-    return <Check className="w-3 h-3 text-gray-400 dark:text-gray-500" />
+
+    return <Check className="h-3.5 w-3.5 text-zinc-400 dark:text-zinc-500" aria-hidden />
   }
 
   if (isSystem) {
     return (
-      <div className="flex justify-center my-4">
-        <div className="bg-gray-100 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-2xl px-5 py-3 shadow-lg">
-          <p className="text-sm text-chat-text-primary dark:text-gray-200 text-center font-bold">
-            {content}
-          </p>
+      <div className="my-4 flex justify-center">
+        <div className="rounded-2xl border border-zinc-200/60 bg-white/50 px-5 py-3 text-center shadow-lg backdrop-blur-xl dark:border-white/10 dark:bg-zinc-800/50">
+          <p className="text-sm font-semibold text-zinc-800 dark:text-zinc-100">{content}</p>
         </div>
       </div>
     )
   }
 
+  const bubbleGlass = isOwn
+    ? 'border-white/70 bg-white/65 text-zinc-900 shadow-[0_1px_12px_rgba(0,0,0,0.06)] dark:border-white/20 dark:bg-white/18 dark:text-zinc-100 dark:shadow-[0_1px_16px_rgba(0,0,0,0.35)]'
+    : 'border-zinc-300/50 bg-zinc-200/45 text-zinc-900 shadow-[0_1px_12px_rgba(0,0,0,0.08)] dark:border-white/10 dark:bg-zinc-950/35 dark:text-zinc-100 dark:shadow-[0_1px_16px_rgba(0,0,0,0.4)]'
+
   return (
-    <div className={cn('flex gap-2 group', isOwn ? 'justify-end' : 'justify-start')}>
+    <div className={cn('group flex gap-2', isOwn ? 'justify-end' : 'justify-start')}>
       {!isOwn && (
-        <Avatar className="w-8 h-8 flex-shrink-0">
+        <Avatar className="h-8 w-8 flex-shrink-0">
           <AvatarImage src={senderAvatar} />
-          <AvatarFallback className="text-xs bg-gray-200 dark:bg-gray-700 text-gray-900 dark:text-gray-100">
+          <AvatarFallback className="bg-zinc-200 text-xs text-zinc-900 dark:bg-zinc-700 dark:text-zinc-100">
             {senderName.charAt(0).toUpperCase()}
           </AvatarFallback>
         </Avatar>
       )}
 
-      <div className={cn('max-w-[85%] flex flex-col', isOwn ? 'items-end' : 'items-start')}>
-        {!isOwn && showSenderName && (
-          <div className="text-xs font-semibold text-gray-600 dark:text-gray-400 mb-1 px-1">
-            {senderName}
-          </div>
-        )}
-
+      <div className={cn('flex max-w-[85%] flex-col', isOwn ? 'items-end' : 'items-start')}>
         <div className="relative">
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <div
                 className={cn(
-                  'px-4 py-3 shadow-lg max-w-full transition-all relative cursor-pointer hover:opacity-90',
+                  'relative max-w-full cursor-pointer backdrop-blur-2xl transition-all hover:brightness-[1.02] dark:hover:brightness-110',
+                  'border px-3 py-2',
+                  bubbleGlass,
+                  /* TL, TR, BR, BL — you: small BR (tail toward screen right); them: small BL */
                   isOwn
-                    ? 'bg-purple-600 dark:bg-purple-500 text-white'
-                    : 'bg-gray-200 dark:bg-gray-700 text-gray-900 dark:text-gray-100',
-                  isOwn
-                    ? 'rounded-2xl rounded-tr-sm rounded-bl-2xl'
-                    : 'rounded-2xl rounded-tl-sm rounded-br-2xl'
+                    ? 'rounded-tl-[18px] rounded-tr-[18px] rounded-br-[5px] rounded-bl-[18px]'
+                    : 'rounded-tl-[18px] rounded-tr-[18px] rounded-br-[18px] rounded-bl-[5px]',
                 )}
-                data-messenger-message-sent={isOwn}
-                data-messenger-message-received={!isOwn}
                 onMouseEnter={() => setShowReactionPicker(true)}
                 onMouseLeave={() => setShowReactionPicker(false)}
               >
-                <p className={cn('text-sm break-words leading-relaxed', isOwn ? 'text-white' : 'text-gray-900 dark:text-gray-100')}>
-                  {content}
-                </p>
+                {!isOwn && showSenderName && (
+                  <div className="mb-1 text-[11px] font-semibold tracking-tight text-zinc-600 dark:text-zinc-400">
+                    {senderName}
+                  </div>
+                )}
+                {/* Inline row: text + time/ticks; wide gap-x so they don’t feel crowded */}
+                <div className="flex flex-row flex-wrap items-end justify-start gap-x-4 gap-y-1 sm:gap-x-5">
+                  <p className="m-0 max-w-full min-w-[max(0px,calc(100%-5.5rem))] flex-[1_1_auto] text-left text-[15px] leading-snug break-words sm:min-w-[max(0px,calc(100%-6rem))]">
+                    {content}
+                  </p>
+                  <span className="ml-auto inline-flex shrink-0 items-center gap-1 pb-px text-[11px] leading-none tabular-nums text-zinc-500 dark:text-zinc-400">
+                    {formatTime(createdAt)}
+                    {isOwn && <span className="inline-flex items-center">{getReadStatus()}</span>}
+                  </span>
+                </div>
               </div>
             </DropdownMenuTrigger>
             <DropdownMenuContent align={isOwn ? 'end' : 'start'}>
@@ -238,9 +235,9 @@ export function MessengerMessageBubble({
                   <DropdownMenuItem
                     onClick={handleReport}
                     disabled={isReporting}
-                    className="text-semantic-danger focus:text-semantic-danger focus:bg-semantic-danger/10"
+                    className="text-semantic-danger focus:bg-semantic-danger/10 focus:text-semantic-danger"
                   >
-                    <Flag className="h-4 w-4 mr-2" />
+                    <Flag className="mr-2 h-4 w-4" />
                     {isReporting ? 'Reporting...' : 'Report Message'}
                   </DropdownMenuItem>
                 </>
@@ -248,17 +245,16 @@ export function MessengerMessageBubble({
             </DropdownMenuContent>
           </DropdownMenu>
 
-          {/* Hover reaction picker */}
           {showReactionPicker && (
-            <div className="absolute -top-8 left-1/2 -translate-x-1/2 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none group-hover:pointer-events-auto">
-              <div className="flex gap-1 bg-white dark:bg-gray-800 rounded-full px-2 py-1 shadow-lg border border-gray-200 dark:border-gray-700">
+            <div className="pointer-events-none absolute -top-8 left-1/2 -translate-x-1/2 opacity-0 transition-opacity group-hover:pointer-events-auto group-hover:opacity-100">
+              <div className="flex gap-1 rounded-full border border-zinc-200 bg-white/95 px-2 py-1 shadow-lg backdrop-blur-md dark:border-zinc-600 dark:bg-zinc-800/95">
                 {['❤️', '👍', '😂'].map((emoji) => (
                   <button
                     key={emoji}
+                    type="button"
                     onClick={() => handleReaction(emoji)}
                     disabled={isReacting}
-                    className="p-1 rounded hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors text-lg disabled:opacity-50"
-                    type="button"
+                    className="rounded p-1 text-lg transition-colors hover:bg-zinc-100 disabled:opacity-50 dark:hover:bg-zinc-700"
                   >
                     {emoji}
                   </button>
@@ -268,22 +264,21 @@ export function MessengerMessageBubble({
           )}
         </div>
 
-        {/* Reactions */}
         {reactions.length > 0 && (
-          <div className={cn('flex flex-wrap gap-1 mt-1', isOwn ? 'justify-end' : 'justify-start')}>
+          <div className={cn('mt-1 flex flex-wrap gap-1', isOwn ? 'justify-end' : 'justify-start')}>
             {reactions.map((group) => (
               <button
                 key={group.emoji}
+                type="button"
                 onClick={() => handleReaction(group.emoji)}
                 disabled={isReacting}
                 className={cn(
-                  'inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs transition-all',
+                  'inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-xs transition-all',
                   hasUserReacted(group.emoji)
-                    ? 'bg-purple-100 dark:bg-purple-900/50 text-purple-700 dark:text-purple-300 border border-purple-300 dark:border-purple-700'
-                    : 'bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 border border-gray-300 dark:border-gray-700 hover:bg-gray-200 dark:hover:bg-gray-700',
-                  'disabled:opacity-50 cursor-pointer'
+                    ? 'border-purple-300 bg-purple-100 text-purple-700 dark:border-purple-700 dark:bg-purple-900/50 dark:text-purple-300'
+                    : 'border-zinc-300 bg-zinc-100 text-zinc-700 hover:bg-zinc-200 dark:border-zinc-600 dark:bg-zinc-800 dark:text-zinc-300 dark:hover:bg-zinc-700',
+                  'cursor-pointer disabled:opacity-50',
                 )}
-                type="button"
               >
                 <span>{group.emoji}</span>
                 <span className="text-[10px] font-medium">{group.count}</span>
@@ -291,14 +286,6 @@ export function MessengerMessageBubble({
             ))}
           </div>
         )}
-
-        {/* Timestamp and read status */}
-        <div className={cn('flex items-center gap-1.5 mt-1 px-1', isOwn ? 'flex-row-reverse' : 'flex-row')}>
-          <span className="text-[10px] text-gray-500 dark:text-gray-400 font-medium">
-            {formatTime(createdAt)}
-          </span>
-          {isOwn && getReadStatus()}
-        </div>
       </div>
     </div>
   )

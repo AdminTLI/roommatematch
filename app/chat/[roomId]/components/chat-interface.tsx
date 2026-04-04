@@ -3266,7 +3266,7 @@ export function ChatInterface({ roomId, user, onBack, onToggleRightPane, rightPa
                     disabled={isSending || isBlocked}
                     inputMode="text"
                     enterKeyHint="send"
-                    className={`flex-1 min-w-0 h-12 sm:h-13 text-sm sm:text-base bg-gray-100 border rounded-full focus:bg-gray-100 focus:ring-2 transition-all placeholder:text-gray-500 text-gray-900 font-medium ${
+                    className={`flex-1 min-w-0 h-12 sm:h-13 text-base bg-gray-100 border rounded-full focus:bg-gray-100 focus:ring-2 transition-all placeholder:text-base placeholder:text-gray-500 text-gray-900 font-medium touch-manipulation ${
                       contentValidationError 
                         ? 'border-red-500 focus:border-red-500 focus:ring-red-300' 
                         : 'border-white focus:border-blue-500 focus:ring-blue-300'

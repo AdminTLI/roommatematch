@@ -299,7 +299,8 @@
 }
 
 /* Chat page specific styles - prevent page scrolling */
-/* Lock the root - No global scroll */
+/* Lock the root - No global scroll.
+   Use dvh/svh so content is not laid out under iOS Safari's bottom URL bar (100vh is often too tall). */
 html.chat-page,
 html:has([data-chat-page]),
 body.chat-page,
@@ -309,6 +310,16 @@ body:has([data-chat-page]) {
   max-height: 100vh !important;
   width: 100% !important;
   --chat-bottom-offset: 120px;
+}
+
+@supports (height: 100dvh) {
+  html.chat-page,
+  html:has([data-chat-page]),
+  body.chat-page,
+  body:has([data-chat-page]) {
+    height: 100dvh !important;
+    max-height: 100dvh !important;
+  }
 }
 
 body.chat-page main,
@@ -332,6 +343,14 @@ body:has([data-chat-page]) .safe-area-inset {
   overflow: hidden !important;
 }
 
+@supports (height: 100dvh) {
+  body.chat-page .safe-area-inset,
+  body:has([data-chat-page]) .safe-area-inset {
+    height: 100dvh !important;
+    max-height: 100dvh !important;
+  }
+}
+
 body.chat-page .safe-area-inset > div,
 body:has([data-chat-page]) .safe-area-inset > div {
   height: 100% !important;
@@ -346,10 +365,10 @@ body:has([data-chat-page]) .safe-area-inset > div {
     --chat-bottom-offset: calc(7.5rem + env(safe-area-inset-bottom, 0px));
   }
 
-  /* Open thread only: dock + Domu hidden — composer uses bottom + safe area */
+  /* Open thread: dock hidden — still reserve space for mobile browser bottom chrome (Safari URL bar / toolbar) + home indicator */
   body.chat-page.mobile-chat-active-conversation,
   body:has([data-chat-page]).mobile-chat-active-conversation {
-    --chat-bottom-offset: calc(0.5rem + env(safe-area-inset-bottom, 0px)) !important;
+    --chat-bottom-offset: calc(env(safe-area-inset-bottom, 0px) + 5rem) !important;
   }
 
   body.chat-page main,
@@ -800,13 +819,17 @@ body:has([data-chat-page]) [class*="border-t"][class*="shadow-2xl"] {
     flex-direction: column !important;
   }
 
-  /* Messenger message bubble border-radius overrides */
-  [data-messenger-message-sent] {
-    border-radius: 18px 18px 4px 18px !important;
+  /* Mobile profile sheet: match dynamic viewport when available */
+  .mobile-profile-sheet-height {
+    height: calc(100vh - var(--chat-bottom-offset, 96px));
+    max-height: calc(100vh - var(--chat-bottom-offset, 96px));
   }
 
-  [data-messenger-message-received] {
-    border-radius: 18px 18px 18px 4px !important;
+  @supports (height: 100dvh) {
+    .mobile-profile-sheet-height {
+      height: calc(100dvh - var(--chat-bottom-offset, 96px));
+      max-height: calc(100dvh - var(--chat-bottom-offset, 96px));
+    }
   }
 
   /* Edge fade hint for horizontal scroll areas */

@@ -97,6 +97,7 @@ export function MessengerTypingBar({
 
   return (
     <div 
+      data-messenger-composer
       className={cn(
         'relative z-[60] flex-shrink-0 rounded-b-lg border-t border-gray-200 bg-white p-1 shadow-[0_-4px_24px_rgba(0,0,0,0.06)] dark:border-gray-700 dark:bg-gray-900',
         className,
@@ -111,7 +112,7 @@ export function MessengerTypingBar({
         <div className="flex items-center gap-1">
           {/* Pill-shaped input container */}
           <div className={cn(
-            'flex-1 flex items-center gap-2 bg-gray-100 dark:bg-gray-800 rounded-full px-2.5 py-0.5 min-h-[28px] border transition-all',
+            'flex-1 flex items-center gap-2 bg-gray-100 dark:bg-gray-800 rounded-full px-2.5 py-1.5 min-h-[44px] border transition-all',
             contentValidationError
               ? 'border-red-500 dark:border-red-500 focus-within:ring-2 focus-within:ring-red-300 dark:focus-within:ring-red-400'
               : 'border-gray-200 dark:border-gray-700 focus-within:ring-2 focus-within:ring-purple-500 dark:focus-within:ring-purple-400 focus-within:border-transparent'
@@ -140,8 +141,9 @@ export function MessengerTypingBar({
               placeholder={placeholder}
               disabled={disabled}
               rows={1}
-              className="flex-1 bg-transparent border-none outline-none resize-none text-sm leading-[16px] text-gray-900 dark:text-gray-100 placeholder:text-gray-500 dark:placeholder:text-gray-400 max-h-[120px] overflow-y-auto scrollbar-hide py-0"
-              style={{ minHeight: '14px' }}
+              /* 16px+ on iOS prevents Safari from auto-zooming the page on focus */
+              className="flex-1 bg-transparent border-none outline-none resize-none text-base leading-normal text-gray-900 dark:text-gray-100 placeholder:text-base placeholder:text-gray-500 dark:placeholder:text-gray-400 max-h-[120px] overflow-y-auto scrollbar-hide py-0.5 touch-manipulation"
+              style={{ minHeight: '22px', fontSize: '16px' }}
             />
           </div>
 
