@@ -15,6 +15,7 @@ import Link from 'next/link'
 import { Users, AlertCircle, Mail, Shield, ArrowRight } from 'lucide-react'
 import { MessageNotificationPopup } from '@/app/(components)/notifications/message-notification-popup'
 import { usePathname } from 'next/navigation'
+import { useAppVisualViewportTopInset } from '@/hooks/use-app-visual-viewport-top-inset'
 import { AppFooter } from './app-footer'
 import { QueryClientProvider } from '@tanstack/react-query'
 import { queryClient } from '@/app/providers'
@@ -42,6 +43,7 @@ export function AppShell({
 }: AppShellProps) {
   const router = useRouter()
   const pathname = usePathname()
+  useAppVisualViewportTopInset()
   const [showQuestionnaire, setShowQuestionnaire] = useState(false)
   const [verificationStatus, setVerificationStatus] = useState<{
     emailVerified: boolean
@@ -138,7 +140,7 @@ export function AppShell({
   return (
     <QueryClientProvider client={queryClient}>
       <ThemeProvider>
-        <div className="min-h-screen bg-transparent safe-area-inset">
+        <div className="app-shell-visual-viewport-pad min-h-screen bg-transparent safe-area-inset">
           <div className="flex min-h-screen flex-col">
             {/* Main content area */}
             <div className="flex-1 flex flex-col overflow-hidden relative z-0">

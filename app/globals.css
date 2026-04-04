@@ -351,8 +351,7 @@ body:has([data-chat-page]) .safe-area-inset {
   }
 }
 
-/* Mobile: `100dvh` can still extend under overlaid URL/toolbars; sync to Visual Viewport API via
-   `--chat-visual-vh` (set from useChatVisualViewportHeight on /chat). */
+/* Mobile: optional `--chat-visual-vh` (px) can shrink html/body; chat column uses ChatPageViewportRoot. */
 @media (max-width: 1023px) {
   html.chat-page,
   html:has([data-chat-page]),
@@ -995,4 +994,11 @@ body:has([data-chat-page]) [class*="border-t"][class*="shadow-2xl"] {
     }
   }
 
+}
+
+/* Unlayered: wins over @layer utilities — mobile browser top chrome (not covered by safe-area alone) */
+@media (max-width: 1023px) {
+  .app-shell-visual-viewport-pad {
+    padding-top: calc(env(safe-area-inset-top, 0px) + var(--app-visual-top-inset, 0px)) !important;
+  }
 }
