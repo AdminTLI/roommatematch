@@ -37,6 +37,7 @@ import { MessengerMessageBubble } from './messenger-message-bubble'
 import { MessengerTypingBar } from './messenger-typing-bar'
 import { cn } from '@/lib/utils'
 import { queryClient, queryKeys } from '@/app/providers'
+import { useVisualViewportKeyboardInset } from '@/hooks/use-visual-viewport-keyboard-inset'
 
 interface Message {
   id: string
@@ -68,6 +69,8 @@ interface MessengerConversationProps {
   onBack?: () => void
   partnerName?: string
   partnerAvatar?: string
+  /** Mobile: hide composer when profile/compatibility sheet is open */
+  hideComposer?: boolean
 }
 
 export function MessengerConversation({
@@ -76,7 +79,8 @@ export function MessengerConversation({
   onToggleProfile,
   onBack,
   partnerName = 'User',
-  partnerAvatar
+  partnerAvatar,
+  hideComposer = false,
 }: MessengerConversationProps) {
   const supabase = createClient()
   const router = useRouter()
@@ -86,6 +90,7 @@ export function MessengerConversation({
   const profilesMapRef = useRef<Map<string, any>>(new Map())
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const messagesContainerRef = useRef<HTMLDivElement>(null)
+  const conversationRootRef = useRef<HTMLDivElement>(null)
   const messagesChannelRef = useRef<any>(null)
   const [shouldAutoScroll, setShouldAutoScroll] = useState(true)
   const [userScrolledUp, setUserScrolledUp] = useState(false)
@@ -965,8 +970,32 @@ export function MessengerConversation({
     showErrorToast('Search feature', 'Search functionality will be implemented soon.')
   }
 
+  const syncKeyboardInset = useVisualViewportKeyboardInset(conversationRootRef)
+
+  const handleComposerFocus = useCallback(() => {
+    syncKeyboardInset()
+    requestAnimationFrame(() => {
+      syncKeyboardInset()
+      requestAnimationFrame(syncKeyboardInset)
+    })
+    window.setTimeout(syncKeyboardInset, 50)
+    window.setTimeout(syncKeyboardInset, 200)
+  }, [syncKeyboardInset])
+
+  const handleComposerBlur = useCallback(() => {
+    window.setTimeout(syncKeyboardInset, 80)
+    window.setTimeout(syncKeyboardInset, 320)
+  }, [syncKeyboardInset])
+
+  useEffect(() => {
+    if (hideComposer) {
+      conversationRootRef.current?.style.removeProperty('padding-bottom')
+    }
+  }, [hideComposer])
+
   return (
     <div
+      ref={conversationRootRef}
       data-messenger-conversation
       className="flex flex-col h-full w-full bg-white dark:bg-gray-900 overflow-hidden rounded-lg border border-gray-200 dark:border-gray-800"
     >
@@ -1261,18 +1290,21 @@ export function MessengerConversation({
         )}
       </div>
 
-      {/* Fixed Typing Bar */}
-      <MessengerTypingBar
-        onSend={handleSendMessage}
-        placeholder={
-          isBlocked
-            ? 'This user has been blocked. To send a message, unblock them.'
-            : isMessagingDisabledByPrivacy
-              ? 'Messaging is disabled by privacy settings.'
-              : 'Type a message...'
-        }
-        disabled={isBlocked || isMessagingDisabledByPrivacy}
-      />
+      {!hideComposer && (
+        <MessengerTypingBar
+          onSend={handleSendMessage}
+          onComposerFocus={handleComposerFocus}
+          onComposerBlur={handleComposerBlur}
+          placeholder={
+            isBlocked
+              ? 'This user has been blocked. To send a message, unblock them.'
+              : isMessagingDisabledByPrivacy
+                ? 'Messaging is disabled by privacy settings.'
+                : 'Type a message...'
+          }
+          disabled={isBlocked || isMessagingDisabledByPrivacy}
+        />
+      )}
     </div>
   )
 }

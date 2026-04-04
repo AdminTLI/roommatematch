@@ -9,7 +9,7 @@ import { safeLogger } from '@/lib/utils/logger'
 import { cn } from '@/lib/utils'
 import { type HousingStatusKey } from '@/lib/constants/housing-status'
 import { createClient } from '@/lib/supabase/client'
-import { ScoreInfoPopover } from '@/components/compatibility/score-info-popover'
+import { ScoreInfoPopover, scoreInfoIconTriggerBaseClass } from '@/components/compatibility/score-info-popover'
 
 interface CompatibilityData {
   compatibility_score: number
@@ -251,7 +251,7 @@ export function MessengerProfilePane({ chatId, isOpen, onClose }: MessengerProfi
         }}
       >
         <div
-          className="space-y-6 bg-white px-6 py-6 pb-8 dark:bg-gray-900 max-lg:pb-[calc(var(--chat-bottom-offset,7.5rem)+1.25rem)]"
+          className="space-y-6 bg-white px-6 py-6 dark:bg-gray-900 max-lg:pb-[max(2rem,calc(1.25rem+env(safe-area-inset-bottom,0px)))] lg:pb-8"
           style={{ minHeight: 'min-content' }}
         >
           {isLoading ? (
@@ -339,20 +339,23 @@ export function MessengerProfilePane({ chatId, isOpen, onClose }: MessengerProfi
                       <div className="grid grid-cols-2 gap-3">
                         {compatibility.harmony_score !== null && (
                           <div className="p-3 rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800">
-                            <div className="mb-1 flex min-w-0 items-center gap-1.5">
+                            <div className="mb-1 flex min-w-0 items-center gap-1">
                               <ScoreInfoPopover
                                 title="Harmony score"
                                 description="Measures how well your day-to-day living preferences align — cleanliness, sleep, noise, guests, shared spaces, substances, study/social balance, and home vibe."
                               >
                                 <button
                                   type="button"
-                                  className="flex-shrink-0 touch-manipulation rounded-lg p-1 text-pink-500 transition-colors hover:bg-gray-200/80 hover:text-pink-600 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 dark:text-pink-400 dark:hover:bg-gray-700/80 dark:hover:text-pink-300"
+                                  className={cn(
+                                    scoreInfoIconTriggerBaseClass,
+                                    'text-pink-500 transition-colors hover:bg-gray-200/80 hover:text-pink-600 dark:text-pink-400 dark:hover:bg-gray-700/80 dark:hover:text-pink-300',
+                                  )}
                                   aria-label="What is the Harmony score? Opens explanation."
                                 >
                                   <Heart className="h-3.5 w-3.5" aria-hidden />
                                 </button>
                               </ScoreInfoPopover>
-                              <span className="truncate text-xs text-gray-600 dark:text-gray-400">Harmony Score</span>
+                              <span className="min-w-0 truncate pl-0.5 text-xs text-gray-600 dark:text-gray-400">Harmony Score</span>
                             </div>
                             <div className="text-2xl font-bold text-gray-900 dark:text-white">
                               {Math.round(compatibility.harmony_score * 100)}%
@@ -367,20 +370,23 @@ export function MessengerProfilePane({ chatId, isOpen, onClose }: MessengerProfi
                         )}
                         {compatibility.context_score !== null && (
                           <div className="p-3 rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800">
-                            <div className="mb-1 flex min-w-0 items-center gap-1.5">
+                            <div className="mb-1 flex min-w-0 items-center gap-1">
                               <ScoreInfoPopover
                                 title="Context score"
                                 description="Measures how similar your context is — university, programme, study year, and overlap in preferred cities. Location is treated as a soft boost, not a hard filter."
                               >
                                 <button
                                   type="button"
-                                  className="flex-shrink-0 touch-manipulation rounded-lg p-1 text-blue-500 transition-colors hover:bg-gray-200/80 hover:text-blue-600 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 dark:text-blue-400 dark:hover:bg-gray-700/80 dark:hover:text-blue-300"
+                                  className={cn(
+                                    scoreInfoIconTriggerBaseClass,
+                                    'text-blue-500 transition-colors hover:bg-gray-200/80 hover:text-blue-600 dark:text-blue-400 dark:hover:bg-gray-700/80 dark:hover:text-blue-300',
+                                  )}
                                   aria-label="What is the Context score? Opens explanation."
                                 >
                                   <Users className="h-3.5 w-3.5" aria-hidden />
                                 </button>
                               </ScoreInfoPopover>
-                              <span className="truncate text-xs text-gray-600 dark:text-gray-400">Context Score</span>
+                              <span className="min-w-0 truncate pl-0.5 text-xs text-gray-600 dark:text-gray-400">Context Score</span>
                             </div>
                             <div className="text-2xl font-bold text-gray-900 dark:text-white">
                               {Math.round(compatibility.context_score * 100)}%
@@ -428,12 +434,15 @@ export function MessengerProfilePane({ chatId, isOpen, onClose }: MessengerProfi
                                     className="p-3 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
                                   >
                                     <div className="flex items-start justify-between mb-1.5">
-                                      <div className="flex items-center gap-1.5 flex-1 min-w-0">
+                                      <div className="flex min-w-0 flex-1 items-center gap-1">
                                         {description ? (
                                           <ScoreInfoPopover title={label} description={description}>
                                             <button
                                               type="button"
-                                              className="flex-shrink-0 touch-manipulation rounded-lg p-0.5 text-gray-500 transition-colors hover:bg-gray-100 hover:text-gray-800 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 dark:text-gray-400 dark:hover:bg-gray-800 dark:hover:text-gray-200"
+                                              className={cn(
+                                                scoreInfoIconTriggerBaseClass,
+                                                'text-gray-500 transition-colors hover:bg-gray-100 hover:text-gray-800 dark:text-gray-400 dark:hover:bg-gray-800 dark:hover:text-gray-200',
+                                              )}
                                               aria-label={`${label}: open explanation`}
                                             >
                                               <Icon className="h-3.5 w-3.5" aria-hidden />
@@ -442,7 +451,7 @@ export function MessengerProfilePane({ chatId, isOpen, onClose }: MessengerProfi
                                         ) : (
                                           <Icon className="h-3.5 w-3.5 flex-shrink-0 text-gray-500 dark:text-gray-400" aria-hidden />
                                         )}
-                                        <span className="text-xs font-medium text-gray-900 dark:text-white truncate">
+                                        <span className="min-w-0 truncate pl-0.5 text-xs font-medium text-gray-900 dark:text-white">
                                           {label}
                                         </span>
                                       </div>

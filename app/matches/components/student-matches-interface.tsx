@@ -1065,7 +1065,7 @@ export function StudentMatchesInterface({ user }: StudentMatchesInterfaceProps) 
           {/* Mobile (viewport < md): hybrid — one focused card with in-page navigation, or browse all on page */}
           <div className="md:hidden space-y-4 mb-4">
             {pageSlice.length > 0 && (
-              <div className="flex flex-col gap-3 rounded-2xl border border-zinc-200/80 dark:border-white/10 bg-zinc-50/80 dark:bg-white/5 p-3">
+              <div className="flex flex-col gap-3">
                 {pageSlice.length > 1 && (
                   <div className="flex items-center justify-between gap-2">
                     <Button

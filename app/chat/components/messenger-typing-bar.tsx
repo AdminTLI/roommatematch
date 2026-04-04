@@ -11,13 +11,19 @@ interface MessengerTypingBarProps {
   placeholder?: string
   disabled?: boolean
   className?: string
+  /** Mobile: run after visual viewport settles so the composer stays above the keyboard */
+  onComposerFocus?: () => void
+  /** Mobile: iOS Chrome sometimes skips a final visualViewport event when the keyboard closes */
+  onComposerBlur?: () => void
 }
 
 export function MessengerTypingBar({
   onSend,
   placeholder = 'Type a message...',
   disabled = false,
-  className
+  className,
+  onComposerFocus,
+  onComposerBlur,
 }: MessengerTypingBarProps) {
   const [message, setMessage] = useState('')
   const [contentValidationError, setContentValidationError] = useState<string>('')
@@ -137,6 +143,8 @@ export function MessengerTypingBar({
                 validateContent(value)
                 handleInput()
               }}
+              onFocus={onComposerFocus}
+              onBlur={onComposerBlur}
               onKeyDown={handleKeyDown}
               placeholder={placeholder}
               disabled={disabled}

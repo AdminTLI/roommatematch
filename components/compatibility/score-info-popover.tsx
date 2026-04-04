@@ -5,6 +5,13 @@ import { Info } from 'lucide-react'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
 import { cn } from '@/lib/utils'
 
+/** Tight icon trigger + keyboard-only ring (avoids sticky focus box on mobile after dismiss). */
+export const scoreInfoIconTriggerBaseClass = cn(
+  'inline-flex size-8 shrink-0 items-center justify-center rounded-md p-0',
+  'touch-manipulation [-webkit-tap-highlight-color:transparent]',
+  'focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500/50',
+)
+
 interface ScoreInfoPopoverProps {
   title?: string
   description: string
@@ -37,7 +44,8 @@ export function ScoreInfoPopover({
           <button
             type="button"
             className={cn(
-              'flex-shrink-0 touch-manipulation rounded-full p-0.5 text-slate-400 transition-colors hover:text-slate-300 focus:outline-none focus:ring-2 focus:ring-indigo-500/50',
+              scoreInfoIconTriggerBaseClass,
+              'text-slate-400 transition-colors hover:bg-slate-800/60 hover:text-slate-200',
               triggerClassName,
             )}
             aria-label={title || 'More information'}
@@ -52,6 +60,7 @@ export function ScoreInfoPopover({
         align="center"
         className="z-[400] w-[min(100vw-2rem,18rem)] border-slate-700 bg-slate-900 p-3 text-slate-100 shadow-xl"
         onOpenAutoFocus={(e) => e.preventDefault()}
+        onCloseAutoFocus={(e) => e.preventDefault()}
       >
         {title ? <p className="mb-1.5 text-sm font-semibold text-white">{title}</p> : null}
         <p className="text-xs leading-relaxed text-slate-200">{description}</p>

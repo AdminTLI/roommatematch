@@ -358,11 +358,12 @@ body:has([data-chat-page]) .safe-area-inset > div {
   overflow: hidden !important;
 }
 
-/* Below lg: reserve space for floating dock + safe area on the chat list */
+/* Below lg: reserve space for floating dock + safe area + mobile browser bottom chrome
+   (Chrome iOS URL/toolbar overlays content; safe-area-inset-bottom is often only the home indicator). */
 @media (max-width: 1023px) {
   body.chat-page,
   body:has([data-chat-page]) {
-    --chat-bottom-offset: calc(7.5rem + env(safe-area-inset-bottom, 0px));
+    --chat-bottom-offset: calc(10.75rem + env(safe-area-inset-bottom, 0px));
   }
 
   /* Open thread: dock hidden — still reserve space for mobile browser bottom chrome (Safari URL bar / toolbar) + home indicator */
@@ -377,13 +378,11 @@ body:has([data-chat-page]) .safe-area-inset > div {
   }
 
   body.chat-page [data-messenger-sidebar],
-  body:has([data-chat-page]) [data-messenger-sidebar],
-  body.chat-page [data-messenger-profile-pane],
-  body:has([data-chat-page]) [data-messenger-profile-pane],
-  body.chat-page [data-profile-compatibility-pane],
-  body:has([data-chat-page]) [data-profile-compatibility-pane] {
+  body:has([data-chat-page]) [data-messenger-sidebar] {
     padding-bottom: var(--chat-bottom-offset, 120px) !important;
   }
+  /* Profile / compatibility full-screen sheets: do not reserve floating-dock padding here —
+     it created a false bottom gap and huge scrollable whitespace inside the panel. */
 }
 
 body.chat-page main>div,
@@ -817,19 +816,6 @@ body:has([data-chat-page]) [class*="border-t"][class*="shadow-2xl"] {
     overflow: hidden !important;
     display: flex !important;
     flex-direction: column !important;
-  }
-
-  /* Mobile profile sheet: match dynamic viewport when available */
-  .mobile-profile-sheet-height {
-    height: calc(100vh - var(--chat-bottom-offset, 96px));
-    max-height: calc(100vh - var(--chat-bottom-offset, 96px));
-  }
-
-  @supports (height: 100dvh) {
-    .mobile-profile-sheet-height {
-      height: calc(100dvh - var(--chat-bottom-offset, 96px));
-      max-height: calc(100dvh - var(--chat-bottom-offset, 96px));
-    }
   }
 
   /* Edge fade hint for horizontal scroll areas */

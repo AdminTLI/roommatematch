@@ -5,7 +5,8 @@ import { useRouter } from 'next/navigation'
 import { motion } from 'framer-motion'
 import { X, UserPlus, Zap, Heart, Users, MessageCircle, LucideIcon, Droplets, Volume2, Moon, Coffee, BookOpen, Home, Sparkles, GraduationCap } from 'lucide-react'
 import { Button } from '@/components/ui/button'
-import { ScoreInfoPopover } from '@/components/compatibility/score-info-popover'
+import { ScoreInfoPopover, scoreInfoIconTriggerBaseClass } from '@/components/compatibility/score-info-popover'
+import { cn } from '@/lib/utils'
 
 interface DiscoveryCardProps {
     profile: {
@@ -126,10 +127,9 @@ export function DiscoveryCard({ profile, onSkip, onConnect, connectButtonText = 
         }
     }
 
-    // Mobile (< md): fixed viewport-capped height so the flip card never grows with content;
-    // dimensions (back) and highlights (front) scroll inside the card. Desktop keeps min-height behavior.
+    // Mobile (< md): tall enough for front (incl. Chat) + safe area; inner surface scrolls if needed.
     const mobileCardShellClass =
-      'max-md:h-[min(32rem,calc(100dvh-12rem))] max-md:min-h-0 max-md:shrink-0'
+      'max-md:h-[min(46rem,calc(100dvh-4.5rem))] max-md:min-h-0 max-md:shrink-0'
 
     return (
         <div
@@ -152,14 +152,12 @@ export function DiscoveryCard({ profile, onSkip, onConnect, connectButtonText = 
               style={{
                 backfaceVisibility: 'hidden',
                 WebkitBackfaceVisibility: 'hidden',
-                transform: 'translateZ(1px)'
+                transform: 'translateZ(2px) rotateY(0deg)',
+                WebkitTransform: 'translateZ(2px) rotateY(0deg)',
               }}
             >
-              <motion.div
-                whileHover={{ y: -4, scale: 1.01 }}
-                transition={{ duration: 0.2 }}
-                className="group relative flex h-full min-h-[28rem] flex-col overflow-hidden rounded-2xl border border-slate-700 bg-slate-800 shadow-xl max-md:min-h-0 sm:min-h-[30rem]"
-              >
+              {/* Plain div (no Framer hover transform) so iOS keeps preserve-3d and the back face shows correctly */}
+              <div className="group relative flex h-full min-h-[28rem] max-md:min-h-0 flex-col overflow-y-auto overscroll-y-contain rounded-2xl border border-slate-700 bg-slate-800 shadow-xl md:overflow-hidden sm:min-h-[30rem]">
             {/* Hero Match Score Section */}
             <div className="relative shrink-0 p-6 pb-4 text-center bg-gradient-to-b from-violet-600/20 to-transparent">
                 <div className="inline-flex items-center gap-2 mb-3">
@@ -185,20 +183,23 @@ export function DiscoveryCard({ profile, onSkip, onConnect, connectButtonText = 
                 {/* Harmony Score */}
                 <div className="space-y-2">
                     <div className="flex items-center justify-between gap-3 min-w-0">
-                        <div className="flex min-w-0 flex-1 items-center gap-2">
+                        <div className="flex min-w-0 flex-1 items-center gap-1">
                             <ScoreInfoPopover
                               title="Harmony score"
                               description="Measures how well your day-to-day living preferences align — cleanliness, sleep, noise, guests, shared spaces, substances, study/social balance, and home vibe."
                             >
                               <button
                                 type="button"
-                                className="flex-shrink-0 touch-manipulation rounded-lg p-1.5 text-pink-400 transition-colors hover:bg-slate-700/50 hover:text-pink-300 focus:outline-none focus:ring-2 focus:ring-indigo-500/50"
+                                className={cn(
+                                  scoreInfoIconTriggerBaseClass,
+                                  'text-pink-400 transition-colors hover:bg-slate-700/50 hover:text-pink-300',
+                                )}
                                 aria-label="What is the Harmony score? Opens explanation."
                               >
-                                <Heart className="h-4 w-4" aria-hidden />
+                                <Heart className="h-3.5 w-3.5" aria-hidden />
                               </button>
                             </ScoreInfoPopover>
-                            <span className="truncate text-sm font-medium text-slate-300">Harmony</span>
+                            <span className="min-w-0 truncate pl-0.5 text-sm font-medium text-slate-300">Harmony</span>
                         </div>
                         <span className={`flex-shrink-0 text-sm font-bold tabular-nums ${getScoreColor(harmonyScore)}`}>
                             {harmonyScore}%
@@ -217,20 +218,23 @@ export function DiscoveryCard({ profile, onSkip, onConnect, connectButtonText = 
                 {/* Context Score */}
                 <div className="space-y-2">
                     <div className="flex items-center justify-between gap-3 min-w-0">
-                        <div className="flex min-w-0 flex-1 items-center gap-2">
+                        <div className="flex min-w-0 flex-1 items-center gap-1">
                             <ScoreInfoPopover
                               title="Context score"
                               description="Measures how similar your academic context is — university, programme, and study year."
                             >
                               <button
                                 type="button"
-                                className="flex-shrink-0 touch-manipulation rounded-lg p-1.5 text-blue-400 transition-colors hover:bg-slate-700/50 hover:text-blue-300 focus:outline-none focus:ring-2 focus:ring-indigo-500/50"
+                                className={cn(
+                                  scoreInfoIconTriggerBaseClass,
+                                  'text-blue-400 transition-colors hover:bg-slate-700/50 hover:text-blue-300',
+                                )}
                                 aria-label="What is the Context score? Opens explanation."
                               >
-                                <Users className="h-4 w-4" aria-hidden />
+                                <Users className="h-3.5 w-3.5" aria-hidden />
                               </button>
                             </ScoreInfoPopover>
-                            <span className="truncate text-sm font-medium text-slate-300">Context</span>
+                            <span className="min-w-0 truncate pl-0.5 text-sm font-medium text-slate-300">Context</span>
                         </div>
                         <span className={`flex-shrink-0 text-sm font-bold tabular-nums ${getScoreColor(contextScore)}`}>
                             {contextScore}%
@@ -260,8 +264,8 @@ export function DiscoveryCard({ profile, onSkip, onConnect, connectButtonText = 
               </Button>
             </div>
 
-            {/* Compatibility Highlights — scroll on small screens when the card is height-capped */}
-            <div className="min-h-0 flex-1 overflow-y-auto overscroll-y-contain px-6 py-4 border-t border-slate-700/50">
+            {/* Highlights: desktop scrolls here; mobile scrolls the whole card surface above */}
+            <div className="border-t border-slate-700/50 px-6 py-4 max-md:flex-none md:min-h-0 md:flex-1 md:overflow-y-auto md:overscroll-y-contain">
                 <h4 className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-3">
                     Why you match
                 </h4>
@@ -299,7 +303,7 @@ export function DiscoveryCard({ profile, onSkip, onConnect, connectButtonText = 
                     )}
                 </div>
             )}
-              </motion.div>
+              </div>
             </div>
 
             {/* Back Face */}
@@ -308,11 +312,11 @@ export function DiscoveryCard({ profile, onSkip, onConnect, connectButtonText = 
               style={{
                 backfaceVisibility: 'hidden',
                 WebkitBackfaceVisibility: 'hidden',
-                transform: 'rotateY(180deg) translateZ(1px)',
-                WebkitTransform: 'rotateY(180deg) translateZ(1px)'
+                transform: 'rotateY(180deg) translateZ(2px)',
+                WebkitTransform: 'rotateY(180deg) translateZ(2px)',
               }}
             >
-              <div className="flex h-full w-full min-h-0 flex-col overflow-hidden rounded-2xl border border-slate-700 bg-slate-800 p-5 shadow-xl min-h-[28rem] max-md:min-h-0 sm:min-h-[30rem] sm:p-6">
+              <div className="flex h-full w-full min-h-[28rem] max-md:min-h-0 flex-col overflow-y-auto overscroll-y-contain rounded-2xl border border-slate-700 bg-slate-800 p-5 shadow-xl md:overflow-hidden sm:min-h-[30rem] sm:p-6">
                 {/* User Details Heading */}
                 <div className="mb-4 shrink-0">
                   <h3 className="text-xl font-semibold text-slate-100 mb-1">User Details</h3>
@@ -345,20 +349,23 @@ export function DiscoveryCard({ profile, onSkip, onConnect, connectButtonText = 
                     {harmonyScore > 0 && (
                       <div className="space-y-2 min-w-0">
                         <div className="flex items-center justify-between gap-1.5 min-w-0">
-                          <div className="flex min-w-0 flex-1 items-center gap-1.5">
+                          <div className="flex min-w-0 flex-1 items-center gap-1">
                             <ScoreInfoPopover
                               title="Harmony score"
                               description="Measures how well your day-to-day living preferences align — cleanliness, sleep, noise, guests, shared spaces, substances, study/social balance, and home vibe."
                             >
                               <button
                                 type="button"
-                                className="flex-shrink-0 touch-manipulation rounded-lg p-1 text-pink-400 transition-colors hover:bg-slate-700/50 hover:text-pink-300 focus:outline-none focus:ring-2 focus:ring-indigo-500/50"
+                                className={cn(
+                                  scoreInfoIconTriggerBaseClass,
+                                  'text-pink-400 transition-colors hover:bg-slate-700/50 hover:text-pink-300',
+                                )}
                                 aria-label="What is the Harmony score? Opens explanation."
                               >
-                                <Heart className="h-4 w-4" aria-hidden />
+                                <Heart className="h-3.5 w-3.5" aria-hidden />
                               </button>
                             </ScoreInfoPopover>
-                            <span className="truncate text-sm font-medium text-slate-300">Harmony</span>
+                            <span className="min-w-0 truncate pl-0.5 text-sm font-medium text-slate-300">Harmony</span>
                           </div>
                           <span className={`flex-shrink-0 text-sm font-semibold tabular-nums ${getScoreColor(harmonyScore)}`}>
                             {harmonyScore}%
@@ -376,20 +383,23 @@ export function DiscoveryCard({ profile, onSkip, onConnect, connectButtonText = 
                     {contextScore > 0 && (
                       <div className="space-y-2 min-w-0">
                         <div className="flex items-center justify-between gap-1.5 min-w-0">
-                          <div className="flex min-w-0 flex-1 items-center gap-1.5">
+                          <div className="flex min-w-0 flex-1 items-center gap-1">
                             <ScoreInfoPopover
                               title="Context score"
                               description="Measures how similar your academic context is — university, programme, and study year."
                             >
                               <button
                                 type="button"
-                                className="flex-shrink-0 touch-manipulation rounded-lg p-1 text-blue-400 transition-colors hover:bg-slate-700/50 hover:text-blue-300 focus:outline-none focus:ring-2 focus:ring-indigo-500/50"
+                                className={cn(
+                                  scoreInfoIconTriggerBaseClass,
+                                  'text-blue-400 transition-colors hover:bg-slate-700/50 hover:text-blue-300',
+                                )}
                                 aria-label="What is the Context score? Opens explanation."
                               >
-                                <Users className="h-4 w-4" aria-hidden />
+                                <Users className="h-3.5 w-3.5" aria-hidden />
                               </button>
                             </ScoreInfoPopover>
-                            <span className="truncate text-sm font-medium text-slate-300">Context</span>
+                            <span className="min-w-0 truncate pl-0.5 text-sm font-medium text-slate-300">Context</span>
                           </div>
                           <span className={`flex-shrink-0 text-sm font-semibold tabular-nums ${getScoreColor(contextScore)}`}>
                             {contextScore}%
@@ -438,17 +448,20 @@ export function DiscoveryCard({ profile, onSkip, onConnect, connectButtonText = 
                           className="p-2.5 rounded-lg border border-slate-700 bg-slate-900/30"
                         >
                           <div className="flex items-center justify-between mb-2 gap-2">
-                            <div className="flex items-center gap-2 flex-1 min-w-0">
+                            <div className="flex min-w-0 flex-1 items-center gap-1">
                               <ScoreInfoPopover title={label} description={description}>
                                 <button
                                   type="button"
-                                  className="flex-shrink-0 touch-manipulation rounded-lg p-1 text-slate-400 transition-colors hover:bg-slate-800/80 hover:text-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500/50"
+                                  className={cn(
+                                    scoreInfoIconTriggerBaseClass,
+                                    'text-slate-400 transition-colors hover:bg-slate-800/80 hover:text-slate-200',
+                                  )}
                                   aria-label={`${label}: open explanation (tap outside popup to close)`}
                                 >
-                                  <Icon className="h-4 w-4" aria-hidden />
+                                  <Icon className="h-3.5 w-3.5" aria-hidden />
                                 </button>
                               </ScoreInfoPopover>
-                              <span className="text-sm font-medium text-slate-100 truncate whitespace-nowrap">
+                              <span className="min-w-0 truncate whitespace-nowrap pl-0.5 text-sm font-medium text-slate-100">
                                 {label}
                               </span>
                             </div>

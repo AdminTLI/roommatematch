@@ -24,6 +24,8 @@ import {
 } from '@/components/ui/dialog'
 import { showErrorToast, showSuccessToast } from '@/lib/toast'
 import type { MatchSuggestion } from '@/lib/matching/types'
+import { scoreInfoIconTriggerBaseClass } from '@/components/compatibility/score-info-popover'
+import { cn } from '@/lib/utils'
 
 interface SuggestionCardProps {
   suggestion: MatchSuggestion
@@ -481,18 +483,27 @@ export function SuggestionCard({
             {harmonyScore !== null && (
               <div className="space-y-2">
                 <div className="flex items-center justify-between">
-                  <div className="flex flex-nowrap items-center gap-2 min-w-0">
-                    <Heart className="w-4 h-4 text-pink-500 flex-shrink-0" />
-                    <span className="text-sm font-medium text-zinc-700 dark:text-zinc-300 whitespace-nowrap">Harmony</span>
+                  <div className="flex min-w-0 flex-nowrap items-center gap-1">
+                    <Heart className="h-4 w-4 shrink-0 text-pink-500" />
+                    <span className="whitespace-nowrap pl-0.5 text-sm font-medium text-zinc-700 dark:text-zinc-300">Harmony</span>
                     <TooltipProvider>
                       <Tooltip>
                         <TooltipTrigger asChild>
-                          <button type="button" className="flex-shrink-0 cursor-help rounded-full p-0.5 text-zinc-500 dark:text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-300 focus:outline-none focus:ring-2 focus:ring-indigo-500/50">
+                          <button
+                            type="button"
+                            className={cn(
+                              scoreInfoIconTriggerBaseClass,
+                              'cursor-help text-zinc-500 hover:bg-zinc-100 hover:text-zinc-700 dark:text-zinc-400 dark:hover:bg-zinc-800 dark:hover:text-zinc-300',
+                            )}
+                          >
                             <Info className="h-3.5 w-3.5" aria-hidden />
                             <span className="sr-only">What is Harmony Score?</span>
                           </button>
                         </TooltipTrigger>
-                        <TooltipContent side="top" className="max-w-xs bg-zinc-900 dark:bg-zinc-800 border-zinc-700 text-zinc-100 text-xs">
+                        <TooltipContent
+                          side="top"
+                          className="max-w-xs border-zinc-700 bg-zinc-900 text-xs text-zinc-100 dark:bg-zinc-800"
+                        >
                           <p>Measures how well your day-to-day living preferences align - cleanliness, sleep, noise, guests, shared spaces, substances, study/social balance, and home vibe.</p>
                         </TooltipContent>
                       </Tooltip>
@@ -514,18 +525,27 @@ export function SuggestionCard({
             {contextScore !== null && (
               <div className="space-y-2">
                 <div className="flex items-center justify-between">
-                  <div className="flex flex-nowrap items-center gap-2 min-w-0">
-                    <Users className="w-4 h-4 text-blue-500 flex-shrink-0" />
-                    <span className="text-sm font-medium text-zinc-700 dark:text-zinc-300 whitespace-nowrap">Context</span>
+                  <div className="flex min-w-0 flex-nowrap items-center gap-1">
+                    <Users className="h-4 w-4 shrink-0 text-blue-500" />
+                    <span className="whitespace-nowrap pl-0.5 text-sm font-medium text-zinc-700 dark:text-zinc-300">Context</span>
                     <TooltipProvider>
                       <Tooltip>
                         <TooltipTrigger asChild>
-                          <button type="button" className="flex-shrink-0 cursor-help rounded-full p-0.5 text-zinc-500 dark:text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-300 focus:outline-none focus:ring-2 focus:ring-indigo-500/50">
+                          <button
+                            type="button"
+                            className={cn(
+                              scoreInfoIconTriggerBaseClass,
+                              'cursor-help text-zinc-500 hover:bg-zinc-100 hover:text-zinc-700 dark:text-zinc-400 dark:hover:bg-zinc-800 dark:hover:text-zinc-300',
+                            )}
+                          >
                             <Info className="h-3.5 w-3.5" aria-hidden />
                             <span className="sr-only">What is Context Score?</span>
                           </button>
                         </TooltipTrigger>
-                        <TooltipContent side="top" className="max-w-xs bg-zinc-900 dark:bg-zinc-800 border-zinc-700 text-zinc-100 text-xs">
+                        <TooltipContent
+                          side="top"
+                          className="max-w-xs border-zinc-700 bg-zinc-900 text-xs text-zinc-100 dark:bg-zinc-800"
+                        >
                           <p>Measures how similar your academic context is - university, programme, and study year.</p>
                         </TooltipContent>
                       </Tooltip>
@@ -657,20 +677,29 @@ export function SuggestionCard({
                       key={dimensionKey} 
                       className="p-4 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900"
                     >
-                      <div className="flex items-start justify-between mb-2">
-                        <div className="flex items-center gap-2 flex-1 min-w-0">
-                          <Icon className="w-4 h-4 text-zinc-500 dark:text-zinc-400 flex-shrink-0" />
-                          <span className="text-sm font-medium text-zinc-700 dark:text-zinc-300 truncate">
+                      <div className="mb-2 flex items-start justify-between">
+                        <div className="flex min-w-0 flex-1 items-center gap-1">
+                          <Icon className="h-4 w-4 shrink-0 text-zinc-500 dark:text-zinc-400" />
+                          <span className="min-w-0 truncate pl-0.5 text-sm font-medium text-zinc-700 dark:text-zinc-300">
                             {label}
                           </span>
                           {description && (
                             <TooltipProvider>
                               <Tooltip>
                                 <TooltipTrigger asChild>
-                                  <Info className="w-3.5 h-3.5 text-zinc-400 dark:text-zinc-500 cursor-help flex-shrink-0" />
+                                  <button
+                                    type="button"
+                                    className={cn(
+                                      scoreInfoIconTriggerBaseClass,
+                                      'cursor-help text-zinc-400 hover:bg-zinc-100 hover:text-zinc-600 dark:text-zinc-500 dark:hover:bg-zinc-800 dark:hover:text-zinc-300',
+                                    )}
+                                    aria-label={`${label}: more information`}
+                                  >
+                                    <Info className="h-3.5 w-3.5" aria-hidden />
+                                  </button>
                                 </TooltipTrigger>
                                 <TooltipContent>
-                                  <p className="text-xs max-w-xs">{description}</p>
+                                  <p className="max-w-xs text-xs">{description}</p>
                                 </TooltipContent>
                               </Tooltip>
                             </TooltipProvider>

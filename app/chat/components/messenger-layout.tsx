@@ -234,6 +234,7 @@ export function MessengerLayout({ user, initialChatId, initialOtherUserId, onNew
             onBack={handleBackToList}
             partnerName={chatInfo.partnerName}
             partnerAvatar={chatInfo.partnerAvatar}
+            hideComposer={!isDesktop && rightPaneOpen}
           />
         ) : (
           <div className="flex-1 flex items-center justify-center bg-white dark:bg-gray-900">
@@ -287,11 +288,11 @@ export function MessengerLayout({ user, initialChatId, initialOtherUserId, onNew
         </div>
       )}
 
-      {/* Mobile Profile Pane - Overlay */}
+      {/* Mobile Profile Pane - Overlay (z above composer z-[60]) */}
       {!isDesktop && selectedChatId && rightPaneOpen && (
-        <div className="fixed inset-0 z-50 lg:hidden bg-black/50" onClick={handleToggleRightPane}>
+        <div className="fixed inset-0 z-[100] lg:hidden bg-black/50" onClick={handleToggleRightPane}>
           <div
-            className="mobile-profile-sheet-height absolute inset-x-0 top-0 flex w-full flex-col bg-gradient-to-br from-purple-950 via-indigo-950 to-blue-950 dark:from-purple-950 dark:via-indigo-950 dark:to-blue-950"
+            className="absolute inset-0 flex min-h-0 w-full flex-col bg-gradient-to-br from-purple-950 via-indigo-950 to-blue-950 dark:from-purple-950 dark:via-indigo-950 dark:to-blue-950"
             onClick={(e) => e.stopPropagation()}
           >
             <MessengerProfilePane
