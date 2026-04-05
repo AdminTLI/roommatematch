@@ -53,7 +53,7 @@ const copy: Record<
     heroTitleGradient: 'Founding Circle.',
     heroTitleAfter: '',
     heroLead:
-      "We're revolutionizing how students and young professionals find roommates. Join our exclusive, invite-only Beta to find your perfect match before the public launch — and help us build the platform you actually want to use.",
+      "We're revolutionizing how students and young professionals find roommates. Join our exclusive, invite-only Beta to find your perfect match before the public launch - and help us build the platform you actually want to use.",
     ctaPrimary: 'Apply for Beta Access',
     stat1Title: 'First wave',
     stat1Body: 'Early testers get direct founder access and the most influence.',
@@ -166,7 +166,7 @@ const copy: Record<
         icon: Wrench,
         title: 'Het is work in progress',
         description:
-          'Je komt bugs, ontbrekende features en rare glitches tegen. Dat hoort erbij — jouw feedback helpt ons verbeteren.',
+          'Je komt bugs, ontbrekende features en rare glitches tegen. Dat hoort erbij - jouw feedback helpt ons verbeteren.',
       },
       {
         icon: Sparkles,

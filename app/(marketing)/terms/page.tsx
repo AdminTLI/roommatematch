@@ -42,7 +42,7 @@ const content: Record<
     sections: [
       {
         id: 'tldr',
-        title: '0. TL;DR — Summary (not legally binding)',
+        title: '0. TL;DR - Summary (not legally binding)',
         description:
           'This is a friendly overview. The numbered sections below are the legally binding terms.',
         table: {
@@ -166,7 +166,7 @@ const content: Record<
         bullets: [
           'Refrain from publicly sharing screenshots, recordings, or detailed descriptions of beta features.',
           'Do not share your beta invite link with third parties unless we have explicitly said you may.',
-          'Let us know if you accidentally disclose anything — we won’t hold it against you.',
+          'Let us know if you accidentally disclose anything - we won’t hold it against you.',
         ],
         note:
           'This is a courtesy request, not a binding NDA. We appreciate your discretion.',
@@ -201,7 +201,7 @@ const content: Record<
           'Domu Match does not store raw ID images or biometric templates; we receive only the verification outcome and limited attributes.',
           'Verification may include government ID, selfie/video, and (for students) proof of student status.',
           'Refusing or failing verification may limit features or lead to suspension.',
-          'No ghost, AI-generated, or borrowed identities — using AI faces or another person’s documents is a material breach.',
+          'No ghost, AI-generated, or borrowed identities - using AI faces or another person’s documents is a material breach.',
         ],
       },
       {

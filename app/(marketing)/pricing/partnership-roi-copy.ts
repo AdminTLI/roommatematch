@@ -49,7 +49,7 @@ export const partnershipRoiCopy: Record<Locale, PartnershipRoiCopy> = {
     statAdminLabel: 'Admin time lost to mediation.',
     statAttritionLabel: 'Driver of first-year attrition.',
     sectionPartnershipsTitle: 'University partnerships',
-    sectionPartnershipsSubtitle: 'Pilot or campus license — choose what fits your rollout.',
+    sectionPartnershipsSubtitle: 'Pilot or campus license - choose what fits your rollout.',
     tabFlexible: 'Flexible Pilot',
     tabCampus: 'Campus License',
     flexibleIntro:
@@ -103,7 +103,7 @@ export const partnershipRoiCopy: Record<Locale, PartnershipRoiCopy> = {
     statAdminLabel: 'Admin-tijd kwijt aan bemiddeling.',
     statAttritionLabel: 'Belangrijkste driever van eerstejaars-uitval.',
     sectionPartnershipsTitle: 'Universiteitspartnerships',
-    sectionPartnershipsSubtitle: 'Pilot of campuslicentie — kies wat bij je uitrol past.',
+    sectionPartnershipsSubtitle: 'Pilot of campuslicentie - kies wat bij je uitrol past.',
     tabFlexible: 'Flexibele pilot',
     tabCampus: 'Campuslicentie',
     flexibleIntro:

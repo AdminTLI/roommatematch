@@ -229,7 +229,7 @@ export const content: Record<Locale, FeaturesForStudentsContent> = {
         {
           title: 'De Geest',
           description:
-            "Je woont samen met iemand die je amper ziet—totdat rekeningen, chores of gasten ineens gedoe worden.",
+            "Je woont samen met iemand die je amper ziet - totdat rekeningen, chores of gasten ineens gedoe worden.",
         },
       ],
     },

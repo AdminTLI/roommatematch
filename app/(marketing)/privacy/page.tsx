@@ -191,7 +191,7 @@ export default function PrivacyPage() {
                 <ul className="list-disc pl-6 text-slate-700 mb-6 space-y-1">
                   <li>Crash reports and error logs (automatically captured when something breaks).</li>
                   <li>
-                    Session recordings or heatmaps (if enabled) — you will be informed at sign-up and can opt out
+                    Session recordings or heatmaps (if enabled) - you will be informed at sign-up and can opt out
                     in Settings.
                   </li>
                   <li>In-app feedback submissions and bug reports you submit voluntarily.</li>
@@ -224,7 +224,7 @@ export default function PrivacyPage() {
                 <ul className="list-disc pl-6 text-slate-700 mb-4 space-y-1">
                   <li>Device type, OS, browser type, IP address, timestamps, pages viewed.</li>
                   <li>
-                    Approximate location (country/region) derived from IP — used for security and anonymized
+                    Approximate location (country/region) derived from IP - used for security and anonymized
                     analytics only.
                   </li>
                 </ul>
@@ -250,28 +250,28 @@ export default function PrivacyPage() {
                         <td className="px-4 py-3 align-top">
                           Create account, suggesting roommates, enabling chat
                         </td>
-                        <td className="px-4 py-3 align-top">Art. 6(1)(b) — Contract</td>
+                        <td className="px-4 py-3 align-top">Art. 6(1)(b) - Contract</td>
                       </tr>
                       <tr>
                         <td className="px-4 py-3 align-top">Deep lifestyle profiling</td>
                         <td className="px-4 py-3 align-top">
-                          200-questionnaire — Harmony/Context scores
+                          200-questionnaire - Harmony/Context scores
                         </td>
-                        <td className="px-4 py-3 align-top">Art. 6(1)(a) + Art. 9(2)(a) — Consent</td>
+                        <td className="px-4 py-3 align-top">Art. 6(1)(a) + Art. 9(2)(a) - Consent</td>
                       </tr>
                       <tr>
                         <td className="px-4 py-3 align-top">Beta testing &amp; product improvement</td>
                         <td className="px-4 py-3 align-top">
                           Bug logs, crash reports, session data, feedback forms, usability surveys
                         </td>
-                        <td className="px-4 py-3 align-top">Art. 6(1)(a) — Consent (at sign-up)</td>
+                        <td className="px-4 py-3 align-top">Art. 6(1)(a) - Consent (at sign-up)</td>
                       </tr>
                       <tr>
                         <td className="px-4 py-3 align-top">Platform security &amp; fraud prevention</td>
                         <td className="px-4 py-3 align-top">
                           ID verification, abuse reporting, incident logs
                         </td>
-                        <td className="px-4 py-3 align-top">Art. 6(1)(f) — Legitimate interest</td>
+                        <td className="px-4 py-3 align-top">Art. 6(1)(f) - Legitimate interest</td>
                       </tr>
                       <tr>
                         <td className="px-4 py-3 align-top">University analytics</td>
@@ -287,7 +287,7 @@ export default function PrivacyPage() {
                         <td className="px-4 py-3 align-top">
                           Responding to lawful authority requests, record-keeping obligations
                         </td>
-                        <td className="px-4 py-3 align-top">Art. 6(1)(c) — Legal obligation</td>
+                        <td className="px-4 py-3 align-top">Art. 6(1)(c) - Legal obligation</td>
                       </tr>
                     </tbody>
                   </table>
@@ -349,8 +349,8 @@ export default function PrivacyPage() {
                 </h2>
                 <h3 className="text-xl font-semibold text-slate-900 mb-2">How the matching algorithm works</h3>
                 <ul className="list-disc pl-6 text-slate-700 mb-4 space-y-1">
-                  <li>Harmony score — based on lifestyle answers.</li>
-                  <li>Context score — based on academic/practical context.</li>
+                  <li>Harmony score - based on lifestyle answers.</li>
+                  <li>Context score - based on academic/practical context.</li>
                   <li>These combine into a compatibility score used to rank suggested profiles.</li>
                 </ul>
                 <p className="text-slate-700 mb-4">
@@ -535,7 +535,7 @@ export default function PrivacyPage() {
                 <ul className="list-disc pl-6 text-slate-700 mb-4 space-y-1">
                   <li>Encryption in transit (TLS/HTTPS) and at rest for all databases and storage.</li>
                   <li>
-                    Strict access controls — only authorized personnel with genuine need can access personal data.
+                    Strict access controls - only authorized personnel with genuine need can access personal data.
                   </li>
                   <li>Regular updates, monitoring, and incident response procedures.</li>
                   <li>Security by design and by default, in line with the 2026 Cybersecurity Act (Cbw).</li>

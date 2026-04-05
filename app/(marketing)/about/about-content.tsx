@@ -7,11 +7,40 @@ import { Timeline } from '@/components/about/timeline'
 import { EvidenceTile } from '@/components/about/evidence-tile'
 import { CheckCircle2, Lightbulb, Shield, BookOpen, Target, GraduationCap, User } from 'lucide-react'
 import Link from 'next/link'
+import Image from 'next/image'
 import { motion, useReducedMotion } from 'framer-motion'
+import { useState } from 'react'
 import { cn } from '@/lib/utils'
 
 const GLASS =
   'bg-white/60 backdrop-blur-xl border border-white/50 shadow-[0_8px_30px_rgb(0,0,0,0.04)] rounded-3xl'
+
+const FOUNDER_AVATAR_FRAME =
+  'relative h-12 w-12 min-h-12 min-w-12 flex-shrink-0 overflow-hidden rounded-full border border-indigo-200/80 bg-indigo-50/80'
+
+function FounderAvatar({ portraitSrc }: { portraitSrc?: string }) {
+  const [failed, setFailed] = useState(false)
+  if (!portraitSrc || failed) {
+    return (
+      <div className={cn(FOUNDER_AVATAR_FRAME, 'flex items-center justify-center')}>
+        <User className="h-6 w-6 flex-shrink-0 text-indigo-700" aria-hidden />
+      </div>
+    )
+  }
+  return (
+    <div className={FOUNDER_AVATAR_FRAME}>
+      <Image
+        src={portraitSrc}
+        alt=""
+        fill
+        className="object-cover"
+        sizes="48px"
+        onError={() => setFailed(true)}
+        aria-hidden
+      />
+    </div>
+  )
+}
 
 const content = {
   en: {
@@ -26,13 +55,25 @@ const content = {
       heading: 'Our Story',
       subheading: "How we started, what drives us, and where we're headed.",
       paragraphs: [
-        "University is supposed to be the most transformative chapter of your life, yet for millions of students, the excitement of an acceptance letter quickly fades into the anxiety of a housing lottery. We have seen this story play out too many times: brilliant students struggling to pass exams not because the coursework was too hard, but because their home environment was draining their energy. Domu Match was born from this silence - from the realization that while universities were excellent at teaching students what to learn, no one was helping them decide who to live with. We realized that in the high-stakes world of higher education, a compatible roommate isn't just a convenience; they are the difference between feeling isolated and feeling supported.",
-        "We refused to accept that your mental health should be left to chance, so we built the infrastructure to change it. By replacing random assignment with compatibility science, we help students and young professionals find homes based on shared living values, daily rhythms, and mutual respect rather than just move-in dates. We bridge the gap between strangers, turning the daunting process of \"finding a room\" into the meaningful experience of building a micro-community. Our platform verifies every user and prioritizes privacy by design, ensuring that the technology works quietly in the background to create a foundation of trust before you ever unlock the front door.",
-        "This is about more than just a place to sleep; it is about reclaiming your home as a sanctuary. We believe that who you live with determines who you become during these critical years, which is why we are partnering with forward-thinking universities to make wellbeing-focused housing the new standard. Whether you are an international student navigating a new culture or a first-year leaving home for the first time, our mission remains the same: to ensure that when you close your books at the end of the day, you are coming home to a place where you can truly recharge, thrive, and be yourself."
+        "Whether you are stepping onto a university campus for the first time or starting your career as a young professional, these years are supposed to be transformative. Yet, the excitement of an acceptance letter or a new job offer quickly fades into the anxiety of a housing lottery. We have seen this story play out too many times. Brilliant students struggling to pass exams, and driven professionals burning out at work - not because the tasks were too hard, but because a toxic home environment was draining their energy. Domu Match was born from this realization. In the high-stakes worlds of higher education and early careers, a compatible flatmate isn't just a convenience. In fact, they are the difference between feeling isolated and feeling supported.",
+        "We refused to accept that your mental health and daily peace should be left to chance, so we built the infrastructure to change it. By replacing random assignment and endless scrolling with compatibility science, we help students and young professionals find homes based on shared living values, daily rhythms - like study routines versus 9-to-5 work schedules - and mutual respect. We bridge the gap between strangers, turning the daunting process of \"finding a room\" into the meaningful experience of building a micro-community. Because we separate students and young professionals into dedicated matching pools and verify every user with a government ID, our technology works quietly in the background to create a foundation of trust before you ever unlock the front door.",
+        "This is about more than just a place to sleep. It is about reclaiming your home as a sanctuary. We believe that who you live with shapes how you grow during these critical years, which is why we are partnering with forward-thinking universities and housing agencies to make wellbeing-focused living the new standard. Whether you are an international student navigating a new culture, a first-year leaving home, or a young professional seeking a peaceful retreat after a long workday, our mission remains the same: to ensure that when you close your books or log off for the day, you are coming home to a place where you can truly recharge, thrive, and be yourself."
       ],
       founders: [
-        { name: 'Danish Samsudin', title: 'Founder and Product Developer', quote: "As a former President of ESN Breda, I've seen how much universities are doing to prioritise their students well-being and mental health. It takes an entire 'behind the scenes' team to create a meaningful impact towards students, especially internationals. But I know I could contribute not just more, but better. After just a few months, I truly believe we now have what it takes to support HEI's with their long term goals and objectives." },
-        { name: 'Vitor Mello', title: 'Co-Founder and Sales and Marketing', quote: "I watched too many brilliant friends lose their spark simply because they were living in toxic environments. I refused to accept that 'bad roommates' are just a part of student life. We built Domu Match to prove that peace of mind isn't luck - it's a standard we can guarantee. I'm incredibly proud that we finally have the tool I wish my friends had years ago." }
+        {
+          name: 'Danish Samsudin',
+          role: 'Co-Founder',
+          subtitle: 'Product & Strategy',
+          portraitSrc: '/images/about/DanishLinkedInPP.jpg',
+          quote: "As a former President of ESN Breda, I've seen how much universities are doing to prioritise their students well-being and mental health. It takes an entire 'behind the scenes' team to create a meaningful impact towards students, especially internationals. But I know I could contribute not just more, but better. After just a few months, I truly believe we now have what it takes to support HEI's with their long term goals and objectives.",
+        },
+        {
+          name: 'Vitor Mello',
+          role: 'Co-Founder',
+          subtitle: 'Sales & Marketing',
+          portraitSrc: '/images/about/VitorLinkedInPP.jpg',
+          quote: "I watched too many brilliant friends lose their spark simply because they were living in toxic environments. I refused to accept that 'bad roommates' are just a part of student life. We built Domu Match to prove that peace of mind isn't luck - it's a standard we can guarantee. I'm incredibly proud that we finally have the tool I wish my friends had years ago.",
+        },
       ]
     },
     timeline: [
@@ -145,8 +186,20 @@ const content = {
         'Ons doel is eenvoudig: studenthuisvesting veiliger, blijer en beter passend maken. Eén match tegelijk.'
       ],
       founders: [
-        { name: 'Danish Samsudin', title: 'Oprichter en ontwikkelaar', quote: 'We zijn met Domu Match gestart omdat we te veel studenten zagen worstelen met huisgenoten. Onze missie: met wetenschap en technologie matches maken die echt standhouden.' },
-        { name: 'Vitor Mello', title: 'Medeoprichter en verkoop en marketing', quote: 'i am a placeholder. don\'t forget to fill me out' }
+        {
+          name: 'Danish Samsudin',
+          role: 'Medeoprichter',
+          subtitle: 'Product & strategie',
+          portraitSrc: '/images/about/DanishLinkedInPP.jpg',
+          quote: 'We zijn met Domu Match gestart omdat we te veel studenten zagen worstelen met huisgenoten. Onze missie: met wetenschap en technologie matches maken die echt standhouden.',
+        },
+        {
+          name: 'Vitor Mello',
+          role: 'Medeoprichter',
+          subtitle: 'Verkoop & marketing',
+          portraitSrc: '/images/about/VitorLinkedInPP.jpg',
+          quote: "i am a placeholder. don't forget to fill me out",
+        },
       ]
     },
     timeline: [
@@ -329,12 +382,11 @@ export function AboutContent() {
                     {t.story.founders.map((founder, index) => (
                       <div key={founder.name}>
                         <div className="flex items-center gap-3 mb-4">
-                          <div className="h-12 w-12 min-h-12 min-w-12 flex-shrink-0 rounded-full bg-indigo-50/80 border border-indigo-200/80 flex items-center justify-center">
-                            <User className="h-6 w-6 flex-shrink-0 text-indigo-700" aria-hidden />
-                          </div>
+                          <FounderAvatar portraitSrc={founder.portraitSrc} />
                           <div>
                             <h3 className="text-lg font-semibold text-slate-800">{founder.name}</h3>
-                            <p className="text-sm text-slate-600">{founder.title}</p>
+                            <p className="text-sm text-slate-600">{founder.role}</p>
+                            <p className="text-sm text-slate-600">{founder.subtitle}</p>
                           </div>
                         </div>
                         <p className="text-sm text-slate-600 leading-relaxed">

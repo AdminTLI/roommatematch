@@ -132,7 +132,7 @@ export default function BetaTermsPage() {
                   explicitly said you may.
                 </li>
                 <li>
-                  Let us know if you accidentally disclose anything — we won’t hold it
+                  Let us know if you accidentally disclose anything - we won’t hold it
                   against you.
                 </li>
               </ul>

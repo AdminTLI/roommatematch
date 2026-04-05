@@ -135,7 +135,7 @@ export const learnPageCopy: Record<Locale, LearnPageStrings> = {
   nl: {
     heroTitle: 'Minder conflicten. Meer tevredenheid. Minder druk op teams.',
     heroSub:
-      'Domu Match helpt universiteiten veiligere, beter passende woonervaringen te bieden — met minder administratieve last en hogere studenttevredenheid.',
+      'Domu Match helpt universiteiten veiligere, beter passende woonervaringen te bieden - met minder administratieve last en hogere studenttevredenheid.',
     bookPilot: 'Plan een pilot',
     viewDemo: 'Bekijk demo',
     outcomesTitle: 'Aantoonbare resultaten',
@@ -204,7 +204,7 @@ export const learnPageCopy: Record<Locale, LearnPageStrings> = {
     ],
     savingsTitle: 'Wat kan betere huisvesting voor je begroting betekenen?',
     savingsSub:
-      'Woonconflict is een belangrijke driver van eerstejaars-uitval. Een klein deel extra behoud kan oplopen tot aanzienlijke omzet — en betere studentuitkomsten.',
+      'Woonconflict is een belangrijke driver van eerstejaars-uitval. Een klein deel extra behoud kan oplopen tot aanzienlijke omzet - en betere studentuitkomsten.',
     statIntl: 'Gem. verlies per uitvallende internationale student',
     statAttrition: 'Belangrijkste reden eerstejaars-uitval',
     statRetention: 'Voorzichtige retentiewinst door betere matching',

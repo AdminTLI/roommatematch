@@ -112,7 +112,7 @@ export const faqMarketingNl: FaqMarketingCategory[] = [
       {
         question: 'Kan ik videobellen voordat we afspreken?',
         answer:
-          'Ja. Je kunt veilig videobellen in het platform — handig voor internationale studenten voordat je elkaar live ontmoet.',
+          'Ja. Je kunt veilig videobellen in het platform - handig voor internationale studenten voordat je elkaar live ontmoet.',
       },
       {
         question: 'Wat moet ik vragen aan potentiële huisgenoten?',

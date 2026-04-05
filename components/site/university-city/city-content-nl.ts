@@ -131,12 +131,12 @@ export const cityContentNl: Record<CityKey, CityContent> = {
       {
         question: 'Wat is de gemiddelde huur voor studentenkamers in Rotterdam?',
         answer:
-          'Meestal €350–€650 per maand — betaalbaarder dan Amsterdam. Kralingen en Noord zijn populair.',
+          'Meestal €350–€650 per maand - betaalbaarder dan Amsterdam. Kralingen en Noord zijn populair.',
       },
       {
         question: 'Met welke Rotterdamse instellingen werkt Domu Match?',
         answer:
-          'Met EUR, Hogeschool Rotterdam, Inholland Rotterdam en Codarts — voor passende huisgenoten binnen elke instelling.',
+          'Met EUR, Hogeschool Rotterdam, Inholland Rotterdam en Codarts - voor passende huisgenoten binnen elke instelling.',
       },
       {
         question: 'Welke buurten zijn populair bij studenten in Rotterdam?',
@@ -328,7 +328,7 @@ export const cityContentNl: Record<CityKey, CityContent> = {
       {
         question: 'Met welke Eindhovense instellingen werkt Domu Match?',
         answer:
-          'Met TU/e en Fontys — voor passende huisgenoten in de regio.',
+          'Met TU/e en Fontys - voor passende huisgenoten in de regio.',
       },
       {
         question: 'Welke buurten zijn populair bij studenten in Eindhoven?',
@@ -447,7 +447,7 @@ export const cityContentNl: Record<CityKey, CityContent> = {
       {
         question: 'Met welke instelling werkt Domu Match in Leiden?',
         answer:
-          'Met Universiteit Leiden — alle faculteiten kunnen via Domu Match passende huisgenoten vinden.',
+          'Met Universiteit Leiden - alle faculteiten kunnen via Domu Match passende huisgenoten vinden.',
       },
       {
         question: 'Welke buurten zijn populair bij studenten in Leiden?',

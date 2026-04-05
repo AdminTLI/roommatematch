@@ -77,7 +77,7 @@ export default function Page() {
         </button>
 
         {hasSentLog ? (
-          <p className="success">Test log sent — check Sentry Logs.</p>
+          <p className="success">Test log sent - check Sentry Logs.</p>
         ) : (
           <div className="success_placeholder" />
         )}

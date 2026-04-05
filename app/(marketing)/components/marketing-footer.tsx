@@ -23,7 +23,7 @@ const copy: Record<
 > = {
   en: {
     brandBlurb:
-      'From strangers to roommates — the safest way in the Netherlands. ID-verified, compatibility-first for students and young professionals.',
+      'From strangers to roommates - the safest way in the Netherlands. ID-verified, compatibility-first for students and young professionals.',
     sections: [
       {
         title: 'Product',
@@ -74,7 +74,7 @@ const copy: Record<
   },
   nl: {
     brandBlurb:
-      'Van vreemden naar huisgenoten — op de veiligste manier in Nederland. ID-geverifieerd, compatibiliteit eerst voor studenten en young professionals.',
+      'Van vreemden naar huisgenoten - op de veiligste manier in Nederland. ID-geverifieerd, compatibiliteit eerst voor studenten en young professionals.',
     sections: [
       {
         title: 'Product',
