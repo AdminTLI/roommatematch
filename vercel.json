@@ -4,6 +4,11 @@
   "installCommand": "npm install",
   "cleanUrls": true,
   "trailingSlash": false,
+  "functions": {
+    "api/index.py": {
+      "maxDuration": 60
+    }
+  },
   "rewrites": [
     {
       "source": "/api/domu/:path*",

@@ -1,8 +1,6 @@
 import { GoogleGenAI } from '@google/genai'
 import type { SupabaseClient } from '@supabase/supabase-js'
-
-/** Cost-focused model; keep in sync with Domu chat + Python API. */
-export const GEMINI_FLASH_MODEL = 'gemini-2.5-flash' as const
+import { getGeminiModel } from '@/lib/gemini-model'
 
 export const GEMINI_MAX_OUTPUT_TOKENS = 350
 
@@ -103,7 +101,7 @@ export async function generateMatchExplanationWithGemini(score: ScoreRow): Promi
   try {
     const ai = new GoogleGenAI({ apiKey })
     const response = await ai.models.generateContent({
-      model: GEMINI_FLASH_MODEL,
+      model: getGeminiModel(),
       contents: [{ role: 'user', parts: [{ text: buildMatchExplanationPrompt(score) }] }],
       config: {
         maxOutputTokens: GEMINI_MAX_OUTPUT_TOKENS,

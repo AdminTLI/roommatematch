@@ -2,15 +2,19 @@ import { NextResponse } from 'next/server'
 import { GoogleGenAI } from '@google/genai'
 import { createServiceClient } from '@/lib/supabase/service'
 import { appendSourcesSection, extractGroundingSources } from '@/lib/domu-ai/grounding-sources'
+import { getGeminiModel } from '@/lib/gemini-model'
 import { buildDomuSystemInstruction } from '@/lib/domu-ai/system-prompt'
 
-/** Vercel Hobby caps server routes at ~10s; Pro can raise this in dashboard if needed. */
-export const maxDuration = 10
+/**
+ * Allow Gemini + Google Search grounding to finish on multi-turn event queries.
+ * Hobby may still cap at ~10s; Pro uses up to 60s. Python `/api/index.py` also sets maxDuration via vercel.json.
+ */
+export const maxDuration = 60
 
-const GEMINI_MODEL = 'gemini-2.5-flash' as const
 /** Room for richer, sectioned answers + Google Search without cutting off mid-sentence. */
 const MAX_OUTPUT_TOKENS = 3072
-const GEMINI_TIMEOUT_MS = 9000
+/** Stay slightly under maxDuration to leave room for JSON + logging. */
+const GEMINI_TIMEOUT_MS = 55_000
 
 /** Max number of prior messages to send as context (user + assistant pairs). */
 const MAX_HISTORY_MESSAGES = 20
@@ -68,7 +72,7 @@ export async function POST(request: Request) {
     let response
     try {
       response = await ai.models.generateContent({
-        model: GEMINI_MODEL,
+        model: getGeminiModel(),
         contents,
         config: {
           systemInstruction: buildDomuSystemInstruction(),
@@ -110,7 +114,7 @@ export async function POST(request: Request) {
     if (name === 'AbortError' || /aborted|timeout|deadline|DEADLINE_EXCEEDED|504/i.test(raw)) {
       return NextResponse.json({
         reply:
-          'That took too long to answer. Please try again with a shorter question, or try again in a moment.',
+          'That took too long—looking up live events can be slow. Please try again in a moment.',
       })
     }
 

@@ -29,6 +29,19 @@ load_dotenv(".env.local")
 app = Flask(__name__)
 CORS(app)
 
+# Align with Next.js Domu route: multi-turn + tool calls (search) need enough wall time.
+# Inner search can take up to SEARCH_TOOL_TIMEOUT_S; the outer cap must exceed that plus model time.
+MAX_HISTORY_MESSAGES = 20
+GEMINI_WALL_TIMEOUT_S = 55
+SEARCH_TOOL_TIMEOUT_S = 12
+
+
+def _app_gemini_model() -> str:
+    """Same defaults as lib/gemini-model.ts: GEMINI_MODEL, then GEMINI_DOMU_MODEL, else flash-lite."""
+    raw = (os.getenv("GEMINI_MODEL") or os.getenv("GEMINI_DOMU_MODEL") or "gemini-2.5-flash-lite").strip()
+    return raw or "gemini-2.5-flash-lite"
+
+
 # --- search_internet tool (with timeout to avoid hanging) ---
 
 
@@ -42,7 +55,7 @@ def search_internet(query: str) -> dict:
     try:
         with ThreadPoolExecutor(max_workers=1) as ex:
             future = ex.submit(_do_search)
-            results = future.result(timeout=8)
+            results = future.result(timeout=SEARCH_TOOL_TIMEOUT_S)
         return {"results": results}
     except FuturesTimeoutError:
         return {"error": "Search timed out", "results": []}
@@ -157,6 +170,38 @@ def is_malicious(user_message: str) -> bool:
     return any(phrase in lowered for phrase in suspicious_phrases)
 
 
+def _parse_history(raw_history) -> list:
+    """Normalize client history to [{'role': 'user'|'assistant', 'text': str}, ...]."""
+    if not isinstance(raw_history, list):
+        return []
+    out = []
+    for m in raw_history:
+        if not m or not isinstance(m, dict):
+            continue
+        role = m.get("role")
+        text = (m.get("text") or "").strip()
+        if not text:
+            continue
+        if role == "assistant":
+            out.append({"role": "assistant", "text": text})
+        else:
+            out.append({"role": "user", "text": text})
+    return out
+
+
+def _build_gemini_contents(history: list, current_message: str) -> list:
+    """Build multi-turn contents for Gemini (matches app/api/domu/chat/route.ts)."""
+    trimmed = history[-MAX_HISTORY_MESSAGES:]
+    contents = []
+    for entry in trimmed:
+        gemini_role = "model" if entry["role"] == "assistant" else "user"
+        contents.append(
+            types.Content(role=gemini_role, parts=[types.Part(text=entry["text"])])
+        )
+    contents.append(types.Content(role="user", parts=[types.Part(text=current_message)]))
+    return contents
+
+
 # --- Routes ---
 
 
@@ -176,7 +221,8 @@ def chat():
     # Parse request
     try:
         data = request.get_json() or {}
-        message = data.get("message") or ""
+        message = (data.get("message") or "").strip()
+        history = _parse_history(data.get("history"))
     except Exception as e:
         # Log technical details, but show a simple message to users
         print("[Domu AI] Invalid JSON payload:", e)
@@ -212,22 +258,24 @@ def chat():
             thinking_config=types.ThinkingConfig(thinking_budget=0),
         )
 
+        contents = _build_gemini_contents(history, message)
+
         def _do_generate():
             return client.models.generate_content(
-                model="gemini-2.5-flash",
-                contents=message,
+                model=_app_gemini_model(),
+                contents=contents,
                 config=config,
             )
 
-        # Wall time cap (align with Next.js Domu route; allow search + longer answers).
+        # Wall time cap: must be > search tool timeout + model generation (see module constants).
         with ThreadPoolExecutor(max_workers=1) as ex:
             future = ex.submit(_do_generate)
             try:
-                response = future.result(timeout=9)
+                response = future.result(timeout=GEMINI_WALL_TIMEOUT_S)
             except FuturesTimeoutError:
                 return jsonify(
                     {
-                        "reply": "That took too long to answer. Please try again with a shorter question, or try again in a moment."
+                        "reply": "That took too long—looking up live events can be slow. Please try again in a moment."
                     }
                 ), 200
 
@@ -244,7 +292,7 @@ def chat():
             or "504" in raw
             or "DEADLINE_EXCEEDED" in raw
         ):
-            reply = "That took too long to answer. Please try again with a shorter question, or try again in a moment."
+            reply = "That took too long—looking up live events can be slow. Please try again in a moment."
 
         # Rate limits / overload
         if raw and ("quota" in raw or "429" in raw or "RESOURCE_EXHAUSTED" in raw):
