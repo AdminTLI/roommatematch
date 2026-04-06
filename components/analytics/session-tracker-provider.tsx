@@ -1,9 +1,10 @@
 'use client'
 
-import { useEffect, useRef } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { initializeSessionTracking, trackPageView } from '@/lib/analytics/session-tracker'
 import { usePathname } from 'next/navigation'
+import { getClientConsents } from '@/lib/privacy/cookie-consent-client'
 
 /**
  * Provider component that initializes session tracking
@@ -14,8 +15,15 @@ export function SessionTrackerProvider({ children }: { children: React.ReactNode
   const supabaseRef = useRef(createClient())
   const initializedRef = useRef(false)
   const lastTrackedPathRef = useRef<string | null>(null)
+  const [trackingReady, setTrackingReady] = useState(false)
 
   useEffect(() => {
+    // First-party journey analytics only run when the user has opted in (Analytics category).
+    if (!getClientConsents()?.analytics) {
+      setTrackingReady(false)
+      return
+    }
+
     // Get current user and initialize session tracking (only once)
     if (!initializedRef.current) {
       const initTracking = async () => {
@@ -28,18 +36,25 @@ export function SessionTrackerProvider({ children }: { children: React.ReactNode
             initializeSessionTracking()
           }
           initializedRef.current = true
+          setTrackingReady(true)
         } catch (error) {
           // Silently fail - don't break the app if tracking fails
           console.warn('Failed to initialize session tracking:', error)
         }
       }
 
-      initTracking()
+      void initTracking()
+    } else {
+      setTrackingReady(true)
     }
   }, [])
 
   // Track page views when pathname changes
   useEffect(() => {
+    if (!getClientConsents()?.analytics || !trackingReady) {
+      return
+    }
+
     if (pathname && initializedRef.current) {
       // Skip if we've already tracked this pathname (prevents duplicate tracking in React Strict Mode)
       if (lastTrackedPathRef.current === pathname) {
@@ -65,9 +80,9 @@ export function SessionTrackerProvider({ children }: { children: React.ReactNode
           // Don't break the app if tracking fails
         }
       }
-      trackView()
+      void trackView()
     }
-  }, [pathname])
+  }, [pathname, trackingReady])
 
   return <>{children}</>
 }

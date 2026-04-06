@@ -2,15 +2,13 @@
 
 import { useState, useEffect } from 'react'
 import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Alert, AlertDescription } from '@/components/ui/alert'
-import { Cookie, X, Settings } from 'lucide-react'
+import { Card, CardContent } from '@/components/ui/card'
+import { Cookie, Settings } from 'lucide-react'
 import { 
   shouldShowConsentBanner, 
   saveClientConsents, 
   getClientConsents,
   getOrCreateAnonymousSessionId,
-  type ConsentType 
 } from '@/lib/privacy/cookie-consent-client'
 import { CookiePreferenceCenter } from './cookie-preference-center'
 
@@ -44,12 +42,17 @@ const translations = {
 export function CookieConsentBanner({ locale = 'en' }: CookieConsentBannerProps) {
   const [showBanner, setShowBanner] = useState(false)
   const [showPreferences, setShowPreferences] = useState(false)
+  const [showReopenControl, setShowReopenControl] = useState(false)
   const t = translations[locale]
 
   useEffect(() => {
     // Check if banner should be shown
     if (shouldShowConsentBanner()) {
       setShowBanner(true)
+      setShowReopenControl(false)
+    } else if (getClientConsents()) {
+      // User already saved choices — offer a persistent way to reopen the preference center
+      setShowReopenControl(true)
     }
   }, [])
 
@@ -125,10 +128,6 @@ export function CookieConsentBanner({ locale = 'en' }: CookieConsentBannerProps)
     setShowPreferences(true)
   }
 
-  if (!showBanner && !showPreferences) {
-    return null
-  }
-
   if (showPreferences) {
     return (
       <CookiePreferenceCenter
@@ -139,27 +138,34 @@ export function CookieConsentBanner({ locale = 'en' }: CookieConsentBannerProps)
           const prefs = getClientConsents()
           if (prefs) {
             setShowBanner(false)
+            setShowReopenControl(true)
           }
         }}
       />
     )
   }
 
+  if (!showBanner && !showReopenControl) {
+    return null
+  }
+
   return (
-    <div className="fixed bottom-0 left-0 right-0 z-50 p-3 sm:p-4 md:p-6">
+    <>
+    {showBanner && (
+    <div className="fixed bottom-0 left-0 right-0 z-50 p-3 sm:p-4 md:p-6 pb-[max(0.75rem,env(safe-area-inset-bottom))]">
       <div className="container mx-auto max-w-4xl">
-        <Card className="border-border-subtle bg-bg-surface/95 dark:bg-bg-surface/95 shadow-elev-2 backdrop-blur supports-[backdrop-filter]:bg-bg-surface/80 dark:supports-[backdrop-filter]:bg-bg-surface/80">
+        <Card className="border border-white/80 bg-white/90 text-slate-900 shadow-[0_20px_60px_rgba(15,23,42,0.12)] backdrop-blur-xl supports-[backdrop-filter]:bg-white/85 dark:border-white/15 dark:bg-slate-900/90 dark:text-slate-50 dark:shadow-[0_24px_64px_rgba(0,0,0,0.45)] dark:supports-[backdrop-filter]:bg-slate-900/80">
           <CardContent className="p-4 sm:p-5 md:p-6">
             <div className="flex flex-col sm:flex-row items-start gap-3 sm:gap-4">
-              <Cookie className="h-5 w-5 sm:h-6 sm:w-6 text-primary mt-0.5 sm:mt-1 flex-shrink-0" />
+              <Cookie className="h-5 w-5 sm:h-6 sm:w-6 text-blue-600 dark:text-violet-400 mt-0.5 sm:mt-1 flex-shrink-0" />
               <div className="flex-1 min-w-0">
-                <h3 className="text-base sm:text-lg font-semibold text-text-primary mb-1.5 sm:mb-2">
+                <h3 className="text-base sm:text-lg font-bold tracking-tight text-slate-900 dark:text-slate-50 mb-1.5 sm:mb-2">
                   {t.title}
                 </h3>
-                <p className="text-xs sm:text-sm text-text-secondary mb-2 sm:mb-3">
+                <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-300 mb-2 sm:mb-3 leading-relaxed">
                   {t.description}
                 </p>
-                <p className="text-xs text-text-muted mb-3 sm:mb-4">
+                <p className="text-xs text-slate-500 dark:text-slate-400 mb-3 sm:mb-4 leading-relaxed">
                   {t.essential}
                 </p>
                 <div className="flex flex-col sm:flex-row flex-wrap gap-2 sm:gap-3">
@@ -167,7 +173,7 @@ export function CookieConsentBanner({ locale = 'en' }: CookieConsentBannerProps)
                     onClick={handleAcceptAll}
                     variant="primary"
                     size="sm"
-                    className="w-full sm:w-auto"
+                    className="w-full sm:w-auto rounded-full bg-blue-600 font-semibold text-white shadow-lg shadow-blue-600/25 hover:bg-blue-700 dark:bg-violet-600 dark:shadow-violet-600/25 dark:hover:bg-violet-700"
                   >
                     {t.acceptAll}
                   </Button>
@@ -175,7 +181,7 @@ export function CookieConsentBanner({ locale = 'en' }: CookieConsentBannerProps)
                     onClick={handleRejectAll}
                     variant="outline"
                     size="sm"
-                    className="w-full sm:w-auto text-text-primary"
+                    className="w-full sm:w-auto rounded-full border-slate-200/90 bg-white/70 text-slate-900 hover:bg-white dark:border-slate-600 dark:bg-slate-800/80 dark:text-slate-100 dark:hover:bg-slate-800"
                   >
                     {t.rejectAll}
                   </Button>
@@ -183,17 +189,17 @@ export function CookieConsentBanner({ locale = 'en' }: CookieConsentBannerProps)
                     onClick={handleCustomize}
                     variant="ghost"
                     size="sm"
-                    className="flex items-center gap-2 w-full sm:w-auto text-text-secondary hover:text-text-primary"
+                    className="flex items-center gap-2 w-full sm:w-auto rounded-full text-slate-600 hover:bg-slate-100/90 hover:text-slate-900 dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-slate-50"
                   >
                     <Settings className="h-4 w-4" />
                     {t.customize}
                   </Button>
                 </div>
-                <p className="text-xs text-text-muted mt-3 sm:mt-4">
+                <p className="text-xs text-slate-500 dark:text-slate-400 mt-3 sm:mt-4">
                   {t.learnMore}{' '}
-                  <a 
-                    href="/cookies" 
-                    className="text-primary hover:text-primary/80 transition-colors font-medium"
+                  <a
+                    href="/cookies"
+                    className="font-medium text-blue-600 transition-colors hover:text-blue-700 dark:text-violet-400 dark:hover:text-violet-300"
                     target="_blank"
                     rel="noopener noreferrer"
                   >
@@ -206,6 +212,22 @@ export function CookieConsentBanner({ locale = 'en' }: CookieConsentBannerProps)
         </Card>
       </div>
     </div>
+    )}
+    {showReopenControl && !showBanner && (
+      <div className="fixed bottom-4 left-4 z-40 print:hidden">
+        <Button
+          type="button"
+          variant="outline"
+          size="sm"
+          onClick={() => setShowPreferences(true)}
+          className="rounded-full border-slate-200/90 bg-white/90 text-xs font-medium text-slate-800 shadow-md backdrop-blur-md dark:border-slate-600 dark:bg-slate-900/90 dark:text-slate-100"
+        >
+          <Cookie className="mr-1.5 h-3.5 w-3.5" aria-hidden />
+          {locale === 'nl' ? 'Cookie-instellingen' : 'Cookie settings'}
+        </Button>
+      </div>
+    )}
+    </>
   )
 }
 

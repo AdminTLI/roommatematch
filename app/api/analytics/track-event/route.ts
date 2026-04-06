@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createClient, createAdminClient } from '@/lib/supabase/server'
 import { safeLogger } from '@/lib/utils/logger'
 import { parseUTMParamsFromURL, classifyTrafficSource } from '@/lib/analytics/traffic-source-utils'
+import { getTruncatedClientIpFromNextRequest } from '@/lib/privacy/truncate-client-ip'
 
 export async function POST(request: NextRequest) {
   try {
@@ -71,14 +72,8 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    // Derive basic IP/geolocation information from request headers (best-effort, may be null)
-    const ipAddress =
-      request.headers.get('x-real-ip') ||
-      request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ||
-      // Next.js may expose IP directly in some environments
-      // @ts-ignore - `ip` is not always present in types
-      (request as any).ip ||
-      null
+    // Truncated client IP only (reduces identifiability); geo still from platform headers when present
+    const ipAddress = getTruncatedClientIpFromNextRequest(request)
 
     const geoCountryCode = request.headers.get('x-vercel-ip-country') || null
     const geoRegion = request.headers.get('x-vercel-ip-country-region') || null

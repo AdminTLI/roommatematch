@@ -4,129 +4,207 @@ import { MarketingSubpageWrapperLight } from '../components/marketing-subpage-wr
 import Container from '@/components/ui/primitives/container'
 import Section from '@/components/ui/primitives/section'
 import { useApp } from '@/app/providers'
-import { Cookie } from 'lucide-react'
+
+const LAST_UPDATED_ISO = '2026-04-06'
 
 const content = {
   en: {
     title: 'Cookie Statement',
     lastUpdatedLabel: 'Last updated',
     introduction:
-      'This Cookie Statement explains how Domu Match uses cookies and similar technologies on our platform, in line with the EU ePrivacy rules and the Dutch Telecommunications Act (Telecommunicatiewet, Tw). We want you to understand what we do and give consent in a freely given, specific, informed and unambiguous way.',
-    whatAreCookies: {
-      title: 'What are cookies?',
+      'This Cookie Statement explains how Domu Match (“we”, “us”) uses cookies, local storage, session storage, and similar technologies on domumatch.com and our web application. It is written to support compliance with the EU ePrivacy rules and the Dutch Telecommunications Act (Telecommunicatiewet). Non-essential technologies are only activated after you give consent through our cookie banner or preference centre.',
+    controller: {
+      title: 'Data controller',
       paragraphs: [
-        'Cookies are small text files that a website stores on your device (for example your laptop or phone) when you visit the site. Each time you visit, your browser sends the cookie back so the website can recognise your device.',
-        'Domu Match uses first-party cookies (placed by domumatch.com itself) and may use third-party cookies (placed by carefully selected partners that provide services to Domu Match).',
-        'We also use both session cookies (which are deleted when you close your browser) and persistent cookies (which remain for a set period or until you delete them).'
+        'The controller responsible for personal data in connection with cookies and similar technologies (within the meaning of the GDPR and Dutch law) is DMS Enterprise (eenmanszaak), trading under the name Domu Match (handelsnaam), registered in the Netherlands, Chamber of Commerce (KVK) number 97573337. This identification matches our Privacy Policy.',
+        'Privacy contact: domumatch@gmail.com'
+      ]
+    },
+    whatAreCookies: {
+      title: 'What are cookies and similar technologies?',
+      paragraphs: [
+        'Cookies are small text files placed on your device when you visit a website. Your browser sends them back on later requests so the site can recognise your browser or session.',
+        'We also use similar technologies that are not HTTP cookies but work alongside them: for example browser localStorage and sessionStorage. Under EU guidance these are often treated like cookies when they store or access information on your device, so we describe them here as well.',
+        'Technologies can be first-party (set by Domu Match on our domain) or third-party (set by a service provider on their domain, for example during embedded identity verification).'
       ]
     },
     categoriesIntro: {
-      title: 'Cookie categories we use',
+      title: 'How we group choices in the preference centre',
       description:
-        'We group our cookies into categories so you can make clear choices. Only the strictly necessary cookies are always active; all other categories require your active consent.'
+        'Our cookie banner and Cookie Preference Centre use the same categories: Essential (always on), Analytics, Error tracking, Session replay, and Marketing. Only Essential is active without your opt-in. You can Accept all, Reject all, or Customize. Reject all is shown with equal prominence to Accept all, in line with Dutch DPA guidance.'
     },
     strictlyNecessary: {
-      title: 'Category 1: Strictly Necessary (Functional) Cookies',
+      title: 'Category A — Strictly necessary HTTP cookies',
       description:
-        'These cookies are essential for the platform to work, for secure login (e.g. university sign-in for students, email for young professionals) and for ID verification. Without them, Domu Match cannot function properly. Because they only support the service you request, they do not require consent, but we want to be transparent about them.',
-      tableCaption: 'Strictly necessary cookies used by Domu Match',
-      headers: ['Name', 'Provider', 'Purpose', 'Duration'],
+        'These cookies are required to operate a secure logged-in service (authentication, session integrity, and CSRF protection for signed-in users). They are exempt from consent under the ePrivacy framework because they are strictly necessary to provide the service you request.',
+      tableCaption: 'Strictly necessary HTTP cookies',
+      headers: ['Name / pattern', 'Provider', 'Purpose', 'Duration'],
       rows: [
         [
-          'surf_auth_session',
-          'Domu Match / SURFconext',
-          'Maintains your secure login session with your university via Surf Connect so you can access Domu Match and stay signed in as you navigate.',
-          'Session (deleted when you close your browser)'
+          'Cookies whose names start with sb- (for example sb-<project-ref>-auth-token)',
+          'Supabase (processor) / Domu Match',
+          'Supabase Auth session: keeps you signed in, refreshes tokens safely, and supports OAuth / OpenID Connect flows if we enable external identity providers in Supabase Auth. Exact cookie names depend on your Supabase project reference.',
+          'Session-based; Supabase refreshes tokens while you use the site. Cleared when you sign out or remove cookies.'
         ],
         [
-          'surf_auth_state',
-          'Domu Match / SURFconext',
-          'Stores temporary state information needed to complete the Surf Connect single sign-on flow and to protect against login abuse.',
-          'Session (deleted when the login flow is completed or the browser is closed)'
-        ],
-        [
-          'persona_session_id',
-          'Persona',
-          'Supports secure ID-verification flows (for example when uploading your ID) and helps prevent fraud during the verification process.',
-          'Session (deleted when you close your browser)'
-        ],
-        [
-          'persona_csrf_token',
-          'Persona',
-          'Security cookie that protects the ID verification flow against cross-site request forgery (CSRF) attacks.',
-          'Session (deleted when the verification flow ends or the browser is closed)'
-        ],
-        [
-          'domu_app_session',
+          'csrf-token',
           'Domu Match',
-          'Keeps you logged in to the Domu Match platform and links your actions to your account in a secure way.',
-          'Session (deleted when you log out or close your browser)'
-        ],
-        [
-          'domu_functional_preferences',
-          'Domu Match',
-          'Stores basic functional preferences (such as language settings and previously dismissed onboarding hints) so you do not have to set them every time.',
-          '12 months'
+          'HTTP-only CSRF token for authenticated users. Used to protect POST/PUT/PATCH/DELETE requests to our APIs from cross-site request forgery.',
+          'Up to 24 hours (rotated by our application)'
         ]
       ]
     },
-    analytics: {
-      title: 'Category 2: Analytical Cookies (Questionnaire Experience)',
+    universitySsoNote: {
+      title: 'SURFconext and other university SSO (not live today)',
+      paragraphs: [
+        'Domu Match does not currently offer SURFconext or other institution-specific single sign-on in production.',
+        'Technically, the stack can support future university SSO in two ways: (1) Supabase Auth can be linked to an external OIDC/OAuth identity provider (for example a national or institutional IdP); after login you would still use the same Supabase sb-* session cookies described above. (2) The repository contains optional, feature-flagged placeholder code for a SAML-style SURFconext integration (environment variables such as ENABLE_SURFCONEXT in env.example) — this is not connected to the live sign-in experience and would need a full implementation and security review before use.',
+        'If we launch SURFconext or similar SSO, we will update this Cookie Statement to list any additional first- or third-party cookies or domains involved.'
+      ]
+    },
+    verificationThirdParties: {
+      title: 'Strictly necessary third parties during ID verification',
+      paragraphs: [
+        'When you go through mandatory identity verification we embed or redirect to Persona (withpersona.com). Persona may set and read its own cookies and similar storage on Persona-controlled domains to operate fraud prevention, device signals, and the verification UI. We do not control those technologies.',
+        'For details, see Persona’s own legal and privacy documentation. We only receive verification outcomes and related attributes in line with our Privacy Policy.'
+      ]
+    },
+    essentialStorage: {
+      title: 'Category B — Essential local and session storage (first-party)',
       description:
-        'We use low-impact analytical cookies to understand how well our questionnaire flow works and how long it takes to complete. This helps us keep your matching experience smooth without using invasive tracking or behavioural advertising.',
-      processing: [
-        'We measure how long it takes to complete the multi-block questionnaire (for example 8 blocks of around 25 questions). This tells us if certain steps are confusing or if users get stuck.',
-        'We look at aggregated completion rates (for example how many people reach the final block) to improve the design and wording of questions.',
-        'We do not build behavioural profiles and we do not use these cookies for advertising.'
-      ],
-      privacyMeasures: [
-        'IP addresses are truncated (for example by masking the last octet) before they are stored or analysed, in line with Dutch “low-impact analytics” expectations.',
-        'Analytics data is only used in aggregate form (for example statistics per group), not to make decisions about individual users.',
-        'Where possible, we remove or pseudonymise identifiers so they cannot easily be linked back to you.'
-      ],
-      tableCaption: 'Analytical cookies used by Domu Match',
-      headers: ['Name', 'Provider', 'Purpose', 'Duration'],
+        'The following keys are used in your browser for core functionality. They are treated as strictly necessary for the service and are not tied to optional analytics or marketing in our application code.',
+      tableCaption: 'Essential browser storage keys',
+      headers: ['Key', 'Storage type', 'Purpose', 'Duration'],
       rows: [
         [
-          'domu_analytics_session',
-          'Domu Match',
-          'Counts visits and measures overall questionnaire progress so we can see where users drop off and improve the 10–15 minute completion experience.',
-          'Session (deleted when you close your browser)'
+          'locale',
+          'localStorage',
+          'Remembers your selected interface language (English or Dutch).',
+          'Until you change language or clear site data'
         ],
         [
-          'domu_questionnaire_timing',
-          'Domu Match',
-          'Measures how long each questionnaire block takes to complete in anonymised form so we can simplify or re-order blocks if needed.',
-          'Up to 13 months'
+          'theme',
+          'localStorage',
+          'Remembers your light/dark/system appearance preference.',
+          'Until you change theme or clear site data'
+        ],
+        [
+          'domu_consent_preferences',
+          'localStorage',
+          'Stores your cookie choices and policy version so we do not ask on every visit.',
+          'Until you update preferences or clear site data'
+        ],
+        [
+          'domu_anonymous_session_id',
+          'localStorage',
+          'Anonymous identifier used when saving consent to our database before you create an account. Only a one-way hash of this value is stored server-side.',
+          'Until you clear site data'
+        ],
+        [
+          'verification-email',
+          'sessionStorage',
+          'Temporarily remembers the email address during email verification and sign-in flows.',
+          'Until you close the browser tab'
         ]
+      ]
+    },
+    optionalIntro: {
+      title: 'Optional categories (require consent)',
+      description:
+        'The technologies below load or run only if you opt in through the matching toggle in our preference centre (or Accept all). If you reject or withdraw consent, we stop using them in the browser to the extent technically possible without breaking the core service.'
+    },
+    analytics: {
+      title: 'Analytics',
+      description:
+        'Helps us understand aggregate usage (traffic, performance, and product funnels) so we can improve Domu Match.',
+      bullets: [
+        'Vercel Web Analytics and Vercel Speed Insights (Vercel Inc.) load only when Analytics consent is on and are not globally disabled via NEXT_PUBLIC_DISABLE_ANALYTICS.',
+        'Our own first-party “user journey” events (for example page views) are sent to Domu Match servers and stored in our database. The client uses localStorage keys domu_session_id and domu_session_start to group events into a browser session (30-minute inactivity timeout). When Analytics consent is off, this client-side journey tracking is not initialized.',
+        'For each journey event we store a truncated client IP address (for IPv4, the last octet is replaced with 0; for IPv6, only a short prefix is kept) together with coarse location fields our host may supply (for example country/region/city). This reduces identifiability while still allowing aggregate geographic reporting.'
+      ],
+      tableCaption: 'Analytics-related providers and storage',
+      headers: ['Technology', 'Provider', 'Purpose', 'Notes'],
+      rows: [
+        [
+          'Vercel Web Analytics & Speed Insights',
+          'Vercel Inc.',
+          'Privacy-friendly, aggregate web analytics and Core Web Vitals style performance metrics for our deployment.',
+          'See Vercel’s privacy policy. Loaded only after Analytics consent.'
+        ],
+        [
+          'First-party journey / page events',
+          'Domu Match',
+          'Product analytics such as page_view and server-side business events linked to onboarding and matching flows.',
+          'Uses localStorage session keys above; data is stored in our Supabase-backed database (user_journey_events and related tables).'
+        ]
+      ]
+    },
+    errorTracking: {
+      title: 'Error tracking',
+      description:
+        'Client-side error monitoring through Sentry (Functional Software Inc.). When enabled, Sentry may collect error payloads, performance traces, and technical context needed to diagnose bugs. We strip cookies and sensitive headers from events in our SDK configuration where possible.',
+      bullets: [
+        'The browser Sentry SDK initializes only when Error tracking consent is granted and NEXT_PUBLIC_SENTRY_DSN is configured.',
+        'Separately, Sentry on our servers and edge runtime may record unhandled errors and performance data to keep the service secure and available. We rely on our legitimate interests (and, where applicable, our contract with you) for that processing — not on advertising or profiling. It is not used for behavioural marketing. Sub-processors and details are listed in our Privacy Policy.'
+      ]
+    },
+    sessionReplay: {
+      title: 'Session replay',
+      description:
+        'Sentry Session Replay may record short clips of how the interface is used to debug complex issues. Replay is attached only when Session replay consent is on; sampling rates are configured in our Sentry client setup.',
+      bullets: [
+        'Replay can capture on-screen text you type or see. Only enable this if you are comfortable with that risk, or leave it off.',
+        'Requires Error tracking consent path to be meaningful in our current client bundle (Sentry initializes only with Error tracking consent).'
+      ]
+    },
+    marketing: {
+      title: 'Marketing',
+      description:
+        'We provide a Marketing toggle so we can turn on measurement or advertising tags in a consent-aware way in the future.',
+      bullets: [
+        'We have confirmed that we do not load third-party advertising or remarketing pixels (such as Meta Pixel, Google Ads tags, or similar) in our production application code.',
+        'If we add marketing technologies later, we will update this statement and map them to the Marketing category before activation.'
+      ]
+    },
+    consentProof: {
+      title: 'Proof of consent and preference changes',
+      paragraphs: [
+        'When you save choices, we write domu_consent_preferences in localStorage and send a record to our API (/api/privacy/consent). For logged-in users we store rows in the user_consents table; for anonymous visitors we store a SHA-256 hash of domu_anonymous_session_id instead of the raw id.',
+        'We may store a truncated client IP address (same rules as for analytics journey events) and the user agent sent by your browser with that request to demonstrate compliance if ever questioned by a regulator. We do not use that data for advertising.'
+      ]
+    },
+    functionalNote: {
+      title: 'Other local storage for product features',
+      paragraphs: [
+        'Some product areas use localStorage for purely functional UX that is not used for cross-site advertising — for example caching dismissed tips or chat UI state on your device. These are not used to track you across other companies’ sites. If you clear site data, that state resets.'
       ]
     },
     bannerLogic: {
       title: 'Cookie banner and consent logic',
       paragraphs: [
-        'When you first visit Domu Match, we show a cookie banner with three clear options: “Accept All”, “Reject All”, and “Customize”. The “Reject All” button is shown on the same layer and with equal visual weight as “Accept All”, in line with the 2026 guidance of the Dutch Data Protection Authority (Autoriteit Persoonsgegevens).',
-        'No analytical or other tracking cookies are placed before you actively choose “Accept All” or grant consent through “Customize”. Before that moment, only the strictly necessary (functional and security) cookies described above are active.',
-        'You can always open the Cookie Preference Center again through the floating “Cookie Settings” button that is visible on the site. There you can change your choices per category at any time.'
+        'On your first visit, if we have no saved preferences, you will see a banner with Accept all, Reject all, and Customize.',
+        'Until you make a choice, we do not load optional Analytics (including Vercel Analytics), optional client-side error tracking/replay (Sentry in the browser), or first-party journey tracking that depends on Analytics consent.',
+        'After you save a choice, a small Cookie settings control appears so you can reopen the preference centre at any time.'
       ],
       bullets: [
-        'No pre-ticked boxes are used for non-essential cookies.',
-        'Rejecting is just as easy as accepting (no nudging colours or complex flows).',
-        'Your choices are stored in a consent record so we do not repeatedly ask you for the same consent.'
+        'Non-essential toggles default to off; we do not use pre-ticked boxes for optional categories.',
+        'Reject all is as easy as Accept all (no dark patterns or forced scrolling).',
+        'Saving preferences may reload the page so technologies align with your choice.'
       ]
     },
     manage: {
-      title: 'How to manage or delete cookies',
+      title: 'How to manage or delete cookies and storage',
       description:
-        'You stay in control of your cookies. You can withdraw consent or delete cookies in two ways: on Domu Match itself and in your browser.',
+        'You can change optional categories in our Cookie Preference Centre at any time via Cookie settings, or clear all data for our site in your browser.',
       onSiteTitle: 'On Domu Match',
       onSiteItems: [
-        'Use the floating “Cookie Settings” button that appears on the site to reopen the Cookie Preference Center at any time.',
-        'In the Cookie Preference Center you can turn analytical and other non-essential categories on or off. Changes take effect after you save your preferences.',
-        'If you withdraw consent, we stop using the relevant cookies and update our consent records accordingly.'
+        'Click the Cookie settings button (lower-left on screen once you have saved a choice) to reopen the Cookie Preference Centre.',
+        'Use Customize to switch Analytics, Error tracking, Session replay, or Marketing on or off, then Save preferences.',
+        'Withdrawing consent updates our records and stops loading the related optional technologies on your device after reload where applicable.'
       ],
       browserTitle: 'In your browser',
       browserIntro:
-        'You can also delete or block cookies through your browser settings. The following links contain step-by-step instructions from the main browser providers:',
+        'You can delete or block cookies and site data through your browser settings. Official help pages:',
       browserLinks: [
         {
           name: 'Google Chrome',
@@ -146,29 +224,37 @@ const content = {
         }
       ]
     },
+    processors: {
+      title: 'Key processors and further reading',
+      intro: 'Privacy and cookie information from core infrastructure providers:',
+      links: [
+        { name: 'Supabase', href: 'https://supabase.com/privacy' },
+        { name: 'Vercel', href: 'https://vercel.com/legal/privacy-policy' },
+        { name: 'Sentry / Functional Software', href: 'https://sentry.io/privacy/' },
+        { name: 'Persona', href: 'https://withpersona.com/legal/privacy-policy' }
+      ]
+    },
     retention: {
-      title: 'Retention periods',
-      intro:
-        'We only keep cookies and consent records for as long as needed for the purposes described above. In summary:',
+      title: 'Retention (summary)',
+      intro: 'Indicative periods — see our Privacy Policy for full retention schedules:',
       bullets: [
-        'Session cookies (for example login and Surf Connect / Persona security cookies) are deleted when you log out or close your browser.',
-        'Functional preference cookies (for example language and dismissed hints) are stored for up to 12 months, after which you may be asked again.',
-        'Analytical cookies for questionnaire timing and completion are stored for up to 13 months.',
-        'Consent records (proof that you accepted or rejected certain categories) are stored for the period required under Dutch law and to demonstrate compliance to regulators.'
+        'Supabase authentication cookies follow Supabase session settings and are cleared when you sign out or remove cookies.',
+        'csrf-token is rotated on our application schedule (up to roughly 24 hours).',
+        'Consent records in user_consents are kept for as long as needed to demonstrate compliance with telecom and privacy law.',
+        'Analytics and journey data in our database are retained only for product improvement and security, then deleted or aggregated according to internal policies described in the Privacy Policy.'
       ]
     },
     compliance: {
-      title: 'Compliance with Dutch DPA (Autoriteit Persoonsgegevens)',
+      title: 'Compliance approach (Netherlands / EU)',
       paragraphs: [
-        'Domu Match is designed to follow the “freely given, specific, informed and unambiguous” consent standard from the ePrivacy rules and the Dutch Telecommunications Act.',
-        'We avoid dark patterns: we do not hide the “Reject All” option, we do not use misleading colours, and we do not force you to accept analytical cookies to use the core service.',
-        'Because we see you as a co‑partner in the matching process, we aim to be transparent and honest about how and why we use cookies and analytics data.'
+        'We aim to meet the standard of freely given, specific, informed, and unambiguous consent for any optional storage and access that requires it.',
+        'This statement is for transparency and is not legal advice. If you need certainty for your organisation, consult qualified counsel.'
       ]
     },
     contact: {
-      title: 'Questions or feedback',
+      title: 'Questions',
       description:
-        'If you have questions about this Cookie Statement or how Domu Match uses cookies, please contact us. We are happy to explain our approach in more detail.',
+        'If something here does not match what you see in your browser or you want to exercise GDPR rights, contact us and we will help.',
       email: 'Email: domumatch@gmail.com'
     }
   },
@@ -176,122 +262,199 @@ const content = {
     title: 'Cookieverklaring',
     lastUpdatedLabel: 'Laatst bijgewerkt',
     introduction:
-      'In deze Cookieverklaring leggen we uit hoe Domu Match cookies en vergelijkbare technologieën gebruikt op ons platform, in lijn met de ePrivacy-regels en de Nederlandse Telecommunicatiewet (Tw). We willen dat u begrijpt wat we doen en uw toestemming vrij, specifiek, geïnformeerd en ondubbelzinnig kunt geven.',
-    whatAreCookies: {
-      title: 'Wat zijn cookies?',
+      'In deze Cookieverklaring leggen we uit hoe Domu Match (“wij”) cookies, local storage, session storage en vergelijkbare technologieën gebruikt op domumatch.com en in onze webapplicatie. De verklaring sluit aan bij de ePrivacy-regels en de Nederlandse Telecommunicatiewet. Niet-noodzakelijke technologieën worden pas ingeschakeld nadat u via de cookiebanner of het voorkeurencentrum toestemming geeft.',
+    controller: {
+      title: 'Verwerkingsverantwoordelijke',
       paragraphs: [
-        'Cookies zijn kleine tekstbestanden die een website op uw apparaat plaatst (bijvoorbeeld uw laptop of telefoon) wanneer u de site bezoekt. Bij een volgend bezoek stuurt uw browser de cookie terug zodat de website uw apparaat herkent.',
-        'Domu Match gebruikt first-party cookies (geplaatst door domumatch.com zelf) en kan third-party cookies gebruiken (geplaatst door zorgvuldig geselecteerde partners die diensten aan Domu Match leveren).',
-        'We gebruiken zowel sessiecookies (die worden verwijderd wanneer u uw browser sluit) als permanente cookies (die gedurende een bepaalde periode blijven bestaan of totdat u ze verwijdert).'
+        'De verwerkingsverantwoordelijke voor persoonsgegevens in verband met cookies en vergelijkbare technologieën (in de zin van de AVG en het Nederlandse recht) is DMS Enterprise (eenmanszaak), handelend onder de naam Domu Match (handelsnaam), gevestigd in Nederland, KvK-nummer 97573337. Deze identificatie komt overeen met ons Privacybeleid.',
+        'Contact voor privacy: domumatch@gmail.com'
+      ]
+    },
+    whatAreCookies: {
+      title: 'Wat zijn cookies en vergelijkbare technologieën?',
+      paragraphs: [
+        'Cookies zijn kleine tekstbestanden die op uw apparaat worden geplaatst wanneer u een website bezoekt. Uw browser stuurt ze bij latere verzoeken terug zodat de site uw browser of sessie kan herkennen.',
+        'We gebruiken ook vergelijkbare technologieën die géén HTTP-cookies zijn maar wel informatie op uw apparaat kunnen opslaan of uitlezen, zoals localStorage en sessionStorage in de browser. Onder EU-richtsnoeren worden die vaak gelijk behandeld met cookies; daarom beschrijven we ze hier ook.',
+        'Technologieën kunnen first-party zijn (gezet door Domu Match op ons domein) of third-party (gezet door een dienstverlener op hun domein, bijvoorbeeld tijdens ingesloten ID-verificatie).'
       ]
     },
     categoriesIntro: {
-      title: 'Cookiecategorieën die wij gebruiken',
+      title: 'Hoe we keuzes groeperen in het voorkeurencentrum',
       description:
-        'We delen onze cookies in categorieën in zodat u duidelijke keuzes kunt maken. Alleen strikt noodzakelijke cookies staan altijd aan; alle andere categorieën vereisen uw actieve toestemming.'
+        'Onze cookiebanner en het Cookie-voorkeurencentrum gebruiken dezelfde categorieën: Essentieel (altijd aan), Analyse, Foutopsporing, Sessie-opname en Marketing. Alleen Essentieel staat aan zonder uw actieve keuze. U kunt Alles accepteren, Alles weigeren of Aanpassen. “Alles weigeren” heeft dezelfde zichtbaarheid als “Alles accepteren”, conform de lijn van de Autoriteit Persoonsgegevens.'
     },
     strictlyNecessary: {
-      title: 'Categorie 1: Strikt noodzakelijke (functionele) cookies',
+      title: 'Categorie A — Strikt noodzakelijke HTTP-cookies',
       description:
-        'Deze cookies zijn essentieel voor het functioneren van het platform, voor veilig inloggen via uw onderwijsinstelling en voor ID-verificatie. Zonder deze cookies kan Domu Match niet goed werken. Omdat ze alleen de door u gevraagde dienst mogelijk maken, is geen toestemming vereist, maar we zijn hier wel graag transparant over.',
-      tableCaption: 'Strikt noodzakelijke cookies die Domu Match gebruikt',
-      headers: ['Naam', 'Aanbieder', 'Doel', 'Duur'],
+        'Deze cookies zijn nodig voor een veilig ingelogde dienst (authenticatie, sessie-integriteit en CSRF-bescherming voor ingelogde gebruikers). Ze vallen onder de uitzondering voor strikte noodzakelijkheid in het ePrivacy-kader.',
+      tableCaption: 'Strikt noodzakelijke HTTP-cookies',
+      headers: ['Naam / patroon', 'Aanbieder', 'Doel', 'Duur'],
       rows: [
         [
-          'surf_auth_session',
-          'Domu Match / SURFconext',
-          'Houdt uw beveiligde inlogsessie via Surf Connect in stand zodat u toegang heeft tot Domu Match en ingelogd blijft terwijl u door het platform navigeert.',
-          'Sessie (verwijderd wanneer u uw browser sluit)'
+          'Cookies waarvan de naam begint met sb- (bijv. sb-<project-ref>-auth-token)',
+          'Supabase (verwerker) / Domu Match',
+          'Supabase Auth-sessie: houdt u ingelogd, vernieuwt tokens veilig en ondersteunt OAuth- / OpenID Connect-stromen als we externe identity providers in Supabase Auth inschakelen. De exacte cookienamen hangen af van uw Supabase-projectreferentie.',
+          'Sessie-gebaseerd; Supabase vernieuwt tokens tijdens gebruik. Gewist bij uitloggen of verwijderen van cookies.'
         ],
         [
-          'surf_auth_state',
-          'Domu Match / SURFconext',
-          'Slaat tijdelijke statusinformatie op die nodig is om de Surf Connect single sign-on stroom af te ronden en misbruik van het inlogproces te voorkomen.',
-          'Sessie (verwijderd wanneer de inlogstroom is afgerond of de browser wordt gesloten)'
-        ],
-        [
-          'persona_session_id',
-          'Persona',
-          'Ondersteunt veilige ID-verificatie (bijvoorbeeld wanneer u uw ID uploadt) en helpt fraude tijdens het verificatieproces te voorkomen.',
-          'Sessie (verwijderd wanneer u uw browser sluit)'
-        ],
-        [
-          'persona_csrf_token',
-          'Persona',
-          'Beveiligingscookie die de ID-verificatiestroom beschermt tegen cross-site request forgery (CSRF)-aanvallen.',
-          'Sessie (verwijderd wanneer de verificatiestroom eindigt of de browser wordt gesloten)'
-        ],
-        [
-          'domu_app_session',
+          'csrf-token',
           'Domu Match',
-          'Houdt u ingelogd op het Domu Match-platform en koppelt uw handelingen op een veilige manier aan uw account.',
-          'Sessie (verwijderd wanneer u uitlogt of uw browser sluit)'
-        ],
-        [
-          'domu_functional_preferences',
-          'Domu Match',
-          'Slaat basis-voorkeuren op (zoals taalinstellingen en eerder weggeklikte tips) zodat u deze niet telkens opnieuw hoeft in te stellen.',
-          '12 maanden'
+          'HTTP-only CSRF-token voor ingelogde gebruikers, ter bescherming van POST/PUT/PATCH/DELETE-verzoeken aan onze API’s tegen cross-site request forgery.',
+          'Tot ca. 24 uur (roulerend door onze applicatie)'
         ]
       ]
     },
-    analytics: {
-      title: 'Categorie 2: Analytische cookies (vragenlijst-ervaring)',
+    universitySsoNote: {
+      title: 'SURFconext en ander universiteits-SSO (nu niet live)',
+      paragraphs: [
+        'Domu Match biedt op dit moment geen SURFconext of ander instellingsspecifiek single sign-on in productie.',
+        'Technisch kan de stack toekomstige universiteits-SSO op twee manieren ondersteunen: (1) Supabase Auth kan worden gekoppeld aan een externe OIDC/OAuth identity provider (bijvoorbeeld een nationale of instellings-IdP); na inloggen gebruikt u nog steeds dezelfde Supabase sb-* sessiecookies als hierboven beschreven. (2) In de repository staat optionele, achter een feature-flag geplaatste placeholdercode voor een SAML-achtige SURFconext-koppeling (omgevingsvariabelen zoals ENABLE_SURFCONEXT in env.example) — dit is niet gekoppeld aan de live inlogervaring en vereist een volledige implementatie en security review voordat het gebruikt kan worden.',
+        'Als we SURFconext of vergelijkbaar SSO lanceren, werken we deze Cookieverklaring bij met eventuele extra first- of third-party cookies of domeinen.'
+      ]
+    },
+    verificationThirdParties: {
+      title: 'Strikt noodzakelijke derden tijdens ID-verificatie',
+      paragraphs: [
+        'Bij verplichte identiteitsverificatie embedden of doorverwijzen we naar Persona (withpersona.com). Persona kan eigen cookies en vergelijkbare opslag op Persona-domeinen gebruiken voor fraudepreventie, apparaatsignalen en de verificatie-UI. Wij beheersen die technologieën niet.',
+        'Zie de documentatie van Persona voor details. Wij ontvangen alleen uitkomsten en gerelateerde attributen zoals in ons Privacybeleid beschreven.'
+      ]
+    },
+    essentialStorage: {
+      title: 'Categorie B — Essentiële local- en session storage (first-party)',
       description:
-        'We gebruiken laag-impact analytische cookies om te begrijpen hoe goed onze vragenlijst werkt en hoe lang het invullen duurt. Dit helpt ons om uw matching-ervaring soepel te houden, zonder invasieve tracking of gedragsgerichte advertenties.',
-      processing: [
-        'We meten hoe lang het duurt om de meerbloksvragenlijst in te vullen (bijvoorbeeld 8 blokken van ongeveer 25 vragen). Zo zien we of bepaalde stappen onduidelijk zijn of waar gebruikers vastlopen.',
-        'We kijken naar geaggregeerde voltooiingspercentages (bijvoorbeeld hoeveel mensen het laatste blok halen) om de opbouw en formulering van vragen te verbeteren.',
-        'We bouwen geen gedragsprofielen en gebruiken deze cookies niet voor advertenties.'
-      ],
-      privacyMeasures: [
-        'IP-adressen worden ingekort (bijvoorbeeld door het laatste octet te maskeren) voordat ze worden opgeslagen of geanalyseerd, in lijn met de Nederlandse verwachtingen voor “laag-impact analytics”.',
-        'Analysedata wordt alleen in geaggregeerde vorm gebruikt (bijvoorbeeld statistieken per groep), niet om beslissingen over individuele gebruikers te nemen.',
-        'Waar mogelijk verwijderen of pseudonimiseren we identificerende gegevens zodat deze niet eenvoudig aan u kunnen worden gekoppeld.'
-      ],
-      tableCaption: 'Analytische cookies die Domu Match gebruikt',
-      headers: ['Naam', 'Aanbieder', 'Doel', 'Duur'],
+        'De volgende sleutels worden in uw browser gebruikt voor kernfunctionaliteit. Ze zijn strikt noodzakelijk voor de dienst en zijn in onze applicatiecode niet bedoeld voor optionele analyse of marketing.',
+      tableCaption: 'Essentiële browser-opsleutels',
+      headers: ['Sleutel', 'Opslagtype', 'Doel', 'Duur'],
       rows: [
         [
-          'domu_analytics_session',
-          'Domu Match',
-          'Telt bezoeken en meet de voortgang in de vragenlijst zodat we kunnen zien waar gebruikers uitvallen en de invulervaring van 10–15 minuten kunnen verbeteren.',
-          'Sessie (verwijderd wanneer u uw browser sluit)'
+          'locale',
+          'localStorage',
+          'Onthoudt uw gekozen interface-taal (Engels of Nederlands).',
+          'Tot u van taal wisselt of sitedata wist'
         ],
         [
-          'domu_questionnaire_timing',
-          'Domu Match',
-          'Meet hoeveel tijd het kost om elk vragenlijstblok in anonieme vorm te voltooien, zodat we blokken indien nodig kunnen vereenvoudigen of herschikken.',
-          'Tot 13 maanden'
+          'theme',
+          'localStorage',
+          'Onthoudt licht/donker/systeem voor de weergave.',
+          'Tot u het thema wijzigt of sitedata wist'
+        ],
+        [
+          'domu_consent_preferences',
+          'localStorage',
+          'Slaat uw cookiekeuzes en beleidsversie op zodat we niet bij elk bezoek opnieuw vragen.',
+          'Tot u voorkeuren wijzigt of sitedata wist'
+        ],
+        [
+          'domu_anonymous_session_id',
+          'localStorage',
+          'Anonieme id om toestemming in onze database te koppelen voordat u een account heeft. Alleen een eenrichtings-hash wordt server-side opgeslagen.',
+          'Tot u sitedata wist'
+        ],
+        [
+          'verification-email',
+          'sessionStorage',
+          'Onthoudt tijdelijk het e-mailadres tijdens verificatie- en inlogstromen.',
+          'Tot u het browsertabblad sluit'
         ]
+      ]
+    },
+    optionalIntro: {
+      title: 'Optionele categorieën (toestemming vereist)',
+      description:
+        'De onderstaande technologieën worden alleen geladen of uitgevoerd als u dat via de bijbehorende schakelaar in het voorkeurencentrum (of via Alles accepteren) toestaat. Bij weigering of intrekking stoppen we met het gebruik ervan in de browser voor zover technisch mogelijk zonder de kernfunctionaliteit te breken.'
+    },
+    analytics: {
+      title: 'Analyse',
+      description:
+        'Helpt ons gebruik in geaggregeerde vorm te begrijpen (verkeer, prestaties en productflows) om Domu Match te verbeteren.',
+      bullets: [
+        'Vercel Web Analytics en Vercel Speed Insights (Vercel Inc.) worden alleen geladen bij Analyse-toestemming en als NEXT_PUBLIC_DISABLE_ANALYTICS niet is gezet.',
+        'Onze first-party “user journey”-events (bijv. page views) gaan naar servers van Domu Match en worden in onze database opgeslagen. De client gebruikt localStorage-sleutels domu_session_id en domu_session_start om events in een browsersessie te groeperen (30 minuten inactiviteit). Zonder Analyse-toestemming wordt deze client-side journey-tracking niet geïnitialiseerd.',
+        'Bij elk journey-event slaan we een ingekorte client-IP op (bij IPv4 wordt het laatste octet 0; bij IPv6 houden we alleen een kort prefix), samen met grove locatievelden die onze host kan meeleveren (bijv. land/regio/stad). Dat vermindert herleidbaarheid en ondersteunt toch geaggregeerde geografische rapportages.'
+      ],
+      tableCaption: 'Analyse-gerelateerde aanbieders en opslag',
+      headers: ['Technologie', 'Aanbieder', 'Doel', 'Toelichting'],
+      rows: [
+        [
+          'Vercel Web Analytics & Speed Insights',
+          'Vercel Inc.',
+          'Privacy-vriendelijke, geaggregeerde webanalyse en prestatie-indicatoren voor onze hosting.',
+          'Zie het privacybeleid van Vercel. Alleen na Analyse-toestemming geladen.'
+        ],
+        [
+          'First-party journey- / pagina-events',
+          'Domu Match',
+          'Productanalyse zoals page_view en server-side business events rond onboarding en matching.',
+          'Gebruikt bovenstaande session-sleutels; data staat in onze Supabase-database (user_journey_events e.d.).'
+        ]
+      ]
+    },
+    errorTracking: {
+      title: 'Foutopsporing (error tracking)',
+      description:
+        'Client-side foutmonitoring via Sentry (Functional Software Inc.). Indien ingeschakeld kan Sentry foutmeldingen, performance-traces en technische context verzamelen. We strippen cookies en gevoelige headers in onze SDK-configuratie waar mogelijk.',
+      bullets: [
+        'De browser-Sentry-SDK start alleen bij toestemming voor Foutopsporing en als NEXT_PUBLIC_SENTRY_DSN is ingesteld.',
+        'Daarnaast kan Sentry op onze servers en edge-runtime niet-afgehandelde fouten en prestatiegegevens vastleggen om de dienst veilig en beschikbaar te houden. Daarvoor steunen we op onze gerechtvaardigde belangen (en waar van toepassing op de overeenkomst met u) — niet op advertenties of profilering. Het wordt niet gebruikt voor gedragsmarketing. Subverwerkers en details staan in ons Privacybeleid.'
+      ]
+    },
+    sessionReplay: {
+      title: 'Sessie-opname (session replay)',
+      description:
+        'Sentry Session Replay kan korte opnames maken van hoe de interface wordt gebruikt om complexe problemen te debuggen. Alleen actief bij toestemming voor Sessie-opname; sampling volgt onze Sentry-clientconfiguratie.',
+      bullets: [
+        'Replay kan tekst op het scherm vastleggen. Schakel dit alleen in als u daarmee instemt.',
+        'In de huidige clientbundle is zinvolle werking verbonden aan de Foutopsporing-pad (Sentry start alleen met Foutopsporing-toestemming).'
+      ]
+    },
+    marketing: {
+      title: 'Marketing',
+      description:
+        'We bieden een Marketing-schakelaar zodat we later meet- of advertentietags op een toestemmingsbewuste manier kunnen toevoegen.',
+      bullets: [
+        'We hebben bevestigd dat we geen third-party advertentie- of remarketingpixels (zoals Meta Pixel, Google Ads-tags of vergelijkbaar) laden in onze productie-applicatiecode.',
+        'Als we later marketingtechnologieën toevoegen, werken we deze verklaring bij en koppelen we ze aan de categorie Marketing vóór activatie.'
+      ]
+    },
+    consentProof: {
+      title: 'Bewijs van toestemming en voorkeurswijzigingen',
+      paragraphs: [
+        'Als u opslaat, schrijven we domu_consent_preferences naar localStorage en sturen we een record naar onze API (/api/privacy/consent). Voor ingelogde gebruikers slaan we rijen op in user_consents; voor anonieme bezoekers slaan we een SHA-256-hash van domu_anonymous_session_id op, niet de ruwe id.',
+        'We kunnen een ingekorte client-IP (dezelfde regels als bij analyse-journeyevents) en de user-agent die uw browser meestuurt bij dat verzoek bewaren om naleving aan te tonen. We gebruiken die gegevens niet voor advertenties.'
+      ]
+    },
+    functionalNote: {
+      title: 'Overige lokale opslag voor productfuncties',
+      paragraphs: [
+        'Sommige onderdelen gebruiken localStorage puur functioneel (bijv. weggeklikte tips of chat-UI-status). Die worden niet gebruikt om u op andere sites van derden te volgen. Als u sitedata wist, wordt die status gereset.'
       ]
     },
     bannerLogic: {
-      title: 'Cookiebanner en toestemmingslogica',
+      title: 'Cookiebanner en logica',
       paragraphs: [
-        'Bij uw eerste bezoek aan Domu Match tonen we een cookiebanner met drie duidelijke opties: “Alles accepteren”, “Alles weigeren” en “Aanpassen”. De knop “Alles weigeren” staat op dezelfde laag en met hetzelfde visuele gewicht als “Alles accepteren”, in lijn met de richtsnoeren van de Autoriteit Persoonsgegevens voor 2026.',
-        'Er worden geen analytische of andere trackingcookies geplaatst voordat u actief kiest voor “Alles accepteren” of via “Aanpassen” toestemming geeft. Tot dat moment zijn alleen de strikt noodzakelijke (functionele en beveiligings-)cookies die hierboven zijn beschreven actief.',
-        'U kunt het Cookie Voorkeurencentrum altijd opnieuw openen via de zwevende knop “Cookie-instellingen” die op de site zichtbaar is. Daar kunt u uw keuzes per categorie op elk moment wijzigen.'
+        'Bij uw eerste bezoek tonen we een banner als er nog geen voorkeuren zijn opgeslagen, met Alles accepteren, Alles weigeren en Aanpassen.',
+        'Tot u een keuze maakt, laden we geen optionele Analyse (inclusief Vercel Analytics), optionele client-side foutopsporing/replay (Sentry in de browser), of first-party journey-tracking die aan Analyse-toestemming hangt.',
+        'Na het opslaan verschijnt een kleine knop Cookie-instellingen zodat u het voorkeurencentrum altijd kunt heropenen.'
       ],
       bullets: [
-        'Er worden geen vooraf aangevinkte vakjes gebruikt voor niet-essentiële cookies.',
-        'Weigeren is net zo eenvoudig als accepteren (geen misleidende kleuren of ingewikkelde stappen).',
-        'Uw keuzes worden opgeslagen in een toestemmingsregister zodat we u niet onnodig vaak om dezelfde toestemming vragen.'
+        'Optionele schakelaars staan standaard uit; geen vooraf aangevinkte vakjes.',
+        'Weigeren is net zo eenvoudig als accepteren.',
+        'Na opslaan kan de pagina vernieuwen zodat technologieën aansluiten op uw keuze.'
       ]
     },
     manage: {
-      title: 'Hoe u cookies kunt beheren of verwijderen',
+      title: 'Cookies en opslag beheren of wissen',
       description:
-        'U houdt zelf de controle over cookies. U kunt toestemming intrekken of cookies verwijderen op twee manieren: op Domu Match zelf en in uw browser.',
+        'U kunt optionele categorieën wijzigen via het Cookie-voorkeurencentrum (Cookie-instellingen), of alle gegevens voor onze site wissen in uw browser.',
       onSiteTitle: 'Op Domu Match',
       onSiteItems: [
-        'Gebruik de zwevende knop “Cookie-instellingen” die op de site verschijnt om het Cookie Voorkeurencentrum op elk moment opnieuw te openen.',
-        'In het Cookie Voorkeurencentrum kunt u analytische en andere niet-essentiële categorieën aan- of uitzetten. Wijzigingen worden toegepast nadat u uw voorkeuren opslaat.',
-        'Als u toestemming intrekt, stoppen we met het gebruiken van de betreffende cookies en werken we onze toestemmingsregistratie bij.'
+        'Klik op Cookie-instellingen (linksonder zodra u een keuze heeft opgeslagen) om het voorkeurencentrum te openen.',
+        'Gebruik Aanpassen om Analyse, Foutopsporing, Sessie-opname of Marketing aan of uit te zetten en sla op.',
+        'Intrekken werkt door onze registratie bij te werken en laadt gerelateerde optionele technologieën na vernieuwen niet op uw apparaat (voor zover van toepassing).'
       ],
       browserTitle: 'In uw browser',
       browserIntro:
-        'U kunt ook cookies verwijderen of blokkeren via de instellingen van uw browser. De onderstaande links bevatten stapsgewijze uitleg van de belangrijkste browserleveranciers:',
+        'U kunt cookies en sitedata wissen of blokkeren via uw browserinstellingen. Officiële helppagina’s:',
       browserLinks: [
         {
           name: 'Google Chrome',
@@ -311,29 +474,37 @@ const content = {
         }
       ]
     },
+    processors: {
+      title: 'Belangrijke verwerkers en verder lezen',
+      intro: 'Privacy- en cookie-informatie van kernleveranciers:',
+      links: [
+        { name: 'Supabase', href: 'https://supabase.com/privacy' },
+        { name: 'Vercel', href: 'https://vercel.com/legal/privacy-policy' },
+        { name: 'Sentry / Functional Software', href: 'https://sentry.io/privacy/' },
+        { name: 'Persona', href: 'https://withpersona.com/legal/privacy-policy' }
+      ]
+    },
     retention: {
-      title: 'Bewaartermijnen',
-      intro:
-        'We bewaren cookies en toestemmingsgegevens niet langer dan nodig is voor de hierboven beschreven doelen. Samengevat:',
+      title: 'Bewaartermijnen (samenvatting)',
+      intro: 'Indicatieve termijnen — zie ons Privacybeleid voor volledige schema’s:',
       bullets: [
-        'Sessiecookies (zoals inlog- en Surf Connect / Persona-beveiligingscookies) worden verwijderd wanneer u uitlogt of uw browser sluit.',
-        'Functionele voorkeurscookies (zoals taal en weggeklikte tips) worden maximaal 12 maanden bewaard, waarna we u mogelijk opnieuw om uw voorkeuren vragen.',
-        'Analytische cookies voor timing en voltooiing van de vragenlijst worden maximaal 13 maanden bewaard.',
-        'Toestemmingsrecords (bewijs dat u bepaalde categorieën heeft geaccepteerd of geweigerd) worden bewaard voor de periode die nodig is onder het Nederlandse recht en om naleving richting toezichthouders aan te tonen.'
+        'Supabase-authenticatiecookies volgen de sessie-instellingen van Supabase en worden gewist bij uitloggen of het verwijderen van cookies.',
+        'csrf-token rouleert volgens onze applicatie (tot ongeveer 24 uur).',
+        'Toestemmingsrecords in user_consents bewaren we zolang nodig is om naleving van telecom- en privacyrecht aan te tonen.',
+        'Analyse- en journeydata in onze database bewaren we alleen voor productverbetering en beveiliging, daarna verwijderen of aggregeren we volgens interne regels in het Privacybeleid.'
       ]
     },
     compliance: {
-      title: 'Naleving van de Autoriteit Persoonsgegevens',
+      title: 'Nalevingsbenadering (Nederland / EU)',
       paragraphs: [
-        'Domu Match is ingericht volgens de norm van “vrijelijk gegeven, specifiek, geïnformeerd en ondubbelzinnig” uit de ePrivacy-regels en de Telecommunicatiewet.',
-        'We vermijden dark patterns: we verbergen de optie “Alles weigeren” niet, gebruiken geen misleidende kleuren en dwingen u niet om analytische cookies te accepteren om de kernfunctionaliteit te gebruiken.',
-        'Omdat we u zien als co‑partner in het matchingproces, willen we open en eerlijk zijn over hoe en waarom we cookies en analysedata gebruiken.'
+        'We streven ernaar om aan de norm van vrijelijk gegeven, specifiek, geïnformeerd en ondubbelzinnig te voldoen voor optionele opslag en toegang waar toestemming vereist is.',
+        'Deze verklaring is bedoeld voor transparantie en is geen juridisch advies. Raadpleeg bij twijfel een gespecialiseerde adviseur.'
       ]
     },
     contact: {
-      title: 'Vragen of feedback',
+      title: 'Vragen',
       description:
-        'Als u vragen heeft over deze Cookieverklaring of over hoe Domu Match cookies gebruikt, neem dan gerust contact met ons op. We leggen onze aanpak graag verder uit.',
+        'Als iets niet overeenkomt met wat u in uw browser ziet of u rechten onder de AVG wilt uitoefenen, neem contact op — we helpen u graag.',
       email: 'E-mail: domumatch@gmail.com'
     }
   }
@@ -348,64 +519,63 @@ export default function CookiePolicyPage() {
       <Section className="py-12 md:py-16 lg:py-20">
         <Container>
           <div className="max-w-4xl mx-auto">
-            <div className="rounded-3xl border border-white/15 bg-slate-950/80 backdrop-blur-xl shadow-[0_18px_55px_rgba(15,23,42,0.35)] p-6 sm:p-10">
-              <div className="flex items-center gap-3 mb-4">
-                <Cookie className="h-8 w-8 text-violet-400" />
-                <h1 className="text-4xl font-bold text-white">{t.title}</h1>
-              </div>
-              <p className="text-slate-500 mb-8">
-                  {t.lastUpdatedLabel}:{' '}
-                  {new Date('2026-01-06').toLocaleDateString(locale === 'nl' ? 'nl-NL' : 'en-US')}
+            <div className="rounded-3xl border border-white/60 bg-white/45 backdrop-blur-xl shadow-[0_18px_50px_rgba(15,23,42,0.08)] p-6 sm:p-10">
+              <h1 className="text-3xl md:text-4xl font-bold text-slate-900 mb-4">{t.title}</h1>
+              <p className="text-slate-600 mb-8">
+                {t.lastUpdatedLabel}:{' '}
+                {new Date(LAST_UPDATED_ISO).toLocaleDateString(locale === 'nl' ? 'nl-NL' : 'en-US', {
+                  year: 'numeric',
+                  month: 'long',
+                  day: 'numeric'
+                })}
+              </p>
+
+              <div className="mb-10 rounded-xl border border-amber-400/40 bg-amber-50 p-4">
+                <p className="text-amber-900 font-semibold mb-1">Beta Notice</p>
+                <p className="text-amber-900/90 leading-relaxed">
+                  You are using a pre-release (beta) version of Domu Match. This means features may change, data
+                  may be reset, and additional data collection (such as bug reports and session logs) may be done
+                  to help us improve the product. Our Privacy Policy covers data practices in detail; this
+                  statement focuses on cookies and similar technologies.
                 </p>
+              </div>
 
-              {/* Introduction */}
-              <p className="text-slate-400 mb-12 leading-relaxed">{t.introduction}</p>
+              <p className="text-slate-700 mb-12 leading-relaxed">{t.introduction}</p>
 
-              {/* What are cookies */}
               <section className="mb-12">
-                <h2 className="text-2xl font-semibold text-white mt-8 mb-4">{t.whatAreCookies.title}</h2>
-                <div className="space-y-3 text-slate-400">
+                <h2 className="text-2xl font-semibold text-slate-900 mb-4">{t.whatAreCookies.title}</h2>
+                <div className="space-y-3 text-slate-700">
                   {t.whatAreCookies.paragraphs.map((paragraph, index) => (
                     <p key={index}>{paragraph}</p>
                   ))}
                 </div>
               </section>
 
-              {/* Categories intro */}
               <section className="mb-12">
-                <h2 className="text-2xl font-semibold text-white mt-8 mb-4">
-                  {t.categoriesIntro.title}
-                </h2>
-                <p className="text-slate-400 mb-6">{t.categoriesIntro.description}</p>
+                <h2 className="text-2xl font-semibold text-slate-900 mb-4">{t.categoriesIntro.title}</h2>
+                <p className="text-slate-700 mb-6">{t.categoriesIntro.description}</p>
 
                 <div className="space-y-6">
-                  {/* Strictly Necessary */}
-                  <div className="border border-slate-700 rounded-lg p-6 bg-slate-800/50">
-                    <h3 className="text-xl font-semibold text-white mb-3">
-                      {t.strictlyNecessary.title}
-                    </h3>
-                    <p className="text-slate-400 mb-4">{t.strictlyNecessary.description}</p>
-
-                    <div className="overflow-x-auto">
-                      <table className="w-full text-sm text-left text-slate-400 border border-slate-700 rounded-lg overflow-hidden">
-                        <caption className="text-left text-xs text-slate-500 px-4 pt-2 pb-3">
+                  <div className="rounded-xl border border-slate-200 bg-white/60 p-6">
+                    <h3 className="text-xl font-semibold text-slate-900 mb-3">{t.strictlyNecessary.title}</h3>
+                    <p className="text-slate-700 mb-4">{t.strictlyNecessary.description}</p>
+                    <div className="overflow-x-auto rounded-lg border border-slate-200 overflow-hidden bg-white/60">
+                      <table className="min-w-full text-left text-sm text-slate-700">
+                        <caption className="text-left text-xs text-slate-600 px-4 pt-2 pb-3">
                           {t.strictlyNecessary.tableCaption}
                         </caption>
-                        <thead className="bg-slate-800 text-xs uppercase text-slate-300">
+                        <thead className="bg-slate-900 text-white text-xs uppercase">
                           <tr>
                             {t.strictlyNecessary.headers.map((header, index) => (
-                              <th key={index} scope="col" className="px-4 py-3">
+                              <th key={index} scope="col" className="px-4 py-3 font-semibold">
                                 {header}
                               </th>
                             ))}
                           </tr>
                         </thead>
-                        <tbody>
+                        <tbody className="divide-y divide-slate-200">
                           {t.strictlyNecessary.rows.map((row, rowIndex) => (
-                            <tr
-                              key={rowIndex}
-                              className={rowIndex % 2 === 0 ? 'bg-slate-900/50' : 'bg-slate-800/30'}
-                            >
+                            <tr key={rowIndex}>
                               {row.map((cell, cellIndex) => (
                                 <td key={cellIndex} className="px-4 py-3 align-top">
                                   {cell}
@@ -418,59 +588,44 @@ export default function CookiePolicyPage() {
                     </div>
                   </div>
 
-                  {/* Analytics */}
-                  <div className="border border-slate-700 rounded-lg p-6 bg-slate-800/30">
-                    <h3 className="text-xl font-semibold text-white mb-3">{t.analytics.title}</h3>
-                    <p className="text-slate-400 mb-4">{t.analytics.description}</p>
-
-                    <div className="space-y-4 text-slate-400">
-                      <div>
-                        <p className="font-semibold mb-2">
-                          {locale === 'nl'
-                            ? 'Hoe we deze analytische cookies gebruiken'
-                            : 'How we use these analytical cookies'}
-                        </p>
-                        <ul className="list-disc pl-6 space-y-2">
-                          {t.analytics.processing.map((item, index) => (
-                            <li key={index}>{item}</li>
-                          ))}
-                        </ul>
-                      </div>
-
-                      <div>
-                        <p className="font-semibold mb-2">
-                          {locale === 'nl'
-                            ? 'Privacybeschermende maatregelen'
-                            : 'Privacy-protective measures'}
-                        </p>
-                        <ul className="list-disc pl-6 space-y-2">
-                          {t.analytics.privacyMeasures.map((item, index) => (
-                            <li key={index}>{item}</li>
-                          ))}
-                        </ul>
-                      </div>
+                  <div className="rounded-xl border border-slate-200 bg-white/60 p-6">
+                    <h3 className="text-xl font-semibold text-slate-900 mb-3">{t.universitySsoNote.title}</h3>
+                    <div className="space-y-3 text-slate-700">
+                      {t.universitySsoNote.paragraphs.map((p, i) => (
+                        <p key={i}>{p}</p>
+                      ))}
                     </div>
+                  </div>
 
-                    <div className="overflow-x-auto mt-4">
-                      <table className="w-full text-sm text-left text-slate-400 border border-slate-700 rounded-lg overflow-hidden">
-                        <caption className="text-left text-xs text-slate-500 px-4 pt-2 pb-3">
-                          {t.analytics.tableCaption}
+                  <div className="rounded-xl border border-slate-200 bg-white/60 p-6">
+                    <h3 className="text-xl font-semibold text-slate-900 mb-3">{t.verificationThirdParties.title}</h3>
+                    <div className="space-y-3 text-slate-700">
+                      {t.verificationThirdParties.paragraphs.map((p, i) => (
+                        <p key={i}>{p}</p>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div className="rounded-xl border border-slate-200 bg-white/60 p-6">
+                    <h3 className="text-xl font-semibold text-slate-900 mb-3">{t.essentialStorage.title}</h3>
+                    <p className="text-slate-700 mb-4">{t.essentialStorage.description}</p>
+                    <div className="overflow-x-auto rounded-lg border border-slate-200 overflow-hidden bg-white/60">
+                      <table className="min-w-full text-left text-sm text-slate-700">
+                        <caption className="text-left text-xs text-slate-600 px-4 pt-2 pb-3">
+                          {t.essentialStorage.tableCaption}
                         </caption>
-                        <thead className="bg-slate-800 text-xs uppercase text-slate-300">
+                        <thead className="bg-slate-900 text-white text-xs uppercase">
                           <tr>
-                            {t.analytics.headers.map((header, index) => (
-                              <th key={index} scope="col" className="px-4 py-3">
+                            {t.essentialStorage.headers.map((header, index) => (
+                              <th key={index} scope="col" className="px-4 py-3 font-semibold">
                                 {header}
                               </th>
                             ))}
                           </tr>
                         </thead>
-                        <tbody>
-                          {t.analytics.rows.map((row, rowIndex) => (
-                            <tr
-                              key={rowIndex}
-                              className={rowIndex % 2 === 0 ? 'bg-slate-900/50' : 'bg-slate-800/30'}
-                            >
+                        <tbody className="divide-y divide-slate-200">
+                          {t.essentialStorage.rows.map((row, rowIndex) => (
+                            <tr key={rowIndex}>
                               {row.map((cell, cellIndex) => (
                                 <td key={cellIndex} className="px-4 py-3 align-top">
                                   {cell}
@@ -480,49 +635,131 @@ export default function CookiePolicyPage() {
                           ))}
                         </tbody>
                       </table>
+                    </div>
+                  </div>
+
+                  <div className="rounded-xl border border-slate-200 bg-white/60 p-6">
+                    <h3 className="text-xl font-semibold text-slate-900 mb-2">{t.optionalIntro.title}</h3>
+                    <p className="text-slate-700 mb-6">{t.optionalIntro.description}</p>
+
+                    <div className="space-y-8">
+                      <div>
+                        <h4 className="text-lg font-semibold text-slate-900 mb-2">{t.analytics.title}</h4>
+                        <p className="text-slate-700 mb-3">{t.analytics.description}</p>
+                        <ul className="list-disc pl-6 space-y-2 text-slate-700 mb-4">
+                          {t.analytics.bullets.map((item, index) => (
+                            <li key={index}>{item}</li>
+                          ))}
+                        </ul>
+                        <div className="overflow-x-auto rounded-lg border border-slate-200 overflow-hidden bg-white/60">
+                          <table className="min-w-full text-left text-sm text-slate-700">
+                            <caption className="text-left text-xs text-slate-600 px-4 pt-2 pb-3">
+                              {t.analytics.tableCaption}
+                            </caption>
+                            <thead className="bg-slate-900 text-white text-xs uppercase">
+                              <tr>
+                                {t.analytics.headers.map((header, index) => (
+                                  <th key={index} scope="col" className="px-4 py-3 font-semibold">
+                                    {header}
+                                  </th>
+                                ))}
+                              </tr>
+                            </thead>
+                            <tbody className="divide-y divide-slate-200">
+                              {t.analytics.rows.map((row, rowIndex) => (
+                                <tr key={rowIndex}>
+                                  {row.map((cell, cellIndex) => (
+                                    <td key={cellIndex} className="px-4 py-3 align-top">
+                                      {cell}
+                                    </td>
+                                  ))}
+                                </tr>
+                              ))}
+                            </tbody>
+                          </table>
+                        </div>
+                      </div>
+
+                      <div>
+                        <h4 className="text-lg font-semibold text-slate-900 mb-2">{t.errorTracking.title}</h4>
+                        <p className="text-slate-700 mb-3">{t.errorTracking.description}</p>
+                        <ul className="list-disc pl-6 space-y-2 text-slate-700">
+                          {t.errorTracking.bullets.map((item, index) => (
+                            <li key={index}>{item}</li>
+                          ))}
+                        </ul>
+                      </div>
+
+                      <div>
+                        <h4 className="text-lg font-semibold text-slate-900 mb-2">{t.sessionReplay.title}</h4>
+                        <p className="text-slate-700 mb-3">{t.sessionReplay.description}</p>
+                        <ul className="list-disc pl-6 space-y-2 text-slate-700">
+                          {t.sessionReplay.bullets.map((item, index) => (
+                            <li key={index}>{item}</li>
+                          ))}
+                        </ul>
+                      </div>
+
+                      <div>
+                        <h4 className="text-lg font-semibold text-slate-900 mb-2">{t.marketing.title}</h4>
+                        <p className="text-slate-700 mb-3">{t.marketing.description}</p>
+                        <ul className="list-disc pl-6 space-y-2 text-slate-700">
+                          {t.marketing.bullets.map((item, index) => (
+                            <li key={index}>{item}</li>
+                          ))}
+                        </ul>
+                      </div>
                     </div>
                   </div>
                 </div>
               </section>
 
-              {/* Cookie banner logic */}
               <section className="mb-12">
-                <h2 className="text-2xl font-semibold text-white mt-8 mb-4">
-                  {t.bannerLogic.title}
-                </h2>
-                <div className="space-y-3 text-slate-400 mb-4">
+                <h2 className="text-2xl font-semibold text-slate-900 mb-4">{t.consentProof.title}</h2>
+                <div className="space-y-3 text-slate-700">
+                  {t.consentProof.paragraphs.map((p, i) => (
+                    <p key={i}>{p}</p>
+                  ))}
+                </div>
+              </section>
+
+              <section className="mb-12">
+                <h2 className="text-2xl font-semibold text-slate-900 mb-4">{t.functionalNote.title}</h2>
+                <div className="space-y-3 text-slate-700">
+                  {t.functionalNote.paragraphs.map((p, i) => (
+                    <p key={i}>{p}</p>
+                  ))}
+                </div>
+              </section>
+
+              <section className="mb-12">
+                <h2 className="text-2xl font-semibold text-slate-900 mb-4">{t.bannerLogic.title}</h2>
+                <div className="space-y-3 text-slate-700 mb-4">
                   {t.bannerLogic.paragraphs.map((paragraph, index) => (
                     <p key={index}>{paragraph}</p>
                   ))}
                 </div>
-                <ul className="list-disc pl-6 space-y-2 text-slate-400">
+                <ul className="list-disc pl-6 space-y-2 text-slate-700">
                   {t.bannerLogic.bullets.map((item, index) => (
                     <li key={index}>{item}</li>
                   ))}
                 </ul>
               </section>
 
-              {/* Manage / delete cookies */}
               <section className="mb-12">
-                <h2 className="text-2xl font-semibold text-white mt-8 mb-4">{t.manage.title}</h2>
-                <p className="text-slate-400 mb-4">{t.manage.description}</p>
-
-                <div className="space-y-6 text-slate-400">
+                <h2 className="text-2xl font-semibold text-slate-900 mb-4">{t.manage.title}</h2>
+                <p className="text-slate-700 mb-4">{t.manage.description}</p>
+                <div className="space-y-6 text-slate-700">
                   <div>
-                    <h3 className="text-lg font-semibold text-white mb-2">
-                      {t.manage.onSiteTitle}
-                    </h3>
+                    <h3 className="text-lg font-semibold text-slate-900 mb-2">{t.manage.onSiteTitle}</h3>
                     <ul className="list-disc pl-6 space-y-2">
                       {t.manage.onSiteItems.map((item, index) => (
                         <li key={index}>{item}</li>
                       ))}
                     </ul>
                   </div>
-
                   <div>
-                    <h3 className="text-lg font-semibold text-white mb-2">
-                      {t.manage.browserTitle}
-                    </h3>
+                    <h3 className="text-lg font-semibold text-slate-900 mb-2">{t.manage.browserTitle}</h3>
                     <p className="mb-3">{t.manage.browserIntro}</p>
                     <ul className="list-disc pl-6 space-y-2">
                       {t.manage.browserLinks.map((link, index) => (
@@ -531,7 +768,7 @@ export default function CookiePolicyPage() {
                             href={link.href}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="text-violet-400 hover:text-violet-300 hover:underline"
+                            className="text-violet-600 underline hover:text-violet-700"
                           >
                             {link.name}
                           </a>
@@ -542,36 +779,48 @@ export default function CookiePolicyPage() {
                 </div>
               </section>
 
-              {/* Retention */}
               <section className="mb-12">
-                <h2 className="text-2xl font-semibold text-white mt-8 mb-4">
-                  {t.retention.title}
-                </h2>
-                <p className="text-slate-400 mb-4">{t.retention.intro}</p>
-                <ul className="list-disc pl-6 space-y-2 text-slate-400">
+                <h2 className="text-2xl font-semibold text-slate-900 mb-4">{t.processors.title}</h2>
+                <p className="text-slate-700 mb-3">{t.processors.intro}</p>
+                <ul className="list-disc pl-6 space-y-2 text-slate-700">
+                  {t.processors.links.map((link) => (
+                    <li key={link.href}>
+                      <a
+                        href={link.href}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-violet-600 underline hover:text-violet-700"
+                      >
+                        {link.name}
+                      </a>
+                    </li>
+                  ))}
+                </ul>
+              </section>
+
+              <section className="mb-12">
+                <h2 className="text-2xl font-semibold text-slate-900 mb-4">{t.retention.title}</h2>
+                <p className="text-slate-700 mb-4">{t.retention.intro}</p>
+                <ul className="list-disc pl-6 space-y-2 text-slate-700">
                   {t.retention.bullets.map((item, index) => (
                     <li key={index}>{item}</li>
                   ))}
                 </ul>
               </section>
 
-              {/* Compliance */}
               <section className="mb-12">
-                <h2 className="text-2xl font-semibold text-white mt-8 mb-4">
-                  {t.compliance.title}
-                </h2>
-                <div className="space-y-3 text-slate-400">
+                <h2 className="text-2xl font-semibold text-slate-900 mb-4">{t.compliance.title}</h2>
+                <div className="space-y-3 text-slate-700">
                   {t.compliance.paragraphs.map((paragraph, index) => (
                     <p key={index}>{paragraph}</p>
                   ))}
                 </div>
               </section>
 
-              {/* Contact */}
               <section className="mb-12">
-                <h2 className="text-2xl font-semibold text-white mt-8 mb-4">{t.contact.title}</h2>
-                <p className="text-slate-400 mb-4">{t.contact.description}</p>
-                <p className="text-slate-400">{t.contact.email}</p>
+                <h2 className="text-2xl font-semibold text-slate-900 mb-4">{t.contact.title}</h2>
+                <p className="text-slate-700 mb-4">{t.contact.description}</p>
+                <p className="text-slate-700">{t.contact.email}</p>
               </section>
             </div>
           </div>
@@ -580,4 +829,3 @@ export default function CookiePolicyPage() {
     </MarketingSubpageWrapperLight>
   )
 }
-

@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { grantConsent, withdrawConsent, type ConsentType } from '@/lib/privacy/cookie-consent-server'
 import { safeLogger } from '@/lib/utils/logger'
+import { getTruncatedClientIpFromNextRequest } from '@/lib/privacy/truncate-client-ip'
 
 /**
  * POST /api/privacy/consent
@@ -26,7 +27,7 @@ export async function POST(req: NextRequest) {
     const { data: { user } } = await supabase.auth.getUser()
 
     const metadata = {
-      ip_address: req.headers.get('x-forwarded-for') || req.headers.get('x-real-ip') || undefined,
+      ip_address: getTruncatedClientIpFromNextRequest(req) || undefined,
       user_agent: req.headers.get('user-agent') || undefined,
       consent_method: 'preference_center',
       sessionId: sessionId || undefined

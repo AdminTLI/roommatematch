@@ -175,41 +175,42 @@ export function CookiePreferenceCenter({ locale = 'en', onClose }: CookiePrefere
   const t = consentDescriptions[locale]
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50">
-      <Card className="w-full max-w-2xl max-h-[90vh] flex flex-col">
-        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4 flex-shrink-0">
+    <div className="fixed inset-0 z-[80] flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-sm dark:bg-black/55">
+      <Card className="flex max-h-[90vh] w-full max-w-2xl flex-col border border-white/80 bg-white/95 text-slate-900 shadow-[0_24px_80px_rgba(15,23,42,0.15)] backdrop-blur-xl supports-[backdrop-filter]:bg-white/90 dark:border-slate-700 dark:bg-slate-900/95 dark:text-slate-50 dark:shadow-[0_24px_80px_rgba(0,0,0,0.5)] dark:supports-[backdrop-filter]:bg-slate-900/90">
+        <CardHeader className="flex flex-shrink-0 flex-row items-center justify-between space-y-0 border-b border-slate-200/80 pb-4 dark:border-slate-700">
           <div className="flex items-center gap-3">
-            <Cookie className="h-6 w-6 text-gray-600" />
-            <CardTitle className="text-xl sm:text-2xl">
+            <Cookie className="h-6 w-6 text-blue-600 dark:text-violet-400" />
+            <CardTitle className="text-xl font-bold tracking-tight text-slate-900 sm:text-2xl dark:text-slate-50">
               {locale === 'nl' ? 'Cookie Voorkeuren' : 'Cookie Preferences'}
             </CardTitle>
           </div>
           {onClose && (
             <Button
               variant="ghost"
-              size="icon"
+              size="sm"
               onClick={onClose}
-              className="h-8 w-8"
+              className="h-10 w-10 shrink-0 rounded-full p-0 text-slate-500 hover:bg-slate-100 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-50"
+              aria-label={locale === 'nl' ? 'Sluiten' : 'Close'}
             >
               <X className="h-4 w-4" />
             </Button>
           )}
         </CardHeader>
-        <CardContent className="space-y-6 overflow-y-auto flex-1 pr-1 [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-thumb]:bg-gray-300 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-track]:bg-transparent">
-          <CardDescription>
-            {locale === 'nl' 
+        <CardContent className="flex-1 space-y-6 overflow-y-auto pr-1 pt-6 [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-slate-300 dark:[&::-webkit-scrollbar-thumb]:bg-slate-600 [&::-webkit-scrollbar-track]:bg-transparent">
+          <CardDescription className="text-slate-600 dark:text-slate-300">
+            {locale === 'nl'
               ? 'Beheer uw cookie voorkeuren. U kunt deze instellingen op elk moment wijzigen.'
               : 'Manage your cookie preferences. You can change these settings at any time.'}
           </CardDescription>
 
           {/* Essential Cookies */}
-          <div className="flex items-start justify-between p-4 border border-gray-200 rounded-lg bg-gray-50">
+          <div className="flex items-start justify-between rounded-2xl border border-slate-200/90 bg-slate-50/90 p-4 dark:border-slate-600 dark:bg-slate-800/60">
             <div className="flex-1 pr-4">
-              <div className="flex items-center gap-2 mb-2">
-                <Label className="text-base font-semibold">{t.essential.title}</Label>
-                <Info className="h-4 w-4 text-gray-400" />
+              <div className="mb-2 flex items-center gap-2">
+                <Label className="text-base font-semibold text-slate-900 dark:text-slate-50">{t.essential.title}</Label>
+                <Info className="h-4 w-4 text-slate-400 dark:text-slate-500" />
               </div>
-              <p className="text-sm text-gray-600">{t.essential.description}</p>
+              <p className="text-sm leading-relaxed text-slate-600 dark:text-slate-300">{t.essential.description}</p>
             </div>
             <Switch
               checked={preferences.essential}
@@ -219,10 +220,10 @@ export function CookiePreferenceCenter({ locale = 'en', onClose }: CookiePrefere
           </div>
 
           {/* Analytics */}
-          <div className="flex items-start justify-between p-4 border border-gray-200 rounded-lg">
+          <div className="flex items-start justify-between rounded-2xl border border-slate-200/90 p-4 dark:border-slate-600">
             <div className="flex-1 pr-4">
-              <Label className="text-base font-semibold mb-2 block">{t.analytics.title}</Label>
-              <p className="text-sm text-gray-600">{t.analytics.description}</p>
+              <Label className="mb-2 block text-base font-semibold text-slate-900 dark:text-slate-50">{t.analytics.title}</Label>
+              <p className="text-sm leading-relaxed text-slate-600 dark:text-slate-300">{t.analytics.description}</p>
             </div>
             <Switch
               checked={preferences.analytics}
@@ -231,10 +232,10 @@ export function CookiePreferenceCenter({ locale = 'en', onClose }: CookiePrefere
           </div>
 
           {/* Error Tracking */}
-          <div className="flex items-start justify-between p-4 border border-gray-200 rounded-lg">
+          <div className="flex items-start justify-between rounded-2xl border border-slate-200/90 p-4 dark:border-slate-600">
             <div className="flex-1 pr-4">
-              <Label className="text-base font-semibold mb-2 block">{t.error_tracking.title}</Label>
-              <p className="text-sm text-gray-600">{t.error_tracking.description}</p>
+              <Label className="mb-2 block text-base font-semibold text-slate-900 dark:text-slate-50">{t.error_tracking.title}</Label>
+              <p className="text-sm leading-relaxed text-slate-600 dark:text-slate-300">{t.error_tracking.description}</p>
             </div>
             <Switch
               checked={preferences.error_tracking}
@@ -243,10 +244,10 @@ export function CookiePreferenceCenter({ locale = 'en', onClose }: CookiePrefere
           </div>
 
           {/* Session Replay */}
-          <div className="flex items-start justify-between p-4 border border-gray-200 rounded-lg">
+          <div className="flex items-start justify-between rounded-2xl border border-slate-200/90 p-4 dark:border-slate-600">
             <div className="flex-1 pr-4">
-              <Label className="text-base font-semibold mb-2 block">{t.session_replay.title}</Label>
-              <p className="text-sm text-gray-600">{t.session_replay.description}</p>
+              <Label className="mb-2 block text-base font-semibold text-slate-900 dark:text-slate-50">{t.session_replay.title}</Label>
+              <p className="text-sm leading-relaxed text-slate-600 dark:text-slate-300">{t.session_replay.description}</p>
             </div>
             <Switch
               checked={preferences.session_replay}
@@ -255,10 +256,10 @@ export function CookiePreferenceCenter({ locale = 'en', onClose }: CookiePrefere
           </div>
 
           {/* Marketing */}
-          <div className="flex items-start justify-between p-4 border border-gray-200 rounded-lg">
+          <div className="flex items-start justify-between rounded-2xl border border-slate-200/90 p-4 dark:border-slate-600">
             <div className="flex-1 pr-4">
-              <Label className="text-base font-semibold mb-2 block">{t.marketing.title}</Label>
-              <p className="text-sm text-gray-600">{t.marketing.description}</p>
+              <Label className="mb-2 block text-base font-semibold text-slate-900 dark:text-slate-50">{t.marketing.title}</Label>
+              <p className="text-sm leading-relaxed text-slate-600 dark:text-slate-300">{t.marketing.description}</p>
             </div>
             <Switch
               checked={preferences.marketing}
@@ -266,10 +267,10 @@ export function CookiePreferenceCenter({ locale = 'en', onClose }: CookiePrefere
             />
           </div>
 
-          <div className="flex flex-col sm:flex-row gap-3 pt-4 border-t flex-shrink-0">
+          <div className="flex flex-shrink-0 flex-col gap-3 border-t border-slate-200/80 pt-4 dark:border-slate-700 sm:flex-row">
             <Button
               onClick={handleSave}
-              className="flex-1 bg-brand-600 hover:bg-brand-700 text-white"
+              className="flex-1 rounded-full bg-blue-600 font-semibold text-white shadow-lg shadow-blue-600/20 hover:bg-blue-700 dark:bg-violet-600 dark:shadow-violet-600/20 dark:hover:bg-violet-700"
             >
               {locale === 'nl' ? 'Voorkeuren Opslaan' : 'Save Preferences'}
             </Button>
@@ -277,7 +278,7 @@ export function CookiePreferenceCenter({ locale = 'en', onClose }: CookiePrefere
               <Button
                 variant="outline"
                 onClick={onClose}
-                className="w-full sm:w-auto"
+                className="w-full rounded-full border-slate-200/90 bg-white/70 sm:w-auto dark:border-slate-600 dark:bg-slate-800/80 dark:text-slate-100 dark:hover:bg-slate-800"
               >
                 {locale === 'nl' ? 'Annuleren' : 'Cancel'}
               </Button>
