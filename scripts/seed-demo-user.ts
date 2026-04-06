@@ -449,7 +449,7 @@ async function createDemoUser() {
     console.log('🎉 Demo user setup completed successfully!')
     console.log('')
     console.log('📧 Email:', DEMO_USER_EMAIL)
-    console.log('🔑 Password: (set via DEMO_USER_PASSWORD — not printed)')
+    console.log('🔑 Password: (set via DEMO_USER_PASSWORD  -  not printed)')
     console.log('🆔 User ID:', userId)
     console.log('')
     console.log('You can now test the full application flow with this demo account.')

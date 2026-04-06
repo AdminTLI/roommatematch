@@ -1062,7 +1062,7 @@ export function StudentMatchesInterface({ user }: StudentMatchesInterfaceProps) 
             ))}
           </div>
 
-          {/* Mobile (viewport < md): hybrid — one focused card with in-page navigation, or browse all on page */}
+          {/* Mobile (viewport < md): hybrid  -  one focused card with in-page navigation, or browse all on page */}
           <div className="md:hidden space-y-4 mb-4">
             {pageSlice.length > 0 && (
               <div className="flex flex-col gap-3">

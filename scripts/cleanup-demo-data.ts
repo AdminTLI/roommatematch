@@ -4,7 +4,7 @@
  * Demo Data Cleanup Script
  * 
  * Purges all demo/fake entities from the database while preserving:
- * - The whitelisted account (DEMO_USER_EMAIL — never commit real values)
+ * - The whitelisted account (DEMO_USER_EMAIL  -  never commit real values)
  * - All real user data
  * - System configuration data
  * 

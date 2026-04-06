@@ -30,7 +30,8 @@ export function ThemeRouteHandler() {
             pathname?.startsWith('/about') ||
             pathname?.startsWith('/privacy') ||
             pathname?.startsWith('/terms') ||
-            pathname?.startsWith('/cookies')
+            pathname?.startsWith('/cookies') ||
+            pathname?.startsWith('/accessibility')
 
         if (isAppPage) {
             setTheme('dark')

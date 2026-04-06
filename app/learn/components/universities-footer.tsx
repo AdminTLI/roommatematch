@@ -42,6 +42,7 @@ const copy: Record<
           { name: 'Contact Sales', href: '/contact' },
           { name: 'Documentation', href: '/docs' },
           { name: 'Status', href: '/status' },
+          { name: 'Accessibility', href: '/accessibility' },
         ],
       },
       {
@@ -50,7 +51,6 @@ const copy: Record<
           { name: 'Privacy Policy', href: '/privacy' },
           { name: 'Terms of Service', href: '/terms' },
           { name: 'Data Processing Agreement', href: '/dpa' },
-          { name: 'Accessibility', href: '/accessibility' },
         ],
       },
     ],
@@ -84,6 +84,7 @@ const copy: Record<
           { name: 'Contact sales', href: '/contact' },
           { name: 'Documentatie', href: '/docs' },
           { name: 'Status', href: '/status' },
+          { name: 'Toegankelijkheid', href: '/accessibility' },
         ],
       },
       {
@@ -92,7 +93,6 @@ const copy: Record<
           { name: 'Privacybeleid', href: '/privacy' },
           { name: 'Algemene voorwaarden', href: '/terms' },
           { name: 'Verwerkersovereenkomst', href: '/dpa' },
-          { name: 'Toegankelijkheid', href: '/accessibility' },
         ],
       },
     ],

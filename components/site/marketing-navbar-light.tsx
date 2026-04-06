@@ -68,7 +68,7 @@ const buttonContent = {
   },
 }
 
-/** Inactive Beta nav label — matches landing headline gradient, bolder than other links */
+/** Inactive Beta nav label  -  matches landing headline gradient, bolder than other links */
 const betaNavInactiveLabelClass =
   'text-transparent bg-clip-text bg-gradient-to-r from-blue-700 to-violet-700 font-bold'
 

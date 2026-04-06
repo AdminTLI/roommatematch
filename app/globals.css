@@ -396,7 +396,7 @@ body:has([data-chat-page]) .safe-area-inset > div {
   }
 
   /* Open thread: dock hidden. 100dvh already matches the visible viewport on iOS Safari; do not add a
-     fixed rem band here — it stacked with the URL bar inset and left a gap above the toolbar/keyboard. */
+     fixed rem band here  -  it stacked with the URL bar inset and left a gap above the toolbar/keyboard. */
   body.chat-page.mobile-chat-active-conversation,
   body:has([data-chat-page]).mobile-chat-active-conversation {
     --chat-bottom-offset: env(safe-area-inset-bottom, 0px) !important;
@@ -411,7 +411,7 @@ body:has([data-chat-page]) .safe-area-inset > div {
   body:has([data-chat-page]) [data-messenger-sidebar] {
     padding-bottom: var(--chat-bottom-offset, 120px) !important;
   }
-  /* Profile / compatibility full-screen sheets: do not reserve floating-dock padding here —
+  /* Profile / compatibility full-screen sheets: do not reserve floating-dock padding here  - 
      it created a false bottom gap and huge scrollable whitespace inside the panel. */
 }
 
@@ -996,7 +996,7 @@ body:has([data-chat-page]) [class*="border-t"][class*="shadow-2xl"] {
 
 }
 
-/* Unlayered: wins over @layer utilities — mobile browser top chrome (not covered by safe-area alone) */
+/* Unlayered: wins over @layer utilities  -  mobile browser top chrome (not covered by safe-area alone) */
 @media (max-width: 1023px) {
   .app-shell-visual-viewport-pad {
     padding-top: calc(env(safe-area-inset-top, 0px) + var(--app-visual-top-inset, 0px)) !important;

@@ -55,7 +55,7 @@ export function CookieConsentBanner({ locale = 'en' }: CookieConsentBannerProps)
       setShowBanner(true)
       setShowReopenControl(false)
     } else if (getClientConsents()) {
-      // User already saved choices — offer a persistent way to reopen the preference center
+      // User already saved choices  -  offer a persistent way to reopen the preference center
       setShowReopenControl(true)
     }
   }, [])

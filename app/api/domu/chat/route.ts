@@ -1,13 +1,15 @@
 import { NextResponse } from 'next/server'
 import { GoogleGenAI } from '@google/genai'
 import { createServiceClient } from '@/lib/supabase/service'
+import { appendSourcesSection, extractGroundingSources } from '@/lib/domu-ai/grounding-sources'
+import { buildDomuSystemInstruction } from '@/lib/domu-ai/system-prompt'
 
 /** Vercel Hobby caps server routes at ~10s; Pro can raise this in dashboard if needed. */
 export const maxDuration = 10
 
 const GEMINI_MODEL = 'gemini-2.5-flash' as const
-/** 350 was too small for 2.5 + Google Search: answers hit MAX_TOKENS mid-sentence. */
-const MAX_OUTPUT_TOKENS = 2048
+/** Room for richer, sectioned answers + Google Search without cutting off mid-sentence. */
+const MAX_OUTPUT_TOKENS = 3072
 const GEMINI_TIMEOUT_MS = 9000
 
 /** Max number of prior messages to send as context (user + assistant pairs). */
@@ -69,6 +71,7 @@ export async function POST(request: Request) {
         model: GEMINI_MODEL,
         contents,
         config: {
+          systemInstruction: buildDomuSystemInstruction(),
           tools: [{ googleSearch: {} }],
           maxOutputTokens: MAX_OUTPUT_TOKENS,
           // 2.5 models use "thinking" by default; it competes with visible output under maxOutputTokens.
@@ -80,7 +83,9 @@ export async function POST(request: Request) {
       clearTimeout(timeoutId)
     }
 
-    const reply = response.text ?? "I couldn't generate a response."
+    const rawText = response.text ?? "I couldn't generate a response."
+    const sources = extractGroundingSources(response)
+    const reply = appendSourcesSection(rawText, sources)
 
     // Save to Supabase (best-effort, don't block)
     try {

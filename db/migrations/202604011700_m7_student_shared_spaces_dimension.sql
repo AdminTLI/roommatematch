@@ -1,6 +1,6 @@
 -- Student M7 (privacy-territoriality) copy replaced 2026-04: get_shared_spaces_dimension
 -- must align with data/item-bank.v1.json.
--- New M7_Q1: closed-door entry MCQ. New M7_Q3/M7_Q4: bedroom privacy / sanctuary — inverted
+-- New M7_Q1: closed-door entry MCQ. New M7_Q3/M7_Q4: bedroom privacy / sanctuary  -  inverted
 -- into “shared-space openness” (higher = more communal / less strict territorial norms).
 -- Legacy: M7_Q1 bipolar numeric 1–5 + old M7_Q3/M7_Q4 likerts (no invert on Q3/Q4).
 

@@ -223,7 +223,7 @@ export function AccountSettings({ user, profile, onVisibilityChange }: AccountSe
       <div className="space-y-4">
         <h3 className="text-sm font-medium text-zinc-600 dark:text-zinc-400 uppercase tracking-wider px-1">Security</h3>
         <div className="bg-white/80 dark:bg-zinc-900/40 border border-zinc-200 dark:border-white/10 rounded-2xl overflow-hidden divide-y divide-zinc-200 dark:divide-white/5 backdrop-blur-xl">
-          {/* Email Address — read-only; changes via support only */}
+          {/* Email Address  -  read-only; changes via support only */}
           <div className="p-4 flex flex-col sm:flex-row sm:items-center gap-4 bg-zinc-50 dark:bg-zinc-900/60">
             <div className="flex items-center gap-3 sm:w-1/3">
               <Mail className="w-4 h-4 text-zinc-400 dark:text-zinc-500" />

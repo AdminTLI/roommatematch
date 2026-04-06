@@ -2,7 +2,7 @@
 // GET /api/housing/listings with comprehensive filtering and sorting
 //
 // `revalidate` applies when the route can be fully static; this handler uses cookies/session,
-// so Next may still treat it as dynamic — HTTP Cache-Control below is the main lever for anonymous traffic.
+// so Next may still treat it as dynamic  -  HTTP Cache-Control below is the main lever for anonymous traffic.
 
 import { NextRequest, NextResponse } from 'next/server'
 import { z } from 'zod'

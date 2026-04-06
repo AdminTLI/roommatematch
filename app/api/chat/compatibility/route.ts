@@ -344,7 +344,7 @@ export async function GET(request: NextRequest) {
             personalizedExplanation = templateExplanation()
           } catch {
             personalizedExplanation =
-              'You have overlapping lifestyle signals in our questionnaire—worth a conversation to see if day-to-day habits line up.'
+              'You have overlapping lifestyle signals in our questionnaire - worth a conversation to see if day-to-day habits line up.'
           }
         }
       } else {

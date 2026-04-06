@@ -38,7 +38,7 @@ export class DistributedLock {
           '3. Add these environment variables to your deployment platform:\n' +
           '   - UPSTASH_REDIS_REST_URL (e.g., https://your-instance.upstash.io)\n' +
           '   - UPSTASH_REDIS_REST_TOKEN (your API token)\n' +
-          '   (Vercel may also expose KV_REST_API_URL / KV_REST_API_TOKEN — both work.)\n' +
+          '   (Vercel may also expose KV_REST_API_URL / KV_REST_API_TOKEN  -  both work.)\n' +
           '4. Redeploy your application\n\n' +
           'See env.example for more details.'
         )

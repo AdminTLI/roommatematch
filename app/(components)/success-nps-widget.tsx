@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useState, useCallback } from 'react'
+import { motion, useReducedMotion } from 'framer-motion'
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Textarea } from '@/components/ui/textarea'
@@ -15,6 +16,7 @@ interface EligibilityResponse {
 }
 
 export function SuccessNpsWidget() {
+  const prefersReducedMotion = useReducedMotion()
   const [isVisible, setIsVisible] = useState(false)
   const [isLoading, setIsLoading] = useState(true)
   const [step, setStep] = useState<Step>('success')
@@ -148,8 +150,32 @@ export function SuccessNpsWidget() {
 
   const canSubmit = !!successStatus && npsScore !== null && !isSubmitting
 
+  // Left of Domu AI FAB (14×14, 1rem gap); bottom offsets mirror domu-chat-widget.tsx.
   return (
-    <div className="fixed bottom-4 right-4 z-50 w-80 max-w-[calc(100vw-2rem)]">
+    <motion.div
+      className="fixed z-40 w-80 max-w-[min(20rem,calc(100vw-6.5rem))] bottom-[calc(6.25rem+env(safe-area-inset-bottom,0px))] right-[calc(1rem+3.5rem+1rem)] md:bottom-6 md:right-[calc(1.5rem+3.5rem+1rem)]"
+      initial={
+        prefersReducedMotion ? false : { y: 52, opacity: 0, x: 0 }
+      }
+      animate={
+        prefersReducedMotion
+          ? undefined
+          : {
+              y: 0,
+              opacity: 1,
+              x: [0, -7, 7, -5, 5, -3, 3, 0],
+            }
+      }
+      transition={
+        prefersReducedMotion
+          ? undefined
+          : {
+              y: { duration: 0.4, ease: [0.22, 1, 0.36, 1] },
+              opacity: { duration: 0.28 },
+              x: { duration: 0.5, delay: 0.3, ease: 'easeInOut' },
+            }
+      }
+    >
       <Card className="shadow-lg border border-zinc-200/80 dark:border-zinc-800/80 bg-background">
         <CardHeader className="pb-2 flex flex-row items-start justify-between space-y-0">
           <div>
@@ -281,7 +307,7 @@ export function SuccessNpsWidget() {
           )}
         </CardContent>
       </Card>
-    </div>
+    </motion.div>
   )
 }
 

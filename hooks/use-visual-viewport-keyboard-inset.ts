@@ -61,7 +61,7 @@ export function useVisualViewportKeyboardInset(
       document.documentElement?.clientHeight && document.documentElement.clientHeight > 0
         ? document.documentElement.clientHeight
         : innerH
-    // Use the larger of the two "obscured bottom" estimates — Chrome iOS sometimes disagrees between
+    // Use the larger of the two "obscured bottom" estimates  -  Chrome iOS sometimes disagrees between
     // innerHeight and clientHeight relative to visualViewport.
     const insetInner = Math.max(0, Math.round(innerH - vv.offsetTop - vv.height))
     const insetClient = Math.max(0, Math.round(clientH - vv.offsetTop - vv.height))
@@ -69,7 +69,7 @@ export function useVisualViewportKeyboardInset(
     const layoutH = Math.max(innerH, clientH)
     const heightRatio = vv.height / layoutH
 
-    // Large inset: usually keyboard; iOS Chrome sometimes over-reports — bias down slightly.
+    // Large inset: usually keyboard; iOS Chrome sometimes over-reports  -  bias down slightly.
     const keyboardHeavy =
       rawInset >= 110 || (rawInset >= 56 && heightRatio < 0.58 && vv.offsetTop > 8)
 

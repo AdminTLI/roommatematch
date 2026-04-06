@@ -134,14 +134,37 @@ export function DomuChatWidget() {
                       }`}
                     >
                       {msg.role === 'assistant' ? (
-                        <div className="prose prose-sm prose-slate dark:prose-invert max-w-none">
+                        <div className="prose prose-sm prose-slate dark:prose-invert max-w-none prose-p:mb-3 prose-p:leading-relaxed prose-p:last:mb-0 prose-headings:font-semibold prose-headings:text-slate-800 dark:prose-headings:text-slate-100 prose-h2:mb-2 prose-h2:mt-4 prose-h2:text-base prose-h2:first:mt-0 prose-h3:mb-2 prose-h3:mt-3 prose-h3:text-[0.9375rem] prose-h3:first:mt-0 prose-hr:my-5 prose-hr:border-slate-200 dark:prose-hr:border-slate-600 prose-strong:font-semibold prose-strong:text-slate-900 dark:prose-strong:text-white">
                           <ReactMarkdown
                             remarkPlugins={[remarkGfm]}
                             components={{
-                              p: ({ children }) => <p className="mb-2 last:mb-0">{children}</p>,
-                              ul: ({ children }) => <ul className="list-disc pl-4 space-y-1">{children}</ul>,
-                              ol: ({ children }) => <ol className="list-decimal pl-4 space-y-1">{children}</ol>,
-                              li: ({ children }) => <li className="leading-snug">{children}</li>
+                              p: ({ children }) => <p className="mb-3 last:mb-0 leading-relaxed">{children}</p>,
+                              h2: ({ children }) => (
+                                <h2 className="mb-2 mt-4 border-b border-slate-200 pb-1 text-base font-semibold first:mt-0 dark:border-slate-600">
+                                  {children}
+                                </h2>
+                              ),
+                              h3: ({ children }) => (
+                                <h3 className="mb-2 mt-3 text-[0.9375rem] font-semibold first:mt-0">{children}</h3>
+                              ),
+                              hr: () => <hr className="my-5 border-0 border-t border-slate-200 dark:border-slate-600" />,
+                              ul: ({ children }) => (
+                                <ul className="my-2 list-disc space-y-2 pl-4 marker:text-slate-400">{children}</ul>
+                              ),
+                              ol: ({ children }) => (
+                                <ol className="my-2 list-decimal space-y-2 pl-4 marker:text-slate-400">{children}</ol>
+                              ),
+                              li: ({ children }) => <li className="leading-relaxed">{children}</li>,
+                              a: ({ href, children }) => (
+                                <a
+                                  href={href}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="break-words font-medium text-[var(--brand-primary)] underline decoration-2 underline-offset-2 hover:opacity-90"
+                                >
+                                  {children}
+                                </a>
+                              )
                             }}
                           >
                             {msg.text}

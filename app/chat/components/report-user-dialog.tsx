@@ -92,7 +92,7 @@ export function ReportUserDialog({
         throw new Error(data.error || 'Failed to submit report')
       }
 
-      showSuccessToast('Report submitted', 'Thank you — our team will review this.')
+      showSuccessToast('Report submitted', 'Thank you  -  our team will review this.')
       handleOpenChange(false)
       onSubmitted?.()
     } catch (e: unknown) {
@@ -179,7 +179,7 @@ export function ReportUserDialog({
             />
             <label htmlFor="report-consent" className="cursor-pointer text-sm leading-snug text-zinc-800 dark:text-zinc-200">
               I agree that Domu Match moderators may read the <strong>10 most recent messages</strong> in this
-              chat — including my messages and those from others — to review this report. This consent is stored
+              chat  -  including my messages and those from others  -  to review this report. This consent is stored
               with my report.
             </label>
           </div>

@@ -1,5 +1,5 @@
 -- Student M1 (personality-values) copy changed mid-2026. M1_Q14 replaced
--- "tidy surroundings" with "quiet empty apartment after long classes" — inverted
+-- "tidy surroundings" with "quiet empty apartment after long classes"  -  inverted
 -- vs. the old M1_Q13 "energized by social activity" signal for the same dimension.
 -- Legacy rows may still hold old semantics until users re-submit the section.
 

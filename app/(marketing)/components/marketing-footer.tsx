@@ -51,6 +51,7 @@ const copy: Record<
           { name: 'Contact Us', href: '/contact' },
           { name: 'FAQ', href: '/faq' },
           { name: 'Status', href: '/status' },
+          { name: 'Accessibility', href: '/accessibility' },
         ],
       },
       {
@@ -59,7 +60,6 @@ const copy: Record<
           { name: 'Privacy Policy', href: '/privacy' },
           { name: 'Terms & Conditions', href: '/terms' },
           { name: 'Cookie & local storage policy', href: '/cookies' },
-          { name: 'Accessibility', href: '/accessibility' },
         ],
       },
     ],
@@ -102,6 +102,7 @@ const copy: Record<
           { name: 'Neem contact op', href: '/contact' },
           { name: 'Veelgestelde vragen', href: '/faq' },
           { name: 'Status', href: '/status' },
+          { name: 'Toegankelijkheid', href: '/accessibility' },
         ],
       },
       {
@@ -110,7 +111,6 @@ const copy: Record<
           { name: 'Privacybeleid', href: '/privacy' },
           { name: 'Algemene voorwaarden', href: '/terms' },
           { name: 'Cookie- en localStorage-beleid', href: '/cookies' },
-          { name: 'Toegankelijkheid', href: '/accessibility' },
         ],
       },
     ],

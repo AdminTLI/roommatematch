@@ -8,7 +8,7 @@ import { getUpstashRedisRestCredentials, hasUpstashRedisRestEnv } from './upstas
 
 /**
  * Upstash Redis store for production rate limiting
- * Requires REST URL + token (UPSTASH_* or KV_REST_* — see lib/upstash-env.ts).
+ * Requires REST URL + token (UPSTASH_* or KV_REST_*  -  see lib/upstash-env.ts).
  */
 export class UpstashRateLimitStore implements RateLimitStore {
   private baseUrl: string

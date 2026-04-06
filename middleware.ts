@@ -380,7 +380,7 @@ export async function middleware(req: NextRequest) {
       safeLogger.warn('[Middleware] Error checking admins table', { error: adminError.message })
     }
 
-    // No generated Database generic — `.from('admins')` infers `data` as `never`; assert row shape for runtime use.
+    // No generated Database generic  -  `.from('admins')` infers `data` as `never`; assert row shape for runtime use.
     const adminRecord: { id: string; role: string | null } | null =
       adminData as unknown as { id: string; role: string | null } | null
     const isAdminFromAdminsTable = !!adminRecord

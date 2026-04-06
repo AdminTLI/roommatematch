@@ -18,7 +18,7 @@ function resetMobileLayoutScroll() {
  * Uses the Visual Viewport API (offsetTop/height), not layout `100vh` / `100dvh`, so mobile browser
  * chrome (Safari/Chrome, bar top or bottom) cannot push the composer off-screen.
  *
- * Resets window/main scroll and re-syncs after keyboard blur — iOS often leaves a non-zero layout
+ * Resets window/main scroll and re-syncs after keyboard blur  -  iOS often leaves a non-zero layout
  * scroll or stale rects, which caused the header to disappear and a gap under the composer.
  *
  * Uses `!important` so we override `globals.css` chat rules that also use `!important`.

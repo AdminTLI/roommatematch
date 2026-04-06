@@ -4,7 +4,7 @@ import { assertSupabaseRestProjectUrl } from '@/lib/supabase/assert-rest-project
 
 /**
  * Server Supabase clients use the same HTTPS project URL as the browser: PostgREST + Auth + Realtime over HTTP.
- * Transaction pooling (Supavisor, port 6543) applies to DATABASE_URL for direct Postgres only — not to supabase-js.
+ * Transaction pooling (Supavisor, port 6543) applies to DATABASE_URL for direct Postgres only  -  not to supabase-js.
  */
 
 export async function createClient() {

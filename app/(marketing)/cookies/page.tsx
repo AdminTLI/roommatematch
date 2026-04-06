@@ -12,7 +12,7 @@ const content = {
     title: 'Cookie & Local Storage Statement',
     lastUpdatedLabel: 'Last updated',
     introduction:
-      'This Cookie & Local Storage Statement explains how Domu Match (“we”, “us”) stores and reads information on your device — including HTTP cookies, browser local storage, session storage, and similar technologies — on domumatch.com and our web application. Dutch law and the EU ePrivacy rules apply to this kind of access, not only to traditional “cookies”. Non-essential technologies are only activated after you give consent through our cookie banner or preference centre.',
+      'This Cookie & Local Storage Statement explains how Domu Match (“we”, “us”) stores and reads information on your device  -  including HTTP cookies, browser local storage, session storage, and similar technologies  -  on domumatch.com and our web application. Dutch law and the EU ePrivacy rules apply to this kind of access, not only to traditional “cookies”. Non-essential technologies are only activated after you give consent through our cookie banner or preference centre.',
     controller: {
       title: 'Data controller',
       paragraphs: [
@@ -34,9 +34,9 @@ const content = {
         'Our cookie banner and Cookie Preference Centre use the same categories: Essential (always on), Analytics, Error tracking, Session replay, and Marketing. Only Essential is active without your opt-in. You can Accept all, Reject all, or Customize. Reject all is shown with equal prominence to Accept all, in line with Dutch DPA guidance.'
     },
     strictlyNecessary: {
-      title: 'Category A — Strictly necessary cookies, local storage & platform integrity',
+      title: 'Category A  -  Strictly necessary cookies, local storage & platform integrity',
       description:
-        'These entries are required to operate a secure logged-in service (authentication, session integrity, CSRF protection) and to deliver the site through our hosting provider. Under the ePrivacy framework they fall under the strictly necessary exemption because they are needed to provide the service you actively request — not for optional analytics or marketing.',
+        'These entries are required to operate a secure logged-in service (authentication, session integrity, CSRF protection) and to deliver the site through our hosting provider. Under the ePrivacy framework they fall under the strictly necessary exemption because they are needed to provide the service you actively request  -  not for optional analytics or marketing.',
       tableCaption: 'Strictly necessary storage (device + HTTP)',
       headers: ['Name / pattern', 'Where it lives', 'Provider', 'Purpose', 'Duration'],
       rows: [
@@ -65,7 +65,7 @@ const content = {
           'Vercel platform identifiers (names vary; set by our host)',
           'HTTP cookie / edge mechanism (as determined by Vercel)',
           'Vercel Inc. (processor) / Domu Match',
-          'Strictly necessary hosting and edge operations: for example request routing, TLS delivery, and proportionate abuse or denial-of-service mitigation on Vercel’s network. This is separate from optional Vercel Web Analytics and Speed Insights (those load only after Analytics consent — see below).',
+          'Strictly necessary hosting and edge operations: for example request routing, TLS delivery, and proportionate abuse or denial-of-service mitigation on Vercel’s network. This is separate from optional Vercel Web Analytics and Speed Insights (those load only after Analytics consent  -  see below).',
           'Per Vercel’s platform behaviour; typically short-lived or session-oriented technical tokens.'
         ]
       ]
@@ -80,7 +80,7 @@ const content = {
       title: 'SURFconext and other university SSO (not live today)',
       paragraphs: [
         'Domu Match does not currently offer SURFconext or other institution-specific single sign-on in production.',
-        'Technically, the stack can support future university SSO in two ways: (1) Supabase Auth can be linked to an external OIDC/OAuth identity provider (for example a national or institutional IdP); after login you would still use the same Supabase session persistence described in Category A (local storage and/or HTTP cookies). (2) The repository contains optional, feature-flagged placeholder code for a SAML-style SURFconext integration (environment variables such as ENABLE_SURFCONEXT in env.example) — this is not connected to the live sign-in experience and would need a full implementation and security review before use.',
+        'Technically, the stack can support future university SSO in two ways: (1) Supabase Auth can be linked to an external OIDC/OAuth identity provider (for example a national or institutional IdP); after login you would still use the same Supabase session persistence described in Category A (local storage and/or HTTP cookies). (2) The repository contains optional, feature-flagged placeholder code for a SAML-style SURFconext integration (environment variables such as ENABLE_SURFCONEXT in env.example)  -  this is not connected to the live sign-in experience and would need a full implementation and security review before use.',
         'If we launch SURFconext or similar SSO, we will update this Cookie & Local Storage Statement to list any additional first- or third-party cookies, storage keys, or domains involved.'
       ]
     },
@@ -92,7 +92,7 @@ const content = {
       ]
     },
     essentialStorage: {
-      title: 'Category B — Essential local and session storage (first-party)',
+      title: 'Category B  -  Essential local and session storage (first-party)',
       description:
         'The following keys are used in your browser for core functionality. They are treated as strictly necessary for the service and are not tied to optional analytics or marketing in our application code.',
       tableCaption: 'Essential browser storage keys',
@@ -167,7 +167,7 @@ const content = {
         'Client-side error monitoring through Sentry (Functional Software Inc.). When enabled, Sentry may collect error payloads, performance traces, and technical context needed to diagnose bugs. We strip cookies and sensitive headers from events in our SDK configuration where possible.',
       bullets: [
         'The browser Sentry SDK initializes only when Error tracking consent is granted and NEXT_PUBLIC_SENTRY_DSN is configured.',
-        'Separately, Sentry on our servers and edge runtime may record unhandled errors and performance data to keep the service secure and available. We rely on our legitimate interests (and, where applicable, our contract with you) for that processing — not on advertising or profiling. It is not used for behavioural marketing. Sub-processors and details are listed in our Privacy Policy.'
+        'Separately, Sentry on our servers and edge runtime may record unhandled errors and performance data to keep the service secure and available. We rely on our legitimate interests (and, where applicable, our contract with you) for that processing  -  not on advertising or profiling. It is not used for behavioural marketing. Sub-processors and details are listed in our Privacy Policy.'
       ]
     },
     sessionReplay: {
@@ -198,7 +198,7 @@ const content = {
     functionalNote: {
       title: 'Other local storage for product features',
       paragraphs: [
-        'Some product areas use localStorage for purely functional UX that is not used for cross-site advertising — for example caching dismissed tips or chat UI state on your device. These are not used to track you across other companies’ sites. If you clear site data, that state resets.'
+        'Some product areas use localStorage for purely functional UX that is not used for cross-site advertising  -  for example caching dismissed tips or chat UI state on your device. These are not used to track you across other companies’ sites. If you clear site data, that state resets.'
       ]
     },
     bannerLogic: {
@@ -210,7 +210,7 @@ const content = {
       ],
       bullets: [
         'Non-essential toggles default to off; we do not use pre-ticked boxes for optional categories.',
-        'If you choose Customize on your first visit (before any choice is saved), the preference centre opens with Analytics, Error tracking, Session replay, and Marketing all switched off until you actively enable them — matching GDPR / AP expectations.',
+        'If you choose Customize on your first visit (before any choice is saved), the preference centre opens with Analytics, Error tracking, Session replay, and Marketing all switched off until you actively enable them  -  matching GDPR / AP expectations.',
         'Reject all is as easy as Accept all (no dark patterns or forced scrolling).',
         'Saving preferences may reload the page so technologies align with your choice.'
       ]
@@ -259,7 +259,7 @@ const content = {
     },
     retention: {
       title: 'Retention (summary)',
-      intro: 'Indicative periods — see our Privacy Policy for full retention schedules:',
+      intro: 'Indicative periods  -  see our Privacy Policy for full retention schedules:',
       bullets: [
         'Supabase authentication data in localStorage and HTTP cookies follows Supabase session settings and is cleared when you sign out or remove site data / cookies.',
         'csrf-token is rotated on our application schedule (up to roughly 24 hours).',
@@ -285,7 +285,7 @@ const content = {
     title: 'Cookie- en localStorage-verklaring',
     lastUpdatedLabel: 'Laatst bijgewerkt',
     introduction:
-      'In deze Cookie- en localStorage-verklaring leggen we uit hoe Domu Match (“wij”) informatie op uw apparaat opslaat en uitleest — waaronder HTTP-cookies, localStorage en sessionStorage in de browser en vergelijkbare technologieën — op domumatch.com en in onze webapplicatie. Onder het Nederlandse recht en de ePrivacy-regels geldt die toegang breder dan alleen traditionele “cookies”. Niet-noodzakelijke technologieën worden pas ingeschakeld nadat u via de cookiebanner of het voorkeurencentrum toestemming geeft.',
+      'In deze Cookie- en localStorage-verklaring leggen we uit hoe Domu Match (“wij”) informatie op uw apparaat opslaat en uitleest  -  waaronder HTTP-cookies, localStorage en sessionStorage in de browser en vergelijkbare technologieën  -  op domumatch.com en in onze webapplicatie. Onder het Nederlandse recht en de ePrivacy-regels geldt die toegang breder dan alleen traditionele “cookies”. Niet-noodzakelijke technologieën worden pas ingeschakeld nadat u via de cookiebanner of het voorkeurencentrum toestemming geeft.',
     controller: {
       title: 'Verwerkingsverantwoordelijke',
       paragraphs: [
@@ -307,9 +307,9 @@ const content = {
         'Onze cookiebanner en het Cookie-voorkeurencentrum gebruiken dezelfde categorieën: Essentieel (altijd aan), Analyse, Foutopsporing, Sessie-opname en Marketing. Alleen Essentieel staat aan zonder uw actieve keuze. U kunt Alles accepteren, Alles weigeren of Aanpassen. “Alles weigeren” heeft dezelfde zichtbaarheid als “Alles accepteren”, conform de lijn van de Autoriteit Persoonsgegevens.'
     },
     strictlyNecessary: {
-      title: 'Categorie A — Strikt noodzakelijke cookies, localStorage & platformintegriteit',
+      title: 'Categorie A  -  Strikt noodzakelijke cookies, localStorage & platformintegriteit',
       description:
-        'Deze items zijn nodig voor een veilig ingelogde dienst (authenticatie, sessie-integriteit, CSRF-bescherming) en voor het uitserveren van de site via onze hostingprovider. Ze vallen onder de uitzondering voor strikte noodzakelijkheid in het ePrivacy-kader omdat ze nodig zijn voor de dienst die u actief vraagt — niet voor optionele analyse of marketing.',
+        'Deze items zijn nodig voor een veilig ingelogde dienst (authenticatie, sessie-integriteit, CSRF-bescherming) en voor het uitserveren van de site via onze hostingprovider. Ze vallen onder de uitzondering voor strikte noodzakelijkheid in het ePrivacy-kader omdat ze nodig zijn voor de dienst die u actief vraagt  -  niet voor optionele analyse of marketing.',
       tableCaption: 'Strikt noodzakelijke opslag (apparaat + HTTP)',
       headers: ['Naam / patroon', 'Waar het staat', 'Aanbieder', 'Doel', 'Duur'],
       rows: [
@@ -338,7 +338,7 @@ const content = {
           'Vercel-platformidentifiers (namen variëren; gezet door onze host)',
           'HTTP-cookie / edge-mechanisme (door Vercel bepaald)',
           'Vercel Inc. (verwerker) / Domu Match',
-          'Strikt noodzakelijke hosting- en edge-werking: o.a. requestrouting, TLS-aflevering en evenredige bescherming tegen misbruik of denial-of-service op het netwerk van Vercel. Dit staat los van optionele Vercel Web Analytics en Speed Insights (die alleen na Analyse-toestemming laden — zie hieronder).',
+          'Strikt noodzakelijke hosting- en edge-werking: o.a. requestrouting, TLS-aflevering en evenredige bescherming tegen misbruik of denial-of-service op het netwerk van Vercel. Dit staat los van optionele Vercel Web Analytics en Speed Insights (die alleen na Analyse-toestemming laden  -  zie hieronder).',
           'Conform het platformgedrag van Vercel; doorgaans korte of sessie-gerichte technische tokens.'
         ]
       ]
@@ -353,7 +353,7 @@ const content = {
       title: 'SURFconext en ander universiteits-SSO (nu niet live)',
       paragraphs: [
         'Domu Match biedt op dit moment geen SURFconext of ander instellingsspecifiek single sign-on in productie.',
-        'Technisch kan de stack toekomstige universiteits-SSO op twee manieren ondersteunen: (1) Supabase Auth kan worden gekoppeld aan een externe OIDC/OAuth identity provider (bijvoorbeeld een nationale of instellings-IdP); na inloggen gebruikt u nog steeds dezelfde Supabase-sessiepersistentie als in categorie A (localStorage en/of HTTP-cookies). (2) In de repository staat optionele, achter een feature-flag geplaatste placeholdercode voor een SAML-achtige SURFconext-koppeling (omgevingsvariabelen zoals ENABLE_SURFCONEXT in env.example) — dit is niet gekoppeld aan de live inlogervaring en vereist een volledige implementatie en security review voordat het gebruikt kan worden.',
+        'Technisch kan de stack toekomstige universiteits-SSO op twee manieren ondersteunen: (1) Supabase Auth kan worden gekoppeld aan een externe OIDC/OAuth identity provider (bijvoorbeeld een nationale of instellings-IdP); na inloggen gebruikt u nog steeds dezelfde Supabase-sessiepersistentie als in categorie A (localStorage en/of HTTP-cookies). (2) In de repository staat optionele, achter een feature-flag geplaatste placeholdercode voor een SAML-achtige SURFconext-koppeling (omgevingsvariabelen zoals ENABLE_SURFCONEXT in env.example)  -  dit is niet gekoppeld aan de live inlogervaring en vereist een volledige implementatie en security review voordat het gebruikt kan worden.',
         'Als we SURFconext of vergelijkbaar SSO lanceren, werken we deze Cookie- en localStorage-verklaring bij met eventuele extra first- of third-party cookies, opslagsleutels of domeinen.'
       ]
     },
@@ -365,7 +365,7 @@ const content = {
       ]
     },
     essentialStorage: {
-      title: 'Categorie B — Essentiële local- en session storage (first-party)',
+      title: 'Categorie B  -  Essentiële local- en session storage (first-party)',
       description:
         'De volgende sleutels worden in uw browser gebruikt voor kernfunctionaliteit. Ze zijn strikt noodzakelijk voor de dienst en zijn in onze applicatiecode niet bedoeld voor optionele analyse of marketing.',
       tableCaption: 'Essentiële browser-opsleutels',
@@ -440,7 +440,7 @@ const content = {
         'Client-side foutmonitoring via Sentry (Functional Software Inc.). Indien ingeschakeld kan Sentry foutmeldingen, performance-traces en technische context verzamelen. We strippen cookies en gevoelige headers in onze SDK-configuratie waar mogelijk.',
       bullets: [
         'De browser-Sentry-SDK start alleen bij toestemming voor Foutopsporing en als NEXT_PUBLIC_SENTRY_DSN is ingesteld.',
-        'Daarnaast kan Sentry op onze servers en edge-runtime niet-afgehandelde fouten en prestatiegegevens vastleggen om de dienst veilig en beschikbaar te houden. Daarvoor steunen we op onze gerechtvaardigde belangen (en waar van toepassing op de overeenkomst met u) — niet op advertenties of profilering. Het wordt niet gebruikt voor gedragsmarketing. Subverwerkers en details staan in ons Privacybeleid.'
+        'Daarnaast kan Sentry op onze servers en edge-runtime niet-afgehandelde fouten en prestatiegegevens vastleggen om de dienst veilig en beschikbaar te houden. Daarvoor steunen we op onze gerechtvaardigde belangen (en waar van toepassing op de overeenkomst met u)  -  niet op advertenties of profilering. Het wordt niet gebruikt voor gedragsmarketing. Subverwerkers en details staan in ons Privacybeleid.'
       ]
     },
     sessionReplay: {
@@ -483,7 +483,7 @@ const content = {
       ],
       bullets: [
         'Optionele schakelaars staan standaard uit; geen vooraf aangevinkte vakjes.',
-        'Kiest u bij het eerste bezoek voor Aanpassen (voordat een keuze is opgeslagen), dan opent het voorkeurencentrum met Analyse, Foutopsporing, Sessie-opname en Marketing allemaal uit — tot u ze zelf aanzet. Dit sluit aan bij de verwachtingen van de AVG en de AP.',
+        'Kiest u bij het eerste bezoek voor Aanpassen (voordat een keuze is opgeslagen), dan opent het voorkeurencentrum met Analyse, Foutopsporing, Sessie-opname en Marketing allemaal uit  -  tot u ze zelf aanzet. Dit sluit aan bij de verwachtingen van de AVG en de AP.',
         'Weigeren is net zo eenvoudig als accepteren.',
         'Na opslaan kan de pagina vernieuwen zodat technologieën aansluiten op uw keuze.'
       ]
@@ -532,7 +532,7 @@ const content = {
     },
     retention: {
       title: 'Bewaartermijnen (samenvatting)',
-      intro: 'Indicatieve termijnen — zie ons Privacybeleid voor volledige schema’s:',
+      intro: 'Indicatieve termijnen  -  zie ons Privacybeleid voor volledige schema’s:',
       bullets: [
         'Supabase-authenticatiegegevens in localStorage en HTTP-cookies volgen de sessie-instellingen van Supabase en worden gewist bij uitloggen of het verwijderen van sitedata/cookies.',
         'csrf-token rouleert volgens onze applicatie (tot ongeveer 24 uur).',
@@ -550,7 +550,7 @@ const content = {
     contact: {
       title: 'Vragen',
       description:
-        'Als iets niet overeenkomt met wat u in uw browser ziet of u rechten onder de AVG wilt uitoefenen, neem contact op — we helpen u graag.',
+        'Als iets niet overeenkomt met wat u in uw browser ziet of u rechten onder de AVG wilt uitoefenen, neem contact op  -  we helpen u graag.',
       email: 'E-mail: domumatch@gmail.com'
     }
   }

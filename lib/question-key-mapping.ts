@@ -63,7 +63,7 @@ export const itemIdToQuestionKey: Record<string, string> = {
   'M2_Q10': 'noise_tolerance',   // Afternoon quiet hours (frequency)
   'M2_Q11': 'noise_tolerance',   // Noise in shared spaces after quiet hours (comfort)
   'M2_Q12': 'noise_tolerance',   // Adjacent commons vacated at bedtime
-  'M2_Q13': 'study_intensity',   // Quiet-hours start weekdays (MCQ time) — distinct key vs sleep_start
+  'M2_Q13': 'study_intensity',   // Quiet-hours start weekdays (MCQ time)  -  distinct key vs sleep_start
   'M2_Q14': 'conflict_style',    // Quiet-hours end weekdays (MCQ)
   'M2_Q15': 'parties_frequency', // Quiet-hours end weekends (MCQ)
   'M2_Q16': 'noise_tolerance',   // Staying up later than housemates (MCQ)
@@ -73,7 +73,7 @@ export const itemIdToQuestionKey: Record<string, string> = {
   'M2_Q20': 'noise_tolerance',   // Hallway light under door while sleeping
   'M2_Q21': 'noise_tolerance',   // Background noise out loud to fall asleep
   'M2_Q22': 'noise_tolerance',   // Weekend morning household energy (bipolar)
-  'M2_Q23': 'utensils_sharing',  // Woken at night: typical reaction (MCQ) — legacy key spare slot for JSON value
+  'M2_Q23': 'utensils_sharing',  // Woken at night: typical reaction (MCQ)  -  legacy key spare slot for JSON value
   'M2_Q24': 'noise_tolerance',   // Daytime rest: expect lower noise in commons
   'M2_Q25': 'agreeableness',     // Opposite schedules: can plan around (agreement)
 
@@ -167,7 +167,7 @@ export const itemIdToQuestionKey: Record<string, string> = {
   'M6_Q6': 'social_level',             // Channel for routine complaints (MCQ)
   'M6_Q7': 'communication_preference', // Corrective feedback blunt ↔ diplomatic (bipolar)
   'M6_Q8': 'openness',                  // Written notes feel passive-aggressive (likert)
-  'M6_Q9': 'study_intensity',          // Text disagreement reflex (MCQ) — may collide with M2_Q13 quiet-hours key
+  'M6_Q9': 'study_intensity',          // Text disagreement reflex (MCQ)  -  may collide with M2_Q13 quiet-hours key
   'M6_Q10': 'openness',                // Mandatory monthly house meeting (likert)
   'M6_Q11': 'extraversion',            // After critical feedback: cool down ↔ resolve now (bipolar)
   'M6_Q12': 'parties_frequency',       // Defend before accepting critique (likert)
@@ -181,7 +181,7 @@ export const itemIdToQuestionKey: Record<string, string> = {
   'M6_Q20': 'communication_preference', // Third-party housemate conflict instinct (MCQ)
   'M6_Q21': 'food_sharing',            // Roommate agreement as authority (likert)
   'M6_Q22': 'conflict_style',          // Rule enforcement vs context (bipolar)
-  'M6_Q23': 'utensils_sharing',        // External escalation (MCQ) — may collide with M2_Q23
+  'M6_Q23': 'utensils_sharing',        // External escalation (MCQ)  -  may collide with M2_Q23
   'M6_Q24': 'agreeableness',           // Money conflicts: zero tolerance ↔ flexibility (bipolar)
   'M6_Q25': 'openness',                // Willing to adapt communication style (likert)
 
@@ -204,15 +204,15 @@ export const itemIdToQuestionKey: Record<string, string> = {
   'M7_Q16': 'extraversion',            // Leave trace in living room vs pack up (bipolar)
   'M7_Q17': 'social_level',            // Camp in living room all day (likert)
   'M7_Q18': 'guests_frequency',       // Reaction when housemate brings guests (MCQ)
-  'M7_Q19': 'study_intensity',         // Signal want to be alone (MCQ) — may collide with M2
-  'M7_Q20': 'alcohol_at_home',         // Package handling when away (MCQ) — spare key
-  'M7_Q21': 'pets_tolerance',          // Unsolicited advice on habits (likert) — spare key
+  'M7_Q19': 'study_intensity',         // Signal want to be alone (MCQ)  -  may collide with M2
+  'M7_Q20': 'alcohol_at_home',         // Package handling when away (MCQ)  -  spare key
+  'M7_Q21': 'pets_tolerance',          // Unsolicited advice on habits (likert)  -  spare key
   'M7_Q22': 'openness',                // Personal struggles private ↔ open (bipolar)
   'M7_Q23': 'cleanliness_kitchen',     // Okay quick bathroom entry while grooming (likert)
   'M7_Q24': 'conscientiousness',       // Monitor housemates' wellbeing (likert)
   'M7_Q25': 'openness',                // Willing to loosen stricter boundaries (likert)
 
-  // Reliability & Logistics (2026-04 student bank) — dedicated keys in question_items (m8_q01–m8_q25)
+  // Reliability & Logistics (2026-04 student bank)  -  dedicated keys in question_items (m8_q01–m8_q25)
   'M8_Q1': 'm8_q01',
   'M8_Q2': 'm8_q02',
   'M8_Q3': 'm8_q03',

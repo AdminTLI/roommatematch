@@ -138,7 +138,7 @@ export function DiscoveryCard({ profile, onSkip, onConnect, connectButtonText = 
         >
           {/*
             perspective lives on this shell; the flipper is the next child only.
-            Never put overflow:hidden between perspective and preserve-3d — WebKit then
+            Never put overflow:hidden between perspective and preserve-3d  -  WebKit then
             fails backface-visibility and shows a mirrored front instead of the back.
           */}
           <div
@@ -194,7 +194,7 @@ export function DiscoveryCard({ profile, onSkip, onConnect, connectButtonText = 
                         <div className="flex min-w-0 flex-1 items-center gap-1">
                             <ScoreInfoPopover
                               title="Harmony score"
-                              description="Measures how well your day-to-day living preferences align — cleanliness, sleep, noise, guests, shared spaces, substances, study/social balance, and home vibe."
+                              description="Measures how well your day-to-day living preferences align  -  cleanliness, sleep, noise, guests, shared spaces, substances, study/social balance, and home vibe."
                             >
                               <button
                                 type="button"
@@ -229,7 +229,7 @@ export function DiscoveryCard({ profile, onSkip, onConnect, connectButtonText = 
                         <div className="flex min-w-0 flex-1 items-center gap-1">
                             <ScoreInfoPopover
                               title="Context score"
-                              description="Measures how similar your academic context is — university, programme, and study year."
+                              description="Measures how similar your academic context is  -  university, programme, and study year."
                             >
                               <button
                                 type="button"
@@ -364,7 +364,7 @@ export function DiscoveryCard({ profile, onSkip, onConnect, connectButtonText = 
                           <div className="flex min-w-0 flex-1 items-center gap-1">
                             <ScoreInfoPopover
                               title="Harmony score"
-                              description="Measures how well your day-to-day living preferences align — cleanliness, sleep, noise, guests, shared spaces, substances, study/social balance, and home vibe."
+                              description="Measures how well your day-to-day living preferences align  -  cleanliness, sleep, noise, guests, shared spaces, substances, study/social balance, and home vibe."
                             >
                               <button
                                 type="button"
@@ -398,7 +398,7 @@ export function DiscoveryCard({ profile, onSkip, onConnect, connectButtonText = 
                           <div className="flex min-w-0 flex-1 items-center gap-1">
                             <ScoreInfoPopover
                               title="Context score"
-                              description="Measures how similar your academic context is — university, programme, and study year."
+                              description="Measures how similar your academic context is  -  university, programme, and study year."
                             >
                               <button
                                 type="button"
@@ -433,7 +433,7 @@ export function DiscoveryCard({ profile, onSkip, onConnect, connectButtonText = 
                   </p>
                 )}
 
-                {/* Dimension Scores — scroll inside the card on mobile (parent has bounded height) */}
+                {/* Dimension Scores  -  scroll inside the card on mobile (parent has bounded height) */}
                 <div className="mb-0 min-h-0 flex-1 overflow-y-auto overscroll-y-contain">
                   <h4 className="text-sm font-semibold text-slate-300 mb-1 flex shrink-0 items-center gap-2">
                     <Sparkles className="w-4 h-4 text-indigo-400" />

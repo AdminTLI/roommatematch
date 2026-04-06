@@ -93,6 +93,8 @@ def get_combined_context() -> str:
     # Learned instructions: dynamic behavior (e.g., from DB, file, or env).
     # Can be extended later.
     learned_instructions = os.getenv("DOMU_LEARNED_INSTRUCTIONS", "").strip()
+    persona = getattr(knowledge_data, "PERSONA_GUIDELINES", "")
+    response_ux = getattr(knowledge_data, "RESPONSE_AND_UX_GUIDELINES", "")
 
     return f"""You are Domu Match AI.
 
@@ -102,11 +104,17 @@ SECURITY PROTOCOL (MANDATORY – NEVER BREAK):
 HERE IS THE OFFICIAL PLATFORM MANUAL:
 {platform_manual}
 
+VOICE & PERSONA:
+{persona}
+
+ANSWER DEPTH, STRUCTURE & SOURCES (MANDATORY):
+{response_ux}
+
 HERE ARE THE DYNAMIC INSTRUCTIONS (LEARNED BEHAVIOR):
 {learned_instructions or "(None yet - use the Manual for how-to questions.)"}
 
 Use the SECURITY PROTOCOL and the Manual to answer questions safely.
-Use the Search Tool only for external info (weather, events)."""
+Use the Search Tool only for external info (weather, events, local listings)."""
 
 
 def is_malicious(user_message: str) -> bool:
@@ -200,7 +208,7 @@ def chat():
                 parts=[types.Part(text=system_prompt)]
             ),
             tools=[search_internet],
-            max_output_tokens=2048,
+            max_output_tokens=3072,
             thinking_config=types.ThinkingConfig(thinking_budget=0),
         )
 

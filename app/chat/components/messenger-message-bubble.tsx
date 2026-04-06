@@ -169,7 +169,7 @@ export function MessengerMessageBubble({
                   'relative max-w-full cursor-pointer backdrop-blur-2xl transition-all hover:brightness-[1.02] dark:hover:brightness-110',
                   'border px-3 py-2',
                   bubbleGlass,
-                  /* TL, TR, BR, BL — you: small BR (tail toward screen right); them: small BL */
+                  /* TL, TR, BR, BL  -  you: small BR (tail toward screen right); them: small BL */
                   isOwn
                     ? 'rounded-tl-[18px] rounded-tr-[18px] rounded-br-[5px] rounded-bl-[18px]'
                     : 'rounded-tl-[18px] rounded-tr-[18px] rounded-br-[18px] rounded-bl-[5px]',

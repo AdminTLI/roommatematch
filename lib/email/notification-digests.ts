@@ -126,7 +126,7 @@ export function buildMessagesDigestEmail(params: {
               <h2 style="color: #111827; font-size: 20px; font-weight: 700; margin-bottom: 16px; text-align: center;">You’ve got messages waiting</h2>
               <p style="color: #4b5563; font-size: 16px; line-height: 24px; margin-bottom: 16px;">Hey ${escapeHtml(niceName)},</p>
               <p style="color: #4b5563; font-size: 16px; line-height: 24px; margin-bottom: 32px;">
-                  Good timing: you have <strong>${escapeHtml(String(count))} ${escapeHtml(noun)}</strong> in the last 24 hours. Don’t let the conversation cool—pop into your inbox and reply when you’re ready.
+                  Good timing: you have <strong>${escapeHtml(String(count))} ${escapeHtml(noun)}</strong> in the last 24 hours. Don’t let the conversation cool - pop into your inbox and reply when you’re ready.
               </p>
               <div style="text-align: center; margin-bottom: 32px;">
                   <a href="${escapeHtml(link)}" style="background-color: #7c3aed; color: #ffffff; padding: 14px 32px; text-decoration: none; border-radius: 12px; font-weight: 600; font-size: 16px; display: inline-block;">Open messages</a>

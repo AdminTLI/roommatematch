@@ -159,7 +159,7 @@ export function ProfileSettings({ user, profile, academic, userType, professiona
         </Alert>
       )}
 
-      {/* Personal Information Group — PII is read-only; changes go through support */}
+      {/* Personal Information Group  -  PII is read-only; changes go through support */}
       <div className="space-y-4">
         <h3 className="text-sm font-medium text-zinc-600 dark:text-zinc-400 uppercase tracking-wider px-1">Personal Information</h3>
         <p className="text-xs text-zinc-500 dark:text-zinc-400 px-1 leading-relaxed">
@@ -179,7 +179,7 @@ export function ProfileSettings({ user, profile, academic, userType, professiona
               <Label className="text-zinc-600 dark:text-zinc-400 font-medium">First Name</Label>
             </div>
             <div className="flex-1 text-sm text-zinc-600 dark:text-zinc-400 px-0 sm:px-3">
-              {displayFirstName || '—'}
+              {displayFirstName || '-'}
             </div>
           </div>
 
@@ -189,7 +189,7 @@ export function ProfileSettings({ user, profile, academic, userType, professiona
               <Label className="text-zinc-600 dark:text-zinc-400 font-medium">Last Name</Label>
             </div>
             <div className="flex-1 text-sm text-zinc-600 dark:text-zinc-400 px-0 sm:px-3">
-              {displayLastName || '—'}
+              {displayLastName || '-'}
             </div>
           </div>
 
@@ -199,7 +199,7 @@ export function ProfileSettings({ user, profile, academic, userType, professiona
               <Label className="text-zinc-600 dark:text-zinc-400 font-medium">Phone</Label>
             </div>
             <div className="flex-1 text-sm text-zinc-600 dark:text-zinc-400 px-0 sm:px-3">
-              {displayPhone || '—'}
+              {displayPhone || '-'}
             </div>
           </div>
 
@@ -209,7 +209,7 @@ export function ProfileSettings({ user, profile, academic, userType, professiona
               <Label className="text-zinc-600 dark:text-zinc-400 font-medium">Email</Label>
             </div>
             <div className="flex-1 text-sm text-zinc-600 dark:text-zinc-400 px-0 sm:px-3 break-all">
-              {displayEmail || '—'}
+              {displayEmail || '-'}
             </div>
           </div>
         </div>

@@ -64,7 +64,7 @@ const fadeInUp = {
   transition: { duration: 0.6, ease: [0.2, 0.8, 0.2, 1] }
 }
 
-/** Opacity-only: no translateY — ancestor transforms break 3D flip / backface-visibility in WebKit. */
+/** Opacity-only: no translateY  -  ancestor transforms break 3D flip / backface-visibility in WebKit. */
 const fadeInOpacity = {
   initial: { opacity: 0 },
   animate: { opacity: 1 },

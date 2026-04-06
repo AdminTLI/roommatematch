@@ -20,7 +20,7 @@ interface CookiePreferenceCenterProps {
   locale?: 'en' | 'nl'
   onClose?: () => void
   /**
-   * `customize_first_visit`: user opened the centre from “Customize” before any saved prefs — keep every
+   * `customize_first_visit`: user opened the centre from “Customize” before any saved prefs  -  keep every
    * non-essential toggle off (never hydrate stale storage into toggles).
    * `from_storage`: load prior choices from localStorage when present.
    */

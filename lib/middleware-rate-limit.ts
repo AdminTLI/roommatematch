@@ -274,7 +274,7 @@ export async function enforceMiddlewareApiRateLimits(req: NextRequest): Promise<
     const authKey = getIPRateLimitKey('mw_auth', clientIp)
     const isProdRuntime =
       process.env.NODE_ENV === 'production' || Boolean(process.env.VERCEL_ENV)
-    // Production without working Upstash: same brute-force posture as when limit() throws — 1 req/min per IP.
+    // Production without working Upstash: same brute-force posture as when limit() throws  -  1 req/min per IP.
     const authMemoryLimit = isProdRuntime ? AUTH_UPSTASH_ERROR_FALLBACK_LIMIT : AUTH_API_LIMIT
     const authMemoryWindowSec = isProdRuntime
       ? AUTH_UPSTASH_ERROR_FALLBACK_WINDOW_SECONDS

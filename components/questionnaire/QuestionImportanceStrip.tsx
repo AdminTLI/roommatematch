@@ -4,7 +4,7 @@ import { Checkbox } from '@/components/ui/checkbox'
 import { Telescope } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
-/** Research-only importance tick — visually distinct from deal-breaker and sensitive badges. */
+/** Research-only importance tick  -  visually distinct from deal-breaker and sensitive badges. */
 export function QuestionImportanceStrip(props: {
   id: string
   checked: boolean

@@ -242,7 +242,7 @@ export function MessengerProfilePane({ chatId, isOpen, onClose }: MessengerProfi
         )}
       </div>
 
-      {/* Scrollable Content — bottom padding on lg- must clear mobile browser chrome (not just safe-area) */}
+      {/* Scrollable Content  -  bottom padding on lg- must clear mobile browser chrome (not just safe-area) */}
       <div
         data-profile-pane-scroll
         className="min-h-0 flex-1 overflow-x-hidden overflow-y-auto overscroll-y-contain scrollbar-visible touch-pan-y"
@@ -347,7 +347,7 @@ export function MessengerProfilePane({ chatId, isOpen, onClose }: MessengerProfi
                             <div className="mb-1 flex min-w-0 items-center justify-start gap-1">
                               <ScoreInfoPopover
                                 title="Harmony score"
-                                description="Measures how well your day-to-day living preferences align — cleanliness, sleep, noise, guests, shared spaces, substances, study/social balance, and home vibe."
+                                description="Measures how well your day-to-day living preferences align  -  cleanliness, sleep, noise, guests, shared spaces, substances, study/social balance, and home vibe."
                               >
                                 <button
                                   type="button"
@@ -380,7 +380,7 @@ export function MessengerProfilePane({ chatId, isOpen, onClose }: MessengerProfi
                             <div className="mb-1 flex min-w-0 items-center justify-start gap-1">
                               <ScoreInfoPopover
                                 title="Context score"
-                                description="Measures how similar your context is — university, programme, study year, and overlap in preferred cities. Location is treated as a soft boost, not a hard filter."
+                                description="Measures how similar your context is  -  university, programme, study year, and overlap in preferred cities. Location is treated as a soft boost, not a hard filter."
                               >
                                 <button
                                   type="button"

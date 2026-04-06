@@ -358,7 +358,7 @@ export const RATE_LIMITS = {
     failClosed: true
   }, getSharedStore),
 
-  // Global API fallback (legacy key; middleware uses @upstash/ratelimit — see lib/middleware-rate-limit.ts)
+  // Global API fallback (legacy key; middleware uses @upstash/ratelimit  -  see lib/middleware-rate-limit.ts)
   api_global: new RateLimiter({
     windowMs: 60 * 1000, // 1 minute
     maxRequests: 100,
@@ -582,7 +582,7 @@ function isVercelDeployment(): boolean {
  * - `x-vercel-forwarded-for` (first hop is the client; not spoofable like `x-forwarded-for`)
  * - `x-real-ip`
  *
- * We never read `x-forwarded-for` on Vercel — clients can send it and it must not affect limits.
+ * We never read `x-forwarded-for` on Vercel  -  clients can send it and it must not affect limits.
  * Off Vercel (local, tests), `x-forwarded-for` is used after the trusted headers are absent.
  */
 export function getClientIpFromHeaders(headers: Headers): string {

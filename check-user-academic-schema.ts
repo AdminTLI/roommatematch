@@ -22,7 +22,7 @@ async function checkSchema() {
     .from('user_academic')
     .insert({
       user_id: '11111111-1111-4111-8111-111111111104',
-      university_id: '550e8400-e29b-41d4-a716-446655440001', // example UvA id from seed fixtures — replace for your DB
+      university_id: '550e8400-e29b-41d4-a716-446655440001', // example UvA id from seed fixtures  -  replace for your DB
       degree_level: 'bachelor',
       program_id: null,
       undecided_program: true,

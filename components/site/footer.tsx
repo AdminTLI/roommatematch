@@ -13,22 +13,23 @@ const content = {
     company: 'Company',
     support: 'Support',
     cities: 'Find Roommates',
-    howItWorks: 'How it works',
+    howItWorks: 'How It Works',
     features: 'Features',
     pricing: 'Pricing',
     universities: 'Universities',
-    aboutUs: 'About us',
+    aboutUs: 'About Us',
     blog: 'Blog',
     careers: 'Careers',
     contact: 'Contact',
-    helpCenter: 'Help center',
+    helpCenter: 'Help Center',
     faq: 'FAQ',
     safety: 'Safety',
-    privacyPolicy: 'Privacy policy',
+    accessibility: 'Accessibility',
+    privacyPolicy: 'Privacy Policy',
     termsOfService: 'Terms of Service',
-    privacy: 'Privacy',
+    privacy: 'Privacy Policy',
     terms: 'Terms of Service',
-    cookies: 'Cookies',
+    cookies: 'Cookie Policy',
     allRightsReserved: 'All rights reserved.',
   },
   nl: {
@@ -49,11 +50,12 @@ const content = {
     helpCenter: 'Helpcentrum',
     faq: 'Veelgestelde vragen',
     safety: 'Veiligheid',
+    accessibility: 'Toegankelijkheid',
     privacyPolicy: 'Privacybeleid',
     termsOfService: 'Algemene voorwaarden',
-    privacy: 'Privacy',
+    privacy: 'Privacybeleid',
     terms: 'Algemene voorwaarden',
-    cookies: 'Cookies',
+    cookies: 'Cookiebeleid',
     allRightsReserved: 'Alle rechten voorbehouden.',
   },
 }
@@ -221,6 +223,11 @@ export default function Footer() {
               <li>
                 <Link href="/safety" className="hover:text-white transition-colors">
                   {t.safety}
+                </Link>
+              </li>
+              <li>
+                <Link href="/accessibility" className="hover:text-white transition-colors">
+                  {t.accessibility}
                 </Link>
               </li>
               <li>

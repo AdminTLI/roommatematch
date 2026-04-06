@@ -42,7 +42,7 @@ async function createDemoUser() {
     
     console.log('📧 Demo User Details:')
     console.log(`   Email: ${DEMO_USER.email}`)
-    console.log('   Password: (from DEMO_USER_PASSWORD — not printed)')
+    console.log('   Password: (from DEMO_USER_PASSWORD  -  not printed)')
     console.log(`   Name: ${DEMO_USER.full_name}`)
     console.log(`   University: ${DEMO_USER.university}`)
     console.log(`   Program: ${DEMO_USER.program}`)
