@@ -75,6 +75,7 @@ export async function POST(request: Request) {
         model: getGeminiModel(),
         contents,
         config: {
+          // NL students & young pros: persona, Google Search ranking/curation, sectioned synthesis (see lib/domu-ai/system-prompt.ts).
           systemInstruction: buildDomuSystemInstruction(),
           tools: [{ googleSearch: {} }],
           maxOutputTokens: MAX_OUTPUT_TOKENS,

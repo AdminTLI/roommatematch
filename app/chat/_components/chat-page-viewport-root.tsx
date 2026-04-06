@@ -13,15 +13,22 @@ function resetMobileLayoutScroll() {
   document.querySelector('main')?.scrollTo(0, 0)
 }
 
+function isMobileThreadLayout() {
+  if (typeof document === 'undefined') return false
+  return document.body.classList.contains('mobile-chat-active-conversation')
+}
+
 /**
- * Clamps the chat root to the portion of the *visual viewport* that sits below this element's top.
- * Uses the Visual Viewport API (offsetTop/height), not layout `100vh` / `100dvh`, so mobile browser
- * chrome (Safari/Chrome, bar top or bottom) cannot push the composer off-screen.
+ * Publishes Visual Viewport metrics to the document root and sizes the chat column.
  *
- * Resets window/main scroll and re-syncs after keyboard blur  -  iOS often leaves a non-zero layout
- * scroll or stale rects, which caused the header to disappear and a gap under the composer.
+ * **Active mobile thread** (`mobile-chat-active-conversation`): `globals.css` pins `[data-chat-page]`
+ * with `position: fixed` to `--vv-*`, matching the visible rectangle (keyboard + Safari/Chrome bars).
  *
- * Uses `!important` so we override `globals.css` chat rules that also use `!important`.
+ * **Chat list / desktop**: Clamps height from visual bottom minus this node's top so the composer
+ * column stays inside the visible viewport.
+ *
+ * Resets window/main scroll after keyboard blur — iOS often leaves stale layout scroll so the
+ * conversation header appears "gone" until pinch-zoom.
  */
 export function ChatPageViewportRoot({ children }: { children: ReactNode }) {
   const ref = useRef<HTMLDivElement>(null)
@@ -31,6 +38,7 @@ export function ChatPageViewportRoot({ children }: { children: ReactNode }) {
     if (!el || typeof window === 'undefined' || !window.visualViewport) return
 
     let raf = 0
+    const root = document.documentElement
 
     const sync = () => {
       cancelAnimationFrame(raf)
@@ -41,6 +49,22 @@ export function ChatPageViewportRoot({ children }: { children: ReactNode }) {
 
         const mobile = window.matchMedia(`(max-width: ${MOBILE_MAX}px)`).matches
         if (!mobile) {
+          root.style.removeProperty('--vv-offset-top')
+          root.style.removeProperty('--vv-offset-left')
+          root.style.removeProperty('--vv-width')
+          root.style.removeProperty('--vv-height')
+          node.style.removeProperty('height')
+          node.style.removeProperty('max-height')
+          return
+        }
+
+        root.style.setProperty('--vv-offset-top', `${Math.round(vv.offsetTop)}px`)
+        root.style.setProperty('--vv-offset-left', `${Math.round(vv.offsetLeft)}px`)
+        root.style.setProperty('--vv-width', `${Math.round(vv.width)}px`)
+        root.style.setProperty('--vv-height', `${Math.round(vv.height)}px`)
+        root.style.setProperty('--chat-visual-vh', `${Math.round(vv.height)}px`)
+
+        if (isMobileThreadLayout()) {
           node.style.removeProperty('height')
           node.style.removeProperty('max-height')
           return
@@ -87,6 +111,9 @@ export function ChatPageViewportRoot({ children }: { children: ReactNode }) {
     window.addEventListener('orientationchange', sync)
     document.addEventListener('focusout', onFocusOut, true)
 
+    const observer = new MutationObserver(() => sync())
+    observer.observe(document.body, { attributes: true, attributeFilter: ['class'] })
+
     const onPageShow = (e: PageTransitionEvent) => {
       if (e.persisted) {
         resetMobileLayoutScroll()
@@ -105,12 +132,18 @@ export function ChatPageViewportRoot({ children }: { children: ReactNode }) {
       cancelAnimationFrame(raf)
       window.clearTimeout(t1)
       window.clearTimeout(t2)
+      observer.disconnect()
       vv.removeEventListener('resize', sync)
       vv.removeEventListener('scroll', sync)
       window.removeEventListener('resize', sync)
       window.removeEventListener('orientationchange', sync)
       window.removeEventListener('pageshow', onPageShow)
       document.removeEventListener('focusout', onFocusOut, true)
+      root.style.removeProperty('--vv-offset-top')
+      root.style.removeProperty('--vv-offset-left')
+      root.style.removeProperty('--vv-width')
+      root.style.removeProperty('--vv-height')
+      root.style.removeProperty('--chat-visual-vh')
       el.style.removeProperty('height')
       el.style.removeProperty('max-height')
     }

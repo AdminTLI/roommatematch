@@ -443,6 +443,23 @@ body:has([data-chat-page]) main>div>div[data-chat-page] {
   width: 100% !important;
 }
 
+/* Open thread on mobile: lock the chat column to the *visual viewport* (keyboard + browser bars).
+   ChatPageViewportRoot sets --vv-* on <html> from window.visualViewport. */
+@media (max-width: 1023px) {
+  body.mobile-chat-active-conversation.chat-page main > div > div[data-chat-page],
+  body:has([data-chat-page]).mobile-chat-active-conversation main > div > div[data-chat-page] {
+    position: fixed !important;
+    z-index: 25 !important;
+    top: var(--vv-offset-top, 0px) !important;
+    left: var(--vv-offset-left, 0px) !important;
+    width: var(--vv-width, 100vw) !important;
+    height: var(--vv-height, 100dvh) !important;
+    max-height: var(--vv-height, 100dvh) !important;
+    flex: none !important;
+    box-sizing: border-box !important;
+  }
+}
+
 /* Hide footer on chat page */
 body.chat-page main>div>div:has(footer),
 body:has([data-chat-page]) main>div>div:has(footer),

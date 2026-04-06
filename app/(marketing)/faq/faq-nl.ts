@@ -5,34 +5,29 @@ export const faqMarketingNl: FaqMarketingCategory[] = [
     category: 'Aan de slag',
     items: [
       {
-        question: 'Is Domu Match echt gratis voor studenten?',
+        question: 'Wat is Domu Match?',
         answer:
-          'Ja. Domu Match is volledig gratis voor alle studenten in Nederland. Ook young professionals kunnen gratis gebruikmaken van het platform. Geen verborgen kosten, geen betaalde tiers en geen kosten voor berichten of matches. Een passende huisgenoot moet voor iedereen bereikbaar zijn.',
-      },
-      {
-        question: 'Is Domu Match alleen voor studenten?',
-        answer:
-          'Nee. Domu Match bedient studenten en young professionals in gescheiden pools. Studenten matchen alleen met studenten; young professionals alleen met young professionals. Je kiest je levensfase bij aanmelding.',
+          'Domu Match helpt geverifieerde studenten en young professionals in Nederland compatibele huisgenoten te vinden. Je vult een gestructureerde vragenlijst over je leefstijl in, krijgt suggesties met een compatibiliteitsscore en begrijpelijke uitleg, en chat op het platform. Studenten en young professionals matchen alleen binnen hun eigen groep.',
       },
       {
         question: 'Wie kan Domu Match gebruiken?',
         answer:
-          'Studenten van 17+ ingeschreven bij een Nederlandse universiteit (aanmelden met je universiteitsmail) en young professionals in Nederland (aanmelden met je e-mail). Beide groepen worden ID-geverifieerd en matchen in aparte pools.',
+          'Studenten aan een Nederlandse universiteit of hogeschool melden zich aan met een instellingsmail en doorlopen identiteitsverificatie. Young professionals in Nederland gebruiken hun eigen e-mailadres en dezelfde ID-check. Je moet minimaal 17 zijn. Iedereen wordt geverifieerd voordat matching en chat volledig beschikbaar zijn.',
       },
       {
-        question: 'Hoe meld ik me aan?',
+        question: 'Hoe lang duurt aanmelden en onboarding?',
         answer:
-          'Klik op de homepage op “Aan de slag” en maak een account. Studenten gebruiken hun universiteitsmail; young professionals hun eigen e-mail. Vul de compatibiliteitsvragenlijst in (ongeveer 10–15 minuten) en je ontvangt matches. Beide trajecten vereisen identiteitsverificatie.',
+          'Account aanmaken en verificatie is snel; de compatibiliteitsvragenlijst duurt meestal zo’n 10–15 minuten. Hoe eerlijker en completer je antwoorden, hoe nuttiger je matches en uitleg.',
       },
       {
-        question: 'Met welke universiteiten werkt Domu Match?',
+        question: 'Moet ik al een kamer of contract hebben?',
         answer:
-          'We werken samen met 50+ Nederlandse universiteiten en hogescholen, waaronder UvA, VU, EUR, Universiteit Utrecht, TU Delft, Universiteit Leiden, Radboud en vele anderen.',
+          'Nee. Veel mensen zoeken eerst een huisgenoot en daarna samen een woning; anderen hebben al een kamer en zoeken flatmates. Beide scenario’s passen bij Domu Match.',
       },
       {
-        question: 'Moet ik eerst huisvesting hebben voordat ik Domu Match gebruik?',
+        question: 'Welke instellingen worden ondersteund?',
         answer:
-          'Nee. Je kunt Domu Match gebruiken als je al een kamer zoekt met huisgenoten, of als je samen met matches een woning zoekt. Veel gebruikers vinden eerst een huisgenoot en daarna samen een woning.',
+          'Domu Match is bedoeld voor het Nederlandse hoger onderwijs: universiteiten en hogescholen. Als je instellingsmail bij aanmelding wordt geaccepteerd, kun je het studententraject gebruiken. Klopt iets niet voor jouw school, neem contact op met support.',
       },
     ],
   },
@@ -42,192 +37,127 @@ export const faqMarketingNl: FaqMarketingCategory[] = [
       {
         question: 'Hoe verifieert Domu Match gebruikers?',
         answer:
-          'Iedereen wordt geverifieerd met een overheids-ID via Persona voordat je kunt chatten. Studenten bevestigen daarnaast hun status met een universiteitsmail. Young professionals voltooien dezelfde ID-check. Zo houden we bots en oplichting buiten de deur.',
+          'Identiteit loopt via Persona met een overheids-ID en selfie (en soms een korte video) op hun beveiligde flow. Studenten tonen daarnaast hun studentstatus via de universiteits- of hogeschoolmail. Zonder voltooide verificatie werken matching en chat niet hetzelfde als voor geverifieerde gebruikers.',
       },
       {
-        question: 'Zijn mijn gegevens veilig?',
+        question: 'Zijn mijn persoonsgegevens veilig?',
         answer:
-          'Ja. We zijn AVG-proof en nemen dataprotectie serieus. Gegevens worden versleuteld, niet verkocht aan derden en jij bepaalt wat je met matches deelt.',
+          'We verwerken gegevens volgens de AVG. We gebruiken versleuteling zoals gangbaar in de sector, we verkopen je persoonsgegevens niet en jij bepaalt wat je op je profiel zet. Zie ons Privacybeleid voor details.',
       },
       {
-        question: 'Kan ik verdacht gedrag melden?',
+        question: 'Kan ik iemand melden of blokkeren?',
         answer:
-          'Ja. Op elk profiel zit een meldknop. Ons veiligheidsteam bekijkt meldingen binnen 24 uur en onderneemt actie, tot schorsing of permanente ban bij ernstige overtredingen.',
-      },
-      {
-        question: 'Welke informatie zien andere gebruikers?',
-        answer:
-          'Je voornaam, levensfase (student of young professional) en wat je zelf in je profiel zet, zijn zichtbaar voor matches. Voor studenten kunnen universiteit en opleiding getoond worden. E-mail, telefoon en exact adres deel je niet via het platform, tenzij je dat zelf kiest.',
+          'Ja. Je kunt meldingen doen vanuit profielen en gesprekken en gebruikers blokkeren waar nodig. Ons team beoordeelt meldingen en kan accounts schorsen of verbannen bij overtredingen.',
       },
       {
         question: 'Doen jullie strafrechtelijke achtergrondchecks?',
         answer:
-          'We verifiëren identiteit via overheids-ID (Persona) en voor studenten via universiteitsmail. Geen strafrechtelijke achtergrondchecks, wel duidelijke communityrichtlijnen en handhaving bij overtredingen van de voorwaarden.',
+          'Nee. We verifiëren identiteit en (voor studenten) de band met de instelling. We handhaven communityrichtlijnen bij misbruik, maar we doen geen uittreksels uit een justitiële documentatie.',
       },
     ],
   },
   {
-    category: 'Matching & algoritme',
+    category: 'Matching & scores',
     items: [
       {
-        question: 'Hoe werkt het matchingalgoritme?',
+        question: 'Hoe werkt huisgenoot-matching?',
         answer:
-          'Het algoritme analyseert 40+ factoren: slaapritme, netheid, sociale gewoontes, studeer- of werkpatronen, geluid, persoonlijkheid en meer. We gebruiken onderzoek naar huisgenoot-compatibiliteit om die factoren gewogen mee te nemen.',
+          'Je antwoorden beschrijven hoe je woont: netheid, geluid, gasten, slaap en stilte-uren, gedeelde ruimtes, middelen, balans tussen studie/werk en sociaal leven, en het soort thuis dat je wilt. Waar je antwoorden het vereisen, passen we harde uitsluitingen toe (bijvoorbeeld strikt niet roken binnen). Daarna scoren we de fit op die leefstijldimensies en tellen we context mee, zoals universiteit, opleiding en studiejaar. Technisch zoeken we kandidaten ook via profiel-embeddings voordat de gedetailleerde score wordt toegepast.',
       },
       {
-        question: 'Wat is een compatibiliteitsscore?',
+        question: 'Wat betekent de compatibiliteitsscore?',
         answer:
-          'De score (0–100%) laat zien hoe goed je matcht binnen jouw pool (studenten met studenten, professionals met professionals) op leefstijl. Boven de 70% is goed, boven de 80% sterk, boven de 90% uitzonderlijk.',
+          'De score is een samenvatting van 0–100%: hoe dicht je voorkeuren op de gemeten dimensies bij elkaar liggen. Het is een hulpmiddel, geen garantie voor hoe samenwonen in de praktijk voelt. Gebruik de score samen met de korte sterke punten en aandachtspunten bij elke suggestie.',
       },
       {
         question: 'Kan ik zien waarom ik met iemand match?',
         answer:
-          'Ja. We werken met uitlegbare matching: je ziet welke factoren bijdragen aan de score en waar je mogelijk compromissen nodig hebt.',
+          'Ja. Suggesties bevatten highlights (wat goed past) en watch-outs (waar je het misschien moet uitpraten of compromissen zoekt). Dat is bewust: matching moet uitlegbaar zijn, geen black box.',
       },
       {
-        question: 'Kan ik matches filteren?',
+        question: 'Kan ik match-suggesties filteren?',
         answer:
-          'Ja, onder meer op universiteit, opleiding, gender (als relevant voor jouw woonsituatie), locatie en intreemoment. We raden aan ook hoge-compatibiliteitsmatches te bekijken die buiten je filters vallen.',
-      },
-      {
-        question: 'Hoe vaak krijg ik nieuwe matches?',
-        answer:
-          'Nieuwe matches komen erbij als anderen hun profiel afronden. De meeste gebruikers zien 3–10 kwalitatieve matches per week. Hoe completer je profiel, hoe beter de matches.',
-      },
-      {
-        question: 'Wat als ik geen matches heb?',
-        answer:
-          'Zeldzaam, maar mogelijk in kleinere studentensteden of bij zeer specifieke wensen. Probeer filters aan te passen, alle profielonderdelen in te vullen en voorkeuren niet te smal te zetten. Neem contact op met support als je na een week nog niets ziet.',
+          'Je kunt filteren op universiteit, studieniveau, opleiding en studiejaar. Verbreed filters als je weinig resultaten ziet, vooral in het begin of in kleinere steden.',
       },
     ],
   },
   {
-    category: 'Het platform gebruiken',
+    category: 'Chat, Domu AI & regels',
     items: [
       {
-        question: 'Hoe stuur ik een bericht naar een potentiële huisgenoot?',
+        question: 'Hoe werkt chatten?',
         answer:
-          'Open het profiel van je match en start een gesprek via onze beveiligde chat. We geven ook suggesties om het ijs te breken.',
+          'Als je via de matchflow met iemand bent verbonden, chat je binnen Domu Match. Chat is tekst, gemodereerd, en bedoeld om contact op het platform te houden tot jullie zelf ergens anders verder gaan.',
       },
       {
-        question: 'Kan ik videobellen voordat we afspreken?',
+        question: 'Waarom werd mijn bericht geblokkeerd of gelimiteerd?',
         answer:
-          'Ja. Je kunt veilig videobellen in het platform - handig voor internationale studenten voordat je elkaar live ontmoet.',
+          'Om spam en misbruik te beperken geldt een rate limit op uitgaande berichten (bijvoorbeeld tot 30 berichten per 5 minuten onder normale omstandigheden). Wacht even en probeer daarna opnieuw. Externe links zijn in chat niet toegestaan om veiligheidsredenen.',
       },
       {
-        question: 'Wat moet ik vragen aan potentiële huisgenoten?',
+        question: 'Wat is Domu AI?',
         answer:
-          'Focus op dagelijks leven: slaap, gastenbeleid, schoonmaak, gedeelde kosten en dealbreakers. Het platform suggereert vragen op basis van jullie compatibiliteitsfactoren.',
+          'Domu AI is de assistent in de app (chatbubble) voor vragen over Domu Match, wonen in Nederland en huisvesting in het algemeen. Het is geen juridisch advies en heeft geen toegang tot privégegevens van andere gebruikers.',
       },
       {
-        question: 'Hoeveel huisgenoten kan ik tegelijk benaderen?',
+        question: 'Kan ik videobellen met andere gebruikers in Domu Match?',
         answer:
-          'Onbeperkt, maar we raden 3–5 gelijktijdige gesprekken aan zodat je iedereen fatsoenlijk aandacht geeft.',
+          'De standaardchat is tekst. Wil je videobellen voor je elkaar ontmoet, spreek dat buiten het platform af (bijvoorbeeld WhatsApp of Google Meet) als je dat vertrouwt. Aparte video-introfuncties kunnen naast live chat verschijnen naarmate het product groeit.',
       },
       {
-        question: 'Kan ik meerdere huisgenoten zoeken voor een grotere woning?',
+        question: 'Kan ik meerdere huisgenoten zoeken?',
         answer:
-          'Ja. Je kunt aangeven dat je meerdere huisgenoten zoekt; we matchen je met mensen of groepen die hetzelfde zoeken.',
+          'Je kunt individuen ontmoeten en groepssuggesties verkennen waar het product dat ondersteunt. Exacte groepsflows kunnen veranderen bij updates; het doel is altijd transparante compatibiliteitsinformatie voordat je commitment geeft.',
       },
     ],
   },
   {
-    category: 'Huisvesting vinden',
+    category: 'Huisvesting & vervolgstappen',
     items: [
       {
-        question: 'Biedt Domu Match kamers of advertenties?',
+        question: 'Zijn er ook kamers of advertenties in Domu Match?',
         answer:
-          'We focussen op huisgenoot-matching, niet op kamerverhuur. Wel verwijzen we naar bronnen en partners om, nadat je een match hebt, huisvesting te vinden.',
+          'Huisgenoot-matching is de kern. We bouwen ook huisvestingsontdekking in de app (advertenties doorbladeren, voorkeuren en—waar ondersteund—aanvragen voor bezichtigingen). Of je die sectie ziet, hangt af van de huidige uitrol en configuratie. Zie je die nog niet, dan kun je alsnog matchen en samen huisvesting zoeken buiten die omgeving.',
       },
       {
-        question: 'Wat is de gemiddelde huur in Amsterdam/Rotterdam/Utrecht?',
+        question: 'Moet ik eerst huisgenoten of eerst een woning zoeken?',
         answer:
-          'Amsterdam: ongeveer €450–€1.200 per maand, Rotterdam: €350–€650, Utrecht: €450–€700. Sterk afhankelijk van wijk en kamer (gedeeld vs. privé).',
+          'Veel mensen zoeken eerst mensen bij wie ze kunnen wonen en daarna samen een plek. Zo verklein je de kans dat je een contract tekent met onbekenden die je niet hebt gesproken. Er is geen enkele verplichte volgorde; kies wat bij je planning past.',
       },
       {
-        question: 'Moet ik eerst een contract tekenen voordat ik huisgenoten zoek?',
+        question: 'Waar vind ik typische huren of buurten?',
         answer:
-          'We raden aan eerst passende huisgenoten te vinden en daarna samen naar huisvesting te zoeken. Zo zijn alle partijen committed en verklein je de kans op een mismatch thuis.',
-      },
-      {
-        question: 'Kunnen internationale studenten Domu Match gebruiken?',
-        answer:
-          'Zeker. Je moet ingeschreven staan bij een Nederlandse universiteit met een geldige studentenmail.',
+          'Huurprijzen veranderen snel en verschillen per stad en kamertype. Gebruik gemeentelijke of landelijke cijfers, het huisvestingsloket van je instelling en betrouwbare platforms voor marktinzicht. Domu Match richt zich op met wie je woont en—waar beschikbaar—hoe advertenties bij je voorkeuren passen, niet op het noemen van gemiddelde huren.',
       },
     ],
   },
   {
-    category: 'Account & techniek',
+    category: 'Account & support',
     items: [
       {
-        question: 'Hoe werk ik mijn profiel bij?',
+        question: 'Hoe werk ik mijn profiel of vragenlijst bij?',
         answer:
-          'Ga naar Instellingen > Profiel. Belangrijke voorkeurswijzigingen kunnen je matches opnieuw laten berekenen.',
+          'Open Instellingen: profiel, vragenlijst, meldingen en privacy (inclusief data-export en verwijderverzoeken) staan in de tabbladen daar. Grote wijzigingen in je antwoorden kunnen je toekomstige matches beïnvloeden.',
       },
       {
-        question: 'Kan ik mijn account verwijderen?',
+        question: 'Hoe verwijder ik mijn account?',
         answer:
-          'Ja. Instellingen > Privacy > Account verwijderen. Gegevens worden binnen 30 dagen verwijderd (AVG). Binnen 7 dagen kun je reactivatie aanvragen als je van gedachten verandert.',
+          'Ga naar Instellingen → Account en volg de link om je account te verwijderen. Je doorloopt een korte exitflow. Verwijdering is definitief aan onze kant zodra verwerkt; bewaring van bepaalde gegevens om juridische of beveiligingsredenen staat in ons Privacybeleid.',
       },
       {
-        question: 'Ik ben mijn wachtwoord vergeten.',
+        question: 'Ik ben mijn wachtwoord vergeten—wat nu?',
         answer:
-          'Klik op “Wachtwoord vergeten” op de inlogpagina. We sturen een link naar je (universiteits)mail; links verlopen na 24 uur.',
+          'Gebruik op de inlogpagina “Wachtwoord vergeten” en controleer je mail (ook spam). Resetlinks verlopen om veiligheidsredenen; vraag zo nodig een nieuwe aan.',
       },
       {
         question: 'Is er een mobiele app?',
         answer:
-          'Nu is Domu Match een webapp, geoptimaliseerd voor mobiel. Een native app staat op de roadmap.',
+          'Domu Match is een webapplicatie die in de browser op telefoon en desktop werkt. Je hoeft vandaag geen aparte app uit de store te installeren.',
       },
       {
-        question: 'Mijn universiteitsmail is veranderd. Wat nu?',
+        question: 'Hoe neem ik contact op met support?',
         answer:
-          'Mail domumatch@gmail.com met je oude en nieuwe adres. We verifiëren beide en werken je account binnen 24–48 uur bij.',
-      },
-    ],
-  },
-  {
-    category: 'Prijzen & universiteiten',
-    items: [
-      {
-        question: 'Blijft Domu Match gratis?',
-        answer:
-          'Voor studenten: ja, en dat houden we zo. Later kunnen er betaalde features voor universiteiten bijkomen, maar de kern voor studenten blijft gratis.',
-      },
-      {
-        question: 'Hoe verdient Domu Match geld?',
-        answer:
-          'Via partnerships met onderwijsinstellingen die waarde zien in minder woonconflicten en beter studentenwelzijn.',
-      },
-      {
-        question: 'Mijn universiteit staat niet in jullie lijst. Kan ik tóch aanmelden?',
-        answer:
-          'Met een geldig Nederlands universiteitsdomein (@*.nl) kun je je meestal gewoon aanmelden. Mail domumatch@gmail.com voor een officiële partnership met jouw instelling.',
-      },
-    ],
-  },
-  {
-    category: 'Probleemoplossing',
-    items: [
-      {
-        question: 'Waarom krijg ik geen matches?',
-        answer:
-          'Controleer of je profiel 100% compleet is, je voorkeuren niet te smal zijn en je account geverifieerd is. Meestal volgen binnen 48 uur na afronden matches.',
-      },
-      {
-        question: 'Ik kan mijn e-mail niet verifiëren',
-        answer:
-          'Check je spam. Vraag zo nodig een nieuwe link via Instellingen. Gebruik je officiële universiteitsmail (@universiteit.nl).',
-      },
-      {
-        question: 'Mijn berichten worden niet verstuurd',
-        answer:
-          'Controleer je verbinding, log uit en weer in. Blijft het mis? Neem contact op met support.',
-      },
-      {
-        question: 'Hoe bereik ik support?',
-        answer:
-          'Mail domumatch@gmail.com of gebruik het helpcentrum in de app. Op werkdagen reageren we binnen 24 uur.',
+          'Gebruik waar beschikbaar het Helpcentrum in de app, of mail domumatch@gmail.com. Vermeld je accountmail en een korte probleemomschrijving, dan kunnen we sneller helpen.',
       },
     ],
   },

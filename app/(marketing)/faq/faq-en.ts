@@ -3,232 +3,162 @@ export type FaqMarketingCategory = { category: string; items: FaqMarketingItem[]
 
 export const faqMarketingEn: FaqMarketingCategory[] = [
   {
-    category: 'Getting Started',
+    category: 'Getting started',
     items: [
       {
-        question: 'Is Domu Match really free for students?',
+        question: 'What is Domu Match?',
         answer:
-          'Yes, Domu Match is completely free for all students in the Netherlands. We also offer free access for young professionals. There are no hidden fees, no premium tiers, and no charges for messaging or viewing matches. We believe finding a compatible roommate should be accessible to everyone.',
-      },
-      {
-        question: 'Is Domu Match only for students?',
-        answer:
-          'No. Domu Match serves both students and young professionals in separate pools. Students match only with other students; young professionals only with other young professionals. You choose your life stage when you sign up.',
+          'Domu Match helps verified students and young professionals in the Netherlands find compatible roommates. You complete a structured lifestyle questionnaire, get suggestions with a compatibility score and plain-language reasons, and chat on the platform. Students and young professionals are matched only within their own pool.',
       },
       {
         question: 'Who can use Domu Match?',
         answer:
-          'Domu Match is available to students aged 17+ enrolled at Dutch universities (sign up with your university email) and to young professionals in the Netherlands (sign up with your email). Both groups are ID-verified and matched in separate pools.',
+          'Students enrolled at Dutch universities or hogescholen sign up with an institutional email and complete identity verification. Young professionals in the Netherlands sign up with their own email and complete the same ID verification. You must be at least 17. Everyone is verified before they can use core matching and chat features.',
       },
       {
-        question: 'How do I sign up?',
+        question: 'How long does signup and onboarding take?',
         answer:
-          'Click "Get Started" on our homepage and create an account. Students use their university email; young professionals use their email. Complete our compatibility questionnaire (about 10-15 minutes) and you\'ll start receiving matches. Both paths require identity verification.',
+          'Creating an account and passing verification is quick; the compatibility questionnaire usually takes about 10–15 minutes. The more honestly and completely you answer, the more useful your matches and explanations will be.',
       },
       {
-        question: 'What universities does Domu Match work with?',
+        question: 'Do I need a room or contract before I join?',
         answer:
-          'We partner with 50+ Dutch universities including UvA, VU Amsterdam, EUR, Utrecht University, TU Delft, Leiden University, Radboud University, and many more across the Netherlands.',
+          'No. Many people join to find a roommate first and look for housing together; others already have a room and need flatmates. Domu Match supports both.',
       },
       {
-        question: 'Do I need to find housing first before using Domu Match?',
+        question: 'Which institutions are supported?',
         answer:
-          "No! You can use Domu Match whether you're looking for roommates for an existing apartment or searching for housing together with potential matches. Many users find their roommate first, then search for housing together.",
+          'Domu Match is built for Dutch higher education: universities and hogescholen. If your institutional email is accepted at signup, you can use the student path. If something looks wrong for your school, contact support so we can help.',
       },
     ],
   },
   {
-    category: 'Safety & Verification',
+    category: 'Safety & verification',
     items: [
       {
         question: 'How does Domu Match verify users?',
         answer:
-          'Every user is government-ID verified through Persona before they can chat. Students also verify their status with a university email address. Young professionals sign up with their email and complete the same ID verification. This keeps the platform safe from bots and scams.',
+          'Identity verification is done through Persona using government ID and a selfie (and sometimes a short video) on their secure flow. Students also prove student status via their university or hogeschool email. Until verification is complete, you cannot use matching and chat the same way as verified users.',
       },
       {
-        question: 'Is my personal information safe?',
+        question: 'Is my personal data safe?',
         answer:
-          "Yes. We're fully GDPR compliant and take data protection seriously. Your personal information is encrypted, never sold to third parties, and you have complete control over what information you share with matches.",
+          'We process data under GDPR. We use encryption in line with industry practice, we do not sell your personal data, and you control what you put on your profile. For full detail, see our Privacy Policy.',
       },
       {
-        question: 'Can I report suspicious behavior?',
+        question: 'Can I report or block someone?',
         answer:
-          'Absolutely. Every profile has a report button. Our safety team reviews all reports within 24 hours and takes appropriate action, including account suspension or permanent bans for serious violations.',
+          'Yes. You can report concerns from profiles and conversations, and block users when needed. Reports are reviewed by our team and we may suspend or ban accounts that break our rules.',
       },
       {
-        question: 'What information is visible to other users?',
+        question: 'Do you run criminal background checks?',
         answer:
-          'Your first name, life stage (student or young professional), and the information you choose to share in your profile are visible to matches. For students, university and program may be shown. Your email, phone number, and exact address are never shared unless you choose to share them directly.',
-      },
-      {
-        question: 'Do you conduct background checks?',
-        answer:
-          'We verify identity through government ID (Persona) and, for students, university email. We do not conduct criminal background checks, but we have strict community guidelines and remove users who violate our terms of service.',
+          'No. We verify identity and (for students) institutional affiliation. We enforce community guidelines and take action on abuse, but we do not perform criminal record checks.',
       },
     ],
   },
   {
-    category: 'Matching Algorithm',
+    category: 'Matching & scores',
     items: [
       {
-        question: 'How does the matching algorithm work?',
+        question: 'How does roommate matching work?',
         answer:
-          'Our algorithm analyzes 40+ compatibility factors including sleep schedules, cleanliness preferences, social habits, study routines, noise tolerance, and personality traits. We use science-backed research on roommate compatibility to weight these factors appropriately.',
+          'Your questionnaire answers describe how you live: cleanliness, noise, guests, sleep and quiet hours, shared spaces, substances, balance between study/work and social life, and the kind of home you want. We apply dealbreakers where your answers require it (for example strict no-smoking indoors), then score fit across those lifestyle dimensions and add context such as university, programme, and study year. Technical search also uses profile embeddings to surface likely candidates before the detailed score is applied.',
       },
       {
-        question: 'What is a compatibility score?',
+        question: 'What does the compatibility score mean?',
         answer:
-          'The compatibility score (0-100%) indicates how well you match with another user in your pool (students with students, young professionals with young professionals) based on lifestyle factors. Scores above 70% indicate good compatibility, above 80% excellent, and above 90% exceptional.',
+          'The score is a 0–100% summary of how closely your stated preferences align on the dimensions we measure. It is a guide, not a guarantee of how living together will feel. Use it together with the written strengths and “watch outs” on each suggestion.',
       },
       {
         question: 'Can I see why I was matched with someone?',
         answer:
-          'Yes! Unlike other platforms, we believe in explainable AI. When you view a match, you can see exactly which factors contributed to your compatibility score and which areas might require compromise.',
+          'Yes. Suggestions include highlights (what aligns well) and watch-outs (where you may need to compromise or talk things through). That is intentional: we want matching to be understandable, not a black box.',
       },
       {
-        question: 'Can I filter my matches?',
+        question: 'Can I filter match suggestions?',
         answer:
-          'Yes. You can filter matches by university, program, gender (if relevant to your housing situation), location preferences, and move-in timeline. However, we encourage you to review all high-compatibility matches.',
-      },
-      {
-        question: 'How often do I get new matches?',
-        answer:
-          "New matches appear as new students complete their profiles. Most users receive 3-10 high-quality matches per week. The more complete your profile, the better matches you'll receive.",
-      },
-      {
-        question: 'What if I have no matches?',
-        answer:
-          "This is rare but can happen in smaller university cities or for very specific requirements. Try adjusting your filters, completing all profile sections, and ensuring your preferences aren't too restrictive. Contact support if you still have no matches after a week.",
+          'You can narrow suggestions by university, degree level, programme, and study year. Widen filters if you see few results, especially early on or in smaller cities.',
       },
     ],
   },
   {
-    category: 'Using the Platform',
+    category: 'Chat, Domu AI & rules',
     items: [
       {
-        question: 'How do I message potential roommates?',
+        question: 'How does messaging work?',
         answer:
-          'Once you have a match, simply click their profile and start a conversation through our secure in-app messaging. We provide conversation starters to break the ice!',
+          'After you connect with someone through the match flow, you message inside Domu Match. Chat is text-based, moderated, and designed to keep contact on-platform until you choose to share details elsewhere.',
       },
       {
-        question: 'Can I video call matches before meeting?',
+        question: 'Why was my message blocked or limited?',
         answer:
-          'Yes! We offer secure video chat within the platform so you can meet face-to-face before committing to meeting in person. This is especially helpful for international students.',
+          'To reduce spam and abuse, outgoing messages are rate-limited (for example up to 30 messages per 5 minutes under normal operation). If you hit the limit, wait a few minutes and continue. External links are not allowed in chat for safety.',
       },
       {
-        question: 'What should I ask potential roommates?',
+        question: 'What is Domu AI?',
         answer:
-          'Focus on daily living habits: sleeping schedules, guests policies, cleaning routines, shared expenses expectations, and deal-breakers. Our platform provides suggested questions based on compatibility factors.',
+          'Domu AI is the in-app assistant (chat bubble) that answers questions about using Domu Match, living in the Netherlands, and housing topics in general. It is guidance only: it is not legal advice, and it does not access other users’ private data.',
       },
       {
-        question: 'How many roommates can I match with at once?',
+        question: 'Can I video call other users inside Domu Match?',
         answer:
-          'You can message unlimited matches simultaneously. We recommend having conversations with 3-5 potential roommates at a time to give each conversation proper attention.',
+          'Day-to-day chat is text-first. If you want a video call before meeting, agree that off-platform (for example WhatsApp or Google Meet) once you are comfortable. Optional video-intro features may be offered separately from live chat as the product evolves.',
       },
       {
-        question: 'Can I search for multiple roommates for a larger apartment?',
+        question: 'Can I look for more than one roommate?',
         answer:
-          "Yes! You can indicate you're looking for multiple roommates, and we'll match you with individuals or groups who are also seeking larger shared accommodation.",
+          'You can use Domu Match to meet individuals and explore group-style suggestions where the product supports them. Exact group flows can change as we ship updates; the goal is always transparent compatibility information before you commit.',
       },
     ],
   },
   {
-    category: 'Finding Housing',
+    category: 'Housing & next steps',
     items: [
       {
-        question: 'Does Domu Match provide housing listings?',
+        question: 'Does Domu Match include housing listings?',
         answer:
-          "We focus on roommate matching, not housing listings. However, we provide resources and partnerships with housing platforms to help you find accommodation once you've found compatible roommates.",
+          'Roommate matching is the core product. We are also building housing discovery inside the app (browse listings, preferences, and—in supported cases—tour requests). Whether you see that section depends on current rollout and configuration. If it is not visible yet, you can still match with roommates and coordinate housing together off the listings area.',
       },
       {
-        question: 'What is the average rent in Amsterdam/Rotterdam/Utrecht?',
+        question: 'Should I find roommates or housing first?',
         answer:
-          'Amsterdam: €450-€1,200/month, Rotterdam: €350-€650/month, Utrecht: €450-€700/month. Prices vary significantly by neighborhood and room type (private vs. shared).',
+          'Many people prefer finding people they can live with first, then searching together. That reduces the risk of signing for a flat with strangers you have not vetted. There is no single right order; choose what fits your timeline.',
       },
       {
-        question: 'Should I sign a lease before finding roommates?',
+        question: 'Where can I learn typical rents or neighbourhoods?',
         answer:
-          'We recommend finding compatible roommates first, then searching for housing together. This ensures all parties are committed and reduces the risk of incompatible living situations.',
-      },
-      {
-        question: 'Can international students use Domu Match?',
-        answer:
-          'Absolutely! Domu Match is perfect for international students. You just need to be enrolled at a Dutch university with a valid student email address.',
+          'Rents change quickly and vary by city and room type. Use municipal or national housing statistics, your institution’s housing desk, and reputable listing sites for market ranges. Domu Match focuses on who you live with and, when available, how listings fit your stated preferences—not on quoting average rents.',
       },
     ],
   },
   {
-    category: 'Account & Technical',
+    category: 'Account & support',
     items: [
       {
-        question: 'How do I update my profile?',
+        question: 'How do I update my profile or questionnaire?',
         answer:
-          'Go to Settings > Profile and update any information. Your matches will automatically be recalculated if you change significant preferences.',
+          'Open Settings: profile fields, questionnaire, notifications, and privacy (including data export and deletion requests) live in the tabs there. Big changes to your answers can change who you match with going forward.',
       },
       {
-        question: 'Can I delete my account?',
+        question: 'How do I delete my account?',
         answer:
-          'Yes. Go to Settings > Privacy > Delete Account. Your data will be permanently deleted within 30 days in compliance with GDPR. You can reactivate within 7 days if you change your mind.',
+          'Go to Settings → Account and follow the link to delete your account. You will complete a short exit flow. Deletion is permanent on our side once processed; retention of certain records for legal or security reasons is described in our Privacy Policy.',
       },
       {
-        question: 'I forgot my password. How do I reset it?',
+        question: 'I forgot my password—what now?',
         answer:
-          'Click "Forgot Password" on the login page. We\'ll send a reset link to your university email address. Links expire after 24 hours for security.',
+          'On the sign-in page, use “Forgot password” and check your email (including spam). Reset links expire for security; request a new one if needed.',
       },
       {
         question: 'Is there a mobile app?',
         answer:
-          'Currently, Domu Match is a web application optimized for mobile browsers. A dedicated mobile app is planned for future release.',
-      },
-      {
-        question: 'My university email changed. How do I update it?',
-        answer:
-          "Contact support at domumatch@gmail.com with your old and new university email. We'll verify both emails and update your account within 24-48 hours.",
-      },
-    ],
-  },
-  {
-    category: 'Pricing & Universities',
-    items: [
-      {
-        question: 'Will Domu Match always be free?',
-        answer:
-          'Yes. Domu Match is free for students and will always remain free. We may introduce premium features for universities in the future, but core student features will remain free.',
-      },
-      {
-        question: 'How does Domu Match make money?',
-        answer:
-          'We partner with universities and receive support from educational institutions who see value in reducing housing-related conflicts and improving student wellbeing.',
-      },
-      {
-        question: "My university isn't listed. Can I still use Domu Match?",
-        answer:
-          'If you have a Dutch university email address (@*.nl), you can sign up. Contact us at domumatch@gmail.com to request official partnership with your institution.',
-      },
-    ],
-  },
-  {
-    category: 'Troubleshooting',
-    items: [
-      {
-        question: 'Why am I not receiving matches?',
-        answer:
-          "Ensure your profile is 100% complete, your preferences aren't too restrictive, and your account is verified. Most users receive matches within 48 hours of completing their profile.",
-      },
-      {
-        question: "I can't verify my email address",
-        answer:
-          'Check your spam folder. If you still don\'t see the email, request a new verification link from Settings. Use your official university email (@university.nl format).',
-      },
-      {
-        question: "Messages aren't sending",
-        answer:
-          'Check your internet connection. If the problem persists, try logging out and back in. Contact support if issues continue.',
+          'Domu Match is a web application that works in the browser on phones and desktops. There is no separate app store download required today.',
       },
       {
         question: 'How do I contact support?',
         answer:
-          'Email domumatch@gmail.com or use the in-app help center. We respond to all inquiries within 24 hours during business days.',
+          'Use the in-app Help Center where available, or email domumatch@gmail.com. Include your account email and a short description of the issue so we can help faster.',
       },
     ],
   },

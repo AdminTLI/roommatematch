@@ -29,7 +29,6 @@ import { MessengerTypingBar } from './messenger-typing-bar'
 import { ReportUserDialog } from './report-user-dialog'
 import { cn } from '@/lib/utils'
 import { queryClient, queryKeys } from '@/app/providers'
-import { useVisualViewportKeyboardInset } from '@/hooks/use-visual-viewport-keyboard-inset'
 
 interface Message {
   id: string
@@ -923,13 +922,9 @@ export function MessengerConversation({
     showErrorToast('Search feature', 'Search functionality will be implemented soon.')
   }
 
-  const syncKeyboardInset = useVisualViewportKeyboardInset(conversationRootRef, {
-    enabled: !hideComposer,
-  })
-
   const handleComposerFocus = useCallback(() => {
-    // Replying usually means the user wants the latest messages in view; keyboard inset reflow
-    // can leave the list scrolled to a stale position without this.
+    // Replying usually means the user wants the latest messages in view; keep the list pinned to
+    // the end while the keyboard/visual viewport settles (handled by ChatPageViewportRoot on /chat).
     setUserScrolledUp(false)
     userScrolledUpRef.current = false
     setShouldAutoScroll(true)
@@ -942,33 +937,16 @@ export function MessengerConversation({
     }
 
     flushMessagesToEnd()
-    syncKeyboardInset()
     requestAnimationFrame(() => {
       flushMessagesToEnd()
-      syncKeyboardInset()
       requestAnimationFrame(() => {
         flushMessagesToEnd()
-        syncKeyboardInset()
       })
     })
-    window.setTimeout(() => {
-      flushMessagesToEnd()
-      syncKeyboardInset()
-    }, 50)
-    window.setTimeout(() => {
-      flushMessagesToEnd()
-      syncKeyboardInset()
-    }, 200)
-    window.setTimeout(() => {
-      flushMessagesToEnd()
-      syncKeyboardInset()
-    }, 450)
-  }, [syncKeyboardInset])
-
-  const handleComposerBlur = useCallback(() => {
-    window.setTimeout(syncKeyboardInset, 80)
-    window.setTimeout(syncKeyboardInset, 320)
-  }, [syncKeyboardInset])
+    window.setTimeout(flushMessagesToEnd, 50)
+    window.setTimeout(flushMessagesToEnd, 200)
+    window.setTimeout(flushMessagesToEnd, 450)
+  }, [])
 
   return (
     <div
@@ -1219,7 +1197,6 @@ export function MessengerConversation({
         <MessengerTypingBar
           onSend={handleSendMessage}
           onComposerFocus={handleComposerFocus}
-          onComposerBlur={handleComposerBlur}
           placeholder={
             isBlocked
               ? 'This user has been blocked. To send a message, unblock them.'
