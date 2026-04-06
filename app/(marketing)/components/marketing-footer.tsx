@@ -58,7 +58,7 @@ const copy: Record<
         links: [
           { name: 'Privacy Policy', href: '/privacy' },
           { name: 'Terms & Conditions', href: '/terms' },
-          { name: 'Cookie Policy', href: '/cookies' },
+          { name: 'Cookie & local storage policy', href: '/cookies' },
           { name: 'Accessibility', href: '/accessibility' },
         ],
       },
@@ -109,7 +109,7 @@ const copy: Record<
         links: [
           { name: 'Privacybeleid', href: '/privacy' },
           { name: 'Algemene voorwaarden', href: '/terms' },
-          { name: 'Cookiebeleid', href: '/cookies' },
+          { name: 'Cookie- en localStorage-beleid', href: '/cookies' },
           { name: 'Toegankelijkheid', href: '/accessibility' },
         ],
       },

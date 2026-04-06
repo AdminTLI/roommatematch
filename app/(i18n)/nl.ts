@@ -708,7 +708,7 @@ export const nl = {
   legal: {
     termsOfService: 'Algemene Voorwaarden',
     privacyPolicy: 'Privacybeleid',
-    cookiePolicy: 'Cookie Beleid',
+    cookiePolicy: 'Cookie- en localStorage-beleid',
     gdpr: 'GDPR Naleving',
     contact: 'Contact',
     support: 'Ondersteuning'

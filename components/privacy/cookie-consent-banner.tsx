@@ -19,23 +19,27 @@ interface CookieConsentBannerProps {
 const translations = {
   en: {
     title: 'Cookie Consent',
-    description: 'We use cookies and similar technologies to improve your experience, analyze site usage, and assist in our marketing efforts. You can choose which cookies to accept.',
+    description:
+      'We use cookies, local storage, and similar technologies to run the site, measure usage when you allow it, and support optional features. You can choose what to allow.',
     acceptAll: 'Accept All',
     rejectAll: 'Reject All',
     customize: 'Customize',
-    essential: 'Essential cookies are required for the site to function properly.',
+    essential:
+      'Essential cookies and storage are required for secure login, CSRF protection, and core site operation.',
     learnMore: 'Learn more in our',
-    cookiePolicy: 'Cookie Policy'
+    cookiePolicy: 'Cookie & local storage policy'
   },
   nl: {
     title: 'Cookie Toestemming',
-    description: 'We gebruiken cookies en vergelijkbare technologieën om uw ervaring te verbeteren, sitegebruik te analyseren en onze marketinginspanningen te ondersteunen. U kunt kiezen welke cookies u accepteert.',
+    description:
+      'We gebruiken cookies, local storage en vergelijkbare technologieën om de site te laten werken, gebruik te meten als u dat toestaat, en optionele functies te ondersteunen. U kiest zelf wat u toestaat.',
     acceptAll: 'Alles Accepteren',
     rejectAll: 'Alles Weigeren',
     customize: 'Aanpassen',
-    essential: 'Essentiële cookies zijn vereist voor de site om correct te functioneren.',
+    essential:
+      'Essentiële cookies en opslag zijn nodig voor veilig inloggen, CSRF-bescherming en de kern van de site.',
     learnMore: 'Meer informatie in ons',
-    cookiePolicy: 'Cookiebeleid'
+    cookiePolicy: 'Cookie- en localStorage-beleid'
   }
 }
 
@@ -132,6 +136,7 @@ export function CookieConsentBanner({ locale = 'en' }: CookieConsentBannerProps)
     return (
       <CookiePreferenceCenter
         locale={locale}
+        consentBaseline={getClientConsents() ? 'from_storage' : 'customize_first_visit'}
         onClose={() => {
           setShowPreferences(false)
           // Check if user has made selections

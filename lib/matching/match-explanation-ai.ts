@@ -2,7 +2,7 @@ import { GoogleGenAI } from '@google/genai'
 import type { SupabaseClient } from '@supabase/supabase-js'
 
 /** Cost-focused model; keep in sync with Domu chat + Python API. */
-export const GEMINI_FLASH_MODEL = 'gemini-1.5-flash' as const
+export const GEMINI_FLASH_MODEL = 'gemini-2.5-flash' as const
 
 export const GEMINI_MAX_OUTPUT_TOKENS = 350
 

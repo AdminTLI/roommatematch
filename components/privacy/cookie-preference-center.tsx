@@ -14,9 +14,17 @@ import {
   NON_ESSENTIAL_CONSENTS 
 } from '@/lib/privacy/cookie-consent-client'
 
+export type ConsentBaselineMode = 'from_storage' | 'customize_first_visit'
+
 interface CookiePreferenceCenterProps {
   locale?: 'en' | 'nl'
   onClose?: () => void
+  /**
+   * `customize_first_visit`: user opened the centre from “Customize” before any saved prefs — keep every
+   * non-essential toggle off (never hydrate stale storage into toggles).
+   * `from_storage`: load prior choices from localStorage when present.
+   */
+  consentBaseline?: ConsentBaselineMode
 }
 
 const consentDescriptions = {
@@ -68,28 +76,37 @@ const consentDescriptions = {
   }
 }
 
-export function CookiePreferenceCenter({ locale = 'en', onClose }: CookiePreferenceCenterProps) {
-  const [preferences, setPreferences] = useState({
-    essential: true,
-    analytics: false,
-    error_tracking: false,
-    session_replay: false,
-    marketing: false
-  })
+const DEFAULT_PREFERENCES = {
+  essential: true,
+  analytics: false,
+  error_tracking: false,
+  session_replay: false,
+  marketing: false
+} as const
+
+export function CookiePreferenceCenter({
+  locale = 'en',
+  onClose,
+  consentBaseline = 'from_storage'
+}: CookiePreferenceCenterProps) {
+  const [preferences, setPreferences] = useState({ ...DEFAULT_PREFERENCES })
 
   useEffect(() => {
-    // Load existing preferences
+    if (consentBaseline === 'customize_first_visit') {
+      setPreferences({ ...DEFAULT_PREFERENCES })
+      return
+    }
     const existing = getClientConsents()
     if (existing) {
       setPreferences({
-        essential: existing.essential,
-        analytics: existing.analytics,
-        error_tracking: existing.error_tracking,
-        session_replay: existing.session_replay,
-        marketing: existing.marketing
+        essential: true,
+        analytics: Boolean(existing.analytics),
+        error_tracking: Boolean(existing.error_tracking),
+        session_replay: Boolean(existing.session_replay),
+        marketing: Boolean(existing.marketing)
       })
     }
-  }, [])
+  }, [consentBaseline])
 
   const handleToggle = async (consentType: ConsentType, value: boolean) => {
     if (consentType === 'essential') {

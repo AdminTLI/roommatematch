@@ -9,10 +9,10 @@ const LAST_UPDATED_ISO = '2026-04-06'
 
 const content = {
   en: {
-    title: 'Cookie Statement',
+    title: 'Cookie & Local Storage Statement',
     lastUpdatedLabel: 'Last updated',
     introduction:
-      'This Cookie Statement explains how Domu Match (“we”, “us”) uses cookies, local storage, session storage, and similar technologies on domumatch.com and our web application. It is written to support compliance with the EU ePrivacy rules and the Dutch Telecommunications Act (Telecommunicatiewet). Non-essential technologies are only activated after you give consent through our cookie banner or preference centre.',
+      'This Cookie & Local Storage Statement explains how Domu Match (“we”, “us”) stores and reads information on your device — including HTTP cookies, browser local storage, session storage, and similar technologies — on domumatch.com and our web application. Dutch law and the EU ePrivacy rules apply to this kind of access, not only to traditional “cookies”. Non-essential technologies are only activated after you give consent through our cookie banner or preference centre.',
     controller: {
       title: 'Data controller',
       paragraphs: [
@@ -34,32 +34,54 @@ const content = {
         'Our cookie banner and Cookie Preference Centre use the same categories: Essential (always on), Analytics, Error tracking, Session replay, and Marketing. Only Essential is active without your opt-in. You can Accept all, Reject all, or Customize. Reject all is shown with equal prominence to Accept all, in line with Dutch DPA guidance.'
     },
     strictlyNecessary: {
-      title: 'Category A — Strictly necessary HTTP cookies',
+      title: 'Category A — Strictly necessary cookies, local storage & platform integrity',
       description:
-        'These cookies are required to operate a secure logged-in service (authentication, session integrity, and CSRF protection for signed-in users). They are exempt from consent under the ePrivacy framework because they are strictly necessary to provide the service you request.',
-      tableCaption: 'Strictly necessary HTTP cookies',
-      headers: ['Name / pattern', 'Provider', 'Purpose', 'Duration'],
+        'These entries are required to operate a secure logged-in service (authentication, session integrity, CSRF protection) and to deliver the site through our hosting provider. Under the ePrivacy framework they fall under the strictly necessary exemption because they are needed to provide the service you actively request — not for optional analytics or marketing.',
+      tableCaption: 'Strictly necessary storage (device + HTTP)',
+      headers: ['Name / pattern', 'Where it lives', 'Provider', 'Purpose', 'Duration'],
       rows: [
         [
-          'Cookies whose names start with sb- (for example sb-<project-ref>-auth-token)',
+          'Supabase Auth session (typically sb-<project-ref>-auth-token and related sb-* keys)',
+          'localStorage',
           'Supabase (processor) / Domu Match',
-          'Supabase Auth session: keeps you signed in, refreshes tokens safely, and supports OAuth / OpenID Connect flows if we enable external identity providers in Supabase Auth. Exact cookie names depend on your Supabase project reference.',
-          'Session-based; Supabase refreshes tokens while you use the site. Cleared when you sign out or remove cookies.'
+          'Primary browser persistence for your Supabase Auth session: keeps you signed in and lets the client refresh tokens. The Supabase browser client typically stores these values in localStorage alongside any HTTP-cookie synchronisation used for server-side session checks.',
+          'Until you sign out or clear site data for our origin; Supabase may refresh tokens while the session is active.'
+        ],
+        [
+          'Supabase Auth session (sb-* pattern, may be chunked across multiple names)',
+          'HTTP cookie',
+          'Supabase (processor) / Domu Match',
+          'Synchronised session data for server-side rendering, middleware, and protected routes (for example so the server can validate your session on each request). Exact names depend on your Supabase project reference.',
+          'Session-based; refreshed while you use the site. Cleared when you sign out or remove cookies / site data.'
         ],
         [
           'csrf-token',
+          'HTTP cookie',
           'Domu Match',
-          'HTTP-only CSRF token for authenticated users. Used to protect POST/PUT/PATCH/DELETE requests to our APIs from cross-site request forgery.',
+          'HTTP-only CSRF token for authenticated users. Protects POST/PUT/PATCH/DELETE requests to our APIs from cross-site request forgery.',
           'Up to 24 hours (rotated by our application)'
+        ],
+        [
+          'Vercel platform identifiers (names vary; set by our host)',
+          'HTTP cookie / edge mechanism (as determined by Vercel)',
+          'Vercel Inc. (processor) / Domu Match',
+          'Strictly necessary hosting and edge operations: for example request routing, TLS delivery, and proportionate abuse or denial-of-service mitigation on Vercel’s network. This is separate from optional Vercel Web Analytics and Speed Insights (those load only after Analytics consent — see below).',
+          'Per Vercel’s platform behaviour; typically short-lived or session-oriented technical tokens.'
         ]
+      ]
+    },
+    infrastructureNote: {
+      title: 'Cloudflare / bot widgets',
+      paragraphs: [
+        'We do not load Cloudflare Turnstile or other Cloudflare challenge widgets in our application code. If we add them later, we will update this statement and assign them to the correct legal category (strictly necessary vs consent-based) before activation.'
       ]
     },
     universitySsoNote: {
       title: 'SURFconext and other university SSO (not live today)',
       paragraphs: [
         'Domu Match does not currently offer SURFconext or other institution-specific single sign-on in production.',
-        'Technically, the stack can support future university SSO in two ways: (1) Supabase Auth can be linked to an external OIDC/OAuth identity provider (for example a national or institutional IdP); after login you would still use the same Supabase sb-* session cookies described above. (2) The repository contains optional, feature-flagged placeholder code for a SAML-style SURFconext integration (environment variables such as ENABLE_SURFCONEXT in env.example) — this is not connected to the live sign-in experience and would need a full implementation and security review before use.',
-        'If we launch SURFconext or similar SSO, we will update this Cookie Statement to list any additional first- or third-party cookies or domains involved.'
+        'Technically, the stack can support future university SSO in two ways: (1) Supabase Auth can be linked to an external OIDC/OAuth identity provider (for example a national or institutional IdP); after login you would still use the same Supabase session persistence described in Category A (local storage and/or HTTP cookies). (2) The repository contains optional, feature-flagged placeholder code for a SAML-style SURFconext integration (environment variables such as ENABLE_SURFCONEXT in env.example) — this is not connected to the live sign-in experience and would need a full implementation and security review before use.',
+        'If we launch SURFconext or similar SSO, we will update this Cookie & Local Storage Statement to list any additional first- or third-party cookies, storage keys, or domains involved.'
       ]
     },
     verificationThirdParties: {
@@ -188,6 +210,7 @@ const content = {
       ],
       bullets: [
         'Non-essential toggles default to off; we do not use pre-ticked boxes for optional categories.',
+        'If you choose Customize on your first visit (before any choice is saved), the preference centre opens with Analytics, Error tracking, Session replay, and Marketing all switched off until you actively enable them — matching GDPR / AP expectations.',
         'Reject all is as easy as Accept all (no dark patterns or forced scrolling).',
         'Saving preferences may reload the page so technologies align with your choice.'
       ]
@@ -238,7 +261,7 @@ const content = {
       title: 'Retention (summary)',
       intro: 'Indicative periods — see our Privacy Policy for full retention schedules:',
       bullets: [
-        'Supabase authentication cookies follow Supabase session settings and are cleared when you sign out or remove cookies.',
+        'Supabase authentication data in localStorage and HTTP cookies follows Supabase session settings and is cleared when you sign out or remove site data / cookies.',
         'csrf-token is rotated on our application schedule (up to roughly 24 hours).',
         'Consent records in user_consents are kept for as long as needed to demonstrate compliance with telecom and privacy law.',
         'Analytics and journey data in our database are retained only for product improvement and security, then deleted or aggregated according to internal policies described in the Privacy Policy.'
@@ -259,10 +282,10 @@ const content = {
     }
   },
   nl: {
-    title: 'Cookieverklaring',
+    title: 'Cookie- en localStorage-verklaring',
     lastUpdatedLabel: 'Laatst bijgewerkt',
     introduction:
-      'In deze Cookieverklaring leggen we uit hoe Domu Match (“wij”) cookies, local storage, session storage en vergelijkbare technologieën gebruikt op domumatch.com en in onze webapplicatie. De verklaring sluit aan bij de ePrivacy-regels en de Nederlandse Telecommunicatiewet. Niet-noodzakelijke technologieën worden pas ingeschakeld nadat u via de cookiebanner of het voorkeurencentrum toestemming geeft.',
+      'In deze Cookie- en localStorage-verklaring leggen we uit hoe Domu Match (“wij”) informatie op uw apparaat opslaat en uitleest — waaronder HTTP-cookies, localStorage en sessionStorage in de browser en vergelijkbare technologieën — op domumatch.com en in onze webapplicatie. Onder het Nederlandse recht en de ePrivacy-regels geldt die toegang breder dan alleen traditionele “cookies”. Niet-noodzakelijke technologieën worden pas ingeschakeld nadat u via de cookiebanner of het voorkeurencentrum toestemming geeft.',
     controller: {
       title: 'Verwerkingsverantwoordelijke',
       paragraphs: [
@@ -284,32 +307,54 @@ const content = {
         'Onze cookiebanner en het Cookie-voorkeurencentrum gebruiken dezelfde categorieën: Essentieel (altijd aan), Analyse, Foutopsporing, Sessie-opname en Marketing. Alleen Essentieel staat aan zonder uw actieve keuze. U kunt Alles accepteren, Alles weigeren of Aanpassen. “Alles weigeren” heeft dezelfde zichtbaarheid als “Alles accepteren”, conform de lijn van de Autoriteit Persoonsgegevens.'
     },
     strictlyNecessary: {
-      title: 'Categorie A — Strikt noodzakelijke HTTP-cookies',
+      title: 'Categorie A — Strikt noodzakelijke cookies, localStorage & platformintegriteit',
       description:
-        'Deze cookies zijn nodig voor een veilig ingelogde dienst (authenticatie, sessie-integriteit en CSRF-bescherming voor ingelogde gebruikers). Ze vallen onder de uitzondering voor strikte noodzakelijkheid in het ePrivacy-kader.',
-      tableCaption: 'Strikt noodzakelijke HTTP-cookies',
-      headers: ['Naam / patroon', 'Aanbieder', 'Doel', 'Duur'],
+        'Deze items zijn nodig voor een veilig ingelogde dienst (authenticatie, sessie-integriteit, CSRF-bescherming) en voor het uitserveren van de site via onze hostingprovider. Ze vallen onder de uitzondering voor strikte noodzakelijkheid in het ePrivacy-kader omdat ze nodig zijn voor de dienst die u actief vraagt — niet voor optionele analyse of marketing.',
+      tableCaption: 'Strikt noodzakelijke opslag (apparaat + HTTP)',
+      headers: ['Naam / patroon', 'Waar het staat', 'Aanbieder', 'Doel', 'Duur'],
       rows: [
         [
-          'Cookies waarvan de naam begint met sb- (bijv. sb-<project-ref>-auth-token)',
+          'Supabase Auth-sessie (doorgaans sb-<project-ref>-auth-token en aanverwante sb-*-sleutels)',
+          'localStorage',
           'Supabase (verwerker) / Domu Match',
-          'Supabase Auth-sessie: houdt u ingelogd, vernieuwt tokens veilig en ondersteunt OAuth- / OpenID Connect-stromen als we externe identity providers in Supabase Auth inschakelen. De exacte cookienamen hangen af van uw Supabase-projectreferentie.',
-          'Sessie-gebaseerd; Supabase vernieuwt tokens tijdens gebruik. Gewist bij uitloggen of verwijderen van cookies.'
+          'Primaire browser-opslag van uw Supabase Auth-sessie: houdt u ingelogd en laat de client tokens vernieuwen. De Supabase browserclient slaat deze waarden typisch op in localStorage, naast eventuele synchronisatie met HTTP-cookies voor server-side sessiecontroles.',
+          'Tot u uitlogt of sitedata voor onze origin wist; Supabase kan tokens vernieuwen zolang de sessie actief is.'
+        ],
+        [
+          'Supabase Auth-sessie (sb-*-patroon; kan over meerdere namen verdeeld zijn)',
+          'HTTP-cookie',
+          'Supabase (verwerker) / Domu Match',
+          'Gesynchroniseerde sessiegegevens voor server-side rendering, middleware en beveiligde routes (zodat de server bij elk verzoek uw sessie kan valideren). Exacte namen hangen af van uw Supabase-projectreferentie.',
+          'Sessie-gebaseerd; vernieuwd tijdens gebruik. Gewist bij uitloggen of verwijderen van cookies/sitedata.'
         ],
         [
           'csrf-token',
+          'HTTP-cookie',
           'Domu Match',
-          'HTTP-only CSRF-token voor ingelogde gebruikers, ter bescherming van POST/PUT/PATCH/DELETE-verzoeken aan onze API’s tegen cross-site request forgery.',
+          'HTTP-only CSRF-token voor ingelogde gebruikers. Beschermt POST/PUT/PATCH/DELETE-verzoeken aan onze API’s tegen cross-site request forgery.',
           'Tot ca. 24 uur (roulerend door onze applicatie)'
+        ],
+        [
+          'Vercel-platformidentifiers (namen variëren; gezet door onze host)',
+          'HTTP-cookie / edge-mechanisme (door Vercel bepaald)',
+          'Vercel Inc. (verwerker) / Domu Match',
+          'Strikt noodzakelijke hosting- en edge-werking: o.a. requestrouting, TLS-aflevering en evenredige bescherming tegen misbruik of denial-of-service op het netwerk van Vercel. Dit staat los van optionele Vercel Web Analytics en Speed Insights (die alleen na Analyse-toestemming laden — zie hieronder).',
+          'Conform het platformgedrag van Vercel; doorgaans korte of sessie-gerichte technische tokens.'
         ]
+      ]
+    },
+    infrastructureNote: {
+      title: 'Cloudflare / bot-widgets',
+      paragraphs: [
+        'We laden Cloudflare Turnstile of andere Cloudflare challenge-widgets niet in onze applicatiecode. Als we die later toevoegen, werken we deze verklaring bij en wijzen we ze toe aan de juiste juridische categorie (strikt noodzakelijk vs toestemmingsplichtig) vóór activatie.'
       ]
     },
     universitySsoNote: {
       title: 'SURFconext en ander universiteits-SSO (nu niet live)',
       paragraphs: [
         'Domu Match biedt op dit moment geen SURFconext of ander instellingsspecifiek single sign-on in productie.',
-        'Technisch kan de stack toekomstige universiteits-SSO op twee manieren ondersteunen: (1) Supabase Auth kan worden gekoppeld aan een externe OIDC/OAuth identity provider (bijvoorbeeld een nationale of instellings-IdP); na inloggen gebruikt u nog steeds dezelfde Supabase sb-* sessiecookies als hierboven beschreven. (2) In de repository staat optionele, achter een feature-flag geplaatste placeholdercode voor een SAML-achtige SURFconext-koppeling (omgevingsvariabelen zoals ENABLE_SURFCONEXT in env.example) — dit is niet gekoppeld aan de live inlogervaring en vereist een volledige implementatie en security review voordat het gebruikt kan worden.',
-        'Als we SURFconext of vergelijkbaar SSO lanceren, werken we deze Cookieverklaring bij met eventuele extra first- of third-party cookies of domeinen.'
+        'Technisch kan de stack toekomstige universiteits-SSO op twee manieren ondersteunen: (1) Supabase Auth kan worden gekoppeld aan een externe OIDC/OAuth identity provider (bijvoorbeeld een nationale of instellings-IdP); na inloggen gebruikt u nog steeds dezelfde Supabase-sessiepersistentie als in categorie A (localStorage en/of HTTP-cookies). (2) In de repository staat optionele, achter een feature-flag geplaatste placeholdercode voor een SAML-achtige SURFconext-koppeling (omgevingsvariabelen zoals ENABLE_SURFCONEXT in env.example) — dit is niet gekoppeld aan de live inlogervaring en vereist een volledige implementatie en security review voordat het gebruikt kan worden.',
+        'Als we SURFconext of vergelijkbaar SSO lanceren, werken we deze Cookie- en localStorage-verklaring bij met eventuele extra first- of third-party cookies, opslagsleutels of domeinen.'
       ]
     },
     verificationThirdParties: {
@@ -438,6 +483,7 @@ const content = {
       ],
       bullets: [
         'Optionele schakelaars staan standaard uit; geen vooraf aangevinkte vakjes.',
+        'Kiest u bij het eerste bezoek voor Aanpassen (voordat een keuze is opgeslagen), dan opent het voorkeurencentrum met Analyse, Foutopsporing, Sessie-opname en Marketing allemaal uit — tot u ze zelf aanzet. Dit sluit aan bij de verwachtingen van de AVG en de AP.',
         'Weigeren is net zo eenvoudig als accepteren.',
         'Na opslaan kan de pagina vernieuwen zodat technologieën aansluiten op uw keuze.'
       ]
@@ -488,7 +534,7 @@ const content = {
       title: 'Bewaartermijnen (samenvatting)',
       intro: 'Indicatieve termijnen — zie ons Privacybeleid voor volledige schema’s:',
       bullets: [
-        'Supabase-authenticatiecookies volgen de sessie-instellingen van Supabase en worden gewist bij uitloggen of het verwijderen van cookies.',
+        'Supabase-authenticatiegegevens in localStorage en HTTP-cookies volgen de sessie-instellingen van Supabase en worden gewist bij uitloggen of het verwijderen van sitedata/cookies.',
         'csrf-token rouleert volgens onze applicatie (tot ongeveer 24 uur).',
         'Toestemmingsrecords in user_consents bewaren we zolang nodig is om naleving van telecom- en privacyrecht aan te tonen.',
         'Analyse- en journeydata in onze database bewaren we alleen voor productverbetering en beveiliging, daarna verwijderen of aggregeren we volgens interne regels in het Privacybeleid.'
@@ -536,11 +582,20 @@ export default function CookiePolicyPage() {
                   You are using a pre-release (beta) version of Domu Match. This means features may change, data
                   may be reset, and additional data collection (such as bug reports and session logs) may be done
                   to help us improve the product. Our Privacy Policy covers data practices in detail; this
-                  statement focuses on cookies and similar technologies.
+                  statement focuses on cookies, local storage, and similar technologies.
                 </p>
               </div>
 
               <p className="text-slate-700 mb-12 leading-relaxed">{t.introduction}</p>
+
+              <section className="mb-12">
+                <h2 className="text-2xl font-semibold text-slate-900 mb-4">{t.controller.title}</h2>
+                <div className="space-y-3 text-slate-700">
+                  {t.controller.paragraphs.map((p, i) => (
+                    <p key={i}>{p}</p>
+                  ))}
+                </div>
+              </section>
 
               <section className="mb-12">
                 <h2 className="text-2xl font-semibold text-slate-900 mb-4">{t.whatAreCookies.title}</h2>
@@ -585,6 +640,12 @@ export default function CookiePolicyPage() {
                           ))}
                         </tbody>
                       </table>
+                    </div>
+                    <div className="mt-6 space-y-3 border-t border-slate-200 pt-4 text-slate-700">
+                      <h4 className="text-base font-semibold text-slate-900">{t.infrastructureNote.title}</h4>
+                      {t.infrastructureNote.paragraphs.map((p, i) => (
+                        <p key={i}>{p}</p>
+                      ))}
                     </div>
                   </div>
 

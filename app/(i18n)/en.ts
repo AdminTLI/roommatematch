@@ -717,7 +717,7 @@ export const en = {
   legal: {
     termsOfService: 'Terms of Service',
     privacyPolicy: 'Privacy Policy',
-    cookiePolicy: 'Cookie Policy',
+    cookiePolicy: 'Cookie & local storage policy',
     gdpr: 'GDPR Compliance',
     contact: 'Contact Us',
     support: 'Support'

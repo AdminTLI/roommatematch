@@ -5,7 +5,7 @@ import { createServiceClient } from '@/lib/supabase/service'
 /** Align with Vercel Hobby serverless limit. */
 export const maxDuration = 10
 
-const GEMINI_MODEL = 'gemini-1.5-flash' as const
+const GEMINI_MODEL = 'gemini-2.5-flash' as const
 const MAX_OUTPUT_TOKENS = 350
 const GEMINI_TIMEOUT_MS = 8000
 
