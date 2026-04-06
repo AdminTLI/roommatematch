@@ -200,7 +200,8 @@ def chat():
                 parts=[types.Part(text=system_prompt)]
             ),
             tools=[search_internet],
-            max_output_tokens=350,
+            max_output_tokens=2048,
+            thinking_config=types.ThinkingConfig(thinking_budget=0),
         )
 
         def _do_generate():
@@ -210,11 +211,11 @@ def chat():
                 config=config,
             )
 
-        # Cap wall time for Vercel Hobby (~10s function budget after cold start).
+        # Wall time cap (align with Next.js Domu route; allow search + longer answers).
         with ThreadPoolExecutor(max_workers=1) as ex:
             future = ex.submit(_do_generate)
             try:
-                response = future.result(timeout=8)
+                response = future.result(timeout=9)
             except FuturesTimeoutError:
                 return jsonify(
                     {

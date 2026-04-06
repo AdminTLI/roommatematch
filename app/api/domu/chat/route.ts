@@ -2,12 +2,13 @@ import { NextResponse } from 'next/server'
 import { GoogleGenAI } from '@google/genai'
 import { createServiceClient } from '@/lib/supabase/service'
 
-/** Align with Vercel Hobby serverless limit. */
+/** Vercel Hobby caps server routes at ~10s; Pro can raise this in dashboard if needed. */
 export const maxDuration = 10
 
 const GEMINI_MODEL = 'gemini-2.5-flash' as const
-const MAX_OUTPUT_TOKENS = 350
-const GEMINI_TIMEOUT_MS = 8000
+/** 350 was too small for 2.5 + Google Search: answers hit MAX_TOKENS mid-sentence. */
+const MAX_OUTPUT_TOKENS = 2048
+const GEMINI_TIMEOUT_MS = 9000
 
 /** Max number of prior messages to send as context (user + assistant pairs). */
 const MAX_HISTORY_MESSAGES = 20
@@ -70,6 +71,8 @@ export async function POST(request: Request) {
         config: {
           tools: [{ googleSearch: {} }],
           maxOutputTokens: MAX_OUTPUT_TOKENS,
+          // 2.5 models use "thinking" by default; it competes with visible output under maxOutputTokens.
+          thinkingConfig: { thinkingBudget: 0 },
           abortSignal: controller.signal,
         },
       })

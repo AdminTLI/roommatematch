@@ -23,20 +23,15 @@ BEGIN
   );
 END;
 $$ LANGUAGE plpgsql;
-
 GRANT EXECUTE ON FUNCTION public.is_admin() TO authenticated;
 GRANT EXECUTE ON FUNCTION public.is_admin() TO anon;
-
 COMMENT ON FUNCTION public.is_admin() IS 'Check if current user is admin, using SECURITY DEFINER to avoid RLS recursion. Use this function instead of querying admins table directly in RLS policies.';
-
 -- Fix the recursive policy on admins table
 -- The policy "Admins can read admin data" queries admins from within an admins policy, causing recursion
 DROP POLICY IF EXISTS "Admins can read admin data" ON public.admins;
-
 -- Recreate the policy using the function to avoid recursion
 CREATE POLICY "Admins can read admin data" ON public.admins
   FOR SELECT USING (
     user_id = auth.uid() OR
     is_admin()
   );
-

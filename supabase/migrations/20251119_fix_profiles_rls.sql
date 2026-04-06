@@ -2,7 +2,6 @@
 -- The old policy caused "infinite recursion detected" errors when joining profiles with other tables
 
 DROP POLICY IF EXISTS "Minimal public profiles visible to university members" ON profiles;
-
 -- Security definer helper so we can evaluate university membership without recursion
 CREATE OR REPLACE FUNCTION public.can_view_minimal_profile(target_university_id UUID)
 RETURNS BOOLEAN
@@ -18,12 +17,9 @@ BEGIN
   );
 END;
 $$ LANGUAGE plpgsql;
-
 GRANT EXECUTE ON FUNCTION public.can_view_minimal_profile(UUID) TO authenticated;
-
 CREATE POLICY "Minimal public profiles visible to university members" ON profiles
   FOR SELECT USING (
     minimal_public = true
     AND can_view_minimal_profile(university_id)
   );
-
