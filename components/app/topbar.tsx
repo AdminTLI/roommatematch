@@ -28,6 +28,7 @@ import { usePathname } from 'next/navigation'
 import { useMobileChatChrome } from '@/components/app/mobile-chat-chrome-context'
 import { cn } from '@/lib/utils'
 import { HoverCard, HoverCardContent, HoverCardTrigger } from '@/components/ui/hover-card'
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
 
 interface TopbarProps {
   user: {
@@ -241,11 +242,11 @@ export function Topbar({ user, context = 'user' }: TopbarProps) {
         hideTopBarOnMobileForChat && 'max-lg:hidden',
       )}
     >
-      <div className="flex items-center w-full px-3 sm:px-4 lg:px-6 py-3 gap-3 md:gap-4 max-w-7xl mx-auto">
+      <div className="flex flex-wrap items-center w-full px-3 sm:px-4 lg:px-6 py-3 gap-3 md:gap-4 max-w-7xl mx-auto">
         {/* Logo - Visible on all screens now that sidebar is gone */}
         <Link
           href={isAdminContext ? '/admin' : '/dashboard'}
-          className="flex items-center gap-2 hover:opacity-80 transition-opacity flex-shrink-0"
+          className="order-1 flex items-center gap-2 hover:opacity-80 transition-opacity flex-shrink-0"
         >
           <div className="relative h-8 w-8 flex-shrink-0">
             <Image
@@ -263,7 +264,14 @@ export function Topbar({ user, context = 'user' }: TopbarProps) {
         </Link>
 
         {/* Search - Glassmorphism style */}
-        <div className="flex-1 max-w-2xl mx-auto relative px-2 sm:px-4" ref={searchRef}>
+        <div
+          className={cn(
+            'order-3 w-full relative',
+            'sm:order-2 sm:flex-1 sm:max-w-2xl sm:mx-auto',
+            'px-0 sm:px-4',
+          )}
+          ref={searchRef}
+        >
           <div className="relative w-full group">
             <Search className="absolute left-4 sm:left-6 top-1/2 transform -translate-y-1/2 w-4 h-4 text-zinc-500 group-focus-within:text-indigo-400 transition-colors pointer-events-none" />
             <input
@@ -361,7 +369,7 @@ export function Topbar({ user, context = 'user' }: TopbarProps) {
         </div>
 
         {/* Right side - Actions */}
-        <div className="flex items-center gap-1.5 sm:gap-3 md:gap-4 flex-shrink-0">
+        <div className="order-2 sm:order-3 ml-auto flex items-center gap-1.5 sm:gap-3 md:gap-4 flex-shrink-0">
           <div className="text-zinc-400 hover:text-white transition-colors">
             <NotificationBell userId={user.id} />
           </div>
@@ -371,60 +379,100 @@ export function Topbar({ user, context = 'user' }: TopbarProps) {
           </div>
 
           {context === 'user' && (
-            <HoverCard openDelay={180} closeDelay={120}>
-              <HoverCardTrigger asChild>
-                <button
-                  type="button"
-                  className={cn(
-                    'inline-flex max-w-[100%] flex-shrink-0 items-center rounded-full border-2 border-indigo-500/45 bg-gradient-to-r from-indigo-500/[0.18] via-purple-500/[0.14] to-indigo-500/[0.18] px-2.5 py-1 shadow-md shadow-indigo-500/20 ring-1 ring-indigo-500/15 transition hover:scale-[1.03] hover:border-indigo-500/70 hover:shadow-lg hover:shadow-indigo-500/30 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500/50 focus-visible:ring-offset-2 focus-visible:ring-offset-white dark:border-indigo-400/50 dark:from-indigo-400/[0.22] dark:via-purple-400/[0.18] dark:to-indigo-400/[0.22] dark:shadow-indigo-950/40 dark:ring-indigo-400/20 dark:hover:border-indigo-300/70 dark:focus-visible:ring-offset-bg-body sm:px-3 sm:py-1.5',
-                  )}
-                  aria-label="Beta program - hover or tap for details"
-                >
-                  <span className="text-[11px] font-bold uppercase tracking-wide text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 to-purple-600 dark:from-indigo-300 dark:to-purple-300 sm:text-xs">
-                    Beta
-                  </span>
-                </button>
-              </HoverCardTrigger>
-              <HoverCardContent
-                side="bottom"
-                align="end"
-                className={cn(
-                  'w-[min(22rem,calc(100vw-1.5rem))] overflow-hidden rounded-2xl p-0',
-                  'border border-white/55 bg-white/70 shadow-[0_20px_50px_rgba(15,23,42,0.12)] backdrop-blur-2xl backdrop-saturate-150',
-                  'ring-1 ring-inset ring-white/40 dark:border-white/12 dark:bg-zinc-950/55 dark:shadow-[0_24px_60px_rgba(0,0,0,0.45)] dark:ring-white/[0.06]',
-                )}
-              >
-                <div className="px-4 pt-4">
-                  <h3 className="text-sm font-semibold leading-snug text-zinc-900 dark:text-zinc-50">
-                    Thank you for being here with us
-                  </h3>
-                  <div className="mt-3 space-y-2.5 text-sm font-normal leading-relaxed text-zinc-600 dark:text-zinc-300">
-                    <p>
-                      We don&apos;t take your time lightly. As one of our beta members, you&apos;re helping shape Domu
-                      Match with every click, honest note, and idea you share. That effort genuinely moves the product
-                      forward, and we&apos;re grateful you chose to show up.
-                    </p>
-                    <p>
-                      If you haven&apos;t already, come hang out in our WhatsApp community. You&apos;ll meet other
-                      students on the same journey, hear what we&apos;re working on sooner, and you can always reach
-                      the team there when something&apos;s on your mind - you&apos;re not just a user to us.
-                    </p>
-                  </div>
-                </div>
-                <div className="mt-3 border-t border-white/45 bg-white/40 px-4 py-2.5 dark:border-white/10 dark:bg-white/[0.07]">
-                  <a
-                    href="https://chat.whatsapp.com/LUKdaP84dszJAO0PKswOXM"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="group flex w-full items-center justify-between gap-2 text-sm font-medium text-indigo-700 transition hover:text-indigo-600 dark:text-indigo-300 dark:hover:text-indigo-200"
-                    onPointerDown={(e) => e.stopPropagation()}
-                  >
-                    <span className="min-w-0 text-left leading-snug">Join our WhatsApp community</span>
-                    <ArrowUpRight className="h-4 w-4 shrink-0 opacity-70 transition group-hover:opacity-100" aria-hidden />
-                  </a>
-                </div>
-              </HoverCardContent>
-            </HoverCard>
+            <>
+              {(() => {
+                const pillClassName = cn(
+                  'inline-flex max-w-[100%] flex-shrink-0 items-center rounded-full border-2 border-indigo-500/45 bg-gradient-to-r from-indigo-500/[0.18] via-purple-500/[0.14] to-indigo-500/[0.18] px-2.5 py-1 shadow-md shadow-indigo-500/20 ring-1 ring-indigo-500/15 transition hover:scale-[1.03] hover:border-indigo-500/70 hover:shadow-lg hover:shadow-indigo-500/30 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500/50 focus-visible:ring-offset-2 focus-visible:ring-offset-white dark:border-indigo-400/50 dark:from-indigo-400/[0.22] dark:via-purple-400/[0.18] dark:to-indigo-400/[0.22] dark:shadow-indigo-950/40 dark:ring-indigo-400/20 dark:hover:border-indigo-300/70 dark:focus-visible:ring-offset-bg-body sm:px-3 sm:py-1.5',
+                )
+
+                const content = (
+                  <>
+                    <div className="px-4 pt-4">
+                      <h3 className="text-sm font-semibold leading-snug text-zinc-900 dark:text-zinc-50">
+                        Thank you for being here with us
+                      </h3>
+                      <div className="mt-3 space-y-2.5 text-sm font-normal leading-relaxed text-zinc-600 dark:text-zinc-300">
+                        <p>
+                          We don&apos;t take your time lightly. As one of our beta members, you&apos;re helping shape Domu
+                          Match with every click, honest note, and idea you share. That effort genuinely moves the product
+                          forward, and we&apos;re grateful you chose to show up.
+                        </p>
+                        <p>
+                          If you haven&apos;t already, come hang out in our WhatsApp community. You&apos;ll meet other
+                          students on the same journey, hear what we&apos;re working on sooner, and you can always reach
+                          the team there when something&apos;s on your mind - you&apos;re not just a user to us.
+                        </p>
+                      </div>
+                    </div>
+                    <div className="mt-3 border-t border-white/45 bg-white/40 px-4 py-2.5 dark:border-white/10 dark:bg-white/[0.07]">
+                      <a
+                        href="https://chat.whatsapp.com/LUKdaP84dszJAO0PKswOXM"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="group flex w-full items-center justify-between gap-2 text-sm font-medium text-indigo-700 transition hover:text-indigo-600 dark:text-indigo-300 dark:hover:text-indigo-200"
+                        onPointerDown={(e) => e.stopPropagation()}
+                      >
+                        <span className="min-w-0 text-left leading-snug">Join our WhatsApp community</span>
+                        <ArrowUpRight className="h-4 w-4 shrink-0 opacity-70 transition group-hover:opacity-100" aria-hidden />
+                      </a>
+                    </div>
+                  </>
+                )
+
+                return (
+                  <>
+                    {/* Desktop: hover affordance */}
+                    <div className="hidden sm:block">
+                      <HoverCard openDelay={180} closeDelay={120}>
+                        <HoverCardTrigger asChild>
+                          <button type="button" className={pillClassName} aria-label="Beta program - hover for details">
+                            <span className="text-[11px] font-bold uppercase tracking-wide text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 to-purple-600 dark:from-indigo-300 dark:to-purple-300 sm:text-xs">
+                              Beta
+                            </span>
+                          </button>
+                        </HoverCardTrigger>
+                        <HoverCardContent
+                          side="bottom"
+                          align="end"
+                          className={cn(
+                            'w-[min(22rem,calc(100vw-1.5rem))] overflow-hidden rounded-2xl p-0',
+                            'border border-white/55 bg-white/70 shadow-[0_20px_50px_rgba(15,23,42,0.12)] backdrop-blur-2xl backdrop-saturate-150',
+                            'ring-1 ring-inset ring-white/40 dark:border-white/12 dark:bg-zinc-950/55 dark:shadow-[0_24px_60px_rgba(0,0,0,0.45)] dark:ring-white/[0.06]',
+                          )}
+                        >
+                          {content}
+                        </HoverCardContent>
+                      </HoverCard>
+                    </div>
+
+                    {/* Mobile: click/tap popover so it doesn't get trapped behind scroll containers */}
+                    <div className="sm:hidden">
+                      <Popover>
+                        <PopoverTrigger asChild>
+                          <button type="button" className={pillClassName} aria-label="Beta program - tap for details">
+                            <span className="text-[11px] font-bold uppercase tracking-wide text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 to-purple-600 dark:from-indigo-300 dark:to-purple-300 sm:text-xs">
+                              Beta
+                            </span>
+                          </button>
+                        </PopoverTrigger>
+                        <PopoverContent
+                          side="bottom"
+                          align="end"
+                          sideOffset={8}
+                          className={cn(
+                            'z-[10000] w-[min(22rem,calc(100vw-1.5rem))] overflow-hidden rounded-2xl p-0',
+                            'border border-white/55 bg-white/90 shadow-[0_20px_50px_rgba(15,23,42,0.12)] backdrop-blur-2xl backdrop-saturate-150',
+                            'ring-1 ring-inset ring-white/40 dark:border-white/12 dark:bg-zinc-950/70 dark:shadow-[0_24px_60px_rgba(0,0,0,0.45)] dark:ring-white/[0.06]',
+                          )}
+                        >
+                          {content}
+                        </PopoverContent>
+                      </Popover>
+                    </div>
+                  </>
+                )
+              })()}
+            </>
           )}
 
           <UserDropdown user={user} />

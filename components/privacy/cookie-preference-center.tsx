@@ -192,8 +192,8 @@ export function CookiePreferenceCenter({
   const t = consentDescriptions[locale]
 
   return (
-    <div className="fixed inset-0 z-[80] flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-sm dark:bg-black/55">
-      <Card className="flex max-h-[90vh] w-full max-w-2xl flex-col border border-white/80 bg-white/95 text-slate-900 shadow-[0_24px_80px_rgba(15,23,42,0.15)] backdrop-blur-xl supports-[backdrop-filter]:bg-white/90 dark:border-slate-700 dark:bg-slate-900/95 dark:text-slate-50 dark:shadow-[0_24px_80px_rgba(0,0,0,0.5)] dark:supports-[backdrop-filter]:bg-slate-900/90">
+    <div className="fixed inset-0 z-[80] flex items-end justify-center bg-slate-900/40 p-2 backdrop-blur-sm dark:bg-black/55 sm:items-center sm:p-4">
+      <Card className="flex w-full max-w-2xl flex-col overflow-hidden border border-white/80 bg-white/95 text-slate-900 shadow-[0_24px_80px_rgba(15,23,42,0.15)] backdrop-blur-xl supports-[backdrop-filter]:bg-white/90 dark:border-slate-700 dark:bg-slate-900/95 dark:text-slate-50 dark:shadow-[0_24px_80px_rgba(0,0,0,0.5)] dark:supports-[backdrop-filter]:bg-slate-900/90 max-h-[calc(100dvh-0.75rem)] sm:max-h-[90vh] rounded-t-3xl sm:rounded-3xl">
         <CardHeader className="flex flex-shrink-0 flex-row items-center justify-between space-y-0 border-b border-slate-200/80 pb-4 dark:border-slate-700">
           <div className="flex items-center gap-3">
             <Cookie className="h-6 w-6 text-blue-600 dark:text-violet-400" />
@@ -203,6 +203,7 @@ export function CookiePreferenceCenter({
           </div>
           {onClose && (
             <Button
+              type="button"
               variant="ghost"
               size="sm"
               onClick={onClose}
@@ -213,7 +214,7 @@ export function CookiePreferenceCenter({
             </Button>
           )}
         </CardHeader>
-        <CardContent className="flex-1 space-y-6 overflow-y-auto pr-1 pt-6 [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-slate-300 dark:[&::-webkit-scrollbar-thumb]:bg-slate-600 [&::-webkit-scrollbar-track]:bg-transparent">
+        <CardContent className="flex-1 space-y-6 overflow-y-auto px-6 pb-6 pt-6 [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-slate-300 dark:[&::-webkit-scrollbar-thumb]:bg-slate-600 [&::-webkit-scrollbar-track]:bg-transparent">
           <CardDescription className="text-slate-600 dark:text-slate-300">
             {locale === 'nl'
               ? 'Beheer uw cookie voorkeuren. U kunt deze instellingen op elk moment wijzigen.'
@@ -283,25 +284,26 @@ export function CookiePreferenceCenter({
               onCheckedChange={(checked) => handleToggle('marketing', checked)}
             />
           </div>
-
-          <div className="flex flex-shrink-0 flex-col gap-3 border-t border-slate-200/80 pt-4 dark:border-slate-700 sm:flex-row">
-            <Button
-              onClick={handleSave}
-              className="flex-1 rounded-full bg-blue-600 font-semibold text-white shadow-lg shadow-blue-600/20 hover:bg-blue-700 dark:bg-violet-600 dark:shadow-violet-600/20 dark:hover:bg-violet-700"
-            >
-              {locale === 'nl' ? 'Voorkeuren Opslaan' : 'Save Preferences'}
-            </Button>
-            {onClose && (
-              <Button
-                variant="outline"
-                onClick={onClose}
-                className="w-full rounded-full border-slate-200/90 bg-white/70 sm:w-auto dark:border-slate-600 dark:bg-slate-800/80 dark:text-slate-100 dark:hover:bg-slate-800"
-              >
-                {locale === 'nl' ? 'Annuleren' : 'Cancel'}
-              </Button>
-            )}
-          </div>
         </CardContent>
+        <div className="flex flex-shrink-0 flex-col gap-3 border-t border-slate-200/80 bg-white/80 px-6 pb-[max(1rem,env(safe-area-inset-bottom))] pt-4 backdrop-blur-sm dark:border-slate-700 dark:bg-slate-900/70 sm:flex-row">
+          <Button
+            type="button"
+            onClick={handleSave}
+            className="flex-1 rounded-full bg-blue-600 font-semibold text-white shadow-lg shadow-blue-600/20 hover:bg-blue-700 dark:bg-violet-600 dark:shadow-violet-600/20 dark:hover:bg-violet-700"
+          >
+            {locale === 'nl' ? 'Voorkeuren Opslaan' : 'Save Preferences'}
+          </Button>
+          {onClose && (
+            <Button
+              type="button"
+              variant="outline"
+              onClick={onClose}
+              className="w-full rounded-full border-slate-200/90 bg-white/70 sm:w-auto dark:border-slate-600 dark:bg-slate-800/80 dark:text-slate-100 dark:hover:bg-slate-800"
+            >
+              {locale === 'nl' ? 'Annuleren' : 'Cancel'}
+            </Button>
+          )}
+        </div>
       </Card>
     </div>
   )

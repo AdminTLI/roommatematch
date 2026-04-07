@@ -948,6 +948,15 @@ export function MessengerConversation({
     window.setTimeout(flushMessagesToEnd, 450)
   }, [])
 
+  const handleComposerBlur = useCallback(() => {
+    // Some mobile browsers (notably iOS Chrome) can miss the final visualViewport event when the
+    // keyboard closes. ChatPageViewportRoot listens to window resize; trigger a cheap resync.
+    if (typeof window === 'undefined') return
+    window.setTimeout(() => window.dispatchEvent(new Event('resize')), 0)
+    window.setTimeout(() => window.dispatchEvent(new Event('resize')), 120)
+    window.setTimeout(() => window.dispatchEvent(new Event('resize')), 350)
+  }, [])
+
   return (
     <div
       ref={conversationRootRef}
@@ -1197,6 +1206,7 @@ export function MessengerConversation({
         <MessengerTypingBar
           onSend={handleSendMessage}
           onComposerFocus={handleComposerFocus}
+          onComposerBlur={handleComposerBlur}
           placeholder={
             isBlocked
               ? 'This user has been blocked. To send a message, unblock them.'

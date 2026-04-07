@@ -219,13 +219,24 @@ export function CookieConsentBanner({ locale = 'en' }: CookieConsentBannerProps)
     </div>
     )}
     {showReopenControl && !showBanner && (
-      <div className="fixed bottom-4 left-4 z-40 print:hidden">
+      <div className="fixed left-4 z-40 print:hidden bottom-[calc(6rem+env(safe-area-inset-bottom,0px))] sm:bottom-4">
         <Button
           type="button"
           variant="outline"
           size="sm"
           onClick={() => setShowPreferences(true)}
-          className="rounded-full border-slate-200/90 bg-white/90 text-xs font-medium text-slate-800 shadow-md backdrop-blur-md dark:border-slate-600 dark:bg-slate-900/90 dark:text-slate-100"
+          className="sm:hidden h-10 w-10 rounded-full p-0 border-slate-200/90 bg-white/90 text-slate-800 shadow-md backdrop-blur-md dark:border-slate-600 dark:bg-slate-900/90 dark:text-slate-100"
+          aria-label={locale === 'nl' ? 'Cookie-instellingen' : 'Cookie settings'}
+        >
+          <Cookie className="h-4 w-4" aria-hidden />
+        </Button>
+
+        <Button
+          type="button"
+          variant="outline"
+          size="sm"
+          onClick={() => setShowPreferences(true)}
+          className="hidden sm:inline-flex rounded-full border-slate-200/90 bg-white/90 text-xs font-medium text-slate-800 shadow-md backdrop-blur-md dark:border-slate-600 dark:bg-slate-900/90 dark:text-slate-100"
         >
           <Cookie className="mr-1.5 h-3.5 w-3.5" aria-hidden />
           {locale === 'nl' ? 'Cookie-instellingen' : 'Cookie settings'}

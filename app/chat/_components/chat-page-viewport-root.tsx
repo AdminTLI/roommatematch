@@ -7,7 +7,9 @@ const MIN_CHAT_HEIGHT = 220
 
 function resetMobileLayoutScroll() {
   if (typeof window === 'undefined') return
-  window.scrollTo({ top: 0, left: 0, behavior: 'instant' })
+  // Use a standards-compliant behavior value; some mobile browsers throw on unknown values
+  // and then skip the rest of our keyboard-dismissal recovery.
+  window.scrollTo({ top: 0, left: 0, behavior: 'auto' })
   document.documentElement.scrollTop = 0
   document.body.scrollTop = 0
   document.querySelector('main')?.scrollTo(0, 0)
