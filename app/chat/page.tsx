@@ -5,7 +5,6 @@ import { checkUserVerificationStatus, getVerificationRedirectUrl } from '@/lib/a
 import { getUserProfile } from '@/lib/auth/user-profile'
 import { getOnboardingRedirectUrlIfIncomplete } from '@/lib/onboarding/server-redirect'
 import { MessengerLayout } from './components/messenger-layout'
-import { DomuChatWidget } from '../dashboard/components/domu-chat-widget'
 import { ChatRouteChrome } from './_components/chat-route-chrome'
 import { ChatPageViewportRoot } from './_components/chat-page-viewport-root'
 
@@ -67,7 +66,6 @@ export default async function ChatPage({ searchParams }: ChatPageProps) {
           />
         </ChatPageViewportRoot>
       </AppShell>
-      <DomuChatWidget />
     </ChatRouteChrome>
   )
 }

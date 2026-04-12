@@ -1,10 +1,16 @@
 'use client'
 
 import { useState, useRef, KeyboardEvent } from 'react'
-import { Send } from 'lucide-react'
+import { Send, X } from 'lucide-react'
 import { EmojiPicker } from './emoji-picker'
 import { cn } from '@/lib/utils'
 import { filterContent, getViolationErrorMessage } from '@/lib/utils/content-filter'
+
+export interface ComposerReplyPreview {
+  id: string
+  content: string
+  senderName: string
+}
 
 interface MessengerTypingBarProps {
   onSend: (message: string) => void
@@ -15,6 +21,9 @@ interface MessengerTypingBarProps {
   onComposerFocus?: () => void
   /** Mobile: iOS Chrome sometimes skips a final visualViewport event when the keyboard closes */
   onComposerBlur?: () => void
+  /** Shown above the input when replying to a message */
+  replyDraft?: ComposerReplyPreview | null
+  onCancelReply?: () => void
 }
 
 export function MessengerTypingBar({
@@ -24,6 +33,8 @@ export function MessengerTypingBar({
   className,
   onComposerFocus,
   onComposerBlur,
+  replyDraft,
+  onCancelReply,
 }: MessengerTypingBarProps) {
   const [message, setMessage] = useState('')
   const [contentValidationError, setContentValidationError] = useState<string>('')
@@ -105,16 +116,34 @@ export function MessengerTypingBar({
     <div 
       data-messenger-composer
       className={cn(
-        'relative z-[60] flex-shrink-0 rounded-b-lg border-t border-gray-200 bg-white p-1 shadow-[0_-4px_24px_rgba(0,0,0,0.06)] dark:border-gray-700 dark:bg-gray-900',
+        'relative z-[60] flex-shrink-0 rounded-b-lg border-t border-gray-200 bg-white p-1 pb-[max(0.25rem,env(safe-area-inset-bottom))] dark:border-gray-700 dark:bg-gray-950',
         className,
       )}
       style={{
         flexShrink: 0,
         flexGrow: 0,
-        flexBasis: 'auto'
+        flexBasis: 'auto',
       }}
     >
       <div className="flex flex-col gap-1">
+        {replyDraft ? (
+          <div className="flex items-start gap-1 rounded-lg border border-gray-200 bg-gray-50 px-2 py-2 dark:border-gray-700 dark:bg-gray-900/90">
+            <div className="min-w-0 flex-1 border-l-[3px] border-purple-600 pl-2 dark:border-purple-500">
+              <p className="text-[11px] font-semibold uppercase tracking-wide text-gray-600 dark:text-gray-400">
+                Replying to {replyDraft.senderName}
+              </p>
+              <p className="line-clamp-2 text-xs text-gray-600 dark:text-gray-300">{replyDraft.content}</p>
+            </div>
+            <button
+              type="button"
+              className="flex h-11 w-11 shrink-0 touch-manipulation items-center justify-center rounded-full text-gray-500 hover:bg-gray-200 hover:text-gray-800 dark:text-gray-400 dark:hover:bg-gray-800 dark:hover:text-gray-100"
+              aria-label="Cancel reply"
+              onClick={() => onCancelReply?.()}
+            >
+              <X className="h-5 w-5" />
+            </button>
+          </div>
+        ) : null}
         <div className="flex items-center gap-1">
           {/* Pill-shaped input container */}
           <div className={cn(
@@ -162,17 +191,16 @@ export function MessengerTypingBar({
             onClick={handleSend}
             disabled={disabled || !message.trim() || !!contentValidationError}
             className={cn(
-              'flex-shrink-0 w-7 h-7 rounded-full flex items-center justify-center transition-all',
-              'bg-purple-600 dark:bg-purple-500 text-white',
+              'flex h-11 w-11 shrink-0 touch-manipulation items-center justify-center rounded-full transition-colors',
+              'bg-purple-600 text-white dark:bg-purple-500',
               'hover:bg-purple-700 dark:hover:bg-purple-600',
-              'disabled:opacity-50 disabled:cursor-not-allowed',
-              'active:scale-95 shadow-lg',
-              message.trim() && !disabled && !contentValidationError ? 'hover:scale-105' : ''
+              'disabled:cursor-not-allowed disabled:opacity-50',
+              'active:scale-[0.98]',
             )}
             aria-label="Send message"
             type="button"
           >
-            <Send className="w-5 h-5" />
+            <Send className="h-5 w-5" />
           </button>
         </div>
         {contentValidationError && (

@@ -7,6 +7,7 @@ import {
   generateMatchExplanationWithGemini,
   getCachedMatchExplanation,
   saveCachedMatchExplanation,
+  type MatchExplanationAudience,
 } from '@/lib/matching/match-explanation-ai'
 import { toStudent } from '@/lib/matching/answer-map'
 import type { StudentProfile } from '@/lib/matching/answer-map'
@@ -294,71 +295,91 @@ export async function GET(request: NextRequest) {
 
     const score = compatibilityScore[0]
 
-    // Fetch both users' data to generate personalized explanation
-    // This is optional - if it fails, we still return the compatibility scores
-    let personalizedExplanation = ''
-    try {
-      const [userAProfile, userBProfile] = await Promise.all([
-        fetchUserProfileForExplanation(admin, user.id),
-        fetchUserProfileForExplanation(admin, targetUserId)
-      ])
+    const [userLow, userHigh] = canonicalUserPair(user.id, targetUserId)
 
-      // Generate personalized explanation if we have both profiles
-      if (userAProfile && userBProfile) {
-        const sectionScores = {
-          personality: Number(score.personality_score) || 0,
-          schedule: Number(score.schedule_score) || 0,
-          lifestyle: Number(score.lifestyle_score) || 0,
-          social: Number(score.social_score) || 0,
-          academic: Number(score.academic_bonus) || 0
-        }
-        const matchId = `${user.id}-${targetUserId}`
-        const templateExplanation = () =>
-          generatePersonalizedExplanation({
+    let cohortAudience: MatchExplanationAudience = { viewerUserType: null, roommateUserType: null }
+    try {
+      const { data: cohortRows } = await admin
+        .from('profiles')
+        .select('user_id, user_type')
+        .in('user_id', [user.id, targetUserId])
+      for (const row of cohortRows || []) {
+        const ut = row.user_type === 'student' || row.user_type === 'professional' ? row.user_type : null
+        if (row.user_id === user.id) cohortAudience.viewerUserType = ut
+        if (row.user_id === targetUserId) cohortAudience.roommateUserType = ut
+      }
+    } catch {
+      /* tone defaults to neutral */
+    }
+
+    let personalizedExplanation = ''
+    let userAProfile: StudentProfile | null = null
+    let userBProfile: StudentProfile | null = null
+    try {
+      ;[userAProfile, userBProfile] = await Promise.all([
+        fetchUserProfileForExplanation(admin, user.id),
+        fetchUserProfileForExplanation(admin, targetUserId),
+      ])
+    } catch (profileError) {
+      safeLogger.warn('Failed to fetch user profiles for explanation', {
+        error: profileError,
+        message: profileError instanceof Error ? profileError.message : 'Unknown error',
+      })
+    }
+
+    const sectionScores = {
+      personality: Number(score.personality_score) || 0,
+      schedule: Number(score.schedule_score) || 0,
+      lifestyle: Number(score.lifestyle_score) || 0,
+      social: Number(score.social_score) || 0,
+      academic: Number(score.academic_bonus) || 0,
+    }
+    const matchId = `${user.id}-${targetUserId}`
+    const templateExplanation = () =>
+      userAProfile && userBProfile
+        ? generatePersonalizedExplanation({
             studentA: userAProfile,
             studentB: userBProfile,
             sectionScores,
-            matchId
+            matchId,
           })
+        : ''
 
-        try {
-          const [userLow, userHigh] = canonicalUserPair(user.id, targetUserId)
-          const cached = await getCachedMatchExplanation(admin, userLow, userHigh)
-          if (cached) {
-            personalizedExplanation = cached
-          } else {
-            const aiText = await generateMatchExplanationWithGemini(score)
-            if (aiText) {
-              personalizedExplanation = aiText
-              await saveCachedMatchExplanation(admin, userLow, userHigh, aiText)
-            } else {
-              personalizedExplanation = templateExplanation()
-            }
-          }
-        } catch (explanationError) {
-          safeLogger.warn('Failed to generate personalized explanation', {
-            error: explanationError,
-            message: explanationError instanceof Error ? explanationError.message : 'Unknown error'
-          })
-          try {
-            personalizedExplanation = templateExplanation()
-          } catch {
-            personalizedExplanation =
-              'You have overlapping lifestyle signals in our questionnaire - worth a conversation to see if day-to-day habits line up.'
-          }
-        }
+    try {
+      const cached = await getCachedMatchExplanation(admin, userLow, userHigh, user.id)
+      if (cached) {
+        personalizedExplanation = cached
       } else {
-        safeLogger.debug('Skipping personalized explanation - missing user profiles', {
-          hasUserA: !!userAProfile,
-          hasUserB: !!userBProfile
-        })
+        const aiText = await generateMatchExplanationWithGemini(score, cohortAudience)
+        if (aiText) {
+          personalizedExplanation = aiText
+          await saveCachedMatchExplanation(admin, userLow, userHigh, user.id, aiText)
+        } else {
+          personalizedExplanation =
+            templateExplanation() ||
+            'Your questionnaire signals overlap in some areas and differ in others — use the scores above as a map for what to discuss before moving in together.'
+        }
       }
-    } catch (profileError) {
-      safeLogger.warn('Failed to fetch user profiles for explanation', { 
-        error: profileError,
-        message: profileError instanceof Error ? profileError.message : 'Unknown error'
+    } catch (explanationError) {
+      safeLogger.warn('Failed to generate personalized explanation', {
+        error: explanationError,
+        message: explanationError instanceof Error ? explanationError.message : 'Unknown error',
       })
-      // Continue without personalized explanation - scores are still returned
+      try {
+        personalizedExplanation =
+          templateExplanation() ||
+          'You have overlapping lifestyle signals in our questionnaire - worth a conversation to see if day-to-day habits line up.'
+      } catch {
+        personalizedExplanation =
+          'You have overlapping lifestyle signals in our questionnaire - worth a conversation to see if day-to-day habits line up.'
+      }
+    }
+
+    if (!userAProfile || !userBProfile) {
+      safeLogger.debug('Questionnaire map unavailable for template fallback', {
+        hasUserA: !!userAProfile,
+        hasUserB: !!userBProfile,
+      })
     }
 
     // Check if the OTHER user (target) has incomplete university/academic info
@@ -461,14 +482,11 @@ export async function GET(request: NextRequest) {
       stack: error.stack
     } : { error: String(error) }
     
-    safeLogger.error('Error in compatibility API', { 
+    safeLogger.error('Error in compatibility API', {
       error,
       errorMessage,
       errorStack,
       errorDetails,
-      chatId,
-      currentUserId: user?.id,
-      targetUserId
     })
     
     console.error('[API Compatibility] Full error:', {
@@ -476,9 +494,6 @@ export async function GET(request: NextRequest) {
       errorMessage,
       errorStack,
       errorDetails,
-      chatId,
-      currentUserId: user?.id,
-      targetUserId
     })
     
     return NextResponse.json(

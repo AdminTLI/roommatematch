@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { usePathname } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { Cookie, Settings } from 'lucide-react'
@@ -43,11 +44,29 @@ const translations = {
   }
 }
 
+function isChatPath(pathname: string | null) {
+  return pathname === '/chat' || pathname?.startsWith('/chat/')
+}
+
+function isDashboardPath(pathname: string | null) {
+  return pathname === '/dashboard'
+}
+
 export function CookieConsentBanner({ locale = 'en' }: CookieConsentBannerProps) {
+  const pathname = usePathname()
   const [showBanner, setShowBanner] = useState(false)
   const [showPreferences, setShowPreferences] = useState(false)
   const [showReopenControl, setShowReopenControl] = useState(false)
   const t = translations[locale]
+
+  const onChat = isChatPath(pathname)
+  const onDashboard = isDashboardPath(pathname)
+
+  useEffect(() => {
+    if (onChat && showPreferences) {
+      setShowPreferences(false)
+    }
+  }, [onChat, showPreferences])
 
   useEffect(() => {
     // Check if banner should be shown
@@ -133,6 +152,9 @@ export function CookieConsentBanner({ locale = 'en' }: CookieConsentBannerProps)
   }
 
   if (showPreferences) {
+    if (onChat) {
+      return null
+    }
     return (
       <CookiePreferenceCenter
         locale={locale}
@@ -150,7 +172,11 @@ export function CookieConsentBanner({ locale = 'en' }: CookieConsentBannerProps)
     )
   }
 
-  if (!showBanner && !showReopenControl) {
+  if (onChat) {
+    return null
+  }
+
+  if (!showBanner && !(showReopenControl && onDashboard)) {
     return null
   }
 
@@ -218,7 +244,7 @@ export function CookieConsentBanner({ locale = 'en' }: CookieConsentBannerProps)
       </div>
     </div>
     )}
-    {showReopenControl && !showBanner && (
+    {showReopenControl && !showBanner && onDashboard && (
       <div className="fixed left-4 z-40 print:hidden bottom-[calc(6rem+env(safe-area-inset-bottom,0px))] sm:bottom-4">
         <Button
           type="button"

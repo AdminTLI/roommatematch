@@ -87,7 +87,7 @@ export async function POST(request: NextRequest) {
       }, { status: 400 })
     }
 
-    const { chat_id, content } = body
+    const { chat_id, content, reply_to_id: replyToIdRaw } = body
 
     if (!chat_id || !content) {
       return NextResponse.json({ 
@@ -170,6 +170,32 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ 
         error: getUserFriendlyError('Failed to verify chat membership')
       }, { status: 403 })
+    }
+
+    let validatedReplyToId: string | null = null
+    if (replyToIdRaw != null && replyToIdRaw !== '') {
+      const rid = typeof replyToIdRaw === 'string' ? replyToIdRaw.trim() : String(replyToIdRaw)
+      const uuidRe =
+        /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i
+      if (!uuidRe.test(rid)) {
+        return NextResponse.json({ error: getUserFriendlyError('Invalid reply reference') }, { status: 400 })
+      }
+
+      const { data: parentMsg, error: parentErr } = await supabase
+        .from('messages')
+        .select('id, chat_id')
+        .eq('id', rid)
+        .maybeSingle()
+
+      if (parentErr || !parentMsg) {
+        return NextResponse.json({ error: getUserFriendlyError('Could not find message to reply to') }, { status: 400 })
+      }
+
+      if (parentMsg.chat_id !== chat_id) {
+        return NextResponse.json({ error: getUserFriendlyError('Invalid reply reference') }, { status: 400 })
+      }
+
+      validatedReplyToId = rid
     }
 
     // Blocklist gate:
@@ -300,10 +326,14 @@ export async function POST(request: NextRequest) {
     // When inserts bypass RLS (admin client), Realtime cannot properly evaluate permissions
     // Insert with profile join - if profile doesn't exist, the insert will still succeed
     // but we'll fetch the message separately to avoid relying on the join
-    const insertData: any = {
+    const insertData: Record<string, unknown> = {
       chat_id,
       user_id: user.id,
-      content: trimmedContent
+      content: trimmedContent,
+    }
+
+    if (validatedReplyToId) {
+      insertData.reply_to_id = validatedReplyToId
     }
     
     // Add flagging fields if message is suspicious
@@ -317,7 +347,7 @@ export async function POST(request: NextRequest) {
     const { data: insertedMessage, error: insertError } = await supabase
       .from('messages')
       .insert(insertData)
-      .select('id, content, created_at, user_id, is_flagged, auto_flagged, flagged_reason')
+      .select('id, content, created_at, user_id, reply_to_id, is_flagged, auto_flagged, flagged_reason')
       .single()
 
     if (insertError) {
@@ -495,6 +525,7 @@ export async function POST(request: NextRequest) {
         content,
         created_at,
         user_id,
+        reply_to_id,
         profiles(
           user_id,
           first_name,

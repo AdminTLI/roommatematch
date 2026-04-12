@@ -38,6 +38,10 @@ export const queryKeys = {
     userAId && userBId
       ? ['compatibility', userAId, userBId]
       : ['compatibility'],
+
+  /** Per-chat compatibility for messenger header + profile pane (shared cache) */
+  chatCompatibility: (chatId?: string | null) =>
+    chatId ? (['chat', 'compatibility', chatId] as const) : (['chat', 'compatibility'] as const),
 } as const
 
 // Create a client with granular stale times and enhanced retry logic

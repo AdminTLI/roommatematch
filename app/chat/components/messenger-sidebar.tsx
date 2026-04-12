@@ -15,7 +15,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger
 } from '@/components/ui/dropdown-menu'
-import { Settings, MoreVertical, Plus, Archive, ArchiveRestore, Bell, BellOff, CheckCheck, RotateCcw, Eye, EyeOff, MessageSquare } from 'lucide-react'
+import { MoreVertical, Plus, Archive, ArchiveRestore, Bell, BellOff, CheckCheck, RotateCcw } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 import { fetchWithCSRF } from '@/lib/utils/fetch-with-csrf'
 import { queryKeys, queryClient } from '@/app/providers'
@@ -611,7 +611,7 @@ export function MessengerSidebar({ user, onChatSelect, selectedChatId, onNewChat
   }, [chats, user.id])
 
   // Fetch online users (active in last 15 minutes)
-  const { data: onlineUsersData = { users: [] }, isLoading: isLoadingOnlineUsers } = useQuery({
+  const { data: onlineUsersData = { users: [] } } = useQuery({
     queryKey: ['online-users', user.id],
     queryFn: async () => {
       const response = await fetch('/api/chat/online-users', { credentials: 'include' })
@@ -626,6 +626,32 @@ export function MessengerSidebar({ user, onChatSelect, selectedChatId, onNewChat
   })
 
   const onlineUsersList = onlineUsersData.users || []
+
+  /** Deduped “stories” row: API online users + any participant-flagged online */
+  const storyPeople = useMemo(() => {
+    const map = new Map<string, { id: string; displayName: string; avatar?: string }>()
+    for (const u of onlineUsersList as { id: string; firstName: string; avatar?: string }[]) {
+      if (u?.id) {
+        map.set(u.id, {
+          id: u.id,
+          displayName: (u.firstName || 'User').trim() || 'User',
+          avatar: u.avatar,
+        })
+      }
+    }
+    for (const u of onlineUsers) {
+      if (!map.has(u.id)) {
+        map.set(u.id, {
+          id: u.id,
+          displayName: (u.name || 'User').trim() || 'User',
+          avatar: u.avatar,
+        })
+      }
+    }
+    return Array.from(map.values())
+  }, [onlineUsersList, onlineUsers])
+
+  const onlineIdSet = useMemo(() => new Set(storyPeople.map(p => p.id)), [storyPeople])
 
   // Handle clicking on an online user avatar
   const handleOnlineUserClick = useCallback(async (userId: string) => {
@@ -686,10 +712,10 @@ export function MessengerSidebar({ user, onChatSelect, selectedChatId, onNewChat
   return (
     <div
       data-messenger-sidebar
-      className="flex flex-col h-full w-full bg-white dark:bg-gray-900 border-r border-gray-200 dark:border-gray-800 overflow-hidden"
+      className="flex h-full w-full flex-col overflow-hidden border-r border-gray-200 bg-white dark:border-gray-800 dark:bg-gray-950"
     >
       {/* Current User Header */}
-      <div className="flex-shrink-0 px-4 py-4 border-b border-gray-200 dark:border-gray-800 flex items-center justify-between">
+      <div className="flex flex-shrink-0 items-center justify-between border-b border-gray-200 px-3 py-3 dark:border-gray-800">
         <div className="flex items-center gap-3 flex-1 min-w-0">
           <Avatar className="w-10 h-10 flex-shrink-0">
             <AvatarImage src={undefined} />
@@ -706,7 +732,7 @@ export function MessengerSidebar({ user, onChatSelect, selectedChatId, onNewChat
         {onNewChat && (
           <Button
             onClick={onNewChat}
-            className="lg:hidden flex-shrink-0 mr-2 bg-purple-600 hover:bg-purple-700 text-white"
+            className="mr-2 min-h-11 flex-shrink-0 bg-purple-600 px-3 text-white hover:bg-purple-700 lg:hidden"
             size="sm"
           >
             New Chat
@@ -715,8 +741,8 @@ export function MessengerSidebar({ user, onChatSelect, selectedChatId, onNewChat
         {isMounted ? (
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
-                <MoreVertical className="w-4 h-4" />
+              <Button variant="ghost" size="sm" className="h-11 w-11 shrink-0 p-0 touch-manipulation">
+                <MoreVertical className="h-5 w-5" />
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="w-56">
@@ -782,8 +808,8 @@ export function MessengerSidebar({ user, onChatSelect, selectedChatId, onNewChat
             </DropdownMenuContent>
           </DropdownMenu>
         ) : (
-          <Button variant="ghost" size="sm" className="h-8 w-8 p-0" disabled>
-            <MoreVertical className="w-4 h-4" />
+          <Button variant="ghost" size="sm" className="h-11 w-11 shrink-0 p-0" disabled>
+            <MoreVertical className="h-5 w-5" />
           </Button>
         )}
       </div>
@@ -832,260 +858,233 @@ export function MessengerSidebar({ user, onChatSelect, selectedChatId, onNewChat
           </div>
         )}
 
-        {/* Online Now Carousel */}
-        {onlineUsers.length > 0 && (
-          <div className="px-4 py-4 border-b border-gray-200 dark:border-gray-800">
-            <h2 className="text-xs font-bold text-gray-600 dark:text-gray-400 uppercase tracking-wider mb-3">
-              Online Now
-            </h2>
-            <div className="flex gap-3 overflow-x-auto scrollbar-hide pb-2">
-              {onlineUsers.slice(0, 10).map((onlineUser) => (
-                <div
-                  key={onlineUser.id}
-                  className="flex flex-col items-center gap-2 flex-shrink-0 cursor-pointer hover:opacity-80 transition-opacity"
-                  onClick={() => {
-                    const chatWithUser = chats.find(chat =>
-                      chat.type === 'individual' && chat.participants.some(p => p.id === onlineUser.id)
-                    )
-                    if (chatWithUser) {
-                      onChatSelect(chatWithUser.id)
-                    }
-                  }}
-                >
-                  <div className="relative">
-                    <Avatar className="w-12 h-12">
-                      <AvatarImage src={onlineUser.avatar} />
-                      <AvatarFallback className="text-sm font-semibold bg-purple-600 text-white">
-                        {onlineUser.name.charAt(0)}
-                      </AvatarFallback>
-                    </Avatar>
-                    <div className="absolute -bottom-0.5 -right-0.5 w-4 h-4 bg-green-500 rounded-full border-2 border-white dark:border-gray-900 shadow-sm"></div>
-                  </div>
-                  <span className="text-xs text-gray-900 dark:text-gray-100 font-medium max-w-[60px] truncate text-center">
-                    {onlineUser.name}
-                  </span>
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
-
-        {/* Online Section - Only show when not viewing archived/muted */}
+        {/* Stories-style online row (deduped) */}
         {!showArchived && !showMuted && (
-          <div className="px-4 py-4">
-            <div className="flex items-center justify-between mb-3">
-              <h2 className="text-xs font-bold text-gray-600 dark:text-gray-400 uppercase tracking-wider">
-                Online ({onlineUsersList.length})
-              </h2>
-            </div>
-            <div className="flex flex-wrap gap-3">
-              {onlineUsersList.length > 0 ? (
-                onlineUsersList.map((onlineUser: { id: string; firstName: string; avatar?: string }) => (
-                  <div
-                    key={onlineUser.id}
-                    onClick={() => handleOnlineUserClick(onlineUser.id)}
-                    className="flex flex-col items-center gap-2 cursor-pointer hover:opacity-80 transition-opacity flex-shrink-0"
+          <div className="border-b border-gray-200 px-3 py-3 dark:border-gray-800">
+            <h2 className="mb-2 text-xs font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400">
+              Active now
+            </h2>
+            <div className="scrollbar-hide flex gap-3 overflow-x-auto pb-1">
+              {storyPeople.length > 0 ? (
+                storyPeople.map(person => (
+                  <button
+                    key={person.id}
+                    type="button"
+                    onClick={() => handleOnlineUserClick(person.id)}
+                    className="flex flex-shrink-0 flex-col items-center gap-1.5 touch-manipulation"
                   >
-                    <Avatar className="w-12 h-12">
-                      <AvatarImage src={onlineUser.avatar} />
-                      <AvatarFallback className="bg-purple-600 text-white">
-                        {onlineUser.firstName.charAt(0).toUpperCase()}
-                      </AvatarFallback>
-                    </Avatar>
-                    <p className="text-xs text-gray-900 dark:text-gray-100 font-medium max-w-[60px] truncate text-center">
-                      {onlineUser.firstName}
-                    </p>
-                  </div>
+                    <div className="rounded-full bg-gradient-to-tr from-emerald-400 to-green-600 p-[2px]">
+                      <Avatar className="h-12 w-12 border-2 border-white dark:border-gray-950">
+                        <AvatarImage src={person.avatar} />
+                        <AvatarFallback className="bg-purple-600 text-sm font-semibold text-white">
+                          {person.displayName.charAt(0).toUpperCase()}
+                        </AvatarFallback>
+                      </Avatar>
+                    </div>
+                    <span className="max-w-[64px] truncate text-center text-xs font-medium text-gray-900 dark:text-gray-100">
+                      {person.displayName}
+                    </span>
+                  </button>
                 ))
               ) : (
-                <div className="flex flex-col items-center gap-2 flex-shrink-0 opacity-50">
-                  <Avatar className="w-12 h-12">
-                    <AvatarFallback className="bg-gray-300 dark:bg-gray-700 text-gray-500 dark:text-gray-400">
-                      <span className="text-base">💤</span>
+                <div className="flex flex-col items-center gap-1.5 py-1 opacity-60">
+                  <Avatar className="h-12 w-12">
+                    <AvatarFallback className="bg-gray-200 text-base text-gray-500 dark:bg-gray-800 dark:text-gray-400">
+                      💤
                     </AvatarFallback>
                   </Avatar>
-                  <p className="text-xs text-gray-500 dark:text-gray-400 text-center max-w-[60px] truncate">
-                    All Offline
-                  </p>
+                  <span className="max-w-[80px] truncate text-center text-xs text-gray-500 dark:text-gray-400">
+                    All offline
+                  </span>
                 </div>
               )}
             </div>
           </div>
         )}
 
-        {/* Recently Matched Section - Only show when not viewing archived/muted */}
+        {/* Recently matched — flat rows */}
         {!showArchived && !showMuted && recentlyMatchedChats.length > 0 && (
-          <div className="px-4 py-4">
-            <div className="flex items-center justify-between mb-3">
-              <h2 className="text-xs font-bold text-gray-600 dark:text-gray-400 uppercase tracking-wider">
-                Recently Matched ({recentlyMatchedChats.length})
+          <div className="border-b border-gray-200 dark:border-gray-800">
+            <div className="px-3 py-2">
+              <h2 className="text-xs font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400">
+                New matches ({recentlyMatchedChats.length})
               </h2>
             </div>
-            <div className="space-y-2">
-              {recentlyMatchedChats.map((chat) => {
-                const otherParticipant = chat.participants.find(p => p.id !== user.id) || chat.participants[0]
-                const isSelected = selectedChatId === chat.id
+            {recentlyMatchedChats.map(chat => {
+              const otherParticipant = chat.participants.find(p => p.id !== user.id) || chat.participants[0]
+              const isSelected = selectedChatId === chat.id
+              const partnerId = otherParticipant?.id
 
-                return (
-                  <div
-                    key={chat.id}
-                    onClick={() => onChatSelect(chat.id)}
-                    className={cn(
-                      'flex items-center gap-3 p-3 rounded-lg cursor-pointer transition-colors',
-                      isSelected
-                        ? 'bg-purple-100 dark:bg-purple-900/30'
-                        : 'hover:bg-gray-100 dark:hover:bg-gray-800'
-                    )}
-                  >
-                    <Avatar className="w-10 h-10 flex-shrink-0">
+              return (
+                <button
+                  key={chat.id}
+                  type="button"
+                  onClick={() => onChatSelect(chat.id)}
+                  className={cn(
+                    'flex w-full items-center gap-3 border-t border-gray-200/90 px-3 py-3 text-left transition-colors active:bg-gray-100 dark:border-gray-800 dark:active:bg-gray-900',
+                    isSelected ? 'bg-gray-100 dark:bg-gray-900' : 'bg-white dark:bg-gray-950',
+                  )}
+                >
+                  <div className="relative shrink-0">
+                    <Avatar className="h-11 w-11">
                       <AvatarImage src={otherParticipant?.avatar} />
                       <AvatarFallback className="bg-purple-600 text-white">
                         {otherParticipant?.name?.charAt(0) || chat.name.charAt(0)}
                       </AvatarFallback>
                     </Avatar>
-                    <div className="flex-1 min-w-0">
-                      <p className="text-sm font-semibold text-gray-900 dark:text-gray-100 truncate">
-                        {chat.name}
-                      </p>
-                    </div>
+                    {partnerId && onlineIdSet.has(partnerId) ? (
+                      <span
+                        className="absolute bottom-0 right-0 h-2.5 w-2.5 rounded-full border-2 border-white bg-green-500 dark:border-gray-950"
+                        aria-hidden
+                      />
+                    ) : null}
                   </div>
-                )
-              })}
-            </div>
+                  <span className="min-w-0 flex-1 truncate text-sm font-semibold text-gray-900 dark:text-gray-100">
+                    {chat.name}
+                  </span>
+                </button>
+              )
+            })}
           </div>
         )}
 
-        {/* Active Chats Section */}
-        <div className="px-4 py-4">
-          <div className="flex items-center justify-between mb-3">
-            <h2 className="text-xs font-bold text-gray-600 dark:text-gray-400 uppercase tracking-wider">
-              {showArchived 
-                ? `Archived Chats (${archivedChats.length})` 
-                : showMuted 
-                ? `Muted Chats (${mutedChats.length})` 
-                : `Active Chats (${activeConversations.length})`}
+        {/* Messages list — flat rows, trailing unread */}
+        <div>
+          <div className="flex items-center justify-between px-3 py-2">
+            <h2 className="text-xs font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400">
+              {showArchived
+                ? `Archived (${archivedChats.length})`
+                : showMuted
+                  ? `Muted (${mutedChats.length})`
+                  : `Messages (${activeConversations.length})`}
             </h2>
             {!showArchived && !showMuted && (() => {
-              const totalUnread = activeConversations.reduce((sum, chat) => sum + (chat.unreadCount || 0), 0)
+              const totalUnread = activeConversations.reduce((sum, c) => sum + (c.unreadCount || 0), 0)
               return totalUnread > 0 ? (
-                <Badge variant="secondary" className="text-xs">
-                  {totalUnread > 99 ? '99+' : totalUnread}
-                </Badge>
+                <span className="text-xs font-medium text-gray-500 dark:text-gray-400">{totalUnread > 99 ? '99+' : totalUnread} new</span>
               ) : null
             })()}
           </div>
           {activeConversations.length === 0 ? (
-            <div className="text-center py-8">
+            <div className="px-3 py-8 text-center">
               <p className="text-sm text-gray-500 dark:text-gray-400">
-                {showArchived 
-                  ? 'No archived conversations' 
-                  : showMuted 
-                  ? 'No muted conversations' 
-                  : 'No active conversations'}
+                {showArchived
+                  ? 'No archived conversations'
+                  : showMuted
+                    ? 'No muted conversations'
+                    : 'No conversations yet'}
               </p>
-              {(showArchived && archivedChats.length === 0) && (
-                <p className="text-xs text-gray-400 dark:text-gray-500 mt-2">
-                  Archived chats will appear here
-                </p>
+              {showArchived && archivedChats.length === 0 && (
+                <p className="mt-2 text-xs text-gray-400 dark:text-gray-500">Archived chats will appear here</p>
               )}
-              {(showMuted && mutedChats.length === 0) && (
-                <p className="text-xs text-gray-400 dark:text-gray-500 mt-2">
-                  Muted chats will appear here
-                </p>
+              {showMuted && mutedChats.length === 0 && (
+                <p className="mt-2 text-xs text-gray-400 dark:text-gray-500">Muted chats will appear here</p>
               )}
             </div>
           ) : (
-            <div className="space-y-2">
-              {activeConversations.map((chat) => {
+            <div className="flex flex-col">
+              {activeConversations.map(chat => {
                 const otherParticipant = chat.participants.find(p => p.id !== user.id) || chat.participants[0]
                 const isSelected = selectedChatId === chat.id
-                const isArchived = archivedChats.includes(chat.id)
+                const isArchivedRow = archivedChats.includes(chat.id)
+                const partnerId = otherParticipant?.id
+                const unread = chat.unreadCount > 0 && !isArchivedRow ? chat.unreadCount : 0
 
                 return (
                   <div
                     key={chat.id}
                     className={cn(
-                      'flex items-center gap-3 p-3 rounded-lg transition-colors group',
-                      isSelected
-                        ? 'bg-purple-100 dark:bg-purple-900/30'
-                        : 'hover:bg-gray-100 dark:hover:bg-gray-800'
+                      'group flex items-stretch border-t border-gray-200/90 dark:border-gray-800',
+                      isSelected ? 'bg-gray-100 dark:bg-gray-900' : 'bg-white dark:bg-gray-950',
                     )}
                   >
-                    <div
+                    <button
+                      type="button"
                       onClick={() => onChatSelect(chat.id)}
-                      className="flex items-center gap-3 flex-1 min-w-0 cursor-pointer"
+                      className="flex min-w-0 flex-1 items-center gap-3 py-3 pl-3 pr-2 text-left touch-manipulation active:bg-gray-50 dark:active:bg-gray-900/80"
                     >
-                      <Avatar className="w-10 h-10 flex-shrink-0">
-                        <AvatarImage src={otherParticipant?.avatar} />
-                        <AvatarFallback className="bg-purple-600 text-white">
-                          {otherParticipant?.name?.charAt(0) || chat.name.charAt(0)}
-                        </AvatarFallback>
-                      </Avatar>
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center justify-between gap-2 mb-1">
-                          <div className="flex items-center gap-2 flex-1 min-w-0">
-                            <p className="text-sm font-semibold text-gray-900 dark:text-gray-100 truncate">
-                              {chat.name}
-                            </p>
-                            {isArchived && (
-                              <Archive className="w-3 h-3 text-gray-400 flex-shrink-0" />
-                            )}
-                          </div>
-                          {chat.lastMessage && (
-                            <span className="text-[10px] text-gray-500 dark:text-gray-400 flex-shrink-0">
+                      <div className="relative shrink-0">
+                        <Avatar className="h-11 w-11">
+                          <AvatarImage src={otherParticipant?.avatar} />
+                          <AvatarFallback className="bg-purple-600 text-white">
+                            {otherParticipant?.name?.charAt(0) || chat.name.charAt(0)}
+                          </AvatarFallback>
+                        </Avatar>
+                        {partnerId && onlineIdSet.has(partnerId) ? (
+                          <span
+                            className="absolute bottom-0 right-0 h-2.5 w-2.5 rounded-full border-2 border-white bg-green-500 dark:border-gray-950"
+                            aria-hidden
+                          />
+                        ) : null}
+                      </div>
+                      <div className="min-w-0 flex-1">
+                        <div className="mb-0.5 flex items-center gap-2">
+                          <p className="min-w-0 flex-1 truncate text-sm font-semibold text-gray-900 dark:text-gray-100">
+                            {chat.name}
+                          </p>
+                          {isArchivedRow ? <Archive className="h-3.5 w-3.5 shrink-0 text-gray-400" aria-hidden /> : null}
+                          {chat.lastMessage ? (
+                            <span className="shrink-0 text-[10px] tabular-nums text-gray-500 dark:text-gray-400">
                               {formatMessageTime(chat.lastMessage.created_at || chat.lastMessage.timestamp)}
                             </span>
-                          )}
+                          ) : null}
                         </div>
-                        {chat.lastMessage && (
-                          <p className="text-xs text-gray-600 dark:text-gray-400 truncate">
+                        {chat.lastMessage ? (
+                          <p className="line-clamp-1 text-xs text-gray-600 dark:text-gray-400">
+                            {chat.lastMessage.sender ? `${chat.lastMessage.sender}: ` : ''}
                             {chat.lastMessage.content}
                           </p>
+                        ) : (
+                          <p className="line-clamp-1 text-xs text-gray-400 dark:text-gray-500">No messages yet</p>
                         )}
                       </div>
-                      {chat.unreadCount > 0 && !isArchived && (
-                        <Badge className="bg-purple-600 text-white text-xs min-w-[20px] h-5 flex items-center justify-center rounded-full">
-                          {chat.unreadCount > 99 ? '99+' : chat.unreadCount}
-                        </Badge>
+                    </button>
+                    <div className="flex shrink-0 items-center gap-1 pr-2">
+                      {unread > 0 ? (
+                        <span className="flex h-[22px] min-w-[22px] items-center justify-center rounded-full bg-purple-600 px-1.5 text-xs font-semibold text-white tabular-nums">
+                          {unread > 99 ? '99+' : unread}
+                        </span>
+                      ) : null}
+                      {(showArchived || showMuted) && (
+                        <div className="flex opacity-100 lg:opacity-0 lg:group-hover:opacity-100">
+                          {showArchived && (
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={e => {
+                                e.stopPropagation()
+                                handleUnarchive(chat.id)
+                              }}
+                              className="h-11 w-11 touch-manipulation p-0"
+                              title="Unarchive"
+                              type="button"
+                            >
+                              <ArchiveRestore className="h-4 w-4" />
+                            </Button>
+                          )}
+                          {showMuted && (
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={e => {
+                                e.stopPropagation()
+                                const muted = JSON.parse(localStorage.getItem('muted_chats') || '[]')
+                                const updated = muted.filter((id: string) => id !== chat.id)
+                                localStorage.setItem('muted_chats', JSON.stringify(updated))
+                                setMutedChats(updated)
+                                window.dispatchEvent(new CustomEvent('mutedChatsChanged'))
+                                showSuccessToast('Chat unmuted', 'Notifications for this chat have been enabled.')
+                              }}
+                              className="h-11 w-11 touch-manipulation p-0"
+                              title="Unmute"
+                              type="button"
+                            >
+                              <Bell className="h-4 w-4" />
+                            </Button>
+                          )}
+                        </div>
                       )}
                     </div>
-                    {(showArchived || showMuted) && (
-                      <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                        {showArchived && (
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={(e) => {
-                              e.stopPropagation()
-                              handleUnarchive(chat.id)
-                            }}
-                            className="h-7 w-7 p-0"
-                            title="Unarchive"
-                          >
-                            <ArchiveRestore className="w-4 h-4" />
-                          </Button>
-                        )}
-                        {showMuted && (
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={(e) => {
-                              e.stopPropagation()
-                              const muted = JSON.parse(localStorage.getItem('muted_chats') || '[]')
-                              const updated = muted.filter((id: string) => id !== chat.id)
-                              localStorage.setItem('muted_chats', JSON.stringify(updated))
-                              setMutedChats(updated)
-                              window.dispatchEvent(new CustomEvent('mutedChatsChanged'))
-                              showSuccessToast('Chat unmuted', 'Notifications for this chat have been enabled.')
-                            }}
-                            className="h-7 w-7 p-0"
-                            title="Unmute"
-                          >
-                            <Bell className="w-4 h-4" />
-                          </Button>
-                        )}
-                      </div>
-                    )}
                   </div>
                 )
               })}

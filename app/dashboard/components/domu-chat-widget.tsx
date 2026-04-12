@@ -24,11 +24,19 @@ export function DomuChatWidget() {
   ])
   const [input, setInput] = useState('')
   const [isLoading, setIsLoading] = useState(false)
-  const messagesEndRef = useRef<HTMLDivElement>(null)
+  const messagesScrollRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
-  }, [messages])
+    if (!isOpen || activeMobileConversation) return
+    const run = () => {
+      const el = messagesScrollRef.current
+      if (!el) return
+      el.scrollTop = el.scrollHeight
+    }
+    run()
+    const id = requestAnimationFrame(run)
+    return () => cancelAnimationFrame(id)
+  }, [messages, isOpen, isLoading, activeMobileConversation])
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
@@ -115,7 +123,7 @@ export function DomuChatWidget() {
             </div>
 
             {/* Messages */}
-            <div className="flex-1 overflow-y-auto p-3">
+            <div ref={messagesScrollRef} className="flex-1 overflow-y-auto p-3">
               <div className="space-y-3">
                 {messages.map((msg, i) => (
                   <motion.div
@@ -182,7 +190,7 @@ export function DomuChatWidget() {
                     <span className="text-xs">Domu is thinking…</span>
                   </div>
                 )}
-                <div ref={messagesEndRef} />
+                <div aria-hidden="true" className="h-px w-full shrink-0" />
               </div>
             </div>
 

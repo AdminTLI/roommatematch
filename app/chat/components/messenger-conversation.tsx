@@ -2,9 +2,24 @@
 
 import { useState, useEffect, useRef, useLayoutEffect, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
+import { useQuery } from '@tanstack/react-query'
 import { User } from '@supabase/supabase-js'
-import { ChevronLeft, MoreHorizontal, Sparkles, Flag, Ban, Trash2, Bell, BellOff, Archive, Search, MessageSquare, XCircle, RotateCcw } from 'lucide-react'
+import {
+  MoreHorizontal,
+  ChevronLeft,
+  Flag,
+  Ban,
+  Trash2,
+  Bell,
+  BellOff,
+  Archive,
+  Search,
+  MessageSquare,
+  RotateCcw,
+  Sparkles,
+} from 'lucide-react'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
+import { badgeVariants } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import {
   DropdownMenu,
@@ -24,11 +39,12 @@ import {
 import { createClient } from '@/lib/supabase/client'
 import { fetchWithCSRF } from '@/lib/utils/fetch-with-csrf'
 import { showSuccessToast, showErrorToast } from '@/lib/toast'
-import { MessengerMessageBubble } from './messenger-message-bubble'
+import { MessengerMessageBubble, type MessageReplyRef } from './messenger-message-bubble'
 import { MessengerTypingBar } from './messenger-typing-bar'
 import { ReportUserDialog } from './report-user-dialog'
 import { cn } from '@/lib/utils'
 import { queryClient, queryKeys } from '@/app/providers'
+import { fetchChatCompatibility } from '@/lib/chat/fetch-chat-compatibility'
 
 interface Message {
   id: string
@@ -40,6 +56,12 @@ interface Message {
   read_by: string[]
   is_own: boolean
   is_system_message?: boolean
+  reply_to?: {
+    id: string
+    content: string
+    sender_id: string
+    sender_name: string
+  }
 }
 
 interface MessageReaction {
@@ -110,6 +132,19 @@ export function MessengerConversation({
   const [isClearing, setIsClearing] = useState(false)
   const [isMarkingUnread, setIsMarkingUnread] = useState(false)
   const [otherMembersCount, setOtherMembersCount] = useState(1)
+  const [replyDraft, setReplyDraft] = useState<MessageReplyRef | null>(null)
+
+  const { data: compatData, isLoading: compatLoading } = useQuery({
+    queryKey: queryKeys.chatCompatibility(chatId),
+    queryFn: () => fetchChatCompatibility(chatId),
+    staleTime: 5 * 60 * 1000,
+    enabled: !!chatId && !isGroupChat,
+  })
+
+  const matchPercent =
+    compatData?.compatibility_score != null && !Number.isNaN(compatData.compatibility_score)
+      ? Math.round(compatData.compatibility_score * 100)
+      : null
 
   const isMessageHiddenByBlockWindow = useCallback((message: Message) => {
     if (!partnerUserId || message.sender_id !== partnerUserId) return false
@@ -206,7 +241,7 @@ export function MessengerConversation({
       const MESSAGE_LIMIT = 50
       const { data: messagesData, error: messagesError } = await supabase
         .from('messages')
-        .select('id, content, user_id, created_at')
+        .select('id, content, user_id, created_at, reply_to_id')
         .eq('chat_id', chatId)
         .order('created_at', { ascending: false })
         .limit(MESSAGE_LIMIT)
@@ -276,6 +311,28 @@ export function MessengerConversation({
 
       // Update profiles map ref
       profilesMapRef.current = newProfilesMap
+
+      const senderNameForUser = (uid: string) => {
+        const profile = newProfilesMap.get(uid)
+        return profile
+          ? [profile.first_name?.trim(), profile.last_name?.trim()].filter(Boolean).join(' ') || 'User'
+          : 'User'
+      }
+
+      const replyIds = [
+        ...new Set(
+          reversedMessages
+            .map((m: { reply_to_id?: string | null }) => m.reply_to_id)
+            .filter((id): id is string => typeof id === 'string' && id.length > 0),
+        ),
+      ]
+      const parentById = new Map<string, { id: string; content: string; user_id: string }>()
+      if (replyIds.length > 0) {
+        const { data: parents } = await supabase.from('messages').select('id, content, user_id').in('id', replyIds)
+        for (const p of parents || []) {
+          parentById.set(p.id, p as { id: string; content: string; user_id: string })
+        }
+      }
 
       // Get chat info and partner user ID
       const { data: chatData } = await supabase
@@ -357,16 +414,30 @@ export function MessengerConversation({
       }
 
       // Transform messages with sender names
-      const formattedMessages: Message[] = reversedMessages.map(msg => {
-        const profile = newProfilesMap.get(msg.user_id)
-        const senderName = profile
-          ? [profile.first_name?.trim(), profile.last_name?.trim()].filter(Boolean).join(' ') || 'User'
-          : msg.user_id == null
-            ? 'Deleted User'
-            : 'User'
+      const formattedMessages: Message[] = reversedMessages.map((msg: {
+        id: string
+        content: string
+        user_id: string
+        created_at: string
+        reply_to_id?: string | null
+      }) => {
+        const senderName = senderNameForUser(msg.user_id)
 
         const readBy = readReceiptsMap.get(msg.id) || []
         const isSystemGreeting = msg.content === "You're matched! Start your conversation 👋"
+
+        let reply_to: Message['reply_to'] = undefined
+        if (msg.reply_to_id) {
+          const p = parentById.get(msg.reply_to_id)
+          if (p) {
+            reply_to = {
+              id: p.id,
+              content: p.content,
+              sender_id: p.user_id,
+              sender_name: senderNameForUser(p.user_id),
+            }
+          }
+        }
 
         return {
           id: msg.id,
@@ -377,7 +448,8 @@ export function MessengerConversation({
           created_at: msg.created_at,
           read_by: readBy,
           is_own: msg.user_id === user.id,
-          is_system_message: isSystemGreeting
+          is_system_message: isSystemGreeting,
+          reply_to,
         }
       })
 
@@ -454,6 +526,7 @@ export function MessengerConversation({
       setIsMuted(false) // Reset muted state
       setDisplayPartnerName(partnerName) // Reset to prop value
       setDisplayPartnerAvatar(partnerAvatar) // Reset to prop value
+      setReplyDraft(null)
     }
 
     loadMessages()
@@ -465,13 +538,18 @@ export function MessengerConversation({
         schema: 'public',
         table: 'messages',
         filter: `chat_id=eq.${chatId}`
-      }, async (payload) => {
-        const newMsg = payload.new as any
+      }, (payload) => {
+        const newMsg = payload.new as {
+          id: string
+          content: string
+          user_id: string
+          created_at: string
+          reply_to_id?: string | null
+        }
 
-        // Get sender name from profiles map (profiles already loaded when messages loaded)
         let senderName = 'User'
         const profile = profilesMapRef.current.get(newMsg.user_id)
-        
+
         if (profile) {
           senderName = [profile.first_name?.trim(), profile.last_name?.trim()].filter(Boolean).join(' ') || 'User'
         }
@@ -479,14 +557,25 @@ export function MessengerConversation({
         const isSystemGreeting = newMsg.content === "You're matched! Start your conversation 👋"
         const isOwnMessage = newMsg.user_id === user.id
         const readBy = isOwnMessage ? [user.id] : []
-        
-        // Append new message instead of reloading
+
         setMessages(prev => {
-          // Check for duplicates
           if (prev.some(msg => msg.id === newMsg.id)) {
             return prev
           }
-          
+
+          let reply_to: Message['reply_to'] = undefined
+          if (newMsg.reply_to_id) {
+            const hit = prev.find(m => m.id === newMsg.reply_to_id)
+            if (hit) {
+              reply_to = {
+                id: hit.id,
+                content: hit.content,
+                sender_id: hit.sender_id,
+                sender_name: hit.sender_name,
+              }
+            }
+          }
+
           const newMessage: Message = {
             id: newMsg.id,
             content: newMsg.content,
@@ -496,13 +585,45 @@ export function MessengerConversation({
             created_at: newMsg.created_at,
             read_by: readBy,
             is_own: isOwnMessage,
-            is_system_message: isSystemGreeting
+            is_system_message: isSystemGreeting,
+            reply_to,
           }
-          
-          return [...prev, newMessage]
+
+          const next = [...prev, newMessage]
+
+          if (newMsg.reply_to_id && !reply_to) {
+            void supabase
+              .from('messages')
+              .select('id, content, user_id')
+              .eq('id', newMsg.reply_to_id)
+              .maybeSingle()
+              .then(({ data: p }) => {
+                if (!p) return
+                const pr = profilesMapRef.current.get(p.user_id)
+                const sn = pr
+                  ? [pr.first_name?.trim(), pr.last_name?.trim()].filter(Boolean).join(' ') || 'User'
+                  : 'User'
+                setMessages(curr =>
+                  curr.map(m =>
+                    m.id === newMsg.id
+                      ? {
+                          ...m,
+                          reply_to: {
+                            id: p.id,
+                            content: p.content,
+                            sender_id: p.user_id,
+                            sender_name: sn,
+                          },
+                        }
+                      : m,
+                  ),
+                )
+              })
+          }
+
+          return next
         })
 
-        // Only auto-scroll if user is at bottom
         if (!userScrolledUpRef.current && scrollToBottomRef.current) {
           scrollToBottomRef.current(true)
         }
@@ -549,10 +670,19 @@ export function MessengerConversation({
         throw new Error('This user has been blocked. To send a message, unblock them first.')
       }
 
+      const replySnapshot = replyDraft
+      const payload: { chat_id: string; content: string; reply_to_id?: string } = {
+        chat_id: chatId,
+        content,
+      }
+      if (replySnapshot?.id) {
+        payload.reply_to_id = replySnapshot.id
+      }
+
       const response = await fetchWithCSRF('/api/chat/send', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ chat_id: chatId, content })
+        body: JSON.stringify(payload),
       })
 
       if (!response.ok) {
@@ -595,22 +725,37 @@ export function MessengerConversation({
           : 'User'
         const isSystemGreeting = sentMessage.content === "You're matched! Start your conversation 👋"
 
+        const reply_to: Message['reply_to'] | undefined = replySnapshot
+          ? {
+              id: replySnapshot.id,
+              content: replySnapshot.content,
+              sender_id: replySnapshot.senderId,
+              sender_name: replySnapshot.senderName,
+            }
+          : undefined
+
+        setReplyDraft(null)
+
         setMessages(prev => {
           if (prev.some(msg => msg.id === sentMessage.id)) {
             return prev
           }
 
-          return [...prev, {
-            id: sentMessage.id,
-            content: sentMessage.content,
-            sender_id: sentMessage.user_id,
-            sender_name: senderName,
-            sender_avatar: undefined,
-            created_at: sentMessage.created_at,
-            read_by: [user.id],
-            is_own: true,
-            is_system_message: isSystemGreeting
-          }]
+          return [
+            ...prev,
+            {
+              id: sentMessage.id,
+              content: sentMessage.content,
+              sender_id: sentMessage.user_id,
+              sender_name: senderName,
+              sender_avatar: undefined,
+              created_at: sentMessage.created_at,
+              read_by: [user.id],
+              is_own: true,
+              is_system_message: isSystemGreeting,
+              reply_to,
+            },
+          ]
         })
       }
 
@@ -961,56 +1106,89 @@ export function MessengerConversation({
     <div
       ref={conversationRootRef}
       data-messenger-conversation
-      className="flex flex-col h-full w-full bg-white dark:bg-gray-900 overflow-hidden rounded-lg border border-gray-200 dark:border-gray-800"
+      className="flex h-full w-full flex-col overflow-hidden bg-white dark:bg-gray-950 lg:rounded-t-lg"
     >
-      {/* Fixed Header */}
-      <div className="flex max-w-full flex-shrink-0 items-center justify-between border-b border-gray-200 bg-white px-4 dark:border-gray-800 dark:bg-gray-900 max-lg:pb-3 max-lg:pt-safe-top lg:rounded-t-lg lg:py-3">
-        <div className="flex items-center gap-2 flex-1 min-w-0">
-          {onBack && (
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={onBack}
-              className="h-8 w-8 p-0 lg:hidden"
-            >
-              <ChevronLeft className="w-5 h-5 text-gray-600 dark:text-gray-400" />
-              <span className="sr-only">Back to chats</span>
-            </Button>
-          )}
-          <Avatar className="w-10 h-10 flex-shrink-0">
-            <AvatarImage src={displayPartnerAvatar} />
-            <AvatarFallback className="bg-purple-600 text-white">
-              {displayPartnerName.charAt(0).toUpperCase()}
-            </AvatarFallback>
-          </Avatar>
-          <div className="flex-1 min-w-0">
-            <h2 className="text-base font-semibold text-gray-900 dark:text-gray-100 truncate">
-              {displayPartnerName}
-            </h2>
-          </div>
-        </div>
-        <div className="flex items-center gap-2">
-          {/* Compatibility Icon Button */}
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={onToggleProfile}
-            className="h-8 w-8 p-0"
-            title="View profile & compatibility"
-          >
-            <Sparkles className="w-5 h-5 text-gray-600 dark:text-gray-400" />
-            <span className="sr-only">View profile & compatibility</span>
-          </Button>
-          
-          {/* More Options Dropdown */}
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
+      {/* Fixed Header — single visual row: back · avatar · title + inline match · menu */}
+      <div className="flex max-w-full flex-shrink-0 items-center justify-between gap-2 border-b border-gray-200 bg-white px-3 py-2.5 dark:border-gray-800 dark:bg-gray-950 max-lg:pt-safe-top lg:px-4 lg:py-3">
+        <div className="flex min-w-0 flex-1 items-center gap-2.5 lg:gap-3">
+          <div className="flex shrink-0 items-center gap-1.5 lg:gap-2">
+            {onBack && (
               <Button
                 variant="ghost"
                 size="sm"
-                className="h-8 w-8 p-0"
+                onClick={onBack}
+                aria-label="Back to chats"
+                className="h-11 w-11 shrink-0 touch-manipulation rounded-full bg-gray-100 p-0 text-gray-900 transition-colors hover:bg-gray-200 active:scale-[0.98] active:bg-gray-300 lg:hidden dark:bg-gray-800 dark:text-gray-100 dark:hover:bg-gray-700 dark:active:bg-gray-600"
               >
-                <MoreHorizontal className="w-5 h-5 text-gray-600 dark:text-gray-400" />
+                <ChevronLeft className="h-6 w-6" strokeWidth={2.25} aria-hidden />
+              </Button>
+            )}
+            <Avatar className="h-10 w-10 shrink-0">
+              <AvatarImage src={displayPartnerAvatar} />
+              <AvatarFallback className="bg-purple-600 text-white">
+                {displayPartnerName.charAt(0).toUpperCase()}
+              </AvatarFallback>
+            </Avatar>
+          </div>
+
+          <div className="flex min-w-0 flex-1 items-center gap-2">
+            <h2 className="min-w-0 flex-1 truncate text-base font-semibold leading-tight text-gray-900 dark:text-gray-100">
+              {displayPartnerName}
+            </h2>
+            {!isGroupChat && partnerUserId && (
+              <button
+                type="button"
+                onClick={onToggleProfile}
+                aria-label={
+                  matchPercent != null
+                    ? `Compatibility ${matchPercent}% — open details`
+                    : 'View compatibility details'
+                }
+                className={cn(
+                  badgeVariants({ variant: 'outline', size: 'default' }),
+                  'h-8 min-h-8 shrink-0 touch-manipulation gap-1.5 px-3 py-0 leading-none',
+                  'border-purple-200/90 bg-surface-1 text-xs font-semibold shadow-sm',
+                  'hover:border-purple-300 hover:bg-purple-50/90 active:bg-purple-100/80',
+                  'dark:border-purple-800/80 dark:bg-purple-950/25',
+                  'dark:hover:border-purple-600 dark:hover:bg-purple-950/45 dark:active:bg-purple-950/60',
+                )}
+              >
+                <Sparkles
+                  className="h-3.5 w-3.5 shrink-0 text-violet-500 dark:text-violet-400"
+                  aria-hidden
+                  strokeWidth={2}
+                />
+                {compatLoading ? (
+                  <span className="text-xs font-semibold tabular-nums text-ink-400 dark:text-ink-500">…</span>
+                ) : matchPercent != null ? (
+                  <span
+                    className={cn(
+                      'whitespace-nowrap bg-gradient-to-r from-indigo-600 via-violet-600 to-fuchsia-600 bg-clip-text text-xs font-semibold tabular-nums text-transparent',
+                      'dark:from-indigo-400 dark:via-violet-400 dark:to-fuchsia-400',
+                    )}
+                  >
+                    {matchPercent}% Match
+                  </span>
+                ) : (
+                  <span
+                    className={cn(
+                      'whitespace-nowrap bg-gradient-to-r from-indigo-600 via-violet-600 to-fuchsia-600 bg-clip-text text-xs font-semibold text-transparent',
+                      'dark:from-indigo-400 dark:via-violet-400 dark:to-fuchsia-400',
+                    )}
+                  >
+                    View Match
+                  </span>
+                )}
+              </button>
+            )}
+          </div>
+        </div>
+        <div className="flex shrink-0 items-center gap-1">
+          {/* More Options Dropdown */}
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" size="sm" className="h-11 w-11 touch-manipulation p-0">
+                <MoreHorizontal className="h-5 w-5 text-gray-600 dark:text-gray-400" />
                 <span className="sr-only">More options</span>
               </Button>
             </DropdownMenuTrigger>
@@ -1194,6 +1372,23 @@ export function MessengerConversation({
                   onReactionChange={() => handleReactionChange(message.id)}
                   otherMembersCount={otherMembersCount}
                   chatId={chatId}
+                  replyTo={
+                    message.reply_to
+                      ? {
+                          id: message.reply_to.id,
+                          content: message.reply_to.content,
+                          senderName: message.reply_to.sender_name,
+                          senderId: message.reply_to.sender_id,
+                        }
+                      : null
+                  }
+                  onReply={
+                    message.is_system_message
+                      ? undefined
+                      : (target) => {
+                          setReplyDraft(target)
+                        }
+                  }
                 />
               </div>
             ))}
@@ -1207,6 +1402,16 @@ export function MessengerConversation({
           onSend={handleSendMessage}
           onComposerFocus={handleComposerFocus}
           onComposerBlur={handleComposerBlur}
+          replyDraft={
+            replyDraft
+              ? {
+                  id: replyDraft.id,
+                  content: replyDraft.content,
+                  senderName: replyDraft.senderName,
+                }
+              : null
+          }
+          onCancelReply={() => setReplyDraft(null)}
           placeholder={
             isBlocked
               ? 'This user has been blocked. To send a message, unblock them.'

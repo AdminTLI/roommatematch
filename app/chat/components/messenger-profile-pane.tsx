@@ -1,26 +1,42 @@
 'use client'
 
-import { useState, useEffect, useCallback } from 'react'
-import { X, ChevronDown, ChevronUp, Droplets, Volume2, Moon, Home, Coffee, BookOpen, Heart, Info, Users, Sparkles } from 'lucide-react'
+import { useState, useEffect, useCallback, type ElementType, type ReactNode } from 'react'
+import { useQuery } from '@tanstack/react-query'
+import {
+  X,
+  ChevronDown,
+  ChevronUp,
+  Droplets,
+  Volume2,
+  Moon,
+  Home,
+  Coffee,
+  BookOpen,
+  Heart,
+  Info,
+  Users,
+  Sparkles,
+  Zap,
+} from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
-import { StatusBadgeList } from '@/components/ui/status-badge'
+import { StatusBadge } from '@/components/ui/status-badge'
 import { safeLogger } from '@/lib/utils/logger'
 import { cn } from '@/lib/utils'
 import { type HousingStatusKey } from '@/lib/constants/housing-status'
 import { createClient } from '@/lib/supabase/client'
+import { queryKeys } from '@/app/providers'
+import { fetchChatCompatibility, type ChatCompatibilityPayload } from '@/lib/chat/fetch-chat-compatibility'
 import {
   ScoreInfoPopover,
   scoreInfoIconTriggerBarAlignClass,
-  scoreInfoIconTriggerBarAlignCompactClass,
+  scoreInfoIconTriggerBaseClass,
 } from '@/components/compatibility/score-info-popover'
-
-interface CompatibilityData {
-  compatibility_score: number
-  harmony_score?: number | null
-  context_score?: number | null
-  dimension_scores_json?: { [key: string]: number } | null
-}
+import {
+  discoveryMatchTierLabel,
+  discoveryScoreBarClass,
+  discoveryScoreTextClass,
+} from '@/lib/compatibility/discovery-score-visuals'
 
 interface UserInfoData {
   first_name: string | null
@@ -48,18 +64,9 @@ interface MessengerProfilePaneProps {
   onClose?: () => void
 }
 
-const getScoreGradient = (score: number) => {
-  if (score >= 0.85) return 'from-emerald-500 to-green-600'
-  if (score >= 0.7) return 'from-blue-500 to-indigo-600'
-  if (score >= 0.55) return 'from-violet-500 to-purple-600'
-  return 'from-amber-500 to-orange-500'
-}
-
-const getCompatibilityLabel = (score: number) => {
-  if (score >= 0.85) return 'Amazing'
-  if (score >= 0.7) return 'Great'
-  if (score >= 0.55) return 'Good'
-  return 'Low'
+function pctFromFraction(f: number | null | undefined): number | null {
+  if (f == null || Number.isNaN(f)) return null
+  return Math.min(100, Math.max(0, Math.round(f * 100)))
 }
 
 const formatWfhStatus = (wfhStatus?: string | null) => {
@@ -75,90 +82,169 @@ const formatWfhStatus = (wfhStatus?: string | null) => {
   }
 }
 
-const dimensionConfig: { [key: string]: { label: string; description: string; icon: any } } = {
+const dimensionConfig: { [key: string]: { label: string; description: string; icon: ElementType<{ className?: string }> } } = {
   cleanliness: {
     label: 'Cleanliness',
-    description: 'Measures how well your cleanliness standards align across shared spaces like kitchen, bathroom, and living areas.',
-    icon: Droplets
+    description:
+      'Measures how well your cleanliness standards align across shared spaces like kitchen, bathroom, and living areas.',
+    icon: Droplets,
   },
   noise: {
     label: 'Noise Tolerance',
-    description: 'Assesses compatibility around noise sensitivity, including preferences for parties, music volume, and quiet hours.',
-    icon: Volume2
+    description:
+      'Assesses compatibility around noise sensitivity, including preferences for parties, music volume, and quiet hours.',
+    icon: Volume2,
   },
   guests: {
     label: 'Guest Frequency',
-    description: 'Evaluates alignment on how often friends, partners, or visitors stay overnight and use shared spaces.',
-    icon: Users
+    description:
+      'Evaluates alignment on how often friends, partners, or visitors stay overnight and use shared spaces.',
+    icon: Users,
   },
   sleep: {
     label: 'Sleep Schedule',
-    description: 'Compares sleep schedule compatibility, including wake-up times and bedtimes (early bird vs night owl preferences).',
-    icon: Moon
+    description:
+      'Compares sleep schedule compatibility, including wake-up times and bedtimes (early bird vs night owl preferences).',
+    icon: Moon,
   },
   shared_spaces: {
     label: 'Shared Spaces',
-    description: 'Measures preferences for using common areas versus private spaces and how you like to utilize shared living areas.',
-    icon: Home
+    description:
+      'Measures preferences for using common areas versus private spaces and how you like to utilize shared living areas.',
+    icon: Home,
   },
   substances: {
     label: 'Substances',
-    description: 'Assesses comfort levels and boundaries around alcohol consumption or other substances within the home environment.',
-    icon: Coffee
+    description:
+      'Assesses comfort levels and boundaries around alcohol consumption or other substances within the home environment.',
+    icon: Coffee,
   },
   study_social: {
     label: 'Study/Social Balance',
-    description: 'Evaluates the balance between study time and social activities, and how these priorities align in daily life.',
-    icon: BookOpen
+    description:
+      'Evaluates the balance between study time and social activities, and how these priorities align in daily life.',
+    icon: BookOpen,
   },
   home_vibe: {
     label: 'Home Vibe',
-    description: 'Compares home atmosphere preferences, whether you prefer a quiet retreat for focus or a social hub for interaction.',
-    icon: Heart
+    description:
+      'Compares home atmosphere preferences, whether you prefer a quiet retreat for focus or a social hub for interaction.',
+    icon: Heart,
+  },
+}
+
+const DIMENSION_ORDER = [
+  'cleanliness',
+  'noise',
+  'guests',
+  'sleep',
+  'shared_spaces',
+  'substances',
+  'study_social',
+  'home_vibe',
+] as const
+
+/** When AI text is unavailable, still ground copy in every score we have. */
+function deterministicCompatSummary(compat: ChatCompatibilityPayload): string {
+  const parts: string[] = []
+  const overall = pctFromFraction(compat.compatibility_score ?? undefined)
+  const harmony = pctFromFraction(compat.harmony_score ?? undefined)
+  const context = pctFromFraction(compat.context_score ?? undefined)
+
+  if (overall != null) {
+    parts.push(
+      overall >= 70
+        ? `Your overall match is strong at about ${overall}% — that usually means fewer surprises once you share a place.`
+        : overall >= 55
+          ? `Your overall match sits around ${overall}% — there is real overlap, but a few habits may need a clear chat.`
+          : `Your overall match is lower, around ${overall}% — it does not rule someone out, but it flags areas to discuss early.`,
+    )
   }
+  if (harmony != null) {
+    parts.push(
+      harmony >= 70
+        ? `Harmony (day-to-day living fit) is about ${harmony}%: routines, noise, guests, and shared spaces likely line up fairly well.`
+        : harmony >= 55
+          ? `Harmony is about ${harmony}%: you are partly aligned on daily rhythms — worth comparing concrete examples (quiet hours, cleaning, visitors).`
+          : `Harmony is about ${harmony}%: day-to-day preferences may diverge — plan house rules together before you commit.`,
+    )
+  }
+  if (context != null) {
+    parts.push(
+      context >= 70
+        ? `Context (background overlap, e.g. study or work chapter) is about ${context}% — similar schedules or life stage can make logistics easier.`
+        : context >= 55
+          ? `Context is about ${context}%: you are somewhat aligned on background timing, but do not assume identical deadlines or commute patterns.`
+          : `Context is about ${context}%: different paths can still work — just budget extra clarity on expectations.`,
+    )
+  }
+
+  const raw = compat.dimension_scores_json
+  if (raw && typeof raw === 'object' && !Array.isArray(raw)) {
+    const entries: { key: string; p: number }[] = []
+    const known = new Set<string>([...DIMENSION_ORDER])
+    for (const key of DIMENSION_ORDER) {
+      const v = raw[key]
+      if (typeof v === 'number') entries.push({ key, p: pctFromFraction(v) ?? 0 })
+    }
+    for (const key of Object.keys(raw)) {
+      if (known.has(key)) continue
+      const v = raw[key]
+      if (typeof v === 'number') entries.push({ key, p: pctFromFraction(v) ?? 0 })
+    }
+
+    if (entries.length > 0) {
+      const byDesc = [...entries].sort((a, b) => b.p - a.p)
+      const byAsc = [...entries].sort((a, b) => a.p - b.p)
+      const label = (k: string) => dimensionConfig[k]?.label || k.replace(/_/g, ' ')
+      const top = byDesc.slice(0, 3).map(e => `${label(e.key)} (${e.p}%)`)
+      const weakest = byAsc.slice(0, 2).map(e => `${label(e.key)} (${e.p}%)`)
+      parts.push(
+        `Across the lifestyle dimensions, your strongest alignment shows up in ${top.join(', ')}; the areas to discuss most openly include ${weakest.join(' and ')} — use those as conversation starters, not verdicts.`,
+      )
+    }
+  }
+
+  return parts.join('\n\n')
 }
 
-const getScoreColor = (score: number) => {
-  if (score >= 0.85) return 'text-emerald-600 dark:text-emerald-400'
-  if (score >= 0.7) return 'text-indigo-600 dark:text-indigo-400'
-  if (score >= 0.55) return 'text-violet-600 dark:text-violet-400'
-  return 'text-amber-600 dark:text-amber-400'
-}
-
-const getScoreBarColor = (score: number) => {
-  if (score >= 0.85) return 'bg-emerald-500'
-  if (score >= 0.7) return 'bg-indigo-500'
-  if (score >= 0.55) return 'bg-violet-500'
-  return 'bg-amber-500'
+function SectionTitle({ children }: { children: ReactNode }) {
+  return (
+    <h3 className="mb-3 text-xs font-semibold uppercase tracking-wider text-gray-500 dark:text-slate-400">{children}</h3>
+  )
 }
 
 export function MessengerProfilePane({ chatId, isOpen, onClose }: MessengerProfilePaneProps) {
-  const [compatibility, setCompatibility] = useState<CompatibilityData | null>(null)
   const [userInfo, setUserInfo] = useState<UserInfoData | null>(null)
   const [currentUserInterests, setCurrentUserInterests] = useState<string[]>([])
-  const [isLoading, setIsLoading] = useState(false)
+  const [userLoading, setUserLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [showDetails, setShowDetails] = useState(false)
 
-  const fetchData = useCallback(async () => {
+  const { data: compat, isLoading: compatLoading, isFetching: compatFetching } = useQuery<
+    ChatCompatibilityPayload | null
+  >({
+    queryKey: queryKeys.chatCompatibility(chatId),
+    queryFn: () => fetchChatCompatibility(chatId),
+    staleTime: 5 * 60 * 1000,
+    enabled: isOpen && !!chatId,
+  })
+
+  const fetchUserProfile = useCallback(async () => {
     if (!isOpen) return
 
-    setIsLoading(true)
+    setUserLoading(true)
     setError(null)
-    setCompatibility(null)
     setUserInfo(null)
 
     try {
-      // Fetch current user's interests
       const supabase = createClient()
-      const { data: { user } } = await supabase.auth.getUser()
+      const {
+        data: { user },
+      } = await supabase.auth.getUser()
       if (user) {
-        const { data: profile } = await supabase
-          .from('profiles')
-          .select('interests')
-          .eq('user_id', user.id)
-          .maybeSingle()
-        
+        const { data: profile } = await supabase.from('profiles').select('interests').eq('user_id', user.id).maybeSingle()
+
         if (profile?.interests && Array.isArray(profile.interests)) {
           setCurrentUserInterests(profile.interests)
         } else {
@@ -166,344 +252,326 @@ export function MessengerProfilePane({ chatId, isOpen, onClose }: MessengerProfi
         }
       }
 
-      const [compatResponse, userInfoResponse] = await Promise.all([
-        fetch(`/api/chat/compatibility?chatId=${chatId}&_t=${Date.now()}`, {
-          cache: 'no-store',
-          headers: {
-            'Cache-Control': 'no-cache, no-store, must-revalidate',
-            'Pragma': 'no-cache',
-            'Expires': '0'
-          }
-        }),
-        fetch(`/api/chat/user-info?chatId=${chatId}`, {
-          cache: 'no-store',
-          headers: {
-            'Cache-Control': 'no-cache, no-store, must-revalidate',
-            'Pragma': 'no-cache',
-            'Expires': '0'
-          }
-        })
-      ])
-
-      if (compatResponse.ok) {
-        const compatData = await compatResponse.json()
-        setCompatibility(compatData)
-      } else {
-        safeLogger.warn('[MessengerProfilePane] Failed to fetch compatibility:', await compatResponse.text())
-      }
+      const userInfoResponse = await fetch(`/api/chat/user-info?chatId=${chatId}`, {
+        cache: 'no-store',
+        headers: {
+          'Cache-Control': 'no-cache, no-store, must-revalidate',
+          Pragma: 'no-cache',
+          Expires: '0',
+        },
+        credentials: 'include',
+      })
 
       if (userInfoResponse.ok) {
         const userInfoData = await userInfoResponse.json()
         setUserInfo(userInfoData)
       } else {
-        safeLogger.warn('[MessengerProfilePane] Failed to fetch user info:', await userInfoResponse.text())
+        safeLogger.warn('[MessengerProfilePane] Failed to fetch user info', {
+          status: userInfoResponse.status,
+          body: await userInfoResponse.text(),
+        })
       }
     } catch (err) {
-      safeLogger.error('[MessengerProfilePane] Error fetching data:', err)
+      safeLogger.error('[MessengerProfilePane] Error fetching profile:', err)
       setError('Failed to load profile data')
     } finally {
-      setIsLoading(false)
+      setUserLoading(false)
     }
   }, [chatId, isOpen])
 
   useEffect(() => {
     if (isOpen) {
-      fetchData()
+      fetchUserProfile()
     }
-  }, [isOpen, fetchData])
+  }, [isOpen, fetchUserProfile])
 
   if (!isOpen) return null
 
-  const matchScore = compatibility ? Math.round(compatibility.compatibility_score * 100) : null
+  const mainPct =
+    compat?.compatibility_score != null && !Number.isNaN(compat.compatibility_score)
+      ? pctFromFraction(compat.compatibility_score)
+      : null
+
+  const harmonyPct = pctFromFraction(compat?.harmony_score ?? undefined)
+  const contextPct = pctFromFraction(compat?.context_score ?? undefined)
+
+  const showSkeleton = userLoading && !userInfo && !error
+  const compatPending = (compatLoading || compatFetching) && mainPct === null
+
+  const hasDimensionDetails =
+    compat?.dimension_scores_json &&
+    typeof compat.dimension_scores_json === 'object' &&
+    Object.keys(compat.dimension_scores_json).length > 0
 
   return (
     <div
       data-messenger-profile-pane
-      className="flex flex-col h-full w-full overflow-hidden bg-white dark:bg-gray-900"
-      style={{
-        height: '100%',
-        maxHeight: '100%',
-        minHeight: 0
-      }}
+      className="flex min-h-0 min-w-0 flex-1 flex-col bg-zinc-100 text-gray-900 dark:bg-zinc-900 dark:text-slate-100"
     >
-      {/* Header */}
-      <div className="flex-shrink-0 px-6 py-4 border-b border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 flex items-center justify-between">
-        <h2 className="text-lg font-bold text-gray-900 dark:text-white">Profile & Compatibility</h2>
+      <div className="flex shrink-0 items-center justify-between border-b border-gray-200 bg-white px-4 py-4 dark:border-slate-800 dark:bg-slate-900/95">
+        <div className="min-w-0 flex-1 pr-3">
+          <h2 className="bg-gradient-to-r from-violet-600 via-indigo-600 to-blue-600 bg-clip-text text-2xl font-black uppercase leading-none tracking-wide text-transparent dark:from-violet-400 dark:via-indigo-400 dark:to-sky-400 sm:text-3xl">
+            Match Insights
+          </h2>
+        </div>
         {onClose && (
           <Button
             variant="ghost"
             size="sm"
             onClick={onClose}
-            className="h-8 w-8 p-0 rounded-full text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-gray-900 dark:hover:text-white"
+            className="hidden h-11 w-11 shrink-0 touch-manipulation rounded-full p-0 text-gray-600 hover:bg-gray-100 dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-white lg:inline-flex"
           >
-            <X className="h-4 w-4" />
+            <X className="h-5 w-5" />
             <span className="sr-only">Close profile panel</span>
           </Button>
         )}
       </div>
 
-      {/* Scrollable Content  -  bottom padding on lg- must clear mobile browser chrome (not just safe-area) */}
+      {/* Fills remaining sheet height; single scroll surface */}
       <div
         data-profile-pane-scroll
-        className="min-h-0 flex-1 overflow-x-hidden overflow-y-auto overscroll-y-contain scrollbar-visible touch-pan-y"
-        style={{
-          overflowY: 'auto',
-          overflowX: 'hidden',
-          WebkitOverflowScrolling: 'touch',
-          scrollbarWidth: 'thin',
-          height: 0,
-          flex: '1 1 0%',
-        }}
+        className="min-h-0 flex-1 overflow-x-hidden overflow-y-auto overscroll-y-contain bg-zinc-100 scroll-smooth touch-pan-y [scrollbar-gutter:stable] dark:bg-zinc-900"
+        style={{ WebkitOverflowScrolling: 'touch' }}
       >
-        <div
-          className="space-y-6 bg-white px-6 py-6 pb-8 dark:bg-gray-900 max-lg:pb-[calc(8.5rem+env(safe-area-inset-bottom,0px))]"
-          style={{ minHeight: 'min-content' }}
-        >
-          {isLoading ? (
-            <div className="space-y-6">
-              <div className="h-32 bg-gray-200 dark:bg-gray-800 rounded-lg animate-pulse"></div>
-              <div className="space-y-4">
-                {[1, 2, 3].map((i) => (
-                  <div key={i} className="space-y-2">
-                    <div className="h-4 bg-gray-200 dark:bg-gray-800 rounded animate-pulse w-3/4"></div>
-                    <div className="h-2 bg-gray-200 dark:bg-gray-800 rounded animate-pulse"></div>
-                  </div>
-                ))}
-              </div>
+        <div className="mx-auto w-full max-w-lg space-y-5 px-4 py-5 pb-[max(1.5rem,env(safe-area-inset-bottom,0px))]">
+          {showSkeleton ? (
+            <div className="space-y-4">
+              <div className="h-48 animate-pulse rounded-2xl bg-gray-200 dark:bg-slate-800" />
+              <div className="h-32 animate-pulse rounded-2xl bg-gray-200 dark:bg-slate-800" />
+              <div className="h-24 animate-pulse rounded-2xl bg-gray-200 dark:bg-slate-800" />
             </div>
           ) : error ? (
-            <div className="text-center py-12">
-              <p className="text-sm text-gray-600 dark:text-gray-400">{error}</p>
+            <div className="rounded-2xl border border-gray-200 bg-white py-12 text-center dark:border-slate-700 dark:bg-slate-800">
+              <p className="text-sm text-gray-600 dark:text-slate-400">{error}</p>
             </div>
           ) : (
             <>
-              {/* Match Score Card */}
-              {matchScore !== null && compatibility && (
-                <div className="rounded-2xl bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 shadow-xl overflow-hidden">
-                  {/* Hero Match Score Section */}
-                  <div className="relative p-6 pb-4 text-center bg-gradient-to-b from-indigo-600/10 dark:from-indigo-600/20 to-transparent">
-                    <div className="inline-flex items-center gap-2 mb-3">
-                      <Sparkles className="w-5 h-5 text-indigo-500 dark:text-indigo-400" />
-                      <span className="text-sm font-medium text-gray-600 dark:text-gray-400 uppercase tracking-wider">Match Score</span>
-                    </div>
-
-                    {/* Large Match Percentage */}
-                    <div className="relative">
-                      <span className={cn(
-                        'text-6xl font-black tracking-tight block',
-                        compatibility.compatibility_score >= 0.85 ? 'text-emerald-600 dark:text-emerald-400' :
-                        compatibility.compatibility_score >= 0.7 ? 'text-indigo-600 dark:text-indigo-400' :
-                        compatibility.compatibility_score >= 0.55 ? 'text-violet-600 dark:text-violet-400' :
-                        'text-amber-600 dark:text-amber-400'
-                      )}>
-                        {matchScore}%
-                      </span>
-                      <div className="mt-2">
-                        <span className={cn(
-                          'text-sm font-semibold px-3 py-1 rounded-full bg-white dark:bg-gray-900 inline-block border border-gray-200 dark:border-gray-700',
-                          compatibility.compatibility_score >= 0.85 ? 'text-emerald-600 dark:text-emerald-400' :
-                          compatibility.compatibility_score >= 0.7 ? 'text-indigo-600 dark:text-indigo-400' :
-                          compatibility.compatibility_score >= 0.55 ? 'text-violet-600 dark:text-violet-400' :
-                          'text-amber-600 dark:text-amber-400'
-                        )}>
-                          {getCompatibilityLabel(compatibility.compatibility_score)} Match
-                        </span>
-                      </div>
-                    </div>
+              {/* Discovery-style score block (aligned with dashboard /matches DiscoveryCard) */}
+              <div className="overflow-hidden rounded-2xl border border-slate-200/90 bg-white shadow-md dark:border-slate-700 dark:bg-slate-800 dark:shadow-xl">
+                <div className="relative shrink-0 bg-gradient-to-b from-violet-100/95 via-indigo-50/80 to-white px-6 pb-7 pt-8 text-center dark:from-violet-600/25 dark:via-transparent dark:to-transparent">
+                  <div className="mb-4 flex items-center justify-center gap-2">
+                    <Zap className="h-5 w-5 text-violet-600 dark:text-violet-400" aria-hidden />
+                    <span className="text-sm font-medium uppercase tracking-wider text-slate-600 dark:text-slate-300">Match score</span>
                   </div>
 
-                  {/* Expandable Details Button */}
-                  {(compatibility.harmony_score !== null || compatibility.context_score !== null || compatibility.dimension_scores_json) && (
-                    <div className="px-6 pb-4 border-t border-gray-200 dark:border-gray-700">
-                      <Button
-                        variant="ghost"
-                        onClick={() => setShowDetails(!showDetails)}
-                        className="w-full mt-4 text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-700 border border-gray-200 dark:border-gray-700 rounded-lg"
-                      >
-                        <div className="flex items-center justify-between w-full">
-                          <div className="flex items-center gap-2">
-                            <Sparkles className="w-4 h-4" />
-                            <span className="text-sm font-medium">View Detailed Scores</span>
-                          </div>
-                          {showDetails ? (
-                            <ChevronUp className="w-4 h-4" />
-                          ) : (
-                            <ChevronDown className="w-4 h-4" />
-                          )}
-                        </div>
-                      </Button>
+                  {compatPending ? (
+                    <div className="mx-auto flex max-w-[200px] flex-col items-center gap-3">
+                      <div className="h-16 w-24 animate-pulse rounded-lg bg-violet-100/90 dark:bg-slate-700/80" />
+                      <div className="h-8 w-32 animate-pulse rounded-full bg-violet-100/80 dark:bg-slate-700/80" />
                     </div>
+                  ) : mainPct != null && compat?.compatibility_score != null ? (
+                    <>
+                      <span
+                        className={cn(
+                          'block text-6xl font-black tracking-tight tabular-nums',
+                          discoveryScoreTextClass(mainPct),
+                        )}
+                      >
+                        {mainPct}%
+                      </span>
+                      <div className="mt-2">
+                        <span
+                          className={cn(
+                            'inline-block rounded-full bg-violet-100/90 px-3 py-1 text-sm font-semibold dark:bg-slate-700/50',
+                            discoveryScoreTextClass(mainPct),
+                          )}
+                        >
+                          {discoveryMatchTierLabel(mainPct)} match
+                        </span>
+                      </div>
+                    </>
+                  ) : (
+                    <p className="text-sm text-slate-500 dark:text-slate-400">No compatibility score available for this chat.</p>
                   )}
                 </div>
-              )}
 
-              {/* Expanded Details Section */}
-              {matchScore !== null && compatibility && showDetails && (
-                <div className="mt-4 mb-6 space-y-4">
-                      {/* Context Score and Harmony Score */}
-                      <div className="grid grid-cols-2 gap-3">
-                        {compatibility.harmony_score !== null && (
-                          <div className="p-3 rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800">
-                            <div className="mb-1 flex min-w-0 items-center justify-start gap-1">
-                              <ScoreInfoPopover
-                                title="Harmony score"
-                                description="Measures how well your day-to-day living preferences align  -  cleanliness, sleep, noise, guests, shared spaces, substances, study/social balance, and home vibe."
+                {/* Harmony & context — same structure as DiscoveryCard */}
+                {!compatPending && compat && (harmonyPct != null || contextPct != null) && (
+                  <div className="space-y-5 border-t border-slate-200/90 px-6 py-5 dark:border-slate-700/50">
+                    {harmonyPct != null && compat.harmony_score != null && (
+                      <div className="space-y-2">
+                        <div className="flex min-w-0 items-center justify-between gap-3">
+                          <div className="flex min-w-0 flex-1 items-center gap-1">
+                            <ScoreInfoPopover
+                              title="Harmony score"
+                              description="Measures how well your day-to-day living preferences align — cleanliness, sleep, noise, guests, shared spaces, substances, study/social balance, and home vibe."
+                            >
+                              <button
+                                type="button"
+                                className={cn(
+                                  scoreInfoIconTriggerBaseClass,
+                                  'text-pink-600 transition-colors hover:bg-violet-100/90 hover:text-pink-700 dark:text-pink-400 dark:hover:bg-slate-700/50 dark:hover:text-pink-300',
+                                )}
+                                aria-label="What is the Harmony score? Opens explanation."
                               >
-                                <button
-                                  type="button"
-                                  className={cn(
-                                    scoreInfoIconTriggerBarAlignCompactClass,
-                                    'text-pink-500 transition-colors hover:bg-gray-200/80 hover:text-pink-600 dark:text-pink-400 dark:hover:bg-gray-700/80 dark:hover:text-pink-300',
-                                  )}
-                                  aria-label="What is the Harmony score? Opens explanation."
-                                >
-                                  <Heart className="h-3.5 w-3.5" aria-hidden />
-                                </button>
-                              </ScoreInfoPopover>
-                              <span className="min-w-0 shrink truncate text-left text-xs text-gray-600 dark:text-gray-400">
-                                Harmony Score
-                              </span>
-                            </div>
-                            <div className="text-2xl font-bold text-gray-900 dark:text-white">
-                              {Math.round(compatibility.harmony_score * 100)}%
-                            </div>
-                            <div className="relative h-1.5 w-full overflow-hidden rounded-full bg-gray-200 dark:bg-gray-700 mt-2">
-                              <div 
-                                className={cn('h-full rounded-full transition-all duration-500', getScoreBarColor(compatibility.harmony_score))}
-                                style={{ width: `${compatibility.harmony_score * 100}%` }}
-                              />
-                            </div>
+                                <Heart className="h-3.5 w-3.5" aria-hidden />
+                              </button>
+                            </ScoreInfoPopover>
+                            <span className="min-w-0 truncate pl-0.5 text-sm font-medium text-slate-700 dark:text-slate-300">Harmony</span>
                           </div>
-                        )}
-                        {compatibility.context_score !== null && (
-                          <div className="p-3 rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800">
-                            <div className="mb-1 flex min-w-0 items-center justify-start gap-1">
-                              <ScoreInfoPopover
-                                title="Context score"
-                                description="Measures how similar your context is  -  university, programme, study year, and overlap in preferred cities. Location is treated as a soft boost, not a hard filter."
-                              >
-                                <button
-                                  type="button"
-                                  className={cn(
-                                    scoreInfoIconTriggerBarAlignCompactClass,
-                                    'text-blue-500 transition-colors hover:bg-gray-200/80 hover:text-blue-600 dark:text-blue-400 dark:hover:bg-gray-700/80 dark:hover:text-blue-300',
-                                  )}
-                                  aria-label="What is the Context score? Opens explanation."
-                                >
-                                  <Users className="h-3.5 w-3.5" aria-hidden />
-                                </button>
-                              </ScoreInfoPopover>
-                              <span className="min-w-0 shrink truncate text-left text-xs text-gray-600 dark:text-gray-400">
-                                Context Score
-                              </span>
-                            </div>
-                            <div className="text-2xl font-bold text-gray-900 dark:text-white">
-                              {Math.round(compatibility.context_score * 100)}%
-                            </div>
-                            <div className="relative h-1.5 w-full overflow-hidden rounded-full bg-gray-200 dark:bg-gray-700 mt-2">
-                              <div 
-                                className={cn('h-full rounded-full transition-all duration-500', getScoreBarColor(compatibility.context_score))}
-                                style={{ width: `${compatibility.context_score * 100}%` }}
-                              />
-                            </div>
-                          </div>
-                        )}
-                      </div>
-                      {(compatibility.harmony_score !== null || compatibility.context_score !== null) && (
-                        <p className="mb-3 text-[11px] leading-snug text-gray-500 dark:text-gray-400">
-                          Tap the heart or people icons for score details. Tap outside the popup to close it.
-                        </p>
-                      )}
-
-                      {/* Detailed Dimension Scores */}
-                      {compatibility.dimension_scores_json && typeof compatibility.dimension_scores_json === 'object' && Object.keys(compatibility.dimension_scores_json).length > 0 && (
-                        <div className="border border-gray-200 dark:border-gray-700 rounded-xl overflow-hidden bg-gray-50 dark:bg-gray-800">
-                          <div className="px-4 py-3 border-b border-gray-200 dark:border-gray-700">
-                            <h4 className="text-sm font-semibold text-gray-900 dark:text-white flex items-center gap-2">
-                              <Sparkles className="w-4 h-4 text-indigo-600 dark:text-indigo-400" />
-                              Dimension Scores
-                            </h4>
-                            <p className="mt-1.5 text-[11px] leading-snug text-gray-500 dark:text-gray-400">
-                              Tap each row&apos;s icon for what that dimension measures.
-                            </p>
-                          </div>
-                          <div className="px-4 pb-4 pt-3">
-                            <div className="grid grid-cols-1 gap-3">
-                              {Object.entries(compatibility.dimension_scores_json).map(([key, score]) => {
-                                const dimensionKey = key as string
-                                const dimensionScore = typeof score === 'number' ? score : 0
-                                const config = dimensionConfig[dimensionKey]
-                                const Icon = config?.icon || Info
-                                const label = config?.label || dimensionKey
-                                const description = config?.description || ''
-                                
-                                return (
-                                  <div 
-                                    key={dimensionKey} 
-                                    className="p-3 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
-                                  >
-                                    <div className="mb-1.5 flex items-center justify-between gap-2">
-                                      <div className="flex min-w-0 flex-1 items-center gap-1.5">
-                                        {description ? (
-                                          <ScoreInfoPopover title={label} description={description}>
-                                            <button
-                                              type="button"
-                                              className={cn(
-                                                scoreInfoIconTriggerBarAlignClass,
-                                                'text-gray-500 transition-colors hover:bg-gray-100 hover:text-gray-800 dark:text-gray-400 dark:hover:bg-gray-800 dark:hover:text-gray-200',
-                                              )}
-                                              aria-label={`${label}: open explanation`}
-                                            >
-                                              <Icon className="h-3.5 w-3.5" aria-hidden />
-                                            </button>
-                                          </ScoreInfoPopover>
-                                        ) : (
-                                          <Icon className="h-3.5 w-3.5 shrink-0 text-gray-500 dark:text-gray-400" aria-hidden />
-                                        )}
-                                        <span className="min-w-0 truncate text-xs font-medium leading-snug text-gray-900 dark:text-white">
-                                          {label}
-                                        </span>
-                                      </div>
-                                      <span
-                                        className={cn(
-                                          'shrink-0 text-xs font-bold tabular-nums leading-snug',
-                                          getScoreColor(dimensionScore),
-                                        )}
-                                      >
-                                        {Math.round(dimensionScore * 100)}%
-                                      </span>
-                                    </div>
-                                    <div className="relative h-1.5 w-full overflow-hidden rounded-full bg-gray-200 dark:bg-gray-700">
-                                      <div 
-                                        className={cn('h-full rounded-full transition-all duration-500', getScoreBarColor(dimensionScore))}
-                                        style={{ width: `${dimensionScore * 100}%` }}
-                                      />
-                                    </div>
-                                  </div>
-                                )
-                              })}
-                            </div>
-                          </div>
+                          <span
+                            className={cn('shrink-0 text-sm font-bold tabular-nums', discoveryScoreTextClass(harmonyPct))}
+                          >
+                            {harmonyPct}%
+                          </span>
                         </div>
-                      )}
-                </div>
-              )}
+                        <div className="h-2 overflow-hidden rounded-full bg-slate-200 dark:bg-slate-700">
+                          <div
+                            className={cn('h-full rounded-full transition-[width] duration-500 ease-out', discoveryScoreBarClass(harmonyPct))}
+                            style={{ width: `${harmonyPct}%` }}
+                          />
+                        </div>
+                      </div>
+                    )}
 
-              {/* Bio */}
-              <div>
-                <h3 className="text-sm font-bold text-gray-900 dark:text-white uppercase tracking-wider mb-3">BIO</h3>
-                {userInfo?.bio && userInfo.bio.trim() ? (
-                  <p className="text-sm text-gray-700 dark:text-gray-300 leading-relaxed whitespace-pre-wrap">
-                    {userInfo.bio}
-                  </p>
-                ) : (
-                  <p className="text-xs text-gray-500 dark:text-gray-400 italic">No bio available</p>
+                    {contextPct != null && compat.context_score != null && (
+                      <div className="space-y-2">
+                        <div className="flex min-w-0 items-center justify-between gap-3">
+                          <div className="flex min-w-0 flex-1 items-center gap-1">
+                            <ScoreInfoPopover
+                              title="Context score"
+                              description="Measures how similar your academic context is — university, programme, and study year."
+                            >
+                              <button
+                                type="button"
+                                className={cn(
+                                  scoreInfoIconTriggerBaseClass,
+                                  'text-blue-600 transition-colors hover:bg-indigo-50 hover:text-blue-700 dark:text-blue-400 dark:hover:bg-slate-700/50 dark:hover:text-blue-300',
+                                )}
+                                aria-label="What is the Context score? Opens explanation."
+                              >
+                                <Users className="h-3.5 w-3.5" aria-hidden />
+                              </button>
+                            </ScoreInfoPopover>
+                            <span className="min-w-0 truncate pl-0.5 text-sm font-medium text-slate-700 dark:text-slate-300">Context</span>
+                          </div>
+                          <span
+                            className={cn('shrink-0 text-sm font-bold tabular-nums', discoveryScoreTextClass(contextPct))}
+                          >
+                            {contextPct}%
+                          </span>
+                        </div>
+                        <div className="h-2 overflow-hidden rounded-full bg-slate-200 dark:bg-slate-700">
+                          <div
+                            className={cn('h-full rounded-full transition-[width] duration-500 ease-out', discoveryScoreBarClass(contextPct))}
+                            style={{ width: `${contextPct}%` }}
+                          />
+                        </div>
+                      </div>
+                    )}
+
+                    <div className="rounded-xl border border-violet-200/80 bg-violet-50/60 px-3 py-3 text-left dark:border-slate-700/60 dark:bg-slate-900/40">
+                      <p className="whitespace-pre-wrap text-[12px] leading-relaxed text-slate-600 dark:text-slate-400">
+                        {compatFetching && !compat.personalized_explanation?.trim() ? (
+                          <span className="inline-flex items-center gap-2 text-slate-500 dark:text-slate-500">
+                            <span
+                              className="inline-block h-3.5 w-3.5 animate-spin rounded-full border-2 border-violet-400 border-t-transparent dark:border-violet-500"
+                              aria-hidden
+                            />
+                            Updating match insight…
+                          </span>
+                        ) : compat.personalized_explanation?.trim() ? (
+                          compat.personalized_explanation.trim()
+                        ) : (
+                          deterministicCompatSummary(compat)
+                        )}
+                      </p>
+                    </div>
+                  </div>
+                )}
+
+                {hasDimensionDetails && (
+                  <div className="border-t border-slate-200/90 px-6 pb-5 pt-3 dark:border-slate-700/50">
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      onClick={() => setShowDetails(!showDetails)}
+                      className="h-10 min-h-[44px] w-full rounded-xl bg-gradient-to-r from-violet-600 to-indigo-600 text-sm font-semibold text-white shadow-md shadow-violet-500/25 transition-all hover:from-violet-500 hover:to-indigo-500 active:scale-[0.99] dark:shadow-violet-900/25"
+                    >
+                      <span className="flex w-full items-center justify-center gap-2">
+                        <Sparkles className="h-4 w-4" />
+                        {showDetails ? 'Hide dimensions' : 'Dimension breakdown'}
+                        {showDetails ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
+                      </span>
+                    </Button>
+                  </div>
+                )}
+
+                {showDetails && hasDimensionDetails && compat?.dimension_scores_json && (
+                  <div className="border-t border-slate-200/90 px-4 pb-5 pt-3 dark:border-slate-700/50">
+                    <p className="mb-3 text-[11px] leading-snug text-slate-500 dark:text-slate-500">
+                      Each bar reflects alignment on that lifestyle dimension (tap the icon for details).
+                    </p>
+                    <div className="grid grid-cols-1 gap-2.5">
+                      {Object.entries(compat.dimension_scores_json).map(([key, score]) => {
+                        const dimensionKey = key as string
+                        const dimensionScore = typeof score === 'number' ? score : 0
+                        const dimPct = pctFromFraction(dimensionScore) ?? 0
+                        const config = dimensionConfig[dimensionKey]
+                        const Icon = config?.icon || Info
+                        const label = config?.label || dimensionKey
+                        const description = config?.description || ''
+
+                        return (
+                          <div
+                            key={dimensionKey}
+                            className="rounded-xl border border-slate-200/90 bg-slate-50/90 px-3 py-3 transition-colors hover:border-violet-200/80 dark:border-slate-700/80 dark:bg-slate-900/50 dark:hover:border-slate-600"
+                          >
+                            <div className="mb-2 flex items-center justify-between gap-2">
+                              <div className="flex min-w-0 flex-1 items-center gap-1.5">
+                                {description ? (
+                                  <ScoreInfoPopover title={label} description={description}>
+                                    <button
+                                      type="button"
+                                      className={cn(
+                                        scoreInfoIconTriggerBarAlignClass,
+                                        'text-slate-500 transition-colors hover:bg-slate-200/90 hover:text-slate-800 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-200',
+                                      )}
+                                      aria-label={`${label}: open explanation`}
+                                    >
+                                      <Icon className="h-3.5 w-3.5" aria-hidden />
+                                    </button>
+                                  </ScoreInfoPopover>
+                                ) : (
+                                  <Icon className="h-3.5 w-3.5 shrink-0 text-slate-500 dark:text-slate-500" aria-hidden />
+                                )}
+                                <span className="min-w-0 truncate text-xs font-medium text-slate-800 dark:text-slate-200">{label}</span>
+                              </div>
+                              <span
+                                className={cn('shrink-0 text-xs font-bold tabular-nums', discoveryScoreTextClass(dimPct))}
+                              >
+                                {dimPct}%
+                              </span>
+                            </div>
+                            <div className="h-1.5 overflow-hidden rounded-full bg-slate-200 dark:bg-slate-700">
+                              <div
+                                className={cn(
+                                  'h-full rounded-full transition-[width] duration-500 ease-out',
+                                  discoveryScoreBarClass(dimPct),
+                                )}
+                                style={{ width: `${dimPct}%` }}
+                              />
+                            </div>
+                          </div>
+                        )
+                      })}
+                    </div>
+                  </div>
                 )}
               </div>
 
-              {/* Interests */}
-              <div>
-                <h3 className="text-sm font-bold text-gray-900 dark:text-white uppercase tracking-wider mb-3">INTERESTS</h3>
+              {/* Profile body — light cards (previous pane feel) */}
+              <div className="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm dark:border-slate-700 dark:bg-slate-800/90 dark:shadow-none">
+                <SectionTitle>Bio</SectionTitle>
+                {userInfo?.bio && userInfo.bio.trim() ? (
+                  <p className="text-sm leading-relaxed text-gray-700 whitespace-pre-wrap dark:text-slate-200">{userInfo.bio}</p>
+                ) : (
+                  <p className="text-xs italic text-gray-500 dark:text-slate-500">No bio yet</p>
+                )}
+              </div>
+
+              <div className="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm dark:border-slate-700 dark:bg-slate-800/90 dark:shadow-none">
+                <SectionTitle>Interests</SectionTitle>
                 {userInfo?.interests && userInfo.interests.length > 0 ? (
                   <div className="flex flex-wrap gap-2">
                     {userInfo.interests.map((interest, index) => {
@@ -513,10 +581,10 @@ export function MessengerProfilePane({ chatId, isOpen, onClose }: MessengerProfi
                           key={index}
                           variant="secondary"
                           className={cn(
-                            "px-3 py-1.5 text-xs rounded-full",
+                            'rounded-full px-3 py-1.5 text-xs',
                             isShared
-                              ? "bg-purple-600 dark:bg-purple-500 text-white border-purple-600 dark:border-purple-500 hover:bg-purple-700 dark:hover:bg-purple-600"
-                              : "bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-gray-100 border-gray-200 dark:border-gray-700 hover:bg-gray-200 dark:hover:bg-gray-700"
+                              ? 'border-violet-500 bg-violet-600 text-white hover:bg-violet-500'
+                              : 'border-gray-200 bg-gray-100 text-gray-800 hover:bg-gray-200 dark:border-slate-600 dark:bg-slate-700 dark:text-slate-200 dark:hover:bg-slate-600',
                           )}
                         >
                           {interest}
@@ -525,28 +593,31 @@ export function MessengerProfilePane({ chatId, isOpen, onClose }: MessengerProfi
                     })}
                   </div>
                 ) : (
-                  <p className="text-xs text-gray-500 dark:text-gray-400 italic">No interests listed</p>
+                  <p className="text-xs italic text-gray-500 dark:text-slate-500">No interests listed</p>
                 )}
               </div>
 
-              {/* Housing Status */}
-              <div>
-                <h3 className="text-sm font-bold text-gray-900 dark:text-white uppercase tracking-wider mb-3">HOUSING STATUS</h3>
-                <div className="space-y-3">
+              <div className="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm dark:border-slate-700 dark:bg-slate-800/90 dark:shadow-none">
+                <SectionTitle>Housing</SectionTitle>
+                <div className="space-y-3 text-sm text-gray-700 dark:text-slate-300">
                   {userInfo?.housing_status && userInfo.housing_status.length > 0 ? (
-                    <StatusBadgeList
-                      statusKeys={userInfo.housing_status}
-                      variant="secondary"
-                      className="flex-wrap"
-                    />
+                    <div className="flex flex-wrap gap-2">
+                      {userInfo.housing_status.map(key => (
+                        <StatusBadge
+                          key={key}
+                          statusKey={key}
+                          variant="secondary"
+                          className="border-gray-200 bg-gray-100 text-gray-800 dark:border-slate-600 dark:bg-slate-700 dark:text-slate-200"
+                        />
+                      ))}
+                    </div>
                   ) : (
-                    <p className="text-xs text-gray-500 dark:text-gray-400 italic">No housing status selected</p>
+                    <p className="text-xs italic text-gray-500 dark:text-slate-500">No housing status selected</p>
                   )}
-                  {/* Budget (min–max rent from questionnaire) */}
                   {(userInfo?.budget_min != null || userInfo?.budget_max != null) && (
-                    <div className="text-sm">
-                      <span className="text-gray-600 dark:text-gray-400 font-medium">Budget (rent/month): </span>
-                      <span className="text-gray-900 dark:text-white">
+                    <div>
+                      <span className="font-medium text-gray-500 dark:text-slate-400">Budget (rent/month): </span>
+                      <span className="text-gray-900 dark:text-slate-200">
                         {userInfo.budget_min != null && userInfo.budget_max != null
                           ? `€${userInfo.budget_min} – €${userInfo.budget_max}`
                           : userInfo.budget_min != null
@@ -557,61 +628,51 @@ export function MessengerProfilePane({ chatId, isOpen, onClose }: MessengerProfi
                       </span>
                     </div>
                   )}
-                  {/* Preferred city/cities (from housing preferences / questionnaire) */}
                   {userInfo?.preferred_cities && userInfo.preferred_cities.length > 0 && (
-                    <div className="text-sm">
-                      <span className="text-gray-600 dark:text-gray-400 font-medium">Preferred city: </span>
-                      <span className="text-gray-900 dark:text-white">
-                        {userInfo.preferred_cities.join(', ')}
-                      </span>
+                    <div>
+                      <span className="font-medium text-gray-500 dark:text-slate-400">Preferred city: </span>
+                      <span className="text-gray-900 dark:text-slate-200">{userInfo.preferred_cities.join(', ')}</span>
                     </div>
                   )}
                 </div>
               </div>
 
-              {/* University Data */}
               {userInfo?.user_type === 'professional' ? (
-                <div>
-                  <h3 className="text-sm font-bold text-gray-900 dark:text-white uppercase tracking-wider mb-3">
-                    PROFESSIONAL LIFESTYLE
-                  </h3>
-                  <div className="space-y-2 text-sm">
+                <div className="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm dark:border-slate-700 dark:bg-slate-800/90 dark:shadow-none">
+                  <SectionTitle>Professional lifestyle</SectionTitle>
+                  <div className="space-y-2 text-sm text-gray-700 dark:text-slate-300">
                     <div>
-                      <span className="text-gray-600 dark:text-gray-400 font-medium">WFH: </span>
-                      <span className="text-gray-900 dark:text-white">{formatWfhStatus(userInfo?.wfh_status)}</span>
+                      <span className="font-medium text-gray-500 dark:text-slate-400">WFH: </span>
+                      {formatWfhStatus(userInfo?.wfh_status)}
                     </div>
                     <div>
-                      <span className="text-gray-600 dark:text-gray-400 font-medium">Age: </span>
-                      <span className="text-gray-900 dark:text-white">
-                        {userInfo?.age != null ? `${userInfo.age} years old` : 'Not provided'}
-                      </span>
+                      <span className="font-medium text-gray-500 dark:text-slate-400">Age: </span>
+                      {userInfo?.age != null ? `${userInfo.age} years old` : 'Not provided'}
                     </div>
                     <div>
-                      <span className="text-gray-600 dark:text-gray-400 font-medium">Schedule: </span>
-                      <span className="text-gray-900 dark:text-gray-100">
-                        {userInfo?.work_schedule || 'Not provided'}
-                      </span>
+                      <span className="font-medium text-gray-500 dark:text-slate-400">Schedule: </span>
+                      {userInfo?.work_schedule || 'Not provided'}
                     </div>
                   </div>
                 </div>
               ) : (
-                <div>
-                  <h3 className="text-sm font-bold text-gray-900 dark:text-white uppercase tracking-wider mb-3">UNIVERSITY</h3>
-                  <div className="space-y-2 text-sm">
+                <div className="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm dark:border-slate-700 dark:bg-slate-800/90 dark:shadow-none">
+                  <SectionTitle>University</SectionTitle>
+                  <div className="space-y-2 text-sm text-gray-700 dark:text-slate-300">
                     {userInfo?.programme_name && (
                       <div>
-                        <span className="text-gray-600 dark:text-gray-400 font-medium">Programme: </span>
-                        <span className="text-gray-900 dark:text-white">{userInfo.programme_name}</span>
+                        <span className="font-medium text-gray-500 dark:text-slate-400">Programme: </span>
+                        {userInfo.programme_name}
                       </div>
                     )}
                     {userInfo?.study_year !== null && userInfo?.study_year !== undefined && (
                       <div>
-                        <span className="text-gray-600 dark:text-gray-400 font-medium">Year: </span>
-                        <span className="text-gray-900 dark:text-white">{userInfo.study_year}</span>
+                        <span className="font-medium text-gray-500 dark:text-slate-400">Year: </span>
+                        {userInfo.study_year}
                       </div>
                     )}
-                    {(!userInfo?.programme_name && userInfo?.study_year === null) && (
-                      <p className="text-xs text-gray-500 dark:text-gray-400 italic">No university information available</p>
+                    {!userInfo?.programme_name && userInfo?.study_year == null && (
+                      <p className="text-xs italic text-gray-500 dark:text-slate-500">No university information available</p>
                     )}
                   </div>
                 </div>

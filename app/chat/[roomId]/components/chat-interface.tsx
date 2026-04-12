@@ -2948,11 +2948,11 @@ export function ChatInterface({ roomId, user, onBack, onToggleRightPane, rightPa
             contain: 'layout'
           }}
           onScroll={(e) => {
+            const target = e.currentTarget
+            if (!target) return
             // If scroll is locked and user scrolled to top, restore to bottom
             if (scrollLockRef.current && hasScrolledInitiallyRef.current) {
-              const target = e.currentTarget
               if (target.scrollTop < 100 && target.scrollHeight > target.clientHeight) {
-                // Prevent the scroll to top
                 target.scrollTop = target.scrollHeight
               }
             }
