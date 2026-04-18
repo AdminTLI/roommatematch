@@ -1,8 +1,25 @@
-import { createClient } from '@/lib/supabase/server'
+import { createAdminClient, createClient } from '@/lib/supabase/server'
+import { createChatMessageReactionNotification } from '@/lib/notifications/create'
 import { NextRequest, NextResponse } from 'next/server'
 import { safeLogger } from '@/lib/utils/logger'
 import { checkRateLimit, getUserRateLimitKey } from '@/lib/rate-limit'
 import { getUserFriendlyError } from '@/lib/errors/user-friendly-messages'
+import type { SupabaseClient } from '@supabase/supabase-js'
+
+/** Prefer service role for reaction rows so INSERT is not blocked by RLS quirks after we already verified membership. */
+function getReactionWriteClient(userClient: SupabaseClient): SupabaseClient {
+  if (!process.env.SUPABASE_SERVICE_ROLE_KEY) {
+    return userClient
+  }
+  try {
+    return createAdminClient()
+  } catch (e) {
+    safeLogger.warn('[reactions] Service role client unavailable, using user session for writes', {
+      error: e instanceof Error ? e.message : String(e),
+    })
+    return userClient
+  }
+}
 
 export async function POST(request: NextRequest) {
   try {
@@ -47,16 +64,19 @@ export async function POST(request: NextRequest) {
       }, { status: 400 })
     }
 
-    const { message_id, emoji } = body
+    const { message_id, emoji: rawEmoji } = body
 
-    if (!message_id || !emoji) {
+    if (!message_id || !rawEmoji) {
       return NextResponse.json({ 
         error: getUserFriendlyError('Message ID and emoji are required')
       }, { status: 400 })
     }
 
-    // Validate emoji (basic check - should be a single emoji)
-    if (typeof emoji !== 'string' || emoji.length === 0 || emoji.length > 20) {
+    const emoji =
+      typeof rawEmoji === 'string' ? rawEmoji.normalize('NFC').trim() : ''
+
+    // Allow multi-codepoint emoji sequences (UTF-16 length can exceed grapheme count)
+    if (!emoji || emoji.length === 0 || emoji.length > 48) {
       return NextResponse.json({ 
         error: getUserFriendlyError('Invalid emoji')
       }, { status: 400 })
@@ -65,7 +85,7 @@ export async function POST(request: NextRequest) {
     // Verify user is a member of the chat containing this message
     const { data: message, error: messageError } = await supabase
       .from('messages')
-      .select('chat_id')
+      .select('chat_id, user_id')
       .eq('id', message_id)
       .single()
 
@@ -94,8 +114,10 @@ export async function POST(request: NextRequest) {
       }, { status: 403 })
     }
 
+    const reactionDb = getReactionWriteClient(supabase)
+
     // Check if reaction already exists (toggle behavior)
-    const { data: existingReaction, error: checkError } = await supabase
+    const { data: existingReaction, error: checkError } = await reactionDb
       .from('message_reactions')
       .select('id')
       .eq('message_id', message_id)
@@ -113,7 +135,7 @@ export async function POST(request: NextRequest) {
     // Toggle: Delete if exists, insert if not
     if (existingReaction) {
       // Remove reaction
-      const { error: deleteError } = await supabase
+      const { error: deleteError } = await reactionDb
         .from('message_reactions')
         .delete()
         .eq('id', existingReaction.id)
@@ -131,7 +153,7 @@ export async function POST(request: NextRequest) {
       })
     } else {
       // Add reaction
-      const { data: newReaction, error: insertError } = await supabase
+      const { data: newReaction, error: insertError } = await reactionDb
         .from('message_reactions')
         .insert({
           message_id,
@@ -142,10 +164,60 @@ export async function POST(request: NextRequest) {
         .single()
 
       if (insertError) {
-        safeLogger.error('Failed to add reaction', { error: insertError })
+        if (insertError.code === '23505') {
+          const { data: row } = await reactionDb
+            .from('message_reactions')
+            .select('id, emoji, created_at')
+            .eq('message_id', message_id)
+            .eq('user_id', user.id)
+            .eq('emoji', emoji)
+            .maybeSingle()
+          if (row) {
+            return NextResponse.json({ action: 'added', reaction: row })
+          }
+        }
+        safeLogger.error('Failed to add reaction', {
+          code: insertError.code,
+          message: insertError.message,
+          details: insertError.details,
+          hint: insertError.hint,
+        })
         return NextResponse.json({ 
           error: getUserFriendlyError('Failed to add reaction')
         }, { status: 500 })
+      }
+
+      const messageAuthorId = message.user_id as string | undefined
+      if (messageAuthorId && messageAuthorId !== user.id) {
+        try {
+          const notifyClient = await createAdminClient()
+          const { data: reactorProfile } = await notifyClient
+            .from('profiles')
+            .select('first_name, last_name')
+            .eq('user_id', user.id)
+            .maybeSingle()
+
+          let reactorName = 'Someone'
+          if (reactorProfile) {
+            reactorName =
+              [reactorProfile.first_name, reactorProfile.last_name].filter(Boolean).join(' ').trim() || reactorName
+          }
+
+          await createChatMessageReactionNotification(
+            messageAuthorId,
+            reactorName,
+            message.chat_id,
+            message_id,
+            emoji,
+            user.id
+          )
+        } catch (notifyErr) {
+          safeLogger.error('[reactions] Failed to create reaction notification', {
+            error: notifyErr instanceof Error ? notifyErr.message : String(notifyErr),
+            messageId: message_id,
+            chatId: message.chat_id,
+          })
+        }
       }
 
       return NextResponse.json({ 

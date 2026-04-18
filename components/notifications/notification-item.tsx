@@ -14,6 +14,7 @@ import {
   AlertTriangle,
   Megaphone,
   Clock,
+  Smile,
 } from 'lucide-react'
 import { formatDistanceToNow } from 'date-fns'
 import { Button } from '@/components/ui/button'
@@ -28,6 +29,7 @@ const iconMap = {
   Heart,
   CheckCircle,
   MessageCircle,
+  Smile,
   User,
   FileText,
   Shield,
@@ -40,6 +42,7 @@ const iconMap = {
 function primaryActionLabel(type: Notification['type']): string {
   switch (type) {
     case 'chat_message':
+    case 'chat_message_reaction':
       return 'Open'
     case 'group_invitation':
       return 'Open'
@@ -115,6 +118,21 @@ function headlineForEntry(entry: NotificationListEntry): HeadlineParts {
     }
   }
 
+  if (n.type === 'chat_message_reaction') {
+    const meta = n.metadata || {}
+    const name =
+      typeof meta.reactor_name === 'string' && meta.reactor_name.trim()
+        ? meta.reactor_name.trim()
+        : 'Someone'
+    const emoji = typeof meta.emoji === 'string' ? meta.emoji : ''
+    const body = `${name} reacted ${emoji} to your message`.trim()
+    return {
+      primary: 'New reaction',
+      body: `${body.slice(0, 80)}${body.length > 80 ? '…' : ''}`,
+      time: formatDistanceToNow(new Date(n.created_at), { addSuffix: true }),
+    }
+  }
+
   if (n.type === 'system_announcement' || n.type === 'admin_alert' || n.type === 'safety_alert') {
     return {
       primary: n.title,
@@ -143,6 +161,15 @@ function avatarForEntry(
   if (n.type === 'chat_message') {
     const vm = viewById.get(n.id)
     return { url: vm?.sender_avatar_url, fallbackName: parseChatSender(n) }
+  }
+  if (n.type === 'chat_message_reaction') {
+    const vm = viewById.get(n.id)
+    const meta = n.metadata || {}
+    const name =
+      typeof meta.reactor_name === 'string' && meta.reactor_name.trim()
+        ? meta.reactor_name.trim()
+        : 'Someone'
+    return { url: vm?.sender_avatar_url, fallbackName: name }
   }
   return { url: null, fallbackName: 'System' }
 }
@@ -190,7 +217,7 @@ export function NotificationItem({
   const { primary, body, time } = headlineForEntry(entry)
   const { url, fallbackName } = avatarForEntry(entry, viewById)
   const Icon = typeIcon(n.type)
-  const showAvatar = n.type === 'chat_message' || entry.kind === 'group'
+  const showAvatar = n.type === 'chat_message' || n.type === 'chat_message_reaction' || entry.kind === 'group'
 
   const [dragX, setDragX] = useState(0)
   const startX = useRef(0)

@@ -29,11 +29,13 @@ import {
 } from '@/components/ui/dialog'
 
 interface Member {
+  chat_member_id: string
+  /** Peer auth user id — used only for pairwise match APIs, never rendered */
   user_id: string
   name: string
   program: string
   university: string
-  status: 'pending' | 'accepted' | 'rejected'
+  membership_status: 'active' | 'invited'
   compatibility?: {
     compatibility_score: number
     personality_score: number
@@ -111,6 +113,7 @@ export function LockedGroupChat({ chatId, userId, onUnlock }: LockedGroupChatPro
       const { data: chatMembers } = await supabase
         .from('chat_members')
         .select(`
+          id,
           user_id,
           status,
           profiles!chat_members_user_id_fkey (
@@ -125,17 +128,15 @@ export function LockedGroupChat({ chatId, userId, onUnlock }: LockedGroupChatPro
         .eq('chat_id', chatId)
         .in('status', ['active', 'invited'])
 
-      // Get compatibility scores using the API endpoint
-      const otherMemberIds = chatMembers?.filter(m => m.user_id !== userId).map(m => m.user_id) || []
       const pairwiseScores: Record<string, any> = {}
 
-      // Use the members-preview API which already computes compatibility
+      // Use the members-preview API which already computes compatibility (no raw peer user ids)
       const membersResponse = await fetch(`/api/chat/groups?chatId=${chatId}&action=members-preview`)
       if (membersResponse.ok) {
         const { members: membersWithCompat } = await membersResponse.json()
-        membersWithCompat?.forEach((m: any) => {
-          if (m.compatibility) {
-            pairwiseScores[m.user_id] = m.compatibility
+        membersWithCompat?.forEach((m: { chat_member_id?: string; compatibility?: unknown }) => {
+          if (m.compatibility && m.chat_member_id) {
+            pairwiseScores[m.chat_member_id] = m.compatibility
           }
         })
       }
@@ -144,12 +145,13 @@ export function LockedGroupChat({ chatId, userId, onUnlock }: LockedGroupChatPro
       const formattedMembers: Member[] = (chatMembers || [])
         .filter(m => m.user_id !== userId) // Exclude self from the list
         .map(m => ({
-          user_id: m.user_id,
+          chat_member_id: m.id as string,
+          user_id: m.user_id as string,
           name: [m.profiles?.first_name, m.profiles?.last_name].filter(Boolean).join(' ') || 'User',
           program: m.profiles?.program || 'Program',
           university: m.profiles?.universities?.name || 'University',
-          status: m.status as 'pending' | 'accepted' | 'rejected',
-          compatibility: pairwiseScores[m.user_id] || null
+          membership_status: (m.status === 'invited' ? 'invited' : 'active') as 'active' | 'invited',
+          compatibility: pairwiseScores[m.id as string] || null
         }))
 
       setMembers(formattedMembers)
@@ -426,7 +428,7 @@ export function LockedGroupChat({ chatId, userId, onUnlock }: LockedGroupChatPro
             const memberStatus = getMemberStatus(member.user_id)
             
             return (
-              <Card key={member.user_id} className="relative">
+              <Card key={member.chat_member_id} className="relative">
                 <CardHeader>
                   <div className="flex items-start justify-between">
                     <div className="flex items-center gap-3">
@@ -442,6 +444,12 @@ export function LockedGroupChat({ chatId, userId, onUnlock }: LockedGroupChatPro
                         </CardDescription>
                       </div>
                     </div>
+                    <div className="flex flex-col items-end gap-1">
+                    {member.membership_status === 'invited' && (
+                      <Badge variant="outline" className="text-amber-800 border-amber-300 bg-amber-50">
+                        Group invite pending
+                      </Badge>
+                    )}
                     {memberStatus === 'accepted' && (
                       <Badge variant="default" className="bg-green-600">
                         <Check className="w-3 h-3 mr-1" />
@@ -454,6 +462,7 @@ export function LockedGroupChat({ chatId, userId, onUnlock }: LockedGroupChatPro
                         Rejected
                       </Badge>
                     )}
+                    </div>
                   </div>
                 </CardHeader>
                 <CardContent className="space-y-4">
@@ -510,7 +519,7 @@ export function LockedGroupChat({ chatId, userId, onUnlock }: LockedGroupChatPro
                   )}
 
                   {/* Action Buttons - Only show if user is not the creator */}
-                  {!isCreator && memberStatus === 'pending' && (
+                  {!isCreator && memberStatus === 'pending' && member.membership_status === 'active' && (
                     <div className="flex gap-2 pt-2 border-t">
                       <Button
                         variant="outline"

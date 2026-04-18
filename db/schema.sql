@@ -1,22 +1,42 @@
+-- =============================================================================
+-- GREENFIELD BOOTSTRAP ONLY
+-- =============================================================================
+-- Intended for an empty local/CI database. On Supabase Cloud, types and tables
+-- usually already exist from `supabase db push` / migrations — do NOT paste-run
+-- this whole file there; you will still hit "relation already exists" on tables.
+-- For schema changes on an existing project, add a file under db/migrations/ and
+-- apply it with the Supabase CLI or Dashboard SQL (see project docs).
+-- =============================================================================
+
 -- Enable required extensions
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 CREATE EXTENSION IF NOT EXISTS "vector";
 
--- Create custom types
-CREATE TYPE verification_status AS ENUM ('unverified', 'pending', 'verified', 'failed');
-CREATE TYPE kyc_provider AS ENUM ('veriff', 'persona', 'onfido');
-CREATE TYPE kyc_status AS ENUM ('pending', 'approved', 'rejected', 'expired');
-CREATE TYPE report_category AS ENUM ('spam', 'harassment', 'inappropriate', 'other');
-CREATE TYPE degree_level AS ENUM ('bachelor', 'master', 'phd', 'exchange', 'other');
-CREATE TYPE match_status AS ENUM ('pending', 'accepted', 'rejected');
-CREATE TYPE report_status AS ENUM ('open', 'actioned', 'dismissed');
-CREATE TYPE admin_role AS ENUM ('super_admin', 'university_admin', 'moderator');
-CREATE TYPE post_status AS ENUM ('draft', 'published', 'hidden', 'deleted');
-CREATE TYPE notification_type AS ENUM (
+-- Create custom types (idempotent: safe if types already exist from migrations)
+DO $$ BEGIN CREATE TYPE verification_status AS ENUM ('unverified', 'pending', 'verified', 'failed');
+EXCEPTION WHEN duplicate_object THEN NULL; END $$;
+DO $$ BEGIN CREATE TYPE kyc_provider AS ENUM ('veriff', 'persona', 'onfido');
+EXCEPTION WHEN duplicate_object THEN NULL; END $$;
+DO $$ BEGIN CREATE TYPE kyc_status AS ENUM ('pending', 'approved', 'rejected', 'expired');
+EXCEPTION WHEN duplicate_object THEN NULL; END $$;
+DO $$ BEGIN CREATE TYPE report_category AS ENUM ('spam', 'harassment', 'inappropriate', 'other');
+EXCEPTION WHEN duplicate_object THEN NULL; END $$;
+DO $$ BEGIN CREATE TYPE degree_level AS ENUM ('bachelor', 'master', 'phd', 'exchange', 'other');
+EXCEPTION WHEN duplicate_object THEN NULL; END $$;
+DO $$ BEGIN CREATE TYPE match_status AS ENUM ('pending', 'accepted', 'rejected');
+EXCEPTION WHEN duplicate_object THEN NULL; END $$;
+DO $$ BEGIN CREATE TYPE report_status AS ENUM ('open', 'actioned', 'dismissed');
+EXCEPTION WHEN duplicate_object THEN NULL; END $$;
+DO $$ BEGIN CREATE TYPE admin_role AS ENUM ('super_admin', 'university_admin', 'moderator');
+EXCEPTION WHEN duplicate_object THEN NULL; END $$;
+DO $$ BEGIN CREATE TYPE post_status AS ENUM ('draft', 'published', 'hidden', 'deleted');
+EXCEPTION WHEN duplicate_object THEN NULL; END $$;
+DO $$ BEGIN CREATE TYPE notification_type AS ENUM (
   'match_created',
-  'match_accepted', 
+  'match_accepted',
   'match_confirmed',
   'chat_message',
+  'chat_message_reaction',
   'profile_updated',
   'questionnaire_completed',
   'verification_status',
@@ -25,6 +45,7 @@ CREATE TYPE notification_type AS ENUM (
   'safety_alert',
   'system_announcement'
 );
+EXCEPTION WHEN duplicate_object THEN NULL; END $$;
 
 -- Universities table
 CREATE TABLE universities (

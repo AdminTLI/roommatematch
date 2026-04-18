@@ -132,12 +132,15 @@ export async function attachSenderAvatars(
   notifications: Notification[]
 ): Promise<NotificationViewModel[]> {
   return notifications.map((n) => {
-    if (n.type !== 'chat_message') return { ...n }
+    if (n.type !== 'chat_message' && n.type !== 'chat_message_reaction') return { ...n }
     const fromServer = (n as { sender_avatar_url?: string | null }).sender_avatar_url
     if (fromServer) {
       return { ...n, sender_avatar_url: fromServer }
     }
-    const senderId = n.metadata?.sender_id as string | undefined
+    const senderId =
+      n.type === 'chat_message_reaction'
+        ? (n.metadata?.reactor_id as string | undefined)
+        : (n.metadata?.sender_id as string | undefined)
     return { ...n, sender_avatar_url: senderId ? null : null }
   })
 }

@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createAdminClient, createClient } from '@/lib/supabase/server'
+import { chatHrefFromMetadata } from '@/lib/notifications/chat-navigation'
 
 function extractSenderName(notification: { message?: string; metadata?: Record<string, any> }) {
   const metadataName = notification.metadata?.sender_name
@@ -101,7 +102,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Notification not found' }, { status: 404 })
     }
 
-    if (notification.type !== 'chat_message') {
+    if (notification.type !== 'chat_message' && notification.type !== 'chat_message_reaction') {
       return NextResponse.json({ error: 'Notification is not a chat message' }, { status: 400 })
     }
 
@@ -112,7 +113,7 @@ export async function POST(request: NextRequest) {
     let senderId: string | null = typeof metadata.sender_id === 'string' ? metadata.sender_id : null
     const senderName = extractSenderName(notification)
 
-    if (!senderId && senderName) {
+    if (!senderId && senderName && notification.type === 'chat_message') {
       senderId = await findSenderIdByName(admin, senderName)
     }
 
@@ -120,40 +121,45 @@ export async function POST(request: NextRequest) {
       chatId = await findDirectChatId(admin, user.id, senderId)
     }
 
-    // Mark this message notification family as read to keep notification panel in sync.
+    // Mark this message / reaction notification family as read to keep notification panel in sync.
     const nowIso = new Date().toISOString()
     if (chatId) {
       await supabase
         .from('notifications')
         .update({ is_read: true, updated_at: nowIso })
         .eq('user_id', user.id)
-        .eq('type', 'chat_message')
+        .in('type', ['chat_message', 'chat_message_reaction'])
         .eq('metadata->>chat_id', chatId)
     }
 
-    if (senderId) {
-      await supabase
-        .from('notifications')
-        .update({ is_read: true, updated_at: nowIso })
-        .eq('user_id', user.id)
-        .eq('type', 'chat_message')
-        .eq('metadata->>sender_id', senderId)
+    if (notification.type === 'chat_message') {
+      if (senderId) {
+        await supabase
+          .from('notifications')
+          .update({ is_read: true, updated_at: nowIso })
+          .eq('user_id', user.id)
+          .eq('type', 'chat_message')
+          .eq('metadata->>sender_id', senderId)
+      }
+
+      if (senderName) {
+        await supabase
+          .from('notifications')
+          .update({ is_read: true, updated_at: nowIso })
+          .eq('user_id', user.id)
+          .eq('type', 'chat_message')
+          .eq('metadata->>sender_name', senderName)
+      }
     }
 
-    if (senderName) {
-      await supabase
-        .from('notifications')
-        .update({ is_read: true, updated_at: nowIso })
-        .eq('user_id', user.id)
-        .eq('type', 'chat_message')
-        .eq('metadata->>sender_name', senderName)
-    }
+    const mergedMeta: Record<string, unknown> = { ...(metadata as Record<string, unknown>) }
+    if (chatId) mergedMeta.chat_id = chatId
 
     return NextResponse.json({
       chatId,
       senderId,
       senderName,
-      href: chatId ? `/chat?chatId=${chatId}` : senderId ? `/chat?userId=${senderId}` : '/chat',
+      href: chatHrefFromMetadata(mergedMeta),
     })
   } catch (error) {
     console.error('Error resolving chat notification target:', error)

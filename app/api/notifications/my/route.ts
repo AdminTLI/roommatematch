@@ -17,6 +17,7 @@ const ALL_NOTIFICATION_TYPES: NotificationType[] = [
   'match_accepted',
   'match_confirmed',
   'chat_message',
+  'chat_message_reaction',
   'group_invitation',
   'profile_updated',
   'questionnaire_completed',
@@ -29,7 +30,7 @@ const ALL_NOTIFICATION_TYPES: NotificationType[] = [
 ]
 
 const MATCH_NOTIFICATION_TYPES: NotificationType[] = ['match_created', 'match_accepted', 'match_confirmed']
-const MESSAGE_NOTIFICATION_TYPES: NotificationType[] = ['chat_message']
+const MESSAGE_NOTIFICATION_TYPES: NotificationType[] = ['chat_message', 'chat_message_reaction']
 
 export async function GET(request: NextRequest) {
   try {
@@ -137,16 +138,29 @@ export async function GET(request: NextRequest) {
     const admin = createAdminClient();
     const enriched = await Promise.all(
       (notifications || []).map(async (n) => {
-        if (n.type !== 'chat_message') return n;
-        const senderId = n.metadata?.sender_id as string | undefined;
-        const chatId = n.metadata?.chat_id as string | undefined;
-        if (!senderId) return n;
-        try {
-          const sender_avatar_url = await senderAvatarForChatNotification(admin, user.id, senderId, chatId);
-          return { ...n, sender_avatar_url };
-        } catch {
-          return n;
+        if (n.type === 'chat_message') {
+          const senderId = n.metadata?.sender_id as string | undefined;
+          const chatId = n.metadata?.chat_id as string | undefined;
+          if (!senderId) return n;
+          try {
+            const sender_avatar_url = await senderAvatarForChatNotification(admin, user.id, senderId, chatId);
+            return { ...n, sender_avatar_url };
+          } catch {
+            return n;
+          }
         }
+        if (n.type === 'chat_message_reaction') {
+          const reactorId = n.metadata?.reactor_id as string | undefined;
+          const chatId = n.metadata?.chat_id as string | undefined;
+          if (!reactorId) return n;
+          try {
+            const sender_avatar_url = await senderAvatarForChatNotification(admin, user.id, reactorId, chatId);
+            return { ...n, sender_avatar_url };
+          } catch {
+            return n;
+          }
+        }
+        return n;
       })
     );
 

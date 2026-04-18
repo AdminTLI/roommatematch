@@ -3,6 +3,7 @@ export type NotificationType =
   | 'match_accepted' 
   | 'match_confirmed'
   | 'chat_message'
+  | 'chat_message_reaction'
   | 'group_invitation'
   | 'profile_updated'
   | 'questionnaire_completed'
@@ -23,7 +24,7 @@ export interface Notification {
   is_read: boolean;
   created_at: string;
   updated_at: string;
-  /** Set server-side for chat_message when resolved against progressive disclosure rules */
+  /** Set server-side for chat_message / chat_message_reaction when resolved against progressive disclosure rules */
   sender_avatar_url?: string | null;
 }
 
@@ -67,6 +68,11 @@ export const NOTIFICATION_CONFIG = {
   },
   chat_message: {
     icon: 'MessageCircle',
+    color: 'purple',
+    priority: 'medium' as const,
+  },
+  chat_message_reaction: {
+    icon: 'Smile',
     color: 'purple',
     priority: 'medium' as const,
   },

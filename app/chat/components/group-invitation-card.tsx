@@ -38,8 +38,9 @@ interface GroupInvitation {
     academic_score: number
   }
   other_members?: Array<{
-    user_id: string
-    status: string
+    chat_member_id: string
+    membership_status: string
+    group_invitation_status?: string | null
     name: string
     program: string
     university: string
@@ -196,7 +197,7 @@ export function GroupInvitationCard({ invitation, onAccepted, onRejected }: Grou
               </div>
               <div className="flex flex-wrap gap-2">
                 {invitation.other_members.slice(0, 3).map((member) => (
-                  <div key={member.user_id} className="flex items-center gap-2">
+                  <div key={member.chat_member_id} className="flex items-center gap-2">
                     <Avatar className="w-8 h-8">
                       <AvatarFallback className="text-xs">
                         {member.name.charAt(0).toUpperCase()}

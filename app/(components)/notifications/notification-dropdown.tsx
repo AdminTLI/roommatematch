@@ -19,6 +19,7 @@ import {
   attachSenderAvatars,
 } from '@/services/notificationsService'
 import type { NotificationFilterCategory } from '@/types/notification'
+import { chatHrefFromMetadata } from '@/lib/notifications/chat-navigation'
 
 function useIsMobile() {
   const [isMobile, setIsMobile] = useState(false)
@@ -145,11 +146,7 @@ export function NotificationDropdown({
     },
   })
 
-  const getChatHref = (metadata: Record<string, unknown>) => {
-    if (metadata.chat_id) return `/chat?chatId=${metadata.chat_id}`
-    if (metadata.sender_id) return `/chat?userId=${metadata.sender_id}`
-    return '/chat'
-  }
+  const getChatHref = (metadata: Record<string, unknown>) => chatHrefFromMetadata(metadata)
 
   const resolveChatHref = async (notification: Notification) => {
     try {
@@ -186,6 +183,7 @@ export function NotificationDropdown({
           }
           break
         case 'chat_message':
+        case 'chat_message_reaction':
           router.push(await resolveChatHref(notification))
           break
         case 'group_invitation':

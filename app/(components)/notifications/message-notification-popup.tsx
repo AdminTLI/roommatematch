@@ -7,6 +7,7 @@ import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { Notification } from '@/lib/notifications/types'
 import { MessageCircle } from 'lucide-react'
+import { chatHrefFromMetadata } from '@/lib/notifications/chat-navigation'
 
 interface PopupNotification extends Notification {
   primaryActionLabel: string
@@ -22,11 +23,7 @@ export function MessageNotificationPopup({ userId }: MessageNotificationPopupPro
   const router = useRouter()
   const supabase = useMemo(() => createClient(), [])
 
-  const getChatHref = (metadata: Record<string, any>) => {
-    if (metadata.chat_id) return `/chat?chatId=${metadata.chat_id}`
-    if (metadata.sender_id) return `/chat?userId=${metadata.sender_id}`
-    return '/chat'
-  }
+  const getChatHref = (metadata: Record<string, any>) => chatHrefFromMetadata(metadata)
 
   const resolveChatHref = async (notification: Notification) => {
     try {
@@ -53,6 +50,7 @@ export function MessageNotificationPopup({ userId }: MessageNotificationPopupPro
       case 'match_accepted':
       case 'match_confirmed':
       case 'chat_message':
+      case 'chat_message_reaction':
       case 'group_invitation':
         return { label: 'Open Chat', href: getChatHref(metadata) }
       case 'match_created':
@@ -147,9 +145,10 @@ export function MessageNotificationPopup({ userId }: MessageNotificationPopupPro
 
   const handlePrimaryAction = async (notification: PopupNotification) => {
     const action = getPrimaryAction(notification)
-    const targetHref = notification.type === 'chat_message'
-      ? await resolveChatHref(notification)
-      : action.href
+    const targetHref =
+      notification.type === 'chat_message' || notification.type === 'chat_message_reaction'
+        ? await resolveChatHref(notification)
+        : action.href
     await markAsRead(notification.id)
     router.push(targetHref)
     setNotifications((prev) => prev.filter((n) => n.id !== notification.id))
@@ -162,8 +161,19 @@ export function MessageNotificationPopup({ userId }: MessageNotificationPopupPro
 
   const getDisplayTitle = (notification: PopupNotification): string => {
     const metadata = notification.metadata || {}
-    if (notification.type === 'chat_message' && typeof metadata.sender_name === 'string' && metadata.sender_name.trim()) {
+    if (
+      notification.type === 'chat_message' &&
+      typeof metadata.sender_name === 'string' &&
+      metadata.sender_name.trim()
+    ) {
       return metadata.sender_name.trim()
+    }
+    if (
+      notification.type === 'chat_message_reaction' &&
+      typeof metadata.reactor_name === 'string' &&
+      metadata.reactor_name.trim()
+    ) {
+      return metadata.reactor_name.trim()
     }
     return notification.title
   }
@@ -179,6 +189,10 @@ export function MessageNotificationPopup({ userId }: MessageNotificationPopupPro
       } else {
         message = message.replace(/^[^:]{1,40}:\s*/, '')
       }
+      return truncateText(message.trim(), 140)
+    }
+
+    if (notification.type === 'chat_message_reaction') {
       return truncateText(message.trim(), 140)
     }
 

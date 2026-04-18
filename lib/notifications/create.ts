@@ -333,6 +333,36 @@ export async function createChatMessageNotification(
 }
 
 /**
+ * Notify the message author when someone else reacts to their message.
+ */
+export async function createChatMessageReactionNotification(
+  recipientId: string,
+  reactorName: string,
+  chatId: string,
+  messageId: string,
+  emoji: string,
+  reactorId: string
+): Promise<void> {
+  const title = 'New reaction';
+  const message = `${reactorName} reacted ${emoji} to your message`;
+  const metadata = {
+    chat_id: chatId,
+    message_id: messageId,
+    reactor_name: reactorName,
+    reactor_id: reactorId,
+    emoji,
+  };
+
+  await createNotification({
+    user_id: recipientId,
+    type: 'chat_message_reaction',
+    title,
+    message,
+    metadata,
+  });
+}
+
+/**
  * Create a profile update notification
  */
 export async function createProfileUpdateNotification(

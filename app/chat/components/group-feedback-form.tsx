@@ -13,7 +13,8 @@ interface GroupFeedbackFormProps {
   feedbackType: 'left' | 'reassigned' | 'discomfort'
   isOpen: boolean
   onClose: () => void
-  onSubmit?: () => void
+  /** Called after feedback is saved and membership updated (API already ran inside this form). */
+  onSuccess?: () => void
 }
 
 const categoryOptions = [
@@ -29,7 +30,7 @@ export function GroupFeedbackForm({
   feedbackType,
   isOpen,
   onClose,
-  onSubmit
+  onSuccess
 }: GroupFeedbackFormProps) {
   const [selectedCategories, setSelectedCategories] = useState<string[]>([])
   const [reason, setReason] = useState('')
@@ -62,9 +63,7 @@ export function GroupFeedbackForm({
         throw new Error(error.error || 'Failed to submit feedback')
       }
 
-      if (onSubmit) {
-        onSubmit()
-      }
+      onSuccess?.()
       onClose()
       
       // Reset form

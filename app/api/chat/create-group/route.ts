@@ -170,12 +170,16 @@ export async function POST(request: NextRequest) {
       )
     }
 
+    const invitationIdByInvitee = new Map(
+      (createdInvitations || []).map((row) => [row.invitee_id as string, row.id as string])
+    )
+
     // Add invitees as 'invited' members (they'll become 'active' when they accept)
-    const invitedMembers = uniqueMemberIds.map((inviteeId, index) => ({
+    const invitedMembers = uniqueMemberIds.map((inviteeId) => ({
       chat_id: chatId,
       user_id: inviteeId,
       status: 'invited',
-      invitation_id: createdInvitations?.[index]?.id || null
+      invitation_id: invitationIdByInvitee.get(inviteeId) || null
     }))
 
     const { error: invitedMembersErr } = await admin
@@ -183,8 +187,11 @@ export async function POST(request: NextRequest) {
       .insert(invitedMembers)
 
     if (invitedMembersErr) {
-      safeLogger.warn('Failed to add invited members', { error: invitedMembersErr })
-      // Don't fail - invitations are more important
+      safeLogger.error('Failed to add invited members', { error: invitedMembersErr, chatId })
+      return NextResponse.json(
+        { error: `Failed to add invited members: ${invitedMembersErr.message}` },
+        { status: 500 }
+      )
     }
 
     // Calculate initial compatibility score

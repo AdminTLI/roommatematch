@@ -150,7 +150,7 @@ export function MessengerTypingBar({
             'flex-1 flex items-center gap-2 bg-gray-100 dark:bg-gray-800 rounded-full px-2.5 py-1.5 min-h-[44px] border transition-all',
             contentValidationError
               ? 'border-red-500 dark:border-red-500 focus-within:ring-2 focus-within:ring-red-300 dark:focus-within:ring-red-400'
-              : 'border-gray-200 dark:border-gray-700 focus-within:ring-2 focus-within:ring-purple-500 dark:focus-within:ring-purple-400 focus-within:border-transparent'
+              : 'border-gray-200 dark:border-gray-700'
           )}>
             {/* Emoji Picker */}
             <div className="flex-shrink-0 self-center">

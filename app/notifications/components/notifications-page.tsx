@@ -24,6 +24,7 @@ import {
   RefreshCw,
   Settings
 } from 'lucide-react'
+import { chatHrefFromMetadata } from '@/lib/notifications/chat-navigation'
 
 interface NotificationsPageProps {
   user: {
@@ -228,11 +229,7 @@ export function NotificationsPage({ user }: NotificationsPageProps) {
     }
   }
 
-  const getChatHref = (metadata: Record<string, any>) => {
-    if (metadata.chat_id) return `/chat?chatId=${metadata.chat_id}`
-    if (metadata.sender_id) return `/chat?userId=${metadata.sender_id}`
-    return '/chat'
-  }
+  const getChatHref = (metadata: Record<string, any>) => chatHrefFromMetadata(metadata)
 
   const resolveChatHref = async (notification: Notification) => {
     try {
@@ -272,6 +269,7 @@ export function NotificationsPage({ user }: NotificationsPageProps) {
         }
         break
       case 'chat_message':
+      case 'chat_message_reaction':
         router.push(await resolveChatHref(notification))
         break
       case 'group_invitation':
@@ -427,6 +425,7 @@ export function NotificationsPage({ user }: NotificationsPageProps) {
                 <SelectItem value="match_accepted">Match Accepted</SelectItem>
                 <SelectItem value="match_confirmed">Match Confirmed</SelectItem>
                 <SelectItem value="chat_message">Messages</SelectItem>
+                <SelectItem value="chat_message_reaction">Message reactions</SelectItem>
                 <SelectItem value="profile_updated">Profile Updates</SelectItem>
                 <SelectItem value="questionnaire_completed">Questionnaire</SelectItem>
                 <SelectItem value="verification_status">Verification</SelectItem>

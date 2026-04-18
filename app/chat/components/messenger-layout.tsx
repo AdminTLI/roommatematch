@@ -5,7 +5,6 @@ import { User } from '@supabase/supabase-js'
 import { MessengerSidebar } from './messenger-sidebar'
 import { MessengerConversation } from './messenger-conversation'
 import { MessengerProfilePane } from './messenger-profile-pane'
-import { NewChatModal } from './new-chat-modal'
 import { createClient } from '@/lib/supabase/client'
 import { fetchWithCSRF } from '@/lib/utils/fetch-with-csrf'
 import { queryClient, queryKeys } from '@/app/providers'
@@ -16,7 +15,8 @@ interface MessengerLayoutProps {
   user: User & { name?: string; email?: string }
   initialChatId?: string | null
   initialOtherUserId?: string | null
-  onNewChat?: () => void
+  /** Deep-link: scroll to this message after opening the chat */
+  initialMessageId?: string | null
 }
 
 interface ChatInfo {
@@ -28,11 +28,18 @@ interface ChatInfo {
 /** Must match sheet `duration-300` */
 const MOBILE_SHEET_TRANSITION_MS = 300
 
-export function MessengerLayout({ user, initialChatId, initialOtherUserId, onNewChat }: MessengerLayoutProps) {
+export function MessengerLayout({
+  user,
+  initialChatId,
+  initialOtherUserId,
+  initialMessageId,
+}: MessengerLayoutProps) {
   const [selectedChatId, setSelectedChatId] = useState<string | null>(initialChatId || null)
+  const [pendingMessageHighlightId, setPendingMessageHighlightId] = useState<string | null>(
+    initialMessageId || null,
+  )
   const [rightPaneOpen, setRightPaneOpen] = useState(false)
   const [chatInfo, setChatInfo] = useState<ChatInfo | null>(null)
-  const [isNewChatModalOpen, setIsNewChatModalOpen] = useState(false)
   const [isDesktop, setIsDesktop] = useState(true)
   /** Drives bottom-sheet enter animation (translate-y) on mobile */
   const [mobileSheetEntered, setMobileSheetEntered] = useState(false)
@@ -138,6 +145,17 @@ export function MessengerLayout({ user, initialChatId, initialOtherUserId, onNew
     }
   }, [initialChatId])
 
+  useEffect(() => {
+    setPendingMessageHighlightId(initialMessageId || null)
+  }, [initialMessageId])
+
+  useEffect(() => {
+    if (!initialChatId || !pendingMessageHighlightId) return
+    if (selectedChatId !== initialChatId) {
+      setPendingMessageHighlightId(null)
+    }
+  }, [selectedChatId, initialChatId, pendingMessageHighlightId])
+
   // If we arrive from a notification without a chatId, resolve/create a direct chat from userId.
   useEffect(() => {
     const resolveChatFromOtherUser = async () => {
@@ -216,14 +234,8 @@ export function MessengerLayout({ user, initialChatId, initialOtherUserId, onNew
     setRightPaneOpen(prev => !prev)
   }
 
-  const handleNewChat = () => {
-    setIsNewChatModalOpen(true)
-    if (onNewChat) {
-      onNewChat()
-    }
-  }
-
   const handleBackToList = () => {
+    setPendingMessageHighlightId(null)
     setSelectedChatId(null)
     if (mobileSheetCloseTimerRef.current) {
       clearTimeout(mobileSheetCloseTimerRef.current)
@@ -233,11 +245,15 @@ export function MessengerLayout({ user, initialChatId, initialOtherUserId, onNew
     setRightPaneOpen(false)
   }
 
-  const handleChatCreated = (chatId: string) => {
-    queryClient.invalidateQueries({ queryKey: queryKeys.chats(user.id) })
-    setSelectedChatId(chatId)
-    setIsNewChatModalOpen(false)
-  }
+  const handleHighlightConsumed = useCallback(() => {
+    setPendingMessageHighlightId(null)
+    if (typeof window === 'undefined') return
+    const url = new URL(window.location.href)
+    if (!url.searchParams.has('messageId')) return
+    url.searchParams.delete('messageId')
+    const next = `${url.pathname}${url.search}${url.hash}`
+    window.history.replaceState(window.history.state, '', next)
+  }, [])
 
   const conversationEl = selectedChatId ? (
     <MessengerConversation
@@ -248,6 +264,14 @@ export function MessengerLayout({ user, initialChatId, initialOtherUserId, onNew
       partnerName={chatInfo?.partnerName ?? 'User'}
       partnerAvatar={chatInfo?.partnerAvatar}
       hideComposer={!isDesktop && rightPaneOpen}
+      highlightMessageId={
+        pendingMessageHighlightId &&
+        selectedChatId &&
+        (!initialChatId || selectedChatId === initialChatId)
+          ? pendingMessageHighlightId
+          : null
+      }
+      onHighlightConsumed={handleHighlightConsumed}
     />
   ) : null
 
@@ -292,7 +316,6 @@ export function MessengerLayout({ user, initialChatId, initialOtherUserId, onNew
           user={user}
           onChatSelect={handleChatSelect}
           selectedChatId={selectedChatId}
-          onNewChat={handleNewChat}
         />
       </div>
 
@@ -320,7 +343,6 @@ export function MessengerLayout({ user, initialChatId, initialOtherUserId, onNew
               user={user}
               onChatSelect={handleChatSelect}
               selectedChatId={selectedChatId}
-              onNewChat={handleNewChat}
             />
           </div>
 
@@ -385,13 +407,6 @@ export function MessengerLayout({ user, initialChatId, initialOtherUserId, onNew
           </div>
         </div>
       )}
-
-      <NewChatModal
-        isOpen={isNewChatModalOpen}
-        onClose={() => setIsNewChatModalOpen(false)}
-        user={user}
-        onChatCreated={handleChatCreated}
-      />
     </div>
   )
 }

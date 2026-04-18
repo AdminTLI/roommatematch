@@ -15,7 +15,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger
 } from '@/components/ui/dropdown-menu'
-import { MoreVertical, Plus, Archive, ArchiveRestore, Bell, BellOff, CheckCheck, RotateCcw } from 'lucide-react'
+import { MoreVertical, Archive, ArchiveRestore, Bell, BellOff, CheckCheck, RotateCcw } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 import { fetchWithCSRF } from '@/lib/utils/fetch-with-csrf'
 import { queryKeys, queryClient } from '@/app/providers'
@@ -50,7 +50,6 @@ interface MessengerSidebarProps {
   user: User & { name?: string; email?: string }
   onChatSelect: (chatId: string) => void
   selectedChatId?: string | null
-  onNewChat?: () => void
 }
 
 const formatMessageTime = (timestamp: string) => {
@@ -89,7 +88,7 @@ const formatMessageTime = (timestamp: string) => {
   return messageDate.toLocaleDateString([], { day: 'numeric', month: 'short' })
 }
 
-export function MessengerSidebar({ user, onChatSelect, selectedChatId, onNewChat }: MessengerSidebarProps) {
+export function MessengerSidebar({ user, onChatSelect, selectedChatId }: MessengerSidebarProps) {
   const router = useRouter()
   const supabase = createClient()
   const [isMounted, setIsMounted] = useState(false)
@@ -482,6 +481,38 @@ export function MessengerSidebar({ user, onChatSelect, selectedChatId, onNewChat
         console.warn('Failed to fetch unread counts:', err)
       }
 
+      const latestReactionByChat = new Map<
+        string,
+        { reaction_at: string; emoji: string; reactor_id: string }
+      >()
+      if (chatIds.length > 0) {
+        const { data: reactionRows, error: reactionRpcError } = await supabase.rpc(
+          'latest_reaction_on_my_messages_per_chat',
+          { p_user_id: user.id, p_chat_ids: chatIds },
+        )
+        if (reactionRpcError) {
+          console.debug(
+            '[MessengerSidebar] latest_reaction_on_my_messages_per_chat unavailable:',
+            reactionRpcError.message,
+          )
+        } else if (Array.isArray(reactionRows)) {
+          for (const row of reactionRows as Array<{
+            chat_id: string
+            reaction_at: string
+            emoji: string
+            reactor_id: string
+          }>) {
+            if (row?.chat_id && row.reaction_at) {
+              latestReactionByChat.set(row.chat_id, {
+                reaction_at: row.reaction_at,
+                emoji: row.emoji,
+                reactor_id: row.reactor_id,
+              })
+            }
+          }
+        }
+      }
+
       // Transform to ChatRoom format
       // Ensure chatsWithUserMessages is always a Set
       const chatsWithUserMessagesRaw = (allMessagesMap as any).chatsWithUserMessages
@@ -525,21 +556,61 @@ export function MessengerSidebar({ user, onChatSelect, selectedChatId, onNewChat
           })
         }
 
-        const lastMessage = latestMessage
-        const lastMessageDate = lastMessage?.created_at ? new Date(lastMessage.created_at) : null
+        const reactionSnap = latestReactionByChat.get(room.id)
+        const lastMessageRaw = latestMessage
+        const lastMessageDate = lastMessageRaw?.created_at ? new Date(lastMessageRaw.created_at) : null
+        const lastMessageTime = lastMessageDate ? lastMessageDate.getTime() : 0
+        const reactionTime = reactionSnap?.reaction_at ? new Date(reactionSnap.reaction_at).getTime() : 0
+        const useReactionPreview = Boolean(reactionSnap && reactionTime > lastMessageTime)
+
+        let lastMessage: ChatRoom['lastMessage'] = undefined
+        let mostRecentMessageTime = room.created_at ? new Date(room.created_at).getTime() : 0
+
+        if (useReactionPreview && reactionSnap) {
+          const reactorProfile = profilesMap.get(reactionSnap.reactor_id)
+          let reactorName = 'User'
+          if (reactorProfile) {
+            const rfn = reactorProfile.first_name?.trim()
+            const rln = reactorProfile.last_name?.trim()
+            if (rfn && rln) {
+              reactorName = `${rfn} ${rln}`
+            } else if (rfn) {
+              reactorName = rfn
+            } else if (rln) {
+              reactorName = rln
+            }
+          }
+          const reactionDate = new Date(reactionSnap.reaction_at)
+          lastMessage = {
+            content: `reacted ${reactionSnap.emoji} to your message`,
+            sender: reactorName,
+            timestamp: reactionDate.toLocaleString(),
+            isRead: false,
+            created_at: reactionSnap.reaction_at,
+          }
+          mostRecentMessageTime = Math.max(mostRecentMessageTime, reactionTime)
+        } else if (lastMessageRaw && lastMessageDate) {
+          lastMessage = {
+            content: lastMessageRaw.content,
+            sender: lastMessageRaw.user_id === user.id ? 'You' : participantName,
+            timestamp: lastMessageDate.toLocaleString(),
+            isRead: false,
+            created_at: lastMessageRaw.created_at,
+          }
+          mostRecentMessageTime = Math.max(mostRecentMessageTime, lastMessageTime)
+        } else {
+          mostRecentMessageTime = Math.max(
+            mostRecentMessageTime,
+            room.created_at ? new Date(room.created_at).getTime() : 0,
+          )
+        }
 
         return {
           id: room.id,
           name: room.is_group ? `Group Chat` : participantName,
           type: room.is_group ? 'group' : 'individual',
-          lastMessage: lastMessage && lastMessageDate ? {
-            content: lastMessage.content,
-            sender: lastMessage.user_id === user.id ? 'You' : participantName,
-            timestamp: lastMessageDate.toLocaleString(),
-            isRead: false,
-            created_at: lastMessage.created_at
-          } : undefined,
-          mostRecentMessageTime: lastMessageDate ? lastMessageDate.getTime() : (room.created_at ? new Date(room.created_at).getTime() : 0),
+          lastMessage,
+          mostRecentMessageTime,
           participants: room.chat_members?.map((p: any) => {
             const profile = profilesMap.get(p.user_id)
             let fullName = 'User'
@@ -625,6 +696,20 @@ export function MessengerSidebar({ user, onChatSelect, selectedChatId, onNewChat
   useRealtimeInvalidation({
     table: 'messages',
     event: 'INSERT',
+    queryKeys: queryKeys.chats(user.id),
+    enabled: !!user.id,
+  })
+
+  useRealtimeInvalidation({
+    table: 'message_reactions',
+    event: 'INSERT',
+    queryKeys: queryKeys.chats(user.id),
+    enabled: !!user.id,
+  })
+
+  useRealtimeInvalidation({
+    table: 'message_reactions',
+    event: 'DELETE',
     queryKeys: queryKeys.chats(user.id),
     enabled: !!user.id,
   })
@@ -766,16 +851,6 @@ export function MessengerSidebar({ user, onChatSelect, selectedChatId, onNewChat
             <p className="text-xs text-gray-500 dark:text-gray-400 truncate">Online</p>
           </div>
         </div>
-        {/* New Chat - mobile/tablet only (left of three-dots menu) */}
-        {onNewChat && (
-          <Button
-            onClick={onNewChat}
-            className="mr-2 min-h-11 flex-shrink-0 bg-purple-600 px-3 text-white hover:bg-purple-700 lg:hidden"
-            size="sm"
-          >
-            New Chat
-          </Button>
-        )}
         {isMounted ? (
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
@@ -1130,20 +1205,6 @@ export function MessengerSidebar({ user, onChatSelect, selectedChatId, onNewChat
           )}
         </div>
       </div>
-
-      {/* New Chat Button - desktop only (hidden on mobile/tablet) */}
-      {onNewChat && (
-        <div className="hidden lg:block flex-shrink-0 p-4 border-t border-gray-200 dark:border-gray-800">
-          <Button
-            onClick={onNewChat}
-            className="w-full bg-purple-600 hover:bg-purple-700 text-white"
-            size="sm"
-          >
-            <Plus className="w-4 h-4 mr-2" />
-            New Chat
-          </Button>
-        </div>
-      )}
     </div>
   )
 }

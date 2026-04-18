@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, type MouseEvent, type KeyboardEvent } from 'react'
 import { useRouter } from 'next/navigation'
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
@@ -30,6 +30,12 @@ interface NewChatModalProps {
   onChatCreated?: (chatId: string) => void
 }
 
+type GroupListEmptyHint =
+  | null
+  | 'no_confirmed_pool'
+  | 'none_verified'
+  | 'no_named_profiles'
+
 export function NewChatModal({ isOpen, onClose, user, initialMode, onChatCreated }: NewChatModalProps) {
   const router = useRouter()
   const supabase = createClient()
@@ -42,6 +48,7 @@ export function NewChatModal({ isOpen, onClose, user, initialMode, onChatCreated
   const [groupIntent, setGroupIntent] = useState<'housing' | 'study' | 'social' | 'general'>('general')
   const [contextMessage, setContextMessage] = useState('')
   const [chatMode, setChatMode] = useState<'individual' | 'group'>(initialMode || 'individual')
+  const [groupListEmptyHint, setGroupListEmptyHint] = useState<GroupListEmptyHint>(null)
 
   // Reset state when modal opens/closes
   useEffect(() => {
@@ -52,6 +59,7 @@ export function NewChatModal({ isOpen, onClose, user, initialMode, onChatCreated
       setGroupIntent('general')
       setContextMessage('')
       setSearchQuery('')
+      setGroupListEmptyHint(null)
     } else {
       // Reset when closed
       setSelectedMatchIds([])
@@ -60,11 +68,13 @@ export function NewChatModal({ isOpen, onClose, user, initialMode, onChatCreated
       setContextMessage('')
       setSearchQuery('')
       setMatches([])
+      setGroupListEmptyHint(null)
     }
   }, [isOpen, initialMode])
 
   const loadMatches = useCallback(async () => {
     setIsLoading(true)
+    setGroupListEmptyHint(null)
     try {
       const now = new Date().toISOString()
       
@@ -292,6 +302,7 @@ export function NewChatModal({ isOpen, onClose, user, initialMode, onChatCreated
         })
 
         if (matchedUserIds.size === 0) {
+          setGroupListEmptyHint('no_confirmed_pool')
           setMatches([])
           setIsLoading(false)
           return
@@ -313,6 +324,7 @@ export function NewChatModal({ isOpen, onClose, user, initialMode, onChatCreated
           .eq('verification_status', 'verified') // Only verified users for group chat
 
         if (profilesError || !profiles || profiles.length === 0) {
+          setGroupListEmptyHint('none_verified')
           setMatches([])
           setIsLoading(false)
           return
@@ -398,6 +410,14 @@ export function NewChatModal({ isOpen, onClose, user, initialMode, onChatCreated
           })
           .sort((a, b) => b.compatibility_score - a.compatibility_score)
 
+        if (formattedMatches.length === 0) {
+          setGroupListEmptyHint('no_named_profiles')
+          setMatches([])
+          setIsLoading(false)
+          return
+        }
+
+        setGroupListEmptyHint(null)
         setMatches(formattedMatches)
       }
     } catch (error) {
@@ -430,7 +450,9 @@ export function NewChatModal({ isOpen, onClose, user, initialMode, onChatCreated
     // Matches will reload automatically due to chatMode dependency in loadMatches
   }
 
-  const handleToggleSelection = (matchId: string) => {
+  const handleToggleSelection = (matchId: string, e?: MouseEvent | KeyboardEvent) => {
+    e?.preventDefault()
+    e?.stopPropagation()
     setSelectedMatchIds(prev => {
       if (chatMode === 'individual') {
         // Individual: replace selection
@@ -638,9 +660,7 @@ export function NewChatModal({ isOpen, onClose, user, initialMode, onChatCreated
                   {match.name}
                   <button
                     onClick={(e) => {
-                      e.preventDefault()
-                      e.stopPropagation()
-                      handleToggleSelection(match.match_user_id)
+                      handleToggleSelection(match.match_user_id, e)
                     }}
                     type="button"
                     className="ml-1 hover:bg-gray-300 rounded-full p-0.5"
@@ -675,11 +695,36 @@ export function NewChatModal({ isOpen, onClose, user, initialMode, onChatCreated
                 <Loader2 className="w-6 h-6 animate-spin text-gray-400" />
               </div>
             ) : matches.length === 0 ? (
-              <div className="text-center py-12 text-gray-500">
-                {chatMode === 'group' 
-                  ? 'No verified matches available. Only verified users you have matched with will appear here.'
-                  : 'No matches available. Complete your profile to get matched!'
-                }
+              <div className="text-center py-12 px-4 text-gray-600 space-y-2">
+                {chatMode === 'group' ? (
+                  <>
+                    <p className="font-medium text-gray-900">No one to add yet</p>
+                    {groupListEmptyHint === 'no_confirmed_pool' && (
+                      <p className="text-sm max-w-md mx-auto">
+                        You can only start a group with people you already have a <strong>confirmed</strong> match with
+                        (or an eligible saved match). When you have confirmed matches, they will show up here.
+                      </p>
+                    )}
+                    {groupListEmptyHint === 'none_verified' && (
+                      <p className="text-sm max-w-md mx-auto">
+                        You have matches in this pool, but <strong>none are verified</strong> yet. Group chats are limited
+                        to verified members so everyone can trust who is in the room.
+                      </p>
+                    )}
+                    {groupListEmptyHint === 'no_named_profiles' && (
+                      <p className="text-sm max-w-md mx-auto">
+                        Matched users must have a <strong>first or last name</strong> on their profile to appear in this list.
+                      </p>
+                    )}
+                    {!groupListEmptyHint && (
+                      <p className="text-sm max-w-md mx-auto">
+                        Only <strong>verified</strong> people you have a <strong>confirmed</strong> match with can be invited to a group.
+                      </p>
+                    )}
+                  </>
+                ) : (
+                  <p>No matches available. Complete your profile to get matched!</p>
+                )}
               </div>
             ) : filteredMatches.length === 0 ? (
               <div className="text-center py-12 text-gray-500">
@@ -689,42 +734,54 @@ export function NewChatModal({ isOpen, onClose, user, initialMode, onChatCreated
               <div className="divide-y">
                 {filteredMatches.map((match) => {
                   const isSelected = selectedMatchIds.includes(match.match_user_id)
-                  
+
                   return (
-                    <button
+                    <div
                       key={match.match_user_id}
-                      onClick={() => handleToggleSelection(match.match_user_id)}
-                      type="button"
-                      className={`w-full flex items-center gap-3 p-4 hover:bg-gray-50 transition-colors text-left ${
-                        isSelected ? 'bg-blue-50 border-l-4 border-blue-600' : ''
+                      role="button"
+                      tabIndex={0}
+                      aria-pressed={isSelected}
+                      onClick={(e) => handleToggleSelection(match.match_user_id, e)}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter' || e.key === ' ') {
+                          e.preventDefault()
+                          handleToggleSelection(match.match_user_id, e)
+                        }
+                      }}
+                      className={`w-full flex items-center gap-3 p-4 cursor-pointer select-none transition-colors text-left outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 ${
+                        isSelected
+                          ? 'bg-blue-50 border-l-4 border-blue-600 ring-1 ring-inset ring-blue-200'
+                          : 'hover:bg-gray-50 border-l-4 border-transparent'
                       }`}
-                      // Privacy: No user IDs in attributes
                     >
-                      <Avatar className="w-12 h-12">
-                        <AvatarFallback className="text-lg font-semibold">
-                          {match.name.charAt(0).toUpperCase()}
-                        </AvatarFallback>
-                      </Avatar>
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-2 mb-1">
-                          <p className="font-semibold text-gray-900 truncate">
-                            {match.name}
+                      <span className="flex w-full items-center gap-3 pointer-events-none">
+                        <Avatar className="w-12 h-12 shrink-0">
+                          <AvatarFallback className="text-lg font-semibold">
+                            {match.name.charAt(0).toUpperCase()}
+                          </AvatarFallback>
+                        </Avatar>
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-2 mb-1">
+                            <p className="font-semibold text-gray-900 truncate">
+                              {match.name}
+                            </p>
+                            <Badge variant="outline" className="text-xs shrink-0">
+                              {Math.round(match.compatibility_score * 100)}
+                            </Badge>
+                          </div>
+                          <p className="text-sm text-gray-600 truncate">
+                            {match.program_name} • {match.university_name}
                           </p>
-                          <Badge variant="outline" className="text-xs">
-                            {Math.round(match.compatibility_score * 100)}
-                          </Badge>
                         </div>
-                        <p className="text-sm text-gray-600 truncate">
-                          {match.program_name} • {match.university_name}
-                        </p>
-                        {/* PRIVACY: No user IDs displayed - match_user_id is only used internally for selection */}
-                      </div>
-                      {isSelected && (
-                        <div className="w-6 h-6 rounded-full bg-blue-600 flex items-center justify-center flex-shrink-0">
-                          <Check className="w-4 h-4 text-white" />
-                        </div>
-                      )}
-                    </button>
+                        {isSelected ? (
+                          <div className="w-8 h-8 rounded-full bg-blue-600 flex items-center justify-center shrink-0 shadow-sm">
+                            <Check className="w-4 h-4 text-white" />
+                          </div>
+                        ) : (
+                          <div className="w-8 h-8 rounded-full border-2 border-gray-200 shrink-0" aria-hidden />
+                        )}
+                      </span>
+                    </div>
                   )
                 })}
               </div>
@@ -733,11 +790,15 @@ export function NewChatModal({ isOpen, onClose, user, initialMode, onChatCreated
 
           {/* Footer Actions */}
           <div className="flex items-center justify-between pt-4 border-t">
-            <div className="text-sm text-gray-600">
-              {chatMode === 'group' && (
-                <span>
+            <div className="text-sm text-gray-600 min-h-[1.25rem]">
+              {chatMode === 'group' ? (
+                <span className="font-medium text-gray-800">
                   {selectedMatchIds.length} of 5 selected
                 </span>
+              ) : selectedMatchIds.length > 0 ? (
+                <span className="font-medium text-gray-800">1 selected</span>
+              ) : (
+                <span className="text-gray-500">Select someone to start chatting</span>
               )}
             </div>
             <div className="flex gap-2">

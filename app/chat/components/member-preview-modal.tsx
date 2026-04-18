@@ -6,11 +6,10 @@ import { Avatar, AvatarFallback } from '@/components/ui/avatar'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Loader2 } from 'lucide-react'
-import { createClient } from '@/lib/supabase/client'
-
 interface Member {
-  user_id: string
-  status: string
+  chat_member_id: string
+  membership_status: string
+  group_invitation_status?: string | null
   name: string
   program: string
   university: string
@@ -46,7 +45,6 @@ export function MemberPreviewModal({ chatId, members: initialMembers, isOpen, on
   const loadMembers = async () => {
     setIsLoading(true)
     try {
-      const supabase = createClient()
       const response = await fetch(`/api/chat/groups?chatId=${chatId}&action=members-preview`)
       
       if (!response.ok) {
@@ -89,9 +87,16 @@ export function MemberPreviewModal({ chatId, members: initialMembers, isOpen, on
               No members found
             </div>
           ) : (
-            members.map((member) => (
+            members.map((member) => {
+              const statusLabel =
+                member.membership_status === 'invited'
+                  ? member.group_invitation_status === 'pending'
+                    ? 'Invite pending'
+                    : 'Invited'
+                  : 'Member'
+              return (
               <div
-                key={member.user_id}
+                key={member.chat_member_id}
                 className="p-4 border rounded-lg space-y-3"
               >
                 <div className="flex items-start gap-4">
@@ -106,7 +111,7 @@ export function MemberPreviewModal({ chatId, members: initialMembers, isOpen, on
                         {member.name}
                       </p>
                       <Badge variant="outline" className="text-xs">
-                        {member.status}
+                        {statusLabel}
                       </Badge>
                     </div>
                     <p className="text-sm text-gray-600">
@@ -157,7 +162,8 @@ export function MemberPreviewModal({ chatId, members: initialMembers, isOpen, on
                   </div>
                 )}
               </div>
-            ))
+              )
+            })
           )}
         </div>
 

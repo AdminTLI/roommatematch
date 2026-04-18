@@ -1,9 +1,9 @@
 'use client'
 
-import { useState } from 'react'
+import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react'
+import { createPortal } from 'react-dom'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
-import { Check, CheckCheck, Copy, Flag, Reply } from 'lucide-react'
-import { EmojiPicker } from './emoji-picker'
+import { Check, CheckCheck, Copy, Flag, Reply, Smile } from 'lucide-react'
 import { ReportUserDialog } from './report-user-dialog'
 import { fetchWithCSRF } from '@/lib/utils/fetch-with-csrf'
 import { cn } from '@/lib/utils'
@@ -14,7 +14,32 @@ import {
   ContextMenuSeparator,
   ContextMenuTrigger,
 } from '@/components/ui/context-menu'
-import { showSuccessToast } from '@/lib/toast'
+import { showErrorToast, showSuccessToast } from '@/lib/toast'
+
+/** Common chat reactions — toggle via API on pick */
+const REACTION_PICK_EMOJIS = ['👍', '❤️', '😂', '😮', '😢', '🙌', '🔥', '👏']
+
+/** ~2 rows of 40px cells + padding/border; used before first paint */
+const REACTION_MENU_EST_HEIGHT = 140
+const REACTION_MENU_EST_WIDTH = 220
+/** Reserve space for composer + safe margin so the menu does not sit under the typing bar */
+const REACTION_VIEWPORT_BOTTOM_RESERVE = 104
+const REACTION_VIEWPORT_EDGE_MARGIN = 8
+
+function getScrollableAncestor(el: HTMLElement | null): HTMLElement | null {
+  let p: HTMLElement | null = el?.parentElement ?? null
+  while (p) {
+    const { overflowY } = window.getComputedStyle(p)
+    if (
+      (overflowY === 'auto' || overflowY === 'scroll' || overflowY === 'overlay') &&
+      p.scrollHeight > p.clientHeight + 1
+    ) {
+      return p
+    }
+    p = p.parentElement
+  }
+  return null
+}
 
 export interface MessageReplyRef {
   id: string
@@ -69,9 +94,113 @@ export function MessengerMessageBubble({
   replyTo,
   onReply,
 }: MessengerMessageBubbleProps) {
-  const [showReactionPicker, setShowReactionPicker] = useState(false)
+  const [reactionMenuOpen, setReactionMenuOpen] = useState(false)
+  /** Fixed viewport coordinates so the picker never clips off-screen */
+  const [reactionMenuFixedPos, setReactionMenuFixedPos] = useState<{
+    top: number
+    left: number
+  } | null>(null)
   const [isReacting, setIsReacting] = useState(false)
   const [reportOpen, setReportOpen] = useState(false)
+  const reactionTriggerRef = useRef<HTMLButtonElement>(null)
+  const reactionMenuRef = useRef<HTMLDivElement>(null)
+
+  const updateReactionMenuPlacement = useCallback(() => {
+    const trigger = reactionTriggerRef.current
+    if (!trigger || !reactionMenuOpen) return
+
+    const triggerRect = trigger.getBoundingClientRect()
+    const menuEl = reactionMenuRef.current
+    const measured = menuEl?.getBoundingClientRect()
+    const menuWidth =
+      measured && measured.width > 1 ? measured.width : Math.min(REACTION_MENU_EST_WIDTH, window.innerWidth - 2 * REACTION_VIEWPORT_EDGE_MARGIN)
+    const menuHeight =
+      measured && measured.height > 1 ? measured.height : REACTION_MENU_EST_HEIGHT
+
+    const vv = window.visualViewport
+    const visibleTop = (vv?.offsetTop ?? 0) + REACTION_VIEWPORT_EDGE_MARGIN
+    const visibleBottom = Math.min(
+      window.innerHeight,
+      vv ? vv.offsetTop + vv.height : window.innerHeight,
+    ) - REACTION_VIEWPORT_BOTTOM_RESERVE - REACTION_VIEWPORT_EDGE_MARGIN
+    const visibleLeft = (vv?.offsetLeft ?? 0) + REACTION_VIEWPORT_EDGE_MARGIN
+    const visibleRight = Math.min(
+      window.innerWidth,
+      vv ? vv.offsetLeft + vv.width : window.innerWidth,
+    ) - REACTION_VIEWPORT_EDGE_MARGIN
+
+    const gap = 6
+    const spaceBelow = visibleBottom - triggerRect.bottom
+    const spaceAbove = triggerRect.top - visibleTop
+
+    const placeAbove =
+      spaceBelow >= menuHeight + gap
+        ? false
+        : spaceAbove >= menuHeight + gap
+          ? true
+          : spaceAbove > spaceBelow
+
+    let top = placeAbove ? triggerRect.top - menuHeight - gap : triggerRect.bottom + gap
+    top = Math.max(visibleTop, Math.min(top, visibleBottom - menuHeight))
+
+    let left = isOwn ? triggerRect.left : triggerRect.right - menuWidth
+    left = Math.max(visibleLeft, Math.min(left, visibleRight - menuWidth))
+
+    setReactionMenuFixedPos({ top, left })
+  }, [reactionMenuOpen, isOwn])
+
+  useLayoutEffect(() => {
+    if (!reactionMenuOpen) {
+      setReactionMenuFixedPos(null)
+      return
+    }
+    updateReactionMenuPlacement()
+    const id = requestAnimationFrame(() => updateReactionMenuPlacement())
+    return () => cancelAnimationFrame(id)
+  }, [reactionMenuOpen, updateReactionMenuPlacement])
+
+  useEffect(() => {
+    if (!reactionMenuOpen) return
+
+    const onReposition = () => updateReactionMenuPlacement()
+    const scrollOpts: AddEventListenerOptions = { passive: true }
+
+    window.addEventListener('resize', onReposition)
+    window.visualViewport?.addEventListener('resize', onReposition)
+    window.visualViewport?.addEventListener('scroll', onReposition)
+
+    const scrollParent = getScrollableAncestor(reactionTriggerRef.current)
+    scrollParent?.addEventListener('scroll', onReposition, scrollOpts)
+
+    return () => {
+      window.removeEventListener('resize', onReposition)
+      window.visualViewport?.removeEventListener('resize', onReposition)
+      window.visualViewport?.removeEventListener('scroll', onReposition)
+      scrollParent?.removeEventListener('scroll', onReposition)
+    }
+  }, [reactionMenuOpen, updateReactionMenuPlacement])
+
+  useEffect(() => {
+    if (!reactionMenuOpen) return
+
+    const handlePointerDown = (event: PointerEvent) => {
+      const target = event.target as Node
+      if (reactionMenuRef.current?.contains(target)) return
+      if (reactionTriggerRef.current?.contains(target)) return
+      setReactionMenuOpen(false)
+    }
+
+    const handleEscape = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') setReactionMenuOpen(false)
+    }
+
+    document.addEventListener('pointerdown', handlePointerDown, true)
+    window.addEventListener('keydown', handleEscape)
+    return () => {
+      document.removeEventListener('pointerdown', handlePointerDown, true)
+      window.removeEventListener('keydown', handleEscape)
+    }
+  }, [reactionMenuOpen])
 
   const formatTime = (timestamp: string) => {
     const date = new Date(timestamp)
@@ -96,27 +225,54 @@ export function MessengerMessageBubble({
         if (response.status === 429) {
           return
         }
-        throw new Error('Failed to add reaction')
+        let detail: string | undefined
+        try {
+          const data = (await response.json()) as { error?: string }
+          if (typeof data?.error === 'string' && data.error.trim()) {
+            detail = data.error.trim()
+          }
+        } catch {
+          /* ignore */
+        }
+        showErrorToast('Could not update reaction', detail ?? `Error ${response.status}`)
+        return
       }
 
       if (onReactionChange) {
         onReactionChange()
       }
-      setShowReactionPicker(false)
+      setReactionMenuOpen(false)
     } catch (error: unknown) {
       const err = error as { status?: number; response?: { status?: number } }
       if (err?.status !== 429 && err?.response?.status !== 429) {
         console.error('Failed to add reaction:', error)
+        showErrorToast('Could not update reaction', error instanceof Error ? error.message : undefined)
       }
     } finally {
       setIsReacting(false)
     }
   }
 
-  const hasUserReacted = (emoji: string) => {
-    const group = reactions.find((r) => r.emoji === emoji)
-    return group ? group.userReactions.includes(currentUserId) : false
+  const sortedReactions =
+    reactions.length > 0
+      ? [...reactions].sort((a, b) => b.count - a.count || a.emoji.localeCompare(b.emoji))
+      : []
+
+  const uniqueReactorIds = new Set<string>()
+  for (const r of reactions) {
+    for (const uid of r.userReactions) {
+      uniqueReactorIds.add(uid)
+    }
   }
+  const isOneToOneRoom = otherMembersCount <= 1
+  const showPerEmojiCounts = !isOneToOneRoom || uniqueReactorIds.size >= 2
+
+  const reactionAriaLabel =
+    sortedReactions.length === 0
+      ? ''
+      : showPerEmojiCounts
+        ? sortedReactions.map((g) => `${g.emoji} ${g.count}`).join(', ')
+        : sortedReactions.map((g) => g.emoji).join(' ')
 
   const getReadStatus = () => {
     if (!isOwn) return null
@@ -184,28 +340,31 @@ export function MessengerMessageBubble({
           ? 'rounded-tl-[18px] rounded-tr-[18px] rounded-br-[5px] rounded-bl-[18px]'
           : 'rounded-tl-[18px] rounded-tr-[18px] rounded-br-[18px] rounded-bl-[5px]',
       )}
-      onMouseEnter={() => setShowReactionPicker(true)}
-      onMouseLeave={() => setShowReactionPicker(false)}
     >
       {replyTo ? (
         <div
           className={cn(
-            'mb-2 border-l-[3px] pl-2 text-left',
-            isOwn ? 'border-white/80 dark:border-white/50' : 'border-purple-500 dark:border-purple-400',
+            'mb-2 rounded-lg border py-2 pl-2.5 pr-2 text-left shadow-inner',
+            isOwn
+              ? 'border-zinc-200/90 bg-zinc-100/95 dark:border-white/20 dark:bg-black/40 dark:shadow-[inset_0_1px_0_rgba(255,255,255,0.06)]'
+              : 'border-zinc-200/80 bg-zinc-100/85 dark:border-white/10 dark:bg-white/[0.08]',
+            'border-l-[3px] border-l-purple-600 dark:border-l-purple-300',
           )}
         >
           <p
             className={cn(
-              'text-[11px] font-semibold',
-              isOwn ? 'text-white/90 dark:text-white/90' : 'text-purple-700 dark:text-purple-300',
+              'text-[11px] font-semibold tracking-tight text-purple-700',
+              isOwn ? 'dark:text-purple-100' : 'dark:text-purple-200',
             )}
           >
             {replyTo.senderName}
           </p>
           <p
             className={cn(
-              'line-clamp-2 text-xs',
-              isOwn ? 'text-white/75 dark:text-white/80' : 'text-zinc-600 dark:text-zinc-400',
+              'mt-0.5 max-w-none text-[13px] font-normal leading-snug break-words sm:text-sm',
+              isOwn
+                ? 'line-clamp-4 text-zinc-700 dark:text-zinc-50'
+                : 'line-clamp-3 text-zinc-600 dark:text-zinc-300',
             )}
           >
             {replyTo.content}
@@ -246,29 +405,36 @@ export function MessengerMessageBubble({
           </Avatar>
         )}
 
-        <div className={cn('flex max-w-[85%] flex-col', isOwn ? 'items-end' : 'items-start')}>
-          <div className="relative">
+        <div
+          className={cn(
+            'flex flex-col',
+            isOwn ? 'items-end' : 'items-start',
+            replyTo ? 'max-w-[min(94vw,26rem)] sm:max-w-[32rem]' : 'max-w-[85%]',
+            reactions.length > 0 && !reactionMenuOpen && 'pb-4',
+          )}
+        >
+          <div className="relative min-w-0 max-w-full">
             <ContextMenu>
               <ContextMenuTrigger asChild>{bubbleInner}</ContextMenuTrigger>
-              <ContextMenuContent className="w-52">
+              <ContextMenuContent className="w-56">
                 {onReply ? (
-                  <ContextMenuItem className="gap-2" onSelect={handleReplySelect}>
-                    <Reply className="h-4 w-4" />
+                  <ContextMenuItem onSelect={handleReplySelect}>
+                    <Reply className="h-4 w-4 shrink-0 opacity-80" />
                     Reply
                   </ContextMenuItem>
                 ) : null}
-                <ContextMenuItem className="gap-2" onSelect={handleCopy}>
-                  <Copy className="h-4 w-4" />
+                <ContextMenuItem onSelect={handleCopy}>
+                  <Copy className="h-4 w-4 shrink-0 opacity-80" />
                   Copy message
                 </ContextMenuItem>
                 {!isOwn && (
                   <>
-                    <ContextMenuSeparator />
+                    <ContextMenuSeparator className="my-1.5 bg-border-subtle" />
                     <ContextMenuItem
-                      className="gap-2 text-semantic-danger focus:bg-semantic-danger/10 focus:text-semantic-danger"
+                      className="text-red-600 data-[highlighted]:bg-red-500/12 data-[highlighted]:text-red-700 dark:text-red-400 dark:data-[highlighted]:bg-red-950/70 dark:data-[highlighted]:text-red-100"
                       onSelect={() => setReportOpen(true)}
                     >
-                      <Flag className="h-4 w-4" />
+                      <Flag className="h-4 w-4 shrink-0 opacity-90" />
                       Report message
                     </ContextMenuItem>
                   </>
@@ -276,47 +442,131 @@ export function MessengerMessageBubble({
               </ContextMenuContent>
             </ContextMenu>
 
-            {showReactionPicker && (
-              <div className="pointer-events-none absolute -top-8 left-1/2 -translate-x-1/2 opacity-0 transition-opacity group-hover:pointer-events-auto group-hover:opacity-100">
-                <div className="flex gap-1 rounded-full border border-zinc-200 bg-white/95 px-2 py-1 shadow-lg backdrop-blur-md dark:border-zinc-600 dark:bg-zinc-800/95">
-                  {['❤️', '👍', '😂'].map((emoji) => (
+            {sortedReactions.length > 0 && !reactionMenuOpen ? (
+              <div
+                role="group"
+                aria-label={reactionAriaLabel}
+                className={cn(
+                  // Below bubble body so text/timestamp stay clear; slight upward nudge only kisses the bottom edge
+                  'pointer-events-auto absolute top-full z-20 max-w-full min-w-0 -translate-y-1.5',
+                  isOwn ? 'right-3' : 'left-3',
+                )}
+              >
+                <div
+                  className={cn(
+                    'inline-flex h-[25px] w-max max-w-full min-w-0 flex-nowrap items-center justify-center gap-px overflow-hidden rounded-full border px-1 py-0 shadow-[0_1px_2px_rgba(15,23,42,0.08)] dark:shadow-[0_1px_3px_rgba(0,0,0,0.45)]',
+                    'border-zinc-200/95 bg-white dark:border-zinc-600 dark:bg-zinc-800',
+                  )}
+                >
+                  {sortedReactions.map((group) => (
                     <button
-                      key={emoji}
+                      key={group.emoji}
                       type="button"
-                      onClick={() => handleReaction(emoji)}
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        void handleReaction(group.emoji)
+                      }}
                       disabled={isReacting}
-                      className="rounded p-1 text-lg transition-colors hover:bg-zinc-100 disabled:opacity-50 dark:hover:bg-zinc-700"
+                      title={
+                        showPerEmojiCounts
+                          ? `${group.emoji} · ${group.count}`
+                          : `${group.emoji}`
+                      }
+                      className={cn(
+                        'inline-flex h-full min-h-0 min-w-0 shrink-0 cursor-pointer items-center justify-center gap-0.5 rounded-none border-0 bg-transparent px-1.5',
+                        'hover:bg-zinc-100 active:bg-zinc-200/80 disabled:opacity-50 dark:hover:bg-zinc-700/80 dark:active:bg-zinc-600/80',
+                      )}
                     >
-                      {emoji}
+                      <span className="inline-flex min-h-[1.125rem] min-w-[1.125rem] shrink-0 items-center justify-center text-[15px] leading-none">
+                        {group.emoji}
+                      </span>
+                      {showPerEmojiCounts ? (
+                        <span className="inline-flex min-w-[0.65rem] items-center justify-center text-[10px] font-medium tabular-nums leading-none text-zinc-400 dark:text-zinc-500">
+                          {group.count}
+                        </span>
+                      ) : null}
                     </button>
                   ))}
                 </div>
               </div>
-            )}
-          </div>
+            ) : null}
 
-          {reactions.length > 0 && (
-            <div className={cn('mt-1 flex flex-wrap gap-1', isOwn ? 'justify-end' : 'justify-start')}>
-              {reactions.map((group) => (
-                <button
-                  key={group.emoji}
-                  type="button"
-                  onClick={() => handleReaction(group.emoji)}
-                  disabled={isReacting}
-                  className={cn(
-                    'inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-xs transition-all',
-                    hasUserReacted(group.emoji)
-                      ? 'border-purple-300 bg-purple-100 text-purple-700 dark:border-purple-700 dark:bg-purple-900/50 dark:text-purple-300'
-                      : 'border-zinc-300 bg-zinc-100 text-zinc-700 hover:bg-zinc-200 dark:border-zinc-600 dark:bg-zinc-800 dark:text-zinc-300 dark:hover:bg-zinc-700',
-                    'cursor-pointer disabled:opacity-50',
-                  )}
-                >
-                  <span>{group.emoji}</span>
-                  <span className="text-[10px] font-medium">{group.count}</span>
-                </button>
-              ))}
+            {/* Beside bubble only — no extra row (avoids large vertical gaps between messages) */}
+            <div
+              className={cn(
+                // Vertically centred on the full bubble height (parent is `relative` around the bubble)
+                'absolute top-1/2 z-10 -translate-y-1/2',
+                // Their message: control on the right of the bubble; yours: on the left
+                isOwn ? 'right-full mr-0.5' : 'left-full ml-0.5',
+              )}
+            >
+              <button
+                ref={reactionTriggerRef}
+                type="button"
+                aria-haspopup="dialog"
+                aria-expanded={reactionMenuOpen}
+                aria-label="Add reaction"
+                onClick={(e) => {
+                  e.stopPropagation()
+                  setReactionMenuOpen((open) => !open)
+                }}
+                className={cn(
+                  'inline-flex h-7 w-7 items-center justify-center rounded-full border border-transparent sm:h-8 sm:w-8',
+                  'text-zinc-500 transition-colors hover:border-zinc-200 hover:bg-zinc-100 hover:text-zinc-800',
+                  'dark:text-zinc-400 dark:hover:border-zinc-600 dark:hover:bg-zinc-800 dark:hover:text-zinc-100',
+                  'pointer-events-auto',
+                  reactionMenuOpen
+                    ? 'opacity-100'
+                    : 'max-md:opacity-90 md:pointer-events-none md:opacity-0 md:group-hover:pointer-events-auto md:group-hover:opacity-100',
+                )}
+              >
+                <Smile className="h-4 w-4" aria-hidden />
+              </button>
+
+              {reactionMenuOpen
+                ? createPortal(
+                    <div
+                      ref={reactionMenuRef}
+                      role="dialog"
+                      aria-label="Choose a reaction"
+                      style={
+                        reactionMenuFixedPos
+                          ? {
+                              top: reactionMenuFixedPos.top,
+                              left: reactionMenuFixedPos.left,
+                            }
+                          : { top: 0, left: 0, visibility: 'hidden' as const }
+                      }
+                      className={cn(
+                        'fixed z-[200] w-[min(220px,calc(100vw-1rem))] rounded-xl border border-zinc-200 bg-white/98 p-2 shadow-xl backdrop-blur-xl',
+                        'dark:border-zinc-600 dark:bg-zinc-900/98',
+                      )}
+                      onPointerDown={(e) => e.stopPropagation()}
+                    >
+                      <div className="grid grid-cols-4 gap-1">
+                        {REACTION_PICK_EMOJIS.map((emoji) => (
+                          <button
+                            key={emoji}
+                            type="button"
+                            disabled={isReacting}
+                            onClick={() => void handleReaction(emoji)}
+                            className={cn(
+                              'flex h-10 items-center justify-center rounded-lg text-xl transition-colors',
+                              'hover:bg-zinc-100 active:scale-95 dark:hover:bg-zinc-800',
+                              'disabled:cursor-not-allowed disabled:opacity-50',
+                            )}
+                            title={`React with ${emoji}`}
+                          >
+                            {emoji}
+                          </button>
+                        ))}
+                      </div>
+                    </div>,
+                    document.body,
+                  )
+                : null}
             </div>
-          )}
+          </div>
         </div>
       </div>
       {!isOwn && (

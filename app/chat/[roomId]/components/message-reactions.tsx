@@ -1,17 +1,9 @@
 'use client'
 
-import { useState, useEffect } from 'react'
-import { Button } from '@/components/ui/button'
+import { useState } from 'react'
 import { Smile } from 'lucide-react'
 import { fetchWithCSRF } from '@/lib/utils/fetch-with-csrf'
 import { safeLogger } from '@/lib/utils/logger'
-
-interface Reaction {
-  id: string
-  emoji: string
-  user_id: string
-  created_at: string
-}
 
 interface ReactionGroup {
   emoji: string
@@ -21,8 +13,9 @@ interface ReactionGroup {
 
 interface MessageReactionsProps {
   messageId: string
-  userId: string
   reactions: ReactionGroup[]
+  /** Other participants in the room (excl. self). `1` = 1:1 DM. */
+  otherMembersCount?: number
   onReactionChange?: () => void
 }
 
@@ -30,9 +23,9 @@ const COMMON_EMOJIS = ['👍', '❤️', '😂', '😮', '😢', '🙌', '🔥',
 
 export function MessageReactions({
   messageId,
-  userId,
   reactions,
-  onReactionChange
+  otherMembersCount = 1,
+  onReactionChange,
 }: MessageReactionsProps) {
   const [showPicker, setShowPicker] = useState(false)
   const [isToggling, setIsToggling] = useState<string | null>(null)
@@ -69,54 +62,84 @@ export function MessageReactions({
     }
   }
 
-  const hasUserReacted = (emoji: string) => {
-    const group = reactions.find(r => r.emoji === emoji)
-    return group ? group.userReactions.includes(userId) : false
+  const sortedReactions =
+    reactions.length > 0
+      ? [...reactions].sort((a, b) => b.count - a.count || a.emoji.localeCompare(b.emoji))
+      : []
+
+  const uniqueReactorIds = new Set<string>()
+  for (const r of reactions) {
+    for (const uid of r.userReactions) {
+      uniqueReactorIds.add(uid)
+    }
   }
+  const isOneToOneRoom = otherMembersCount <= 1
+  const showPerEmojiCounts = !isOneToOneRoom || uniqueReactorIds.size >= 2
+
+  const reactionAriaLabel =
+    sortedReactions.length === 0
+      ? ''
+      : showPerEmojiCounts
+        ? sortedReactions.map((g) => `${g.emoji} ${g.count}`).join(', ')
+        : sortedReactions.map((g) => g.emoji).join(' ')
 
   if (reactions.length === 0 && !showPicker) {
     return (
-      <div className="mt-1">
+      <div className="mt-px">
         <button
           onClick={() => setShowPicker(true)}
-          className="inline-flex items-center gap-1 px-2 py-1 rounded-full hover:bg-white/10 transition-colors text-xs text-white/60 hover:text-white"
+          className="inline-flex h-[18px] items-center gap-px rounded-full px-[3px] py-0 text-[11px] leading-none text-white/60 transition-colors hover:bg-white/10 hover:text-white"
           title="Add reaction"
         >
-          <Smile className="w-3 h-3" />
+          <Smile className="h-3 w-3 shrink-0" />
         </button>
       </div>
     )
   }
 
   return (
-    <div className="mt-1 flex items-center gap-1 flex-wrap">
-      {/* Existing Reactions */}
-      {reactions.map((group) => (
-        <button
-          key={group.emoji}
-          onClick={() => handleReactionToggle(group.emoji)}
-          disabled={isToggling === group.emoji}
-          className={`
-            inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs transition-all
-            ${hasUserReacted(group.emoji)
-              ? 'bg-white/20 text-white border border-white/30'
-              : 'bg-white/10 text-white/80 hover:bg-white/15 border border-white/20'
-            }
-            ${isToggling === group.emoji ? 'opacity-50 cursor-wait' : 'cursor-pointer hover:scale-105'}
-          `}
+    <div className="relative mt-px flex max-w-full flex-wrap items-center gap-1.5">
+      {sortedReactions.length > 0 ? (
+        <div
+          role="group"
+          aria-label={reactionAriaLabel}
+          className="inline-flex h-[25px] w-max max-w-full min-w-0 flex-nowrap items-center justify-center gap-px overflow-hidden rounded-full border border-white/25 bg-white/15 px-1 py-0 shadow-[0_1px_2px_rgba(0,0,0,0.2)]"
         >
-          <span>{group.emoji}</span>
-          <span className="text-[10px] font-medium">{group.count}</span>
-        </button>
-      ))}
+          {sortedReactions.map((group) => (
+            <button
+              key={group.emoji}
+              type="button"
+              onClick={() => void handleReactionToggle(group.emoji)}
+              disabled={isToggling !== null}
+              title={
+                showPerEmojiCounts ? `${group.emoji} · ${group.count}` : `${group.emoji}`
+              }
+              className={`
+                inline-flex h-full min-h-0 min-w-0 shrink-0 cursor-pointer items-center justify-center gap-0.5 rounded-none border-0 bg-transparent px-1.5
+                hover:bg-white/10 active:bg-white/15
+                ${isToggling ? 'cursor-wait opacity-50' : ''}
+              `}
+            >
+              <span className="inline-flex min-h-[1.125rem] min-w-[1.125rem] shrink-0 items-center justify-center text-[15px] leading-none">
+                {group.emoji}
+              </span>
+              {showPerEmojiCounts ? (
+                <span className="inline-flex min-w-[0.65rem] items-center justify-center text-[10px] font-medium tabular-nums leading-none text-white/55">
+                  {group.count}
+                </span>
+              ) : null}
+            </button>
+          ))}
+        </div>
+      ) : null}
 
-      {/* Add Reaction Button */}
       <button
+        type="button"
         onClick={() => setShowPicker(!showPicker)}
-        className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full hover:bg-white/10 transition-colors text-xs text-white/60 hover:text-white border border-transparent hover:border-white/20"
+        className="inline-flex h-[25px] items-center gap-px rounded-full border border-transparent px-1 py-0 text-[11px] leading-none text-white/60 transition-colors hover:border-white/20 hover:bg-white/10 hover:text-white"
         title="Add reaction"
       >
-        <Smile className="w-3 h-3" />
+        <Smile className="h-3 w-3 shrink-0" />
       </button>
 
       {/* Emoji Picker */}

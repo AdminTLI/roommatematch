@@ -379,6 +379,13 @@ export const RATE_LIMITS = {
     failClosed: true
   }, getSharedStore),
 
+  // Message emoji reactions (toggle via POST /api/chat/reactions)
+  reactions: new RateLimiter({
+    windowMs: 5 * 60 * 1000, // 5 minutes
+    maxRequests: 100,
+    failClosed: true
+  }, getSharedStore),
+
   // Reports (fail-closed to prevent abuse)
   reports: new RateLimiter({
     windowMs: 60 * 60 * 1000, // 1 hour

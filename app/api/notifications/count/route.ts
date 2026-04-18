@@ -15,6 +15,7 @@ const ALL_NOTIFICATION_TYPES: NotificationType[] = [
   'match_accepted',
   'match_confirmed',
   'chat_message',
+  'chat_message_reaction',
   'group_invitation',
   'profile_updated',
   'questionnaire_completed',
@@ -27,7 +28,7 @@ const ALL_NOTIFICATION_TYPES: NotificationType[] = [
 ]
 
 const MATCH_NOTIFICATION_TYPES: NotificationType[] = ['match_created', 'match_accepted', 'match_confirmed']
-const MESSAGE_NOTIFICATION_TYPES: NotificationType[] = ['chat_message']
+const MESSAGE_NOTIFICATION_TYPES: NotificationType[] = ['chat_message', 'chat_message_reaction']
 
 export async function GET(request: NextRequest) {
   try {

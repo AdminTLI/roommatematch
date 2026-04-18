@@ -133,7 +133,6 @@ export function ChatInterface({ roomId, user, onBack, onToggleRightPane, rightPa
   const [groupCompatibility, setGroupCompatibility] = useState<any>(null)
   const [showCompatibility, setShowCompatibility] = useState(false)
   const [showLeaveGroupDialog, setShowLeaveGroupDialog] = useState(false)
-  const [isLeavingGroup, setIsLeavingGroup] = useState(false)
   const [isLocked, setIsLocked] = useState(false)
   // Removed panel state - now handled by right pane in ChatThreeColumnLayout
   const [hasMatch, setHasMatch] = useState(false)
@@ -3157,8 +3156,12 @@ export function ChatInterface({ roomId, user, onBack, onToggleRightPane, rightPa
                                 <div className={`px-1 ${message.is_own ? 'flex justify-end' : ''}`}>
                                   <MessageReactions
                                     messageId={message.id}
-                                    userId={user.id}
                                     reactions={messageReactions.get(message.id) || []}
+                                    otherMembersCount={
+                                      isGroup
+                                        ? members.filter((m) => m.id !== user.id).length
+                                        : 1
+                                    }
                                     onReactionChange={() => {
                                       // Reload reactions for this message
                                       const loadReactions = async () => {
@@ -3498,35 +3501,12 @@ export function ChatInterface({ roomId, user, onBack, onToggleRightPane, rightPa
         feedbackType="left"
         isOpen={showLeaveGroupDialog}
         onClose={() => setShowLeaveGroupDialog(false)}
-        onSubmit={async () => {
-          setIsLeavingGroup(true)
-          try {
-            const response = await fetchWithCSRF('/api/chat/groups', {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({
-                chat_id: roomId,
-                feedback_type: 'left'
-              })
-            })
-
-            if (!response.ok) {
-              const error = await response.json()
-              throw new Error(error.error || 'Failed to leave group')
-            }
-
-            showSuccessToast('Left group', 'You have successfully left the group.')
-            if (onBack) {
-              onBack()
-            } else {
-              router.push('/chat')
-            }
-          } catch (error: any) {
-            console.error('Failed to leave group:', error)
-            showErrorToast('Failed to leave group', error.message || 'Please try again.')
-          } finally {
-            setIsLeavingGroup(false)
-            setShowLeaveGroupDialog(false)
+        onSuccess={() => {
+          showSuccessToast('Left group', 'You have successfully left the group.')
+          if (onBack) {
+            onBack()
+          } else {
+            router.push('/chat')
           }
         }}
       />

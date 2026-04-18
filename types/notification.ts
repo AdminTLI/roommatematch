@@ -16,7 +16,7 @@ export type NotificationFilterCategory = (typeof NOTIFICATION_FILTER_CATEGORIES)
 
 export const CATEGORY_TYPES: Record<NotificationFilterCategory, NotificationType[] | null> = {
   all: null,
-  messages: ['chat_message', 'group_invitation'],
+  messages: ['chat_message', 'chat_message_reaction', 'group_invitation'],
   matches: ['match_created', 'match_accepted', 'match_confirmed'],
   updates: [
     'profile_updated',

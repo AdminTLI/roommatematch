@@ -69,7 +69,8 @@ export async function GET(request: NextRequest) {
       const { data: members } = await supabase
         .from('chat_members')
         .select(`
-          user_id,
+          id,
+          invitation_id,
           status,
           profiles!chat_members_user_id_fkey (
             first_name,
@@ -84,12 +85,30 @@ export async function GET(request: NextRequest) {
         .eq('chat_id', chatId)
         .neq('user_id', user.id)
 
+      const invitationStatusById = new Map<string, string>()
+      const invitationIds = (members || [])
+        .map((m: { invitation_id?: string | null }) => m.invitation_id)
+        .filter((id): id is string => Boolean(id))
+      if (invitationIds.length > 0) {
+        const adminInv = await createAdminClient()
+        const { data: invRows } = await adminInv
+          .from('group_invitations')
+          .select('id, status')
+          .in('id', invitationIds)
+        invRows?.forEach((row: { id: string; status: string }) => {
+          invitationStatusById.set(row.id, row.status)
+        })
+      }
+
       const viewerUserType = await getUserType(user.id)
       const otherMembers = members?.map((m: any) => {
         const sameCohort = viewerUserType != null && m.profiles?.user_type === viewerUserType
         return {
-          user_id: m.user_id,
-          status: m.status,
+          chat_member_id: m.id as string,
+          membership_status: m.status as string,
+          group_invitation_status: m.invitation_id
+            ? invitationStatusById.get(m.invitation_id as string) || null
+            : null,
           name: sameCohort
             ? [m.profiles?.first_name, m.profiles?.last_name].filter(Boolean).join(' ') || 'User'
             : 'User',

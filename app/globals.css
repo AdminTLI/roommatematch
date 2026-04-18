@@ -287,13 +287,29 @@
     -webkit-tap-highlight-color: rgba(122, 59, 182, 0.1);
   }
 
-  /* Focus ring styles - adapts to dark mode */
-  *:focus-visible {
+  /*
+   * Focus ring for interactive controls. Omit input/textarea/select so text fields
+   * use component styles (or browser default) — the purple double ring on every
+   * :focus-visible was especially noisy in chat composers.
+   */
+  *:focus-visible:not(input):not(textarea):not(select) {
     outline: none;
     box-shadow: 0 0 0 2px #7a3bb6, 0 0 0 4px rgba(122, 59, 182, 0.2);
   }
 
-  .dark *:focus-visible {
+  .dark *:focus-visible:not(input):not(textarea):not(select) {
+    box-shadow: 0 0 0 2px #9d5dd1, 0 0 0 4px rgba(157, 93, 209, 0.3);
+  }
+
+  /* Native toggles are still `input` but should keep a clear keyboard focus ring */
+  input[type='checkbox']:focus-visible,
+  input[type='radio']:focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 2px #7a3bb6, 0 0 0 4px rgba(122, 59, 182, 0.2);
+  }
+
+  .dark input[type='checkbox']:focus-visible,
+  .dark input[type='radio']:focus-visible {
     box-shadow: 0 0 0 2px #9d5dd1, 0 0 0 4px rgba(157, 93, 209, 0.3);
   }
 }

@@ -88,13 +88,14 @@ export async function POST(request: NextRequest) {
     }
 
     // Keep notification center in sync with chat reads:
-    // when this chat is opened, mark unread chat-message notifications
+    // when this chat is opened, mark unread message and reaction notifications
     // for this chat as read for the current user.
+    const nowIso = new Date().toISOString()
     const { error: notificationsError } = await supabase
       .from('notifications')
-      .update({ is_read: true, updated_at: new Date().toISOString() })
+      .update({ is_read: true, updated_at: nowIso })
       .eq('user_id', user.id)
-      .eq('type', 'chat_message')
+      .in('type', ['chat_message', 'chat_message_reaction'])
       .eq('metadata->chat_id', chat_id)
       .eq('is_read', false)
 

@@ -87,6 +87,10 @@ interface MessengerConversationProps {
   partnerAvatar?: string
   /** Mobile: hide composer when profile/compatibility sheet is open */
   hideComposer?: boolean
+  /** When set, scroll this message into view after messages load */
+  highlightMessageId?: string | null
+  /** Called after highlight ring is cleared (e.g. strip `messageId` from URL) */
+  onHighlightConsumed?: () => void
 }
 
 export function MessengerConversation({
@@ -97,6 +101,8 @@ export function MessengerConversation({
   partnerName = 'User',
   partnerAvatar,
   hideComposer = false,
+  highlightMessageId = null,
+  onHighlightConsumed,
 }: MessengerConversationProps) {
   const supabase = createClient()
   const router = useRouter()
@@ -182,6 +188,52 @@ export function MessengerConversation({
   }, [partnerUserId, blockWindows])
 
   const visibleMessages = messages.filter((message) => !isMessageHiddenByBlockWindow(message))
+
+  const highlightAppliedRef = useRef<string | null>(null)
+
+  useEffect(() => {
+    if (!highlightMessageId) {
+      highlightAppliedRef.current = null
+    }
+  }, [highlightMessageId])
+
+  useEffect(() => {
+    highlightAppliedRef.current = null
+  }, [chatId])
+
+  useEffect(() => {
+    if (!highlightMessageId || isLoading) return
+    if (!visibleMessages.some((m) => m.id === highlightMessageId)) return
+    if (highlightAppliedRef.current === highlightMessageId) return
+    highlightAppliedRef.current = highlightMessageId
+
+    const raf = requestAnimationFrame(() => {
+      const el = document.getElementById(highlightMessageId)
+      if (!el) return
+      el.scrollIntoView({ behavior: 'smooth', block: 'center' })
+      el.classList.add(
+        'ring-2',
+        'ring-purple-500',
+        'ring-offset-2',
+        'rounded-2xl',
+        'transition-shadow',
+        'dark:ring-offset-gray-950',
+      )
+      window.setTimeout(() => {
+        el.classList.remove(
+          'ring-2',
+          'ring-purple-500',
+          'ring-offset-2',
+          'rounded-2xl',
+          'transition-shadow',
+          'dark:ring-offset-gray-950',
+        )
+        onHighlightConsumed?.()
+      }, 2200)
+    })
+
+    return () => cancelAnimationFrame(raf)
+  }, [highlightMessageId, isLoading, visibleMessages, onHighlightConsumed])
 
   // Auto-scroll to bottom (prevents page scroll)
   const scrollToBottom = useCallback((force = false) => {
@@ -1501,7 +1553,7 @@ export function MessengerConversation({
               </div>
             )}
             {visibleMessages.map((message, index) => (
-              <div key={message.id}>
+              <div key={message.id} id={message.id} className="scroll-mt-28">
                 {shouldShowDateSeparator(index, visibleMessages) && (
                   <div className="flex justify-center my-6">
                     <div className="bg-gray-100 dark:bg-gray-800 px-4 py-2 rounded-full">

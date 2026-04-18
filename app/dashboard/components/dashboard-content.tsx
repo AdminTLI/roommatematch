@@ -1409,6 +1409,7 @@ export function DashboardContent({ hasCompletedQuestionnaire = false, hasPartial
       case 'match_confirmed':
         return <Heart className="w-4 h-4" />
       case 'chat_message':
+      case 'chat_message_reaction':
         return <MessageCircle className="w-4 h-4" />
       case 'profile_updated':
       case 'questionnaire_completed':
@@ -1427,6 +1428,7 @@ export function DashboardContent({ hasCompletedQuestionnaire = false, hasPartial
       case 'match_confirmed':
         return 'bg-semantic-success/20 text-semantic-success'
       case 'chat_message':
+      case 'chat_message_reaction':
         return 'bg-semantic-accent-soft text-semantic-accent'
       case 'profile_updated':
       case 'questionnaire_completed':
@@ -1452,8 +1454,10 @@ export function DashboardContent({ hasCompletedQuestionnaire = false, hasPartial
         }
         break
       case 'chat_message':
+      case 'chat_message_reaction':
         if (metadata.chat_id) {
-          router.push(`/chat/${metadata.chat_id}`)
+          const mid = typeof metadata.message_id === 'string' ? metadata.message_id : ''
+          router.push(mid ? `/chat?chatId=${metadata.chat_id}&messageId=${encodeURIComponent(mid)}` : `/chat?chatId=${metadata.chat_id}`)
         }
         break
       case 'profile_updated':

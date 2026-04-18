@@ -24,13 +24,13 @@ export async function GET(request: NextRequest) {
       )
     }
 
-    // Verify user is a member of the chat
+    // Verify user is a member (active participant or pending invitee — both may preview)
     const { data: membership } = await supabase
       .from('chat_members')
       .select('user_id')
       .eq('chat_id', chatId)
       .eq('user_id', user.id)
-      .eq('status', 'active')
+      .in('status', ['active', 'invited'])
       .maybeSingle()
 
     if (!membership) {
@@ -72,8 +72,10 @@ export async function GET(request: NextRequest) {
       const { data: members, error } = await supabase
         .from('chat_members')
         .select(`
+          id,
           user_id,
           status,
+          invitation_id,
           profiles!chat_members_user_id_fkey (
             first_name,
             last_name,
@@ -93,10 +95,11 @@ export async function GET(request: NextRequest) {
         )
       }
 
-      // Get pairwise compatibility scores
+      // Get pairwise compatibility scores (server-side only; never expose peer user_id)
       const admin = await createAdminClient()
-      const memberIds = members?.map(m => m.user_id) || []
-      const pairwiseScores: Record<string, any> = {}
+      const membersOthers = (members || []).filter((m: { user_id: string }) => m.user_id !== user.id)
+      const memberIds = membersOthers.map((m: { user_id: string }) => m.user_id)
+      const pairwiseScoresByUserId: Record<string, any> = {}
 
       for (const memberId of memberIds) {
         try {
@@ -105,22 +108,37 @@ export async function GET(request: NextRequest) {
             user_b_id: memberId
           })
           if (score && score.length > 0) {
-            pairwiseScores[memberId] = score[0]
+            pairwiseScoresByUserId[memberId] = score[0]
           }
         } catch (err) {
           safeLogger.warn('Failed to compute pairwise score', { userId: memberId, error: err })
         }
       }
 
+      const invitationStatusById = new Map<string, string>()
+      const invitationIds = membersOthers
+        .map((m: { invitation_id?: string | null }) => m.invitation_id)
+        .filter((id): id is string => Boolean(id))
+      if (invitationIds.length > 0) {
+        const { data: invRows } = await admin
+          .from('group_invitations')
+          .select('id, status')
+          .in('id', invitationIds)
+        invRows?.forEach((row: { id: string; status: string }) => {
+          invitationStatusById.set(row.id, row.status)
+        })
+      }
+
       return NextResponse.json({
-        members: members?.map(m => ({
-          user_id: m.user_id,
-          status: m.status,
+        members: membersOthers.map((m: { id: string; user_id: string; status: string; invitation_id?: string | null; profiles?: any }) => ({
+          chat_member_id: m.id,
+          membership_status: m.status,
+          group_invitation_status: m.invitation_id ? invitationStatusById.get(m.invitation_id) || null : null,
           name: [m.profiles?.first_name, m.profiles?.last_name].filter(Boolean).join(' ') || 'User',
           program: m.profiles?.program || 'Program',
           university: m.profiles?.universities?.name || 'University',
-          compatibility: pairwiseScores[m.user_id] || null
-        })) || []
+          compatibility: pairwiseScoresByUserId[m.user_id] || null
+        }))
       })
     }
 
