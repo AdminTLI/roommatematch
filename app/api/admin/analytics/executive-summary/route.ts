@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createAdminClient } from '@/lib/supabase/server'
-import { requireAdmin } from '@/lib/auth/admin'
 import { safeLogger } from '@/lib/utils/logger'
+import { resolveAdminAnalyticsScope, resolveScopedMetricsUserIds } from '@/lib/admin/analytics-scope'
 
 type LiquidityUniversity = {
   university_id: string | null
@@ -34,39 +34,16 @@ const ACTIVE_HOUSING_STATUSES = ['seeking_room', 'offering_room', 'team_up'] as 
 
 export async function GET(request: NextRequest) {
   try {
-    const adminCheck = await requireAdmin(request, false)
-
-    if (!adminCheck.ok) {
-      return NextResponse.json(
-        { error: adminCheck.error || 'Admin access required' },
-        { status: adminCheck.status }
-      )
+    const scope = await resolveAdminAnalyticsScope(request)
+    if (!scope.ok) {
+      return NextResponse.json({ error: scope.error }, { status: scope.status })
     }
 
-    const { adminRecord } = adminCheck
+    const { universityId, filters } = scope
     const admin = createAdminClient()
+    const universityUserIds = await resolveScopedMetricsUserIds(admin, universityId, filters)
 
-    if (!adminRecord) {
-      return NextResponse.json(
-        { error: 'Admin record not found' },
-        { status: 500 }
-      )
-    }
-
-    const isSuperAdmin = adminRecord.role === 'super_admin'
-    const universityId = isSuperAdmin ? null : adminRecord.university_id
-
-    // Resolve scoped user IDs for university-scoped admins
-    let universityUserIds: Set<string> | null = null
-    if (universityId) {
-      const { data: academic } = await admin
-        .from('user_academic')
-        .select('user_id')
-        .eq('university_id', universityId)
-
-      universityUserIds = new Set(academic?.map((a: { user_id: string }) => a.user_id) || [])
-
-      if (universityUserIds.size === 0) {
+    if (universityUserIds.size === 0) {
         const empty: ExecutiveSummaryResponse = {
           liquidity: {
             topUniversities: [],
@@ -88,7 +65,6 @@ export async function GET(request: NextRequest) {
           },
         }
         return NextResponse.json(empty)
-      }
     }
 
     // Run the four metric groups in parallel where possible
@@ -123,8 +99,8 @@ export async function GET(request: NextRequest) {
 
 async function computeLiquidity(
   admin: ReturnType<typeof createAdminClient>,
-  universityId: string | null,
-  universityUserIds: Set<string> | null
+  universityId: string,
+  universityUserIds: Set<string>
 ): Promise<ExecutiveSummaryResponse['liquidity']> {
   // Fetch profiles with housing_status set
   const { data: profiles, error: profilesError } = await admin
@@ -144,9 +120,7 @@ async function computeLiquidity(
   const filteredProfiles = (profiles || []).filter((profile: any) => {
     if (!profile.user_id) return false
 
-    if (universityId && universityUserIds) {
-      if (!universityUserIds.has(profile.user_id)) return false
-    }
+    if (!universityUserIds.has(profile.user_id)) return false
 
     const statuses = Array.isArray(profile.housing_status)
       ? profile.housing_status as string[]
@@ -259,8 +233,8 @@ async function computeLiquidity(
 
 async function computeVelocity(
   admin: ReturnType<typeof createAdminClient>,
-  universityId: string | null,
-  universityUserIds: Set<string> | null
+  universityId: string,
+  universityUserIds: Set<string>
 ): Promise<ExecutiveSummaryResponse['velocity']> {
   // Get scoped active users with their creation timestamps
   let usersQuery = admin
@@ -268,7 +242,7 @@ async function computeVelocity(
     .select('id, created_at')
     .eq('is_active', true)
 
-  if (universityId && universityUserIds) {
+  if (universityUserIds.size > 0) {
     usersQuery = usersQuery.in('id', Array.from(universityUserIds))
   }
 
@@ -296,31 +270,24 @@ async function computeVelocity(
     }
   }
 
-  // Fetch matches involving these users
-  const scopedUserIds = Array.from(userCreatedAt.keys())
-
-  let matchesQuery = admin
-    .from('matches')
-    .select('a_user, b_user, created_at')
-
-  // Scope matches by university if needed
-  if (universityId && universityUserIds) {
-    matchesQuery = matchesQuery.or(
-      `a_user.in.(${Array.from(universityUserIds).join(',')}),b_user.in.(${Array.from(
-        universityUserIds
-      ).join(',')})`
-    )
+  const matchRows: { a_user: string; b_user: string; created_at: string }[] = []
+  const ids = Array.from(universityUserIds)
+  for (let i = 0; i < ids.length; i += 120) {
+    const part = ids.slice(i, i + 120)
+    const { data: ma } = await admin
+      .from('matches')
+      .select('a_user, b_user, created_at')
+      .eq('status', 'confirmed')
+      .in('a_user', part)
+    const { data: mb } = await admin
+      .from('matches')
+      .select('a_user, b_user, created_at')
+      .eq('status', 'confirmed')
+      .in('b_user', part)
+    matchRows.push(...((ma || []) as typeof matchRows), ...((mb || []) as typeof matchRows))
   }
 
-  const { data: matches, error: matchesError } = await matchesQuery
-
-  if (matchesError) {
-    safeLogger.error('[Admin Executive Summary] Velocity matches error', matchesError)
-    return {
-      averageTimeToFirstMatchDays: 0,
-      sampleSize: 0,
-    }
-  }
+  const matches = matchRows
 
   // Map from user_id -> earliest match created_at
   const firstMatchAt = new Map<string, Date>()
@@ -378,8 +345,8 @@ async function computeVelocity(
 
 async function computeMatchQuality(
   admin: ReturnType<typeof createAdminClient>,
-  universityId: string | null,
-  universityUserIds: Set<string> | null
+  universityId: string,
+  universityUserIds: Set<string>
 ): Promise<ExecutiveSummaryResponse['matchQuality']> {
   const nowIso = new Date().toISOString()
 
@@ -404,11 +371,8 @@ async function computeMatchQuality(
   ;(suggestions || []).forEach((s: any) => {
     if (!Array.isArray(s.member_ids) || s.member_ids.length !== 2) return
 
-    // Scope by university: only include matches where all members are in the scoped university
-    if (universityId && universityUserIds) {
-      const allInScope = s.member_ids.every((id: string) => universityUserIds!.has(id))
-      if (!allInScope) return
-    }
+    const allInScope = s.member_ids.every((id: string) => universityUserIds.has(id))
+    if (!allInScope) return
 
     // Filter out expired suggestions if expires_at is present
     if (s.expires_at && typeof s.expires_at === 'string') {
@@ -562,8 +526,8 @@ async function computeMatchQuality(
 
 async function computeOnboardingRate(
   admin: ReturnType<typeof createAdminClient>,
-  universityId: string | null,
-  universityUserIds: Set<string> | null
+  universityId: string,
+  universityUserIds: Set<string>
 ): Promise<ExecutiveSummaryResponse['onboarding']> {
   // Base population: active users in scope
   let usersQuery = admin
@@ -571,7 +535,7 @@ async function computeOnboardingRate(
     .select('id')
     .eq('is_active', true)
 
-  if (universityId && universityUserIds) {
+  if (universityUserIds.size > 0) {
     usersQuery = usersQuery.in('id', Array.from(universityUserIds))
   }
 

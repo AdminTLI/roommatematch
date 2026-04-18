@@ -44,6 +44,9 @@ import { MessengerTypingBar } from './messenger-typing-bar'
 import { ReportUserDialog } from './report-user-dialog'
 import { cn } from '@/lib/utils'
 import { queryClient, queryKeys } from '@/app/providers'
+import type { ChatPrivacySnapshot } from '@/lib/privacy/profile-access-types'
+import { Checkbox } from '@/components/ui/checkbox'
+import { Label } from '@/components/ui/label'
 import { fetchChatCompatibility } from '@/lib/chat/fetch-chat-compatibility'
 
 interface Message {
@@ -133,6 +136,24 @@ export function MessengerConversation({
   const [isMarkingUnread, setIsMarkingUnread] = useState(false)
   const [otherMembersCount, setOtherMembersCount] = useState(1)
   const [replyDraft, setReplyDraft] = useState<MessageReplyRef | null>(null)
+  const [revealDialogOpen, setRevealDialogOpen] = useState(false)
+  const [revealDetailsChoice, setRevealDetailsChoice] = useState(true)
+  const [revealPictureChoice, setRevealPictureChoice] = useState(false)
+  const [revealSubmitting, setRevealSubmitting] = useState(false)
+
+  const { data: privacySnap } = useQuery<ChatPrivacySnapshot | null>({
+    queryKey: queryKeys.chatPrivacy(chatId, user.id),
+    queryFn: async () => {
+      const r = await fetch(`/api/chat/privacy-state?chatId=${encodeURIComponent(chatId)}`, {
+        credentials: 'include',
+        cache: 'no-store',
+      })
+      if (!r.ok) return null
+      return (await r.json()) as ChatPrivacySnapshot
+    },
+    enabled: Boolean(chatId && partnerUserId && !isGroupChat),
+    staleTime: 15_000,
+  })
 
   const { data: compatData, isLoading: compatLoading } = useQuery({
     queryKey: queryKeys.chatCompatibility(chatId),
@@ -439,12 +460,13 @@ export function MessengerConversation({
           }
         }
 
+        const senderProf = newProfilesMap.get(msg.user_id)
         return {
           id: msg.id,
           content: msg.content,
           sender_id: msg.user_id,
           sender_name: senderName,
-          sender_avatar: undefined,
+          sender_avatar: senderProf?.avatar_url || undefined,
           created_at: msg.created_at,
           read_by: readBy,
           is_own: msg.user_id === user.id,
@@ -581,7 +603,7 @@ export function MessengerConversation({
             content: newMsg.content,
             sender_id: newMsg.user_id,
             sender_name: senderName,
-            sender_avatar: undefined,
+            sender_avatar: profile?.avatar_url || undefined,
             created_at: newMsg.created_at,
             read_by: readBy,
             is_own: isOwnMessage,
@@ -624,6 +646,8 @@ export function MessengerConversation({
           return next
         })
 
+        void queryClient.invalidateQueries({ queryKey: queryKeys.chatPrivacy(chatId, user.id) })
+
         if (!userScrolledUpRef.current && scrollToBottomRef.current) {
           scrollToBottomRef.current(true)
         }
@@ -637,9 +661,32 @@ export function MessengerConversation({
     }
   }, [chatId, user.id, supabase, loadMessages])
 
-  // Update partner name and avatar when partnerUserId or profiles change
+  // Update partner name and avatar: progressive disclosure snapshot for 1:1, else profile/props.
   useEffect(() => {
-    if (partnerUserId && profilesMapRef.current) {
+    if (!partnerUserId) {
+      setDisplayPartnerName(partnerName)
+      setDisplayPartnerAvatar(partnerAvatar)
+      return
+    }
+    if (isGroupChat) {
+      if (profilesMapRef.current) {
+        const partnerProfile = profilesMapRef.current.get(partnerUserId)
+        if (partnerProfile) {
+          const partnerFullName = [partnerProfile.first_name?.trim(), partnerProfile.last_name?.trim()]
+            .filter(Boolean)
+            .join(' ') || 'User'
+          setDisplayPartnerName(partnerFullName)
+          setDisplayPartnerAvatar(partnerProfile.avatar_url || undefined)
+        }
+      }
+      return
+    }
+    if (privacySnap) {
+      setDisplayPartnerName(privacySnap.partner_display_name)
+      setDisplayPartnerAvatar(privacySnap.partner_avatar_url || undefined)
+      return
+    }
+    if (profilesMapRef.current) {
       const partnerProfile = profilesMapRef.current.get(partnerUserId)
       if (partnerProfile) {
         const partnerFullName = [partnerProfile.first_name?.trim(), partnerProfile.last_name?.trim()]
@@ -648,12 +695,8 @@ export function MessengerConversation({
         setDisplayPartnerName(partnerFullName)
         setDisplayPartnerAvatar(partnerProfile.avatar_url || undefined)
       }
-    } else if (!partnerUserId) {
-      // Reset to prop values if no partner
-      setDisplayPartnerName(partnerName)
-      setDisplayPartnerAvatar(partnerAvatar)
     }
-  }, [partnerUserId, partnerName, partnerAvatar])
+  }, [partnerUserId, partnerName, partnerAvatar, isGroupChat, privacySnap])
 
   // Auto-scroll on initial load only
   useLayoutEffect(() => {
@@ -760,10 +803,53 @@ export function MessengerConversation({
       }
 
       scrollToBottom(true)
+      void queryClient.invalidateQueries({ queryKey: queryKeys.chatPrivacy(chatId, user.id) })
+      void queryClient.invalidateQueries({ queryKey: queryKeys.chats(user.id) })
     } catch (error) {
       console.error('Failed to send message:', error)
     }
   }
+
+  const handleConfirmReveal = async () => {
+    if (!revealDetailsChoice && revealPictureChoice) {
+      showErrorToast('Choose details first', 'Profile picture can only be shared together with profile details.')
+      return
+    }
+    setRevealSubmitting(true)
+    try {
+      const res = await fetchWithCSRF('/api/chat/reveal-profile', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          chat_id: chatId,
+          reveal_details: revealDetailsChoice,
+          reveal_picture: revealDetailsChoice && revealPictureChoice,
+        }),
+      })
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}))
+        throw new Error(err.error || 'Failed to save')
+      }
+      setRevealDialogOpen(false)
+      void queryClient.invalidateQueries({ queryKey: queryKeys.chatPrivacy(chatId, user.id) })
+      void queryClient.invalidateQueries({ queryKey: queryKeys.chats(user.id) })
+      showSuccessToast('Preferences saved', 'Your sharing choices are updated for this chat.')
+    } catch (e) {
+      showErrorToast('Could not save', e instanceof Error ? e.message : 'Something went wrong')
+    } finally {
+      setRevealSubmitting(false)
+    }
+  }
+
+  const avatarForDisplayedMessage = useCallback(
+    (message: Message) => {
+      if (isGroupChat || !privacySnap) return message.sender_avatar
+      if (message.is_own) return privacySnap.viewer_avatar_url
+      if (partnerUserId && message.sender_id === partnerUserId) return privacySnap.partner_avatar_url ?? undefined
+      return message.sender_avatar
+    },
+    [isGroupChat, privacySnap, partnerUserId],
+  )
 
   // Handle reaction change
   const handleReactionChange = async (messageId: string) => {
@@ -1325,6 +1411,56 @@ export function MessengerConversation({
         </DialogContent>
       </Dialog>
 
+      <Dialog open={revealDialogOpen} onOpenChange={setRevealDialogOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Reveal profile</DialogTitle>
+            <DialogDescription>
+              Choose what you are comfortable sharing with this match. You can share details without sharing your profile picture.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 py-2">
+            <div className="flex items-start gap-3">
+              <Checkbox
+                id="reveal-details"
+                checked={revealDetailsChoice}
+                onCheckedChange={(v) => setRevealDetailsChoice(v === true)}
+              />
+              <div className="grid gap-1.5 leading-none">
+                <Label htmlFor="reveal-details" className="text-sm font-medium">
+                  Reveal my profile details
+                </Label>
+                <p className="text-xs text-muted-foreground">
+                  Includes richer profile context shown in match insights (for example age and programme where available).
+                </p>
+              </div>
+            </div>
+            <div className="flex items-start gap-3">
+              <Checkbox
+                id="reveal-picture"
+                checked={revealPictureChoice}
+                disabled={!revealDetailsChoice}
+                onCheckedChange={(v) => setRevealPictureChoice(v === true)}
+              />
+              <div className="grid gap-1.5 leading-none">
+                <Label htmlFor="reveal-picture" className="text-sm font-medium">
+                  Also reveal my profile picture
+                </Label>
+                <p className="text-xs text-muted-foreground">Only applies if you have uploaded a photo in Settings.</p>
+              </div>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" type="button" onClick={() => setRevealDialogOpen(false)} disabled={revealSubmitting}>
+              Cancel
+            </Button>
+            <Button type="button" onClick={() => void handleConfirmReveal()} disabled={revealSubmitting}>
+              {revealSubmitting ? 'Saving…' : 'Confirm'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
       {/* Message Feed - Scrollable */}
       <div
         ref={messagesContainerRef}
@@ -1345,6 +1481,25 @@ export function MessengerConversation({
           </div>
         ) : (
           <div className="space-y-4">
+            {privacySnap?.show_reveal_prompt && !isGroupChat && (
+              <div
+                role="status"
+                className="rounded-xl border border-violet-200 bg-violet-50/90 px-4 py-3 text-sm text-violet-950 shadow-sm dark:border-violet-800 dark:bg-violet-950/40 dark:text-violet-100"
+              >
+                <p className="font-medium">You have built enough back-and-forth to share more safely.</p>
+                <p className="mt-1 text-xs opacity-90">
+                  When you are ready, choose whether to reveal profile details and/or your profile picture. Both people choose independently; details unlock when you have both agreed to share details.
+                </p>
+                <Button
+                  type="button"
+                  size="sm"
+                  className="mt-3 bg-violet-600 text-white hover:bg-violet-700"
+                  onClick={() => setRevealDialogOpen(true)}
+                >
+                  Reveal profile details
+                </Button>
+              </div>
+            )}
             {visibleMessages.map((message, index) => (
               <div key={message.id}>
                 {shouldShowDateSeparator(index, visibleMessages) && (
@@ -1361,7 +1516,7 @@ export function MessengerConversation({
                   content={message.content}
                   senderId={message.sender_id}
                   senderName={message.sender_name}
-                  senderAvatar={message.sender_avatar}
+                  senderAvatar={avatarForDisplayedMessage(message)}
                   createdAt={message.created_at}
                   isOwn={message.is_own}
                   isSystem={message.is_system_message}

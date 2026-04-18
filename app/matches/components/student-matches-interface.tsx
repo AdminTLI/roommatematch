@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useCallback, useRef, useMemo } from 'react'
+import { useState, useEffect, useLayoutEffect, useCallback, useRef, useMemo } from 'react'
 import { useRouter } from 'next/navigation'
 import { useMutation, useQuery } from '@tanstack/react-query'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
@@ -176,28 +176,28 @@ export function StudentMatchesInterface({ user }: StudentMatchesInterfaceProps) 
   // Use localStorage to persist across page navigations
   const STORAGE_KEY = `processed_suggestions_${user.id}`
 
-  // Load processed suggestions from localStorage on mount
-  const [processedSuggestions, setProcessedSuggestions] = useState<Map<string, 'declined' | 'accepted' | 'confirmed'>>(() => {
-    if (typeof window === 'undefined') return new Map()
+  // Must match SSR on first paint; read localStorage after commit (useLayoutEffect) to avoid hydration drift.
+  const [processedSuggestions, setProcessedSuggestions] = useState<
+    Map<string, 'declined' | 'accepted' | 'confirmed'>
+  >(() => new Map())
+
+  useLayoutEffect(() => {
     try {
       const stored = localStorage.getItem(STORAGE_KEY)
-      if (stored) {
-        const data = JSON.parse(stored) as Record<string, { status: string; timestamp: number }>
-        // Only keep entries from last 24 hours to prevent localStorage bloat
-        const oneDayAgo = Date.now() - 24 * 60 * 60 * 1000
-        const filtered = new Map<string, 'declined' | 'accepted' | 'confirmed'>()
-        for (const [id, { status, timestamp }] of Object.entries(data)) {
-          if (timestamp > oneDayAgo) {
-            filtered.set(id, status as 'declined' | 'accepted' | 'confirmed')
-          }
+      if (!stored) return
+      const data = JSON.parse(stored) as Record<string, { status: string; timestamp: number }>
+      const oneDayAgo = Date.now() - 24 * 60 * 60 * 1000
+      const filtered = new Map<string, 'declined' | 'accepted' | 'confirmed'>()
+      for (const [id, { status, timestamp }] of Object.entries(data)) {
+        if (timestamp > oneDayAgo) {
+          filtered.set(id, status as 'declined' | 'accepted' | 'confirmed')
         }
-        return filtered
       }
+      setProcessedSuggestions(filtered)
     } catch (error) {
       console.error('[Matches] Failed to load processed suggestions from localStorage:', error)
     }
-    return new Map()
-  })
+  }, [STORAGE_KEY])
 
   // Persist processed suggestions to localStorage whenever it changes
   // Use a ref to track previous state and only update when there's an actual change
@@ -1053,8 +1053,8 @@ export function StudentMatchesInterface({ user }: StudentMatchesInterfaceProps) 
         )
       ) : (
         <>
-          {/* Desktop / tablet: max 12 per page, 3 columns (md) / 4 columns (xl) */}
-          <div className="hidden md:grid md:grid-cols-3 xl:grid-cols-4 gap-6 mb-4">
+          {/* Desktop / tablet: max 12 per page, 3 columns */}
+          <div className="hidden md:grid md:grid-cols-3 gap-7 lg:gap-8 mb-4">
             {pageSlice.map((suggestion) => (
               <div key={suggestion.id} className="min-w-0">
                 {renderMatchCard(suggestion)}

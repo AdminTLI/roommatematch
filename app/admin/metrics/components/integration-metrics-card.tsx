@@ -13,7 +13,9 @@ interface IntegrationMetrics {
 
 const CHART_COLORS = ['#0EA5E9', '#6366F1']
 
-export function IntegrationMetricsCard() {
+type Props = { analyticsQuery?: string }
+
+export function IntegrationMetricsCard({ analyticsQuery = '' }: Props) {
   const [data, setData] = useState<IntegrationMetrics | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -23,7 +25,7 @@ export function IntegrationMetricsCard() {
 
     async function load() {
       try {
-        const res = await fetch('/api/admin/analytics/integration')
+        const res = await fetch(`/api/admin/analytics/integration${analyticsQuery}`)
 
         if (!res.ok) {
           const body = await res.json().catch(() => ({}))
@@ -51,7 +53,7 @@ export function IntegrationMetricsCard() {
     return () => {
       isMounted = false
     }
-  }, [])
+  }, [analyticsQuery])
 
   if (isLoading) {
     return (

@@ -18,6 +18,8 @@ interface NotificationBellProps {
 
 export function NotificationBell({ userId }: NotificationBellProps) {
   const [isOpen, setIsOpen] = useState(false)
+  /** Avoid SSR/client tree differences from React Query resolving before hydration completes. */
+  const [hasMounted, setHasMounted] = useState(false)
   const dropdownRef = useRef<HTMLDivElement>(null)
   const supabase = createClient()
 
@@ -46,6 +48,10 @@ export function NotificationBell({ userId }: NotificationBellProps) {
     queryKeys: ['notifications', 'count', userId],
     enabled: !!userId,
   })
+
+  useEffect(() => {
+    setHasMounted(true)
+  }, [])
 
   // Close dropdown when clicking outside
   useEffect(() => {
@@ -76,7 +82,8 @@ export function NotificationBell({ userId }: NotificationBellProps) {
     }
   }, [isOpen])
 
-  const handleMarkAsRead = async (notificationId: string) => {
+  const handleMarkAsRead = async (notificationIds: string[]) => {
+    if (notificationIds.length === 0) return
     try {
       const { fetchWithCSRF } = await import('@/lib/utils/fetch-with-csrf')
       const response = await fetchWithCSRF('/api/notifications/mark-read', {
@@ -84,13 +91,10 @@ export function NotificationBell({ userId }: NotificationBellProps) {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({
-          notificationIds: [notificationId]
-        })
+        body: JSON.stringify({ notificationIds }),
       })
 
       if (response.ok) {
-        // Invalidate query to refetch
         refetchCounts()
       }
     } catch (error) {
@@ -146,7 +150,7 @@ export function NotificationBell({ userId }: NotificationBellProps) {
         aria-label="Notifications"
       >
         <Bell className="h-5 w-5 text-text-primary" />
-        {unreadCount > 0 && (
+        {hasMounted && unreadCount > 0 && (
           <Badge 
             variant="destructive" 
             className="absolute -top-1 -right-1 h-5 w-5 flex items-center justify-center p-0 text-xs"
@@ -161,9 +165,11 @@ export function NotificationBell({ userId }: NotificationBellProps) {
         onClose={() => setIsOpen(false)}
         onMarkAsRead={handleMarkAsRead}
         onMarkAllAsRead={handleMarkAllAsRead}
-        counts={counts}
+        counts={counts ?? null}
         userId={userId}
-        refreshCounts={refetchCounts}
+        refreshCounts={async () => {
+          await refetchCounts()
+        }}
       />
     </div>
   )

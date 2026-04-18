@@ -37,10 +37,18 @@ import {
   discoveryScoreBarClass,
   discoveryScoreTextClass,
 } from '@/lib/compatibility/discovery-score-visuals'
+import { MatchInsightMarkdown } from '@/components/compatibility/match-insight-markdown'
+import { ProgressiveProfileLockHint } from './progressive-profile-lock-hint'
 
 interface UserInfoData {
   first_name: string | null
   last_name: string | null
+  progressive_disclosure?: {
+    mutual_details: boolean
+    mutual_picture: boolean
+    messages_exchanged_count: number
+    show_reveal_prompt: boolean
+  }
   bio: string | null
   interests: string[]
   housing_status?: HousingStatusKey[]
@@ -144,68 +152,116 @@ const DIMENSION_ORDER = [
   'home_vibe',
 ] as const
 
-/** When AI text is unavailable, still ground copy in every score we have. */
+function toUnitInterval(f: number | null | undefined): number | null {
+  if (f == null || Number.isNaN(f)) return null
+  return f > 1 ? Math.min(1, f / 100) : Math.min(1, Math.max(0, f))
+}
+
+function qualitativeOverall(f: number | null | undefined): string {
+  const u = toUnitInterval(f)
+  if (u == null) return 'Your profiles suggest a mix of overlap and normal differences, which is typical for flat shares.'
+  if (u >= 0.7) return 'Your profiles suggest a strong overall overlap, which often makes day-to-day life feel a bit easier.'
+  if (u >= 0.55) return 'Your profiles suggest solid overlap with a few habits that are worth naming early so nobody is guessing.'
+  return 'Your profiles suggest enough overlap to explore, with a few topics that deserve a friendly planning chat up front.'
+}
+
+function qualitativeHarmony(f: number | null | undefined): string {
+  const u = toUnitInterval(f)
+  if (u == null) return ''
+  if (u >= 0.7) {
+    return 'Day-to-day living rhythms look well aligned, so late nights, guests, and shared spaces are less likely to become a guessing game.'
+  }
+  if (u >= 0.55) {
+    return 'Day-to-day rhythms look partly aligned, so a short chat about quiet hours and cleaning cadence can prevent small irritations later.'
+  }
+  return 'Day-to-day rhythms may differ a bit, so agreeing on a few house rules early usually pays off.'
+}
+
+function qualitativeContext(f: number | null | undefined): string {
+  const u = toUnitInterval(f)
+  if (u == null) return ''
+  if (u >= 0.7) {
+    return 'Background timing and life chapter look similar enough that schedules and stress peaks may line up in helpful ways.'
+  }
+  if (u >= 0.55) {
+    return 'Background timing looks somewhat similar, but it is still worth checking assumptions about deadlines, travel weeks, and crunch periods.'
+  }
+  return 'Background paths may not mirror each other perfectly, which is fine, just plan a little extra clarity on expectations.'
+}
+
+/** When AI text is unavailable: same coach Markdown shape, no raw scores in copy. */
 function deterministicCompatSummary(compat: ChatCompatibilityPayload): string {
-  const parts: string[] = []
-  const overall = pctFromFraction(compat.compatibility_score ?? undefined)
-  const harmony = pctFromFraction(compat.harmony_score ?? undefined)
-  const context = pctFromFraction(compat.context_score ?? undefined)
-
-  if (overall != null) {
-    parts.push(
-      overall >= 70
-        ? `Your overall match is strong at about ${overall}% — that usually means fewer surprises once you share a place.`
-        : overall >= 55
-          ? `Your overall match sits around ${overall}% — there is real overlap, but a few habits may need a clear chat.`
-          : `Your overall match is lower, around ${overall}% — it does not rule someone out, but it flags areas to discuss early.`,
-    )
-  }
-  if (harmony != null) {
-    parts.push(
-      harmony >= 70
-        ? `Harmony (day-to-day living fit) is about ${harmony}%: routines, noise, guests, and shared spaces likely line up fairly well.`
-        : harmony >= 55
-          ? `Harmony is about ${harmony}%: you are partly aligned on daily rhythms — worth comparing concrete examples (quiet hours, cleaning, visitors).`
-          : `Harmony is about ${harmony}%: day-to-day preferences may diverge — plan house rules together before you commit.`,
-    )
-  }
-  if (context != null) {
-    parts.push(
-      context >= 70
-        ? `Context (background overlap, e.g. study or work chapter) is about ${context}% — similar schedules or life stage can make logistics easier.`
-        : context >= 55
-          ? `Context is about ${context}%: you are somewhat aligned on background timing, but do not assume identical deadlines or commute patterns.`
-          : `Context is about ${context}%: different paths can still work — just budget extra clarity on expectations.`,
-    )
-  }
-
   const raw = compat.dimension_scores_json
+  const entries: { key: string; u: number }[] = []
+  const known = new Set<string>([...DIMENSION_ORDER])
+
   if (raw && typeof raw === 'object' && !Array.isArray(raw)) {
-    const entries: { key: string; p: number }[] = []
-    const known = new Set<string>([...DIMENSION_ORDER])
     for (const key of DIMENSION_ORDER) {
       const v = raw[key]
-      if (typeof v === 'number') entries.push({ key, p: pctFromFraction(v) ?? 0 })
+      if (typeof v === 'number' && !Number.isNaN(v)) {
+        entries.push({ key, u: toUnitInterval(v) ?? 0 })
+      }
     }
     for (const key of Object.keys(raw)) {
       if (known.has(key)) continue
       const v = raw[key]
-      if (typeof v === 'number') entries.push({ key, p: pctFromFraction(v) ?? 0 })
-    }
-
-    if (entries.length > 0) {
-      const byDesc = [...entries].sort((a, b) => b.p - a.p)
-      const byAsc = [...entries].sort((a, b) => a.p - b.p)
-      const label = (k: string) => dimensionConfig[k]?.label || k.replace(/_/g, ' ')
-      const top = byDesc.slice(0, 3).map(e => `${label(e.key)} (${e.p}%)`)
-      const weakest = byAsc.slice(0, 2).map(e => `${label(e.key)} (${e.p}%)`)
-      parts.push(
-        `Across the lifestyle dimensions, your strongest alignment shows up in ${top.join(', ')}; the areas to discuss most openly include ${weakest.join(' and ')} — use those as conversation starters, not verdicts.`,
-      )
+      if (typeof v === 'number' && !Number.isNaN(v)) {
+        entries.push({ key, u: toUnitInterval(v) ?? 0 })
+      }
     }
   }
 
-  return parts.join('\n\n')
+  const label = (k: string) => dimensionConfig[k]?.label || k.replace(/_/g, ' ')
+  const byDesc = [...entries].sort((a, b) => b.u - a.u)
+  const byAsc = [...entries].sort((a, b) => a.u - b.u)
+  const topKeys = byDesc.slice(0, 3).map(e => e.key)
+  const weakKeys = byAsc.slice(0, 2).map(e => e.key)
+
+  const b1 =
+    qualitativeHarmony(compat.harmony_score ?? undefined) ||
+    (topKeys[0]
+      ? `Your answers suggest you are on similar ground around ${label(topKeys[0])}, which can make shared life feel calmer.`
+      : qualitativeOverall(compat.compatibility_score ?? undefined))
+
+  const b2 =
+    qualitativeContext(compat.context_score ?? undefined) ||
+    (topKeys[1]
+      ? `You also look aligned on ${label(topKeys[1])}, so small logistics (meals, guests, quiet time) are easier to negotiate kindly.`
+      : 'You both signal enough overlap that a few clear agreements usually keep a flat share feeling fair.')
+
+  const b3 =
+    topKeys[2] != null
+      ? `On ${label(topKeys[2])}, your questionnaire points toward a compatible study and social balance, which helps during busy weeks.`
+      : 'Your questionnaire points toward a compatible study and social balance, which helps during busy weeks.'
+
+  const w1 =
+    weakKeys[0] != null
+      ? `${label(weakKeys[0])} is a normal place for roommates to differ. During exam weeks, agree on a simple rhythm (noise, kitchen use, guests) so stress does not turn into friction.`
+      : 'Cleaning and shared spaces are a normal place for roommates to differ. During exam weeks, agree on a simple rhythm so stress does not turn into friction.'
+
+  const w2 =
+    weakKeys[1] != null
+      ? `${label(weakKeys[1])} is worth a quick boundary chat too (for example, kitchen use during dinner rushes or weekend mornings).`
+      : 'Noise and quiet hours are worth a quick boundary chat too (for example, kitchen use during dinner rushes or weekend mornings).'
+
+  const sharedHint =
+    topKeys[0] != null
+      ? `we both skew similar on ${label(topKeys[0]).toLowerCase()}`
+      : 'we both seem to want a respectful, drama-light flat share'
+
+  const ice = `Hey! Domu Match says ${sharedHint}. Are you more of a movie-night person or a meal-prep person?`
+
+  return `**🌟 Why you'll live well together:**
+* ${b1}
+* ${b2}
+* ${b3}
+
+**🗣️ Things to chat about before moving in:**
+* ${w1}
+* ${w2}
+
+**💬 Suggested Icebreaker:**
+* "${ice}"`
 }
 
 function SectionTitle({ children }: { children: ReactNode }) {
@@ -302,6 +358,8 @@ export function MessengerProfilePane({ chatId, isOpen, onClose }: MessengerProfi
     compat?.dimension_scores_json &&
     typeof compat.dimension_scores_json === 'object' &&
     Object.keys(compat.dimension_scores_json).length > 0
+
+  const detailsLocked = Boolean(userInfo?.progressive_disclosure && !userInfo.progressive_disclosure.mutual_details)
 
   return (
     <div
@@ -461,21 +519,22 @@ export function MessengerProfilePane({ chatId, isOpen, onClose }: MessengerProfi
                     )}
 
                     <div className="rounded-xl border border-violet-200/80 bg-violet-50/60 px-3 py-3 text-left dark:border-slate-700/60 dark:bg-slate-900/40">
-                      <p className="whitespace-pre-wrap text-[12px] leading-relaxed text-slate-600 dark:text-slate-400">
-                        {compatFetching && !compat.personalized_explanation?.trim() ? (
-                          <span className="inline-flex items-center gap-2 text-slate-500 dark:text-slate-500">
-                            <span
-                              className="inline-block h-3.5 w-3.5 animate-spin rounded-full border-2 border-violet-400 border-t-transparent dark:border-violet-500"
-                              aria-hidden
-                            />
-                            Updating match insight…
-                          </span>
-                        ) : compat.personalized_explanation?.trim() ? (
-                          compat.personalized_explanation.trim()
-                        ) : (
-                          deterministicCompatSummary(compat)
-                        )}
-                      </p>
+                      {compatFetching && !compat.personalized_explanation?.trim() ? (
+                        <span className="inline-flex items-center gap-2 text-[12px] text-slate-500 dark:text-slate-500">
+                          <span
+                            className="inline-block h-3.5 w-3.5 animate-spin rounded-full border-2 border-violet-400 border-t-transparent dark:border-violet-500"
+                            aria-hidden
+                          />
+                          Updating match insight…
+                        </span>
+                      ) : (
+                        <MatchInsightMarkdown
+                          className="text-[12px] text-slate-600 dark:text-slate-400"
+                          markdown={
+                            (compat.personalized_explanation?.trim() || deterministicCompatSummary(compat)).trim()
+                          }
+                        />
+                      )}
                     </div>
                   </div>
                 )}
@@ -565,6 +624,8 @@ export function MessengerProfilePane({ chatId, isOpen, onClose }: MessengerProfi
                 <SectionTitle>Bio</SectionTitle>
                 {userInfo?.bio && userInfo.bio.trim() ? (
                   <p className="text-sm leading-relaxed text-gray-700 whitespace-pre-wrap dark:text-slate-200">{userInfo.bio}</p>
+                ) : detailsLocked ? (
+                  <ProgressiveProfileLockHint partnerFirstName={userInfo?.first_name} what="their bio" />
                 ) : (
                   <p className="text-xs italic text-gray-500 dark:text-slate-500">No bio yet</p>
                 )}
@@ -592,6 +653,8 @@ export function MessengerProfilePane({ chatId, isOpen, onClose }: MessengerProfi
                       )
                     })}
                   </div>
+                ) : detailsLocked ? (
+                  <ProgressiveProfileLockHint partnerFirstName={userInfo?.first_name} what="their interests" />
                 ) : (
                   <p className="text-xs italic text-gray-500 dark:text-slate-500">No interests listed</p>
                 )}
@@ -600,39 +663,45 @@ export function MessengerProfilePane({ chatId, isOpen, onClose }: MessengerProfi
               <div className="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm dark:border-slate-700 dark:bg-slate-800/90 dark:shadow-none">
                 <SectionTitle>Housing</SectionTitle>
                 <div className="space-y-3 text-sm text-gray-700 dark:text-slate-300">
-                  {userInfo?.housing_status && userInfo.housing_status.length > 0 ? (
-                    <div className="flex flex-wrap gap-2">
-                      {userInfo.housing_status.map(key => (
-                        <StatusBadge
-                          key={key}
-                          statusKey={key}
-                          variant="secondary"
-                          className="border-gray-200 bg-gray-100 text-gray-800 dark:border-slate-600 dark:bg-slate-700 dark:text-slate-200"
-                        />
-                      ))}
-                    </div>
+                  {detailsLocked ? (
+                    <ProgressiveProfileLockHint partnerFirstName={userInfo?.first_name} what="their housing preferences" />
                   ) : (
-                    <p className="text-xs italic text-gray-500 dark:text-slate-500">No housing status selected</p>
-                  )}
-                  {(userInfo?.budget_min != null || userInfo?.budget_max != null) && (
-                    <div>
-                      <span className="font-medium text-gray-500 dark:text-slate-400">Budget (rent/month): </span>
-                      <span className="text-gray-900 dark:text-slate-200">
-                        {userInfo.budget_min != null && userInfo.budget_max != null
-                          ? `€${userInfo.budget_min} – €${userInfo.budget_max}`
-                          : userInfo.budget_min != null
-                            ? `€${userInfo.budget_min}+`
-                            : userInfo.budget_max != null
-                              ? `up to €${userInfo.budget_max}`
-                              : ''}
-                      </span>
-                    </div>
-                  )}
-                  {userInfo?.preferred_cities && userInfo.preferred_cities.length > 0 && (
-                    <div>
-                      <span className="font-medium text-gray-500 dark:text-slate-400">Preferred city: </span>
-                      <span className="text-gray-900 dark:text-slate-200">{userInfo.preferred_cities.join(', ')}</span>
-                    </div>
+                    <>
+                      {userInfo?.housing_status && userInfo.housing_status.length > 0 ? (
+                        <div className="flex flex-wrap gap-2">
+                          {userInfo.housing_status.map(key => (
+                            <StatusBadge
+                              key={key}
+                              statusKey={key}
+                              variant="secondary"
+                              className="border-gray-200 bg-gray-100 text-gray-800 dark:border-slate-600 dark:bg-slate-700 dark:text-slate-200"
+                            />
+                          ))}
+                        </div>
+                      ) : (
+                        <p className="text-xs italic text-gray-500 dark:text-slate-500">No housing status selected</p>
+                      )}
+                      {(userInfo?.budget_min != null || userInfo?.budget_max != null) && (
+                        <div>
+                          <span className="font-medium text-gray-500 dark:text-slate-400">Budget (rent/month): </span>
+                          <span className="text-gray-900 dark:text-slate-200">
+                            {userInfo.budget_min != null && userInfo.budget_max != null
+                              ? `€${userInfo.budget_min} – €${userInfo.budget_max}`
+                              : userInfo.budget_min != null
+                                ? `€${userInfo.budget_min}+`
+                                : userInfo.budget_max != null
+                                  ? `up to €${userInfo.budget_max}`
+                                  : ''}
+                          </span>
+                        </div>
+                      )}
+                      {userInfo?.preferred_cities && userInfo.preferred_cities.length > 0 && (
+                        <div>
+                          <span className="font-medium text-gray-500 dark:text-slate-400">Preferred city: </span>
+                          <span className="text-gray-900 dark:text-slate-200">{userInfo.preferred_cities.join(', ')}</span>
+                        </div>
+                      )}
+                    </>
                   )}
                 </div>
               </div>
@@ -640,39 +709,64 @@ export function MessengerProfilePane({ chatId, isOpen, onClose }: MessengerProfi
               {userInfo?.user_type === 'professional' ? (
                 <div className="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm dark:border-slate-700 dark:bg-slate-800/90 dark:shadow-none">
                   <SectionTitle>Professional lifestyle</SectionTitle>
-                  <div className="space-y-2 text-sm text-gray-700 dark:text-slate-300">
-                    <div>
-                      <span className="font-medium text-gray-500 dark:text-slate-400">WFH: </span>
-                      {formatWfhStatus(userInfo?.wfh_status)}
+                  {detailsLocked ? (
+                    <ProgressiveProfileLockHint partnerFirstName={userInfo?.first_name} what="their work and lifestyle details" />
+                  ) : (
+                    <div className="space-y-2 text-sm text-gray-700 dark:text-slate-300">
+                      <div>
+                        <span className="font-medium text-gray-500 dark:text-slate-400">WFH: </span>
+                        {formatWfhStatus(userInfo?.wfh_status)}
+                      </div>
+                      <div>
+                        <span className="font-medium text-gray-500 dark:text-slate-400">Age: </span>
+                        {userInfo?.age != null ? `${userInfo.age} years old` : 'Not provided'}
+                      </div>
+                      <div>
+                        <span className="font-medium text-gray-500 dark:text-slate-400">Schedule: </span>
+                        {userInfo?.work_schedule || 'Not provided'}
+                      </div>
                     </div>
-                    <div>
-                      <span className="font-medium text-gray-500 dark:text-slate-400">Age: </span>
-                      {userInfo?.age != null ? `${userInfo.age} years old` : 'Not provided'}
-                    </div>
-                    <div>
-                      <span className="font-medium text-gray-500 dark:text-slate-400">Schedule: </span>
-                      {userInfo?.work_schedule || 'Not provided'}
-                    </div>
-                  </div>
+                  )}
                 </div>
               ) : (
                 <div className="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm dark:border-slate-700 dark:bg-slate-800/90 dark:shadow-none">
                   <SectionTitle>University</SectionTitle>
                   <div className="space-y-2 text-sm text-gray-700 dark:text-slate-300">
-                    {userInfo?.programme_name && (
-                      <div>
-                        <span className="font-medium text-gray-500 dark:text-slate-400">Programme: </span>
-                        {userInfo.programme_name}
-                      </div>
-                    )}
-                    {userInfo?.study_year !== null && userInfo?.study_year !== undefined && (
-                      <div>
-                        <span className="font-medium text-gray-500 dark:text-slate-400">Year: </span>
-                        {userInfo.study_year}
-                      </div>
-                    )}
-                    {!userInfo?.programme_name && userInfo?.study_year == null && (
-                      <p className="text-xs italic text-gray-500 dark:text-slate-500">No university information available</p>
+                    {detailsLocked ? (
+                      <ProgressiveProfileLockHint partnerFirstName={userInfo?.first_name} what="their university details" />
+                    ) : (
+                      <>
+                        {userInfo?.university_name && (
+                          <div>
+                            <span className="font-medium text-gray-500 dark:text-slate-400">University: </span>
+                            {userInfo.university_name}
+                          </div>
+                        )}
+                        {userInfo?.programme_name && (
+                          <div>
+                            <span className="font-medium text-gray-500 dark:text-slate-400">Programme: </span>
+                            {userInfo.programme_name}
+                          </div>
+                        )}
+                        {userInfo?.study_year !== null && userInfo?.study_year !== undefined && (
+                          <div>
+                            <span className="font-medium text-gray-500 dark:text-slate-400">Year: </span>
+                            {userInfo.study_year}
+                          </div>
+                        )}
+                        {userInfo?.degree_level && (
+                          <div>
+                            <span className="font-medium text-gray-500 dark:text-slate-400">Degree level: </span>
+                            {userInfo.degree_level}
+                          </div>
+                        )}
+                        {!userInfo?.university_name &&
+                          !userInfo?.programme_name &&
+                          userInfo?.study_year == null &&
+                          !userInfo?.degree_level && (
+                            <p className="text-xs italic text-gray-500 dark:text-slate-500">No university information available</p>
+                          )}
+                      </>
                     )}
                   </div>
                 </div>

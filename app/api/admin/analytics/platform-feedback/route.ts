@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createAdminClient } from '@/lib/supabase/server'
-import { requireAdmin } from '@/lib/auth/admin'
 import { safeLogger } from '@/lib/utils/logger'
+import { openScopedAnalyticsSession } from '@/lib/admin/analytics-scope'
 
 type SuccessStatus = 'domu_match' | 'external' | 'still_looking' | null
 type FeedbackStatus = 'completed' | 'dismissed'
@@ -39,69 +38,37 @@ interface RecentFeedbackItem {
 
 export async function GET(request: NextRequest) {
   try {
-    const adminCheck = await requireAdmin(request, false)
-
-    if (!adminCheck.ok) {
-      return NextResponse.json(
-        { error: adminCheck.error || 'Admin access required' },
-        { status: adminCheck.status }
-      )
+    const ctx = await openScopedAnalyticsSession(request)
+    if (!ctx.ok) {
+      return NextResponse.json({ error: ctx.error }, { status: ctx.status })
     }
 
-    const { adminRecord } = adminCheck
-    const admin = createAdminClient()
+    const { admin, scopedUserIds: universityUserIds } = ctx
 
-    const isSuperAdmin = adminRecord?.role === 'super_admin'
-    const universityId = isSuperAdmin ? null : adminRecord?.university_id
-
-    // If admin is scoped to a university, find all user_ids for that university
-    let universityUserIds: Set<string> | null = null
-    if (universityId) {
-      const { data: academic, error: academicError } = await admin
-        .from('user_academic')
-        .select('user_id')
-        .eq('university_id', universityId)
-
-      if (academicError) {
-        safeLogger.error('[Admin Platform Feedback] Failed to load user_academic', {
-          error: academicError,
-          universityId,
-        })
+    if (universityUserIds.size === 0) {
+      const emptyOverall: OverallStats = {
+        totalResponses: 0,
+        completedResponses: 0,
+        placementRate: 0,
+        npsScore: null,
+        domuMatchCount: 0,
+        externalCount: 0,
+        stillLookingCount: 0,
+        promoters: 0,
+        passives: 0,
+        detractors: 0,
       }
 
-      universityUserIds = new Set(academic?.map((a) => a.user_id) || [])
+      return NextResponse.json({
+        overall: emptyOverall,
+        recentFeedback: [] as RecentFeedbackItem[],
+      })
     }
 
-    // Load platform feedback rows, optionally filtered by university users
-    let feedbackQuery = admin
+    const { data: rows, error } = await admin
       .from('platform_feedback')
       .select('id, user_id, success_status, nps_score, reason, status, created_at')
-
-    if (universityId && universityUserIds) {
-      if (universityUserIds.size === 0) {
-        const emptyOverall: OverallStats = {
-          totalResponses: 0,
-          completedResponses: 0,
-          placementRate: 0,
-          npsScore: null,
-          domuMatchCount: 0,
-          externalCount: 0,
-          stillLookingCount: 0,
-          promoters: 0,
-          passives: 0,
-          detractors: 0,
-        }
-
-        return NextResponse.json({
-          overall: emptyOverall,
-          recentFeedback: [] as RecentFeedbackItem[],
-        })
-      }
-
-      feedbackQuery = feedbackQuery.in('user_id', Array.from(universityUserIds))
-    }
-
-    const { data: rows, error } = await feedbackQuery
+      .in('user_id', Array.from(universityUserIds))
 
     if (error) {
       safeLogger.error('[Admin Platform Feedback] Failed to load platform_feedback', { error })

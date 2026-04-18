@@ -3,6 +3,7 @@ import { createClient, createAdminClient } from '@/lib/supabase/server'
 import { safeLogger } from '@/lib/utils/logger'
 import { requireAdmin } from '@/lib/auth/admin'
 import { checkRateLimit, getUserRateLimitKey } from '@/lib/rate-limit'
+import { ensureProfileAccessRows, resolvePairMatchId } from '@/lib/privacy/profile-access-server'
 
 export async function POST(request: NextRequest) {
   try {
@@ -152,10 +153,12 @@ export async function POST(request: NextRequest) {
       }
     }
 
+    const pairMatchId = await resolvePairMatchId(admin, user.id, targetUserId)
+
     // Create new chat
     const { data: createdChat, error: chatErr } = await admin
       .from('chats')
-      .insert({ is_group: false, created_by: user.id })
+      .insert({ is_group: false, created_by: user.id, match_id: pairMatchId })
       .select('id')
       .single()
 
@@ -180,6 +183,8 @@ export async function POST(request: NextRequest) {
         { status: 500 }
       )
     }
+
+    await ensureProfileAccessRows(admin, chatId)
 
     // Create welcome message
     await admin.from('messages').insert({

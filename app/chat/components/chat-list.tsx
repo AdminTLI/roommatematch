@@ -23,6 +23,7 @@ import {
   Star
 } from 'lucide-react'
 import { NewChatModal } from './new-chat-modal'
+import { programmaticAvatarUrl } from '@/lib/avatars/programmatic'
 import { GroupInvitationCard } from './group-invitation-card'
 import { queryKeys, queryClient } from '@/app/providers'
 import { useRealtimeInvalidation } from '@/hooks/use-realtime-invalidation'
@@ -229,20 +230,21 @@ export function ChatList({ user, onChatSelect, selectedChatId }: ChatListProps) 
 
           if (!nonSystemError && nonSystemMessages) {
             // Create a set of chat IDs that have non-system messages
-            const chatsWithUserMessages = new Set(nonSystemMessages.map((msg: any) => msg.chat_id))
-            
+            const nonGreetingChatIds = new Set(nonSystemMessages.map((msg: any) => msg.chat_id as string))
+
             // Update allMessagesMap to mark chats with user messages
             // This ensures we have the correct hasUserMessages flag even if the first query missed messages
-            chatsWithUserMessages.forEach((chatId) => {
+            nonGreetingChatIds.forEach((cid) => {
               // If we don't have messages in allMessagesMap for this chat, add an empty array
               // so that hasUserMessages will be true
-              if (!allMessagesMap.has(chatId)) {
-                allMessagesMap.set(chatId, [])
+              if (!allMessagesMap.has(cid)) {
+                allMessagesMap.set(cid, [])
               }
             })
-            
+
             // Store the set for later use
-            (allMessagesMap as any).chatsWithUserMessages = chatsWithUserMessages
+            ;(allMessagesMap as Map<string, any[]> & { chatsWithUserMessages?: Set<string> }).chatsWithUserMessages =
+              nonGreetingChatIds
           }
         } catch (nonSystemError) {
           console.warn('[ChatList] Exception checking for non-system messages (non-fatal):', nonSystemError)
@@ -338,13 +340,16 @@ export function ChatList({ user, onChatSelect, selectedChatId }: ChatListProps) 
               try {
                 const { data: fallbackProfiles, error: fallbackError } = await supabase
                   .from('profiles')
-                  .select('user_id, first_name, last_name')
+                  .select('user_id, first_name, last_name, avatar_id')
                   .in('user_id', Array.from(allUserIds))
 
               if (!fallbackError && fallbackProfiles) {
                 fallbackProfiles.forEach((profile: any) => {
                   if (profile?.user_id) {
-                    profilesMap.set(profile.user_id, profile)
+                    profilesMap.set(profile.user_id, {
+                      ...profile,
+                      avatar_url: programmaticAvatarUrl(profile.avatar_id, profile.user_id),
+                    })
                   }
                 })
                 console.log(`[ChatList] Fallback: Loaded ${profilesMap.size} profiles directly from Supabase`)
@@ -506,7 +511,7 @@ export function ChatList({ user, onChatSelect, selectedChatId }: ChatListProps) 
             return {
               id: p.user_id,
               name: fullName,
-              avatar: undefined, // Avatars not implemented - Avatar component will show initials via AvatarFallback
+              avatar: profile?.avatar_url || undefined,
               isOnline: false
             }
           }) || [],
@@ -526,6 +531,40 @@ export function ChatList({ user, onChatSelect, selectedChatId }: ChatListProps) 
         activeConversations: transformedChats.filter(c => !c.isRecentlyMatched).length,
         chatIds: transformedChats.map(c => c.id)
       })
+
+      const individualIds = transformedChats.filter((c) => c.type === 'individual').map((c) => c.id)
+      if (individualIds.length > 0) {
+        try {
+          const pr = await fetchWithCSRF('/api/chat/privacy-state/batch', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ chat_ids: individualIds }),
+          })
+          if (pr.ok) {
+            const body = (await pr.json()) as {
+              by_chat_id?: Record<
+                string,
+                { partner_user_id: string | null; partner_avatar_url: string | null; partner_display_name: string }
+              >
+            }
+            const byChat = body.by_chat_id || {}
+            return transformedChats.map((chat) => {
+              if (chat.type !== 'individual') return chat
+              const snap = byChat[chat.id]
+              if (!snap?.partner_user_id) return chat
+              return {
+                ...chat,
+                name: snap.partner_display_name || chat.name,
+                participants: chat.participants.map((p) =>
+                  p.id === snap.partner_user_id ? { ...p, avatar: snap.partner_avatar_url || undefined } : p,
+                ),
+              }
+            })
+          }
+        } catch (e) {
+          console.warn('[ChatList] privacy-state batch failed (non-fatal)', e)
+        }
+      }
 
       return transformedChats
     } catch (error) {

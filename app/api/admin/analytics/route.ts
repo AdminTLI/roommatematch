@@ -1,48 +1,31 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createAdminClient } from '@/lib/supabase/server'
-import { requireAdmin } from '@/lib/auth/admin'
 import { safeLogger } from '@/lib/utils/logger'
+import { resolveAdminAnalyticsScope, resolveScopedMetricsUserIds } from '@/lib/admin/analytics-scope'
+
+function chunk<T>(arr: T[], size: number): T[][] {
+  const out: T[][] = []
+  for (let i = 0; i < arr.length; i += size) out.push(arr.slice(i, i + size))
+  return out
+}
 
 export async function GET(request: NextRequest) {
   try {
-    const adminCheck = await requireAdmin(request, false)
-    
-    if (!adminCheck.ok) {
-      return NextResponse.json(
-        { error: adminCheck.error || 'Admin access required' },
-        { status: adminCheck.status }
-      )
+    const scope = await resolveAdminAnalyticsScope(request)
+    if (!scope.ok) {
+      return NextResponse.json({ error: scope.error }, { status: scope.status })
     }
 
-    const { adminRecord } = adminCheck
+    const { universityId, filters } = scope
     const admin = createAdminClient()
 
-    if (!adminRecord) {
-      return NextResponse.json(
-        { error: 'Admin record not found' },
-        { status: 500 }
-      )
-    }
+    const scopedUserIds = await resolveScopedMetricsUserIds(admin, universityId, filters)
+    const universityUserIds: Set<string> | null = scopedUserIds
 
     const now = new Date()
     const sevenDaysAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000)
     const thirtyDaysAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000)
     const oneDayAgo = new Date(now.getTime() - 24 * 60 * 60 * 1000)
-
-    // Determine if we should filter by university
-    const isSuperAdmin = adminRecord.role === 'super_admin'
-    const universityId = isSuperAdmin ? null : adminRecord.university_id
-
-    // Get university user IDs once (cached for all queries)
-    let universityUserIds: Set<string> | null = null
-    if (universityId) {
-      const { data: academic } = await admin
-        .from('user_academic')
-        .select('user_id')
-        .eq('university_id', universityId)
-      
-      universityUserIds = new Set(academic?.map(a => a.user_id) || [])
-    }
 
     // 1. Total Users - count active users
     let totalUsersQuery = admin
@@ -50,12 +33,11 @@ export async function GET(request: NextRequest) {
       .select('id', { count: 'exact', head: true })
       .eq('is_active', true)
 
-    if (universityId && universityUserIds) {
+    if (universityUserIds) {
       if (universityUserIds.size > 0) {
         totalUsersQuery = totalUsersQuery.in('id', Array.from(universityUserIds))
       } else {
-        // No users in this university
-        totalUsersQuery = totalUsersQuery.eq('id', '00000000-0000-0000-0000-000000000000') // Impossible ID
+        totalUsersQuery = totalUsersQuery.eq('id', '00000000-0000-0000-0000-000000000000')
       }
     }
 
@@ -67,7 +49,7 @@ export async function GET(request: NextRequest) {
       .select('user_id', { count: 'exact', head: true })
       .eq('verification_status', 'verified')
 
-    if (universityId && universityUserIds) {
+    if (universityUserIds) {
       if (universityUserIds.size > 0) {
         verifiedUsersQuery = verifiedUsersQuery.in('user_id', Array.from(universityUserIds))
       } else {
@@ -87,7 +69,7 @@ export async function GET(request: NextRequest) {
     
     // If university filter, check if chat members are from that university
     let activeChats = activeChatIds.size
-    if (universityId && universityUserIds && activeChatIds.size > 0) {
+    if (universityUserIds && activeChatIds.size > 0) {
       const { data: chatMembers } = await admin
         .from('chat_members')
         .select('chat_id, user_id')
@@ -108,7 +90,7 @@ export async function GET(request: NextRequest) {
       .select('id, member_ids, accepted_by, status, kind, expires_at, created_at')
       .eq('kind', 'pair') // Only count pair matches for total
 
-    if (universityId && universityUserIds && universityUserIds.size === 0) {
+    if (universityUserIds && universityUserIds.size === 0) {
       allMatchesQuery = allMatchesQuery.eq('id', '00000000-0000-0000-0000-000000000000')
     }
 
@@ -121,13 +103,9 @@ export async function GET(request: NextRequest) {
       allMatches.forEach(match => {
         if (!match.member_ids || !Array.isArray(match.member_ids)) return
         
-        // Filter by university if needed
-        if (universityId && universityUserIds) {
-          const allFromUniversity = match.member_ids.every(id => 
-            universityUserIds.has(id)
-          )
-          if (!allFromUniversity) return
-        }
+        if (universityUserIds.size === 0) return
+        const allFromUniversity = match.member_ids.every((id: string) => universityUserIds.has(id))
+        if (!allFromUniversity) return
 
         // Create unique key for pair
         const sortedIds = [...match.member_ids].sort().join('-')
@@ -138,13 +116,31 @@ export async function GET(request: NextRequest) {
       })
     }
 
-    // 5. Reports Pending - check both 'open' and 'pending' status
-    let reportsQuery = admin
-      .from('reports')
-      .select('id', { count: 'exact', head: true })
-      .in('status', ['open', 'pending'])
-
-    const { count: reportsPending } = await reportsQuery
+    // 5. Reports Pending — tenant-scoped (reporter or subject in cohort)
+    let reportsPending = 0
+    if (universityUserIds && universityUserIds.size > 0) {
+      const ids = Array.from(universityUserIds)
+      const seen = new Set<string>()
+      for (const part of chunk(ids, 120)) {
+        const { data: byReporter } = await admin
+          .from('reports')
+          .select('id')
+          .in('status', ['open', 'pending'])
+          .in('reporter_id', part)
+        for (const r of byReporter || []) {
+          if (r.id) seen.add(r.id)
+        }
+        const { data: byTarget } = await admin
+          .from('reports')
+          .select('id')
+          .in('status', ['open', 'pending'])
+          .in('target_user_id', part)
+        for (const r of byTarget || []) {
+          if (r.id) seen.add(r.id)
+        }
+      }
+      reportsPending = seen.size
+    }
 
     // 6. Signups Last 7 Days
     let signups7dQuery = admin
@@ -153,12 +149,10 @@ export async function GET(request: NextRequest) {
       .eq('is_active', true)
       .gte('created_at', sevenDaysAgo.toISOString())
 
-    if (universityId && universityUserIds) {
-      if (universityUserIds.size > 0) {
-        signups7dQuery = signups7dQuery.in('id', Array.from(universityUserIds))
-      } else {
-        signups7dQuery = signups7dQuery.eq('id', '00000000-0000-0000-0000-000000000000')
-      }
+    if (universityUserIds.size > 0) {
+      signups7dQuery = signups7dQuery.in('id', Array.from(universityUserIds))
+    } else {
+      signups7dQuery = signups7dQuery.eq('id', '00000000-0000-0000-0000-000000000000')
     }
 
     const { count: signupsLast7Days } = await signups7dQuery
@@ -170,12 +164,10 @@ export async function GET(request: NextRequest) {
       .eq('is_active', true)
       .gte('created_at', thirtyDaysAgo.toISOString())
 
-    if (universityId && universityUserIds) {
-      if (universityUserIds.size > 0) {
-        signups30dQuery = signups30dQuery.in('id', Array.from(universityUserIds))
-      } else {
-        signups30dQuery = signups30dQuery.eq('id', '00000000-0000-0000-0000-000000000000')
-      }
+    if (universityUserIds.size > 0) {
+      signups30dQuery = signups30dQuery.in('id', Array.from(universityUserIds))
+    } else {
+      signups30dQuery = signups30dQuery.eq('id', '00000000-0000-0000-0000-000000000000')
     }
 
     const { count: signupsLast30Days } = await signups30dQuery
@@ -187,7 +179,7 @@ export async function GET(request: NextRequest) {
       .gte('created_at', sevenDaysAgo.toISOString())
       .eq('kind', 'pair')
 
-    if (universityId && universityUserIds && universityUserIds.size === 0) {
+    if (universityUserIds.size === 0) {
       matchActivityQuery = matchActivityQuery.eq('id', '00000000-0000-0000-0000-000000000000')
     }
 
@@ -200,12 +192,9 @@ export async function GET(request: NextRequest) {
       recentMatches.forEach(match => {
         if (!match.member_ids || !Array.isArray(match.member_ids)) return
         
-        if (universityId && universityUserIds) {
-          const allFromUniversity = match.member_ids.every(id => 
-            universityUserIds.has(id)
-          )
-          if (!allFromUniversity) return
-        }
+        if (universityUserIds.size === 0) return
+        const allFromUniversity = match.member_ids.every((id: string) => universityUserIds.has(id))
+        if (!allFromUniversity) return
 
         const sortedIds = [...match.member_ids].sort().join('-')
         if (!recentUniquePairs.has(sortedIds)) {
@@ -237,19 +226,23 @@ export async function GET(request: NextRequest) {
       academicQuery = academicQuery.eq('university_id', universityId)
     }
 
-    const { data: allAcademic } = await academicQuery
+    const { data: allAcademicRaw } = await academicQuery
+    const allAcademic = (allAcademicRaw || []).filter((a) => universityUserIds.has(a.user_id))
 
-    // Get verified user IDs
-    const { data: verifiedProfiles } = await admin
-      .from('profiles')
-      .select('user_id')
-      .eq('verification_status', 'verified')
-
-    const verifiedUserIds = new Set(verifiedProfiles?.map(p => p.user_id) || [])
+    // Get verified user IDs (scoped)
+    let verifiedUserIds = new Set<string>()
+    if (universityUserIds.size > 0) {
+      const { data: verifiedProfiles } = await admin
+        .from('profiles')
+        .select('user_id')
+        .eq('verification_status', 'verified')
+        .in('user_id', Array.from(universityUserIds))
+      verifiedUserIds = new Set(verifiedProfiles?.map((p) => p.user_id) || [])
+    }
 
     // Count by university
     const universityCounts = new Map<string, { total: number; verified: number }>()
-    allAcademic?.forEach(a => {
+    allAcademic.forEach((a) => {
       const uniId = a.university_id
       if (!uniId) return
       
@@ -279,10 +272,11 @@ export async function GET(request: NextRequest) {
       programStatsQuery = programStatsQuery.eq('university_id', universityId)
     }
 
-    const { data: academicData } = await programStatsQuery
+    const { data: academicDataRaw } = await programStatsQuery
+    const academicData = (academicDataRaw || []).filter((a) => universityUserIds.has(a.user_id))
 
     // Get program and university names
-    const programIds = new Set(academicData?.map(a => a.program_id).filter(Boolean) || [])
+    const programIds = new Set(academicData.map((a) => a.program_id).filter(Boolean) || [])
     const programMap = new Map()
     
     if (programIds.size > 0) {
@@ -298,7 +292,7 @@ export async function GET(request: NextRequest) {
 
     // Count by program
     const programCounts = new Map<string, { count: number; university_name: string }>()
-    academicData?.forEach(a => {
+    academicData.forEach((a) => {
       const progId = a.program_id
       if (!progId) return
       
@@ -321,12 +315,10 @@ export async function GET(request: NextRequest) {
       .from('user_study_year_v')
       .select('user_id, study_year')
 
-    if (universityId && universityUserIds) {
-      if (universityUserIds.size > 0) {
-        studyYearQuery = studyYearQuery.in('user_id', Array.from(universityUserIds))
-      } else {
-        studyYearQuery = studyYearQuery.eq('user_id', '00000000-0000-0000-0000-000000000000')
-      }
+    if (universityUserIds.size > 0) {
+      studyYearQuery = studyYearQuery.in('user_id', Array.from(universityUserIds))
+    } else {
+      studyYearQuery = studyYearQuery.eq('user_id', '00000000-0000-0000-0000-000000000000')
     }
 
     const { data: studyYearData } = await studyYearQuery

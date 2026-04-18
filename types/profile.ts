@@ -41,5 +41,10 @@ export interface Profile {
   preferred_cities?: string[] | null
   date_of_birth?: string | null
   is_visible?: boolean | null
+  /** DiceBear seed shown to matches before mutual reveal */
+  avatar_id?: string | null
+  /** Object path in private `secure_profile_pics` bucket (not a public URL) */
+  profile_picture_url?: string | null
+  share_details_by_default?: boolean | null
   [key: string]: unknown
 }

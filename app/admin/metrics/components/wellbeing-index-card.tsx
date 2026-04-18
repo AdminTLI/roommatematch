@@ -11,7 +11,9 @@ interface WellbeingResponse {
   harmonyScore: number
 }
 
-export function WellbeingIndexCard() {
+type Props = { analyticsQuery?: string }
+
+export function WellbeingIndexCard({ analyticsQuery = '' }: Props) {
   const [data, setData] = useState<WellbeingResponse | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -19,7 +21,7 @@ export function WellbeingIndexCard() {
   useEffect(() => {
     const load = async () => {
       try {
-        const res = await fetch('/api/admin/analytics/wellbeing')
+        const res = await fetch(`/api/admin/analytics/wellbeing${analyticsQuery}`)
         if (!res.ok) {
           const err = await res.json().catch(() => ({}))
           throw new Error(err.error || 'Failed to load wellbeing analytics')
@@ -34,7 +36,7 @@ export function WellbeingIndexCard() {
     }
 
     load()
-  }, [])
+  }, [analyticsQuery])
 
   const hasData = (data?.totalActiveMatches ?? 0) > 0
   const score = data?.harmonyScore ?? 0

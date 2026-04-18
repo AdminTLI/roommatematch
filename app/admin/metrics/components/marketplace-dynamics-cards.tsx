@@ -26,7 +26,9 @@ interface MarketplaceDynamicsResponse {
   squadFormation: SquadFormationMetrics
 }
 
-export function MarketplaceDynamicsCards() {
+type Props = { analyticsQuery?: string }
+
+export function MarketplaceDynamicsCards({ analyticsQuery = '' }: Props) {
   const [data, setData] = useState<MarketplaceDynamicsResponse | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -36,7 +38,7 @@ export function MarketplaceDynamicsCards() {
 
     const load = async () => {
       try {
-        const res = await fetch('/api/admin/analytics/marketplace-dynamics')
+        const res = await fetch(`/api/admin/analytics/marketplace-dynamics${analyticsQuery}`)
 
         if (!res.ok) {
           const body = await res.json().catch(() => ({}))
@@ -63,7 +65,7 @@ export function MarketplaceDynamicsCards() {
     return () => {
       isMounted = false
     }
-  }, [])
+  }, [analyticsQuery])
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">

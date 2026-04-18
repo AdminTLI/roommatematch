@@ -24,7 +24,9 @@ interface TrustAlgorithmResponse {
   topDealbreakers: TopDealbreaker[]
 }
 
-export function TrustAlgorithmCards() {
+type Props = { analyticsQuery?: string }
+
+export function TrustAlgorithmCards({ analyticsQuery = '' }: Props) {
   const [data, setData] = useState<TrustAlgorithmResponse | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -34,7 +36,7 @@ export function TrustAlgorithmCards() {
 
     async function load() {
       try {
-        const res = await fetch('/api/admin/analytics/trust-and-algorithm')
+        const res = await fetch(`/api/admin/analytics/trust-and-algorithm${analyticsQuery}`)
 
         if (!res.ok) {
           const body = await res.json().catch(() => ({}))
@@ -62,7 +64,7 @@ export function TrustAlgorithmCards() {
     return () => {
       isMounted = false
     }
-  }, [])
+  }, [analyticsQuery])
 
   const totalUsers = data?.totalUsers ?? 0
   const verifiedUsers = data?.verifiedUsers ?? 0

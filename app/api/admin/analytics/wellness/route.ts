@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createAdminClient } from '@/lib/supabase/server'
-import { requireAdmin } from '@/lib/auth/admin'
 import { safeLogger } from '@/lib/utils/logger'
+import { resolveAdminAnalyticsScope, resolveScopedMetricsUserIds } from '@/lib/admin/analytics-scope'
 
 type SurveyType = 'day_14' | 'day_30'
 
@@ -16,63 +16,36 @@ interface WellnessRow {
 
 export async function GET(request: NextRequest) {
   try {
-    const adminCheck = await requireAdmin(request, false)
-
-    if (!adminCheck.ok) {
-      return NextResponse.json(
-        { error: adminCheck.error || 'Admin access required' },
-        { status: adminCheck.status }
-      )
+    const scope = await resolveAdminAnalyticsScope(request)
+    if (!scope.ok) {
+      return NextResponse.json({ error: scope.error }, { status: scope.status })
     }
 
-    const { adminRecord } = adminCheck
+    const { universityId, filters } = scope
     const admin = createAdminClient()
-
-    const isSuperAdmin = adminRecord?.role === 'super_admin'
-    const universityId = isSuperAdmin ? null : adminRecord?.university_id
-
-    // If admin is scoped to a university, find all user_ids for that university
-    let universityUserIds: Set<string> | null = null
-    if (universityId) {
-      const { data: academic, error: academicError } = await admin
-        .from('user_academic')
-        .select('user_id')
-        .eq('university_id', universityId)
-
-      if (academicError) {
-        safeLogger.error('[Admin Wellness Analytics] Failed to load user_academic', {
-          error: academicError,
-          universityId,
-        })
-      }
-
-      universityUserIds = new Set(academic?.map((a) => a.user_id) || [])
-    }
+    const universityUserIds = await resolveScopedMetricsUserIds(admin, universityId, filters)
 
     // Load wellness survey rows, optionally filtered by university users
     let wellnessQuery = admin
       .from('wellness_surveys')
       .select('user_id, survey_type, found_housing, found_with_match, reduced_stress, created_at')
 
-    if (universityId && universityUserIds) {
-      if (universityUserIds.size === 0) {
-        // No users in this university – return empty dataset
-        return NextResponse.json({
-          overall: {
-            totalResponses: 0,
-            day14Responses: 0,
-            day30Responses: 0,
-            foundHousingRate: 0,
-            foundWithMatchRate: 0,
-            reducedStressRate: 0,
-          },
-          bySurveyType: [],
-          timeSeries: [],
-        })
-      }
-
-      wellnessQuery = wellnessQuery.in('user_id', Array.from(universityUserIds))
+    if (universityUserIds.size === 0) {
+      return NextResponse.json({
+        overall: {
+          totalResponses: 0,
+          day14Responses: 0,
+          day30Responses: 0,
+          foundHousingRate: 0,
+          foundWithMatchRate: 0,
+          reducedStressRate: 0,
+        },
+        bySurveyType: [],
+        timeSeries: [],
+      })
     }
+
+    wellnessQuery = wellnessQuery.in('user_id', Array.from(universityUserIds))
 
     const { data: rows, error } = await wellnessQuery
 

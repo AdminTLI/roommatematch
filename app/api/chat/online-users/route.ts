@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createClient, createAdminClient } from '@/lib/supabase/server'
 import { checkRateLimit, getUserRateLimitKey } from '@/lib/rate-limit'
 import { safeLogger } from '@/lib/utils/logger'
+import { programmaticAvatarUrl } from '@/lib/avatars/programmatic'
 
 export async function GET(request: NextRequest) {
   try {
@@ -138,7 +139,7 @@ export async function GET(request: NextRequest) {
     // Fetch profiles for active users
     const { data: profiles, error: profilesError } = await admin
       .from('profiles')
-      .select('user_id, first_name, last_name')
+      .select('user_id, first_name, last_name, avatar_id')
       .in('user_id', allowedUserIds)
 
     if (profilesError) {
@@ -150,7 +151,7 @@ export async function GET(request: NextRequest) {
     const users = (profiles || []).map((profile: any) => ({
       id: profile.user_id,
       firstName: profile.first_name?.trim() || 'User',
-      avatar: undefined // Can be extended later if avatars are stored
+      avatar: programmaticAvatarUrl(profile.avatar_id, profile.user_id),
     }))
 
     return NextResponse.json({ 

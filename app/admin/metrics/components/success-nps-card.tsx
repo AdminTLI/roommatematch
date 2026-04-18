@@ -33,7 +33,9 @@ interface PlatformFeedbackResponse {
   recentFeedback: RecentFeedbackItem[]
 }
 
-export function SuccessNpsCard() {
+type Props = { analyticsQuery?: string }
+
+export function SuccessNpsCard({ analyticsQuery = '' }: Props) {
   const [data, setData] = useState<PlatformFeedbackResponse | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -41,7 +43,7 @@ export function SuccessNpsCard() {
   useEffect(() => {
     const load = async () => {
       try {
-        const res = await fetch('/api/admin/analytics/platform-feedback')
+        const res = await fetch(`/api/admin/analytics/platform-feedback${analyticsQuery}`)
         if (!res.ok) {
           const err = await res.json().catch(() => ({}))
           throw new Error(err.error || 'Failed to load platform feedback analytics')
@@ -56,7 +58,7 @@ export function SuccessNpsCard() {
     }
 
     load()
-  }, [])
+  }, [analyticsQuery])
 
   const overall = data?.overall
 

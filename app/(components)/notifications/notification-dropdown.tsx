@@ -1,34 +1,30 @@
 'use client'
 
-import React, { useState, useEffect, useRef, useCallback } from 'react'
+import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react'
 import { createPortal } from 'react-dom'
 import { useRouter } from 'next/navigation'
-import { useQuery } from '@tanstack/react-query'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Button } from '@/components/ui/button'
-import { Badge } from '@/components/ui/badge'
-import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs'
-// Tooltip removed from buttons to fix click handlers
-import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet'
-// ScrollArea not available, using div with overflow styling
-import { NotificationItem } from './notification-item'
-import { Notification, NotificationCounts } from '@/lib/notifications/types'
+import { useInfiniteQuery, useQueryClient } from '@tanstack/react-query'
+import { Card, CardContent } from '@/components/ui/card'
 import { createClient } from '@/lib/supabase/client'
 import { logger } from '@/lib/utils/logger'
-import { cn } from '@/lib/utils'
-import { queryKeys } from '@/app/providers'
 import { useRealtimeInvalidation } from '@/hooks/use-realtime-invalidation'
-import { Bell, CheckCheck, Eye, X } from 'lucide-react'
+import type { Notification } from '@/lib/notifications/types'
+import type { NotificationCounts } from '@/lib/notifications/types'
+import { NotificationsModal } from '@/components/notifications/notifications-modal'
+import { NotificationsPanel } from '@/components/notifications/notifications-panel'
+import {
+  NOTIFICATIONS_PAGE_SIZE,
+  fetchMyNotifications,
+  processNotificationsWithPrivacy,
+  attachSenderAvatars,
+} from '@/services/notificationsService'
+import type { NotificationFilterCategory } from '@/types/notification'
 
-// Hook to detect if we're on mobile
 function useIsMobile() {
   const [isMobile, setIsMobile] = useState(false)
 
   useEffect(() => {
-    const checkMobile = () => {
-      setIsMobile(window.innerWidth < 640)
-    }
-    
+    const checkMobile = () => setIsMobile(window.innerWidth < 640)
     checkMobile()
     window.addEventListener('resize', checkMobile)
     return () => window.removeEventListener('resize', checkMobile)
@@ -40,35 +36,43 @@ function useIsMobile() {
 interface NotificationDropdownProps {
   isOpen: boolean
   onClose: () => void
-  onMarkAsRead: (id: string) => Promise<void>
+  onMarkAsRead: (notificationIds: string[]) => Promise<void>
   onMarkAllAsRead: () => Promise<void>
   counts: NotificationCounts | null
   userId: string
-  refreshCounts: () => Promise<void>
+  refreshCounts: () => Promise<unknown>
 }
 
-export function NotificationDropdown({ 
-  isOpen, 
-  onClose, 
-  onMarkAsRead, 
+export function NotificationDropdown({
+  isOpen,
+  onClose,
+  onMarkAsRead,
   onMarkAllAsRead,
   counts,
   userId,
-  refreshCounts
+  refreshCounts,
 }: NotificationDropdownProps) {
   const router = useRouter()
   const supabase = createClient()
+  const queryClient = useQueryClient()
   const isMobile = useIsMobile()
   const [mounted, setMounted] = useState(false)
-  const [activeTab, setActiveTab] = useState<'all' | 'unread'>('all')
   const [dropdownPosition, setDropdownPosition] = useState<{ top: number; left: number } | null>(null)
   const listScrollRef = useRef<HTMLDivElement>(null)
+  const [category, setCategory] = useState<NotificationFilterCategory>('all')
+  const [unreadOnly, setUnreadOnly] = useState(false)
 
   useEffect(() => {
     setMounted(true)
   }, [])
 
-  // Calculate position to center panel on bell icon (only on window scroll/resize, not when scrolling inside panel)
+  useEffect(() => {
+    if (!isOpen) {
+      setCategory('all')
+      setUnreadOnly(false)
+    }
+  }, [isOpen])
+
   useEffect(() => {
     if (!isOpen || isMobile || !mounted) return
 
@@ -78,7 +82,7 @@ export function NotificationDropdown({
 
       const bellRect = bellButton.getBoundingClientRect()
       const bellCenterX = bellRect.left + bellRect.width / 2
-      const panelWidth = 384
+      const panelWidth = 500
       const panelLeft = bellCenterX - panelWidth / 2
       const padding = 16
       const left = Math.max(padding, Math.min(panelLeft, window.innerWidth - panelWidth - padding))
@@ -90,11 +94,9 @@ export function NotificationDropdown({
     }
 
     updatePosition()
-    // Use passive: false only for resize; for scroll, only listen to window scroll (not capture)
-    // so that scrolling inside the panel doesn't trigger this
     const handleScroll = (e: Event) => {
       const target = e.target as Node
-      if (listScrollRef.current && listScrollRef.current.contains(target)) return
+      if (listScrollRef.current?.contains(target)) return
       updatePosition()
     }
     window.addEventListener('scroll', handleScroll, true)
@@ -106,126 +108,44 @@ export function NotificationDropdown({
     }
   }, [isOpen, isMobile, mounted])
 
-  // Fetch notifications with React Query
-  const fetchNotifications = useCallback(async (): Promise<Notification[]> => {
-    const desiredLimit = Math.min(
-      Math.max(counts?.unread ?? 20, 20),
-      200
-    )
-    const params = new URLSearchParams({
-      limit: desiredLimit.toString(),
-    })
-    
-    // Add filter based on active tab
-    if (activeTab === 'unread') {
-      params.append('is_read', 'false')
-    }
-    
-    const response = await fetch(`/api/notifications/my?${params}`)
-    if (!response.ok) {
-      throw new Error('Failed to fetch notifications')
-    }
-    const data = await response.json()
-    const notifications = data.notifications || []
-    
-    // Process notifications to check acceptance status for match_created and match_accepted types
-    const processedNotifications = await Promise.all(notifications.map(async (notif: Notification) => {
-      // Safety check: For match_created and match_accepted notifications, verify both users accepted
-      if (notif.type === 'match_created' || notif.type === 'match_accepted') {
-        let bothUsersAccepted = false
-        
-        // First, check if message contains a name that needs sanitization
-        let hasName = false
-        let genericMessage = ''
-        
-        if (notif.type === 'match_created' && notif.message && notif.message.includes('match with')) {
-          // Check if message contains a name - if it has text between "with" and "!" that's not generic, it's a name
-          const matchWithPattern = /match with ([^!]+)!/i
-          const match = notif.message.match(matchWithPattern)
-          if (match) {
-            const namePart = match[1].toLowerCase().trim()
-            hasName = !namePart.includes('someone') && 
-                     !namePart.includes('a potential roommate') &&
-                     !namePart.includes('user') &&
-                     namePart.length > 0
-          }
-          genericMessage = 'You have matched with someone! Check out your matches to see who.'
-        } else if (notif.type === 'match_accepted' && notif.message && notif.message.includes('accepted your match request')) {
-          // Check if message contains a name (not just "Someone")
-          hasName = !notif.message.includes('Someone') && 
-                   !notif.message.includes('someone') &&
-                   !notif.message.includes('Someone accepted your match request')
-          genericMessage = 'Someone accepted your match request!'
-        }
-        
-        // Only verify if we detected a name (optimization)
-        if (hasName && notif.metadata?.match_id) {
-          try {
-            // First try match_suggestions table (new system)
-            const { data: suggestion } = await supabase
-              .from('match_suggestions')
-              .select('status, accepted_by, member_ids')
-              .eq('id', notif.metadata.match_id)
-              .single()
-            
-            if (suggestion) {
-              const acceptedBy = suggestion.accepted_by || []
-              const memberIds = suggestion.member_ids || []
-              bothUsersAccepted = suggestion.status === 'confirmed' || 
-                (memberIds.length === 2 && memberIds.every((id: string) => acceptedBy.includes(id)))
-            } else {
-              // If not found in match_suggestions, try old matches table
-              const { data: match } = await supabase
-                .from('matches')
-                .select('status, a_user, b_user')
-                .eq('id', notif.metadata.match_id)
-                .single()
-              
-              if (match) {
-                // In old matches table, status 'confirmed' means both accepted
-                bothUsersAccepted = match.status === 'confirmed'
-              }
-            }
-          } catch (error) {
-            // If we can't verify, assume not both accepted (safer for privacy)
-            logger.warn('Failed to verify match acceptance status, assuming not both accepted', error)
-            bothUsersAccepted = false
-          }
-        }
-        
-        // If name detected AND (both users haven't accepted OR we couldn't verify), sanitize
-        // Also sanitize if no match_id but name detected (fallback for edge cases)
-        if (hasName && (!bothUsersAccepted || !notif.metadata?.match_id)) {
-          notif.message = genericMessage
-        }
-      }
-      
-      return notif
-    }))
-    
-    return processedNotifications
-  }, [counts?.unread, supabase, activeTab])
+  const fetchPage = useCallback(
+    async ({ pageParam }: { pageParam: number }) => {
+      const { notifications: raw, hasMore } = await fetchMyNotifications({
+        limit: NOTIFICATIONS_PAGE_SIZE,
+        offset: pageParam * NOTIFICATIONS_PAGE_SIZE,
+        category,
+        isRead: unreadOnly ? false : undefined,
+      })
+      const processed = await processNotificationsWithPrivacy(supabase, raw)
+      const items = await attachSenderAvatars(supabase, processed)
+      return { items, hasMore }
+    },
+    [supabase, category, unreadOnly]
+  )
 
-  const { data: notifications = [], isLoading } = useQuery({
-    queryKey: ['notifications', 'dropdown', userId, counts?.unread, activeTab],
-    queryFn: fetchNotifications,
-    staleTime: 10_000, // 10 seconds for real-time data
+  const { data, isLoading, fetchNextPage, hasNextPage, isFetchingNextPage, refetch } = useInfiniteQuery({
+    queryKey: ['notifications', 'dropdown', userId, category, unreadOnly],
+    queryFn: fetchPage,
+    initialPageParam: 0,
+    getNextPageParam: (lastPage, _pages, lastPageParam) => (lastPage.hasMore ? lastPageParam + 1 : undefined),
     enabled: isOpen && !!userId,
+    staleTime: 10_000,
   })
 
-  // Set up real-time invalidation for notifications
+  const notifications = useMemo(() => data?.pages.flatMap((p) => p.items) ?? [], [data?.pages])
+
   useRealtimeInvalidation({
     table: 'notifications',
     event: '*',
     filter: `user_id=eq.${userId}`,
-    queryKeys: ['notifications', userId],
+    queryKeys: ['notifications', 'dropdown', userId],
     enabled: isOpen && !!userId,
     onInvalidate: () => {
-      refreshCounts()
+      void refreshCounts()
     },
   })
 
-  const getChatHref = (metadata: Record<string, any>) => {
+  const getChatHref = (metadata: Record<string, unknown>) => {
     if (metadata.chat_id) return `/chat?chatId=${metadata.chat_id}`
     if (metadata.sender_id) return `/chat?userId=${metadata.sender_id}`
     return '/chat'
@@ -240,371 +160,150 @@ export function NotificationDropdown({
         body: JSON.stringify({ notificationId: notification.id }),
       })
       if (response.ok) {
-        const data = await response.json()
-        if (typeof data?.href === 'string' && data.href.length > 0) return data.href
+        const resData = await response.json()
+        if (typeof resData?.href === 'string' && resData.href.length > 0) return resData.href
       }
     } catch (error) {
-      logger.warn('[NotificationDropdown] Failed to resolve chat href from notification', error)
+      logger.warn('[NotificationDropdown] Failed to resolve chat href from notification', {
+        detail: error instanceof Error ? error.message : String(error),
+      })
     }
-    return getChatHref(notification.metadata || {})
+    return getChatHref((notification.metadata || {}) as Record<string, unknown>)
   }
 
-  const handleNotificationClick = async (notification: Notification) => {
-    // Mark as read if not already read
-    if (!notification.is_read) {
-      await onMarkAsRead(notification.id)
+  const handleOpen = useCallback(
+    async (notification: Notification) => {
+      const { metadata } = notification
+
+      switch (notification.type) {
+        case 'match_created':
+        case 'match_accepted':
+        case 'match_confirmed':
+          if (metadata.chat_id) {
+            router.push(getChatHref(metadata))
+          } else if (metadata.match_id) {
+            router.push('/matches')
+          }
+          break
+        case 'chat_message':
+          router.push(await resolveChatHref(notification))
+          break
+        case 'group_invitation':
+          if (metadata.chat_id) {
+            router.push(getChatHref(metadata))
+          }
+          break
+        case 'profile_updated':
+          router.push('/settings')
+          break
+        case 'questionnaire_completed':
+          router.push('/matches')
+          break
+        case 'verification_status':
+          router.push('/verify')
+          break
+        case 'housing_update':
+          router.push('/housing')
+          break
+        case 'agreement_update':
+          router.push('/agreements')
+          break
+        case 'safety_alert':
+          router.push('/safety')
+          break
+        case 'system_announcement':
+        case 'admin_alert':
+          router.push('/notifications')
+          break
+        default:
+          router.push('/notifications')
+      }
+
+      onClose()
+    },
+    [onClose, router]
+  )
+
+  const handleMarkAsReadMany = useCallback(
+    async (ids: string[]) => {
+      if (ids.length === 0) return
+      await onMarkAsRead(ids)
+      await refreshCounts()
+      await queryClient.invalidateQueries({ queryKey: ['notifications', 'dropdown', userId] })
+    },
+    [onMarkAsRead, queryClient, refreshCounts, userId]
+  )
+
+  const handleMarkAllClick = useCallback(async () => {
+    const unreadTotal = counts?.unread ?? 0
+    if (unreadTotal === 0) return
+    try {
+      await onMarkAllAsRead()
+      await refreshCounts()
+      await queryClient.invalidateQueries({ queryKey: ['notifications', 'dropdown', userId] })
+      await refetch()
+    } catch (error) {
+      logger.error('[NotificationDropdown] Failed to mark all as read:', error)
+      await refetch()
       await refreshCounts()
     }
+  }, [counts?.unread, onMarkAllAsRead, queryClient, refetch, refreshCounts, userId])
 
-    // Navigate based on notification type and metadata
-    const { metadata } = notification
-    
-    switch (notification.type) {
-      case 'match_created':
-      case 'match_accepted':
-      case 'match_confirmed':
-        if (metadata.chat_id) {
-          router.push(getChatHref(metadata))
-        } else if (metadata.match_id) {
-          router.push('/matches')
-        }
-        break
-      case 'chat_message':
-        router.push(await resolveChatHref(notification))
-        break
-      case 'group_invitation':
-        if (metadata.chat_id) {
-          router.push(getChatHref(metadata))
-        }
-        break
-      case 'profile_updated':
-        router.push('/settings')
-        break
-      case 'questionnaire_completed':
-        router.push('/matches')
-        break
-      case 'verification_status':
-        router.push('/verify')
-        break
-      case 'housing_update':
-        router.push('/housing')
-        break
-      case 'agreement_update':
-        router.push('/agreements')
-        break
-      case 'safety_alert':
-        router.push('/safety')
-        break
-      case 'system_announcement':
-        // Could navigate to a specific announcement page
-        router.push('/notifications')
-        break
-      default:
-        router.push('/notifications')
-    }
+  const unreadTotal = counts?.unread ?? 0
 
-    onClose()
+  const listProps = {
+    notifications,
+    counts,
+    isLoading,
+    hasNextPage: Boolean(hasNextPage),
+    isFetchingNextPage,
+    fetchNextPage: () => void fetchNextPage(),
+    category,
+    onCategoryChange: setCategory,
+    unreadOnly,
+    onUnreadOnlyChange: setUnreadOnly,
+    onClose,
+    onMarkAllAsRead: handleMarkAllClick,
+    onMarkAsRead: handleMarkAsReadMany,
+    onOpen: handleOpen,
+    unreadTotal,
+    listScrollRef,
   }
 
   if (!isOpen) return null
 
-  const unreadCount = counts?.unread ?? notifications.filter(n => !n.is_read).length
-
-  const handleMarkAllClick = async (e: React.MouseEvent<HTMLButtonElement>) => {
-    e.preventDefault()
-    e.stopPropagation()
-    
-    if (unreadCount === 0) {
-      logger.log('[NotificationDropdown] No unread notifications to mark')
-      return
-    }
-    
-    try {
-      logger.log('[NotificationDropdown] Marking all as read...', { unreadCount })
-      await onMarkAllAsRead()
-      logger.log('[NotificationDropdown] Mark all as read completed, refreshing...')
-      
-      // Refresh counts and notifications
-      await Promise.all([
-        refreshCounts(),
-        fetchNotifications()
-      ])
-      
-      logger.log('[NotificationDropdown] Refresh completed')
-    } catch (error) {
-      logger.error('[NotificationDropdown] Failed to mark all as read:', error)
-      // Re-fetch to get accurate state
-      await fetchNotifications()
-      await refreshCounts()
-    }
-  }
-
-  const HeaderContent = ({ isMobile = false }: { isMobile?: boolean }) => {
-    const btnClass =
-      'h-10 w-10 shrink-0 p-0 sm:h-9 sm:w-9 hover:bg-zinc-100 dark:hover:bg-slate-700 text-zinc-600 dark:text-slate-300 hover:text-zinc-900 dark:hover:text-white disabled:opacity-40'
-
-    const actions = (
-      <div
-        className={cn(
-          'flex shrink-0 items-center',
-          isMobile ? 'w-full justify-between gap-2' : 'justify-end gap-1',
-        )}
-        onClick={(e) => e.stopPropagation()}
-      >
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={(e) => {
-            logger.log('[NotificationDropdown] Mark all button clicked!', { unreadCount })
-            e.preventDefault()
-            e.stopPropagation()
-            handleMarkAllClick(e)
-          }}
-          disabled={unreadCount === 0}
-          className={btnClass}
-          title="Mark all as read"
-          type="button"
-        >
-          <CheckCheck className="h-4 w-4 flex-shrink-0" />
-          <span className="sr-only">Mark all as read</span>
-        </Button>
-
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={(e) => {
-            logger.log('[NotificationDropdown] View all button clicked!')
-            e.preventDefault()
-            e.stopPropagation()
-            setTimeout(() => {
-              window.location.href = '/notifications'
-            }, 0)
-          }}
-          className={btnClass}
-          title="View all notifications"
-          type="button"
-        >
-          <Eye className="h-4 w-4 flex-shrink-0" />
-          <span className="sr-only">View all notifications</span>
-        </Button>
-
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={(e) => {
-            e.preventDefault()
-            e.stopPropagation()
-            onClose()
-          }}
-          className={btnClass}
-          title="Close notifications"
-          type="button"
-        >
-          <X className="h-4 w-4 flex-shrink-0" />
-          <span className="sr-only">Close</span>
-        </Button>
-      </div>
-    )
-
-    return (
-      <div
-        className={cn(
-          'flex w-full',
-          isMobile ? 'flex-col items-stretch gap-3' : 'flex-row items-center justify-between gap-3',
-        )}
-        onClick={(e) => e.stopPropagation()}
-      >
-        <div className="flex min-w-0 flex-1 items-center gap-2 sm:gap-2.5">
-          <Bell className="h-5 w-5 flex-shrink-0 text-violet-600 dark:text-violet-400" />
-          <h2 className="truncate text-base font-semibold tracking-tight text-zinc-900 dark:text-white">
-            Notifications
-          </h2>
-          {unreadCount > 0 && (
-            <Badge
-              variant="destructive"
-              className="ml-1 h-5 flex-shrink-0 rounded-full border-0 bg-violet-600 px-1.5 text-[10px] leading-none hover:bg-violet-500 dark:bg-violet-600 dark:hover:bg-violet-500"
-            >
-              {unreadCount}
-            </Badge>
-          )}
-        </div>
-
-        {isMobile ? (
-          <div className="border-t border-zinc-200 pt-3 dark:border-slate-700/80">{actions}</div>
-        ) : (
-          actions
-        )}
-      </div>
-    )
-  }
-
-  const NotificationList = () => {
-    // Filter notifications based on active tab (client-side filtering as backup)
-    const filteredNotifications = activeTab === 'unread' 
-      ? notifications.filter(n => !n.is_read)
-      : notifications
-
-    return (
-      <div className="flex flex-col h-full min-h-0">
-        {/* Professional Tabs */}
-        <div className="flex-shrink-0 px-3 pt-3 pb-2 bg-white dark:bg-slate-800">
-          <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as 'all' | 'unread')}>
-            <TabsList className="grid w-full grid-cols-2 grid-rows-1 h-11 rounded-xl bg-zinc-100 dark:bg-slate-700/50 p-1.5 gap-1.5 items-center">
-              <TabsTrigger
-                value="all"
-                className="w-full text-xs font-medium rounded-lg data-[state=active]:bg-violet-600 data-[state=active]:text-white text-zinc-600 dark:text-slate-300 h-5 min-h-0 flex items-center justify-center gap-1.5 px-2.5 py-0"
-              >
-                <span>All</span>
-                {notifications.length > 0 && (
-                  <Badge variant="secondary" className="h-4 min-w-[16px] px-1.5 text-[10px] font-medium rounded-full border-0 bg-zinc-400/80 dark:bg-slate-600/80 text-white leading-none flex items-center justify-center shrink-0">
-                    {notifications.length}
-                  </Badge>
-                )}
-              </TabsTrigger>
-              <TabsTrigger
-                value="unread"
-                className="w-full text-xs font-medium rounded-lg data-[state=active]:bg-violet-600 data-[state=active]:text-white text-zinc-600 dark:text-slate-300 h-5 min-h-0 flex items-center justify-center gap-1.5 px-2.5 py-0"
-              >
-                <span>Unread</span>
-                {unreadCount > 0 && (
-                  <Badge variant="destructive" className="h-4 min-w-[16px] px-1.5 text-[10px] font-medium rounded-full bg-violet-600/80 text-white border-0 leading-none flex items-center justify-center shrink-0">
-                    {unreadCount}
-                  </Badge>
-                )}
-              </TabsTrigger>
-            </TabsList>
-          </Tabs>
-        </div>
-
-        {/* Notification List - Scrollable container; ref so window scroll listener ignores scrolls here */}
-        <div
-          ref={listScrollRef}
-          className="flex-1 min-h-0 overflow-y-auto overflow-x-hidden bg-white dark:bg-slate-800 overscroll-contain"
-          style={{ WebkitOverflowScrolling: 'touch' }}
-          onWheel={(e) => e.stopPropagation()}
-        >
-          {isLoading ? (
-            <div className="p-4 text-center text-zinc-500 dark:text-slate-400 text-xs">
-              Loading notifications...
-            </div>
-          ) : filteredNotifications.length === 0 ? (
-            <div className="p-6 text-center">
-              <div className="w-12 h-12 rounded-xl bg-violet-100 dark:bg-violet-500/10 flex items-center justify-center mx-auto mb-3">
-                <Bell className="h-6 w-6 text-violet-600 dark:text-violet-400" />
-              </div>
-              <p className="text-zinc-900 dark:text-white text-sm font-semibold mb-1">
-                {activeTab === 'unread' ? 'No unread notifications' : 'No notifications yet'}
-              </p>
-              <p className="text-zinc-500 dark:text-slate-400 text-xs mt-1">
-                {activeTab === 'unread' 
-                  ? 'All caught up! New notifications will appear here.'
-                  : "We'll notify you about matches, messages, and updates"
-                }
-              </p>
-            </div>
-          ) : (
-            <div className="space-y-2 p-3">
-              {filteredNotifications.map((notification) => (
-                <div key={notification.id} className="flex justify-center">
-                  <div className="w-full max-w-full">
-                    <NotificationItem
-                      notification={notification}
-                      onMarkAsRead={async (id) => {
-                        await onMarkAsRead(id)
-                        await refreshCounts()
-                      }}
-                      onNavigate={handleNotificationClick}
-                    />
-                  </div>
-                </div>
-              ))}
-              {activeTab === 'unread' && counts && counts.unread > filteredNotifications.length && (
-                <p className="text-[10px] text-zinc-400 dark:text-slate-500 px-2 pb-2">
-                  Showing the first {filteredNotifications.length} of {counts.unread} unread notifications. 
-                  Tap "View all notifications" to open the full list.
-                </p>
-              )}
-            </div>
-          )}
-        </div>
-      </div>
-    )
-  }
-
-  // Render mobile Sheet or desktop dropdown based on screen size
   if (isMobile) {
     return (
-      <Sheet open={isOpen} onOpenChange={onClose}>
-        <SheetContent
-          data-notification-dropdown
-          side="right"
-          className="w-full p-0 z-[100] bg-white dark:bg-slate-800 border-zinc-200 dark:border-slate-700 flex flex-col"
-          onClick={(e) => {
-            // Prevent clicks inside sheet from closing it
-            e.stopPropagation()
-          }}
-        >
-          <SheetHeader
-            className="mb-0 flex-shrink-0 space-y-0 border-b border-zinc-200 px-4 pb-4 pt-4 dark:border-slate-700/50"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <SheetTitle className="sr-only">Notifications</SheetTitle>
-            <HeaderContent isMobile />
-          </SheetHeader>
-          <div className="flex-1 min-h-0 flex flex-col overflow-hidden">
-            <NotificationList />
-          </div>
-        </SheetContent>
-      </Sheet>
+      <NotificationsModal
+        open={isOpen}
+        onOpenChange={(open) => {
+          if (!open) onClose()
+        }}
+        {...listProps}
+      />
     )
   }
 
-  // Desktop: Card Dropdown
-  if (!isOpen || !mounted) return null
+  if (!mounted) return null
 
   return createPortal(
     <>
-      {/* Backdrop for desktop */}
-      <div 
-        className="fixed inset-0 bg-background/80 backdrop-blur-sm z-[1000]" 
+      <div
+        className="fixed inset-0 z-[1000] bg-background/80 backdrop-blur-sm"
         onClick={(e) => {
-          // Only close if clicking directly on backdrop, not on child elements
-          if (e.target === e.currentTarget) {
-            onClose()
-          }
+          if (e.target === e.currentTarget) onClose()
         }}
-        aria-hidden="true" 
+        aria-hidden="true"
       />
-      {/* Dropdown content */}
-      <div 
+      <div
         data-notification-dropdown
-        className="fixed w-96 z-[1001]"
+        className="fixed z-[1001] w-[min(100vw-24px,500px)] max-w-[500px]"
         style={dropdownPosition ? { top: `${dropdownPosition.top}px`, left: `${dropdownPosition.left}px` } : { display: 'none' }}
-        onClick={(e) => {
-          // Prevent clicks inside dropdown from closing it
-          e.stopPropagation()
-        }}
+        onClick={(e) => e.stopPropagation()}
       >
-        <Card className="shadow-xl overflow-hidden bg-white dark:bg-slate-800 border-zinc-200 dark:border-slate-700 rounded-2xl border">
-          <CardHeader
-            className="pb-3 px-4 pt-4 border-b border-zinc-200 dark:border-slate-700/50 rounded-t-2xl"
-            onClick={(e) => {
-              // Prevent header clicks from closing dropdown
-              e.stopPropagation()
-            }}
-          >
-            <CardTitle
-              className="text-base font-semibold"
-              onClick={(e) => {
-                // Prevent title clicks from closing dropdown
-                e.stopPropagation()
-              }}
-            >
-              <HeaderContent isMobile={false} />
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="p-0 bg-white dark:bg-slate-800 flex flex-col" style={{ height: '500px', maxHeight: '500px', minHeight: 0 }}>
-            <NotificationList />
+        <Card className="overflow-hidden rounded-2xl border border-zinc-200 bg-white shadow-xl dark:border-slate-700 dark:bg-slate-900">
+          <CardContent className="min-h-0 p-0">
+            <NotificationsPanel {...listProps} />
           </CardContent>
         </Card>
       </div>

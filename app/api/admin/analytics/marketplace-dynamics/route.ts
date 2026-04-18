@@ -1,51 +1,18 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createAdminClient } from '@/lib/supabase/server'
-import { requireAdmin } from '@/lib/auth/admin'
 import { safeLogger } from '@/lib/utils/logger'
+import { resolveAdminAnalyticsScope, resolveScopedMetricsUserIds } from '@/lib/admin/analytics-scope'
 
 export async function GET(request: NextRequest) {
   try {
-    const adminCheck = await requireAdmin(request, false)
-
-    if (!adminCheck.ok) {
-      return NextResponse.json(
-        { error: adminCheck.error || 'Admin access required' },
-        { status: adminCheck.status }
-      )
+    const scope = await resolveAdminAnalyticsScope(request)
+    if (!scope.ok) {
+      return NextResponse.json({ error: scope.error }, { status: scope.status })
     }
 
-    const { adminRecord } = adminCheck
+    const { universityId, filters } = scope
     const admin = createAdminClient()
-
-    if (!adminRecord) {
-      return NextResponse.json(
-        { error: 'Admin record not found' },
-        { status: 500 }
-      )
-    }
-
-    const isSuperAdmin = adminRecord.role === 'super_admin'
-    const universityId = isSuperAdmin ? null : adminRecord.university_id
-
-    // Resolve university-scoped user IDs (if applicable)
-    let universityUserIds: Set<string> | null = null
-
-    if (universityId) {
-      const { data: academic, error: academicError } = await admin
-        .from('user_academic')
-        .select('user_id')
-        .eq('university_id', universityId)
-
-      if (academicError) {
-        safeLogger.error('[Marketplace Dynamics] Failed to fetch academic users', academicError)
-        return NextResponse.json(
-          { error: 'Failed to load marketplace dynamics' },
-          { status: 500 }
-        )
-      }
-
-      universityUserIds = new Set(academic?.map(a => a.user_id) || [])
-    }
+    const universityUserIds = await resolveScopedMetricsUserIds(admin, universityId, filters)
 
     // 1) Active users with housing status (supply vs demand)
     let usersQuery = admin
@@ -53,13 +20,10 @@ export async function GET(request: NextRequest) {
       .select('id')
       .eq('is_active', true)
 
-    if (universityId && universityUserIds) {
-      if (universityUserIds.size > 0) {
-        usersQuery = usersQuery.in('id', Array.from(universityUserIds))
-      } else {
-        // No users for this university
-        usersQuery = usersQuery.eq('id', '00000000-0000-0000-0000-000000000000')
-      }
+    if (universityUserIds.size > 0) {
+      usersQuery = usersQuery.in('id', Array.from(universityUserIds))
+    } else {
+      usersQuery = usersQuery.eq('id', '00000000-0000-0000-0000-000000000000')
     }
 
     const { data: activeUsers, error: usersError } = await usersQuery
@@ -162,7 +126,7 @@ export async function GET(request: NextRequest) {
 
     let activeChatIds = activeChatIdsAll
 
-    if (universityId && universityUserIds && activeChatIdsAll.size > 0) {
+    if (universityUserIds.size > 0 && activeChatIdsAll.size > 0) {
       const { data: chatMembers, error: membersError } = await admin
         .from('chat_members')
         .select('chat_id, user_id')

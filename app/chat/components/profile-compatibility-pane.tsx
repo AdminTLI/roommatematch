@@ -29,6 +29,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from '@/components/ui/tooltip'
+import { ProgressiveProfileLockHint } from './progressive-profile-lock-hint'
 
 interface CompatibilityData {
   compatibility_score: number
@@ -53,6 +54,12 @@ interface CompatibilityData {
 interface UserInfoData {
   first_name: string | null
   last_name: string | null
+  progressive_disclosure?: {
+    mutual_details: boolean
+    mutual_picture?: boolean
+    messages_exchanged_count?: number
+    show_reveal_prompt?: boolean
+  }
   bio: string | null
   interests: string[]
   housing_status?: HousingStatusKey[]
@@ -255,6 +262,8 @@ export function ProfileCompatibilityPane({ chatId, userId, isOpen, onClose }: Pr
     ? `${userInfo.first_name || ''}${userInfo.last_name ? ` ${userInfo.last_name}` : ''}`.trim() || 'User'
     : null
 
+  const detailsLocked = Boolean(userInfo?.progressive_disclosure && !userInfo.progressive_disclosure.mutual_details)
+
   return (
     <div data-profile-compatibility-pane className="flex flex-col h-full w-full overflow-hidden bg-white dark:bg-gray-900">
       {/* Header */}
@@ -436,6 +445,8 @@ export function ProfileCompatibilityPane({ chatId, userId, isOpen, onClose }: Pr
                   <p className="text-sm text-gray-700 dark:text-gray-300 leading-relaxed whitespace-pre-wrap">
                     {userInfo.bio}
                   </p>
+                ) : detailsLocked ? (
+                  <ProgressiveProfileLockHint partnerFirstName={userInfo?.first_name} what="their bio" />
                 ) : (
                   <p className="text-xs text-gray-500 dark:text-gray-400 italic">
                     No bio available
@@ -458,6 +469,8 @@ export function ProfileCompatibilityPane({ chatId, userId, isOpen, onClose }: Pr
                       </Badge>
                     ))}
                   </div>
+                ) : detailsLocked ? (
+                  <ProgressiveProfileLockHint partnerFirstName={userInfo?.first_name} what="their interests" />
                 ) : (
                   <p className="text-xs text-gray-500 dark:text-gray-400 italic">
                     No interests listed
@@ -468,7 +481,9 @@ export function ProfileCompatibilityPane({ chatId, userId, isOpen, onClose }: Pr
               {/* Housing Status - Always show */}
               <div>
                 <h3 className="text-sm font-bold text-gray-900 dark:text-white uppercase tracking-wider mb-3">HOUSING STATUS</h3>
-                {userInfo?.housing_status && userInfo.housing_status.length > 0 ? (
+                {detailsLocked ? (
+                  <ProgressiveProfileLockHint partnerFirstName={userInfo?.first_name} what="their housing preferences" />
+                ) : userInfo?.housing_status && userInfo.housing_status.length > 0 ? (
                   <StatusBadgeList
                     statusKeys={userInfo.housing_status}
                     variant="secondary"
@@ -486,57 +501,67 @@ export function ProfileCompatibilityPane({ chatId, userId, isOpen, onClose }: Pr
                   <h3 className="text-sm font-bold text-gray-900 dark:text-white uppercase tracking-wider mb-3">
                     PROFESSIONAL LIFESTYLE
                   </h3>
-                  <div className="space-y-2 text-sm">
-                    <div>
-                      <span className="text-gray-600 dark:text-gray-400 font-medium">WFH: </span>
-                      <span className="text-gray-900 dark:text-white">{formatWfhStatus(userInfo?.wfh_status)}</span>
+                  {detailsLocked ? (
+                    <ProgressiveProfileLockHint partnerFirstName={userInfo?.first_name} what="their work and lifestyle details" />
+                  ) : (
+                    <div className="space-y-2 text-sm">
+                      <div>
+                        <span className="text-gray-600 dark:text-gray-400 font-medium">WFH: </span>
+                        <span className="text-gray-900 dark:text-white">{formatWfhStatus(userInfo?.wfh_status)}</span>
+                      </div>
+                      <div>
+                        <span className="text-gray-600 dark:text-gray-400 font-medium">Age: </span>
+                        <span className="text-gray-900 dark:text-white">
+                          {userInfo?.age != null ? `${userInfo.age} years old` : 'Not provided'}
+                        </span>
+                      </div>
+                      <div>
+                        <span className="text-gray-600 dark:text-gray-400 font-medium">Schedule: </span>
+                        <span className="text-gray-900 dark:text-white">
+                          {userInfo?.work_schedule || 'Not provided'}
+                        </span>
+                      </div>
                     </div>
-                    <div>
-                      <span className="text-gray-600 dark:text-gray-400 font-medium">Age: </span>
-                      <span className="text-gray-900 dark:text-white">
-                        {userInfo?.age != null ? `${userInfo.age} years old` : 'Not provided'}
-                      </span>
-                    </div>
-                    <div>
-                      <span className="text-gray-600 dark:text-gray-400 font-medium">Schedule: </span>
-                      <span className="text-gray-900 dark:text-white">
-                        {userInfo?.work_schedule || 'Not provided'}
-                      </span>
-                    </div>
-                  </div>
+                  )}
                 </div>
               ) : (
                 <div>
                   <h3 className="text-sm font-bold text-gray-900 dark:text-white uppercase tracking-wider mb-3">UNIVERSITY</h3>
                   <div className="space-y-2 text-sm">
-                    {userInfo?.university_name ? (
-                      <div>
-                        <span className="text-gray-600 dark:text-gray-400 font-medium">University: </span>
-                        <span className="text-gray-900 dark:text-white">{userInfo.university_name}</span>
-                      </div>
-                    ) : null}
-                    {userInfo?.programme_name ? (
-                      <div>
-                        <span className="text-gray-600 dark:text-gray-400 font-medium">Programme: </span>
-                        <span className="text-gray-900 dark:text-white">{userInfo.programme_name}</span>
-                      </div>
-                    ) : null}
-                    {userInfo?.study_year !== null && userInfo?.study_year !== undefined ? (
-                      <div>
-                        <span className="text-gray-600 dark:text-gray-400 font-medium">Year: </span>
-                        <span className="text-gray-900 dark:text-white">{userInfo.study_year}</span>
-                      </div>
-                    ) : null}
-                    {userInfo?.degree_level ? (
-                      <div>
-                        <span className="text-gray-600 dark:text-gray-400 font-medium">Degree Level: </span>
-                        <span className="text-gray-900 dark:text-white">{userInfo.degree_level}</span>
-                      </div>
-                    ) : null}
-                    {(!userInfo?.university_name && !userInfo?.programme_name && userInfo?.study_year === null && !userInfo?.degree_level) && (
-                      <p className="text-xs text-gray-500 dark:text-gray-400 italic">
-                        No university information available
-                      </p>
+                    {detailsLocked ? (
+                      <ProgressiveProfileLockHint partnerFirstName={userInfo?.first_name} what="their university details" />
+                    ) : (
+                      <>
+                        {userInfo?.university_name ? (
+                          <div>
+                            <span className="text-gray-600 dark:text-gray-400 font-medium">University: </span>
+                            <span className="text-gray-900 dark:text-white">{userInfo.university_name}</span>
+                          </div>
+                        ) : null}
+                        {userInfo?.programme_name ? (
+                          <div>
+                            <span className="text-gray-600 dark:text-gray-400 font-medium">Programme: </span>
+                            <span className="text-gray-900 dark:text-white">{userInfo.programme_name}</span>
+                          </div>
+                        ) : null}
+                        {userInfo?.study_year !== null && userInfo?.study_year !== undefined ? (
+                          <div>
+                            <span className="text-gray-600 dark:text-gray-400 font-medium">Year: </span>
+                            <span className="text-gray-900 dark:text-white">{userInfo.study_year}</span>
+                          </div>
+                        ) : null}
+                        {userInfo?.degree_level ? (
+                          <div>
+                            <span className="text-gray-600 dark:text-gray-400 font-medium">Degree Level: </span>
+                            <span className="text-gray-900 dark:text-white">{userInfo.degree_level}</span>
+                          </div>
+                        ) : null}
+                        {(!userInfo?.university_name && !userInfo?.programme_name && userInfo?.study_year === null && !userInfo?.degree_level) && (
+                          <p className="text-xs text-gray-500 dark:text-gray-400 italic">
+                            No university information available
+                          </p>
+                        )}
+                      </>
                     )}
                   </div>
                 </div>

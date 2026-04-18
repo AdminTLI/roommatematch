@@ -22,6 +22,7 @@ import { queryKeys, queryClient } from '@/app/providers'
 import { cn } from '@/lib/utils'
 import { showSuccessToast, showErrorToast } from '@/lib/toast'
 import { useRealtimeInvalidation } from '@/hooks/use-realtime-invalidation'
+import { programmaticAvatarUrl } from '@/lib/avatars/programmatic'
 
 interface ChatRoom {
   id: string
@@ -443,13 +444,16 @@ export function MessengerSidebar({ user, onChatSelect, selectedChatId, onNewChat
             try {
               const { data: fallbackProfiles, error: fallbackError } = await supabase
                 .from('profiles')
-                .select('user_id, first_name, last_name')
+                .select('user_id, first_name, last_name, avatar_id')
                 .in('user_id', Array.from(allUserIds))
 
               if (!fallbackError && fallbackProfiles) {
                 fallbackProfiles.forEach((profile: any) => {
                   if (profile?.user_id) {
-                    profilesMap.set(profile.user_id, profile)
+                    profilesMap.set(profile.user_id, {
+                      ...profile,
+                      avatar_url: programmaticAvatarUrl(profile.avatar_id, profile.user_id),
+                    })
                   }
                 })
                 console.log(`[MessengerSidebar] Fallback: Loaded ${profilesMap.size} profiles directly from Supabase`)
@@ -554,7 +558,7 @@ export function MessengerSidebar({ user, onChatSelect, selectedChatId, onNewChat
             return {
               id: p.user_id,
               name: fullName,
-              avatar: undefined,
+              avatar: profile?.avatar_url || undefined,
               isOnline: false
             }
           }) || [],
@@ -562,6 +566,40 @@ export function MessengerSidebar({ user, onChatSelect, selectedChatId, onNewChat
           isRecentlyMatched
         }
       })
+
+      const individualIds = transformedChats.filter((c) => c.type === 'individual').map((c) => c.id)
+      if (individualIds.length > 0) {
+        try {
+          const pr = await fetchWithCSRF('/api/chat/privacy-state/batch', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ chat_ids: individualIds }),
+          })
+          if (pr.ok) {
+            const body = (await pr.json()) as {
+              by_chat_id?: Record<
+                string,
+                { partner_user_id: string | null; partner_avatar_url: string | null; partner_display_name: string }
+              >
+            }
+            const byChat = body.by_chat_id || {}
+            return transformedChats.map((chat) => {
+              if (chat.type !== 'individual') return chat
+              const snap = byChat[chat.id]
+              if (!snap?.partner_user_id) return chat
+              return {
+                ...chat,
+                name: snap.partner_display_name || chat.name,
+                participants: chat.participants.map((p) =>
+                  p.id === snap.partner_user_id ? { ...p, avatar: snap.partner_avatar_url || p.avatar } : p,
+                ),
+              }
+            })
+          }
+        } catch (e) {
+          console.warn('[MessengerSidebar] privacy-state batch failed (non-fatal)', e)
+        }
+      }
 
       return transformedChats
     } catch (error) {

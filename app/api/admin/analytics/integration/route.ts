@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createAdminClient } from '@/lib/supabase/server'
-import { requireAdmin } from '@/lib/auth/admin'
 import { safeLogger } from '@/lib/utils/logger'
+import { openScopedAnalyticsSession } from '@/lib/admin/analytics-scope'
 
 type MatchStatus = 'pending' | 'accepted' | 'rejected' | 'unmatched'
 
@@ -25,59 +24,28 @@ interface IntegrationMetricsResponse {
 
 export async function GET(request: NextRequest) {
   try {
-    const adminCheck = await requireAdmin(request, false)
-
-    if (!adminCheck.ok) {
-      return NextResponse.json(
-        { error: adminCheck.error || 'Admin access required' },
-        { status: adminCheck.status }
-      )
+    const ctx = await openScopedAnalyticsSession(request)
+    if (!ctx.ok) {
+      return NextResponse.json({ error: ctx.error }, { status: ctx.status })
     }
 
-    const { adminRecord } = adminCheck
-    const admin = createAdminClient()
+    const { admin, scopedUserIds: universityUserIds } = ctx
 
-    const isSuperAdmin = adminRecord?.role === 'super_admin'
-    const universityId = isSuperAdmin ? null : adminRecord?.university_id
-
-    // If admin is scoped to a university, find all user_ids for that university
-    let universityUserIds: Set<string> | null = null
-    if (universityId) {
-      const { data: academic, error: academicError } = await admin
-        .from('user_academic')
-        .select('user_id')
-        .eq('university_id', universityId)
-
-      if (academicError) {
-        safeLogger.error('[Admin Integration Analytics] Failed to load user_academic', {
-          error: academicError,
-          universityId,
-        })
+    if (universityUserIds.size === 0) {
+      const empty: IntegrationMetricsResponse = {
+        totalMatches: 0,
+        crossCulturalMatches: 0,
+        integrationRate: 0,
       }
-
-      universityUserIds = new Set((academic || []).map((a: { user_id: string }) => a.user_id))
-
-      if (universityUserIds.size === 0) {
-        const empty: IntegrationMetricsResponse = {
-          totalMatches: 0,
-          crossCulturalMatches: 0,
-          integrationRate: 0,
-        }
-        return NextResponse.json(empty)
-      }
+      return NextResponse.json(empty)
     }
 
-    // Load active matches (status = 'accepted'), optionally filtered by university users
-    let matchesQuery = admin
+    const matchesQuery = admin
       .from('matches')
       .select('a_user, b_user, status')
       .eq('status', 'accepted')
-
-    if (universityId && universityUserIds) {
-      matchesQuery = matchesQuery
-        .in('a_user', Array.from(universityUserIds))
-        .in('b_user', Array.from(universityUserIds))
-    }
+      .in('a_user', Array.from(universityUserIds))
+      .in('b_user', Array.from(universityUserIds))
 
     const { data: matches, error: matchesError } = await matchesQuery
 

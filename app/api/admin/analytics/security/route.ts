@@ -1,31 +1,34 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createAdminClient } from '@/lib/supabase/server'
-import { requireAdmin } from '@/lib/auth/admin'
 import { safeLogger } from '@/lib/utils/logger'
+import { resolveAdminAnalyticsScope } from '@/lib/admin/analytics-scope'
 
 export async function GET(request: NextRequest) {
   try {
-    const adminCheck = await requireAdmin(request, false)
-    
-    if (!adminCheck.ok) {
-      return NextResponse.json(
-        { error: adminCheck.error || 'Admin access required' },
-        { status: adminCheck.status }
-      )
+    const scope = await resolveAdminAnalyticsScope(request)
+    if (!scope.ok) {
+      return NextResponse.json({ error: scope.error }, { status: scope.status })
     }
 
+    const { universityId } = scope
     const admin = createAdminClient()
     const fourteenDaysAgo = new Date(Date.now() - 14 * 24 * 60 * 60 * 1000)
 
     // Get security events from analytics_metrics
     // Sum metric_value for each event type per day
-    const { data: securityEvents } = await admin
+    const { data: rawEvents } = await admin
       .from('analytics_metrics')
       .select('metric_name, metric_value, period_start, period_end, filter_criteria')
       .eq('metric_category', 'safety_incidents')
       .like('metric_name', 'security_event_%')
       .gte('period_start', fourteenDaysAgo.toISOString())
       .order('period_start', { ascending: true })
+
+    const securityEvents = (rawEvents || []).filter((event: { filter_criteria?: unknown }) => {
+      const fc = event.filter_criteria as { university_id?: string } | null | undefined
+      if (!fc || typeof fc !== 'object' || !('university_id' in fc)) return false
+      return fc.university_id === universityId
+    })
 
     // Group by date and event type, summing metric_value
     const dailyEvents = new Map<string, {

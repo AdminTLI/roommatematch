@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createClient } from '@/lib/supabase/server';
+import { createClient, createAdminClient } from '@/lib/supabase/server';
 import { NotificationFilters, NotificationType } from '@/lib/notifications/types';
+import { CATEGORY_TYPES, isNotificationFilterCategory } from '@/types/notification';
+import { senderAvatarForChatNotification } from '@/lib/privacy/profile-access-server';
 
 const DEFAULT_NOTIFICATION_PREFS = {
   emailMatches: true,
@@ -39,6 +41,10 @@ export async function GET(request: NextRequest) {
     }
 
     const { searchParams } = new URL(request.url);
+    const categoryParam = searchParams.get('category') || undefined;
+    const category =
+      categoryParam && isNotificationFilterCategory(categoryParam) ? categoryParam : undefined;
+
     const filters: NotificationFilters = {
       is_read: searchParams.get('is_read') ? searchParams.get('is_read') === 'true' : undefined,
       type: searchParams.get('type') as any,
@@ -88,15 +94,30 @@ export async function GET(request: NextRequest) {
       })
     }
 
-    query = query.in('type', allowedTypes)
-
     if (filters.is_read !== undefined) {
       query = query.eq('is_read', filters.is_read);
     }
 
-    if (filters.type) {
-      query = query.eq('type', filters.type);
+    let typesQuery: NotificationType[] = allowedTypes
+    if (category && category !== 'all') {
+      typesQuery = (CATEGORY_TYPES[category] ?? []).filter((t): t is NotificationType =>
+        allowedTypes.includes(t as NotificationType)
+      ) as NotificationType[]
+      if (typesQuery.length === 0) {
+        return NextResponse.json({
+          notifications: [],
+          pagination: {
+            limit: filters.limit,
+            offset: filters.offset,
+            has_more: false,
+          },
+        })
+      }
+    } else if (filters.type && allowedTypes.includes(filters.type as NotificationType)) {
+      typesQuery = [filters.type as NotificationType]
     }
+
+    query = query.in('type', typesQuery)
 
     if (filters.limit) {
       query = query.limit(filters.limit);
@@ -113,8 +134,24 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'Failed to fetch notifications' }, { status: 500 });
     }
 
+    const admin = createAdminClient();
+    const enriched = await Promise.all(
+      (notifications || []).map(async (n) => {
+        if (n.type !== 'chat_message') return n;
+        const senderId = n.metadata?.sender_id as string | undefined;
+        const chatId = n.metadata?.chat_id as string | undefined;
+        if (!senderId) return n;
+        try {
+          const sender_avatar_url = await senderAvatarForChatNotification(admin, user.id, senderId, chatId);
+          return { ...n, sender_avatar_url };
+        } catch {
+          return n;
+        }
+      })
+    );
+
     return NextResponse.json({ 
-      notifications: notifications || [],
+      notifications: enriched,
       pagination: {
         limit: filters.limit,
         offset: filters.offset,

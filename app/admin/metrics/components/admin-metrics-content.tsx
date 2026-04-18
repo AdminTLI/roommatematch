@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo, useCallback } from 'react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -28,9 +28,30 @@ import { showErrorToast } from '@/lib/toast'
 import { SuccessNpsCard } from './success-nps-card'
 import { IntegrationMetricsCard } from './integration-metrics-card'
 import { WellbeingIndexCard } from './wellbeing-index-card'
-import { ExecutiveSummaryCards } from './executive-summary-cards'
+import { ExecutiveSummaryCards, type ExecutiveSummaryData } from './executive-summary-cards'
 import { MarketplaceDynamicsCards } from './marketplace-dynamics-cards'
 import { TrustAlgorithmCards } from './trust-algorithm-cards'
+import { MetricsFilterBar } from './metrics-filter-bar'
+import { MetricsDashboardSection } from './metrics-dashboard-section'
+import { AdminUniversityScopeBar } from './admin-university-scope-bar'
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
+import {
+  CHART_MARGIN_DEFAULT,
+  CHART_TICK,
+  chartContainerClass,
+  chartGridProps,
+  chartTooltipProps,
+} from '@/lib/admin/metrics-chart-styles'
+import { AtRiskMetricsCard, type AtRiskMetricsData } from './at-risk-metrics-card'
+import { MediationIndexCard, type MediationIndexData } from './mediation-index-card'
+import {
+  InternationalIntegrationPulseCard,
+  type HousingFrictionData,
+} from './international-integration-pulse-card'
+import {
+  buildAdminAnalyticsQuery,
+  type AdminAnalyticsFilters,
+} from '@/lib/admin/analytics-query'
 
 interface Metrics {
   totalUsers: number
@@ -234,9 +255,29 @@ interface WellnessAnalyticsData {
   }>
 }
 
-export function AdminMetricsContent() {
+type AdminMetricsContentProps = {
+  isPlatformSuper: boolean
+  initialUniversityId: string | null
+  initialUniversityName?: string | null
+}
+
+export function AdminMetricsContent({
+  isPlatformSuper,
+  initialUniversityId,
+  initialUniversityName = null,
+}: AdminMetricsContentProps) {
+  const [selectedUniversityId, setSelectedUniversityId] = useState<string | null>(
+    isPlatformSuper ? null : initialUniversityId
+  )
+  const [universityOptions, setUniversityOptions] = useState<Array<{ id: string; name: string }>>([])
+  const [filters, setFilters] = useState<AdminAnalyticsFilters>({
+    cohort: 'all',
+    origin: 'all',
+    housing: 'all',
+  })
+
   const [metrics, setMetrics] = useState<Metrics | null>(null)
-  const [isLoading, setIsLoading] = useState(true)
+  const [isLoading, setIsLoading] = useState(() => !isPlatformSuper)
   const [isRefreshing, setIsRefreshing] = useState(false)
   const [conversionFunnel, setConversionFunnel] = useState<ConversionFunnelData | null>(null)
   const [userLifecycle, setUserLifecycle] = useState<UserLifecycleData | null>(null)
@@ -248,31 +289,37 @@ export function AdminMetricsContent() {
   const [userFlows, setUserFlows] = useState<UserFlowsData | null>(null)
   const [geographic, setGeographic] = useState<GeographicData | null>(null)
   const [wellness, setWellness] = useState<WellnessAnalyticsData | null>(null)
+  const [executiveSummary, setExecutiveSummary] = useState<ExecutiveSummaryData | null>(null)
+  const [executiveSummaryLoading, setExecutiveSummaryLoading] = useState(false)
+  const [atRiskMetrics, setAtRiskMetrics] = useState<AtRiskMetricsData | null>(null)
+  const [mediationIndex, setMediationIndex] = useState<MediationIndexData | null>(null)
+  const [housingFriction, setHousingFriction] = useState<HousingFrictionData | null>(null)
 
-  useEffect(() => {
-    loadMetrics()
-  }, [])
+  const tenantUniversityId = selectedUniversityId || initialUniversityId
+  const analyticsQuery = useMemo(() => {
+    if (!tenantUniversityId) return ''
+    return buildAdminAnalyticsQuery(tenantUniversityId, filters, isPlatformSuper)
+  }, [tenantUniversityId, filters, isPlatformSuper])
 
-  // Auto-refresh realtime data every 30 seconds
-  useEffect(() => {
-    const interval = setInterval(() => {
-      fetch('/api/admin/analytics/realtime')
-        .then(res => res.json())
-        .then(data => setRealtime(data))
-        .catch(err => console.error('Failed to refresh realtime data:', err))
-    }, 30000)
+  const institutionDisplayName = useMemo(() => {
+    if (!tenantUniversityId) return ''
+    return (
+      universityOptions.find((u) => u.id === tenantUniversityId)?.name ??
+      initialUniversityName ??
+      ''
+    )
+  }, [tenantUniversityId, universityOptions, initialUniversityName])
 
-    return () => clearInterval(interval)
-  }, [])
-
-  const loadMetrics = async (isRefresh = false) => {
+  const loadMetrics = useCallback(async (isRefresh = false) => {
+    if (!tenantUniversityId) return
     if (isRefresh) {
       setIsRefreshing(true)
     } else {
       setIsLoading(true)
     }
+    setExecutiveSummaryLoading(true)
     try {
-      // Load all metrics in parallel
+      const q = analyticsQuery
       const [
         metricsResponse,
         conversionFunnelResponse,
@@ -285,18 +332,26 @@ export function AdminMetricsContent() {
         userFlowsResponse,
         geographicResponse,
         wellnessResponse,
+        executiveSummaryResponse,
+        atRiskResponse,
+        mediationIndexResponse,
+        housingFrictionResponse,
       ] = await Promise.all([
-        fetch('/api/admin/analytics'),
-        fetch('/api/admin/analytics/conversion-funnel'),
-        fetch('/api/admin/analytics/user-lifecycle'),
-        fetch('/api/admin/analytics/security'),
-        fetch('/api/admin/analytics/coverage'),
-        fetch('/api/admin/analytics/cohort-retention'),
-        fetch('/api/admin/analytics/realtime'),
-        fetch('/api/admin/analytics/traffic-sources'),
-        fetch('/api/admin/analytics/user-flows'),
-        fetch('/api/admin/analytics/geographic'),
-        fetch('/api/admin/analytics/wellness'),
+        fetch(`/api/admin/analytics${q}`),
+        fetch(`/api/admin/analytics/conversion-funnel${q}`),
+        fetch(`/api/admin/analytics/user-lifecycle${q}`),
+        fetch(`/api/admin/analytics/security${q}`),
+        fetch(`/api/admin/analytics/coverage${q}`),
+        fetch(`/api/admin/analytics/cohort-retention${q}`),
+        fetch(`/api/admin/analytics/realtime${q}`),
+        fetch(`/api/admin/analytics/traffic-sources${q}`),
+        fetch(`/api/admin/analytics/user-flows${q}`),
+        fetch(`/api/admin/analytics/geographic${q}`),
+        fetch(`/api/admin/analytics/wellness${q}`),
+        fetch(`/api/admin/analytics/executive-summary${q}`),
+        fetch(`/api/admin/analytics/at-risk${q}`),
+        fetch(`/api/admin/analytics/mediation-index${q}`),
+        fetch(`/api/admin/analytics/housing-friction${q}`),
       ])
 
       if (metricsResponse.ok) {
@@ -314,7 +369,7 @@ export function AdminMetricsContent() {
           signupsLast7Days: 0,
           signupsLast30Days: 0,
           verificationRate: 0,
-          matchActivity: 0
+          matchActivity: 0,
         })
       }
 
@@ -367,6 +422,31 @@ export function AdminMetricsContent() {
         const data = await wellnessResponse.json()
         setWellness(data)
       }
+
+      if (executiveSummaryResponse.ok) {
+        const data = (await executiveSummaryResponse.json()) as ExecutiveSummaryData
+        setExecutiveSummary(data)
+      } else {
+        setExecutiveSummary(null)
+      }
+
+      if (atRiskResponse.ok) {
+        setAtRiskMetrics((await atRiskResponse.json()) as AtRiskMetricsData)
+      } else {
+        setAtRiskMetrics(null)
+      }
+
+      if (mediationIndexResponse.ok) {
+        setMediationIndex((await mediationIndexResponse.json()) as MediationIndexData)
+      } else {
+        setMediationIndex(null)
+      }
+
+      if (housingFrictionResponse.ok) {
+        setHousingFriction((await housingFrictionResponse.json()) as HousingFrictionData)
+      } else {
+        setHousingFriction(null)
+      }
     } catch (error) {
       console.error('Failed to load metrics:', error)
       showErrorToast('Failed to load metrics')
@@ -379,22 +459,81 @@ export function AdminMetricsContent() {
         signupsLast7Days: 0,
         signupsLast30Days: 0,
         verificationRate: 0,
-        matchActivity: 0
+        matchActivity: 0,
       })
+      setExecutiveSummary(null)
+      setAtRiskMetrics(null)
+      setMediationIndex(null)
+      setHousingFriction(null)
     } finally {
       setIsLoading(false)
       setIsRefreshing(false)
+      setExecutiveSummaryLoading(false)
     }
-  }
+  }, [analyticsQuery, tenantUniversityId])
+
+  useEffect(() => {
+    if (isPlatformSuper && !tenantUniversityId) {
+      setMetrics(null)
+      setIsLoading(false)
+    }
+  }, [isPlatformSuper, tenantUniversityId])
+
+  useEffect(() => {
+    if (!isPlatformSuper) return
+    const loadUnis = async () => {
+      try {
+        const res = await fetch('/api/admin/universities-for-picker')
+        if (!res.ok) return
+        const body = await res.json()
+        setUniversityOptions(body.universities || [])
+      } catch {
+        /* ignore */
+      }
+    }
+    loadUnis()
+  }, [isPlatformSuper])
+
+  useEffect(() => {
+    if (!tenantUniversityId) {
+      setIsLoading(false)
+      return
+    }
+    void loadMetrics()
+  }, [tenantUniversityId, analyticsQuery, loadMetrics])
+
+  // Auto-refresh realtime data every 30 seconds
+  useEffect(() => {
+    if (!tenantUniversityId) return
+    const interval = setInterval(() => {
+      fetch(`/api/admin/analytics/realtime${analyticsQuery}`)
+        .then((res) => res.json())
+        .then((data) => setRealtime(data))
+        .catch((err) => console.error('Failed to refresh realtime data:', err))
+    }, 30000)
+
+    return () => clearInterval(interval)
+  }, [analyticsQuery, tenantUniversityId])
 
   const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884d8', '#82ca9d']
 
-  if (isLoading) {
+  if (tenantUniversityId && isLoading) {
     return (
       <div className="p-6">
         <div className="flex items-center gap-2">
           <RefreshCw className="h-4 w-4 animate-spin" />
-          <span>Loading metrics...</span>
+          <span>Loading metrics…</span>
+        </div>
+      </div>
+    )
+  }
+
+  if (tenantUniversityId && !isLoading && !metrics) {
+    return (
+      <div className="p-6">
+        <div className="flex items-center gap-2 text-red-600">
+          <AlertTriangle className="h-4 w-4" />
+          <span>Failed to load metrics. Please try refreshing.</span>
         </div>
       </div>
     )
@@ -402,11 +541,29 @@ export function AdminMetricsContent() {
 
   if (!metrics) {
     return (
-      <div className="p-6">
-        <div className="flex items-center gap-2 text-red-600">
-          <AlertTriangle className="h-4 w-4" />
-          <span>Failed to load metrics. Please try refreshing.</span>
+      <div className="p-4 md:p-6 max-w-2xl space-y-6">
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+          <div>
+            <h1 className="text-2xl font-bold tracking-tight">Institutional Metrics</h1>
+            <p className="text-sm text-muted-foreground mt-1">
+              Cross-tenant rollups are not available. Choose an institution to load the dashboard.
+            </p>
+          </div>
         </div>
+        <AdminUniversityScopeBar
+          isPlatformSuper={isPlatformSuper}
+          universityOptions={universityOptions}
+          selectedUniversityId={selectedUniversityId}
+          onUniversityChange={setSelectedUniversityId}
+          lockedUniversityName={initialUniversityName}
+        />
+        <Alert>
+          <AlertTitle>Select An Institution</AlertTitle>
+          <AlertDescription>
+            Pick a university to load cohort KPIs and operational charts. You can change institutions at any time from
+            the selector above.
+          </AlertDescription>
+        </Alert>
       </div>
     )
   }
@@ -426,48 +583,84 @@ export function AdminMetricsContent() {
 
   return (
     <div className="p-4 md:p-6 space-y-6 md:space-y-8">
-      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-bold">System Metrics</h1>
-          <p className="text-gray-600 dark:text-gray-400">
-            Platform analytics and performance metrics
+      <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+        <div className="min-w-0 flex-1">
+          <h1 className="text-2xl font-bold tracking-tight">Institutional Metrics</h1>
+          <p className="text-muted-foreground text-sm mt-1 max-w-2xl">
+            Retention, wellbeing, and operational signals for the active institution and cohort filters.
           </p>
         </div>
-        <Button onClick={() => loadMetrics(true)} variant="outline" disabled={isRefreshing}>
-          <RefreshCw className={`h-4 w-4 mr-2 ${isRefreshing ? 'animate-spin' : ''}`} />
-          Refresh
-        </Button>
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 shrink-0">
+          <AdminUniversityScopeBar
+            isPlatformSuper={isPlatformSuper}
+            universityOptions={universityOptions}
+            selectedUniversityId={selectedUniversityId}
+            onUniversityChange={setSelectedUniversityId}
+            lockedUniversityName={initialUniversityName}
+          />
+          <Button
+            onClick={() => loadMetrics(true)}
+            variant="outline"
+            disabled={isRefreshing || !tenantUniversityId}
+            className="shrink-0"
+          >
+            <RefreshCw className={`h-4 w-4 mr-2 ${isRefreshing ? 'animate-spin' : ''}`} />
+            Refresh
+          </Button>
+        </div>
       </div>
 
-      <ExecutiveSummaryCards />
-      <Separator className="my-4 md:my-6" />
+      <MetricsDashboardSection
+        variant="cohort"
+        title={institutionDisplayName ? institutionDisplayName : 'Institution'}
+        description={
+          institutionDisplayName
+            ? `Figures in this section summarize the verified cohort at ${institutionDisplayName}, sliced by the filters below. They are suitable for stewardship and reporting.`
+            : 'Choose an institution to show the executive summary and risk indicators for that tenant.'
+        }
+      >
+        <MetricsFilterBar filters={filters} onChange={setFilters} />
 
+        <ExecutiveSummaryCards data={executiveSummary ?? undefined} isPending={executiveSummaryLoading} />
+
+        <div className="grid grid-cols-1 xl:grid-cols-3 gap-4 md:gap-6">
+          <AtRiskMetricsCard data={atRiskMetrics} isPending={isLoading || isRefreshing} />
+          <MediationIndexCard data={mediationIndex} isPending={isLoading || isRefreshing} />
+          <InternationalIntegrationPulseCard data={housingFriction} isPending={isLoading || isRefreshing} />
+        </div>
+      </MetricsDashboardSection>
+
+      <MetricsDashboardSection
+        variant="engagement"
+        title="Live Usage, Journeys, And Technical Signals"
+        description="Product telemetry and journeys (traffic, geography, funnels, security signals). With an institution selected, these charts use that tenant and the same cohort filters as above — they are not mixed with other universities."
+      >
       {/* Real-time Activity Card */}
       {realtime && (
-        <Card className="border-blue-200 dark:border-blue-800">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium flex items-center gap-2">
+        <Card className="border-blue-200/80 dark:border-blue-900/60 shadow-sm overflow-hidden">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 bg-muted/30">
+            <CardTitle className="text-base font-semibold flex items-center gap-2">
               <Radio className="h-4 w-4 text-blue-600 dark:text-blue-400" />
-              Real-time Activity
+              Real-Time Activity
             </CardTitle>
             <div className="flex items-center gap-2">
               <div className="h-2 w-2 bg-green-500 rounded-full animate-pulse" />
-              <span className="text-xs text-muted-foreground">Live</span>
+              <span className="text-xs font-medium text-muted-foreground">Live</span>
             </div>
           </CardHeader>
-          <CardContent>
+          <CardContent className="pt-6">
             <div className="grid grid-cols-3 gap-4">
               <div>
-                <div className="text-2xl font-bold">{realtime.activeUsers}</div>
+                <div className="text-2xl font-bold tabular-nums">{realtime.activeUsers}</div>
                 <p className="text-xs text-muted-foreground">Active Users</p>
               </div>
               <div>
-                <div className="text-2xl font-bold">{realtime.activeSessions}</div>
+                <div className="text-2xl font-bold tabular-nums">{realtime.activeSessions}</div>
                 <p className="text-xs text-muted-foreground">Active Sessions</p>
               </div>
               <div>
-                <div className="text-2xl font-bold">{realtime.eventsLast5Min}</div>
-                <p className="text-xs text-muted-foreground">Events (5 min)</p>
+                <div className="text-2xl font-bold tabular-nums">{realtime.eventsLast5Min}</div>
+                <p className="text-xs text-muted-foreground">Events (Last 5 Minutes)</p>
               </div>
             </div>
           </CardContent>
@@ -484,7 +677,7 @@ export function AdminMetricsContent() {
           <CardContent>
             <div className="text-2xl font-bold">{(metrics.totalUsers ?? 0).toLocaleString()}</div>
             <p className="text-xs text-muted-foreground">
-              {(metrics.signupsLast7Days ?? 0)} new in last 7 days
+              {(metrics.signupsLast7Days ?? 0).toLocaleString()} New Sign-Ups (Last 7 Days)
             </p>
           </CardContent>
         </Card>
@@ -497,7 +690,7 @@ export function AdminMetricsContent() {
           <CardContent>
             <div className="text-2xl font-bold">{(metrics.verifiedUsers ?? 0).toLocaleString()}</div>
             <p className="text-xs text-muted-foreground">
-              {verificationRate}% verification rate
+              {verificationRate}% Verification Rate
             </p>
           </CardContent>
         </Card>
@@ -510,7 +703,7 @@ export function AdminMetricsContent() {
           <CardContent>
             <div className="text-2xl font-bold">{(metrics.activeChats ?? 0).toLocaleString()}</div>
             <p className="text-xs text-muted-foreground">
-              Active conversations
+              Active Conversations
             </p>
           </CardContent>
         </Card>
@@ -523,15 +716,15 @@ export function AdminMetricsContent() {
           <CardContent>
             <div className="text-2xl font-bold">{(metrics.totalMatches ?? 0).toLocaleString()}</div>
             <p className="text-xs text-muted-foreground">
-              {(metrics.matchActivity ?? 0)} this week
+              {(metrics.matchActivity ?? 0).toLocaleString()} This Week
             </p>
           </CardContent>
         </Card>
 
-        <WellbeingIndexCard />
+        <WellbeingIndexCard analyticsQuery={analyticsQuery} />
       </div>
 
-      <MarketplaceDynamicsCards />
+      <MarketplaceDynamicsCards analyticsQuery={analyticsQuery} />
       <Separator className="my-8" />
 
       {/* Verification & Safety Trust Stack */}
@@ -656,11 +849,11 @@ export function AdminMetricsContent() {
       </Card>
 
       {/* System Trust & Algorithm Health */}
-      <TrustAlgorithmCards />
+      <TrustAlgorithmCards analyticsQuery={analyticsQuery} />
 
       {/* Placement Success & NPS Micro-Survey */}
-      <SuccessNpsCard />
-      <IntegrationMetricsCard />
+      <SuccessNpsCard analyticsQuery={analyticsQuery} />
+      <IntegrationMetricsCard analyticsQuery={analyticsQuery} />
 
       {/* Wellness & Impact Outcomes */}
       {wellness && wellness.overall.totalResponses > 0 && (
@@ -719,53 +912,60 @@ export function AdminMetricsContent() {
               {/* Comparison chart: Day 14 vs Day 30 */}
               {wellnessComparisonData.length > 0 && (
                 <div>
-                  <h4 className="text-base font-semibold mb-4 text-gray-800 dark:text-gray-200">
-                    Outcomes by survey point
+                  <h4 className="text-base font-semibold mb-4 text-foreground">
+                    Outcomes By Survey Point
                   </h4>
-                  <div className="w-full" style={{ minHeight: '350px' }}>
+                  <div className={`w-full ${chartContainerClass}`} style={{ minHeight: 350 }}>
                     <ResponsiveContainer width="100%" height={350}>
                       <BarChart
                         data={wellnessComparisonData}
-                        margin={{ top: 20, right: 30, left: 20, bottom: 20 }}
+                        margin={{ ...CHART_MARGIN_DEFAULT, left: 8, bottom: 28 }}
                       >
-                        <CartesianGrid strokeDasharray="3 3" />
-                        <XAxis dataKey="label" tick={{ fontSize: 12 }} />
+                        <CartesianGrid {...chartGridProps} />
+                        <XAxis dataKey="label" tick={CHART_TICK} tickLine={false} axisLine={false} />
                         <YAxis
-                          label={{ value: 'Share of respondents (%)', angle: -90, position: 'insideLeft' }}
+                          tick={CHART_TICK}
+                          tickLine={false}
+                          axisLine={false}
+                          label={{
+                            value: 'Share Of Respondents (%)',
+                            angle: -90,
+                            position: 'insideLeft',
+                            style: { fill: 'hsl(var(--muted-foreground))', fontSize: 11 },
+                          }}
                           domain={[0, 100]}
                         />
                         <Tooltip
-                          formatter={(value: number, name: string) => {
+                          {...chartTooltipProps}
+                          formatter={(value, name) => {
                             const labels: Record<string, string> = {
-                              foundHousingRate: 'Found housing',
-                              foundWithMatchRate: 'Found housing with Domu Match roommate',
-                              reducedStressRate: 'Reported reduced stress',
+                              foundHousingRate: 'Found Housing',
+                              foundWithMatchRate: 'Found Housing With Domu Match Roommate',
+                              reducedStressRate: 'Reported Reduced Stress',
                             }
-                            return [`${value.toFixed(1)}%`, labels[name] || name]
-                          }}
-                          contentStyle={{
-                            backgroundColor: 'rgba(255, 255, 255, 0.96)',
-                            border: '1px solid #e5e7eb',
+                            const n = Number(value)
+                            const label = typeof name === 'string' ? labels[name] || name : String(name ?? '')
+                            return [`${Number.isFinite(n) ? n.toFixed(1) : '0'}%`, label]
                           }}
                         />
-                        <Legend wrapperStyle={{ paddingTop: 12 }} />
+                        <Legend wrapperStyle={{ paddingTop: 12, fontSize: 12 }} />
                         <Bar
                           dataKey="foundHousingRate"
                           fill="#10b981"
-                          name="Found housing"
-                          radius={[4, 4, 0, 0]}
+                          name="Found Housing"
+                          radius={[6, 6, 0, 0]}
                         />
                         <Bar
                           dataKey="foundWithMatchRate"
                           fill="#6366f1"
-                          name="Found housing with Domu Match roommate"
-                          radius={[4, 4, 0, 0]}
+                          name="Found Housing With Domu Match Roommate"
+                          radius={[6, 6, 0, 0]}
                         />
                         <Bar
                           dataKey="reducedStressRate"
                           fill="#a855f7"
-                          name="Reported reduced stress"
-                          radius={[4, 4, 0, 0]}
+                          name="Reported Reduced Stress"
+                          radius={[6, 6, 0, 0]}
                         />
                       </BarChart>
                     </ResponsiveContainer>
@@ -805,8 +1005,8 @@ export function AdminMetricsContent() {
               {/* Pie Chart */}
               {trafficSources.sources.length > 0 && (
                 <div>
-                  <h4 className="text-base font-semibold mb-4 text-gray-800 dark:text-gray-200">Traffic Distribution</h4>
-                  <div className="w-full" style={{ minHeight: '350px' }}>
+                  <h4 className="text-base font-semibold mb-4 text-foreground">Traffic Distribution</h4>
+                  <div className={`w-full ${chartContainerClass}`} style={{ minHeight: 350 }}>
                     <ResponsiveContainer width="100%" height={350}>
                       <PieChart>
                         <Pie
@@ -814,8 +1014,14 @@ export function AdminMetricsContent() {
                           cx="50%"
                           cy="50%"
                           labelLine={false}
-                          label={({ source, percentage }) => `${source}: ${percentage.toFixed(1)}%`}
-                          outerRadius={120}
+                          label={({ source, percentage }) => {
+                            const s = typeof source === 'string' ? source : String(source ?? '')
+                            const cap = s ? s.charAt(0).toUpperCase() + s.slice(1) : ''
+                            return `${cap}: ${Number(percentage).toFixed(1)}%`
+                          }}
+                          outerRadius={118}
+                          innerRadius={44}
+                          paddingAngle={2}
                           fill="#8884d8"
                           dataKey="count"
                         >
@@ -823,7 +1029,7 @@ export function AdminMetricsContent() {
                             <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                           ))}
                         </Pie>
-                        <Tooltip formatter={(value: number) => value.toLocaleString()} />
+                        <Tooltip {...chartTooltipProps} formatter={(value: number) => value.toLocaleString()} />
                       </PieChart>
                     </ResponsiveContainer>
                   </div>
@@ -1849,6 +2055,7 @@ export function AdminMetricsContent() {
           </CardContent>
         </Card>
       )}
+      </MetricsDashboardSection>
     </div>
   )
 }

@@ -28,6 +28,7 @@ import { createClient } from '@/lib/supabase/client'
 import { User } from '@supabase/supabase-js'
 import { showErrorToast, showSuccessToast } from '@/lib/toast'
 import { fetchWithCSRF } from '@/lib/utils/fetch-with-csrf'
+import { programmaticAvatarUrl } from '@/lib/avatars/programmatic'
 import { queryKeys, queryClient } from '@/app/providers'
 import { safeLogger } from '@/lib/utils/logger'
 import { filterContent, getViolationErrorMessage } from '@/lib/utils/content-filter'
@@ -697,11 +698,19 @@ export function ChatInterface({ roomId, user, onBack, onToggleRightPane, rightPa
               try {
                 const { data: fallbackProfiles, error: fallbackError } = await supabase
                   .from('profiles')
-                  .select('user_id, first_name, last_name')
+                  .select('user_id, first_name, last_name, avatar_id')
                   .in('user_id', Array.from(userIds))
 
                 if (!fallbackError && fallbackProfiles) {
-                  profilesMap = new Map(fallbackProfiles.map((p: any) => [p.user_id, p]))
+                  profilesMap = new Map(
+                    fallbackProfiles.map((p: any) => [
+                      p.user_id,
+                      {
+                        ...p,
+                        avatar_url: programmaticAvatarUrl(p.avatar_id, p.user_id),
+                      },
+                    ]),
+                  )
                   setProfilesMap(profilesMap)
                   safeLogger.debug(`[Chat] Fallback: Loaded ${profilesMap.size} profiles directly from Supabase`)
                 }
@@ -715,6 +724,32 @@ export function ChatInterface({ roomId, user, onBack, onToggleRightPane, rightPa
         } catch (err) {
           safeLogger.warn('[Chat] Failed to fetch profiles:', err)
           // Don't throw - continue with empty profiles map
+        }
+      }
+
+      /** 1:1 only: signed photo + programmatic URLs aligned with progressive disclosure */
+      const privacyAvatarByUserId = new Map<string, string>()
+      if (!roomData.is_group && roomId) {
+        try {
+          const pr = await fetch(
+            `/api/chat/privacy-state?chatId=${encodeURIComponent(roomId)}`,
+            { credentials: 'include', cache: 'no-store' },
+          )
+          if (pr.ok) {
+            const snap = (await pr.json()) as {
+              partner_user_id?: string | null
+              partner_avatar_url?: string | null
+              viewer_avatar_url?: string
+            }
+            if (snap.partner_user_id && snap.partner_avatar_url) {
+              privacyAvatarByUserId.set(snap.partner_user_id, snap.partner_avatar_url)
+            }
+            if (snap.viewer_avatar_url) {
+              privacyAvatarByUserId.set(user.id, snap.viewer_avatar_url)
+            }
+          }
+        } catch {
+          /* non-fatal */
         }
       }
 
@@ -750,6 +785,8 @@ export function ChatInterface({ roomId, user, onBack, onToggleRightPane, rightPa
           content: msg.content,
           sender_id: msg.user_id,
           sender_name: senderName,
+          sender_avatar:
+            privacyAvatarByUserId.get(msg.user_id) || profile?.avatar_url || undefined,
           created_at: msg.created_at,
           read_by: readBy,
           is_own: msg.user_id === user.id,
@@ -787,7 +824,8 @@ export function ChatInterface({ roomId, user, onBack, onToggleRightPane, rightPa
           return {
             id: member.user_id,
             name: memberName,
-            avatar: undefined, // Avatars not implemented - Avatar component will show initials via AvatarFallback
+            avatar:
+              privacyAvatarByUserId.get(member.user_id) || profile?.avatar_url || undefined,
             is_online: onlineUsers.has(member.user_id),
             last_seen: lastSeenMap.get(member.user_id)
           }
@@ -983,6 +1021,7 @@ export function ChatInterface({ roomId, user, onBack, onToggleRightPane, rightPa
           content: msg.content,
           sender_id: msg.user_id,
           sender_name: senderName,
+          sender_avatar: profile?.avatar_url || undefined,
           created_at: msg.created_at,
           read_by: readBy,
           is_own: msg.user_id === user.id,
@@ -1143,6 +1182,7 @@ export function ChatInterface({ roomId, user, onBack, onToggleRightPane, rightPa
 
           // Fetch profile for the sender (skip if sender deleted their account)
           let senderName = newMessage.user_id == null ? 'Deleted User' : 'Unknown User'
+          let senderAvatar: string | undefined
           if (newMessage.user_id != null) {
           try {
             console.log('[Realtime] Fetching profile for user:', newMessage.user_id)
@@ -1160,6 +1200,7 @@ export function ChatInterface({ roomId, user, onBack, onToggleRightPane, rightPa
               const profile = profiles.find((p: any) => p.user_id === newMessage.user_id)
               if (profile) {
                 senderName = [profile.first_name?.trim(), profile.last_name?.trim()].filter(Boolean).join(' ') || 'User'
+                senderAvatar = profile.avatar_url || undefined
                 console.log('[Realtime] ✅ Profile fetched successfully:', senderName)
                 // Update profilesMap in state for use in typing indicators
                 setProfilesMap(prev => {
@@ -1217,6 +1258,7 @@ export function ChatInterface({ roomId, user, onBack, onToggleRightPane, rightPa
               content: newMessage.content,
               sender_id: newMessage.user_id,
               sender_name: senderName,
+              sender_avatar: senderAvatar,
               created_at: newMessage.created_at,
               read_by: [],
               is_own: false,
@@ -2166,6 +2208,7 @@ export function ChatInterface({ roomId, user, onBack, onToggleRightPane, rightPa
       const senderName = profile
         ? [profile.first_name?.trim(), profile.last_name?.trim()].filter(Boolean).join(' ') || 'User'
         : 'You'
+      const senderAvatar = profile?.avatar_url || undefined
 
       // Optimistically update local messages
       const optimisticMessage = {
@@ -2173,6 +2216,7 @@ export function ChatInterface({ roomId, user, onBack, onToggleRightPane, rightPa
         content: content.trim(),
         sender_id: user.id,
         sender_name: senderName,
+        sender_avatar: senderAvatar,
         created_at: new Date().toISOString(),
         read_by: [user.id],
         is_own: true
@@ -2189,12 +2233,14 @@ export function ChatInterface({ roomId, user, onBack, onToggleRightPane, rightPa
         const senderName = profile
           ? [profile.first_name?.trim(), profile.last_name?.trim()].filter(Boolean).join(' ') || 'User'
           : 'You'
+        const senderAvatar = profile?.avatar_url || undefined
 
         return [...filtered, {
           id: message.id,
           content: message.content,
           sender_id: message.user_id,
           sender_name: senderName,
+          sender_avatar: senderAvatar,
           created_at: message.created_at,
           read_by: [user.id],
           is_own: true

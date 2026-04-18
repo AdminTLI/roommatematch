@@ -4,8 +4,10 @@ import { safeLogger } from '@/lib/utils/logger'
 import { generatePersonalizedExplanation } from '@/lib/matching/personalized-explanation'
 import {
   canonicalUserPair,
+  fetchMatchIcebreakerSocialHints,
   generateMatchExplanationWithGemini,
   getCachedMatchExplanation,
+  isMatchInsightCoachFormat,
   saveCachedMatchExplanation,
   type MatchExplanationAudience,
 } from '@/lib/matching/match-explanation-ai'
@@ -347,17 +349,18 @@ export async function GET(request: NextRequest) {
 
     try {
       const cached = await getCachedMatchExplanation(admin, userLow, userHigh, user.id)
-      if (cached) {
+      if (cached && isMatchInsightCoachFormat(cached)) {
         personalizedExplanation = cached
       } else {
-        const aiText = await generateMatchExplanationWithGemini(score, cohortAudience)
+        const socialHints = await fetchMatchIcebreakerSocialHints(admin, user.id, targetUserId)
+        const aiText = await generateMatchExplanationWithGemini(score, cohortAudience, socialHints)
         if (aiText) {
           personalizedExplanation = aiText
           await saveCachedMatchExplanation(admin, userLow, userHigh, user.id, aiText)
         } else {
           personalizedExplanation =
             templateExplanation() ||
-            'Your questionnaire signals overlap in some areas and differ in others — use the scores above as a map for what to discuss before moving in together.'
+            'Your questionnaire signals overlap in some areas and differ in others. Use the match overview in the app as a map for what to discuss before moving in together.'
         }
       }
     } catch (explanationError) {

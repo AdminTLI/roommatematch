@@ -1,34 +1,18 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createAdminClient } from '@/lib/supabase/server'
-import { requireAdmin } from '@/lib/auth/admin'
 import { safeLogger } from '@/lib/utils/logger'
+import { resolveAdminAnalyticsScope, resolveScopedMetricsUserIds } from '@/lib/admin/analytics-scope'
 
 export async function GET(request: NextRequest) {
   try {
-    const adminCheck = await requireAdmin(request, false)
-    
-    if (!adminCheck.ok) {
-      return NextResponse.json(
-        { error: adminCheck.error || 'Admin access required' },
-        { status: adminCheck.status }
-      )
+    const scope = await resolveAdminAnalyticsScope(request)
+    if (!scope.ok) {
+      return NextResponse.json({ error: scope.error }, { status: scope.status })
     }
 
-    const { adminRecord } = adminCheck
+    const { universityId } = scope
     const admin = createAdminClient()
-    const isSuperAdmin = adminRecord?.role === 'super_admin'
-    const universityId = isSuperAdmin ? null : adminRecord?.university_id
-
-    // Get university user IDs if filtering
-    let universityUserIds: Set<string> | null = null
-    if (universityId) {
-      const { data: academic } = await admin
-        .from('user_academic')
-        .select('user_id')
-        .eq('university_id', universityId)
-      
-      universityUserIds = new Set(academic?.map(a => a.user_id) || [])
-    }
+    const universityUserIds = await resolveScopedMetricsUserIds(admin, universityId, scope.filters)
 
     // Get matches (all time and last 7 days)
     const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000)
@@ -50,10 +34,9 @@ export async function GET(request: NextRequest) {
       allMatches.forEach(match => {
         if (!match.member_ids || !Array.isArray(match.member_ids)) return
         
-        if (universityId && universityUserIds) {
-          const allFromUniversity = match.member_ids.every(id => universityUserIds.has(id))
-          if (!allFromUniversity) return
-        }
+        if (universityUserIds.size === 0) return
+        const allFromUniversity = match.member_ids.every((id: string) => universityUserIds.has(id))
+        if (!allFromUniversity) return
 
         const sortedIds = [...match.member_ids].sort().join('-')
         if (!uniqueMatches.has(sortedIds)) {
@@ -96,10 +79,9 @@ export async function GET(request: NextRequest) {
           if (!match.member_ids || !Array.isArray(match.member_ids)) return
           
           // Apply university filter if needed
-          if (universityId && universityUserIds) {
-            const allFromUniversity = match.member_ids.every(id => universityUserIds.has(id))
-            if (!allFromUniversity) return
-          }
+          if (universityUserIds.size === 0) return
+          const allFromUniversity = match.member_ids.every((id: string) => universityUserIds.has(id))
+          if (!allFromUniversity) return
           
           // Check if match is in this week
           const matchDate = new Date(match.created_at)
@@ -139,8 +121,9 @@ export async function GET(request: NextRequest) {
       .select('user_id, created_at')
       .not('user_id', 'is', null)
 
-    if (universityId) {
-      signupsQuery = signupsQuery.eq('university_id', universityId)
+    signupsQuery = signupsQuery.eq('university_id', universityId)
+    if (universityUserIds.size > 0) {
+      signupsQuery = signupsQuery.in('user_id', Array.from(universityUserIds))
     }
 
     const { data: profiles } = await signupsQuery
@@ -153,7 +136,7 @@ export async function GET(request: NextRequest) {
       .eq('section', 'complete')
       .not('completed_at', 'is', null)
 
-    if (universityId && universityUserIds) {
+    if (universityUserIds.size > 0) {
       onboardingQuery = onboardingQuery.in('user_id', Array.from(universityUserIds))
     }
 
@@ -167,11 +150,10 @@ export async function GET(request: NextRequest) {
       allMatches.forEach(match => {
         if (!match.member_ids || !Array.isArray(match.member_ids)) return
         
-        if (universityId && universityUserIds) {
-          const allFromUniversity = match.member_ids.every(id => universityUserIds.has(id))
-          if (!allFromUniversity) return
-        }
-        
+        if (universityUserIds.size === 0) return
+        const allFromUniversity = match.member_ids.every((id: string) => universityUserIds.has(id))
+        if (!allFromUniversity) return
+
         match.member_ids.forEach((userId: string) => usersWithMatches.add(userId))
       })
     }
@@ -184,29 +166,19 @@ export async function GET(request: NextRequest) {
       .eq('kind', 'pair')
       .eq('status', 'accepted')
 
-    if (universityId && universityUserIds) {
-      // Filter by university users
-      const acceptedMatches = await acceptedMatchesQuery
-      const filteredAccepted = acceptedMatches.data?.filter(match => {
+    const acceptedMatchesRes = await acceptedMatchesQuery
+    const filteredAccepted =
+      acceptedMatchesRes.data?.filter((match) => {
         if (!match.member_ids || !Array.isArray(match.member_ids)) return false
+        if (universityUserIds.size === 0) return false
         return match.member_ids.every((id: string) => universityUserIds.has(id))
       }) || []
-      
-      const acceptedUsers = new Set<string>()
-      filteredAccepted.forEach(match => {
-        match.member_ids.forEach((userId: string) => acceptedUsers.add(userId))
-      })
-      var acceptedCount = acceptedUsers.size
-    } else {
-      const { data: acceptedMatches } = await acceptedMatchesQuery
-      const acceptedUsers = new Set<string>()
-      acceptedMatches?.forEach(match => {
-        if (match.member_ids && Array.isArray(match.member_ids)) {
-          match.member_ids.forEach((userId: string) => acceptedUsers.add(userId))
-        }
-      })
-      var acceptedCount = acceptedUsers.size
-    }
+
+    const acceptedUsers = new Set<string>()
+    filteredAccepted.forEach((match) => {
+      match.member_ids.forEach((userId: string) => acceptedUsers.add(userId))
+    })
+    const acceptedCount = acceptedUsers.size
 
     // Step 5: Agreements (already calculated)
     const agreementUsers = new Set<string>()

@@ -23,6 +23,8 @@ export interface Notification {
   is_read: boolean;
   created_at: string;
   updated_at: string;
+  /** Set server-side for chat_message when resolved against progressive disclosure rules */
+  sender_avatar_url?: string | null;
 }
 
 export interface CreateNotificationData {
@@ -107,6 +109,11 @@ export const NOTIFICATION_CONFIG = {
     icon: 'Megaphone',
     color: 'purple',
     priority: 'medium' as const,
+  },
+  admin_alert: {
+    icon: 'Megaphone',
+    color: 'orange',
+    priority: 'high' as const,
   },
 } as const;
 

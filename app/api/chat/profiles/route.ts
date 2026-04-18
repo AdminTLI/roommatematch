@@ -3,6 +3,7 @@ import { createClient, createAdminClient } from '@/lib/supabase/server'
 import { checkRateLimit, getUserRateLimitKey, buildRateLimitHeaders } from '@/lib/rate-limit'
 import { safeLogger } from '@/lib/utils/logger'
 import { getUserType } from '@/lib/auth/cohort-visibility'
+import { programmaticAvatarUrl } from '@/lib/avatars/programmatic'
 
 export async function POST(request: NextRequest) {
   try {
@@ -136,7 +137,7 @@ export async function POST(request: NextRequest) {
     // Fetch profiles for all allowed chat members (include user_type for cohort visibility)
     const { data: profiles, error: profilesError } = await admin
       .from('profiles')
-      .select('user_id, first_name, last_name, user_type, is_visible')
+      .select('user_id, first_name, last_name, user_type, is_visible, avatar_id')
       .in('user_id', allowedUserIds.length > 0 ? allowedUserIds : [])
 
     if (profilesError) {
@@ -168,7 +169,7 @@ export async function POST(request: NextRequest) {
         return {
           user_id: profile.user_id,
           first_name: 'User',
-          last_name: ''
+          last_name: '',
         }
       }
 
@@ -177,7 +178,7 @@ export async function POST(request: NextRequest) {
         return {
           user_id: profile.user_id,
           first_name: 'User',
-          last_name: ''
+          last_name: '',
         }
       }
 
@@ -186,13 +187,15 @@ export async function POST(request: NextRequest) {
         return {
           user_id: profile.user_id,
           first_name: 'User',
-          last_name: ''
+          last_name: '',
         }
       }
       return {
         user_id: profile.user_id,
         first_name: profile.first_name,
-        last_name: profile.last_name ?? ''
+        last_name: profile.last_name ?? '',
+        /** DiceBear URL (safe to show in chat UI); real photos use privacy-state snapshot for 1:1 */
+        avatar_url: programmaticAvatarUrl(profile.avatar_id, profile.user_id),
       }
     })
 

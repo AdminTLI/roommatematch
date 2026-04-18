@@ -1,58 +1,36 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createAdminClient } from '@/lib/supabase/server'
-import { requireAdmin } from '@/lib/auth/admin'
 import { safeLogger } from '@/lib/utils/logger'
+import { openScopedAnalyticsSession } from '@/lib/admin/analytics-scope'
 
 export async function GET(request: NextRequest) {
   try {
-    const adminCheck = await requireAdmin(request, false)
-    
-    if (!adminCheck.ok) {
-      return NextResponse.json(
-        { error: adminCheck.error || 'Admin access required' },
-        { status: adminCheck.status }
-      )
+    const ctx = await openScopedAnalyticsSession(request)
+    if (!ctx.ok) {
+      return NextResponse.json({ error: ctx.error }, { status: ctx.status })
     }
 
-    const { adminRecord } = adminCheck
-    const admin = createAdminClient()
-    const isSuperAdmin = adminRecord?.role === 'super_admin'
-    const universityId = isSuperAdmin ? null : adminRecord?.university_id
+    const { admin, scopedUserIds } = ctx
 
-    // Get date range from query params (default to last 7 days)
+    if (scopedUserIds.size === 0) {
+      return NextResponse.json({
+        topPaths: [],
+        dropOffs: [],
+        totalSessions: 0,
+      })
+    }
+
     const searchParams = request.nextUrl.searchParams
     const days = parseInt(searchParams.get('days') || '7', 10)
     const startDate = new Date(Date.now() - days * 24 * 60 * 60 * 1000)
 
-    // Get page view events
-    let eventsQuery = admin
+    const { data: events, error } = await admin
       .from('user_journey_events')
       .select('user_id, session_id, page_url, event_timestamp')
       .eq('event_category', 'page_view')
       .gte('event_timestamp', startDate.toISOString())
       .not('page_url', 'is', null)
+      .in('user_id', Array.from(scopedUserIds))
       .order('event_timestamp', { ascending: true })
-
-    // Filter by university if needed
-    if (universityId) {
-      const { data: academic } = await admin
-        .from('user_academic')
-        .select('user_id')
-        .eq('university_id', universityId)
-      
-      const universityUserIds = new Set(academic?.map(a => a.user_id) || [])
-      
-      if (universityUserIds.size > 0) {
-        eventsQuery = eventsQuery.in('user_id', Array.from(universityUserIds))
-      } else {
-        return NextResponse.json({
-          topPaths: [],
-          dropOffs: []
-        })
-      }
-    }
-
-    const { data: events, error } = await eventsQuery
 
     if (error) {
       safeLogger.error('[Admin Analytics] User flows error', { error })

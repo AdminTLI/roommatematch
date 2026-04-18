@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient, createAdminClient } from '@/lib/supabase/server'
+import { getChatPrivacySnapshot } from '@/lib/privacy/profile-access-server'
 import { checkRateLimit, getUserRateLimitKey, buildRateLimitHeaders } from '@/lib/rate-limit'
 import { safeLogger } from '@/lib/utils/logger'
 import { canViewCohortProfile } from '@/lib/auth/cohort-visibility'
@@ -173,6 +174,9 @@ export async function GET(request: NextRequest) {
       )
     }
 
+    const privacySnap = await getChatPrivacySnapshot(admin, chatId, user.id)
+    const mutualDetails = Boolean(privacySnap?.mutual_details)
+
     // Profile/settings data is only visible to users of the same role (student vs professional)
     const allowed = await canViewCohortProfile(user.id, targetUserId)
     if (!allowed) {
@@ -303,9 +307,13 @@ export async function GET(request: NextRequest) {
         }
       }
 
-      // Extract university and program names
-      universityName = academicData?.universities?.name || academicData?.universities?.common_name || null
-      programName = academicData?.programs?.name_en || academicData?.programs?.name || null
+      // Extract university and program names (join shape varies by PostgREST version)
+      const uni = academicData?.universities as { name?: string; common_name?: string } | { name?: string; common_name?: string }[] | null | undefined
+      const prog = academicData?.programs as { name?: string; name_en?: string } | { name?: string; name_en?: string }[] | null | undefined
+      const uniRow = Array.isArray(uni) ? uni[0] : uni
+      const progRow = Array.isArray(prog) ? prog[0] : prog
+      universityName = uniRow?.name || uniRow?.common_name || null
+      programName = progRow?.name_en || progRow?.name || null
       degreeLevel = academicData?.degree_level || null
     }
 
@@ -381,7 +389,7 @@ export async function GET(request: NextRequest) {
       ...buildRateLimitHeaders(CHAT_PROFILES_LIMIT, rateLimitResult)
     }
 
-    return NextResponse.json({
+    const basePayload = {
       first_name: profile.first_name || null,
       last_name: profile.last_name || null,
       bio: profile.bio || null,
@@ -397,8 +405,39 @@ export async function GET(request: NextRequest) {
       university_name: universityName,
       programme_name: programName,
       degree_level: degreeLevel,
-      study_year: studyYear
-    }, { headers })
+      study_year: studyYear,
+      progressive_disclosure: {
+        mutual_details: mutualDetails,
+        mutual_picture: Boolean(privacySnap?.mutual_picture),
+        messages_exchanged_count: privacySnap?.messages_exchanged_count ?? 0,
+        show_reveal_prompt: Boolean(privacySnap?.show_reveal_prompt),
+      },
+    }
+
+    if (!mutualDetails) {
+      return NextResponse.json(
+        {
+          ...basePayload,
+          last_name: null,
+          bio: null,
+          interests: [],
+          housing_status: [],
+          budget_min: null,
+          budget_max: null,
+          preferred_cities: [],
+          wfh_status: null,
+          work_schedule: null,
+          age: null,
+          university_name: null,
+          programme_name: null,
+          degree_level: null,
+          study_year: null,
+        },
+        { headers },
+      )
+    }
+
+    return NextResponse.json(basePayload, { headers })
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : String(error)
     const errorStack = error instanceof Error ? error.stack : undefined

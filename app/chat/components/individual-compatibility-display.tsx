@@ -29,6 +29,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from '@/components/ui/tooltip'
+import { MatchInsightMarkdown } from '@/components/compatibility/match-insight-markdown'
 
 interface IndividualCompatibilityData {
   compatibility_score: number
@@ -439,11 +440,12 @@ export function IndividualCompatibilityDisplay({
           <CardContent className="p-5 sm:p-5">
             <h3 className="text-base sm:text-sm font-semibold text-gray-900 dark:text-gray-100 mb-4 sm:mb-3 flex items-center gap-2">
               <Sparkles className="w-5 h-5 sm:w-4 sm:h-4 text-indigo-600 dark:text-indigo-400" />
-              Why You're Compatible
+              Living together guide
             </h3>
-            <p className="text-base sm:text-sm text-gray-600 dark:text-gray-400 leading-relaxed">
-              {compatibility.personalized_explanation}
-            </p>
+            <MatchInsightMarkdown
+              className="text-base sm:text-sm text-gray-600 dark:text-gray-400"
+              markdown={compatibility.personalized_explanation}
+            />
           </CardContent>
         </Card>
       )}

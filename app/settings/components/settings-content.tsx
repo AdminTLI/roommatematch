@@ -13,6 +13,7 @@ import {
 } from '@/components/ui/select'
 import { User, FileText, Shield, Settings as SettingsIcon, EyeOff, Eye, Loader2 } from 'lucide-react'
 import { ProfileSettings } from './profile-settings'
+import { AvatarAndPhotoSettings } from './avatar-and-photo-settings'
 import { QuestionnaireSettings } from './questionnaire-settings'
 import { AccountSettings } from './account-settings'
 import { PrivacySettings } from './privacy-settings'
@@ -181,6 +182,9 @@ export function SettingsContent({ user, profile, academic, professionalContext, 
                     <div className="mb-6">
                       <h2 className="text-xl font-semibold text-zinc-900 dark:text-white">Profile Information</h2>
                       <p className="text-sm text-zinc-600 dark:text-zinc-400 mt-1">Update your personal information and preferences.</p>
+                    </div>
+                    <div className="mb-10">
+                      <AvatarAndPhotoSettings profile={profile || {}} />
                     </div>
                     <ProfileSettings
                       user={user}

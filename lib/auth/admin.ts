@@ -4,11 +4,18 @@ import { safeLogger } from '@/lib/utils/logger'
 import { getUserRole, isSuperAdmin, type UserRole } from './roles'
 import { sanitizeEmail, sanitizeUserId } from '@/lib/utils/sanitize-logs'
 
+export type AdminsTableRole = 'super_admin' | 'university_admin' | 'moderator'
+
 export interface AdminAuthResult {
   ok: boolean
   status: number
   user?: { id: string; email?: string }
-  adminRecord?: { role: UserRole; university_id: string | null }
+  adminRecord?: {
+    role: UserRole
+    university_id: string | null
+    /** Row in `admins` (may differ from platform role in `user_roles`). */
+    admins_table_role: AdminsTableRole | null
+  }
   error?: string
 }
 
@@ -55,13 +62,14 @@ export async function requireAdmin(request?: NextRequest, requireSecret?: boolea
 
   // Get admin record for university_id (may be null for super admins)
   const adminClient = createAdminClient()
-  const { data: adminRecord } = await adminClient
+  const { data: adminRow } = await adminClient
     .from('admins')
-    .select('university_id')
+    .select('university_id, role')
     .eq('user_id', user.id)
     .maybeSingle()
 
-  const universityId = adminRecord?.university_id || null
+  const universityId = adminRow?.university_id || null
+  const adminsTableRole = (adminRow?.role as AdminsTableRole | null) ?? null
 
   // Validate shared secret from environment variable
   // This provides an additional layer of security for sensitive admin operations
@@ -128,7 +136,8 @@ export async function requireAdmin(request?: NextRequest, requireSecret?: boolea
     },
     adminRecord: {
       role: userRole,
-      university_id: universityId
+      university_id: universityId,
+      admins_table_role: adminsTableRole,
     }
   }
 }

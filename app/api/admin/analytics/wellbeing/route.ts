@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createAdminClient } from '@/lib/supabase/server'
-import { requireAdmin } from '@/lib/auth/admin'
 import { safeLogger } from '@/lib/utils/logger'
+import { openScopedAnalyticsSession } from '@/lib/admin/analytics-scope'
 
 type MatchRow = {
   a_user: string
@@ -22,68 +21,27 @@ type ReportRow = {
 
 export async function GET(request: NextRequest) {
   try {
-    const adminCheck = await requireAdmin(request, false)
-
-    if (!adminCheck.ok) {
-      return NextResponse.json(
-        { error: adminCheck.error || 'Admin access required' },
-        { status: adminCheck.status }
-      )
+    const ctx = await openScopedAnalyticsSession(request)
+    if (!ctx.ok) {
+      return NextResponse.json({ error: ctx.error }, { status: ctx.status })
     }
 
-    const { adminRecord } = adminCheck
-    const admin = createAdminClient()
+    const { admin, scopedUserIds: universityUserIds } = ctx
 
-    if (!adminRecord) {
-      return NextResponse.json(
-        { error: 'Admin record not found' },
-        { status: 500 }
-      )
+    if (universityUserIds.size === 0) {
+      return NextResponse.json({
+        totalActiveMatches: 0,
+        totalBlocks: 0,
+        totalReports: 0,
+        harmonyScore: 0,
+      })
     }
 
-    const isSuperAdmin = adminRecord.role === 'super_admin'
-    const universityId = isSuperAdmin ? null : adminRecord.university_id
+    const isPairInUniversityScope = (aUserId: string, bUserId: string): boolean =>
+      universityUserIds.has(aUserId) && universityUserIds.has(bUserId)
 
-    // If admin is scoped to a university, find all user_ids for that university
-    let universityUserIds: Set<string> | null = null
-    if (universityId) {
-      const { data: academic, error: academicError } = await admin
-        .from('user_academic')
-        .select('user_id')
-        .eq('university_id', universityId)
-
-      if (academicError) {
-        safeLogger.error('[Admin Wellbeing Analytics] Failed to load user_academic', {
-          error: academicError,
-          universityId,
-        })
-      }
-
-      universityUserIds = new Set(academic?.map((a) => a.user_id) || [])
-    }
-
-    // Helper to decide if a pair of users belongs to this admin's university scope
-    const isPairInUniversityScope = (aUserId: string, bUserId: string): boolean => {
-      if (!universityId || !universityUserIds) {
-        return true
-      }
-      if (universityUserIds.size === 0) {
-        return false
-      }
-      // For university-scoped admins, only count pairs where both users are from their university
-      return universityUserIds.has(aUserId) && universityUserIds.has(bUserId)
-    }
-
-    const isUserInUniversityScope = (userId: string | null | undefined): boolean => {
-      if (!userId) return false
-      if (!universityId || !universityUserIds) {
-        return true
-      }
-      if (universityUserIds.size === 0) {
-        return false
-      }
-      return universityUserIds.has(userId)
-    }
+    const isUserInUniversityScope = (userId: string | null | undefined): boolean =>
+      !!userId && universityUserIds.has(userId)
 
     // 1) Total active matches (accepted matches, optionally scoped by university)
     const { data: matchesRows, error: matchesError } = await admin
@@ -131,15 +89,10 @@ export async function GET(request: NextRequest) {
 
       if (!isActive) return false
 
-      // For university-scoped admins, count blocks where at least one side is in their university
-      if (universityId && universityUserIds) {
-        return (
-          isUserInUniversityScope(b.user_id) ||
-          isUserInUniversityScope(b.blocked_user_id)
-        )
-      }
-
-      return true
+      return (
+        isUserInUniversityScope(b.user_id) ||
+        isUserInUniversityScope(b.blocked_user_id)
+      )
     })
 
     const totalBlocks = scopedBlocks.length
@@ -161,19 +114,11 @@ export async function GET(request: NextRequest) {
 
     const typedReports = (reportRows || []) as ReportRow[]
 
-    const scopedReports = typedReports.filter((r) => {
-      if (!universityId || !universityUserIds) {
-        return true
-      }
-      if (universityUserIds.size === 0) {
-        return false
-      }
-
-      return (
+    const scopedReports = typedReports.filter(
+      (r) =>
         isUserInUniversityScope(r.reporter_id) ||
         isUserInUniversityScope(r.target_user_id)
-      )
-    })
+    )
 
     const totalReports = scopedReports.length
 

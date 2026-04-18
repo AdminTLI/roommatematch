@@ -42,6 +42,10 @@ export const queryKeys = {
   /** Per-chat compatibility for messenger header + profile pane (shared cache) */
   chatCompatibility: (chatId?: string | null) =>
     chatId ? (['chat', 'compatibility', chatId] as const) : (['chat', 'compatibility'] as const),
+
+  /** Progressive disclosure / avatars for a chat thread */
+  chatPrivacy: (chatId?: string | null, userId?: string | null) =>
+    chatId && userId ? (['chat', 'privacy', chatId, userId] as const) : (['chat', 'privacy'] as const),
 } as const
 
 // Create a client with granular stale times and enhanced retry logic
@@ -90,16 +94,19 @@ export function useApp() {
 }
 
 export function Providers({ children }: { children: React.ReactNode }) {
-  const [locale, setLocale] = useState<Locale>(() => {
-    // Initialize from localStorage on client side only
-    if (typeof window !== 'undefined') {
+  // Match SSR on first paint; sync from localStorage after mount to avoid hydration mismatches.
+  const [locale, setLocale] = useState<Locale>(DEFAULT_LOCALE)
+
+  useEffect(() => {
+    try {
       const savedLocale = localStorage.getItem('locale') as Locale
       if (savedLocale && ['en', 'nl'].includes(savedLocale)) {
-        return savedLocale
+        setLocale(savedLocale)
       }
+    } catch {
+      // ignore
     }
-    return DEFAULT_LOCALE
-  })
+  }, [])
   const [supabase] = useState(() => createClient())
 
   useEffect(() => {

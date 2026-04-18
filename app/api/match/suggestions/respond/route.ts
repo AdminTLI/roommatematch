@@ -7,6 +7,7 @@ import { safeLogger } from '@/lib/utils/logger'
 import { checkRateLimit, getUserRateLimitKey } from '@/lib/rate-limit'
 import { trackEvent, EVENT_TYPES } from '@/lib/events'
 import { validateMatchSuggestion, validateUserAction, validateStatusTransition } from '@/lib/matching/validation'
+import { ensureProfileAccessRows, resolvePairMatchId } from '@/lib/privacy/profile-access-server'
 
 export async function POST(request: NextRequest) {
   try {
@@ -512,10 +513,11 @@ export async function POST(request: NextRequest) {
           }
           
           if (!chatId) {
+            const pairMatchId = await resolvePairMatchId(admin, userA, userB)
             // Create chat
             const { data: createdChat, error: chatErr } = await admin
               .from('chats')
-              .insert({ is_group: false, created_by: userA, match_id: null })
+              .insert({ is_group: false, created_by: userA, match_id: pairMatchId })
               .select('id')
               .single()
             
@@ -564,6 +566,8 @@ export async function POST(request: NextRequest) {
               userB,
               memberCount: 2
             })
+
+            await ensureProfileAccessRows(admin, chatId)
             
             // System message (use first user as sender)
             const { error: msgErr } = await admin
@@ -760,10 +764,11 @@ export async function POST(request: NextRequest) {
             }
             
             if (!chatId) {
+              const pairMatchIdRecheck = await resolvePairMatchId(admin, userA, userB)
               // Create chat
               const { data: createdChat, error: chatErr } = await admin
                 .from('chats')
-                .insert({ is_group: false, created_by: userA, match_id: null })
+                .insert({ is_group: false, created_by: userA, match_id: pairMatchIdRecheck })
                 .select('id')
                 .single()
               
@@ -812,6 +817,8 @@ export async function POST(request: NextRequest) {
                 userB,
                 memberCount: 2
               })
+
+              await ensureProfileAccessRows(admin, chatId)
               
               // System message (use first user as sender)
               const { error: msgErr } = await admin

@@ -1,57 +1,34 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createAdminClient } from '@/lib/supabase/server'
-import { requireAdmin } from '@/lib/auth/admin'
 import { safeLogger } from '@/lib/utils/logger'
+import { openScopedAnalyticsSession } from '@/lib/admin/analytics-scope'
 
 export async function GET(request: NextRequest) {
   try {
-    const adminCheck = await requireAdmin(request, false)
-    
-    if (!adminCheck.ok) {
-      return NextResponse.json(
-        { error: adminCheck.error || 'Admin access required' },
-        { status: adminCheck.status }
-      )
+    const ctx = await openScopedAnalyticsSession(request)
+    if (!ctx.ok) {
+      return NextResponse.json({ error: ctx.error }, { status: ctx.status })
     }
 
-    const { adminRecord } = adminCheck
-    const admin = createAdminClient()
-    const isSuperAdmin = adminRecord?.role === 'super_admin'
-    const universityId = isSuperAdmin ? null : adminRecord?.university_id
+    const { admin, scopedUserIds } = ctx
 
-    // Get date range from query params (default to last 30 days)
+    if (scopedUserIds.size === 0) {
+      return NextResponse.json({
+        sources: [],
+        campaigns: [],
+        timeSeries: [],
+      })
+    }
+
     const searchParams = request.nextUrl.searchParams
     const days = parseInt(searchParams.get('days') || '30', 10)
     const startDate = new Date(Date.now() - days * 24 * 60 * 60 * 1000)
 
-    // Get user journey events with traffic source data
-    let eventsQuery = admin
+    const { data: events, error } = await admin
       .from('user_journey_events')
       .select('traffic_source, utm_source, utm_campaign, utm_medium, event_timestamp, user_id')
       .gte('event_timestamp', startDate.toISOString())
       .not('traffic_source', 'is', null)
-
-    // Filter by university if needed
-    if (universityId) {
-      const { data: academic } = await admin
-        .from('user_academic')
-        .select('user_id')
-        .eq('university_id', universityId)
-      
-      const universityUserIds = new Set(academic?.map(a => a.user_id) || [])
-      
-      if (universityUserIds.size > 0) {
-        eventsQuery = eventsQuery.in('user_id', Array.from(universityUserIds))
-      } else {
-        return NextResponse.json({
-          sources: [],
-          campaigns: [],
-          timeSeries: []
-        })
-      }
-    }
-
-    const { data: events, error } = await eventsQuery
+      .in('user_id', Array.from(scopedUserIds))
 
     if (error) {
       safeLogger.error('[Admin Analytics] Traffic sources error', { error })

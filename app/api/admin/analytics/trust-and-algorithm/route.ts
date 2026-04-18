@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createAdminClient } from '@/lib/supabase/server'
-import { requireAdmin } from '@/lib/auth/admin'
 import { safeLogger } from '@/lib/utils/logger'
+import { openScopedAnalyticsSession } from '@/lib/admin/analytics-scope'
 
 type TopDealbreaker = {
   key: string
@@ -20,63 +19,27 @@ const DEALBREAKER_LABELS: Record<string, string> = {
 
 export async function GET(request: NextRequest) {
   try {
-    const adminCheck = await requireAdmin(request, false)
-
-    if (!adminCheck.ok) {
-      return NextResponse.json(
-        { error: adminCheck.error || 'Admin access required' },
-        { status: adminCheck.status }
-      )
+    const ctx = await openScopedAnalyticsSession(request)
+    if (!ctx.ok) {
+      return NextResponse.json({ error: ctx.error }, { status: ctx.status })
     }
 
-    const { adminRecord } = adminCheck
-    const admin = createAdminClient()
+    const { admin, scopedUserIds: universityUserIds } = ctx
 
-    if (!adminRecord) {
-      return NextResponse.json(
-        { error: 'Admin record not found' },
-        { status: 500 }
-      )
+    if (universityUserIds.size === 0) {
+      return NextResponse.json({
+        totalUsers: 0,
+        verifiedUsers: 0,
+        verificationRate: 0,
+        topDealbreakers: [] as TopDealbreaker[],
+      })
     }
 
-    const isSuperAdmin = adminRecord.role === 'super_admin'
-    const universityId = isSuperAdmin ? null : adminRecord.university_id
-
-    // Resolve scoped user IDs for university-scoped admins
-    let universityUserIds: Set<string> | null = null
-    if (universityId) {
-      const { data: academic, error: academicError } = await admin
-        .from('user_academic')
-        .select('user_id')
-        .eq('university_id', universityId)
-
-      if (academicError) {
-        safeLogger.error('[Admin Trust & Algorithm] Failed to fetch academic users', academicError)
-        return NextResponse.json(
-          { error: 'Failed to load trust & algorithm metrics' },
-          { status: 500 }
-        )
-      }
-
-      universityUserIds = new Set((academic || []).map(a => a.user_id as string))
-    }
-
-    // 1. Active users in scope (base population)
-    let usersQuery = admin
+    const { data: users, error: usersError } = await admin
       .from('users')
       .select('id')
       .eq('is_active', true)
-
-    if (universityId && universityUserIds) {
-      if (universityUserIds.size > 0) {
-        usersQuery = usersQuery.in('id', Array.from(universityUserIds))
-      } else {
-        // No users for this university
-        usersQuery = usersQuery.eq('id', '00000000-0000-0000-0000-000000000000')
-      }
-    }
-
-    const { data: users, error: usersError } = await usersQuery
+      .in('id', Array.from(universityUserIds))
 
     if (usersError) {
       safeLogger.error('[Admin Trust & Algorithm] Failed to fetch active users', usersError)
