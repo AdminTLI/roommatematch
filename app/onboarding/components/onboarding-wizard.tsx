@@ -287,20 +287,19 @@ export function OnboardingWizard({ user }: OnboardingWizardProps) {
       let vectorError = null
       let retries = 3
       while (retries > 0) {
-        const { error } = await supabase.rpc('compute_user_vector_and_store', { 
-          p_user_id: user.id 
-        })
-        
-        if (!error) {
+        const res = await fetch('/api/onboarding/compute-vector', { method: 'POST' })
+
+        if (res.ok) {
           vectorError = null
           break
         }
-        
-        vectorError = error
+
+        const json = await res.json().catch(() => null)
+        vectorError = json?.error || res.statusText
         retries--
         
         if (retries > 0) {
-          console.warn(`Vector generation failed, retrying... (${retries} attempts left)`, error)
+          console.warn(`Vector generation failed, retrying... (${retries} attempts left)`, vectorError)
           // Wait 1 second before retry
           await new Promise(resolve => setTimeout(resolve, 1000))
         }

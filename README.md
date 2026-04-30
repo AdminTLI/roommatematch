@@ -109,6 +109,11 @@ If you use a preserved demo or QA account, configure it only via environment var
    cp env.example .env.local
    ```
    
+   Generate local secrets (required for CSRF protection):
+   ```bash
+   npm run env:init
+   ```
+   
    Edit `.env.local` with your Supabase credentials:
    ```env
    NEXT_PUBLIC_SUPABASE_URL=your_supabase_url

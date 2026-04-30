@@ -9,6 +9,15 @@ export function getUpstashRedisRestCredentials(): { url: string; token: string }
   const url = process.env.UPSTASH_REDIS_REST_URL || process.env.KV_REST_API_URL || ''
   const token = process.env.UPSTASH_REDIS_REST_TOKEN || process.env.KV_REST_API_TOKEN || ''
   if (!url || !token) return null
+  // Treat env.example placeholder values as "not configured" (prevents noisy fetch failures in dev).
+  const u = url.trim().toLowerCase()
+  const t = token.trim().toLowerCase()
+  if (
+    u.includes('your-redis-instance') ||
+    u.includes('upstash.io') && (t.includes('your_') || t.includes('your-') || t.includes('token_here'))
+  ) {
+    return null
+  }
   return { url, token }
 }
 

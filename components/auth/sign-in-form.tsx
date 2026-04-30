@@ -8,9 +8,9 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Loader2, Mail, Lock, Eye, EyeOff } from 'lucide-react'
-import { createBrowserClient } from '@supabase/ssr'
 import { toast } from 'sonner'
 import { signOutOtherSessions } from '@/lib/auth/sign-out-other-sessions'
+import { createClient } from '@/lib/supabase/client'
 import {
   SESSION_TERMINATED_ERROR_PARAM,
   SESSION_TERMINATED_MESSAGE,
@@ -24,10 +24,8 @@ export function SignInForm({ initialErrorCode }: { initialErrorCode?: string | n
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState('')
   const router = useRouter()
-  const supabase = createBrowserClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-  )
+  const [supabaseInitError, setSupabaseInitError] = useState<string | null>(null)
+  const [supabase, setSupabase] = useState<ReturnType<typeof createClient> | null>(null)
 
   useEffect(() => {
     if (initialErrorCode !== SESSION_TERMINATED_ERROR_PARAM) return
@@ -37,12 +35,32 @@ export function SignInForm({ initialErrorCode }: { initialErrorCode?: string | n
     }
   }, [initialErrorCode])
 
+  useEffect(() => {
+    try {
+      setSupabase(createClient())
+      setSupabaseInitError(null)
+    } catch (e) {
+      const msg = e instanceof Error ? e.message : String(e)
+      setSupabaseInitError(msg)
+      setSupabase(null)
+    }
+  }, [])
+
   const handleEmailSignIn = async (e: React.FormEvent) => {
     e.preventDefault()
     setIsLoading(true)
     setError('')
 
     try {
+      if (!supabase) {
+        setError(
+          supabaseInitError ||
+            'Supabase is not configured. Please set NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY in .env.local and restart the dev server.'
+        )
+        setIsLoading(false)
+        return
+      }
+
       // Trim email and password to remove any accidental whitespace
       const trimmedEmail = email.trim()
       const trimmedPassword = password.trim()
@@ -209,6 +227,11 @@ export function SignInForm({ initialErrorCode }: { initialErrorCode?: string | n
             <AlertDescription>{error}</AlertDescription>
           </Alert>
         )}
+        {!error && supabaseInitError && (
+          <Alert variant="destructive">
+            <AlertDescription>{supabaseInitError}</AlertDescription>
+          </Alert>
+        )}
 
         <form onSubmit={handleEmailSignIn} className="space-y-4">
           <div className="space-y-2">
@@ -265,7 +288,7 @@ export function SignInForm({ initialErrorCode }: { initialErrorCode?: string | n
           <Button
             type="submit"
             className="w-full min-h-[44px] text-base bg-slate-900 text-white border-0 shadow-[0_12px_30px_rgba(15,23,42,0.16)] hover:bg-slate-900/90 transition-colors disabled:opacity-70"
-            disabled={isLoading}
+            disabled={isLoading || !supabase}
           >
             {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
             Sign in

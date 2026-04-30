@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createClient } from '@/lib/supabase/server'
+import { createAdminClient } from '@/lib/supabase/server'
 import { requireAdmin } from '@/lib/auth/admin'
 import { logAdminAction } from '@/lib/admin/audit'
 import { safeLogger } from '@/lib/utils/logger'
@@ -17,7 +17,7 @@ export async function POST(request: NextRequest) {
     }
 
     const { user, adminRecord } = adminCheck
-    const supabase = await createClient()
+    const supabase = await createAdminClient()
 
     // Audit log admin action
     await logAdminAction(user!.id, 'backfill_vectors', null, null, {

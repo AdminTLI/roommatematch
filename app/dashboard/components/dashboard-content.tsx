@@ -538,75 +538,26 @@ export function DashboardContent({ hasCompletedQuestionnaire = false, hasPartial
         if (recentUserIds.length > 1) {
           // Use batch function for multiple users (more efficient)
           try {
-            const { data, error } = await supabase.rpc('compute_compatibility_scores_batch', {
-              user_a_id: user.id,
-              user_b_ids: recentUserIds
+            const res = await fetch('/api/match/compatibility/batch', {
+              method: 'POST',
+              headers: { 'content-type': 'application/json' },
+              body: JSON.stringify({ other_user_ids: recentUserIds }),
             })
 
-            if (error) {
-              // Non-fatal: log as warning and fall back to individual calls
-              logger.warn('Error computing batch compatibility scores, falling back to individual RPC calls', { error })
-              // Fall back to individual calls
-              compatibilityScores = await Promise.all(
-                recentUserIds.map(async (otherUserId) => {
-                  try {
-                    const cacheKey = getCompatibilityCacheKey(user.id, otherUserId)
-                    const result = await queryClient.fetchQuery({
-                      queryKey: cacheKey,
-                      queryFn: async () => {
-                        const { data, error } = await supabase.rpc('compute_compatibility_score', {
-                          user_a_id: user.id,
-                          user_b_id: otherUserId
-                        })
-                        if (error) throw error
-                        return Array.isArray(data) && data.length > 0 ? data[0] : (data || {})
-                      },
-                      staleTime: getCompatibilityStaleTime(),
-                    })
-                    const score = Number(result?.compatibility_score || 0)
-                    const harmonyScore = result?.harmony_score != null && result?.harmony_score !== undefined 
-                      ? Number(result.harmony_score) 
-                      : 0
-                    const contextScore = result?.context_score != null && result?.context_score !== undefined
-                      ? Number(result.context_score)
-                      : 0
-                    // Extract dimension_scores_json - handle JSONB from PostgreSQL
-                    let dimensionScores: { [key: string]: number } | null = null
-                    if (result?.dimension_scores_json) {
-                      if (typeof result.dimension_scores_json === 'object' && result.dimension_scores_json !== null) {
-                        const keys = Object.keys(result.dimension_scores_json)
-                        if (keys.length > 0) {
-                          dimensionScores = result.dimension_scores_json as { [key: string]: number }
-                        }
-                      } else if (typeof result.dimension_scores_json === 'string') {
-                        try {
-                          const parsed = JSON.parse(result.dimension_scores_json)
-                          if (parsed && typeof parsed === 'object' && Object.keys(parsed).length > 0) {
-                            dimensionScores = parsed as { [key: string]: number }
-                          }
-                        } catch (e) {
-                          // Ignore parse errors
-                        }
-                      }
-                    }
-                    // Cache the result
-                    queryClient.setQueryData(cacheKey, result)
-                    return { userId: otherUserId, score, harmonyScore, contextScore, dimensionScores }
-                  } catch (error) {
-                    logger.error(`Error computing compatibility score for ${otherUserId}:`, error)
-                    return { userId: otherUserId, score: 0, harmonyScore: 0, contextScore: 0, dimensionScores: null }
-                  }
-                })
-              )
-            } else {
-              // Process batch results and cache them
-              // Log the entire batch response for debugging
-              if (process.env.NODE_ENV === 'development' && data && data.length > 0) {
-                logger.log('[Dashboard] Batch response sample:', JSON.stringify(data[0], null, 2))
-              }
-              
-              compatibilityScores = await Promise.all(
-                (data || []).map(async (result: any) => {
+            const json = res.ok ? await res.json() : null
+            if (!res.ok) {
+              throw new Error(json?.error || 'Batch compatibility request failed')
+            }
+
+            const data = json?.results || []
+
+            // Process batch results and cache them
+            if (process.env.NODE_ENV === 'development' && data && data.length > 0) {
+              logger.log('[Dashboard] Batch response sample:', JSON.stringify(data[0], null, 2))
+            }
+
+            compatibilityScores = await Promise.all(
+              (data || []).map(async (result: any) => {
                   const otherUserId = result.user_b_id
                   const score = extractScore(result?.compatibility_score, 0)
                   
@@ -660,8 +611,7 @@ export function DashboardContent({ hasCompletedQuestionnaire = false, hasPartial
 
                   return { userId: otherUserId, score, harmonyScore, contextScore, dimensionScores }
                 })
-              )
-            }
+            )
           } catch (error) {
             logger.error('Error in batch compatibility score computation:', error)
             // Fall back to individual calls
@@ -672,12 +622,10 @@ export function DashboardContent({ hasCompletedQuestionnaire = false, hasPartial
                   const result = await queryClient.fetchQuery({
                     queryKey: cacheKey,
                     queryFn: async () => {
-                      const { data, error } = await supabase.rpc('compute_compatibility_score', {
-                        user_a_id: user.id,
-                        user_b_id: otherUserId
-                      })
-                      if (error) throw error
-                      const resultData = Array.isArray(data) && data.length > 0 ? data[0] : (data || {})
+                      const res = await fetch(`/api/match/compatibility?other_user_id=${encodeURIComponent(otherUserId)}`)
+                      const json = res.ok ? await res.json() : null
+                      if (!res.ok) throw new Error(json?.error || 'Compatibility request failed')
+                      const resultData = json?.result || {}
                       // Debug logging to see what we're getting from the database
                       if (process.env.NODE_ENV === 'development') {
                         logger.log(`[Dashboard] Compatibility result for ${otherUserId}:`, {
@@ -748,12 +696,10 @@ export function DashboardContent({ hasCompletedQuestionnaire = false, hasPartial
             const result = await queryClient.fetchQuery({
               queryKey: cacheKey,
               queryFn: async () => {
-                const { data, error } = await supabase.rpc('compute_compatibility_score', {
-                  user_a_id: user.id,
-                  user_b_id: otherUserId
-                })
-                if (error) throw error
-                return Array.isArray(data) && data.length > 0 ? data[0] : (data || {})
+                const res = await fetch(`/api/match/compatibility?other_user_id=${encodeURIComponent(otherUserId)}`)
+                const json = res.ok ? await res.json() : null
+                if (!res.ok) throw new Error(json?.error || 'Compatibility request failed')
+                return json?.result || {}
               },
               staleTime: getCompatibilityStaleTime(),
             })
@@ -1122,19 +1068,13 @@ export function DashboardContent({ hasCompletedQuestionnaire = false, hasPartial
         const compatibilityScores = await Promise.all(
           uniqueUserIds.map(async (otherUserId) => {
             try {
-              const { data, error } = await supabase.rpc('compute_compatibility_score', {
-                user_a_id: user.id,
-                user_b_id: otherUserId
-              })
-
-              if (error) {
-                logger.error(`Error computing compatibility score for ${otherUserId}:`, error)
+              const res = await fetch(`/api/match/compatibility?other_user_id=${encodeURIComponent(otherUserId)}`)
+              const json = res.ok ? await res.json() : null
+              if (!res.ok) {
+                logger.error(`Error computing compatibility score for ${otherUserId}:`, json?.error || res.statusText)
                 return 0
               }
-
-              // The function returns a table (array), get the first row
-              const result = Array.isArray(data) && data.length > 0 ? data[0] : (data || {})
-              return Number(result.compatibility_score || 0)
+              return Number(json?.result?.compatibility_score || 0)
             } catch (error) {
               logger.error(`Error computing compatibility score for ${otherUserId}:`, error)
               return 0

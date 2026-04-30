@@ -99,34 +99,20 @@ export function MatchesInterface({ user }: MatchesInterfaceProps) {
     setIsLoading(true)
     
     try {
-      // Load individual matches using RPC
-      const { data: individualData, error: individualError } = await supabase.rpc('get_user_matches', {
-        p_user_id: user.id,
-        p_limit: 20,
-        p_offset: 0,
-        p_university_ids: filters.universityIds.length > 0 ? filters.universityIds : null,
-        p_degree_levels: filters.degreeLevels.length > 0 ? filters.degreeLevels : null,
-        p_program_ids: filters.programIds.length > 0 ? filters.programIds : null,
-        p_study_years: filters.studyYears.length > 0 ? filters.studyYears : null
+      // Load matches via server-side API (service role) to avoid exposing powerful RPCs to the browser
+      const res = await fetch('/api/matches/my', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ filters }),
       })
 
-      if (individualError) {
-        throw individualError
+      const json = res.ok ? await res.json() : null
+      if (!res.ok) {
+        throw new Error(json?.error || 'Failed to load matches')
       }
 
-      // Load group matches using RPC
-      const { data: groupData, error: groupError } = await supabase.rpc('get_group_matches', {
-        p_user_id: user.id,
-        p_limit: 10,
-        p_offset: 0
-      })
-
-      if (groupError) {
-        console.warn('Failed to load group matches:', groupError)
-      }
-
-      setIndividualMatches(individualData || [])
-      setGroupSuggestions(groupData || [])
+      setIndividualMatches(json?.individualMatches || [])
+      setGroupSuggestions(json?.groupSuggestions || [])
       setLastUpdated(new Date())
       
     } catch (error) {

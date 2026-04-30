@@ -250,7 +250,8 @@ export async function POST(request: NextRequest) {
       if (!currentUser.vector) {
         safeLogger.debug('[Matching] Current user missing vector, generating...')
         // Use update_user_vector which we know works with JSONB
-        const { error: vectorError } = await supabase.rpc('update_user_vector', { 
+        const adminClient = createAdminClient()
+        const { error: vectorError } = await adminClient.rpc('update_user_vector', { 
           p_user_id: user.id 
         })
         

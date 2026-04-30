@@ -200,6 +200,27 @@ export async function middleware(req: NextRequest) {
     return NextResponse.next()
   }
 
+  // Define protected routes that require authentication / verification checks.
+  // Important: keep marketing + general public pages reachable even if a user has
+  // stale/invalid auth cookies (otherwise they get stuck being redirected to sign-in).
+  const protectedRoutes = [
+    '/dashboard',
+    '/settings',
+    '/matches',
+    '/chat',
+    '/onboarding',
+    '/forum',
+    '/notifications',
+    '/housing',
+    '/move-in',
+    '/reputation',
+    '/safety',
+  ]
+
+  const isProtectedRoute = protectedRoutes.some((route) => pathname.startsWith(route))
+  const isAdminRoute = pathname.startsWith('/admin')
+  const isVerifyRoute = pathname === '/verify'
+
   // Skip middleware for static assets and public routes
   if (
     pathname.startsWith('/_next') ||
@@ -207,6 +228,12 @@ export async function middleware(req: NextRequest) {
     pathname.startsWith('/images') ||
     publicPrefixes.some((p) => pathname.startsWith(p))
   ) {
+    return NextResponse.next()
+  }
+
+  // If this route doesn't need auth/verification logic, don't call Supabase at all.
+  // This prevents public pages (including `/`) from being affected by stale auth cookies.
+  if (!isProtectedRoute && !isAdminRoute && !isVerifyRoute) {
     return NextResponse.next()
   }
 
@@ -290,21 +317,6 @@ export async function middleware(req: NextRequest) {
     res.cookies.set(csrfCookie.httpOnlyCookie.name, csrfCookie.httpOnlyCookie.value, csrfCookie.httpOnlyCookie.options)
   }
 
-  // Define protected routes that require full verification
-  const protectedRoutes = [
-    '/dashboard',
-    '/settings',
-    '/matches',
-    '/chat',
-    '/onboarding',
-    '/forum',
-    '/notifications',
-    '/housing',
-    '/move-in',
-    '/reputation',
-    '/safety',
-  ]
-
   // Define routes that are always allowed (verification pages, auth pages)
   const allowedRoutes = [
     '/auth/verify-email',
@@ -316,7 +328,6 @@ export async function middleware(req: NextRequest) {
   ]
 
   // Check if current path is a protected route
-  const isProtectedRoute = protectedRoutes.some(route => pathname.startsWith(route))
   const isAllowedRoute = allowedRoutes.some(route => pathname.startsWith(route))
 
   // CRITICAL: For authenticated users, ALWAYS check email verification first

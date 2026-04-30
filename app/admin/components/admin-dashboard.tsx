@@ -50,6 +50,18 @@ interface AnalyticsData {
     description: string
     timestamp: string
   }>
+  matchDeclines?: {
+    totalDeclines: number
+    declineRate: number
+    totalBlocklistAdditions: number
+    avgDeclinedScore: number
+  }
+  recentMatchActivity?: Array<{
+    id: string
+    actionType: string
+    description: string
+    timestamp: string
+  }>
 }
 
 interface Report {
@@ -116,12 +128,12 @@ export function AdminDashboard({ admin }: AdminDashboardProps) {
     setIsLoading(true)
     
     try {
-      // Load analytics using RPC
-      const { data: analyticsData, error: analyticsError } = await supabase.rpc('get_admin_analytics', {
-        p_admin_university_id: admin.university_id
-      })
-
-      if (analyticsError) throw analyticsError
+      // Load analytics via server-side API (service role) to avoid exposing powerful RPCs to the browser
+      const analyticsResponse = await fetch(`/api/admin/analytics?requested_university_id=${encodeURIComponent(admin.university_id)}`)
+      const analyticsData = analyticsResponse.ok ? await analyticsResponse.json() : null
+      if (!analyticsResponse.ok) {
+        throw new Error(analyticsData?.error || 'Failed to load analytics')
+      }
 
       // Load coverage metrics
       const coverageResponse = await fetch('/api/admin/coverage')
@@ -189,11 +201,11 @@ export function AdminDashboard({ admin }: AdminDashboardProps) {
 
       // Transform analytics data
       const transformedAnalytics: AnalyticsData = {
-        totalUsers: analyticsData?.[0]?.total_users || 0,
-        verifiedUsers: analyticsData?.[0]?.verified_users || 0,
-        activeChats: analyticsData?.[0]?.active_chats || 0,
-        totalMatches: analyticsData?.[0]?.total_matches || 0,
-        reportsPending: analyticsData?.[0]?.reports_pending || 0,
+        totalUsers: analyticsData?.totalUsers || 0,
+        verifiedUsers: analyticsData?.verifiedUsers || 0,
+        activeChats: analyticsData?.activeChats || 0,
+        totalMatches: analyticsData?.totalMatches || 0,
+        reportsPending: analyticsData?.reportsPending || 0,
         coveragePercentage: coverageData?.data ? 
           (coverageData.data.completeInstitutions / coverageData.data.totalInstitutions) * 100 : 100,
         completeInstitutions: coverageData?.data?.completeInstitutions || 0,
@@ -254,7 +266,7 @@ export function AdminDashboard({ admin }: AdminDashboardProps) {
         .update({ 
           status: action === 'resolve' ? 'resolved' : 'reviewed',
           resolved_at: new Date().toISOString(),
-          resolved_by: admin.user_id
+          resolved_by: admin.id
         })
         .eq('id', reportId)
 

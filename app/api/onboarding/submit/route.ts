@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server'
-import { createClient } from '@/lib/supabase/server'
+import { createAdminClient, createClient } from '@/lib/supabase/server'
 import { submitCompleteOnboarding, extractSubmissionDataFromIntro, extractLanguagesFromSections, mapSubmissionError } from '@/lib/onboarding/submission'
 import { transformAnswer } from '@/lib/question-key-mapping'
 import { safeLogger } from '@/lib/utils/logger'
@@ -660,7 +660,8 @@ export async function POST(request: Request) {
         safeLogger.debug('[Submit] Generating user vector...')
         let vectorGenerated = false
         try {
-          const { error: vectorError } = await supabase.rpc('update_user_vector', {
+          const admin = createAdminClient()
+          const { error: vectorError } = await admin.rpc('update_user_vector', {
             p_user_id: userId
           })
 
