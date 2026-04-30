@@ -5,6 +5,34 @@ import { useLayoutEffect, useRef, type ReactNode } from 'react'
 const MOBILE_MAX = 1023
 const MIN_CHAT_HEIGHT = 220
 
+/** Stabilize `visualViewport` vs `layout` metrics for mobile chat (iOS Safari/Chrome + `interactive-widget: resizes-content`). */
+function getStableVisualViewportBox(vv: VisualViewport) {
+  const layoutH = Math.max(
+    window.innerHeight || 0,
+    document.documentElement?.clientHeight || 0,
+    1,
+  )
+  const vvTop = Math.round(vv.offsetTop)
+  const vvH = Math.round(vv.height)
+  const obscuredBottom = Math.max(0, layoutH - vvTop - vvH)
+
+  // Keyboard open: visual height shrinks and/or the OS/browser consumes the bottom band.
+  const keyboardOpen =
+    vvH < layoutH * 0.82 && (obscuredBottom > 56 || vvTop > 8)
+
+  // After dismiss, some WebKit builds briefly keep a small `vv.height` while `offsetTop` is already 0,
+  // which made `--vv-height` too short and left dead space above the bottom chrome.
+  const staleAfterKeyboard =
+    vvTop < 12 && obscuredBottom > 96 && vvH < layoutH - 120
+
+  if (staleAfterKeyboard || !keyboardOpen) {
+    return { heightPx: layoutH, widthPx: Math.round(vv.width) }
+  }
+
+  const heightPx = Math.min(vvH, Math.max(1, layoutH - vvTop))
+  return { heightPx, widthPx: Math.round(vv.width) }
+}
+
 function resetMobileLayoutScroll() {
   if (typeof window === 'undefined') return
   // Use a standards-compliant behavior value; some mobile browsers throw on unknown values
@@ -60,11 +88,12 @@ export function ChatPageViewportRoot({ children }: { children: ReactNode }) {
           return
         }
 
+        const { heightPx, widthPx } = getStableVisualViewportBox(vv)
         root.style.setProperty('--vv-offset-top', `${Math.round(vv.offsetTop)}px`)
         root.style.setProperty('--vv-offset-left', `${Math.round(vv.offsetLeft)}px`)
-        root.style.setProperty('--vv-width', `${Math.round(vv.width)}px`)
-        root.style.setProperty('--vv-height', `${Math.round(vv.height)}px`)
-        root.style.setProperty('--chat-visual-vh', `${Math.round(vv.height)}px`)
+        root.style.setProperty('--vv-width', `${widthPx}px`)
+        root.style.setProperty('--vv-height', `${heightPx}px`)
+        root.style.setProperty('--chat-visual-vh', `${heightPx}px`)
 
         if (isMobileThreadLayout()) {
           node.style.removeProperty('height')
@@ -73,7 +102,7 @@ export function ChatPageViewportRoot({ children }: { children: ReactNode }) {
         }
 
         const rect = node.getBoundingClientRect()
-        const visualBottom = vv.offsetTop + vv.height
+        const visualBottom = vv.offsetTop + heightPx
         let h = Math.floor(visualBottom - rect.top)
         h = Math.max(MIN_CHAT_HEIGHT, h)
 
