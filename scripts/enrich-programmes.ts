@@ -60,7 +60,7 @@ try {
 }
 
 // Environment configuration
-const SKDB_API_BASE = process.env.SKDB_API_BASE
+const SKDB_API_BASE = (process.env.SKDB_API_BASE || 'https://api.skdb.nl/v1').replace(/\/+$/, '')
 const SKDB_API_KEY = process.env.SKDB_API_KEY
 const SKDB_DUMP_PATH = process.env.SKDB_DUMP_PATH
 
@@ -277,44 +277,74 @@ async function fetchProgrammesFromAPI(): Promise<SkdbProgram[]> {
     throw new Error('SKDB_API_BASE and SKDB_API_KEY must be set for API mode')
   }
   
-  console.log('📡 Fetching programmes from Studiekeuzedatabase API...')
+  console.log('📡 Fetching programmes from Studiekeuzedatabase API v1...')
   
   try {
-    const response = await fetch(`${SKDB_API_BASE}/Institutions?$expand=Programmes`, {
-      headers: {
-        'Authorization': `Bearer ${SKDB_API_KEY}`,
-        'Accept': 'application/json'
-      }
-    })
-    
-    if (!response.ok) {
-      throw new Error(`API request failed: ${response.status} ${response.statusText}`)
+    const headers = {
+      'Authorization': `Bearer ${SKDB_API_KEY}`,
+      'Accept': 'application/json'
+    } as const
+
+    const instellingenRes = await fetch(`${SKDB_API_BASE}/instellingen`, { headers })
+    if (!instellingenRes.ok) {
+      throw new Error(`API request failed (instellingen): ${instellingenRes.status} ${instellingenRes.statusText}`)
     }
-    
-    const data = await response.json()
+    const instellingenData: Array<{ instellingSkdb: number; instellingNaam?: string }> = await instellingenRes.json()
+    const instellingNaamById = new Map<number, string>()
+    for (const inst of instellingenData || []) {
+      if (typeof inst?.instellingSkdb === 'number') {
+        instellingNaamById.set(inst.instellingSkdb, inst.instellingNaam || `Instelling ${inst.instellingSkdb}`)
+      }
+    }
+
+    const opleidingenRes = await fetch(`${SKDB_API_BASE}/opleidingen`, { headers })
+    if (!opleidingenRes.ok) {
+      throw new Error(`API request failed (opleidingen): ${opleidingenRes.status} ${opleidingenRes.statusText}`)
+    }
+    const opleidingenData: any[] = await opleidingenRes.json()
+
     const programmes: SkdbProgram[] = []
-    
-    for (const institution of data.value || []) {
-      for (const programme of institution.programmes || []) {
-        try {
-          const program = ProgramSchema.parse({
-            institution: institution.name,
-            name: programme.name,
-            nameEn: programme.nameEn,
-            crohoCode: programme.crohoCode,
-            degreeLevel: determineDegreeLevel(programme),
-            languageCodes: programme.languageCodes || [],
-            faculty: programme.faculty,
-            active: programme.status !== 'ended'
-          })
-          
-          programmes.push(program)
-        } catch (error) {
-          console.warn(`⚠️  Skipping invalid programme: ${programme.name}`, error)
-        }
+    const now = new Date()
+
+    for (const opleiding of opleidingenData || []) {
+      try {
+        const institutionName =
+          instellingNaamById.get(Number(opleiding.instellingSkdb)) ||
+          opleiding.instellingNaam ||
+          opleiding.instellingCode ||
+          'Unknown institution'
+
+        const vormen: any[] = Array.isArray(opleiding.vormen) ? opleiding.vormen : []
+        const hasActiveVorm = vormen.length === 0
+          ? true
+          : vormen.some(v => {
+              const end = v?.eindeOpleidingDatum
+              if (!end) return true
+              const d = new Date(end)
+              return !Number.isNaN(d.getTime()) && d >= now
+            })
+
+        const program = ProgramSchema.parse({
+          institution: institutionName,
+          name: opleiding.opleidingNaam,
+          nameEn: opleiding.opleidingNaamEngels || opleiding.rioNaamEngels,
+          crohoCode: opleiding.opleidingCode !== undefined && opleiding.opleidingCode !== null ? String(opleiding.opleidingCode) : undefined,
+          degreeLevel: determineDegreeLevel({
+            name: opleiding.opleidingNaam,
+            level: opleiding.graad,
+            description: opleiding.soortHo
+          }),
+          languageCodes: [],
+          faculty: opleiding.lcskSector || opleiding.lcskCluster || undefined,
+          active: hasActiveVorm
+        })
+
+        programmes.push(program)
+      } catch (error) {
+        console.warn(`⚠️  Skipping invalid programme: ${opleiding?.opleidingNaam ?? 'Unknown'}`, error)
       }
     }
-    
+
     console.log(`✅ Fetched ${programmes.length} programmes from API`)
     return programmes
     

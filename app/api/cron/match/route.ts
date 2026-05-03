@@ -38,6 +38,22 @@ export async function GET(request: NextRequest) {
     safeLogger.warn('[Cron] No cron secret configured - allowing request in development only')
   }
 
+  // Preferred architecture: matching orchestration runs inside Postgres via pg_cron.
+  // Keep this route as a backwards-compatible fallback (feature-flagged).
+  const runner = process.env.MATCHING_RUNNER || 'pg_cron'
+  if (runner === 'pg_cron') {
+    safeLogger.info('[Cron] Matching run is handled by Postgres pg_cron; endpoint is a no-op', {
+      runner
+    })
+    return NextResponse.json({
+      success: true,
+      runner,
+      message:
+        'Daily matching is scheduled inside Supabase Postgres via pg_cron. This endpoint is retained for legacy compatibility.',
+      timestamp: new Date().toISOString()
+    })
+  }
+
   try {
     safeLogger.info('[Cron] Starting scheduled matching run (dual marketplace: student + professional)')
     

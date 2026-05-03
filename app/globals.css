@@ -459,16 +459,28 @@ body:has([data-chat-page]) main>div>div[data-chat-page] {
   width: 100% !important;
 }
 
-/* Open thread on mobile: lock the chat column to the *visual viewport* (keyboard + browser bars).
-   ChatPageViewportRoot sets --vv-* on <html> from window.visualViewport. */
+/*
+ * Open thread on mobile: pin the chat column to the visible viewport.
+ *
+ * Anchor at (0, 0) of the layout viewport and stretch the full width. We deliberately do NOT use
+ * `var(--vv-offset-top)` / `--vv-offset-left` here: modern iOS Safari already keeps `position: fixed`
+ * elements aligned to the visual viewport, so adding the visual-viewport offset double-shifts the
+ * container. That manifested as the header banner sliding down on focus (white space above it) and
+ * staying displaced after blur because `vv.offsetTop` did not always return to 0 promptly.
+ *
+ * Height tracks `visualViewport.height` so the composer hugs the top of the soft keyboard. JS
+ * (ChatPageViewportRoot) listens for `visualviewport.scroll` and focus events and resets
+ * `window.scrollTo(0, 0)` so iOS "scroll-into-view" cannot slide the page out from under us.
+ */
 @media (max-width: 1023px) {
   body.mobile-chat-active-conversation.chat-page main > div > div[data-chat-page],
   body:has([data-chat-page]).mobile-chat-active-conversation main > div > div[data-chat-page] {
     position: fixed !important;
     z-index: 25 !important;
-    top: var(--vv-offset-top, 0px) !important;
-    left: var(--vv-offset-left, 0px) !important;
-    width: var(--vv-width, 100vw) !important;
+    top: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
+    width: 100% !important;
     height: var(--vv-height, 100dvh) !important;
     max-height: var(--vv-height, 100dvh) !important;
     flex: none !important;

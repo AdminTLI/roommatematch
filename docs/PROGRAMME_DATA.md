@@ -7,7 +7,7 @@ This document describes how programme data is sourced, imported, and integrated 
 The platform uses **Studiekeuzedatabase (SKDB)** as the exclusive source for programme data:
 
 - **SKDB (Primary Source)**: Authoritative source for all programme data
-  - Primary: REST OData API (when `SKDB_API_BASE` + `SKDB_API_KEY` are configured)
+  - Primary: REST API (when `SKDB_API_BASE` + `SKDB_API_KEY` are configured)
   - Fallback: Full database CSV/XLSX dump (when `SKDB_DUMP_PATH` is configured)
   - Authority: Studiekeuzedatabase (CROHO-backed)
   - Coverage: All 14 UNL (Association of Universities in the Netherlands) research universities
@@ -33,7 +33,7 @@ Add these to your `.env` file:
 ```bash
 # SKDB Configuration (required)
 # API Mode (Primary)
-SKDB_API_BASE=https://api.skdb.nl
+SKDB_API_BASE=https://api.skdb.nl/v1
 SKDB_API_KEY=your_skdb_api_key_here
 
 # OR Dump Mode (Fallback)
@@ -66,7 +66,7 @@ pnpm sync:programmes
 ### SKDB Sync (`scripts/sync-skdb-programmes.ts`)
 
 1. **Data Fetching**:
-   - **API Mode**: Fetches via OData API (`/Institutions?$expand=Programmes` or `/Programmes`)
+  - **API Mode**: Fetches via SKDB API v1 (`/instellingen` + `/opleidingen`)
    - **Dump Mode**: Parses CSV/XLSX files for offline imports
 2. **Institution Mapping**: Uses comprehensive synonym map to match SKDB institution names to slugs
 3. **Programme Matching**: Matches SKDB programmes to existing programmes by:

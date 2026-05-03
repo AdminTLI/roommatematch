@@ -177,7 +177,13 @@ export function SignInForm({ initialErrorCode }: { initialErrorCode?: string | n
         if (errorMsgLower.includes('invalid') || 
             errorMsgLower.includes('credentials') ||
             errorMsgLower.includes('password')) {
-          setError('Incorrect email or password. If you\'ve forgotten your password, you can reset it using the link below.')
+          setError(
+            [
+              'Incorrect email or password.',
+              'If you are running locally, make sure this user exists in the Supabase project you configured in NEXT_PUBLIC_SUPABASE_URL (check the console log: “[Supabase] Browser client configured for …”).',
+              'If you\'ve forgotten your password, you can reset it using the link below.',
+            ].join(' ')
+          )
         } else {
           // For other errors, show the error message
           setError(signInError.message || 'An error occurred during sign in. Please try again.')

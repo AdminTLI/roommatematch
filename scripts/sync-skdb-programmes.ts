@@ -55,7 +55,7 @@ try {
 }
 
 // Environment configuration
-const SKDB_API_BASE = process.env.SKDB_API_BASE || 'https://api.skdb.nl';
+const SKDB_API_BASE = (process.env.SKDB_API_BASE || 'https://api.skdb.nl/v1').replace(/\/+$/, '');
 const SKDB_API_KEY = process.env.SKDB_API_KEY;
 const SKDB_DUMP_PATH = process.env.SKDB_DUMP_PATH;
 
@@ -248,10 +248,10 @@ function levenshteinDistance(str1: string, str2: string): number {
  * Determine degree level from programme data
  */
 function determineDegreeLevel(programmeData: any): 'bachelor' | 'master' | 'premaster' {
-  const name = (programmeData.name || '').toLowerCase();
+  const name = (programmeData.name || programmeData.opleidingNaam || '').toLowerCase();
   const description = (programmeData.description || '').toLowerCase();
   // Handle CSV format: niveau can be "Bachelor", "Master", or quoted strings
-  const niveau = (programmeData.niveau || programmeData.level || '').toString().toLowerCase().replace(/["']/g, '');
+  const niveau = (programmeData.niveau || programmeData.level || programmeData.graad || '').toString().toLowerCase().replace(/["']/g, '');
   const titel = (programmeData.Titel || programmeData.titel || '').toLowerCase();
   
   // Check for premaster/schakelprogramma first
@@ -302,93 +302,95 @@ async function fetchProgrammesFromAPI(): Promise<SkdbProgram[]> {
     throw new Error('SKDB_API_KEY must be set for API mode');
   }
   
-  console.log(`📡 Fetching programmes from Studiekeuzedatabase API (${SKDB_API_BASE})...`);
+  console.log(`📡 Fetching programmes from Studiekeuzedatabase API v1 (${SKDB_API_BASE})...`);
   
   try {
-    // Try the expand pattern first
-    let response = await fetch(`${SKDB_API_BASE}/Institutions?$expand=Programmes`, {
-      headers: {
-        'Authorization': `Bearer ${SKDB_API_KEY}`,
-        'Accept': 'application/json'
+    const headers = {
+      'Authorization': `Bearer ${SKDB_API_KEY}`,
+      'Accept': 'application/json'
+    } as const;
+
+    // v1: fetch instellingen for ID -> name mapping
+    const instellingenRes = await fetch(`${SKDB_API_BASE}/instellingen`, { headers });
+    if (!instellingenRes.ok) {
+      throw new Error(`API request failed (instellingen): ${instellingenRes.status} ${instellingenRes.statusText}`);
+    }
+    const instellingenData: Array<{ instellingSkdb: number; instellingNaam?: string }> = await instellingenRes.json();
+    const instellingNaamById = new Map<number, string>();
+    for (const inst of instellingenData || []) {
+      if (typeof inst?.instellingSkdb === 'number') {
+        instellingNaamById.set(inst.instellingSkdb, inst.instellingNaam || `Instelling ${inst.instellingSkdb}`);
       }
-    });
-    
-    // If that fails, try alternative endpoint patterns
-    if (!response.ok && response.status === 404) {
-      console.log('   Trying alternative endpoint: /Programmes');
-      response = await fetch(`${SKDB_API_BASE}/Programmes`, {
-        headers: {
-          'Authorization': `Bearer ${SKDB_API_KEY}`,
-          'Accept': 'application/json'
-        }
-      });
     }
-    
-    if (!response.ok) {
-      throw new Error(`API request failed: ${response.status} ${response.statusText}`);
+
+    // v1: fetch opleidingen list (flat list across all instellingen)
+    const opleidingenRes = await fetch(`${SKDB_API_BASE}/opleidingen`, { headers });
+    if (!opleidingenRes.ok) {
+      throw new Error(`API request failed (opleidingen): ${opleidingenRes.status} ${opleidingenRes.statusText}`);
     }
-    
-    const data = await response.json();
+    const opleidingenData: any[] = await opleidingenRes.json();
+
     const programmes: SkdbProgram[] = [];
-    
-    // Handle both expand pattern and direct programmes endpoint
-    const institutions = data.value || data.institutions || [];
-    const directProgrammes = data.programmes || [];
-    
-    if (institutions.length > 0) {
-      // Expand pattern: institutions with nested programmes
-      for (const institution of institutions) {
-        for (const programme of institution.programmes || []) {
-          try {
-            const program = SkdbProgramSchema.parse({
-              institution: institution.name,
-              name: programme.name,
-              nameEn: programme.nameEn || programme.name_en,
-              crohoCode: programme.crohoCode || programme.croho_code,
-              rioCode: programme.rioCode || programme.rio_code,
-              degreeLevel: determineDegreeLevel(programme),
-              languageCodes: programme.languageCodes || programme.language_codes || [],
-              faculty: programme.faculty,
-              active: programme.status !== 'ended' && programme.active !== false,
-              ectsCredits: programme.ectsCredits || programme.ects_credits || programme.ects,
-              durationYears: programme.durationYears || programme.duration_years,
-              durationMonths: programme.durationMonths || programme.duration_months,
-              admissionRequirements: programme.admissionRequirements || programme.admission_requirements
+    const now = new Date();
+
+    for (const opleiding of opleidingenData || []) {
+      try {
+        const institutionName =
+          instellingNaamById.get(Number(opleiding.instellingSkdb)) ||
+          opleiding.instellingNaam ||
+          opleiding.instellingCode ||
+          'Unknown institution';
+
+        const vormen: any[] = Array.isArray(opleiding.vormen) ? opleiding.vormen : [];
+        const hasActiveVorm = vormen.length === 0
+          ? true
+          : vormen.some(v => {
+              const end = v?.eindeOpleidingDatum;
+              if (!end) return true;
+              const d = new Date(end);
+              return !Number.isNaN(d.getTime()) && d >= now;
             });
-            
-            programmes.push(program);
-          } catch (error) {
-            console.warn(`⚠️  Skipping invalid programme: ${programme.name}`, error);
-          }
-        }
-      }
-    } else if (directProgrammes.length > 0) {
-      // Direct programmes endpoint
-      for (const programme of directProgrammes) {
-        try {
-          const program = SkdbProgramSchema.parse({
-            institution: programme.institution || programme.institutionName,
-            name: programme.name,
-            nameEn: programme.nameEn || programme.name_en,
-            crohoCode: programme.crohoCode || programme.croho_code,
-            rioCode: programme.rioCode || programme.rio_code,
-            degreeLevel: determineDegreeLevel(programme),
-            languageCodes: programme.languageCodes || programme.language_codes || [],
-            faculty: programme.faculty,
-            active: programme.status !== 'ended' && programme.active !== false,
-            ectsCredits: programme.ectsCredits || programme.ects_credits || programme.ects,
-            durationYears: programme.durationYears || programme.duration_years,
-            durationMonths: programme.durationMonths || programme.duration_months,
-            admissionRequirements: programme.admissionRequirements || programme.admission_requirements
-          });
-          
-          programmes.push(program);
-        } catch (error) {
-          console.warn(`⚠️  Skipping invalid programme: ${programme.name}`, error);
-        }
+
+        const ectsRaw = opleiding.studieLastEcts;
+        const ectsCredits = ectsRaw === undefined || ectsRaw === null || ectsRaw === ''
+          ? undefined
+          : Number(String(ectsRaw).replace(',', '.'));
+
+        const admissionParts = [
+          opleiding.wettelijkeVooropleidingEisenVwo,
+          opleiding.wettelijkeAanvullendeEisenVwo,
+          opleiding.wettelijkeVooropleidingEisenHavo,
+          opleiding.wettelijkeAanvullendeEisenHavo,
+          opleiding.toelatingsEisenMbo
+        ].filter(Boolean);
+
+        const program = SkdbProgramSchema.parse({
+          institution: institutionName,
+          name: opleiding.opleidingNaam,
+          nameEn: opleiding.opleidingNaamEngels || opleiding.rioNaamEngels,
+          // v1 exposes opleidingCode as RIO/ISAT. We store it in crohoCode to keep a stable identifier in our pipeline.
+          crohoCode: opleiding.opleidingCode !== undefined && opleiding.opleidingCode !== null ? String(opleiding.opleidingCode) : undefined,
+          rioCode: undefined,
+          degreeLevel: determineDegreeLevel({
+            name: opleiding.opleidingNaam,
+            graad: opleiding.graad,
+            soortHo: opleiding.soortHo
+          }),
+          languageCodes: [],
+          faculty: opleiding.lcskSector || opleiding.lcskCluster || undefined,
+          active: hasActiveVorm,
+          ectsCredits: Number.isFinite(ectsCredits as number) ? (ectsCredits as number) : undefined,
+          durationYears: undefined,
+          durationMonths: undefined,
+          admissionRequirements: admissionParts.length > 0 ? admissionParts.join('\n\n') : undefined
+        });
+
+        programmes.push(program);
+      } catch (error) {
+        console.warn(`⚠️  Skipping invalid programme: ${opleiding?.opleidingNaam ?? 'Unknown'}`, error);
       }
     }
-    
+
     console.log(`✅ Fetched ${programmes.length} programmes from API`);
     return programmes;
     

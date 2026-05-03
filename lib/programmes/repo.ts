@@ -7,6 +7,7 @@
 
 import { createClient } from '@/lib/supabase/client'
 import { createAdminClient } from '@/lib/supabase/server'
+import { withRedisCache } from '@/lib/cache/redis-cache'
 import type { Programme, DegreeLevel, ProgrammesByLevel } from '@/types/programme'
 
 /**
@@ -94,21 +95,34 @@ export async function getProgrammesByInstitutionAndLevel(
   level: DegreeLevel,
   useServerClient: boolean = false
 ): Promise<Programme[]> {
-  const supabase = useServerClient ? createAdminClient() : createClient()
-  
-  const { data, error } = await supabase
-    .from('programmes')
-    .select('*')
-    .eq('institution_slug', institutionSlug)
-    .eq('level', level)
-    .order('name', { ascending: true })
-  
-  if (error) {
-    console.error(`Error fetching programmes for ${institutionSlug}/${level}:`, error)
-    return []
+  const runQuery = async (): Promise<Programme[]> => {
+    const supabase = useServerClient ? createAdminClient() : createClient()
+
+    const { data, error } = await supabase
+      .from('programmes')
+      .select('*')
+      .eq('institution_slug', institutionSlug)
+      .eq('level', level)
+      .order('name', { ascending: true })
+
+    if (error) {
+      console.error(`Error fetching programmes for ${institutionSlug}/${level}:`, error)
+      return []
+    }
+
+    return (data || []).map(mapRowToProgramme)
   }
-  
-  return (data || []).map(mapRowToProgramme)
+
+  // Only cache server-side calls (API routes, server components). Client-side calls don't have Redis env.
+  if (!useServerClient) {
+    return runQuery()
+  }
+
+  return withRedisCache(
+    `inst=${institutionSlug}:level=${level}`,
+    { namespace: 'programmes_by_inst_level', ttlSeconds: 24 * 60 * 60, failOpen: true },
+    runQuery
+  )
 }
 
 /**
@@ -122,27 +136,39 @@ export async function getAllProgrammesForInstitution(
   institutionSlug: string,
   useServerClient: boolean = false
 ): Promise<ProgrammesByLevel> {
-  const supabase = useServerClient ? createAdminClient() : createClient()
-  
-  const { data, error } = await supabase
-    .from('programmes')
-    .select('*')
-    .eq('institution_slug', institutionSlug)
-    .order('level', { ascending: true })
-    .order('name', { ascending: true })
-  
-  if (error) {
-    console.error(`Error fetching all programmes for ${institutionSlug}:`, error)
-    return { bachelor: [], premaster: [], master: [] }
+  const runQuery = async (): Promise<ProgrammesByLevel> => {
+    const supabase = useServerClient ? createAdminClient() : createClient()
+
+    const { data, error } = await supabase
+      .from('programmes')
+      .select('*')
+      .eq('institution_slug', institutionSlug)
+      .order('level', { ascending: true })
+      .order('name', { ascending: true })
+
+    if (error) {
+      console.error(`Error fetching all programmes for ${institutionSlug}:`, error)
+      return { bachelor: [], premaster: [], master: [] }
+    }
+
+    const programmes = (data || []).map(mapRowToProgramme)
+
+    return {
+      bachelor: programmes.filter(p => p.level === 'bachelor'),
+      premaster: programmes.filter(p => p.level === 'premaster'),
+      master: programmes.filter(p => p.level === 'master'),
+    }
   }
-  
-  const programmes = (data || []).map(mapRowToProgramme)
-  
-  return {
-    bachelor: programmes.filter(p => p.level === 'bachelor'),
-    premaster: programmes.filter(p => p.level === 'premaster'),
-    master: programmes.filter(p => p.level === 'master')
+
+  if (!useServerClient) {
+    return runQuery()
   }
+
+  return withRedisCache(
+    `inst=${institutionSlug}:all_levels`,
+    { namespace: 'programmes_all_by_inst', ttlSeconds: 24 * 60 * 60, failOpen: true },
+    runQuery
+  )
 }
 
 /**

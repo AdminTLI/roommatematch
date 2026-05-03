@@ -4,63 +4,23 @@
  */
 
 import type { RateLimitStore, RateLimitEntry } from './rate-limit'
-import { getUpstashRedisRestCredentials, hasUpstashRedisRestEnv } from './upstash-env'
+import { getOptionalRedis } from '@/lib/redis/optional-redis'
 
 /**
  * Upstash Redis store for production rate limiting
- * Requires REST URL + token (UPSTASH_* or KV_REST_*  -  see lib/upstash-env.ts).
+ * Uses @upstash/redis (REST under the hood) for global consistency across serverless instances.
  */
 export class UpstashRateLimitStore implements RateLimitStore {
-  private baseUrl: string
-  private token: string
-
-  constructor(requireCredentials: boolean = false) {
-    const creds = getUpstashRedisRestCredentials()
-    this.baseUrl = creds?.url ?? ''
-    this.token = creds?.token ?? ''
-
-    if (requireCredentials && (!this.baseUrl || !this.token)) {
-      throw new Error(
-        '[RateLimit] Upstash Redis credentials are required but not configured. Set UPSTASH_REDIS_REST_URL and UPSTASH_REDIS_REST_TOKEN (or KV_REST_API_URL and KV_REST_API_TOKEN).'
-      )
-    }
-
-    if (!this.baseUrl || !this.token) {
-      console.warn('[RateLimit] Upstash Redis not configured. Falling back to in-memory store.')
-    }
-  }
+  constructor() {}
 
   async get(key: string): Promise<RateLimitEntry | null> {
-    if (!this.baseUrl || !this.token) {
-      // In production, this should never happen if requireCredentials was true
-      // But if it does, throw to trigger fail-closed behavior
-      if (process.env.NODE_ENV === 'production') {
-        throw new Error('[RateLimit] Upstash Redis not configured in production')
-      }
-      return null
-    }
-
+    const redis = getOptionalRedis()
+    if (!redis) return null
     try {
-      const response = await fetch(`${this.baseUrl}/get/${encodeURIComponent(key)}`, {
-        headers: {
-          'Authorization': `Bearer ${this.token}`
-        },
-        next: { revalidate: 0 } // Don't cache rate limit checks
-      })
+      const data = await redis.get<string>(key)
+      if (!data) return null
 
-      if (!response.ok) {
-        if (response.status === 404) {
-          return null
-        }
-        throw new Error(`Upstash Redis GET failed: ${response.statusText}`)
-      }
-
-      const data = await response.json()
-      if (!data.result) {
-        return null
-      }
-
-      const entry = JSON.parse(data.result)
+      const entry = JSON.parse(data) as RateLimitEntry
       
       // Check if entry has expired
       if (Date.now() > entry.resetTime) {
@@ -70,63 +30,32 @@ export class UpstashRateLimitStore implements RateLimitStore {
 
       return entry
     } catch (error) {
+      // Let caller decide fail-open vs fail-closed (RateLimiter config).
       console.error('[RateLimit] Upstash Redis get error:', error)
-      throw error // Re-throw to trigger fail-closed behavior
+      throw error
     }
   }
 
   async set(key: string, entry: RateLimitEntry): Promise<void> {
-    if (!this.baseUrl || !this.token) {
-      // In production, this should never happen if requireCredentials was true
-      // But if it does, throw to trigger fail-closed behavior
-      if (process.env.NODE_ENV === 'production') {
-        throw new Error('[RateLimit] Upstash Redis not configured in production')
-      }
-      return
-    }
-
+    const redis = getOptionalRedis()
+    if (!redis) return
     try {
       const ttl = Math.ceil((entry.resetTime - Date.now()) / 1000)
       if (ttl <= 0) {
         return // Entry already expired
       }
-
-      const response = await fetch(`${this.baseUrl}/setex/${encodeURIComponent(key)}/${ttl}`, {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${this.token}`,
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(entry),
-        next: { revalidate: 0 }
-      })
-
-      if (!response.ok) {
-        throw new Error(`Upstash Redis SETEX failed: ${response.statusText}`)
-      }
+      await redis.set(key, JSON.stringify(entry), { ex: ttl })
     } catch (error) {
       console.error('[RateLimit] Upstash Redis set error:', error)
-      throw error // Re-throw to trigger fail-closed behavior
+      throw error
     }
   }
 
   async delete(key: string): Promise<void> {
-    if (!this.baseUrl || !this.token) {
-      return
-    }
-
+    const redis = getOptionalRedis()
+    if (!redis) return
     try {
-      const response = await fetch(`${this.baseUrl}/del/${encodeURIComponent(key)}`, {
-        headers: {
-          'Authorization': `Bearer ${this.token}`
-        },
-        next: { revalidate: 0 }
-      })
-
-      // Ignore 404 errors (key doesn't exist)
-      if (!response.ok && response.status !== 404) {
-        throw new Error(`Upstash Redis DEL failed: ${response.statusText}`)
-      }
+      await redis.del(key)
     } catch (error) {
       console.error('[RateLimit] Upstash Redis delete error:', error)
       // Don't throw on delete errors - not critical
@@ -151,16 +80,8 @@ export function getRateLimitStore(): RateLimitStore | undefined {
   // If credentials are missing, return undefined
   // Validation will happen when store is actually used at runtime
   
-  if (!hasUpstashRedisRestEnv()) {
-    // No credentials available - return undefined
-    // This allows build to complete
-    // Runtime validation happens in RateLimiter.getStore()
-    return undefined
-  }
-  
-  // Credentials are available - create store
-  // Don't use requireCredentials=true here (it throws) - validate later when used
-  // During build, credentials won't be available anyway
-  return new UpstashRateLimitStore(false)
+  const redis = getOptionalRedis()
+  if (!redis) return undefined
+  return new UpstashRateLimitStore()
 }
 

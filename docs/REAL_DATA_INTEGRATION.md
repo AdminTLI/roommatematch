@@ -148,7 +148,7 @@ NEXT_PUBLIC_SUPABASE_ANON_KEY=your_anon_key
 SUPABASE_SERVICE_ROLE_KEY=your_service_role_key
 
 # Optional for programme imports
-SKDB_API_BASE=https://api.studiekeuzedatabase.nl
+SKDB_API_BASE=https://api.skdb.nl/v1
 SKDB_API_KEY=your_api_key
 ```
 
