@@ -161,7 +161,7 @@ export async function middleware(req: NextRequest) {
         '/api/analytics/track-event',
         '/api/admin/sync-updates', // Admin endpoint for syncing deployment updates
         '/api/auth/resend-verification', // Resend verification email (users may not be authenticated)
-        '/api/domu/chat', // Domu AI chat (dashboard widget; protected by auth + same-origin)
+        '/api/domu/chat', // Authenticated in route handler (Supabase session); CSRF skipped like other AI widgets
         '/api/settings/hide-profile', // Internal settings action; low-risk to skip CSRF
       ]
       // Normalize pathname (remove trailing slash) for consistent matching

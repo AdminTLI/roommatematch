@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server'
 import { GoogleGenAI } from '@google/genai'
+import { createClient } from '@/lib/supabase/server'
 import { createServiceClient } from '@/lib/supabase/service'
 import { appendSourcesSection, extractGroundingSources } from '@/lib/domu-ai/grounding-sources'
 import { getGeminiModel } from '@/lib/gemini-model'
@@ -34,6 +35,22 @@ function buildContents(history: HistoryEntry[], currentMessage: string): Array<{
 
 export async function POST(request: Request) {
   try {
+    const supabaseAuth = await createClient()
+    const {
+      data: { user },
+      error: authError,
+    } = await supabaseAuth.auth.getUser()
+
+    if (authError || !user) {
+      return NextResponse.json(
+        {
+          reply:
+            'Please sign in to use Domu Assistant. Open the app from your dashboard after logging in.',
+        },
+        { status: 401 },
+      )
+    }
+
     const body = await request.json().catch(() => ({}))
     const message = (body?.message ?? '').trim()
     const rawHistory = body?.history
@@ -96,6 +113,7 @@ export async function POST(request: Request) {
     try {
       const supabase = createServiceClient()
       await supabase.from('domu_ai_chat_log').insert({
+        user_id: user.id,
         user_message: message,
         assistant_reply: reply
       })
