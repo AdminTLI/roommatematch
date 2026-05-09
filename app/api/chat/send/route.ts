@@ -432,10 +432,6 @@ export async function POST(request: NextRequest) {
         chatId: chat_id
       })
 
-      // #region agent log
-      fetch('http://127.0.0.1:7242/ingest/a9ae1253-eb67-47e3-8214-0f523bc4444c',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({sessionId:'debug-session',runId:'pre-fix1',hypothesisId:'H3',location:'app/api/chat/send/route.ts:177',message:'insertedMessage missing',data:{userId:user.id,chatId:chat_id},timestamp:Date.now()})}).catch(()=>{})
-      // #endregion
-
       return NextResponse.json({ 
         error: getUserFriendlyError('Failed to send message')
       }, { status: 500 })
