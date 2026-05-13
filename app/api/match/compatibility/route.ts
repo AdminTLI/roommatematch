@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient, createAdminClient } from '@/lib/supabase/server'
+import { isUuidString, viewerMayRequestCompatibilityScore } from '@/lib/auth/compatibility-pair-access'
 
 export async function GET(request: NextRequest) {
   const supabase = await createClient()
@@ -17,7 +18,16 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ error: 'Missing other_user_id' }, { status: 400 })
   }
 
+  if (!isUuidString(otherUserId)) {
+    return NextResponse.json({ error: 'Invalid other_user_id' }, { status: 400 })
+  }
+
   const admin = await createAdminClient()
+  const pairAllowed = await viewerMayRequestCompatibilityScore(admin, user.id, otherUserId.trim())
+  if (!pairAllowed) {
+    return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
+  }
+
   const { data, error } = await admin.rpc('compute_compatibility_score', {
     user_a_id: user.id,
     user_b_id: otherUserId,
