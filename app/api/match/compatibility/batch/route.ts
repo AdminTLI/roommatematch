@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient, createAdminClient } from '@/lib/supabase/server'
+import { getViewerCompatibilityPartnerIds } from '@/lib/auth/pair-compatibility-access'
 
 type BatchRequestBody = {
   other_user_ids: string[]
@@ -29,6 +30,13 @@ export async function POST(request: NextRequest) {
   }
 
   const admin = await createAdminClient()
+  const partners = await getViewerCompatibilityPartnerIds(admin, user.id)
+  for (const id of otherUserIds) {
+    if (!partners.has(id)) {
+      return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
+    }
+  }
+
   const { data, error } = await admin.rpc('compute_compatibility_scores_batch', {
     user_a_id: user.id,
     user_b_ids: otherUserIds,

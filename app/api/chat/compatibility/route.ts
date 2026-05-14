@@ -14,6 +14,7 @@ import {
 import { toStudent } from '@/lib/matching/answer-map'
 import type { StudentProfile } from '@/lib/matching/answer-map'
 import { canViewCohortProfile } from '@/lib/auth/cohort-visibility'
+import { viewerMayComputeCompatibilityWith } from '@/lib/auth/pair-compatibility-access'
 
 /** Hobby / Free tier friendly ceiling (Gemini + RPC + DB). */
 export const maxDuration = 10
@@ -82,6 +83,12 @@ export async function GET(request: NextRequest) {
         )
       }
 
+      const viewerInChat = chatMembers.some((m) => m.user_id === user.id)
+      if (!viewerInChat) {
+        safeLogger.warn('[API Compatibility] Caller not a member of chat', { chatId, userId: user.id })
+        return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
+      }
+
       safeLogger.debug('Chat members found', { 
         chatId, 
         members: chatMembers?.map(m => m.user_id),
@@ -119,6 +126,13 @@ export async function GET(request: NextRequest) {
         allMembers: chatMembers?.map(m => ({ user_id: m.user_id, isCurrentUser: m.user_id === user.id }))
       })
     } else if (otherUserId) {
+      const allowedPair = await viewerMayComputeCompatibilityWith(admin, user.id, otherUserId)
+      if (!allowedPair) {
+        return NextResponse.json(
+          { error: 'Compatibility is only available for users in your match context' },
+          { status: 403 }
+        )
+      }
       targetUserId = otherUserId
     }
 

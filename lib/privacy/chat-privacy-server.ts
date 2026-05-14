@@ -113,6 +113,9 @@ export async function getChatPrivacySnapshot(
   const { data: members, error: membersError } = await admin.from('chat_members').select('user_id').eq('chat_id', chatId)
   if (membersError || !members || members.length !== 2) return null
 
+  const viewerInChat = members.some((m) => m.user_id === viewerUserId)
+  if (!viewerInChat) return null
+
   const partnerUserId = members.find((m) => m.user_id !== viewerUserId)?.user_id ?? null
   if (!partnerUserId) return null
 
