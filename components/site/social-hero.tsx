@@ -1,5 +1,6 @@
 'use client'
 
+import dynamic from 'next/dynamic'
 import Link from 'next/link'
 import { useMemo } from 'react'
 import { BETA_SIGNUP_GOOGLE_FORM_URL } from '@/lib/marketing/beta-signup'
@@ -7,10 +8,22 @@ import Container from '@/components/ui/primitives/container'
 import Section from '@/components/ui/primitives/section'
 import { Button } from '@/components/ui/button'
 import { useApp } from '@/app/providers'
-import {
-  SocialHeroPreviewCard,
-  type SocialHeroPreviewCardData,
-} from '@/components/site/social-hero-preview-card'
+import type { SocialHeroPreviewCardData } from '@/components/site/social-hero-preview-card'
+
+const SocialHeroPreviewCard = dynamic(
+  () =>
+    import('@/components/site/social-hero-preview-card').then((m) => ({
+      default: m.SocialHeroPreviewCard,
+    })),
+  {
+    loading: () => (
+      <div
+        className="relative mx-auto max-w-[420px] h-[660px] w-full rounded-3xl bg-white/50 animate-pulse"
+        aria-hidden
+      />
+    ),
+  }
+)
 
 const content = {
   en: {

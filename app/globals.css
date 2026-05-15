@@ -732,6 +732,13 @@ body:has([data-chat-page]) [class*="border-t"][class*="shadow-2xl"] {
   .ticker-scroll {
     animation: none;
   }
+
+  .dm-mesh-drift-1,
+  .dm-mesh-drift-2,
+  .dm-mesh-drift-3,
+  .dm-mesh-drift-4 {
+    animation: none;
+  }
 }
 
 @layer utilities {

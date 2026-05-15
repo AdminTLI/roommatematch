@@ -1,26 +1,30 @@
 // Internationalization utilities
 // This module provides locale management and dictionary access
 
-import { en } from '@/app/(i18n)/en'
-import { nl } from '@/app/(i18n)/nl'
+import type { Dictionary } from '@/lib/i18n/dictionary-loader'
+import { loadDictionary } from '@/lib/i18n/dictionary-loader'
+
+export type { Dictionary } from '@/lib/i18n/dictionary-loader'
 
 export type Locale = 'en' | 'nl'
-export type Dictionary = typeof en
 
 export const LOCALES: Locale[] = ['en', 'nl']
 export const DEFAULT_LOCALE: Locale = 'en'
 
-export const dictionaries = {
-  en,
-  nl
-} as const
-
 /**
- * Get dictionary for a specific locale
+ * Get dictionary for a specific locale (server / sync callers).
+ * Loads only the requested locale module.
  */
 export function getDictionary(locale: Locale): Dictionary {
-  return dictionaries[locale] || dictionaries[DEFAULT_LOCALE]
+  if (locale === 'nl') {
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
+    return require('@/app/(i18n)/nl').nl as Dictionary
+  }
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
+  return require('@/app/(i18n)/en').en as Dictionary
 }
+
+export { loadDictionary }
 
 /**
  * Get nested dictionary value by path
