@@ -65,6 +65,16 @@ export async function GET(request: NextRequest) {
       )
     }
 
+    // Caller must be in this chat; otherwise match checks alone can authorize the wrong peer.
+    const viewerIsMember = chatMembers.some((m) => m.user_id === user.id)
+    if (!viewerIsMember) {
+      safeLogger.warn('user-info: authenticated user is not a member of chat', {
+        chatId,
+        userId: user.id,
+      })
+      return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
+    }
+
     // Check if chat is a group chat
     const { data: chatData, error: chatError } = await admin
       .from('chats')

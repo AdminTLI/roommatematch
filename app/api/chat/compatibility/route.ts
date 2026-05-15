@@ -82,6 +82,15 @@ export async function GET(request: NextRequest) {
         )
       }
 
+      const viewerIsMember = chatMembers.some((m) => m.user_id === user.id)
+      if (!viewerIsMember) {
+        safeLogger.warn('[compatibility] caller is not a member of chat', {
+          chatId,
+          userId: user.id,
+        })
+        return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
+      }
+
       safeLogger.debug('Chat members found', { 
         chatId, 
         members: chatMembers?.map(m => m.user_id),
