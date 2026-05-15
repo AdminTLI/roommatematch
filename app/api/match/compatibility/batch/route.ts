@@ -1,10 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient, createAdminClient } from '@/lib/supabase/server'
 import { getViewerCompatibilityPartnerIds } from '@/lib/auth/pair-compatibility-access'
+import { isUuidString, viewerMayRequestCompatibilityScore } from '@/lib/auth/compatibility-pair-access'
+import { filterCompatibilityPeerIds } from '@/lib/matching/compatibility-peer-access'
 
 type BatchRequestBody = {
   other_user_ids: string[]
 }
+
+const MAX_BATCH_PEERS = 25
 
 export async function POST(request: NextRequest) {
   const supabase = await createClient()
@@ -24,7 +28,8 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'Invalid JSON body' }, { status: 400 })
   }
 
-  const otherUserIds = Array.isArray(body?.other_user_ids) ? body.other_user_ids.filter(Boolean) : []
+  const rawIds = Array.isArray(body?.other_user_ids) ? body.other_user_ids.filter(Boolean) : []
+  const otherUserIds = [...new Set(rawIds)].slice(0, MAX_BATCH_PEERS)
   if (otherUserIds.length === 0) {
     return NextResponse.json({ results: [] })
   }
@@ -35,11 +40,23 @@ export async function POST(request: NextRequest) {
     if (!partners.has(id)) {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
     }
+  for (const oid of otherUserIds) {
+    const id = typeof oid === 'string' ? oid.trim() : String(oid)
+    if (!isUuidString(id)) {
+      return NextResponse.json({ error: 'Invalid other_user_ids entry' }, { status: 400 })
+    }
+    const allowed = await viewerMayRequestCompatibilityScore(admin, user.id, id)
+    if (!allowed) {
+      return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
+    }
+  const allowedPeers = await filterCompatibilityPeerIds(admin, user.id, otherUserIds)
+  if (allowedPeers.length === 0) {
+    return NextResponse.json({ results: [] })
   }
 
   const { data, error } = await admin.rpc('compute_compatibility_scores_batch', {
     user_a_id: user.id,
-    user_b_ids: otherUserIds,
+    user_b_ids: allowedPeers,
   })
 
   if (error) {

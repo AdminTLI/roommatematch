@@ -15,6 +15,8 @@ import { toStudent } from '@/lib/matching/answer-map'
 import type { StudentProfile } from '@/lib/matching/answer-map'
 import { canViewCohortProfile } from '@/lib/auth/cohort-visibility'
 import { viewerMayComputeCompatibilityWith } from '@/lib/auth/pair-compatibility-access'
+import { isUuidString, viewerMayRequestCompatibilityScore } from '@/lib/auth/compatibility-pair-access'
+import { filterCompatibilityPeerIds } from '@/lib/matching/compatibility-peer-access'
 
 /** Hobby / Free tier friendly ceiling (Gemini + RPC + DB). */
 export const maxDuration = 10
@@ -86,6 +88,13 @@ export async function GET(request: NextRequest) {
       const viewerInChat = chatMembers.some((m) => m.user_id === user.id)
       if (!viewerInChat) {
         safeLogger.warn('[API Compatibility] Caller not a member of chat', { chatId, userId: user.id })
+      const viewerIsMember = chatMembers.some((m) => m.user_id === user.id)
+      if (!viewerIsMember) {
+        safeLogger.warn('[chat/compatibility] Non-member attempted compatibility fetch', {
+          chatId,
+          userId: user.id,
+        })
+        safeLogger.warn('[API Compatibility] Viewer not in chat', { chatId, userId: user.id })
         return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
       }
 
@@ -132,6 +141,17 @@ export async function GET(request: NextRequest) {
           { error: 'Compatibility is only available for users in your match context' },
           { status: 403 }
         )
+      if (!isUuidString(otherUserId)) {
+        return NextResponse.json({ error: 'Invalid otherUserId' }, { status: 400 })
+      }
+      const pairAllowed = await viewerMayRequestCompatibilityScore(admin, user.id, otherUserId.trim())
+      if (!pairAllowed) {
+        return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
+      }
+      targetUserId = otherUserId.trim()
+      const allowedPeers = await filterCompatibilityPeerIds(admin, user.id, [otherUserId])
+      if (allowedPeers.length === 0) {
+        return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
       }
       targetUserId = otherUserId
     }

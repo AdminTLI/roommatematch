@@ -72,6 +72,11 @@ export async function GET(request: NextRequest) {
         { error: 'You can only view info for chats you belong to' },
         { status: 403 }
       )
+    const viewerIsMember = chatMembers.some((m) => m.user_id === user.id)
+    if (!viewerIsMember) {
+      safeLogger.warn('[chat/user-info] Non-member attempted profile fetch', { chatId, userId: user.id })
+      safeLogger.warn('User attempted user-info for chat they are not in', { chatId, userId: user.id })
+      return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
     }
 
     // Check if chat is a group chat

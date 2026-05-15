@@ -1,6 +1,7 @@
-import { NextResponse } from 'next/server'
+import { NextRequest, NextResponse } from 'next/server'
 import { createAdminClient } from '@/lib/supabase/server'
 import { safeLogger } from '@/lib/utils/logger'
+import { checkCustomRateLimit, getClientIpFromHeaders } from '@/lib/rate-limit'
 
 export interface MarketingStatsResponse {
   matchedWithin24hPercent: number
@@ -16,8 +17,19 @@ export interface MarketingStatsResponse {
   generatedAt: string
 }
 
-export async function GET() {
+export async function GET(request: NextRequest) {
   try {
+    const ip = getClientIpFromHeaders(request.headers)
+    const { allowed, headers: rateHeaders } = await checkCustomRateLimit(
+      `marketing_stats:${ip}`,
+      120,
+      60,
+      { failClosed: false }
+    )
+    if (!allowed) {
+      return NextResponse.json({ error: 'Too many requests' }, { status: 429, headers: rateHeaders })
+    }
+
     const admin = createAdminClient()
     const now = new Date()
     const oneYearAgo = new Date(now.getTime() - 365 * 24 * 60 * 60 * 1000)
@@ -442,27 +454,10 @@ export async function GET() {
 
     safeLogger.debug('[Marketing Stats] Verified profiles:', verifiedProfiles?.length || 0)
 
-    // Get users with email confirmed (using auth.admin.listUsers)
-    let emailVerifiedUserIds = new Set<string>()
-    try {
-      const { data: authUsers, error: authError } = await admin.auth.admin.listUsers()
-      if (!authError && authUsers?.users) {
-        authUsers.users.forEach(u => {
-          if (u.email_confirmed_at) {
-            emailVerifiedUserIds.add(u.id)
-          }
-        })
-        safeLogger.debug('[Marketing Stats] Email verified users:', emailVerifiedUserIds.size)
-      }
-    } catch (authErr) {
-      console.warn('[Marketing Stats] Could not fetch auth users, using profiles only:', authErr)
-    }
-
     const verifiedSet = new Set<string>()
-    verifiedProfiles?.forEach(p => verifiedSet.add(p.user_id))
-    emailVerifiedUserIds.forEach(id => verifiedSet.add(id))
+    verifiedProfiles?.forEach((p) => verifiedSet.add(p.user_id))
 
-    safeLogger.debug('[Marketing Stats] Total verified users (profile + email):', verifiedSet.size)
+    safeLogger.debug('[Marketing Stats] Total verified users (profile verification):', verifiedSet.size)
 
     const verifiedUsersPercent = totalUsers && totalUsers > 0
       ? Math.round((verifiedSet.size / totalUsers) * 100)
@@ -517,7 +512,11 @@ export async function GET() {
     safeLogger.debug('[Marketing Stats] Final response:', JSON.stringify(response, null, 2))
     safeLogger.debug('[Marketing Stats] Stats calculation completed successfully')
 
-    return NextResponse.json(response)
+    return NextResponse.json(response, {
+      headers: {
+        'Cache-Control': 'public, s-maxage=120, stale-while-revalidate=300',
+      },
+    })
   } catch (error) {
     console.error('[Marketing Stats] Error computing stats:', error)
     return NextResponse.json(

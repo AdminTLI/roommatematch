@@ -12,6 +12,8 @@ import {
   getOrCreateAnonymousSessionId,
 } from '@/lib/privacy/cookie-consent-client'
 import { CookiePreferenceCenter } from './cookie-preference-center'
+import { useCookieConsentAppearance } from '@/lib/privacy/cookie-consent-appearance'
+import { cn } from '@/lib/utils'
 
 interface CookieConsentBannerProps {
   locale?: 'en' | 'nl'
@@ -61,6 +63,7 @@ export function CookieConsentBanner({ locale = 'en' }: CookieConsentBannerProps)
 
   const onChat = isChatPath(pathname)
   const onDashboard = isDashboardPath(pathname)
+  const appearance = useCookieConsentAppearance()
 
   useEffect(() => {
     if (onChat && showPreferences) {
@@ -185,18 +188,18 @@ export function CookieConsentBanner({ locale = 'en' }: CookieConsentBannerProps)
     {showBanner && (
     <div className="fixed bottom-0 left-0 right-0 z-50 p-3 sm:p-4 md:p-6 pb-[max(0.75rem,env(safe-area-inset-bottom))]">
       <div className="container mx-auto max-w-4xl">
-        <Card className="border border-white/80 bg-white/90 text-slate-900 shadow-[0_20px_60px_rgba(15,23,42,0.12)] backdrop-blur-xl supports-[backdrop-filter]:bg-white/85 dark:border-white/15 dark:bg-slate-900/90 dark:text-slate-50 dark:shadow-[0_24px_64px_rgba(0,0,0,0.45)] dark:supports-[backdrop-filter]:bg-slate-900/80">
+        <Card className={appearance.panel}>
           <CardContent className="p-4 sm:p-5 md:p-6">
             <div className="flex flex-col sm:flex-row items-start gap-3 sm:gap-4">
-              <Cookie className="h-5 w-5 sm:h-6 sm:w-6 text-blue-600 dark:text-violet-400 mt-0.5 sm:mt-1 flex-shrink-0" />
+              <Cookie className={cn('h-5 w-5 sm:h-6 sm:w-6 mt-0.5 sm:mt-1 flex-shrink-0', appearance.icon)} />
               <div className="flex-1 min-w-0">
-                <h3 className="text-base sm:text-lg font-bold tracking-tight text-slate-900 dark:text-slate-50 mb-1.5 sm:mb-2">
+                <h3 className={cn('text-base sm:text-lg font-bold tracking-tight mb-1.5 sm:mb-2', appearance.title)}>
                   {t.title}
                 </h3>
-                <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-300 mb-2 sm:mb-3 leading-relaxed">
+                <p className={cn('text-xs sm:text-sm mb-2 sm:mb-3 leading-relaxed', appearance.body)}>
                   {t.description}
                 </p>
-                <p className="text-xs text-slate-500 dark:text-slate-400 mb-3 sm:mb-4 leading-relaxed">
+                <p className={cn('text-xs mb-3 sm:mb-4 leading-relaxed', appearance.muted)}>
                   {t.essential}
                 </p>
                 <div className="flex flex-col sm:flex-row flex-wrap gap-2 sm:gap-3">
@@ -204,7 +207,7 @@ export function CookieConsentBanner({ locale = 'en' }: CookieConsentBannerProps)
                     onClick={handleAcceptAll}
                     variant="primary"
                     size="sm"
-                    className="w-full sm:w-auto rounded-full bg-blue-600 font-semibold text-white shadow-lg shadow-blue-600/25 hover:bg-blue-700 dark:bg-violet-600 dark:shadow-violet-600/25 dark:hover:bg-violet-700"
+                    className={cn('w-full sm:w-auto', appearance.primaryBtn)}
                   >
                     {t.acceptAll}
                   </Button>
@@ -212,7 +215,7 @@ export function CookieConsentBanner({ locale = 'en' }: CookieConsentBannerProps)
                     onClick={handleRejectAll}
                     variant="outline"
                     size="sm"
-                    className="w-full sm:w-auto rounded-full border-slate-200/90 bg-white/70 text-slate-900 hover:bg-white dark:border-slate-600 dark:bg-slate-800/80 dark:text-slate-100 dark:hover:bg-slate-800"
+                    className={cn('w-full sm:w-auto', appearance.outlineBtn)}
                   >
                     {t.rejectAll}
                   </Button>
@@ -220,17 +223,17 @@ export function CookieConsentBanner({ locale = 'en' }: CookieConsentBannerProps)
                     onClick={handleCustomize}
                     variant="ghost"
                     size="sm"
-                    className="flex items-center gap-2 w-full sm:w-auto rounded-full text-slate-600 hover:bg-slate-100/90 hover:text-slate-900 dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-slate-50"
+                    className={cn('flex items-center gap-2 w-full sm:w-auto', appearance.ghostBtn)}
                   >
                     <Settings className="h-4 w-4" />
                     {t.customize}
                   </Button>
                 </div>
-                <p className="text-xs text-slate-500 dark:text-slate-400 mt-3 sm:mt-4">
+                <p className={cn('text-xs mt-3 sm:mt-4', appearance.muted)}>
                   {t.learnMore}{' '}
                   <a
                     href="/cookies"
-                    className="font-medium text-blue-600 transition-colors hover:text-blue-700 dark:text-violet-400 dark:hover:text-violet-300"
+                    className={cn('font-medium transition-colors', appearance.link)}
                     target="_blank"
                     rel="noopener noreferrer"
                   >
@@ -251,7 +254,7 @@ export function CookieConsentBanner({ locale = 'en' }: CookieConsentBannerProps)
           variant="outline"
           size="sm"
           onClick={() => setShowPreferences(true)}
-          className="sm:hidden h-10 w-10 rounded-full p-0 border-slate-200/90 bg-white/90 text-slate-800 shadow-md backdrop-blur-md dark:border-slate-600 dark:bg-slate-900/90 dark:text-slate-100"
+          className={cn('sm:hidden h-10 w-10 rounded-full p-0', appearance.reopenBtn)}
           aria-label={locale === 'nl' ? 'Cookie-instellingen' : 'Cookie settings'}
         >
           <Cookie className="h-4 w-4" aria-hidden />
@@ -262,7 +265,7 @@ export function CookieConsentBanner({ locale = 'en' }: CookieConsentBannerProps)
           variant="outline"
           size="sm"
           onClick={() => setShowPreferences(true)}
-          className="hidden sm:inline-flex rounded-full border-slate-200/90 bg-white/90 text-xs font-medium text-slate-800 shadow-md backdrop-blur-md dark:border-slate-600 dark:bg-slate-900/90 dark:text-slate-100"
+          className={cn('hidden sm:inline-flex text-xs font-medium', appearance.reopenBtn)}
         >
           <Cookie className="mr-1.5 h-3.5 w-3.5" aria-hidden />
           {locale === 'nl' ? 'Cookie-instellingen' : 'Cookie settings'}
