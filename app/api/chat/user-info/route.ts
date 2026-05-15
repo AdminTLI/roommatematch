@@ -65,6 +65,12 @@ export async function GET(request: NextRequest) {
       )
     }
 
+    const viewerIsMember = chatMembers.some((m) => m.user_id === user.id)
+    if (!viewerIsMember) {
+      safeLogger.warn('User attempted user-info for chat they are not in', { chatId, userId: user.id })
+      return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
+    }
+
     // Check if chat is a group chat
     const { data: chatData, error: chatError } = await admin
       .from('chats')

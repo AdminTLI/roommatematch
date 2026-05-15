@@ -1,9 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient, createAdminClient } from '@/lib/supabase/server'
+import { filterCompatibilityPeerIds } from '@/lib/matching/compatibility-peer-access'
 
 type BatchRequestBody = {
   other_user_ids: string[]
 }
+
+const MAX_BATCH_PEERS = 25
 
 export async function POST(request: NextRequest) {
   const supabase = await createClient()
@@ -23,15 +26,21 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'Invalid JSON body' }, { status: 400 })
   }
 
-  const otherUserIds = Array.isArray(body?.other_user_ids) ? body.other_user_ids.filter(Boolean) : []
+  const rawIds = Array.isArray(body?.other_user_ids) ? body.other_user_ids.filter(Boolean) : []
+  const otherUserIds = [...new Set(rawIds)].slice(0, MAX_BATCH_PEERS)
   if (otherUserIds.length === 0) {
     return NextResponse.json({ results: [] })
   }
 
   const admin = await createAdminClient()
+  const allowedPeers = await filterCompatibilityPeerIds(admin, user.id, otherUserIds)
+  if (allowedPeers.length === 0) {
+    return NextResponse.json({ results: [] })
+  }
+
   const { data, error } = await admin.rpc('compute_compatibility_scores_batch', {
     user_a_id: user.id,
-    user_b_ids: otherUserIds,
+    user_b_ids: allowedPeers,
   })
 
   if (error) {
