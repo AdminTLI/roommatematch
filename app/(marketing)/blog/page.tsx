@@ -64,6 +64,11 @@ export default function BlogPage() {
         hasPart: [
           {
             '@type': 'Article',
+            name: 'Beyond Beds: The Hidden ROI of Fixing Europe’s Student Housing Gap Before Retention Breaks',
+            url: 'https://domumatch.com/blog/student-housing-gap-retention-roi',
+          },
+          {
+            '@type': 'Article',
             name: 'Move-In Week Red Flags: Signs Your Living Situation Might Tank Your Semester',
             url: 'https://domumatch.com/blog/move-in-week-red-flags',
           },
