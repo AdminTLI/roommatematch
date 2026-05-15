@@ -2,7 +2,7 @@ import type { Metadata } from 'next'
 import { Inter } from 'next/font/google'
 import { Toaster } from 'sonner'
 import { ErrorBoundaryWrapper } from '@/components/ErrorBoundaryWrapper'
-import { Providers } from '@/app/providers'
+import { RouteProviders } from '@/app/route-providers'
 import { ConditionalAnalytics } from '@/components/privacy/conditional-analytics'
 import { CookieConsentBanner } from '@/components/privacy/cookie-consent-banner'
 import { GlobalRealtimeCleanupHandler } from '@/components/realtime/global-cleanup-handler'
@@ -43,9 +43,9 @@ export default function RootLayout({
     <html lang="en" suppressHydrationWarning data-scroll-behavior="smooth">
       <body className={`${inter.className} antialiased`}>
         <ErrorBoundaryWrapper>
-          <Providers>
+          <RouteProviders>
             {children}
-          </Providers>
+          </RouteProviders>
         </ErrorBoundaryWrapper>
         <Toaster position="top-right" richColors />
         <ConditionalAnalytics />

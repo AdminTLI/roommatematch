@@ -66,6 +66,8 @@ export default function BlogPage() {
             '@type': 'Article',
             name: 'Student Housing Shortage Is a Retention Line Item: What Dutch Data Says About Staying Home',
             url: 'https://domumatch.com/blog/student-housing-shortage-retention-roi',
+            name: 'Beyond Beds: The Hidden ROI of Fixing Europe’s Student Housing Gap Before Retention Breaks',
+            url: 'https://domumatch.com/blog/student-housing-gap-retention-roi',
           },
           {
             '@type': 'Article',

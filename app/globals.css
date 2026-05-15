@@ -460,19 +460,45 @@ body:has([data-chat-page]) main>div>div[data-chat-page] {
 }
 
 /*
- * Open thread on mobile: pin the chat column to the visible viewport.
+ * Open thread on mobile: hard-lock the page and pin the chat column to the visible viewport.
  *
- * Anchor at (0, 0) of the layout viewport and stretch the full width. We deliberately do NOT use
- * `var(--vv-offset-top)` / `--vv-offset-left` here: modern iOS Safari already keeps `position: fixed`
- * elements aligned to the visual viewport, so adding the visual-viewport offset double-shifts the
- * container. That manifested as the header banner sliding down on focus (white space above it) and
- * staying displaced after blur because `vv.offsetTop` did not always return to 0 promptly.
+ * iOS Safari behaves inconsistently when the soft keyboard appears:
+ *   - It sometimes pans the visual viewport, sometimes scrolls the layout viewport.
+ *   - `position: fixed` elements have changed semantics across iOS versions — they may stay glued
+ *     to the visual viewport or scroll with the page.
+ *   - Earlier attempts to compensate with `top: var(--vv-offset-top)` over-shifted on modern iOS;
+ *     dropping the compensation broke older iOS where the page does scroll out.
  *
- * Height tracks `visualViewport.height` so the composer hugs the top of the soft keyboard. JS
- * (ChatPageViewportRoot) listens for `visualviewport.scroll` and focus events and resets
- * `window.scrollTo(0, 0)` so iOS "scroll-into-view" cannot slide the page out from under us.
+ * To make the behaviour version-independent we remove the scrollable surface entirely:
+ *   1. `body` becomes `position: fixed; height: var(--vv-height)` while a thread is open below
+ *      `lg`. With no scrollable root, iOS has nothing to "scroll into view" — the focused composer
+ *      stays in place because the page literally cannot move.
+ *   2. The chat container ([data-chat-page]) remains `position: fixed; top: 0; height: var(--vv-height)`
+ *      so it tracks the visual viewport (its bottom hugs the top of the keyboard while the composer
+ *      stays just above it).
+ *   3. The shell's dynamic `--app-visual-top-inset` padding is zeroed so it cannot leave a
+ *      stray strip of body chrome behind the fixed header banner.
  */
 @media (max-width: 1023px) {
+  body.mobile-chat-active-conversation,
+  body:has([data-chat-page]).mobile-chat-active-conversation {
+    position: fixed !important;
+    top: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
+    width: 100% !important;
+    height: var(--vv-height, 100dvh) !important;
+    max-height: var(--vv-height, 100dvh) !important;
+    overflow: hidden !important;
+    overscroll-behavior: none !important;
+    touch-action: pan-y !important;
+  }
+
+  body.mobile-chat-active-conversation .app-shell-visual-viewport-pad,
+  body:has([data-chat-page]).mobile-chat-active-conversation .app-shell-visual-viewport-pad {
+    padding-top: 0 !important;
+  }
+
   body.mobile-chat-active-conversation.chat-page main > div > div[data-chat-page],
   body:has([data-chat-page]).mobile-chat-active-conversation main > div > div[data-chat-page] {
     position: fixed !important;
@@ -704,6 +730,13 @@ body:has([data-chat-page]) [class*="border-t"][class*="shadow-2xl"] {
 
 @media (prefers-reduced-motion: reduce) {
   .ticker-scroll {
+    animation: none;
+  }
+
+  .dm-mesh-drift-1,
+  .dm-mesh-drift-2,
+  .dm-mesh-drift-3,
+  .dm-mesh-drift-4 {
     animation: none;
   }
 }

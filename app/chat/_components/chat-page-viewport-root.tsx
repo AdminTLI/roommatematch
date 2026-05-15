@@ -12,7 +12,6 @@ function resetMobileLayoutScroll() {
   window.scrollTo({ top: 0, left: 0, behavior: 'auto' })
   document.documentElement.scrollTop = 0
   document.body.scrollTop = 0
-  document.querySelector('main')?.scrollTo(0, 0)
 }
 
 function isMobileThreadLayout() {
@@ -21,18 +20,15 @@ function isMobileThreadLayout() {
 }
 
 /**
- * Publishes the visual viewport *height* to the document root and sizes the chat column.
+ * Publishes `visualViewport.height` to the document root and sizes the chat column.
  *
- * **Active mobile thread** (`mobile-chat-active-conversation`): `globals.css` pins
- * `[data-chat-page]` with `position: fixed; top: 0; left: 0; width: 100%; height: var(--vv-height)`.
- * We intentionally do NOT publish `visualViewport.offsetTop` / `offsetLeft` / `width` here — modern
- * iOS Safari keeps `position: fixed` aligned to the visual viewport on its own, and adding the
- * visual-viewport offset on top of that double-shifts the container (header banner slides down on
- * focus and stays displaced after blur because `vv.offsetTop` doesn't always return to 0 cleanly).
- *
- * To keep the fixed container glued to (0, 0) we also defensively reset `window.scrollTo(0, 0)`
- * whenever the visual viewport scrolls (iOS "scroll-into-view" when focusing the composer) and on
- * every focus / blur of inputs inside this subtree.
+ * **Active mobile thread** (`mobile-chat-active-conversation`):
+ *   - `globals.css` locks `<body>` to `position: fixed; height: var(--vv-height)` so iOS has no
+ *     scrollable surface — the page literally cannot slide when the keyboard opens.
+ *   - `[data-chat-page]` is pinned `position: fixed; top: 0; height: var(--vv-height)` so its
+ *     bottom edge hugs the top of the soft keyboard.
+ *   - We do NOT publish `vv.offsetTop` here. Adding it as a `top` offset double-shifted the header
+ *     on modern iOS Safari, and the locked body makes iOS scroll-into-view a non-issue anyway.
  *
  * **Chat list / desktop**: clamps the column height from the visible viewport bottom minus this
  * node's top so the composer column stays inside the visible viewport.
@@ -63,9 +59,13 @@ export function ChatPageViewportRoot({ children }: { children: ReactNode }) {
           return
         }
 
-        const vvHeight = Math.round(vv.height)
-        root.style.setProperty('--vv-height', `${vvHeight}px`)
-        root.style.setProperty('--chat-visual-vh', `${vvHeight}px`)
+        // Some mobile browsers transiently report 0 during keyboard animations; ignore those
+        // samples so we never collapse the chat container to height: 0.
+        const measured = Math.round(vv.height)
+        if (measured > 0) {
+          root.style.setProperty('--vv-height', `${measured}px`)
+          root.style.setProperty('--chat-visual-vh', `${measured}px`)
+        }
 
         if (isMobileThreadLayout()) {
           // CSS handles size via --vv-height + position:fixed. Just make sure stale inline
@@ -92,64 +92,27 @@ export function ChatPageViewportRoot({ children }: { children: ReactNode }) {
       })
     }
 
-    const onVisualViewportScroll = () => {
-      // iOS Safari may scroll the layout viewport to bring the focused composer into view. Our
-      // chat container is `position: fixed; top: 0`, so any document scroll slides the header off
-      // screen. Snap the document back to (0, 0) immediately, then re-sync sizing.
-      if (isMobileThreadLayout()) {
-        resetMobileLayoutScroll()
-      }
-      sync()
-    }
-
-    const onFocusIn = (ev: FocusEvent) => {
-      const target = ev.target
-      if (!(target instanceof HTMLElement)) return
-      if (target.tagName !== 'TEXTAREA' && target.tagName !== 'INPUT') return
-      if (!el.contains(target)) return
-      if (!isMobileThreadLayout()) return
-
-      // Pre-empt iOS scroll-into-view: it always tries to scroll right after focus is dispatched.
-      // Repeatedly resetting across the keyboard animation keeps the fixed chat column at the top.
-      resetMobileLayoutScroll()
-      window.setTimeout(resetMobileLayoutScroll, 0)
-      window.setTimeout(resetMobileLayoutScroll, 50)
-      window.setTimeout(resetMobileLayoutScroll, 150)
-      window.setTimeout(resetMobileLayoutScroll, 350)
-    }
-
     const onFocusOut = (ev: FocusEvent) => {
       const target = ev.target
       if (!(target instanceof HTMLElement)) return
       if (target.tagName !== 'TEXTAREA' && target.tagName !== 'INPUT') return
       if (!el.contains(target)) return
 
+      // After blur, repeatedly re-sync because iOS occasionally fires its final visualViewport
+      // event *after* the keyboard animation ends. With the body now locked we don't need to
+      // fight a scrolling document — a couple of size syncs over the animation window suffice.
       resetMobileLayoutScroll()
       sync()
-      window.setTimeout(() => {
-        resetMobileLayoutScroll()
-        sync()
-      }, 0)
-      window.setTimeout(() => {
-        resetMobileLayoutScroll()
-        sync()
-      }, 80)
-      window.setTimeout(() => {
-        resetMobileLayoutScroll()
-        sync()
-      }, 250)
-      window.setTimeout(() => {
-        resetMobileLayoutScroll()
-        sync()
-      }, 500)
+      window.setTimeout(sync, 80)
+      window.setTimeout(sync, 250)
+      window.setTimeout(sync, 500)
     }
 
     const vv = window.visualViewport
     vv.addEventListener('resize', sync)
-    vv.addEventListener('scroll', onVisualViewportScroll)
+    vv.addEventListener('scroll', sync)
     window.addEventListener('resize', sync)
     window.addEventListener('orientationchange', sync)
-    document.addEventListener('focusin', onFocusIn, true)
     document.addEventListener('focusout', onFocusOut, true)
 
     const observer = new MutationObserver(() => sync())
@@ -175,11 +138,10 @@ export function ChatPageViewportRoot({ children }: { children: ReactNode }) {
       window.clearTimeout(t2)
       observer.disconnect()
       vv.removeEventListener('resize', sync)
-      vv.removeEventListener('scroll', onVisualViewportScroll)
+      vv.removeEventListener('scroll', sync)
       window.removeEventListener('resize', sync)
       window.removeEventListener('orientationchange', sync)
       window.removeEventListener('pageshow', onPageShow)
-      document.removeEventListener('focusin', onFocusIn, true)
       document.removeEventListener('focusout', onFocusOut, true)
       root.style.removeProperty('--vv-height')
       root.style.removeProperty('--chat-visual-vh')

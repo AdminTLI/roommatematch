@@ -25,6 +25,15 @@ const content = {
         date: '2026-05-13',
         category: 'Housing',
         icon: TrendingUp,
+        slug: 'student-housing-gap-retention-roi',
+        title:
+          'Beyond Beds: The Hidden ROI of Fixing Europe’s Student Housing Gap Before Retention Breaks',
+        excerpt:
+          'Room shortages and roommate mismatch are not peripheral problems. They tax wellbeing, grades, and persistence—while clearer intake and compatibility infrastructure pays back upstream.',
+        readTime: '9 min read',
+        date: '2026-05-06',
+        category: 'Retention',
+        icon: BookOpen,
       },
       {
         slug: 'move-in-week-red-flags',
@@ -173,6 +182,15 @@ const content = {
         date: '2026-05-13',
         category: 'Huisvesting',
         icon: TrendingUp,
+        slug: 'student-housing-gap-retention-roi',
+        title:
+          'Meer dan een bed: de verborgen ROI van de studentenhuisvestingskloof vóór je retentie kraakt',
+        excerpt:
+          'Kamertekorten en een verkeerde match zijn geen randzaken. Ze raken welzijn, cijfers en volhoudbaarheid—terwijl vroege intake en compatibiliteit zich upstream terugverdienen.',
+        readTime: '9 min lezen',
+        date: '2026-05-06',
+        category: 'Retentie',
+        icon: BookOpen,
       },
       {
         slug: 'move-in-week-red-flags',
