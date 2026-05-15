@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient, createAdminClient } from '@/lib/supabase/server'
+import { getViewerCompatibilityPartnerIds } from '@/lib/auth/pair-compatibility-access'
 import { isUuidString, viewerMayRequestCompatibilityScore } from '@/lib/auth/compatibility-pair-access'
 import { filterCompatibilityPeerIds } from '@/lib/matching/compatibility-peer-access'
 
@@ -34,6 +35,11 @@ export async function POST(request: NextRequest) {
   }
 
   const admin = await createAdminClient()
+  const partners = await getViewerCompatibilityPartnerIds(admin, user.id)
+  for (const id of otherUserIds) {
+    if (!partners.has(id)) {
+      return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
+    }
   for (const oid of otherUserIds) {
     const id = typeof oid === 'string' ? oid.trim() : String(oid)
     if (!isUuidString(id)) {

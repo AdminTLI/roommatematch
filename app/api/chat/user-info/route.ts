@@ -65,6 +65,13 @@ export async function GET(request: NextRequest) {
       )
     }
 
+    const viewerInChat = chatMembers.some((m) => m.user_id === user.id)
+    if (!viewerInChat) {
+      safeLogger.warn('user-info: caller not a member of chat', { chatId, userId: user.id })
+      return NextResponse.json(
+        { error: 'You can only view info for chats you belong to' },
+        { status: 403 }
+      )
     const viewerIsMember = chatMembers.some((m) => m.user_id === user.id)
     if (!viewerIsMember) {
       safeLogger.warn('[chat/user-info] Non-member attempted profile fetch', { chatId, userId: user.id })

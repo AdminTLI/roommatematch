@@ -14,6 +14,7 @@ import {
 import { toStudent } from '@/lib/matching/answer-map'
 import type { StudentProfile } from '@/lib/matching/answer-map'
 import { canViewCohortProfile } from '@/lib/auth/cohort-visibility'
+import { viewerMayComputeCompatibilityWith } from '@/lib/auth/pair-compatibility-access'
 import { isUuidString, viewerMayRequestCompatibilityScore } from '@/lib/auth/compatibility-pair-access'
 import { filterCompatibilityPeerIds } from '@/lib/matching/compatibility-peer-access'
 
@@ -84,6 +85,9 @@ export async function GET(request: NextRequest) {
         )
       }
 
+      const viewerInChat = chatMembers.some((m) => m.user_id === user.id)
+      if (!viewerInChat) {
+        safeLogger.warn('[API Compatibility] Caller not a member of chat', { chatId, userId: user.id })
       const viewerIsMember = chatMembers.some((m) => m.user_id === user.id)
       if (!viewerIsMember) {
         safeLogger.warn('[chat/compatibility] Non-member attempted compatibility fetch', {
@@ -131,6 +135,12 @@ export async function GET(request: NextRequest) {
         allMembers: chatMembers?.map(m => ({ user_id: m.user_id, isCurrentUser: m.user_id === user.id }))
       })
     } else if (otherUserId) {
+      const allowedPair = await viewerMayComputeCompatibilityWith(admin, user.id, otherUserId)
+      if (!allowedPair) {
+        return NextResponse.json(
+          { error: 'Compatibility is only available for users in your match context' },
+          { status: 403 }
+        )
       if (!isUuidString(otherUserId)) {
         return NextResponse.json({ error: 'Invalid otherUserId' }, { status: 400 })
       }

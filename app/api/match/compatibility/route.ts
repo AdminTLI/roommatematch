@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient, createAdminClient } from '@/lib/supabase/server'
+import { viewerMayComputeCompatibilityWith } from '@/lib/auth/pair-compatibility-access'
 import { isUuidString, viewerMayRequestCompatibilityScore } from '@/lib/auth/compatibility-pair-access'
 import { filterCompatibilityPeerIds } from '@/lib/matching/compatibility-peer-access'
 
@@ -24,6 +25,8 @@ export async function GET(request: NextRequest) {
   }
 
   const admin = await createAdminClient()
+  const allowed = await viewerMayComputeCompatibilityWith(admin, user.id, otherUserId)
+  if (!allowed) {
   const pairAllowed = await viewerMayRequestCompatibilityScore(admin, user.id, otherUserId.trim())
   if (!pairAllowed) {
   const allowed = await filterCompatibilityPeerIds(admin, user.id, [otherUserId])
