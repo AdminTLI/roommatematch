@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient, createAdminClient } from '@/lib/supabase/server'
-import { isUuidString, viewerMayRequestCompatibilityScore } from '@/lib/auth/compatibility-pair-access'
+import { isUuidString } from '@/lib/auth/compatibility-pair-access'
 import { filterCompatibilityPeerIds } from '@/lib/matching/compatibility-peer-access'
 
 type BatchRequestBody = {
@@ -33,16 +33,14 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ results: [] })
   }
 
-  const admin = await createAdminClient()
   for (const oid of otherUserIds) {
     const id = typeof oid === 'string' ? oid.trim() : String(oid)
     if (!isUuidString(id)) {
       return NextResponse.json({ error: 'Invalid other_user_ids entry' }, { status: 400 })
     }
-    const allowed = await viewerMayRequestCompatibilityScore(admin, user.id, id)
-    if (!allowed) {
-      return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
-    }
+  }
+
+  const admin = await createAdminClient()
   const allowedPeers = await filterCompatibilityPeerIds(admin, user.id, otherUserIds)
   if (allowedPeers.length === 0) {
     return NextResponse.json({ results: [] })
@@ -59,4 +57,3 @@ export async function POST(request: NextRequest) {
 
   return NextResponse.json({ results: data || [] })
 }
-
