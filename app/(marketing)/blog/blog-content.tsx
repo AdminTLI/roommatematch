@@ -3,7 +3,7 @@
 import Section from '@/components/ui/primitives/section'
 import Container from '@/components/ui/primitives/container'
 import Link from 'next/link'
-import { Calendar, Clock, ArrowRight, BookOpen, Shield, Brain } from 'lucide-react'
+import { Calendar, Clock, ArrowRight, BookOpen, Shield, Brain, TrendingUp } from 'lucide-react'
 import { useApp } from '@/app/providers'
 import { motion, useReducedMotion } from 'framer-motion'
 import { cn } from '@/lib/utils'
@@ -15,6 +15,26 @@ const content = {
     subtitle: 'Expert guidance on finding compatible roommates, staying safe while renting, and understanding how technology can help you make better housing decisions.',
     readArticle: 'Read article',
     posts: [
+      {
+        slug: 'student-housing-shortage-retention-roi',
+        title:
+          'Student Housing Shortage Is a Retention Line Item: What Dutch Data Says About Staying Home',
+        excerpt:
+          'Dutch reporting ties room shortages to more students staying home and stressed international searches. Here is the executive view on hidden costs and why structured matching is retention infrastructure.',
+        readTime: '9 min read',
+        date: '2026-05-13',
+        category: 'Housing',
+        icon: TrendingUp,
+        slug: 'student-housing-gap-retention-roi',
+        title:
+          'Beyond Beds: The Hidden ROI of Fixing Europe’s Student Housing Gap Before Retention Breaks',
+        excerpt:
+          'Room shortages and roommate mismatch are not peripheral problems. They tax wellbeing, grades, and persistence—while clearer intake and compatibility infrastructure pays back upstream.',
+        readTime: '9 min read',
+        date: '2026-05-06',
+        category: 'Retention',
+        icon: BookOpen,
+      },
       {
         slug: 'move-in-week-red-flags',
         title: 'Move-In Week Red Flags: Signs Your Living Situation Might Tank Your Semester',
@@ -153,6 +173,25 @@ const content = {
     subtitle: 'Deskundige tips om compatibele huisgenoten te vinden, veilig te huren en te begrijpen hoe technologie je helpt betere woonbeslissingen te nemen.',
     readArticle: 'Lees artikel',
     posts: [
+      {
+        slug: 'student-housing-shortage-retention-roi',
+        title: 'Studentenhuisvesting als retentiepost: wat Nederlandse cijfers zeggen over thuiswonen',
+        excerpt:
+          'Media laten zien dat krapte en huren doorwerken in thuiswonen en lange zoektochten. Een beknopt beeld voor beleid en onderwijs: verborgen kosten en waar matching infra oplevert.',
+        readTime: '9 min lezen',
+        date: '2026-05-13',
+        category: 'Huisvesting',
+        icon: TrendingUp,
+        slug: 'student-housing-gap-retention-roi',
+        title:
+          'Meer dan een bed: de verborgen ROI van de studentenhuisvestingskloof vóór je retentie kraakt',
+        excerpt:
+          'Kamertekorten en een verkeerde match zijn geen randzaken. Ze raken welzijn, cijfers en volhoudbaarheid—terwijl vroege intake en compatibiliteit zich upstream terugverdienen.',
+        readTime: '9 min lezen',
+        date: '2026-05-06',
+        category: 'Retentie',
+        icon: BookOpen,
+      },
       {
         slug: 'move-in-week-red-flags',
         title: 'Red flags in je eerste woonweek',

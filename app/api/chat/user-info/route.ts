@@ -68,6 +68,7 @@ export async function GET(request: NextRequest) {
     const viewerIsMember = chatMembers.some((m) => m.user_id === user.id)
     if (!viewerIsMember) {
       safeLogger.warn('[chat/user-info] Non-member attempted profile fetch', { chatId, userId: user.id })
+      safeLogger.warn('User attempted user-info for chat they are not in', { chatId, userId: user.id })
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
     }
 
