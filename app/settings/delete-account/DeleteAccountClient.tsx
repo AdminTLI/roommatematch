@@ -51,6 +51,7 @@ export function DeleteAccountClient({
   const [deleteLoading, setDeleteLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [redirectCountdown, setRedirectCountdown] = useState<number | null>(null)
+  const [deletionScheduledAt, setDeletionScheduledAt] = useState<string | null>(null)
 
   const handleHideProfile = async () => {
     setError(null)
@@ -104,8 +105,10 @@ export function DeleteAccountClient({
         const msg = typeof data.debug === 'string' ? data.debug : (data.message || data.error || 'Failed to delete account')
         throw new Error(msg)
       }
+      setDeletionScheduledAt(
+        typeof data.deletion_scheduled_at === 'string' ? data.deletion_scheduled_at : null
+      )
       setStep('done')
-      // Clear local session (auth user already deleted server-side)
       const supabase = createBrowserClient(
         process.env.NEXT_PUBLIC_SUPABASE_URL!,
         process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
@@ -295,7 +298,7 @@ export function DeleteAccountClient({
         <Card className="border-zinc-200 dark:border-white/10">
           <CardContent className="py-12 flex flex-col items-center justify-center gap-4">
             <Loader2 className="w-10 h-10 animate-spin text-blue-500" />
-            <p className="text-zinc-600 dark:text-zinc-400">Deleting your account...</p>
+            <p className="text-zinc-600 dark:text-zinc-400">Scheduling your account deletion...</p>
           </CardContent>
         </Card>
       )}
@@ -305,7 +308,18 @@ export function DeleteAccountClient({
           <CardContent className="py-12 flex flex-col items-center justify-center gap-4">
             <Home className="w-12 h-12 text-zinc-400" />
             <p className="text-zinc-600 dark:text-zinc-400 text-center">
-              Your account has been deleted.
+              Your account is scheduled for permanent deletion
+              {deletionScheduledAt
+                ? ` on ${new Date(deletionScheduledAt).toLocaleDateString('en-GB', {
+                    day: 'numeric',
+                    month: 'long',
+                    year: 'numeric',
+                  })}`
+                : ' after our 30-day grace period'}.
+            </p>
+            <p className="text-sm text-zinc-500 dark:text-zinc-500 text-center max-w-md">
+              You have been signed out. Contact support before that date if you wish to cancel.
+              Verification documents may be kept for up to 4 weeks as required by Dutch law.
             </p>
             <p className="text-sm text-zinc-500 dark:text-zinc-500">
               {redirectCountdown !== null && redirectCountdown > 0

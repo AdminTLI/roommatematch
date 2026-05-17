@@ -49,10 +49,25 @@ function getEmailConfig(): EmailConfig | null {
 /**
  * Send email via Mailjet Send API v3.1
  */
+export type SendEmailOptions = {
+  /** Skip the platform-wide "email notifications" toggle (e.g. contact form to support). */
+  skipPlatformGate?: boolean
+}
+
 export async function sendEmail(
-  message: EmailMessage
+  message: EmailMessage,
+  options?: SendEmailOptions
 ): Promise<boolean> {
   try {
+    if (!options?.skipPlatformGate) {
+      const { getPlatformSettings } = await import('@/lib/platform-settings')
+      const platformSettings = await getPlatformSettings()
+      if (!platformSettings.emailNotificationsEnabled) {
+        safeLogger.info('[Email] Skipped: platform email notifications are disabled')
+        return false
+      }
+    }
+
     const config = getEmailConfig()
 
     if (!config) {

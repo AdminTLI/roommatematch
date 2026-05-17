@@ -1,5 +1,6 @@
 import type { Redis } from '@upstash/redis'
 import { getOptionalRedis } from '@/lib/redis/optional-redis'
+import { parseRedisJsonValue } from '@/lib/redis/parse-redis-value'
 
 type CacheOptions = {
   /** Cache key namespace/prefix (e.g. "inst", "programmes"). */
@@ -23,13 +24,9 @@ function buildKey(namespace: string, key: string): string {
 }
 
 async function getJson<T>(redis: Redis, key: string): Promise<T | null> {
-  const v = await redis.get<string>(key)
+  const v = await redis.get(key)
   if (!v) return null
-  try {
-    return JSON.parse(v) as T
-  } catch {
-    return null
-  }
+  return parseRedisJsonValue<T>(v)
 }
 
 async function setJson(redis: Redis, key: string, value: unknown, ttlSeconds: number): Promise<void> {

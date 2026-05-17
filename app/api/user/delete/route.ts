@@ -4,9 +4,8 @@
  * Account deletion with retention flow & exit survey.
  * Implements GDPR Right to Erasure (Art. 17) with:
  * - Exit survey capture (no user_id link - GDPR compliant)
- * - PII removal (hard delete)
- * - Data anonymization for business intelligence (questionnaire answers for matching algorithm)
- * - Chat scrubbing (sender_id -> NULL, preserve context for recipient)
+ * - 30-day grace period before permanent erasure (AVG/GDPR)
+ * - Automated hard delete via /api/cron/maintenance (Supabase pg_cron)
  * - Block deletion if active agreement disputes
  */
 
@@ -14,6 +13,10 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { createServiceClient } from '@/lib/supabase/service'
 import { safeLogger } from '@/lib/utils/logger'
+import {
+  ACCOUNT_DELETION_GRACE_PERIOD_DAYS,
+  scheduleAccountDeletion,
+} from '@/lib/privacy/account-deletion'
 
 /** Survey reasons that count as "win" for analytics */
 const WIN_REASONS = ['found_room']
@@ -68,7 +71,6 @@ export async function DELETE(req: NextRequest) {
         error: disputesErr,
         userId: user.id,
       })
-      // Allow deletion to proceed if we can't check (e.g. table missing)
     }
 
     if (hasActiveDisputes) {
@@ -130,108 +132,50 @@ export async function DELETE(req: NextRequest) {
       })
     }
 
-    // ─── Step 4: Anonymize questionnaire responses (best-effort) ─────────────────
-    try {
-      const { error: respError } = await adminClient
-        .from('responses')
-        .update({ user_id: null })
-        .eq('user_id', user.id)
-      if (respError) {
-        safeLogger.warn('[DeleteAccount] Failed to anonymize responses', {
-          error: respError,
-          userId: user.id,
-        })
-      }
-    } catch (respErr) {
-      safeLogger.warn('[DeleteAccount] Responses anonymization failed', {
-        error: respErr,
-        userId: user.id,
-      })
-    }
-
-    // ─── Step 5: Anonymize chat messages (best-effort) ──────────────────────────
-    try {
-      const { error: msgError } = await adminClient
-        .from('messages')
-        .update({ user_id: null })
-        .eq('user_id', user.id)
-      if (msgError) {
-        safeLogger.warn('[DeleteAccount] Failed to anonymize messages', {
-          error: msgError,
-          userId: user.id,
-        })
-      }
-    } catch (msgErr) {
-      safeLogger.warn('[DeleteAccount] Messages anonymization failed', {
-        error: msgErr,
-        userId: user.id,
-      })
-    }
-
-    // ─── Step 6: Delete user_vectors (best-effort) ─────────────────────────────
-    try {
-      await adminClient.from('user_vectors').delete().eq('user_id', user.id)
-    } catch (vecErr) {
-      safeLogger.warn('[DeleteAccount] user_vectors delete failed', {
-        error: vecErr,
-        userId: user.id,
-      })
-    }
-
-    // ─── Step 7: Delete public.users row first (triggers cascade cleanup, avoids Auth "Database error deleting user") ─
-    // Supabase Auth's deleteUser can fail with "Database error deleting user" when public schema still references auth.users.
-    // Deleting public.users first runs the BEFORE DELETE trigger (profiles, responses, etc.) so auth.users delete succeeds.
-    try {
-      const { error: usersDeleteError } = await adminClient
-        .from('users')
-        .delete()
-        .eq('id', user.id)
-      if (usersDeleteError) {
-        safeLogger.warn('[DeleteAccount] public.users delete failed (will still try auth delete)', {
-          error: usersDeleteError,
-          userId: user.id,
-        })
-      }
-    } catch (usersErr) {
-      safeLogger.warn('[DeleteAccount] public.users delete threw', {
-        error: usersErr,
-        userId: user.id,
-      })
-    }
-
-    // ─── Step 8: Delete auth user (required) ─
-    const { error: authDeleteError } = await adminClient.auth.admin.deleteUser(
-      user.id
-    )
-
-    if (authDeleteError) {
-      safeLogger.error('[DeleteAccount] Failed to delete auth user', {
-        error: authDeleteError,
-        userId: user.id,
-      })
-      const authErrMsg = authDeleteError.message || 'Could not complete account deletion.'
-      return NextResponse.json(
-        {
-          error: 'Deletion failed',
-          message: process.env.NODE_ENV === 'development' ? authErrMsg : 'Could not complete account deletion. Please try again or contact support.',
-          debug: process.env.NODE_ENV === 'development' ? authErrMsg : undefined,
-        },
-        { status: 500 }
-      )
-    }
-
-    // Optional: Persona/ID verification cleanup webhook could be triggered here.
-    // e.g. POST to Persona API to remove user from their system.
-
-    safeLogger.info('[DeleteAccount] Account deleted successfully', {
+    // ─── Step 4: Schedule GDPR deletion (30-day grace; hard delete via maintenance cron) ─
+    const scheduled = await scheduleAccountDeletion({
+      adminClient,
       userId: user.id,
+      reason: survey_reason,
+      metadata: {
+        source: 'delete_account_ui',
+        survey_reason: survey_reason.slice(0, 100),
+        is_win: isWin,
+        ip_address: req.headers.get('x-forwarded-for') || req.headers.get('x-real-ip') || 'unknown',
+        user_agent: req.headers.get('user-agent') || 'unknown',
+      },
+    })
+
+    // Mark auth user so middleware can block re-login during grace period
+    const { error: metadataError } = await adminClient.auth.admin.updateUserById(user.id, {
+      app_metadata: {
+        deletion_scheduled_at: scheduled.deletionScheduledAt,
+        deletion_request_id: scheduled.requestId,
+      },
+    })
+    if (metadataError) {
+      safeLogger.warn('[DeleteAccount] Failed to set deletion app_metadata', {
+        error: metadataError,
+        userId: user.id,
+      })
+    }
+
+    safeLogger.info('[DeleteAccount] Deletion scheduled', {
+      userId: user.id,
+      requestId: scheduled.requestId,
+      deletionScheduledAt: scheduled.deletionScheduledAt,
       surveyReason: survey_reason,
       isWin,
     })
 
     return NextResponse.json({
       success: true,
-      message: 'Account deleted successfully.',
+      scheduled: true,
+      request_id: scheduled.requestId,
+      deletion_scheduled_at: scheduled.deletionScheduledAt,
+      grace_period_days: scheduled.gracePeriodDays,
+      message: `Your account is scheduled for permanent deletion on ${new Date(scheduled.deletionScheduledAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' })}.`,
+      note: `Per GDPR/AVG we allow a ${ACCOUNT_DELETION_GRACE_PERIOD_DAYS}-day grace period before permanent erasure. Contact support before that date if you wish to cancel. Verification documents may be retained for up to 4 weeks after verification as required by Dutch law.`,
     })
   } catch (error) {
     safeLogger.error('[DeleteAccount] Unexpected error', error)

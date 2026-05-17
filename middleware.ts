@@ -8,6 +8,8 @@ import { checkUserVerificationStatus, getVerificationRedirectUrl } from '@/lib/a
 import { safeLogger } from '@/lib/utils/logger'
 import { createAdminClient } from '@/lib/supabase/server'
 import { SESSION_TERMINATED_ERROR_PARAM } from '@/lib/auth/session-terminated'
+import { getPlatformSettingsUncached } from '@/lib/platform-settings-db'
+import type { PlatformSettings } from '@/lib/platform-settings-shared'
 
 // Admin check cache (for feature flags) - 30 seconds TTL
 interface CachedAdminCheck {
@@ -17,6 +19,19 @@ interface CachedAdminCheck {
 
 const adminCheckCache = new Map<string, CachedAdminCheck>()
 const ADMIN_CACHE_TTL_MS = 30 * 1000 // 30 seconds
+
+let platformSettingsCache: { settings: PlatformSettings; expiresAt: number } | null = null
+const PLATFORM_SETTINGS_CACHE_TTL_MS = 30 * 1000
+
+async function getCachedPlatformSettings(): Promise<PlatformSettings> {
+  const now = Date.now()
+  if (platformSettingsCache && platformSettingsCache.expiresAt > now) {
+    return platformSettingsCache.settings
+  }
+  const settings = await getPlatformSettingsUncached()
+  platformSettingsCache = { settings, expiresAt: now + PLATFORM_SETTINGS_CACHE_TTL_MS }
+  return settings
+}
 
 // CSRF token cache - only regenerate if missing or expired
 const csrfTokenCache = new Map<string, { token: string; expiresAt: number }>()
@@ -83,10 +98,44 @@ export async function middleware(req: NextRequest) {
     }
   }
 
+  const platformSettings = await getCachedPlatformSettings()
+
+  const maintenanceExempt =
+    pathname === '/maintenance' ||
+    pathname.startsWith('/auth/sign-in') ||
+    pathname.startsWith('/admin-portal/login') ||
+    pathname.startsWith('/admin') ||
+    pathname.startsWith('/api/admin') ||
+    pathname.startsWith('/api/cron') ||
+    pathname.startsWith('/api/public') ||
+    pathname.startsWith('/_next') ||
+    pathname.startsWith('/static') ||
+    pathname.startsWith('/images') ||
+    pathname === '/favicon.ico' ||
+    pathname === '/robots.txt' ||
+    pathname === '/sitemap.xml'
+
+  if (platformSettings.maintenanceMode && !maintenanceExempt) {
+    const url = req.nextUrl.clone()
+    url.pathname = '/maintenance'
+    return NextResponse.redirect(url)
+  }
+
+  if (
+    !platformSettings.registrationEnabled &&
+    (pathname === '/auth/sign-up' || pathname.startsWith('/auth/sign-up/'))
+  ) {
+    const url = req.nextUrl.clone()
+    url.pathname = '/auth/sign-in'
+    url.searchParams.set('reason', 'registration_disabled')
+    return NextResponse.redirect(url)
+  }
+
   // Allow public routes without checks
   const publicPrefixes = [
     '/auth/sign-in',
     '/auth/sign-up',
+    '/maintenance',
     '/auth/callback',
     '/auth/verify-email',
     '/auth/reset-password',
@@ -271,6 +320,25 @@ export async function middleware(req: NextRequest) {
     const url = req.nextUrl.clone()
     url.pathname = '/auth/sign-in'
     url.searchParams.set('error', SESSION_TERMINATED_ERROR_PARAM)
+    const redirectRes = NextResponse.redirect(url)
+    res.cookies.getAll().forEach((c) => {
+      redirectRes.cookies.set(c)
+    })
+    return redirectRes
+  }
+
+  // Block access during GDPR deletion grace period (hard delete runs via maintenance cron)
+  const deletionScheduledAt = user?.app_metadata?.deletion_scheduled_at as string | undefined
+  if (
+    user &&
+    deletionScheduledAt &&
+    !pathname.startsWith('/auth/') &&
+    pathname !== '/settings/delete-account'
+  ) {
+    const url = req.nextUrl.clone()
+    url.pathname = '/auth/sign-in'
+    url.searchParams.set('reason', 'account_deletion_scheduled')
+    url.searchParams.set('deletion_at', deletionScheduledAt)
     const redirectRes = NextResponse.redirect(url)
     res.cookies.getAll().forEach((c) => {
       redirectRes.cookies.set(c)

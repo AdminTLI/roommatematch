@@ -8,6 +8,7 @@ import type { CohortFilter } from '@/lib/matching/repo'
 import matchModeConfig from '@/config/match-mode.json'
 import { requireAdminResponse } from '@/lib/auth/admin'
 import { safeLogger } from '@/lib/utils/logger'
+import { getMaxGroupMembers, getPlatformSettings } from '@/lib/platform-settings'
 
 export async function POST(request: NextRequest) {
   // Require admin authentication
@@ -18,9 +19,12 @@ export async function POST(request: NextRequest) {
 
   try {
     const body = await request.json()
+    const platformSettings = await getPlatformSettings()
+    const defaultGroupSize = getMaxGroupMembers(platformSettings)
+
     const { 
       mode = 'pairs', 
-      groupSize = 2, 
+      groupSize = defaultGroupSize, 
       cohort = {}, 
       runId,
       suggestionMode = false
@@ -32,7 +36,12 @@ export async function POST(request: NextRequest) {
       suggestionMode?: boolean
     }
 
-    safeLogger.info('[API] Running matching', { mode, groupSize, runId, suggestionMode })
+    const resolvedGroupSize = Math.min(
+      getMaxGroupMembers(platformSettings),
+      Math.max(2, groupSize ?? defaultGroupSize)
+    )
+
+    safeLogger.info('[API] Running matching', { mode, groupSize: resolvedGroupSize, runId, suggestionMode })
 
     const repo = await getMatchRepo()
     
@@ -43,7 +52,7 @@ export async function POST(request: NextRequest) {
       const result = await runMatchingAsSuggestions({ 
         repo, 
         mode, 
-        groupSize, 
+        groupSize: resolvedGroupSize, 
         cohort, 
         runId 
       })
@@ -52,7 +61,7 @@ export async function POST(request: NextRequest) {
       const result = await runMatching({ 
         repo, 
         mode, 
-        groupSize, 
+        groupSize: resolvedGroupSize, 
         cohort, 
         runId 
       })

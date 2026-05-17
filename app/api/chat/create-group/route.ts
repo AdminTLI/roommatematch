@@ -5,6 +5,7 @@ import { requireAdmin } from '@/lib/auth/admin'
 import { createNotificationsForUsers, createNotification } from '@/lib/notifications/create'
 import { calculateGroupCompatibility } from '@/lib/group-compatibility/calculator'
 import { checkRateLimit, getUserRateLimitKey } from '@/lib/rate-limit'
+import { getMaxGroupMembers, getPlatformSettings } from '@/lib/platform-settings'
 
 export async function POST(request: NextRequest) {
   try {
@@ -15,22 +16,32 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
+    const platformSettings = await getPlatformSettings()
+    const maxGroupMembers = getMaxGroupMembers(platformSettings)
+    const maxOtherMembers = maxGroupMembers - 1
+
     const { member_ids, name, group_intent, context_message } = await request.json()
     
     if (!member_ids || !Array.isArray(member_ids) || member_ids.length < 2) {
       return NextResponse.json({ error: 'At least 2 members required for group chat' }, { status: 400 })
     }
 
-    if (member_ids.length > 5) {
-      return NextResponse.json({ error: 'Maximum 5 other members allowed in a group (6 total including you)' }, { status: 400 })
+    if (member_ids.length > maxOtherMembers) {
+      return NextResponse.json(
+        { error: `Maximum ${maxOtherMembers} other members allowed in a group (${maxGroupMembers} total including you)` },
+        { status: 400 }
+      )
     }
 
     // Ensure current user is not in member_ids and calculate total
     const uniqueMemberIds = Array.from(new Set(member_ids.filter(id => id !== user.id)))
     const allMemberIds = [user.id, ...uniqueMemberIds]
     
-    if (allMemberIds.length > 6) {
-      return NextResponse.json({ error: 'Maximum 6 members allowed in a group' }, { status: 400 })
+    if (allMemberIds.length > maxGroupMembers) {
+      return NextResponse.json(
+        { error: `Maximum ${maxGroupMembers} members allowed in a group` },
+        { status: 400 }
+      )
     }
 
     // Rate limiting: 3 group chats per day

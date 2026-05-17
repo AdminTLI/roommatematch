@@ -1215,7 +1215,7 @@ If you need immediate assistance, contact domumatch@gmail.com.`,
 1. Go to Settings > Privacy
 2. Click "Delete Account"
 3. Confirm the deletion
-4. Your account will be deleted within 7 days (grace period)
+4. Your account will be permanently deleted after 30 days (GDPR/AVG grace period)
 
 Note: Some data may be retained for legal compliance:
 - Verification documents: 4 weeks (Dutch law)

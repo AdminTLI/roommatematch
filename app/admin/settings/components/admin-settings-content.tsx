@@ -8,60 +8,29 @@ import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { Switch } from '@/components/ui/switch'
 import { Badge } from '@/components/ui/badge'
-import { 
-  Settings, 
-  Save, 
+import { SettingFieldHint } from '@/components/admin/setting-field-hint'
+import {
+  Settings,
+  Save,
   RefreshCw,
   Database,
   Bell,
-  Shield,
   Building2,
   CheckCircle,
-  AlertCircle
+  AlertCircle,
 } from 'lucide-react'
-
-interface PlatformSettings {
-  // Platform Configuration
-  siteName: string
-  siteDescription: string
-  maintenanceMode: boolean
-  registrationEnabled: boolean
-  
-  // University Settings
-  defaultUniversity: string
-  allowMultipleUniversities: boolean
-  
-  // System Preferences
-  maxUsersPerMatch: number
-  matchExpirationDays: number
-  autoBackupEnabled: boolean
-  backupFrequency: 'daily' | 'weekly' | 'monthly'
-  
-  // Notification Settings
-  emailNotificationsEnabled: boolean
-  pushNotificationsEnabled: boolean
-  adminAlertsEnabled: boolean
-}
+import {
+  DEFAULT_PLATFORM_SETTINGS,
+  type PlatformSettings,
+} from '@/lib/platform-settings-shared'
+import { fetchWithCSRF } from '@/lib/utils/fetch-with-csrf'
 
 export function AdminSettingsContent() {
   const [isLoading, setIsLoading] = useState(true)
   const [isSaving, setIsSaving] = useState(false)
   const [saveStatus, setSaveStatus] = useState<'idle' | 'success' | 'error'>('idle')
-  const [settings, setSettings] = useState<PlatformSettings>({
-    siteName: 'Domu Match',
-    siteDescription: 'From strangers to roommates',
-    maintenanceMode: false,
-    registrationEnabled: true,
-    defaultUniversity: '',
-    allowMultipleUniversities: false,
-    maxUsersPerMatch: 4,
-    matchExpirationDays: 7,
-    autoBackupEnabled: true,
-    backupFrequency: 'daily',
-    emailNotificationsEnabled: true,
-    pushNotificationsEnabled: true,
-    adminAlertsEnabled: true
-  })
+  const [loadError, setLoadError] = useState<string | null>(null)
+  const [settings, setSettings] = useState<PlatformSettings>(DEFAULT_PLATFORM_SETTINGS)
 
   useEffect(() => {
     loadSettings()
@@ -69,16 +38,18 @@ export function AdminSettingsContent() {
 
   const loadSettings = async () => {
     setIsLoading(true)
+    setLoadError(null)
     try {
-      // In a real implementation, this would fetch from an API
-      // For now, we'll use default values
-      // const response = await fetch('/api/admin/settings')
-      // if (response.ok) {
-      //   const data = await response.json()
-      //   setSettings(data)
-      // }
+      const response = await fetch('/api/admin/settings')
+      if (!response.ok) {
+        const body = await response.json().catch(() => ({}))
+        throw new Error(body.error || 'Failed to load settings')
+      }
+      const data = (await response.json()) as PlatformSettings
+      setSettings(data)
     } catch (error) {
       console.error('Failed to load settings:', error)
+      setLoadError(error instanceof Error ? error.message : 'Failed to load settings')
     } finally {
       setIsLoading(false)
     }
@@ -87,19 +58,19 @@ export function AdminSettingsContent() {
   const handleSave = async () => {
     setIsSaving(true)
     setSaveStatus('idle')
-    
+
     try {
-      // In a real implementation, this would save to an API
-      // const response = await fetch('/api/admin/settings', {
-      //   method: 'POST',
-      //   headers: { 'Content-Type': 'application/json' },
-      //   body: JSON.stringify(settings)
-      // })
-      // if (!response.ok) throw new Error('Failed to save settings')
-      
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1000))
-      
+      const response = await fetchWithCSRF('/api/admin/settings', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(settings),
+      })
+      if (!response.ok) {
+        const body = await response.json().catch(() => ({}))
+        throw new Error(body.error || 'Failed to save settings')
+      }
+      const saved = (await response.json()) as PlatformSettings
+      setSettings(saved)
       setSaveStatus('success')
       setTimeout(() => setSaveStatus('idle'), 3000)
     } catch (error) {
@@ -115,7 +86,7 @@ export function AdminSettingsContent() {
     key: K,
     value: PlatformSettings[K]
   ) => {
-    setSettings(prev => ({ ...prev, [key]: value }))
+    setSettings((prev) => ({ ...prev, [key]: value }))
   }
 
   if (isLoading) {
@@ -131,11 +102,14 @@ export function AdminSettingsContent() {
 
   return (
     <div className="space-y-8">
-      {/* Header */}
       <div className="flex justify-between items-center">
         <div>
-          <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-foreground">Platform Settings</h1>
-          <p className="text-lg text-gray-600 dark:text-muted-foreground mt-1">Configure platform-wide settings and preferences</p>
+          <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-foreground">
+            Platform Settings
+          </h1>
+          <p className="text-lg text-gray-600 dark:text-muted-foreground mt-1">
+            Configure platform-wide settings. Changes are saved to the database and take effect within about a minute on live traffic.
+          </p>
         </div>
         <div className="flex items-center gap-2">
           {saveStatus === 'success' && (
@@ -150,11 +124,7 @@ export function AdminSettingsContent() {
               Error
             </Badge>
           )}
-          <Button 
-            onClick={handleSave} 
-            disabled={isSaving}
-            className="flex items-center gap-2"
-          >
+          <Button onClick={handleSave} disabled={isSaving} className="flex items-center gap-2">
             {isSaving ? (
               <>
                 <RefreshCw className="w-4 h-4 animate-spin" />
@@ -170,30 +140,38 @@ export function AdminSettingsContent() {
         </div>
       </div>
 
-      {/* Platform Configuration */}
+      {loadError && (
+        <Card className="border-amber-200 bg-amber-50">
+          <CardContent className="pt-6 text-sm text-amber-900">
+            Could not load saved settings ({loadError}). Showing defaults until the database migration is applied.
+          </CardContent>
+        </Card>
+      )}
+
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Settings className="w-5 h-5" />
             Platform Configuration
           </CardTitle>
-          <CardDescription>
-            Basic platform settings and branding
-          </CardDescription>
+          <CardDescription>Branding, SEO, and global access controls</CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
           <div className="space-y-2">
-            <Label htmlFor="siteName">Site Name</Label>
+            <Label htmlFor="siteName">Site name</Label>
             <Input
               id="siteName"
               value={settings.siteName}
               onChange={(e) => updateSetting('siteName', e.target.value)}
               placeholder="Domu Match"
             />
+            <SettingFieldHint>
+              Used in page titles, Open Graph tags, email sender name, and the maintenance page. Individual marketing pages may still set their own titles; the homepage and app shell use this name.
+            </SettingFieldHint>
           </div>
-          
+
           <div className="space-y-2">
-            <Label htmlFor="siteDescription">Site Description</Label>
+            <Label htmlFor="siteDescription">Site description (SEO)</Label>
             <Textarea
               id="siteDescription"
               value={settings.siteDescription}
@@ -201,14 +179,17 @@ export function AdminSettingsContent() {
               placeholder="From strangers to roommates"
               rows={3}
             />
+            <SettingFieldHint>
+              Becomes the default meta description and Open Graph / Twitter description on the marketing site and app root. Google often shows this text under your link in search results (it may rewrite it). Allow a few days after saving for Google to recrawl; use Search Console to request indexing. Does not change text visible on the page body.
+            </SettingFieldHint>
           </div>
 
-          <div className="flex items-center justify-between">
-            <div className="space-y-0.5">
-              <Label htmlFor="maintenanceMode">Maintenance Mode</Label>
-              <p className="text-sm text-gray-500">
-                Temporarily disable public access to the platform
-              </p>
+          <div className="flex items-center justify-between gap-4">
+            <div className="space-y-1 pr-4">
+              <Label htmlFor="maintenanceMode">Maintenance mode</Label>
+              <SettingFieldHint>
+                Redirects visitors to /maintenance. Sign-in, admin routes, and cron jobs still work so you can recover the site.
+              </SettingFieldHint>
             </div>
             <Switch
               id="maintenanceMode"
@@ -217,12 +198,12 @@ export function AdminSettingsContent() {
             />
           </div>
 
-          <div className="flex items-center justify-between">
-            <div className="space-y-0.5">
-              <Label htmlFor="registrationEnabled">Registration Enabled</Label>
-              <p className="text-sm text-gray-500">
-                Allow new users to register accounts
-              </p>
+          <div className="flex items-center justify-between gap-4">
+            <div className="space-y-1 pr-4">
+              <Label htmlFor="registrationEnabled">Registration enabled</Label>
+              <SettingFieldHint>
+                When off, /auth/sign-up is blocked and new account creation is disabled. Existing users can still sign in.
+              </SettingFieldHint>
             </div>
             <Switch
               id="registrationEnabled"
@@ -233,37 +214,34 @@ export function AdminSettingsContent() {
         </CardContent>
       </Card>
 
-      {/* University Settings */}
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Building2 className="w-5 h-5" />
             University Settings
           </CardTitle>
-          <CardDescription>
-            Configure university-specific settings
-          </CardDescription>
+          <CardDescription>Defaults for student onboarding</CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
           <div className="space-y-2">
-            <Label htmlFor="defaultUniversity">Default University</Label>
+            <Label htmlFor="defaultUniversity">Default university (ID)</Label>
             <Input
               id="defaultUniversity"
               value={settings.defaultUniversity}
               onChange={(e) => updateSetting('defaultUniversity', e.target.value)}
-              placeholder="Select default university"
+              placeholder="UUID from universities table"
             />
-            <p className="text-sm text-gray-500">
-              The default university for new registrations
-            </p>
+            <SettingFieldHint>
+              Optional. Pre-selects this university for new users on the onboarding intro step (only when they have not chosen one yet). Use the university row UUID from Supabase, not the display name.
+            </SettingFieldHint>
           </div>
 
-          <div className="flex items-center justify-between">
-            <div className="space-y-0.5">
-              <Label htmlFor="allowMultipleUniversities">Allow Multiple Universities</Label>
-              <p className="text-sm text-gray-500">
-                Allow users to be associated with multiple universities
-              </p>
+          <div className="flex items-center justify-between gap-4">
+            <div className="space-y-1 pr-4">
+              <Label htmlFor="allowMultipleUniversities">Allow multiple universities</Label>
+              <SettingFieldHint>
+                When off, users are expected to stay with one university affiliation. When on, future profile flows may allow multiple affiliations (each account still has a primary university today).
+              </SettingFieldHint>
             </div>
             <Switch
               id="allowMultipleUniversities"
@@ -274,54 +252,55 @@ export function AdminSettingsContent() {
         </CardContent>
       </Card>
 
-      {/* System Preferences */}
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Database className="w-5 h-5" />
             System Preferences
           </CardTitle>
-          <CardDescription>
-            Configure system behavior and limits
-          </CardDescription>
+          <CardDescription>Matching limits and operational checks</CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
           <div className="space-y-2">
-            <Label htmlFor="maxUsersPerMatch">Maximum Users Per Match</Label>
+            <Label htmlFor="maxUsersPerMatch">Maximum users per match / group</Label>
             <Input
               id="maxUsersPerMatch"
               type="number"
-              min="2"
-              max="10"
+              min={2}
+              max={10}
               value={settings.maxUsersPerMatch}
-              onChange={(e) => updateSetting('maxUsersPerMatch', parseInt(e.target.value) || 4)}
+              onChange={(e) =>
+                updateSetting('maxUsersPerMatch', parseInt(e.target.value, 10) || 4)
+              }
             />
-            <p className="text-sm text-gray-500">
-              Maximum number of users that can be matched together
-            </p>
+            <SettingFieldHint>
+              Caps group matching runs and the size of group chats users can create (including themselves). Pair matching is always two people.
+            </SettingFieldHint>
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="matchExpirationDays">Match Expiration (Days)</Label>
+            <Label htmlFor="matchExpirationDays">Match suggestion expiry (days)</Label>
             <Input
               id="matchExpirationDays"
               type="number"
-              min="1"
-              max="30"
+              min={1}
+              max={90}
               value={settings.matchExpirationDays}
-              onChange={(e) => updateSetting('matchExpirationDays', parseInt(e.target.value) || 7)}
+              onChange={(e) =>
+                updateSetting('matchExpirationDays', parseInt(e.target.value, 10) || 7)
+              }
             />
-            <p className="text-sm text-gray-500">
-              Number of days before a match suggestion expires
-            </p>
+            <SettingFieldHint>
+              New match suggestions receive an expires_at date this many days ahead. After that date they are treated as expired in the app and by cleanup jobs.
+            </SettingFieldHint>
           </div>
 
-          <div className="flex items-center justify-between">
-            <div className="space-y-0.5">
-              <Label htmlFor="autoBackupEnabled">Automatic Backups</Label>
-              <p className="text-sm text-gray-500">
-                Automatically backup system data
-              </p>
+          <div className="flex items-center justify-between gap-4">
+            <div className="space-y-1 pr-4">
+              <Label htmlFor="autoBackupEnabled">Backup monitoring</Label>
+              <SettingFieldHint>
+                When enabled, the admin dashboard tracks backup health events. Database backups themselves are managed by Supabase; this toggle controls monitoring alerts, not the backup engine.
+              </SettingFieldHint>
             </div>
             <Switch
               id="autoBackupEnabled"
@@ -332,40 +311,45 @@ export function AdminSettingsContent() {
 
           {settings.autoBackupEnabled && (
             <div className="space-y-2">
-              <Label htmlFor="backupFrequency">Backup Frequency</Label>
+              <Label htmlFor="backupFrequency">Backup check frequency</Label>
               <select
                 id="backupFrequency"
                 value={settings.backupFrequency}
-                onChange={(e) => updateSetting('backupFrequency', e.target.value as 'daily' | 'weekly' | 'monthly')}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                onChange={(e) =>
+                  updateSetting(
+                    'backupFrequency',
+                    e.target.value as PlatformSettings['backupFrequency']
+                  )
+                }
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-background dark:border-border"
               >
                 <option value="daily">Daily</option>
                 <option value="weekly">Weekly</option>
                 <option value="monthly">Monthly</option>
               </select>
+              <SettingFieldHint>
+                How often the system expects a recorded backup health event before flagging it as outdated in admin.
+              </SettingFieldHint>
             </div>
           )}
         </CardContent>
       </Card>
 
-      {/* Notification Settings */}
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Bell className="w-5 h-5" />
             Notification Settings
           </CardTitle>
-          <CardDescription>
-            Configure notification preferences
-          </CardDescription>
+          <CardDescription>Platform-wide delivery switches</CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
-          <div className="flex items-center justify-between">
-            <div className="space-y-0.5">
-              <Label htmlFor="emailNotificationsEnabled">Email Notifications</Label>
-              <p className="text-sm text-gray-500">
-                Send email notifications to users
-              </p>
+          <div className="flex items-center justify-between gap-4">
+            <div className="space-y-1 pr-4">
+              <Label htmlFor="emailNotificationsEnabled">Email notifications</Label>
+              <SettingFieldHint>
+                Disables marketing and lifecycle emails sent via Mailjet (match digests, onboarding reminders, etc.). Auth emails from Supabase (verification, password reset) are not affected.
+              </SettingFieldHint>
             </div>
             <Switch
               id="emailNotificationsEnabled"
@@ -374,12 +358,12 @@ export function AdminSettingsContent() {
             />
           </div>
 
-          <div className="flex items-center justify-between">
-            <div className="space-y-0.5">
-              <Label htmlFor="pushNotificationsEnabled">Push Notifications</Label>
-              <p className="text-sm text-gray-500">
-                Enable browser push notifications
-              </p>
+          <div className="flex items-center justify-between gap-4">
+            <div className="space-y-1 pr-4">
+              <Label htmlFor="pushNotificationsEnabled">In-app notifications</Label>
+              <SettingFieldHint>
+                When off, the platform stops creating new in-app notification records (bell icon). Does not remove existing notifications.
+              </SettingFieldHint>
             </div>
             <Switch
               id="pushNotificationsEnabled"
@@ -388,12 +372,12 @@ export function AdminSettingsContent() {
             />
           </div>
 
-          <div className="flex items-center justify-between">
-            <div className="space-y-0.5">
-              <Label htmlFor="adminAlertsEnabled">Admin Alerts</Label>
-              <p className="text-sm text-gray-500">
-                Send alerts to administrators for important events
-              </p>
+          <div className="flex items-center justify-between gap-4">
+            <div className="space-y-1 pr-4">
+              <Label htmlFor="adminAlertsEnabled">Admin alerts</Label>
+              <SettingFieldHint>
+                Controls operational alert emails and Slack messages (health checks, data quality, cron failures). Requires ALERTS_EMAIL_ENABLED or SLACK_WEBHOOK_URL in environment.
+              </SettingFieldHint>
             </div>
             <Switch
               id="adminAlertsEnabled"
@@ -404,14 +388,8 @@ export function AdminSettingsContent() {
         </CardContent>
       </Card>
 
-      {/* Save Button at Bottom */}
       <div className="flex justify-end">
-        <Button 
-          onClick={handleSave} 
-          disabled={isSaving}
-          size="lg"
-          className="flex items-center gap-2"
-        >
+        <Button onClick={handleSave} disabled={isSaving} size="lg" className="flex items-center gap-2">
           {isSaving ? (
             <>
               <RefreshCw className="w-4 h-4 animate-spin" />
@@ -428,4 +406,3 @@ export function AdminSettingsContent() {
     </div>
   )
 }
-

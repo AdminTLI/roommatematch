@@ -4,6 +4,7 @@
 import { createClient } from '@supabase/supabase-js'
 import { safeLogger } from '@/lib/utils/logger'
 import { sendAlert } from '@/lib/monitoring/alerts'
+import { logOpsEvent, type OpsEventSeverity } from '@/lib/monitoring/ops-log'
 
 export interface SecurityEvent {
   id: string
@@ -77,6 +78,30 @@ export async function logSecurityEvent(
     if (error) {
       safeLogger.error('Failed to log security event', { error, eventType })
       return false
+    }
+
+    const opsSeverity: OpsEventSeverity =
+      severity === 'critical'
+        ? 'critical'
+        : severity === 'high'
+          ? 'error'
+          : severity === 'medium'
+            ? 'warning'
+            : 'info'
+
+    if (opsSeverity !== 'info') {
+      await logOpsEvent({
+        source: 'security',
+        severity: opsSeverity,
+        title: `Security: ${eventType}`,
+        message: `Security event (${severity}): ${eventType}`,
+        metadata: {
+          event_type: eventType,
+          user_id: userId,
+          ip_address: ipAddress,
+          details,
+        },
+      })
     }
 
     // Check if alert should be triggered

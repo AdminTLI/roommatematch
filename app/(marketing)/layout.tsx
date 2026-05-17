@@ -1,12 +1,17 @@
 import { Metadata } from 'next'
 import type { ReactNode } from 'react'
+import { getPlatformSettings } from '@/lib/platform-settings'
 
-export const metadata: Metadata = {
+export async function generateMetadata(): Promise<Metadata> {
+  const { siteName, siteDescription } = await getPlatformSettings()
+  const defaultTitle = `Find Your Perfect Roommate in Netherlands | ${siteName} - Shared Living for Students & Young Professionals`
+
+  return {
   title: {
-    default: 'Find Your Perfect Roommate in Netherlands | Domu Match - Shared Living for Students & Young Professionals',
-    template: '%s | Domu Match',
+    default: defaultTitle,
+    template: `%s | ${siteName}`,
   },
-  description: 'Find compatible roommates in the Netherlands with science-backed matching. Verified students and young professionals, safe platform, perfect for Amsterdam, Rotterdam, Utrecht, and shared living across the Netherlands. Start matching today!',
+  description: siteDescription,
   keywords: [
     'find roommate Netherlands',
     'student housing Netherlands',
@@ -36,9 +41,9 @@ export const metadata: Metadata = {
     'roommate compatibility test',
     'find flatmate Netherlands',
   ],
-  authors: [{ name: 'Domu Match' }],
-  creator: 'Domu Match',
-  publisher: 'Domu Match',
+  authors: [{ name: siteName }],
+  creator: siteName,
+  publisher: siteName,
   metadataBase: new URL('https://domumatch.com'),
   alternates: {
     canonical: 'https://domumatch.com',
@@ -52,9 +57,9 @@ export const metadata: Metadata = {
     locale: 'en_US',
     alternateLocale: 'nl_NL',
     url: 'https://domumatch.com',
-    siteName: 'Domu Match',
-    title: 'Find Your Perfect Roommate in Netherlands | Domu Match',
-    description: 'Find compatible roommates in the Netherlands with science-backed matching. Verified students and young professionals, safe platform, perfect for shared living.',
+    siteName,
+    title: defaultTitle,
+    description: siteDescription,
     images: [
       {
         url: 'https://domumatch.com/images/logo.png',
@@ -66,8 +71,8 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'Find Your Perfect Roommate in Netherlands | Domu Match',
-    description: 'Find compatible roommates in the Netherlands with science-backed matching. Verified students and young professionals, safe platform.',
+    title: defaultTitle,
+    description: siteDescription,
     images: ['https://domumatch.com/images/logo.png'],
     creator: '@domumatch',
   },
@@ -86,6 +91,7 @@ export const metadata: Metadata = {
     // Add when available: google: 'verification-code',
     // Add when available: yandex: 'verification-code',
   },
+}
 }
 
 export default function MarketingLayout({

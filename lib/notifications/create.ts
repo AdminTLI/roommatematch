@@ -4,7 +4,13 @@ import { CreateNotificationData, Notification, NotificationType } from './types'
 /**
  * Create a single notification
  */
-export async function createNotification(data: CreateNotificationData): Promise<Notification> {
+export async function createNotification(data: CreateNotificationData): Promise<Notification | null> {
+  const { getPlatformSettings } = await import('@/lib/platform-settings')
+  const platformSettings = await getPlatformSettings()
+  if (!platformSettings.pushNotificationsEnabled) {
+    return null
+  }
+
   const supabase = await createAdminClient();
   
   const { data: notification, error } = await supabase
@@ -36,6 +42,12 @@ export async function createNotificationsForUsers(
   message: string,
   metadata?: Record<string, any>
 ): Promise<Notification[]> {
+  const { getPlatformSettings } = await import('@/lib/platform-settings')
+  const platformSettings = await getPlatformSettings()
+  if (!platformSettings.pushNotificationsEnabled) {
+    return []
+  }
+
   const supabase = await createAdminClient();
   
   const notifications = userIds.map(userId => ({

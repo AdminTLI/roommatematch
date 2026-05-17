@@ -5,6 +5,17 @@
 
 import type { RateLimitStore, RateLimitEntry } from './rate-limit'
 import { getOptionalRedis } from '@/lib/redis/optional-redis'
+import { parseRedisJsonValue } from '@/lib/redis/parse-redis-value'
+
+function isRateLimitEntry(value: unknown): value is RateLimitEntry {
+  if (!value || typeof value !== 'object') return false
+  const entry = value as RateLimitEntry
+  return (
+    typeof entry.count === 'number' &&
+    typeof entry.resetTime === 'number' &&
+    typeof entry.windowStart === 'number'
+  )
+}
 
 /**
  * Upstash Redis store for production rate limiting
@@ -17,10 +28,15 @@ export class UpstashRateLimitStore implements RateLimitStore {
     const redis = getOptionalRedis()
     if (!redis) return null
     try {
-      const data = await redis.get<string>(key)
+      const data = await redis.get(key)
       if (!data) return null
 
-      const entry = JSON.parse(data) as RateLimitEntry
+      const parsed = parseRedisJsonValue<RateLimitEntry>(data)
+      if (!isRateLimitEntry(parsed)) {
+        await this.delete(key)
+        return null
+      }
+      const entry = parsed
       
       // Check if entry has expired
       if (Date.now() > entry.resetTime) {

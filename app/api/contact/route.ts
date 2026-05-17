@@ -28,7 +28,8 @@ export async function POST(request: Request) {
     const data = parse.data
     const inbox = 'domumatch@gmail.com'
 
-    const sent = await sendEmail({
+    const sent = await sendEmail(
+      {
       to: inbox,
       replyTo: data.email,
       subject: `[Contact] ${data.topic} - ${data.name}`,
@@ -49,7 +50,9 @@ Topic: ${data.topic}
 Message:
 ${data.message}
       `.trim(),
-    })
+    },
+      { skipPlatformGate: true }
+    )
 
     if (!sent) {
       safeLogger.warn('[Contact] Email send failed')

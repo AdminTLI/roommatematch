@@ -11,11 +11,15 @@ import {
   Shield, 
   AlertTriangle,
   BarChart3,
-  Settings,
-  Database,
   Activity,
-  RefreshCw
+  RefreshCw,
+  Database,
+  Settings,
 } from 'lucide-react'
+import {
+  SystemStatusPanel,
+  type SystemHealthData,
+} from '@/app/admin/components/system-status-panel'
 
 type TimePeriod = '24h' | '7d' | '1m' | '3m' | '6m' | '1y' | 'all'
 
@@ -26,45 +30,6 @@ interface DashboardMetrics {
   pendingReports: number
   period: string
   lastUpdated: string
-}
-
-interface SystemHealth {
-  overall: {
-    status: 'online' | 'degraded' | 'offline'
-    lastCheck: string
-    summary: {
-      online: number
-      degraded: number
-      offline: number
-      total: number
-    }
-  }
-  services: {
-    database: {
-      status: 'online' | 'degraded' | 'offline'
-      responseTime: number
-      lastCheck: string
-      error?: string
-    }
-    authentication: {
-      status: 'online' | 'degraded' | 'offline'
-      responseTime: number
-      lastCheck: string
-      error?: string
-    }
-    matchingEngine: {
-      status: 'online' | 'degraded' | 'offline'
-      responseTime: number
-      lastCheck: string
-      error?: string
-    }
-    fileStorage: {
-      status: 'online' | 'degraded' | 'offline'
-      responseTime: number
-      lastCheck: string
-      error?: string
-    }
-  }
 }
 
 interface ActivityItem {
@@ -91,7 +56,7 @@ export function AdminContent() {
     period: 'all',
     lastUpdated: ''
   })
-  const [systemHealth, setSystemHealth] = useState<SystemHealth | null>(null)
+  const [systemHealth, setSystemHealth] = useState<SystemHealthData | null>(null)
   const [activities, setActivities] = useState<ActivityItem[]>([])
 
   useEffect(() => {
@@ -175,19 +140,6 @@ export function AdminContent() {
     loadMetrics()
     loadSystemHealth()
     loadActivityFeed()
-  }
-
-  const getStatusBadge = (status: 'online' | 'degraded' | 'offline') => {
-    const variants = {
-      online: 'bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-300',
-      degraded: 'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-800 dark:text-yellow-300',
-      offline: 'bg-red-100 dark:bg-red-900/30 text-red-800 dark:text-red-300'
-    }
-    return (
-      <Badge variant="default" className={variants[status]}>
-        {status === 'online' ? 'Online' : status === 'degraded' ? 'Degraded' : 'Offline'}
-      </Badge>
-    )
   }
 
   const timePeriodLabels: Record<TimePeriod, string> = {
@@ -333,69 +285,12 @@ export function AdminContent() {
               )}
             </CardTitle>
           </CardHeader>
-          <CardContent className="space-y-4">
-            {isHealthLoading ? (
-              <div className="space-y-3">
-                {[1, 2, 3, 4].map((i) => (
-                  <div key={i} className="flex items-center justify-between">
-                    <div className="h-4 w-24 bg-gray-200 rounded animate-pulse"></div>
-                    <div className="h-6 w-16 bg-gray-200 rounded animate-pulse"></div>
-                  </div>
-                ))}
-              </div>
-            ) : systemHealth ? (
-              <>
-                <div className="flex items-center justify-between">
-                  <div>
-                    <span className="text-sm text-gray-600 dark:text-muted-foreground">Database</span>
-                    {systemHealth.services.database.responseTime > 0 && (
-                      <span className="text-xs text-gray-500 dark:text-gray-400 ml-2">
-                        ({systemHealth.services.database.responseTime}ms)
-                      </span>
-                    )}
-                  </div>
-                  {getStatusBadge(systemHealth.services.database.status)}
-                </div>
-                <div className="flex items-center justify-between">
-                  <div>
-                    <span className="text-sm text-gray-600 dark:text-muted-foreground">Authentication</span>
-                    {systemHealth.services.authentication.responseTime > 0 && (
-                      <span className="text-xs text-gray-500 dark:text-gray-400 ml-2">
-                        ({systemHealth.services.authentication.responseTime}ms)
-                      </span>
-                    )}
-                  </div>
-                  {getStatusBadge(systemHealth.services.authentication.status)}
-                </div>
-                <div className="flex items-center justify-between">
-                  <div>
-                    <span className="text-sm text-gray-600 dark:text-muted-foreground">Matching Engine</span>
-                    {systemHealth.services.matchingEngine.responseTime > 0 && (
-                      <span className="text-xs text-gray-500 dark:text-gray-400 ml-2">
-                        ({systemHealth.services.matchingEngine.responseTime}ms)
-                      </span>
-                    )}
-                  </div>
-                  {getStatusBadge(systemHealth.services.matchingEngine.status)}
-                </div>
-                <div className="flex items-center justify-between">
-                  <div>
-                    <span className="text-sm text-gray-600 dark:text-muted-foreground">File Storage</span>
-                    {systemHealth.services.fileStorage.responseTime > 0 && (
-                      <span className="text-xs text-gray-500 dark:text-gray-400 ml-2">
-                        ({systemHealth.services.fileStorage.responseTime}ms)
-                      </span>
-                    )}
-                  </div>
-                  {getStatusBadge(systemHealth.services.fileStorage.status)}
-                </div>
-                <div className="text-xs text-gray-500 dark:text-gray-400 mt-4 pt-4 border-t dark:border-gray-700">
-                  Last checked: {new Date(systemHealth.overall.lastCheck).toLocaleTimeString()}
-                </div>
-              </>
-            ) : (
-              <div className="text-sm text-gray-500 dark:text-gray-400">Unable to load system status</div>
-            )}
+          <CardContent>
+            <SystemStatusPanel
+              systemHealth={systemHealth}
+              isLoading={isHealthLoading}
+              showLogsLink
+            />
           </CardContent>
         </Card>
 

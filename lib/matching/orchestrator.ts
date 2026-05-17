@@ -625,11 +625,12 @@ export async function runMatchingAsSuggestions({
       byUser[uid] = byUser[uid].slice(0, topN)
     }
 
+    const { getMatchSuggestionExpiresAt, getPlatformSettings } = await import('@/lib/platform-settings')
+    const platformSettings = await getPlatformSettings()
+
     // 4) Create suggestions (unique by pair key, using sorted memberIds for dedupe)
-    // Matches don't expire - set expiration far in the future for database compatibility
     const now = Date.now()
-    // Set expiration to 100 years from now (effectively never expires)
-    const expiresAt = new Date(now + 100 * 365 * 24 * 3600 * 1000).toISOString()
+    const expiresAt = getMatchSuggestionExpiresAt(platformSettings.matchExpirationDays)
     const seen = new Set<string>()
     const suggestions: MatchSuggestion[] = []
 

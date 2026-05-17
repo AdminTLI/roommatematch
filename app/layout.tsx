@@ -10,17 +10,32 @@ import './globals.css'
 
 const inter = Inter({ subsets: ['latin'] })
 
-export const metadata: Metadata = {
-  title: 'Domu Match - From strangers to roommates',
-  description: 'From strangers to roommates. Connect with fellow students and find your ideal roommate match. Safe, verified, and designed for Dutch universities.',
-  icons: {
-    icon: '/images/logo.png',
-    apple: '/images/logo.png',
-  },
-  verification: {
-    // Add your Google Search Console verification code here after claiming the property
-    // google: 'your-verification-code',
-  },
+import { getPlatformSettings } from '@/lib/platform-settings'
+
+export async function generateMetadata(): Promise<Metadata> {
+  const { siteName, siteDescription } = await getPlatformSettings()
+  return {
+    title: `${siteName} - From strangers to roommates`,
+    description: siteDescription,
+    icons: {
+      icon: '/images/logo.png',
+      apple: '/images/logo.png',
+    },
+    openGraph: {
+      title: siteName,
+      description: siteDescription,
+      siteName,
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title: siteName,
+      description: siteDescription,
+    },
+    verification: {
+      // Add your Google Search Console verification code here after claiming the property
+      // google: 'your-verification-code',
+    },
+  }
 }
 
 export const viewport = {

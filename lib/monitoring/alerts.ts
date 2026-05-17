@@ -296,14 +296,19 @@ export async function sendAlert(
       }
     }
 
+    const { getPlatformSettings } = await import('@/lib/platform-settings')
+    const platformSettings = await getPlatformSettings()
+
     // Send email alert if configured
-    const emailEnabled = process.env.ALERTS_EMAIL_ENABLED === 'true'
+    const emailEnabled =
+      platformSettings.adminAlertsEnabled && process.env.ALERTS_EMAIL_ENABLED === 'true'
     if (emailEnabled) {
       await sendEmailAlert(title, message, severity, metadata)
     }
 
     // Send Slack alert if configured
-    const slackWebhookUrl = process.env.SLACK_WEBHOOK_URL
+    const slackWebhookUrl =
+      platformSettings.adminAlertsEnabled ? process.env.SLACK_WEBHOOK_URL : undefined
     if (slackWebhookUrl) {
       await sendSlackAlert(title, message, severity, metadata)
     }
@@ -326,10 +331,33 @@ async function sendEmailAlert(
   metadata: Record<string, any>
 ): Promise<boolean> {
   try {
-    // TODO: Implement email sending via SMTP
-    // For now, just log the alert
-    safeLogger.info('Email alert (not implemented)', { title, message, severity, metadata })
-    return true
+    const { sendEmail } = await import('@/lib/email/workflows')
+    const recipients = (process.env.OPS_ALERT_EMAIL ?? '')
+      .split(',')
+      .map((e) => e.trim())
+      .filter(Boolean)
+
+    if (recipients.length === 0) {
+      safeLogger.warn('Email alert skipped: OPS_ALERT_EMAIL not configured', { title })
+      return false
+    }
+
+    const html = `
+      <h2>${title}</h2>
+      <p><strong>Severity:</strong> ${severity}</p>
+      <p>${message}</p>
+      <pre style="background:#f4f4f4;padding:12px;font-size:12px;">${JSON.stringify(metadata, null, 2)}</pre>
+    `
+
+    let sent = false
+    for (const to of recipients) {
+      const ok = await sendEmail(
+        { to, subject: `[Domu Match] ${title}`, html, text: message },
+        { skipPlatformGate: true }
+      )
+      sent = sent || ok
+    }
+    return sent
   } catch (error) {
     safeLogger.error('Error sending email alert', { error })
     return false

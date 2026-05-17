@@ -9,6 +9,8 @@ import { sendSLAReminders, processPendingDSARRequests } from '@/lib/privacy/dsar
 import { createClient } from '@supabase/supabase-js'
 import { createAdminClient } from '@/lib/supabase/server'
 import { safeLogger } from '@/lib/utils/logger'
+import { logOpsEvent, purgeOldOpsEvents } from '@/lib/monitoring/ops-log'
+import { verifyCronRequest } from '@/lib/cron/verify-cron-request'
 
 export const maxDuration = 300 // 5 minutes - maximum allowed for Hobby plan
 export const dynamic = 'force-dynamic'
@@ -20,33 +22,14 @@ export const dynamic = 'force-dynamic'
  */
 export async function GET(request: Request) {
   try {
-    // Verify cron secret for security - REQUIRED in production
-    const authHeader = request.headers.get('authorization')
-    const cronSecret = process.env.CRON_SECRET || process.env.VERCEL_CRON_SECRET
-
-    // Require secret in production - fail fast if missing
-    if (process.env.NODE_ENV === 'production' || process.env.VERCEL_ENV) {
-      if (!cronSecret) {
+    const cronAuth = verifyCronRequest(request)
+    if (!cronAuth.ok) {
+      if (cronAuth.status === 500) {
         safeLogger.error('[Cron] CRON_SECRET or VERCEL_CRON_SECRET is required in production')
-        return NextResponse.json(
-          { error: 'Cron secret not configured' },
-          { status: 500 }
-        )
+      } else {
+        safeLogger.warn('[Cron] Unauthorized maintenance request attempt', cronAuth.logContext)
       }
-    }
-
-    // Verify authorization header matches secret
-    if (cronSecret && authHeader !== `Bearer ${cronSecret}`) {
-      safeLogger.warn('[Cron] Unauthorized maintenance request attempt', {
-        hasHeader: !!authHeader,
-        hasSecret: !!cronSecret
-      })
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-    }
-    
-    // If no secret configured in development, warn but allow (for local testing)
-    if (!cronSecret && (process.env.NODE_ENV !== 'production' && !process.env.VERCEL_ENV)) {
-      safeLogger.warn('[Cron] No cron secret configured - allowing request in development only')
+      return NextResponse.json({ error: cronAuth.error }, { status: cronAuth.status })
     }
 
     safeLogger.info('[Cron] Starting maintenance tasks')
@@ -554,7 +537,7 @@ export async function GET(request: Request) {
         safeLogger.error('[Cron] Failed to expire match suggestions', { error })
       }
 
-      // 6.7. Process account deletions (after grace period)
+      // 6.7. Process account deletions (after 30-day GDPR/AVG grace period)
       try {
         const { data: deletionRequests, error: fetchError } = await supabase
           .from('dsar_requests')
@@ -764,6 +747,16 @@ export async function GET(request: Request) {
       results
     })
 
+    const opsPurged = await purgeOldOpsEvents(90)
+
+    await logOpsEvent({
+      source: 'cron',
+      severity: failureCount > 0 ? 'warning' : 'info',
+      title: 'Daily maintenance completed',
+      message: `Maintenance finished: ${successCount} succeeded, ${failureCount} failed. Purged ${opsPurged} ops log rows older than 90 days.`,
+      metadata: { successCount, failureCount, opsPurged, results },
+    })
+
     return NextResponse.json({
       success: true,
       runId: `maintenance_${Date.now()}`,
@@ -782,6 +775,13 @@ export async function GET(request: Request) {
     })
   } catch (error) {
     safeLogger.error('[Cron] Maintenance tasks failed', { error })
+    await logOpsEvent({
+      source: 'cron',
+      severity: 'error',
+      title: 'Daily maintenance failed',
+      message: error instanceof Error ? error.message : 'Unknown error',
+      metadata: { error: String(error) },
+    })
     return NextResponse.json(
       { error: 'Maintenance tasks failed', details: error instanceof Error ? error.message : 'Unknown error' },
       { status: 500 }

@@ -323,22 +323,30 @@ export async function calculateCohortRetentionMetrics(
 
     const cohortStart = new Date(cohortDate)
     const cohortEnd = new Date(cohortStart.getTime() + 24 * 60 * 60 * 1000) // +1 day
+    const cohortStartIso = cohortStart.toISOString()
+    const cohortEndIso = cohortEnd.toISOString()
 
-    // Count cohort size (users who signed up in this cohort)
+    // University affiliation lives on user_academic, not public.users
+    const cohortUserSelect = universityId ? 'id, user_academic!inner(university_id)' : 'id'
+
     let cohortQuery = supabase
       .from('users')
-      .select('id', { count: 'exact', head: true })
-      .gte('created_at', cohortStart.toISOString())
-      .lt('created_at', cohortEnd.toISOString())
+      .select(cohortUserSelect, { count: 'exact', head: true })
+      .gte('created_at', cohortStartIso)
+      .lt('created_at', cohortEndIso)
 
     if (universityId) {
-      cohortQuery = cohortQuery.eq('university_id', universityId)
+      cohortQuery = cohortQuery.eq('user_academic.university_id', universityId)
     }
 
     const { count: cohortSize, error: cohortError } = await cohortQuery
 
     if (cohortError) {
-      safeLogger.error('Failed to count cohort size', { error: cohortError })
+      safeLogger.error('Failed to count cohort size', {
+        error: cohortError,
+        universityId,
+        cohortDate,
+      })
     }
 
     if (!cohortSize || cohortSize === 0) {
@@ -350,8 +358,8 @@ export async function calculateCohortRetentionMetrics(
         day30Retention: 0,
         day90Retention: 0,
         period: {
-          start: cohortStart.toISOString(),
-          end: cohortEnd.toISOString()
+          start: cohortStartIso,
+          end: cohortEndIso
         }
       }
     }
@@ -359,12 +367,12 @@ export async function calculateCohortRetentionMetrics(
     // Get cohort user IDs
     let cohortUsersQuery = supabase
       .from('users')
-      .select('id')
-      .gte('created_at', cohortStart.toISOString())
-      .lt('created_at', cohortEnd.toISOString())
+      .select(cohortUserSelect)
+      .gte('created_at', cohortStartIso)
+      .lt('created_at', cohortEndIso)
 
     if (universityId) {
-      cohortUsersQuery = cohortUsersQuery.eq('university_id', universityId)
+      cohortUsersQuery = cohortUsersQuery.eq('user_academic.university_id', universityId)
     }
 
     const { data: cohortUsers, error: usersError } = await cohortUsersQuery

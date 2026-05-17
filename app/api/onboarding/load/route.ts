@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import type { SectionKey } from '@/types/questionnaire'
+import { getPlatformSettings } from '@/lib/platform-settings'
 
 export async function GET(request: Request) {
   const supabase = await createClient()
@@ -29,7 +30,19 @@ export async function GET(request: Request) {
     return NextResponse.json({ error: error.message }, { status: 500 })
   }
 
-  return NextResponse.json({ answers: data?.answers ?? [], lastSavedAt: data?.updated_at })
+  const platformSettings = await getPlatformSettings()
+
+  return NextResponse.json({
+    answers: data?.answers ?? [],
+    lastSavedAt: data?.updated_at,
+    platformDefaults:
+      section === 'intro'
+        ? {
+            defaultUniversityId: platformSettings.defaultUniversity || null,
+            allowMultipleUniversities: platformSettings.allowMultipleUniversities,
+          }
+        : undefined,
+  })
 }
 
 

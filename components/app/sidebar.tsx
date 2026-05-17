@@ -87,6 +87,7 @@ export function Sidebar({ user, onClose }: SidebarProps) {
   const router = useRouter()
   const [unreadChatCount, setUnreadChatCount] = useState(0)
   const [totalMatchesCount, setTotalMatchesCount] = useState(0)
+  const [opsHealthWarning, setOpsHealthWarning] = useState(false)
   const isAdminRoute = pathname?.startsWith('/admin')
   const isAdmin = useIsAdmin()
 
@@ -169,6 +170,29 @@ export function Sidebar({ user, onClose }: SidebarProps) {
     }
   }, [user.id])
 
+  useEffect(() => {
+    if (!isAdminRoute) {
+      setOpsHealthWarning(false)
+      return
+    }
+
+    const fetchOpsSummary = async () => {
+      try {
+        const res = await fetch('/api/admin/ops-log/summary')
+        if (res.ok) {
+          const data = await res.json()
+          setOpsHealthWarning(data.overallHealth !== 'online')
+        }
+      } catch {
+        setOpsHealthWarning(false)
+      }
+    }
+
+    fetchOpsSummary()
+    const interval = setInterval(fetchOpsSummary, 60000)
+    return () => clearInterval(interval)
+  }, [isAdminRoute])
+
   return (
     <div className="flex flex-col h-full w-full bg-bg-surface dark:bg-bg-surface border-r border-border-subtle">
       {/* Branding Header */}
@@ -202,6 +226,8 @@ export function Sidebar({ user, onClose }: SidebarProps) {
               {adminNavigationItems.map((item) => {
                 const isActive = pathname === item.href || pathname.startsWith(item.href + '/')
                 const Icon = item.icon
+                const showHealthDot =
+                  opsHealthWarning && (item.href === '/admin' || item.href === '/admin/logs')
                 return (
                   <Link key={item.name} href={item.href} onClick={onClose}>
                     <Button
@@ -214,7 +240,13 @@ export function Sidebar({ user, onClose }: SidebarProps) {
                       )}
                     >
                       <Icon className="w-5 h-5" />
-                      <span className="font-medium">{item.name}</span>
+                      <span className="font-medium flex-1 text-left">{item.name}</span>
+                      {showHealthDot && (
+                        <span
+                          className="w-2 h-2 rounded-full bg-amber-500 shrink-0"
+                          title="System health issue detected"
+                        />
+                      )}
                     </Button>
                   </Link>
                 )

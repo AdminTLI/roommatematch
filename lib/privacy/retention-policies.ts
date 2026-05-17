@@ -75,9 +75,9 @@ export const RETENTION_POLICIES: RetentionPolicy[] = [
   },
   {
     dataType: 'deleted_accounts',
-    retentionDays: 7, // 7 days grace period
+    retentionDays: 30, // GDPR/AVG one-month erasure window
     description: 'Accounts marked for deletion',
-    legalBasis: 'Grace period to allow account recovery',
+    legalBasis: 'Grace period to allow account recovery before permanent erasure',
     exceptions: ['Verification documents retained for additional 4 weeks per Dutch law']
   }
 ]

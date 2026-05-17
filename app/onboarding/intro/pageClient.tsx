@@ -84,7 +84,7 @@ function IntroClientContent() {
         // This ensures data persistence across page refreshes
         const response = await fetch(`/api/onboarding/load?section=intro`)
         if (response.ok) {
-          const { answers } = await response.json()
+          const { answers, platformDefaults } = await response.json()
           if (answers && answers.length > 0) {
             const welcomeContextIds = new Set([
               'student_origin',
@@ -104,16 +104,29 @@ function IntroClientContent() {
               return acc
             }, {})
             setAcademicData(savedData)
-            
-            // Re-validate with loaded data
+
             const hasUniversity = savedData.institution_slug || savedData.institution_other
             const hasDegreeLevel = savedData.degree_level
             const hasProgram = savedData.program_id || savedData.undecided_program
             const hasGraduationYear = savedData.expected_graduation_year
-            const hasStudyStartMonth = savedData.study_start_month !== null && savedData.study_start_month !== undefined
-            const hasGraduationMonth = savedData.graduation_month !== null && savedData.graduation_month !== undefined
-            
-            setIsValid(hasUniversity && hasDegreeLevel && hasProgram && hasGraduationYear && hasStudyStartMonth && hasGraduationMonth)
+            const hasStudyStartMonth =
+              savedData.study_start_month !== null && savedData.study_start_month !== undefined
+            const hasGraduationMonth =
+              savedData.graduation_month !== null && savedData.graduation_month !== undefined
+
+            setIsValid(
+              hasUniversity &&
+                hasDegreeLevel &&
+                hasProgram &&
+                hasGraduationYear &&
+                hasStudyStartMonth &&
+                hasGraduationMonth
+            )
+          } else if (platformDefaults?.defaultUniversityId) {
+            setAcademicData((prev) => ({
+              ...prev,
+              university_id: platformDefaults.defaultUniversityId,
+            }))
           }
         }
       } catch (error) {

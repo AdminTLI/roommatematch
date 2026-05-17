@@ -1,14 +1,24 @@
 import { Suspense } from 'react'
+import { redirect } from 'next/navigation'
 import { AuthWrapperLight } from '@/app/auth/components/auth-wrapper-light'
 import { SignUpSection } from './sign-up-section'
 import { Metadata } from 'next'
+import { getPlatformSettings } from '@/lib/platform-settings'
 
-export const metadata: Metadata = {
-  title: 'Sign Up | Domu Match',
-  description: 'Create your Domu Match account to find compatible roommates. Join as a student or young professional.',
+export async function generateMetadata(): Promise<Metadata> {
+  const { siteName } = await getPlatformSettings()
+  return {
+    title: `Sign Up | ${siteName}`,
+    description: `Create your ${siteName} account to find compatible roommates. Join as a student or young professional.`,
+  }
 }
 
-export default function SignUpPage() {
+export default async function SignUpPage() {
+  const { registrationEnabled } = await getPlatformSettings()
+  if (!registrationEnabled) {
+    redirect('/auth/sign-in?reason=registration_disabled')
+  }
+
   return (
     <AuthWrapperLight>
       <Suspense
