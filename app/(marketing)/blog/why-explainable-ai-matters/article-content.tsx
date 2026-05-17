@@ -34,7 +34,7 @@ const content = {
     ctaText: 'Get Started',
     body: () => (
       <div className="space-y-10">
-        <p className="text-lg text-slate-200 leading-relaxed">
+        <p className="text-lg text-slate-700 leading-relaxed">
           When an algorithm decides who you should live with, shouldn&apos;t you understand why? As artificial intelligence becomes increasingly integrated into housing, admissions, and employment decisions, transparency has moved from academic debate to legal requirement.
         </p>
 
@@ -182,7 +182,7 @@ const content = {
     ctaText: 'Aan de slag',
     body: () => (
       <div className="space-y-10">
-        <p className="text-lg text-slate-200 leading-relaxed">
+        <p className="text-lg text-slate-700 leading-relaxed">
           Als een algoritme bepaalt met wie je gaat samenwonen, wil je weten waarom. Nu AI steeds vaker keuzes rond wonen, studie en werk beïnvloedt, is transparantie geen luxe meer maar een wettelijke eis.
         </p>
 

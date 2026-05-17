@@ -1247,7 +1247,7 @@ export function MessengerConversation({
       className="flex h-full w-full flex-col overflow-hidden bg-white dark:bg-gray-950 lg:rounded-t-lg"
     >
       {/* Fixed Header — single visual row: back · avatar · title + inline match · menu */}
-      <div className="flex max-w-full flex-shrink-0 items-center justify-between gap-2 border-b border-gray-200 bg-white px-3 py-2.5 dark:border-gray-800 dark:bg-gray-950 max-lg:pt-safe-top lg:px-4 lg:py-3">
+      <div className="flex max-w-full flex-shrink-0 items-center justify-between gap-2 border-b border-gray-200 bg-white px-3 py-2.5 dark:border-gray-800 dark:bg-gray-950 max-lg:app-pt-safe-top lg:px-4 lg:py-3">
         <div className="flex min-w-0 flex-1 items-center gap-2.5 lg:gap-3">
           <div className="flex shrink-0 items-center gap-1.5 lg:gap-2">
             {onBack && (

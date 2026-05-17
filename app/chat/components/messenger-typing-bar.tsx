@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useRef, KeyboardEvent } from 'react'
+import { useState, useRef, KeyboardEvent, TouchEvent } from 'react'
 import { Send, X } from 'lucide-react'
 import { EmojiPicker } from './emoji-picker'
 import { cn } from '@/lib/utils'
@@ -103,6 +103,26 @@ export function MessengerTypingBar({
     }
   }
 
+  /** Stop iOS Safari from scrolling the page to centre the focused composer. */
+  const preventSafariScrollIntoView = (target: HTMLTextAreaElement) => {
+    target.style.transform = 'translateY(-2000px)'
+    requestAnimationFrame(() => {
+      target.style.transform = ''
+    })
+  }
+
+  const handleComposerTouchEnd = (e: TouchEvent<HTMLTextAreaElement>) => {
+    const target = e.currentTarget
+    if (target !== document.activeElement) {
+      e.preventDefault()
+      target.style.transform = 'translateY(-2000px)'
+      target.focus()
+      requestAnimationFrame(() => {
+        target.style.transform = ''
+      })
+    }
+  }
+
   // Auto-resize textarea
   const handleInput = () => {
     const textarea = inputRef.current
@@ -116,13 +136,14 @@ export function MessengerTypingBar({
     <div 
       data-messenger-composer
       className={cn(
-        'relative z-[60] flex-shrink-0 rounded-b-lg border-t border-gray-200 bg-white p-1 pb-[max(0.25rem,env(safe-area-inset-bottom))] dark:border-gray-700 dark:bg-gray-950',
+        'relative z-[60] flex-shrink-0 rounded-b-lg border-t border-gray-200 bg-white p-1 dark:border-gray-700 dark:bg-gray-950',
         className,
       )}
       style={{
         flexShrink: 0,
         flexGrow: 0,
         flexBasis: 'auto',
+        paddingBottom: 'max(0.25rem, env(safe-area-inset-bottom, 0px), var(--kb-inset, 0px))',
       }}
     >
       <div className="flex flex-col gap-1">
@@ -172,7 +193,9 @@ export function MessengerTypingBar({
                 validateContent(value)
                 handleInput()
               }}
-              onFocus={() => {
+              onTouchEnd={handleComposerTouchEnd}
+              onFocus={(e) => {
+                preventSafariScrollIntoView(e.currentTarget)
                 onComposerFocus?.()
               }}
               onBlur={onComposerBlur}

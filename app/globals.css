@@ -408,7 +408,7 @@ body:has([data-chat-page]) .safe-area-inset > div {
 @media (max-width: 1023px) {
   body.chat-page,
   body:has([data-chat-page]) {
-    --chat-bottom-offset: calc(10.75rem + env(safe-area-inset-bottom, 0px));
+    --chat-bottom-offset: calc(var(--dock-height, 76px) + env(safe-area-inset-bottom, 0px) + 1rem);
   }
 
   /* Open thread: dock hidden. 100dvh already matches the visible viewport on iOS Safari; do not add a
@@ -494,8 +494,8 @@ body:has([data-chat-page]) main>div>div[data-chat-page] {
     touch-action: pan-y !important;
   }
 
-  body.mobile-chat-active-conversation .app-shell-visual-viewport-pad,
-  body:has([data-chat-page]).mobile-chat-active-conversation .app-shell-visual-viewport-pad {
+  body.mobile-chat-active-conversation .safe-area-inset,
+  body:has([data-chat-page]).mobile-chat-active-conversation .safe-area-inset {
     padding-top: 0 !important;
   }
 
@@ -509,6 +509,8 @@ body:has([data-chat-page]) main>div>div[data-chat-page] {
     width: 100% !important;
     height: var(--vv-height, 100dvh) !important;
     max-height: var(--vv-height, 100dvh) !important;
+    transform: translateY(var(--vv-top, 0px)) !important;
+    will-change: transform !important;
     flex: none !important;
     box-sizing: border-box !important;
   }
@@ -755,7 +757,7 @@ body:has([data-chat-page]) [class*="border-t"][class*="shadow-2xl"] {
     padding-bottom: calc(1rem + env(safe-area-inset-bottom));
   }
 
-  .pt-safe-top {
+  .app-pt-safe-top {
     padding-top: calc(1rem + env(safe-area-inset-top));
   }
 
@@ -914,6 +916,11 @@ body:has([data-chat-page]) [class*="border-t"][class*="shadow-2xl"] {
     display: flex !important;
     flex-direction: column !important;
   }
+
+  body.chat-page [data-messenger-messages],
+  body:has([data-chat-page]) [data-messenger-messages] {
+    overscroll-behavior: contain !important;
+  }
   
   /* Ensure profile pane content is scrollable */
   body.chat-page [data-messenger-profile] > div,
@@ -931,17 +938,17 @@ body:has([data-chat-page]) [class*="border-t"][class*="shadow-2xl"] {
     background: linear-gradient(to right, rgba(255, 255, 255, 0), rgba(255, 255, 255, 1));
   }
 
-  /* Blog Content Styling - High contrast for dark backgrounds */
+  /* Blog Content Styling - light marketing pages */
   .blog-content {
     font-size: 1.125rem;
     line-height: 1.75rem;
-    color: #e2e8f0; /* slate-200 - bright, readable on dark */
+    color: #334155; /* slate-700 */
   }
 
   .blog-content h2 {
     font-size: 2rem;
     font-weight: 700;
-    color: #ffffff !important; /* Pure white - maximum contrast */
+    color: #0f172a !important; /* slate-900 */
     margin-top: 3rem;
     margin-bottom: 1.5rem;
     line-height: 1.2;
@@ -951,7 +958,7 @@ body:has([data-chat-page]) [class*="border-t"][class*="shadow-2xl"] {
   .blog-content h3 {
     font-size: 1.5rem;
     font-weight: 600;
-    color: #ffffff !important;
+    color: #0f172a !important;
     margin-top: 2.5rem;
     margin-bottom: 1rem;
     line-height: 1.3;
@@ -960,7 +967,7 @@ body:has([data-chat-page]) [class*="border-t"][class*="shadow-2xl"] {
   .blog-content h4 {
     font-size: 1.25rem;
     font-weight: 600;
-    color: #f8fafc !important; /* slate-50 */
+    color: #1e293b !important; /* slate-800 */
     margin-top: 2rem;
     margin-bottom: 0.75rem;
   }
@@ -968,7 +975,7 @@ body:has([data-chat-page]) [class*="border-t"][class*="shadow-2xl"] {
   .blog-content p {
     font-size: 1.125rem;
     line-height: 1.875rem;
-    color: #e2e8f0 !important; /* slate-200 */
+    color: #334155 !important; /* slate-700 */
     margin-bottom: 1.5rem;
     font-weight: 400;
   }
@@ -976,7 +983,7 @@ body:has([data-chat-page]) [class*="border-t"][class*="shadow-2xl"] {
   .blog-content p:first-of-type {
     font-size: 1.25rem;
     line-height: 2rem;
-    color: #e2e8f0 !important;
+    color: #334155 !important;
     font-weight: 400;
   }
 
@@ -990,7 +997,7 @@ body:has([data-chat-page]) [class*="border-t"][class*="shadow-2xl"] {
   .blog-content li {
     font-size: 1.125rem;
     line-height: 1.875rem;
-    color: #e2e8f0 !important;
+    color: #334155 !important;
     margin-bottom: 0.75rem;
   }
 
@@ -1004,34 +1011,34 @@ body:has([data-chat-page]) [class*="border-t"][class*="shadow-2xl"] {
 
   .blog-content strong {
     font-weight: 600;
-    color: #ffffff !important;
+    color: #0f172a !important;
   }
 
   .blog-content a {
-    color: #a5b4fc !important; /* indigo-300 */
+    color: #1d4ed8 !important; /* blue-700 */
     text-decoration: none;
     font-weight: 500;
     transition: color 0.2s;
   }
 
   .blog-content a:hover {
-    color: #c7d2fe !important; /* indigo-200 */
+    color: #1e40af !important; /* blue-800 */
     text-decoration: underline;
   }
 
   .blog-content figcaption {
-    color: #94a3b8 !important; /* slate-400 */
+    color: #475569 !important; /* slate-600 */
     font-size: 0.875rem;
     font-style: italic;
     margin-top: 0.5rem;
   }
 
   .blog-content blockquote {
-    border-left: 4px solid #a5b4fc;
+    border-left: 4px solid #93c5fd;
     padding-left: 1.5rem;
     margin: 2rem 0;
     font-style: italic;
-    color: #e2e8f0 !important;
+    color: #334155 !important;
     font-size: 1.25rem;
     line-height: 1.875rem;
   }
@@ -1074,7 +1081,12 @@ body:has([data-chat-page]) [class*="border-t"][class*="shadow-2xl"] {
 
 }
 
-/* Unlayered: wins over @layer utilities  -  mobile browser top chrome (not covered by safe-area alone) */
+/* Unlayered: stable top padding for app chrome (not tied to visualViewport on iOS) */
+.app-pt-safe-top {
+  padding-top: calc(1rem + env(safe-area-inset-top, 0px));
+}
+
+/* Chrome Android: optional URL-bar overlap (skipped on iOS — see useAppVisualViewportTopInset) */
 @media (max-width: 1023px) {
   .app-shell-visual-viewport-pad {
     padding-top: calc(env(safe-area-inset-top, 0px) + var(--app-visual-top-inset, 0px)) !important;

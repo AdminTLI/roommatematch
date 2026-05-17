@@ -10,7 +10,7 @@ const content = {
     title:
       'Beyond Beds: The Hidden ROI of Fixing Europe’s Student Housing Gap Before Retention Breaks',
     excerpt:
-      'Room shortages and mismatch stress are not “market noise”. They are predictable drag on wellbeing, grades, and completion. Here is what institutions miss—and how early compatibility pays back.',
+      'Room shortages and mismatch stress are not “market noise”. They are predictable drag on wellbeing, grades, and completion. Here is what institutions miss - and how early compatibility pays back.',
     publishDate: '2026-05-06',
     readTime: '9 min read',
     relatedLinks: [
@@ -35,14 +35,14 @@ const content = {
     ],
     ctaTitle: 'Treat Housing Like Academic Infrastructure',
     ctaDescription:
-      'Match on routines and boundaries before move-in week chaos. Domu Match turns compatibility into an upfront decision—not a crisis managed in group chats.',
+      'Match on routines and boundaries before move-in week chaos. Domu Match turns compatibility into an upfront decision - not a crisis managed in group chats.',
     ctaHref: '/auth/sign-up',
     ctaText: 'Get Started',
     body: () => (
       <div className="space-y-10">
-        <p className="text-lg text-slate-200 leading-relaxed">
+        <p className="text-lg text-slate-700 leading-relaxed">
           When classrooms reopen each autumn, leaders optimistically reset dashboards on retention and wellbeing. Too often, those dashboards ignore the{' '}
-          <strong>quiet infrastructure underneath learning</strong>: where students sleep, whether they feel safe, and whether their housemates help them focus—or drain them before lectures begin.
+          <strong>quiet infrastructure underneath learning</strong>: where students sleep, whether they feel safe, and whether their housemates help them focus - or drain them before lectures begin.
         </p>
 
         <figure>
@@ -62,7 +62,7 @@ const content = {
 
         <p>
           In the Netherlands, the student housing squeeze is now front-page economics. Reporting on CBS figures noted that among graduates in 2023,{' '}
-          <strong>43% had lived with their parents throughout their studies</strong>, up from 31% for the cohort graduating in 2016—while{' '}
+          <strong>43% had lived with their parents throughout their studies</strong>, up from 31% for the cohort graduating in 2016 - while{' '}
           <strong>79%</strong> of 2023 graduates were still at home after year one, compared with <strong>63%</strong> in 2016 (
           <a
             href="https://www.dutchnews.nl/2026/02/high-prices-and-room-shortages-lead-more-students-to-stay-home/"
@@ -71,7 +71,7 @@ const content = {
           >
             DutchNews, 2026
           </a>
-          ). Parallel reporting describes landlords selling off thousands of student rooms and rents climbing sharply—context where “find housing” becomes a part-time job (
+          ). Parallel reporting describes landlords selling off thousands of student rooms and rents climbing sharply - context where “find housing” becomes a part-time job (
           <a
             href="https://www.dutchnews.nl/2025/11/private-landlords-sell-off-student-housing-worsening-shortage/"
             target="_blank"
@@ -83,7 +83,7 @@ const content = {
         </p>
 
         <p>
-          For internationally mobile students—often carrying visa timelines and higher scam exposure—the signal is equally blunt. International enrolments have{' '}
+          For internationally mobile students - often carrying visa timelines and higher scam exposure - the signal is equally blunt. International enrolments have{' '}
           <strong>fallen for a third consecutive year</strong> (
           <a
             href="https://www.dutchnews.nl/2026/02/new-international-student-numbers-fall-for-third-year-in-a-row/"
@@ -108,12 +108,12 @@ const content = {
 
         <p>
           Budget owners often anchor student housing debates to euros per square metre. That misses the productivity ledger. Noise, overcrowding, landlord instability, and roommate conflict{' '}
-          <strong>tax attention</strong>—the same scarce resource lectures compete for. Students experiencing housing stress show up tired, avoid campus, delay coursework, and disengage from cohort belonging—the upstream drivers of persistence.
+          <strong>tax attention</strong> - the same scarce resource lectures compete for. Students experiencing housing stress show up tired, avoid campus, delay coursework, and disengage from cohort belonging - the upstream drivers of persistence.
         </p>
 
         <p>
           Peer-reviewed work reinforces the mechanism. A 2025 structural equation study of tertiary students reported that{' '}
-          <strong>inadequate housing was significantly associated with poorer mental health</strong>, and that mental health was positively associated with academic performance—indicating that{' '}
+          <strong>inadequate housing was significantly associated with poorer mental health</strong>, and that mental health was positively associated with academic performance - indicating that{' '}
           <strong>poorer housing links to weaker outcomes through mental health pathways</strong> (
           <a
             href="https://www.frontiersin.org/articles/10.3389/feduc.2025.1627192/full"
@@ -128,11 +128,11 @@ const content = {
 
         <p>
           This is not an argument for blaming students when markets fail. It is an argument for reallocating attention from reactive counselling queues toward{' '}
-          <strong>preventable stressors</strong> embedded in daily life. Sleep continuity, noise exposure, safety of tenure, and predictable chore rhythms are not lifestyle trivia for stretched cohorts—they are conditions that decide whether someone studies tonight or scrolls until 2 a.m. avoiding their kitchen.
+          <strong>preventable stressors</strong> embedded in daily life. Sleep continuity, noise exposure, safety of tenure, and predictable chore rhythms are not lifestyle trivia for stretched cohorts - they are conditions that decide whether someone studies tonight or scrolls until 2 a.m. avoiding their kitchen.
         </p>
 
         <p>
-          Recent wellbeing scholarship underscores why loneliness and anxiety amplify academic strain across cohorts—and why vulnerable mobility paths deserve sharper safeguards (
+          Recent wellbeing scholarship underscores why loneliness and anxiety amplify academic strain across cohorts - and why vulnerable mobility paths deserve sharper safeguards (
           <a
             href="https://www.frontiersin.org/journals/psychology/articles/10.3389/fpsyg.2025.1481328/full"
             target="_blank"
@@ -149,12 +149,12 @@ const content = {
           Stickers and welcome fairs generate visibility; they do not manufacture compatibility. The return on intentional community infrastructure shows up when institutions and cities fund{' '}
           <strong>predictable matching</strong>,{' '}
           <strong>transparent norms</strong>, and{' '}
-          <strong>early dispute rails</strong>—so small frictions do not become lease breaks or transfers.
+          <strong>early dispute rails</strong> - so small frictions do not become lease breaks or transfers.
         </p>
 
         <ul>
           <li>
-            <strong>Front-load clarity.</strong> Translate vague promises—“we’re all chill”—into observable behaviours: sleep windows, guest cadence, cleaning cadence, study vs. social defaults.
+            <strong>Front-load clarity.</strong> Translate vague promises - “we’re all chill” - into observable behaviours: sleep windows, guest cadence, cleaning cadence, study vs. social defaults.
           </li>
           <li>
             <strong>Measure what breaks cohorts.</strong> Track accommodation incidents, mid-year moves, and wellbeing contacts alongside classroom metrics; intervene where patterns cluster.
@@ -163,12 +163,12 @@ const content = {
             <strong>Partner for throughput.</strong> Align municipalities, housing providers, and student associations on shared intake timelines so fewer students are priced into desperation deals.
           </li>
           <li>
-            <strong>Fund mediation early.</strong> Train resident assistants and peer mentors on chore norms and boundary conversations—not only crisis escalation—so persistent friction resolves before academic alerts fire.
+            <strong>Fund mediation early.</strong> Train resident assistants and peer mentors on chore norms and boundary conversations - not only crisis escalation - so persistent friction resolves before academic alerts fire.
           </li>
         </ul>
 
         <p>
-          For municipalities competing for talent pipelines, the calculus mirrors employer incentives: every avoidable mid-year move dumps distraction into lecture halls and shifts advising capacity toward preventable chaos. When intake teams publish realistic timelines and scam-aware guidance alongside enrolment offers—mirroring how Dutch institutions now warn applicants about housing friction—you shrink the gap between{' '}
+          For municipalities competing for talent pipelines, the calculus mirrors employer incentives: every avoidable mid-year move dumps distraction into lecture halls and shifts advising capacity toward preventable chaos. When intake teams publish realistic timelines and scam-aware guidance alongside enrolment offers - mirroring how Dutch institutions now warn applicants about housing friction - you shrink the gap between{' '}
           <strong>letters of acceptance</strong> and <strong>stable tenancy</strong>.
         </p>
 
@@ -176,14 +176,14 @@ const content = {
 
         <p>
           Domu Match is built for the layer universities historically underserve:{' '}
-          <strong>who you live with</strong>. Our questionnaire encodes habits and boundaries—sleep, cleanliness, guests, stress responses—into explainable compatibility signals you can discuss before keys change hands. That shifts conflict from{' '}
+          <strong>who you live with</strong>. Our questionnaire encodes habits and boundaries - sleep, cleanliness, guests, stress responses - into explainable compatibility signals you can discuss before keys change hands. That shifts conflict from{' '}
           <em>surprise and shame</em> to <em>alignment and negotiation</em>.
         </p>
 
         <p>
           If you are shaping retention strategy for 2026 and beyond, start where students actually recover cognitive bandwidth: home. Explore{' '}
           <Link href="/how-it-works">how matching works</Link>, browse housing-ready connections on{' '}
-          <Link href="/matches">matches</Link>, and help your cohort enter the year strong—not scrambling.
+          <Link href="/matches">matches</Link>, and help your cohort enter the year strong - not scrambling.
         </p>
 
         <h2>References</h2>
@@ -261,7 +261,7 @@ const content = {
     title:
       'Meer dan een bed: de verborgen ROI van de studentenhuisvestingskloof vóór je retentie kraakt',
     excerpt:
-      'Kamertekorten en woonstress zijn geen “marktruis”. Ze raken welzijn, cijfers en volhoudbaarheid. Dit mist het beleid vaak—en dit levert vroege compatibiliteit op.',
+      'Kamertekorten en woonstress zijn geen “marktruis”. Ze raken welzijn, cijfers en volhoudbaarheid. Dit mist het beleid vaak - en dit levert vroege compatibiliteit op.',
     publishDate: '2026-05-06',
     readTime: '9 min lezen',
     relatedLinks: [
@@ -286,12 +286,12 @@ const content = {
     ],
     ctaTitle: 'Behandel huisvesting als studie-infrastructuur',
     ctaDescription:
-      'Match op routines en grenzen vóór de chaos van introductieweken. Domu Match maakt compatibiliteit een keuze vóór ingaan—niet een crisis in de groepsapp.',
+      'Match op routines en grenzen vóór de chaos van introductieweken. Domu Match maakt compatibiliteit een keuze vóór ingaan - niet een crisis in de groepsapp.',
     ctaHref: '/auth/sign-up',
     ctaText: 'Aan de slag',
     body: () => (
       <div className="space-y-10">
-        <p className="text-lg text-slate-200 leading-relaxed">
+        <p className="text-lg text-slate-700 leading-relaxed">
           Retentie en welzijn worden vaak gemeten in colleges en dashboards. Zichtbaar minder vaak:{' '}
           <strong>waar studenten slapen</strong>, of ze zich veilig voelen, en of huisgenoten rust geven of energie kosten vóór het eerste college.
         </p>
@@ -351,7 +351,7 @@ const content = {
         <h2>Verborgen kosten (groter dan huur alleen)</h2>
 
         <p>
-          Geluid, overbewoning, onzekere verhuur en huisgenootconflicten kosten <strong>aandacht</strong>—dezelfde bron die colleges nodig hebben. Internationaal onderzoek laat via een structureel vergelijkingsmodel zien dat <strong>onprettige huisvesting samenhangt met slechtere mentale gezondheid</strong> en dat mentale gezondheid weer samenhangt met academische prestaties (
+          Geluid, overbewoning, onzekere verhuur en huisgenootconflicten kosten <strong>aandacht</strong> - dezelfde bron die colleges nodig hebben. Internationaal onderzoek laat via een structureel vergelijkingsmodel zien dat <strong>onprettige huisvesting samenhangt met slechtere mentale gezondheid</strong> en dat mentale gezondheid weer samenhangt met academische prestaties (
           <a
             href="https://www.frontiersin.org/articles/10.3389/feduc.2025.1627192/full"
             target="_blank"
@@ -377,7 +377,7 @@ const content = {
         <h2>ROI van community-infrastructuur</h2>
 
         <p>
-          Welkomstmessen alleen maken geen compatibiliteit. Rendement ontstaat bij vroege normen: slaapvensters, gasten, schoonmaak, studie vs. sociaal—en bij het meten van verhuizingen en incidenten naast klassieke cohortdata. Gemeenten en hogescholen winnen wanneer intake, anti-fraude-informatie en peer-mediation dezelfde planning krijgen als curriculum—zo voorkom je dat kleine wrijving leasebreuk wordt.
+          Welkomstmessen alleen maken geen compatibiliteit. Rendement ontstaat bij vroege normen: slaapvensters, gasten, schoonmaak, studie vs. sociaal - en bij het meten van verhuizingen en incidenten naast klassieke cohortdata. Gemeenten en hogescholen winnen wanneer intake, anti-fraude-informatie en peer-mediation dezelfde planning krijgen als curriculum - zo voorkom je dat kleine wrijving leasebreuk wordt.
         </p>
 
         <h2>Hoe Domu Match helpt</h2>

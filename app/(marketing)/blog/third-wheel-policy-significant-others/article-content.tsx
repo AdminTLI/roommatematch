@@ -39,7 +39,7 @@ const content = {
     ctaText: 'Match on Guest Policies',
     body: () => (
       <div className="space-y-10">
-        <p className="text-lg text-slate-200 leading-relaxed">
+        <p className="text-lg text-slate-700 leading-relaxed">
           Nobody mentions this on campus tours, but here it is: when you choose a roommate, you are also
           choosing every partner and situationship that comes with them. If you do not talk about that up
           front, your two-person room can quietly become a three-person one - and you become the permanent
@@ -261,7 +261,7 @@ const content = {
     ctaText: 'Aan de slag',
     body: () => (
       <div className="space-y-10">
-        <p className="text-lg text-slate-200 leading-relaxed">
+        <p className="text-lg text-slate-700 leading-relaxed">
           Partners horen bij studentenleven, maar zonder duidelijke afspraken kunnen ze je huis ongemerkt
           overnemen. De “derde wiel”-regel draait niet om mensen buitensluiten, maar om samen bepalen wat
           eerlijk en leefbaar is.

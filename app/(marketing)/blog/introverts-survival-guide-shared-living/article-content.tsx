@@ -39,7 +39,7 @@ const content = {
     ctaText: 'Match with Quiet-Friendly Flats',
     body: () => (
       <div className="space-y-10">
-        <p className="text-lg text-slate-200 leading-relaxed">
+        <p className="text-lg text-slate-700 leading-relaxed">
           If you are introverted or neurodivergent, university can feel like a never‑ending group project:
           lectures, seminars, group work, societies, part‑time jobs. By the time you get home, the last thing
           you want is to keep performing. You need a place where your brain can actually power down.
@@ -241,7 +241,7 @@ const content = {
     ctaText: 'Aan de slag',
     body: () => (
       <div className="space-y-10">
-        <p className="text-lg text-slate-200 leading-relaxed">
+        <p className="text-lg text-slate-700 leading-relaxed">
           De hele dag colleges, projectgroepen en drukke gangen is voor veel introverten al een marathon. Als
           het thuis óók altijd druk en luid is, kom je nooit echt bij. Dan voelt elke dag alsof je op halve
           batterij draait.

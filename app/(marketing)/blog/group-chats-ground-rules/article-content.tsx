@@ -39,7 +39,7 @@ const content = {
     ctaText: 'Match with Rule-Compatible Roommates',
     body: () => (
       <div className="space-y-10">
-        <p className="text-lg text-slate-200 leading-relaxed">
+        <p className="text-lg text-slate-700 leading-relaxed">
           Most student houses have rules. In the calm ones, they are written down. In the chaotic ones, they
           only appear as 37‑message group chat arguments at 1 a.m. Ground rules are not about being strict;
           they are about giving everyone the same script so you are not constantly guessing what is okay.
@@ -179,7 +179,7 @@ const content = {
     ctaText: 'Aan de slag',
     body: () => (
       <div className="space-y-10">
-        <p className="text-lg text-slate-200 leading-relaxed">
+        <p className="text-lg text-slate-700 leading-relaxed">
           De meeste huisruzies worden niet in het echt uitgevochten, maar in de groepsapp. Door afspraken
           vroeg en concreet te maken, hoeft je telefoon geen slagveld te worden.
         </p>

@@ -40,7 +40,7 @@ const content = {
     ctaText: 'Get Started',
     body: () => (
       <div className="space-y-10">
-        <p className="text-lg text-slate-200 leading-relaxed">
+        <p className="text-lg text-slate-700 leading-relaxed">
           If you still treat student housing as a side office that forwards links to Facebook groups, the last eighteen months of Dutch headlines should
           force a reset. Reporting from{' '}
           <a href="https://www.dutchnews.nl/2025/09/more-students-are-stuck-at-home-as-housing-shortage-grows/" target="_blank" rel="noreferrer">
@@ -232,7 +232,7 @@ const content = {
     ctaText: 'Aan de slag',
     body: () => (
       <div className="space-y-10">
-        <p className="text-lg text-slate-200 leading-relaxed">
+        <p className="text-lg text-slate-700 leading-relaxed">
           Nederlandse berichtgeving laat een hard patroon zien: meer studenten blijven thuiswonen of worstelen lang met een kamer, terwijl huren
           verder oplopen. Volgens{' '}
           <a href="https://www.dutchnews.nl/2025/09/more-students-are-stuck-at-home-as-housing-shortage-grows/" target="_blank" rel="noreferrer">

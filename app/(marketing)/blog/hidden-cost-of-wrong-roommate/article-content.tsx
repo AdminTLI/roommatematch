@@ -39,7 +39,7 @@ const content = {
     ctaText: 'Find a Compatible Roommate',
     body: () => (
       <div className="space-y-10">
-        <p className="text-lg text-slate-200 leading-relaxed">
+        <p className="text-lg text-slate-700 leading-relaxed">
           On paper, a random roommate looks like the cheapest option. You split the rent, you sign the lease,
           and you hope for the best. But the real cost of the wrong roommate rarely shows up in the initial
           budget. It shows up months later - in broken leases, emergency moves, lost deposits and grades that
@@ -309,7 +309,7 @@ const content = {
     ctaText: 'Vind een compatibele huisgenoot',
     body: () => (
       <div className="space-y-10">
-        <p className="text-lg text-slate-200 leading-relaxed">
+        <p className="text-lg text-slate-700 leading-relaxed">
           De “goedkope” random huisgenoot blijkt vaak allesbehalve goedkoop. Een verkeerde match kost geld,
           tijd, concentratie en soms zelfs studievertraging. Investeren in compatibiliteit is uiteindelijk
           goedkoper dan verhuizen uit een rampzalige woonsituatie.

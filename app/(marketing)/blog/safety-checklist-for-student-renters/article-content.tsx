@@ -34,7 +34,7 @@ const content = {
     ctaText: 'Get Verified',
     body: () => (
       <div className="space-y-10">
-        <p className="text-lg text-slate-200 leading-relaxed">
+        <p className="text-lg text-slate-700 leading-relaxed">
           The competitive Dutch student housing market creates opportunities for scammers and fraudulent landlords. With a shortage of 23,100 student accommodations across major cities and average rents reaching €683 per month (and €979 in Amsterdam), students are often desperate to secure housing quickly, making them vulnerable targets.
         </p>
 
@@ -168,7 +168,7 @@ const content = {
     ctaText: 'Nu verifiëren',
     body: () => (
       <div className="space-y-10">
-        <p className="text-lg text-slate-200 leading-relaxed">
+        <p className="text-lg text-slate-700 leading-relaxed">
           De krappe Nederlandse studentenmarkt biedt kansen voor oplichters en malafide verhuurders. Met een tekort van 23.100 studentenkamers en gemiddelde huren van €683 per maand (en €979 in Amsterdam) voelen studenten vaak tijdsdruk, waardoor ze kwetsbaarder zijn.
         </p>
 

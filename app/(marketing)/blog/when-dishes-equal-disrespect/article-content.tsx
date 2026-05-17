@@ -39,7 +39,7 @@ const content = {
     ctaText: 'Match on Chores & Cleanliness',
     body: () => (
       <div className="space-y-10">
-        <p className="text-lg text-slate-200 leading-relaxed">
+        <p className="text-lg text-slate-700 leading-relaxed">
           Very few people genuinely lose it over a single plate in the sink. They lose it over the fiftieth
           plate, after months of feeling like the only adult in the kitchen. In shared living, chores are
           never just about soap and sponges - they are about respect, fairness and feeling seen.
@@ -185,7 +185,7 @@ const content = {
     ctaText: 'Begin met matchen',
     body: () => (
       <div className="space-y-10">
-        <p className="text-lg text-slate-200 leading-relaxed">
+        <p className="text-lg text-slate-700 leading-relaxed">
           Afwasconflicten gaan zelden over één keer “vergeten”. Ze gaan over steeds weer dezelfde persoon die
           opdraait voor troep die niet van hen is. Dat voelt op den duur niet meer als rommel, maar als
           minachting voor je tijd.

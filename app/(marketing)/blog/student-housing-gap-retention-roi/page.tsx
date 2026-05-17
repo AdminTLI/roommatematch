@@ -5,7 +5,7 @@ export const metadata: Metadata = {
   title:
     'Beyond Beds: The Hidden ROI of Fixing Europe’s Student Housing Gap | Domu Match',
   description:
-    'Student housing shortages quietly tax retention and grades. Data from the Netherlands and peer-reviewed research show why compatible, stable housing is academic infrastructure—and how to invest earlier.',
+    'Student housing shortages quietly tax retention and grades. Data from the Netherlands and peer-reviewed research show why compatible, stable housing is academic infrastructure - and how to invest earlier.',
   keywords:
     'student housing crisis Europe, university retention, Netherlands student housing, roommate compatibility ROI, international student housing, Domu Match',
   openGraph: {

@@ -140,7 +140,7 @@ export function AppShell({
   return (
     <QueryClientProvider client={queryClient}>
       <ThemeProvider>
-        <div className="app-shell-visual-viewport-pad min-h-screen bg-transparent safe-area-inset">
+        <div className="min-h-screen bg-transparent safe-area-inset">
           <div className="flex min-h-screen flex-col">
             {/* Main content area */}
             <div className="flex-1 flex flex-col overflow-hidden relative z-0">

@@ -238,7 +238,7 @@ export function Topbar({ user, context = 'user' }: TopbarProps) {
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.4 }}
       className={cn(
-        'sticky top-0 z-40 bg-white/70 pt-safe-top backdrop-blur-xl dark:bg-bg-body',
+        'sticky top-0 z-40 bg-white/70 app-pt-safe-top backdrop-blur-xl dark:bg-bg-body',
         hideTopBarOnMobileForChat && 'max-lg:hidden',
       )}
     >

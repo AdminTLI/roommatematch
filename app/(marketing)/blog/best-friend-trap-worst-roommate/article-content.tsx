@@ -39,7 +39,7 @@ const content = {
     ctaText: 'Get Started',
     body: () => (
       <div className="space-y-10">
-        <p className="text-lg text-slate-200 leading-relaxed">
+        <p className="text-lg text-slate-700 leading-relaxed">
           On paper, living with your best friend feels like the obvious move. You already know each other,
           you have the same jokes, and it seems safer than a stranger. But in shared housing,{' '}
           <strong>who you like is not the same as how you live</strong>. Confusing the two is how a lot of
@@ -303,7 +303,7 @@ const content = {
     ctaText: 'Aan de slag',
     body: () => (
       <div className="space-y-10">
-        <p className="text-lg text-slate-200 leading-relaxed">
+        <p className="text-lg text-slate-700 leading-relaxed">
           Samenwonen met je beste vriend(in) voelt logisch en veilig, maar vriendschapsklik is niet hetzelfde
           als wooncompatibiliteit. Wie je leuk vindt is iets anders dan hoe je leeft. Als je dat door elkaar
           haalt, loop je kans om én een huis én een vriendschap kwijt te raken.

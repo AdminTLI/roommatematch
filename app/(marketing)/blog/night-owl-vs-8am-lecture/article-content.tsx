@@ -39,7 +39,7 @@ const content = {
     ctaText: 'Match by Sleep Schedule',
     body: () => (
       <div className="space-y-10">
-        <p className="text-lg text-slate-200 leading-relaxed">
+        <p className="text-lg text-slate-700 leading-relaxed">
           You can budget for rent, travel and textbooks. You cannot easily budget for the cost of a roommate
           who games until 3 a.m. when you have an 8 a.m. lab three times a week. Sleep is the quiet engine
           behind your degree - and your roommate has a huge say in whether you actually get any.
@@ -214,7 +214,7 @@ const content = {
     ctaText: 'Match op ritme',
     body: () => (
       <div className="space-y-10">
-        <p className="text-lg text-slate-200 leading-relaxed">
+        <p className="text-lg text-slate-700 leading-relaxed">
           Een huisgenoot die tot diep in de nacht gamet en een rooster vol 8‑uurcolleges zijn geen goede
           combinatie. Onderzoek laat zien dat minder en slechter slapen je concentratie, geheugen en
           studieresultaten verslechtert{' '}

@@ -84,7 +84,7 @@ export function BottomTabBar({ user }: BottomTabBarProps) {
 
 	return (
 		<nav className="fixed bottom-0 left-0 right-0 z-40 border-t border-border-subtle bg-bg-surface/95 dark:bg-bg-surface/95 backdrop-blur supports-[backdrop-filter]:bg-bg-surface/80 dark:supports-[backdrop-filter]:bg-bg-surface/80 md:hidden pb-safe-bottom">
-			<ul className="pt-safe-top grid grid-cols-4 h-20 w-full">
+			<ul className="app-pt-safe-top grid grid-cols-4 h-20 w-full">
 				{tabs.map((tab) => {
 					const isActive = pathname === tab.href || pathname.startsWith(tab.href + '/')
 					const Icon = tab.icon

@@ -39,7 +39,7 @@ const content = {
     ctaText: 'See Your Compatibility',
     body: () => (
       <div className="space-y-10">
-        <p className="text-lg text-slate-200 leading-relaxed">
+        <p className="text-lg text-slate-700 leading-relaxed">
           “I’m clean.” “I’m pretty tidy.” “I don’t like mess.” You have probably heard all three. Maybe you
           have said them. The problem is that they mean nothing without context. Two people can both call
           themselves “clean” and still end up fighting over a chopping board.
@@ -215,7 +215,7 @@ const content = {
     ctaText: 'Start je profiel',
     body: () => (
       <div className="space-y-10">
-        <p className="text-lg text-slate-200 leading-relaxed">
+        <p className="text-lg text-slate-700 leading-relaxed">
           Als iemand zegt “ik ben netjes”, weet je eigenlijk nog niets. De één bedoelt “er ligt geen vuilnis
           op de grond”, de ander “ik poets wekelijks de voegen”. Conflicten ontstaan precies in dat gat
           tussen twee definities.

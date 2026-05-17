@@ -3,6 +3,7 @@
 import { motion } from 'framer-motion'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
+import { useEffect, useRef } from 'react'
 import { Home, Users, MessageCircle, Shield, Settings, LayoutDashboard, BarChart3 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { useMobileChatChrome } from '@/components/app/mobile-chat-chrome-context'
@@ -10,6 +11,37 @@ import { useMobileChatChrome } from '@/components/app/mobile-chat-chrome-context
 export function FloatingDock() {
     const pathname = usePathname()
     const { activeMobileConversation } = useMobileChatChrome()
+    const dockRootRef = useRef<HTMLDivElement>(null)
+
+    useEffect(() => {
+        const root = document.documentElement
+
+        if (activeMobileConversation) {
+            root.style.removeProperty('--dock-height')
+            return
+        }
+
+        const el = dockRootRef.current
+        if (!el) return
+
+        const publish = () => {
+            const h = Math.ceil(el.getBoundingClientRect().height)
+            if (h > 0) {
+                root.style.setProperty('--dock-height', `${h}px`)
+            }
+        }
+
+        publish()
+        const ro = new ResizeObserver(publish)
+        ro.observe(el)
+        window.addEventListener('resize', publish)
+
+        return () => {
+            ro.disconnect()
+            window.removeEventListener('resize', publish)
+            root.style.removeProperty('--dock-height')
+        }
+    }, [activeMobileConversation])
 
     if (activeMobileConversation) {
         return null
@@ -46,7 +78,10 @@ export function FloatingDock() {
     const activeTabId = activeTab?.id || ''
 
     return (
-        <div className="fixed bottom-4 inset-x-0 z-40 flex w-full justify-center px-4 pb-[env(safe-area-inset-bottom,0px)] pointer-events-none">
+        <div
+            ref={dockRootRef}
+            className="fixed bottom-4 inset-x-0 z-40 flex w-full justify-center px-4 pb-[env(safe-area-inset-bottom,0px)] pointer-events-none"
+        >
             <motion.div
                 initial={{ y: 100, opacity: 0 }}
                 animate={{ y: 0, opacity: 1 }}

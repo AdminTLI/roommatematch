@@ -39,7 +39,7 @@ const content = {
     ctaText: 'Plan a Better Match',
     body: () => (
       <div className="space-y-10">
-        <p className="text-lg text-slate-200 leading-relaxed">
+        <p className="text-lg text-slate-700 leading-relaxed">
           Most students know within the first two weeks if a living situation feels off. The problem is that
           you are also being told - directly or indirectly - to &quot;give it time&quot;, &quot;be more chill&quot;
           or &quot;everyone struggles at first&quot;. There is a difference between normal adjustment and
@@ -219,7 +219,7 @@ const content = {
     ctaText: 'Plan je volgende match',
     body: () => (
       <div className="space-y-10">
-        <p className="text-lg text-slate-200 leading-relaxed">
+        <p className="text-lg text-slate-700 leading-relaxed">
           Als je in de eerste week al denkt “oef, dit wordt hem niet”, dan klopt dat gevoel vaak. Dat betekent
           niet dat je meteen weg moet, wel dat je alert mag zijn en hulp mag inschakelen als het nodig is.
         </p>

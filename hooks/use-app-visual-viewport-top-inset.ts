@@ -4,14 +4,25 @@ import { useLayoutEffect } from 'react'
 
 const MOBILE_MAX = 1023
 
+/** iOS / iPadOS WebKit — visualViewport.offsetTop is unreliable on iOS 26+ after keyboard use. */
+function isAppleMobileWebKit(): boolean {
+  if (typeof navigator === 'undefined') return false
+  const ua = navigator.userAgent
+  return (
+    /iPad|iPhone|iPod/.test(ua) ||
+    (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1)
+  )
+}
+
 /**
  * Sets `--app-visual-top-inset` from `visualViewport.offsetTop` so fixed/sticky app chrome clears
- * mobile browser UI (Safari/Chrome URL bar at the top). `env(safe-area-inset-top)` alone does not
- * include that overlap.
+ * mobile browser UI (Chrome Android URL bar at the top). Skipped on iOS where offsetTop sticks
+ * after keyboard dismissal (iOS 26 Safari regression).
  */
 export function useAppVisualViewportTopInset() {
   useLayoutEffect(() => {
     if (typeof window === 'undefined' || !window.visualViewport) return
+    if (isAppleMobileWebKit()) return
 
     const root = document.documentElement
 

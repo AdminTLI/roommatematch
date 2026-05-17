@@ -34,7 +34,7 @@ const content = {
     ctaText: 'Get Started',
     body: () => (
       <div className="space-y-10">
-        <p className="text-lg text-slate-200 leading-relaxed">
+        <p className="text-lg text-slate-700 leading-relaxed">
           Finding the right roommate in the Netherlands is not just about splitting rent - it is about creating a living environment that supports your academic success and personal well-being. With the Dutch student housing market facing a shortage of 23,100 accommodations across the 20 largest student cities, competition is fierce, and making the right choice matters more than ever.
         </p>
 
@@ -170,7 +170,7 @@ const content = {
     ctaText: 'Aan de slag',
     body: () => (
       <div className="space-y-10">
-        <p className="text-lg text-slate-200 leading-relaxed">
+        <p className="text-lg text-slate-700 leading-relaxed">
           De juiste huisgenoot vinden in Nederland draait niet alleen om de huur delen - het gaat om een woonomgeving die je studie en welzijn ondersteunt. Omdat er in de 20 grootste studentensteden een tekort is van 23.100 kamers, is de concurrentie hevig en is een doordachte keuze belangrijker dan ooit.
         </p>
 

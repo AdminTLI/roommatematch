@@ -39,7 +39,7 @@ const content = {
     ctaText: 'Find Compatible Housemates',
     body: () => (
       <div className="space-y-10">
-        <p className="text-lg text-slate-200 leading-relaxed">
+        <p className="text-lg text-slate-700 leading-relaxed">
           January hits differently. It is dark when you wake up and dark before dinner. Money is tighter after
           the holidays. Deadlines pile up. If you are far from home or already prone to low mood, this is prime
           time for the winter blues to kick in - and your living situation can either buffer that or make it
@@ -224,7 +224,7 @@ const content = {
     ctaText: 'Begin met matchen',
     body: () => (
       <div className="space-y-10">
-        <p className="text-lg text-slate-200 leading-relaxed">
+        <p className="text-lg text-slate-700 leading-relaxed">
           In januari is het vroeg donker, koud en druk met deadlines. Als je dan thuiskomt in een huis waar
           iedereen langs elkaar heen leeft, wordt de winterdip alleen maar dieper.
         </p>
