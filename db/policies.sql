@@ -661,8 +661,14 @@ CREATE POLICY "Users can view own notifications" ON notifications
 CREATE POLICY "Users can update own notifications" ON notifications
   FOR UPDATE USING (user_id = auth.uid());
 
+-- Notifications are inserted exclusively through the SECURITY DEFINER function
+-- `public.create_notification()` or via the service role (admin client in server-side
+-- code).  An open WITH CHECK (true) policy would allow any authenticated user to INSERT
+-- notifications for arbitrary user_ids via the PostgREST API, enabling notification spam
+-- and phishing.  The correct enforcement mechanism is the SECURITY DEFINER function +
+-- service_role key on the server; no permissive authenticated-user INSERT policy is needed.
 CREATE POLICY "System can insert notifications" ON notifications
-  FOR INSERT WITH CHECK (true);
+  FOR INSERT WITH CHECK (auth.jwt()->>'role' = 'service_role');
 
 -- Verifications: Users can read their own, admins can read all in their university
 CREATE POLICY "Users can read own verifications" ON verifications
