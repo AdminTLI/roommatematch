@@ -185,13 +185,8 @@ export function ProfileCompatibilityPane({ chatId, userId, isOpen, onClose }: Pr
     try {
       // Fetch compatibility and user info in parallel
       const [compatResponse, userInfoResponse] = await Promise.all([
-        fetch(`/api/chat/compatibility?chatId=${chatId}&_t=${Date.now()}`, {
-          cache: 'no-store',
-          headers: {
-            'Cache-Control': 'no-cache, no-store, must-revalidate',
-            'Pragma': 'no-cache',
-            'Expires': '0'
-          }
+        fetch(`/api/chat/compatibility?chatId=${encodeURIComponent(chatId)}`, {
+          credentials: 'include',
         }),
         fetch(`/api/chat/user-info?chatId=${chatId}`, {
           cache: 'no-store',

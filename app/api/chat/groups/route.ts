@@ -99,19 +99,29 @@ export async function GET(request: NextRequest) {
       const admin = await createAdminClient()
       const membersOthers = (members || []).filter((m: { user_id: string }) => m.user_id !== user.id)
       const memberIds = membersOthers.map((m: { user_id: string }) => m.user_id)
-      const pairwiseScoresByUserId: Record<string, any> = {}
+      const pairwiseScoresByUserId: Record<string, unknown> = {}
 
-      for (const memberId of memberIds) {
+      if (memberIds.length > 0) {
         try {
-          const { data: score } = await admin.rpc('compute_compatibility_score', {
-            user_a_id: user.id,
-            user_b_id: memberId
-          })
-          if (score && score.length > 0) {
-            pairwiseScoresByUserId[memberId] = score[0]
+          const { data: batchRows, error: batchError } = await admin.rpc(
+            'compute_compatibility_scores_batch',
+            {
+              user_a_id: user.id,
+              user_b_ids: memberIds,
+            }
+          )
+          if (batchError) {
+            safeLogger.warn('Batch pairwise score failed', { error: batchError })
+          } else if (Array.isArray(batchRows)) {
+            for (const row of batchRows) {
+              const peerId = (row as { user_b_id?: string }).user_b_id
+              if (peerId) {
+                pairwiseScoresByUserId[peerId] = row
+              }
+            }
           }
         } catch (err) {
-          safeLogger.warn('Failed to compute pairwise score', { userId: memberId, error: err })
+          safeLogger.warn('Failed to compute pairwise scores batch', { error: err })
         }
       }
 

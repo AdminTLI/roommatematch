@@ -54,38 +54,19 @@ function DiscoveryCardWrapper({
   connectButtonText?: string
   connectButtonIcon?: LucideIcon
 }) {
+  const storedScore =
+    suggestion.fitIndex > 0 ? suggestion.fitIndex / 100 : 0
+
   const [compatibilityData, setCompatibilityData] = useState<{
     compatibility_score?: number
     harmony_score?: number | null
     context_score?: number | null
     dimension_scores_json?: { [key: string]: number } | null
     other_user_has_incomplete_academic?: boolean
-  } | null>(null)
-  const [isLoading, setIsLoading] = useState(true)
-
-  useEffect(() => {
-    const fetchCompatibility = async () => {
-      if (!otherUserId) {
-        setIsLoading(false)
-        return
-      }
-
-      try {
-        setIsLoading(true)
-        const response = await fetch(`/api/chat/compatibility?otherUserId=${otherUserId}`)
-        if (response.ok) {
-          const data = await response.json()
-          setCompatibilityData(data)
-        }
-      } catch (error) {
-        console.error('Error fetching compatibility data:', error)
-      } finally {
-        setIsLoading(false)
-      }
-    }
-
-    fetchCompatibility()
-  }, [otherUserId])
+  } | null>({
+    compatibility_score: storedScore,
+  })
+  const [isLoading, setIsLoading] = useState(false)
 
   // Generate compatibility highlights from suggestion data
   const generateHighlights = (): string[] => {

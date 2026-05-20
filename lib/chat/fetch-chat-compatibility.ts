@@ -7,14 +7,20 @@ export interface ChatCompatibilityPayload {
   personalized_explanation?: string | null
 }
 
-export async function fetchChatCompatibility(chatId: string): Promise<ChatCompatibilityPayload | null> {
-  const res = await fetch(`/api/chat/compatibility?chatId=${encodeURIComponent(chatId)}&_t=${Date.now()}`, {
-    cache: 'no-store',
-    headers: {
-      'Cache-Control': 'no-cache, no-store, must-revalidate',
-      Pragma: 'no-cache',
-      Expires: '0',
-    },
+export type FetchChatCompatibilityOptions = {
+  /** Skip Gemini explanation; scores only (faster) */
+  scoresOnly?: boolean
+}
+
+export async function fetchChatCompatibility(
+  chatId: string,
+  options?: FetchChatCompatibilityOptions
+): Promise<ChatCompatibilityPayload | null> {
+  const params = new URLSearchParams({ chatId })
+  if (options?.scoresOnly) {
+    params.set('scoresOnly', '1')
+  }
+  const res = await fetch(`/api/chat/compatibility?${params.toString()}`, {
     credentials: 'include',
   })
   if (!res.ok) return null

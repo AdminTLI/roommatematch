@@ -702,14 +702,7 @@ export function MessengerSidebar({ user, onChatSelect, selectedChatId }: Messeng
 
   useRealtimeInvalidation({
     table: 'message_reactions',
-    event: 'INSERT',
-    queryKeys: queryKeys.chats(user.id),
-    enabled: !!user.id,
-  })
-
-  useRealtimeInvalidation({
-    table: 'message_reactions',
-    event: 'DELETE',
+    event: '*',
     queryKeys: queryKeys.chats(user.id),
     enabled: !!user.id,
   })

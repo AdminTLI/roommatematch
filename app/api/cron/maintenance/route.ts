@@ -336,8 +336,11 @@ export async function GET(request: Request) {
           totalIssues += count
 
           // Critical issues that should be fixed immediately
-          if (issue.issue_type === 'confirmed_not_all_accepted' || 
-              issue.issue_type === 'all_accepted_not_confirmed') {
+          if (
+            issue.issue_type === 'confirmed_not_all_accepted' ||
+            issue.issue_type === 'all_accepted_not_confirmed' ||
+            issue.issue_type === 'fit_index_fit_score_mismatch'
+          ) {
             criticalIssues += count
           }
         }
@@ -364,12 +367,20 @@ export async function GET(request: Request) {
       if (criticalIssues > 0) {
         const alertMessage = `Found ${criticalIssues} critical match consistency issue(s):\n\n` +
           Object.entries(issueSummary)
-            .filter(([type]) => type === 'confirmed_not_all_accepted' || type === 'all_accepted_not_confirmed')
-            .map(([type, { count, details }]) => {
-              const typeLabel = type === 'confirmed_not_all_accepted' 
-                ? 'Confirmed matches where not all members accepted'
-                : 'All members accepted but status not confirmed'
-              return `- ${typeLabel}: ${count} issue(s)`
+            .filter(([type]) =>
+              type === 'confirmed_not_all_accepted' ||
+              type === 'all_accepted_not_confirmed' ||
+              type === 'fit_index_fit_score_mismatch' ||
+              type === 'missing_or_zero_fit_score'
+            )
+            .map(([type, { count }]) => {
+              const labels: Record<string, string> = {
+                confirmed_not_all_accepted: 'Confirmed matches where not all members accepted',
+                all_accepted_not_confirmed: 'All members accepted but status not confirmed',
+                fit_index_fit_score_mismatch: 'Stored fit_index does not match fit_score',
+                missing_or_zero_fit_score: 'Active suggestions missing stored scores',
+              }
+              return `- ${labels[type] ?? type}: ${count} issue(s)`
             })
             .join('\n') +
           (fixResults.length > 0 

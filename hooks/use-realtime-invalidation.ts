@@ -22,6 +22,10 @@ export interface RealtimeInvalidationOptions {
   channelName?: string
   /** Callback function to call before invalidating cache */
   onInvalidate?: () => void
+  /** Optional raw payload handler (e.g. in-app notification popups) */
+  onPayload?: (payload: { eventType?: string; new?: Record<string, unknown>; old?: Record<string, unknown> }) => void
+  /** When false, skip React Query invalidation (use with onPayload only) */
+  invalidateQueries?: boolean
   /** Optional callback function to call when subscription errors occur */
   onError?: (error: string, status: string) => void
 }
@@ -48,6 +52,8 @@ export function useRealtimeInvalidation({
   enabled = true,
   channelName,
   onInvalidate,
+  onPayload,
+  invalidateQueries = true,
   onError,
 }: RealtimeInvalidationOptions) {
   const subscriptionIdRef = useRef<string | null>(null)
@@ -211,20 +217,23 @@ export function useRealtimeInvalidation({
             })
           }
 
+          onPayload?.(payload)
+
           // Call optional callback before invalidation
           onInvalidate?.()
 
-          // Invalidate React Query cache
-          queryClient.invalidateQueries({
-            queryKey: queryKeys,
-          })
-
-          if (isDevelopment) {
-            console.log('[RealtimeInvalidation] Cache invalidated:', {
-              queryKeys: queryKeys.map(k => typeof k === 'string' && k.length > 36 ? '[REDACTED]' : k),
-              table,
-              event: payload.eventType,
+          if (invalidateQueries && queryKeys.length > 0) {
+            queryClient.invalidateQueries({
+              queryKey: queryKeys,
             })
+
+            if (isDevelopment) {
+              console.log('[RealtimeInvalidation] Cache invalidated:', {
+                queryKeys: queryKeys.map(k => typeof k === 'string' && k.length > 36 ? '[REDACTED]' : k),
+                table,
+                event: payload.eventType,
+              })
+            }
           }
         },
         onStatusChange: (status, err) => {
@@ -314,6 +323,6 @@ export function useRealtimeInvalidation({
       }
       retryAttemptsRef.current = 0
     }
-  }, [table, event, filter, enabled, channelName, onInvalidate, onError, supabase, isDevelopment, queryKeys])
+  }, [table, event, filter, enabled, channelName, onInvalidate, onPayload, invalidateQueries, onError, supabase, isDevelopment, queryKeys])
 }
 

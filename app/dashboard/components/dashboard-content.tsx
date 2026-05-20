@@ -54,7 +54,6 @@ import { logger } from '@/lib/utils/logger'
 import { queryKeys, queryClient } from '@/app/providers'
 import { useRealtimeInvalidation } from '@/hooks/use-realtime-invalidation'
 import { monitorQuery } from '@/lib/utils/query-monitor'
-import { getCompatibilityCacheKey, getCompatibilityStaleTime } from '@/lib/cache/compatibility-cache'
 import { WellnessSurveyModal } from './wellness-survey-modal'
 import { SuccessNpsWidget } from '@/app/(components)/success-nps-widget'
 
@@ -524,231 +523,30 @@ export function DashboardContent({ hasCompletedQuestionnaire = false, hasPartial
 
         const recentUserIds = recentMatches.map(m => m.userId)
 
-        // Helper function to safely extract numeric scores from database results
-        const extractScore = (value: any, defaultValue: number = 0): number => {
-          if (value == null || value === undefined || value === '') return defaultValue
+        const extractScore = (value: unknown, defaultValue: number = 0): number => {
+          if (value == null || value === '') return defaultValue
           const num = Number(value)
-          return isNaN(num) ? defaultValue : num
+          return Number.isNaN(num) ? defaultValue : num
         }
 
-        // Compute compatibility scores using batch function when multiple users
-        // Falls back to individual calls with caching for single user
-        let compatibilityScores: Array<{ userId: string; score: number; harmonyScore: number; contextScore: number; dimensionScores: { [key: string]: number } | null }>
-
-        if (recentUserIds.length > 1) {
-          // Use batch function for multiple users (more efficient)
-          try {
-            const res = await fetch('/api/match/compatibility/batch', {
-              method: 'POST',
-              headers: { 'content-type': 'application/json' },
-              body: JSON.stringify({ other_user_ids: recentUserIds }),
-            })
-
-            const json = res.ok ? await res.json() : null
-            if (!res.ok) {
-              throw new Error(json?.error || 'Batch compatibility request failed')
-            }
-
-            const data = json?.results || []
-
-            // Process batch results and cache them
-            if (process.env.NODE_ENV === 'development' && data && data.length > 0) {
-              logger.log('[Dashboard] Batch response sample:', JSON.stringify(data[0], null, 2))
-            }
-
-            compatibilityScores = await Promise.all(
-              (data || []).map(async (result: any) => {
-                  const otherUserId = result.user_b_id
-                  const score = extractScore(result?.compatibility_score, 0)
-                  
-                  // Extract harmony_score and context_score - PostgreSQL returns snake_case
-                  const harmonyScore = extractScore(result?.harmony_score, 0)
-                  const contextScore = extractScore(result?.context_score, 0)
-                  // Extract dimension_scores_json - handle JSONB from PostgreSQL
-                  let dimensionScores: { [key: string]: number } | null = null
-                  if (result?.dimension_scores_json) {
-                    if (typeof result.dimension_scores_json === 'object' && result.dimension_scores_json !== null) {
-                      // Check if it's not an empty object
-                      const keys = Object.keys(result.dimension_scores_json)
-                      if (keys.length > 0) {
-                        dimensionScores = result.dimension_scores_json as { [key: string]: number }
-                      }
-                    } else if (typeof result.dimension_scores_json === 'string') {
-                      // If it's a string, try to parse it
-                      try {
-                        const parsed = JSON.parse(result.dimension_scores_json)
-                        if (parsed && typeof parsed === 'object' && Object.keys(parsed).length > 0) {
-                          dimensionScores = parsed as { [key: string]: number }
-                        }
-                      } catch (e) {
-                        // Ignore parse errors
-                      }
-                    }
-                  }
-                  
-                  if (process.env.NODE_ENV === 'development') {
-                    logger.log(`[Dashboard] Batch result for ${otherUserId}:`, {
-                      score,
-                      harmonyScore,
-                      contextScore,
-                      dimensionScores,
-                      rawDimensionScores: result?.dimension_scores_json,
-                      dimensionScoresType: typeof result?.dimension_scores_json,
-                      dimensionScoresKeys: dimensionScores ? Object.keys(dimensionScores) : null,
-                      rawHarmony: result?.harmony_score,
-                      rawContext: result?.context_score,
-                      harmonyType: typeof result?.harmony_score,
-                      contextType: typeof result?.context_score,
-                      allKeys: Object.keys(result || {})
-                    })
-                  }
-
-                  // Cache each result individually for future use
-                  const cacheKey = getCompatibilityCacheKey(user.id, otherUserId)
-                  queryClient.setQueryData(cacheKey, result, {
-                    updatedAt: Date.now(),
-                  })
-
-                  return { userId: otherUserId, score, harmonyScore, contextScore, dimensionScores }
-                })
-            )
-          } catch (error) {
-            logger.error('Error in batch compatibility score computation:', error)
-            // Fall back to individual calls
-            compatibilityScores = await Promise.all(
-              recentUserIds.map(async (otherUserId) => {
-                try {
-                  const cacheKey = getCompatibilityCacheKey(user.id, otherUserId)
-                  const result = await queryClient.fetchQuery({
-                    queryKey: cacheKey,
-                    queryFn: async () => {
-                      const res = await fetch(`/api/match/compatibility?other_user_id=${encodeURIComponent(otherUserId)}`)
-                      const json = res.ok ? await res.json() : null
-                      if (!res.ok) throw new Error(json?.error || 'Compatibility request failed')
-                      const resultData = json?.result || {}
-                      // Debug logging to see what we're getting from the database
-                      if (process.env.NODE_ENV === 'development') {
-                        logger.log(`[Dashboard] Compatibility result for ${otherUserId}:`, {
-                          compatibility_score: resultData?.compatibility_score,
-                          harmony_score: resultData?.harmony_score,
-                          context_score: resultData?.context_score,
-                          keys: Object.keys(resultData || {})
-                        })
-                      }
-                      return resultData
-                    },
-                    staleTime: getCompatibilityStaleTime(),
-                  })
-                  const score = extractScore(result?.compatibility_score, 0)
-                  const harmonyScore = extractScore(result?.harmony_score, 0)
-                  const contextScore = extractScore(result?.context_score, 0)
-                  // Extract dimension_scores_json - handle JSONB from PostgreSQL
-                  let dimensionScores: { [key: string]: number } | null = null
-                  if (result?.dimension_scores_json) {
-                    if (typeof result.dimension_scores_json === 'object' && result.dimension_scores_json !== null) {
-                      const keys = Object.keys(result.dimension_scores_json)
-                      if (keys.length > 0) {
-                        dimensionScores = result.dimension_scores_json as { [key: string]: number }
-                      }
-                    } else if (typeof result.dimension_scores_json === 'string') {
-                      try {
-                        const parsed = JSON.parse(result.dimension_scores_json)
-                        if (parsed && typeof parsed === 'object' && Object.keys(parsed).length > 0) {
-                          dimensionScores = parsed as { [key: string]: number }
-                        }
-                      } catch (e) {
-                        // Ignore parse errors
-                      }
-                    }
-                  }
-                  
-                  if (process.env.NODE_ENV === 'development') {
-                    logger.log(`[Dashboard] Individual result for ${otherUserId}:`, {
-                      score,
-                      harmonyScore,
-                      contextScore,
-                      dimensionScores,
-                      rawDimensionScores: result?.dimension_scores_json,
-                      dimensionScoresType: typeof result?.dimension_scores_json,
-                      dimensionScoresKeys: dimensionScores ? Object.keys(dimensionScores) : null,
-                      rawHarmony: result?.harmony_score,
-                      rawContext: result?.context_score,
-                      harmonyType: typeof result?.harmony_score,
-                      contextType: typeof result?.context_score,
-                      resultKeys: Object.keys(result || {}),
-                      fullResult: result
-                    })
-                  }
-                  
-                  return { userId: otherUserId, score, harmonyScore, contextScore, dimensionScores }
-                } catch (error) {
-                  logger.error(`Error computing compatibility score for ${otherUserId}:`, error)
-                  return { userId: otherUserId, score: 0, harmonyScore: 0, contextScore: 0, dimensionScores: null }
-                }
-              })
-            )
-          }
-        } else if (recentUserIds.length === 1) {
-          // Single user - use cached individual call
-          const otherUserId = recentUserIds[0]
-          try {
-            const cacheKey = getCompatibilityCacheKey(user.id, otherUserId)
-            const result = await queryClient.fetchQuery({
-              queryKey: cacheKey,
-              queryFn: async () => {
-                const res = await fetch(`/api/match/compatibility?other_user_id=${encodeURIComponent(otherUserId)}`)
-                const json = res.ok ? await res.json() : null
-                if (!res.ok) throw new Error(json?.error || 'Compatibility request failed')
-                return json?.result || {}
-              },
-              staleTime: getCompatibilityStaleTime(),
-            })
-            const score = extractScore(result?.compatibility_score, 0)
-            const harmonyScore = extractScore(result?.harmony_score, 0)
-            const contextScore = extractScore(result?.context_score, 0)
-            // Extract dimension_scores_json - handle JSONB from PostgreSQL
-            let dimensionScores: { [key: string]: number } | null = null
-            if (result?.dimension_scores_json) {
-              if (typeof result.dimension_scores_json === 'object' && result.dimension_scores_json !== null) {
-                const keys = Object.keys(result.dimension_scores_json)
-                if (keys.length > 0) {
-                  dimensionScores = result.dimension_scores_json as { [key: string]: number }
-                }
-              } else if (typeof result.dimension_scores_json === 'string') {
-                try {
-                  const parsed = JSON.parse(result.dimension_scores_json)
-                  if (parsed && typeof parsed === 'object' && Object.keys(parsed).length > 0) {
-                    dimensionScores = parsed as { [key: string]: number }
-                  }
-                } catch (e) {
-                  // Ignore parse errors
-                }
-              }
-            }
-            
-            if (process.env.NODE_ENV === 'development') {
-              logger.log(`[Dashboard] Single user result for ${otherUserId}:`, {
-                score,
-                harmonyScore,
-                contextScore,
-                dimensionScores,
-                rawDimensionScores: result?.dimension_scores_json,
-                dimensionScoresType: typeof result?.dimension_scores_json,
-                dimensionScoresKeys: dimensionScores ? Object.keys(dimensionScores) : null,
-                rawHarmony: result?.harmony_score,
-                rawContext: result?.context_score,
-                resultKeys: Object.keys(result || {})
-              })
-            }
-            
-            compatibilityScores = [{ userId: otherUserId, score, harmonyScore, contextScore, dimensionScores }]
-          } catch (error) {
-            logger.error(`Error computing compatibility score for ${otherUserId}:`, error)
-            compatibilityScores = [{ userId: otherUserId, score: 0, harmonyScore: 0, contextScore: 0, dimensionScores: null }]
-          }
-        } else {
-          compatibilityScores = []
+        const suggestionByUserId = new Map<string, (typeof rawSuggestions)[0]>()
+        for (const sug of Array.from(deduped.values())) {
+          const oid = sug.memberIds?.find((id: string) => id !== user.id)
+          if (oid) suggestionByUserId.set(oid, sug)
         }
+
+        const compatibilityScores = recentUserIds.map((otherUserId) => {
+          const sug = suggestionByUserId.get(otherUserId)
+          const fitIndex = Number(sug?.fitIndex ?? 0)
+          const score = fitIndex > 0 ? fitIndex / 100 : Number(sug?.fitScore ?? 0)
+          return {
+            userId: otherUserId,
+            score,
+            harmonyScore: 0,
+            contextScore: 0,
+            dimensionScores: null as { [key: string]: number } | null,
+          }
+        })
 
         // Create maps for easy lookup
         const scoreMap = new Map(compatibilityScores.map(m => [m.userId, m.score]))
@@ -1032,57 +830,32 @@ export function DashboardContent({ hasCompletedQuestionnaire = false, hasPartial
         // Fetch active confirmed match suggestions (matching server-side logic: limit 20, then deduplicate)
         // Only show confirmed matches where both users have accepted
         const now = new Date().toISOString()
-        const { data: suggestions, error } = await supabase
+        const { data: avgSuggestions, error } = await supabase
           .from('match_suggestions')
-          .select('fit_score, member_ids, created_at')
+          .select('member_ids, fit_score, fit_index, created_at')
           .eq('kind', 'pair')
           .contains('member_ids', [user.id])
-          .eq('status', 'confirmed') // Only show confirmed matches where both users have accepted
-          .gte('expires_at', now) // Only non-expired suggestions
-          .order('created_at', { ascending: false }) // Most recent first (matching server)
-          .limit(20) // Match server-side limit to ensure consistent calculation
+          .eq('status', 'confirmed')
+          .gte('expires_at', now)
+          .order('created_at', { ascending: false })
+          .limit(20)
 
         if (error) {
           logger.error('Error fetching match suggestions for avg:', error)
         }
 
-        // Deduplicate by keeping most recent suggestion for each user (matching server logic)
-        const matchMap = new Map<string, string>() // Map userId -> created_at
-          ; (suggestions || []).forEach((s: any) => {
-            const memberIds = s.member_ids as string[]
-            if (!memberIds || memberIds.length !== 2) return
+        const avgByPeer = new Map<string, number>()
+        for (const s of avgSuggestions || []) {
+          const memberIds = s.member_ids as string[]
+          if (!memberIds || memberIds.length !== 2) continue
+          const otherUserId = memberIds[0] === user.id ? memberIds[1] : memberIds[0]
+          if (!avgByPeer.has(otherUserId)) {
+            const fitIndex = Number(s.fit_index ?? Math.round(Number(s.fit_score || 0) * 100))
+            avgByPeer.set(otherUserId, fitIndex > 0 ? fitIndex / 100 : Number(s.fit_score || 0))
+          }
+        }
 
-            const otherUserId = memberIds[0] === user.id ? memberIds[1] : memberIds[0]
-
-            // Keep the most recent suggestion for each user (matching server logic)
-            const existing = matchMap.get(otherUserId)
-            if (!existing || new Date(s.created_at) > new Date(existing)) {
-              matchMap.set(otherUserId, s.created_at)
-            }
-          })
-
-        // Get unique matched users from deduplicated map
-        const uniqueUserIds = Array.from(matchMap.keys())
-
-        // Compute compatibility scores using the new algorithm for all matched users
-        const compatibilityScores = await Promise.all(
-          uniqueUserIds.map(async (otherUserId) => {
-            try {
-              const res = await fetch(`/api/match/compatibility?other_user_id=${encodeURIComponent(otherUserId)}`)
-              const json = res.ok ? await res.json() : null
-              if (!res.ok) {
-                logger.error(`Error computing compatibility score for ${otherUserId}:`, json?.error || res.statusText)
-                return 0
-              }
-              return Number(json?.result?.compatibility_score || 0)
-            } catch (error) {
-              logger.error(`Error computing compatibility score for ${otherUserId}:`, error)
-              return 0
-            }
-          })
-        )
-
-        const allScores = compatibilityScores
+        const allScores = Array.from(avgByPeer.values())
           .map(score => Math.min(score, 1.0)) // Cap each score at 1.0 (100%)
           .filter(score => score > 0) // Only include valid scores
 

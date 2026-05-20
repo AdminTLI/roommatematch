@@ -357,7 +357,10 @@ async function fetchDashboardData(userId: string): Promise<DashboardData> {
       // Extract other user IDs and deduplicate by keeping most recent
       // Map: otherUserId -> { created_at }
       // Also filter out suggestions where user has already accepted (they should go to pending tab, not suggested)
-      const matchMap = new Map<string, string>() // Map userId -> created_at
+      const matchMap = new Map<
+        string,
+        { created_at: string; fit_index: number; fit_score: number }
+      >()
       let filteredCount = 0
       suggestions.forEach((s: any) => {
         const memberIds = s.member_ids as string[]
@@ -396,11 +399,16 @@ async function fetchDashboardData(userId: string): Promise<DashboardData> {
         }
         
         const otherUserId = memberIds[0] === userId ? memberIds[1] : memberIds[0]
-        
-        // Keep the most recent suggestion for each user
+        const fitIndex = Number(s.fit_index ?? Math.round(Number(s.fit_score || 0) * 100))
+        const fitScore = Number(s.fit_score ?? fitIndex / 100)
+
         const existing = matchMap.get(otherUserId)
-        if (!existing || new Date(s.created_at) > new Date(existing)) {
-          matchMap.set(otherUserId, s.created_at)
+        if (!existing || new Date(s.created_at) > new Date(existing.created_at)) {
+          matchMap.set(otherUserId, {
+            created_at: s.created_at,
+            fit_index: fitIndex,
+            fit_score: fitScore,
+          })
         }
       })
 
@@ -408,81 +416,20 @@ async function fetchDashboardData(userId: string): Promise<DashboardData> {
         console.log('[Dashboard] Filtered out accepted suggestions:', filteredCount)
       }
 
-      // Get the 3 most recent unique matches (sorted by created_at)
       const recentMatches = Array.from(matchMap.entries())
-        .map(([userId, created_at]) => ({ userId, created_at }))
+        .map(([uid, meta]) => ({ userId: uid, ...meta }))
         .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
-        .slice(0, 3) // Take 3 most recent
+        .slice(0, 3)
 
       if (recentMatches.length > 0) {
-        const recentUserIds = recentMatches.map(m => m.userId)
-
-        // Compute compatibility scores using the new algorithm for each matched user
-        const compatibilityScores = await Promise.all(
-          recentUserIds.map(async (otherUserId) => {
-            try {
-              const { data, error } = await supabase.rpc('compute_compatibility_score', {
-                user_a_id: userId,
-                user_b_id: otherUserId
-              })
-              
-              if (error) {
-                console.error(`Error computing compatibility score for ${otherUserId}:`, error)
-                return { userId: otherUserId, score: 0 }
-              }
-              
-              // The function returns a table (array), get the first row
-              const result = Array.isArray(data) && data.length > 0 ? data[0] : (data || {})
-              const compatibilityScore = Number(result.compatibility_score || 0)
-              const harmonyScore = result?.harmony_score != null && result?.harmony_score !== undefined
-                ? Number(result.harmony_score)
-                : 0
-              const contextScore = result?.context_score != null && result?.context_score !== undefined
-                ? Number(result.context_score)
-                : 0
-              
-              // Extract dimension_scores_json - handle JSONB from PostgreSQL
-              let dimensionScores: { [key: string]: number } | null = null
-              if (result?.dimension_scores_json) {
-                if (typeof result.dimension_scores_json === 'object' && result.dimension_scores_json !== null) {
-                  const keys = Object.keys(result.dimension_scores_json)
-                  if (keys.length > 0) {
-                    dimensionScores = result.dimension_scores_json as { [key: string]: number }
-                  }
-                } else if (typeof result.dimension_scores_json === 'string') {
-                  try {
-                    const parsed = JSON.parse(result.dimension_scores_json)
-                    if (parsed && typeof parsed === 'object' && Object.keys(parsed).length > 0) {
-                      dimensionScores = parsed as { [key: string]: number }
-                    }
-                  } catch (e) {
-                    // Ignore parse errors
-                  }
-                }
-              }
-              
-              return { userId: otherUserId, score: compatibilityScore, harmonyScore, contextScore, dimensionScores }
-            } catch (error) {
-              console.error(`Error computing compatibility score for ${otherUserId}:`, error)
-              return { userId: otherUserId, score: 0, harmonyScore: 0, contextScore: 0, dimensionScores: null }
-            }
-          })
-        )
-
-        // Create maps for easy lookup
-        const scoreMap = new Map(compatibilityScores.map(m => [m.userId, m.score]))
-        const harmonyScoreMap = new Map(compatibilityScores.map(m => [m.userId, (m as any).harmonyScore]))
-        const contextScoreMap = new Map(compatibilityScores.map(m => [m.userId, (m as any).contextScore]))
-        const dimensionScoresMap = new Map(compatibilityScores.map(m => [m.userId, (m as any).dimensionScores]))
-
-        // Maintain the order from recentMatches (most recent first) and add scores
-        const recentEntries = recentMatches.map(({ userId, created_at }) => ({
+        const recentEntries = recentMatches.map(({ userId, created_at, fit_score, fit_index }) => ({
           userId,
           created_at,
-          score: scoreMap.get(userId) || 0,
-          harmonyScore: harmonyScoreMap.get(userId),
-          contextScore: contextScoreMap.get(userId),
-          dimensionScores: dimensionScoresMap.get(userId) || null
+          score: fit_score,
+          harmonyScore: 0,
+          contextScore: 0,
+          dimensionScores: null as { [key: string]: number } | null,
+          fitIndex: fit_index,
         }))
 
         if (recentEntries.length > 0) {
@@ -572,47 +519,19 @@ async function fetchDashboardData(userId: string): Promise<DashboardData> {
           })
         }
 
-        // Override total matches count with unique matched users
         totalMatchesCount = matchMap.size
-      
-          // Calculate average compatibility from ALL matches using new algorithm
-          // Compute compatibility scores for all matched users
-          const allCompatibilityScores = await Promise.all(
-            Array.from(matchMap.keys()).map(async (otherUserId) => {
-          try {
-            const { data, error } = await supabase.rpc('compute_compatibility_score', {
-              user_a_id: userId,
-              user_b_id: otherUserId
-            })
-            
-            if (error) {
-              console.error(`Error computing compatibility score for ${otherUserId}:`, error)
-              return 0
-            }
-            
-            // The function returns a table (array), get the first row
-            const result = Array.isArray(data) && data.length > 0 ? data[0] : (data || {})
-            return Number(result.compatibility_score || 0)
-          } catch (error) {
-            console.error(`Error computing compatibility score for ${otherUserId}:`, error)
-            return 0
-          }
-        })
-      )
-      
-      const allScores = allCompatibilityScores
-        .map(score => Math.min(score, 1.0)) // Cap each score at 1.0 (100%)
-        .filter(score => score > 0) // Only include valid scores
-      
-      if (allScores.length > 0) {
-        const avgCompatibilityFromAll = Math.min(
-          Math.round(
-            (allScores.reduce((sum, score) => sum + score, 0) / allScores.length) * 100
-          ),
-          100 // Cap the final result at 100%
-        )
-          // Store for use later (will override the topMatches-based calculation)
-          avgCompatibility = avgCompatibilityFromAll
+
+        const storedScores = Array.from(matchMap.values())
+          .map((m) => Math.min(Number(m.fit_score) || 0, 1))
+          .filter((score) => score > 0)
+
+        if (storedScores.length > 0) {
+          avgCompatibility = Math.min(
+            Math.round(
+              (storedScores.reduce((sum, score) => sum + score, 0) / storedScores.length) * 100
+            ),
+            100
+          )
         }
       }
     } else {

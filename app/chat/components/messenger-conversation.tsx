@@ -37,6 +37,8 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog'
 import { createClient } from '@/lib/supabase/client'
+import { channelManager } from '@/lib/realtime/channel-manager'
+import type { ChannelSubscription } from '@/lib/realtime/channel-manager'
 import { fetchWithCSRF } from '@/lib/utils/fetch-with-csrf'
 import { showSuccessToast, showErrorToast } from '@/lib/toast'
 import { MessengerMessageBubble, type MessageReplyRef } from './messenger-message-bubble'
@@ -113,7 +115,6 @@ export function MessengerConversation({
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const messagesContainerRef = useRef<HTMLDivElement>(null)
   const conversationRootRef = useRef<HTMLDivElement>(null)
-  const messagesChannelRef = useRef<any>(null)
   const [shouldAutoScroll, setShouldAutoScroll] = useState(true)
   const [userScrolledUp, setUserScrolledUp] = useState(false)
   const userScrolledUpRef = useRef(false)
@@ -605,14 +606,17 @@ export function MessengerConversation({
 
     loadMessages()
 
-    const channel = supabase
-      .channel(`messages:${chatId}`)
-      .on('postgres_changes', {
-        event: 'INSERT',
-        schema: 'public',
-        table: 'messages',
-        filter: `chat_id=eq.${chatId}`
-      }, (payload) => {
+    channelManager.initialize(supabase)
+    const subscription: ChannelSubscription = {
+      table: 'messages',
+      event: 'INSERT',
+      schema: 'public',
+      filter: `chat_id=eq.${chatId}`,
+    }
+    const channelKey = channelManager.getChannelKey(subscription)
+
+    const subId = channelManager.subscribe(subscription, {
+      onEvent: (payload) => {
         const newMsg = payload.new as {
           id: string
           content: string
@@ -703,13 +707,11 @@ export function MessengerConversation({
         if (!userScrolledUpRef.current && scrollToBottomRef.current) {
           scrollToBottomRef.current(true)
         }
-      })
-      .subscribe()
-
-    messagesChannelRef.current = channel
+      },
+    })
 
     return () => {
-      supabase.removeChannel(channel)
+      channelManager.unsubscribe(channelKey, subId)
     }
   }, [chatId, user.id, supabase, loadMessages])
 

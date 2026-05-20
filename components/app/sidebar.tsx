@@ -19,8 +19,9 @@ import {
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
 import { cn } from '@/lib/utils'
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef, useCallback } from 'react'
 import { createClient } from '@/lib/supabase/client'
+import { useRealtimeInvalidation } from '@/hooks/use-realtime-invalidation'
 import { isFeatureEnabled } from '@/lib/feature-flags'
 import { Separator } from '@/components/ui/separator'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
@@ -90,41 +91,35 @@ export function Sidebar({ user, onClose }: SidebarProps) {
   const [opsHealthWarning, setOpsHealthWarning] = useState(false)
   const isAdminRoute = pathname?.startsWith('/admin')
   const isAdmin = useIsAdmin()
+  const unreadDebounceRef = useRef<NodeJS.Timeout | null>(null)
+
+  const fetchUnreadCount = useCallback(async () => {
+    try {
+      const response = await fetch('/api/chat/unread')
+      if (response.ok) {
+        const data = await response.json()
+        setUnreadChatCount(data.total_unread || 0)
+      } else {
+        setUnreadChatCount(0)
+      }
+    } catch (error) {
+      console.error('Error fetching unread count:', error)
+      setUnreadChatCount(0)
+    }
+  }, [])
+
+  const debouncedFetchUnreadCount = useCallback(() => {
+    if (unreadDebounceRef.current) {
+      clearTimeout(unreadDebounceRef.current)
+    }
+    unreadDebounceRef.current = setTimeout(() => {
+      void fetchUnreadCount()
+    }, 500)
+  }, [fetchUnreadCount])
 
   useEffect(() => {
     const supabase = createClient()
 
-    // Debounce timer for unread count refetch - using object to ensure cleanup can access it
-    const timerRef: { current: NodeJS.Timeout | null } = { current: null }
-
-    // Fetch initial unread message count using optimized API endpoint
-    const fetchUnreadCount = async () => {
-      try {
-        const response = await fetch('/api/chat/unread')
-        if (response.ok) {
-          const data = await response.json()
-          setUnreadChatCount(data.total_unread || 0)
-        } else {
-          // Fallback to 0 if API fails
-          setUnreadChatCount(0)
-        }
-      } catch (error) {
-        console.error('Error fetching unread count:', error)
-        setUnreadChatCount(0)
-      }
-    }
-
-    // Debounced version for real-time updates
-    const debouncedFetchUnreadCount = () => {
-      if (timerRef.current) {
-        clearTimeout(timerRef.current)
-      }
-      timerRef.current = setTimeout(() => {
-        fetchUnreadCount()
-      }, 500) // Wait 500ms after last event before refetching
-    }
-
-    // Fetch match suggestions count
     const fetchMatchesCount = async () => {
       try {
         const now = new Date().toISOString()
@@ -134,41 +129,32 @@ export function Sidebar({ user, onClose }: SidebarProps) {
           .eq('kind', 'pair')
           .contains('member_ids', [user.id])
           .neq('status', 'rejected')
-          .gte('expires_at', now) // Only non-expired suggestions
-        
+          .gte('expires_at', now)
+
         setTotalMatchesCount(count || 0)
       } catch (error) {
         console.error('Error fetching match suggestions count:', error)
       }
     }
 
-    fetchUnreadCount()
-    fetchMatchesCount()
-
-    // Subscribe to real-time message updates
-    const channel = supabase
-      .channel('sidebar-chat-updates')
-      .on(
-        'postgres_changes',
-        {
-          event: '*',
-          schema: 'public',
-          table: 'messages',
-        },
-        () => {
-          // Use debounced version to avoid excessive API calls
-          debouncedFetchUnreadCount()
-        }
-      )
-      .subscribe()
+    void fetchUnreadCount()
+    void fetchMatchesCount()
 
     return () => {
-      if (timerRef.current) {
-        clearTimeout(timerRef.current)
+      if (unreadDebounceRef.current) {
+        clearTimeout(unreadDebounceRef.current)
       }
-      supabase.removeChannel(channel)
     }
-  }, [user.id])
+  }, [user.id, fetchUnreadCount])
+
+  useRealtimeInvalidation({
+    table: 'messages',
+    event: 'INSERT',
+    queryKeys: [],
+    enabled: !!user.id,
+    invalidateQueries: false,
+    onInvalidate: debouncedFetchUnreadCount,
+  })
 
   useEffect(() => {
     if (!isAdminRoute) {

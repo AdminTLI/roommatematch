@@ -1,11 +1,11 @@
 'use client'
 
-import { useState, useEffect, useMemo } from 'react'
+import { useState, useCallback } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Button } from '@/components/ui/button'
 import { useRouter } from 'next/navigation'
-import { createClient } from '@/lib/supabase/client'
 import { Notification } from '@/lib/notifications/types'
+import { useRealtimeInvalidation } from '@/hooks/use-realtime-invalidation'
 import { MessageCircle } from 'lucide-react'
 import { chatHrefFromMetadata } from '@/lib/notifications/chat-navigation'
 
@@ -21,7 +21,6 @@ interface MessageNotificationPopupProps {
 export function MessageNotificationPopup({ userId }: MessageNotificationPopupProps) {
   const [notifications, setNotifications] = useState<PopupNotification[]>([])
   const router = useRouter()
-  const supabase = useMemo(() => createClient(), [])
 
   const getChatHref = (metadata: Record<string, any>) => chatHrefFromMetadata(metadata)
 
@@ -74,7 +73,7 @@ export function MessageNotificationPopup({ userId }: MessageNotificationPopupPro
     }
   }
 
-  const addPopupNotification = (notification: Notification) => {
+  const addPopupNotification = useCallback((notification: Notification) => {
     const action = getPrimaryAction(notification)
     const popupNotification: PopupNotification = {
       ...notification,
@@ -93,7 +92,7 @@ export function MessageNotificationPopup({ userId }: MessageNotificationPopupPro
     setTimeout(() => {
       setNotifications((prev) => prev.filter((n) => n.id !== popupNotification.id))
     }, 8000)
-  }
+  }, [])
 
   const markAsRead = async (notificationId: string) => {
     try {
@@ -112,32 +111,19 @@ export function MessageNotificationPopup({ userId }: MessageNotificationPopupPro
     }
   }
 
-  useEffect(() => {
-    if (!userId) return
-
-    // Subscribe to all new notifications for this user.
-    const channel = supabase
-      .channel('in-app-notifications')
-      .on(
-        'postgres_changes',
-        {
-          event: 'INSERT',
-          schema: 'public',
-          table: 'notifications',
-          filter: `user_id=eq.${userId}`,
-        },
-        (payload) => {
-          const notification = payload.new as Notification
-          if (!notification || notification.user_id !== userId) return
-          addPopupNotification(notification)
-        }
-      )
-      .subscribe()
-
-    return () => {
-      supabase.removeChannel(channel)
-    }
-  }, [userId, supabase])
+  useRealtimeInvalidation({
+    table: 'notifications',
+    event: 'INSERT',
+    filter: `user_id=eq.${userId}`,
+    queryKeys: [],
+    enabled: !!userId,
+    invalidateQueries: false,
+    onPayload: (payload) => {
+      const notification = payload.new as Notification | undefined
+      if (!notification || notification.user_id !== userId) return
+      addPopupNotification(notification)
+    },
+  })
 
   const handleDismiss = (id: string) => {
     setNotifications((prev) => prev.filter((n) => n.id !== id))

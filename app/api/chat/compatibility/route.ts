@@ -33,6 +33,9 @@ export async function GET(request: NextRequest) {
     const { searchParams } = new URL(request.url)
     const chatId = searchParams.get('chatId')
     const otherUserId = searchParams.get('otherUserId')
+    const scoresOnly =
+      searchParams.get('scoresOnly') === '1' ||
+      searchParams.get('scoresOnly') === 'true'
 
     if (!chatId && !otherUserId) {
       return NextResponse.json(
@@ -320,6 +323,17 @@ export async function GET(request: NextRequest) {
     }
 
     const score = compatibilityScore[0]
+
+    if (scoresOnly) {
+      return NextResponse.json({
+        compatibility_score: Number(score.compatibility_score) || 0,
+        harmony_score: Number(score.harmony_score) || null,
+        context_score: Number(score.context_score) || null,
+        dimension_scores_json: score.dimension_scores_json || null,
+        is_valid_match: score.is_valid_match !== false,
+        algorithm_version: score.algorithm_version || 'v1.0',
+      })
+    }
 
     const [userLow, userHigh] = canonicalUserPair(user.id, targetUserId)
 

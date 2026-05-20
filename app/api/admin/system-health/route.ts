@@ -3,7 +3,7 @@ import { requireAdmin } from '@/lib/auth/admin'
 import { runAllHealthChecks } from '@/lib/monitoring/system-health'
 import { logAdminApiFailure } from '@/lib/monitoring/ops-log'
 import { safeLogger } from '@/lib/utils/logger'
-import { channelManager } from '@/lib/realtime/channel-manager'
+import { capturePerformanceBaseline } from '@/lib/monitoring/performance-baseline'
 
 export async function GET(request: NextRequest) {
   try {
@@ -17,22 +17,14 @@ export async function GET(request: NextRequest) {
     }
 
     const health = await runAllHealthChecks()
-    const realtimeStats = channelManager.getStats()
+    const performanceBaseline = capturePerformanceBaseline()
 
     return NextResponse.json({
       ...health,
       performance: {
-        realtime: {
-          totalChannels: realtimeStats.totalChannels,
-          totalSubscriptions: realtimeStats.totalSubscriptions,
-          channels: realtimeStats.channels.map((ch) => ({
-            table: ch.table,
-            event: ch.event,
-            subscriptionCount: ch.subscriptionCount,
-            state: ch.state,
-          })),
-        },
-        cache: {},
+        ...performanceBaseline,
+        scoreReadMode:
+          process.env.MATCH_SCORES_LIVE_SYNC === '1' ? 'live_sync' : 'stored_snapshot',
       },
     })
   } catch (error) {
