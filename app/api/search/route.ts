@@ -312,12 +312,12 @@ export async function GET(request: NextRequest) {
       // This prevents attackers from injecting filters like: q=foo,university_id.eq.victim
       // queryLower is the lowercased, sanitized query - safe for use in string interpolation
       
-      // Enhanced user search: search profiles - use simple queries without joins to avoid relationship errors
+      // Enhanced user search: use RLS-enforced client so results are scoped to same-university users
       let allProfiles: any[] = []
       let allProfilesError: any = null
       
-      // Try searching by first name (use admin client to bypass RLS)
-      const { data: profilesByName, error: nameError } = await adminSupabase
+      // Search by first name (RLS enforced: same-university + minimal_public=true)
+      const { data: profilesByName, error: nameError } = await supabase
         .from('profiles')
         .select('user_id, first_name, last_name, program, university_id')
         .neq('user_id', user.id)
@@ -334,7 +334,7 @@ export async function GET(request: NextRequest) {
       
       // Search by last name (if we don't have enough results)
       if (allProfiles.length < 10) {
-        const { data: profilesByLastName, error: lastNameError } = await adminSupabase
+        const { data: profilesByLastName, error: lastNameError } = await supabase
           .from('profiles')
           .select('user_id, first_name, last_name, program, university_id')
           .neq('user_id', user.id)
@@ -354,7 +354,7 @@ export async function GET(request: NextRequest) {
       
       // Search by program (if we don't have enough results)
       if (allProfiles.length < 10) {
-        const { data: profilesByProgram, error: programError } = await adminSupabase
+        const { data: profilesByProgram, error: programError } = await supabase
           .from('profiles')
           .select('user_id, first_name, last_name, program, university_id')
           .neq('user_id', user.id)
@@ -386,7 +386,7 @@ export async function GET(request: NextRequest) {
         const universityMap = new Map<string, string>()
         
         if (universityIds.length > 0) {
-          const { data: universities } = await adminSupabase
+          const { data: universities } = await supabase
             .from('universities')
             .select('id, name')
             .in('id', universityIds)
@@ -404,7 +404,7 @@ export async function GET(request: NextRequest) {
         
         if (userIds.length > 0 && chatIds.length > 0) {
           // Get all chat members for chats the current user is in
-          const { data: allChatMembers } = await adminSupabase
+          const { data: allChatMembers } = await supabase
             .from('chat_members')
             .select('chat_id, user_id')
             .in('chat_id', chatIds)
@@ -482,7 +482,7 @@ export async function GET(request: NextRequest) {
             for (const programName of programNames.slice(0, 3)) { // Limit to 3 programs to avoid too many queries
               if (allUsers.length >= 10) break
               
-              const { data: profilesByProgram, error: programSearchError } = await adminSupabase
+              const { data: profilesByProgram, error: programSearchError } = await supabase
                 .from('profiles')
                 .select('user_id, first_name, last_name, program, university_id')
                 .neq('user_id', user.id)
@@ -498,7 +498,7 @@ export async function GET(request: NextRequest) {
                 const universityMap = new Map<string, string>()
                 
                 if (newUniversityIds.length > 0) {
-                  const { data: universities } = await adminSupabase
+                  const { data: universities } = await supabase
                     .from('universities')
                     .select('id, name')
                     .in('id', newUniversityIds)
@@ -536,8 +536,8 @@ export async function GET(request: NextRequest) {
           const universityNames = universities.map(u => u.name)
           const universityMap = new Map(universities.map(u => [u.id, u.name]))
           
-          // Find users with these universities - search profiles directly (use admin client)
-          const { data: profilesByUniversity, error: usersUniError } = await adminSupabase
+          // Find users with these universities - use authenticated client to enforce RLS
+          const { data: profilesByUniversity, error: usersUniError } = await supabase
             .from('profiles')
             .select('user_id, first_name, last_name, program, university_id')
             .in('university_id', universityIds)
