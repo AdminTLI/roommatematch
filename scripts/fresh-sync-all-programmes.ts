@@ -130,12 +130,20 @@ function mapInstitutionToSlug(institutionName: string, slugMap: Map<string, stri
 function determineDegreeLevel(record: any): 'bachelor' | 'master' | 'premaster' {
   const niveau = (record.niveau || record.Niveau || '').toString().toLowerCase();
   const name = (record.NaamOpleiding || record.naam || '').toString().toLowerCase();
-  
-  if (niveau.includes('master') || name.includes('pre-master') || name.includes('schakelprogramma') || name.includes('premaster')) {
+
+  if (
+    name.includes('pre-master') ||
+    name.includes('schakelprogramma') ||
+    name.includes('premaster') ||
+    name.includes('schakel')
+  ) {
     return 'premaster';
   }
   if (niveau.includes('master') || name.includes('master')) {
     return 'master';
+  }
+  if (niveau.includes('bachelor') || name.includes('bachelor')) {
+    return 'bachelor';
   }
   return 'bachelor';
 }

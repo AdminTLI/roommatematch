@@ -324,29 +324,43 @@ export async function upsertProgrammesForInstitution(
  * @param useServerClient - Whether to use server-side client (default: true)
  * @returns Map of institution slug to counts by level
  */
+const PROGRAMME_COUNT_PAGE_SIZE = 1000
+
 export async function getProgrammeCountsByInstitution(
   useServerClient: boolean = true
 ): Promise<Record<string, { bachelor: number; premaster: number; master: number }>> {
   const supabase = useServerClient ? createAdminClient() : createClient()
-  
-  const { data, error } = await supabase
-    .from('programmes')
-    .select('institution_slug, level')
-  
-  if (error) {
-    console.error('Error fetching programme counts:', error)
-    return {}
-  }
-  
   const counts: Record<string, { bachelor: number; premaster: number; master: number }> = {}
-  
-  for (const row of data || []) {
-    if (!counts[row.institution_slug]) {
-      counts[row.institution_slug] = { bachelor: 0, premaster: 0, master: 0 }
+
+  let from = 0
+  while (true) {
+    const { data, error } = await supabase
+      .from('programmes')
+      .select('institution_slug, level')
+      .range(from, from + PROGRAMME_COUNT_PAGE_SIZE - 1)
+
+    if (error) {
+      console.error('Error fetching programme counts:', error)
+      return counts
     }
-    counts[row.institution_slug][row.level as DegreeLevel]++
+
+    if (!data?.length) {
+      break
+    }
+
+    for (const row of data) {
+      if (!counts[row.institution_slug]) {
+        counts[row.institution_slug] = { bachelor: 0, premaster: 0, master: 0 }
+      }
+      counts[row.institution_slug][row.level as DegreeLevel]++
+    }
+
+    from += PROGRAMME_COUNT_PAGE_SIZE
+    if (data.length < PROGRAMME_COUNT_PAGE_SIZE) {
+      break
+    }
   }
-  
+
   return counts
 }
 

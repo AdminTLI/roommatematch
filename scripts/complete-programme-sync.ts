@@ -104,9 +104,34 @@ async function loadInstitutionMapping(): Promise<Map<number, string>> {
   return mapping;
 }
 
+const INSTITUTION_SYNONYMS: Record<string, string> = {
+  'Fontys Hogeschool': 'fontys',
+  'Hogeschool De Kempel': 'dekempel',
+  'Universiteit voor Humanistiek': 'uvh',
+  'Technische Universiteit Delft': 'tud',
+  'Technische Universiteit Eindhoven': 'tue',
+  'Erasmus Universiteit Rotterdam': 'eur',
+  'Universiteit Leiden': 'leiden',
+  'Universiteit Maastricht': 'um',
+  'Open Universiteit': 'ou',
+  'Radboud Universiteit': 'ru',
+  'Universiteit van Tilburg': 'tilburg',
+  'Universiteit van Amsterdam': 'uva',
+  'Rijksuniversiteit Groningen': 'rug',
+  'Universiteit Twente': 'utwente',
+  'Universiteit Utrecht': 'uu',
+  'Vrije Universiteit Amsterdam': 'vu',
+  'Wageningen University & Research': 'wur',
+};
+
 function mapInstitutionToSlug(institutionName: string, slugMap: Map<string, string>): string | null {
   if (!institutionName) return null;
-  
+
+  const synonymSlug = INSTITUTION_SYNONYMS[institutionName];
+  if (synonymSlug) {
+    return synonymSlug;
+  }
+
   const normalized = institutionName.toLowerCase().trim();
   
   // Direct match
@@ -127,12 +152,20 @@ function mapInstitutionToSlug(institutionName: string, slugMap: Map<string, stri
 function determineDegreeLevel(record: any): 'bachelor' | 'master' | 'premaster' {
   const niveau = (record.niveau || record.Niveau || '').toString().toLowerCase();
   const name = (record.NaamOpleiding || record.naam || '').toString().toLowerCase();
-  
-  if (niveau.includes('master') || name.includes('pre-master') || name.includes('schakelprogramma')) {
+
+  if (
+    name.includes('pre-master') ||
+    name.includes('schakelprogramma') ||
+    name.includes('premaster') ||
+    name.includes('schakel')
+  ) {
     return 'premaster';
   }
   if (niveau.includes('master') || name.includes('master')) {
     return 'master';
+  }
+  if (niveau.includes('bachelor') || name.includes('bachelor')) {
+    return 'bachelor';
   }
   return 'bachelor';
 }
@@ -244,6 +277,126 @@ async function main() {
   
   console.log(`   ✅ Mapped ${programmesToInsert.length} programmes to institutions`);
   console.log(`   ⚠️  ${unmatched.length} programmes could not be matched\n`);
+
+  const crohoOwner = new Map<string, string>();
+  let crohoFrom = 0;
+  const crohoPageSize = 1000;
+  while (true) {
+    const { data: crohoRows, error: crohoError } = await supabase
+      .from('programmes')
+      .select('croho_code, institution_slug')
+      .not('croho_code', 'is', null)
+      .range(crohoFrom, crohoFrom + crohoPageSize - 1);
+
+    if (crohoError) throw crohoError;
+    if (!crohoRows?.length) break;
+
+    for (const row of crohoRows) {
+      if (row.croho_code) {
+        crohoOwner.set(String(row.croho_code), row.institution_slug);
+      }
+    }
+
+    crohoFrom += crohoPageSize;
+    if (crohoRows.length < crohoPageSize) break;
+  }
+
+  const usedCrohoInRun = new Set<string>();
+
+  function sanitizeProgrammePayload(prog: (typeof programmesToInsert)[0]) {
+    const copy = { ...prog };
+    if (!copy.croho_code) return copy;
+
+    const croho = String(copy.croho_code);
+    const owner = crohoOwner.get(croho);
+    if (
+      (owner && owner !== copy.institution_slug) ||
+      usedCrohoInRun.has(croho)
+    ) {
+      copy.croho_code = null;
+      return copy;
+    }
+
+    usedCrohoInRun.add(croho);
+    crohoOwner.set(croho, copy.institution_slug);
+    return copy;
+  }
+
+  async function upsertProgramme(prog: (typeof programmesToInsert)[0]): Promise<'inserted' | 'updated' | 'failed'> {
+    const tryInsert = async (payload: typeof prog) => {
+      const { error } = await supabase.from('programmes').insert(payload);
+      return error;
+    };
+
+    const tryUpdate = async (payload: typeof prog, id: string) => {
+      const { data: updateResult, error } = await supabase
+        .from('programmes')
+        .update(payload)
+        .eq('id', id)
+        .select('id');
+      if (error) return { ok: false as const, error };
+      if (updateResult?.length) return { ok: true as const, mode: 'updated' as const };
+      const insertError = await tryInsert(payload);
+      return insertError ? { ok: false as const, error: insertError } : { ok: true as const, mode: 'inserted' as const };
+    };
+
+    let payload = sanitizeProgrammePayload(prog);
+    let existingId: string | null = null;
+
+    if (payload.croho_code) {
+      const { data } = await supabase
+        .from('programmes')
+        .select('id')
+        .eq('croho_code', payload.croho_code)
+        .eq('institution_slug', payload.institution_slug)
+        .maybeSingle();
+      if (data) existingId = data.id;
+    }
+
+    if (!existingId) {
+      const { data } = await supabase
+        .from('programmes')
+        .select('id')
+        .eq('institution_slug', payload.institution_slug)
+        .eq('level', payload.level)
+        .eq('name', payload.name)
+        .maybeSingle();
+      if (data) existingId = data.id;
+    }
+
+    if (existingId) {
+      let result = await tryUpdate(payload, existingId);
+      if (!result.ok && result.error?.code === '23505') {
+        payload = { ...payload, croho_code: null };
+        result = await tryUpdate(payload, existingId);
+      }
+      if (!result.ok) return 'failed';
+      return result.mode === 'updated' ? 'updated' : 'inserted';
+    }
+
+    let insertError = await tryInsert(payload);
+    if (insertError?.code === '23505') {
+      payload = { ...payload, croho_code: null };
+      insertError = await tryInsert(payload);
+    }
+    if (insertError) {
+      if (insertError.code === '23505') {
+        const { data: existing } = await supabase
+          .from('programmes')
+          .select('id')
+          .eq('institution_slug', payload.institution_slug)
+          .eq('level', payload.level)
+          .eq('name', payload.name)
+          .maybeSingle();
+        if (existing) {
+          const result = await tryUpdate(payload, existing.id);
+          if (result.ok) return result.mode === 'updated' ? 'updated' : 'inserted';
+        }
+      }
+      return 'failed';
+    }
+    return 'inserted';
+  }
   
   // Insert programmes one by one to ensure all are saved
   console.log('💾 Upserting programmes to database...\n');
@@ -255,121 +408,13 @@ async function main() {
   for (let i = 0; i < programmesToInsert.length; i++) {
     const prog = programmesToInsert[i];
     
-    // Try to find existing programme
-    let existingId: string | null = null;
-    
-    // First try by CROHO code (if available)
-    if (prog.croho_code) {
-      const { data } = await supabase
-        .from('programmes')
-        .select('id')
-        .eq('croho_code', prog.croho_code)
-        .maybeSingle();
-      
-      if (data) existingId = data.id;
-    }
-    
-    // If not found, try by name + institution + level
-    if (!existingId) {
-      const { data } = await supabase
-        .from('programmes')
-        .select('id')
-        .eq('institution_slug', prog.institution_slug)
-        .eq('level', prog.level)
-        .eq('name', prog.name)
-        .maybeSingle();
-      
-      if (data) existingId = data.id;
-    }
-    
-    if (existingId) {
-      // Update existing - verify it actually exists first
-      const { data: verifyExisting } = await supabase
-        .from('programmes')
-        .select('id')
-        .eq('id', existingId)
-        .maybeSingle();
-      
-      if (!verifyExisting) {
-        // Programme was deleted, insert it
-        const { error: insertError } = await supabase
-          .from('programmes')
-          .insert(prog);
-        
-        if (insertError) {
-          console.error(`❌ Failed to insert ${prog.name} (was deleted):`, insertError.message);
-          totalFailed++;
-        } else {
-          totalInserted++;
-        }
-      } else {
-        // Update existing
-        const { data: updateResult, error } = await supabase
-          .from('programmes')
-          .update(prog)
-          .eq('id', existingId)
-          .select('id');
-        
-        if (error) {
-          console.error(`❌ Failed to update ${prog.name}:`, error.message);
-          totalFailed++;
-        } else if (updateResult && updateResult.length > 0) {
-          // Update succeeded and affected rows
-          totalUpdated++;
-        } else {
-          // Update affected 0 rows - insert instead
-          const { error: insertError } = await supabase
-            .from('programmes')
-            .insert(prog);
-          
-          if (insertError) {
-            console.error(`❌ Failed to insert ${prog.name} (update affected 0 rows):`, insertError.message);
-            totalFailed++;
-          } else {
-            totalInserted++;
-          }
-        }
-      }
-    } else {
-      // Insert new
-      const { error } = await supabase
-        .from('programmes')
-        .insert(prog);
-      
-      if (error) {
-        // If unique constraint violation, try update
-        if (error.code === '23505') {
-          // Find by name + institution + level
-          const { data: existing } = await supabase
-            .from('programmes')
-            .select('id')
-            .eq('institution_slug', prog.institution_slug)
-            .eq('level', prog.level)
-            .eq('name', prog.name)
-            .maybeSingle();
-          
-          if (existing) {
-            const { error: updateError } = await supabase
-              .from('programmes')
-              .update(prog)
-              .eq('id', existing.id);
-            
-            if (updateError) {
-              console.error(`❌ Failed to upsert ${prog.name}:`, updateError.message);
-              totalFailed++;
-            } else {
-              totalUpdated++;
-            }
-          } else {
-            console.error(`❌ Unique constraint but can't find existing: ${prog.name}`);
-            totalFailed++;
-          }
-        } else {
-          console.error(`❌ Failed to insert ${prog.name}:`, error.message);
-          totalFailed++;
-        }
-      } else {
-        totalInserted++;
+    const result = await upsertProgramme(prog);
+    if (result === 'inserted') totalInserted++;
+    else if (result === 'updated') totalUpdated++;
+    else {
+      totalFailed++;
+      if (totalFailed <= 20) {
+        console.error(`❌ Failed to upsert ${prog.name} (${prog.institution_slug})`);
       }
     }
     

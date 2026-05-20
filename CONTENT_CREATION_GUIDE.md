@@ -204,17 +204,52 @@ images: [
 - [ ] Target keyword in at least 2 H2 headings
 - [ ] 3-5 internal links to product pages
 - [ ] 2-3 external links to authoritative sources
-- [ ] Featured image (16:9, at least 1200px wide)
+- [ ] Featured image via `<BlogHeroImage imageKey="..." />` (see below)
 - [ ] Meta description (150-160 characters)
 - [ ] Alt text for all images
 - [ ] Article structured data (add to page.tsx)
 - [ ] Custom OG image
 
+### Blog hero images (required)
+
+In-article images **must** use the shared component — do not paste raw Unsplash URLs:
+
+```tsx
+import { BlogHeroImage } from '@/components/marketing/blog-hero-image'
+
+<figure>
+  <BlogHeroImage
+    imageKey="studentsCollaborating"  // or housingCityscape
+    alt="Descriptive alt text for accessibility and SEO"
+  />
+  <figcaption>Optional caption</figcaption>
+</figure>
+```
+
+Approved keys live in `lib/blog/approved-images.ts`. Each key maps to a URL that already works on other posts.
+
+**Before merging any blog PR**, run:
+
+```bash
+npm run verify:blog-images
+```
+
+This checks every Unsplash URL under `app/(marketing)/blog/` returns HTTP 200.
+
+#### Cursor automation: avoid broken images
+
+When your automation generates `article-content.tsx`:
+
+1. **Never invent** Unsplash photo IDs (e.g. `photo-1523050854058-8df90110c9f1`). LLMs often hallucinate plausible-looking IDs that return **404** and show a broken image on the site.
+2. **Always** use `<BlogHeroImage imageKey="..." />` with a key from `lib/blog/approved-images.ts`.
+3. To add a new hero look: pick a photo on [unsplash.com](https://unsplash.com), copy the full `images.unsplash.com/photo-…` URL from the download link, verify it with `curl -I` or `npm run verify:blog-images`, then add it to `approved-images.ts` before referencing it.
+4. Add to the automation checklist: run `npm run verify:blog-images` after creating the post.
+
 ### Publishing Workflow
 
 1. **Write post** in Markdown or doc
 2. **Create file**: `app/(marketing)/blog/[slug]/page.tsx`
-3. **Add article content**: Create `article-content.tsx` component
+3. **Add article content**: Create `article-content.tsx` component (use `BlogHeroImage` for heroes)
 4. **Add metadata**: Title, description, keywords, OG tags
 5. **Add structured data**: Article schema with author, dates, keywords
 6. **Update RSS feed**: Add post to `app/blog/rss.xml/route.ts`

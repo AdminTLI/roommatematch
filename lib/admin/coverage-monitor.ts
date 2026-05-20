@@ -12,6 +12,32 @@ import type { Institution } from '@/types/institution'
 import type { DegreeLevel } from '@/types/programme'
 
 /**
+ * Degree levels that must be present for an institution to count as "complete".
+ * Premaster is not required when bachelor and master programmes exist (many WO/HBO
+ * institutions list only bachelor + master in Studiekeuzedatabase).
+ */
+function getMissingDegreeLevels(counts: {
+  bachelor: number
+  premaster: number
+  master: number
+}): DegreeLevel[] {
+  const missingLevels: DegreeLevel[] = []
+
+  if (counts.bachelor === 0) {
+    missingLevels.push('bachelor')
+  }
+  if (counts.master === 0) {
+    missingLevels.push('master')
+  }
+  // Require premaster only for bachelor-only tracks (no separate master programmes)
+  if (counts.premaster === 0 && counts.master === 0 && counts.bachelor > 0) {
+    missingLevels.push('premaster')
+  }
+
+  return missingLevels
+}
+
+/**
  * Load programme coverage whitelist from config file
  */
 function loadCoverageWhitelist(): Map<string, Set<DegreeLevel>> {
@@ -86,10 +112,7 @@ export async function checkProgrammeCoverage(): Promise<CoverageReport> {
       const brinCode = getInstitutionBrinCode(institution.id)
       const counts = countsByInstitution[institution.id] || { bachelor: 0, premaster: 0, master: 0 }
 
-      const missingLevels: DegreeLevel[] = []
-      if (counts.bachelor === 0) missingLevels.push('bachelor')
-      if (counts.premaster === 0) missingLevels.push('premaster')
-      if (counts.master === 0) missingLevels.push('master')
+      const missingLevels = getMissingDegreeLevels(counts)
 
       // Check whitelist: remove missing levels that are allowed for this institution
       const allowedMissing = whitelist.get(institution.id)

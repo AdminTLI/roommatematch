@@ -104,7 +104,13 @@ const INSTITUTION_SYNONYMS: Record<string, string> = {
   'Wageningen University & Research': 'wur',
   'Wageningen University and Research Centre': 'wur',
   'Wageningen University': 'wur',
-  'WUR': 'wur'
+  'WUR': 'wur',
+  'Fontys Hogeschool': 'fontys',
+  'Fontys University of Applied Sciences': 'fontys',
+  'Hogeschool De Kempel': 'dekempel',
+  'De Kempel': 'dekempel',
+  'Universiteit voor Humanistiek': 'uvh',
+  'University for Humanistics': 'uvh'
 };
 
 // Extended SKDB programme schema with all fields
@@ -254,15 +260,24 @@ function determineDegreeLevel(programmeData: any): 'bachelor' | 'master' | 'prem
   const niveau = (programmeData.niveau || programmeData.level || programmeData.graad || '').toString().toLowerCase().replace(/["']/g, '');
   const titel = (programmeData.Titel || programmeData.titel || '').toLowerCase();
   
-  // Check for premaster/schakelprogramma first
-  if (name.includes('pre-master') || name.includes('schakelprogramma') || 
-      name.includes('premaster') || name.includes('bridge') ||
-      name.includes('schakel')) {
+  const soortHo = (programmeData.soortHo || programmeData.SoortHo || '').toString().toLowerCase();
+
+  // Check for premaster/schakelprogramma first (before generic "master" matches)
+  if (
+    name.includes('pre-master') ||
+    name.includes('schakelprogramma') ||
+    name.includes('premaster') ||
+    name.includes('bridge') ||
+    name.includes('schakel') ||
+    soortHo.includes('pre-master') ||
+    soortHo.includes('premaster') ||
+    soortHo.includes('schakel')
+  ) {
     return 'premaster';
   }
-  
-  // Check niveau field (from CSV) - this is the most reliable
-  if (niveau.includes('master')) {
+
+  // Check niveau / graad / soortHo (from CSV or API) - most reliable
+  if (niveau.includes('master') || soortHo.includes('master')) {
     return 'master';
   }
   
@@ -646,24 +661,42 @@ async function findExistingSkdbProgramme(
       .from('programmes')
       .select('*')
       .eq('croho_code', skdbProgram.crohoCode)
+      .eq('institution_slug', institutionSlug)
       .maybeSingle();
-    
+
     if (!error && data) {
       return { id: data.id, matchType: 'croho', existingProgramme: data };
     }
   }
   
-  // Strategy 2: Match by name + institution + level (fuzzy)
+  // Strategy 2: Match by name + institution (fuzzy); prefer correct level, fall back if level was wrong
   const normalizedSkdbName = normalizeName(skdbProgram.name);
-  
-  const { data: candidates, error } = await supabase
+
+  const nameFilter = `name.ilike.%${normalizedSkdbName}%,name_en.ilike.%${normalizedSkdbName}%`;
+
+  const { data: levelCandidates, error: levelError } = await supabase
     .from('programmes')
     .select('*')
     .eq('institution_slug', institutionSlug)
     .eq('level', skdbProgram.degreeLevel)
-    .or(`name.ilike.%${normalizedSkdbName}%,name_en.ilike.%${normalizedSkdbName}%`)
+    .or(nameFilter)
     .limit(10);
-  
+
+  let candidates = levelCandidates;
+  let error = levelError;
+
+  if (!error && (!candidates || candidates.length === 0)) {
+    const { data: anyLevelCandidates, error: anyLevelError } = await supabase
+      .from('programmes')
+      .select('*')
+      .eq('institution_slug', institutionSlug)
+      .or(nameFilter)
+      .limit(10);
+
+    candidates = anyLevelCandidates;
+    error = anyLevelError;
+  }
+
   if (error || !candidates || candidates.length === 0) {
     return null;
   }
@@ -721,6 +754,7 @@ async function upsertSkdbProgramme(
     const updateData: any = {
       name: skdbProgram.name, // Use SKDB name as primary
       name_en: skdbProgram.nameEn || existing.name_en,
+      level: skdbProgram.degreeLevel,
       croho_code: skdbProgram.crohoCode || existing.croho_code,
       language_codes: skdbProgram.languageCodes.length > 0 ? skdbProgram.languageCodes : existing.language_codes,
       faculty: skdbProgram.faculty || existing.faculty,
@@ -1001,6 +1035,10 @@ async function main(): Promise<void> {
       unmatched: []
     };
     
+    const institutionFilter = process.env.INSTITUTION_FILTER
+      ? new Set(process.env.INSTITUTION_FILTER.split(',').map(s => s.trim()).filter(Boolean))
+      : null;
+
     // Process each SKDB programme
     for (const skdbProgram of skdbProgrammes) {
       const institutionSlug = mapInstitutionToSlug(skdbProgram.institution, slugMap);
@@ -1014,6 +1052,10 @@ async function main(): Promise<void> {
           reason: 'institution_not_found'
         });
         report.summary.notFound++;
+        continue;
+      }
+
+      if (institutionFilter && !institutionFilter.has(institutionSlug)) {
         continue;
       }
       

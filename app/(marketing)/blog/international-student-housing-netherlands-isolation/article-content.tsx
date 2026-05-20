@@ -2,7 +2,7 @@
 
 import { BlogPostLayout } from '@/components/marketing/blog-post-layout'
 import Link from 'next/link'
-import Image from 'next/image'
+import { BlogHeroImage } from '@/components/marketing/blog-hero-image'
 import { useApp } from '@/app/providers'
 
 const content = {
@@ -41,12 +41,9 @@ const content = {
         </p>
 
         <figure>
-          <Image
-            src="https://images.unsplash.com/photo-1523050854058-8df90110c9f1?w=1200&q=80"
-            alt="International student housing Netherlands: graduation caps and gowns symbolising mobility and completion"
-            width={1200}
-            height={630}
-            className="w-full rounded-2xl"
+          <BlogHeroImage
+            imageKey="studentsCollaborating"
+            alt="International students collaborating — symbolising mobility and integration in Dutch higher education"
           />
           <figcaption>
             Housing friction is an integration variable: it shapes commutes, social access, and how quickly students can anchor in a city.
@@ -260,12 +257,9 @@ const content = {
         </p>
 
         <figure>
-          <Image
-            src="https://images.unsplash.com/photo-1523050854058-8df90110c9f1?w=1200&q=80"
-            alt="Internationale studentenhuisvesting Nederland: studenten met afstudeerhoeden, symbool voor mobiliteit en studiesucces"
-            width={1200}
-            height={630}
-            className="w-full rounded-2xl"
+          <BlogHeroImage
+            imageKey="studentsCollaborating"
+            alt="Internationale studenten samen aan het werk — symbool voor mobiliteit en integratie in het Nederlandse hoger onderwijs"
           />
           <figcaption>
             Woonfrictie beïnvloedt integratie: reistijd, netwerk en toegang tot het studentenleven hangen samen met een adres.

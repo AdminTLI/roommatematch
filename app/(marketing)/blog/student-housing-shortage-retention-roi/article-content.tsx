@@ -2,7 +2,7 @@
 
 import { BlogPostLayout } from '@/components/marketing/blog-post-layout'
 import Link from 'next/link'
-import Image from 'next/image'
+import { BlogHeroImage } from '@/components/marketing/blog-hero-image'
 import { useApp } from '@/app/providers'
 
 const content = {
@@ -56,12 +56,9 @@ const content = {
         </p>
 
         <figure>
-          <Image
-            src="https://images.unsplash.com/photo-1523050854058-8df90110c9f1?w=1200&q=80"
-            alt="Students on a university campus with buildings in the background"
-            width={1200}
-            height={630}
-            className="w-full rounded-2xl"
+          <BlogHeroImage
+            imageKey="housingCityscape"
+            alt="Residential buildings and city skyline — student housing scarcity in Dutch university cities"
           />
           <figcaption>
             When stable rooms disappear, the hidden invoice shows up in commutes, counselling queues, and completion risk, not only in rent tables.
@@ -247,12 +244,9 @@ const content = {
         </p>
 
         <figure>
-          <Image
-            src="https://images.unsplash.com/photo-1523050854058-8df90110c9f1?w=1200&q=80"
-            alt="Studenten op een universiteitscampus"
-            width={1200}
-            height={630}
-            className="w-full rounded-2xl"
+          <BlogHeroImage
+            imageKey="housingCityscape"
+            alt="Woonblokken en stadsgezicht — kamertekort in Nederlandse studentensteden"
           />
           <figcaption>
             Stabiliteit op de kamer bepaalt mee of ondersteuning naar studie gaat of naar crisislogistiek.

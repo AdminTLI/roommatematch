@@ -23,6 +23,40 @@ import { getInstitutionBrinCode } from '@/lib/duo/erkenningen';
 import { getProgrammeCountsByInstitution } from '@/lib/programmes/repo';
 import type { Institution } from '@/types/institution';
 import type { DegreeLevel } from '@/types/programme';
+import { readFileSync } from 'fs';
+import { join } from 'path';
+
+function getMissingDegreeLevels(counts: {
+  bachelor: number;
+  premaster: number;
+  master: number;
+}): DegreeLevel[] {
+  const missingLevels: DegreeLevel[] = [];
+  if (counts.bachelor === 0) missingLevels.push('bachelor');
+  if (counts.master === 0) missingLevels.push('master');
+  if (counts.premaster === 0 && counts.master === 0 && counts.bachelor > 0) {
+    missingLevels.push('premaster');
+  }
+  return missingLevels;
+}
+
+function loadCoverageWhitelist(): Map<string, Set<DegreeLevel>> {
+  try {
+    const whitelistPath = join(process.cwd(), 'config', 'programme-coverage-whitelist.json');
+    const whitelistData = JSON.parse(readFileSync(whitelistPath, 'utf-8'));
+    const whitelistMap = new Map<string, Set<DegreeLevel>>();
+    if (whitelistData.institutions) {
+      for (const [institutionId, config] of Object.entries(whitelistData.institutions) as [string, { allowedMissingLevels?: DegreeLevel[] }][]) {
+        if (config.allowedMissingLevels?.length) {
+          whitelistMap.set(institutionId, new Set(config.allowedMissingLevels));
+        }
+      }
+    }
+    return whitelistMap;
+  } catch {
+    return new Map();
+  }
+}
 
 interface InstitutionCoverage {
   id: string;
@@ -55,7 +89,8 @@ async function main(): Promise<void> {
     // Load onboarding institutions
     const institutions = loadInstitutions();
     const allInstitutions = [...institutions.wo, ...institutions.wo_special, ...institutions.hbo];
-    
+    const whitelist = loadCoverageWhitelist();
+
     // Get programme counts from database
     console.log('🔍 Querying programmes table...');
     const countsByInstitution = await getProgrammeCountsByInstitution(true);
@@ -71,13 +106,14 @@ async function main(): Promise<void> {
       const brinCode = getInstitutionBrinCode(institution.id);
       const counts = countsByInstitution[institution.id] || { bachelor: 0, premaster: 0, master: 0 };
       
-      const missingLevels: DegreeLevel[] = [];
-      if (counts.bachelor === 0) missingLevels.push('bachelor');
-      if (counts.premaster === 0) missingLevels.push('premaster');
-      if (counts.master === 0) missingLevels.push('master');
-      
+      const missingLevels = getMissingDegreeLevels(counts);
+      const allowedMissing = whitelist.get(institution.id);
+      const actualMissingLevels = allowedMissing
+        ? missingLevels.filter(level => !allowedMissing.has(level))
+        : missingLevels;
+
       const total = counts.bachelor + counts.premaster + counts.master;
-      const status = !brinCode ? 'missing' : total === 0 ? 'missing' : missingLevels.length === 0 ? 'complete' : 'incomplete';
+      const status = !brinCode ? 'missing' : total === 0 ? 'missing' : actualMissingLevels.length === 0 ? 'complete' : 'incomplete';
       
       coverage.push({
         id: institution.id,
@@ -86,7 +122,7 @@ async function main(): Promise<void> {
         brin: brinCode || null,
         hasBrin: !!brinCode,
         programmes: counts,
-        missingLevels,
+        missingLevels: actualMissingLevels,
         status
       });
       

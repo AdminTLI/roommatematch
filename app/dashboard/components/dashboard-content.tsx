@@ -54,6 +54,7 @@ import { logger } from '@/lib/utils/logger'
 import { queryKeys, queryClient } from '@/app/providers'
 import { useRealtimeInvalidation } from '@/hooks/use-realtime-invalidation'
 import { monitorQuery } from '@/lib/utils/query-monitor'
+import { fetchLiveCompatibilityBatch } from '@/lib/matching/live-compatibility'
 import { WellnessSurveyModal } from './wellness-survey-modal'
 import { SuccessNpsWidget } from '@/app/(components)/success-nps-widget'
 
@@ -535,18 +536,53 @@ export function DashboardContent({ hasCompletedQuestionnaire = false, hasPartial
           if (oid) suggestionByUserId.set(oid, sug)
         }
 
-        const compatibilityScores = recentUserIds.map((otherUserId) => {
-          const sug = suggestionByUserId.get(otherUserId)
-          const fitIndex = Number(sug?.fitIndex ?? 0)
-          const score = fitIndex > 0 ? fitIndex / 100 : Number(sug?.fitScore ?? 0)
-          return {
-            userId: otherUserId,
-            score,
-            harmonyScore: 0,
-            contextScore: 0,
-            dimensionScores: null as { [key: string]: number } | null,
-          }
-        })
+        let compatibilityScores: Array<{
+          userId: string
+          score: number
+          harmonyScore: number
+          contextScore: number
+          dimensionScores: { [key: string]: number } | null
+        }>
+
+        try {
+          const liveByPeer = await fetchLiveCompatibilityBatch(recentUserIds)
+          compatibilityScores = recentUserIds.map((otherUserId) => {
+            const live = liveByPeer.get(otherUserId)
+            const sug = suggestionByUserId.get(otherUserId)
+            const fitIndex = Number(sug?.fitIndex ?? 0)
+            const fallbackScore = fitIndex > 0 ? fitIndex / 100 : Number(sug?.fitScore ?? 0)
+            if (live) {
+              return {
+                userId: otherUserId,
+                score: extractScore(live.compatibility_score, fallbackScore),
+                harmonyScore: extractScore(live.harmony_score, 0),
+                contextScore: extractScore(live.context_score, 0),
+                dimensionScores: live.dimension_scores_json,
+              }
+            }
+            return {
+              userId: otherUserId,
+              score: fallbackScore,
+              harmonyScore: 0,
+              contextScore: 0,
+              dimensionScores: null,
+            }
+          })
+        } catch (batchError) {
+          logger.error('Error in batch compatibility for dashboard recent matches:', batchError)
+          compatibilityScores = recentUserIds.map((otherUserId) => {
+            const sug = suggestionByUserId.get(otherUserId)
+            const fitIndex = Number(sug?.fitIndex ?? 0)
+            const score = fitIndex > 0 ? fitIndex / 100 : Number(sug?.fitScore ?? 0)
+            return {
+              userId: otherUserId,
+              score,
+              harmonyScore: 0,
+              contextScore: 0,
+              dimensionScores: null,
+            }
+          })
+        }
 
         // Create maps for easy lookup
         const scoreMap = new Map(compatibilityScores.map(m => [m.userId, m.score]))
@@ -572,8 +608,9 @@ export function DashboardContent({ hasCompletedQuestionnaire = false, hasPartial
           return []
         }
 
-        // Fetch profiles for matched users (without relying on nested relationships)
-        const { data: profiles, error: profilesError } = await supabase
+        // Fetch profiles for matched users (without relying on nested relationships).
+        // Profile rows may be blocked by RLS for pending suggestions; still show cards (same as /matches).
+        const { data: profilesData, error: profilesError } = await supabase
           .from('profiles')
           .select(`
           user_id, 
@@ -584,10 +621,13 @@ export function DashboardContent({ hasCompletedQuestionnaire = false, hasPartial
           .in('user_id', finalUserIds)
 
         if (profilesError) {
-          // Non-fatal: log as warning and return empty matches to avoid console errors
-          logger.warn('Error loading profiles for recent matches (likely RLS/permissions or schema mismatch). Returning empty list.', { error: profilesError })
-          return []
+          logger.warn(
+            'Error loading profiles for recent matches (likely RLS). Showing suggestion cards without profile details.',
+            { error: profilesError }
+          )
         }
+
+        const profiles = profilesData ?? []
 
         // Fetch university names separately to avoid nested relation issues
         const universityMap = new Map<string, string>()
@@ -642,39 +682,68 @@ export function DashboardContent({ hasCompletedQuestionnaire = false, hasPartial
         // Create a map of user_id to match score
         const matchScoreMap = new Map(recentMatchEntries.map(m => [m.userId, m.score]))
 
+        const isUUID = (str: string): boolean => {
+          if (!str || typeof str !== 'string') return false
+          if (/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(str)) return true
+          if (/[0-9a-f]{8}-?[0-9a-f]{4}-?[0-9a-f]{4}-?[0-9a-f]{4}-?[0-9a-f]{12}/i.test(str)) return true
+          return false
+        }
+
+        const removeUUIDs = (str: string): string => {
+          if (!str || typeof str !== 'string') return str
+          return str.replace(/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/gi, '').trim()
+        }
+
+        const normalizeMatchScore = (rawScore: number, sug?: (typeof rawSuggestions)[0]): number => {
+          let normalizedScore = rawScore
+          if (normalizedScore <= 0 && sug) {
+            const fitIndex = Number(sug.fitIndex ?? 0)
+            normalizedScore = fitIndex > 0 ? fitIndex / 100 : Number(sug.fitScore ?? 0)
+          }
+          if (normalizedScore > 1.0) {
+            if (normalizedScore > 100) {
+              normalizedScore = 1
+            } else {
+              normalizedScore = normalizedScore / 100
+            }
+          }
+          return Math.max(0, Math.min(normalizedScore, 1.0))
+        }
+
         // Format matches maintaining the order from recentMatchEntries (most recent first)
         const formattedMatches = recentMatchEntries.map(({ userId, score, harmonyScore, contextScore, dimensionScores }) => {
-          const profile = profiles?.find((p: any) => p.user_id === userId)
+          const sug = suggestionByUserId.get(userId)
+          const profile = profiles.find((p: { user_id: string }) => p.user_id === userId)
+
+          const baseMatch = {
+            id: userId,
+            userId,
+            score: normalizeMatchScore(score, sug),
+            harmonyScore: extractScore(harmonyScore, 0),
+            contextScore: extractScore(contextScore, 0),
+            dimensionScores: dimensionScores || null,
+            avatar: undefined as undefined,
+          }
+
           if (!profile) {
-            return null
+            logger.log(
+              '[loadRecentMatches] Peer profile unavailable (RLS or missing row); showing suggestion card without profile fields',
+              { userId }
+            )
+            return {
+              ...baseMatch,
+              name: undefined,
+              program: '',
+              university: '',
+            }
           }
 
           const fullName = [profile.first_name?.trim(), profile.last_name?.trim()].filter(Boolean).join(' ') || 'User'
           const programDisplay = programMap.get(userId) || null
-
-          // Resolve university name via the separate university lookup
           const universityName = profile.university_id
             ? universityMap.get(profile.university_id) || 'University'
             : 'University'
 
-          // Helper function to check if a string is a UUID
-          const isUUID = (str: string): boolean => {
-            if (!str || typeof str !== 'string') return false
-            // Check for full UUID format
-            if (/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(str)) return true
-            // Check for UUID-like patterns (without dashes or partial)
-            if (/[0-9a-f]{8}-?[0-9a-f]{4}-?[0-9a-f]{4}-?[0-9a-f]{4}-?[0-9a-f]{12}/i.test(str)) return true
-            return false
-          }
-
-          // Remove any UUIDs from strings (even if embedded)
-          const removeUUIDs = (str: string): string => {
-            if (!str || typeof str !== 'string') return str
-            // Remove UUID patterns completely
-            return str.replace(/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/gi, '').trim()
-          }
-
-          // Clean all fields to ensure no UUIDs are displayed
           let safeName = removeUUIDs(fullName)
           if (isUUID(safeName) || safeName === userId || safeName.includes(userId) || !safeName) {
             safeName = 'User'
@@ -690,35 +759,13 @@ export function DashboardContent({ hasCompletedQuestionnaire = false, hasPartial
             safeProgram = ''
           }
 
-          // Normalize score to 0-1 range if needed
-          // fit_score should already be in 0-1 range, but handle edge cases
-          let normalizedScore = score
-          if (normalizedScore > 1.0) {
-            // If score is > 1.0, it might already be in 0-100 range (like 94 instead of 0.94)
-            if (normalizedScore > 100) {
-              // If > 100, cap at 100 and convert to 0-1 range
-              normalizedScore = 100 / 100
-            } else {
-              // If between 1 and 100, convert to 0-1 range
-              normalizedScore = normalizedScore / 100
-            }
-          }
-          // Ensure it's in valid range (0-1)
-          normalizedScore = Math.max(0, Math.min(normalizedScore, 1.0))
-
           return {
-            id: userId,
-            userId: userId,
+            ...baseMatch,
             name: safeName,
-            score: normalizedScore, // Keep as decimal 0-1 for calculations
-            harmonyScore: extractScore(harmonyScore, 0), // Extract with helper to ensure it's a number
-            contextScore: extractScore(contextScore, 0), // Extract with helper to ensure it's a number
-            dimensionScores: dimensionScores || null,
             program: safeProgram,
             university: safeUniversity,
-            avatar: undefined
           }
-        }).filter((m): m is NonNullable<typeof m> => m !== null) // Remove null entries
+        })
 
         logger.log('loadRecentMatches: Formatted', formattedMatches.length, 'recent matches from match_suggestions table')
 

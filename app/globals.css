@@ -514,6 +514,24 @@ body:has([data-chat-page]) main>div>div[data-chat-page] {
     flex: none !important;
     box-sizing: border-box !important;
   }
+
+  /*
+   * iOS 26 keyboard fallback: keep composer anchored to visual viewport bottom even when
+   * Safari scrolls the layout viewport while focusing the textarea.
+   */
+  body.mobile-chat-active-conversation [data-messenger-composer],
+  body:has([data-chat-page]).mobile-chat-active-conversation [data-messenger-composer] {
+    position: fixed !important;
+    left: 0 !important;
+    right: 0 !important;
+    bottom: var(--kb-inset, 0px) !important;
+    z-index: 70 !important;
+  }
+
+  body.mobile-chat-active-conversation [data-messenger-messages],
+  body:has([data-chat-page]).mobile-chat-active-conversation [data-messenger-messages] {
+    padding-bottom: calc(6rem + var(--kb-inset, 0px)) !important;
+  }
 }
 
 /* Hide footer on chat page */

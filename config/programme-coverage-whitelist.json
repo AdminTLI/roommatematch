@@ -93,6 +93,10 @@
     "kpz": {
       "allowedMissingLevels": ["master"],
       "reason": "KPZ University of Applied Sciences does not offer master's programs."
+    },
+    "dekempel": {
+      "allowedMissingLevels": ["premaster", "master"],
+      "reason": "De Kempel offers a single bachelor teacher-training programme in Studiekeuzedatabase."
     }
   }
 }

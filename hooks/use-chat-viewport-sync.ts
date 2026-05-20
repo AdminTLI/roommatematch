@@ -91,12 +91,29 @@ export function useChatViewportSync(containerRef: RefObject<HTMLDivElement | nul
       })
     }
 
+    const focusSyncTimers = new Set<number>()
+    const scheduleFocusResync = () => {
+      const delays = [40, 90, 160, 260, 380, 520, 700, 920, 1200]
+      for (const delay of delays) {
+        const timer = window.setTimeout(() => {
+          focusSyncTimers.delete(timer)
+          sync()
+        }, delay)
+        focusSyncTimers.add(timer)
+      }
+    }
+    const clearFocusResyncTimers = () => {
+      focusSyncTimers.forEach((timer) => window.clearTimeout(timer))
+      focusSyncTimers.clear()
+    }
+
     const onFocusOut = (ev: FocusEvent) => {
       const target = ev.target
       if (!(target instanceof HTMLElement)) return
       if (target.tagName !== 'TEXTAREA' && target.tagName !== 'INPUT') return
       if (!el.contains(target)) return
 
+      clearFocusResyncTimers()
       resetMobileLayoutScroll()
       sync()
       window.setTimeout(sync, 80)
@@ -110,11 +127,10 @@ export function useChatViewportSync(containerRef: RefObject<HTMLDivElement | nul
       if (target.tagName !== 'TEXTAREA' && target.tagName !== 'INPUT') return
       if (!el.contains(target)) return
 
+      resetMobileLayoutScroll()
       sync()
       requestAnimationFrame(sync)
-      window.setTimeout(sync, 50)
-      window.setTimeout(sync, 200)
-      window.setTimeout(sync, 450)
+      scheduleFocusResync()
     }
 
     const vv = window.visualViewport
@@ -144,6 +160,7 @@ export function useChatViewportSync(containerRef: RefObject<HTMLDivElement | nul
 
     return () => {
       cancelAnimationFrame(raf)
+      clearFocusResyncTimers()
       window.clearTimeout(t1)
       window.clearTimeout(t2)
       observer.disconnect()

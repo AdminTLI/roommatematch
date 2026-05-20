@@ -14,6 +14,11 @@ import { motion } from 'framer-motion'
 import { fetchWithCSRF } from '@/lib/utils/fetch-with-csrf'
 import type { MatchSuggestion } from '@/lib/matching/types'
 import { queryKeys, queryClient } from '@/app/providers'
+import { getCompatibilityStaleTime } from '@/lib/cache/compatibility-cache'
+import {
+  fetchLiveCompatibilityBatch,
+  type LiveCompatibilitySnapshot,
+} from '@/lib/matching/live-compatibility'
 
 /** Shown per page in the UI (desktop grid + mobile pager). API fetches in multiples of this. */
 const MATCHES_CARDS_PER_PAGE = 12
@@ -40,7 +45,8 @@ interface MatchWithStatus extends MatchSuggestion {
 function DiscoveryCardWrapper({ 
   suggestion, 
   otherUserId, 
-  currentUserId,
+  liveCompatibility,
+  liveCompatLoading,
   onSkip,
   onConnect,
   connectButtonText,
@@ -48,7 +54,8 @@ function DiscoveryCardWrapper({
 }: { 
   suggestion: MatchWithStatus
   otherUserId: string
-  currentUserId: string
+  liveCompatibility?: LiveCompatibilitySnapshot | null
+  liveCompatLoading?: boolean
   onSkip: () => void
   onConnect: () => void
   connectButtonText?: string
@@ -57,16 +64,14 @@ function DiscoveryCardWrapper({
   const storedScore =
     suggestion.fitIndex > 0 ? suggestion.fitIndex / 100 : 0
 
-  const [compatibilityData, setCompatibilityData] = useState<{
-    compatibility_score?: number
-    harmony_score?: number | null
-    context_score?: number | null
-    dimension_scores_json?: { [key: string]: number } | null
-    other_user_has_incomplete_academic?: boolean
-  } | null>({
+  const compatibilityData = liveCompatibility ?? {
     compatibility_score: storedScore,
-  })
-  const [isLoading, setIsLoading] = useState(false)
+    harmony_score: 0,
+    context_score: 0,
+    dimension_scores_json: null,
+  }
+
+  const isLoading = Boolean(liveCompatLoading && !liveCompatibility && otherUserId)
 
   // Generate compatibility highlights from suggestion data
   const generateHighlights = (): string[] => {
@@ -77,12 +82,11 @@ function DiscoveryCardWrapper({
       highlights.push(...suggestion.reasons.slice(0, 3))
     }
     
-    // Add harmony/context based highlights if scores are high
-    if (compatibilityData?.harmony_score && compatibilityData.harmony_score >= 0.7) {
+    if (compatibilityData.harmony_score >= 0.7) {
       highlights.push('Excellent day-to-day living compatibility')
     }
-    
-    if (compatibilityData?.context_score && compatibilityData.context_score >= 0.7) {
+
+    if (compatibilityData.context_score >= 0.7) {
       highlights.push('Similar academic background and goals')
     }
     
@@ -96,12 +100,14 @@ function DiscoveryCardWrapper({
     return highlights.slice(0, 3)
   }
 
-  const matchScore = compatibilityData?.compatibility_score 
-    ? Math.round(compatibilityData.compatibility_score * 100)
-    : suggestion.fitIndex || 0
+  const matchScore = Math.round(
+    (compatibilityData.compatibility_score > 0
+      ? compatibilityData.compatibility_score
+      : storedScore) * 100
+  ) || suggestion.fitIndex || 0
 
-  const harmonyScore = compatibilityData?.harmony_score ?? 0
-  const contextScore = compatibilityData?.context_score ?? 0
+  const harmonyScore = compatibilityData.harmony_score
+  const contextScore = compatibilityData.context_score
 
   if (isLoading) {
     return (
@@ -122,8 +128,8 @@ function DiscoveryCardWrapper({
           harmonyScore: harmonyScore,
           contextScore: contextScore,
           compatibilityHighlights: generateHighlights(),
-          dimensionScores: compatibilityData?.dimension_scores_json || null,
-          otherUserHasIncompleteAcademic: compatibilityData?.other_user_has_incomplete_academic ?? false
+          dimensionScores: compatibilityData.dimension_scores_json,
+          otherUserHasIncompleteAcademic: false,
         }}
         onSkip={onSkip}
         onConnect={onConnect}
@@ -721,6 +727,32 @@ export function StudentMatchesInterface({ user }: StudentMatchesInterfaceProps) 
     return filteredSuggestions.slice(start, start + MATCHES_CARDS_PER_PAGE)
   }, [filteredSuggestions, matchesPageIndex])
 
+  const pagePeerIds = useMemo(
+    () =>
+      pageSlice
+        .map((s) => s.memberIds.find((id) => id !== user.id))
+        .filter((id): id is string => Boolean(id)),
+    [pageSlice, user.id]
+  )
+
+  const pagePeerIdsKey = useMemo(
+    () => [...pagePeerIds].sort().join(','),
+    [pagePeerIds]
+  )
+
+  const {
+    data: liveCompatByPeer,
+    isLoading: liveCompatQueryLoading,
+    isFetching: liveCompatFetching,
+  } = useQuery({
+    queryKey: ['matches-live-compat', user.id, activeTab, pagePeerIdsKey],
+    queryFn: () => fetchLiveCompatibilityBatch(pagePeerIds),
+    enabled: pagePeerIds.length > 0 && !isLoading,
+    staleTime: getCompatibilityStaleTime(),
+  })
+
+  const liveCompatLoading = liveCompatQueryLoading || liveCompatFetching
+
   useEffect(() => {
     const tp = Math.max(1, Math.ceil(filteredSuggestions.length / MATCHES_CARDS_PER_PAGE))
     setMatchesPageIndex((pi) => Math.min(Math.max(0, pi), tp - 1))
@@ -868,7 +900,7 @@ export function StudentMatchesInterface({ user }: StudentMatchesInterfaceProps) 
   }
 
   const renderMatchCard = (suggestion: MatchWithStatus) => {
-    const otherUserId = suggestion.memberIds.find((id) => id !== user.id)
+    const otherUserId = suggestion.memberIds.find((id) => id !== user.id) ?? ''
     let onSkip: (() => void) | undefined
     let onConnect: (() => void) | undefined
 
@@ -905,8 +937,9 @@ export function StudentMatchesInterface({ user }: StudentMatchesInterfaceProps) 
     return (
       <DiscoveryCardWrapper
         suggestion={suggestion}
-        otherUserId={otherUserId || ''}
-        currentUserId={user.id}
+        otherUserId={otherUserId}
+        liveCompatibility={otherUserId ? liveCompatByPeer?.get(otherUserId) : undefined}
+        liveCompatLoading={liveCompatLoading}
         onSkip={onSkip}
         onConnect={onConnect}
         connectButtonText={activeTab === 'confirmed' ? 'Chat' : undefined}
