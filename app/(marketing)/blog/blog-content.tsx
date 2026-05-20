@@ -3,7 +3,7 @@
 import Section from '@/components/ui/primitives/section'
 import Container from '@/components/ui/primitives/container'
 import Link from 'next/link'
-import { Calendar, Clock, ArrowRight, BookOpen, Shield, Brain, TrendingUp } from 'lucide-react'
+import { Calendar, Clock, ArrowRight, BookOpen, Shield, Brain, TrendingUp, Users } from 'lucide-react'
 import { useApp } from '@/app/providers'
 import { motion, useReducedMotion } from 'framer-motion'
 import { cn } from '@/lib/utils'
@@ -16,6 +16,17 @@ const content = {
     readArticle: 'Read article',
     posts: [
       {
+        slug: 'international-student-housing-netherlands-isolation',
+        title:
+          'International Student Housing in the Netherlands: Where Data Meets Integration Risk',
+        excerpt:
+          'Kences figures via NOS, Nuffic evidence on graduates who leave because of housing, and municipal routing in Breda show why room access is an integration indicator, not a side file.',
+        readTime: '9 min read',
+        date: '2026-05-20',
+        category: 'Integration',
+        icon: Users,
+      },
+      {
         slug: 'student-housing-shortage-retention-roi',
         title:
           'Student Housing Shortage Is a Retention Line Item: What Dutch Data Says About Staying Home',
@@ -25,6 +36,8 @@ const content = {
         date: '2026-05-13',
         category: 'Housing',
         icon: TrendingUp,
+      },
+      {
         slug: 'student-housing-gap-retention-roi',
         title:
           'Beyond Beds: The Hidden ROI of Fixing Europe’s Student Housing Gap Before Retention Breaks',
@@ -174,6 +187,17 @@ const content = {
     readArticle: 'Lees artikel',
     posts: [
       {
+        slug: 'international-student-housing-netherlands-isolation',
+        title:
+          'Internationale studentenhuisvesting in Nederland: waar data en integratierisico elkaar raken',
+        excerpt:
+          'Kences-cijfers via NOS, Nuffic over vertrek na afstuderen, en gemeentelijke verwijzingen in Breda maken zichtbaar waarom kamertoegang een integratie-indicator is.',
+        readTime: '9 min lezen',
+        date: '2026-05-20',
+        category: 'Integratie',
+        icon: Users,
+      },
+      {
         slug: 'student-housing-shortage-retention-roi',
         title: 'Studentenhuisvesting als retentiepost: wat Nederlandse cijfers zeggen over thuiswonen',
         excerpt:
@@ -182,6 +206,8 @@ const content = {
         date: '2026-05-13',
         category: 'Huisvesting',
         icon: TrendingUp,
+      },
+      {
         slug: 'student-housing-gap-retention-roi',
         title:
           'Meer dan een bed: de verborgen ROI van de studentenhuisvestingskloof vóór je retentie kraakt',

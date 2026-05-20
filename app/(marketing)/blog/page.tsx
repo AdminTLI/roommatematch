@@ -64,8 +64,16 @@ export default function BlogPage() {
         hasPart: [
           {
             '@type': 'Article',
+            name: 'International Student Housing in the Netherlands: Where Data Meets Integration Risk',
+            url: 'https://domumatch.com/blog/international-student-housing-netherlands-isolation',
+          },
+          {
+            '@type': 'Article',
             name: 'Student Housing Shortage Is a Retention Line Item: What Dutch Data Says About Staying Home',
             url: 'https://domumatch.com/blog/student-housing-shortage-retention-roi',
+          },
+          {
+            '@type': 'Article',
             name: 'Beyond Beds: The Hidden ROI of Fixing Europe’s Student Housing Gap Before Retention Breaks',
             url: 'https://domumatch.com/blog/student-housing-gap-retention-roi',
           },
