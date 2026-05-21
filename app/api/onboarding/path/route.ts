@@ -1,9 +1,15 @@
 import { NextResponse } from 'next/server'
 import { createServiceClient } from '@/lib/supabase/service'
 import { isUserType } from '@/types/profile'
+import { requireAuthenticatedUser } from '@/lib/auth/server-route-guards'
 
 export async function POST(request: Request) {
   try {
+    const auth = await requireAuthenticatedUser()
+    if (!auth.ok) {
+      return NextResponse.json({ error: auth.error }, { status: auth.status })
+    }
+
     let body: unknown
     try {
       body = await request.json()
@@ -15,6 +21,10 @@ export async function POST(request: Request) {
 
     if (!user_id || typeof user_id !== 'string') {
       return NextResponse.json({ error: 'Missing or invalid user_id' }, { status: 400 })
+    }
+
+    if (user_id !== auth.user.id) {
+      return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
     }
 
     if (!isUserType(user_type)) {

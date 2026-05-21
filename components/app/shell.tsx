@@ -19,6 +19,7 @@ import { useAppVisualViewportTopInset } from '@/hooks/use-app-visual-viewport-to
 import { AppFooter } from './app-footer'
 import { QueryClientProvider } from '@tanstack/react-query'
 import { queryClient } from '@/app/providers'
+import { ActivityHeartbeat } from '@/components/app/activity-heartbeat'
 
 interface AppShellProps {
   children: React.ReactNode
@@ -215,6 +216,8 @@ export function AppShell({
               </div>
             </div>
           </div>
+
+          {user.id !== 'demo-user-id' && <ActivityHeartbeat />}
 
           {/* Message Notification Popup */}
           <MessageNotificationPopup userId={user.id} />

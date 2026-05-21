@@ -36,6 +36,7 @@ import {
 import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
 import { DiscoveryCard } from './discovery-card'
+import { MatchRightsInfoBanner } from '@/components/privacy/match-rights-info-banner'
 import { EmptyState } from '@/components/ui/empty-state'
 import { Card, CardContent } from '@/components/ui/card'
 import {
@@ -1283,6 +1284,8 @@ export function DashboardContent({ hasCompletedQuestionnaire = false, hasPartial
           Here are your suggested matches. Complete your profile to discover more potential roommates.
         </p>
       </motion.div>
+
+      <MatchRightsInfoBanner />
 
       {/* Discovery Feed Grid */}
       <motion.div

@@ -4,6 +4,7 @@ import { createServiceClient } from '@/lib/supabase/service'
 import { appendSourcesSection, extractGroundingSources } from '@/lib/domu-ai/grounding-sources'
 import { getGeminiModel } from '@/lib/gemini-model'
 import { buildDomuSystemInstruction } from '@/lib/domu-ai/system-prompt'
+import { requireAuthenticatedUser } from '@/lib/auth/server-route-guards'
 
 /**
  * Allow Gemini + Google Search grounding to finish on multi-turn event queries.
@@ -34,17 +35,22 @@ function buildContents(history: HistoryEntry[], currentMessage: string): Array<{
 
 export async function POST(request: Request) {
   try {
+    const auth = await requireAuthenticatedUser()
+    if (!auth.ok) {
+      return NextResponse.json({ error: auth.error }, { status: auth.status })
+    }
+
     const body = await request.json().catch(() => ({}))
     const message = (body?.message ?? '').trim()
     const rawHistory = body?.history
     const history: HistoryEntry[] = Array.isArray(rawHistory)
       ? rawHistory
           .filter((m: unknown) => m && typeof m === 'object' && 'role' in m && 'text' in m)
-          .map((m: { role: string; text: string }) => ({
+          .map((m: { role: string; text: string }): HistoryEntry => ({
             role: m.role === 'assistant' ? 'assistant' : 'user',
-            text: String(m.text ?? '').trim()
+            text: String(m.text ?? '').trim(),
           }))
-          .filter((m: HistoryEntry) => m.text.length > 0)
+          .filter((m) => m.text.length > 0)
       : []
 
     if (!message) {

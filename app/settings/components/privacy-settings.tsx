@@ -8,6 +8,7 @@ import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Switch } from '@/components/ui/switch'
 import { Label } from '@/components/ui/label'
 import Link from 'next/link'
+import { MatchingRightsSection } from '@/components/privacy/matching-rights-section'
 import {
   Eye,
   EyeOff,
@@ -31,6 +32,8 @@ const DEFAULT_PRIVACY = {
 interface PrivacySettingsProps {
   user: any
   profile?: { is_visible?: boolean; privacy_settings?: Record<string, boolean> } | null
+  /** Open Art. 22 review modal when linked from match UI (?review=1). */
+  openReviewOnMount?: boolean
 }
 
 interface DSARRequest {
@@ -42,7 +45,7 @@ interface DSARRequest {
   completed_at?: string
 }
 
-export function PrivacySettings({ user, profile }: PrivacySettingsProps) {
+export function PrivacySettings({ user, profile, openReviewOnMount }: PrivacySettingsProps) {
   const router = useRouter()
   const [isLoading, setIsLoading] = useState(false)
   const [isSuccess, setIsSuccess] = useState(false)
@@ -280,6 +283,8 @@ export function PrivacySettings({ user, profile }: PrivacySettingsProps) {
           )}
         </Button>
       </div>
+
+      <MatchingRightsSection openReviewOnMount={openReviewOnMount} />
 
       {/* Data Management Group */}
       <div className="space-y-4">

@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
 import { createAdminClient } from '@/lib/supabase/server'
 import { safeLogger } from '@/lib/utils/logger'
+import { purgeExpiredVerificationsWithStorage } from '@/lib/privacy/verification-retention'
+import { runInactivityLifecycle } from '@/lib/privacy/inactive-accounts'
 
 /**
  * GET /api/cron/data-retention
@@ -56,19 +58,24 @@ export async function GET(request: Request) {
       messages: { deleted: 0, error: null as string | null },
       reports: { deleted: 0, error: null as string | null },
       app_events: { deleted: 0, error: null as string | null },
-      inactive_accounts: { anonymized: 0, error: null as string | null },
+      inactive_accounts: {
+        warnings30d: 0,
+        warnings7d: 0,
+        processed: 0,
+        error: null as string | null,
+      },
       match_suggestions: { expired: 0, error: null as string | null },
       account_deletions: { deleted: 0, errors: [] as string[] }
     }
 
-    // 1. Purge expired verification documents (4 weeks per Dutch law)
+    // 1. Purge expired verification documents + storage (4 weeks per Dutch law)
     try {
-      const { data: verificationResult, error } = await supabase.rpc('purge_expired_verifications')
-      if (error) {
-        throw error
-      }
-      results.verifications.deleted = verificationResult || 0
-      safeLogger.info('[Cron] Purged expired verification documents', { count: results.verifications.deleted })
+      const purgeResult = await purgeExpiredVerificationsWithStorage(supabase)
+      results.verifications.deleted = purgeResult.dbDeleted
+      safeLogger.info('[Cron] Purged expired verification documents', {
+        dbDeleted: purgeResult.dbDeleted,
+        storageFilesDeleted: purgeResult.storageFilesDeleted,
+      })
     } catch (error) {
       results.verifications.error = error instanceof Error ? error.message : 'Unknown error'
       safeLogger.error('[Cron] Failed to purge expired verifications', { error })
@@ -113,17 +120,19 @@ export async function GET(request: Request) {
       safeLogger.error('[Cron] Failed to purge expired app events', { error })
     }
 
-    // 5. Anonymize inactive accounts (2 years)
+    // 5. Inactive account warnings + 1-year processing (privacy policy)
     try {
-      const { data: accountResult, error } = await supabase.rpc('anonymize_inactive_accounts')
-      if (error) {
-        throw error
+      const inactivityResult = await runInactivityLifecycle(supabase)
+      results.inactive_accounts.warnings30d = inactivityResult.warnings30d
+      results.inactive_accounts.warnings7d = inactivityResult.warnings7d
+      results.inactive_accounts.processed = inactivityResult.processed
+      if (inactivityResult.errors.length > 0) {
+        results.inactive_accounts.error = inactivityResult.errors.join('; ')
       }
-      results.inactive_accounts.anonymized = accountResult || 0
-      safeLogger.info('[Cron] Anonymized inactive accounts', { count: results.inactive_accounts.anonymized })
+      safeLogger.info('[Cron] Inactive account lifecycle complete', inactivityResult)
     } catch (error) {
       results.inactive_accounts.error = error instanceof Error ? error.message : 'Unknown error'
-      safeLogger.error('[Cron] Failed to anonymize inactive accounts', { error })
+      safeLogger.error('[Cron] Failed inactive account lifecycle', { error })
     }
 
     // 6. Expire old match suggestions (90 days after expiry)

@@ -138,7 +138,8 @@ export function AdminDSARContent() {
       rectification: 'Data Rectification',
       portability: 'Data Portability',
       restriction: 'Processing Restriction',
-      objection: 'Objection to Processing'
+      objection: 'Objection to Processing',
+      automated_decision_review: 'Match review (Art. 22)',
     }
     return labels[type] || type
   }
@@ -273,6 +274,9 @@ export function AdminDSARContent() {
                 <option value="deletion">Deletion</option>
                 <option value="rectification">Rectification</option>
                 <option value="portability">Portability</option>
+                <option value="automated_decision_review">Match review (Art. 22)</option>
+                <option value="restriction">Restriction</option>
+                <option value="objection">Objection</option>
               </select>
             </div>
             <div>

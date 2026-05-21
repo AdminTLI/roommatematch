@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import {
@@ -41,7 +41,10 @@ interface SettingsContentProps {
 
 export function SettingsContent({ user, profile, academic, professionalContext, progressData, userType }: SettingsContentProps) {
   const router = useRouter()
-  const [activeTab, setActiveTab] = useState('profile')
+  const searchParams = useSearchParams()
+  const openReviewOnMount = searchParams.get('review') === '1'
+  const initialTab = searchParams.get('tab') === 'privacy' ? 'privacy' : 'profile'
+  const [activeTab, setActiveTab] = useState(initialTab)
   const [mounted, setMounted] = useState(false)
   const [unhideLoading, setUnhideLoading] = useState(false)
   const isProfileHidden = profile?.is_visible === false
@@ -225,7 +228,11 @@ export function SettingsContent({ user, profile, academic, professionalContext, 
                       <h2 className="text-xl font-semibold text-zinc-900 dark:text-white">Privacy & Data</h2>
                       <p className="text-sm text-zinc-600 dark:text-zinc-400 mt-1">Control your data visibility and privacy settings.</p>
                     </div>
-                    <PrivacySettings user={user} profile={profile} />
+                    <PrivacySettings
+                      user={user}
+                      profile={profile}
+                      openReviewOnMount={openReviewOnMount}
+                    />
                   </div>
                 </TabsContent>
               </Tabs>

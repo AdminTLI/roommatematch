@@ -7,7 +7,14 @@
 import { createClient } from '@/lib/supabase/server'
 import { safeLogger } from '@/lib/utils/logger'
 
-export type DSARRequestType = 'export' | 'deletion' | 'rectification' | 'portability' | 'restriction' | 'objection'
+export type DSARRequestType =
+  | 'export'
+  | 'deletion'
+  | 'rectification'
+  | 'portability'
+  | 'restriction'
+  | 'objection'
+  | 'automated_decision_review'
 export type DSARRequestStatus = 'pending' | 'in_progress' | 'completed' | 'rejected' | 'cancelled'
 
 export interface DSARRequest {

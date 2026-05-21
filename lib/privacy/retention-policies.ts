@@ -26,10 +26,11 @@ export const RETENTION_POLICIES: RetentionPolicy[] = [
   },
   {
     dataType: 'inactive_accounts',
-    retentionDays: 730, // 2 years
-    description: 'User accounts that have been inactive for 2 years',
-    legalBasis: 'Legitimate interest in maintaining user data for potential re-engagement',
-    exceptions: ['Will be anonymized rather than deleted to preserve analytics data']
+    retentionDays: 365, // 1 year per privacy policy / Dutch DPA guidance
+    description: 'User accounts inactive for 1 year',
+    legalBasis:
+      'Privacy policy: accounts inactive for 1 year are anonymized; non-identifying analytics may be retained',
+    exceptions: ['Warnings at 30 and 7 days before processing; users may log in to reset the clock']
   },
   {
     dataType: 'chat_messages',

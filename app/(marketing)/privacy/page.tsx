@@ -498,6 +498,12 @@ export default function PrivacyPage() {
                           Ask us to temporarily restrict processing while we review a request.
                         </td>
                       </tr>
+                      <tr>
+                        <td className="px-4 py-3 align-top">Automated matching (Art. 22)</td>
+                        <td className="px-4 py-3 align-top">
+                          Request an explanation, human review, or challenge of a compatibility suggestion (Settings → Privacy).
+                        </td>
+                      </tr>
                     </tbody>
                   </table>
                 </div>

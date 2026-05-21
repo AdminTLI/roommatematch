@@ -23,6 +23,7 @@ import {
   Heart
 } from 'lucide-react'
 import { useState } from 'react'
+import Link from 'next/link'
 import {
   Tooltip,
   TooltipContent,
@@ -438,10 +439,13 @@ export function IndividualCompatibilityDisplay({
       {compatibility.personalized_explanation && (
         <Card className="border-2 border-gray-200 dark:border-gray-800">
           <CardContent className="p-5 sm:p-5">
-            <h3 className="text-base sm:text-sm font-semibold text-gray-900 dark:text-gray-100 mb-4 sm:mb-3 flex items-center gap-2">
+            <h3 className="text-base sm:text-sm font-semibold text-gray-900 dark:text-gray-100 mb-1 flex items-center gap-2">
               <Sparkles className="w-5 h-5 sm:w-4 sm:h-4 text-indigo-600 dark:text-indigo-400" />
               Living together guide
             </h3>
+            <p className="text-xs text-gray-500 dark:text-gray-400 mb-4 sm:mb-3">
+              AI-generated summary for discussion — not the sole basis for your compatibility score.
+            </p>
             <MatchInsightMarkdown
               className="text-base sm:text-sm text-gray-600 dark:text-gray-400"
               markdown={compatibility.personalized_explanation}
@@ -520,6 +524,17 @@ export function IndividualCompatibilityDisplay({
     </Card>
         )}
       </div>
+
+      <p className="text-center text-xs text-gray-500 dark:text-gray-400 pt-2">
+        <Link
+          href="/settings?tab=privacy&review=1"
+          className="text-indigo-600 dark:text-indigo-400 underline hover:no-underline"
+        >
+          Question this score?
+        </Link>
+        {' '}
+        — request a human review under your GDPR rights.
+      </p>
 
       {/* Algorithm Version Badge - Subtle Footer */}
       {compatibility.algorithm_version && (

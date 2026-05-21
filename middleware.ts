@@ -212,6 +212,7 @@ export async function middleware(req: NextRequest) {
         '/api/auth/resend-verification', // Resend verification email (users may not be authenticated)
         '/api/domu/chat', // Domu AI chat (dashboard widget; protected by auth + same-origin)
         '/api/settings/hide-profile', // Internal settings action; low-risk to skip CSRF
+        '/api/account/activity', // Session heartbeat; auth required in route
       ]
       // Normalize pathname (remove trailing slash) for consistent matching
       const normalizedPathname = pathname.replace(/\/$/, '')
@@ -392,6 +393,7 @@ export async function middleware(req: NextRequest) {
     '/auth/sign-in',
     '/auth/callback',
     '/auth/reset-password', // Password reset pages (both initial and confirm)
+    '/auth/inactive-account',
     '/verify', // Persona verification page (will check email verification internally)
   ]
 
@@ -487,6 +489,24 @@ export async function middleware(req: NextRequest) {
         userRoleError: userRoleError?.message,
         adminError: adminError?.message
       })
+      return NextResponse.redirect(url)
+    }
+  }
+
+  // Inactive accounts (1-year retention) — block app access after anonymization
+  if (user && isProtectedRoute && pathname !== '/auth/inactive-account') {
+    const { data: inactiveRow } = await supabase
+      .from('users')
+      .select('is_active, inactivity_processed_at')
+      .eq('id', user.id)
+      .maybeSingle()
+
+    if (
+      inactiveRow?.inactivity_processed_at &&
+      inactiveRow.is_active === false
+    ) {
+      const url = req.nextUrl.clone()
+      url.pathname = '/auth/inactive-account'
       return NextResponse.redirect(url)
     }
   }
