@@ -42,6 +42,12 @@ import {
   chartGridProps,
   chartTooltipProps,
 } from '@/lib/admin/metrics-chart-styles'
+
+const formatChartNumber = (value: unknown): string =>
+  typeof value === 'number' ? value.toLocaleString() : typeof value === 'string' ? value : ''
+
+const formatChartNumberPair = (value: unknown, label: string): [string, string] =>
+  [formatChartNumber(value), label]
 import { AtRiskMetricsCard, type AtRiskMetricsData } from './at-risk-metrics-card'
 import { MediationIndexCard, type MediationIndexData } from './mediation-index-card'
 import {
@@ -1014,10 +1020,11 @@ export function AdminMetricsContent({
                           cx="50%"
                           cy="50%"
                           labelLine={false}
-                          label={({ source, percentage }) => {
+                          label={(props) => {
+                            const { source, percentage } = props as { source?: string; percentage?: number }
                             const s = typeof source === 'string' ? source : String(source ?? '')
                             const cap = s ? s.charAt(0).toUpperCase() + s.slice(1) : ''
-                            return `${cap}: ${Number(percentage).toFixed(1)}%`
+                            return `${cap}: ${Number(percentage ?? 0).toFixed(1)}%`
                           }}
                           outerRadius={118}
                           innerRadius={44}
@@ -1029,7 +1036,7 @@ export function AdminMetricsContent({
                             <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                           ))}
                         </Pie>
-                        <Tooltip {...chartTooltipProps} formatter={(value: number) => value.toLocaleString()} />
+                        <Tooltip {...chartTooltipProps} formatter={(value) => formatChartNumber(value)} />
                       </PieChart>
                     </ResponsiveContainer>
                   </div>
@@ -1057,7 +1064,7 @@ export function AdminMetricsContent({
                         />
                         <YAxis label={{ value: 'Events', angle: -90, position: 'insideLeft' }} />
                         <Tooltip 
-                          formatter={(value: number) => value.toLocaleString()}
+                          formatter={(value) => formatChartNumber(value)}
                           labelFormatter={(label) => new Date(label).toLocaleDateString()}
                           contentStyle={{ backgroundColor: 'rgba(255, 255, 255, 0.95)', border: '1px solid #e5e7eb' }}
                         />
@@ -1184,7 +1191,7 @@ export function AdminMetricsContent({
                             height={100}
                           />
                           <YAxis label={{ value: 'Users', angle: -90, position: 'insideLeft' }} />
-                          <Tooltip formatter={(value: number) => value.toLocaleString()} />
+                          <Tooltip formatter={(value) => formatChartNumber(value)} />
                           <Bar dataKey="userCount" fill="#0088FE" name="Users" />
                         </BarChart>
                       </ResponsiveContainer>
@@ -1197,7 +1204,10 @@ export function AdminMetricsContent({
                             cx="50%"
                             cy="50%"
                             labelLine={false}
-                            label={({ name, userCount }) => `${name}: ${userCount}`}
+                            label={(props) => {
+                              const { name, userCount } = props as { name?: string; userCount?: number }
+                              return `${name}: ${userCount}`
+                            }}
                             outerRadius={120}
                             fill="#8884d8"
                             dataKey="userCount"
@@ -1206,7 +1216,7 @@ export function AdminMetricsContent({
                               <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                             ))}
                           </Pie>
-                          <Tooltip formatter={(value: number) => value.toLocaleString()} />
+                          <Tooltip formatter={(value) => formatChartNumber(value)} />
                         </PieChart>
                       </ResponsiveContainer>
                     </div>
@@ -1266,7 +1276,7 @@ export function AdminMetricsContent({
                         />
                       <YAxis label={{ value: 'Users', angle: -90, position: 'insideLeft' }} />
                         <Tooltip 
-                          formatter={(value: number) => value.toLocaleString()}
+                          formatter={(value) => formatChartNumber(value)}
                           contentStyle={{ backgroundColor: 'rgba(255, 255, 255, 0.95)', border: '1px solid #e5e7eb' }}
                         />
                         <Legend wrapperStyle={{ paddingTop: '20px' }} />
@@ -1294,7 +1304,7 @@ export function AdminMetricsContent({
                           tick={{ fontSize: 11 }}
                         />
                         <Tooltip 
-                          formatter={(value: number) => value.toLocaleString()}
+                          formatter={(value) => formatChartNumber(value)}
                           labelFormatter={(label) => label}
                           contentStyle={{ backgroundColor: 'rgba(255, 255, 255, 0.95)', border: '1px solid #e5e7eb' }}
                         />
@@ -1320,7 +1330,7 @@ export function AdminMetricsContent({
                             label={{ value: 'Study Year', position: 'insideBottom', offset: -5 }}
                           />
                           <YAxis label={{ value: 'Students', angle: -90, position: 'insideLeft' }} />
-                          <Tooltip formatter={(value: number) => value.toLocaleString()} contentStyle={{ backgroundColor: 'rgba(255, 255, 255, 0.95)', border: '1px solid #e5e7eb' }} />
+                          <Tooltip formatter={(value) => formatChartNumber(value)} contentStyle={{ backgroundColor: 'rgba(255, 255, 255, 0.95)', border: '1px solid #e5e7eb' }} />
                           <Legend wrapperStyle={{ paddingTop: '20px' }} />
                           <Bar dataKey="count" fill="#FF8042" name="Students" />
                         </BarChart>
@@ -1334,7 +1344,10 @@ export function AdminMetricsContent({
                             cx="50%"
                             cy="50%"
                             labelLine={false}
-                            label={({ study_year, percent }) => `Year ${study_year}: ${(percent * 100).toFixed(0)}%`}
+                            label={(props) => {
+                              const { study_year, percent } = props as { study_year?: number; percent?: number }
+                              return `Year ${study_year}: ${((percent ?? 0) * 100).toFixed(0)}%`
+                            }}
                             outerRadius={120}
                             fill="#8884d8"
                             dataKey="count"
@@ -1343,7 +1356,7 @@ export function AdminMetricsContent({
                               <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                             ))}
                           </Pie>
-                          <Tooltip formatter={(value: number) => value.toLocaleString()} contentStyle={{ backgroundColor: 'rgba(255, 255, 255, 0.95)', border: '1px solid #e5e7eb' }} />
+                          <Tooltip formatter={(value) => formatChartNumber(value)} contentStyle={{ backgroundColor: 'rgba(255, 255, 255, 0.95)', border: '1px solid #e5e7eb' }} />
                         </PieChart>
                       </ResponsiveContainer>
                     </div>
@@ -1428,10 +1441,10 @@ export function AdminMetricsContent({
                         <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
                           <div 
                             className="bg-blue-600 h-2 rounded-full transition-all"
-                            style={{ width: `${(step.count / conversionFunnel.funnelSteps[0].count) * 100}%` }}
+                            style={{ width: `${(step.count / (conversionFunnel.funnelSteps?.[0]?.count ?? 1)) * 100}%` }}
                           />
                         </div>
-                        {index < conversionFunnel.funnelSteps.length - 1 && (
+                        {index < (conversionFunnel.funnelSteps?.length ?? 0) - 1 && (
                           <div className="text-center text-xs text-muted-foreground py-1">
                             ↓ {step.dropOff.toLocaleString()} dropped off
                           </div>
@@ -1466,7 +1479,7 @@ export function AdminMetricsContent({
                           domain={[0, 'dataMax + 5']}
                         />
                         <Tooltip 
-                          formatter={(value: number) => [value.toLocaleString(), 'Matches']}
+                          formatter={(value) => formatChartNumberPair(value, 'Matches')}
                           labelFormatter={(label) => `Week of ${new Date(label).toLocaleDateString()}`}
                           contentStyle={{ backgroundColor: 'rgba(255, 255, 255, 0.95)', border: '1px solid #e5e7eb' }}
                         />
@@ -1555,7 +1568,7 @@ export function AdminMetricsContent({
                       <CartesianGrid strokeDasharray="3 3" />
                       <XAxis hide />
                       <YAxis />
-                      <Tooltip formatter={(value: number) => value.toLocaleString()} contentStyle={{ backgroundColor: 'rgba(255, 255, 255, 0.95)', border: '1px solid #e5e7eb' }} />
+                      <Tooltip formatter={(value) => formatChartNumber(value)} contentStyle={{ backgroundColor: 'rgba(255, 255, 255, 0.95)', border: '1px solid #e5e7eb' }} />
                       <Legend wrapperStyle={{ paddingTop: '20px' }} />
                       <Bar dataKey="signup" stackId="a" fill="#0088FE" name="Signup" />
                       <Bar dataKey="onboarding" stackId="a" fill="#00C49F" name="Onboarding" />
@@ -1585,7 +1598,11 @@ export function AdminMetricsContent({
                           domain={[0, 'dataMax + 10']}
                         />
                         <Tooltip 
-                          formatter={(value: number) => [value.toFixed(1), 'Engagement Score']}
+                          formatter={(value) =>
+                            typeof value === 'number'
+                              ? [value.toFixed(1), 'Engagement Score']
+                              : ['', 'Engagement Score']
+                          }
                           labelFormatter={(label) => new Date(label).toLocaleDateString()}
                           contentStyle={{ backgroundColor: 'rgba(255, 255, 255, 0.95)', border: '1px solid #e5e7eb' }}
                         />
@@ -1697,7 +1714,7 @@ export function AdminMetricsContent({
                       />
                       <YAxis label={{ value: 'Events', angle: -90, position: 'insideLeft' }} />
                       <Tooltip 
-                        formatter={(value: number, name: string) => {
+                        formatter={(value, name) => {
                           const labels: Record<string, string> = {
                             failed_login: 'Failed Logins',
                             suspicious_activity: 'Suspicious Activity',
@@ -1705,7 +1722,8 @@ export function AdminMetricsContent({
                             verification_failure: 'Verification Failures',
                             rate_limit_exceeded: 'Rate Limit Exceeded'
                           }
-                          return [value.toLocaleString(), labels[name] || name]
+                          const label = typeof name === 'string' ? labels[name] || name : String(name ?? '')
+                          return [formatChartNumber(value), label]
                         }}
                         labelFormatter={(label) => new Date(label).toLocaleDateString()}
                         contentStyle={{ backgroundColor: 'rgba(255, 255, 255, 0.95)', border: '1px solid #e5e7eb' }}
@@ -1820,7 +1838,7 @@ export function AdminMetricsContent({
                       />
                       <YAxis />
                       <Tooltip 
-                        formatter={(value: number) => value.toLocaleString()}
+                        formatter={(value) => formatChartNumber(value)}
                         labelFormatter={(label) => label}
                         contentStyle={{ backgroundColor: 'rgba(255, 255, 255, 0.95)', border: '1px solid #e5e7eb' }}
                       />
@@ -1961,7 +1979,9 @@ export function AdminMetricsContent({
                         domain={[0, 100]}
                       />
                       <Tooltip 
-                        formatter={(value: number) => [`${value}%`, 'Retention']}
+                        formatter={(value) =>
+                          typeof value === 'number' ? [`${value}%`, 'Retention'] : ['', 'Retention']
+                        }
                         labelFormatter={(label) => `Cohort: ${new Date(label).toLocaleDateString()}`}
                         contentStyle={{ backgroundColor: 'rgba(255, 255, 255, 0.95)', border: '1px solid #e5e7eb' }}
                       />

@@ -337,8 +337,8 @@ export class EventTracker {
         total_events: data?.length || 0,
         unique_features: new Set(data?.map((d: any) => d.name) || []).size,
         last_activity: data?.[data.length - 1]?.created_at,
-        events_by_type: {},
-        events_by_day: {}
+        events_by_type: {} as Record<string, number>,
+        events_by_day: {} as Record<string, number>
       }
 
       // Group by event type

@@ -1,10 +1,14 @@
 import * as React from "react"
 import { cn } from "@/lib/utils"
 
+type CardProps = React.HTMLAttributes<HTMLDivElement> & {
+  variant?: string
+}
+
 const Card = React.forwardRef<
   HTMLDivElement,
-  React.HTMLAttributes<HTMLDivElement>
->(({ className, ...props }, ref) => (
+  CardProps
+>(({ className, variant: _variant, ...props }, ref) => (
   <div
     ref={ref}
     className={cn(

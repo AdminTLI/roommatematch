@@ -79,10 +79,10 @@ export function AdminAnomalyCard({
   const AnomalyIcon = anomalyIcons[anomaly.anomaly_type]
   const StatusIcon = statusIcons[anomaly.status]
   
-  const severityColor = severityColors[anomaly.severity]
+  const severityColor = severityColors[anomaly.severity as keyof typeof severityColors]
   const statusColor = statusColors[anomaly.status]
   
-  const deviationIcon = anomaly.deviation_percentage && anomaly.deviation_percentage > 0
+  const DeviationIcon = anomaly.deviation_percentage && anomaly.deviation_percentage > 0
     ? ArrowUp 
     : ArrowDown
 
@@ -160,14 +160,12 @@ export function AdminAnomalyCard({
               Actual Value
             </h4>
             <div className="flex items-center gap-2">
-              {deviationIcon && (
-                <deviationIcon className={cn(
+              <DeviationIcon className={cn(
                   'h-4 w-4',
                   anomaly.deviation_percentage && anomaly.deviation_percentage > 0 
                     ? 'text-green-600' 
                     : 'text-red-600'
                 )} />
-              )}
               <span className="text-lg font-semibold text-gray-900 dark:text-gray-100">
                 {anomaly.actual_value.toLocaleString()}
               </span>
@@ -329,7 +327,9 @@ export function AdminAnomalyList({
   const sortedAnomalies = [...anomalies].sort((a, b) => {
     // First by severity (critical > high > medium > low)
     const severityOrder = { critical: 4, high: 3, medium: 2, low: 1 }
-    const severityDiff = severityOrder[b.severity] - severityOrder[a.severity]
+    const severityDiff =
+      severityOrder[b.severity as keyof typeof severityOrder] -
+      severityOrder[a.severity as keyof typeof severityOrder]
     if (severityDiff !== 0) return severityDiff
     
     // Then by detection time (most recent first)

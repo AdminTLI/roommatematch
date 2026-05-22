@@ -135,7 +135,7 @@ export function Universities() {
     visible: (i: number) => ({
       opacity: 1,
       y: 0,
-      transition: { delay: reducedMotion ? 0 : i * 0.06, duration: 0.35, ease: 'easeOut' },
+      transition: { delay: reducedMotion ? 0 : i * 0.06, duration: 0.35, ease: 'easeOut' as const },
     }),
   }
 

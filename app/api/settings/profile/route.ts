@@ -53,7 +53,7 @@ export async function POST(request: Request) {
     const validationResult = profileUpdateSchema.safeParse(body)
     
     if (!validationResult.success) {
-      const firstError = validationResult.error.errors[0]
+      const firstError = validationResult.error.issues[0]
       return NextResponse.json({ 
         error: firstError.message || getFriendlyError('Validation failed')
       }, { status: 400 })
@@ -119,12 +119,9 @@ export async function POST(request: Request) {
       }, { status: 500 })
     }
 
+    const academic = academicData ?? { university_id: null as string | null, degree_level: null as string | null }
     if (!academicData) {
-      // Previously this endpoint required questionnaire/academic data
-      // and would block profile updates if they were missing.
-      // Relax this to allow saving basic profile info without completing the questionnaire.
       safeLogger.debug('[Profile] No user_academic record; allowing profile update without academic data')
-      academicData = { university_id: null, degree_level: null } as any
     }
 
     const { data: existingProfile } = await serviceSupabase
@@ -142,14 +139,14 @@ export async function POST(request: Request) {
       .from('profiles')
       .upsert({
         user_id: user.id,
-        university_id: academicData.university_id,
+        university_id: academic.university_id,
         first_name: identity.first_name,
         last_name: identity.last_name,
         phone: identity.phone,
         bio: bio || null,
         interests: interests && Array.isArray(interests) ? interests : [],
         housing_status: housingStatus && Array.isArray(housingStatus) ? housingStatus : [],
-        degree_level: academicData.degree_level,
+        degree_level: academic.degree_level,
         updated_at: new Date().toISOString()
       }, {
         onConflict: 'user_id'

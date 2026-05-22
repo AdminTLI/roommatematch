@@ -1042,7 +1042,7 @@ export class SupabaseMatchRepo implements MatchRepo {
     // Prefer confirmed suggestions over newer non-confirmed ones
     const seenOtherIds = new Map<string, MatchSuggestion>()
     for (const sug of suggestions) {
-      const otherId = sug.memberIds.find(id => id !== userId)
+      const otherId = sug.memberIds.find((id: string) => id !== userId)
       if (!otherId) continue
 
       const existing = seenOtherIds.get(otherId)

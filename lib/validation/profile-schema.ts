@@ -10,8 +10,7 @@ import { USER_TYPES } from '@/types/profile'
  */
 export const pathSelectionSchema = z.object({
   user_type: z.enum([USER_TYPES[0], USER_TYPES[1]], {
-    required_error: 'Please select whether you are a student or a young professional.',
-    invalid_type_error: 'Invalid selection.',
+    message: 'Please select whether you are a student or a young professional.',
   }),
 })
 

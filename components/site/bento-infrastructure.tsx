@@ -62,7 +62,7 @@ function CompatibilityCounter({
     const controls = animate(count, 98, {
       duration: 2,
       delay: 0.5,
-      ease: 'easeOut',
+      ease: 'easeOut' as const,
       onUpdate: (v) => setDisplay(Math.round(v).toString()),
     })
     return () => controls.stop()
@@ -92,7 +92,7 @@ export function BentoInfrastructure() {
       : {
           opacity: 1,
           y: 0,
-          transition: { duration: 0.5, ease: 'easeOut' },
+          transition: { duration: 0.5, ease: 'easeOut' as const },
         },
   }
 

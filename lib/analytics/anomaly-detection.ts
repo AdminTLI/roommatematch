@@ -500,7 +500,7 @@ export async function detectAllAnomalies(
       })
 
       // Send alert for high severity anomalies
-      if (severity === 'high' || severity === 'critical') {
+      if (severity === 'high') {
         await sendAlert(
           'anomaly',
           `Verification Anomaly Detected: ${anomaly.type}`,
@@ -548,7 +548,7 @@ export async function detectAllAnomalies(
       })
 
       // Send alert for high severity anomalies
-      if (severity === 'high' || severity === 'critical') {
+      if (severity === 'high') {
         await sendAlert(
           'anomaly',
           `Matching Anomaly Detected: ${anomaly.type}`,
@@ -596,7 +596,7 @@ export async function detectAllAnomalies(
       })
 
       // Send alert for high severity anomalies
-      if (severity === 'high' || severity === 'critical') {
+      if (severity === 'high') {
         await sendAlert(
           'anomaly',
           `Job Processing Anomaly Detected: ${anomaly.type}`,

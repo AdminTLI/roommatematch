@@ -189,10 +189,10 @@ export function TopMatchesWidget() {
                 </div>
                 
                 <div className="flex gap-2">
-                  <Button variant="ghost" size="icon" className="h-8 w-8">
+                  <Button variant="ghost" size="sm" className="h-8 w-8">
                     <Heart className="w-4 h-4" />
                   </Button>
-                  <Button variant="ghost" size="icon" className="h-8 w-8">
+                  <Button variant="ghost" size="sm" className="h-8 w-8">
                     <MessageCircle className="w-4 h-4" />
                   </Button>
                 </div>

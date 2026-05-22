@@ -4,7 +4,8 @@
 'use client'
 
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { SortOption, getSortLabel, getSortOptions } from '@/lib/housing/sorting'
+import type { SortOption } from '@/types/housing'
+import { getSortLabel, getSortOptions } from '@/lib/housing/sorting'
 
 interface SortDropdownProps {
   value: SortOption

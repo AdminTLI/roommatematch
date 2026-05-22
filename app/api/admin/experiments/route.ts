@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server'
+import { createClient as createSupabaseAdminClient } from '@supabase/supabase-js'
 import { createClient } from '@/lib/supabase/server'
 import { getExperimentMetrics, getActiveExperiments } from '@/lib/matching/experiments'
 import { safeLogger } from '@/lib/utils/logger'
@@ -133,7 +134,7 @@ export async function POST(request: Request) {
       throw new Error('Missing required environment variables')
     }
 
-    const adminSupabase = createClient(supabaseUrl, supabaseKey)
+    const adminSupabase = createSupabaseAdminClient(supabaseUrl, supabaseKey)
 
     // Create experiment
     const { data: experiment, error: experimentError } = await adminSupabase

@@ -10,7 +10,7 @@ import crypto from 'crypto'
 
 const SaveSearchSchema = z.object({
   name: z.string().min(1).max(255),
-  filters: z.record(z.any()), // JSON object
+  filters: z.record(z.string(), z.any()), // JSON object
   notifyEmail: z.boolean().default(true),
   notifyPush: z.boolean().default(false),
   frequency: z.enum(['instant', 'daily', 'weekly']).default('daily')
@@ -127,7 +127,7 @@ export async function POST(request: NextRequest) {
     
   } catch (error) {
     if (error instanceof z.ZodError) {
-      return NextResponse.json({ error: 'Invalid request data', details: error.errors }, { status: 400 })
+      return NextResponse.json({ error: 'Invalid request data', details: error.issues }, { status: 400 })
     }
     
     console.error('API error:', error)

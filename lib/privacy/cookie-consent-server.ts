@@ -7,6 +7,8 @@
 
 import { createClient } from '@/lib/supabase/server'
 import type { ConsentType, ConsentStatus } from './cookie-consent-client'
+
+export type { ConsentType, ConsentStatus } from './cookie-consent-client'
 import crypto from 'crypto'
 
 export interface ConsentRecord {

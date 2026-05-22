@@ -25,7 +25,7 @@ export default function InactiveAccountPage() {
           . You may also create a new account if you wish to use Domu Match again.
         </p>
         <div className="flex flex-col gap-3 sm:flex-row">
-          <Button asChild variant="default" className="bg-violet-600 hover:bg-violet-700">
+          <Button asChild variant="primary" className="bg-violet-600 hover:bg-violet-700">
             <a href="mailto:contact@domumatch.com">Contact support</a>
           </Button>
           <Button asChild variant="outline">

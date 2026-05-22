@@ -46,6 +46,11 @@
     ".next/dev/types/**/*.ts"
   ],
   "exclude": [
-    "node_modules"
+    "node_modules",
+    "scripts/**",
+    "**/__tests__/**",
+    "tests/**",
+    "**/__stories__/**",
+    "hooks/use-session-tracking.ts"
   ]
 }

@@ -53,20 +53,19 @@ export function MoveInContent() {
       {
         id: 'plan-1',
         title: 'Amsterdam Apartment Move',
-        description: 'Moving to new shared apartment in Amsterdam',
+        description: 'Moving with roommate Emma',
+        move_in_date: '2024-02-01',
+        move_out_date: '2024-02-15',
+        property_address: 'Amsterdam, Netherlands',
+        property_type: 'apartment',
+        is_shared: true,
+        budget_limit: 1500,
+        currency: 'EUR',
         status: 'in_progress',
-        start_date: '2024-02-01',
-        end_date: '2024-02-15',
-        budget: 1500,
         created_by: user?.id || 'demo-user',
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString(),
-        participants: ['demo-user', 'user-2'],
-        tasks: [],
-        expenses: [],
-        location: 'Amsterdam, Netherlands',
-        notes: 'Moving with roommate Emma'
-      }
+      } satisfies MoveInPlan
     ])
   }, [user])
 
@@ -165,8 +164,8 @@ export function MoveInContent() {
             onEdit={(plan) => {
               // Handle edit
             }}
-            onDelete={(plan) => {
-              setPlans(prev => prev.filter(p => p.id !== plan.id))
+            onDelete={(planId) => {
+              setPlans(prev => prev.filter(p => p.id !== planId))
             }}
           />
         </TabsContent>

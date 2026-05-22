@@ -358,13 +358,16 @@ export async function getUsersNeedingEmailReminders(
         return []
       }
 
-      return (users || []).map(user => ({
-        user_id: user.id,
-        email: user.email,
-        first_name: user.first_name,
-        last_name: user.last_name,
-        created_at: user.created_at
-      }))
+      return (users || []).map((row) => {
+        const linkedUser = Array.isArray(row.users) ? row.users[0] : row.users
+        return {
+          user_id: row.user_id,
+          email: linkedUser?.email,
+          first_name: linkedUser?.first_name,
+          last_name: linkedUser?.last_name,
+          created_at: linkedUser?.created_at,
+        }
+      })
     } else if (trigger === 'onboarding_reminder') {
       // Get users who haven't completed onboarding after 48 hours
       const { data: users, error } = await supabase
@@ -384,13 +387,16 @@ export async function getUsersNeedingEmailReminders(
         return []
       }
 
-      return (users || []).map(user => ({
-        user_id: user.id,
-        email: user.email,
-        first_name: user.first_name,
-        last_name: user.last_name,
-        created_at: user.created_at
-      }))
+      return (users || []).map((row) => {
+        const linkedUser = Array.isArray(row.users) ? row.users[0] : row.users
+        return {
+          user_id: row.user_id,
+          email: linkedUser?.email,
+          first_name: linkedUser?.first_name,
+          last_name: linkedUser?.last_name,
+          created_at: linkedUser?.created_at,
+        }
+      })
     }
 
     return []

@@ -29,7 +29,11 @@ const inputClass =
 
 export function SignUpForm({ userType }: { userType?: UserType | null }) {
   const { dictionary } = useApp()
-  const t = dictionary.auth.signUp
+  const t = dictionary.auth.signUp as (typeof import('@/app/(i18n)/en').en)['auth']['signUp'] & {
+    modalTitle?: string
+    dobUnderage?: string
+    goHome?: string
+  }
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')

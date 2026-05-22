@@ -37,7 +37,7 @@ export function EmptyMatchesState({
             <div className="flex flex-col sm:flex-row gap-3 justify-center">
               <Button
                 onClick={onRefresh}
-                variant="default"
+                variant="primary"
                 className="min-w-[140px]"
               >
                 <RefreshCw className="h-4 w-4 mr-2" />
@@ -63,7 +63,7 @@ export function EmptyMatchesState({
             </p>
             <Button
               onClick={() => router.push('/onboarding')}
-              variant="default"
+              variant="primary"
               className="min-w-[180px]"
             >
               Complete Questionnaire

@@ -747,7 +747,7 @@ export function AdminReportsContent() {
               Cancel
             </Button>
             <Button
-              variant={actionType === 'ban' ? 'destructive' : 'default'}
+              variant={actionType === 'ban' ? 'destructive' : 'primary'}
               onClick={handleAction}
               disabled={isProcessing || (actionType !== 'dismiss' && !actionMessage.trim())}
             >

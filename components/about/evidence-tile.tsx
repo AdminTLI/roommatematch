@@ -36,8 +36,8 @@ export function EvidenceTile({
         'h-full flex flex-col p-6 md:p-8 rounded-3xl border border-white/60 bg-white/45 backdrop-blur-xl shadow-[0_18px_50px_rgba(15,23,42,0.08)]',
         'transition-all duration-300 hover:bg-white/60'
       )}
-      initial={reducedMotion ? false : { opacity: 0, y: 24 }}
-      whileInView={reducedMotion ? false : { opacity: 1, y: 0 }}
+      initial={reducedMotion ? undefined : { opacity: 0, y: 24 }}
+      whileInView={reducedMotion ? undefined : { opacity: 1, y: 0 }}
       viewport={{ once: true }}
       transition={{ duration: 0.5 }}
     >

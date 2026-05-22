@@ -27,7 +27,12 @@ export default async function NotificationsPageWrapper() {
       }}
       showQuestionnairePrompt={true}
     >
-      <NotificationsPage user={user} />
+      <NotificationsPage user={{
+        id: user.id,
+        email: user.email ?? '',
+        name: user.user_metadata?.full_name,
+        avatar: user.user_metadata?.avatar_url,
+      }} />
     </AppShell>
   )
 }

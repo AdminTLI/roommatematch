@@ -224,14 +224,14 @@ export function ProfileCompatibilityPane({ chatId, userId, isOpen, onClose }: Pr
         const compatData = await compatResponse.json()
         setCompatibility(compatData)
       } else {
-        safeLogger.warn('[ProfilePane] Failed to fetch compatibility:', await compatResponse.text())
+        safeLogger.warn('[ProfilePane] Failed to fetch compatibility', { response: await compatResponse.text() })
       }
 
       if (userInfoResponse.ok) {
         const userInfoData = await userInfoResponse.json()
         setUserInfo(userInfoData)
       } else {
-        safeLogger.warn('[ProfilePane] Failed to fetch user info:', await userInfoResponse.text())
+        safeLogger.warn('[ProfilePane] Failed to fetch user info', { response: await userInfoResponse.text() })
         if (userInfoResponse.status === 403) {
           setError('You can only view info for matched users.')
         }

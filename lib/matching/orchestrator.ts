@@ -7,7 +7,7 @@ import type { MatchSuggestion } from './types'
 import { toStudent, mapAnswersToVector } from './answer-map'
 import { checkDealBreakers, getReadableReasons } from './dealbreakers'
 import { solvePairs, solveGroups } from './optimize'
-import { MatchingEngine, DEFAULT_WEIGHTS, type MatchingWeights } from './scoring'
+import { MatchingEngine, DEFAULT_WEIGHTS, type MatchingWeights, type UserProfile } from './scoring'
 import itemBank from '@/data/item-bank.v1.json'
 import matchModeConfig from '@/config/match-mode.json'
 import { safeLogger } from '@/lib/utils/logger'
@@ -93,7 +93,7 @@ export async function runMatching({
     })
 
     // Get active experiments for A/B testing
-    const universityId = cohort.universityId || students[0]?.meta?.universityId
+    const universityId = cohort.institutionId || students[0]?.meta?.universityId
     const activeExperiments = universityId ? await getActiveExperiments(students[0]?.id || '', universityId) : []
 
     // Assign users to experiment variants and get variant configurations
@@ -161,7 +161,7 @@ export async function runMatching({
           const profileA = toEngineProfile(studentA)
           const profileB = toEngineProfile(studentB)
 
-          const { score } = engine.computeCompatibilityScore(profileA, profileB)
+          const { score } = engine.computeCompatibilityScore(profileA as UserProfile, profileB as UserProfile)
 
           validPairs.push({
             a: i,
@@ -228,7 +228,7 @@ export async function runMatching({
         const profileA = toEngineProfile(studentA)
         const profileB = toEngineProfile(studentB)
 
-        const { score, explanation } = engine.computeCompatibilityScore(profileA, profileB)
+        const { score, explanation } = engine.computeCompatibilityScore(profileA as UserProfile, profileB as UserProfile)
 
         // Generate human-readable reasons
         const reasons = getReadableReasons(studentA, studentB)
@@ -460,7 +460,16 @@ export async function runMatchingAsSuggestions({
     })
 
     // 2) Precompute pair fits passing deal-breakers
-    const pairFits: { key: string; aId: string; bId: string; fit: number; fitIndex: number; ps: any }[] = []
+    const pairFits: {
+      key: string
+      aId: string
+      bId: string
+      fit: number
+      fitIndex: number
+      ps: any
+      status: 'pending' | 'accepted'
+      acceptedBy: string[]
+    }[] = []
 
     safeLogger.info(`[Suggestions] Starting pair matching`, {
       studentCount: students.length,

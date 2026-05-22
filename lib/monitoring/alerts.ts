@@ -191,7 +191,13 @@ export async function storeAlertMetric(
  * Send alert notification via email/Slack
  */
 export async function sendAlert(
-  alertType: 'study_months' | 'coverage' | 'security' | 'anomaly',
+  alertType:
+    | 'study_months'
+    | 'coverage'
+    | 'security'
+    | 'anomaly'
+    | 'data-integrity'
+    | 'system-health',
   title: string,
   message: string,
   severity: 'low' | 'medium' | 'high' | 'critical' = 'medium',

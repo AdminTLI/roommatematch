@@ -15,7 +15,7 @@ import { ChevronLeft, ChevronRight, Download, Info } from 'lucide-react'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'
 
 interface Column<T> {
-  header: string
+  header: string | React.ReactNode
   accessor: keyof T | ((row: T) => React.ReactNode)
   sortable?: boolean
   tooltip?: string // Optional tooltip text for the column header

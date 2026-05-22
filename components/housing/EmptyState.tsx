@@ -95,7 +95,7 @@ export function EmptyState({
         <div className="mt-8 text-sm text-gray-500">
           <p>
             Need help finding the right place? 
-            <Button variant="link" className="p-0 h-auto text-primary">
+            <Button variant="ghost" className="p-0 h-auto text-primary">
               Contact our support team
             </Button>
           </p>

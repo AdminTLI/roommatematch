@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, type ReactElement } from 'react'
 import { ChevronDown, ChevronUp, HelpCircle, FileText, ExternalLink } from 'lucide-react'
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible'
 import { Card, CardContent, CardHeader } from '@/components/ui/card'
@@ -30,7 +30,7 @@ export function HelpArticleComponent({
   const formatContent = (content: string) => {
     // Format markdown-like content
     const lines = content.split('\n')
-    const formatted: (string | JSX.Element)[] = []
+    const formatted: (string | ReactElement)[] = []
     let listItems: string[] = []
     let inList = false
 
@@ -118,7 +118,7 @@ export function HelpArticleComponent({
   }
 
   const formatBoldAndLinks = (text: string) => {
-    const parts: (string | JSX.Element)[] = []
+    const parts: (string | ReactElement)[] = []
     let currentIndex = 0
 
     // Match **bold** text

@@ -393,7 +393,7 @@ export async function calculateCohortRetentionMetrics(
       }
     }
 
-    const cohortUserIds = cohortUsers.map(u => u.id)
+    const cohortUserIds = (cohortUsers as unknown as Array<{ id: string }>).map(u => u.id)
 
     // Calculate Day 1 retention (users active on day 1)
     const day1Start = new Date(cohortStart.getTime() + 24 * 60 * 60 * 1000)

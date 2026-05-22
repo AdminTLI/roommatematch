@@ -559,7 +559,7 @@ export function NewChatModal({ isOpen, onClose, user, initialMode, onChatCreated
           {/* Mode Toggle */}
           <div className="flex gap-2">
             <Button
-              variant={chatMode === 'individual' ? 'default' : 'outline'}
+              variant={chatMode === 'individual' ? 'primary' : 'outline'}
               onClick={() => handleModeChange('individual')}
               className="flex-1"
               type="button"
@@ -567,7 +567,7 @@ export function NewChatModal({ isOpen, onClose, user, initialMode, onChatCreated
               Individual Chat
             </Button>
             <Button
-              variant={chatMode === 'group' ? 'default' : 'outline'}
+              variant={chatMode === 'group' ? 'primary' : 'outline'}
               onClick={() => handleModeChange('group')}
               className="flex-1"
               type="button"

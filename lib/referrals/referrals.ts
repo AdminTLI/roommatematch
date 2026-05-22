@@ -290,16 +290,12 @@ export async function createReferral(
     }
 
     // Update referral code uses count
-    await supabase.rpc('increment_referral_code_uses', {
+    const { error: incrementUsesError } = await supabase.rpc('increment_referral_code_uses', {
       p_code_id: referralCodeId
-    }).catch(err => {
-      // If RPC doesn't exist, update manually
-      safeLogger.warn('Failed to increment referral code uses via RPC', { error: err })
-      supabase
-        .from('referral_codes')
-        .update({ uses_count: supabase.raw('uses_count + 1') })
-        .eq('id', referralCodeId)
     })
+    if (incrementUsesError) {
+      safeLogger.warn('Failed to increment referral code uses via RPC', { error: incrementUsesError })
+    }
 
     return {
       id: referral.id,
@@ -392,11 +388,12 @@ export async function completeReferral(
     }
 
     // Update campus ambassador metrics if applicable
-    await supabase.rpc('increment_ambassador_referrals', {
+    const { error: incrementAmbassadorError } = await supabase.rpc('increment_ambassador_referrals', {
       p_user_id: referral.referrer_id
-    }).catch(err => {
-      safeLogger.warn('Failed to increment ambassador referrals via RPC', { error: err })
     })
+    if (incrementAmbassadorError) {
+      safeLogger.warn('Failed to increment ambassador referrals via RPC', { error: incrementAmbassadorError })
+    }
 
     return true
   } catch (error) {

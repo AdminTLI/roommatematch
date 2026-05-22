@@ -24,12 +24,12 @@ const ApplicationSchema = z.object({
   name: z.string().min(2, 'Name is required'),
   email: z.string().email('Valid email required'),
   skills: z.string().min(2, 'Tell us a bit about your skills'),
-  tools: z.string().optional().default(''),
+  tools: z.string(),
   timeCommitment: z.string().min(1, 'Please share your expected commitment'),
   exampleProject: z.string().min(2, 'Share an example project or impact'),
-  notes: z.string().optional().default(''),
-  preferredArea: z.string().optional().default(''),
-  courseProgram: z.string().optional().default(''),
+  notes: z.string(),
+  preferredArea: z.string(),
+  courseProgram: z.string(),
 })
 
 type ApplicationForm = z.infer<typeof ApplicationSchema>

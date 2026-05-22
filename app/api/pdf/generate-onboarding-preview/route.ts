@@ -59,6 +59,10 @@ const sectionMeta: Record<SectionKey, { title: string; whyItMatters: string }> =
     title: 'Reliability & Logistics',
     whyItMatters: 'Ensures all roommates are dependable and aligned on practical living requirements.',
   },
+  'professional-context': {
+    title: 'Professional Context',
+    whyItMatters: 'Aligns work schedules and professional living needs for young professionals sharing housing.',
+  },
 }
 
 async function withTimeout<T>(promise: Promise<T>, ms: number): Promise<T> {
@@ -176,7 +180,10 @@ export async function POST(req: NextRequest) {
 
           const sections = buildOnboardingPdfSections({
             items: itemsJson as Item[],
-            onboardingSections: onboardingSections ?? {},
+            onboardingSections: (onboardingSections ?? {}) as Record<
+              SectionKey,
+              Record<string, { value: unknown; dealBreaker?: boolean }>
+            >,
             sectionMeta,
           })
 
@@ -193,7 +200,7 @@ export async function POST(req: NextRequest) {
 
       const pdfBuffer = await timeoutPromise
 
-      return new NextResponse(pdfBuffer, {
+      return new NextResponse(new Uint8Array(pdfBuffer), {
         headers: {
           'Content-Type': 'application/pdf',
           'Content-Disposition': `attachment; filename="domu-match-onboarding-agreement-${new Date()

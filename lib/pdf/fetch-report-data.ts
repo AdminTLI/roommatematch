@@ -39,7 +39,10 @@ export async function fetchReportData(userId: string, userEmail?: string | null)
   const sectionsMap = new Map<string, SectionAnswer[]>();
   
   for (const response of responses || []) {
-    const questionItem = response.question_items;
+    const questionItem = Array.isArray(response.question_items)
+      ? response.question_items[0]
+      : response.question_items;
+    if (!questionItem) continue;
     const sectionId = questionItem.section;
     
     if (!sectionsMap.has(sectionId)) {

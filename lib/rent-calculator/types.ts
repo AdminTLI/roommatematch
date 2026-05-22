@@ -44,7 +44,7 @@ export interface QuestionConfig {
   type: 'numeric' | 'dropdown' | 'toggle' | 'toggle-era'
   tooltip: string
   placeholder?: string
-  options?: Array<{ label: string; value: string | number | boolean }>
+  options?: ReadonlyArray<{ readonly label: string; readonly value: string | number | boolean }>
   min?: number
   max?: number
   required: boolean

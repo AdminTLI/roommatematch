@@ -101,7 +101,7 @@ export function AppHeader({ user }: AppHeaderProps) {
                 onError={(e) => {
                   // Hide image container if logo fails to load
                   const target = e.target as HTMLElement;
-                  const container = target.closest('.relative');
+                  const container = target.closest('.relative') as HTMLElement | null;
                   if (container) {
                     container.style.display = 'none';
                   }

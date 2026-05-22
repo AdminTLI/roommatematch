@@ -1,7 +1,6 @@
 'use client'
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { useApp } from '@/app/providers'
 import { FileText, Users, MessageCircle, ArrowRight } from 'lucide-react'
 
 interface HowItWorksProps {
@@ -9,8 +8,6 @@ interface HowItWorksProps {
 }
 
 export function HowItWorks({ locale = 'en' }: HowItWorksProps) {
-  const { t } = useApp()
-
   const content = {
     en: {
       title: "How it works",

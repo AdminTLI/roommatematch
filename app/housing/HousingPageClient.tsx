@@ -69,12 +69,15 @@ export function HousingPageClient({
     return data.items || [] // Ensure always array
   }, [debouncedFilters])
 
-  const { data: listings = initialListings, isLoading, error } = useQuery({
+  const { data: listings = initialListings, isLoading, error: queryError } = useQuery({
     queryKey: queryKeys.housingListings(debouncedFilters),
     queryFn: fetchListings,
     staleTime: 30_000, // 30 seconds for semi-static data
     initialData: initialListings,
   })
+
+  const errorMessage =
+    queryError instanceof Error ? queryError.message : typeof queryError === 'string' ? queryError : null
 
   // Handle filter changes
   const handleFiltersChange = useCallback((newFilters: FiltersState) => {
@@ -180,7 +183,7 @@ export function HousingPageClient({
             <ListPane
               listings={listings}
               isLoading={isLoading}
-              error={error}
+              error={errorMessage}
               onHover={setHoveredId}
               onSave={handleSave}
               onShare={handleShare}
@@ -191,7 +194,7 @@ export function HousingPageClient({
               onClearFilters={handleClearFilters}
               hasFilters={hasFilters}
               savedListings={savedListings}
-              highlightedId={hoveredId}
+              highlightedId={hoveredId ?? undefined}
             />
           ) : (
             <MapPane
@@ -200,7 +203,7 @@ export function HousingPageClient({
               onHover={setHoveredId}
               onViewportChange={() => {}}
               onListingClick={(id) => router.push(`/housing/${id}`)}
-              highlightedId={hoveredId}
+              highlightedId={hoveredId ?? undefined}
               className="h-[calc(100vh-280px)] sm:h-[600px]"
             />
           )}
@@ -230,7 +233,7 @@ export function HousingPageClient({
             <ListPane
               listings={listings}
               isLoading={isLoading}
-              error={error}
+              error={errorMessage}
               onHover={setHoveredId}
               onSave={handleSave}
               onShare={handleShare}
@@ -241,7 +244,7 @@ export function HousingPageClient({
               onClearFilters={handleClearFilters}
               hasFilters={hasFilters}
               savedListings={savedListings}
-              highlightedId={hoveredId}
+              highlightedId={hoveredId ?? undefined}
             />
           </div>
 
@@ -253,7 +256,7 @@ export function HousingPageClient({
               onHover={setHoveredId}
               onViewportChange={() => {}}
               onListingClick={(id) => router.push(`/housing/${id}`)}
-              highlightedId={hoveredId}
+              highlightedId={hoveredId ?? undefined}
               className="h-full"
             />
           </div>

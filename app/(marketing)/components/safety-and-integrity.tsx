@@ -3,7 +3,6 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
-import { useApp } from '@/app/providers'
 import Link from 'next/link'
 import { Shield, AlertTriangle, Users, Eye, Lock, FileText, ExternalLink } from 'lucide-react'
 
@@ -12,8 +11,6 @@ interface SafetyAndIntegrityProps {
 }
 
 export function SafetyAndIntegrity({ locale = 'en' }: SafetyAndIntegrityProps) {
-  const { t } = useApp()
-
   const content = {
     en: {
       title: "Safety & Integrity",

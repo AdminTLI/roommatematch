@@ -477,7 +477,7 @@ export async function upsertSkdbProgramme(
   const institutions = loadInstitutions()
   const allInstitutions = [...institutions.wo, ...institutions.wo_special, ...institutions.hbo]
   const institution = allInstitutions.find(inst => inst.id === institutionSlug)
-  const sector = institution?.sector || 'wo'
+  const sector = institution?.kind === 'hbo' ? 'hbo' : 'wo'
   
   const now = new Date().toISOString()
   const sources = { duo: false, skdb: true }

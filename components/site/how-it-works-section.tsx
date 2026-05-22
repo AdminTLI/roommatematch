@@ -254,7 +254,7 @@ export function HowItWorksSection() {
       transition: {
         delay: reducedMotion ? 0 : i * 0.08,
         duration: 0.45,
-        ease: 'easeOut',
+        ease: 'easeOut' as const,
       },
     }),
   }
@@ -296,7 +296,7 @@ export function HowItWorksSection() {
 
         {/* Steps  -  interactive stepper */}
         <div className="mb-20">
-          <InteractiveSteps steps={t.steps} reducedMotion={reducedMotion} />
+          <InteractiveSteps steps={t.steps} reducedMotion={!!reducedMotion} />
         </div>
 
         {/* Features - Why our process works */}
@@ -430,7 +430,7 @@ function InteractiveSteps({ steps, reducedMotion }: InteractiveStepsProps) {
         initial={{ opacity: 0, y: 16 }}
         whileInView={{ opacity: 1, y: 0 }}
         viewport={{ once: true }}
-        transition={{ duration: 0.45, ease: 'easeOut' }}
+        transition={{ duration: 0.45, ease: 'easeOut' as const }}
       >
         <div
           className="pointer-events-none absolute left-[1.5rem] top-6 bottom-6 hidden md:block"
@@ -516,7 +516,7 @@ function InteractiveSteps({ steps, reducedMotion }: InteractiveStepsProps) {
           exit={
             reducedMotion ? { opacity: 0 } : { opacity: 0, y: -12, scale: 0.99 }
           }
-          transition={{ duration: 0.28, ease: 'easeOut' }}
+          transition={{ duration: 0.28, ease: 'easeOut' as const }}
         >
           <div
             className={cn(

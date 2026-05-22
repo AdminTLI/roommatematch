@@ -35,8 +35,8 @@ export function Timeline({ items }: TimelineProps) {
           <motion.div
             key={index}
             className="relative flex gap-5 md:gap-6"
-            initial={reducedMotion ? false : { opacity: 0, y: 16 }}
-            whileInView={reducedMotion ? false : { opacity: 1, y: 0 }}
+            initial={reducedMotion ? undefined : { opacity: 0, y: 16 }}
+            whileInView={reducedMotion ? undefined : { opacity: 1, y: 0 }}
             viewport={{ once: true, margin: '-24px' }}
             transition={{ duration: 0.4, delay: index * 0.06 }}
           >

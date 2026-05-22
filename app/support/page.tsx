@@ -33,7 +33,13 @@ export default async function SupportPage() {
   }
 
   return (
-    <AppShell user={user}>
+    <AppShell user={{
+      id: profile.id,
+      email: profile.email,
+      name: profile.name,
+      avatar: profile.avatar,
+      email_confirmed_at: profile.email_confirmed_at,
+    }}>
       <SupportContent user={user} />
     </AppShell>
   )

@@ -2,7 +2,6 @@
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
-import { useApp } from '@/app/providers'
 import { X, Check, AlertTriangle, Users, Target, Clock, Shield } from 'lucide-react'
 
 interface DiffGridProps {
@@ -10,8 +9,6 @@ interface DiffGridProps {
 }
 
 export function DiffGrid({ locale = 'en' }: DiffGridProps) {
-  const { t } = useApp()
-
   const content = {
     en: {
       title: "Why we're different",

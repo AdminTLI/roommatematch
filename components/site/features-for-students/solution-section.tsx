@@ -26,7 +26,7 @@ export function SolutionSection() {
       transition: {
         delay: reducedMotion ? 0 : i * 0.1,
         duration: 0.45,
-        ease: 'easeOut',
+        ease: 'easeOut' as const,
       },
     }),
   }

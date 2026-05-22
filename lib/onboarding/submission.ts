@@ -33,7 +33,7 @@ export function extractSubmissionDataFromIntro(
   let university_id = ''
   let institution_slug = ''
   let degree_level = ''
-  let program_id = ''
+  let program_id: string | undefined = ''
   let program = ''
   let campus = ''
   let study_start_year: number | undefined
@@ -557,8 +557,8 @@ export async function upsertProfileAndAcademic(
   
   // Calculate programme duration if months are provided (trigger will also calculate, but we set it here for consistency)
   let programme_duration_months: number | null = null
-  if (data.study_start_year && data.study_start_month !== null && 
-      data.expected_graduation_year && data.graduation_month !== null) {
+  if (data.study_start_year != null && data.study_start_month != null &&
+      data.expected_graduation_year != null && data.graduation_month != null) {
     const startDate = new Date(data.study_start_year, data.study_start_month - 1, 1)
     const endDate = new Date(data.expected_graduation_year, data.graduation_month - 1, 1)
     const monthsDiff = (endDate.getFullYear() - startDate.getFullYear()) * 12 + 

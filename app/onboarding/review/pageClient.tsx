@@ -5,7 +5,7 @@ import Link from 'next/link'
 import { QuestionnaireLayout } from '@/components/questionnaire/QuestionnaireLayout'
 import { useOnboardingStore } from '@/store/onboarding'
 import itemsJson from '@/data/item-bank.v1.json'
-import type { Item } from '@/types/questionnaire'
+import type { Item, SectionKey } from '@/types/questionnaire'
 import { useMemo } from 'react'
 import { usePathname, useSearchParams } from 'next/navigation'
 import { Button } from '@/components/ui/button'
@@ -39,6 +39,8 @@ function humanize(item: Item, value: any): string {
       return `${value.start} – ${value.end}`
     case 'number':
       return String(value.value)
+    default:
+      return String(value?.value ?? value ?? '')
   }
 }
 
@@ -73,15 +75,15 @@ function ReviewClientContent() {
   const filteredSectionEntries = useMemo(() => {
     return Object.entries(grouped)
       .map(([section, items]) => {
-        const answeredItems = items.filter((it) => sections[section]?.[it.id])
+        const answeredItems = items.filter((it) => sections[section as SectionKey]?.[it.id])
         if (answeredItems.length === 0) return null
 
         const dealBreakerCount = answeredItems.filter(
-          (it) => sections[section]?.[it.id]?.dealBreaker
+          (it) => sections[section as SectionKey]?.[it.id]?.dealBreaker
         ).length
 
         const visibleItems = answeredItems.filter((it) => {
-          const ans = sections[section]?.[it.id]
+          const ans = sections[section as SectionKey]?.[it.id]
           if (!ans) return false
 
           if (dealbreakersOnly && !ans.dealBreaker) return false
@@ -386,7 +388,7 @@ function ReviewClientContent() {
                     ) : (
                       <div className="divide-y divide-border-subtle/30">
                         {visibleItems.map((it) => {
-                          const ans = sections[section]?.[it.id]
+                          const ans = sections[section as SectionKey]?.[it.id]
                           if (!ans) return null
 
                           return (

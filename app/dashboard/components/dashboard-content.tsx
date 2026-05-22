@@ -410,7 +410,7 @@ export function DashboardContent({ hasCompletedQuestionnaire = false, hasPartial
               }
             }
           } catch (error) {
-            logger.warn('[loadRecentMatches] Failed to load processed suggestions from localStorage:', error)
+            logger.warn('[loadRecentMatches] Failed to load processed suggestions from localStorage', { error })
           }
         }
 
@@ -474,7 +474,7 @@ export function DashboardContent({ hasCompletedQuestionnaire = false, hasPartial
               logger.log('[loadRecentMatches] Cleared', staleEntries.length, 'stale localStorage entries')
             }
           } catch (error) {
-            logger.warn('[loadRecentMatches] Failed to clear stale localStorage entries:', error)
+            logger.warn('[loadRecentMatches] Failed to clear stale localStorage entries', { error })
           }
         }
 
@@ -1315,13 +1315,10 @@ export function DashboardContent({ hasCompletedQuestionnaire = false, hasPartial
                   profile={{
                     id: match.userId || match.id,
                     name: match.name,
-                    program: match.program,
-                    university: match.university,
                     matchPercentage: Math.round((match.score || 0) * 100) > 100 ? Math.round(match.score || 0) : Math.round((match.score || 0) * 100),
                     harmonyScore: match.harmonyScore,
                     contextScore: match.contextScore,
                     dimensionScores: match.dimensionScores || null,
-                    avatar: match.avatar
                   }}
                 />
               </motion.div>

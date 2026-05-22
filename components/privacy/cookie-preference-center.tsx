@@ -78,13 +78,21 @@ const consentDescriptions = {
   }
 }
 
-const DEFAULT_PREFERENCES = {
+type CookiePreferences = {
+  essential: true
+  analytics: boolean
+  error_tracking: boolean
+  session_replay: boolean
+  marketing: boolean
+}
+
+const DEFAULT_PREFERENCES: CookiePreferences = {
   essential: true,
   analytics: false,
   error_tracking: false,
   session_replay: false,
-  marketing: false
-} as const
+  marketing: false,
+}
 
 export function CookiePreferenceCenter({
   locale = 'en',
@@ -92,7 +100,7 @@ export function CookiePreferenceCenter({
   consentBaseline = 'from_storage'
 }: CookiePreferenceCenterProps) {
   const appearance = useCookieConsentAppearance()
-  const [preferences, setPreferences] = useState({ ...DEFAULT_PREFERENCES })
+  const [preferences, setPreferences] = useState<CookiePreferences>({ ...DEFAULT_PREFERENCES })
 
   useEffect(() => {
     if (consentBaseline === 'customize_first_visit') {

@@ -32,8 +32,8 @@ export function UniversityCityFAQ({ city }: FAQSectionProps) {
         <motion.h2
           id="faq-heading"
           className="text-3xl md:text-4xl font-bold text-slate-900 text-center mb-10 md:mb-12 tracking-tight"
-          initial={reducedMotion ? false : { opacity: 0, y: 16 }}
-          whileInView={reducedMotion ? false : { opacity: 1, y: 0 }}
+          initial={reducedMotion ? undefined : { opacity: 0, y: 16 }}
+          whileInView={reducedMotion ? undefined : { opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.5 }}
         >
@@ -41,8 +41,8 @@ export function UniversityCityFAQ({ city }: FAQSectionProps) {
         </motion.h2>
         <motion.div
           className="max-w-3xl mx-auto"
-          initial={reducedMotion ? false : { opacity: 0, y: 20 }}
-          whileInView={reducedMotion ? false : { opacity: 1, y: 0 }}
+          initial={reducedMotion ? undefined : { opacity: 0, y: 20 }}
+          whileInView={reducedMotion ? undefined : { opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.5, delay: 0.1 }}
         >

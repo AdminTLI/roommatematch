@@ -142,7 +142,7 @@ export function SafetySection() {
       transition: {
         delay: reducedMotion ? 0 : i * 0.08,
         duration: 0.45,
-        ease: 'easeOut',
+        ease: 'easeOut' as const,
       },
     }),
   }

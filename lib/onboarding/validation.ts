@@ -121,7 +121,7 @@ export function validateField(key: string, value: any): { valid: boolean; error?
     return { valid: true }
   } catch (error) {
     if (error instanceof z.ZodError) {
-      return { valid: false, error: error.errors[0]?.message || 'Validation failed' }
+      return { valid: false, error: error.issues[0]?.message || 'Validation failed' }
     }
     return { valid: false, error: 'Validation failed' }
   }
@@ -221,7 +221,7 @@ export async function checkQuestionnaireCompletion(
   const missingKeys = requiredKeys.filter(key => !responseKeys.has(key));
 
   return {
-    isComplete,
+    isComplete: isComplete ?? false,
     missingKeys,
     responseCount,
     hasSubmission: !!submission

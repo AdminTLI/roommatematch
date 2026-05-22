@@ -206,7 +206,7 @@ export function SuccessNpsWidget() {
               </p>
               <div className="flex flex-col gap-2">
                 <Button
-                  variant={successStatus === 'domu_match' ? 'default' : 'outline'}
+                  variant={successStatus === 'domu_match' ? 'primary' : 'outline'}
                   size="sm"
                   className="justify-start text-left"
                   onClick={() => handleSelectSuccess('domu_match')}
@@ -216,7 +216,7 @@ export function SuccessNpsWidget() {
                   Yes, through Domu Match!
                 </Button>
                 <Button
-                  variant={successStatus === 'external' ? 'default' : 'outline'}
+                  variant={successStatus === 'external' ? 'primary' : 'outline'}
                   size="sm"
                   className="justify-start text-left"
                   onClick={() => handleSelectSuccess('external')}
@@ -226,7 +226,7 @@ export function SuccessNpsWidget() {
                   Yes, but somewhere else.
                 </Button>
                 <Button
-                  variant={successStatus === 'still_looking' ? 'default' : 'outline'}
+                  variant={successStatus === 'still_looking' ? 'primary' : 'outline'}
                   size="sm"
                   className="justify-start text-left"
                   onClick={() => handleSelectSuccess('still_looking')}
@@ -253,8 +253,8 @@ export function SuccessNpsWidget() {
                   <Button
                     key={i}
                     type="button"
-                    variant={npsScore === i ? 'default' : 'outline'}
-                    size="icon"
+                    variant={npsScore === i ? 'primary' : 'outline'}
+                    size="sm"
                     className="h-7 w-7 text-xs"
                     onClick={() => handleSelectNps(i)}
                     disabled={isSubmitting}

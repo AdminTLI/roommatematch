@@ -370,7 +370,7 @@ export async function getSafetyDashboardData(): Promise<SafetyDashboardData | nu
       average_response_time: 45, // This would be calculated from actual data
       total_wellness_checks: wellnessChecks.data?.length || 0,
       users_at_risk: 0, // This would be calculated from wellness patterns
-      recent_incidents,
+      recent_incidents: recentIncidents,
       wellness_trends: [], // This would be fetched from wellness_patterns table
       safety_alerts: alerts.slice(0, 5)
     }
@@ -529,6 +529,7 @@ export function getDemoWellnessChecks(): WellnessCheck[] {
       positive_notes: ['Great relationship with roommates', 'Enjoying campus life'],
       support_needed: ['Study group', 'Time management tips'],
       status: 'completed',
+      follow_up_required: false,
       completed_at: '2024-01-15T14:00:00Z',
       created_at: '2024-01-15T14:00:00Z',
       updated_at: '2024-01-15T14:00:00Z'
@@ -544,6 +545,7 @@ export function getDemoWellnessChecks(): WellnessCheck[] {
       social_connections: 6,
       academic_pressure: 7,
       status: 'completed',
+      follow_up_required: false,
       completed_at: '2024-01-08T10:00:00Z',
       created_at: '2024-01-08T10:00:00Z',
       updated_at: '2024-01-08T10:00:00Z'

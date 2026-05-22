@@ -103,6 +103,7 @@ export function ChatInterface({ roomId, user, onBack, onToggleRightPane, rightPa
   const [messages, setMessages] = useState<Message[]>([])
   const [members, setMembers] = useState<ChatMember[]>([])
   const [newMessage, setNewMessage] = useState('')
+  const [contentValidationError, setContentValidationError] = useState('')
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState('')
   const [typingUsers, setTypingUsers] = useState<string[]>([])
@@ -145,8 +146,8 @@ export function ChatInterface({ roomId, user, onBack, onToggleRightPane, rightPa
 
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const messagesContainerRef = useRef<HTMLDivElement>(null)
-  const typingTimeoutRef = useRef<NodeJS.Timeout>()
-  const typingDebounceRef = useRef<NodeJS.Timeout>()
+  const typingTimeoutRef = useRef<NodeJS.Timeout | undefined>(undefined)
+  const typingDebounceRef = useRef<NodeJS.Timeout | undefined>(undefined)
   const typingChannelRef = useRef<any>(null)
   const presenceChannelRef = useRef<any>(null)
   const messagesChannelRef = useRef<any>(null)
@@ -714,14 +715,14 @@ export function ChatInterface({ roomId, user, onBack, onToggleRightPane, rightPa
                   safeLogger.debug(`[Chat] Fallback: Loaded ${profilesMap.size} profiles directly from Supabase`)
                 }
               } catch (fallbackErr) {
-                safeLogger.warn('[Chat] Fallback profile fetch also failed:', fallbackErr)
+                safeLogger.warn('[Chat] Fallback profile fetch also failed', { error: fallbackErr })
               }
             }
           } else {
-            safeLogger.warn('[Chat] Failed to fetch profiles via API:', await profilesResponse.text())
+            safeLogger.warn('[Chat] Failed to fetch profiles via API', { response: await profilesResponse.text() })
           }
         } catch (err) {
-          safeLogger.warn('[Chat] Failed to fetch profiles:', err)
+          safeLogger.warn('[Chat] Failed to fetch profiles', { error: err })
           // Don't throw - continue with empty profiles map
         }
       }
@@ -843,7 +844,7 @@ export function ChatInterface({ roomId, user, onBack, onToggleRightPane, rightPa
             setGroupCompatibility(data.compatibility)
           }
         } catch (err) {
-          safeLogger.warn('[Chat] Failed to load group compatibility:', err)
+          safeLogger.warn('[Chat] Failed to load group compatibility', { error: err })
         }
       }
 
@@ -1001,7 +1002,7 @@ export function ChatInterface({ roomId, user, onBack, onToggleRightPane, rightPa
             }
           }
         } catch (err) {
-          safeLogger.warn('[Chat] Failed to fetch profiles for older messages:', err)
+          safeLogger.warn('[Chat] Failed to fetch profiles for older messages', { error: err })
         }
       }
 

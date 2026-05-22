@@ -73,7 +73,7 @@ export function UniversitiesHeader() {
                 sizes="(max-width: 768px) 32px, 40px"
                 onError={(e) => {
                   const target = e.target as HTMLElement
-                  const container = target.closest('.relative')
+                  const container = target.closest('.relative') as HTMLElement | null
                   if (container) {
                     container.style.display = 'none'
                   }

@@ -144,15 +144,20 @@ export function LockedGroupChat({ chatId, userId, onUnlock }: LockedGroupChatPro
       // Format members
       const formattedMembers: Member[] = (chatMembers || [])
         .filter(m => m.user_id !== userId) // Exclude self from the list
-        .map(m => ({
+        .map(m => {
+          const profile = Array.isArray(m.profiles) ? m.profiles[0] : m.profiles
+          const university = profile?.universities
+            ? (Array.isArray(profile.universities) ? profile.universities[0] : profile.universities)
+            : null
+          return {
           chat_member_id: m.id as string,
           user_id: m.user_id as string,
-          name: [m.profiles?.first_name, m.profiles?.last_name].filter(Boolean).join(' ') || 'User',
-          program: m.profiles?.program || 'Program',
-          university: m.profiles?.universities?.name || 'University',
+          name: [profile?.first_name, profile?.last_name].filter(Boolean).join(' ') || 'User',
+          program: profile?.program || 'Program',
+          university: university?.name || 'University',
           membership_status: (m.status === 'invited' ? 'invited' : 'active') as 'active' | 'invited',
           compatibility: pairwiseScores[m.id as string] || null
-        }))
+        }})
 
       setMembers(formattedMembers)
 

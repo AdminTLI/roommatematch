@@ -84,7 +84,7 @@ export async function GET(req: NextRequest) {
       const pdfBuffer = await withTimeout(renderPdf(html, { timeoutMs: 30000 }), 30000);
 
       // Return PDF with proper headers
-      return new NextResponse(pdfBuffer, {
+      return new NextResponse(new Uint8Array(pdfBuffer), {
         headers: {
           'Content-Type': 'application/pdf',
           'Content-Disposition': `attachment; filename="roommate-profile-${user.id.slice(0, 8)}.pdf"`,

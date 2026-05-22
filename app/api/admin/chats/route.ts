@@ -303,7 +303,7 @@ export async function POST(request: NextRequest) {
           .eq('id', chatId)
       } catch (updateError) {
         // Column might not exist, continue with member deletion
-        safeLogger.warn('[Admin] Could not update chat closed_at', updateError)
+        safeLogger.warn('[Admin] Could not update chat closed_at', { error: updateError })
       }
       
       // Remove all participants (effectively closing the chat - RLS will prevent new messages)

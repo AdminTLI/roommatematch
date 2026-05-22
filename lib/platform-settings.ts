@@ -32,6 +32,6 @@ export async function updatePlatformSettings(
   updatedBy: string
 ): Promise<PlatformSettings> {
   const merged = await persistPlatformSettings(settings, updatedBy)
-  revalidateTag(PLATFORM_SETTINGS_CACHE_TAG)
+  revalidateTag(PLATFORM_SETTINGS_CACHE_TAG, 'max')
   return merged
 }

@@ -181,7 +181,7 @@ export function AdminContent() {
               {(Object.keys(timePeriodLabels) as TimePeriod[]).map((period) => (
                 <Button
                   key={period}
-                  variant={timePeriod === period ? 'default' : 'outline'}
+                  variant={timePeriod === period ? 'primary' : 'outline'}
                   size="sm"
                   onClick={() => setTimePeriod(period)}
                   className="text-xs"

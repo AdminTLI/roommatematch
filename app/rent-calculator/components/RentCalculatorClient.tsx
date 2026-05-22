@@ -244,8 +244,7 @@ export function RentCalculatorClient() {
               onNext={handleNext}
               canProceed={
                 formData[currentQuestion.key] !== null &&
-                formData[currentQuestion.key] !== undefined &&
-                formData[currentQuestion.key] !== ''
+                formData[currentQuestion.key] !== undefined
               }
             />
           </div>

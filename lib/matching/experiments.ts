@@ -168,7 +168,7 @@ export async function assignUserToExperiment(
     }
 
     // Assign user to variant based on assignment method
-    let variantName: string
+    let variantName = experiment.variants[0]?.name ?? 'control'
 
     if (experiment.assignment_method === 'user_id_hash') {
       // Hash user ID to consistently assign to same variant
@@ -226,13 +226,13 @@ export async function assignUserToExperiment(
     }
 
     // Update experiment user counts
-    await supabase.rpc('increment_experiment_user_count', {
+    const { error: incrementError } = await supabase.rpc('increment_experiment_user_count', {
       p_experiment_id: experimentId,
       p_variant_name: variantName
-    }).catch(err => {
-      // If RPC doesn't exist, update manually
-      safeLogger.warn('Failed to increment user count via RPC', { error: err })
     })
+    if (incrementError) {
+      safeLogger.warn('Failed to increment user count via RPC', { error: incrementError })
+    }
 
     return assignment.variant_name
   } catch (error) {
@@ -308,7 +308,7 @@ export async function trackMatchQualityMetrics(
     // Get match suggestion details
     const { data: match, error: matchError } = await supabase
       .from('match_suggestions')
-      .select('created_at')
+      .select('created_at, updated_at')
       .eq('id', matchId)
       .maybeSingle()
 
@@ -320,7 +320,9 @@ export async function trackMatchQualityMetrics(
     // Get assignment
     const { data: assignment, error: assignmentError } = await supabase
       .from('experiment_assignments')
-      .select('id')
+      .select(
+        'id, matches_accepted, matches_rejected, chat_initiated, agreement_signed, matches_count'
+      )
       .eq('experiment_id', experimentId)
       .eq('user_id', userId)
       .maybeSingle()
@@ -362,29 +364,36 @@ export async function trackMatchQualityMetrics(
 
     // Update assignment metrics
     if (assignment) {
-      const updateData: any = {}
-      
-      if (metrics.outcome === 'accepted') {
-        updateData.matches_accepted = supabase.raw('matches_accepted + 1')
-      } else if (metrics.outcome === 'rejected') {
-        updateData.matches_rejected = supabase.raw('matches_rejected + 1')
-      } else if (metrics.outcome === 'chat_initiated') {
-        updateData.chat_initiated = supabase.raw('chat_initiated + 1')
-      } else if (metrics.outcome === 'agreement_signed') {
-        updateData.agreement_signed = supabase.raw('agreement_signed + 1')
+      const updateData: Record<string, number | string> = {
+        matches_accepted: assignment.matches_accepted ?? 0,
+        matches_rejected: assignment.matches_rejected ?? 0,
+        chat_initiated: assignment.chat_initiated ?? 0,
+        agreement_signed: assignment.agreement_signed ?? 0,
+        matches_count: (assignment.matches_count ?? 0) + 1,
+        updated_at: new Date().toISOString(),
       }
 
-      if (Object.keys(updateData).length > 0) {
-        updateData.matches_count = supabase.raw('matches_count + 1')
-        updateData.updated_at = new Date().toISOString()
+      if (metrics.outcome === 'accepted') {
+        updateData.matches_accepted = (assignment.matches_accepted ?? 0) + 1
+      } else if (metrics.outcome === 'rejected') {
+        updateData.matches_rejected = (assignment.matches_rejected ?? 0) + 1
+      } else if (metrics.outcome === 'chat_initiated') {
+        updateData.chat_initiated = (assignment.chat_initiated ?? 0) + 1
+      } else if (metrics.outcome === 'agreement_signed') {
+        updateData.agreement_signed = (assignment.agreement_signed ?? 0) + 1
+      }
 
-        await supabase
+      try {
+        const { error: updateError } = await supabase
           .from('experiment_assignments')
           .update(updateData)
           .eq('id', assignment.id)
-          .catch(err => {
-            safeLogger.error('Failed to update assignment metrics', { error: err })
-          })
+
+        if (updateError) {
+          safeLogger.error('Failed to update assignment metrics', { error: updateError })
+        }
+      } catch (err) {
+        safeLogger.error('Failed to update assignment metrics', { error: err })
       }
     }
 

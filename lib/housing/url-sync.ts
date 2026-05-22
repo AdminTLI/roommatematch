@@ -1,7 +1,7 @@
 // URL Sync Utilities for Housing Filters
 // Handles serialization of FiltersState to/from URL search params
 
-import { FiltersState, SortOption, ViewMode } from '@/types/housing'
+import { FiltersState, Listing, SortOption, ViewMode } from '@/types/housing'
 
 export function filtersToSearchParams(filters: FiltersState): URLSearchParams {
   const params = new URLSearchParams()

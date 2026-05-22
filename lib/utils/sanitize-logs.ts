@@ -48,21 +48,21 @@ export function sanitizeObject<T extends Record<string, any>>(
   obj: T,
   sensitiveFields: string[] = ['email', 'password', 'token', 'secret', 'api_key', 'apiKey', 'access_token', 'refresh_token']
 ): Partial<T> {
-  const sanitized = { ...obj }
+  const sanitized: Record<string, unknown> = { ...obj }
   
   for (const field of sensitiveFields) {
     if (field in sanitized) {
       if (field === 'email') {
-        sanitized[field] = sanitizeEmail(sanitized[field]) as any
+        sanitized[field] = sanitizeEmail(sanitized[field] as string)
       } else if (typeof sanitized[field] === 'string') {
-        sanitized[field] = '[REDACTED]' as any
+        sanitized[field] = '[REDACTED]'
       } else {
         delete sanitized[field]
       }
     }
   }
   
-  return sanitized
+  return sanitized as Partial<T>
 }
 
 /**

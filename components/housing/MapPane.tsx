@@ -5,7 +5,8 @@
 
 import { useEffect, useRef, useState } from 'react'
 import { Listing, Coords, MapViewport } from '@/types/housing'
-import { MapAdapter, createLeafletAdapter } from '@/lib/map/leaflet-adapter'
+import type { MapAdapter } from '@/lib/map/adapter'
+import { createLeafletAdapter } from '@/lib/map/leaflet-adapter'
 import { Button } from '@/components/ui/button'
 import { MapPin, Navigation, ZoomIn, ZoomOut } from 'lucide-react'
 

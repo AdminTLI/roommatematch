@@ -163,13 +163,14 @@ export async function POST(request: NextRequest) {
     }
 
     if (autoBlocked) {
-      await admin
-        .from('match_blocklist')
-        .insert({
+      try {
+        await admin.from('match_blocklist').insert({
           user_id: user.id,
           blocked_user_id: target_user_id,
         })
-        .catch(() => {})
+      } catch {
+        // non-blocking
+      }
 
       safeLogger.warn('[Report] Auto-blocked user due to repeated reports', {
         targetUserId: target_user_id,

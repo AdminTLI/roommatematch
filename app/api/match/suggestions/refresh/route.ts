@@ -401,21 +401,26 @@ export async function POST(request: NextRequest) {
           // Use detailed matching stats if available
           if (diagnosticInfo.matchingStats) {
             const stats = diagnosticInfo.matchingStats
-            if (stats.dealBreakerBlocks > 0) {
+            if (typeof stats.dealBreakerBlocks === 'number' && stats.dealBreakerBlocks > 0) {
               diagnosticInfo.possibleReasons.push(`${stats.dealBreakerBlocks} out of ${stats.totalPairs} pairs blocked by deal-breakers`)
               if (Object.keys(stats.dealBreakerReasons || {}).length > 0) {
                 const topReason = Object.entries(stats.dealBreakerReasons || {})
-                  .sort((a, b) => b[1] - a[1])[0]
+                  .sort((a, b) => (b[1] as number) - (a[1] as number))[0]
                 if (topReason) {
                   diagnosticInfo.possibleReasons.push(`Most common issue: ${topReason[0]} (${topReason[1]} times)`)
                 }
               }
             }
-            if (stats.belowThreshold > 0) {
+            if (typeof stats.belowThreshold === 'number' && stats.belowThreshold > 0) {
               const avgScore = stats.scoreStats?.avg || 0
               diagnosticInfo.possibleReasons.push(`${stats.belowThreshold} pairs passed deal-breakers but scored below 30% threshold (average: ${avgScore}%)`)
             }
-            if (stats.totalPairs > 0 && stats.passedDealBreakers === 0 && stats.dealBreakerBlocks === stats.totalPairs) {
+            if (
+              typeof stats.totalPairs === 'number' &&
+              stats.totalPairs > 0 &&
+              stats.passedDealBreakers === 0 &&
+              stats.dealBreakerBlocks === stats.totalPairs
+            ) {
               diagnosticInfo.possibleReasons.push('All potential matches were blocked by deal-breakers. Consider adjusting your preferences.')
             }
           } else {

@@ -742,7 +742,10 @@ async function generateTrendData(metrics: AnalyticsMetric[]): Promise<TrendData[
       
       trends.push({
         metric_name: metric.metric_name,
-        trend_direction: getTrendDirection(changePercentage),
+        trend_direction: (() => {
+          const direction = getTrendDirection(changePercentage)
+          return direction === 'up' ? 'increasing' : direction === 'down' ? 'decreasing' : 'stable'
+        })(),
         change_percentage: changePercentage,
         period: formatTimePeriod(metric.period_start, metric.period_end),
         significance

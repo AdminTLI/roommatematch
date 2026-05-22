@@ -2,13 +2,10 @@
 
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { useApp } from '@/app/providers'
 import Link from 'next/link'
 import { ArrowRight, Shield, Users, Heart, CheckCircle, Brain, Eye, Zap } from 'lucide-react'
 
 export function LandingPage() {
-  const { t } = useApp()
-
   const features = [
     {
       icon: Shield,
@@ -61,10 +58,10 @@ export function LandingPage() {
           </div>
           <div className="flex items-center space-x-4">
             <Link href="/auth/sign-in">
-              <Button variant="ghost">{t('nav.signIn')}</Button>
+              <Button variant="ghost">Sign in</Button>
             </Link>
             <Link href="/auth/sign-up">
-              <Button>{t('nav.signUp')}</Button>
+              <Button>Sign up</Button>
             </Link>
           </div>
         </nav>

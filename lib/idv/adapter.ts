@@ -44,6 +44,7 @@ export interface IDVResult {
   }
   selfieMatch?: boolean
   livenessCheck?: boolean
+  error?: string
 }
 
 export interface IDVCallbackResult {

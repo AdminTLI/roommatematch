@@ -82,7 +82,7 @@ export function SaveSearchDialog({
                 <Checkbox
                   id="notifyEmail"
                   checked={notifyEmail}
-                  onCheckedChange={setNotifyEmail}
+                  onCheckedChange={(checked) => setNotifyEmail(checked === true)}
                 />
                 <Label htmlFor="notifyEmail" className="text-sm">
                   Email notifications
@@ -92,7 +92,7 @@ export function SaveSearchDialog({
                 <Checkbox
                   id="notifyPush"
                   checked={notifyPush}
-                  onCheckedChange={setNotifyPush}
+                  onCheckedChange={(checked) => setNotifyPush(checked === true)}
                 />
                 <Label htmlFor="notifyPush" className="text-sm">
                   Push notifications

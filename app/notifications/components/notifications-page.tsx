@@ -46,7 +46,7 @@ export function NotificationsPage({ user }: NotificationsPageProps) {
   const limit = 20
 
   // Fetch notifications with React Query
-  const fetchNotifications = useCallback(async () => {
+  const fetchNotifications = useCallback(async (): Promise<{ notifications: Notification[]; hasMore: boolean }> => {
     const params = new URLSearchParams({
       limit: limit.toString(),
       offset: (page * limit).toString(),
@@ -306,7 +306,7 @@ export function NotificationsPage({ user }: NotificationsPageProps) {
   const loadMore = () => {
     if (!isLoading && hasMore) {
       setPage(prev => prev + 1)
-      fetchNotifications(false)
+      void refetch()
     }
   }
 
@@ -347,7 +347,7 @@ export function NotificationsPage({ user }: NotificationsPageProps) {
           
           <Button
             variant="outline"
-            onClick={() => fetchNotifications(true)}
+            onClick={() => void refetch()}
             disabled={isLoading}
             className="min-h-[44px] min-w-[44px] sm:min-h-0 sm:min-w-0"
           >

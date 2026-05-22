@@ -63,7 +63,7 @@ export async function GET(request: NextRequest) {
     // Fetch user profiles for member IDs
     const allMemberIds = new Set<string>()
     suggestions?.forEach(s => {
-      s.member_ids?.forEach(id => allMemberIds.add(id))
+      s.member_ids?.forEach((id: string) => allMemberIds.add(id))
     })
 
     const { data: profiles } = await admin
@@ -79,14 +79,14 @@ export async function GET(request: NextRequest) {
     ]
 
     suggestions?.forEach(match => {
-      const memberNames = match.member_ids?.map(id => {
+      const memberNames = match.member_ids?.map((id: string) => {
         const profile = profileMap.get(id)
         return profile 
           ? `${profile.first_name} ${profile.last_name || ''}`.trim() || profile.email
           : 'Unknown'
       }).join('; ') || ''
       
-      const acceptedNames = match.accepted_by?.map(id => {
+      const acceptedNames = match.accepted_by?.map((id: string) => {
         const profile = profileMap.get(id)
         return profile 
           ? `${profile.first_name} ${profile.last_name || ''}`.trim() || profile.email

@@ -56,8 +56,8 @@ function DiscoveryCardWrapper({
   otherUserId: string
   liveCompatibility?: LiveCompatibilitySnapshot | null
   liveCompatLoading?: boolean
-  onSkip: () => void
-  onConnect: () => void
+  onSkip?: () => void
+  onConnect?: () => void
   connectButtonText?: string
   connectButtonIcon?: LucideIcon
 }) {

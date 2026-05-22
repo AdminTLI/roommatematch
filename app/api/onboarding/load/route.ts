@@ -36,7 +36,7 @@ export async function GET(request: Request) {
     answers: data?.answers ?? [],
     lastSavedAt: data?.updated_at,
     platformDefaults:
-      section === 'intro'
+      (section as string) === 'intro'
         ? {
             defaultUniversityId: platformSettings.defaultUniversity || null,
             allowMultipleUniversities: platformSettings.allowMultipleUniversities,

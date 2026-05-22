@@ -30,7 +30,6 @@ import type {
   CreateAgreementData,
   AgreementData
 } from '@/lib/agreements/types'
-import { AGREEMENT_TEMPLATES } from '@/lib/agreements/types'
 import { User } from '@supabase/supabase-js'
 
 export function AgreementsContent() {
@@ -67,39 +66,23 @@ export function AgreementsContent() {
     setTemplates(getDemoTemplates())
   }, [])
 
-  const handleCreateAgreement = (data: CreateAgreementData) => {
+  const handleCreateAgreement = (data: CreateAgreementData & { agreement_data: AgreementData }) => {
     const newAgreement: HouseholdAgreement = {
       id: `agreement-${Date.now()}`,
       title: data.title,
       description: data.description,
-      category: data.category,
+      template_id: data.template_id,
+      agreement_data: data.agreement_data,
       status: 'draft',
       created_by: user?.id || 'demo-user',
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
-      due_date: data.dueDate,
-      participants: data.participants || [],
-      items: data.items || [],
-      signatures: [],
-      attachments: [],
-      tags: data.tags || [],
-      priority: data.priority || 'medium',
-      visibility: data.visibility || 'household',
-      reminder_frequency: data.reminderFrequency || 'weekly',
-      auto_renewal: data.autoRenewal || false,
-      renewal_period: data.renewalPeriod || 'monthly',
-      escalation_rules: data.escalationRules || [],
-      completion_criteria: data.completionCriteria || [],
-      reward_system: data.rewardSystem || null,
-      penalty_system: data.penaltySystem || null,
-      review_schedule: data.reviewSchedule || 'monthly',
-      last_reviewed: null,
-      next_review: null,
-      archived: false,
-      archived_at: null,
-      version: 1,
-      previous_version: null,
-      change_log: []
+      household_name: data.household_name,
+      household_address: data.household_address,
+      requires_all_signatures: data.requires_all_signatures ?? true,
+      auto_renewal: data.auto_renewal ?? false,
+      renewal_period_months: data.renewal_period_months ?? 12,
+      needs_admin_review: false,
     }
 
     setAgreements(prev => [newAgreement, ...prev])
@@ -211,20 +194,33 @@ export function AgreementsContent() {
             onEdit={(agreement) => {
               // Handle edit
             }}
-            onDelete={(agreement) => {
-              setAgreements(prev => prev.filter(a => a.id !== agreement.id))
+            onDelete={(agreementId) => {
+              setAgreements(prev => prev.filter(a => a.id !== agreementId))
             }}
           />
         </TabsContent>
 
         <TabsContent value="templates" className="space-y-6">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {AGREEMENT_TEMPLATES.map((template) => (
+            {templates.map((template) => {
+              const categoryIcon = {
+                house_rules: Home,
+                chore_rotation: RotateCcw,
+                quiet_hours: VolumeX,
+                rent_split: DollarSign,
+                guest_policy: Users,
+                cleaning_schedule: Sparkles,
+                utilities: Zap,
+                parking: Car,
+                general: FileText,
+              }[template.category]
+              const Icon = categoryIcon ?? FileText
+              return (
               <Card key={template.id} className="cursor-pointer hover:shadow-md transition-shadow">
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
-                    <template.icon className="w-5 h-5 text-blue-600" />
-                    {template.title}
+                    <Icon className="w-5 h-5 text-blue-600" />
+                    {template.name}
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
@@ -240,7 +236,8 @@ export function AgreementsContent() {
                   </div>
                 </CardContent>
               </Card>
-            ))}
+              )
+            })}
           </div>
         </TabsContent>
 
@@ -255,7 +252,7 @@ export function AgreementsContent() {
           <div className="bg-white rounded-lg max-w-4xl w-full max-h-[90vh] overflow-y-auto">
             <div className="p-6 border-b border-gray-200 flex items-center justify-between">
               <h2 className="text-xl font-semibold">
-                {selectedTemplate ? `Create ${selectedTemplate.title}` : 'Create New Agreement'}
+                {selectedTemplate ? `Create ${selectedTemplate.name}` : 'Create New Agreement'}
               </h2>
               <Button 
                 variant="ghost" 
@@ -270,8 +267,7 @@ export function AgreementsContent() {
             <div className="p-6">
               <AgreementBuilder 
                 template={selectedTemplate}
-                participants={participants}
-                onSubmit={handleCreateAgreement}
+                onSave={handleCreateAgreement}
                 onCancel={() => {
                   setShowBuilder(false)
                   setSelectedTemplate(undefined)

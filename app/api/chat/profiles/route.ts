@@ -82,7 +82,7 @@ export async function POST(request: NextRequest) {
       safeLogger.warn('User not a member of some requested chats, returning profiles for authorized chats only', {
         userId: user.id,
         authorizedChatIds,
-        unauthorizedChatIds
+        unauthorizedChats
       })
     }
 

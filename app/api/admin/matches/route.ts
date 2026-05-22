@@ -80,7 +80,7 @@ export async function GET(request: NextRequest) {
     // Fetch user profiles and emails for member IDs
     const allMemberIds = new Set<string>()
     suggestions?.forEach(s => {
-      s.member_ids?.forEach(id => allMemberIds.add(id))
+      s.member_ids?.forEach((id: string) => allMemberIds.add(id))
     })
 
     const memberIdsArray = Array.from(allMemberIds)
@@ -122,7 +122,7 @@ export async function GET(request: NextRequest) {
     // Enrich suggestions with user names
     const enriched = suggestions?.map(s => ({
       ...s,
-      members: s.member_ids?.map(id => {
+      members: s.member_ids?.map((id: string) => {
         const profile = profileMap.get(id)
         const user = userMap.get(id)
         const authUser = authUsersMap.get(id)

@@ -422,6 +422,13 @@ export const RATE_LIMITS = {
     failClosed: true
   }, getSharedStore),
 
+  // Unmatch actions (fail-closed to prevent abuse)
+  unmatch: new RateLimiter({
+    windowMs: 60 * 60 * 1000, // 1 hour
+    maxRequests: 10,
+    failClosed: true
+  }, getSharedStore),
+
   // Chat profiles (fail-closed to prevent enumeration)
   chat_profiles: new RateLimiter({
     windowMs: 60 * 1000, // 1 minute

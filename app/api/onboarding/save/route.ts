@@ -7,7 +7,7 @@ import { extractSubmissionDataFromIntro, upsertProfileAndAcademic } from '@/lib/
 import { safeLogger } from '@/lib/utils/logger'
 import { syncQuestionImportanceTicks } from '@/lib/onboarding/sync-question-importance-ticks'
 
-type SaveBody = { section: SectionKey; answers: any[] }
+type SaveBody = { section: SectionKey | 'intro'; answers: any[] }
 
 export async function POST(request: Request) {
   const supabase = await createClient()
@@ -222,7 +222,7 @@ export async function POST(request: Request) {
         const serviceSupabase = createServiceClient()
         
         // Convert program_id from RIO code to UUID if needed (same logic as submit route)
-        let programUUID: string | undefined = submissionData.program_id
+        let programUUID: string | undefined = submissionData.program_id ?? undefined
         if (submissionData.program_id && typeof submissionData.program_id === 'string' && submissionData.program_id.trim() !== '') {
           const isUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(submissionData.program_id)
           

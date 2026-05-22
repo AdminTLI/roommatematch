@@ -164,8 +164,8 @@ export function IntegrationMetricsCard({ analyticsQuery = '' }: Props) {
                     ))}
                   </Pie>
                   <Tooltip
-                    formatter={(value: number, name: string) => [
-                      value.toLocaleString(),
+                    formatter={(value: number | undefined, name: string | undefined) => [
+                      (value ?? 0).toLocaleString(),
                       name === 'Cross-cultural' ? 'Cross-cultural matches' : 'Same-origin matches',
                     ]}
                     contentStyle={{

@@ -253,7 +253,7 @@ export async function POST(request: NextRequest) {
         // The verification status will be checked from the verifications table
         // When the profile is created during onboarding, it will use the verification_status
         // from the verifications table (see onboarding submission logic)
-        safeLogger.info('[Verification] Profile does not exist yet for user', user.id)
+        safeLogger.info('[Verification] Profile does not exist yet for user', { userId: user.id })
         safeLogger.info('[Verification] Status will be checked from verifications table until profile is created')
       }
     }

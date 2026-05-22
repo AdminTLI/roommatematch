@@ -2,7 +2,6 @@
 
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { useApp } from '@/app/providers'
 import Link from 'next/link'
 import { ArrowRight, Users, Shield, CheckCircle } from 'lucide-react'
 
@@ -11,8 +10,6 @@ interface HeroSplitCTAProps {
 }
 
 export function HeroSplitCTA({ locale = 'en' }: HeroSplitCTAProps) {
-  const { t } = useApp()
-
   const content = {
     en: {
       title: "From strangers to roommates",

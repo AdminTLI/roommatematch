@@ -91,7 +91,7 @@ function DefaultErrorFallback({ error, resetError }: { error?: Error; resetError
         <div className="mt-6 text-sm text-gray-500">
           <p>
             If this problem persists, please{' '}
-            <Button variant="link" className="p-0 h-auto text-primary">
+            <Button variant="ghost" className="p-0 h-auto text-primary">
               contact support
             </Button>
           </p>

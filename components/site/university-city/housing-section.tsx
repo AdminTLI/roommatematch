@@ -28,8 +28,8 @@ export function UniversityCityHousing({ city }: HousingSectionProps) {
         <div className="max-w-5xl mx-auto space-y-12">
           <motion.div
             className="text-center space-y-4"
-            initial={reducedMotion ? false : { opacity: 0, y: 16 }}
-            whileInView={reducedMotion ? false : { opacity: 1, y: 0 }}
+            initial={reducedMotion ? undefined : { opacity: 0, y: 16 }}
+            whileInView={reducedMotion ? undefined : { opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 0.5 }}
           >
@@ -50,8 +50,8 @@ export function UniversityCityHousing({ city }: HousingSectionProps) {
                 'p-6 md:p-8 space-y-4 rounded-3xl border border-white/60 bg-white/45 backdrop-blur-xl shadow-[0_18px_50px_rgba(15,23,42,0.08)]',
                 'transition-all duration-300 hover:bg-white/60'
               )}
-              initial={reducedMotion ? false : { opacity: 0, y: 20 }}
-              whileInView={reducedMotion ? false : { opacity: 1, y: 0 }}
+              initial={reducedMotion ? undefined : { opacity: 0, y: 20 }}
+              whileInView={reducedMotion ? undefined : { opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ duration: 0.5, delay: 0.1 }}
             >
@@ -82,8 +82,8 @@ export function UniversityCityHousing({ city }: HousingSectionProps) {
                 'p-6 md:p-8 space-y-4 rounded-3xl border border-white/60 bg-white/45 backdrop-blur-xl shadow-[0_18px_50px_rgba(15,23,42,0.08)]',
                 'transition-all duration-300 hover:bg-white/60'
               )}
-              initial={reducedMotion ? false : { opacity: 0, y: 20 }}
-              whileInView={reducedMotion ? false : { opacity: 1, y: 0 }}
+              initial={reducedMotion ? undefined : { opacity: 0, y: 20 }}
+              whileInView={reducedMotion ? undefined : { opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ duration: 0.5, delay: 0.2 }}
             >

@@ -210,7 +210,7 @@ export async function POST(request: NextRequest) {
           await repo.lockMatch([userA, userB], firstSug.run_id as string)
           await repo.markUsersMatched([userA, userB], firstSug.run_id as string)
         } catch (matchRecordError) {
-          safeLogger.warn('[Admin] Failed to save match record for pair', matchRecordError)
+          safeLogger.warn('[Admin] Failed to save match record for pair', { error: matchRecordError })
           // Continue anyway - suggestions are already confirmed
         }
 
@@ -314,7 +314,7 @@ export async function POST(request: NextRequest) {
             chatId
           )
         } catch (notifError) {
-          safeLogger.warn('[Admin] Failed to create notifications for pair', notifError)
+          safeLogger.warn('[Admin] Failed to create notifications for pair', { error: notifError })
         }
 
         processed++

@@ -386,8 +386,8 @@ export async function calculateGroupCompatibility(
     lifestyle_score: Math.max(0, Math.min(1, lifestyleScore)),
     social_score: Math.max(0, Math.min(1, socialScore)),
     academic_score: Math.max(0, Math.min(1, academicScore)),
-    category_weights: weights,
-    member_deviations,
+    category_weights: weights as unknown as Record<string, number>,
+    member_deviations: memberDeviations,
     calculated_at: new Date().toISOString(),
     explanation
   }

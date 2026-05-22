@@ -2,7 +2,6 @@
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
-import { useApp } from '@/app/providers'
 import { Shield, Users, Lock, CheckCircle, Eye, Globe } from 'lucide-react'
 
 interface ValuePropsProps {
@@ -10,8 +9,6 @@ interface ValuePropsProps {
 }
 
 export function ValueProps({ locale = 'en' }: ValuePropsProps) {
-  const { t } = useApp()
-
   const content = {
     en: {
       title: "Built for trust and safety",

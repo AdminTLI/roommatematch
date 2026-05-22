@@ -25,9 +25,8 @@ const nextConfig = {
     ignoreDuringBuilds: true,
   },
   typescript: {
-    // TODO: Fix TypeScript errors and remove this flag
-    // Run: npm run type-check to identify errors, then fix them
-    ignoreBuildErrors: true,
+    // Type-check runs on every production build (see npm run type-check)
+    ignoreBuildErrors: false,
   },
   compiler: {
     // Remove console.log, console.info, console.debug in production

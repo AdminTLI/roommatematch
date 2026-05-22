@@ -8,6 +8,7 @@ import { checkRateLimit, getUserRateLimitKey } from '@/lib/rate-limit'
 import { trackEvent, EVENT_TYPES } from '@/lib/events'
 import { validateMatchSuggestion, validateUserAction, validateStatusTransition } from '@/lib/matching/validation'
 import { ensureProfileAccessRows, resolvePairMatchId } from '@/lib/privacy/profile-access-server'
+import { joinedUserEmail } from '@/lib/supabase/relation-helpers'
 
 export async function POST(request: NextRequest) {
   try {
@@ -468,8 +469,8 @@ export async function POST(request: NextRequest) {
               .single()
             
             const demoEmail = process.env.DEMO_USER_EMAIL
-            const userAIsDemo = userAProfile?.users?.email === demoEmail
-            const userBIsDemo = userBProfile?.users?.email === demoEmail
+            const userAIsDemo = joinedUserEmail(userAProfile?.users) === demoEmail
+            const userBIsDemo = joinedUserEmail(userBProfile?.users) === demoEmail
             
             if (userAIsDemo || userBIsDemo) {
               safeLogger.warn(`[WARN] Blocked chat creation: demo user cannot be matched with real users in production`)
@@ -567,7 +568,9 @@ export async function POST(request: NextRequest) {
               memberCount: 2
             })
 
-            await ensureProfileAccessRows(admin, chatId)
+            if (chatId) {
+              await ensureProfileAccessRows(admin, chatId)
+            }
             
             // System message (use first user as sender)
             const { error: msgErr } = await admin
@@ -623,7 +626,7 @@ export async function POST(request: NextRequest) {
             suggestion.id,
             chatId
           )
-        } else {
+        } else if (chatId) {
           await createGroupMatchNotification(
             suggestion.memberIds,
             suggestion.id,
@@ -719,8 +722,8 @@ export async function POST(request: NextRequest) {
                 .single()
               
               const demoEmail = process.env.DEMO_USER_EMAIL
-              const userAIsDemo = userAProfile?.users?.email === demoEmail
-              const userBIsDemo = userBProfile?.users?.email === demoEmail
+              const userAIsDemo = joinedUserEmail(userAProfile?.users) === demoEmail
+              const userBIsDemo = joinedUserEmail(userBProfile?.users) === demoEmail
               
               if (userAIsDemo || userBIsDemo) {
                 safeLogger.warn(`[WARN] Blocked chat creation: demo user cannot be matched with real users in production`)
@@ -818,7 +821,9 @@ export async function POST(request: NextRequest) {
                 memberCount: 2
               })
 
-              await ensureProfileAccessRows(admin, chatId)
+              if (chatId) {
+                await ensureProfileAccessRows(admin, chatId)
+              }
               
               // System message (use first user as sender)
               const { error: msgErr } = await admin

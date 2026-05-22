@@ -30,7 +30,7 @@ export function ViewToggle({ value, onChange, className }: ViewToggleProps) {
         return (
           <Button
             key={view.value}
-            variant={isActive ? 'default' : 'ghost'}
+            variant={isActive ? 'primary' : 'ghost'}
             size="sm"
             onClick={() => onChange(view.value)}
             className={cn(

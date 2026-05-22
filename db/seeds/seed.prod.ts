@@ -230,7 +230,7 @@ async function seedProduction() {
     if (listError) {
       console.error('   ❌ Error listing users:', listError.message)
     } else {
-      const demoUser = existingUsers.users.find(u => u.email?.toLowerCase() === DEMO_USER_EMAIL.toLowerCase())
+      const demoUser = existingUsers.users.find(u => u.email?.toLowerCase() === DEMO_USER_EMAIL!.toLowerCase())
       
       let demoUserId: string | undefined
       

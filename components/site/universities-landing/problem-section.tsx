@@ -34,7 +34,7 @@ export function ProblemSection() {
     visible: (i: number) => ({
       opacity: 1,
       y: 0,
-      transition: { delay: reducedMotion ? 0 : i * 0.1, duration: 0.45, ease: 'easeOut' },
+      transition: { delay: reducedMotion ? 0 : i * 0.1, duration: 0.45, ease: 'easeOut' as const },
     }),
   }
 

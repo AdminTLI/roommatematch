@@ -1,5 +1,9 @@
 // Community Pulse Dashboard for Admins - Advanced Analytics Types
 
+import type { DeliveryMethod, SeverityLevel } from '@/lib/safety/types'
+
+export type RiskLevel = 'low' | 'medium' | 'high' | 'critical'
+
 export interface AnalyticsMetric {
   id: string
   metric_name: string

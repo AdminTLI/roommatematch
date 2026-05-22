@@ -10,7 +10,7 @@ export interface SectionAnswer {
   label: string;
   value: string | number | boolean | Likert5 | string[];
   meta?: {
-    unit?: '°C' | 'months' | 'days' | 'guests/mo' | 'time-24h';
+    unit?: '°C' | 'months' | 'days' | 'guests/mo' | 'time-24h' | '€/month' | 'minutes';
     endpoints?: [string, string];
   };
   dealBreaker?: DealBreakerFlag;

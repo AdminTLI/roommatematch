@@ -82,7 +82,8 @@ export async function renderPdf(html: string, options: RenderPdfOptions = {}): P
     })();
 
     try {
-      return await Promise.race([work, timeoutPromise]);
+      const pdfBytes = await Promise.race([work, timeoutPromise]);
+      return Buffer.from(pdfBytes);
     } finally {
       if (timer) clearTimeout(timer);
       if (timedOut) {

@@ -609,7 +609,7 @@ export function AdminVerificationsContent() {
               Cancel
             </Button>
             <Button
-              variant={overrideStatus === 'approved' ? 'default' : 'destructive'}
+              variant={overrideStatus === 'approved' ? 'primary' : 'destructive'}
               onClick={handleOverride}
               disabled={isOverriding}
             >

@@ -129,6 +129,7 @@ export interface AgreementData {
     template_version: string
     filled_at: string
     filled_by: string
+    category?: string
   }
 }
 
@@ -148,6 +149,9 @@ export interface FilledAgreementField {
   value: any
   is_required: boolean
   order: number
+  description?: string
+  placeholder?: string
+  options?: string[]
 }
 
 export interface SignatureData {
@@ -403,6 +407,7 @@ export const AGREEMENT_TEMPLATES: Record<AgreementCategory, TemplateConfig> = {
             id: 'utilities_included',
             type: 'multiselect',
             label: 'Utilities Included in Rent',
+            is_required: false,
             order: 3,
             options: [
               'Electricity',
@@ -504,6 +509,7 @@ export const AGREEMENT_TEMPLATES: Record<AgreementCategory, TemplateConfig> = {
             id: 'guest_areas',
             type: 'multiselect',
             label: 'Areas Guests Can Use',
+            is_required: false,
             order: 3,
             options: [
               'Common areas only',
@@ -552,6 +558,7 @@ export const AGREEMENT_TEMPLATES: Record<AgreementCategory, TemplateConfig> = {
             id: 'shared_responsibilities',
             type: 'multiselect',
             label: 'Shared Cleaning Responsibilities',
+            is_required: false,
             order: 3,
             options: [
               'Kitchen counters',

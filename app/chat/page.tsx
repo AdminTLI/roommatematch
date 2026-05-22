@@ -59,7 +59,7 @@ export default async function ChatPage({ searchParams }: ChatPageProps) {
           <MessengerLayout
             user={{
               ...user,
-              name: userProfile.name || userProfile.first_name || user.email?.split('@')[0] || 'User',
+              name: userProfile.name || user.email?.split('@')[0] || 'User',
               email: user.email
             }}
             initialChatId={initialChatId}

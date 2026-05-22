@@ -356,7 +356,7 @@ export function AdminDSARContent() {
                         </Button>
                         {request.status === 'pending' && (
                           <Button
-                            variant="default"
+                            variant="primary"
                             size="sm"
                             onClick={async () => {
                               // Mark as in progress

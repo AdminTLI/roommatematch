@@ -16,9 +16,6 @@ export function initSentry() {
     // Set tracesSampleRate to 1.0 to capture 100% of the transactions for performance monitoring
     tracesSampleRate: process.env.NODE_ENV === 'production' ? 0.1 : 1.0,
     
-    // Capture unhandled promise rejections
-    captureUnhandledRejections: true,
-    
     // Filter out sensitive data
     beforeSend(event, hint) {
       // Don't send events in development unless explicitly enabled
