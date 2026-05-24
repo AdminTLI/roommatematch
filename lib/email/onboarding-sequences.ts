@@ -4,6 +4,50 @@
 import { createClient } from '@supabase/supabase-js'
 import { safeLogger } from '@/lib/utils/logger'
 import { sendEmail } from './workflows'
+import { renderEmailLayout, renderButton, renderInfoBox, escapeHtml } from './layout'
+import { BRAND, COLORS, URLS, buildUnsubscribeUrl } from './brand'
+import { createUnsubscribeToken } from './unsubscribe-token'
+
+function safeUnsubUrl(userId: string | undefined): string | undefined {
+  if (!userId) return undefined
+  try {
+    return buildUnsubscribeUrl(createUnsubscribeToken(userId))
+  } catch {
+    return undefined
+  }
+}
+
+/**
+ * Should we send a lifecycle / marketing-style email (welcome, verification
+ * reminder, onboarding nudge, first-match alert) to this user?
+ *
+ * Hard transactional mail (password reset, ticket replies, security alerts,
+ * legal warnings) never goes through this gate.
+ *
+ * We map all lifecycle/marketing copy to `emailUpdates` so users have a
+ * single, predictable toggle on the unsubscribe page.
+ */
+export async function canSendLifecycleEmail(userId: string): Promise<boolean> {
+  try {
+    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
+    const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY
+    if (!supabaseUrl || !supabaseKey) return true
+
+    const supabase = createClient(supabaseUrl, supabaseKey)
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('notification_preferences')
+      .eq('user_id', userId)
+      .maybeSingle()
+
+    const prefs = (profile as any)?.notification_preferences
+    if (!prefs || typeof prefs !== 'object') return true
+    return prefs.emailUpdates !== false
+  } catch (error) {
+    safeLogger.warn('[Email] canSendLifecycleEmail check failed; allowing send', { error })
+    return true
+  }
+}
 
 export interface EmailSequence {
   id: string
@@ -39,45 +83,44 @@ export async function sendOnboardingWelcomeEmail(
   userName?: string
 ): Promise<boolean> {
   try {
-    const emailSent = await sendEmail({
-      to: userEmail,
-      subject: 'Welcome to Domu Match!',
-      html: `
-        <h2>Welcome to Domu Match!</h2>
-        <p>Hello ${userName || 'there'},</p>
-        <p>Thank you for joining Domu Match! We're excited to help you find your perfect roommate.</p>
-        <p>To get started, please complete your profile by:</p>
-        <ol>
-          <li>Verifying your identity</li>
-          <li>Completing your onboarding questionnaire</li>
-          <li>Adding your preferences and requirements</li>
-        </ol>
-        <p>Once your profile is complete, we'll start matching you with compatible roommates.</p>
-        <p>If you have any questions, feel free to reach out to our support team.</p>
-        <p>Best regards,<br>The Domu Match Team</p>
-      `,
-      text: `
-        Welcome to Domu Match!
-        
-        Hello ${userName || 'there'},
-        
-        Thank you for joining Domu Match! We're excited to help you find your perfect roommate.
-        
-        To get started, please complete your profile by:
-        1. Verifying your identity
-        2. Completing your onboarding questionnaire
-        3. Adding your preferences and requirements
-        
-        Once your profile is complete, we'll start matching you with compatible roommates.
-        
-        If you have any questions, feel free to reach out to our support team.
-        
-        Best regards,
-        The Domu Match Team
-      `
+    const niceName = userName?.trim() || 'there'
+    const bodyHtml = `
+      <h1 style="margin:0 0 12px;font-size:24px;font-weight:700;color:${COLORS.textHeading};text-align:center;letter-spacing:-0.2px;">
+        Welcome to Domu Match
+      </h1>
+      <p style="margin:0 0 20px;text-align:center;color:${COLORS.textMuted};font-size:15px;">
+        Hey ${escapeHtml(niceName)} - we’re so glad you’re here. Finding a roommate shouldn’t feel like a gamble, and your perfect match could be just a few questions away.
+      </p>
+      <div style="margin:24px 0;">
+        ${renderButton('Set up your profile', URLS.signIn)}
+      </div>
+      ${renderInfoBox(
+        `<strong style="color:${COLORS.textBody};">Quick start (about 5 minutes):</strong>
+         <ol style="margin:8px 0 0;padding-left:18px;color:${COLORS.textMuted};font-size:14px;line-height:22px;">
+           <li>Verify your email and identity.</li>
+           <li>Answer the compatibility questionnaire.</li>
+           <li>Set your preferences - budget, move-in, dealbreakers.</li>
+         </ol>`,
+        'neutral'
+      )}`
+
+    const html = renderEmailLayout({
+      preheader: 'Welcome to Domu Match - set up your profile in about 5 minutes.',
+      title: 'Welcome to Domu Match',
+      bodyHtml,
+      recipientEmail: userEmail,
+      includeUnsubscribe: true,
+      unsubscribeUrl: safeUnsubUrl(userId),
     })
 
-    return emailSent
+    const text = `Hey ${niceName},\n\nWelcome to Domu Match! Set up your profile in about 5 minutes:\n1. Verify your email and identity\n2. Answer the compatibility questionnaire\n3. Set your preferences\n\nGet started: ${URLS.signIn}\n\n- ${BRAND.name}\n${BRAND.tagline}\n`
+
+    return await sendEmail({
+      to: userEmail,
+      subject: 'Welcome to Domu Match',
+      html,
+      text,
+    })
   } catch (error) {
     safeLogger.error('Error sending onboarding welcome email', { error })
     return false
@@ -93,42 +136,41 @@ export async function sendOnboardingCompletionEmail(
   userName?: string
 ): Promise<boolean> {
   try {
-    const emailSent = await sendEmail({
-      to: userEmail,
-      subject: 'Your Profile is Complete!',
-      html: `
-        <h2>Your Profile is Complete!</h2>
-        <p>Hello ${userName || 'there'},</p>
-        <p>Great news! Your profile is complete and we're now matching you with compatible roommates.</p>
-        <p>You'll receive match suggestions soon. In the meantime, you can:</p>
-        <ul>
-          <li>Review your preferences</li>
-          <li>Explore potential matches</li>
-          <li>Update your profile if needed</li>
-        </ul>
-        <p>We'll notify you when we have new matches for you.</p>
-        <p>Best regards,<br>The Domu Match Team</p>
-      `,
-      text: `
-        Your Profile is Complete!
-        
-        Hello ${userName || 'there'},
-        
-        Great news! Your profile is complete and we're now matching you with compatible roommates.
-        
-        You'll receive match suggestions soon. In the meantime, you can:
-        - Review your preferences
-        - Explore potential matches
-        - Update your profile if needed
-        
-        We'll notify you when we have new matches for you.
-        
-        Best regards,
-        The Domu Match Team
-      `
+    const niceName = userName?.trim() || 'there'
+    const dashboardUrl = `${URLS.home}/dashboard`
+
+    const bodyHtml = `
+      <h1 style="margin:0 0 12px;font-size:24px;font-weight:700;color:${COLORS.textHeading};text-align:center;letter-spacing:-0.2px;">
+        Your profile is ready
+      </h1>
+      <p style="margin:0 0 20px;text-align:center;color:${COLORS.textMuted};font-size:15px;">
+        Nice work, ${escapeHtml(niceName)}. Your profile is complete and we’re already running compatibility checks. Matches will start arriving in your dashboard soon.
+      </p>
+      <div style="margin:24px 0;">
+        ${renderButton('Open your dashboard', dashboardUrl)}
+      </div>
+      ${renderInfoBox(
+        `<strong style="color:${COLORS.textBody};">While you wait:</strong> review your preferences, peek at potential matches, and keep your profile fresh - small tweaks can sharpen your recommendations.`,
+        'neutral'
+      )}`
+
+    const html = renderEmailLayout({
+      preheader: 'Your Domu Match profile is complete - matches are on the way.',
+      title: 'Your profile is ready - Domu Match',
+      bodyHtml,
+      recipientEmail: userEmail,
+      includeUnsubscribe: true,
+      unsubscribeUrl: safeUnsubUrl(userId),
     })
 
-    return emailSent
+    const text = `Hey ${niceName},\n\nYour Domu Match profile is complete and we're running compatibility checks. Match suggestions will start landing in your dashboard soon.\n\nOpen your dashboard: ${dashboardUrl}\n\n- ${BRAND.name}\n${BRAND.tagline}\n`
+
+    return await sendEmail({
+      to: userEmail,
+      subject: 'Your profile is ready - Domu Match',
+      html,
+      text,
+    })
   } catch (error) {
     safeLogger.error('Error sending onboarding completion email', { error })
     return false
@@ -144,37 +186,41 @@ export async function sendVerificationReminderEmail(
   userName?: string
 ): Promise<boolean> {
   try {
-    const emailSent = await sendEmail({
-      to: userEmail,
-      subject: 'Complete Your Verification',
-      html: `
-        <h2>Complete Your Verification</h2>
-        <p>Hello ${userName || 'there'},</p>
-        <p>We noticed you haven't completed your identity verification yet.</p>
-        <p>Verification is required to use Domu Match and helps ensure a safe environment for everyone.</p>
-        <p>Please complete your verification to continue using the platform.</p>
-        <p>If you have any questions or need help, feel free to reach out to our support team.</p>
-        <p>Best regards,<br>The Domu Match Team</p>
-      `,
-      text: `
-        Complete Your Verification
-        
-        Hello ${userName || 'there'},
-        
-        We noticed you haven't completed your identity verification yet.
-        
-        Verification is required to use Domu Match and helps ensure a safe environment for everyone.
-        
-        Please complete your verification to continue using the platform.
-        
-        If you have any questions or need help, feel free to reach out to our support team.
-        
-        Best regards,
-        The Domu Match Team
-      `
+    const niceName = userName?.trim() || 'there'
+    const verifyUrl = `${URLS.home}/settings`
+
+    const bodyHtml = `
+      <h1 style="margin:0 0 12px;font-size:24px;font-weight:700;color:${COLORS.textHeading};text-align:center;letter-spacing:-0.2px;">
+        Finish verifying your account
+      </h1>
+      <p style="margin:0 0 20px;text-align:center;color:${COLORS.textMuted};font-size:15px;">
+        Hey ${escapeHtml(niceName)} - a quick verification step keeps Domu Match a safe place for everyone. It only takes a minute and unlocks matching.
+      </p>
+      <div style="margin:24px 0;">
+        ${renderButton('Complete verification', verifyUrl)}
+      </div>
+      ${renderInfoBox(
+        `Need a hand? Email us anytime at <a href="mailto:${BRAND.supportEmail}" style="color:${COLORS.primary};text-decoration:underline;">${BRAND.supportEmail}</a> and we’ll help you through it.`,
+        'neutral'
+      )}`
+
+    const html = renderEmailLayout({
+      preheader: 'A quick verification step unlocks Domu Match.',
+      title: 'Finish verifying your Domu Match account',
+      bodyHtml,
+      recipientEmail: userEmail,
+      includeUnsubscribe: true,
+      unsubscribeUrl: safeUnsubUrl(userId),
     })
 
-    return emailSent
+    const text = `Hey ${niceName},\n\nA quick verification step keeps Domu Match safe and unlocks matching for you. It only takes a minute.\n\nComplete verification: ${verifyUrl}\n\nNeed help? Email ${BRAND.supportEmail}.\n\n- ${BRAND.name}\n${BRAND.tagline}\n`
+
+    return await sendEmail({
+      to: userEmail,
+      subject: 'Finish verifying your Domu Match account',
+      html,
+      text,
+    })
   } catch (error) {
     safeLogger.error('Error sending verification reminder email', { error })
     return false
@@ -191,31 +237,43 @@ export async function sendFirstMatchEmail(
   matchCount: number = 1
 ): Promise<boolean> {
   try {
-    const emailSent = await sendEmail({
-      to: userEmail,
-      subject: `You have ${matchCount} new match${matchCount > 1 ? 'es' : ''}!`,
-      html: `
-        <h2>You Have New Matches!</h2>
-        <p>Hello ${userName || 'there'},</p>
-        <p>Great news! We've found ${matchCount} compatible roommate${matchCount > 1 ? 's' : ''} for you.</p>
-        <p>Log in to your account to view your matches and start connecting.</p>
-        <p>Best regards,<br>The Domu Match Team</p>
-      `,
-      text: `
-        You Have New Matches!
-        
-        Hello ${userName || 'there'},
-        
-        Great news! We've found ${matchCount} compatible roommate${matchCount > 1 ? 's' : ''} for you.
-        
-        Log in to your account to view your matches and start connecting.
-        
-        Best regards,
-        The Domu Match Team
-      `
+    const niceName = userName?.trim() || 'there'
+    const matchesUrl = `${URLS.home}/matches`
+    const plural = matchCount > 1 ? 'matches' : 'match'
+    const subject = `You have ${matchCount} new ${plural}`
+
+    const bodyHtml = `
+      <h1 style="margin:0 0 12px;font-size:24px;font-weight:700;color:${COLORS.textHeading};text-align:center;letter-spacing:-0.2px;">
+        Your first ${escapeHtml(plural)}${matchCount > 1 ? ' are' : ' is'} here
+      </h1>
+      <p style="margin:0 0 20px;text-align:center;color:${COLORS.textMuted};font-size:15px;">
+        Big moment, ${escapeHtml(niceName)} - we found <strong style="color:${COLORS.textHeading};">${matchCount}</strong> compatible roommate${matchCount > 1 ? 's' : ''} for you. Have a look and say hi when you’re ready.
+      </p>
+      <div style="margin:24px 0;">
+        ${renderButton('See your matches', matchesUrl)}
+      </div>
+      ${renderInfoBox(
+        `<strong style="color:${COLORS.textBody};">Tip:</strong> A friendly first message - “When are you hoping to move in?” - gets replies faster than a hello.`,
+        'neutral'
+      )}`
+
+    const html = renderEmailLayout({
+      preheader: `${matchCount} new compatible roommate${matchCount > 1 ? 's are' : ' is'} waiting on Domu Match.`,
+      title: subject,
+      bodyHtml,
+      recipientEmail: userEmail,
+      includeUnsubscribe: true,
+      unsubscribeUrl: safeUnsubUrl(userId),
     })
 
-    return emailSent
+    const text = `Hey ${niceName},\n\nWe found ${matchCount} compatible roommate${matchCount > 1 ? 's' : ''} for you. Have a look and say hi when you're ready.\n\nSee your matches: ${matchesUrl}\n\n- ${BRAND.name}\n${BRAND.tagline}\n`
+
+    return await sendEmail({
+      to: userEmail,
+      subject,
+      html,
+      text,
+    })
   } catch (error) {
     safeLogger.error('Error sending first match email', { error })
     return false
@@ -264,32 +322,37 @@ export async function processOnboardingEmailSequence(
       case 'onboarding_completed':
         emailSent = await sendOnboardingCompletionEmail(userId, user.email, userName)
         break
-      case 'verification_completed':
-        // Send verification completion email
+      case 'verification_completed': {
+        const dashboardUrl = `${URLS.home}/dashboard`
+        const bodyHtml = `
+          <h1 style="margin:0 0 12px;font-size:24px;font-weight:700;color:${COLORS.textHeading};text-align:center;letter-spacing:-0.2px;">
+            Verification complete
+          </h1>
+          <p style="margin:0 0 20px;text-align:center;color:${COLORS.textMuted};font-size:15px;">
+            You’re all set, ${escapeHtml(userName)}. Your identity has been verified and every Domu Match feature is now unlocked.
+          </p>
+          <div style="margin:24px 0;">
+            ${renderButton('Open your dashboard', dashboardUrl)}
+          </div>`
+
+        const html = renderEmailLayout({
+          preheader: 'Your Domu Match identity verification is complete.',
+          title: 'Verification complete - Domu Match',
+          bodyHtml,
+          recipientEmail: user.email,
+          includeUnsubscribe: false,
+        })
+
+        const text = `Hello ${userName},\n\nYour Domu Match identity verification is complete. Every feature is now unlocked.\n\nOpen your dashboard: ${dashboardUrl}\n\n- ${BRAND.name}\n${BRAND.tagline}\n`
+
         emailSent = await sendEmail({
           to: user.email,
-          subject: 'Verification Complete!',
-          html: `
-            <h2>Verification Complete!</h2>
-            <p>Hello ${userName},</p>
-            <p>Your identity verification has been completed successfully.</p>
-            <p>You can now use all features of Domu Match.</p>
-            <p>Best regards,<br>The Domu Match Team</p>
-          `,
-          text: `
-            Verification Complete!
-            
-            Hello ${userName},
-            
-            Your identity verification has been completed successfully.
-            
-            You can now use all features of Domu Match.
-            
-            Best regards,
-            The Domu Match Team
-          `
+          subject: 'Verification complete - Domu Match',
+          html,
+          text,
         })
         break
+      }
       case 'first_match':
         // Get match suggestion count
         const now = new Date().toISOString()

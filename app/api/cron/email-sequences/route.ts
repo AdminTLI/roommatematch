@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server'
-import { processOnboardingEmailSequence, getUsersNeedingEmailReminders, sendVerificationReminderEmail } from '@/lib/email/onboarding-sequences'
+import { processOnboardingEmailSequence, getUsersNeedingEmailReminders, sendVerificationReminderEmail, canSendLifecycleEmail } from '@/lib/email/onboarding-sequences'
 import { sendNotificationDigestEmails } from '@/lib/email/notification-digests'
 import { createClient } from '@supabase/supabase-js'
 import { safeLogger } from '@/lib/utils/logger'
@@ -62,6 +62,9 @@ export async function GET(request: Request) {
     const usersNeedingVerification = await getUsersNeedingEmailReminders('verification_reminder', 24)
     for (const user of usersNeedingVerification) {
       try {
+        // Respect the user's email preferences (set on /unsubscribe or settings).
+        if (!(await canSendLifecycleEmail(user.user_id))) continue
+
         const emailSent = await sendVerificationReminderEmail(
           user.user_id,
           user.email,
@@ -83,6 +86,7 @@ export async function GET(request: Request) {
     const usersNeedingOnboarding = await getUsersNeedingEmailReminders('onboarding_reminder', 48)
     for (const user of usersNeedingOnboarding) {
       try {
+        if (!(await canSendLifecycleEmail(user.user_id))) continue
         const emailSent = await processOnboardingEmailSequence(user.user_id, 'onboarding_started', 0)
 
         if (emailSent) {

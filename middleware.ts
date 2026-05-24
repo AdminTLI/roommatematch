@@ -108,12 +108,17 @@ export async function middleware(req: NextRequest) {
     pathname.startsWith('/api/admin') ||
     pathname.startsWith('/api/cron') ||
     pathname.startsWith('/api/public') ||
+    pathname.startsWith('/api/dev/') ||
+    pathname.startsWith('/api/unsubscribe') ||
     pathname.startsWith('/_next') ||
     pathname.startsWith('/static') ||
     pathname.startsWith('/images') ||
     pathname === '/favicon.ico' ||
     pathname === '/robots.txt' ||
-    pathname === '/sitemap.xml'
+    pathname === '/sitemap.xml' ||
+    pathname.startsWith('/dev/email-preview') ||
+    pathname.startsWith('/dev/unsubscribe-preview') ||
+    pathname.startsWith('/unsubscribe')
 
   if (platformSettings.maintenanceMode && !maintenanceExempt) {
     const url = req.nextUrl.clone()
@@ -144,7 +149,10 @@ export async function middleware(req: NextRequest) {
     '/admin-portal/login',
     '/favicon.ico',
     '/robots.txt',
-    '/sitemap.xml'
+    '/sitemap.xml',
+    '/unsubscribe',
+    '/dev/email-preview',
+    '/dev/unsubscribe-preview',
   ]
   const isApiRoute = pathname.startsWith('/api')
   const method = req.method.toUpperCase()
@@ -213,6 +221,7 @@ export async function middleware(req: NextRequest) {
         '/api/domu/chat', // Domu AI chat (dashboard widget; protected by auth + same-origin)
         '/api/settings/hide-profile', // Internal settings action; low-risk to skip CSRF
         '/api/account/activity', // Session heartbeat; auth required in route
+        '/api/unsubscribe', // Token-authenticated; users arrive from email without session/CSRF
       ]
       // Normalize pathname (remove trailing slash) for consistent matching
       const normalizedPathname = pathname.replace(/\/$/, '')

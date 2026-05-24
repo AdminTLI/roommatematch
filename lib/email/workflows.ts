@@ -3,6 +3,8 @@
 
 import { createClient } from '@supabase/supabase-js'
 import { safeLogger } from '@/lib/utils/logger'
+import { renderEmailLayout, renderButton, renderInfoBox, escapeHtml } from './layout'
+import { BRAND, COLORS, URLS } from './brand'
 
 export interface EmailConfig {
   /** Mailjet API key (from Account settings → SMTP and SEND API settings) */
@@ -153,41 +155,45 @@ export async function sendTicketCreationNotification(
       return false
     }
 
-    // Send email to user
-    const emailSent = await sendEmail({
-      to: user.email,
-      subject: `Support Ticket Created: ${ticket.ticket_number}`,
-      html: `
-        <h2>Support Ticket Created</h2>
-        <p>Hello ${user.first_name || 'there'},</p>
-        <p>Your support ticket has been created successfully.</p>
-        <p><strong>Ticket Number:</strong> ${ticket.ticket_number}</p>
-        <p><strong>Subject:</strong> ${ticket.subject}</p>
-        <p><strong>Category:</strong> ${ticket.category}</p>
-        <p><strong>Priority:</strong> ${ticket.priority}</p>
-        <p>We'll get back to you as soon as possible.</p>
-        <p>Best regards,<br>The Domu Match Team</p>
-      `,
-      text: `
-        Support Ticket Created
-        
-        Hello ${user.first_name || 'there'},
-        
-        Your support ticket has been created successfully.
-        
-        Ticket Number: ${ticket.ticket_number}
-        Subject: ${ticket.subject}
-        Category: ${ticket.category}
-        Priority: ${ticket.priority}
-        
-        We'll get back to you as soon as possible.
-        
-        Best regards,
-        The Domu Match Team
-      `
+    const niceName = user.first_name || 'there'
+    const helpUrl = URLS.helpCenter
+    const bodyHtml = `
+      <h1 style="margin:0 0 12px;font-size:24px;font-weight:700;color:${COLORS.textHeading};text-align:center;letter-spacing:-0.2px;">
+        We got your support request
+      </h1>
+      <p style="margin:0 0 20px;text-align:center;color:${COLORS.textMuted};font-size:15px;">
+        Hi ${escapeHtml(niceName)} - thanks for reaching out. Our team will get back to you as soon as possible.
+      </p>
+      ${renderInfoBox(
+        `<div style="text-align:left;">
+           <div style="font-size:11px;font-weight:700;letter-spacing:2px;color:${COLORS.textMuted};text-transform:uppercase;margin-bottom:6px;">Ticket</div>
+           <div style="font-size:15px;font-weight:600;color:${COLORS.textHeading};margin-bottom:12px;">${escapeHtml(String(ticket.ticket_number))}</div>
+           <div style="font-size:13px;color:${COLORS.textMuted};margin-bottom:4px;"><strong style="color:${COLORS.textBody};">Subject:</strong> ${escapeHtml(String(ticket.subject))}</div>
+           <div style="font-size:13px;color:${COLORS.textMuted};margin-bottom:4px;"><strong style="color:${COLORS.textBody};">Category:</strong> ${escapeHtml(String(ticket.category))}</div>
+           <div style="font-size:13px;color:${COLORS.textMuted};"><strong style="color:${COLORS.textBody};">Priority:</strong> ${escapeHtml(String(ticket.priority))}</div>
+         </div>`,
+        'neutral'
+      )}
+      <div style="margin:24px 0;">
+        ${renderButton('Visit the Help Center', helpUrl)}
+      </div>`
+
+    const html = renderEmailLayout({
+      preheader: `Ticket ${ticket.ticket_number} received - we'll be in touch soon.`,
+      title: `Support ticket created: ${ticket.ticket_number}`,
+      bodyHtml,
+      recipientEmail: user.email,
+      includeUnsubscribe: false,
     })
 
-    return emailSent
+    const text = `Hi ${niceName},\n\nWe received your support request.\n\nTicket: ${ticket.ticket_number}\nSubject: ${ticket.subject}\nCategory: ${ticket.category}\nPriority: ${ticket.priority}\n\nWe'll get back to you as soon as possible.\n\n- ${BRAND.name}\n`
+
+    return await sendEmail({
+      to: user.email,
+      subject: `Support ticket created: ${ticket.ticket_number}`,
+      html,
+      text,
+    })
   } catch (error) {
     safeLogger.error('Error sending ticket creation notification', { error })
     return false
@@ -235,41 +241,40 @@ export async function sendTicketUpdateNotification(
       return false
     }
 
-    // Send email to user
-    const emailSent = await sendEmail({
-      to: user.email,
-      subject: `Support Ticket Update: ${ticket.ticket_number}`,
-      html: `
-        <h2>Support Ticket Update</h2>
-        <p>Hello ${user.first_name || 'there'},</p>
-        <p>Your support ticket has been updated.</p>
-        <p><strong>Ticket Number:</strong> ${ticket.ticket_number}</p>
-        <p><strong>Subject:</strong> ${ticket.subject}</p>
-        <p><strong>Status:</strong> ${ticket.status}</p>
-        <p><strong>Update:</strong></p>
-        <p>${message}</p>
-        <p>Best regards,<br>The Domu Match Team</p>
-      `,
-      text: `
-        Support Ticket Update
-        
-        Hello ${user.first_name || 'there'},
-        
-        Your support ticket has been updated.
-        
-        Ticket Number: ${ticket.ticket_number}
-        Subject: ${ticket.subject}
-        Status: ${ticket.status}
-        
-        Update:
-        ${message}
-        
-        Best regards,
-        The Domu Match Team
-      `
+    const niceName = user.first_name || 'there'
+    const bodyHtml = `
+      <h1 style="margin:0 0 12px;font-size:24px;font-weight:700;color:${COLORS.textHeading};text-align:center;letter-spacing:-0.2px;">
+        New update on your ticket
+      </h1>
+      <p style="margin:0 0 20px;text-align:center;color:${COLORS.textMuted};font-size:15px;">
+        Hi ${escapeHtml(niceName)} - here’s the latest from the team on ticket <strong style="color:${COLORS.textHeading};">${escapeHtml(String(ticket.ticket_number))}</strong>.
+      </p>
+      ${renderInfoBox(
+        `<div style="text-align:left;">
+           <div style="font-size:13px;color:${COLORS.textMuted};margin-bottom:4px;"><strong style="color:${COLORS.textBody};">Subject:</strong> ${escapeHtml(String(ticket.subject))}</div>
+           <div style="font-size:13px;color:${COLORS.textMuted};margin-bottom:12px;"><strong style="color:${COLORS.textBody};">Status:</strong> ${escapeHtml(String(ticket.status))}</div>
+           <div style="font-size:11px;font-weight:700;letter-spacing:2px;color:${COLORS.textMuted};text-transform:uppercase;margin-bottom:6px;">Update</div>
+           <div style="font-size:14px;color:${COLORS.textBody};line-height:22px;white-space:pre-wrap;">${escapeHtml(message)}</div>
+         </div>`,
+        'neutral'
+      )}`
+
+    const html = renderEmailLayout({
+      preheader: `Update on ticket ${ticket.ticket_number}.`,
+      title: `Support ticket update: ${ticket.ticket_number}`,
+      bodyHtml,
+      recipientEmail: user.email,
+      includeUnsubscribe: false,
     })
 
-    return emailSent
+    const text = `Hi ${niceName},\n\nThere's a new update on your support ticket.\n\nTicket: ${ticket.ticket_number}\nSubject: ${ticket.subject}\nStatus: ${ticket.status}\n\nUpdate:\n${message}\n\n- ${BRAND.name}\n`
+
+    return await sendEmail({
+      to: user.email,
+      subject: `Support ticket update: ${ticket.ticket_number}`,
+      html,
+      text,
+    })
   } catch (error) {
     safeLogger.error('Error sending ticket update notification', { error })
     return false
@@ -317,42 +322,43 @@ export async function sendTicketResolutionNotification(
       return false
     }
 
-    // Send email to user
-    const emailSent = await sendEmail({
-      to: user.email,
-      subject: `Support Ticket Resolved: ${ticket.ticket_number}`,
-      html: `
-        <h2>Support Ticket Resolved</h2>
-        <p>Hello ${user.first_name || 'there'},</p>
-        <p>Your support ticket has been resolved.</p>
-        <p><strong>Ticket Number:</strong> ${ticket.ticket_number}</p>
-        <p><strong>Subject:</strong> ${ticket.subject}</p>
-        <p><strong>Resolution:</strong></p>
-        <p>${resolution}</p>
-        <p>If you have any further questions, please don't hesitate to contact us.</p>
-        <p>Best regards,<br>The Domu Match Team</p>
-      `,
-      text: `
-        Support Ticket Resolved
-        
-        Hello ${user.first_name || 'there'},
-        
-        Your support ticket has been resolved.
-        
-        Ticket Number: ${ticket.ticket_number}
-        Subject: ${ticket.subject}
-        
-        Resolution:
-        ${resolution}
-        
-        If you have any further questions, please don't hesitate to contact us.
-        
-        Best regards,
-        The Domu Match Team
-      `
+    const niceName = user.first_name || 'there'
+    const bodyHtml = `
+      <h1 style="margin:0 0 12px;font-size:24px;font-weight:700;color:${COLORS.textHeading};text-align:center;letter-spacing:-0.2px;">
+        Your ticket is resolved
+      </h1>
+      <p style="margin:0 0 20px;text-align:center;color:${COLORS.textMuted};font-size:15px;">
+        Hi ${escapeHtml(niceName)} - we’ve closed out ticket <strong style="color:${COLORS.textHeading};">${escapeHtml(String(ticket.ticket_number))}</strong>. Here’s the outcome.
+      </p>
+      ${renderInfoBox(
+        `<div style="text-align:left;">
+           <div style="font-size:13px;color:${COLORS.textMuted};margin-bottom:12px;"><strong style="color:${COLORS.textBody};">Subject:</strong> ${escapeHtml(String(ticket.subject))}</div>
+           <div style="font-size:11px;font-weight:700;letter-spacing:2px;color:${COLORS.textMuted};text-transform:uppercase;margin-bottom:6px;">Resolution</div>
+           <div style="font-size:14px;color:${COLORS.textBody};line-height:22px;white-space:pre-wrap;">${escapeHtml(resolution)}</div>
+         </div>`,
+        'neutral'
+      )}
+      <p style="margin:20px 0 0;text-align:center;color:${COLORS.textMuted};font-size:14px;">
+        Need anything else? Just reply by emailing
+        <a href="mailto:${BRAND.supportEmail}" style="color:${COLORS.primary};text-decoration:underline;">${BRAND.supportEmail}</a>.
+      </p>`
+
+    const html = renderEmailLayout({
+      preheader: `Ticket ${ticket.ticket_number} resolved.`,
+      title: `Support ticket resolved: ${ticket.ticket_number}`,
+      bodyHtml,
+      recipientEmail: user.email,
+      includeUnsubscribe: false,
     })
 
-    return emailSent
+    const text = `Hi ${niceName},\n\nYour support ticket is resolved.\n\nTicket: ${ticket.ticket_number}\nSubject: ${ticket.subject}\n\nResolution:\n${resolution}\n\nNeed more help? Email ${BRAND.supportEmail}.\n\n- ${BRAND.name}\n`
+
+    return await sendEmail({
+      to: user.email,
+      subject: `Support ticket resolved: ${ticket.ticket_number}`,
+      html,
+      text,
+    })
   } catch (error) {
     safeLogger.error('Error sending ticket resolution notification', { error })
     return false

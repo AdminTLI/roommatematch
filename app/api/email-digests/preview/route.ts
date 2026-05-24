@@ -36,12 +36,18 @@ export async function GET(request: Request) {
       return NextResponse.json({ error: 'Missing kind' }, { status: 400 })
     }
 
+    const previewEmail = searchParams.get('email') || 'preview@domumatch.com'
+
     if (kind === 'matches') {
-      return NextResponse.json(buildMatchesDigestEmail({ toName: name, appUrl, count }))
+      return NextResponse.json(
+        buildMatchesDigestEmail({ toName: name, toEmail: previewEmail, appUrl, count })
+      )
     }
 
     if (kind === 'messages') {
-      return NextResponse.json(buildMessagesDigestEmail({ toName: name, appUrl, count }))
+      return NextResponse.json(
+        buildMessagesDigestEmail({ toName: name, toEmail: previewEmail, appUrl, count })
+      )
     }
 
     if (kind === 'platform') {
@@ -51,6 +57,7 @@ export async function GET(request: Request) {
       return NextResponse.json(
         buildPlatformUpdatesDigestEmail({
           toName: name,
+          toEmail: previewEmail,
           appUrl,
           announcementTitle: title,
           announcementBody: body,

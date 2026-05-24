@@ -1,6 +1,8 @@
 import type { SupabaseClient } from '@supabase/supabase-js'
 import { createNotificationsForUsers } from '@/lib/notifications/create'
 import { sendEmail } from '@/lib/email/workflows'
+import { renderEmailLayout, renderButton, renderInfoBox } from '@/lib/email/layout'
+import { BRAND, COLORS, URLS } from '@/lib/email/brand'
 import { safeLogger } from '@/lib/utils/logger'
 import { getRetentionPolicy } from '@/lib/privacy/retention-policies'
 import { deleteVerificationStorageForUsers } from '@/lib/privacy/verification-retention'
@@ -63,13 +65,31 @@ async function sendInactivityWarningEmail(
     daysRemaining <= 7
       ? 'Your Domu Match account will be anonymized in 7 days'
       : 'Your Domu Match account will be anonymized in 30 days'
-  const html = `
-    <p>We have not seen activity on your Domu Match account for a long time.</p>
-    <p>Per our <a href="https://domumatch.com/privacy">Privacy Policy</a>, accounts inactive for one year are anonymized.</p>
-    <p><strong>Log in within ${daysRemaining} days</strong> to keep your account and data.</p>
-    <p>If you no longer need the service, you can also delete your account from Settings.</p>
-  `
-  const text = `Log in within ${daysRemaining} days to keep your Domu Match account. After one year of inactivity we anonymize accounts per our privacy policy.`
+
+  const bodyHtml = `
+    <h1 style="margin:0 0 12px;font-size:24px;font-weight:700;color:${COLORS.textHeading};text-align:center;letter-spacing:-0.2px;">
+      Your account will be anonymized in ${daysRemaining} days
+    </h1>
+    <p style="margin:0 0 20px;text-align:center;color:${COLORS.textMuted};font-size:15px;">
+      We haven’t seen activity on your Domu Match account for a long time. Per our <a href="${URLS.privacy}" style="color:${COLORS.primary};text-decoration:underline;">Privacy Policy</a>, accounts inactive for one year are anonymized.
+    </p>
+    <div style="margin:24px 0;">
+      ${renderButton('Log in to keep your account', URLS.signIn)}
+    </div>
+    ${renderInfoBox(
+      `If you no longer need the service, you can also delete your account from Settings.`,
+      'neutral'
+    )}`
+
+  const html = renderEmailLayout({
+    preheader: `Log in within ${daysRemaining} days to keep your Domu Match account.`,
+    title: subject,
+    bodyHtml,
+    recipientEmail: email,
+    includeUnsubscribe: false,
+  })
+
+  const text = `Log in within ${daysRemaining} days to keep your Domu Match account. After one year of inactivity we anonymize accounts per our privacy policy. Log in: ${URLS.signIn}\n\n- ${BRAND.name}`
   await sendEmail({ to: email, subject, html, text })
 }
 

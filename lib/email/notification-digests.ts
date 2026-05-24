@@ -2,6 +2,10 @@ import { createAdminClient } from '@/lib/supabase/server'
 import { safeLogger } from '@/lib/utils/logger'
 import { sendEmail } from './workflows'
 import type { NotificationType } from '@/lib/notifications/types'
+import { renderEmailLayout, renderButton, renderInfoBox, escapeHtml, nlToBr } from './layout'
+import { BRAND, COLORS, FONT_STACK } from './brand'
+import { buildUnsubscribeUrl } from './brand'
+import { createUnsubscribeToken } from './unsubscribe-token'
 
 const MATCH_NOTIFICATION_TYPES: NotificationType[] = ['match_created', 'match_accepted', 'match_confirmed']
 const MESSAGE_DIGEST_HOURS = 24
@@ -28,30 +32,35 @@ function isWithinSendWindowAmsterdam(now: Date) {
   return h >= SEND_WINDOW_AMS_START_HOUR && h < SEND_WINDOW_AMS_END_HOUR_EXCLUSIVE
 }
 
-function escapeHtml(input: string) {
-  return input
-    .replaceAll('&', '&amp;')
-    .replaceAll('<', '&lt;')
-    .replaceAll('>', '&gt;')
-    .replaceAll('"', '&quot;')
-    .replaceAll("'", '&#039;')
-}
-
-function nlToBr(text: string) {
-  return escapeHtml(text).replaceAll('\n', '<br/>')
-}
-
 function pluralize(count: number, singular: string, plural?: string) {
   if (count === 1) return singular
   return plural ?? `${singular}s`
 }
 
+/**
+ * Resolve an unsubscribe URL for `userId`. Returns undefined if the
+ * unsubscribe signing secret is not configured (e.g., local preview without
+ * env vars) - callers should treat the email as non-unsubscribable in that
+ * case rather than crash.
+ */
+function safeUnsubscribeUrl(userId: string | undefined, appUrl: string): string | undefined {
+  if (!userId) return undefined
+  try {
+    const token = createUnsubscribeToken(userId)
+    return buildUnsubscribeUrl(token, appUrl)
+  } catch {
+    return undefined
+  }
+}
+
 export function buildMatchesDigestEmail(params: {
   toName?: string
+  toEmail?: string
+  userId?: string
   appUrl: string
   count: number
 }) {
-  const { toName, appUrl, count } = params
+  const { toName, toEmail, userId, appUrl, count } = params
 
   const niceName = toName?.trim() ? toName.trim() : 'there'
   const matchesNoun = pluralize(count, 'match')
@@ -59,126 +68,120 @@ export function buildMatchesDigestEmail(params: {
   const subject = `Your match radar: ${matchesCountStr} ${pluralize(count, 'new match')}`
   const link = `${appUrl}/matches`
 
-  const html = `
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Your match radar is buzzing - Domu Match</title>
-</head>
-<body style="margin: 0; padding: 0; background-color: #f9fafb; font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;">
-    <div style="background-color: #f9fafb; padding: 40px 20px;">
-        <div style="max-width: 500px; margin: 0 auto; background-color: #ffffff; border-radius: 16px; padding: 40px; border: 1px solid #e5e7eb;">
-            <div style="text-align: center; margin-bottom: 32px;">
-                <h1 style="color: #7c3aed; margin: 0; font-size: 24px; font-weight: 800;">Domu Match</h1>
-            </div>
-            <h2 style="color: #111827; font-size: 20px; font-weight: 700; margin-bottom: 16px; text-align: center;">Your match radar is buzzing</h2>
-            <p style="color: #4b5563; font-size: 16px; line-height: 24px; margin-bottom: 16px;">Hey ${escapeHtml(niceName)},</p>
-            <p style="color: #4b5563; font-size: 16px; line-height: 24px; margin-bottom: 32px;">
-                You have <strong>${matchesCountStr} new ${escapeHtml(matchesNoun)}</strong> in the last 72 hours. It’s time to say hi and turn “maybe” into “we’ll meet.”
-            </p>
-            <div style="text-align: center; margin-bottom: 32px;">
-                <a href="${escapeHtml(link)}" style="background-color: #2563eb; color: #ffffff; padding: 14px 32px; text-decoration: none; border-radius: 12px; font-weight: 600; font-size: 16px; display: inline-block;">Check your matches</a>
-            </div>
-            <div style="background-color: #f3f4f6; padding: 16px; border-radius: 12px; text-align: center;">
-                <p style="color: #6b7280; font-size: 13px; margin: 0;">💡 <strong>Tip:</strong> First messages that ask about real plans tend to get replies.</p>
-            </div>
-        </div>
-        <div style="text-align: center; margin-top: 24px;">
-            <p style="color: #9ca3af; font-size: 12px; margin: 0;">&copy; ${new Date().getFullYear()} Domu Match. All rights reserved.</p>
-        </div>
+  const bodyHtml = `
+    <h1 style="margin:0 0 12px;font-size:24px;font-weight:700;color:${COLORS.textHeading};text-align:center;letter-spacing:-0.2px;">
+      Your match radar is buzzing
+    </h1>
+    <p style="margin:0 0 20px;text-align:center;color:${COLORS.textMuted};font-size:15px;">
+      Hey ${escapeHtml(niceName)} - you have <strong style="color:${COLORS.textHeading};">${matchesCountStr} new ${escapeHtml(matchesNoun)}</strong> in the last 72 hours. Time to say hi and turn “maybe” into “we’ll meet.”
+    </p>
+    <div style="margin:24px 0;">
+      ${renderButton('Check your matches', link)}
     </div>
-</body>
-</html>
-  `;
+    ${renderInfoBox(
+      `<strong style="color:${COLORS.textBody};">Tip:</strong> First messages that ask about real plans tend to get replies the fastest.`,
+      'neutral'
+    )}`
 
-  const text = `Hey ${niceName},\n\nYou have ${matchesCountStr} new ${matchesNoun} in the last 72 hours.\nIt’s time to say hi and turn “maybe” into “we’ll meet.”\n\nCheck your matches: ${link}\n`
+  const html = renderEmailLayout({
+    preheader: `You have ${matchesCountStr} new ${matchesNoun} waiting on Domu Match.`,
+    title: subject,
+    bodyHtml,
+    recipientEmail: toEmail,
+    includeUnsubscribe: true,
+    unsubscribeUrl: safeUnsubscribeUrl(userId, appUrl),
+  })
+
+  const text = `Hey ${niceName},\n\nYou have ${matchesCountStr} new ${matchesNoun} in the last 72 hours.\nIt’s time to say hi and turn “maybe” into “we’ll meet.”\n\nCheck your matches: ${link}\n\n- ${BRAND.name}\n${BRAND.tagline}\n`
 
   return { subject, html, text }
 }
 
 export function buildMessagesDigestEmail(params: {
   toName?: string
+  toEmail?: string
+  userId?: string
   appUrl: string
   count: number
 }) {
-  const { toName, appUrl, count } = params
+  const { toName, toEmail, userId, appUrl, count } = params
   const niceName = toName?.trim() ? toName.trim() : 'there'
   const noun = pluralize(count, 'new message')
   const subject = `Inbox alert: ${count} ${noun}`
   const link = `${appUrl}/chat`
 
-  const html = `
-  <!DOCTYPE html>
-  <html lang="en">
-  <head>
-      <meta charset="UTF-8">
-      <meta name="viewport" content="width=device-width, initial-scale=1.0">
-      <title>You've got messages waiting - Domu Match</title>
-  </head>
-  <body style="margin: 0; padding: 0; background-color: #f9fafb; font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;">
-      <div style="background-color: #f9fafb; padding: 40px 20px;">
-          <div style="max-width: 500px; margin: 0 auto; background-color: #ffffff; border-radius: 16px; padding: 40px; border: 1px solid #e5e7eb;">
-              <div style="text-align: center; margin-bottom: 32px;">
-                  <h1 style="color: #7c3aed; margin: 0; font-size: 24px; font-weight: 800;">Domu Match</h1>
-              </div>
-              <h2 style="color: #111827; font-size: 20px; font-weight: 700; margin-bottom: 16px; text-align: center;">You’ve got messages waiting</h2>
-              <p style="color: #4b5563; font-size: 16px; line-height: 24px; margin-bottom: 16px;">Hey ${escapeHtml(niceName)},</p>
-              <p style="color: #4b5563; font-size: 16px; line-height: 24px; margin-bottom: 32px;">
-                  Good timing: you have <strong>${escapeHtml(String(count))} ${escapeHtml(noun)}</strong> in the last 24 hours. Don’t let the conversation cool - pop into your inbox and reply when you’re ready.
-              </p>
-              <div style="text-align: center; margin-bottom: 32px;">
-                  <a href="${escapeHtml(link)}" style="background-color: #7c3aed; color: #ffffff; padding: 14px 32px; text-decoration: none; border-radius: 12px; font-weight: 600; font-size: 16px; display: inline-block;">Open messages</a>
-              </div>
-              <div style="background-color: #f3f4f6; padding: 16px; border-radius: 12px; text-align: center;">
-                  <p style="color: #6b7280; font-size: 13px; margin: 0;">💬 <strong>Tip:</strong> Quick replies are the secret to fast connections.</p>
-              </div>
-          </div>
-          <div style="text-align: center; margin-top: 24px;">
-              <p style="color: #9ca3af; font-size: 12px; margin: 0;">&copy; ${new Date().getFullYear()} Domu Match. All rights reserved.</p>
-          </div>
-      </div>
-  </body>
-  </html>
-    `;
+  const bodyHtml = `
+    <h1 style="margin:0 0 12px;font-size:24px;font-weight:700;color:${COLORS.textHeading};text-align:center;letter-spacing:-0.2px;">
+      You’ve got messages waiting
+    </h1>
+    <p style="margin:0 0 20px;text-align:center;color:${COLORS.textMuted};font-size:15px;">
+      Hey ${escapeHtml(niceName)} - good timing. You have <strong style="color:${COLORS.textHeading};">${escapeHtml(String(count))} ${escapeHtml(noun)}</strong> in the last 24 hours. Pop into your inbox and reply when you’re ready.
+    </p>
+    <div style="margin:24px 0;">
+      ${renderButton('Open messages', link)}
+    </div>
+    ${renderInfoBox(
+      `<strong style="color:${COLORS.textBody};">Tip:</strong> Quick replies are the secret to fast connections.`,
+      'neutral'
+    )}`
 
-  const text = `Hey ${niceName},\n\nYou have ${count} ${noun} in the last 24 hours.\nOpen your messages: ${link}\n`
+  const html = renderEmailLayout({
+    preheader: `${count} ${noun} waiting in your Domu Match inbox.`,
+    title: subject,
+    bodyHtml,
+    recipientEmail: toEmail,
+    includeUnsubscribe: true,
+    unsubscribeUrl: safeUnsubscribeUrl(userId, appUrl),
+  })
+
+  const text = `Hey ${niceName},\n\nYou have ${count} ${noun} in the last 24 hours.\nOpen your messages: ${link}\n\n- ${BRAND.name}\n${BRAND.tagline}\n`
 
   return { subject, html, text }
 }
 
 export function buildPlatformUpdatesDigestEmail(params: {
   toName?: string
+  toEmail?: string
+  userId?: string
   appUrl: string
   announcementTitle: string
   announcementBody: string
   actionUrl?: string | null
 }) {
-  const { toName, appUrl, announcementTitle, announcementBody, actionUrl } = params
+  const { toName, toEmail, userId, appUrl, announcementTitle, announcementBody, actionUrl } = params
 
   const niceName = toName?.trim() ? toName.trim() : 'there'
   const subject = `Domu Match update: ${announcementTitle}`
   const link = actionUrl || `${appUrl}/notifications`
 
-  const html = `
-    <div>
-      <h2 style="margin:0 0 12px;">${escapeHtml(announcementTitle)}</h2>
-      <p style="margin:0 0 12px;">Hey ${escapeHtml(niceName)},</p>
-      <p style="margin:0 0 12px;">Here’s what’s new on Domu Match:</p>
-      <div style="margin:0 0 14px;padding:12px 14px;background:#f5f5ff;border-radius:12px;">
-        ${nlToBr(announcementBody)}
-      </div>
-      <a href="${escapeHtml(link)}" style="display:inline-block;padding:10px 14px;background:#111827;color:white;text-decoration:none;border-radius:10px;">
-        See the update
-      </a>
-      <p style="margin:14px 0 0;color:#555;font-size:13px;">
-        Thanks for being part of Domu Match.
-      </p>
-    </div>
-  `
+  const bodyHtml = `
+    <h1 style="margin:0 0 12px;font-size:24px;font-weight:700;color:${COLORS.textHeading};text-align:center;letter-spacing:-0.2px;">
+      ${escapeHtml(announcementTitle)}
+    </h1>
+    <p style="margin:0 0 20px;text-align:center;color:${COLORS.textMuted};font-size:15px;">
+      Hey ${escapeHtml(niceName)} - here’s what’s new on Domu Match.
+    </p>
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin:0 0 24px;">
+      <tr>
+        <td style="background:${COLORS.primarySoft};border:1px solid ${COLORS.primarySoftBorder};border-radius:16px;padding:18px 20px;font-size:15px;color:${COLORS.textBody};line-height:24px;font-family:${FONT_STACK};">
+          ${nlToBr(announcementBody)}
+        </td>
+      </tr>
+    </table>
+    <div style="margin:0 0 8px;">
+      ${renderButton('See the update', link)}
+    </div>`
 
-  const text = `Hey ${niceName},\n\nHere’s what’s new on Domu Match: ${announcementTitle}\n\n${announcementBody}\n\nRead the update: ${link}\n`
+  const html = renderEmailLayout({
+    preheader: `Update from Domu Match: ${announcementTitle}`,
+    title: subject,
+    bodyHtml,
+    recipientEmail: toEmail,
+    includeUnsubscribe: true,
+    unsubscribeUrl: safeUnsubscribeUrl(userId, appUrl),
+  })
+
+  const text = `Hey ${niceName},\n\nHere’s what’s new on Domu Match: ${announcementTitle}\n\n${announcementBody}\n\nRead the update: ${link}\n\n- ${BRAND.name}\n${BRAND.tagline}\n`
 
   return { subject, html, text }
 }
@@ -279,11 +282,12 @@ async function computeUnreadMessageCount(opts: {
 async function sendMatchesDigestEmail(params: {
   toEmail: string
   toName?: string
+  userId: string
   appUrl: string
   count: number
 }) {
-  const { toEmail, toName, appUrl, count } = params
-  const { subject, html, text } = buildMatchesDigestEmail({ toName, appUrl, count })
+  const { toEmail, toName, userId, appUrl, count } = params
+  const { subject, html, text } = buildMatchesDigestEmail({ toName, toEmail, userId, appUrl, count })
   const sent = await sendEmail({ to: toEmail, subject, html, text })
   if (!sent) {
     throw new Error('Failed to send matches digest email')
@@ -293,11 +297,12 @@ async function sendMatchesDigestEmail(params: {
 async function sendMessagesDigestEmail(params: {
   toEmail: string
   toName?: string
+  userId: string
   appUrl: string
   count: number
 }) {
-  const { toEmail, toName, appUrl, count } = params
-  const { subject, html, text } = buildMessagesDigestEmail({ toName, appUrl, count })
+  const { toEmail, toName, userId, appUrl, count } = params
+  const { subject, html, text } = buildMessagesDigestEmail({ toName, toEmail, userId, appUrl, count })
   const sent = await sendEmail({ to: toEmail, subject, html, text })
   if (!sent) {
     throw new Error('Failed to send messages digest email')
@@ -307,14 +312,17 @@ async function sendMessagesDigestEmail(params: {
 async function sendPlatformUpdatesDigestEmail(params: {
   toEmail: string
   toName?: string
+  userId: string
   appUrl: string
   announcementTitle: string
   announcementBody: string
   actionUrl?: string | null
 }) {
-  const { toEmail, toName, appUrl, announcementTitle, announcementBody, actionUrl } = params
+  const { toEmail, toName, userId, appUrl, announcementTitle, announcementBody, actionUrl } = params
   const { subject, html, text } = buildPlatformUpdatesDigestEmail({
     toName,
+    toEmail,
+    userId,
     appUrl,
     announcementTitle,
     announcementBody,
@@ -430,6 +438,7 @@ export async function sendNotificationDigestEmails() {
       await sendMatchesDigestEmail({
         toEmail: user.email,
         toName,
+        userId,
         appUrl,
         count,
       })
@@ -471,6 +480,7 @@ export async function sendNotificationDigestEmails() {
       await sendMessagesDigestEmail({
         toEmail: user.email,
         toName,
+        userId,
         appUrl,
         count,
       })
@@ -568,6 +578,7 @@ export async function sendNotificationDigestEmails() {
                 await sendPlatformUpdatesDigestEmail({
                   toEmail: user.email,
                   toName: `${profile.first_name || ''} ${profile.last_name || ''}`.trim(),
+                  userId: profile.user_id,
                   appUrl,
                   announcementTitle: (announcement as any).title,
                   announcementBody: (announcement as any).body,

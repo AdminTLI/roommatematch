@@ -4,7 +4,7 @@ import { sendAlert } from '@/lib/monitoring/alerts'
 import { checkAndAlertStudyMonthCompleteness } from '@/lib/monitoring/alerts'
 import { calculateSupplyDemandMetrics, storeSupplyDemandMetrics, calculateCohortRetentionMetrics, storeCohortRetentionMetrics } from '@/lib/analytics/supply-demand'
 import { detectAllAnomalies } from '@/lib/analytics/anomaly-detection'
-import { processOnboardingEmailSequence, getUsersNeedingEmailReminders, sendVerificationReminderEmail } from '@/lib/email/onboarding-sequences'
+import { processOnboardingEmailSequence, getUsersNeedingEmailReminders, sendVerificationReminderEmail, canSendLifecycleEmail } from '@/lib/email/onboarding-sequences'
 import { sendSLAReminders, processPendingDSARRequests } from '@/lib/privacy/dsar-automation'
 import { createClient } from '@supabase/supabase-js'
 import { createAdminClient } from '@/lib/supabase/server'
@@ -239,6 +239,7 @@ export async function GET(request: Request) {
       const usersNeedingVerification = await getUsersNeedingEmailReminders('verification_reminder', 24)
       for (const user of usersNeedingVerification) {
         try {
+          if (!(await canSendLifecycleEmail(user.user_id))) continue
           const emailSent = await sendVerificationReminderEmail(
             user.user_id,
             user.email,
@@ -260,6 +261,7 @@ export async function GET(request: Request) {
       const usersNeedingOnboarding = await getUsersNeedingEmailReminders('onboarding_reminder', 48)
       for (const user of usersNeedingOnboarding) {
         try {
+          if (!(await canSendLifecycleEmail(user.user_id))) continue
           const emailSent = await processOnboardingEmailSequence(user.user_id, 'onboarding_started', 0)
 
           if (emailSent) {
