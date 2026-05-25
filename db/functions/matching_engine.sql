@@ -426,8 +426,9 @@ BEGIN
 END;
 $$;
 
--- Grant permissions
-GRANT EXECUTE ON FUNCTION compute_compatibility_score TO authenticated;
-GRANT EXECUTE ON FUNCTION get_user_matches TO authenticated;
-GRANT EXECUTE ON FUNCTION get_group_matches TO authenticated;
-GRANT EXECUTE ON FUNCTION get_admin_analytics TO authenticated;
+-- ⚠️ NO GRANTS IN THIS PLACEHOLDER FILE.
+-- Permissions are managed by the production migration pipeline:
+--   supabase/migrations/202604301700_harden_security_definer_functions.sql
+--   supabase/migrations/202604301800_harden_security_definer_functions_v2.sql
+--   supabase/migrations/20260525230000_get_user_matches_enforce_cohort.sql
+-- compute_compatibility_score and get_user_matches must only be callable by service_role.

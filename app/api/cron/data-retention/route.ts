@@ -58,6 +58,7 @@ export async function GET(request: Request) {
       messages: { deleted: 0, error: null as string | null },
       reports: { deleted: 0, error: null as string | null },
       app_events: { deleted: 0, error: null as string | null },
+      email_unsubscribe_events: { deleted: 0, error: null as string | null },
       inactive_accounts: {
         warnings30d: 0,
         warnings7d: 0,
@@ -120,7 +121,20 @@ export async function GET(request: Request) {
       safeLogger.error('[Cron] Failed to purge expired app events', { error })
     }
 
-    // 5. Inactive account warnings + 1-year processing (privacy policy)
+    // 5. Purge expired email unsubscribe events (90 days — same as application_logs)
+    try {
+      const { data: unsubResult, error } = await supabase.rpc('purge_expired_email_unsubscribe_events')
+      if (error) {
+        throw error
+      }
+      results.email_unsubscribe_events.deleted = unsubResult || 0
+      safeLogger.info('[Cron] Purged expired email unsubscribe events', { count: results.email_unsubscribe_events.deleted })
+    } catch (error) {
+      results.email_unsubscribe_events.error = error instanceof Error ? error.message : 'Unknown error'
+      safeLogger.error('[Cron] Failed to purge expired email unsubscribe events', { error })
+    }
+
+    // 7. Inactive account warnings + 1-year processing (privacy policy)
     try {
       const inactivityResult = await runInactivityLifecycle(supabase)
       results.inactive_accounts.warnings30d = inactivityResult.warnings30d
@@ -135,7 +149,7 @@ export async function GET(request: Request) {
       safeLogger.error('[Cron] Failed inactive account lifecycle', { error })
     }
 
-    // 6. Expire old match suggestions (90 days after expiry)
+    // 8. Expire old match suggestions (90 days after expiry)
     try {
       // Check if match_suggestions table exists and has expiry logic
       const { data: suggestions, error: fetchError } = await supabase
@@ -165,7 +179,7 @@ export async function GET(request: Request) {
       safeLogger.error('[Cron] Failed to expire match suggestions', { error })
     }
 
-    // 7. Process account deletions (after grace period)
+    // 9. Process account deletions (after grace period)
     try {
       const { data: deletionRequests, error: fetchError } = await supabase
         .from('dsar_requests')
