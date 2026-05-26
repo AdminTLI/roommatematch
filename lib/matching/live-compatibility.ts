@@ -3,6 +3,8 @@
  * Scores-only — no Gemini; used by match cards and dashboard.
  */
 
+import { fetchWithCSRF } from '@/lib/utils/fetch-with-csrf'
+
 export type LiveCompatibilitySnapshot = {
   compatibility_score: number
   harmony_score: number
@@ -60,7 +62,7 @@ export async function fetchLiveCompatibilityBatch(
   const map = new Map<string, LiveCompatibilitySnapshot>()
   if (unique.length === 0) return map
 
-  const res = await fetch('/api/match/compatibility/batch', {
+  const res = await fetchWithCSRF('/api/match/compatibility/batch', {
     method: 'POST',
     headers: { 'content-type': 'application/json' },
     body: JSON.stringify({ other_user_ids: unique }),

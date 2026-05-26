@@ -7,6 +7,7 @@ import {
   shouldRefreshScoresOnSuggestionsList,
   useStoredMatchScores,
 } from '@/lib/matching/score-read-config'
+import { enrichSuggestionsWithLiveCompatibility } from '@/lib/matching/enrich-suggestions-compatibility'
 
 export async function GET(request: NextRequest) {
   try {
@@ -127,6 +128,16 @@ export async function GET(request: NextRequest) {
           }
           return false
         })
+      }
+
+      // Harmony, context, and dimension scores (single batch RPC — avoids client POST + CSRF)
+      if (filteredSuggestions.length > 0) {
+        const admin = await createAdminClient()
+        filteredSuggestions = await enrichSuggestionsWithLiveCompatibility(
+          admin,
+          user.id,
+          filteredSuggestions
+        )
       }
       
       // Calculate pagination metadata

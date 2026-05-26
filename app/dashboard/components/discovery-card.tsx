@@ -75,6 +75,71 @@ const dimensionConfig: { [key: string]: { label: string; description: string; ic
   }
 }
 
+function getDimensionScore(
+  dimensionScores: { [key: string]: number } | null | undefined,
+  dimensionKey: string
+): number {
+  const raw = dimensionScores?.[dimensionKey]
+  return typeof raw === 'number' && !Number.isNaN(raw) ? raw : 0
+}
+
+function DimensionScoresList({
+  dimensionScores,
+  compact = false,
+}: {
+  dimensionScores?: { [key: string]: number } | null
+  compact?: boolean
+}) {
+  return (
+    <div className={compact ? 'space-y-2' : 'space-y-2.5'}>
+      {Object.entries(dimensionConfig).map(([dimensionKey, config]) => {
+        const Icon = config.icon
+        const scorePercent = Math.round(getDimensionScore(dimensionScores, dimensionKey) * 100)
+
+        return (
+          <div
+            key={dimensionKey}
+            className={
+              compact
+                ? 'rounded-md border border-slate-200/80 bg-slate-50/80 px-2 py-1.5 dark:border-slate-700 dark:bg-slate-900/30'
+                : 'rounded-lg border border-slate-200/90 bg-slate-50/90 p-2.5 dark:border-slate-700 dark:bg-slate-900/30'
+            }
+          >
+            <div className={`flex items-center justify-between gap-2 ${compact ? 'mb-1' : 'mb-2'}`}>
+              <div className="flex min-w-0 flex-1 items-center gap-1">
+                <ScoreInfoPopover title={config.label} description={config.description}>
+                  <button
+                    type="button"
+                    className={cn(
+                      scoreInfoIconTriggerBaseClass,
+                      'text-slate-500 transition-colors hover:bg-slate-200/90 hover:text-slate-800 dark:text-slate-400 dark:hover:bg-slate-800/80 dark:hover:text-slate-200',
+                    )}
+                    aria-label={`${config.label}: open explanation`}
+                  >
+                    <Icon className="h-3.5 w-3.5" aria-hidden />
+                  </button>
+                </ScoreInfoPopover>
+                <span className="min-w-0 truncate text-sm font-medium text-slate-900 dark:text-slate-100">
+                  {config.label}
+                </span>
+              </div>
+              <span className={`flex-shrink-0 text-sm font-bold tabular-nums ${discoveryScoreTextClass(scorePercent)}`}>
+                {scorePercent}%
+              </span>
+            </div>
+            <div className={`relative w-full overflow-hidden rounded-full bg-slate-200 dark:bg-slate-700 ${compact ? 'h-1' : 'mt-1.5 h-1'}`}>
+              <div
+                className={`h-full rounded-full ${discoveryScoreBarClass(scorePercent)} transition-all duration-500`}
+                style={{ width: `${scorePercent}%` }}
+              />
+            </div>
+          </div>
+        )
+      })}
+    </div>
+  )
+}
+
 export function DiscoveryCard({ profile, onSkip, onConnect, connectButtonText = 'Connect', connectButtonIcon = UserPlus }: DiscoveryCardProps) {
     const router = useRouter()
     const [isFlipped, setIsFlipped] = useState(false)
@@ -110,16 +175,12 @@ export function DiscoveryCard({ profile, onSkip, onConnect, connectButtonText = 
         }
     }
 
-    // Mobile (< md): tall enough for front (incl. Chat) + safe area; inner surface scrolls if needed.
-    const mobileCardShellClass =
-      'max-md:h-[min(50rem,calc(100dvh-4.5rem))] max-md:min-h-0 max-md:shrink-0'
-
-    /** Taller than min square-ish defaults so cards read as vertical “cards” on desktop. */
-    const cardMinHeightClass = 'min-h-[34rem] sm:min-h-[38rem]'
+    /** Desktop only: taller cards read as vertical “cards”; mobile sizes to content (avoids empty space and dvh growth on scroll). */
+    const cardMinHeightClass = 'md:min-h-[34rem] lg:min-h-[38rem]'
 
     return (
         <div
-          className={`w-full ${cardMinHeightClass} ${mobileCardShellClass}`}
+          className={cn('w-full max-md:h-auto', cardMinHeightClass)}
           style={{ perspective: '1200px', WebkitPerspective: '1200px' }}
         >
           {/*
@@ -128,7 +189,7 @@ export function DiscoveryCard({ profile, onSkip, onConnect, connectButtonText = 
             fails backface-visibility and shows a mirrored front instead of the back.
           */}
           <div
-            className={cn('relative h-full w-full max-md:min-h-0 max-md:h-full', cardMinHeightClass)}
+            className={cn('relative w-full max-md:h-auto md:h-full', cardMinHeightClass)}
             style={{
               transformStyle: 'preserve-3d',
               WebkitTransformStyle: 'preserve-3d',
@@ -140,7 +201,10 @@ export function DiscoveryCard({ profile, onSkip, onConnect, connectButtonText = 
             {/* Front Face */}
             <div
               className={cn(
-                'absolute inset-0 h-full w-full',
+                'w-full md:absolute md:inset-0 md:h-full',
+                isFlipped
+                  ? 'max-md:pointer-events-none max-md:invisible max-md:absolute max-md:inset-0 max-md:h-0 max-md:overflow-hidden'
+                  : 'max-md:relative max-md:h-auto',
                 isFlipped && 'pointer-events-none',
               )}
               style={{
@@ -153,7 +217,9 @@ export function DiscoveryCard({ profile, onSkip, onConnect, connectButtonText = 
             >
               <div
                 className={cn(
-                  'group relative flex h-full max-md:min-h-0 flex-col overflow-y-auto overscroll-y-contain rounded-2xl border border-slate-200/90 bg-white shadow-lg dark:border-slate-700 dark:bg-slate-800 dark:shadow-xl',
+                  'group relative flex w-full flex-col rounded-2xl border border-slate-200/90 bg-white shadow-lg dark:border-slate-700 dark:bg-slate-800 dark:shadow-xl',
+                  'max-md:h-auto max-md:overflow-visible',
+                  'md:h-full md:overflow-y-auto md:overscroll-y-contain',
                   cardMinHeightClass,
                 )}
               >
@@ -251,6 +317,17 @@ export function DiscoveryCard({ profile, onSkip, onConnect, connectButtonText = 
                 <p className="text-[11px] leading-snug text-slate-500 dark:text-slate-500">
                   Tap the heart or people icons for an explanation of each score. Tap outside the popup to close it.
                 </p>
+
+                <div className="border-t border-slate-200/90 pt-4 dark:border-slate-700/50">
+                  <h4 className="mb-1 flex items-center gap-2 text-sm font-semibold text-slate-800 dark:text-slate-300">
+                    <Sparkles className="h-4 w-4 text-indigo-600 dark:text-indigo-400" />
+                    Dimension Scores
+                  </h4>
+                  <p className="mb-3 text-[11px] leading-snug text-slate-500 dark:text-slate-500">
+                    All eight lifestyle dimensions. Tap each icon for details.
+                  </p>
+                  <DimensionScoresList dimensionScores={profile.dimensionScores} compact />
+                </div>
             </div>
 
             {/* View Details Button */}
@@ -308,7 +385,10 @@ export function DiscoveryCard({ profile, onSkip, onConnect, connectButtonText = 
             {/* Back Face */}
             <div
               className={cn(
-                'absolute inset-0 h-full w-full',
+                'w-full md:absolute md:inset-0 md:h-full',
+                !isFlipped
+                  ? 'max-md:pointer-events-none max-md:invisible max-md:absolute max-md:inset-0 max-md:h-0 max-md:overflow-hidden'
+                  : 'max-md:relative max-md:h-auto',
                 !isFlipped && 'pointer-events-none',
               )}
               style={{
@@ -321,7 +401,9 @@ export function DiscoveryCard({ profile, onSkip, onConnect, connectButtonText = 
             >
               <div
                 className={cn(
-                  'flex h-full w-full max-md:min-h-0 flex-col overflow-hidden rounded-2xl border border-slate-200/90 bg-white shadow-lg dark:border-slate-700 dark:bg-slate-800 dark:shadow-xl',
+                  'flex w-full flex-col overflow-hidden rounded-2xl border border-slate-200/90 bg-white shadow-lg dark:border-slate-700 dark:bg-slate-800 dark:shadow-xl',
+                  'max-md:h-auto',
+                  'md:h-full',
                   cardMinHeightClass,
                 )}
               >
@@ -353,83 +435,71 @@ export function DiscoveryCard({ profile, onSkip, onConnect, connectButtonText = 
                     </div>
                   )}
 
-                  {/* Harmony & Context Scores - Horizontal Layout */}
-                  {(harmonyScore > 0 || contextScore > 0) && (
-                    <div className="mb-3 grid grid-cols-2 gap-4 border-b border-slate-200/90 pb-5 dark:border-slate-700/50">
-                      {harmonyScore > 0 && (
-                        <div className="min-w-0 space-y-2">
-                          <div className="flex min-w-0 items-center justify-between gap-1.5">
-                            <div className="flex min-w-0 flex-1 items-center gap-1">
-                              <ScoreInfoPopover
-                                title="Harmony score"
-                                description="Measures how well your day-to-day living preferences align  -  cleanliness, sleep, noise, guests, shared spaces, substances, study/social balance, and home vibe."
-                              >
-                                <button
-                                  type="button"
-                                  className={cn(
-                                    scoreInfoIconTriggerBaseClass,
-                                    'text-pink-600 transition-colors hover:bg-violet-100/90 hover:text-pink-700 dark:text-pink-400 dark:hover:bg-slate-700/50 dark:hover:text-pink-300',
-                                  )}
-                                  aria-label="What is the Harmony score? Opens explanation."
-                                >
-                                  <Heart className="h-3.5 w-3.5" aria-hidden />
-                                </button>
-                              </ScoreInfoPopover>
-                              <span className="min-w-0 truncate pl-0.5 text-sm font-medium text-slate-700 dark:text-slate-300">Harmony</span>
-                            </div>
-                            <span className={`flex-shrink-0 text-sm font-semibold tabular-nums ${discoveryScoreTextClass(harmonyScore)}`}>
-                              {harmonyScore}%
-                            </span>
-                          </div>
-                          <div className="h-1.5 overflow-hidden rounded-full bg-slate-200 dark:bg-slate-700">
-                            <div
-                              className={`h-full rounded-full ${discoveryScoreBarClass(harmonyScore)} transition-all duration-500`}
-                              style={{ width: `${harmonyScore}%` }}
-                            />
-                          </div>
+                  <div className="mb-3 grid grid-cols-2 gap-4 border-b border-slate-200/90 pb-5 dark:border-slate-700/50">
+                    <div className="min-w-0 space-y-2">
+                      <div className="flex min-w-0 items-center justify-between gap-1.5">
+                        <div className="flex min-w-0 flex-1 items-center gap-1">
+                          <ScoreInfoPopover
+                            title="Harmony score"
+                            description="Measures how well your day-to-day living preferences align  -  cleanliness, sleep, noise, guests, shared spaces, substances, study/social balance, and home vibe."
+                          >
+                            <button
+                              type="button"
+                              className={cn(
+                                scoreInfoIconTriggerBaseClass,
+                                'text-pink-600 transition-colors hover:bg-violet-100/90 hover:text-pink-700 dark:text-pink-400 dark:hover:bg-slate-700/50 dark:hover:text-pink-300',
+                              )}
+                              aria-label="What is the Harmony score? Opens explanation."
+                            >
+                              <Heart className="h-3.5 w-3.5" aria-hidden />
+                            </button>
+                          </ScoreInfoPopover>
+                          <span className="min-w-0 truncate pl-0.5 text-sm font-medium text-slate-700 dark:text-slate-300">Harmony</span>
                         </div>
-                      )}
-
-                      {contextScore > 0 && (
-                        <div className="min-w-0 space-y-2">
-                          <div className="flex min-w-0 items-center justify-between gap-1.5">
-                            <div className="flex min-w-0 flex-1 items-center gap-1">
-                              <ScoreInfoPopover
-                                title="Context score"
-                                description="Measures how similar your academic context is  -  university, programme, and study year."
-                              >
-                                <button
-                                  type="button"
-                                  className={cn(
-                                    scoreInfoIconTriggerBaseClass,
-                                    'text-blue-600 transition-colors hover:bg-indigo-50 hover:text-blue-700 dark:text-blue-400 dark:hover:bg-slate-700/50 dark:hover:text-blue-300',
-                                  )}
-                                  aria-label="What is the Context score? Opens explanation."
-                                >
-                                  <Users className="h-3.5 w-3.5" aria-hidden />
-                                </button>
-                              </ScoreInfoPopover>
-                              <span className="min-w-0 truncate pl-0.5 text-sm font-medium text-slate-700 dark:text-slate-300">Context</span>
-                            </div>
-                            <span className={`flex-shrink-0 text-sm font-semibold tabular-nums ${discoveryScoreTextClass(contextScore)}`}>
-                              {contextScore}%
-                            </span>
-                          </div>
-                          <div className="h-1.5 overflow-hidden rounded-full bg-slate-200 dark:bg-slate-700">
-                            <div
-                              className={`h-full rounded-full ${discoveryScoreBarClass(contextScore)} transition-all duration-500`}
-                              style={{ width: `${contextScore}%` }}
-                            />
-                          </div>
-                        </div>
-                      )}
+                        <span className={`flex-shrink-0 text-sm font-semibold tabular-nums ${discoveryScoreTextClass(harmonyScore)}`}>
+                          {harmonyScore}%
+                        </span>
+                      </div>
+                      <div className="h-1.5 overflow-hidden rounded-full bg-slate-200 dark:bg-slate-700">
+                        <div
+                          className={`h-full rounded-full ${discoveryScoreBarClass(harmonyScore)} transition-all duration-500`}
+                          style={{ width: `${harmonyScore}%` }}
+                        />
+                      </div>
                     </div>
-                  )}
-                  {(harmonyScore > 0 || contextScore > 0) && (
-                    <p className="mb-3 text-[11px] leading-snug text-slate-500 dark:text-slate-500">
-                      Tap the heart or people icons for score details. Tap outside the popup to close it.
-                    </p>
-                  )}
+
+                    <div className="min-w-0 space-y-2">
+                      <div className="flex min-w-0 items-center justify-between gap-1.5">
+                        <div className="flex min-w-0 flex-1 items-center gap-1">
+                          <ScoreInfoPopover
+                            title="Context score"
+                            description="Measures how similar your academic context is  -  university, programme, and study year."
+                          >
+                            <button
+                              type="button"
+                              className={cn(
+                                scoreInfoIconTriggerBaseClass,
+                                'text-blue-600 transition-colors hover:bg-indigo-50 hover:text-blue-700 dark:text-blue-400 dark:hover:bg-slate-700/50 dark:hover:text-blue-300',
+                              )}
+                              aria-label="What is the Context score? Opens explanation."
+                            >
+                              <Users className="h-3.5 w-3.5" aria-hidden />
+                            </button>
+                          </ScoreInfoPopover>
+                          <span className="min-w-0 truncate pl-0.5 text-sm font-medium text-slate-700 dark:text-slate-300">Context</span>
+                        </div>
+                        <span className={`flex-shrink-0 text-sm font-semibold tabular-nums ${discoveryScoreTextClass(contextScore)}`}>
+                          {contextScore}%
+                        </span>
+                      </div>
+                      <div className="h-1.5 overflow-hidden rounded-full bg-slate-200 dark:bg-slate-700">
+                        <div
+                          className={`h-full rounded-full ${discoveryScoreBarClass(contextScore)} transition-all duration-500`}
+                          style={{ width: `${contextScore}%` }}
+                        />
+                      </div>
+                    </div>
+                  </div>
 
                   <div className="pb-4">
                     <h4 className="mb-1 flex items-center gap-2 text-sm font-semibold text-slate-800 dark:text-slate-300">
@@ -437,61 +507,9 @@ export function DiscoveryCard({ profile, onSkip, onConnect, connectButtonText = 
                       Detailed Dimension Scores
                     </h4>
                     <p className="mb-3 text-[11px] leading-snug text-slate-500 dark:text-slate-500">
-                      Tap each row&apos;s icon for what that dimension measures. Tap outside the popup to close it.
+                      Tap each row&apos;s icon for what that dimension measures.
                     </p>
-                    <div className="space-y-2.5">
-                      {Object.entries(dimensionConfig).map(([dimensionKey, config]) => {
-                        const Icon = config.icon
-                        const label = config.label
-                        const description = config.description
-
-                        const dimensionScore =
-                          profile.dimensionScores &&
-                          typeof profile.dimensionScores === 'object' &&
-                          profile.dimensionScores[dimensionKey]
-                            ? typeof profile.dimensionScores[dimensionKey] === 'number'
-                              ? profile.dimensionScores[dimensionKey]
-                              : 0
-                            : 0
-                        const scorePercent = Math.round(dimensionScore * 100)
-
-                        return (
-                          <div
-                            key={dimensionKey}
-                            className="rounded-lg border border-slate-200/90 bg-slate-50/90 p-2.5 dark:border-slate-700 dark:bg-slate-900/30"
-                          >
-                            <div className="mb-2 flex items-center justify-between gap-2">
-                              <div className="flex min-w-0 flex-1 items-center gap-1">
-                                <ScoreInfoPopover title={label} description={description}>
-                                  <button
-                                    type="button"
-                                    className={cn(
-                                      scoreInfoIconTriggerBaseClass,
-                                      'text-slate-500 transition-colors hover:bg-slate-200/90 hover:text-slate-800 dark:text-slate-400 dark:hover:bg-slate-800/80 dark:hover:text-slate-200',
-                                    )}
-                                    aria-label={`${label}: open explanation (tap outside popup to close)`}
-                                  >
-                                    <Icon className="h-3.5 w-3.5" aria-hidden />
-                                  </button>
-                                </ScoreInfoPopover>
-                                <span className="min-w-0 truncate whitespace-nowrap pl-0.5 text-sm font-medium text-slate-900 dark:text-slate-100">
-                                  {label}
-                                </span>
-                              </div>
-                              <span className={`flex-shrink-0 text-sm font-bold ${discoveryScoreTextClass(scorePercent)}`}>
-                                {scorePercent}%
-                              </span>
-                            </div>
-                            <div className="relative mt-1.5 h-1 w-full overflow-hidden rounded-full bg-slate-200 dark:bg-slate-700">
-                              <div
-                                className={`h-full rounded-full ${discoveryScoreBarClass(scorePercent)} transition-all duration-500`}
-                                style={{ width: `${scorePercent}%` }}
-                              />
-                            </div>
-                          </div>
-                        )
-                      })}
-                    </div>
+                    <DimensionScoresList dimensionScores={profile.dimensionScores} />
                   </div>
                 </div>
 

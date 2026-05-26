@@ -36,6 +36,7 @@ import {
 import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
 import { DiscoveryCard } from './discovery-card'
+import { DiscoveryFeedMobileCarousel } from './discovery-feed-mobile-carousel'
 import { MatchRightsInfoBanner } from '@/components/privacy/match-rights-info-banner'
 import { EmptyState } from '@/components/ui/empty-state'
 import { Card, CardContent } from '@/components/ui/card'
@@ -55,7 +56,10 @@ import { logger } from '@/lib/utils/logger'
 import { queryKeys, queryClient } from '@/app/providers'
 import { useRealtimeInvalidation } from '@/hooks/use-realtime-invalidation'
 import { monitorQuery } from '@/lib/utils/query-monitor'
-import { fetchLiveCompatibilityBatch } from '@/lib/matching/live-compatibility'
+import {
+  fetchLiveCompatibilityBatch,
+  type LiveCompatibilitySnapshot,
+} from '@/lib/matching/live-compatibility'
 import { WellnessSurveyModal } from './wellness-survey-modal'
 import { SuccessNpsWidget } from '@/app/(components)/success-nps-widget'
 
@@ -545,45 +549,43 @@ export function DashboardContent({ hasCompletedQuestionnaire = false, hasPartial
           dimensionScores: { [key: string]: number } | null
         }>
 
-        try {
-          const liveByPeer = await fetchLiveCompatibilityBatch(recentUserIds)
-          compatibilityScores = recentUserIds.map((otherUserId) => {
-            const live = liveByPeer.get(otherUserId)
-            const sug = suggestionByUserId.get(otherUserId)
-            const fitIndex = Number(sug?.fitIndex ?? 0)
-            const fallbackScore = fitIndex > 0 ? fitIndex / 100 : Number(sug?.fitScore ?? 0)
-            if (live) {
-              return {
-                userId: otherUserId,
-                score: extractScore(live.compatibility_score, fallbackScore),
-                harmonyScore: extractScore(live.harmony_score, 0),
-                contextScore: extractScore(live.context_score, 0),
-                dimensionScores: live.dimension_scores_json,
-              }
-            }
-            return {
-              userId: otherUserId,
-              score: fallbackScore,
-              harmonyScore: 0,
-              contextScore: 0,
-              dimensionScores: null,
-            }
-          })
-        } catch (batchError) {
-          logger.error('Error in batch compatibility for dashboard recent matches:', batchError)
-          compatibilityScores = recentUserIds.map((otherUserId) => {
-            const sug = suggestionByUserId.get(otherUserId)
-            const fitIndex = Number(sug?.fitIndex ?? 0)
-            const score = fitIndex > 0 ? fitIndex / 100 : Number(sug?.fitScore ?? 0)
-            return {
-              userId: otherUserId,
-              score,
-              harmonyScore: 0,
-              contextScore: 0,
-              dimensionScores: null,
-            }
-          })
+        const liveByPeer = new Map<string, LiveCompatibilitySnapshot>()
+        for (const otherUserId of recentUserIds) {
+          const embedded = suggestionByUserId.get(otherUserId)?.liveCompatibility
+          if (embedded) liveByPeer.set(otherUserId, embedded)
         }
+        const missingPeerIds = recentUserIds.filter((id) => !liveByPeer.has(id))
+        if (missingPeerIds.length > 0) {
+          try {
+            const batch = await fetchLiveCompatibilityBatch(missingPeerIds)
+            batch.forEach((snapshot, peerId) => liveByPeer.set(peerId, snapshot))
+          } catch (batchError) {
+            logger.error('Error in batch compatibility for dashboard recent matches:', batchError)
+          }
+        }
+
+        compatibilityScores = recentUserIds.map((otherUserId) => {
+          const live = liveByPeer.get(otherUserId)
+          const sug = suggestionByUserId.get(otherUserId)
+          const fitIndex = Number(sug?.fitIndex ?? 0)
+          const fallbackScore = fitIndex > 0 ? fitIndex / 100 : Number(sug?.fitScore ?? 0)
+          if (live) {
+            return {
+              userId: otherUserId,
+              score: extractScore(live.compatibility_score, fallbackScore),
+              harmonyScore: extractScore(live.harmony_score, 0),
+              contextScore: extractScore(live.context_score, 0),
+              dimensionScores: live.dimension_scores_json,
+            }
+          }
+          return {
+            userId: otherUserId,
+            score: fallbackScore,
+            harmonyScore: 0,
+            contextScore: 0,
+            dimensionScores: null,
+          }
+        })
 
         // Create maps for easy lookup
         const scoreMap = new Map(compatibilityScores.map(m => [m.userId, m.score]))
@@ -1287,14 +1289,31 @@ export function DashboardContent({ hasCompletedQuestionnaire = false, hasPartial
 
       <MatchRightsInfoBanner />
 
-      {/* Discovery Feed Grid */}
+      {/* Discovery Feed — mobile: horizontal carousel (up to 3 matches + view-all CTA) */}
+      {recentMatches.length > 0 && (
+        <motion.div
+          variants={fadeInOpacity}
+          initial="initial"
+          animate="animate"
+          className="md:hidden"
+        >
+          <DiscoveryFeedMobileCarousel matches={recentMatches} />
+        </motion.div>
+      )}
+
+      {/* Discovery Feed — tablet/desktop grid */}
       <motion.div
         variants={staggerChildren}
         initial="initial"
         animate="animate"
-        className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 auto-rows-fr"
+        className={cn(
+          'gap-6 md:auto-rows-fr',
+          recentMatches.length > 0
+            ? 'hidden md:grid md:grid-cols-2 lg:grid-cols-3'
+            : 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 max-md:auto-rows-auto',
+        )}
       >
-        {recentMatches.length > 0 && (
+        {recentMatches.length > 0 &&
           recentMatches.map((match: any) => {
             if (process.env.NODE_ENV === 'development') {
               console.log('[Dashboard] Rendering match card:', {
@@ -1306,16 +1325,19 @@ export function DashboardContent({ hasCompletedQuestionnaire = false, hasPartial
                 dimensionScores: match.dimensionScores,
                 dimensionScoresType: typeof match.dimensionScores,
                 dimensionScoresKeys: match.dimensionScores ? Object.keys(match.dimensionScores) : null,
-                allMatchKeys: Object.keys(match)
+                allMatchKeys: Object.keys(match),
               })
             }
             return (
-              <motion.div key={match.id} variants={fadeInOpacity} className="h-full">
+              <motion.div key={match.id} variants={fadeInOpacity} className="md:h-full">
                 <DiscoveryCard
                   profile={{
                     id: match.userId || match.id,
                     name: match.name,
-                    matchPercentage: Math.round((match.score || 0) * 100) > 100 ? Math.round(match.score || 0) : Math.round((match.score || 0) * 100),
+                    matchPercentage:
+                      Math.round((match.score || 0) * 100) > 100
+                        ? Math.round(match.score || 0)
+                        : Math.round((match.score || 0) * 100),
                     harmonyScore: match.harmonyScore,
                     contextScore: match.contextScore,
                     dimensionScores: match.dimensionScores || null,
@@ -1323,8 +1345,7 @@ export function DashboardContent({ hasCompletedQuestionnaire = false, hasPartial
                 />
               </motion.div>
             )
-          })
-        )}
+          })}
 
         {/* Empty State Card - Glassmorphic, user_type-aware (Phase 3) */}
         {recentMatches.length === 0 && (
@@ -1378,13 +1399,13 @@ export function DashboardContent({ hasCompletedQuestionnaire = false, hasPartial
           </motion.div>
         )}
 
-        {/* Call to Action - Find More - Shows when there are 1-2 matches */}
+        {/* Call to Action - Find More (desktop only; mobile uses carousel CTA → /matches) */}
         {recentMatches.length > 0 && recentMatches.length < 3 && (
           <motion.div
             variants={fadeInUp}
             whileHover={{ y: -4, scale: 1.01 }}
             transition={{ duration: 0.2 }}
-            className="group relative flex flex-col items-center justify-center p-8 rounded-2xl bg-slate-800 border border-slate-700 shadow-xl transition-all duration-300 hover:border-violet-500/50 cursor-pointer h-full"
+            className="group relative hidden md:flex flex-col items-center justify-center p-8 rounded-2xl bg-slate-800 border border-slate-700 shadow-xl transition-all duration-300 hover:border-violet-500/50 cursor-pointer h-full"
             onClick={() => router.push('/settings')}
           >
             <div className="w-20 h-20 rounded-2xl bg-violet-500/10 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-500">

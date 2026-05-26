@@ -1,5 +1,7 @@
 export type MatchKind = 'pair' | 'group';
 
+import type { LiveCompatibilitySnapshot } from '@/lib/matching/live-compatibility'
+
 export type MatchSuggestion = {
   id: string;
   runId: string;
@@ -13,6 +15,8 @@ export type MatchSuggestion = {
   status: 'pending' | 'accepted' | 'declined' | 'expired' | 'confirmed';
   acceptedBy: string[];               // userIds who accepted
   createdAt: string;
+  /** Populated by GET /api/match/suggestions/my (batch RPC). */
+  liveCompatibility?: LiveCompatibilitySnapshot;
 };
 
 export type SectionKey = 'personality' | 'schedule' | 'lifestyle' | 'social' | 'academic';

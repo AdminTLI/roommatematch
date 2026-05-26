@@ -64,14 +64,21 @@ function DiscoveryCardWrapper({
   const storedScore =
     suggestion.fitIndex > 0 ? suggestion.fitIndex / 100 : 0
 
-  const compatibilityData = liveCompatibility ?? {
-    compatibility_score: storedScore,
-    harmony_score: 0,
-    context_score: 0,
-    dimension_scores_json: null,
-  }
+  const compatibilityData =
+    liveCompatibility ??
+    suggestion.liveCompatibility ?? {
+      compatibility_score: storedScore,
+      harmony_score: 0,
+      context_score: 0,
+      dimension_scores_json: null,
+    }
 
-  const isLoading = Boolean(liveCompatLoading && !liveCompatibility && otherUserId)
+  const isLoading = Boolean(
+    liveCompatLoading &&
+      !liveCompatibility &&
+      !suggestion.liveCompatibility &&
+      otherUserId
+  )
 
   // Generate compatibility highlights from suggestion data
   const generateHighlights = (): string[] => {
@@ -979,17 +986,21 @@ export function StudentMatchesInterface({ user }: StudentMatchesInterfaceProps) 
         {/* Mobile: Dropdown Select (< 640px) */}
         <div className="block sm:hidden mb-4">
           <Select value={activeTab} onValueChange={(value) => setActiveTab(value as TabType)}>
-            <SelectTrigger className="w-full bg-white/5 border-white/10 text-white rounded-xl backdrop-blur-xl">
+            <SelectTrigger className="w-full rounded-xl border border-zinc-200 bg-zinc-50 text-zinc-900 backdrop-blur-xl dark:border-white/10 dark:bg-white/5 dark:text-white [&>span]:text-zinc-900 dark:[&>span]:text-white [&>span[data-placeholder]]:text-zinc-500 dark:[&>span[data-placeholder]]:text-zinc-400 [&_svg]:text-zinc-600 dark:[&_svg]:text-white/80">
               <SelectValue>
-                <span className="font-medium">
+                <span className="font-medium text-inherit">
                   {tabs.find(t => t.id === activeTab)?.label}
                 </span>
               </SelectValue>
             </SelectTrigger>
-            <SelectContent className="bg-zinc-950/90 border-white/10 backdrop-blur-xl text-white">
+            <SelectContent className="border-zinc-200 bg-white text-zinc-900 dark:border-white/10 dark:bg-zinc-950/90 dark:text-white backdrop-blur-xl">
               {tabs.map((tab) => (
-                <SelectItem key={tab.id} value={tab.id} className="py-3 px-2 justify-center [&>span]:text-center focus:bg-white/10 focus:text-white">
-                  <span className="font-medium w-full text-center">{tab.label}</span>
+                <SelectItem
+                  key={tab.id}
+                  value={tab.id}
+                  className="py-3 px-2 justify-center text-zinc-900 dark:text-white [&>span]:text-center focus:bg-zinc-100 focus:text-zinc-900 dark:focus:bg-white/10 dark:focus:text-white"
+                >
+                  <span className="font-medium w-full text-center text-inherit">{tab.label}</span>
                 </SelectItem>
               ))}
             </SelectContent>
