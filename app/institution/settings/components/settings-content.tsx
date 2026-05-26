@@ -10,6 +10,7 @@ import { Checkbox } from '@/components/ui/checkbox'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Loader2, Settings } from 'lucide-react'
 import { InstitutionPageHeader } from '../../components/institution-shell'
+import { fetchWithCSRF } from '@/lib/utils/fetch-with-csrf'
 
 export function InstitutionSettingsContent() {
   const [loading, setLoading] = useState(true)
@@ -60,7 +61,7 @@ export function InstitutionSettingsContent() {
     setError(null)
     setSuccess(null)
     try {
-      const res = await fetch('/api/institution/profile', {
+      const res = await fetchWithCSRF('/api/institution/profile', {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

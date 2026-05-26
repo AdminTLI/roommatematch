@@ -11,6 +11,7 @@ import { Textarea } from '@/components/ui/textarea'
 import { Checkbox } from '@/components/ui/checkbox'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Building2, Loader2, Lock, ShieldCheck } from 'lucide-react'
+import { fetchWithCSRF } from '@/lib/utils/fetch-with-csrf'
 
 export function InstitutionOnboardingForm() {
   const router = useRouter()
@@ -105,7 +106,16 @@ export function InstitutionOnboardingForm() {
           throw new Error('Passwords do not match')
         }
         const { error: pwError } = await supabase.auth.updateUser({ password })
-        if (pwError) throw new Error(pwError.message)
+        if (pwError) {
+          const msg = pwError.message.toLowerCase()
+          const alreadySet =
+            msg.includes('same password') ||
+            msg.includes('should be different') ||
+            msg.includes('already')
+          if (!alreadySet) {
+            throw new Error(pwError.message)
+          }
+        }
       }
 
       if (!firstName.trim() || !lastName.trim()) {
@@ -121,7 +131,7 @@ export function InstitutionOnboardingForm() {
         throw new Error('You must accept the terms of service')
       }
 
-      const res = await fetch('/api/institution/profile', {
+      const res = await fetchWithCSRF('/api/institution/profile', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -167,7 +177,7 @@ export function InstitutionOnboardingForm() {
         <CardTitle className="text-2xl">Welcome to the institution portal</CardTitle>
         <CardDescription>
           {institutionName
-            ? `You&apos;ve been invited as an administrator for ${institutionName}.`
+            ? `You've been invited as an administrator for ${institutionName}.`
             : 'Finish setting up your account to view anonymised student insights.'}
         </CardDescription>
       </CardHeader>
