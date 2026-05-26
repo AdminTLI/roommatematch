@@ -51,8 +51,13 @@ export async function requireAdmin(request?: NextRequest, requireSecret?: boolea
   // Check user role from user_roles table
   const userRole = await getUserRole(user.id)
   
-  // Only admin and super_admin roles have admin access
-  if (userRole !== 'admin' && userRole !== 'super_admin') {
+  // Only elevated roles have admin access (admin, super_admin, moderator, university_admin)
+  if (
+    userRole !== 'admin' &&
+    userRole !== 'super_admin' &&
+    userRole !== 'moderator' &&
+    userRole !== 'university_admin'
+  ) {
     return {
       ok: false,
       status: 403,

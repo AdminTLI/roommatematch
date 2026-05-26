@@ -8,6 +8,7 @@ import { loadDictionary, type Dictionary } from '@/lib/i18n/dictionary-loader'
 import { AppContext } from '@/app/app-context'
 import { queryClient } from '@/app/query-client'
 import { en } from '@/app/(i18n)/en'
+import { CookieConsentBanner } from '@/components/privacy/cookie-consent-banner'
 
 interface CoreProvidersProps {
   children: React.ReactNode
@@ -82,6 +83,7 @@ export function CoreProviders({ children }: CoreProvidersProps) {
     <QueryClientProvider client={queryClient}>
       <ThemeProvider attribute="class" defaultTheme="dark" enableSystem>
         <AppContext.Provider value={value}>{children}</AppContext.Provider>
+        <CookieConsentBanner />
       </ThemeProvider>
     </QueryClientProvider>
   )

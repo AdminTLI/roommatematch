@@ -18,7 +18,7 @@ import { usePathname } from 'next/navigation'
 import { useAppVisualViewportTopInset } from '@/hooks/use-app-visual-viewport-top-inset'
 import { AppFooter } from './app-footer'
 import { QueryClientProvider } from '@tanstack/react-query'
-import { queryClient } from '@/app/providers'
+import { queryClient } from '@/app/query-client'
 import { ActivityHeartbeat } from '@/components/app/activity-heartbeat'
 
 interface AppShellProps {

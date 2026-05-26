@@ -11,9 +11,9 @@ export const cookieConsentGlass = {
       'rounded-3xl !border-slate-200/90 !bg-white/97 !text-slate-900 shadow-[0_20px_60px_rgba(15,23,42,0.14)] backdrop-blur-xl supports-[backdrop-filter]:!bg-white/95',
     overlay: 'bg-slate-900/40 backdrop-blur-md',
     icon: 'text-blue-600',
-    title: '!text-slate-900',
-    body: '!text-slate-700',
-    muted: '!text-slate-600',
+    title: '!text-slate-950',
+    body: '!text-slate-800',
+    muted: '!text-slate-700',
     link: 'text-blue-600 hover:text-blue-700',
     headerBorder: 'border-slate-200/90',
     footer: 'border-slate-200/90 !bg-white backdrop-blur-xl',
@@ -56,13 +56,45 @@ export const cookieConsentGlass = {
   },
 } as const
 
+function readAppearanceVariant(resolvedTheme?: string): CookieConsentAppearanceVariant {
+  if (resolvedTheme === 'light' || resolvedTheme === 'dark') {
+    return resolvedTheme
+  }
+
+  if (typeof document === 'undefined') {
+    return 'dark'
+  }
+
+  const root = document.documentElement
+  if (root.classList.contains('light')) return 'light'
+  if (root.classList.contains('dark')) return 'dark'
+
+  return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'
+}
+
 /** Picks light vs dark glass from the active theme (not the route). */
 export function useCookieConsentAppearance() {
   const { resolvedTheme } = useTheme()
-  const [variant, setVariant] = useState<CookieConsentAppearanceVariant>('dark')
+  const [variant, setVariant] = useState<CookieConsentAppearanceVariant>(() =>
+    readAppearanceVariant(resolvedTheme)
+  )
 
   useEffect(() => {
-    setVariant(resolvedTheme === 'light' ? 'light' : 'dark')
+    const syncVariant = () => setVariant(readAppearanceVariant(resolvedTheme))
+
+    syncVariant()
+
+    const root = document.documentElement
+    const observer = new MutationObserver(syncVariant)
+    observer.observe(root, { attributes: true, attributeFilter: ['class'] })
+
+    const media = window.matchMedia('(prefers-color-scheme: dark)')
+    media.addEventListener('change', syncVariant)
+
+    return () => {
+      observer.disconnect()
+      media.removeEventListener('change', syncVariant)
+    }
   }, [resolvedTheme])
 
   return cookieConsentGlass[variant]

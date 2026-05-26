@@ -4,7 +4,6 @@ import { Toaster } from 'sonner'
 import { ErrorBoundaryWrapper } from '@/components/ErrorBoundaryWrapper'
 import { RouteProviders } from '@/app/route-providers'
 import { ConditionalAnalytics } from '@/components/privacy/conditional-analytics'
-import { CookieConsentBanner } from '@/components/privacy/cookie-consent-banner'
 import { GlobalRealtimeCleanupHandler } from '@/components/realtime/global-cleanup-handler'
 import './globals.css'
 
@@ -64,7 +63,6 @@ export default function RootLayout({
         </ErrorBoundaryWrapper>
         <Toaster position="top-right" richColors />
         <ConditionalAnalytics />
-        <CookieConsentBanner />
         <GlobalRealtimeCleanupHandler />
       </body>
     </html>

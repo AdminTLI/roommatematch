@@ -3,7 +3,7 @@
 import { useEffect, useRef } from 'react'
 import { usePathname } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
-import { queryClient } from '@/app/providers'
+import { queryClient } from '@/app/query-client'
 import { channelManager } from '@/lib/realtime/channel-manager'
 import type { ChannelSubscription } from '@/lib/realtime/channel-manager'
 

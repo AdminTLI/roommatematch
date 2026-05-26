@@ -63,15 +63,10 @@ export async function GET(request: NextRequest) {
       allParams: Object.fromEntries(requestUrl.searchParams.entries())
     })
 
-    // Check if this is a password reset flow using multiple methods:
-    // 1. type=recovery parameter (Supabase adds this automatically)
-    // 2. redirectTo includes reset-password
-    // 3. URL contains recovery/reset keywords
-    // 4. Check if user is in recovery mode (can update password without full auth)
-    // 5. Check referrer header (might indicate password reset email)
+    // Check if this is a password reset flow
     const referer = request.headers.get('referer') || ''
-    const isPasswordReset = 
-      type === 'recovery' || 
+    const isPasswordReset =
+      type === 'recovery' ||
       type === 'reset' ||
       redirectTo?.includes('reset-password') ||
       requestUrl.searchParams.toString().includes('recovery') ||
@@ -79,25 +74,6 @@ export async function GET(request: NextRequest) {
       requestUrl.pathname.includes('reset') ||
       referer.includes('reset') ||
       referer.includes('recovery')
-
-    // Additional check: If session exists but user might be in recovery mode
-    // Recovery sessions allow password updates without full authentication
-    if (session && user && !isPasswordReset) {
-      // Try to detect recovery session - if we can update password, it's likely a recovery session
-      // This is a fallback detection method
-      try {
-        // Check if this looks like a recovery flow by examining the token
-        // Recovery tokens typically have specific characteristics
-        const tokenHash = requestUrl.searchParams.get('token_hash') || ''
-        if (tokenHash) {
-          // If there's a token_hash, it might be a recovery token
-          console.log('[Auth Callback] Found token_hash, treating as potential recovery flow')
-          // We'll redirect to reset page to be safe
-        }
-      } catch (e) {
-        // Ignore errors in detection
-      }
-    }
 
     if (isPasswordReset) {
       // Always redirect to the confirm page for password reset
@@ -116,6 +92,16 @@ export async function GET(request: NextRequest) {
                     'pathname check'
       })
       return NextResponse.redirect(confirmUrl)
+    }
+
+    // Admin invite flow — land on institution onboarding (set password + profile)
+    if (type === 'invite' || user?.user_metadata?.invited_role) {
+      const inviteRedirect = redirectTo || '/institution/onboarding'
+      const inviteUrl = inviteRedirect.startsWith('http')
+        ? inviteRedirect
+        : `${requestUrl.origin}${inviteRedirect}`
+      console.log('[Auth Callback] Admin invite detected, redirecting to:', inviteUrl)
+      return NextResponse.redirect(inviteUrl)
     }
 
     // If there's a redirect parameter, use it (for other flows like email verification)

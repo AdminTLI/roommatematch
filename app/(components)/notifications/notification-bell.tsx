@@ -8,7 +8,7 @@ import { NotificationCounts } from '@/lib/notifications/types'
 import { createClient } from '@/lib/supabase/client'
 import { logger } from '@/lib/utils/logger'
 import { cn } from '@/lib/utils'
-import { queryKeys } from '@/app/providers'
+import { queryKeys } from '@/app/query-keys'
 import { useRealtimeInvalidation } from '@/hooks/use-realtime-invalidation'
 import { Bell } from 'lucide-react'
 

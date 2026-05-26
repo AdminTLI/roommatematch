@@ -1310,7 +1310,7 @@ export function DashboardContent({ hasCompletedQuestionnaire = false, hasPartial
           'gap-6 md:auto-rows-fr',
           recentMatches.length > 0
             ? 'hidden md:grid md:grid-cols-2 lg:grid-cols-3'
-            : 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 max-md:auto-rows-auto',
+            : 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 auto-rows-fr',
         )}
       >
         {recentMatches.length > 0 &&
@@ -1329,7 +1329,7 @@ export function DashboardContent({ hasCompletedQuestionnaire = false, hasPartial
               })
             }
             return (
-              <motion.div key={match.id} variants={fadeInOpacity} className="md:h-full">
+              <motion.div key={match.id} variants={fadeInOpacity} className="h-full">
                 <DiscoveryCard
                   profile={{
                     id: match.userId || match.id,

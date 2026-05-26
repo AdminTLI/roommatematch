@@ -32,7 +32,7 @@ export function UserRoleManagement() {
   const [updatingUserId, setUpdatingUserId] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [success, setSuccess] = useState<string | null>(null)
-  const isSuperAdmin = useIsSuperAdmin()
+  const { isSuperAdmin } = useIsSuperAdmin()
 
   const loadUsers = useCallback(async (showRefreshing = false) => {
     if (showRefreshing) {

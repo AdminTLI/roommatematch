@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { motion } from 'framer-motion'
-import { X, UserPlus, Zap, Heart, Users, MessageCircle, LucideIcon, Droplets, Volume2, Moon, Coffee, BookOpen, Home, Sparkles, GraduationCap } from 'lucide-react'
+import { X, UserPlus, Heart, Users, MessageCircle, LucideIcon, Droplets, Volume2, Moon, Coffee, BookOpen, Home, Sparkles, GraduationCap } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { ScoreInfoPopover, scoreInfoIconTriggerBaseClass } from '@/components/compatibility/score-info-popover'
 import {
@@ -175,12 +175,13 @@ export function DiscoveryCard({ profile, onSkip, onConnect, connectButtonText = 
         }
     }
 
-    /** Desktop only: taller cards read as vertical “cards”; mobile sizes to content (avoids empty space and dvh growth on scroll). */
-    const cardMinHeightClass = 'md:min-h-[34rem] lg:min-h-[38rem]'
+    // Fixed rem height (not dvh) so cards stay consistent on scroll; back face scrolls overflow.
+    const cardShellHeightClass =
+      'h-[34rem] min-h-[34rem] max-h-[34rem] shrink-0 sm:h-[36rem] sm:min-h-[36rem] sm:max-h-[36rem]'
 
     return (
         <div
-          className={cn('w-full max-md:h-auto', cardMinHeightClass)}
+          className={cn('w-full', cardShellHeightClass)}
           style={{ perspective: '1200px', WebkitPerspective: '1200px' }}
         >
           {/*
@@ -189,7 +190,7 @@ export function DiscoveryCard({ profile, onSkip, onConnect, connectButtonText = 
             fails backface-visibility and shows a mirrored front instead of the back.
           */}
           <div
-            className={cn('relative w-full max-md:h-auto md:h-full', cardMinHeightClass)}
+            className={cn('relative h-full w-full', cardShellHeightClass)}
             style={{
               transformStyle: 'preserve-3d',
               WebkitTransformStyle: 'preserve-3d',
@@ -201,10 +202,7 @@ export function DiscoveryCard({ profile, onSkip, onConnect, connectButtonText = 
             {/* Front Face */}
             <div
               className={cn(
-                'w-full md:absolute md:inset-0 md:h-full',
-                isFlipped
-                  ? 'max-md:pointer-events-none max-md:invisible max-md:absolute max-md:inset-0 max-md:h-0 max-md:overflow-hidden'
-                  : 'max-md:relative max-md:h-auto',
+                'absolute inset-0 flex w-full flex-col justify-start',
                 isFlipped && 'pointer-events-none',
               )}
               style={{
@@ -217,20 +215,11 @@ export function DiscoveryCard({ profile, onSkip, onConnect, connectButtonText = 
             >
               <div
                 className={cn(
-                  'group relative flex w-full flex-col rounded-2xl border border-slate-200/90 bg-white shadow-lg dark:border-slate-700 dark:bg-slate-800 dark:shadow-xl',
-                  'max-md:h-auto max-md:overflow-visible',
-                  'md:h-full md:overflow-y-auto md:overscroll-y-contain',
-                  cardMinHeightClass,
+                  'group relative flex h-auto max-h-full w-full flex-col justify-start overflow-y-auto overscroll-y-contain rounded-2xl border border-slate-200/90 bg-white shadow-lg dark:border-slate-700 dark:bg-slate-800 dark:shadow-xl',
                 )}
               >
             {/* Hero Match Score Section */}
             <div className="relative shrink-0 bg-gradient-to-b from-violet-100/95 via-indigo-50/80 to-white px-6 pb-4 pt-6 text-center dark:from-violet-600/20 dark:via-transparent dark:to-transparent">
-                <div className="mb-3 inline-flex items-center gap-2">
-                    <Zap className="h-5 w-5 text-violet-600 dark:text-violet-400" />
-                    <span className="text-sm font-medium uppercase tracking-wider text-slate-600 dark:text-slate-300">Match Score</span>
-                </div>
-
-                {/* Large Match Percentage */}
                 <div className="relative">
                     <span className={`text-6xl font-black tracking-tight ${discoveryScoreTextClass(matchScore)}`}>
                         {matchScore}%
@@ -317,17 +306,6 @@ export function DiscoveryCard({ profile, onSkip, onConnect, connectButtonText = 
                 <p className="text-[11px] leading-snug text-slate-500 dark:text-slate-500">
                   Tap the heart or people icons for an explanation of each score. Tap outside the popup to close it.
                 </p>
-
-                <div className="border-t border-slate-200/90 pt-4 dark:border-slate-700/50">
-                  <h4 className="mb-1 flex items-center gap-2 text-sm font-semibold text-slate-800 dark:text-slate-300">
-                    <Sparkles className="h-4 w-4 text-indigo-600 dark:text-indigo-400" />
-                    Dimension Scores
-                  </h4>
-                  <p className="mb-3 text-[11px] leading-snug text-slate-500 dark:text-slate-500">
-                    All eight lifestyle dimensions. Tap each icon for details.
-                  </p>
-                  <DimensionScoresList dimensionScores={profile.dimensionScores} compact />
-                </div>
             </div>
 
             {/* View Details Button */}
@@ -340,8 +318,8 @@ export function DiscoveryCard({ profile, onSkip, onConnect, connectButtonText = 
               </Button>
             </div>
 
-            {/* Highlights — front face scroll is handled by the card surface above (all breakpoints) */}
-            <div className="shrink-0 border-t border-slate-200/90 px-6 py-4 dark:border-slate-700/50">
+            {/* Highlights — dimension scores live on the back face only */}
+            <div className="shrink-0 border-t border-slate-200/90 px-6 py-4 pb-5 dark:border-slate-700/50">
                 <h4 className="mb-3 text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
                     Why you match
                 </h4>
@@ -385,10 +363,7 @@ export function DiscoveryCard({ profile, onSkip, onConnect, connectButtonText = 
             {/* Back Face */}
             <div
               className={cn(
-                'w-full md:absolute md:inset-0 md:h-full',
-                !isFlipped
-                  ? 'max-md:pointer-events-none max-md:invisible max-md:absolute max-md:inset-0 max-md:h-0 max-md:overflow-hidden'
-                  : 'max-md:relative max-md:h-auto',
+                'absolute inset-0 h-full w-full',
                 !isFlipped && 'pointer-events-none',
               )}
               style={{
@@ -401,10 +376,7 @@ export function DiscoveryCard({ profile, onSkip, onConnect, connectButtonText = 
             >
               <div
                 className={cn(
-                  'flex w-full flex-col overflow-hidden rounded-2xl border border-slate-200/90 bg-white shadow-lg dark:border-slate-700 dark:bg-slate-800 dark:shadow-xl',
-                  'max-md:h-auto',
-                  'md:h-full',
-                  cardMinHeightClass,
+                  'flex h-full w-full flex-col overflow-hidden rounded-2xl border border-slate-200/90 bg-white shadow-lg dark:border-slate-700 dark:bg-slate-800 dark:shadow-xl',
                 )}
               >
                 {/* User Details — fixed while the rest of the back scrolls */}

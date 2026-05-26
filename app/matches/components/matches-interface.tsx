@@ -360,14 +360,14 @@ export function MatchesInterface({ user }: MatchesInterfaceProps) {
               </CardContent>
             </Card>
           ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 max-md:auto-rows-auto md:auto-rows-fr">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 auto-rows-fr">
               {individualMatches.map((match) => (
                 <motion.div
                   key={match.match_user_id}
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
                   transition={{ duration: 0.3 }}
-                  className="max-md:h-auto md:h-full"
+                  className="h-full"
                 >
                   <DiscoveryCard
                     profile={{

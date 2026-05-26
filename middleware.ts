@@ -274,7 +274,10 @@ export async function middleware(req: NextRequest) {
     '/move-in',
     '/reputation',
     '/safety',
+    '/institution',
   ]
+
+  const isInstitutionRoute = pathname.startsWith('/institution')
 
   const isProtectedRoute = protectedRoutes.some((route) => pathname.startsWith(route))
   const isAdminRoute = pathname.startsWith('/admin')
@@ -462,7 +465,7 @@ export async function middleware(req: NextRequest) {
     // Fallback: Check admins table for backward compatibility (any admin role grants access)
     const { data: adminData, error: adminError } = await adminClient
       .from('admins')
-      .select('id, role')
+      .select('id, role, university_id')
       .eq('user_id', user.id)
       .maybeSingle()
 
@@ -471,8 +474,8 @@ export async function middleware(req: NextRequest) {
     }
 
     // No generated Database generic  -  `.from('admins')` infers `data` as `never`; assert row shape for runtime use.
-    const adminRecord: { id: string; role: string | null } | null =
-      adminData as unknown as { id: string; role: string | null } | null
+    const adminRecord: { id: string; role: string | null; university_id: string | null } | null =
+      adminData as unknown as { id: string; role: string | null; university_id: string | null } | null
     const isAdminFromAdminsTable = !!adminRecord
     
     // Allow admins via metadata fallback if explicit admin row is missing (production convenience)
@@ -482,6 +485,16 @@ export async function middleware(req: NextRequest) {
     )
 
     const adminsTableRoleForLog = adminRecord?.role ?? 'none'
+
+    const isInstitutionOnlyAdmin =
+      (role === 'admin' || role === 'university_admin' || role === 'moderator') &&
+      !!adminRecord?.university_id
+
+    if (isInstitutionOnlyAdmin) {
+      const url = req.nextUrl.clone()
+      url.pathname = '/institution/dashboard'
+      return NextResponse.redirect(url)
+    }
 
     if (!isAdminOrSuperAdmin && !isAdminFromAdminsTable && !isMetadataAdmin) {
       // Not an admin - redirect to dashboard
@@ -499,6 +512,96 @@ export async function middleware(req: NextRequest) {
         adminError: adminError?.message
       })
       return NextResponse.redirect(url)
+    }
+  }
+
+  // Institution portal — scoped admins only (separate from /admin super-admin tools)
+  if (user && isInstitutionRoute) {
+    const adminClient = createAdminClient()
+
+    const { data: userRole } = await adminClient
+      .from('user_roles')
+      .select('role')
+      .eq('user_id', user.id)
+      .maybeSingle()
+
+    const role = userRole?.role as string | undefined
+    const institutionScoped =
+      role === 'admin' || role === 'university_admin' || role === 'moderator'
+
+    const { data: adminRow } = await adminClient
+      .from('admins')
+      .select('university_id, role')
+      .eq('user_id', user.id)
+      .maybeSingle()
+
+    let institutionId = adminRow?.university_id ?? null
+    if (!institutionId) {
+      const { data: assignment } = await adminClient
+        .from('admin_role_assignments')
+        .select('institution_id')
+        .eq('user_id', user.id)
+        .eq('status', 'active')
+        .maybeSingle()
+      institutionId = assignment?.institution_id ?? null
+    }
+
+    if (role === 'super_admin') {
+      const url = req.nextUrl.clone()
+      url.pathname = '/admin'
+      return NextResponse.redirect(url)
+    }
+
+    if (!institutionScoped || !institutionId) {
+      const url = req.nextUrl.clone()
+      url.pathname = '/dashboard'
+      url.searchParams.set('reason', 'institution_access_denied')
+      return NextResponse.redirect(url)
+    }
+
+    const isOnboarding = pathname.startsWith('/institution/onboarding')
+    if (!isOnboarding) {
+      const { data: adminProfile } = await adminClient
+        .from('institution_admin_profiles')
+        .select('onboarding_completed_at')
+        .eq('user_id', user.id)
+        .maybeSingle()
+
+      if (!adminProfile?.onboarding_completed_at) {
+        const url = req.nextUrl.clone()
+        url.pathname = '/institution/onboarding'
+        return NextResponse.redirect(url)
+      }
+    }
+  }
+
+  // Redirect institution admins away from student app surfaces
+  if (
+    user &&
+    !isInstitutionRoute &&
+    !isAdminRoute &&
+    (pathname.startsWith('/dashboard') ||
+      pathname.startsWith('/matches') ||
+      pathname.startsWith('/onboarding'))
+  ) {
+    const adminClient = createAdminClient()
+    const { data: userRole } = await adminClient
+      .from('user_roles')
+      .select('role')
+      .eq('user_id', user.id)
+      .maybeSingle()
+    const role = userRole?.role as string | undefined
+    if (role === 'admin' || role === 'university_admin' || role === 'moderator') {
+      const { data: adminRow } = await adminClient
+        .from('admins')
+        .select('university_id')
+        .eq('user_id', user.id)
+        .maybeSingle()
+      if (adminRow?.university_id) {
+        const url = req.nextUrl.clone()
+        url.pathname = '/institution/dashboard'
+        return NextResponse.redirect(url)
+      }
     }
   }
 
@@ -521,7 +624,8 @@ export async function middleware(req: NextRequest) {
   }
 
   // Enforce verification for authenticated users accessing protected routes
-  if (user && isProtectedRoute && !isAllowedRoute) {
+  // Institution admins skip student Persona/onboarding verification gates.
+  if (user && isProtectedRoute && !isAllowedRoute && !isInstitutionRoute) {
     const verificationStatus = await checkUserVerificationStatus(user)
     const redirectUrl = getVerificationRedirectUrl(verificationStatus)
 

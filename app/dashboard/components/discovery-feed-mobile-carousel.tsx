@@ -22,7 +22,9 @@ interface DiscoveryFeedMobileCarouselProps {
 
 /** One full-width slide per viewport; slight peek of the next card encourages horizontal scroll. */
 const SLIDE_CLASS =
-  'w-[min(100%,calc(100vw-2.5rem))] shrink-0 snap-start snap-always overflow-visible'
+  // Keep slides visually centered (snap-center) while still allowing a small “peek”.
+  // Width is relative to the scroll container (which has px-4), so it won't feel left-indented.
+  'w-[calc(100%-2rem)] shrink-0 snap-center snap-always overflow-visible mx-auto'
 
 function matchProfile(match: DiscoveryFeedMatch) {
   const rawScore = match.score || 0
@@ -54,6 +56,7 @@ export function DiscoveryFeedMobileCarousel({
         className={cn(
           'flex gap-4 overflow-x-auto overscroll-x-contain px-4 pb-2',
           'scroll-smooth snap-x snap-mandatory scrollbar-hide',
+          'scroll-px-4',
           '[-webkit-overflow-scrolling:touch]',
         )}
       >

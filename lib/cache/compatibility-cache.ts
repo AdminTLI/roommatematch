@@ -5,8 +5,8 @@
  * Compatibility scores are cached for 5 minutes to reduce database load.
  */
 
-import { queryClient } from '@/app/providers'
-import { queryKeys } from '@/app/providers'
+import { queryClient } from '@/app/query-client'
+import { queryKeys } from '@/app/query-keys'
 
 const COMPATIBILITY_CACHE_STALE_TIME = 5 * 60 * 1000 // 5 minutes
 
