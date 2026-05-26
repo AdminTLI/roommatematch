@@ -24,6 +24,60 @@ export type SendInstitutionAdminInviteResult = {
 
 type LinkOtpType = 'magiclink' | 'recovery'
 
+async function tryExistingUserInviteLink(
+  admin: SupabaseClient,
+  email: string,
+  metadata: InstitutionInviteMetadata,
+  verifyType: LinkOtpType,
+  linkParams:
+    | {
+        type: 'magiclink'
+        email: string
+        options: { redirectTo: string; data: InstitutionInviteMetadata }
+      }
+    | {
+        type: 'recovery'
+        email: string
+        options: { redirectTo: string }
+      }
+): Promise<SendInstitutionAdminInviteResult | null> {
+  const { data: linkData, error: linkError } = await admin.auth.admin.generateLink(linkParams)
+
+  if (linkError) {
+    safeLogger.warn('[Admin] generateLink failed for existing user', {
+      error: linkError,
+      email,
+      generateType: linkParams.type,
+    })
+    return null
+  }
+
+  const hashedToken = linkData?.properties?.hashed_token
+  if (!hashedToken) {
+    return null
+  }
+
+  const userId = linkData.user?.id
+  if (userId) {
+    await syncInviteMetadata(admin, userId, metadata)
+    await promotePendingRoleAssignment(admin, userId, email)
+  }
+
+  const acceptUrl = `${getAcceptInvitationUrl()}?token_hash=${encodeURIComponent(hashedToken)}&type=${verifyType}`
+  const sent = await sendBrandedInviteEmail(email, acceptUrl, metadata.invited_first_name)
+
+  if (!sent) {
+    return {
+      ok: false,
+      error:
+        'Sign-in link was generated but the email could not be sent. Check Mailjet configuration.',
+      delivery: 'mailjet',
+    }
+  }
+
+  return { ok: true, userId, delivery: 'mailjet' }
+}
+
 function isExistingAuthUserError(message: string, code?: string): boolean {
   if (code === 'email_exists') return true
   const m = message.toLowerCase()
@@ -98,51 +152,27 @@ async function sendExistingUserInstitutionInvite(
   metadata: InstitutionInviteMetadata
 ): Promise<SendInstitutionAdminInviteResult> {
   const redirectTo = getAdminInviteRedirectUrl()
-  const linkAttempts: Array<{ generateType: LinkOtpType; verifyType: LinkOtpType }> = [
-    { generateType: 'magiclink', verifyType: 'magiclink' },
-    { generateType: 'recovery', verifyType: 'recovery' },
-  ]
 
-  for (const { generateType, verifyType } of linkAttempts) {
-    const { data: linkData, error: linkError } = await admin.auth.admin.generateLink({
-      type: generateType,
-      email,
-      options: { redirectTo, data: metadata },
-    })
+  const magiclinkResult = await tryExistingUserInviteLink(
+    admin,
+    email,
+    metadata,
+    'magiclink',
+    { type: 'magiclink', email, options: { redirectTo, data: metadata } }
+  )
+  if (magiclinkResult) {
+    return magiclinkResult
+  }
 
-    if (linkError) {
-      safeLogger.warn('[Admin] generateLink failed for existing user', {
-        error: linkError,
-        email,
-        generateType,
-      })
-      continue
-    }
-
-    const hashedToken = linkData?.properties?.hashed_token
-    if (!hashedToken) {
-      continue
-    }
-
-    const userId = linkData.user?.id
-    if (userId) {
-      await syncInviteMetadata(admin, userId, metadata)
-      await promotePendingRoleAssignment(admin, userId, email)
-    }
-
-    const acceptUrl = `${getAcceptInvitationUrl()}?token_hash=${encodeURIComponent(hashedToken)}&type=${verifyType}`
-    const sent = await sendBrandedInviteEmail(email, acceptUrl, metadata.invited_first_name)
-
-    if (!sent) {
-      return {
-        ok: false,
-        error:
-          'Sign-in link was generated but the email could not be sent. Check Mailjet configuration.',
-        delivery: 'mailjet',
-      }
-    }
-
-    return { ok: true, userId, delivery: 'mailjet' }
+  const recoveryResult = await tryExistingUserInviteLink(
+    admin,
+    email,
+    metadata,
+    'recovery',
+    { type: 'recovery', email, options: { redirectTo } }
+  )
+  if (recoveryResult) {
+    return recoveryResult
   }
 
   return {
