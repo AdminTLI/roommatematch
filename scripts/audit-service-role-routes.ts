@@ -13,6 +13,7 @@ type Classification =
   | 'cron-webhook'
   | 'public-aggregate'
   | 'public-form'
+  | 'token-authenticated'
   | 'needs-review'
 
 function walk(dir: string): string[] {
@@ -39,6 +40,11 @@ function classify(filePath: string, content: string): Classification {
   if (rel.startsWith('admin/')) return 'admin-only'
   if (rel === 'marketing/stats/route.ts') return 'public-aggregate'
   if (rel === 'careers/apply/route.ts' || rel === 'contact/route.ts') return 'public-form'
+  // Token-authenticated routes use HMAC-signed tokens instead of session cookies.
+  // The unsubscribe route verifies identity via verifyUnsubscribeToken() before any DB access.
+  if (content.includes('verifyUnsubscribeToken') || content.includes('verifyToken')) {
+    return 'token-authenticated'
+  }
   if (
     content.includes('getUser()') ||
     content.includes('requireAdmin') ||

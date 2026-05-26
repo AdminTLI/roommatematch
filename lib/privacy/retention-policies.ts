@@ -80,6 +80,13 @@ export const RETENTION_POLICIES: RetentionPolicy[] = [
     description: 'Accounts marked for deletion',
     legalBasis: 'Grace period to allow account recovery before permanent erasure',
     exceptions: ['Verification documents retained for additional 4 weeks per Dutch law']
+  },
+  {
+    dataType: 'email_unsubscribe_events',
+    retentionDays: 90, // Same as application_logs — operational audit trail
+    description: 'Audit log of email preference changes made via one-click unsubscribe links',
+    legalBasis: 'Legitimate interest in deliverability auditing; minimised by truncated IP storage',
+    exceptions: []
   }
 ]
 

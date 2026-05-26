@@ -10,9 +10,9 @@
  */
 
 import { NextResponse } from 'next/server'
-import { createHash } from 'crypto'
 import { createAdminClient } from '@/lib/supabase/server'
 import { verifyUnsubscribeToken } from '@/lib/email/unsubscribe-token'
+import { truncateClientIp } from '@/lib/privacy/truncate-client-ip'
 import {
   getDevMockUnsubscribeState,
   isDevUnsubscribeMockToken,
@@ -48,11 +48,11 @@ function sanitizePreferences(raw: any): Record<PreferenceKey, boolean> {
   return merged
 }
 
-function hashIp(req: Request): string | null {
+function getAnonymizedIp(req: Request): string | null {
   const fwd = req.headers.get('x-forwarded-for')
-  const ip = (fwd || '').split(',')[0]?.trim() || req.headers.get('x-real-ip') || ''
-  if (!ip) return null
-  return createHash('sha256').update(ip).digest('hex').slice(0, 32)
+  const realIp = req.headers.get('x-real-ip')
+  const raw = (fwd || '').split(',')[0]?.trim() || realIp || null
+  return truncateClientIp(raw)
 }
 
 export async function GET(request: Request) {
@@ -148,7 +148,7 @@ export async function POST(request: Request) {
     }
 
     if (Object.keys(diff).length > 0) {
-      const ipHash = hashIp(request)
+      const ipHash = getAnonymizedIp(request)
       const userAgent = (request.headers.get('user-agent') || '').slice(0, 256)
       const { error: auditErr } = await supabase.from('email_unsubscribe_events').insert({
         user_id: verified.userId,
