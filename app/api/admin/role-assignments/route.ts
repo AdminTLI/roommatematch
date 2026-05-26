@@ -3,7 +3,7 @@ import { requireSuperAdmin } from '@/lib/auth/admin'
 import { createAdminClient } from '@/lib/supabase/server'
 import { safeLogger } from '@/lib/utils/logger'
 import type { UserRole } from '@/lib/auth/roles'
-import { getAdminInviteRedirectUrl } from '@/lib/auth/institution-invite'
+import { sendInstitutionAdminInvite } from '@/lib/auth/send-institution-admin-invite'
 
 const ALLOWED_ROLES: ReadonlyArray<Exclude<UserRole, 'user'>> = [
   'admin',
@@ -60,6 +60,24 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'Failed to load role assignments' }, { status: 500 })
     }
 
+    const activeUserIds = (assignments || [])
+      .filter((row: { status: string; user_id: string | null }) => row.status === 'active' && row.user_id)
+      .map((row: { user_id: string }) => row.user_id)
+
+    const onboardingCompleteByUser = new Set<string>()
+    if (activeUserIds.length > 0) {
+      const { data: profiles } = await admin
+        .from('institution_admin_profiles')
+        .select('user_id, onboarding_completed_at')
+        .in('user_id', activeUserIds)
+
+      for (const profile of profiles || []) {
+        if (profile.onboarding_completed_at) {
+          onboardingCompleteByUser.add(profile.user_id)
+        }
+      }
+    }
+
     const formatted = (assignments || []).map((row: any) => ({
       id: row.id,
       email: row.email,
@@ -76,6 +94,10 @@ export async function GET(request: NextRequest) {
       activated_at: row.activated_at,
       created_at: row.created_at,
       updated_at: row.updated_at,
+      can_resend_invite:
+        row.status === 'pending' ||
+        (row.status === 'active' &&
+          (!row.user_id || !onboardingCompleteByUser.has(row.user_id))),
     }))
 
     return NextResponse.json({ assignments: formatted })
@@ -222,22 +244,17 @@ export async function POST(request: NextRequest) {
     let inviteErrorMessage: string | null = null
     if (sendInvite) {
       try {
-        const redirectTo = getAdminInviteRedirectUrl()
-        const { error: inviteError } = await admin.auth.admin.inviteUserByEmail(email, {
-          redirectTo,
-          data: {
-            invited_role: role,
-            invited_institution_id: institutionId,
-            invited_first_name: firstName,
-            invited_last_name: lastName,
-          },
+        const inviteResult = await sendInstitutionAdminInvite(admin, email, {
+          invited_role: role,
+          invited_institution_id: institutionId,
+          invited_first_name: firstName,
+          invited_last_name: lastName,
         })
-        if (inviteError) {
-          inviteErrorMessage = inviteError.message
-          safeLogger.warn('[Admin] Supabase Auth invite failed; assignment remains pending', {
-            error: inviteError,
+        if (!inviteResult.ok) {
+          inviteErrorMessage = inviteResult.error || 'Invite failed'
+          safeLogger.warn('[Admin] Institution invite failed; assignment remains pending', {
+            error: inviteErrorMessage,
             email: normalizedEmail,
-            redirectTo,
           })
         } else {
           inviteSentAt = new Date().toISOString()

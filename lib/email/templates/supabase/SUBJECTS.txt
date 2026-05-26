@@ -1,0 +1,23 @@
+================================================================================
+SUPABASE DASHBOARD — SUBJECT LINES
+Paste into the Subject field only (NOT into the HTML body).
+Each HTML file also repeats its subject in a comment at the top.
+================================================================================
+
+Confirm signup          →  verify-otp.html
+  Your Domu Match verification code
+
+Invite user             →  invite-user.html
+  You're invited to Domu Match
+
+Magic link or OTP       →  magic-link.html
+  Sign in to Domu Match
+
+Change email address    →  email-change.html
+  Confirm your new email - Domu Match
+
+Reset password          →  password-reset.html
+  Reset your Domu Match password
+
+Reauthentication        →  reauthentication.html
+  {{ .Token }} is your Domu Match verification code

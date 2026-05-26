@@ -14,6 +14,7 @@ export function EmailPreviewClient({ kinds }: Props) {
   const [selectedId, setSelectedId] = useState<string>(kinds[0]?.id ?? '')
   const [viewport, setViewport] = useState<ViewportSize>('desktop')
   const [previewHtml, setPreviewHtml] = useState<string>('')
+  const [previewSubject, setPreviewSubject] = useState<string>('')
   const [rawHtml, setRawHtml] = useState<string>('')
   const [loadError, setLoadError] = useState<string | null>(null)
   const [isLoading, setIsLoading] = useState(false)
@@ -39,6 +40,7 @@ export function EmailPreviewClient({ kinds }: Props) {
     setIsLoading(true)
     setLoadError(null)
     setPreviewHtml('')
+    setPreviewSubject('')
     setRawHtml('')
     setCopyStatus('idle')
 
@@ -65,6 +67,7 @@ export function EmailPreviewClient({ kinds }: Props) {
           throw new Error('Preview returned empty HTML')
         }
         setPreviewHtml(previewData.html)
+        setPreviewSubject(typeof previewData.subject === 'string' ? previewData.subject : '')
         setRawHtml(typeof rawData.html === 'string' ? rawData.html : previewData.html)
       })
       .catch((err) => {
@@ -134,6 +137,14 @@ export function EmailPreviewClient({ kinds }: Props) {
                 <div>
                   <h2 className="text-base font-semibold text-slate-900">{selected?.label}</h2>
                   <p className="text-xs text-slate-500">{selected?.description}</p>
+                  {selected?.category === 'supabase' && previewSubject && (
+                    <div className="mt-3 rounded-lg border border-violet-200 bg-violet-50 px-3 py-2">
+                      <p className="text-[10px] font-semibold uppercase tracking-wider text-violet-700">
+                        Supabase subject field (not in HTML body)
+                      </p>
+                      <p className="mt-1 font-mono text-sm text-violet-950">{previewSubject}</p>
+                    </div>
+                  )}
                 </div>
                 <div className="flex items-center gap-2">
                   <ViewportToggle value={viewport} onChange={setViewport} />

@@ -1,7 +1,7 @@
 <!--
 ================================================================================
 SUPABASE SUBJECT (paste into Subject field — NOT the HTML body):
-  Your Domu Match verification code
+  {{ .Token }} is your Domu Match verification code
 ================================================================================
 -->
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
@@ -13,10 +13,10 @@ SUPABASE SUBJECT (paste into Subject field — NOT the HTML body):
   <meta name="x-apple-disable-message-reformatting" />
   <meta name="color-scheme" content="light only" />
   <meta name="supported-color-schemes" content="light" />
-  <title>Verify your email - Domu Match</title>
+  <title>Confirm it's you - Domu Match</title>
 </head>
 <body style="margin:0;padding:0;background-color:#f8fafc;-webkit-text-size-adjust:100%;-ms-text-size-adjust:100%;">
-  <div style="display:none;max-height:0;overflow:hidden;mso-hide:all;color:transparent;visibility:hidden;opacity:0;font-size:1px;line-height:1px;">Your Domu Match verification code is {{ .Token }}. It expires in 10 minutes.</div>
+  <div style="display:none;max-height:0;overflow:hidden;mso-hide:all;color:transparent;visibility:hidden;opacity:0;font-size:1px;line-height:1px;">Your Domu Match verification code is {{ .Token }}. Enter it to continue.</div>
   <div style="display:none;max-height:0;overflow:hidden;">&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;</div>
 
   <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="background-color:#f8fafc;">
@@ -50,8 +50,8 @@ SUPABASE SUBJECT (paste into Subject field — NOT the HTML body):
               <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="background-color:#ffffff;border-radius:20px;border:1px solid #e2e8f0;">
                 <tr>
                   <td style="padding:32px 32px 28px;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif;color:#334155;font-size:16px;line-height:24px;">
-                    <h1 style="margin:0 0 12px;font-size:24px;font-weight:700;color:#0f172a;text-align:center;letter-spacing:-0.2px;">Confirm your email</h1>
-                    <p style="margin:0 0 8px;text-align:center;color:#64748b;font-size:15px;">Thanks for signing up for Domu Match. Enter this code on the verification page to activate your account and start finding compatible roommates.</p>
+                    <h1 style="margin:0 0 12px;font-size:24px;font-weight:700;color:#0f172a;text-align:center;letter-spacing:-0.2px;">Confirm it's you</h1>
+                    <p style="margin:0 0 8px;text-align:center;color:#64748b;font-size:15px;">You're trying to complete a sensitive action on Domu Match. For your security, enter this verification code to prove it's really you.</p>
                     <p style="margin:0 0 20px;text-align:center;color:#334155;font-size:14px;">Account: <strong style="word-break:break-all;">{{ .Email }}</strong></p>
 
                     <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin:20px 0;">
@@ -59,14 +59,18 @@ SUPABASE SUBJECT (paste into Subject field — NOT the HTML body):
                         <td align="center" style="background:#f5f3ff;border:1px solid #ede9fe;border-radius:16px;padding:24px 20px;">
                           <div style="font-size:11px;font-weight:700;letter-spacing:2px;color:#64748b;text-transform:uppercase;margin-bottom:12px;">Verification code</div>
                           <div style="font-family:'SF Mono','Menlo','Consolas','Courier New',monospace;font-size:36px;font-weight:700;color:#7c3aed;letter-spacing:14px;line-height:1;padding-left:14px;">{{ .Token }}</div>
-                          <div style="margin-top:16px;font-size:12px;color:#64748b;">This code expires in 10 minutes and can only be used once.</div>
+                          <div style="margin-top:16px;font-size:12px;color:#64748b;">This code expires shortly and can only be used once.</div>
                         </td>
                       </tr>
                     </table>
 
-                    <p style="margin:16px 0 0;text-align:center;color:#94a3b8;font-size:13px;">
-                      Didn’t create a Domu Match account? You can safely ignore this email — no account will be created.
-                    </p>
+                    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin:8px 0 0;">
+                      <tr>
+                        <td style="background:#fef3c7;border:1px solid #fde68a;border-radius:14px;padding:14px 16px;font-size:13px;color:#92400e;line-height:20px;">
+                          <strong>Didn’t start this?</strong> Someone may be trying to access your account. Don’t share this code. Email <a href="mailto:domumatch@gmail.com" style="color:#92400e;text-decoration:underline;">domumatch@gmail.com</a> if you need help securing your account.
+                        </td>
+                      </tr>
+                    </table>
                   </td>
                 </tr>
               </table>

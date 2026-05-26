@@ -5,6 +5,7 @@ import { ErrorBoundaryWrapper } from '@/components/ErrorBoundaryWrapper'
 import { RouteProviders } from '@/app/route-providers'
 import { ConditionalAnalytics } from '@/components/privacy/conditional-analytics'
 import { GlobalRealtimeCleanupHandler } from '@/components/realtime/global-cleanup-handler'
+import { AuthHashRedirect } from '@/components/auth/auth-hash-redirect'
 import './globals.css'
 
 const inter = Inter({ subsets: ['latin'] })
@@ -58,6 +59,7 @@ export default function RootLayout({
       <body className={`${inter.className} antialiased`}>
         <ErrorBoundaryWrapper>
           <RouteProviders>
+            <AuthHashRedirect />
             {children}
           </RouteProviders>
         </ErrorBoundaryWrapper>

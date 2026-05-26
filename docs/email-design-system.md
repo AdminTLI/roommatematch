@@ -20,6 +20,8 @@ lib/email/
       magic-link.html
       email-change.html
       invite-user.html
+      reauthentication.html
+      SUBJECTS.txt
 
 app/api/dev/email-preview/route.ts   # renders every template via shared helpers
 app/dev/email-preview/               # admin-only gallery UI

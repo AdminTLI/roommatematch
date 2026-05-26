@@ -62,6 +62,7 @@ interface Assignment {
   invite_sent_at: string | null
   activated_at: string | null
   created_at: string
+  can_resend_invite?: boolean
 }
 
 interface UniversityOpt {
@@ -646,7 +647,8 @@ export function RoleManagementPanel() {
                       </td>
                       <td className="px-4 py-3">
                         <Badge className={STATUS_BADGE_CLASS[a.status]}>
-                          {a.status === 'active' && 'Active'}
+                          {a.status === 'active' &&
+                            (a.can_resend_invite ? 'Active · setup incomplete' : 'Active')}
                           {a.status === 'pending' && 'Pending invite'}
                           {a.status === 'revoked' && 'Revoked'}
                         </Badge>
@@ -661,7 +663,7 @@ export function RoleManagementPanel() {
                       </td>
                       <td className="px-4 py-3 text-right">
                         <div className="flex items-center justify-end gap-2">
-                          {a.status === 'pending' && (
+                          {a.can_resend_invite && (
                             <Button
                               size="sm"
                               variant="outline"

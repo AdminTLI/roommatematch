@@ -1,3 +1,9 @@
+<!--
+================================================================================
+SUPABASE SUBJECT (paste into Subject field — NOT the HTML body):
+  Confirm your new email - Domu Match
+================================================================================
+-->
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en">
 <head>
@@ -10,7 +16,7 @@
   <title>Confirm your new email - Domu Match</title>
 </head>
 <body style="margin:0;padding:0;background-color:#f8fafc;-webkit-text-size-adjust:100%;-ms-text-size-adjust:100%;">
-  <div style="display:none;max-height:0;overflow:hidden;mso-hide:all;color:transparent;visibility:hidden;opacity:0;font-size:1px;line-height:1px;">Confirm the change of your Domu Match email address.</div>
+  <div style="display:none;max-height:0;overflow:hidden;mso-hide:all;color:transparent;visibility:hidden;opacity:0;font-size:1px;line-height:1px;">Confirm your new Domu Match email address: {{ .NewEmail }}</div>
   <div style="display:none;max-height:0;overflow:hidden;">&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;</div>
 
   <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="background-color:#f8fafc;">
@@ -23,11 +29,11 @@
               <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="background-color:#f5f3ff;border-radius:20px;border:1px solid #ede9fe;">
                 <tr>
                   <td align="center" style="padding:28px 24px;">
-                    <a href="https://domumatch.com" style="text-decoration:none;display:inline-block;">
+                    <a href="https://www.domumatch.com" style="text-decoration:none;display:inline-block;">
                       <table role="presentation" cellpadding="0" cellspacing="0" border="0" align="center">
                         <tr>
                           <td align="center" bgcolor="#ffffff" style="background:#ffffff;border-radius:18px;padding:10px;border:1px solid #ede9fe;">
-                            <img src="https://domumatch.com/images/logo.png" width="44" height="44" alt="Domu Match" style="display:block;border:0;outline:none;text-decoration:none;border-radius:12px;width:44px;height:44px;" />
+                            <img src="https://www.domumatch.com/images/logo.png" width="44" height="44" alt="Domu Match" border="0" style="display:block;border:0;outline:none;text-decoration:none;border-radius:12px;width:44px;height:44px;-ms-interpolation-mode:bicubic;" />
                           </td>
                         </tr>
                       </table>
@@ -45,14 +51,14 @@
                 <tr>
                   <td style="padding:32px 32px 28px;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif;color:#334155;font-size:16px;line-height:24px;">
                     <h1 style="margin:0 0 12px;font-size:24px;font-weight:700;color:#0f172a;text-align:center;letter-spacing:-0.2px;">Confirm your new email</h1>
-                    <p style="margin:0 0 24px;text-align:center;color:#64748b;font-size:15px;">You asked to change the email address on your Domu Match account.</p>
+                    <p style="margin:0 0 24px;text-align:center;color:#64748b;font-size:15px;">You requested to change the email address on your Domu Match account. Confirm the new address below — until you do, sign-in will continue to use your current email.</p>
 
                     <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin:0 0 24px;">
                       <tr>
                         <td style="background:#f5f3ff;border:1px solid #ede9fe;border-radius:16px;padding:18px 20px;font-size:14px;color:#5b21b6;line-height:22px;">
-                          <div style="font-size:11px;font-weight:700;letter-spacing:2px;color:#64748b;text-transform:uppercase;margin-bottom:6px;">From</div>
+                          <div style="font-size:11px;font-weight:700;letter-spacing:2px;color:#64748b;text-transform:uppercase;margin-bottom:6px;">Current email</div>
                           <div style="font-size:15px;font-weight:600;color:#334155;word-break:break-all;">{{ .Email }}</div>
-                          <div style="font-size:11px;font-weight:700;letter-spacing:2px;color:#64748b;text-transform:uppercase;margin:14px 0 6px;">To</div>
+                          <div style="font-size:11px;font-weight:700;letter-spacing:2px;color:#64748b;text-transform:uppercase;margin:14px 0 6px;">New email</div>
                           <div style="font-size:15px;font-weight:600;color:#0f172a;word-break:break-all;">{{ .NewEmail }}</div>
                         </td>
                       </tr>
@@ -72,7 +78,7 @@
                     <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin:8px 0 0;">
                       <tr>
                         <td style="background:#fef3c7;border:1px solid #fde68a;border-radius:14px;padding:14px 16px;font-size:13px;color:#92400e;line-height:20px;">
-                          <strong>Didn’t request this?</strong> Don’t click the button. Reply to <a href="mailto:domumatch@gmail.com" style="color:#92400e;text-decoration:underline;">domumatch@gmail.com</a> right away so we can secure your account.
+                          <strong>Didn’t request this change?</strong> Don’t click the link. Contact us at <a href="mailto:domumatch@gmail.com" style="color:#92400e;text-decoration:underline;">domumatch@gmail.com</a> immediately so we can secure your account.
                         </td>
                       </tr>
                     </table>
@@ -94,27 +100,28 @@
                 </tr>
                 <tr>
                   <td align="center" style="padding:0 0 12px;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif;font-size:13px;color:#64748b;">
-                    <a href="https://domumatch.com" style="color:#64748b;text-decoration:none;margin:0 6px;">Website</a>
+                    <a href="https://www.domumatch.com" style="color:#64748b;text-decoration:none;margin:0 6px;">Website</a>
                     <span style="color:#94a3b8;">·</span>
-                    <a href="https://domumatch.com/help-center" style="color:#64748b;text-decoration:none;margin:0 6px;">Help</a>
+                    <a href="https://www.domumatch.com/help-center" style="color:#64748b;text-decoration:none;margin:0 6px;">Help</a>
                     <span style="color:#94a3b8;">·</span>
-                    <a href="https://domumatch.com/contact" style="color:#64748b;text-decoration:none;margin:0 6px;">Contact</a>
+                    <a href="https://www.domumatch.com/contact" style="color:#64748b;text-decoration:none;margin:0 6px;">Contact</a>
                   </td>
                 </tr>
                 <tr>
                   <td align="center" style="padding:0 0 16px;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif;font-size:12px;color:#94a3b8;">
-                    <a href="https://domumatch.com/privacy" style="color:#94a3b8;text-decoration:none;margin:0 6px;">Privacy</a>
+                    <a href="https://www.domumatch.com/privacy" style="color:#94a3b8;text-decoration:none;margin:0 6px;">Privacy</a>
                     <span>·</span>
-                    <a href="https://domumatch.com/terms" style="color:#94a3b8;text-decoration:none;margin:0 6px;">Terms</a>
+                    <a href="https://www.domumatch.com/terms" style="color:#94a3b8;text-decoration:none;margin:0 6px;">Terms</a>
                     <span>·</span>
-                    <a href="https://domumatch.com/cookies" style="color:#94a3b8;text-decoration:none;margin:0 6px;">Cookies</a>
+                    <a href="https://www.domumatch.com/cookies" style="color:#94a3b8;text-decoration:none;margin:0 6px;">Cookies</a>
                   </td>
                 </tr>
                 <tr>
                   <td align="center" style="padding:12px 0 0;border-top:1px solid #eef2f7;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif;font-size:12px;color:#94a3b8;line-height:18px;">
                     <p style="margin:0 0 6px;font-size:13px;color:#64748b;">The smartest way to find compatible roommates. Science-backed matching for better living.</p>
                     <p style="margin:0 0 4px;">© 2026 Domu Match · Breda, The Netherlands</p>
-                    <p style="margin:0 0 4px;">This message was sent from <strong style="color:#64748b;">info@domumatch.com</strong>, an unmonitored address - please don’t reply. For help, email <a href="mailto:domumatch@gmail.com" style="color:#7c3aed;text-decoration:underline;">domumatch@gmail.com</a>.</p>
+                    <p style="margin:0 0 4px;">This message was sent from <strong style="color:#64748b;">info@domumatch.com</strong>, an unmonitored address — please don’t reply. For help, email <a href="mailto:domumatch@gmail.com" style="color:#7c3aed;text-decoration:underline;">domumatch@gmail.com</a>.</p>
+                    <p style="margin:0;">This confirmation was sent to <a href="mailto:{{ .NewEmail }}" style="color:#64748b;text-decoration:underline;">{{ .NewEmail }}</a>.</p>
                   </td>
                 </tr>
               </table>

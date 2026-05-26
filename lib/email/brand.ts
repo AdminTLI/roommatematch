@@ -12,7 +12,8 @@
 export const BRAND = {
   name: 'Domu Match',
   productUrl: 'https://domumatch.com',
-  logoUrl: 'https://domumatch.com/images/logo.png',
+  /** Use www — bare domumatch.com 307-redirects and breaks images in email clients + Supabase preview. */
+  logoUrl: 'https://www.domumatch.com/images/logo.png',
 
   /** Long tagline shown across marketing + footer. Per user direction. */
   tagline:

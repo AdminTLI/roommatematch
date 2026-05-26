@@ -1,3 +1,9 @@
+<!--
+================================================================================
+SUPABASE SUBJECT (paste into Subject field — NOT the HTML body):
+  You're invited to Domu Match
+================================================================================
+-->
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en">
 <head>
@@ -7,10 +13,10 @@
   <meta name="x-apple-disable-message-reformatting" />
   <meta name="color-scheme" content="light only" />
   <meta name="supported-color-schemes" content="light" />
-  <title>You’re invited to Domu Match</title>
+  <title>You're invited to Domu Match</title>
 </head>
 <body style="margin:0;padding:0;background-color:#f8fafc;-webkit-text-size-adjust:100%;-ms-text-size-adjust:100%;">
-  <div style="display:none;max-height:0;overflow:hidden;mso-hide:all;color:transparent;visibility:hidden;opacity:0;font-size:1px;line-height:1px;">You’ve been invited to join Domu Match - set up your account in one tap.</div>
+  <div style="display:none;max-height:0;overflow:hidden;mso-hide:all;color:transparent;visibility:hidden;opacity:0;font-size:1px;line-height:1px;">You've been invited to join Domu Match — accept your invitation to get started.</div>
   <div style="display:none;max-height:0;overflow:hidden;">&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;</div>
 
   <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="background-color:#f8fafc;">
@@ -23,11 +29,11 @@
               <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="background-color:#f5f3ff;border-radius:20px;border:1px solid #ede9fe;">
                 <tr>
                   <td align="center" style="padding:28px 24px;">
-                    <a href="https://domumatch.com" style="text-decoration:none;display:inline-block;">
+                    <a href="https://www.domumatch.com" style="text-decoration:none;display:inline-block;">
                       <table role="presentation" cellpadding="0" cellspacing="0" border="0" align="center">
                         <tr>
                           <td align="center" bgcolor="#ffffff" style="background:#ffffff;border-radius:18px;padding:10px;border:1px solid #ede9fe;">
-                            <img src="https://domumatch.com/images/logo.png" width="44" height="44" alt="Domu Match" style="display:block;border:0;outline:none;text-decoration:none;border-radius:12px;width:44px;height:44px;" />
+                            <img src="https://www.domumatch.com/images/logo.png" width="44" height="44" alt="Domu Match" border="0" style="display:block;border:0;outline:none;text-decoration:none;border-radius:12px;width:44px;height:44px;-ms-interpolation-mode:bicubic;" />
                           </td>
                         </tr>
                       </table>
@@ -44,27 +50,34 @@
               <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="background-color:#ffffff;border-radius:20px;border:1px solid #e2e8f0;">
                 <tr>
                   <td style="padding:32px 32px 28px;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif;color:#334155;font-size:16px;line-height:24px;">
-                    <h1 style="margin:0 0 12px;font-size:24px;font-weight:700;color:#0f172a;text-align:center;letter-spacing:-0.2px;">You’re invited to Domu Match</h1>
-                    <p style="margin:0 0 24px;text-align:center;color:#64748b;font-size:15px;">Welcome! Someone thought you’d be a great fit for Domu Match - the smartest way to find compatible roommates. Set up your account in one tap and start matching.</p>
+                    <h1 style="margin:0 0 12px;font-size:24px;font-weight:700;color:#0f172a;text-align:center;letter-spacing:-0.2px;">You're invited to Domu Match</h1>
+                    <p style="margin:0 0 8px;text-align:center;color:#64748b;font-size:15px;">You've been invited to create a Domu Match account at</p>
+                    <p style="margin:0 0 24px;text-align:center;color:#334155;font-size:15px;font-weight:600;word-break:break-all;">{{ .Email }}</p>
+                    <p style="margin:0 0 24px;text-align:center;color:#64748b;font-size:15px;">Domu Match helps you find compatible roommates using a science-backed questionnaire — so you match on lifestyle, not just listings.</p>
 
                     <table role="presentation" cellpadding="0" cellspacing="0" border="0" align="center" style="margin:0 auto;">
                       <tr>
                         <td align="center" bgcolor="#7c3aed" style="border-radius:14px;background:#7c3aed;">
-                          <a href="{{ .ConfirmationURL }}" style="display:inline-block;padding:14px 28px;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif;font-size:16px;font-weight:600;color:#ffffff;text-decoration:none;border-radius:14px;line-height:1;mso-padding-alt:0;">Accept invitation</a>
+                          <a href="{{ .SiteURL }}/auth/accept-invitation?token_hash={{ .TokenHash }}&amp;type=invite" style="display:inline-block;padding:14px 28px;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif;font-size:16px;font-weight:600;color:#ffffff;text-decoration:none;border-radius:14px;line-height:1;mso-padding-alt:0;">Accept invitation</a>
                         </td>
                       </tr>
                     </table>
 
-                    <p style="margin:24px 0 0;text-align:center;color:#94a3b8;font-size:13px;">If the button doesn’t work, copy and paste this URL into your browser:</p>
-                    <p style="margin:8px 0 16px;text-align:center;color:#7c3aed;font-size:12px;word-break:break-all;line-height:18px;"><a href="{{ .ConfirmationURL }}" style="color:#7c3aed;text-decoration:underline;">{{ .ConfirmationURL }}</a></p>
+                    <p style="margin:24px 0 0;text-align:center;color:#94a3b8;font-size:13px;">If the button doesn’t work, open this link in your browser:</p>
+                    <p style="margin:8px 0 16px;text-align:center;color:#7c3aed;font-size:12px;word-break:break-all;line-height:18px;"><a href="{{ .SiteURL }}/auth/accept-invitation?token_hash={{ .TokenHash }}&amp;type=invite" style="color:#7c3aed;text-decoration:underline;">{{ .SiteURL }}/auth/accept-invitation</a></p>
+                    <p style="margin:0 0 16px;text-align:center;color:#94a3b8;font-size:12px;">This link is single-use and expires after a short time. If it has expired, ask your administrator to resend the invitation.</p>
 
                     <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin:8px 0 0;">
                       <tr>
                         <td style="background:#f8fafc;border:1px solid #eef2f7;border-radius:14px;padding:14px 16px;font-size:13px;color:#64748b;line-height:20px;">
-                          <strong style="color:#334155;">A few things to know:</strong> we use a science-backed questionnaire to match you on the things that actually make living together work - sleep, cleanliness, social style, study/work rhythm and more. Takes about 5 minutes to get started.
+                          <strong style="color:#334155;">What happens next:</strong> accept the invitation, set your password, complete the short compatibility questionnaire (~5 minutes), and start browsing matches.
                         </td>
                       </tr>
                     </table>
+
+                    <p style="margin:16px 0 0;text-align:center;color:#94a3b8;font-size:13px;">
+                      Not expecting this invitation? You can safely ignore this email.
+                    </p>
                   </td>
                 </tr>
               </table>
@@ -83,27 +96,27 @@
                 </tr>
                 <tr>
                   <td align="center" style="padding:0 0 12px;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif;font-size:13px;color:#64748b;">
-                    <a href="https://domumatch.com" style="color:#64748b;text-decoration:none;margin:0 6px;">Website</a>
+                    <a href="https://www.domumatch.com" style="color:#64748b;text-decoration:none;margin:0 6px;">Website</a>
                     <span style="color:#94a3b8;">·</span>
-                    <a href="https://domumatch.com/help-center" style="color:#64748b;text-decoration:none;margin:0 6px;">Help</a>
+                    <a href="https://www.domumatch.com/help-center" style="color:#64748b;text-decoration:none;margin:0 6px;">Help</a>
                     <span style="color:#94a3b8;">·</span>
-                    <a href="https://domumatch.com/contact" style="color:#64748b;text-decoration:none;margin:0 6px;">Contact</a>
+                    <a href="https://www.domumatch.com/contact" style="color:#64748b;text-decoration:none;margin:0 6px;">Contact</a>
                   </td>
                 </tr>
                 <tr>
                   <td align="center" style="padding:0 0 16px;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif;font-size:12px;color:#94a3b8;">
-                    <a href="https://domumatch.com/privacy" style="color:#94a3b8;text-decoration:none;margin:0 6px;">Privacy</a>
+                    <a href="https://www.domumatch.com/privacy" style="color:#94a3b8;text-decoration:none;margin:0 6px;">Privacy</a>
                     <span>·</span>
-                    <a href="https://domumatch.com/terms" style="color:#94a3b8;text-decoration:none;margin:0 6px;">Terms</a>
+                    <a href="https://www.domumatch.com/terms" style="color:#94a3b8;text-decoration:none;margin:0 6px;">Terms</a>
                     <span>·</span>
-                    <a href="https://domumatch.com/cookies" style="color:#94a3b8;text-decoration:none;margin:0 6px;">Cookies</a>
+                    <a href="https://www.domumatch.com/cookies" style="color:#94a3b8;text-decoration:none;margin:0 6px;">Cookies</a>
                   </td>
                 </tr>
                 <tr>
                   <td align="center" style="padding:12px 0 0;border-top:1px solid #eef2f7;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif;font-size:12px;color:#94a3b8;line-height:18px;">
                     <p style="margin:0 0 6px;font-size:13px;color:#64748b;">The smartest way to find compatible roommates. Science-backed matching for better living.</p>
                     <p style="margin:0 0 4px;">© 2026 Domu Match · Breda, The Netherlands</p>
-                    <p style="margin:0 0 4px;">This message was sent from <strong style="color:#64748b;">info@domumatch.com</strong>, an unmonitored address - please don’t reply. For help, email <a href="mailto:domumatch@gmail.com" style="color:#7c3aed;text-decoration:underline;">domumatch@gmail.com</a>.</p>
+                    <p style="margin:0 0 4px;">This message was sent from <strong style="color:#64748b;">info@domumatch.com</strong>, an unmonitored address — please don’t reply. For help, email <a href="mailto:domumatch@gmail.com" style="color:#7c3aed;text-decoration:underline;">domumatch@gmail.com</a>.</p>
                     <p style="margin:0;">This invitation was sent to <a href="mailto:{{ .Email }}" style="color:#64748b;text-decoration:underline;">{{ .Email }}</a>.</p>
                   </td>
                 </tr>

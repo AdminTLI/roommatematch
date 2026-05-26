@@ -80,6 +80,13 @@ export const PREVIEW_KINDS: PreviewKind[] = [
     description: 'Used when an admin invites a new account.',
     hasUnresolvedVars: false,
   },
+  {
+    id: 'supabase-reauthentication',
+    category: 'supabase',
+    label: 'Reauthentication',
+    description: 'OTP before a sensitive action (e.g. change password, delete account).',
+    hasUnresolvedVars: false,
+  },
 
   // App-sent - rendered live via shared layout
   {
@@ -187,11 +194,11 @@ async function renderById(kind: string): Promise<{ subject: string; html: string
   switch (kind) {
     case 'supabase-verify': {
       const html = substituteSupabaseVars(await readSupabaseTemplate('verify-otp.html'))
-      return { subject: 'Verify your email - Domu Match', html }
+      return { subject: 'Your Domu Match verification code', html }
     }
     case 'supabase-password-reset': {
       const html = substituteSupabaseVars(await readSupabaseTemplate('password-reset.html'))
-      return { subject: 'Reset your password - Domu Match', html }
+      return { subject: 'Reset your Domu Match password', html }
     }
     case 'supabase-magic-link': {
       const html = substituteSupabaseVars(await readSupabaseTemplate('magic-link.html'))
@@ -203,7 +210,11 @@ async function renderById(kind: string): Promise<{ subject: string; html: string
     }
     case 'supabase-invite': {
       const html = substituteSupabaseVars(await readSupabaseTemplate('invite-user.html'))
-      return { subject: 'You’re invited to Domu Match', html }
+      return { subject: "You're invited to Domu Match", html }
+    }
+    case 'supabase-reauthentication': {
+      const html = substituteSupabaseVars(await readSupabaseTemplate('reauthentication.html'))
+      return { subject: '138166 is your Domu Match verification code', html }
     }
 
     case 'app-welcome':
@@ -371,6 +382,7 @@ const SUPABASE_FILE_BY_KIND: Record<string, string> = {
   'supabase-magic-link': 'magic-link.html',
   'supabase-email-change': 'email-change.html',
   'supabase-invite': 'invite-user.html',
+  'supabase-reauthentication': 'reauthentication.html',
 }
 
 export async function GET(request: Request) {

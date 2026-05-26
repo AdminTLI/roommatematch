@@ -142,6 +142,7 @@ export async function middleware(req: NextRequest) {
     '/auth/sign-up',
     '/maintenance',
     '/auth/callback',
+    '/auth/accept-invitation',
     '/auth/verify-email',
     '/auth/reset-password',
     '/rent-calculator',
@@ -404,6 +405,7 @@ export async function middleware(req: NextRequest) {
     '/auth/sign-up',
     '/auth/sign-in',
     '/auth/callback',
+    '/auth/accept-invitation',
     '/auth/reset-password', // Password reset pages (both initial and confirm)
     '/auth/inactive-account',
     '/verify', // Persona verification page (will check email verification internally)

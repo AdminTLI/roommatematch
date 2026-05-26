@@ -6,13 +6,16 @@ templates in the Supabase dashboard. All template HTML is versioned in
 
 ## Templates to install
 
-| Supabase template | File |
-|-------------------|------|
-| Confirm signup    | `lib/email/templates/supabase/verify-otp.html` |
-| Magic Link        | `lib/email/templates/supabase/magic-link.html` |
-| Change Email Address | `lib/email/templates/supabase/email-change.html` |
-| Reset Password    | `lib/email/templates/supabase/password-reset.html` |
-| Invite user       | `lib/email/templates/supabase/invite-user.html` |
+| Supabase template | File | Subject (paste in dashboard Subject field) |
+|-------------------|------|---------------------------------------------|
+| Confirm signup    | `verify-otp.html` | `Your Domu Match verification code` |
+| Magic link or OTP | `magic-link.html` | `Sign in to Domu Match` |
+| Change email address | `email-change.html` | `Confirm your new email - Domu Match` |
+| Reset password    | `password-reset.html` | `Reset your Domu Match password` |
+| Invite user       | `invite-user.html` | `You're invited to Domu Match` |
+| Reauthentication  | `reauthentication.html` | `{{ .Token }} is your Domu Match verification code` |
+
+All paths are under `lib/email/templates/supabase/`. Subjects are also listed in `SUBJECTS.txt` and as HTML comments at the top of each file.
 
 ## How to install (per template)
 
@@ -24,20 +27,24 @@ templates in the Supabase dashboard. All template HTML is versioned in
 4. From `/dev/email-preview`, click **Copy raw HTML**, or copy the file
    contents directly from
    `lib/email/templates/supabase/<file>.html`.
-5. **Paste** into the Supabase editor (replace the entire body).
-6. Click **Send test email** and confirm it renders correctly in Gmail web
+5. **Paste** into the Supabase HTML body editor (replace the entire body).
+6. Copy the **Subject** from the HTML comment at the top of the file (or from `SUBJECTS.txt`) into the Supabase **Subject** field — do not put the subject inside the HTML body.
+7. Click **Send test email** and confirm it renders correctly in Gmail web
    and at least one other client (Apple Mail or Outlook).
-7. **Save**.
+8. **Save**.
 
 ## Variables used
 
 | Template | Supabase variables expected |
 |----------|------------------------------|
 | Confirm signup (OTP) | `{{ .Token }}`, `{{ .Email }}` |
-| Magic link | `{{ .ConfirmationURL }}`, `{{ .Email }}` |
+| Magic link or OTP | `{{ .ConfirmationURL }}`, `{{ .Token }}`, `{{ .Email }}` |
 | Email change | `{{ .ConfirmationURL }}`, `{{ .Email }}`, `{{ .NewEmail }}` |
 | Reset password | `{{ .ConfirmationURL }}`, `{{ .Email }}` |
 | Invite user | `{{ .ConfirmationURL }}`, `{{ .Email }}` |
+| Reauthentication | `{{ .Token }}`, `{{ .Email }}` |
+
+**Logo images:** templates use `https://www.domumatch.com/images/logo.png` (with `www`) so email clients and the Supabase preview do not hit a redirect on the bare domain.
 
 The dev preview substitutes realistic samples for these so you can see the
 final visual output.
@@ -57,7 +64,7 @@ curl 'http://localhost:3000/api/dev/email-preview?kind=supabase-verify' | open -
 
 ## Post-install checklist
 
-- [ ] All 5 templates pasted into Supabase and saved
+- [ ] All 6 templates pasted into Supabase (HTML + subject) and saved
 - [ ] *Send test email* from each template, check Gmail (web) inbox
 - [ ] Test on Apple Mail (mobile + desktop)
 - [ ] Test on Outlook.com webmail
@@ -74,7 +81,7 @@ The Supabase templates are static HTML and duplicate the header / footer
 chrome defined in `lib/email/layout.ts`. If you change the brand chrome:
 
 1. Update `lib/email/layout.ts` (affects all app-sent emails immediately).
-2. Manually re-apply the same change to all 5 files under
+2. Manually re-apply the same change to all 6 files under
    `lib/email/templates/supabase/`.
 3. Re-paste each into Supabase from the dev preview’s **Copy raw HTML**
    button.

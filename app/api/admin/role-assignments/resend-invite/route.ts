@@ -2,12 +2,14 @@ import { NextRequest, NextResponse } from 'next/server'
 import { requireSuperAdmin } from '@/lib/auth/admin'
 import { createAdminClient } from '@/lib/supabase/server'
 import { safeLogger } from '@/lib/utils/logger'
-import { getAdminInviteRedirectUrl } from '@/lib/auth/institution-invite'
+import { canResendInstitutionInvite } from '@/lib/auth/institution-invite-eligibility'
+import { sendInstitutionAdminInvite } from '@/lib/auth/send-institution-admin-invite'
 
 /**
  * POST /api/admin/role-assignments/resend-invite
  * Body: { id: string }
- * Re-sends the Supabase Auth invite for a pending assignment.
+ * Re-sends the invite for pending assignments, or active assignments that have not
+ * finished institution onboarding (e.g. invite link expired after auth user was created).
  */
 export async function POST(request: NextRequest) {
   const adminCheck = await requireSuperAdmin(request, false)
@@ -32,44 +34,40 @@ export async function POST(request: NextRequest) {
     const admin = createAdminClient()
     const { data: assignment } = await admin
       .from('admin_role_assignments')
-      .select('id, email, status, role, institution_id, first_name, last_name')
+      .select('id, email, status, role, institution_id, first_name, last_name, user_id')
       .eq('id', id)
       .maybeSingle()
 
     if (!assignment) {
       return NextResponse.json({ error: 'Assignment not found' }, { status: 404 })
     }
-    if (assignment.status !== 'pending') {
+
+    const allowed = await canResendInstitutionInvite(admin, assignment)
+    if (!allowed) {
       return NextResponse.json(
-        { error: 'Cannot resend invite for an assignment that is not pending' },
+        {
+          error:
+            assignment.status === 'revoked'
+              ? 'Cannot resend invite for a revoked assignment'
+              : 'This user has already completed institution onboarding',
+        },
         { status: 400 }
       )
     }
 
-    let redirectTo: string
-    try {
-      redirectTo = getAdminInviteRedirectUrl()
-    } catch (err) {
-      const message = err instanceof Error ? err.message : 'Invalid invite redirect URL'
-      return NextResponse.json({ error: message }, { status: 500 })
-    }
-
-    const { error: inviteError } = await admin.auth.admin.inviteUserByEmail(assignment.email, {
-      redirectTo,
-      data: {
-        invited_role: assignment.role,
-        invited_institution_id: assignment.institution_id,
-        invited_first_name: assignment.first_name,
-        invited_last_name: assignment.last_name,
-      },
+    const result = await sendInstitutionAdminInvite(admin, assignment.email, {
+      invited_role: assignment.role,
+      invited_institution_id: assignment.institution_id,
+      invited_first_name: assignment.first_name,
+      invited_last_name: assignment.last_name,
     })
 
-    if (inviteError) {
-      safeLogger.warn('[Admin] Resend invite failed', { error: inviteError, id, redirectTo })
+    if (!result.ok) {
+      safeLogger.warn('[Admin] Resend invite failed', { error: result.error, id })
       return NextResponse.json(
         {
-          error: inviteError.message,
-          hint: 'Check Supabase Auth → SMTP settings and redirect URLs. See docs/email-troubleshooting.md',
+          error: result.error || 'Failed to resend invite',
+          hint: 'Check Supabase Auth → SMTP settings and redirect URLs. See docs/institution-invite-email-setup.md',
         },
         { status: 500 }
       )
@@ -78,7 +76,11 @@ export async function POST(request: NextRequest) {
     const now = new Date().toISOString()
     await admin.from('admin_role_assignments').update({ invite_sent_at: now }).eq('id', id)
 
-    return NextResponse.json({ success: true, invite_sent_at: now })
+    return NextResponse.json({
+      success: true,
+      invite_sent_at: now,
+      delivery: result.delivery,
+    })
   } catch (err) {
     safeLogger.error('[Admin] Unexpected error in POST /role-assignments/resend-invite', {
       error: err,
