@@ -146,7 +146,7 @@ export function AcceptInvitationClient() {
                   one from <strong>Admin → Users → Role Management</strong>.
                 </p>
                 <div className="flex flex-col gap-2">
-                  <Button asChild variant="default" className="w-full">
+                  <Button asChild variant="primary" className="w-full">
                     <Link href="/auth/sign-in">Go to sign in</Link>
                   </Button>
                   <Button asChild variant="outline" className="w-full">
