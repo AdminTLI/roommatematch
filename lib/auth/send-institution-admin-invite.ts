@@ -22,7 +22,10 @@ export type SendInstitutionAdminInviteResult = {
   delivery?: 'supabase' | 'mailjet'
 }
 
-function isExistingAuthUserError(message: string): boolean {
+type LinkOtpType = 'magiclink' | 'recovery'
+
+function isExistingAuthUserError(message: string, code?: string): boolean {
+  if (code === 'email_exists') return true
   const m = message.toLowerCase()
   return (
     m.includes('already') ||
@@ -72,6 +75,84 @@ async function sendBrandedInviteEmail(
   )
 }
 
+async function syncInviteMetadata(
+  admin: SupabaseClient,
+  userId: string,
+  metadata: InstitutionInviteMetadata
+): Promise<void> {
+  const { error } = await admin.auth.admin.updateUserById(userId, {
+    user_metadata: metadata,
+  })
+  if (error) {
+    safeLogger.warn('[Admin] Failed to sync invite user_metadata', { error, userId })
+  }
+}
+
+/**
+ * Auth user already exists (partial invite, expired link, etc.).
+ * `generateLink` type `invite` returns email_exists — use magiclink or recovery instead.
+ */
+async function sendExistingUserInstitutionInvite(
+  admin: SupabaseClient,
+  email: string,
+  metadata: InstitutionInviteMetadata
+): Promise<SendInstitutionAdminInviteResult> {
+  const redirectTo = getAdminInviteRedirectUrl()
+  const linkAttempts: Array<{ generateType: LinkOtpType; verifyType: LinkOtpType }> = [
+    { generateType: 'magiclink', verifyType: 'magiclink' },
+    { generateType: 'recovery', verifyType: 'recovery' },
+  ]
+
+  for (const { generateType, verifyType } of linkAttempts) {
+    const { data: linkData, error: linkError } = await admin.auth.admin.generateLink({
+      type: generateType,
+      email,
+      options: { redirectTo, data: metadata },
+    })
+
+    if (linkError) {
+      safeLogger.warn('[Admin] generateLink failed for existing user', {
+        error: linkError,
+        email,
+        generateType,
+      })
+      continue
+    }
+
+    const hashedToken = linkData?.properties?.hashed_token
+    if (!hashedToken) {
+      continue
+    }
+
+    const userId = linkData.user?.id
+    if (userId) {
+      await syncInviteMetadata(admin, userId, metadata)
+      await promotePendingRoleAssignment(admin, userId, email)
+    }
+
+    const acceptUrl = `${getAcceptInvitationUrl()}?token_hash=${encodeURIComponent(hashedToken)}&type=${verifyType}`
+    const sent = await sendBrandedInviteEmail(email, acceptUrl, metadata.invited_first_name)
+
+    if (!sent) {
+      return {
+        ok: false,
+        error:
+          'Sign-in link was generated but the email could not be sent. Check Mailjet configuration.',
+        delivery: 'mailjet',
+      }
+    }
+
+    return { ok: true, userId, delivery: 'mailjet' }
+  }
+
+  return {
+    ok: false,
+    error:
+      'This email already has an account. We could not generate a new sign-in link — contact support or use a different email.',
+    delivery: 'mailjet',
+  }
+}
+
 /**
  * Send (or re-send) an institution admin invite.
  * Uses Supabase Auth email for new users; Mailjet + branded link when the auth user already exists.
@@ -96,46 +177,9 @@ export async function sendInstitutionAdminInvite(
     return { ok: true, userId, delivery: 'supabase' }
   }
 
-  if (!isExistingAuthUserError(inviteError.message)) {
+  if (!isExistingAuthUserError(inviteError.message, inviteError.code)) {
     return { ok: false, error: inviteError.message, delivery: 'supabase' }
   }
 
-  const { data: linkData, error: linkError } = await admin.auth.admin.generateLink({
-    type: 'invite',
-    email,
-    options: { redirectTo, data: metadata },
-  })
-
-  if (linkError) {
-    safeLogger.warn('[Admin] generateLink invite failed', { error: linkError, email })
-    return { ok: false, error: linkError.message, delivery: 'mailjet' }
-  }
-
-  const hashedToken = linkData?.properties?.hashed_token
-  if (!hashedToken) {
-    return {
-      ok: false,
-      error: 'Could not generate a new invitation link. Try again or contact support.',
-      delivery: 'mailjet',
-    }
-  }
-
-  const acceptUrl = `${getAcceptInvitationUrl()}?token_hash=${encodeURIComponent(hashedToken)}&type=invite`
-  const sent = await sendBrandedInviteEmail(email, acceptUrl, metadata.invited_first_name)
-
-  if (!sent) {
-    return {
-      ok: false,
-      error:
-        'Auth user exists but the follow-up email could not be sent. Check Mailjet configuration.',
-      delivery: 'mailjet',
-    }
-  }
-
-  const userId = linkData.user?.id
-  if (userId) {
-    await promotePendingRoleAssignment(admin, userId, email)
-  }
-
-  return { ok: true, userId, delivery: 'mailjet' }
+  return sendExistingUserInstitutionInvite(admin, email, metadata)
 }

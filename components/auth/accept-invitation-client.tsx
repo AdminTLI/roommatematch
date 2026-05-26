@@ -73,7 +73,12 @@ export function AcceptInvitationClient() {
       }
 
       const tokenHash = searchParams.get('token_hash')
-      const type = (searchParams.get('type') || 'invite') as 'invite' | 'signup' | 'email'
+      const type = (searchParams.get('type') || 'invite') as
+        | 'invite'
+        | 'signup'
+        | 'email'
+        | 'magiclink'
+        | 'recovery'
 
       if (!tokenHash) {
         if (!cancelled) {
