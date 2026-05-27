@@ -64,6 +64,11 @@ export default function BlogPage() {
         hasPart: [
           {
             '@type': 'Article',
+            name: 'Student Housing and Loneliness: What Dutch Data Show',
+            url: 'https://domumatch.com/blog/student-housing-loneliness-netherlands-data',
+          },
+          {
+            '@type': 'Article',
             name: 'International Student Housing in the Netherlands: Where Data Meets Integration Risk',
             url: 'https://domumatch.com/blog/international-student-housing-netherlands-isolation',
           },

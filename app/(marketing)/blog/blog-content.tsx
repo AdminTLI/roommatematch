@@ -16,6 +16,16 @@ const content = {
     readArticle: 'Read article',
     posts: [
       {
+        slug: 'student-housing-loneliness-netherlands-data',
+        title: 'Student Housing and Loneliness: What Dutch Data Show',
+        excerpt:
+          'CBS and NIDI on who still lives at home through graduation, NOS on Kences monitors and studio versus shared-room warnings, plus Breda and Tilburg municipal rules in one evidence stack.',
+        readTime: '8 min read',
+        date: '2026-05-27',
+        category: 'Wellbeing',
+        icon: Brain,
+      },
+      {
         slug: 'international-student-housing-netherlands-isolation',
         title:
           'International Student Housing in the Netherlands: Where Data Meets Integration Risk',
@@ -186,6 +196,16 @@ const content = {
     subtitle: 'Deskundige tips om compatibele huisgenoten te vinden, veilig te huren en te begrijpen hoe technologie je helpt betere woonbeslissingen te nemen.',
     readArticle: 'Lees artikel',
     posts: [
+      {
+        slug: 'student-housing-loneliness-netherlands-data',
+        title: 'Studentenhuisvesting en eenzaamheid: wat Nederlandse data laten zien',
+        excerpt:
+          'CBS en NIDI over thuiswonen tot afstuderen, NOS over Kences en de studio-versus-kamerdiscussie, plus gemeentelijke regels in Breda en Tilburg in één dossier.',
+        readTime: '8 min lezen',
+        date: '2026-05-27',
+        category: 'Welzijn',
+        icon: Brain,
+      },
       {
         slug: 'international-student-housing-netherlands-isolation',
         title:
