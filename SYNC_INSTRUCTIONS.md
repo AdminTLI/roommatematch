@@ -48,7 +48,7 @@ Before running the sync, make sure you have one of these set in your `.env.local
 
 ### Option 1: SKDB API (Recommended)
 ```bash
-SKDB_API_BASE=https://api.skdb.nl
+SKDB_API_BASE=https://api.skdb.nl/v1
 SKDB_API_KEY=your_skdb_api_key_here
 NEXT_PUBLIC_SUPABASE_URL=your_supabase_url
 SUPABASE_SERVICE_ROLE_KEY=your_service_role_key

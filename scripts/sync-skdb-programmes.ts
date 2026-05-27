@@ -31,6 +31,13 @@ import { loadInstitutions } from '@/lib/loadInstitutions';
 import { getInstitutionBrinCode } from '@/lib/duo/erkenningen';
 import { createAdminClient } from '@/lib/supabase/server';
 import type { DegreeLevel, Programme } from '@/types/programme';
+import {
+  buildInstellingNaamMap,
+  fetchInstellingen,
+  fetchOpleidingen,
+  getSkdbApiBase,
+} from '@/lib/skdb/client';
+import { mapOpleidingToProgramme } from '@/lib/skdb/map-opleiding';
 
 // Load .env.local if it exists
 try {
@@ -55,7 +62,7 @@ try {
 }
 
 // Environment configuration
-const SKDB_API_BASE = (process.env.SKDB_API_BASE || 'https://api.skdb.nl/v1').replace(/\/+$/, '');
+const SKDB_API_BASE = getSkdbApiBase();
 const SKDB_API_KEY = process.env.SKDB_API_KEY;
 const SKDB_DUMP_PATH = process.env.SKDB_DUMP_PATH;
 
@@ -127,7 +134,8 @@ const SkdbProgramSchema = z.object({
   ectsCredits: z.number().optional(),
   durationYears: z.number().optional(),
   durationMonths: z.number().optional(),
-  admissionRequirements: z.string().optional()
+  admissionRequirements: z.string().optional(),
+  metadata: z.record(z.string(), z.union([z.string(), z.undefined()])).optional(),
 });
 
 type SkdbProgram = z.infer<typeof SkdbProgramSchema>;
@@ -310,45 +318,23 @@ function determineDegreeLevel(programmeData: any): 'bachelor' | 'master' | 'prem
 }
 
 /**
- * Fetch programmes via OData API
+ * Fetch programmes via Studiekeuzedatabase API V1
  */
 async function fetchProgrammesFromAPI(): Promise<SkdbProgram[]> {
   if (!SKDB_API_KEY) {
     throw new Error('SKDB_API_KEY must be set for API mode');
   }
-  
+
   console.log(`📡 Fetching programmes from Studiekeuzedatabase API v1 (${SKDB_API_BASE})...`);
-  
+
   try {
-    const headers = {
-      'Authorization': `Bearer ${SKDB_API_KEY}`,
-      'Accept': 'application/json'
-    } as const;
-
-    // v1: fetch instellingen for ID -> name mapping
-    const instellingenRes = await fetch(`${SKDB_API_BASE}/instellingen`, { headers });
-    if (!instellingenRes.ok) {
-      throw new Error(`API request failed (instellingen): ${instellingenRes.status} ${instellingenRes.statusText}`);
-    }
-    const instellingenData: Array<{ instellingSkdb: number; instellingNaam?: string }> = await instellingenRes.json();
-    const instellingNaamById = new Map<number, string>();
-    for (const inst of instellingenData || []) {
-      if (typeof inst?.instellingSkdb === 'number') {
-        instellingNaamById.set(inst.instellingSkdb, inst.instellingNaam || `Instelling ${inst.instellingSkdb}`);
-      }
-    }
-
-    // v1: fetch opleidingen list (flat list across all instellingen)
-    const opleidingenRes = await fetch(`${SKDB_API_BASE}/opleidingen`, { headers });
-    if (!opleidingenRes.ok) {
-      throw new Error(`API request failed (opleidingen): ${opleidingenRes.status} ${opleidingenRes.statusText}`);
-    }
-    const opleidingenData: any[] = await opleidingenRes.json();
+    const instellingenData = await fetchInstellingen();
+    const instellingNaamById = buildInstellingNaamMap(instellingenData);
+    const opleidingenData = await fetchOpleidingen();
 
     const programmes: SkdbProgram[] = [];
-    const now = new Date();
 
-    for (const opleiding of opleidingenData || []) {
+    for (const opleiding of opleidingenData) {
       try {
         const institutionName =
           instellingNaamById.get(Number(opleiding.instellingSkdb)) ||
@@ -356,48 +342,24 @@ async function fetchProgrammesFromAPI(): Promise<SkdbProgram[]> {
           opleiding.instellingCode ||
           'Unknown institution';
 
-        const vormen: any[] = Array.isArray(opleiding.vormen) ? opleiding.vormen : [];
-        const hasActiveVorm = vormen.length === 0
-          ? true
-          : vormen.some(v => {
-              const end = v?.eindeOpleidingDatum;
-              if (!end) return true;
-              const d = new Date(end);
-              return !Number.isNaN(d.getTime()) && d >= now;
-            });
-
-        const ectsRaw = opleiding.studieLastEcts;
-        const ectsCredits = ectsRaw === undefined || ectsRaw === null || ectsRaw === ''
-          ? undefined
-          : Number(String(ectsRaw).replace(',', '.'));
-
-        const admissionParts = [
-          opleiding.wettelijkeVooropleidingEisenVwo,
-          opleiding.wettelijkeAanvullendeEisenVwo,
-          opleiding.wettelijkeVooropleidingEisenHavo,
-          opleiding.wettelijkeAanvullendeEisenHavo,
-          opleiding.toelatingsEisenMbo
-        ].filter(Boolean);
+        const mapped = mapOpleidingToProgramme(opleiding, String(institutionName));
+        if (!mapped) continue;
 
         const program = SkdbProgramSchema.parse({
-          institution: institutionName,
-          name: opleiding.opleidingNaam,
-          nameEn: opleiding.opleidingNaamEngels || opleiding.rioNaamEngels,
-          // v1 exposes opleidingCode as RIO/ISAT. We store it in crohoCode to keep a stable identifier in our pipeline.
-          crohoCode: opleiding.opleidingCode !== undefined && opleiding.opleidingCode !== null ? String(opleiding.opleidingCode) : undefined,
-          rioCode: undefined,
-          degreeLevel: determineDegreeLevel({
-            name: opleiding.opleidingNaam,
-            graad: opleiding.graad,
-            soortHo: opleiding.soortHo
-          }),
-          languageCodes: [],
-          faculty: opleiding.lcskSector || opleiding.lcskCluster || undefined,
-          active: hasActiveVorm,
-          ectsCredits: Number.isFinite(ectsCredits as number) ? (ectsCredits as number) : undefined,
-          durationYears: undefined,
-          durationMonths: undefined,
-          admissionRequirements: admissionParts.length > 0 ? admissionParts.join('\n\n') : undefined
+          institution: mapped.institutionName,
+          name: mapped.name,
+          nameEn: mapped.nameEn,
+          crohoCode: mapped.crohoCode,
+          rioCode: mapped.rioCode,
+          degreeLevel: mapped.degreeLevel,
+          languageCodes: mapped.languageCodes,
+          faculty: mapped.faculty,
+          active: mapped.active,
+          ectsCredits: mapped.ectsCredits,
+          durationYears: mapped.durationYears,
+          durationMonths: mapped.durationMonths,
+          admissionRequirements: mapped.admissionRequirements,
+          metadata: mapped.metadata,
         });
 
         programmes.push(program);
@@ -408,10 +370,23 @@ async function fetchProgrammesFromAPI(): Promise<SkdbProgram[]> {
 
     console.log(`✅ Fetched ${programmes.length} programmes from API`);
     return programmes;
-    
   } catch (error) {
     throw new Error(`Failed to fetch from API: ${error}`);
   }
+}
+
+function mergeProgrammeMetadata(
+  existing: Record<string, unknown> | null | undefined,
+  incoming?: Record<string, string | undefined>
+): Record<string, unknown> {
+  const base = { ...(existing || {}) };
+  if (!incoming) return base;
+  for (const [key, value] of Object.entries(incoming)) {
+    if (value !== undefined && value !== '') {
+      base[key] = value;
+    }
+  }
+  return base;
 }
 
 /**
@@ -749,8 +724,8 @@ async function upsertSkdbProgramme(
   if (match) {
     // Update existing SKDB programme
     const existing = match.existingProgramme;
-    const metadata = existing.metadata || {};
-    
+    const metadata = mergeProgrammeMetadata(existing.metadata, skdbProgram.metadata);
+
     const updateData: any = {
       name: skdbProgram.name, // Use SKDB name as primary
       name_en: skdbProgram.nameEn || existing.name_en,
@@ -774,7 +749,7 @@ async function upsertSkdbProgramme(
       metadata,
       enrichment_status: 'enriched',
       skdb_updated_at: now,
-      rio_code: null // Clear DUO rio_code
+      rio_code: skdbProgram.rioCode || null,
     };
     
     // First verify the programme still exists
@@ -841,7 +816,7 @@ async function upsertSkdbProgramme(
     const insertData: any = {
       institution_slug: institutionSlug,
       brin_code: brinCode || null,
-      rio_code: null, // No DUO data
+      rio_code: skdbProgram.rioCode || null,
       name: skdbProgram.name,
       name_en: skdbProgram.nameEn || null,
       level: skdbProgram.degreeLevel,
@@ -860,7 +835,7 @@ async function upsertSkdbProgramme(
       admission_requirements: skdbProgram.admissionRequirements || null,
       skdb_only: true,
       sources,
-      metadata: {},
+      metadata: mergeProgrammeMetadata({}, skdbProgram.metadata),
       enrichment_status: 'enriched',
       skdb_updated_at: now
     };

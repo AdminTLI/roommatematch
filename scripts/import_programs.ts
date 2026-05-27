@@ -2,9 +2,13 @@
 
 /**
  * Program Importer for Domu Match
- * 
- * Imports WO programmes from Studiekeuzedatabase via OData API or CSV/XLSX dump
- * Maps programmes to our 14 UNL universities and creates program records
+ *
+ * @deprecated API V0 (`/Institutions?$expand=Programmes`) is retired from 1 June 2026.
+ * Use `pnpm sync:programmes` (`scripts/sync-skdb-programmes.ts`) with API V1 instead.
+ * CSV/XLSX dump mode in this script may still work for one-off imports.
+ *
+ * Imports WO programmes from Studiekeuzedatabase via legacy OData API or CSV/XLSX dump.
+ * Maps programmes to our 14 UNL universities and creates program records.
  */
 
 import { createClient } from '@supabase/supabase-js'
@@ -198,7 +202,10 @@ async function fetchProgrammesFromAPI(): Promise<Program[]> {
     throw new Error('SKDB_API_BASE and SKDB_API_KEY must be set for API mode')
   }
   
-  console.log('📡 Fetching programmes from OData API...')
+  console.warn(
+    '⚠️  DEPRECATED: This script uses SKDB API V0, which is unavailable from 1 June 2026. Use pnpm sync:programmes instead.'
+  )
+  console.log('📡 Fetching programmes from OData API (V0)...')
   
   try {
     const response = await fetch(`${SKDB_API_BASE}/Institutions?$expand=Programmes`, {

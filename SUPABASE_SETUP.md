@@ -252,7 +252,7 @@ NEXT_PUBLIC_SUPABASE_URL=https://your-project-id.supabase.co
 SUPABASE_SERVICE_ROLE_KEY=your_service_role_key_here
 
 # SKDB Configuration (for programme enrichment)
-SKDB_API_BASE=https://api.skdb.nl
+SKDB_API_BASE=https://api.skdb.nl/v1
 SKDB_API_KEY=your_skdb_api_key_here
 
 # OR use dump file (fallback)

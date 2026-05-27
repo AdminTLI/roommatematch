@@ -24,7 +24,9 @@ export interface AdminAuthResult {
  * Optionally validates a shared secret from request headers for additional security.
  * 
  * @param request - The Next.js request object (optional, for shared secret check and logging)
- * @param requireSecret - Whether to require the x-admin-secret header. Defaults to true if request is provided, false otherwise.
+ * @param requireSecret - Whether to require the x-admin-secret header (for cron/scripts only).
+ *   Defaults to true in production when a request is provided. Browser admin UI routes must pass `false`
+ *   because the secret cannot be exposed to the client.
  * @returns AdminAuthResult with authentication status
  */
 export async function requireAdmin(request?: NextRequest, requireSecret?: boolean): Promise<AdminAuthResult> {

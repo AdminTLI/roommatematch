@@ -25,16 +25,24 @@ export function useUserRole(): { role: UserRole | null; isLoading: boolean } {
 
       // Fetch role from API endpoint (which will check permissions server-side)
       try {
-        const response = await fetch('/api/auth/role')
+        let response = await fetch('/api/auth/role')
+        if (response.status === 429) {
+          await new Promise((resolve) => setTimeout(resolve, 1500))
+          response = await fetch('/api/auth/role')
+        }
         if (response.ok) {
           const data = await response.json()
           setRole(data.role || 'user')
+        } else if (response.status === 401) {
+          setRole(null)
         } else {
-          setRole('user') // Default to user if API fails
+          // Do not downgrade elevated users on transient errors (e.g. rate limits)
+          console.warn('Could not fetch user role:', response.status, response.statusText)
+          setRole(null)
         }
       } catch (error) {
         console.error('Error fetching user role:', error)
-        setRole('user') // Default to user on error
+        setRole(null)
       } finally {
         setIsLoading(false)
       }

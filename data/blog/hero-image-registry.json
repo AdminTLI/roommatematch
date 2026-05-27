@@ -1,0 +1,15 @@
+{
+  "description": "Maps published blog slugs to BlogHeroImage keys. New posts must register here and avoid keys used in the last 4 entries.",
+  "entries": [
+    {
+      "slug": "international-student-housing-netherlands-isolation",
+      "imageKey": "studentsCollaborating",
+      "date": "2026-05-20"
+    },
+    {
+      "slug": "student-housing-shortage-retention-roi",
+      "imageKey": "housingCityscape",
+      "date": "2026-05-13"
+    }
+  ]
+}

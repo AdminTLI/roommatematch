@@ -251,9 +251,43 @@ Coverage reports include:
 - **Invalid Mappings**: Fallback to manual review queue
 - **API Failures**: Graceful fallback to dump mode if available
 
+## Operational sync (monthly or after each SKDB release)
+
+```bash
+# Programme catalogue (onboarding, matching)
+pnpm sync:programmes
+pnpm verify:skdb
+
+# Blog automation facts
+pnpm sync:skdb-blog-facts
+```
+
+Optional cron endpoints (require `CRON_SECRET`):
+
+- `GET /api/cron/sync-skdb-blog-facts` — refreshes `data/blog/skdb-facts-latest.json`
+- `GET /api/cron/sync-skdb-programmes` — reminder to run full programme sync on a worker
+
+See [`docs/SKDB_BLOG_ATTRIBUTION.md`](SKDB_BLOG_ATTRIBUTION.md) and [`docs/automation/weekly-blog-cursor-prompt.md`](automation/weekly-blog-cursor-prompt.md).
+
+## SKDB release calendar (sync after each release)
+
+| Release | Date (approx.) | Action |
+|---------|----------------|--------|
+| 26.3 | May 2026 | `pnpm sync:programmes` + `pnpm sync:skdb-blog-facts` |
+| 26.4 | 7 July 2026 | Re-sync; new `onderwijstypen` fields for blog facts when available |
+
+API V0 is retired from **1 June 2026**. Use `SKDB_API_BASE=https://api.skdb.nl/v1` only.
+
+### Identifier mapping (API V1)
+
+- `croho_code`: CROHO when present, otherwise `opleidingCode` as stable programme key
+- `rio_code`: RIO/opleiding code when distinct from CROHO
+- `metadata.skdb_opleiding_code`, `metadata.lcsk_sector`, `metadata.lcsk_cluster`: SKDB enrichment
+
 ## Links and References
 
 - **Studiekeuzedatabase**: [Official Portal](https://www.studiekeuzedatabase.nl/)
+- **SKDB API docs**: [Portal documentation](https://portal.skdb.nl/documentatie/)
 - **DUO/RIO**: [Dutch Education Ministry](https://www.duo.nl/)
 - **UNL**: [Association of Universities in the Netherlands](https://www.universiteitenvannederland.nl/)
 - **CROHO**: [Central Register of Higher Education Programmes](https://www.croho.nl/)

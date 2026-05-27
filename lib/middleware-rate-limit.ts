@@ -180,8 +180,18 @@ export function isAiRateLimitedPath(pathname: string): boolean {
   return AI_RATE_LIMIT_PATHS.has(p)
 }
 
+/** Session-authenticated GET endpoints used by the app shell — not login brute-force vectors. */
+const AUTH_SESSION_READ_PATHS = new Set([
+  '/api/auth/role',
+  '/api/auth/verification-status',
+])
+
 export function isAuthApiPath(pathname: string): boolean {
-  return pathname === '/api/auth' || pathname.startsWith('/api/auth/')
+  const normalized = pathname.replace(/\/$/, '') || '/'
+  if (AUTH_SESSION_READ_PATHS.has(normalized)) {
+    return false
+  }
+  return normalized === '/api/auth' || normalized.startsWith('/api/auth/')
 }
 
 function json429(message: string, limit: number, resetMs: number): NextResponse {

@@ -1,0 +1,12 @@
+{
+  "generatedAt": null,
+  "skdbRelease": "26.3",
+  "peildatum": "2026-04-07",
+  "attribution": "Studiekeuzedatabase (LCSK)",
+  "sourceMode": "api",
+  "_notice": "Run `pnpm sync:skdb-blog-facts` with SKDB_API_KEY set to populate this file.",
+  "facts": [],
+  "byCluster": [],
+  "bySector": [],
+  "byInstitution": []
+}

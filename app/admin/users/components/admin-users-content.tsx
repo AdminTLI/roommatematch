@@ -204,15 +204,15 @@ export function AdminUsersContent() {
   const [activeTab, setActiveTab] = useState<'users' | 'roles' | 'workflow'>('users')
 
   const segmentedTriggerClassName =
-    'flex items-center justify-center gap-2 rounded-full px-4 py-2 text-sm font-semibold ' +
+    'flex shrink-0 items-center justify-center gap-2 whitespace-nowrap rounded-full px-4 py-2 text-sm font-semibold ' +
     'data-[state=active]:bg-violet-600 data-[state=active]:text-white ' +
     'data-[state=inactive]:bg-transparent data-[state=inactive]:text-text-secondary ' +
     'dark:data-[state=active]:bg-violet-600 dark:data-[state=active]:text-white'
 
   return (
     <div className="p-6 space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
+      <div className="flex items-start justify-between gap-3">
+        <div className="min-w-0 flex-1">
           <h1 className="text-2xl font-bold">User Management</h1>
           <p className="text-gray-600 dark:text-gray-400">
             All users live in the Users tab. Role Management only shows accounts you grant
@@ -220,22 +220,22 @@ export function AdminUsersContent() {
           </p>
         </div>
         {activeTab === 'users' && (
-          <div className="flex items-center gap-2">
-            <Button
-              onClick={handleRefresh}
-              disabled={isLoading || isRefreshing}
-              variant="outline"
-              className="flex items-center gap-2"
-            >
-              <RefreshCw className={`h-4 w-4 ${isRefreshing ? 'animate-spin' : ''}`} />
-              Refresh
-            </Button>
-          </div>
+          <Button
+            onClick={handleRefresh}
+            disabled={isLoading || isRefreshing}
+            variant="outline"
+            size="sm"
+            aria-label="Refresh users"
+            className="shrink-0 h-10 w-10 p-0 sm:h-10 sm:w-auto sm:px-5 flex items-center justify-center gap-2"
+          >
+            <RefreshCw className={`h-4 w-4 ${isRefreshing ? 'animate-spin' : ''}`} />
+            <span className="hidden sm:inline">Refresh</span>
+          </Button>
         )}
       </div>
 
       <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as typeof activeTab)} className="space-y-6">
-        <TabsList className="h-auto w-full sm:w-auto grid grid-cols-3 gap-1 rounded-full border border-border-subtle/60 bg-bg-surface-alt/80 p-1 overflow-hidden sm:inline-flex">
+        <TabsList className="h-auto w-full max-w-full flex overflow-x-auto gap-1 rounded-full border border-border-subtle/60 bg-bg-surface-alt/80 p-1 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden sm:w-auto sm:overflow-visible">
           <TabsTrigger
             value="users"
             className={segmentedTriggerClassName}

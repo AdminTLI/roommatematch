@@ -6,7 +6,7 @@ import { safeLogger } from '@/lib/utils/logger'
 import { sanitizeSearchInput, validateSearchInputLength } from '@/lib/utils/sanitize'
 
 export async function GET(request: NextRequest) {
-  const adminCheck = await requireAdmin(request)
+  const adminCheck = await requireAdmin(request, false)
   if (!adminCheck.ok) {
     return NextResponse.json(
       { error: adminCheck.error || 'Admin access required' },
@@ -249,7 +249,7 @@ export async function GET(request: NextRequest) {
 }
 
 export async function POST(request: NextRequest) {
-  const adminCheck = await requireAdmin(request)
+  const adminCheck = await requireAdmin(request, false)
   if (!adminCheck.ok) {
     return NextResponse.json(
       { error: adminCheck.error || 'Admin access required' },

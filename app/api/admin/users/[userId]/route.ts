@@ -7,7 +7,7 @@ export async function GET(
   request: NextRequest,
   { params }: { params: Promise<{ userId: string }> | { userId: string } }
 ) {
-  const adminCheck = await requireAdmin(request)
+  const adminCheck = await requireAdmin(request, false)
   if (!adminCheck.ok) {
     return NextResponse.json(
       { error: adminCheck.error || 'Admin access required' },

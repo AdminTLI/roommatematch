@@ -226,7 +226,9 @@ import { BlogHeroImage } from '@/components/marketing/blog-hero-image'
 </figure>
 ```
 
-Approved keys live in `lib/blog/approved-images.ts`. Each key maps to a URL that already works on other posts.
+Approved keys live in `lib/blog/approved-images.ts` (8 themed keys). Each key maps to a verified Unsplash URL.
+
+**Image rotation:** Before each new post, call `selectHeroImageKey({ category, slug })` from `lib/blog/select-hero-image.ts` and avoid keys used in the last 4 entries in `data/blog/hero-image-registry.json`. After publishing, run `pnpm blog:register-hero -- --slug=... --imageKey=...`.
 
 **Before merging any blog PR**, run:
 
