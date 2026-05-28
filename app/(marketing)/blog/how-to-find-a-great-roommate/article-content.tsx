@@ -2,282 +2,348 @@
 
 import { BlogPostLayout } from '@/components/marketing/blog-post-layout'
 import Link from 'next/link'
-import Image from 'next/image'
+import { BlogHeroImage } from '@/components/marketing/blog-hero-image'
 import { useApp } from '@/app/providers'
 
 const content = {
   en: {
     title: 'How to Find a Great Roommate',
-    excerpt: 'Evidence-based tips for compatibility and harmony in student housing. Learn how to navigate the Dutch student housing market and find your perfect match.',
+    excerpt:
+      'A great roommate is less about “good vibes” and more about predictable habits. Use this checklist to screen for routines, boundaries, money reliability, and communication before you share a kitchen.',
     publishDate: '2025-11-15',
-    readTime: '4 min read',
+    readTime: '7 min read',
     relatedLinks: [
       {
-        title: 'Start Matching',
-        href: '/matches',
-        description: 'Use our science-backed algorithm to find compatible roommates based on lifestyle, study habits, and personality.'
+        title: 'Why "I’m Clean" Is a Lie',
+        href: '/blog/why-im-clean-is-a-lie',
+        description:
+          '“Clean” is vague. Use behaviour-based questions to avoid mismatched expectations around chores.',
       },
       {
-        title: 'Complete Your Profile',
-        href: '/onboarding',
-        description: 'Set up your profile and answer our compatibility questionnaire to get better matches.'
+        title: 'Night Owl vs. 8 A.M. Lecture',
+        href: '/blog/night-owl-vs-8am-lecture',
+        description:
+          'Sleep schedules are one of the fastest ways to create conflict. Learn how to talk about it early.',
       },
       {
-        title: 'Learn About Our Approach',
-        href: '/about',
-        description: 'Discover how we use research and data to create better roommate matches.'
-      }
+        title: 'Safety Checklist for Student Renters',
+        href: '/blog/safety-checklist-for-student-renters',
+        description:
+          'A practical safety and contract checklist to use before you pay a deposit or sign anything.',
+      },
     ],
-    ctaTitle: 'Ready to Find Your Perfect Roommate?',
-    ctaDescription: 'Join thousands of students using Domu Match to find compatible roommates through science-backed matching.',
-    ctaHref: '/auth/sign-up',
-    ctaText: 'Get Started',
+    ctaTitle: undefined,
+    ctaDescription: undefined,
+    ctaHref: undefined,
+    ctaText: undefined,
     body: () => (
       <div className="space-y-10">
         <p className="text-lg text-slate-700 leading-relaxed">
-          Finding the right roommate in the Netherlands is not just about splitting rent - it is about creating a living environment that supports your academic success and personal well-being. With the Dutch student housing market facing a shortage of 23,100 accommodations across the 20 largest student cities, competition is fierce, and making the right choice matters more than ever.
+          Finding the right roommate is not just about splitting rent. It is about building a living situation
+          that protects your sleep, your study time, and your nervous system. In a tight housing market, people
+          often rush the decision. That is when “seems nice” gets mistaken for “will be easy to live with”.
         </p>
 
         <figure>
-          <Image
-            src="https://images.unsplash.com/photo-1522202176988-66273c2fd55f?w=1200&q=80"
+          <BlogHeroImage
+            imageKey="studentsCollaborating"
             alt="Students studying together in a shared living space"
-            width={1200}
-            height={630}
-            className="w-full rounded-2xl"
           />
-          <figcaption>Finding a compatible roommate can transform your university experience and support your studies.</figcaption>
+          <figcaption>
+            A good roommate fit is mostly about routines you can rely on, not personality tests.
+          </figcaption>
         </figure>
 
-        <h2>The Dutch Student Housing Challenge</h2>
+        <h2>Start with the reality: shared living is a system</h2>
 
         <p>
-          The Netherlands is experiencing a significant student housing crisis. According to recent data, there is a deficit of 23,100 student accommodations across major university cities. This shortage has created a highly competitive market where students often have limited time to make housing decisions. In cities like Amsterdam, the average student room rent has reached €979 per month, while the supply of student housing decreased by 27% in 2025.
+          Most roommate conflict is not about a single dramatic event. It is about systems that were never
+          defined: who buys basics, how noise works on weekdays, what “clean” means, how guests are handled, and
+          how money is managed. If you define those systems early, you do not need to “hope” your way into a
+          calm home.
         </p>
 
         <p>
-          This challenging environment means that when you do find a potential roommate or housing situation, you need to assess compatibility quickly and effectively. The stakes are high: a bad roommate match can impact your grades, mental health, and overall university experience. If you are searching for housing in a specific city, our guides to <Link href="/housing">student housing in the Netherlands</Link> can help you understand local market conditions.
+          If you are also navigating location, rules, and contracts, start with the basics on{' '}
+          <Link href="/housing">student housing in the Netherlands</Link>. Then treat roommate selection like a
+          screening process, not a vibe check.
         </p>
 
-        <h2>Understanding Compatibility: Beyond First Impressions</h2>
+        <h2>The four domains that predict day-to-day friction</h2>
 
         <p>
-          Compatibility in shared living goes far beyond whether someone seems nice or friendly. Research shows that successful roommate relationships depend on alignment across multiple dimensions. Your daily routines and lifestyle preferences significantly impact harmony. Are you an early riser or night owl? Do you need absolute quiet to study, or do you work better with background noise? Mismatched sleep patterns and study habits can create ongoing tension, especially during exam periods.
+          Instead of trying to decide whether someone is “a good person”, focus on whether their habits will
+          create friction with yours. In practice, four domains do most of the work.
         </p>
+
+        <ul>
+          <li>
+            <strong>Time and sleep</strong>: weekday bedtimes, morning alarms, exam-week quiet, and whether
+            people live on “late night kitchen” schedules.
+          </li>
+          <li>
+            <strong>Guests and boundaries</strong>: spontaneous friends, partners, overnight stays, and what
+            counts as “asking”.
+          </li>
+          <li>
+            <strong>Chores and shared spaces</strong>: dish timelines, bathroom standards, bin routines, and
+            what happens when someone is too busy.
+          </li>
+          <li>
+            <strong>Money and reliability</strong>: rent transfer habits, bills, deposits, and what “late”
+            means when a landlord is involved.
+          </li>
+        </ul>
+
+        <h2>Questions that beat vague labels</h2>
 
         <p>
-          Social preferences matter too. How often do you want to host friends? What is your comfort level with guests staying overnight? And when it comes to cleanliness, honesty is essential - this remains one of the most common sources of conflict among roommates. Understanding each other's expectations before moving in prevents frustration later.
+          “I’m tidy.” “I’m chill.” “I’m not that social.” These labels are where misunderstandings begin. Use
+          questions that force a concrete answer:
         </p>
 
-        <h2>Financial Responsibility and Communication</h2>
-
-        <p>
-          With student room rents averaging €683 per month nationally - and significantly higher in cities like Amsterdam - financial reliability is crucial. In the first quarter of 2025, rents increased by 6.2% compared to the previous year, making financial stability even more important. Before committing to a roommate arrangement, discuss how rent and utilities will be split, payment methods and timelines, what happens if someone cannot pay on time, and shared expenses like internet and household items.
-        </p>
-
-        <p>
-          Effective communication is the foundation of any successful roommate relationship. Some people prefer direct, immediate discussions about issues; others need time to process before addressing concerns. Understanding and respecting different communication styles prevents misunderstandings from escalating into conflicts. Platforms that encourage thoughtful matching, such as <Link href="/how-it-works">Domu Match</Link>, often include compatibility questions that surface these preferences early.
-        </p>
+        <ul>
+          <li>How long do dishes usually stay in the sink after cooking?</li>
+          <li>What time do you normally need the flat to be quiet on weekdays?</li>
+          <li>How many nights a week are overnight guests OK?</li>
+          <li>What happens when you are stressed, do you want space or company?</li>
+          <li>How do you prefer to handle conflict: quick talk, written message, or scheduled house meeting?</li>
+        </ul>
 
         <h2>Red Flags to Watch For</h2>
 
         <p>
-          While it is important to be open-minded, certain warning signs suggest a roommate match might not work out. If someone avoids talking about house rules, cleaning schedules, or financial arrangements, they may not be ready for shared living. Difficulty reaching them or delayed responses during the initial conversation phase often indicates future communication problems. Be cautious of anyone who expects you to adapt completely to their lifestyle without compromise. And while everyone faces financial challenges as students, someone who is evasive about their financial situation may struggle with rent payments.
+          A “red flag” is not someone being different from you. It is a pattern that signals unreliability,
+          unclear boundaries, or refusal to be specific. Take it seriously if someone:
         </p>
+
+        <ul>
+          <li>Refuses to discuss money, chores, guests, or quiet hours.</li>
+          <li>Minimises reasonable boundaries (“you’re overreacting”).</li>
+          <li>Is inconsistent in communication during the “easy” phase.</li>
+          <li>Expects you to adapt completely without compromise.</li>
+          <li>Is vague about what they are actually agreeing to (rules, subletting, contracts).</li>
+        </ul>
 
         <figure>
-          <Image
-            src="https://images.unsplash.com/photo-1560518883-ce09059eeffa?w=1200&q=80"
-            alt="Two students having a conversation in a modern living room"
-            width={1200}
-            height={630}
-            className="w-full rounded-2xl"
+          <BlogHeroImage
+            imageKey="quietRoommate"
+            alt="Two people having a conversation on a sofa in a living room"
           />
-          <figcaption>Having honest conversations about expectations early on sets the tone for a harmonious living situation.</figcaption>
+          <figcaption>
+            A 20-minute conversation about routines can prevent a semester of passive-aggressive tension.
+          </figcaption>
         </figure>
 
-        <h2>Leveraging Technology for Better Matches</h2>
+        <h2>When to walk away, even if housing feels scarce</h2>
 
         <p>
-          Traditional roommate-finding methods - social media groups, university bulletin boards, word of mouth - rely heavily on chance and first impressions. Modern matching platforms use compatibility algorithms to analyze multiple factors simultaneously, increasing your chances of finding someone you will actually get along with.
+          Scarcity makes people accept bad deals. But living in a home that damages your sleep and focus can
+          create costs you do not see until later. If your gut says “this will be chaos”, pause. Use your
+          non-negotiables as a filter: quiet hours, safety, money reliability, and basic respect.
         </p>
 
         <p>
-          Platforms like <Link href="/matches">Domu Match</Link> use comprehensive questionnaires to assess compatibility across lifestyle, academic, and personality dimensions. This data-driven approach helps you find roommates who share your values and complement your personality, rather than just someone who happens to be looking for housing at the same time. Our <Link href="/about">mission and approach</Link> are built on research that shows compatibility significantly improves housing satisfaction and retention.
+          If you need a due-diligence checklist for the housing itself, use{' '}
+          <Link href="/blog/safety-checklist-for-student-renters">Safety Checklist for Student Renters</Link>.
+          If the friction is likely to be chores and standards, start with{' '}
+          <Link href="/blog/why-im-clean-is-a-lie">Why “I’m Clean” Is a Lie</Link>.
         </p>
 
-        <h2>Practical Steps for Finding Your Match</h2>
+        <h2>A simple process you can follow</h2>
 
         <p>
-          Before you can find a compatible roommate, you need to understand your own preferences, habits, and non-negotiables. Be honest about your daily routine, cleanliness standards, social needs and boundaries, study requirements, and financial situation. Once you know yourself, cast a wide net: combine university housing services, compatibility-based matching platforms like ours, student housing groups on social media, and word of mouth through friends and classmates.
-        </p>
-
-        <p>
-          When talking to potential roommates, go beyond surface-level conversation. Ask about their typical daily schedule, how they handle stress and conflict, their previous living experiences, their expectations for shared spaces, and their long-term housing plans. Initial chemistry matters, but it is not everything - if possible, speak with previous roommates or landlords to get a more complete picture. Many Dutch universities provide resources for students to connect with potential roommates, and these often include references or verification processes.
-        </p>
-
-        <h2>The Domu Match Advantage</h2>
-
-        <p>
-          At Domu Match, we understand the challenges of finding compatible roommates in the competitive Dutch student housing market. Our platform uses a comprehensive compatibility assessment that analyzes over 40 lifestyle and academic factors to match you with roommates who share your values and complement your personality.
+          1. Write your non-negotiables in one sentence each (sleep, guests, chores, money, safety).\n+          2. Ask concrete questions during viewings or first chats.\n+          3. Look for consistency between what people say and how the place looks.\n+          4. Agree on a lightweight system: quiet hours, guest norms, and how shared costs are tracked.\n+          5. Put the basics in writing if you can (even a shared note).
         </p>
 
         <p>
-          We verify every user to ensure you are connecting with real students, and our transparent matching process shows you exactly why you are compatible with each potential roommate. This data-driven approach takes the guesswork out of roommate selection, helping you make informed decisions even when you are under time pressure. You can learn more about <Link href="/safety">how we keep you safe</Link> and our verification process on our safety page.
-        </p>
-
-        <p>
-          Ready to find your perfect roommate match? <Link href="/auth/sign-up">Start your profile</Link> and complete our compatibility questionnaire to begin matching with verified students who share your lifestyle and academic preferences.
+          If you want a more structured way to think about “fit”, see <Link href="/how-it-works">How Matching Works</Link>.
+          Treat it as a framework for which topics matter, not as a substitute for real conversation.
         </p>
 
         <h2>Conclusion</h2>
 
         <p>
-          Finding a great roommate in the Netherlands requires more than luck - it requires understanding compatibility, asking the right questions, and using the right tools. With the student housing shortage creating intense competition, taking a systematic, evidence-based approach to roommate selection gives you a significant advantage. By focusing on lifestyle alignment, financial responsibility, and communication compatibility, you can find a roommate who not only shares your space but also supports your academic success and personal well-being.
+          A great roommate is not “perfect”. They are predictable. When you screen for routines, boundaries,
+          money reliability, and communication, you reduce the chance that small issues turn into big resentment.
         </p>
 
         <p>
-          The best roommate relationships are built on mutual respect, clear communication, and aligned expectations. Whether you use traditional methods or modern matching platforms like <Link href="/auth/sign-up">Domu Match</Link>, prioritize compatibility over convenience, and you will be well on your way to a harmonious living situation.
+          Prioritise specificity over labels, and you will be much more likely to land in a home that supports
+          your semester rather than draining it.
         </p>
       </div>
     )
   },
   nl: {
     title: 'Zo vind je een fijne huisgenoot',
-    excerpt: 'Evidence-based tips voor compatibiliteit en harmonie in studentenwoningen. Leer hoe je de Nederlandse studentenhuisvestingsmarkt navigeert en je perfecte match vindt.',
+    excerpt:
+      'Een fijne huisgenoot gaat minder over “klik” en meer over voorspelbare gewoontes. Gebruik deze checklist om te screenen op ritme, grenzen, geld en communicatie vóórdat je een keuken deelt.',
     publishDate: '2025-11-15',
-    readTime: '4 min lezen',
+    readTime: '7 min lezen',
     relatedLinks: [
       {
-        title: 'Begin met matchen',
-        href: '/matches',
-        description: 'Gebruik ons wetenschappelijk onderbouwde algoritme om compatibele huisgenoten te vinden op basis van levensstijl, studiegewoonten en persoonlijkheid.'
+        title: 'Waarom “ik ben netjes” weinig zegt',
+        href: '/blog/why-im-clean-is-a-lie',
+        description:
+          '“Netjes” is vaag. Stel gedragsvragen om misverstanden over schoonmaak te voorkomen.',
       },
       {
-        title: 'Maak je profiel compleet',
-        href: '/onboarding',
-        description: 'Stel je profiel in en vul onze compatibiliteitsvragenlijst in voor betere matches.'
+        title: 'Nachtbraker vs. 8‑uurcollege',
+        href: '/blog/night-owl-vs-8am-lecture',
+        description:
+          'Slaapschema’s botsen snel. Leer hoe je dit vroeg bespreekt, zonder drama.',
       },
       {
-        title: 'Leer meer over onze aanpak',
-        href: '/about',
-        description: 'Ontdek hoe we onderzoek en data gebruiken om betere huisgenootmatches te maken.'
-      }
+        title: 'Veiligheidschecklist voor studenthuurders',
+        href: '/blog/safety-checklist-for-student-renters',
+        description:
+          'Een checklist voor contracten, verificatie en veiligheid vóór je betaalt of tekent.',
+      },
     ],
-    ctaTitle: 'Klaar om je ideale huisgenoot te vinden?',
-    ctaDescription: 'Sluit je aan bij duizenden studenten die via Domu Match compatibele huisgenoten vinden met behulp van wetenschap.',
-    ctaHref: '/auth/sign-up',
-    ctaText: 'Aan de slag',
+    ctaTitle: undefined,
+    ctaDescription: undefined,
+    ctaHref: undefined,
+    ctaText: undefined,
     body: () => (
       <div className="space-y-10">
         <p className="text-lg text-slate-700 leading-relaxed">
-          De juiste huisgenoot vinden in Nederland draait niet alleen om de huur delen - het gaat om een woonomgeving die je studie en welzijn ondersteunt. Omdat er in de 20 grootste studentensteden een tekort is van 23.100 kamers, is de concurrentie hevig en is een doordachte keuze belangrijker dan ooit.
+          Een fijne huisgenoot vinden draait niet alleen om huur delen. Het gaat om een woonsituatie die je
+          slaap, studie en rust beschermt. In een krappe markt beslissen studenten vaak te snel. Dan wordt “lijkt
+          aardig” verward met “is prettig om mee samen te wonen”.
         </p>
 
         <figure>
-          <Image
-            src="https://images.unsplash.com/photo-1522202176988-66273c2fd55f?w=1200&q=80"
+          <BlogHeroImage
+            imageKey="studentsCollaborating"
             alt="Studenten die samen studeren in een gedeelde woonruimte"
-            width={1200}
-            height={630}
-            className="w-full rounded-2xl"
           />
-          <figcaption>Een compatibele huisgenoot vinden kan je studententijd positief beïnvloeden.</figcaption>
+          <figcaption>
+            Een goede match gaat vooral over routines waar je op kunt rekenen, niet over een perfecte vibe.
+          </figcaption>
         </figure>
 
-        <h2>De Nederlandse studentenhuisvestingscrisis</h2>
+        <h2>Begin met de realiteit: samenwonen is een systeem</h2>
 
         <p>
-          Nederland kampt met een groot tekort aan studentenkamers. Er zijn 23.100 minder kamers dan nodig in de belangrijkste universiteitssteden. Daardoor moeten studenten vaak snel beslissen. In Amsterdam bedraagt de gemiddelde kamerhuur al €979 per maand en in 2025 daalde het aanbod met 27%.
+          De meeste huisgenootconflicten gaan niet over één groot incident. Ze gaan over systemen die nooit zijn
+          afgesproken: wie koopt basics, hoe werkt geluid doordeweeks, wat betekent “netjes”, hoe ga je om met
+          logees, en hoe regel je geld. Als je die systemen vroeg definieert, hoef je niet te hopen dat het goed
+          komt.
         </p>
 
         <p>
-          In zo'n krappe markt moet je potentiële huisgenoten razendsnel op compatibiliteit beoordelen. Een slechte match kost energie, haalt je cijfers omlaag en maakt je studententijd stressvoller. Onze <Link href="/housing">gids over studentenhuisvesting</Link> helpt je de lokale markt te begrijpen.
+          Als je ook nog contracten en regels moet uitzoeken, start dan met{' '}
+          <Link href="/housing">studentenhuisvesting in Nederland</Link>. Behandel huisgenootkeuze daarna als een
+          screeningproces, niet als een vibe check.
         </p>
 
-        <h2>Compatibiliteit gaat verder dan een klik</h2>
+        <h2>Vier domeinen die frictie voorspellen</h2>
 
         <p>
-          Samenwonen lukt niet alleen omdat iemand aardig overkomt. Onderzoek laat zien dat succesvolle huisgenootrelaties steunen op meerdere dimensies. Dagelijkse routines bepalen hoeveel frictie je ervaart. Vroege vogel of nachtuil? Heb je stilte nodig of kun je juist met achtergrondgeluid studeren? Verschillende ritmes zorgen snel voor irritatie.
+          In plaats van te bepalen of iemand “een goed mens” is, kijk of hun gewoontes frictie gaan creëren met
+          die van jou. In de praktijk doen vier domeinen het meeste werk:
+        </p>
+
+        <ul>
+          <li>
+            <strong>Tijd en slaap</strong>: bedtijden, wekkers, stilte tijdens tentamens, en “late night keuken”.
+          </li>
+          <li>
+            <strong>Logees en grenzen</strong>: spontane vrienden, partners, overnachten, en wat “vragen” betekent.
+          </li>
+          <li>
+            <strong>Klusjes en gedeelde ruimtes</strong>: afwas-tijdlijnen, badkamer-standaard, vuilnis, en wat je doet
+            als iemand te druk is.
+          </li>
+          <li>
+            <strong>Geld en betrouwbaarheid</strong>: huur overmaken, rekeningen, borg, en wat “te laat” betekent.
+          </li>
+        </ul>
+
+        <h2>Vragen die beter werken dan labels</h2>
+
+        <p>
+          “Ik ben netjes.” “Ik ben chill.” “Ik ben niet zo sociaal.” Deze labels zijn waar misverstanden beginnen.
+          Stel vragen die een concreet antwoord afdwingen:
         </p>
 
         <p>
-          Sociale voorkeuren tellen mee. Hoe vaak wil je bezoek over de vloer? Hoe denk je over logees? En de schoonmaakstandaard - de nummer één bron van conflicten. Wees eerlijk over wat je verwacht voordat je intrekt.
+          Platforms kunnen helpen om het gesprek te structureren, maar het belangrijkste is dat jij het onderwerp
+          niet uitstelt.
         </p>
 
-        <h2>Financiële betrouwbaarheid en communicatie</h2>
+        <ul>
+          <li>Hoe lang blijft afwas meestal staan na het koken?</li>
+          <li>Welke tijd moet het doordeweeks rustig zijn?</li>
+          <li>Hoeveel nachten per week zijn logees OK?</li>
+          <li>Wat doe je als je gestrest bent: ruimte of gezelschap?</li>
+          <li>Hoe bespreek je irritaties: direct, via app, of in een huisoverleg?</li>
+        </ul>
 
         <p>
-          Gemiddeld kost een studentenkamer €683 per maand, en in steden als Amsterdam veel meer. Huurprijzen stegen in Q1 2025 met 6,2%. Bespreek vooraf hoe je huur en vaste lasten verdeelt, betaalwijze en deadlines, wat er gebeurt bij te late betaling, en gezamenlijke kosten zoals internet of schoonmaakmiddelen.
+          Een “rode vlag” is niet iemand die anders is dan jij. Het is een patroon dat wijst op onbetrouwbaarheid,
+          vage grenzen of weigeren om concreet te worden. Neem het serieus als iemand:
         </p>
 
-        <p>
-          Goede communicatie voorkomt escalaties. Sommigen bespreken problemen direct, anderen hebben tijd nodig. Begrip voor elkaars stijl houdt discussies klein. Platforms zoals <Link href="/how-it-works">Domu Match</Link> stellen deze voorkeuren vroeg vast via compatibiliteitsvragen.
-        </p>
-
-        <h2>Signalen om serieus te nemen</h2>
-
-        <p>
-          Blijf open-minded, maar let op rode vlaggen. Wie niet over schoonmaak, regels of geld wil praten, is misschien niet klaar om samen te wonen. Trage of onregelmatige reacties voorspellen vaak toekomstige frustraties. Verwacht iemand dat jij je volledig aanpast? Dan wordt het snel scheef. Wie ontwijkend is over geld, kan moeite hebben om op tijd te betalen.
-        </p>
+        <ul>
+          <li>Niet wil praten over geld, klusjes, logees of stilte-uren.</li>
+          <li>Redelijke grenzen wegwuift (“stel je niet aan”).</li>
+          <li>In de makkelijke fase al inconsistent communiceert.</li>
+          <li>Verwacht dat jij je volledig aanpast zonder compromis.</li>
+          <li>Vaag blijft over wat er precies afgesproken wordt (regels, onderhuur, contract).</li>
+        </ul>
 
         <figure>
-          <Image
-            src="https://images.unsplash.com/photo-1560518883-ce09059eeffa?w=1200&q=80"
+          <BlogHeroImage
+            imageKey="quietRoommate"
             alt="Twee studenten in gesprek in een moderne woonkamer"
-            width={1200}
-            height={630}
-            className="w-full rounded-2xl"
           />
-          <figcaption>Eerlijke gesprekken over verwachtingen zetten de toon voor harmonieus samenwonen.</figcaption>
+          <figcaption>
+            Twintig minuten praten over routines voorkomt vaak maanden aan stille irritatie.
+          </figcaption>
         </figure>
 
-        <h2>Technologie als extra check</h2>
+        <h2>Wanneer je beter kunt afhaken, ook als het schaars voelt</h2>
 
         <p>
-          Traditionele methoden - ongeverifieerde groepschats, prikborden, mond-tot-mond - leunen op toeval. Moderne matchingplatformen analyseren tientallen factoren tegelijk en vergroten de kans op een goede klik.
+          Schaarste zorgt ervoor dat je slechte deals accepteert. Maar wonen op een plek die je slaap en focus
+          sloopt, heeft kosten die je later pas voelt. Als je gevoel zegt “dit wordt chaos”, pauzeer. Gebruik je
+          non-negotiables als filter: stilte, veiligheid, geldbetrouwbaarheid en basisrespect.
         </p>
 
         <p>
-          Platforms zoals <Link href="/matches">Domu Match</Link> gebruiken uitgebreide vragenlijsten om lifestyle, studie en persoonlijkheid te beoordelen. Zo vind je sneller iemand die bij je past in plaats van alleen iemand die óók een kamer zoekt. Onze <Link href="/about">missie en aanpak</Link> zijn gebaseerd op onderzoek dat laat zien dat compatibiliteit woontevredenheid verhoogt.
+          Voor due diligence van de woning zelf gebruik je{' '}
+          <Link href="/blog/safety-checklist-for-student-renters">de veiligheidschecklist</Link>. Voor klusjes en
+          standaarden start je met{' '}
+          <Link href="/blog/why-im-clean-is-a-lie">Waarom “ik ben netjes” weinig zegt</Link>.
         </p>
 
-        <h2>Praktische stappen</h2>
+        <h2>Een simpel proces dat je kunt volgen</h2>
 
         <p>
-          Weet wat jouw must-haves zijn: je dagritme, schoonmaakdrempel, hoeveel sociale energie je thuis wilt, studieset-up en budget. Koppel dan traditionele en moderne opties: universitaire huisvestingsdiensten, compatibiliteitsplatformen, studentengroepen op social media en tips via vrienden.
-        </p>
-
-        <p>
-          Vraag verder dan "waar studeer je?": hoe ziet je dag eruit, hoe ga je om met stress of conflicten, hoe waren vorige woonsituaties, wat verwacht je van gedeelde ruimtes? Een klik is fijn, maar vraag indien mogelijk referenties of ervaringen van vorige huisgenoten. Veel universiteiten bieden tools om veilig in contact te komen én includeren verificatie.
-        </p>
-
-        <h2>Waarom Domu Match helpt</h2>
-
-        <p>
-          Domu Match begrijpt hoe lastig het is om in een krappe markt een goede huisgenoot te vinden. Daarom analyseren we meer dan 40 lifestyle- en studievariabelen zodat je matches krijgt met studenten die jouw waarden delen.
+          1. Schrijf je non-negotiables op (slaap, logees, klusjes, geld, veiligheid).\n+          2. Stel concrete vragen in bezichtigingen of eerste chats.\n+          3. Let op consistentie tussen wat iemand zegt en hoe de plek er echt uitziet.\n+          4. Spreek een licht systeem af: stilte-uren, logees-norm, en gedeelde kosten.\n+          5. Zet de basis in een gedeelde notitie of app.
         </p>
 
         <p>
-          We verifiëren iedere gebruiker en leggen transparant uit waarom jullie compatibel zijn. Zo neem je onder tijdsdruk toch een weloverwogen besluit. Lees meer over <Link href="/safety">onze veiligheidsmaatregelen</Link> en het verificatieproces.
-        </p>
-
-        <p>
-          Klaar om te starten? <Link href="/auth/sign-up">Maak je profiel aan</Link> en vul onze vragenlijst in om te matchen met geverifieerde studenten die bij jouw ritme passen.
+          Als je een denkkader wilt voor “fit”, zie <Link href="/how-it-works">Zo werkt matching</Link>. Gebruik
+          het als lijst met gespreksonderwerpen, niet als vervanging van echt contact.
         </p>
 
         <h2>Conclusie</h2>
 
         <p>
-          Een fijne huisgenoot vinden vraagt om meer dan geluk. Door compatibiliteit te analyseren, de juiste vragen te stellen en slimme tools te gebruiken, vergroot je je kansen enorm. Richt je op leefstijl, financiën en communicatie en je vindt iemand die niet alleen ruimte deelt, maar ook je studie en welzijn ondersteunt.
+          Een fijne huisgenoot is niet “perfect”. Die is voorspelbaar. Als je screent op ritme, grenzen,
+          betrouwbaarheid en communicatie, voorkom je dat kleine irritaties grote frustraties worden.
         </p>
 
         <p>
-          De beste woningdelers bouwen op respect, duidelijke afspraken en gedeelde verwachtingen. Kies voor compatibiliteit boven gemak, en je woont een stuk rustiger. Of je nu traditionele methoden of platforms zoals <Link href="/auth/sign-up">Domu Match</Link> gebruikt.
+          Kies voor concreetheid boven labels, dan is de kans veel groter dat je huis je semester ondersteunt in
+          plaats van leeg trekt.
         </p>
       </div>
     )
-  }
+  },
 }
 
 export function HowToFindGreatRoommateArticle() {

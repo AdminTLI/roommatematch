@@ -2,14 +2,14 @@
 
 import { BlogPostLayout } from '@/components/marketing/blog-post-layout'
 import Link from 'next/link'
-import Image from 'next/image'
+import { BlogHeroImage } from '@/components/marketing/blog-hero-image'
 import { useApp } from '@/app/providers'
 
 const content = {
   en: {
     title: 'Group Chats, Ground Rules: Setting House Norms Without Killing the Vibe',
     excerpt:
-      'Every flat has “rules”. The healthy ones write them down. Learn how to turn Domu Match’s behavioural questions into simple, shared house norms before the group chat explodes.',
+      'Every flat has rules. The healthy ones write them down. Use a short house meeting to turn invisible expectations about noise, guests and cleaning into clear agreements.',
     publishDate: '2026-02-02',
     readTime: '7 min read',
     relatedLinks: [
@@ -26,17 +26,16 @@ const content = {
           'Learn how to make cleaning expectations concrete instead of vague labels.',
       },
       {
-        title: 'Start Matching on House Norms',
-        href: '/matches',
+        title: 'How Matching Works',
+        href: '/how-it-works',
         description:
-          'Use Domu Match to find people whose answers on noise, guests and cleaning can be turned into simple rules everyone understands.',
+          'A plain-language framework for the topics that matter in shared living and how to structure the conversation.',
       },
     ],
-    ctaTitle: 'Turn Quiet Expectations Into Clear Agreements',
-    ctaDescription:
-      'Domu Match surfaces the friction points - noise, guests, cleaning - so you can turn them into ground rules before they blow up your group chat.',
-    ctaHref: '/auth/sign-up',
-    ctaText: 'Match with Rule-Compatible Roommates',
+    ctaTitle: undefined,
+    ctaDescription: undefined,
+    ctaHref: undefined,
+    ctaText: undefined,
     body: () => (
       <div className="space-y-10">
         <p className="text-lg text-slate-700 leading-relaxed">
@@ -46,12 +45,9 @@ const content = {
         </p>
 
         <figure>
-          <Image
-            src="https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=1200&q=80"
-            alt="Students sitting around a table with phones and drinks, checking a group chat"
-            width={1200}
-            height={630}
-            className="w-full rounded-2xl"
+          <BlogHeroImage
+            imageKey="studentsCollaborating"
+            alt="Housemates at a shared table with laptops, chatting and coordinating"
           />
           <figcaption>
             Group chats are great for memes and logistics - but terrible as the only place to negotiate house
@@ -77,7 +73,9 @@ const content = {
         <h2>Let Domu Match Do the Awkward Part</h2>
 
         <p>
-          Domu Match already asks the uncomfortable questions during onboarding. Things like:
+          If you have never had a house meeting, it can feel awkward to raise these topics. The easiest way
+          to reduce awkwardness is to use a neutral agenda: noise, guests, chores, shared items, and how
+          conflicts get repaired. You can treat the first meeting like a setup step, not a confrontation.
         </p>
 
         <ul>
@@ -88,12 +86,8 @@ const content = {
         </ul>
 
         <p>
-          That means you can use your{' '}
-          <Link href="/matches">
-            compatibility report
-          </Link>{' '}
-          as a ready‑made agenda for your first house meeting. You are not inventing issues; you are simply
-          turning existing answers into explicit agreements.
+          If you want a framework for which topics matter (and why), see <Link href="/how-it-works">How Matching Works</Link>.
+          The point is not to outsource the conversation, it is to make the conversation easier to have.
         </p>
 
         <h2>A Simple House-Meeting Template</h2>
@@ -139,21 +133,12 @@ const content = {
           carry.
         </p>
 
-        <h2>Turn Matching Data Into House Rules</h2>
+        <h2>Turn expectations into a one-page agreement</h2>
 
         <p>
-          Domu Match gives you the raw ingredients: how everyone answered on guests, noise, cleanliness and
-          more. You turn that into a simple, shared “house agreement” that you can revisit once or twice a
-          semester.
-        </p>
-
-        <p>
-          You can start by creating a profile, matching with compatible housemates and then using their
-          answers as a starting point for your first house meeting. Start that process on our{' '}
-          <Link href="/auth/sign-up">
-            sign‑up page
-          </Link>
-          .
+          The most effective “house rules” document is short. One page. A few bullet points per topic. The
+          point is shared memory, not perfect compliance. Review it once after the first month, then again
+          around exam season when routines change.
         </p>
       </div>
     ),
@@ -161,7 +146,7 @@ const content = {
   nl: {
     title: 'Groepsapps & huisregels: afspraken maken zonder de sfeer te slopen',
     excerpt:
-      'Elke studentenwoning heeft “regels”. In de rustige huizen staan ze zwart op wit. Gebruik Domu Match om samen simpele, duidelijke afspraken te maken.',
+      'Elke studentenwoning heeft regels. In de rustige huizen staan ze zwart op wit. Maak met één kort huisoverleg verwachtingen over geluid, logees en schoonmaak concreet.',
     publishDate: '2026-02-02',
     readTime: '7 min lezen',
     relatedLinks: [
@@ -171,23 +156,35 @@ const content = {
         description:
           'Maak eerlijke afspraken over partners en logees in een gedeeld huis.',
       },
+      {
+        title: 'Waarom “ik ben netjes” weinig zegt',
+        href: '/blog/why-im-clean-is-a-lie',
+        description:
+          'Maak schoonmaakverwachtingen concreet met gedragsvragen in plaats van vage labels.',
+      },
+      {
+        title: 'Zo werkt matching',
+        href: '/how-it-works',
+        description:
+          'Een raamwerk voor welke onderwerpen ertoe doen, en hoe je een gesprek structureert zonder drama.',
+      },
     ],
-    ctaTitle: 'Maak stille verwachtingen bespreekbaar',
-    ctaDescription:
-      'Gebruik de antwoorden uit Domu Match als basis voor huisregels waar iedereen achter staat.',
-    ctaHref: '/auth/sign-up',
-    ctaText: 'Aan de slag',
+    ctaTitle: undefined,
+    ctaDescription: undefined,
+    ctaHref: undefined,
+    ctaText: undefined,
     body: () => (
       <div className="space-y-10">
         <p className="text-lg text-slate-700 leading-relaxed">
-          De meeste huisruzies worden niet in het echt uitgevochten, maar in de groepsapp. Door afspraken
-          vroeg en concreet te maken, hoeft je telefoon geen slagveld te worden.
+          De meeste huisruzies worden niet in het echt uitgevochten, maar in de groepsapp. Door afspraken vroeg
+          en concreet te maken, hoeft je telefoon geen slagveld te worden.
         </p>
 
         <p>
-          Domu Match helpt je alvast door lastige onderwerpen – geluid, gasten, schoonmaak – in de
-          vragenlijst te verwerken. Gebruik die antwoorden als startpunt voor een kort huisoverleg in de
-          eerste weken. Schrijf de uitkomst op en verwijs ernaar als er later discussie ontstaat.
+          Het helpt om lastige onderwerpen - geluid, gasten, schoonmaak - niet pas te bespreken als iemand al
+          boos is. Plan één kort huisoverleg in de eerste weken. Gebruik een neutrale agenda: stilte-uren,
+          logees, afwas, gedeelde kosten en hoe je irritaties bespreekt. Schrijf de uitkomst op in één notitie
+          en verwijs ernaar als er later discussie ontstaat.
         </p>
       </div>
     ),

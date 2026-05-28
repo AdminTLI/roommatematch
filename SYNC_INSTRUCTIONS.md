@@ -100,6 +100,25 @@ After running the sync, you should see:
 
 ## Troubleshooting
 
+### Error: "401 Authorization Required" or placeholder API key
+
+This means `SKDB_API_KEY` in `.env.local` is missing, expired, or still set to a placeholder like `your_skdb_api_key_here`.
+
+1. Log in to [portal.skdb.nl](https://portal.skdb.nl/) and copy your API token.
+2. Update `.env.local`:
+   ```bash
+   SKDB_API_BASE=https://api.skdb.nl/v1
+   SKDB_API_KEY=<paste-real-token-here>
+   ```
+3. Accounts expire after **one year** — renew via [aanvraag toegang](https://portal.skdb.nl/aanvraag-toegang-skdb/) if needed.
+
+**Dump fallback:** If you have a portal CSV/XLSX export but no API key, place the file and point sync at it:
+```bash
+SKDB_DUMP_PATH=./data/skdb-opleidingen.csv
+pnpm sync:programmes
+```
+Remove or comment out `SKDB_DUMP_PATH` if the file does not exist (otherwise you may see a warning before API fallback).
+
 ### Error: "SKDB_API_KEY or SKDB_DUMP_PATH must be set"
 - Make sure you have either `SKDB_API_KEY` or `SKDB_DUMP_PATH` in your `.env.local` file
 - Restart your terminal after adding environment variables

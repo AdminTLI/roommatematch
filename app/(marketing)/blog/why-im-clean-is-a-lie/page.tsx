@@ -4,13 +4,13 @@ import { WhyImCleanIsALieArticle } from './article-content'
 export const metadata: Metadata = {
   title: 'Why "I’m Clean" Is a Lie (And What to Ask Instead) | Domu Match',
   description:
-    '“Clean” means very different things to different people. Learn how to ask behaviour-based questions about chores and cleanliness and how Domu Match builds this into its matching.',
+    '“Clean” means different things to different people. Learn how to ask behaviour-based questions about chores and shared spaces so you align expectations before resentment starts.',
   keywords:
-    'roommate cleaning expectations, student housing chores, clean roommate conflict, Domu Match cleanliness questions',
+    'roommate cleaning expectations, student housing chores, clean roommate conflict, behaviour-based questions, shared living chores',
   openGraph: {
     title: 'Why "I’m Clean" Is a Lie (And What to Ask Instead)',
     description:
-      'A practical guide to avoiding cleaning wars by focusing on behaviours rather than vague labels  -  with help from Domu Match’s compatibility questions.',
+      'A practical guide to avoiding cleaning wars by focusing on behaviours rather than vague labels.',
     type: 'article',
     publishedTime: '2025-12-15',
     authors: ['Domu Match Team'],
@@ -25,7 +25,7 @@ export default function WhyImCleanIsALiePage() {
         '@type': 'BlogPosting',
         headline: 'Why "I’m Clean" Is a Lie (And What to Ask Instead)',
         description:
-          'Why “clean” is a subjective label, how it leads to roommate conflict, and how to use behaviour-based questions and Domu Match to align expectations.',
+          'Why “clean” is a subjective label, how it leads to roommate conflict, and how to use behaviour-based questions to align expectations.',
         image: 'https://domumatch.com/images/logo.png',
         datePublished: '2025-12-15',
         dateModified: '2025-12-15',
@@ -50,7 +50,7 @@ export default function WhyImCleanIsALiePage() {
         },
         articleSection: 'Compatibility',
         keywords:
-          'roommate cleaning expectations, student housing chores, clean roommate conflict, Domu Match cleanliness questions',
+          'roommate cleaning expectations, student housing chores, clean roommate conflict, behaviour-based questions',
       },
       {
         '@type': 'BreadcrumbList',

@@ -4,9 +4,9 @@ import { SurvivingWinterBluesArticle } from './article-content'
 export const metadata: Metadata = {
   title: 'Surviving the Winter Blues: Why Who You Live With Matters | Domu Match',
   description:
-    'Short days and exam stress can make students feel isolated. Learn how compatible roommates can buffer the winter blues and how Domu Match helps you match on social habits.',
+    'Short days and exam stress can make students feel isolated. Learn how a supportive living situation can buffer the winter blues and what small house norms keep routines steady.',
   keywords:
-    'winter blues students, seasonal affective disorder students, student housing isolation, supportive roommates winter, Domu Match social habits',
+    'winter blues students, seasonal affective disorder students, student housing isolation, supportive roommates winter, shared living routines',
   openGraph: {
     title: 'Surviving the Winter Blues: Why Who You Live With Matters',
     description:
@@ -25,7 +25,7 @@ export default function SurvivingWinterBluesPage() {
         '@type': 'BlogPosting',
         headline: 'Surviving the Winter Blues: Why Who You Live With Matters',
         description:
-          'An exploration of how winter, low mood and isolation interact with student housing  -  and how to use Domu Match to build a supportive home.',
+          'An exploration of how winter, low mood and isolation interact with student housing, and how supportive routines at home can buffer the darker months.',
         image: 'https://domumatch.com/images/logo.png',
         datePublished: '2026-01-10',
         dateModified: '2026-01-10',
@@ -50,7 +50,7 @@ export default function SurvivingWinterBluesPage() {
         },
         articleSection: 'Wellbeing',
         keywords:
-          'winter blues students, seasonal affective disorder students, student housing isolation, supportive roommates winter, Domu Match social habits',
+          'winter blues students, seasonal affective disorder students, student housing isolation, supportive roommates winter, shared living routines',
       },
       {
         '@type': 'BreadcrumbList',

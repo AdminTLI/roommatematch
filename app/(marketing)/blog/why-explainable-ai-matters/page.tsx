@@ -2,12 +2,15 @@ import { Metadata } from 'next'
 import { ExplainableAIArticle } from './article-content'
 
 export const metadata: Metadata = {
-  title: 'Why Explainable AI Matters: Transparency, Trust & Your Rights | Domu Match',
-  description: 'Understanding explainable AI and why transparency in matching algorithms matters. Learn how EU AI Act and GDPR protect your rights in algorithmic decision-making.',
-  keywords: 'explainable AI, EU AI Act, algorithmic transparency, AI matching, GDPR algorithmic decisions, Netherlands AI regulation, transparent AI',
+  title: 'Why Explainable AI Matters | Domu Match',
+  description:
+    'A practical guide to explainable AI: what it is, why it matters for roommate matching, and what transparent systems should reveal so you can evaluate recommendations.',
+  keywords:
+    'explainable AI, algorithmic transparency, AI recommendations, GDPR automated decision-making, EU AI Act, student housing matching',
   openGraph: {
     title: 'Why Explainable AI Matters',
-    description: 'Understanding your matches builds trust and better decisions. Learn how transparency in AI matching aligns with EU regulations.',
+    description:
+      'Explainable AI turns a “black box” score into reasons you can evaluate. Learn what transparent systems should show before you trust a recommendation.',
     type: 'article',
     publishedTime: '2025-11-05',
     authors: ['Domu Match Team'],
@@ -20,8 +23,9 @@ export default function WhyExplainableAIMattersPage() {
     '@graph': [
       {
         '@type': 'BlogPosting',
-        headline: 'Why Explainable AI Matters: Transparency, Trust & Your Rights',
-        description: 'Understanding explainable AI and why transparency in matching algorithms matters. Learn how EU AI Act and GDPR protect your rights in algorithmic decision-making.',
+        headline: 'Why Explainable AI Matters',
+        description:
+          'A practical guide to explainable AI: what it is, why it matters for roommate matching, and what transparent systems should reveal so you can evaluate recommendations.',
         image: 'https://domumatch.com/images/logo.png',
         datePublished: '2025-11-05',
         dateModified: '2025-11-05',
@@ -45,7 +49,8 @@ export default function WhyExplainableAIMattersPage() {
           '@id': 'https://domumatch.com/blog/why-explainable-ai-matters',
         },
         articleSection: 'Technology',
-        keywords: 'explainable AI, EU AI Act, algorithmic transparency, AI matching, GDPR algorithmic decisions',
+        keywords:
+          'explainable AI, algorithmic transparency, AI recommendations, GDPR automated decision-making, EU AI Act',
       },
       {
         '@type': 'BreadcrumbList',

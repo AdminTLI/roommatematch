@@ -3,20 +3,11 @@
  * @see https://portal.skdb.nl/documentatie/
  */
 
-const DEFAULT_BASE = 'https://api.skdb.nl/v1'
+import { getSkdbApiBase, getSkdbApiKey } from './env'
+import { SkdbApiAuthError } from './errors'
+import { validateSkdbSyncConfig } from './validate-config'
 
-export function getSkdbApiBase(): string {
-  const raw = process.env.SKDB_API_BASE || DEFAULT_BASE
-  const trimmed = raw.replace(/\/+$/, '')
-  if (!trimmed.endsWith('/v1')) {
-    return trimmed.endsWith('/v0') ? trimmed.replace(/\/v0$/, '/v1') : `${trimmed}/v1`
-  }
-  return trimmed
-}
-
-export function getSkdbApiKey(): string | undefined {
-  return process.env.SKDB_API_KEY?.trim() || undefined
-}
+export { getSkdbApiBase, getSkdbApiKey } from './env'
 
 export type SkdbInstelling = {
   instellingSkdb: number
@@ -74,6 +65,20 @@ async function fetchJson<T>(path: string): Promise<T> {
     headers: authHeaders(),
   })
   if (!res.ok) {
+    if (res.status === 401) {
+      const validation = validateSkdbSyncConfig()
+      const hints =
+        validation.ok === false
+          ? validation.hints
+          : [
+              'Verify SKDB_API_KEY in .env.local matches the portal token.',
+              'Request or renew access: https://portal.skdb.nl/aanvraag-toegang-skdb/',
+            ]
+      throw new SkdbApiAuthError(
+        `SKDB API request failed (${path}): 401 Authorization Required`,
+        hints
+      )
+    }
     throw new Error(`SKDB API request failed (${path}): ${res.status} ${res.statusText}`)
   }
   return res.json() as Promise<T>

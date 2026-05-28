@@ -2,14 +2,14 @@
 
 import { BlogPostLayout } from '@/components/marketing/blog-post-layout'
 import Link from 'next/link'
-import Image from 'next/image'
+import { BlogHeroImage } from '@/components/marketing/blog-hero-image'
 import { useApp } from '@/app/providers'
 
 const content = {
   en: {
     title: 'Surviving the Winter Blues: Why Who You Live With Matters',
     excerpt:
-      'Short days, cold weather and exam stress hit hard. The right housemates can give you social momentum; the wrong ones can leave you feeling isolated.',
+      'Short days and exam stress can make isolation feel heavier. The right living situation adds gentle structure and support, while the wrong one can amplify withdrawal.',
     publishDate: '2026-01-10',
     readTime: '8 min read',
     relatedLinks: [
@@ -20,23 +20,22 @@ const content = {
           'If your social battery drains quickly, learn how to build a home that helps you recharge instead of burning you out.',
       },
       {
-        title: 'Start Matching on Social Habits',
-        href: '/matches',
+        title: 'Group Chats, Ground Rules',
+        href: '/blog/group-chats-ground-rules',
         description:
-          'Use Domu Match’s questions about social routines and home vibe to find winter-friendly housemates.',
+          'How to set small house norms that keep winter routines predictable and supportive.',
       },
       {
-        title: 'Safety & Support',
-        href: '/safety',
+        title: 'How Matching Works',
+        href: '/how-it-works',
         description:
-          'Read how Domu Match designs for psychological safety and student wellbeing, not just housing logistics.',
+          'A framework for which habits matter in shared living and how to talk about them early.',
       },
     ],
-    ctaTitle: 'Build a Winter Support System at Home',
-    ctaDescription:
-      'Use Domu Match to match with housemates whose social habits and empathy levels help you get through the darker months.',
-    ctaHref: '/auth/sign-up',
-    ctaText: 'Find Compatible Housemates',
+    ctaTitle: undefined,
+    ctaDescription: undefined,
+    ctaHref: undefined,
+    ctaText: undefined,
     body: () => (
       <div className="space-y-10">
         <p className="text-lg text-slate-700 leading-relaxed">
@@ -47,12 +46,9 @@ const content = {
         </p>
 
         <figure>
-          <Image
-            src="https://images.unsplash.com/photo-1485846234645-a62644f84728?w=1200&q=80"
+          <BlogHeroImage
+            imageKey="quietRoommate"
             alt="Student looking out of a window on a dark winter day"
-            width={1200}
-            height={630}
-            className="w-full rounded-2xl"
           />
           <figcaption>
             In winter, isolation hits harder - the people you live with have a direct impact on how heavy it
@@ -123,44 +119,28 @@ const content = {
         </p>
 
         <figure>
-          <Image
-            src="https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=1200&q=80"
+          <BlogHeroImage
+            imageKey="studentsCollaborating"
             alt="Group of students drinking hot drinks together indoors"
-            width={1200}
-            height={630}
-            className="w-full rounded-2xl"
           />
           <figcaption>
             In winter, even small rituals - tea in the kitchen, a shared series - can help keep you connected.
           </figcaption>
         </figure>
 
-        <h2>How Domu Match Helps You Build a Winter Support System</h2>
+        <h2>Build a winter support system at home</h2>
 
         <p>
-          Domu Match does not just match on rent and location; it looks at{' '}
-          <strong>social rhythms, coping styles and home vibe</strong>. Our questionnaire includes items
-          about:
-        </p>
-
-        <ul>
-          <li>How often you like to hang out at home.</li>
-          <li>Whether you want spontaneous gatherings or more planned social time.</li>
-          <li>How you tend to cope when stressed - reaching out vs. withdrawing.</li>
-          <li>What kind of home feels safest when you are under pressure.</li>
-        </ul>
-
-        <p>
-          That means you can purposely look for matches who also value mutual support, low‑key togetherness,
-          or calm, introvert‑friendly spaces. You are not leaving your winter mental health to chance.
+          Winter is easier when home has gentle structure. That does not require an extrovert house. It requires
+          predictable, low-pressure contact: seeing another person in the kitchen once a day, having one shared
+          habit (tea, a short walk, a weekly shop), and knowing you can say “I’m not doing great” without it becoming
+          drama.
         </p>
 
         <p>
-          You can start exploring those matches by creating a profile and completing the questionnaire on our{' '}
-          <Link href="/auth/sign-up">
-            sign‑up page
-          </Link>
-          .
+          The practical move is to turn support into small agreements. A weekly check-in, a default quiet time
+          that protects sleep during exams, and a norm that nobody disappears for days without anyone noticing.
+          If you want a template for that, use <Link href="/blog/group-chats-ground-rules">Group Chats, Ground Rules</Link>.
         </p>
 
         <h2>Especially for International Students</h2>
@@ -206,7 +186,7 @@ const content = {
   nl: {
     title: 'Overleven in de winterdip: waarom huisgenoten nu extra tellen',
     excerpt:
-      'Donkere dagen, kou en tentamenstress maken je kwetsbaarder voor somberheid. De juiste huisgenoten kunnen het verschil maken tussen vereenzamen en je gedragen voelen.',
+      'Donkere dagen en tentamenstress maken isolement zwaarder. Een passende woonsituatie geeft zacht ritme en steun, terwijl een verkeerde match terugtrekgedrag kan versterken.',
     publishDate: '2026-01-10',
     readTime: '8 min lezen',
     relatedLinks: [
@@ -216,12 +196,23 @@ const content = {
         description:
           'Lees hoe je als introverte student een huis vindt dat oplaadt in plaats van uitput.',
       },
+      {
+        title: 'Groepsapps & huisregels',
+        href: '/blog/group-chats-ground-rules',
+        description:
+          'Kleine huisnormen die winterroutines voorspelbaar en steunend houden.',
+      },
+      {
+        title: 'Zo werkt matching',
+        href: '/how-it-works',
+        description:
+          'Een raamwerk voor welke onderwerpen ertoe doen in een gedeeld huis, en hoe je ze bespreekt.',
+      },
     ],
-    ctaTitle: 'Bouw een winters vangnet in huis',
-    ctaDescription:
-      'Match via Domu Match met huisgenoten die jouw behoefte aan steun en rust in de winter begrijpen.',
-    ctaHref: '/auth/sign-up',
-    ctaText: 'Begin met matchen',
+    ctaTitle: undefined,
+    ctaDescription: undefined,
+    ctaHref: undefined,
+    ctaText: undefined,
     body: () => (
       <div className="space-y-10">
         <p className="text-lg text-slate-700 leading-relaxed">
@@ -240,13 +231,10 @@ const content = {
         </p>
 
         <p>
-          Domu Match laat je vooraf matchen op sociale gewoontes, copingstijl en huisvibe. Zo vergroot je de
-          kans dat je in een huis komt waar winter niet alleen iets is dat je uitzit, maar iets dat je samen
-          doorkomt. Meer info vind je op onze{' '}
-          <Link href="/safety">
-            veiligheidspagina
-          </Link>
-          .
+          De praktische stap is om steun om te zetten in kleine afspraken. Eén wekelijks check-in moment, een
+          standaard stilte-uur tijdens tentamens, en een norm dat niemand dagenlang verdwijnt zonder dat iemand
+          het merkt. Voor taal en templates kun je <Link href="/blog/group-chats-ground-rules">Groepsapps & huisregels</Link>
+          gebruiken.
         </p>
 
         <h2>Referenties</h2>

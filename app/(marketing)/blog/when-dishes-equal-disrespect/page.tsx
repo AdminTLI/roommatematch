@@ -5,9 +5,9 @@ export const metadata: Metadata = {
   title:
     'When Dishes = Disrespect: How Tiny Tasks Turn Into Big Resentments | Domu Match',
   description:
-    'Dirty dishes are rarely just about mess. Learn how unequal chores create resentment in shared housing and how Domu Match helps you find people who share your standards.',
+    'Dirty dishes are rarely just about mess. Learn how unequal chores create resentment in shared housing, why “fair” becomes emotional, and what questions prevent conflict.',
   keywords:
-    'roommate chores conflict, dishes roommate problem, student housing cleaning, unfair housework, Domu Match chores',
+    'roommate chores conflict, dishes roommate problem, student housing cleaning, unfair housework, chore expectations',
   openGraph: {
     title: 'When Dishes = Disrespect: How Tiny Tasks Turn Into Big Resentments',
     description:
@@ -27,7 +27,7 @@ export default function WhenDishesEqualDisrespectPage() {
         headline:
           'When Dishes = Disrespect: How Tiny Tasks Turn Into Big Resentments',
         description:
-          'Explains why unequal chore loads feel like disrespect, and how to use Domu Match to find roommates who share your approach to cleaning.',
+          'Explains why unequal chore loads feel like disrespect, and how to use behaviour-based questions to align expectations before resentment builds.',
         image: 'https://domumatch.com/images/logo.png',
         datePublished: '2026-01-27',
         dateModified: '2026-01-27',
@@ -53,7 +53,7 @@ export default function WhenDishesEqualDisrespectPage() {
         },
         articleSection: 'Compatibility',
         keywords:
-          'roommate chores conflict, dishes roommate problem, student housing cleaning, unfair housework, Domu Match chores',
+          'roommate chores conflict, dishes roommate problem, student housing cleaning, unfair housework, chore expectations',
       },
       {
         '@type': 'BreadcrumbList',

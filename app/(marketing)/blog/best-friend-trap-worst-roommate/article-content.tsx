@@ -2,14 +2,14 @@
 
 import { BlogPostLayout } from '@/components/marketing/blog-post-layout'
 import Link from 'next/link'
-import Image from 'next/image'
+import { BlogHeroImage } from '@/components/marketing/blog-hero-image'
 import { useApp } from '@/app/providers'
 
 const content = {
   en: {
     title: 'The "Best Friend" Trap: Why Your Bestie Might Be Your Worst Roommate',
     excerpt:
-      'Friendship chemistry does not always translate into living compatibility. Learn how to protect both your grades and your closest relationships by matching on habits, not vibes.',
+      'Friendship chemistry is real, but it is not the same as living compatibility. Before you sign a lease together, stress-test the boring stuff: sleep, guests, chores, money, and conflict style.',
     publishDate: '2025-11-20',
     readTime: '7 min read',
     relatedLinks: [
@@ -17,248 +17,156 @@ const content = {
         title: 'How to Find a Great Roommate',
         href: '/blog/how-to-find-a-great-roommate',
         description:
-          'Evidence-based tips for assessing roommate compatibility beyond friendship and first impressions.',
+          'A practical checklist for screening routines, boundaries, chores, and communication.',
       },
       {
-        title: 'Start Matching',
-        href: '/matches',
+        title: 'The "Third Wheel" Policy',
+        href: '/blog/third-wheel-policy-significant-others',
         description:
-          'Use Domu Match’s lifestyle and values questionnaire to see how compatible you really are with potential roommates.',
+          'How partners and overnight guests change the household system, and how to set fair rules.',
       },
       {
-        title: 'How Matching Works',
-        href: '/how-it-works',
+        title: 'Group Chats, Ground Rules',
+        href: '/blog/group-chats-ground-rules',
         description:
-          'See how our explainable AI turns your habits and preferences into transparent compatibility scores.',
+          'How to set norms without passive-aggressive late-night messages.',
       },
     ],
-    ctaTitle: 'Protect the Friendship, Upgrade the Match',
-    ctaDescription:
-      'Use Domu Match to reality-check your compatibility with friends, classmates, and new connections before you sign a lease together.',
-    ctaHref: '/auth/sign-up',
-    ctaText: 'Get Started',
+    ctaTitle: undefined,
+    ctaDescription: undefined,
+    ctaHref: undefined,
+    ctaText: undefined,
     body: () => (
       <div className="space-y-10">
         <p className="text-lg text-slate-700 leading-relaxed">
-          On paper, living with your best friend feels like the obvious move. You already know each other,
-          you have the same jokes, and it seems safer than a stranger. But in shared housing,{' '}
-          <strong>who you like is not the same as how you live</strong>. Confusing the two is how a lot of
-          students lose both a home and a friendship in the same year.
+          Living with your best friend sounds like the safest option: you trust them, you already laugh
+          together, and you assume “we get on” will translate into “we will live well”. The trap is that{' '}
+          <strong>liking someone is not the same as being compatible in a shared system</strong>. Houses and
+          flats run on routines, not vibes.
         </p>
 
         <figure>
-          <Image
-            src="https://images.unsplash.com/photo-1523580846011-d3a5bc25702b?w=1200&q=80"
+          <BlogHeroImage
+            imageKey="studentsCollaborating"
             alt="Two students laughing together on a sofa in a shared apartment"
-            width={1200}
-            height={630}
-            className="w-full rounded-2xl"
           />
           <figcaption>
-            Great chemistry at brunch does not guarantee compatible habits at 7 a.m. on a Tuesday.
+            Great chemistry at brunch does not automatically mean compatible habits on a Tuesday morning.
           </figcaption>
         </figure>
 
-        <h2>Friendship Compatibility vs. Living Compatibility</h2>
+        <h2>Friendship compatibility vs. living compatibility</h2>
 
         <p>
-          Friendship is built on shared experiences, humour, and emotional safety. Living compatibility is
-          built on <strong>routines, boundaries, and tiny habits</strong>. You can adore someone&apos;s
-          personality and still struggle with their lifestyle.
+          Friendship is built on shared memories, humour, and emotional safety. Living compatibility is built
+          on small, repeated behaviours: how you handle noise, how you share space, how you manage money, and
+          how you repair conflict.
         </p>
 
         <p>
-          Research on roommate relationships consistently shows that conflict usually stems from misaligned
-          expectations around privacy, cleanliness, and noise rather than &quot;personality clashes&quot;{' '}
-          (e.g., see housing conflict summaries in American college counselling reports;
+          Many student conflicts start in the same few domains: privacy, cleanliness, and noise. When those
+          expectations are misaligned, resentment accumulates quietly until the friendship starts to feel
+          unsafe. For an accessible overview of how stress and mental health pressures show up during study,
+          see the American Psychological Association’s reporting on college mental health ({' '}
           <a
             href="https://www.apa.org/monitor/2019/09/cover-college-mental-health"
             target="_blank"
             rel="noreferrer"
           >
-            {' '}
             American Psychological Association, 2019
           </a>
-          ). In other words, it is the <em>system</em> of your shared life that cracks first, not the
-          friendship itself.
+          ).
         </p>
 
+        <h2>The micro-frictions that break good friendships</h2>
+
         <p>
-          Examples of where this difference shows up:
+          Most roommate fallouts do not start with betrayal. They start with predictable, repeated irritations:
+        </p>
+
+        <ul>
+          <li>Five alarms every morning.</li>
+          <li>A partner “just happens” to be over most nights.</li>
+          <li>One person becomes the default cleaner because they cannot tolerate the mess.</li>
+          <li>“I’ll do it later” becomes a lifestyle.</li>
+        </ul>
+
+        <p>
+          The emotional shift is subtle. You stop reading the behaviour as a habit and start reading it as a
+          message: <em>my time matters less</em>, <em>my sleep is optional</em>, <em>my boundaries are negotiable</em>.
+          That is where the friendship starts to change.
+        </p>
+
+        <h2>The conversation most friends avoid (and later wish they had)</h2>
+
+        <p>
+          Before you sign anything, have one deliberately boring conversation. Not about decor, not about
+          neighbourhoods, not about who gets which wardrobe. The boring conversation is about:
         </p>
 
         <ul>
           <li>
-            You love your friend&apos;s chaotic &quot;always down&quot; energy - until it is 1:30 a.m. and
-            they are still talking on speaker while you have an exam.
+            <strong>Sleep</strong>: bedtimes, alarms, exam-week quiet, and what “late night” means.
           </li>
           <li>
-            You bond over not being &quot;fussy&quot; - until you realise their definition of &quot;not
-            dirty&quot; includes plates sitting in the sink for three days.
+            <strong>Guests</strong>: frequency, partners, overnight stays, and what counts as asking.
           </li>
           <li>
-            You both say you are &quot;chill&quot; - but one of you needs alone time after class while the
-            other wants the door open and the music on.
+            <strong>Chores</strong>: how long dishes sit, how bathrooms get cleaned, and what “messy” means.
           </li>
-        </ul>
-
-        <h2>How Tiny Habits Quietly Ruin Good Friendships</h2>
-
-        <p>
-          Most roommate breakups do not start with a huge betrayal. They start with{' '}
-          <strong>micro-frictions</strong>:
-        </p>
-
-        <ul>
-          <li>They &quot;forget&quot; to take the bin out again.</li>
-          <li>Their partner is over four nights a week, unspoken.</li>
           <li>
-            They snooze five alarms every morning while you lie there, awake and furious, pretending you are
-            fine.
+            <strong>Money</strong>: rent timing, bills, shared basics, and what happens if someone is late.
+          </li>
+          <li>
+            <strong>Conflict repair</strong>: do you talk immediately, cool off first, or schedule a house meeting?
           </li>
         </ul>
 
         <p>
-          Over time, your brain stops reading those things as &quot;habits&quot; and starts reading them as
-          messages: <em>my time is less valuable</em>, <em>my sleep does not matter</em>,{' '}
-          <em>they do not respect me</em>. That shift is where resentment lives.
+          If this conversation feels awkward, you are normal. But awkward is cheaper than a broken lease or a
+          broken friendship.
+        </p>
+
+        <h2>Use behaviour, not labels</h2>
+
+        <p>
+          You do not need a fancy framework. You just need questions that force specificity. Replace “Are you
+          tidy?” with “How long do dishes usually stay in your sink?” Replace “Are you chill?” with “What would
+          make you feel taken for granted at home?”
         </p>
 
         <p>
-          Because you are friends, you might wait longer to say something. You laugh it off, then vent to
-          other people, then explode over a cereal bowl that is not really about the cereal bowl at all.
+          If you want examples of behaviour-based questions, start with{' '}
+          <Link href="/blog/why-im-clean-is-a-lie">Why “I’m Clean” Is a Lie</Link>. For guests and partner dynamics,
+          read{' '}
+          <Link href="/blog/third-wheel-policy-significant-others">The “Third Wheel” Policy</Link>.
         </p>
 
-        <h2>The Conversation Most Friends Skip (And Regret)</h2>
+        <h2>If you decide not to live together</h2>
 
         <p>
-          If you are even thinking about living with a close friend, you need one honest conversation that is
-          not about decor, neighbourhoods, or who gets which wardrobe. You need to talk about:
-        </p>
-
-        <ul>
-          <li>
-            <strong>Sleep</strong>: Typical bed and wake times, alarms, noise tolerance, and exam-season
-            expectations.
-          </li>
-          <li>
-            <strong>Cleanliness</strong>: How long dishes sit in the sink, how often bathrooms are cleaned,
-            and what &quot;messy&quot; actually means to each of you.
-          </li>
-          <li>
-            <strong>Guests</strong>: How often friends and partners stay over, and how you feel about
-            unplanned sleepovers.
-          </li>
-          <li>
-            <strong>Study vs. social</strong>: Whether home is more of a study base or a social hub.
-          </li>
-        </ul>
-
-        <p>
-          If that feels awkward to bring up, you are not alone - but awkward is cheaper than a broken lease
-          or a broken friendship.
-        </p>
-
-        <h2>Using Domu Match to "Interview" Your Best Friend</h2>
-
-        <p>
-          Instead of trying to invent all the hard questions yourself, you can let Domu Match do the heavy
-          lifting. Our questionnaire is built around <strong>behaviours, not labels</strong>. Rather than
-          asking, &quot;Are you clean?&quot; or &quot;Are you chill?&quot; we ask:
-        </p>
-
-        <ul>
-          <li>&quot;How long do dishes usually stay in your sink?&quot;</li>
-          <li>&quot;How many nights per week are you comfortable with overnight guests?&quot;</li>
-          <li>&quot;What time do you typically go to bed on weekdays?&quot;</li>
-          <li>&quot;When you are stressed, do you prefer company or space?&quot;</li>
-        </ul>
-
-        <p>
-          Here is one simple way to reality-check your friendship as a living situation:
-        </p>
-
-        <ol>
-          <li>
-            <strong>Both of you create profiles on Domu Match.</strong> Answer as if you were matching with a
-            stranger. No &quot;aspirational&quot; answers.
-          </li>
-          <li>
-            <strong>Compare your compatibility report together.</strong> Look at where you align - and where
-            you really do not.
-          </li>
-          <li>
-            <strong>Talk about the gaps.</strong> Could you actually compromise on those, or would that
-            compromise make one of you quietly miserable?
-          </li>
-          <li>
-            <strong>Decide from the data, not from guilt.</strong> If the report shows major clashes on
-            sleep, guests, or cleanliness, it might be kinder to each other to stay friends, not roommates.
-          </li>
-        </ol>
-
-        <p>
-          Our explainable matching makes this easier: you can see <em>why</em> you are a strong or weak match
-          across multiple categories, instead of staring at one mysterious score. Learn more about how that
-          works on our{' '}
-          <Link href="/how-it-works">
-            how it works
-          </Link>{' '}
-          page.
-        </p>
-
-        <h2>If You Decide Not to Live Together</h2>
-
-        <p>
-          Saying, &quot;I love you, but I do not think we should live together&quot; can feel brutal in the
-          moment. But in the long term, it is usually an act of care.
-        </p>
-
-        <p>
-          One helpful script:
+          “I love you, but I don’t think we should live together” can feel brutal. In the long run, it is
+          often an act of care. A simple script:
         </p>
 
         <blockquote>
-          &quot;I really value our friendship, and I do not want to put it under pressure. When I filled in
-          my Domu Match profile I realised I need really strict quiet hours and fewer guests than you enjoy.
-          I would rather keep enjoying living with you during the day than risk resenting you at night.&quot;
+          “I really value our friendship. The more I think about daily routines - quiet hours, guests, and
+          cleaning - the more I realise we want different things at home. I would rather keep the friendship
+          easy than risk resenting you in the same space.”
         </blockquote>
 
-        <p>
-          You are not rejecting the person. You are respecting the reality that your nervous systems, study
-          needs, and living habits might not be compatible in one small space.
-        </p>
-
-        <h2>Friendship First, Housing Second</h2>
+        <h2>Friendship first, housing second</h2>
 
         <p>
-          Your home is infrastructure for your wellbeing and your degree. Your friends are infrastructure for
-          your sanity. Protecting one by sacrificing the other is not a smart trade.
-        </p>
-
-        <p>
-          If you are planning next year&apos;s housing right now:
-        </p>
-
-        <ul>
-          <li>Use Domu Match to test compatibility with your closest people, not just strangers.</li>
-          <li>Let the questionnaire give you neutral language for difficult topics.</li>
-          <li>Choose arrangements that protect your sleep, your grades, and your relationships.</li>
-        </ul>
-
-        <p>
-          You can explore compatible options - with friends or with new matches - on our{' '}
-          <Link href="/matches">
-            matching page
-          </Link>
-          . You do not have to gamble your favourite friendship on guesswork.
+          Your home is infrastructure for your degree. Your friends are infrastructure for your sanity. Treat
+          them as two separate systems and you will make clearer decisions.
         </p>
 
         <h2>References</h2>
 
         <p className="text-sm text-slate-300">
-          American Psychological Association. (2019). <em>College mental health: The costs of depression,
-          anxiety and stress</em>. In <em>Monitor on Psychology</em>. Retrieved from{' '}
+          American Psychological Association. (2019). <em>College mental health: The costs of depression, anxiety and stress</em>. In{' '}
+          <em>Monitor on Psychology</em>. Retrieved from{' '}
           <a
             href="https://www.apa.org/monitor/2019/09/cover-college-mental-health"
             target="_blank"
@@ -273,7 +181,7 @@ const content = {
   nl: {
     title: 'De “beste vriend”-valkuil: waarom je bestie geen ideale huisgenoot hoeft te zijn',
     excerpt:
-      'Vriendschap garandeert geen wooncompatibiliteit. Ontdek hoe je je relatie én je studie beschermt door op gewoontes te matchen in plaats van op gevoel.',
+      'Vriendschapsklik is echt, maar het is niet hetzelfde als wooncompatibiliteit. Stress-test vóór je tekent de saaie onderwerpen: slaap, logees, klusjes, geld en hoe je conflict herstelt.',
     publishDate: '2025-11-20',
     readTime: '7 min lezen',
     relatedLinks: [
@@ -281,41 +189,38 @@ const content = {
         title: 'Zo vind je een fijne huisgenoot',
         href: '/blog/how-to-find-a-great-roommate',
         description:
-          'Evidence-based tips om verder te kijken dan eerste indrukken bij het kiezen van een huisgenoot.',
+          'Een praktische checklist om ritme, grenzen, klusjes en communicatie te screenen.',
       },
       {
-        title: 'Begin met matchen',
-        href: '/matches',
+        title: 'De “derde wiel”-regel',
+        href: '/blog/third-wheel-policy-significant-others',
         description:
-          'Gebruik de vragenlijst van Domu Match om te zien hoe compatibel jij en je vrienden écht zijn.',
+          'Hoe partners en logees het huishouden veranderen en hoe je eerlijke afspraken maakt.',
       },
       {
-        title: 'Zo werkt onze matching',
-        href: '/how-it-works',
+        title: 'Groepsapps & huisregels',
+        href: '/blog/group-chats-ground-rules',
         description:
-          'Lees hoe onze uitlegbare AI je leefstijl en voorkeuren omzet in transparante compatibiliteitsscores.',
+          'Huisnormen afspreken zonder passief-agressieve appjes midden in de nacht.',
       },
     ],
-    ctaTitle: 'Bescherm de vriendschap, kies de juiste match',
-    ctaDescription:
-      'Gebruik Domu Match om je compatibiliteit met vrienden en nieuwe contacten te checken vóórdat je samen tekent.',
-    ctaHref: '/auth/sign-up',
-    ctaText: 'Aan de slag',
+    ctaTitle: undefined,
+    ctaDescription: undefined,
+    ctaHref: undefined,
+    ctaText: undefined,
     body: () => (
       <div className="space-y-10">
         <p className="text-lg text-slate-700 leading-relaxed">
-          Samenwonen met je beste vriend(in) voelt logisch en veilig, maar vriendschapsklik is niet hetzelfde
-          als wooncompatibiliteit. Wie je leuk vindt is iets anders dan hoe je leeft. Als je dat door elkaar
-          haalt, loop je kans om én een huis én een vriendschap kwijt te raken.
+          Samenwonen met je beste vriend(in) voelt als de veiligste keuze: je vertrouwt elkaar, je lacht samen,
+          en je denkt dat “we kunnen goed met elkaar” automatisch betekent “we wonen lekker samen”. De valkuil is
+          dat <strong>iemand leuk vinden</strong> niet hetzelfde is als <strong>compatibel zijn in een huishouden</strong>.
+          Een huis draait op routines, niet op gevoel.
         </p>
 
         <figure>
-          <Image
-            src="https://images.unsplash.com/photo-1523580846011-d3a5bc25702b?w=1200&q=80"
+          <BlogHeroImage
+            imageKey="studentsCollaborating"
             alt="Twee studenten die lachen op een bank in een gedeeld appartement"
-            width={1200}
-            height={630}
-            className="w-full rounded-2xl"
           />
           <figcaption>
             Een goede klik op het terras betekent niet automatisch dat je ook elkaars leefritme aankunt.
@@ -325,34 +230,107 @@ const content = {
         <h2>Vriendschapsklik vs. woonklik</h2>
 
         <p>
-          Vriendschap draait om gedeelde ervaringen, humor en emotionele veiligheid. Samenwonen draait om{' '}
-          <strong>routines, grenzen en kleine gewoontes</strong>. Je kunt iemands persoonlijkheid geweldig
-          vinden en toch botsen op dagelijks gedrag.
+          Vriendschap draait om gedeelde ervaringen, humor en emotionele veiligheid. Samenwonen draait om kleine,
+          herhaalde gewoontes: geluid, ruimte delen, geld, en hoe je een conflict repareert.
         </p>
 
         <p>
-          Onderzoek naar huisgenoten laat zien dat conflicten meestal ontstaan rond verwachtingen over
-          privacy, schoonmaak en geluid – niet omdat “de karakters niet matchen”{' '}
-          <span className="italic">
-            (American Psychological Association, 2019)
-          </span>
-          . Met andere woorden: het zijn de <em>systemen</em> thuis die scheuren, niet per se de band.
+          Veel studentconflicten beginnen in dezelfde domeinen: privacy, schoonmaak en geluid. Als die verwachtingen
+          niet matchen, stapelt irritatie zich op tot de vriendschap onveilig voelt. Voor een toegankelijke achtergrond
+          over stress en mentale druk tijdens studie kun je de APA lezen ({' '}
+          <a
+            href="https://www.apa.org/monitor/2019/09/cover-college-mental-health"
+            target="_blank"
+            rel="noreferrer"
+          >
+            American Psychological Association, 2019
+          </a>
+          ).
+        </p>
+
+        <h2>De micro-fricties die goede vriendschappen slopen</h2>
+
+        <p>Meestal gaat het niet mis door één groot drama, maar door herhaling:</p>
+
+        <ul>
+          <li>Vijf wekkers elke ochtend.</li>
+          <li>Een partner die “toevallig” bijna altijd blijft slapen.</li>
+          <li>Eén persoon die standaard schoonmaakt omdat die rommel niet kan negeren.</li>
+          <li>“Ik doe het straks” als vaste modus.</li>
+        </ul>
+
+        <p>
+          Op een gegeven moment lees je het niet meer als een gewoonte maar als een boodschap: <em>mijn tijd telt minder</em>,
+          <em>mijn slaap is optioneel</em>, <em>mijn grenzen zijn onderhandelbaar</em>. Daar groeit wrok.
+        </p>
+
+        <h2>Het gesprek dat vrienden vaak vermijden</h2>
+
+        <p>
+          Voor je tekent, heb je één bewust saai gesprek nodig. Niet over inrichting, niet over de buurt, maar over:
+        </p>
+
+        <ul>
+          <li>
+            <strong>Slaap</strong>: bedtijden, wekkers, stilte tijdens tentamens, en wat “laat” betekent.
+          </li>
+          <li>
+            <strong>Logees</strong>: frequentie, partners, overnachten, en wat “vragen” betekent.
+          </li>
+          <li>
+            <strong>Klusjes</strong>: hoe snel afwas weg is, badkamerstandaard, en wat “rommelig” is.
+          </li>
+          <li>
+            <strong>Geld</strong>: huur timing, rekeningen, basics, en wat er gebeurt bij te late betaling.
+          </li>
+          <li>
+            <strong>Herstel na conflict</strong>: direct praten, eerst afkoelen, of een huisoverleg plannen.
+          </li>
+        </ul>
+
+        <p>
+          Als dit ongemakkelijk voelt, ben je niet de enige. Maar ongemak is goedkoper dan een gebroken contract of
+          een gebroken vriendschap.
+        </p>
+
+        <h2>Gebruik gedrag, niet labels</h2>
+
+        <p>
+          Je hebt geen ingewikkeld model nodig. Je hebt vragen nodig die concreet maken wat iemand bedoelt. Vervang
+          “Ben je netjes?” door “Hoe lang blijft afwas meestal staan?” Vervang “Ben je chill?” door “Wanneer voel jij je
+          vanzelfsprekend genomen in een huis?”
         </p>
 
         <p>
-          Gebruik Domu Match als neutrale tussenstap: vul allebei eerlijk de vragenlijst in, vergelijk jullie
-          rapport en bespreek de verschillen. Op onze{' '}
-          <Link href="/how-it-works">
-            pagina “Zo werkt het”
-          </Link>{' '}
-          leggen we precies uit welke factoren we meenemen.
+          Voor voorbeelden van gedragsvragen: <Link href="/blog/why-im-clean-is-a-lie">Waarom “ik ben netjes” weinig zegt</Link>.
+          Voor logees en partners: <Link href="/blog/third-wheel-policy-significant-others">De “derde wiel”-regel</Link>.
+        </p>
+
+        <h2>Als je besluit niet samen te wonen</h2>
+
+        <p>
+          “Ik hou van je, maar ik denk niet dat we samen moeten wonen” voelt hard. Op de lange termijn is het vaak zorg.
+          Een simpel script:
+        </p>
+
+        <blockquote>
+          “Ik waardeer onze vriendschap echt. Hoe meer ik nadenk over routines - stilte, logees en klusjes - hoe meer ik
+          zie dat we thuis andere dingen willen. Ik hou liever de vriendschap licht dan dat we elkaar gaan irriteren in
+          dezelfde ruimte.”
+        </blockquote>
+
+        <h2>Vriendschap eerst, huisvesting daarna</h2>
+
+        <p>
+          Je huis is infrastructuur voor je studie. Je vrienden zijn infrastructuur voor je sanity. Zie het als twee systemen
+          en je kiest helderder.
         </p>
 
         <h2>Referenties</h2>
 
         <p className="text-sm text-slate-300">
-          American Psychological Association. (2019). <em>College mental health: The costs of depression,
-          anxiety and stress</em>. In <em>Monitor on Psychology</em>. Geraadpleegd via{' '}
+          American Psychological Association. (2019). <em>College mental health: The costs of depression, anxiety and stress</em>. In{' '}
+          <em>Monitor on Psychology</em>. Geraadpleegd via{' '}
           <a
             href="https://www.apa.org/monitor/2019/09/cover-college-mental-health"
             target="_blank"

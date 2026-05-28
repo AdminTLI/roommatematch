@@ -2,14 +2,14 @@
 
 import { BlogPostLayout } from '@/components/marketing/blog-post-layout'
 import Link from 'next/link'
-import Image from 'next/image'
+import { BlogHeroImage } from '@/components/marketing/blog-hero-image'
 import { useApp } from '@/app/providers'
 
 const content = {
   en: {
     title: 'Why "I’m Clean" Is a Lie (And What to Ask Instead)',
     excerpt:
-      '“Clean” is subjective. One person means “no mould”, another means “bleached daily”. Learn how to ask behaviour-based questions so dishes and dust do not ruin your flat.',
+      '“Clean” is not a standard, it is a self-image. Use behaviour-based questions to align expectations about dishes, bathrooms, and shared spaces before resentment starts.',
     publishDate: '2025-12-15',
     readTime: '7 min read',
     relatedLinks: [
@@ -17,166 +17,138 @@ const content = {
         title: 'How to Find a Great Roommate',
         href: '/blog/how-to-find-a-great-roommate',
         description:
-          'Go beyond first impressions with evidence-based questions about lifestyle and responsibilities.',
+          'A practical checklist for screening routines, boundaries, chores, money reliability, and communication.',
       },
       {
-        title: 'Start Matching by Habits',
-        href: '/matches',
+        title: 'When Dishes = Disrespect',
+        href: '/blog/when-dishes-equal-disrespect',
         description:
-          'Use Domu Match’s behavioural questions about cleaning, chores and shared spaces to find compatible housemates.',
+          'Why tiny chores turn into big conflict, and how fairness becomes an emotional issue.',
       },
       {
-        title: 'Safety Checklist for Student Renters',
-        href: '/blog/safety-checklist-for-student-renters',
+        title: 'Group Chats, Ground Rules',
+        href: '/blog/group-chats-ground-rules',
         description:
-          'Protect yourself with clear agreements and understanding of your tenant rights in shared housing.',
+          'How to set house norms without passive-aggressive messages and escalating tension.',
       },
     ],
-    ctaTitle: 'Match on Behaviours, Not Buzzwords',
-    ctaDescription:
-      'Domu Match skips vague labels like “clean” and “chill” and goes straight to concrete, day-to-day behaviours.',
-    ctaHref: '/auth/sign-up',
-    ctaText: 'See Your Compatibility',
+    ctaTitle: undefined,
+    ctaDescription: undefined,
+    ctaHref: undefined,
+    ctaText: undefined,
     body: () => (
       <div className="space-y-10">
         <p className="text-lg text-slate-700 leading-relaxed">
-          “I’m clean.” “I’m pretty tidy.” “I don’t like mess.” You have probably heard all three. Maybe you
-          have said them. The problem is that they mean nothing without context. Two people can both call
-          themselves “clean” and still end up fighting over a chopping board.
+          “I’m clean.” “I’m tidy.” “I don’t like mess.” You have probably heard all three. Maybe you have said
+          them. The problem is that they mean almost nothing without context. Two people can both believe they
+          are “clean” and still end up fighting over a chopping board.
         </p>
 
         <figure>
-          <Image
-            src="https://images.unsplash.com/photo-1519710164239-da123dc03ef4?w=1200&q=80"
-            alt="Student cleaning a shared kitchen counter"
-            width={1200}
-            height={630}
-            className="w-full rounded-2xl"
+          <BlogHeroImage
+            imageKey="sharedKitchen"
+            alt="Person wiping down a kitchen counter in a shared flat"
           />
           <figcaption>
-            Most roommate conflicts over cleanliness start with mismatched definitions, not malice.
+            Most cleaning conflict starts with mismatched definitions, not malice.
           </figcaption>
         </figure>
 
-        <h2>"Clean" Is Not a Standard, It’s a Story</h2>
+        <h2>&quot;Clean&quot; is not a standard, it is a story</h2>
 
         <p>
-          When someone says “I’m clean”, they are telling you a story about themselves - how they like to
-          see themselves - not giving you an objective standard. For one person, “clean” means no visible
-          rubbish and no mould. For another, it means floors vacuumed weekly, surfaces disinfected and no
-          clothes on chairs.
+          When someone says “I’m clean”, they are often describing how they like to see themselves, not an
+          objective routine. For one person, “clean” means no visible rubbish and no mould. For another, it
+          means vacuuming weekly, disinfecting surfaces, and never leaving clothes on chairs.
         </p>
 
         <p>
-          Research on household labour shows that people often underestimate the work they do and see their
-          own level of contribution as “fair”, even when it is not shared equally (Carlson et al., 2016).
-          In shared housing, that same bias shows up as “I already do enough”, even when your experience is
-          very different.
+          Household labour research also shows a common pattern: people underestimate what they do, and
+          perceive their contribution as fair even when labour is uneven (Carlson et al., 2016). In a shared
+          flat, that bias shows up as “I already do enough” while the other person feels like the default
+          cleaner.
         </p>
 
-        <h2>Where Cleaning Fights Really Start</h2>
+        <h2>Where cleaning fights actually start</h2>
 
-        <p>Most cleaning arguments are not about one catastrophic mess. They start small:</p>
+        <p>Most arguments are not about one catastrophic mess. They start small and repeat:</p>
 
         <ul>
-          <li>Dishes that “soak” for days in the sink.</li>
-          <li>Bathroom floors that are always slightly damp and never really wiped.</li>
+          <li>Dishes that “soak” for days.</li>
+          <li>Bathroom floors that stay damp and never get wiped.</li>
           <li>Hair in the drain that no one claims.</li>
           <li>Takeaway boxes living on the counter long after the meal.</li>
         </ul>
 
         <p>
-          At first, you let it go. Then you quietly start doing more of the work yourself. Over time, that
-          unpaid, unrecognised labour becomes resentment: <em>apparently, I’m the only one who cares</em>.
+          At first you let it go. Then you quietly do more of the work yourself. Over time, that unpaid,
+          unrecognised labour turns into resentment: <em>apparently, I’m the only one who cares</em>.
         </p>
 
-        <h2>Why "Are You Clean?" Is the Wrong Question</h2>
+        <h2>Why “Are you clean?” is the wrong question</h2>
 
         <p>
-          When you ask a potential roommate “Are you clean?”, they answer based on their own internal
-          standard. You hear it through yours. You both walk away thinking, “We’re on the same page.” You
-          are not.
+          When you ask a potential roommate “Are you clean?”, they answer using their own internal standard.
+          You hear it through yours. You both walk away thinking you are aligned. You are not.
         </p>
 
         <p>
-          To avoid that gap, you need questions that anchor to <strong>behaviour, not adjectives</strong>.
-          That is exactly how Domu Match approaches cleanliness.
+          To avoid that gap, you need questions anchored to <strong>behaviour</strong>, not adjectives. You want
+          answers you can picture in real life.
         </p>
 
-        <h2>The Domu Method: Behaviour-Based Cleaning Questions</h2>
+        <h2>Behaviour-based questions you can copy</h2>
 
-        <p>
-          Instead of asking people to rate themselves as “clean” or “messy”, we ask questions like:
-        </p>
+        <p>Use questions like these in viewings or first-week house meetings:</p>
 
         <ul>
-          <li>&quot;How long do dishes usually stay in your sink?&quot;</li>
-          <li>&quot;How often do you clean the bathroom (toilet, shower, sink)?&quot;</li>
-          <li>&quot;Which best describes your room most of the time?&quot;</li>
-          <li>&quot;How stressed do you feel when shared spaces are cluttered?&quot;</li>
+          <li>How long do dishes usually stay in your sink after cooking?</li>
+          <li>How often do you clean the bathroom (toilet, shower, sink)?</li>
+          <li>What does “a normal weekday at home” look like for you?</li>
+          <li>How do you feel if shared spaces are cluttered for a day or two?</li>
+          <li>Do you prefer a rota, or “whoever sees it does it”?</li>
         </ul>
 
         <p>
-          Those answers map directly to day-to-day reality. They also give you neutral language to talk
-          about expectations with potential housemates. You can explore those patterns in detail on your{' '}
-          <Link href="/matches">
-            Domu Match compatibility report
-          </Link>
-          .
-        </p>
-
-        <h2>Questions You Should Ask in Real Life</h2>
-
-        <p>Whether or not you use Domu Match, steal these questions for your next viewing:</p>
-
-        <ul>
-          <li>&quot;When you say you’re clean, what does that look like in a typical week?&quot;</li>
-          <li>&quot;What was the cleaning system in your last place? Did it work for you?&quot;</li>
-          <li>&quot;How do you feel if someone leaves their dishes until the next day?&quot;</li>
-          <li>&quot;Who usually notices mess first - you or the people you live with?&quot;</li>
-        </ul>
-
-        <p>
-          Listen less to whether they say the “right” thing and more to whether their answers are specific
-          and realistic. Vague answers now usually mean vague effort later.
+          Listen less for the “right” answer and more for specificity. Vague answers now usually mean vague
+          effort later.
         </p>
 
         <figure>
-          <Image
-            src="https://images.unsplash.com/photo-1525134479668-1bee5c7c6845?w=1200&q=80"
-            alt="Shared student kitchen with dishes and cleaning supplies"
-            width={1200}
-            height={630}
-            className="w-full rounded-2xl"
+          <BlogHeroImage
+            imageKey="quietRoommate"
+            alt="Clean kitchen with dishes and cooking supplies on the counter"
           />
           <figcaption>
-            A simple, shared system for dishes and cleaning is less about perfection and more about fairness.
+            A shared system for dishes and cleaning is less about perfection and more about fairness.
           </figcaption>
         </figure>
 
-        <h2>Agree on Systems, Not Just Standards</h2>
+        <h2>Agree on systems, not just standards</h2>
 
         <p>
           Even if you do not perfectly agree on what “clean” means, you can still live together if you agree
-          on <strong>systems</strong>:
+          on systems:
         </p>
 
         <ul>
           <li>A rota for bathroom and kitchen cleaning.</li>
           <li>Ground rules like “no dishes left overnight” or “clear counters by the next day”.</li>
-          <li>What happens if someone consistently does not pull their weight.</li>
+          <li>What happens if someone repeatedly does not pull their weight.</li>
         </ul>
 
         <p>
-          Domu Match makes it easier to build those systems because you are starting from aligned habits.
-          You are not forcing a neat freak and a chaos goblin into the same kitchen and hoping for the best.
+          If you want the emotional side of chores, read{' '}
+          <Link href="/blog/when-dishes-equal-disrespect">When Dishes = Disrespect</Link>. If you want a
+          lightweight way to turn preferences into house norms, use{' '}
+          <Link href="/blog/group-chats-ground-rules">Group Chats, Ground Rules</Link>.
         </p>
 
         <h2>References</h2>
 
         <p className="text-sm text-slate-300">
-          Carlson, D. L., Hanson, S., &amp; Fitzroy, A. (2016). The division of child care, sexual
-          intimacy, and relationship quality in couples. <em>Gender &amp; Society, 30</em>(3), 442–466.{' '}
+          Carlson, D. L., Hanson, S., &amp; Fitzroy, A. (2016). The division of child care, sexual intimacy,
+          and relationship quality in couples. <em>Gender &amp; Society, 30</em>(3), 442–466.{' '}
           <a
             href="https://journals.sagepub.com/doi/10.1177/0891243215626709"
             target="_blank"
@@ -191,7 +163,7 @@ const content = {
   nl: {
     title: 'Waarom “ik ben netjes” weinig zegt (en wat je beter kunt vragen)',
     excerpt:
-      '“Netjes” is subjectief. Voor de één betekent het “geen schimmel”, voor de ander “alles wekelijks schrobben”. Leer hoe je op gedrag matcht in plaats van op bijvoeglijke naamwoorden.',
+      '“Netjes” is geen standaard maar een zelfbeeld. Gebruik gedragsvragen om verwachtingen over afwas, badkamer en gedeelde ruimtes gelijk te trekken vóórdat irritatie ontstaat.',
     publishDate: '2025-12-15',
     readTime: '7 min lezen',
     relatedLinks: [
@@ -199,43 +171,132 @@ const content = {
         title: 'Zo vind je een fijne huisgenoot',
         href: '/blog/how-to-find-a-great-roommate',
         description:
-          'Evidence-based tips om verder te kijken dan eerste indrukken en mooie woorden.',
+          'Een praktische checklist om ritme, grenzen, klusjes, geld en communicatie te screenen.',
       },
       {
-        title: 'Match op gewoontes',
-        href: '/matches',
+        title: 'Als afwas = disrespect',
+        href: '/blog/when-dishes-equal-disrespect',
         description:
-          'Gebruik de vragen van Domu Match over schoonmaak, afwas en gedeelde ruimtes om passende huisgenoten te vinden.',
+          'Waarom kleine klusjes grote conflicten worden en waarom eerlijkheid emotioneel wordt.',
+      },
+      {
+        title: 'Groepsapps & huisregels',
+        href: '/blog/group-chats-ground-rules',
+        description:
+          'Huisnormen afspreken zonder passief-agressieve appjes en escalatie.',
       },
     ],
-    ctaTitle: 'Match op gedrag, niet op labels',
-    ctaDescription:
-      'Domu Match vraagt niet “ben je netjes?”, maar “hoe lang blijven je afwas en troep staan?”.',
-    ctaHref: '/auth/sign-up',
-    ctaText: 'Start je profiel',
+    ctaTitle: undefined,
+    ctaDescription: undefined,
+    ctaHref: undefined,
+    ctaText: undefined,
     body: () => (
       <div className="space-y-10">
         <p className="text-lg text-slate-700 leading-relaxed">
-          Als iemand zegt “ik ben netjes”, weet je eigenlijk nog niets. De één bedoelt “er ligt geen vuilnis
-          op de grond”, de ander “ik poets wekelijks de voegen”. Conflicten ontstaan precies in dat gat
-          tussen twee definities.
+          “Ik ben netjes.” “Ik ben schoon.” “Ik houd niet van rommel.” Je hoort het vaak, en misschien zeg je
+          het zelf ook. Het probleem is dat het zonder context bijna niets betekent. Twee mensen kunnen zich
+          allebei netjes noemen en alsnog ruzie krijgen over een snijplank.
+        </p>
+
+        <figure>
+          <BlogHeroImage
+            imageKey="sharedKitchen"
+            alt="Iemand veegt een aanrecht schoon in een gedeelde keuken"
+          />
+          <figcaption>
+            De meeste schoonmaakconflicten beginnen bij verschillende definities, niet bij slechte intenties.
+          </figcaption>
+        </figure>
+
+        <h2>“Netjes” is geen standaard, het is een verhaal</h2>
+
+        <p>
+          Als iemand zegt “ik ben netjes”, beschrijft die vaak een zelfbeeld, niet een vaste routine. Voor de één
+          betekent netjes “geen afval, geen schimmel”. Voor de ander betekent het “wekelijks stofzuigen,
+          oppervlakken desinfecteren en geen kleren op stoelen”.
         </p>
 
         <p>
-          Vraag daarom niet óf iemand netjes is, maar hoe hun week er praktisch uitziet: hoe snel doen ze
-          afwas, hoe vaak pakken ze de badkamer aan en hoe snel stoort rommel hen. Domu Match helpt daarbij
-          door die vragen al voor je te stellen in de{' '}
-          <Link href="/onboarding">
-            compatibiliteitsvragenlijst
-          </Link>
-          .
+          Onderzoek naar huishoudelijk werk laat ook zien dat mensen vaak onderschatten wat ze doen en hun bijdrage
+          als eerlijk ervaren, zelfs als de verdeling scheef is (Carlson et al., 2016). In een studentenhuis zie
+          je dat terug als “ik doe al genoeg”, terwijl de ander zich de standaard-opruimer voelt.
+        </p>
+
+        <h2>Waar schoonmaakruzies echt beginnen</h2>
+
+        <p>Meestal gaat het niet om één gigantische puinhoop. Het begint klein en herhaalt zich:</p>
+
+        <ul>
+          <li>Afwas die “even weken” en dan dagen blijft staan.</li>
+          <li>Badkamervloer die altijd nat is en nooit echt wordt gedroogd.</li>
+          <li>Haar in het putje waar niemand verantwoordelijk voor is.</li>
+          <li>Bakjes en verpakkingen die op het aanrecht blijven wonen.</li>
+        </ul>
+
+        <p>
+          Eerst laat je het gaan. Daarna ga je stilletjes meer doen. Uiteindelijk wordt die onbetaalde, onzichtbare
+          arbeid wrok: <em>blijkbaar ben ik de enige die het ziet</em>.
+        </p>
+
+        <h2>Waarom “Ben je netjes?” de verkeerde vraag is</h2>
+
+        <p>
+          Als je vraagt “ben je netjes?”, antwoordt iemand vanuit een eigen standaard. Jij hoort het vanuit die van jou.
+          Jullie denken allebei dat jullie op één lijn zitten. Dat is meestal niet zo.
+        </p>
+
+        <p>
+          Daarom heb je gedragsvragen nodig, geen bijvoeglijke naamwoorden. Je wilt antwoorden die je kunt
+          visualiseren in het dagelijks leven.
+        </p>
+
+        <h2>Gedragsvragen die je kunt kopiëren</h2>
+
+        <p>Gebruik deze vragen tijdens een bezichtiging of in een huisoverleg in week 1:</p>
+
+        <ul>
+          <li>Hoe lang blijft afwas meestal staan na het koken?</li>
+          <li>Hoe vaak maak jij de badkamer schoon (toilet, douche, wastafel)?</li>
+          <li>Hoe ziet een normale doordeweekse avond thuis eruit?</li>
+          <li>Hoe voel je je als gedeelde ruimtes één of twee dagen rommelig zijn?</li>
+          <li>Wil je liever een schema, of “wie het ziet doet het”?</li>
+        </ul>
+
+        <p>
+          Luister minder naar het “juiste” antwoord en meer naar concreetheid. Vage antwoorden nu betekenen vaak vage
+          inzet later.
+        </p>
+
+        <figure>
+          <BlogHeroImage
+            imageKey="quietRoommate"
+            alt="Opgeruimde keuken met enkele spullen op het aanrecht"
+          />
+          <figcaption>
+            Een gedeeld systeem voor afwas en schoonmaak gaat minder over perfectie en meer over eerlijkheid.
+          </figcaption>
+        </figure>
+
+        <h2>Spreek systemen af, niet alleen standaarden</h2>
+
+        <p>Ook als jullie niet dezelfde standaard hebben, kun je goed samenwonen als je systemen afspreekt:</p>
+
+        <ul>
+          <li>Een rota voor keuken en badkamer.</li>
+          <li>Huisregels zoals “geen afwas ’s nachts” of “aanrecht leeg voor morgen”.</li>
+          <li>Wat er gebeurt als iemand structureel niet meedoet.</li>
+        </ul>
+
+        <p>
+          Voor de emotionele kant van klusjes: <Link href="/blog/when-dishes-equal-disrespect">Als afwas = disrespect</Link>.
+          Voor het omzetten van voorkeuren naar afspraken: <Link href="/blog/group-chats-ground-rules">Groepsapps & huisregels</Link>.
         </p>
 
         <h2>Referentie</h2>
 
         <p className="text-sm text-slate-300">
-          Carlson, D. L., Hanson, S., &amp; Fitzroy, A. (2016). The division of child care, sexual
-          intimacy, and relationship quality in couples. <em>Gender &amp; Society, 30</em>(3), 442–466.{' '}
+          Carlson, D. L., Hanson, S., &amp; Fitzroy, A. (2016). The division of child care, sexual intimacy,
+          and relationship quality in couples. <em>Gender &amp; Society, 30</em>(3), 442–466.{' '}
           <a
             href="https://journals.sagepub.com/doi/10.1177/0891243215626709"
             target="_blank"

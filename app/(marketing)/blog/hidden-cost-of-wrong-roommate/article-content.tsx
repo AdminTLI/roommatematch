@@ -2,14 +2,14 @@
 
 import { BlogPostLayout } from '@/components/marketing/blog-post-layout'
 import Link from 'next/link'
-import Image from 'next/image'
+import { BlogHeroImage } from '@/components/marketing/blog-hero-image'
 import { useApp } from '@/app/providers'
 
 const content = {
   en: {
     title: 'The Hidden Cost of the Wrong Roommate (It’s Not Just Rent)',
     excerpt:
-      'Breaking leases, lost deposits, moving costs, and damaged grades all add up. See why investing in compatibility upfront is cheaper than surviving a bad match.',
+      'Bad roommate matches are expensive in ways students rarely budget for: stress, sleep loss, broken agreements, emergency moves, and the slow damage to study focus.',
     publishDate: '2025-12-05',
     readTime: '7 min read',
     relatedLinks: [
@@ -17,26 +17,25 @@ const content = {
         title: 'How to Find a Great Roommate',
         href: '/blog/how-to-find-a-great-roommate',
         description:
-          'Evidence-based tips for selecting roommates who support your wellbeing and academic performance.',
+          'A practical checklist for screening routines, boundaries, chores, money reliability, and communication.',
       },
       {
-        title: 'Start Matching Smart',
-        href: '/matches',
+        title: 'Move-In Week Red Flags',
+        href: '/blog/move-in-week-red-flags',
         description:
-          'Use Domu Match’s lifestyle and values questionnaire to reduce the risk of costly, incompatible matches.',
+          'How to spot early warning signs and distinguish normal adjustment from real red flags.',
       },
       {
-        title: 'About Our Approach',
-        href: '/about',
+        title: 'Safety Checklist for Student Renters',
+        href: '/blog/safety-checklist-for-student-renters',
         description:
-          'Learn how Domu Match treats housing as student wellbeing infrastructure, not just a logistics problem.',
+          'A practical checklist for contracts, deposits, and verification before you commit.',
       },
     ],
-    ctaTitle: 'Protect Your Deposit. Match Smart.',
-    ctaDescription:
-      'Use Domu Match to align on sleep, cleanliness, guest policies and study habits before you sign - not after you are stuck.',
-    ctaHref: '/auth/sign-up',
-    ctaText: 'Find a Compatible Roommate',
+    ctaTitle: undefined,
+    ctaDescription: undefined,
+    ctaHref: undefined,
+    ctaText: undefined,
     body: () => (
       <div className="space-y-10">
         <p className="text-lg text-slate-700 leading-relaxed">
@@ -47,12 +46,9 @@ const content = {
         </p>
 
         <figure>
-          <Image
-            src="https://images.unsplash.com/photo-1523287562758-66c7fc58967a?w=1200&q=80"
-            alt="Student packing boxes and moving out of a student room"
-            width={1200}
-            height={630}
-            className="w-full rounded-2xl"
+          <BlogHeroImage
+            imageKey="cityBikeStudent"
+            alt="Person sitting among cardboard boxes while moving out"
           />
           <figcaption>
             Moving out of a bad living situation costs more than just time and stress - it often comes with a
@@ -85,8 +81,8 @@ const content = {
 
         <p>
           In a market where average student rents are already high, those extra costs can easily push you into
-          four figures. Dutch surveys on student housing show that many students are already rent-burdened,
-          spending a large share of their income on housing (
+          a situation you did not plan for. If you want housing context and source material, start with Kences
+          (student housing knowledge centre) and its publications (
           <a
             href="https://www.kences.nl"
             target="_blank"
@@ -94,7 +90,7 @@ const content = {
           >
             Kences, 2023
           </a>
-          ). Having to move twice in one academic year multiplies that strain.
+          ). The key point is not the exact number, it is that an emergency move is rarely “just inconvenient”.
         </p>
 
         <h2>The Academic Cost: Sleep, Stress and GPA</h2>
@@ -148,12 +144,9 @@ const content = {
         </p>
 
         <figure>
-          <Image
-            src="https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=1200&q=80"
+          <BlogHeroImage
+            imageKey="studyLateNight"
             alt="Student studying with a laptop at a cafe, looking tired"
-            width={1200}
-            height={630}
-            className="w-full rounded-2xl"
           />
           <figcaption>
             When home is exhausting rather than restorative, your brain is already half burnt out before you
@@ -161,7 +154,7 @@ const content = {
           </figcaption>
         </figure>
 
-        <h2>Why Investing in Compatibility Is Cheaper</h2>
+        <h2>Why prevention is cheaper than recovery</h2>
 
         <p>
           Compared to the price of moving twice, repeating classes or extending your degree,{' '}
@@ -177,18 +170,9 @@ const content = {
         </ul>
 
         <p>
-          Domu Match is built around these friction points. Our questionnaire turns vague labels (“clean”,
-          “chill”, “social”) into specific, behavioural data - like how long dishes stay in the sink, when you
-          usually go to bed, and how often you host people.
-        </p>
-
-        <p>
-          You can see those compatibility patterns clearly in your matches, instead of hoping a stranger from
-          an unverified group chat will magically share your habits. Learn more about what we measure on our{' '}
-          <Link href="/how-it-works">
-            how it works
-          </Link>{' '}
-          page.
+          The prevention work is boring, but it is cheap. Ask behaviour-based questions up front, agree on a
+          simple system for chores and guests, and be honest about sleep. If you want a framework for which
+          topics matter, see <Link href="/how-it-works">How Matching Works</Link>.
         </p>
 
         <h2>Practical Questions to Ask Before You Commit</h2>
@@ -210,7 +194,7 @@ const content = {
           choosing a person; you are choosing a pattern.
         </p>
 
-        <h2>Protect Your Deposit. Match Smart.</h2>
+        <h2>Conclusion</h2>
 
         <p>
           The wrong roommate is rarely &quot;just rent&quot;. It is stress, sleep loss, damaged grades, and
@@ -219,13 +203,9 @@ const content = {
         </p>
 
         <p>
-          Domu Match helps you treat housing like the long-term investment it is. Build your profile, answer
-          the compatibility questions honestly, and start exploring matches who fit the way you actually live
-          on our{' '}
-          <Link href="/matches">
-            matching page
-          </Link>
-          . Your future self - and your future bank balance - will thank you.
+          The wrong roommate is rarely “just rent”. It is stress, sleep loss, damaged focus, and sometimes an
+          expensive escape plan. A more careful selection process will not guarantee harmony, but it will
+          reduce predictable conflict in the areas that matter most.
         </p>
 
         <h2>References</h2>
@@ -279,7 +259,7 @@ const content = {
   nl: {
     title: 'De verborgen kosten van de verkeerde huisgenoot (het is meer dan huur)',
     excerpt:
-      'Een slechte match kost je niet alleen geld, maar ook slaap, cijfers en energie. Ontdek waarom tijdig investeren in compatibiliteit uiteindelijk goedkoper is.',
+      'Een slechte match kost je niet alleen geld, maar ook slaap, focus en energie. De echte rekening komt vaak later: stress, conflict en soms een noodverhuizing.',
     publishDate: '2025-12-05',
     readTime: '7 min lezen',
     relatedLinks: [
@@ -287,26 +267,25 @@ const content = {
         title: 'Zo vind je een fijne huisgenoot',
         href: '/blog/how-to-find-a-great-roommate',
         description:
-          'Evidence-based tips om huisgenoten te kiezen die je studie en welzijn ondersteunen.',
+          'Een praktische checklist om ritme, grenzen, klusjes, geld en communicatie te screenen.',
       },
       {
-        title: 'Begin slim met matchen',
-        href: '/matches',
+        title: 'Red flags in je eerste woonweek',
+        href: '/blog/move-in-week-red-flags',
         description:
-          'Gebruik de vragenlijst van Domu Match om de kans op dure, mislukte matches te verkleinen.',
+          'Signalen die je serieus mag nemen, en hoe je onderscheid maakt tussen opstart-chaos en echte problemen.',
       },
       {
-        title: 'Onze aanpak',
-        href: '/about',
+        title: 'Veiligheidschecklist voor studenthuurders',
+        href: '/blog/safety-checklist-for-student-renters',
         description:
-          'Lees hoe Domu Match huisvesting ziet als fundament voor studentwelzijn in plaats van alleen logistiek.',
+          'Checklist voor contracten, borg en verificatie vóór je vastzit aan een verkeerde deal.',
       },
     ],
-    ctaTitle: 'Bescherm je borg. Match slim.',
-    ctaDescription:
-      'Gebruik Domu Match om slaap, schoonmaak, gasten en studieritme af te stemmen vóórdat je tekent.',
-    ctaHref: '/auth/sign-up',
-    ctaText: 'Vind een compatibele huisgenoot',
+    ctaTitle: undefined,
+    ctaDescription: undefined,
+    ctaHref: undefined,
+    ctaText: undefined,
     body: () => (
       <div className="space-y-10">
         <p className="text-lg text-slate-700 leading-relaxed">
@@ -326,12 +305,9 @@ const content = {
         </p>
 
         <p>
-          Met Domu Match kijk je verder dan “we kunnen het goed vinden”. Je matcht op slaap, schoonmaak,
-          gasten en studieritme. Op{' '}
-          <Link href="/how-it-works">
-            “Zo werkt het”
-          </Link>{' '}
-          leggen we uit welke factoren we meenemen en hoe dat je helpt dure fouten te voorkomen.
+          De preventie is saai, maar goedkoop. Stel gedragsvragen vóór je tekent, spreek een simpel systeem af
+          voor klusjes en logees, en wees eerlijk over slaap. Voor een denkkader van welke onderwerpen ertoe
+          doen kun je <Link href="/how-it-works">Zo werkt matching</Link> gebruiken.
         </p>
 
         <h2>Referenties</h2>

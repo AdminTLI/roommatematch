@@ -44,6 +44,65 @@ Act as a Senior Researcher and Industry Expert in Student Wellbeing and Housing 
   - First-person product voice: "we offer", "our tool", "at Domu Match we"
 - **Allowed mentions of Domu Match:** Neutral encyclopedic references only (e.g. internal links to `/about` or `/blog` as citations). The article must remain valuable if every "Domu Match" string were removed.
 - **Internal links:** Reference site sections as context ("universities publish guidance on…") - never as a CTA button or conversion funnel.
+- **Optional data visuals (tables or simple bar charts):** Use only when they materially improve understanding (comparisons, trends, ranked lists). Not every article needs one. See **STEP 2b** and **Appendix E**.
+
+## STEP 2b: OPTIONAL DATA VISUALS (tables and bar charts)
+
+Use a visual **only if** the article discusses a comparison or trend that is hard to scan in prose (for example: programme counts by sector, year-on-year shortage figures from a cited report, top institutions by active programmes from SKDB facts).
+
+**When to include (pick at most one primary visual per article):**
+
+| Use a visual | Skip a visual |
+|--------------|----------------|
+| 3-8 comparable numbers from the same source and time period | Only 1-2 numbers (state them in prose) |
+| Trend over time with cited annual data points | Opinion or advice without numeric series |
+| SKDB `bySector` / `byCluster` top 5-8 rows for a study-landscape angle | Roommate psychology or etiquette topics |
+
+**Hard rules (non-negotiable):**
+
+1. **No invented data.** Every cell and bar must come from:
+   - `data/blog/skdb-facts-latest.json` (SKDB), with release/peildatum in the caption, OR
+   - A specific external source you linked in the article (NOS, Kences, Nuffic, CBS, etc.) with year/peildatum in the caption.
+2. **Do not extrapolate** missing years, interpolate, or round in misleading ways. Rounding to whole numbers is fine if noted in caption.
+3. **Minimum 3 data points** for a bar chart; **maximum 8** for readability.
+4. **Maximum one bar chart and one table per article** (or one visual total if a single chart is enough).
+5. **Caption required** on every visual: source name, year or peildatum, and URL if external (same as article citations).
+6. **No pie charts, 3D effects, or dual-axis charts.** Use `BlogBarChart` for comparisons and `BlogDataTable` for exact figures.
+7. **Axis labels:** Set `yLabel` and `unit` on charts (e.g. "Programmes", "count" or "%").
+8. Before adding a visual, add a one-sentence lead-in in prose explaining what the reader should notice.
+
+**Implementation (STEP 3):**
+
+```tsx
+import { BlogDataTable } from '@/components/marketing/blog-data-table'
+import { BlogBarChart } from '@/components/marketing/blog-bar-chart'
+
+// Table example (SKDB)
+<BlogDataTable
+  columns={[
+    { key: 'sector', label: 'Sector' },
+    { key: 'count', label: 'Programmes', align: 'right' },
+  ]}
+  rows={[
+    { sector: 'Techniek', count: 412 },
+    // ... only rows verified in skdb-facts-latest.json bySector
+  ]}
+  caption="Source: Studiekeuzedatabase (LCSK), release 26.3, peildatum 2026-04-07."
+/>
+
+// Bar chart example (external or SKDB facts[])
+<BlogBarChart
+  data={[
+    { label: '2023', value: 23000 },
+    { label: '2024', value: 26500 },
+  ]}
+  yLabel="Estimated shortage"
+  unit="rooms"
+  caption="Source: Kences figures reported via NOS, September 2025."
+/>
+```
+
+In your completion summary, state either **"Data visual: none (prose sufficient)"** or **"Data visual: table|bar chart"** and list the source file or URL used for each value.
 
 ## STEP 3: CODEBASE INTEGRATION & SCHEMA MARKUP
 
@@ -74,6 +133,7 @@ Act as a Senior Researcher and Industry Expert in Student Wellbeing and Housing 
 - Run `npm run type-check` and `npm run lint` on changed blog files.
 - Run `npm run verify:blog-images` on changed blog files (checks approved catalog URLs and blocks inline Unsplash in non-legacy posts).
 - Confirm the new post's `imageKey` is not among the last 4 entries in `data/blog/hero-image-registry.json`.
+- If you added `BlogDataTable` or `BlogBarChart`, verify every numeric value against `skdb-facts-latest.json` or a cited URL in the article (spot-check labels and counts).
 - Ensure all code is valid TSX and does not break existing imports.
 - In your completion summary, state: "Promotional language gate: PASS" or list removed phrases.
 
@@ -126,6 +186,19 @@ To add a new look: verify the Unsplash URL with `npm run verify:blog-images`, th
 | Study outcomes / employability | SKDB facts JSON | Web (ScienceGuide) |
 | Roommate / wellbeing | Editorial + web | SKDB if relevant |
 | International integration | Web + institution docs | SKDB aggregates |
+
+## Appendix E: Data visual decision guide
+
+| Article angle | Suggested visual | Data source |
+|---------------|------------------|-------------|
+| Dutch HE programme landscape | Table: top sectors/clusters | `skdb-facts-latest.json` → `bySector` / `byCluster` |
+| Admission / selectivity | Table or bar: % with admission requirements | `skdb-facts-latest.json` → `facts[]` |
+| Housing shortage trend | Bar chart: rooms short by year | NOS/Kences (web search, cited) |
+| Roommate habits / conflict | None | N/A |
+
+**SKDB quick picks from `facts[]` (when populated):** `programmes_total_count`, `programmes_active_count`, `programmes_bachelor_count`, `programmes_master_count`, `programmes_with_admission_requirements_pct`, `institutions_count`.
+
+**Do not chart** Domu Match platform stats unless they come from `/api/internal/blog-facts` and you label them as platform data in the caption.
 
 ## Appendix D: Useful commands
 

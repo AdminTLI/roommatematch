@@ -5,14 +5,14 @@ export const metadata: Metadata = {
   title:
     'Group Chats, Ground Rules: Setting House Norms Without Killing the Vibe | Domu Match',
   description:
-    'Avoid 1 a.m. passive-aggressive messages. Learn how to turn Domu Match’s behavioural questions into simple, shared house rules before conflicts start.',
+    'Avoid 1 a.m. passive-aggressive messages. Learn how to turn invisible expectations into clear house rules around noise, guests and cleaning with one short house meeting.',
   keywords:
-    'house rules roommates, student flat group chat, roommate expectations, setting boundaries roommates, Domu Match house norms',
+    'house rules roommates, student flat group chat, roommate expectations, setting boundaries roommates, shared living agreements',
   openGraph: {
     title:
       'Group Chats, Ground Rules: Setting House Norms Without Killing the Vibe',
     description:
-      'A practical guide to using clear agreements - not just group chats - to keep shared living healthy, with help from Domu Match.',
+      'A practical guide to using clear agreements - not just group chats - to keep shared living healthy.',
     type: 'article',
     publishedTime: '2026-02-02',
     authors: ['Domu Match Team'],
@@ -28,7 +28,7 @@ export default function GroupChatsGroundRulesPage() {
         headline:
           'Group Chats, Ground Rules: Setting House Norms Without Killing the Vibe',
         description:
-          'Explains how to set clear house norms around noise, guests and cleaning using Domu Match’s questions as a starting point, instead of relying on chaotic group chats.',
+          'Explains how to set clear house norms around noise, guests and cleaning using a simple agreement, instead of relying on chaotic group chats.',
         image: 'https://domumatch.com/images/logo.png',
         datePublished: '2026-02-02',
         dateModified: '2026-02-02',
@@ -54,7 +54,7 @@ export default function GroupChatsGroundRulesPage() {
         },
         articleSection: 'Boundaries',
         keywords:
-          'house rules roommates, student flat group chat, roommate expectations, setting boundaries roommates, Domu Match house norms',
+          'house rules roommates, student flat group chat, roommate expectations, setting boundaries roommates, shared living agreements',
       },
       {
         '@type': 'BreadcrumbList',

@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { DataTable } from '@/components/admin/data-table'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
@@ -202,6 +202,20 @@ export function AdminUsersContent() {
 
   const { isSuperAdmin, isLoading: isRoleLoading } = useIsSuperAdmin()
   const [activeTab, setActiveTab] = useState<'users' | 'roles' | 'workflow'>('users')
+  const tabsScrollRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    const scrollEl = tabsScrollRef.current
+    if (!scrollEl) return
+
+    if (activeTab === 'users') {
+      scrollEl.scrollLeft = 0
+      return
+    }
+
+    const activeTrigger = scrollEl.querySelector<HTMLElement>('[data-state="active"]')
+    activeTrigger?.scrollIntoView({ block: 'nearest', inline: 'start', behavior: 'smooth' })
+  }, [activeTab])
 
   const segmentedTriggerClassName =
     'flex shrink-0 items-center justify-center gap-2 whitespace-nowrap rounded-full px-4 py-2 text-sm font-semibold ' +
@@ -235,30 +249,35 @@ export function AdminUsersContent() {
       </div>
 
       <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as typeof activeTab)} className="space-y-6">
-        <TabsList className="h-auto w-full max-w-full flex overflow-x-auto gap-1 rounded-full border border-border-subtle/60 bg-bg-surface-alt/80 p-1 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden sm:w-auto sm:overflow-visible">
-          <TabsTrigger
-            value="users"
-            className={segmentedTriggerClassName}
-          >
-            <Users className="h-4 w-4" />
-            Users
-          </TabsTrigger>
-          <TabsTrigger
-            value="roles"
-            className={segmentedTriggerClassName}
-            disabled={isRoleLoading || !isSuperAdmin}
-          >
-            <ShieldCheck className="h-4 w-4" />
-            Role Management
-          </TabsTrigger>
-          <TabsTrigger
-            value="workflow"
-            className={segmentedTriggerClassName}
-          >
-            <Activity className="h-4 w-4" />
-            Registration Workflow
-          </TabsTrigger>
-        </TabsList>
+        <div
+          ref={tabsScrollRef}
+          className="-mx-6 overflow-x-auto overscroll-x-contain px-6 touch-pan-x [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden sm:mx-0 sm:overflow-visible sm:px-0"
+        >
+          <TabsList className="h-auto w-max justify-start gap-1 rounded-full border border-border-subtle/60 bg-bg-surface-alt/80 p-1 sm:w-auto">
+            <TabsTrigger
+              value="users"
+              className={segmentedTriggerClassName}
+            >
+              <Users className="h-4 w-4" />
+              Users
+            </TabsTrigger>
+            <TabsTrigger
+              value="roles"
+              className={segmentedTriggerClassName}
+              disabled={isRoleLoading || !isSuperAdmin}
+            >
+              <ShieldCheck className="h-4 w-4" />
+              Role Management
+            </TabsTrigger>
+            <TabsTrigger
+              value="workflow"
+              className={segmentedTriggerClassName}
+            >
+              <Activity className="h-4 w-4" />
+              Registration Workflow
+            </TabsTrigger>
+          </TabsList>
+        </div>
 
         <TabsContent value="users" className="space-y-6">
           {isLoading ? (

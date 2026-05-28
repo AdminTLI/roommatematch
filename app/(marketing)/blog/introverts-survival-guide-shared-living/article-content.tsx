@@ -2,22 +2,22 @@
 
 import { BlogPostLayout } from '@/components/marketing/blog-post-layout'
 import Link from 'next/link'
-import Image from 'next/image'
+import { BlogHeroImage } from '@/components/marketing/blog-hero-image'
 import { useApp } from '@/app/providers'
 
 const content = {
   en: {
     title: 'The Introvert’s Survival Guide to Shared Living',
     excerpt:
-      'If your social battery drains fast, home needs to be a charging dock, not another performance. Learn how to match with people who get your need for quiet and alone time.',
+      'If your social battery drains fast, home needs to be a charging dock, not another performance. A practical guide to quiet hours, boundaries, and choosing housemates who respect alone time.',
     publishDate: '2026-01-03',
     readTime: '8 min read',
     relatedLinks: [
       {
-        title: 'Start Matching on Social Battery',
-        href: '/matches',
+        title: 'Surviving the Winter Blues',
+        href: '/blog/surviving-the-winter-blues',
         description:
-          'Use Domu Match’s questions about social energy, quiet hours and home vibe to find compatible housemates.',
+          'How home routines and low-pressure support matter when energy and mood dip.',
       },
       {
         title: 'How Matching Works',
@@ -26,17 +26,16 @@ const content = {
           'See how our compatibility engine balances social preferences with lifestyle and study needs.',
       },
       {
-        title: 'For Students',
-        href: '/students',
+        title: 'Group Chats, Ground Rules',
+        href: '/blog/group-chats-ground-rules',
         description:
-          'Learn how Domu Match supports student wellbeing, not just housing logistics.',
+          'A simple template for turning quiet-hour needs into a shared agreement.',
       },
     ],
-    ctaTitle: 'Find Roommates Who Respect Your Quiet',
-    ctaDescription:
-      'Domu Match helps introverted and neurodivergent students find homes that feel restorative, not draining.',
-    ctaHref: '/auth/sign-up',
-    ctaText: 'Match with Quiet-Friendly Flats',
+    ctaTitle: undefined,
+    ctaDescription: undefined,
+    ctaHref: undefined,
+    ctaText: undefined,
     body: () => (
       <div className="space-y-10">
         <p className="text-lg text-slate-700 leading-relaxed">
@@ -46,19 +45,16 @@ const content = {
         </p>
 
         <figure>
-          <Image
-            src="https://images.unsplash.com/photo-1522202176988-66273c2fd55f?w=1200&q=80"
+          <BlogHeroImage
+            imageKey="quietRoommate"
             alt="Student reading quietly with headphones in a shared living space"
-            width={1200}
-            height={630}
-            className="w-full rounded-2xl"
           />
           <figcaption>
             For many introverts, a quiet evening alone is not antisocial - it is basic maintenance.
           </figcaption>
         </figure>
 
-        <h2>The Exhaustion of Being "On" 24/7</h2>
+        <h2>The Exhaustion of Being &quot;On&quot; 24/7</h2>
 
         <p>
           A lot of introverts and neurodivergent students spend most of their day masking - carefully managing
@@ -108,11 +104,9 @@ const content = {
           ). Your living situation can support that - or sabotage it.
         </p>
 
-        <h2>How Domu Match Uses "Social Battery" and Quiet Hours</h2>
+        <h2>Make “quiet” measurable</h2>
 
-        <p>
-          Domu Match includes questions designed specifically for this:
-        </p>
+        <p>Instead of trying to be “easygoing”, define what you actually need:</p>
 
         <ul>
           <li>
@@ -128,9 +122,7 @@ const content = {
           </li>
         </ul>
 
-        <p>
-          When you answer honestly, our compatibility engine can match you with students who:
-        </p>
+        <p>Look for people who:</p>
 
         <ul>
           <li>Also value quiet evenings.</li>
@@ -139,20 +131,15 @@ const content = {
         </ul>
 
         <p>
-          You can explore those alignment patterns in your{' '}
-          <Link href="/matches">
-            match overview
-          </Link>
-          .
+          If you want a neutral framework for these topics, see <Link href="/how-it-works">How Matching Works</Link>.
+          The goal is not to label yourself “introvert” or “extrovert”. It is to set expectations that keep
+          your home restorative.
         </p>
 
         <figure>
-          <Image
-            src="https://images.unsplash.com/photo-1517840933442-d2d1a05edb84?w=1200&q=80"
+          <BlogHeroImage
+            imageKey="studentsCollaborating"
             alt="Two students quietly working at a table with laptops and notebooks"
-            width={1200}
-            height={630}
-            className="w-full rounded-2xl"
           />
           <figcaption>
             Compatible roommates do not have to be identical - they just need compatible rhythms and respect.
@@ -234,11 +221,10 @@ const content = {
           'Gebruik de vragen van Domu Match over sociale energie, stilte-uren en huisvibe om passende huisgenoten te vinden.',
       },
     ],
-    ctaTitle: 'Vind huisgenoten die rust waarderen',
-    ctaDescription:
-      'Domu Match helpt introverte en neurodivergente studenten een huis te vinden dat oplaadt in plaats van uitput.',
-    ctaHref: '/auth/sign-up',
-    ctaText: 'Aan de slag',
+    ctaTitle: undefined,
+    ctaDescription: undefined,
+    ctaHref: undefined,
+    ctaText: undefined,
     body: () => (
       <div className="space-y-10">
         <p className="text-lg text-slate-700 leading-relaxed">

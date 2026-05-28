@@ -2,12 +2,15 @@ import { Metadata } from 'next'
 import { HowToFindGreatRoommateArticle } from './article-content'
 
 export const metadata: Metadata = {
-  title: 'How to Find a Great Roommate: Evidence-Based Tips for Student Housing | Domu Match',
-  description: 'Learn evidence-based strategies for finding compatible roommates in the Netherlands. Navigate the Dutch student housing market with confidence using data-driven compatibility tips.',
-  keywords: 'find roommate Netherlands, student housing compatibility, Dutch student housing, roommate tips, student housing Amsterdam, Rotterdam student housing',
+  title: 'How to Find a Great Roommate | Domu Match',
+  description:
+    'A practical checklist for choosing a roommate: routines, boundaries, chores, money reliability, and communication questions that prevent mismatches in shared living.',
+  keywords:
+    'how to find a roommate, roommate compatibility, student housing roommates, roommate questions, shared living boundaries, roommate red flags',
   openGraph: {
     title: 'How to Find a Great Roommate: Evidence-Based Tips',
-    description: 'Evidence-based tips for compatibility and harmony in student housing in the Netherlands.',
+    description:
+      'A practical checklist for choosing a roommate: routines, boundaries, chores, money reliability, and communication questions that prevent mismatches.',
     type: 'article',
     publishedTime: '2025-11-15',
     authors: ['Domu Match Team'],
@@ -20,8 +23,9 @@ export default function HowToFindGreatRoommatePage() {
     '@graph': [
       {
         '@type': 'BlogPosting',
-        headline: 'How to Find a Great Roommate: Evidence-Based Tips for Student Housing',
-        description: 'Learn evidence-based strategies for finding compatible roommates in the Netherlands. Navigate the Dutch student housing market with confidence using data-driven compatibility tips.',
+        headline: 'How to Find a Great Roommate',
+        description:
+          'A practical checklist for choosing a roommate: routines, boundaries, chores, money reliability, and communication questions that prevent mismatches in shared living.',
         image: 'https://domumatch.com/images/logo.png',
         datePublished: '2025-11-15',
         dateModified: '2025-11-15',
@@ -45,7 +49,8 @@ export default function HowToFindGreatRoommatePage() {
           '@id': 'https://domumatch.com/blog/how-to-find-a-great-roommate',
         },
         articleSection: 'Compatibility',
-        keywords: 'find roommate Netherlands, student housing compatibility, Dutch student housing, roommate tips',
+        keywords:
+          'how to find a roommate, roommate compatibility, student housing roommates, roommate questions',
       },
       {
         '@type': 'BreadcrumbList',

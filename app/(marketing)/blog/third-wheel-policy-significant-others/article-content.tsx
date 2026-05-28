@@ -2,7 +2,7 @@
 
 import { BlogPostLayout } from '@/components/marketing/blog-post-layout'
 import Link from 'next/link'
-import Image from 'next/image'
+import { BlogHeroImage } from '@/components/marketing/blog-hero-image'
 import { useApp } from '@/app/providers'
 
 const content = {
@@ -20,23 +20,22 @@ const content = {
           'Protect yourself with clear agreements, safe contacts, and an understanding of your tenant rights.',
       },
       {
+        title: 'Group Chats, Ground Rules',
+        href: '/blog/group-chats-ground-rules',
+        description:
+          'How to set house norms without conflict spiralling into passive-aggressive messages.',
+      },
+      {
         title: 'How Matching Works',
         href: '/how-it-works',
         description:
-          'See how Domu Match asks about guest frequency and social habits before you move in.',
-      },
-      {
-        title: 'Start Matching on Guest Preferences',
-        href: '/matches',
-        description:
-          'Filter roommates by how often they want guests and partners to stay over, so you agree on the rules in advance.',
+          'A plain-language overview of which living habits matter and how to structure a compatibility conversation.',
       },
     ],
-    ctaTitle: 'Avoid Becoming the Third Wheel in Your Own Home',
-    ctaDescription:
-      'Use Domu Match’s guest frequency and social habits filters to find housemates who share your boundaries around partners and visitors.',
-    ctaHref: '/auth/sign-up',
-    ctaText: 'Match on Guest Policies',
+    ctaTitle: undefined,
+    ctaDescription: undefined,
+    ctaHref: undefined,
+    ctaText: undefined,
     body: () => (
       <div className="space-y-10">
         <p className="text-lg text-slate-700 leading-relaxed">
@@ -47,12 +46,9 @@ const content = {
         </p>
 
         <figure>
-          <Image
-            src="https://images.unsplash.com/photo-1487412947147-5cebf100ffc2?w=1200&q=80"
-            alt="Three students sitting on a sofa where one looks left out"
-            width={1200}
-            height={630}
-            className="w-full rounded-2xl"
+          <BlogHeroImage
+            imageKey="quietRoommate"
+            alt="Three housemates talking on a sofa in a shared living room"
           />
           <figcaption>
             Without a shared guest policy, partners can accidentally turn your home into a place you feel
@@ -117,7 +113,7 @@ const content = {
           policy is not a petty detail - it is infrastructure for your nervous system.
         </p>
 
-        <h2>Why You Need a "Third Wheel" Policy</h2>
+        <h2>Why You Need a &quot;Third Wheel&quot; Policy</h2>
 
         <p>
           A &quot;Third Wheel&quot; policy is just a clear, shared agreement on:
@@ -136,41 +132,23 @@ const content = {
           while everyone is calm than after months of built-up resentment.
         </p>
 
-        <h2>How Domu Match Handles Guest Frequency Up Front</h2>
+        <h2>Make guest expectations explicit (before crisis mode)</h2>
 
         <p>
-          Domu Match bakes this into the questionnaire so you do not have to improvise. Instead of asking,
-          &quot;Are you okay with guests?&quot; (everyone says yes), we ask:
+          The simplest way to prevent the “third wheel” dynamic is to get specific early. Instead of asking,
+          “Are you okay with guests?” (everyone says yes), agree on details:
         </p>
 
         <ul>
-          <li>&quot;How many nights per week are you comfortable with overnight guests?&quot;</li>
-          <li>
-            &quot;What best describes your ideal guest policy?&quot; with options ranging from &quot;rarely
-            ever&quot; to &quot;partner basically lives with me.&quot;
-          </li>
-          <li>&quot;Should long-term partners contribute to utilities if they stay often?&quot;</li>
+          <li>How many nights per week are overnight guests OK?</li>
+          <li>What counts as asking versus informing?</li>
+          <li>When does a guest become a de facto extra household member?</li>
+          <li>Should frequent guests contribute to utilities or shared basics?</li>
         </ul>
 
         <p>
-          When you match through Domu Match, you can <strong>filter and compare people</strong> not just on
-          lifestyle and study habits, but specifically on guest expectations. That means you can:
-        </p>
-
-        <ul>
-          <li>Match with people who also prefer a &quot;no regular sleepovers&quot; home.</li>
-          <li>Or, if you are the one in a long-term relationship, match with people who are explicitly okay
-            with that.
-          </li>
-          <li>See potential friction before you sign a lease together.</li>
-        </ul>
-
-        <p>
-          You can explore those options any time via the{' '}
-          <Link href="/matches">
-            matching dashboard
-          </Link>
-          .
+          The key is timing. You want this conversation <strong>before you move in together, not mid-crisis</strong>.
+          It is much easier to set ground rules while everyone is calm than after months of built-up resentment.
         </p>
 
         <h2>Scripts You Can Borrow for Real Life</h2>
@@ -207,9 +185,9 @@ const content = {
         </ul>
 
         <p>
-          Domu Match helps by turning messy, emotional topics into neutral data points and filters. Instead
-          of silently hoping your roommate is &quot;reasonable&quot;, you can match with people whose guest
-          expectations actually look like yours.
+          If you need help making this conversation less awkward, you can treat it like any other house norm
+          discussion and put it in writing. For phrasing and group norm tips, see{' '}
+          <Link href="/blog/group-chats-ground-rules">Group Chats, Ground Rules</Link>.
         </p>
 
         <h2>References</h2>
@@ -242,23 +220,22 @@ const content = {
           'Bescherm jezelf met duidelijke afspraken, veilige contacten en kennis van je huurdersrechten.',
       },
       {
+        title: 'Groepsapps & huisregels',
+        href: '/blog/group-chats-ground-rules',
+        description:
+          'Huisnormen afspreken zonder dat het escaleert in passief-agressieve appjes.',
+      },
+      {
         title: 'Zo werkt matching',
         href: '/how-it-works',
         description:
-          'Lees hoe Domu Match vooraf naar logeer- en gastvoorkeuren vraagt.',
-      },
-      {
-        title: 'Match op logeerbeleid',
-        href: '/matches',
-        description:
-          'Vind huisgenoten die hetzelfde denken over logees en partners, vóórdat je een contract tekent.',
+          'Een overzicht van onderwerpen die ertoe doen, en hoe je een compatibiliteitsgesprek structureert.',
       },
     ],
-    ctaTitle: 'Voorkom dat jij de derde wiel wordt',
-    ctaDescription:
-      'Gebruik de gast- en logeerfilters van Domu Match om huisgenoten te vinden die jouw grenzen respecteren.',
-    ctaHref: '/auth/sign-up',
-    ctaText: 'Aan de slag',
+    ctaTitle: undefined,
+    ctaDescription: undefined,
+    ctaHref: undefined,
+    ctaText: undefined,
     body: () => (
       <div className="space-y-10">
         <p className="text-lg text-slate-700 leading-relaxed">
@@ -268,12 +245,9 @@ const content = {
         </p>
 
         <figure>
-          <Image
-            src="https://images.unsplash.com/photo-1487412947147-5cebf100ffc2?w=1200&q=80"
-            alt="Drie studenten op een bank waarvan één zich buitengesloten voelt"
-            width={1200}
-            height={630}
-            className="w-full rounded-2xl"
+          <BlogHeroImage
+            imageKey="quietRoommate"
+            alt="Drie huisgenoten pratend op een bank in een gedeelde woonkamer"
           />
           <figcaption>
             Zonder heldere afspraken kan een partner langzaam de rol van onzichtbare huisgenoot krijgen.
@@ -282,12 +256,9 @@ const content = {
 
         <p>
           Bespreek vóórdat je gaat samenwonen hoe vaak logees welkom zijn, wanneer iemand feitelijk meewoond
-          en of er dan meebetaald wordt. De vragenlijst van Domu Match maakt dit gesprek makkelijker door
-          concrete vragen te stellen over overnachtingen en gasten. Meer daarover lees je op{' '}
-          <Link href="/how-it-works">
-            “Zo werkt het”
-          </Link>
-          .
+          en of er dan meebetaald wordt. Maak het concreet: hoeveel nachten, wat “vragen” betekent, en wanneer
+          iemand eigenlijk een extra huisgenoot wordt. Voor taal en afspraken kun je{' '}
+          <Link href="/blog/group-chats-ground-rules">Groepsapps & huisregels</Link> gebruiken.
         </p>
 
         <h2>Referentie</h2>

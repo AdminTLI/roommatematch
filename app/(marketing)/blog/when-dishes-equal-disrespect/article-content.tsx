@@ -2,14 +2,14 @@
 
 import { BlogPostLayout } from '@/components/marketing/blog-post-layout'
 import Link from 'next/link'
-import Image from 'next/image'
+import { BlogHeroImage } from '@/components/marketing/blog-hero-image'
 import { useApp } from '@/app/providers'
 
 const content = {
   en: {
     title: 'When Dishes = Disrespect: How Tiny Tasks Turn Into Big Resentments',
     excerpt:
-      'No one explodes over one plate. Learn the psychology behind chores in shared spaces and how Domu Match helps you find people who actually pull their weight.',
+      'No one explodes over one plate. A guide to the psychology of chores in shared spaces, why “fair” is emotional, and what questions prevent a slow resentment build.',
     publishDate: '2026-01-27',
     readTime: '7 min read',
     relatedLinks: [
@@ -20,23 +20,22 @@ const content = {
           '“Clean” is subjective. Learn which behaviour-based questions to ask before you move in.',
       },
       {
-        title: 'Start Matching on Chore Expectations',
-        href: '/matches',
-        description:
-          'Use Domu Match’s questions about cleaning frequency and shared spaces to avoid unfair labour splits.',
-      },
-      {
         title: 'How to Find a Great Roommate',
         href: '/blog/how-to-find-a-great-roommate',
         description:
           'Evidence-based tips for choosing roommates who respect your time, space and boundaries.',
       },
+      {
+        title: 'Group Chats, Ground Rules',
+        href: '/blog/group-chats-ground-rules',
+        description:
+          'Turn chore expectations into an agreement that does not rely on passive-aggressive reminders.',
+      },
     ],
-    ctaTitle: 'Avoid the Passive‑Aggressive Dish War',
-    ctaDescription:
-      'Domu Match helps you find roommates whose approach to chores feels fair from the start.',
-    ctaHref: '/auth/sign-up',
-    ctaText: 'Match on Chores & Cleanliness',
+    ctaTitle: undefined,
+    ctaDescription: undefined,
+    ctaHref: undefined,
+    ctaText: undefined,
     body: () => (
       <div className="space-y-10">
         <p className="text-lg text-slate-700 leading-relaxed">
@@ -46,12 +45,9 @@ const content = {
         </p>
 
         <figure>
-          <Image
-            src="https://images.unsplash.com/photo-1486591978090-58e619d37fe7?w=1200&q=80"
+          <BlogHeroImage
+            imageKey="sharedKitchen"
             alt="Sink full of dirty dishes in a shared student kitchen"
-            width={1200}
-            height={630}
-            className="w-full rounded-2xl"
           />
           <figcaption>
             A sink like this is rarely about “forgetfulness” alone; it often signals unequal emotional and
@@ -94,11 +90,11 @@ const content = {
           like someone does not see or respect your effort, every new dish feels like disrespect.
         </p>
 
-        <h2>The Domu Method: Matching on Chore Styles</h2>
+        <h2>Ask behaviour, not identity</h2>
 
         <p>
-          Domu Match bakes chore expectations into the matching process so you do not have to find out the
-          hard way. Instead of asking “Are you tidy?”, we ask:
+          The fastest way to avoid a chores war is to stop asking identity questions like “Are you tidy?” and
+          ask behaviour questions instead:
         </p>
 
         <ul>
@@ -109,22 +105,15 @@ const content = {
         </ul>
 
         <p>
-          Those answers feed into your compatibility scores. When you view a match on the{' '}
-          <Link href="/matches">
-            Domu Match dashboard
-          </Link>
-          , you can see straight away whether you are likely to feel equally responsible - or equally chill -
-          about
-          chores.
+          These questions do two things. They reveal the real standard, and they give you neutral language for
+          agreements. If you want a simple way to turn answers into house rules, use{' '}
+          <Link href="/blog/group-chats-ground-rules">Group Chats, Ground Rules</Link>.
         </p>
 
         <figure>
-          <Image
-            src="https://images.unsplash.com/photo-1521017432531-fbd92d768814?w=1200&q=80"
-            alt="Roommates cleaning a kitchen together"
-            width={1200}
-            height={630}
-            className="w-full rounded-2xl"
+          <BlogHeroImage
+            imageKey="contractSigning"
+            alt="Hands washing dishes in a shared kitchen sink"
           />
           <figcaption>
             You do not need identical standards - just a shared sense of fairness and a system that everyone
@@ -178,11 +167,10 @@ const content = {
           '“Netjes” is een label. Ontdek welke concrete vragen je beter stelt over schoonmaak.',
       },
     ],
-    ctaTitle: 'Voorkom passief-agressieve afwasoorlogen',
-    ctaDescription:
-      'Match met huisgenoten die jouw gevoel voor eerlijk delen van klusjes delen.',
-    ctaHref: '/auth/sign-up',
-    ctaText: 'Begin met matchen',
+    ctaTitle: undefined,
+    ctaDescription: undefined,
+    ctaHref: undefined,
+    ctaText: undefined,
     body: () => (
       <div className="space-y-10">
         <p className="text-lg text-slate-700 leading-relaxed">

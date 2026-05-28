@@ -2,14 +2,14 @@
 
 import { BlogPostLayout } from '@/components/marketing/blog-post-layout'
 import Link from 'next/link'
-import Image from 'next/image'
+import { BlogHeroImage } from '@/components/marketing/blog-hero-image'
 import { useApp } from '@/app/providers'
 
 const content = {
   en: {
     title: 'Night Owl vs. 8 A.M. Lecture: Matching Sleep Schedules Before They Clash',
     excerpt:
-      'Sleep is the quiet engine behind your degree. Learn how mismatched sleep schedules wreck focus and grades - and how Domu Match helps you align on routines before you share a wall.',
+      'Sleep is the quiet engine behind your degree. Learn how mismatched sleep schedules create predictable conflict, and how to talk about routines before you share a wall.',
     publishDate: '2026-01-20',
     readTime: '8 min read',
     relatedLinks: [
@@ -20,23 +20,22 @@ const content = {
           'See how sleep, stress and broken leases all add up when you ignore compatibility.',
       },
       {
-        title: 'Start Matching on Sleep Routines',
-        href: '/matches',
+        title: 'Group Chats, Ground Rules',
+        href: '/blog/group-chats-ground-rules',
         description:
-          'Use Domu Match’s questions about bedtimes, alarms and noise tolerance to find roommates whose rhythms fit yours.',
+          'A practical template for turning routines into agreements so you are not negotiating at 1 a.m.',
       },
       {
         title: 'How Matching Works',
         href: '/how-it-works',
         description:
-          'Learn how we use science-backed factors like sleep, study needs and social habits to calculate compatibility.',
+          'A plain-language overview of which habits matter and how to structure a compatibility conversation.',
       },
     ],
-    ctaTitle: 'Protect Your Sleep, Protect Your Semester',
-    ctaDescription:
-      'Use Domu Match to avoid Night Owl vs. 8 a.m. clashes by matching with people who share your routine.',
-    ctaHref: '/auth/sign-up',
-    ctaText: 'Match by Sleep Schedule',
+    ctaTitle: undefined,
+    ctaDescription: undefined,
+    ctaHref: undefined,
+    ctaText: undefined,
     body: () => (
       <div className="space-y-10">
         <p className="text-lg text-slate-700 leading-relaxed">
@@ -46,12 +45,9 @@ const content = {
         </p>
 
         <figure>
-          <Image
-            src="https://images.unsplash.com/photo-1529699211952-734e80c4d42b?w=1200&q=80"
+          <BlogHeroImage
+            imageKey="studyLateNight"
             alt="Student studying late at night with a laptop in a dark room"
-            width={1200}
-            height={630}
-            className="w-full rounded-2xl"
           />
           <figcaption>
             When one person’s normal is 2 a.m. and the other’s is 7 a.m., the walls of a student room are too
@@ -98,35 +94,30 @@ const content = {
           schedules, limited sound‑proofing and exam pressure creates constant micro‑stress.
         </p>
 
-        <h2>The Domu Method: Turning Sleep Into a Matching Factor</h2>
+        <h2>Turn sleep from “personal preference” into a household agreement</h2>
 
         <p>
-          Domu Match treats sleep as a core compatibility dimension - not an afterthought. Our questionnaire
-          includes:
+          Sleep is often treated as private, but in shared housing it is collective. Thin walls, shared
+          kitchens, and different schedules mean you need explicit agreements, not assumptions.
         </p>
 
         <ul>
-          <li>Typical weekday and weekend bedtimes and wake times.</li>
-          <li>Whether you identify more as a morning person or night owl.</li>
-          <li>How sensitive you are to noise and light when sleeping.</li>
-          <li>How often you expect to have late‑night guests or calls.</li>
+          <li>Weeknight quiet hours (and what “quiet” actually means).</li>
+          <li>Alarm rules (snooze, volume, location).</li>
+          <li>Late-night kitchen behaviour (microwave, dishes, calls).</li>
+          <li>Weekend exceptions (and notice expectations).</li>
         </ul>
 
         <p>
-          That data flows into your compatibility scores. When you check your matches on the{' '}
-          <Link href="/matches">
-            Domu Match dashboard
-          </Link>
-          , you will see which people share similar rhythms - and where compromises might be needed.
+          If you want a template for setting rules without killing the vibe, see{' '}
+          <Link href="/blog/group-chats-ground-rules">Group Chats, Ground Rules</Link>. The goal is not to
+          police each other. It is to stop sleep deprivation becoming the default.
         </p>
 
         <figure>
-          <Image
-            src="https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=1200&q=80"
+          <BlogHeroImage
+            imageKey="quietRoommate"
             alt="Student yawning in a lecture hall"
-            width={1200}
-            height={630}
-            className="w-full rounded-2xl"
           />
           <figcaption>
             Chronic 2 a.m. bedtimes plus 8 a.m. lectures is not a personality quirk - it is an academic risk
@@ -150,7 +141,7 @@ const content = {
           people. It means you should probably not be thin‑wall neighbours.
         </p>
 
-        <h2>Protecting Your 8 A.M. (Or Your Late‑Night Flow)</h2>
+        <h2>Protecting your 8 A.M. (or your late-night flow)</h2>
 
         <p>
           Whether you are the early‑morning lab person or the late‑night coder, the key is the same: be honest
@@ -159,11 +150,8 @@ const content = {
         </p>
 
         <p>
-          You can start that process any time by creating a profile and completing the questionnaire on our{' '}
-          <Link href="/auth/sign-up">
-            sign‑up page
-          </Link>
-          .
+          If you need a reminder of why sleep quality matters for learning, the research summaries in Curcio et
+          al. (2006) and Pilcher &amp; Huffcutt (1996) are a good starting point.
         </p>
 
         <h2>References</h2>
@@ -196,7 +184,7 @@ const content = {
   nl: {
     title: 'Nachtbraker vs. 8‑uurcollege: match je slaapschema vóórdat het botst',
     excerpt:
-      'Slaap is je stille superkracht. Ontdek hoe verschillende ritmes je cijfers en humeur raken – en hoe Domu Match je helpt huisgenoten te vinden die bij je ritme passen.',
+      'Slaap is je stille superkracht. Ontdek hoe verschillende ritmes voorspelbare frictie veroorzaken, en hoe je afspraken maakt vóórdat je naast elkaar woont.',
     publishDate: '2026-01-20',
     readTime: '8 min lezen',
     relatedLinks: [
@@ -206,32 +194,37 @@ const content = {
         description:
           'Lees hoe slechte nachten, stress en contractgedoe samen een dure combinatie worden.',
       },
+      {
+        title: 'Groepsapps & huisregels',
+        href: '/blog/group-chats-ground-rules',
+        description:
+          'Een template om routines om te zetten in afspraken zodat je niet om 01.00 uur hoeft te onderhandelen.',
+      },
+      {
+        title: 'Zo werkt matching',
+        href: '/how-it-works',
+        description:
+          'Welke onderwerpen ertoe doen, en hoe je een compatibiliteitsgesprek structureert.',
+      },
     ],
-    ctaTitle: 'Bescherm je slaap, bescherm je studie',
-    ctaDescription:
-      'Match via Domu Match met mensen die ongeveer hetzelfde slaap- en leefritme hebben als jij.',
-    ctaHref: '/auth/sign-up',
-    ctaText: 'Match op ritme',
+    ctaTitle: undefined,
+    ctaDescription: undefined,
+    ctaHref: undefined,
+    ctaText: undefined,
     body: () => (
       <div className="space-y-10">
         <p className="text-lg text-slate-700 leading-relaxed">
           Een huisgenoot die tot diep in de nacht gamet en een rooster vol 8‑uurcolleges zijn geen goede
-          combinatie. Onderzoek laat zien dat minder en slechter slapen je concentratie, geheugen en
-          studieresultaten verslechtert{' '}
-          <span className="italic">
-            (Curcio et al., 2006; Pilcher &amp; Huffcutt, 1996)
-          </span>
-          .
+          combinatie. Slaap voelt persoonlijk, maar in een huis met dunne muren is het een gedeeld systeem.
+          Als je daar geen afspraken over maakt, ontstaat de frictie vanzelf.
         </p>
 
         <p>
-          In Domu Match geef je eerlijk aan wanneer je meestal slaapt, hoe gevoelig je bent voor geluid en hoe
-          vaak je ’s avonds laat nog mensen over de vloer hebt. Zo voorkom je dat een nachtbraker en
-          ochtendmens per ongeluk naast elkaar worden gezet. Meer daarover lees je op{' '}
-          <Link href="/how-it-works">
-            “Zo werkt het”
-          </Link>
-          .
+          Maak slaap concreet. Niet “ben jij een nachtbraker?”, maar: wanneer moet het doordeweeks rustig zijn,
+          hoe gaan jullie om met wekkers, hoe werkt de keuken laat, en wat zijn uitzonderingen in het weekend?
+          Voor een manier om dit zonder drama af te spreken kun je{' '}
+          <Link href="/blog/group-chats-ground-rules">Groepsapps & huisregels</Link> gebruiken. Voor een raamwerk
+          van gespreksonderwerpen: <Link href="/how-it-works">Zo werkt matching</Link>.
         </p>
 
         <h2>Referenties</h2>
@@ -245,6 +238,17 @@ const content = {
             rel="noreferrer"
           >
             https://www.sciencedirect.com/science/article/abs/pii/S1087079205001231
+          </a>
+        </p>
+        <p className="text-sm text-slate-300">
+          Pilcher, J. J., &amp; Huffcutt, A. I. (1996). Effects of sleep deprivation on performance: A
+          meta-analysis. <em>Sleep, 19</em>(4), 318–326.{' '}
+          <a
+            href="https://pubmed.ncbi.nlm.nih.gov/8776790/"
+            target="_blank"
+            rel="noreferrer"
+          >
+            https://pubmed.ncbi.nlm.nih.gov/8776790/
           </a>
         </p>
       </div>

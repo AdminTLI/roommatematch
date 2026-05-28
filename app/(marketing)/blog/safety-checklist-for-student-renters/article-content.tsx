@@ -2,40 +2,47 @@
 
 import { BlogPostLayout } from '@/components/marketing/blog-post-layout'
 import Link from 'next/link'
-import Image from 'next/image'
+import { BlogHeroImage } from '@/components/marketing/blog-hero-image'
 import { useApp } from '@/app/providers'
 
 const content = {
   en: {
     title: 'Safety Checklist for Student Renters',
-    excerpt: 'Verification, contracts, and best practices for safe living in the Netherlands. Protect yourself from rental scams and understand your tenant rights.',
+    excerpt:
+      'A practical safety checklist for renting in the Netherlands: how to verify listings, review contracts, avoid common scam patterns, and protect yourself before you pay a deposit.',
     publishDate: '2025-11-10',
     readTime: '5 min read',
     relatedLinks: [
       {
-        title: 'Get Verified',
-        href: '/verify',
-        description: 'Complete ID verification to ensure you and your potential roommates are verified students.'
+        title: 'Privacy Policy',
+        href: '/privacy',
+        description:
+          'What to look for when sharing documents, bank details, and personal data during a rental search.',
       },
       {
         title: 'Safety & Security',
         href: '/safety',
-        description: 'Learn more about our safety measures and verification processes.'
+        description:
+          'General safety guidance and how Domu Match approaches safety across the product.',
       },
       {
-        title: 'Privacy Policy',
-        href: '/privacy',
-        description: 'Understand how we protect your personal information and data.'
+        title: 'Housing',
+        href: '/housing',
+        description:
+          'Background resources for navigating student housing searches in the Netherlands.',
       }
     ],
-    ctaTitle: 'Stay Safe with Verified Roommates',
-    ctaDescription: 'Join a community of verified students. Our ID verification process ensures you\'re connecting with real students, not scammers.',
-    ctaHref: '/verify',
-    ctaText: 'Get Verified',
+    ctaTitle: undefined,
+    ctaDescription: undefined,
+    ctaHref: undefined,
+    ctaText: undefined,
     body: () => (
       <div className="space-y-10">
         <p className="text-lg text-slate-700 leading-relaxed">
-          The competitive Dutch student housing market creates opportunities for scammers and fraudulent landlords. With a shortage of 23,100 student accommodations across major cities and average rents reaching €683 per month (and €979 in Amsterdam), students are often desperate to secure housing quickly, making them vulnerable targets.
+          A competitive housing market creates opportunities for scammers and fraudulent listings. The pattern
+          is predictable: urgency, pressure, and requests for money or documents before you have verified who
+          you are dealing with. This checklist is designed to slow the process down just enough to protect
+          you.
         </p>
 
         <p>
@@ -55,12 +62,9 @@ const content = {
         <h2>Pre-Rental Verification Checklist</h2>
 
         <figure>
-          <Image
-            src="https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?w=1200&q=80"
-            alt="Modern apartment keys and rental documents"
-            width={1200}
-            height={630}
-            className="w-full rounded-2xl"
+          <BlogHeroImage
+            imageKey="contractSigning"
+            alt="Rental contract and paperwork on a desk with a pen"
           />
           <figcaption>Before signing any rental agreement, verify the landlord and inspect the property in person.</figcaption>
         </figure>
@@ -74,26 +78,30 @@ const content = {
         </p>
 
         <p>
-          If you are joining an existing household, verify the people you will live with. Meet face-to-face, request student IDs or other proof, and check references from previous roommates or landlords when possible. Platforms like <Link href="/verify">Domu Match</Link> verify all users, reducing the risk of connecting with strangers who have not been vetted.
+          If you are joining an existing household, verify the people you will live with. Meet face-to-face,
+          ask for basic proof they are who they say they are, and check references where possible. Do not hand
+          over sensitive documents until you know who the counterparty is and why they need the document.
         </p>
 
         <h2>Understanding Dutch Rental Contracts</h2>
 
         <p>
-          The Netherlands has strong tenant protections, but you need to understand your contract. The Good Landlordship Act (Wet goed verhuurderschap), introduced in 2023, aims to prevent exploitation and ensure fair treatment. Your contract should clearly state the rent amount and payment terms, deposit details including amount and return conditions, contract duration and notice periods, included utilities and shared costs, house rules and restrictions, and maintenance responsibilities.
+          The Netherlands has strong tenant protections, but you still need to understand what you are signing.
+          Your contract should clearly state the rent amount and payment terms, deposit details including
+          amount and return conditions, contract duration and notice periods, included utilities and shared
+          costs, house rules and restrictions, and maintenance responsibilities.
         </p>
 
         <p>
-          Be alert for red flags in contracts: illegal agency fees charged to tenants, vague language about rent increases or deposit returns, unreasonable restrictions that limit tenant rights, and pressure to sign without time for review. When in doubt, consult your university's legal or housing office, the Housing Hotline (Woonlijn), or consumer organizations such as Consumentenbond. You can also learn more about our approach to safety and verification on our <Link href="/safety">safety page</Link>.
+          Be alert for red flags in contracts: vague language about deposit returns, pressure to sign without
+          time for review, or requests for fees that are not clearly explained. When in doubt, consult your
+          university’s housing office or student support resources, and compare against official guidance.
         </p>
 
         <figure>
-          <Image
-            src="https://images.unsplash.com/photo-1450101499163-c8848c66ca85?w=1200&q=80"
-            alt="Student reviewing documents at a desk"
-            width={1200}
-            height={630}
-            className="w-full rounded-2xl"
+          <BlogHeroImage
+            imageKey="housingCityscape"
+            alt="Bright apartment living room for an in-person rental viewing"
           />
           <figcaption>Always review rental contracts carefully and seek legal advice if something seems unclear.</figcaption>
         </figure>
@@ -101,13 +109,16 @@ const content = {
         <h2>Financial Safety Measures</h2>
 
         <p>
-          Deposits for unfurnished rentals are capped at three months' rent. Landlords must return deposits within 14 days after move-out, minus legitimate damages. Keep proof of all payments and avoid cash without receipts. Use traceable bank transfers, never pay before viewing and signing, verify bank account ownership, and store all receipts and communication.
+          Keep proof of all payments and avoid cash without receipts. Use traceable bank transfers, never pay
+          before viewing and signing, verify bank account ownership, and store all receipts and communication.
         </p>
 
         <h2>Safety When Meeting Potential Roommates</h2>
 
         <p>
-          When meeting potential roommates for the first time, arrange to meet in a public place. Bring a friend or let someone know your whereabouts. Trust your instincts if something feels off. Prioritize platforms that verify users - <Link href="/how-it-works">Domu Match</Link> verifies every student on the platform, so you can focus on compatibility rather than worrying about authenticity.
+          When meeting potential roommates for the first time, arrange to meet in a public place. Bring a
+          friend or let someone know your whereabouts. Trust your instincts if something feels off. Keep the
+          first interactions low-risk until you have verified identities and basic details.
         </p>
 
         <h2>Municipal Registration and Insurance</h2>
@@ -119,11 +130,14 @@ const content = {
         <h2>How Domu Match Protects You</h2>
 
         <p>
-          We verify every user with ID and university email checks. Our platform provides safe messaging without requiring you to share personal contact details until you are ready. Transparent profile indicators show which students have completed verification, so you can connect with confidence.
+          Domu Match includes verification and safe messaging features. Regardless of what platform you use, the
+          key safety principle is the same: do not let urgency push you into sharing documents or sending money
+          before you have verified the counterparty.
         </p>
 
         <p>
-          Using a platform that verifies every user dramatically reduces your risk of encountering scammers. <Link href="/verify">Complete your verification</Link> to connect with real students. Our <Link href="/privacy">privacy policy</Link> explains how we protect your data throughout the process.
+          If you do share documents, share the minimum, watermark them where appropriate, and confirm the
+          purpose. Our <Link href="/privacy">privacy policy</Link> explains how data is handled on this site.
         </p>
 
         <h2>What to Do If You Suspect Fraud</h2>
@@ -135,41 +149,50 @@ const content = {
         <h2>Conclusion</h2>
 
         <p>
-          Navigating the Dutch rental market safely requires vigilance, knowledge, and patience. The housing shortage adds pressure, but skipping verification exposes you to significant risk. Follow this checklist, understand your rights, and use verified platforms like <Link href="/auth/sign-up">Domu Match</Link> to protect yourself from scams. Legitimate landlords and roommates will respect thorough verification - if they refuse, walk away. Your safety is worth the extra time. Take a methodical approach, and you will find secure housing that supports your studies instead of adding stress.
+          Navigating the Dutch rental market safely requires vigilance, knowledge, and patience. Pressure is
+          normal, but skipping verification exposes you to risk. Follow this checklist, understand your rights,
+          and treat urgency as a warning sign. Legitimate landlords and roommates will respect thorough
+          verification. If they refuse, walk away.
         </p>
       </div>
     )
   },
   nl: {
     title: 'Veiligheidschecklist voor studenthuurders',
-    excerpt: 'Verificatie, contracten en best practices om veilig te wonen in Nederland. Bescherm jezelf tegen huurfraude en leer je huurdersrechten kennen.',
+    excerpt:
+      'Een praktische veiligheidschecklist voor huren in Nederland: advertenties verifiëren, contracten lezen, veelvoorkomende fraude herkennen en jezelf beschermen vóór je borg betaalt.',
     publishDate: '2025-11-10',
     readTime: '5 min lezen',
     relatedLinks: [
       {
-        title: 'Laat jezelf verifiëren',
-        href: '/verify',
-        description: 'Rond de ID-verificatie af zodat jij en je toekomstige huisgenoten geverifieerde studenten zijn.'
+        title: 'Privacybeleid',
+        href: '/privacy',
+        description:
+          'Waar je op moet letten bij het delen van documenten, bankgegevens en persoonsgegevens tijdens je zoektocht.',
       },
       {
         title: 'Veiligheid & beveiliging',
         href: '/safety',
-        description: 'Lees meer over onze veiligheidsmaatregelen en verificatieprocessen.'
+        description:
+          'Algemene veiligheidsinformatie en hoe Domu Match veiligheid benadert in het product.',
       },
       {
-        title: 'Privacybeleid',
-        href: '/privacy',
-        description: 'Ontdek hoe wij zorgvuldig met jouw persoonsgegevens omgaan.'
+        title: 'Huisvesting',
+        href: '/housing',
+        description:
+          'Achtergrondbronnen voor studentenhuisvesting zoeken in Nederland.',
       }
     ],
-    ctaTitle: 'Blijf veilig met geverifieerde huisgenoten',
-    ctaDescription: 'Word onderdeel van een community van geverifieerde studenten. Onze ID-check zorgt ervoor dat je echte studenten ontmoet en geen oplichters.',
-    ctaHref: '/verify',
-    ctaText: 'Nu verifiëren',
+    ctaTitle: undefined,
+    ctaDescription: undefined,
+    ctaHref: undefined,
+    ctaText: undefined,
     body: () => (
       <div className="space-y-10">
         <p className="text-lg text-slate-700 leading-relaxed">
-          De krappe Nederlandse studentenmarkt biedt kansen voor oplichters en malafide verhuurders. Met een tekort van 23.100 studentenkamers en gemiddelde huren van €683 per maand (en €979 in Amsterdam) voelen studenten vaak tijdsdruk, waardoor ze kwetsbaarder zijn.
+          Een krappe woningmarkt biedt kansen voor oplichters en malafide advertenties. Het patroon is
+          voorspelbaar: haast, druk, en vragen om geld of documenten vóórdat je weet met wie je te maken hebt.
+          Deze checklist helpt je het proces net genoeg te vertragen om jezelf te beschermen.
         </p>
 
         <p>
@@ -183,18 +206,18 @@ const content = {
         </p>
 
         <p>
-          Veelgebruikte trucs zijn nepadvertenties op populaire platforms, vragen om vooruitbetaling vóór een bezichtiging, "verhuurders" die in het buitenland zouden zitten en niet kunnen afspreken, druk om meteen te tekenen zonder contractreview, en persoonlijke documenten of financiële info vragen vóór verificatie. Onze <Link href="/housing">huisvestingszoekfunctie</Link> verbindt je met geverifieerde platformen.
+          Veelgebruikte trucs zijn nepadvertenties op populaire platforms, vragen om vooruitbetaling vóór een
+          bezichtiging, &quot;verhuurders&quot; die in het buitenland zouden zitten en niet kunnen afspreken,
+          druk om meteen te tekenen zonder contractreview, en persoonlijke documenten of financiële info vragen
+          vóór verificatie. Onze <Link href="/housing">huisvestingszoekfunctie</Link> bundelt achtergrondbronnen.
         </p>
 
         <h2>Checklist vóórdat je tekent</h2>
 
         <figure>
-          <Image
-            src="https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?w=1200&q=80"
-            alt="Moderne appartementssleutels en huurdocumenten"
-            width={1200}
-            height={630}
-            className="w-full rounded-2xl"
+          <BlogHeroImage
+            imageKey="contractSigning"
+            alt="Huurcontract en papieren op een bureau met een pen"
           />
           <figcaption>Verifieer de verhuurder en bekijk de woning persoonlijk voordat je tekent.</figcaption>
         </figure>
@@ -204,7 +227,11 @@ const content = {
         </p>
 
         <p>
-          Betaal nooit borg of teken nooit zonder bezichtiging. Echte verhuurders regelen graag een viewing. Controleer het adres, let op rookmelders, sloten en brandveiligheid, leg de staat vast met foto's en video's, en praat met huidige bewoners als dat kan. Ga je in een bestaand huis wonen? Ontmoet elkaar persoonlijk, vraag naar studentenkaart of verificatie, check referenties en gebruik platforms zoals <Link href="/verify">Domu Match</Link> waar iedereen geverifieerd is.
+          Betaal nooit borg of teken nooit zonder bezichtiging. Echte verhuurders regelen graag een viewing.
+          Controleer het adres, let op rookmelders, sloten en brandveiligheid, leg de staat vast met foto&apos;s
+          en video&apos;s, en praat met huidige bewoners als dat kan. Ga je in een bestaand huis wonen? Ontmoet
+          elkaar persoonlijk en deel geen gevoelige documenten voordat je weet wie de tegenpartij is en waarom
+          die het document nodig heeft.
         </p>
 
         <h2>Snap je contract</h2>
@@ -218,12 +245,9 @@ const content = {
         </p>
 
         <figure>
-          <Image
-            src="https://images.unsplash.com/photo-1450101499163-c8848c66ca85?w=1200&q=80"
-            alt="Student die documenten bekijkt aan een bureau"
-            width={1200}
-            height={630}
-            className="w-full rounded-2xl"
+          <BlogHeroImage
+            imageKey="housingCityscape"
+            alt="Lichte woonkamer van een appartement voor een bezichtiging"
           />
           <figcaption>Lees huurcontracten zorgvuldig door en vraag juridisch advies als iets onduidelijk is.</figcaption>
         </figure>
@@ -253,7 +277,8 @@ const content = {
         </p>
 
         <p>
-          Wie via een geverifieerd platform zoekt, verkleint de kans op fraude enorm. <Link href="/verify">Rond je verificatie af</Link> en match met echte studenten. Ons <Link href="/privacy">privacybeleid</Link> legt uit hoe we je gegevens beschermen.
+          Als je documenten deelt, deel het minimum, overweeg watermerken, en controleer het doel. Ons{' '}
+          <Link href="/privacy">privacybeleid</Link> legt uit hoe data op deze site wordt behandeld.
         </p>
 
         <h2>Wat als je fraude vermoedt?</h2>
@@ -265,7 +290,10 @@ const content = {
         <h2>Conclusie</h2>
 
         <p>
-          Veilig huren vraagt om alertheid en kennis. De woningnood zorgt voor haast, maar het overslaan van verificatie levert veel grotere problemen op. Volg deze checklist, ken je rechten en gebruik geverifieerde platformen zoals <Link href="/auth/sign-up">Domu Match</Link> om fraude te vermijden. Eerlijke verhuurders en huisgenoten hebben begrip voor een grondige check - als ze dat niet willen, bedank vriendelijk en loop weg. Je veiligheid is de extra tijd waard.
+          Veilig huren vraagt om alertheid en kennis. De woningnood zorgt voor haast, maar het overslaan van
+          checks levert grotere problemen op. Volg deze checklist, ken je rechten en behandel urgentie als een
+          waarschuwing. Eerlijke verhuurders en huisgenoten hebben begrip voor een grondige check. Als ze dat
+          niet willen, bedank vriendelijk en loop weg. Je veiligheid is de extra tijd waard.
         </p>
       </div>
     )

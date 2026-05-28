@@ -52,7 +52,7 @@ const content = {
         slug: 'move-in-week-red-flags',
         title: 'Move-In Week Red Flags: Signs Your Living Situation Might Tank Your Semester',
         excerpt:
-          'You usually know in the first two weeks if something feels off. Learn which early warning signs to take seriously and what you can still change.',
+          'You usually know in the first two weeks if something feels off. Learn which early warning signs to take seriously, what you can still adjust, and when to involve support.',
         readTime: '7 min read',
         date: '2026-02-09',
         category: 'Wellbeing',
@@ -62,7 +62,7 @@ const content = {
         slug: 'group-chats-ground-rules',
         title: 'Group Chats, Ground Rules: Setting House Norms Without Killing the Vibe',
         excerpt:
-          'Avoid 1 a.m. passive‑aggressive messages. Learn how to turn Domu Match’s behavioural questions into simple, shared house rules.',
+          'Every flat has rules. The healthy ones write them down. Use a short house meeting to turn invisible expectations into clear agreements around noise, guests and cleaning.',
         readTime: '7 min read',
         date: '2026-02-02',
         category: 'Boundaries',
@@ -72,7 +72,7 @@ const content = {
         slug: 'when-dishes-equal-disrespect',
         title: 'When Dishes = Disrespect: How Tiny Tasks Turn Into Big Resentments',
         excerpt:
-          'It is rarely about one plate. Understand the psychology of chores in shared spaces and how to match with people who pull their weight.',
+          'No one explodes over one plate. Learn why chores become emotional, how “fair” turns into resentment, and what questions prevent a slow conflict build.',
         readTime: '7 min read',
         date: '2026-01-27',
         category: 'Compatibility',
@@ -82,7 +82,7 @@ const content = {
         slug: 'night-owl-vs-8am-lecture',
         title: 'Night Owl vs. 8 A.M. Lecture: Matching Sleep Schedules Before They Clash',
         excerpt:
-          'Sleep is your quiet superpower. Learn how mismatched sleep schedules wreck grades  -  and how Domu Match helps you align on routines.',
+          'Sleep is the quiet engine behind your degree. Learn how mismatched sleep schedules create predictable conflict, and how to talk about routines before you share a wall.',
         readTime: '8 min read',
         date: '2026-01-20',
         category: 'Health',
@@ -92,7 +92,7 @@ const content = {
         slug: 'surviving-the-winter-blues',
         title: 'Surviving the Winter Blues: Why Who You Live With Matters',
         excerpt:
-          'Short days and exam stress hit hard. The right housemates can give you social momentum; the wrong ones can leave you feeling isolated.',
+          'Short days and exam stress can make isolation feel heavier. The right living situation adds gentle structure and support, while the wrong one can amplify withdrawal.',
         readTime: '8 min read',
         date: '2026-01-10',
         category: 'Wellbeing',
@@ -102,7 +102,7 @@ const content = {
         slug: 'introverts-survival-guide-shared-living',
         title: 'The Introvert’s Survival Guide to Shared Living',
         excerpt:
-          'If your social battery drains fast, home needs to be a charging dock, not another performance. Learn how to match with people who get it.',
+          'If your social battery drains fast, home needs to be a charging dock, not another performance. A practical guide to quiet hours, boundaries, and choosing housemates who respect alone time.',
         readTime: '8 min read',
         date: '2026-01-03',
         category: 'Wellbeing',
@@ -112,7 +112,7 @@ const content = {
         slug: 'why-im-clean-is-a-lie',
         title: 'Why "I’m Clean" Is a Lie (And What to Ask Instead)',
         excerpt:
-          '“Clean” is subjective. Learn how to ask behaviour‑based questions so dishes and dust do not quietly ruin your flat.',
+          '“Clean” is not a standard, it is a self-image. Use behaviour-based questions to align expectations about dishes, bathrooms, and shared spaces before resentment starts.',
         readTime: '7 min read',
         date: '2025-12-15',
         category: 'Compatibility',
@@ -122,7 +122,7 @@ const content = {
         slug: 'hidden-cost-of-wrong-roommate',
         title: 'The Hidden Cost of the Wrong Roommate (It’s Not Just Rent)',
         excerpt:
-          'Breaking leases, lost deposits, moving costs, and slipping grades all add up. Learn why investing in compatibility upfront is cheaper than surviving a bad match.',
+          'Bad roommate matches are expensive in ways students rarely budget for: stress, sleep loss, broken agreements, emergency moves, and the slow damage to study focus.',
         readTime: '7 min read',
         date: '2025-12-05',
         category: 'Finance',
@@ -132,7 +132,7 @@ const content = {
         slug: 'third-wheel-policy-significant-others',
         title: 'The "Third Wheel" Policy: Handling Significant Others in Shared Spaces',
         excerpt:
-          'Partners and overnight guests can quietly turn a two-person flat into a three-person one. Set fair boundaries around stays, space, and resources before it becomes a problem.',
+          'Partners and guests can quietly reshape your home. Set fair limits around overnight stays, shared resources, and privacy before a two-person flat becomes a three-person one.',
         readTime: '7 min read',
         date: '2025-11-28',
         category: 'Boundaries',
@@ -142,7 +142,7 @@ const content = {
         slug: 'best-friend-trap-worst-roommate',
         title: 'The "Best Friend" Trap: Why Your Bestie Might Be Your Worst Roommate',
         excerpt:
-          'Friendship chemistry does not always translate into living compatibility. Learn how to protect both your friendship and your grades by matching on habits, not vibes.',
+          'Friendship chemistry is real, but it is not the same as living compatibility. Stress-test sleep, guests, chores, money, and conflict style before you sign a lease.',
         readTime: '7 min read',
         date: '2025-11-20',
         category: 'Compatibility',
@@ -152,7 +152,7 @@ const content = {
         slug: 'how-to-find-a-great-roommate',
         title: 'How to Find a Great Roommate',
         excerpt:
-          'Evidence-based tips for compatibility and harmony in student housing. Learn how to navigate the Dutch student housing market and find your perfect match.',
+          'A great roommate is less about “good vibes” and more about predictable habits. Use this checklist to screen for routines, boundaries, money reliability, and communication before you share a kitchen.',
         readTime: '4 min read',
         date: '2025-11-15',
         category: 'Compatibility',
@@ -162,7 +162,7 @@ const content = {
         slug: 'safety-checklist-for-student-renters',
         title: 'Safety Checklist for Student Renters',
         excerpt:
-          'Verification, contracts, and best practices for safe living in the Netherlands. Protect yourself from rental scams and understand your tenant rights.',
+          'A practical safety checklist for renting in the Netherlands: verify listings, review contracts, avoid common scam patterns, and protect yourself before you pay a deposit.',
         readTime: '5 min read',
         date: '2025-11-10',
         category: 'Safety',
@@ -172,7 +172,7 @@ const content = {
         slug: 'why-explainable-ai-matters',
         title: 'Why Explainable AI Matters',
         excerpt:
-          'Understanding your matches builds trust and better decisions. Learn how transparency in AI matching aligns with EU regulations and protects your rights.',
+          'If a system recommends who you should live with, you deserve to understand the reasoning. Explainable AI is the difference between a “black box” score and an outcome you can actually evaluate.',
         readTime: '8 min read',
         date: '2025-11-05',
         category: 'Technology',
@@ -356,13 +356,6 @@ export function BlogContent() {
   const { locale } = useApp()
   const t = content[locale]
   const reducedMotion = useReducedMotion()
-
-  const fadeIn = {
-    initial: reducedMotion ? {} : { opacity: 0, y: 20 },
-    whileInView: reducedMotion ? {} : { opacity: 1, y: 0 },
-    viewport: { once: true },
-    transition: { duration: 0.5 },
-  }
 
   return (
     <>

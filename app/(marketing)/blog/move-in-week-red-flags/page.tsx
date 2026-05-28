@@ -5,9 +5,9 @@ export const metadata: Metadata = {
   title:
     'Move-In Week Red Flags: Signs Your Living Situation Might Tank Your Semester | Domu Match',
   description:
-    'You usually know in the first weeks if something feels off. Learn which housing red flags to take seriously and how to plan a better match with Domu Match.',
+    'You usually know in the first weeks if something feels off. Learn which housing red flags to take seriously, what you can still adjust, and when to involve support.',
   keywords:
-    'roommate red flags, student housing problems, move-in week issues, unsafe student housing, Domu Match better match',
+    'roommate red flags, student housing problems, move-in week issues, unsafe student housing, shared living boundaries',
   openGraph: {
     title:
       'Move-In Week Red Flags: Signs Your Living Situation Might Tank Your Semester',
@@ -28,7 +28,7 @@ export default function MoveInWeekRedFlagsPage() {
         headline:
           'Move-In Week Red Flags: Signs Your Living Situation Might Tank Your Semester',
         description:
-          'Explains how to differentiate normal adjustment from serious red flags in new student housing, and how Domu Match can help you plan a better match.',
+          'Explains how to differentiate normal adjustment from serious red flags in new student housing, and what you can still adjust in the first weeks.',
         image: 'https://domumatch.com/images/logo.png',
         datePublished: '2026-02-09',
         dateModified: '2026-02-09',
@@ -54,7 +54,7 @@ export default function MoveInWeekRedFlagsPage() {
         },
         articleSection: 'Wellbeing',
         keywords:
-          'roommate red flags, student housing problems, move-in week issues, unsafe student housing, Domu Match better match',
+          'roommate red flags, student housing problems, move-in week issues, unsafe student housing, shared living boundaries',
       },
       {
         '@type': 'BreadcrumbList',

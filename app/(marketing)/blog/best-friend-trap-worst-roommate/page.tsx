@@ -5,14 +5,14 @@ export const metadata: Metadata = {
   title:
     'The "Best Friend" Trap: Why Your Bestie Might Be Your Worst Roommate | Domu Match',
   description:
-    'Thinking of living with your best friend? Learn why friendship chemistry does not always translate into living compatibility, and how Domu Match helps you protect both your grades and your relationships.',
+    'Thinking of living with your best friend? Learn why friendship chemistry does not always translate into living compatibility, and how to stress-test routines, boundaries, and expectations before you sign anything.',
   keywords:
-    'best friend roommate, living with friends, roommate compatibility, student housing advice, protect friendship, Domu Match',
+    'best friend roommate, living with friends, roommate compatibility, student housing advice, protect friendship',
   openGraph: {
     title:
       'The "Best Friend" Trap: Why Your Bestie Might Be Your Worst Roommate',
     description:
-      'Why friendship compatibility does not always equal living compatibility  -  and how to use behavioural questions to protect both your housing and your relationships.',
+      'Why friendship compatibility does not always equal living compatibility, and how to use behaviour-based questions to protect both your housing and your relationships.',
     type: 'article',
     publishedTime: '2025-11-20',
     authors: ['Domu Match Team'],
@@ -28,7 +28,7 @@ export default function BestFriendTrapPage() {
         headline:
           'The "Best Friend" Trap: Why Your Bestie Might Be Your Worst Roommate',
         description:
-          'Guidance for students considering living with close friends, focusing on behavioural compatibility, habits, and how Domu Match can help you avoid preventable conflict.',
+          'Guidance for students considering living with close friends, focusing on behavioural compatibility, habits, and the routines that predict conflict in shared living.',
         image: 'https://domumatch.com/images/logo.png',
         datePublished: '2025-11-20',
         dateModified: '2025-11-20',
@@ -53,7 +53,7 @@ export default function BestFriendTrapPage() {
         },
         articleSection: 'Compatibility',
         keywords:
-          'best friend roommate, living with friends, roommate compatibility, student housing advice, protect friendship, Domu Match',
+          'best friend roommate, living with friends, roommate compatibility, student housing advice, protect friendship',
       },
       {
         '@type': 'BreadcrumbList',

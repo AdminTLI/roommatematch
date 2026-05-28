@@ -4,13 +4,13 @@ import { IntrovertsSurvivalGuideArticle } from './article-content'
 export const metadata: Metadata = {
   title: 'The Introvert’s Survival Guide to Shared Living | Domu Match',
   description:
-    'If your social battery drains fast, your home needs to be a charging dock, not another performance. Learn how Domu Match helps introverts and neurodivergent students find compatible roommates.',
+    'If your social battery drains fast, your home needs to be a charging dock, not another performance. Practical advice on quiet hours, boundaries, and choosing housemates who respect alone time.',
   keywords:
-    'introvert roommates, social battery student housing, quiet hours roommates, neurodivergent student housing, Domu Match social battery',
+    'introvert roommates, social battery student housing, quiet hours roommates, neurodivergent student housing, shared living boundaries',
   openGraph: {
     title: 'The Introvert’s Survival Guide to Shared Living',
     description:
-      'Practical advice for introverted and neurodivergent students on finding roommates who respect alone time, quiet, and emotional bandwidth  -  with help from Domu Match.',
+      'Practical advice for introverted and neurodivergent students on finding roommates who respect alone time, quiet, and emotional bandwidth.',
     type: 'article',
     publishedTime: '2026-01-03',
     authors: ['Domu Match Team'],
@@ -25,7 +25,7 @@ export default function IntrovertsSurvivalGuidePage() {
         '@type': 'BlogPosting',
         headline: 'The Introvert’s Survival Guide to Shared Living',
         description:
-          'A guide for introverted and neurodivergent students on creating a living situation that recharges them, including how to use Domu Match’s social battery and quiet-hours filters.',
+          'A guide for introverted and neurodivergent students on creating a living situation that recharges them, with practical advice on quiet hours, boundaries, and expectations.',
         image: 'https://domumatch.com/images/logo.png',
         datePublished: '2026-01-03',
         dateModified: '2026-01-03',
@@ -51,7 +51,7 @@ export default function IntrovertsSurvivalGuidePage() {
         },
         articleSection: 'Wellbeing',
         keywords:
-          'introvert roommates, social battery student housing, quiet hours roommates, neurodivergent student housing, Domu Match social battery',
+          'introvert roommates, social battery student housing, quiet hours roommates, neurodivergent student housing',
       },
       {
         '@type': 'BreadcrumbList',

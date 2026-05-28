@@ -5,9 +5,9 @@ export const metadata: Metadata = {
   title:
     'The "Third Wheel" Policy: Handling Significant Others in Shared Spaces | Domu Match',
   description:
-    'Partners and guests can quietly reshape your home. Learn how to set fair limits around overnight stays, shared resources, and privacy, and see how Domu Match filters for guest frequency.',
+    'Partners and guests can quietly reshape your home. Learn how to set fair limits around overnight stays, shared resources, and privacy before a two-person flat becomes a three-person one.',
   keywords:
-    'roommate guest policy, overnight guests student housing, partner staying over, student flat rules, Domu Match guest frequency',
+    'roommate guest policy, overnight guests student housing, partner staying over, student flat rules, shared living boundaries',
   openGraph: {
     title:
       'The "Third Wheel" Policy: Handling Significant Others in Shared Spaces',
@@ -28,7 +28,7 @@ export default function ThirdWheelPolicyPage() {
         headline:
           'The "Third Wheel" Policy: Handling Significant Others in Shared Spaces',
         description:
-          'Guidance for students on managing partners and overnight guests in shared accommodation, with a focus on fair expectations and Domu Match guest filters.',
+          'Guidance for students on managing partners and overnight guests in shared accommodation, with a focus on fair expectations, privacy, and shared resources.',
         image: 'https://domumatch.com/images/logo.png',
         datePublished: '2025-11-28',
         dateModified: '2025-11-28',
@@ -54,7 +54,7 @@ export default function ThirdWheelPolicyPage() {
         },
         articleSection: 'Compatibility',
         keywords:
-          'roommate guest policy, overnight guests student housing, partner staying over, student flat rules, Domu Match guest frequency',
+          'roommate guest policy, overnight guests student housing, partner staying over, student flat rules, shared living boundaries',
       },
       {
         '@type': 'BreadcrumbList',

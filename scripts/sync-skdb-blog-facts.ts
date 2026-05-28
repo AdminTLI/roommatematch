@@ -10,8 +10,9 @@
 
 import { mkdirSync, writeFileSync, existsSync, readFileSync } from 'fs'
 import { join } from 'path'
-import { getSkdbApiBase, getSkdbApiKey } from '@/lib/skdb/client'
+import { getSkdbApiBase } from '@/lib/skdb/client'
 import { buildSkdbBlogFactsDocument } from '@/lib/skdb/build-blog-facts'
+import { validateSkdbSyncConfig } from '@/lib/skdb/validate-config'
 import type { SkdbBlogFactsDocument } from '@/lib/skdb/blog-facts-types'
 import { createAdminClient } from '@/lib/supabase/server'
 
@@ -63,8 +64,16 @@ async function upsertToDatabase(doc: SkdbBlogFactsDocument): Promise<void> {
 }
 
 async function main() {
-  if (!getSkdbApiKey()) {
-    throw new Error('SKDB_API_KEY must be set. See docs/SKDB_BLOG_ATTRIBUTION.md')
+  const skdbConfig = validateSkdbSyncConfig()
+  if (!skdbConfig.ok || skdbConfig.source !== 'api') {
+    console.error(`\n❌ ${skdbConfig.ok ? 'Blog facts require API mode.' : skdbConfig.message}\n`)
+    if (!skdbConfig.ok) {
+      for (const hint of skdbConfig.hints) console.error(`   • ${hint}`)
+    } else {
+      console.error('   • Blog facts aggregation uses the SKDB API (not CSV dump). Set a valid SKDB_API_KEY.')
+    }
+    console.error('')
+    process.exit(1)
   }
 
   console.log(`📊 Building SKDB blog facts from ${getSkdbApiBase()}...`)

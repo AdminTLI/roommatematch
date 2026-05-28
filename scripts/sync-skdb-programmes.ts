@@ -38,6 +38,7 @@ import {
   getSkdbApiBase,
 } from '@/lib/skdb/client';
 import { mapOpleidingToProgramme } from '@/lib/skdb/map-opleiding';
+import { validateSkdbSyncConfig } from '@/lib/skdb/validate-config';
 
 // Load .env.local if it exists
 try {
@@ -50,7 +51,8 @@ try {
         const [key, ...valueParts] = trimmed.split('=');
         if (key && valueParts.length > 0) {
           const value = valueParts.join('=').trim().replace(/^["']|["']$/g, '');
-          if (!process.env[key]) {
+          // Always prefer .env.local over inherited shell env for SKDB_* keys
+          if (key.startsWith('SKDB_') || !process.env[key]) {
             process.env[key] = value;
           }
         }
@@ -963,27 +965,34 @@ async function main(): Promise<void> {
     console.log(`✅ Loaded ${slugMap.size} university mappings`);
     console.log('');
     
-    // Fetch SKDB programmes
+    // Resolve SKDB data source (dump preferred when file exists)
+    const skdbConfig = validateSkdbSyncConfig();
+    if (!skdbConfig.ok) {
+      console.error(`\n❌ ${skdbConfig.message}\n`);
+      for (const hint of skdbConfig.hints) {
+        console.error(`   • ${hint}`);
+      }
+      console.error('');
+      throw new Error(skdbConfig.message);
+    }
+
     let skdbProgrammes: SkdbProgram[] = [];
     let source = 'unknown';
-    
-    // Prefer dump file if both are set (dump is more reliable)
-    if (SKDB_DUMP_PATH && existsSync(SKDB_DUMP_PATH)) {
-      const ext = SKDB_DUMP_PATH.toLowerCase().split('.').pop();
+
+    if (skdbConfig.source === 'dump' && skdbConfig.dumpPath) {
+      const ext = skdbConfig.dumpPath.toLowerCase().split('.').pop();
       if (ext === 'csv') {
         skdbProgrammes = await parseProgrammesFromCSV();
-        source = `CSV dump (${SKDB_DUMP_PATH})`;
+        source = `CSV dump (${skdbConfig.dumpPath})`;
       } else if (ext === 'xlsx' || ext === 'xls' || ext === 'ods') {
         skdbProgrammes = await parseProgrammesFromXLSX();
-        source = `${ext.toUpperCase()} dump (${SKDB_DUMP_PATH})`;
+        source = `${ext?.toUpperCase()} dump (${skdbConfig.dumpPath})`;
       } else {
-        throw new Error(`Unsupported file format: ${ext}`);
+        throw new Error(`Unsupported dump format: ${ext}`);
       }
-    } else if (SKDB_API_KEY) {
+    } else {
       skdbProgrammes = await fetchProgrammesFromAPI();
       source = `Studiekeuzedatabase API (${SKDB_API_BASE})`;
-    } else {
-      throw new Error('Either SKDB_API_KEY or SKDB_DUMP_PATH must be set');
     }
     
     if (skdbProgrammes.length === 0) {

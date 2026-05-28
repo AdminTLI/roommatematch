@@ -2,290 +2,471 @@
 
 import { BlogPostLayout } from '@/components/marketing/blog-post-layout'
 import Link from 'next/link'
-import Image from 'next/image'
+import { BlogHeroImage } from '@/components/marketing/blog-hero-image'
 import { useApp } from '@/app/providers'
 
 const content = {
   en: {
     title: 'Why Explainable AI Matters',
-    excerpt: 'Understanding your matches builds trust and better decisions. Learn how transparency in AI matching aligns with EU regulations and protects your rights.',
+    excerpt:
+      'If a system recommends who you should live with, you deserve to understand the reasoning. Explainable AI is the difference between a “black box” score and an outcome you can actually evaluate.',
     publishDate: '2025-11-05',
     readTime: '8 min read',
     relatedLinks: [
       {
         title: 'How Matching Works',
         href: '/how-it-works',
-        description: 'Learn about our transparent matching process and how we explain compatibility scores.'
+        description:
+          'A plain-language overview of how compatibility questions translate into recommendations.',
       },
       {
-        title: 'About Our Approach',
+        title: 'Privacy Policy',
+        href: '/privacy',
+        description:
+          'What to look for when a platform uses automated processing and personal data to generate outcomes.',
+      },
+      {
+        title: 'About',
         href: '/about',
-        description: 'Discover our commitment to transparency and science-driven matching.'
+        description: 'Background on Domu Match and how the site is structured.',
       },
-      {
-        title: 'View Your Matches',
-        href: '/matches',
-        description: 'See how we explain your compatibility with each potential roommate.'
-      }
     ],
-    ctaTitle: 'Experience Transparent Matching',
-    ctaDescription: "See exactly why you're compatible with each match. Our explainable AI shows you the factors behind every recommendation.",
-    ctaHref: '/auth/sign-up',
-    ctaText: 'Get Started',
+    ctaTitle: undefined,
+    ctaDescription: undefined,
+    ctaHref: undefined,
+    ctaText: undefined,
     body: () => (
       <div className="space-y-10">
         <p className="text-lg text-slate-700 leading-relaxed">
-          When an algorithm decides who you should live with, shouldn&apos;t you understand why? As artificial intelligence becomes increasingly integrated into housing, admissions, and employment decisions, transparency has moved from academic debate to legal requirement.
+          If a system recommends who you should live with, the most important question is not “who” - it is
+          “why”. A roommate match affects your sleep, safety, finances, study routine, and stress levels. When
+          the reasoning is hidden, people default to guesswork: “Maybe the algorithm knows something I don’t.”
+          Explainable AI exists to prevent exactly that.
         </p>
 
         <p>
-          The European Union's AI Act, fully in force since 2024, is the world's first comprehensive AI regulation. For students in the Netherlands using AI-powered platforms to find roommates, this legislation directly protects your right to understand, question, and control algorithmic decisions that affect your housing situation.
-        </p>
-
-        <figure>
-          <Image
-            src="https://images.unsplash.com/photo-1677442136019-21780ecad995?w=1200&q=80"
-            alt="Abstract visualization of AI and data connections"
-            width={1200}
-            height={630}
-            className="w-full rounded-2xl"
-          />
-          <figcaption>Explainable AI helps you understand the factors behind every recommendation.</figcaption>
-        </figure>
-
-        <h2>What Is Explainable AI?</h2>
-
-        <p>
-          Explainable AI (XAI) refers to systems that can provide clear, understandable reasons for their recommendations. Rather than operating as black boxes, explainable systems reveal the factors, weights, and logic behind their outputs.
-        </p>
-
-        <p>
-          In roommate matching, this means you can see which compatibility factors contributed most to a match, how lifestyle, academic, and personality preferences were weighted, why some matches scored higher than others, where complementary traits helped create a pairing, and potential friction points you should discuss with a match. At <Link href="/how-it-works">Domu Match</Link>, we built our matching process around these principles from the ground up.
-        </p>
-
-        <h2>The EU AI Act: Raising the Bar for Transparency</h2>
-
-        <p>
-          The EU AI Act establishes a risk-based framework for AI. Even if roommate matching is not classified as high risk, the Act's principles apply: users must be informed when AI is used, systems must be explainable, and humans must retain oversight.
-        </p>
-
-        <p>
-          Key requirements for matching platforms include transparency - users must know they are interacting with AI and understand its scope. Human oversight means critical decisions require human review and the ability to override recommendations. Systems must monitor for errors and provide mechanisms to correct them. And users have the right to request explanations and contest recommendations.
-        </p>
-
-        <p>
-          The Netherlands backs these requirements with its own human-centric AI strategy. Dutch regulators emphasize accountability, fairness, and explainability in all AI deployments.
-        </p>
-
-        <h2>GDPR Safeguards Your Algorithmic Rights</h2>
-
-        <p>
-          GDPR's Article 22 grants you the right not to be subject to decisions based solely on automated processing if those decisions significantly affect you. When automation is used, you have rights to explanation, human intervention, and contestation.
-        </p>
-
-        <p>
-          Platforms must provide a meaningful explanation describing the logic behind decisions. You can request that a person re-evaluates an automated outcome. You may challenge an AI-generated recommendation. And you can request the data used to generate a recommendation. Our <Link href="/privacy">privacy policy</Link> outlines how we uphold these rights.
+          Explainability matters for two reasons. First, it is practical: it helps you spot mismatches early
+          and ask better questions before you commit. Second, it is a governance issue: European rules
+          increasingly expect transparency when automated systems influence meaningful decisions. The details
+          are technical, but the principle is simple. You should be able to understand what a system is doing
+          with your information and how it shaped the outcome.
         </p>
 
         <figure>
-          <Image
-            src="https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=1200&q=80"
-            alt="Data visualization and analytics dashboard"
-            width={1200}
-            height={630}
-            className="w-full rounded-2xl"
+          <BlogHeroImage
+            imageKey="studyLateNight"
+            alt="Abstract visualization of connected data and decision paths"
           />
-          <figcaption>Transparent systems let you see how your data shapes your matches.</figcaption>
+          <figcaption>
+            Explainability turns “because the model said so” into reasons you can evaluate and challenge.
+          </figcaption>
         </figure>
 
-        <h2>Why Transparency Builds Trust</h2>
+        <h2>What is explainable AI, in normal language?</h2>
 
         <p>
-          Studies consistently show that users who receive explanations for AI recommendations report higher trust, better satisfaction, and are more likely to follow through on recommendations. Explanations foster confidence in the process. Users feel in control and empowered to decide. Feedback improves when users understand the rationale. And expectations are aligned before moving into a shared space.
-        </p>
-
-        <h2>The Problem with Black Box Algorithms</h2>
-
-        <p>
-          Opaque systems cause several major issues. Without visibility, you cannot verify if the system works correctly or fairly - limited accountability. Users cannot pinpoint what went wrong, making it harder to improve recommendations - poor feedback loops. Blind trust creates anxiety and discourages users from making confident decisions - reduced agency. And hidden logic can perpetuate unfair patterns without detection - bias risks.
+          Explainable AI (often shortened to XAI) refers to methods that make an AI-supported outcome
+          understandable to a human. Instead of a black box score, you get a readable explanation such as: the
+          factors that contributed, what information was used, what trade-offs were made, and where the system
+          is uncertain.
         </p>
 
         <p>
-          That is why we designed <Link href="/matches">Domu Match</Link> to be transparent from the start. You never have to guess why a match was suggested.
+          In roommate matching, an explanation is useful only if it is specific enough to act on. That
+          typically means you can see:
         </p>
 
-        <h2>Explainable AI in Practice at Domu Match</h2>
+        <ul>
+          <li>
+            <strong>Which dimensions mattered</strong>, such as sleep schedules, guests, cleaning norms,
+            communication style, noise expectations, or study rhythm.
+          </li>
+          <li>
+            <strong>What the system inferred</strong> from your answers (and what it did not).
+          </li>
+          <li>
+            <strong>What drove the match</strong>, for example shared quiet hours rather than “similar
+            personality”.
+          </li>
+          <li>
+            <strong>Potential friction points</strong> so you can discuss them early.
+          </li>
+        </ul>
 
         <p>
-          We have embedded explainability into every step of our matching workflow. Every match shows the underlying lifestyle, academic, and social factors - transparent compatibility scores. You will see how heavily each factor was considered - weighting insights. You can tell us whether a match felt accurate, improving future recommendations - user feedback loop. And you can tweak your priorities and immediately see how matches change - adjustable preferences.
+          Done well, transparency does not promise a perfect outcome. It gives you a clearer map of the risks.
         </p>
 
-        <p>
-          When you use <Link href="/how-it-works">Domu Match</Link>, you don&apos;t just get a score - you get context, rationale, and control. Our <Link href="/about">mission</Link> is built on the belief that science-driven matching should be understandable and trustworthy.
-        </p>
-
-        <h2>Real Benefits of Explainable Matching</h2>
+        <h2>Why Europe is pushing for transparency</h2>
 
         <p>
-          Understanding why you matched with someone helps you decide whether to move forward - better decision-making. Knowing alignment areas lets you discuss relevant topics quickly with potential roommates - improved conversations. Clarity reduces uncertainty and helps you trust the process - lower stress. And users who understand their matches are more confident, leading to better outcomes - higher satisfaction.
-        </p>
-
-        <h2>Looking Ahead</h2>
-
-        <p>
-          As EU and Dutch regulations evolve, explainability standards will only rise. We expect more detailed explanation requirements, standard formats, and advances in how complex models can be interpreted. Staying ahead of these standards is part of our commitment to <Link href="/safety">student safety and trust</Link>.
-        </p>
-
-        <h2>Your Rights and Responsibilities</h2>
-
-        <p>
-          You have the right to know how AI recommendations are produced, to request human review and clarification, to challenge or opt out of automated matching, and to access and export your matching data. At the same time, you are responsible for providing accurate information, reviewing explanations before proceeding, offering feedback to improve recommendations, and making informed decisions instead of deferring blindly to AI.
-        </p>
-
-        <h2>Conclusion: Transparency Is the Foundation of Trust</h2>
-
-        <p>
-          Explainable AI isn&apos;t optional - it&apos;s becoming the baseline for any system that influences meaningful life decisions. By demanding transparency and choosing platforms that provide it, you protect your rights, gain confidence, and create better living situations.
+          European regulation is moving in a broadly human-centred direction: people should not be surprised
+          by AI use, and systems should not be unaccountable. Two frameworks matter most in day-to-day terms.
         </p>
 
         <p>
-          At Domu Match, explainability isn&apos;t a legal checkbox; it&apos;s a design philosophy. We believe you should always understand why we recommend a roommate - and that clarity helps you build safer, happier homes. <Link href="/auth/sign-up">Get started</Link> and experience matching that puts you in control.
+          The{' '}
+          <a href="https://eur-lex.europa.eu/eli/reg/2024/1689/oj" target="_blank" rel="noreferrer">
+            EU AI Act (Regulation (EU) 2024/1689)
+          </a>{' '}
+          sets rules for AI systems, including transparency obligations for certain uses and risk management
+          for higher-risk categories. Separately, the GDPR governs how personal data is processed, including
+          automated decision-making.
+        </p>
+
+        <p>
+          Even when a product is not “high risk” under the AI Act, explainability is still part of responsible
+          design: if you cannot explain a recommendation, you cannot meaningfully debug it, audit it, or help
+          users correct it.
+        </p>
+
+        <h2>GDPR and your rights around automated processing</h2>
+
+        <p>
+          GDPR Article 22 is often summarised as protection against being subject to certain decisions made
+          solely by automated processing when they have legal or similarly significant effects. In practice,
+          you should expect platforms to be clear about:
+        </p>
+
+        <ul>
+          <li>Whether automated processing is used and what it is used for.</li>
+          <li>What data categories feed into the outcome.</li>
+          <li>How to correct inputs, withdraw consent where relevant, or request human review.</li>
+        </ul>
+
+        <p>
+          If you want a quick grounding point, start with the official legal texts and then compare claims a
+          platform makes with what it actually explains in the interface and policies.
+        </p>
+
+        <figure>
+          <BlogHeroImage
+            imageKey="studentsCollaborating"
+            alt="Data dashboard showing simplified decision signals"
+          />
+          <figcaption>
+            In a healthy system, data is not a mystery ingredient. You can see what is used and why it
+            matters.
+          </figcaption>
+        </figure>
+
+        <h2>What explainability changes for a student, practically</h2>
+
+        <p>A roommate platform cannot guarantee chemistry. But explainability can make the process less fragile.</p>
+
+        <ul>
+          <li>
+            <strong>It makes you faster at screening</strong>. If a match is driven by quiet weekdays, you
+            immediately know what to verify in conversation.
+          </li>
+          <li>
+            <strong>It helps you spot category errors</strong>. If the system misunderstood your “social”
+            answer, you can correct it before it snowballs.
+          </li>
+          <li>
+            <strong>It reduces false confidence</strong>. Black-box scores feel authoritative even when the
+            underlying inputs are thin.
+          </li>
+          <li>
+            <strong>It improves conversations</strong>. You can discuss specifics (quiet hours, guests, chores)
+            instead of vague labels like “easygoing”.
+          </li>
+        </ul>
+
+        <h2>What to be sceptical of</h2>
+
+        <p>Some “explanations” are marketing rather than information. Watch for these red flags:</p>
+
+        <ul>
+          <li>
+            <strong>Overly generic reasons</strong>, like “you are compatible”, without naming what actually
+            aligned.
+          </li>
+          <li>
+            <strong>Explanations that cannot be contested</strong>, for example no way to correct answers or
+            priorities.
+          </li>
+          <li>
+            <strong>Hidden inputs</strong>, where the platform will not tell you what data was used.
+          </li>
+          <li>
+            <strong>Certainty language</strong>, like “perfect match”, that discourages critical thinking.
+          </li>
+        </ul>
+
+        <p>
+          If you want a concrete grounding exercise, compare this with classic roommate conflict domains:
+          chores, noise, guests, and communication. A useful explanation connects to those real-life topics.
+        </p>
+
+        <p>
+          For practical examples of how specific habits create (or prevent) friction, see{' '}
+          <Link href="/blog/why-im-clean-is-a-lie">Why “I’m Clean” Is a Lie</Link> and{' '}
+          <Link href="/blog/night-owl-vs-8am-lecture">Night Owl vs. 8 A.M. Lecture</Link>.
+        </p>
+
+        <h2>A short checklist before you trust a recommendation</h2>
+
+        <p>If you are using any matching feature, you can ask a platform these questions:</p>
+
+        <ul>
+          <li>What are the top reasons this match was recommended?</li>
+          <li>Can I see which answers drove the outcome?</li>
+          <li>Can I adjust priorities and see the impact?</li>
+          <li>Can I correct mistakes and request review if something looks wrong?</li>
+          <li>Is there a clear explanation of what data is used, and what is not used?</li>
+        </ul>
+
+        <h2>Conclusion</h2>
+
+        <p>
+          Explainable AI is not a buzzword. It is the difference between being managed by a score and being
+          supported by information. When you can see the reasoning, you can question it, correct it, and use it
+          to make a decision that still belongs to you.
+        </p>
+
+        <h2>References</h2>
+
+        <p className="text-sm text-slate-300">
+          European Union. (2024). <em>Regulation (EU) 2024/1689 (Artificial Intelligence Act)</em>.{' '}
+          <a href="https://eur-lex.europa.eu/eli/reg/2024/1689/oj" target="_blank" rel="noreferrer">
+            https://eur-lex.europa.eu/eli/reg/2024/1689/oj
+          </a>
+        </p>
+        <p className="text-sm text-slate-300">
+          European Parliament and Council. (2016). <em>Regulation (EU) 2016/679 (GDPR)</em>.{' '}
+          <a href="https://eur-lex.europa.eu/eli/reg/2016/679/oj" target="_blank" rel="noreferrer">
+            https://eur-lex.europa.eu/eli/reg/2016/679/oj
+          </a>
         </p>
       </div>
-    )
+    ),
   },
   nl: {
     title: 'Waarom uitlegbare AI ertoe doet',
-    excerpt: 'Begrijp waarom je gematcht wordt en neem betere beslissingen. Ontdek hoe transparantie in AI-matching aansluit bij EU-regels en jouw rechten beschermt.',
+    excerpt:
+      'Als een systeem adviseert met wie je gaat samenwonen, wil je het “waarom” kunnen zien. Uitlegbare AI maakt van een ondoorzichtige score een afweging die je zelf kunt beoordelen.',
     publishDate: '2025-11-05',
     readTime: '8 min lezen',
     relatedLinks: [
       {
         title: 'Zo werkt matching',
         href: '/how-it-works',
-        description: 'Lees hoe ons transparante matchingproces werkt en hoe we compatibiliteit uitleggen.'
+        description:
+          'Een overzicht in gewone taal van hoe vragen en voorkeuren leiden tot een aanbeveling.',
       },
       {
-        title: 'Onze aanpak',
+        title: 'Privacybeleid',
+        href: '/privacy',
+        description:
+          'Hoe persoonsgegevens worden verwerkt, en welke vragen je altijd mag stellen bij automatische systemen.',
+      },
+      {
+        title: 'Over Domu Match',
         href: '/about',
-        description: 'Ontdek onze focus op transparantie en wetenschappelijk onderbouwde matching.'
+        description: 'Achtergrond over Domu Match en de opbouw van de site.',
       },
-      {
-        title: 'Bekijk je matches',
-        href: '/matches',
-        description: 'Zie waarom je met iemand compatibel bent voordat je contact opneemt.'
-      }
     ],
-    ctaTitle: 'Ervaar transparante matching',
-    ctaDescription: 'Zie precies waarom je met iemand wordt gematcht. Onze uitlegbare AI toont de factoren achter elke aanbeveling.',
-    ctaHref: '/auth/sign-up',
-    ctaText: 'Aan de slag',
+    ctaTitle: undefined,
+    ctaDescription: undefined,
+    ctaHref: undefined,
+    ctaText: undefined,
     body: () => (
       <div className="space-y-10">
         <p className="text-lg text-slate-700 leading-relaxed">
-          Als een algoritme bepaalt met wie je gaat samenwonen, wil je weten waarom. Nu AI steeds vaker keuzes rond wonen, studie en werk beïnvloedt, is transparantie geen luxe meer maar een wettelijke eis.
+          Als een systeem adviseert met wie je gaat samenwonen, is de belangrijkste vraag niet “met wie” maar
+          “waarom”. Een roommate match raakt je slaap, veiligheid, geld, studieritme en stress. Als de
+          redenering verborgen blijft, ga je gokken: “Misschien weet het algoritme meer dan ik.” Uitlegbare AI
+          probeert precies dat te voorkomen.
         </p>
 
         <p>
-          De Europese AI-verordening, sinds 2024 volledig van kracht, beschermt jouw recht om algoritmische beslissingen te begrijpen, te bevragen en te laten corrigeren. Voor studenten in Nederland betekent dat: je hoeft een match nooit blind te vertrouwen.
+          Uitlegbaarheid is praktisch én bestuurlijk belangrijk. Praktisch, omdat je sneller mismatch-signalen
+          ziet en betere vragen stelt vóórdat je ergens instapt. Bestuurlijk, omdat Europa steeds vaker
+          transparantie verwacht wanneer automatische systemen invloed hebben op betekenisvolle keuzes. Het is
+          technisch, maar het principe is simpel: jij moet kunnen begrijpen wat er met je informatie gebeurt en
+          hoe dat de uitkomst heeft gevormd.
         </p>
 
         <figure>
-          <Image
-            src="https://images.unsplash.com/photo-1677442136019-21780ecad995?w=1200&q=80"
-            alt="Abstracte visualisatie van AI en dataconnecties"
-            width={1200}
-            height={630}
-            className="w-full rounded-2xl"
+          <BlogHeroImage
+            imageKey="studyLateNight"
+            alt="Abstracte visualisatie van verbonden data en beslispaden"
           />
-          <figcaption>Uitlegbare AI helpt je de factoren achter elke aanbeveling te begrijpen.</figcaption>
+          <figcaption>
+            Uitlegbaarheid maakt van “omdat het model het zegt” redenen die je kunt beoordelen en bevragen.
+          </figcaption>
         </figure>
 
-        <h2>Wat is uitlegbare AI?</h2>
+        <h2>Wat is uitlegbare AI, in gewone taal?</h2>
 
         <p>
-          Uitlegbare AI (Explainable AI) zijn systemen die duidelijk laten zien welke factoren, wegingen en logica tot een aanbeveling hebben geleid. Geen black box, maar inzicht in het waarom.
+          Uitlegbare AI (Explainable AI, vaak XAI) zijn methoden die een AI-ondersteunde uitkomst begrijpelijk
+          maken voor mensen. In plaats van een black box-score krijg je uitleg zoals: welke factoren bijdroegen,
+          welke informatie is gebruikt, welke afwegingen zijn gemaakt en waar het systeem onzeker is.
+        </p>
+
+        <p>Bij roommate matching is uitleg pas nuttig als ze concreet genoeg is om iets mee te doen. Denk aan:</p>
+
+        <ul>
+          <li>
+            <strong>Welke dimensies meetellen</strong>, zoals slaap, logees, schoonmaak, communicatie, geluid en
+            studieritme.
+          </li>
+          <li>
+            <strong>Wat het systeem afleidt</strong> uit je antwoorden (en wat niet).
+          </li>
+          <li>
+            <strong>Wat de match droeg</strong>, bijvoorbeeld gedeelde stilte-uren in plaats van “zelfde
+            persoonlijkheid”.
+          </li>
+          <li>
+            <strong>Mogelijke frictiepunten</strong> die je vroeg kunt bespreken.
+          </li>
+        </ul>
+
+        <p>Goede uitleg belooft geen perfecte uitkomst. Het geeft je een kaart van de risico’s.</p>
+
+        <h2>Waarom Europa transparantie steeds serieuzer neemt</h2>
+
+        <p>
+          Europese regels bewegen in een mensgerichte richting: je moet niet verrast worden door AI-gebruik, en
+          systemen mogen niet oncontroleerbaar zijn. Twee kaders zijn in de praktijk het belangrijkst.
         </p>
 
         <p>
-          Bij roommate matching zie je bijvoorbeeld welke lifestyle-, studie- en persoonlijkheidsfactoren het zwaarst wogen, waarom een match hoger scoort dan een andere, welke overeenkomsten of aanvullingen zijn gevonden, en waar mogelijk frictie kan ontstaan zodat je dat vooraf bespreekt. Bij <Link href="/how-it-works">Domu Match</Link> bouwden we ons matchingproces van meet af aan rond deze principes.
+          De{' '}
+          <a href="https://eur-lex.europa.eu/eli/reg/2024/1689/oj" target="_blank" rel="noreferrer">
+            EU AI-verordening (AI Act, Verordening (EU) 2024/1689)
+          </a>{' '}
+          regelt AI-systemen en kent transparantieplichten voor bepaalde toepassingen, met zwaardere eisen voor
+          hogere risicocategorieën. Daarnaast regelt de AVG (GDPR) hoe persoonsgegevens worden verwerkt, inclusief
+          automatische besluitvorming.
         </p>
 
-        <h2>EU AI Act: hogere lat voor transparantie</h2>
-
         <p>
-          De AI Act werkt met risicocategorieën, maar legt altijd nadruk op transparantie, menselijk toezicht en gebruikersrechten. Je moet weten dat AI wordt ingezet en wat de grenzen zijn. Beslissingen moeten kunnen worden herzien of aangepast. Systemen moeten fouten opsporen en corrigeren. En je mag uitleg vragen en aanbevelingen aanvechten.
+          Ook als iets niet “hoog-risico” is onder de AI Act, hoort uitlegbaarheid bij verantwoord ontwerp: als
+          je een aanbeveling niet kunt uitleggen, kun je haar niet goed debuggen, auditen of laten corrigeren.
         </p>
 
+        <h2>AVG en je rechten rond automatische verwerking</h2>
+
         <p>
-          Nederland sluit hierop aan met een eigen mensgerichte AI-strategie waarin uitlegbaarheid centraal staat.
+          Artikel 22 van de AVG wordt vaak samengevat als bescherming tegen bepaalde besluiten die uitsluitend
+          automatisch worden genomen en die juridische of vergelijkbare grote impact hebben. In de praktijk mag je
+          van platforms verwachten dat ze helder zijn over:
         </p>
 
-        <h2>GDPR beschermt je bij automatische beslissingen</h2>
+        <ul>
+          <li>Of automatische verwerking wordt gebruikt, en waarvoor precies.</li>
+          <li>Welke categorieën gegevens meetellen.</li>
+          <li>Hoe je inputs corrigeert, toestemming intrekt waar relevant, of menselijke review aanvraagt.</li>
+        </ul>
 
         <p>
-          Artikel 22 van de AVG geeft je het recht om geen besluiten te krijgen die puur automatisch tot stand komen als die grote impact hebben. Gebeurt dat wel, dan heb je recht op uitleg, menselijke tussenkomst en bezwaar. Je mag weten welke logica en gegevens zijn gebruikt. Je mag een menselijke beoordeling vragen. Je kunt een aanbeveling laten heroverwegen. En je mag de onderliggende data opvragen of meenemen. Ons <Link href="/privacy">privacybeleid</Link> legt uit hoe we deze rechten waarborgen.
+          Als snelle reality check kun je de officiële teksten erbij pakken en vervolgens kijken of een platform
+          in de interface en in het beleid daadwerkelijk uitlegt wat het claimt.
         </p>
 
         <figure>
-          <Image
-            src="https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=1200&q=80"
-            alt="Datavisualisatie en analytics-dashboard"
-            width={1200}
-            height={630}
-            className="w-full rounded-2xl"
+          <BlogHeroImage
+            imageKey="studentsCollaborating"
+            alt="Dashboard met vereenvoudigde signalen die een beslissing beïnvloeden"
           />
-          <figcaption>Transparante systemen laten zien hoe je gegevens je matches beïnvloeden.</figcaption>
+          <figcaption>
+            In een gezond systeem zijn data geen geheim ingrediënt. Je ziet wat gebruikt wordt en waarom.
+          </figcaption>
         </figure>
 
-        <h2>Transparantie bouwt vertrouwen</h2>
+        <h2>Wat uitlegbaarheid voor studenten verandert</h2>
+
+        <p>Een platform kan geen klik garanderen, maar uitlegbaarheid maakt het proces minder kwetsbaar.</p>
+
+        <ul>
+          <li>
+            <strong>Sneller screenen</strong>: als de match vooral draait om stilte-uren, weet je direct wat je
+            moet uitvragen.
+          </li>
+          <li>
+            <strong>Category errors zien</strong>: als het systeem je antwoord verkeerd begreep, kun je het
+            aanpassen vóórdat het verder doorwerkt.
+          </li>
+          <li>
+            <strong>Minder schijnzekerheid</strong>: een black box-score voelt autoritair, zelfs als de data dun
+            is.
+          </li>
+          <li>
+            <strong>Betere gesprekken</strong>: je praat over gedrag in plaats van vage labels.\n+          </li>
+        </ul>
+
+        <h2>Waar je sceptisch op mag zijn</h2>
+
+        <p>Sommige “uitleg” is eigenlijk marketing. Let op deze rode vlaggen:</p>
+
+        <ul>
+          <li>
+            <strong>Algemene redenen</strong>, zoals “jullie passen”, zonder te zeggen waarop.
+          </li>
+          <li>
+            <strong>Uitleg die je niet kunt corrigeren</strong>, bijvoorbeeld geen manier om antwoorden of
+            prioriteiten aan te passen.
+          </li>
+          <li>
+            <strong>Verborgen inputs</strong>, waarbij je niet te horen krijgt welke data meetelt.
+          </li>
+          <li>
+            <strong>Schijnzekerheid</strong>, zoals “perfecte match”, die kritisch denken afremt.
+          </li>
+        </ul>
 
         <p>
-          Onderzoek toont aan dat gebruikers die uitleg krijgen meer vertrouwen hebben, betere keuzes maken en zich eigenaar voelen van het proces. Je begrijpt waarom een match logisch is. Je voelt controle en kunt gerichte vragen stellen. Je feedback wordt nuttiger, wat het systeem verbetert. En je verwachtingen liggen op één lijn vóórdat je samenwoont.
-        </p>
-
-        <h2>Waarom black box-algoritmen problematisch zijn</h2>
-
-        <p>
-          Niet-uitlegbare systemen leiden tot geen verantwoordelijkheid - je kunt niet controleren of het systeem eerlijk of correct werkt. Geen leermomenten - zonder inzicht kun je niet aangeven wat beter moet. Minder regie - je vertrouwt blind en voelt je minder zeker over de uitkomst. En bias-risico - vooroordelen blijven verborgen zolang de logica niet zichtbaar is. Daarom ontwierpen we <Link href="/matches">Domu Match</Link> vanaf het begin transparant.
-        </p>
-
-        <h2>Zo passen wij uitlegbare AI toe</h2>
-
-        <p>
-          Bij Domu Match zit uitleg in elke stap. Je ziet welke factoren het meest bijdragen - heldere scores. Je weet hoe zwaar elk onderdeel telt - weging inzichtelijk. Jij geeft aan of een match klopte, waardoor het systeem verbetert - feedbackloop. En je past je voorkeuren aan en ziet direct het effect - instelbare voorkeuren.
+          Als anker kun je de klassieke roommate-conflicten erbij pakken: afwas, geluid, logees en communicatie.
+          Een bruikbare uitleg sluit daarop aan.
         </p>
 
         <p>
-          Via <Link href="/how-it-works">Domu Match</Link> krijg je dus geen kale score maar context en regie. Onze <Link href="/about">missie</Link> is gebaseerd op het idee dat wetenschappelijke matching begrijpelijk en betrouwbaar moet zijn.
+          Voor voorbeelden van hoe concreet gedrag wél of niet botst, zie{' '}
+          <Link href="/blog/why-im-clean-is-a-lie">Waarom “ik ben netjes” weinig zegt</Link> en{' '}
+          <Link href="/blog/night-owl-vs-8am-lecture">Nachtbraker vs. 8‑uurcollege</Link>.
         </p>
 
-        <h2>Concrete voordelen</h2>
+        <h2>Checklist: vóórdat je een aanbeveling vertrouwt</h2>
 
-        <p>
-          Je weet precies waarom iemand past en of je verder wilt - betere beslissingen. Je bespreekt meteen relevante onderwerpen - gerichtere gesprekken. Transparantie haalt onzekerheid weg - minder stress. En wie het proces begrijpt, staat sterker in elke stap - meer tevredenheid.
-        </p>
+        <p>Je kunt elke matchingfunctie langs deze vragen leggen:</p>
 
-        <h2>Vooruitblik</h2>
-
-        <p>
-          Verwacht strengere uitlegvereisten, standaarden voor hoe uitleg wordt getoond en nieuwe technieken om complexe modellen toch begrijpelijk te maken. Vooroplopen in deze standaarden hoort bij onze inzet voor <Link href="/safety">studentveiligheid en vertrouwen</Link>.
-        </p>
-
-        <h2>Jouw rechten en plichten</h2>
-
-        <p>
-          Je mag weten hoe AI tot een aanbeveling komt, menselijke interventie vragen, bezwaar maken of afzien van automatische beslissingen, en je gegevens inzien en meenemen. Je bent verantwoordelijk voor eerlijke en volledige informatie geven, uitleg echt lezen vóórdat je beslist, feedback delen om het systeem beter te maken, en zelfstandig een keuze maken in plaats van blind op AI te varen.
-        </p>
+        <ul>
+          <li>Wat zijn de belangrijkste redenen voor deze match?</li>
+          <li>Welke antwoorden hebben de uitkomst het meest beïnvloed?</li>
+          <li>Kan ik prioriteiten aanpassen en het effect zien?</li>
+          <li>Kan ik fouten corrigeren en review aanvragen als iets niet klopt?</li>
+          <li>Is helder welke data wel, en welke data niet, wordt gebruikt?</li>
+        </ul>
 
         <h2>Conclusie</h2>
 
         <p>
-          Uitlegbare AI is de basis voor vertrouwen. Door te kiezen voor platforms die transparant zijn, bescherm je jezelf én krijg je betere matches. Bij Domu Match is uitlegbaarheid geen vinkje, maar een ontwerpprincipe. Je verdient het om te weten waarom we een roommate aanraden - zo bouw je aan een veilig, prettig thuis. <Link href="/auth/sign-up">Start vandaag</Link> en ervaar matching die jou in controle zet.
+          Uitlegbare AI is geen buzzword. Het is het verschil tussen gestuurd worden door een score en geholpen
+          worden door informatie. Als je de redenering kunt zien, kun je die bevragen, corrigeren en gebruiken om
+          een keuze te maken die van jou blijft.
+        </p>
+
+        <h2>Referenties</h2>
+
+        <p className="text-sm text-slate-300">
+          Europese Unie. (2024). <em>Verordening (EU) 2024/1689 (AI Act)</em>.{' '}
+          <a href="https://eur-lex.europa.eu/eli/reg/2024/1689/oj" target="_blank" rel="noreferrer">
+            https://eur-lex.europa.eu/eli/reg/2024/1689/oj
+          </a>
+        </p>
+        <p className="text-sm text-slate-300">
+          Europese Unie. (2016). <em>Verordening (EU) 2016/679 (AVG/GDPR)</em>.{' '}
+          <a href="https://eur-lex.europa.eu/eli/reg/2016/679/oj" target="_blank" rel="noreferrer">
+            https://eur-lex.europa.eu/eli/reg/2016/679/oj
+          </a>
         </p>
       </div>
-    )
-  }
+    ),
+  },
 }
 
 export function ExplainableAIArticle() {

@@ -2,7 +2,7 @@
 
 import { BlogPostLayout } from '@/components/marketing/blog-post-layout'
 import Link from 'next/link'
-import Image from 'next/image'
+import { BlogHeroImage } from '@/components/marketing/blog-hero-image'
 import { useApp } from '@/app/providers'
 
 const content = {
@@ -26,17 +26,16 @@ const content = {
           'Protect yourself legally and financially if you decide a housing situation is not safe or sustainable.',
       },
       {
-        title: 'Start Planning Your Next Match',
-        href: '/matches',
+        title: 'Group Chats, Ground Rules',
+        href: '/blog/group-chats-ground-rules',
         description:
-          'Use Domu Match to build a safer, more compatible plan for your next move instead of repeating the same dynamic.',
+          'A short template for clarifying expectations early, before issues escalate.',
       },
     ],
-    ctaTitle: 'Trust Your Nervous System - Then Make a Plan',
-    ctaDescription:
-      'If move‑in week feels wrong, you are allowed to notice that. Domu Match can help you design a better match next time.',
-    ctaHref: '/auth/sign-up',
-    ctaText: 'Plan a Better Match',
+    ctaTitle: undefined,
+    ctaDescription: undefined,
+    ctaHref: undefined,
+    ctaText: undefined,
     body: () => (
       <div className="space-y-10">
         <p className="text-lg text-slate-700 leading-relaxed">
@@ -47,12 +46,9 @@ const content = {
         </p>
 
         <figure>
-          <Image
-            src="https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?w=1200&q=80"
-            alt="Student sitting on moving boxes looking uncertain"
-            width={1200}
-            height={630}
-            className="w-full rounded-2xl"
+          <BlogHeroImage
+            imageKey="cityBikeStudent"
+            alt="Person moving cardboard boxes in a living room during move-in week"
           />
           <figcaption>
             Move‑in week is when you see the raw version of how people actually live - before everyone starts
@@ -156,7 +152,7 @@ const content = {
           and heavy burnout (American Psychological Association, 2019).
         </p>
 
-        <h2>Designing the Next Chapter Differently</h2>
+        <h2>Designing the next chapter differently</h2>
 
         <p>
           Whether you stay or go, move‑in week is valuable data for your next choice. Ask yourself:
@@ -169,17 +165,15 @@ const content = {
         </ul>
 
         <p>
-          You can literally encode those lessons into your Domu Match profile. Be honest about your sleep
-          needs, guest boundaries, cleaning standards and social battery. Then let the matching engine help
-          you filter for people whose answers align.
+          Write the lessons down. Be specific: sleep, guests, cleanliness, communication, safety. Then use them
+          as criteria in your next choice instead of starting from scratch. That is how you avoid repeating the
+          same dynamic.
         </p>
 
         <p>
-          You can start that reset any time on our{' '}
-          <Link href="/auth/sign-up">
-            sign‑up page
-          </Link>
-          .
+          If you need a practical structure for a first-week house meeting, use{' '}
+          <Link href="/blog/group-chats-ground-rules">Group Chats, Ground Rules</Link>. It gives you an agenda
+          so you do not negotiate in a crisis.
         </p>
 
         <h2>References</h2>
@@ -211,12 +205,23 @@ const content = {
         description:
           'Lees hoe blijven in een slechte situatie je geld, energie en cijfers kost.',
       },
+      {
+        title: 'Veiligheidschecklist voor studenthuurders',
+        href: '/blog/safety-checklist-for-student-renters',
+        description:
+          'Bescherm jezelf juridisch en financieel als een woonsituatie niet veilig of houdbaar is.',
+      },
+      {
+        title: 'Groepsapps & huisregels',
+        href: '/blog/group-chats-ground-rules',
+        description:
+          'Een template om verwachtingen vroeg te verduidelijken, vóórdat het escaleert.',
+      },
     ],
-    ctaTitle: 'Vertrouw je gevoel – en maak een plan',
-    ctaDescription:
-      'Gebruik je ervaringen van deze woning om via Domu Match bewuster een volgende match te kiezen.',
-    ctaHref: '/auth/sign-up',
-    ctaText: 'Plan je volgende match',
+    ctaTitle: undefined,
+    ctaDescription: undefined,
+    ctaHref: undefined,
+    ctaText: undefined,
     body: () => (
       <div className="space-y-10">
         <p className="text-lg text-slate-700 leading-relaxed">
