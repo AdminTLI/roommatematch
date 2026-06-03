@@ -16,6 +16,16 @@ const content = {
     readArticle: 'Read article',
     posts: [
       {
+        slug: 'student-room-search-giving-up-netherlands',
+        title: 'When Dutch Students Stop Searching for Rooms',
+        excerpt:
+          'Kences via NOS: fewer students actively search, graduates block turnover, and private supply shrinks. Why that pipeline failure matters for access and wellbeing.',
+        readTime: '9 min read',
+        date: '2026-06-03',
+        category: 'Housing',
+        icon: TrendingUp,
+      },
+      {
         slug: 'international-student-housing-netherlands-isolation',
         title:
           'International Student Housing in the Netherlands: Where Data Meets Integration Risk',
@@ -186,6 +196,16 @@ const content = {
     subtitle: 'Deskundige tips om compatibele huisgenoten te vinden, veilig te huren en te begrijpen hoe technologie je helpt betere woonbeslissingen te nemen.',
     readArticle: 'Lees artikel',
     posts: [
+      {
+        slug: 'student-room-search-giving-up-netherlands',
+        title: 'Waarom steeds meer Nederlandse studenten stoppen met kamers zoeken',
+        excerpt:
+          'Kences via NOS: minder actieve zoekers, afgestudeerden blokkeren doorstroom en particulier aanbod krimpt. Wat die storing betekent voor toegang en welzijn.',
+        readTime: '9 min lezen',
+        date: '2026-06-03',
+        category: 'Huisvesting',
+        icon: TrendingUp,
+      },
       {
         slug: 'international-student-housing-netherlands-isolation',
         title:
