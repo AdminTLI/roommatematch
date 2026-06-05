@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createClient } from '@/lib/supabase/server'
+import { createClient, createAdminClient } from '@/lib/supabase/server'
 import { createServiceClient } from '@/lib/supabase/service'
 import { safeLogger } from '@/lib/utils/logger'
 import {
@@ -90,10 +90,19 @@ export async function POST(req: NextRequest) {
 /**
  * DELETE /api/privacy/delete
  *
- * Immediate account deletion (admin only or after grace period)
+ * Immediate account deletion (admin only or after grace period).
+ *
+ * Security note: session authentication uses the cookie-scoped user client.
+ * All privileged DB operations (deleting another user's rows, calling
+ * auth.admin.deleteUser) MUST use the admin client (service-role key) because:
+ *   1. The users table has no admin DELETE RLS policy — user-scoped deletes fail.
+ *   2. auth.admin.deleteUser() requires the service-role key; calling it on the
+ *      anon-key client returns a 403 and silently leaves the auth user intact,
+ *      which would mark the DSAR as completed while the account remains active.
  */
 export async function DELETE(req: NextRequest) {
   try {
+    // Authenticate the requesting admin using the cookie-scoped client.
     const supabase = await createClient()
     const { data: { user }, error: authError } = await supabase.auth.getUser()
 
@@ -101,6 +110,7 @@ export async function DELETE(req: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
+    // Admin check via user-scoped client (RLS: admins can read their own row).
     const { data: adminCheck } = await supabase
       .from('admins')
       .select('id')
@@ -118,7 +128,10 @@ export async function DELETE(req: NextRequest) {
       return NextResponse.json({ error: 'user_id parameter required' }, { status: 400 })
     }
 
-    const { data: deletionRequest } = await supabase
+    // Use the service-role admin client for all privileged operations below.
+    const adminClient = createAdminClient()
+
+    const { data: deletionRequest } = await adminClient
       .from('dsar_requests')
       .select('*')
       .eq('user_id', targetUserId)
@@ -149,7 +162,7 @@ export async function DELETE(req: NextRequest) {
       )
     }
 
-    const { data: verifications } = await supabase
+    const { data: verifications } = await adminClient
       .from('verifications')
       .select('created_at, updated_at')
       .eq('user_id', targetUserId)
@@ -173,7 +186,8 @@ export async function DELETE(req: NextRequest) {
       })
     }
 
-    const { error: deleteError } = await supabase
+    // Delete user row — cascades to profiles, responses, matches, chats, etc.
+    const { error: deleteError } = await adminClient
       .from('users')
       .delete()
       .eq('id', targetUserId)
@@ -182,13 +196,16 @@ export async function DELETE(req: NextRequest) {
       throw new Error(`Failed to delete user: ${deleteError.message}`)
     }
 
-    const { error: authDeleteError } = await supabase.auth.admin.deleteUser(targetUserId)
+    // Delete the Supabase auth record. This MUST succeed; if it fails the
+    // user can still log in, which would be a GDPR compliance failure.
+    const { error: authDeleteError } = await adminClient.auth.admin.deleteUser(targetUserId)
 
     if (authDeleteError) {
       safeLogger.error('Failed to delete auth user', { error: authDeleteError, userId: targetUserId })
+      throw new Error(`Failed to delete auth user: ${authDeleteError.message}`)
     }
 
-    await supabase
+    await adminClient
       .from('dsar_requests')
       .update({
         status: 'completed',
