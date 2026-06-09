@@ -314,19 +314,12 @@ export async function GET(request: Request) {
               throw new Error(`Failed to delete user: ${deleteError.message}`)
             }
 
-            // 4. Delete auth user (this must be done with admin client)
-            const { error: authDeleteError } = await adminClient.auth.admin.deleteUser(targetUserId)
-
-            if (authDeleteError) {
-              safeLogger.error('[Cron] Failed to delete auth user', { 
-                error: authDeleteError, 
-                userId: targetUserId,
-                requestId: request.id
-              })
-              throw new Error(`Failed to delete auth user: ${authDeleteError.message}`)
-            }
-
-            // 5. Update DSAR request with completion
+            // 4. Stamp the DSAR audit record BEFORE deleting the auth user.
+            //    auth.admin.deleteUser() triggers ON DELETE SET NULL on dsar_requests.user_id
+            //    (migration 20260608230000). We must write deleted_user_id and
+            //    deletion_completed_at now so the audit row is fully populated while
+            //    user_id is still resolvable.  After auth deletion user_id becomes NULL
+            //    but the row is retained — satisfying GDPR Art. 5(2) accountability.
             const adminNotes = verificationFilesRetained
               ? 'Account permanently deleted by automated cron job. Verification documents retained per Dutch law (4 weeks).'
               : verificationFilesDeleted
@@ -338,9 +331,24 @@ export async function GET(request: Request) {
               .update({
                 status: 'completed',
                 deletion_completed_at: new Date().toISOString(),
-                admin_notes: adminNotes
+                deleted_user_id: targetUserId,
+                admin_notes: adminNotes,
               })
               .eq('id', request.id)
+
+            // 5. Delete auth user (this must be done with admin client).
+            //    The ON DELETE SET NULL FK causes dsar_requests.user_id → NULL here,
+            //    but the row is preserved because we changed CASCADE → SET NULL.
+            const { error: authDeleteError } = await adminClient.auth.admin.deleteUser(targetUserId)
+
+            if (authDeleteError) {
+              safeLogger.error('[Cron] Failed to delete auth user', { 
+                error: authDeleteError, 
+                userId: targetUserId,
+                requestId: request.id
+              })
+              throw new Error(`Failed to delete auth user: ${authDeleteError.message}`)
+            }
 
             results.account_deletions.deleted++
             safeLogger.info('[Cron] Account permanently deleted', {
