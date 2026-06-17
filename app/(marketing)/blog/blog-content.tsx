@@ -16,6 +16,16 @@ const content = {
     readArticle: 'Read article',
     posts: [
       {
+        slug: 'private-landlords-exit-student-housing-netherlands',
+        title: 'Why Private Landlords Exit Dutch Student Housing',
+        excerpt:
+          'ABF and Kences reporting shows roughly 10,000 student rooms lost in a year as private landlords sell, even while corporations build. What rental law and 2026 reforms may change.',
+        readTime: '9 min read',
+        date: '2026-06-17',
+        category: 'Housing',
+        icon: TrendingUp,
+      },
+      {
         slug: 'international-student-housing-netherlands-isolation',
         title:
           'International Student Housing in the Netherlands: Where Data Meets Integration Risk',
@@ -186,6 +196,16 @@ const content = {
     subtitle: 'Deskundige tips om compatibele huisgenoten te vinden, veilig te huren en te begrijpen hoe technologie je helpt betere woonbeslissingen te nemen.',
     readArticle: 'Lees artikel',
     posts: [
+      {
+        slug: 'private-landlords-exit-student-housing-netherlands',
+        title: 'Waarom particuliere verhuurders de Nederlandse studentenmarkt verlaten',
+        excerpt:
+          'ABF- en Kences-cijfers tonen circa 10.000 verloren studentenkamers per jaar door verkoop door particulieren, terwijl corporaties wel bouwen. Wat huurwet en hervormingen in 2026 kunnen veranderen.',
+        readTime: '9 min lezen',
+        date: '2026-06-17',
+        category: 'Huisvesting',
+        icon: TrendingUp,
+      },
       {
         slug: 'international-student-housing-netherlands-isolation',
         title:
