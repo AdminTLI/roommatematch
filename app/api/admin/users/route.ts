@@ -326,10 +326,76 @@ export async function POST(request: NextRequest) {
         break
       
       case 'delete':
-        // Delete user - this will cascade delete profile, responses, etc. due to ON DELETE CASCADE
-        // First delete from auth.users (requires admin client)
+        // UAVG (Dutch law) hard guard: identity-verification documents must be retained
+        // for 4 weeks (28 days) after the verification was last updated. The cascade chain
+        //   auth.users → public.users → verifications (ON DELETE CASCADE)
+        // means calling auth.admin.deleteUser() erases verification rows, even when they
+        // are still inside the mandatory retention window.
+        //
+        // Mirror the check from app/api/privacy/delete DELETE handler.
+        const fourWeeksAgo = new Date()
+        fourWeeksAgo.setDate(fourWeeksAgo.getDate() - 28)
+
+        const blockedByRetention: Array<{ userId: string; retentionUntil: string }> = []
+
+        for (const uid of userIds) {
+          const { data: recentVerifications } = await admin
+            .from('verifications')
+            .select('updated_at')
+            .eq('user_id', uid)
+            .gt('updated_at', fourWeeksAgo.toISOString())
+            .limit(1)
+
+          if (recentVerifications && recentVerifications.length > 0) {
+            const latestDate = new Date(recentVerifications[0].updated_at)
+            const retentionUntil = new Date(
+              latestDate.getTime() + 28 * 24 * 60 * 60 * 1000
+            ).toISOString()
+            blockedByRetention.push({ userId: uid, retentionUntil })
+            safeLogger.warn(
+              '[Admin Users] Deletion blocked: verification documents within UAVG 4-week retention window',
+              { userId: uid, retentionUntil, requestedBy: user!.id }
+            )
+          }
+        }
+
+        if (blockedByRetention.length > 0) {
+          return NextResponse.json(
+            {
+              error: 'Deletion blocked by UAVG retention requirement',
+              message:
+                'One or more users have identity-verification documents that must be retained for 4 weeks per Dutch law (UAVG). Delete these accounts after the retention period expires.',
+              blocked: blockedByRetention,
+            },
+            { status: 400 }
+          )
+        }
+
+        // Delete user - auth.admin.deleteUser cascades through auth.users → public.users →
+        // all child tables (profiles, responses, matches, chats, verifications, etc.)
         const deleteErrors: string[] = []
         for (const userId of userIds) {
+          // Stamp a minimal DSAR audit record before permanent erasure so that
+          // GDPR Art. 5(2) accountability is preserved even for admin-initiated deletes.
+          try {
+            await admin.from('dsar_requests').insert({
+              user_id: userId,
+              request_type: 'deletion',
+              status: 'completed',
+              deletion_scheduled_at: new Date().toISOString(),
+              deletion_completed_at: new Date().toISOString(),
+              deleted_user_id: userId,
+              admin_id: user!.id,
+              admin_notes: 'Account permanently deleted by admin via bulk-delete action.',
+            })
+          } catch (dsarErr) {
+            // Non-fatal: log and continue so the actual deletion still proceeds.
+            safeLogger.warn('[Admin Users] Failed to stamp DSAR record before admin delete', {
+              userId,
+              error: dsarErr,
+            })
+          }
+
           const { error: deleteError } = await admin.auth.admin.deleteUser(userId)
           if (deleteError) {
             safeLogger.error('[Admin Users] Failed to delete user', { userId, error: deleteError })
