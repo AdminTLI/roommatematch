@@ -16,6 +16,17 @@ const content = {
     readArticle: 'Read article',
     posts: [
       {
+        slug: 'graduates-blocking-student-rooms-netherlands',
+        title:
+          'Graduates Blocking Student Rooms: What Dutch Data Shows',
+        excerpt:
+          'Kences and NOS report 57% of graduates still occupy student rooms a year after finishing. Here is how exit delays inflate the shortage and what cities like Eindhoven are planning.',
+        readTime: '9 min read',
+        date: '2026-06-24',
+        category: 'Housing',
+        icon: TrendingUp,
+      },
+      {
         slug: 'international-student-housing-netherlands-isolation',
         title:
           'International Student Housing in the Netherlands: Where Data Meets Integration Risk',
@@ -186,6 +197,17 @@ const content = {
     subtitle: 'Deskundige tips om compatibele huisgenoten te vinden, veilig te huren en te begrijpen hoe technologie je helpt betere woonbeslissingen te nemen.',
     readArticle: 'Lees artikel',
     posts: [
+      {
+        slug: 'graduates-blocking-student-rooms-netherlands',
+        title:
+          'Afgestudeerden houden studentenkamers bezet: wat Nederlandse data laten zien',
+        excerpt:
+          'Kences en NOS melden dat 57% van de afgestudeerden een jaar later nog op een studentenkamer woont. Zo vergroot vertraagde doorstroom het tekort, en wat steden plannen.',
+        readTime: '9 min lezen',
+        date: '2026-06-24',
+        category: 'Huisvesting',
+        icon: TrendingUp,
+      },
       {
         slug: 'international-student-housing-netherlands-isolation',
         title:
