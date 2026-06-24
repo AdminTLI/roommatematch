@@ -46,7 +46,7 @@ const content = {
         <figure>
           <BlogHeroImage
             imageKey="cityBikeStudent"
-            alt="Student cycling through a Dutch university city — symbolising mobility between campus and student housing"
+            alt="Student cycling through a Dutch university city, symbolising mobility between campus and student housing"
           />
           <figcaption>
             Turnover in student rooms shapes who can move in each September, not only how many units get built.
@@ -223,7 +223,7 @@ const content = {
         <figure>
           <BlogHeroImage
             imageKey="contractSigning"
-            alt="Hands reviewing a rental contract — illustrating tenancy turnover and housing agreements for students"
+            alt="Hands reviewing a rental contract, illustrating tenancy turnover and housing agreements for students"
           />
           <figcaption>
             Build plans matter, but so does exit: graduates who cannot sign a regular lease keep student rooms
@@ -402,7 +402,7 @@ const content = {
         <figure>
           <BlogHeroImage
             imageKey="cityBikeStudent"
-            alt="Student op de fiets in een Nederlandse studentenstad — symbool voor mobiliteit tussen campus en huisvesting"
+            alt="Student op de fiets in een Nederlandse studentenstad, symbool voor mobiliteit tussen campus en huisvesting"
           />
           <figcaption>
             Doorstroom in studentenkamers bepaalt wie elke september kan intrekken, los van nieuwbouwplannen.
@@ -561,7 +561,7 @@ const content = {
         <figure>
           <BlogHeroImage
             imageKey="contractSigning"
-            alt="Handen die een huurcontract bekijken — illustratie van huurovereenkomsten en doorstroom bij studenten"
+            alt="Handen die een huurcontract bekijken, illustratie van huurovereenkomsten en doorstroom bij studenten"
           />
           <figcaption>
             Nieuwbouw helpt, maar doorstroom telt mee: wie geen regulier contract tekent, houdt kamers bezet
