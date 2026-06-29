@@ -89,7 +89,8 @@ export async function GET(req: NextRequest) {
         notifications: {},
         preferences: {},
         activity: {},
-        consents: {}
+        consents: {},
+        ai_chat_history: {}
       }
 
       // 1. Account information (from auth.users)
@@ -383,6 +384,25 @@ export async function GET(req: NextRequest) {
             withdrawn_at: c.withdrawn_at,
             created_at: c.created_at,
             updated_at: c.updated_at
+          }))
+        }
+      }
+
+      // 16. Domu AI chat history (GDPR Art. 15 — user's own AI conversations)
+      const { data: aiChatLogs } = await supabase
+        .from('domu_ai_chat_log')
+        .select('id, user_message, assistant_reply, created_at')
+        .eq('user_id', user.id)
+        .order('created_at', { ascending: false })
+        .limit(1000)
+
+      if (aiChatLogs) {
+        exportData.ai_chat_history = {
+          conversations: aiChatLogs.map((log: any) => ({
+            id: log.id,
+            user_message: log.user_message,
+            assistant_reply: log.assistant_reply,
+            created_at: log.created_at,
           }))
         }
       }

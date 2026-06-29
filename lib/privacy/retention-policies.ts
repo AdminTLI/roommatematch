@@ -87,6 +87,13 @@ export const RETENTION_POLICIES: RetentionPolicy[] = [
     description: 'Audit log of email preference changes made via one-click unsubscribe links',
     legalBasis: 'Legitimate interest in deliverability auditing; minimised by truncated IP storage',
     exceptions: []
+  },
+  {
+    dataType: 'domu_ai_chat_log',
+    retentionDays: 365, // 1 year — same as chat messages (contractual necessity)
+    description: 'Domu AI chatbot conversation history (user queries and assistant replies)',
+    legalBasis: 'Contractual necessity for providing the AI assistant service; subject to DSAR export and erasure',
+    exceptions: []
   }
 ]
 

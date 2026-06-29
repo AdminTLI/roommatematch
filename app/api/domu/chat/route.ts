@@ -98,10 +98,14 @@ export async function POST(request: Request) {
     const sources = extractGroundingSources(response)
     const reply = appendSourcesSection(rawText, sources)
 
-    // Save to Supabase (best-effort, don't block)
+    // Save to Supabase (best-effort, don't block).
+    // user_id is required so the entry can be included in DSAR exports (Art. 15) and
+    // deleted on account erasure (Art. 17).  auth.user is guaranteed non-null here
+    // because requireAuthenticatedUser() passed above.
     try {
       const supabase = createServiceClient()
       await supabase.from('domu_ai_chat_log').insert({
+        user_id: auth.user.id,
         user_message: message,
         assistant_reply: reply
       })
