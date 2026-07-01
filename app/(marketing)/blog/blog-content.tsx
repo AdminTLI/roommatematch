@@ -16,6 +16,17 @@ const content = {
     readArticle: 'Read article',
     posts: [
       {
+        slug: 'student-housing-co-living-rules-netherlands',
+        title:
+          'Student Co-Living Rules Are Blocking Dutch Housing Supply',
+        excerpt:
+          'National policy wants easier room sharing, but municipal parking norms, permit rules, and split-housing limits still remove thousands of student rooms from the market each year.',
+        readTime: '9 min read',
+        date: '2026-07-01',
+        category: 'Housing',
+        icon: TrendingUp,
+      },
+      {
         slug: 'international-student-housing-netherlands-isolation',
         title:
           'International Student Housing in the Netherlands: Where Data Meets Integration Risk',
@@ -186,6 +197,17 @@ const content = {
     subtitle: 'Deskundige tips om compatibele huisgenoten te vinden, veilig te huren en te begrijpen hoe technologie je helpt betere woonbeslissingen te nemen.',
     readArticle: 'Lees artikel',
     posts: [
+      {
+        slug: 'student-housing-co-living-rules-netherlands',
+        title:
+          'Co-livingregels remmen het Nederlandse studentenhuisvestingsaanbod',
+        excerpt:
+          'Landelijk beleid wil woningdelen vergemakkelijken, maar gemeentelijke parkeernormen, vergunningen en splitsingsregels halen nog steeds duizenden studentenkamers uit de markt.',
+        readTime: '9 min lezen',
+        date: '2026-07-01',
+        category: 'Huisvesting',
+        icon: TrendingUp,
+      },
       {
         slug: 'international-student-housing-netherlands-isolation',
         title:
