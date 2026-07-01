@@ -51,7 +51,7 @@ const content = {
         <figure>
           <BlogHeroImage
             imageKey="sharedKitchen"
-            alt="Shared kitchen in a Dutch student house — co-living rules and municipal permits shape how many rooms are legally rentable"
+            alt="Shared kitchen in a Dutch student house - co-living rules and municipal permits shape how many rooms are legally rentable"
           />
           <figcaption>
             A spare bedroom only counts as housing supply if local rules allow three independent tenants behind one
@@ -197,7 +197,7 @@ const content = {
         <figure>
           <BlogHeroImage
             imageKey="contractSigning"
-            alt="Rental contract and keys on a desk — Dutch student renters navigate national rent law and local co-living permits"
+            alt="Rental contract and keys on a desk - Dutch student renters navigate national rent law and local co-living permits"
           />
           <figcaption>
             National rent law sets the price ceiling. Local permits decide whether three signed contracts are legal in
@@ -356,7 +356,7 @@ const content = {
         <figure>
           <BlogHeroImage
             imageKey="sharedKitchen"
-            alt="Gedeelde keuken in een Nederlands studentenhuis — co-livingregels en gemeentelijke vergunningen bepalen hoeveel kamers legaal verhuurbaar zijn"
+            alt="Gedeelde keuken in een Nederlands studentenhuis - co-livingregels en gemeentelijke vergunningen bepalen hoeveel kamers legaal verhuurbaar zijn"
           />
           <figcaption>
             Een vrije slaapkamer telt alleen als aanbod als lokale regels drie onafhankelijke huurders achter één voordeur
@@ -502,7 +502,7 @@ const content = {
         <figure>
           <BlogHeroImage
             imageKey="contractSigning"
-            alt="Huurcontract en sleutels op een bureau — Nederlandse studenthuurders navigeren landelijke huurwet én lokale co-livingvergunningen"
+            alt="Huurcontract en sleutels op een bureau - Nederlandse studenthuurders navigeren landelijke huurwet én lokale co-livingvergunningen"
           />
           <figcaption>
             Landelijke huurwet bepaalt het plafond. Lokale vergunningen bepalen of drie getekende contracten überhaupt
