@@ -518,6 +518,22 @@ export async function GET(request: Request) {
         safeLogger.error('[Cron] Failed to purge expired app events', { error })
       }
 
+      // 6.4a. Purge expired Domu AI chat log entries (365 days — same as chat messages per DPIA §1.1.4)
+      try {
+        const cutoffDate = new Date(Date.now() - 365 * 24 * 60 * 60 * 1000).toISOString()
+        const { error: aiChatError, count: aiChatCount } = await supabase
+          .from('domu_ai_chat_log')
+          .delete({ count: 'exact' })
+          .lt('created_at', cutoffDate)
+
+        if (aiChatError) {
+          throw aiChatError
+        }
+        safeLogger.info('[Cron] Purged expired Domu AI chat log entries', { count: aiChatCount ?? 0 })
+      } catch (error) {
+        safeLogger.error('[Cron] Failed to purge expired Domu AI chat log entries', { error })
+      }
+
       // 6.5. Inactive account warnings + 1-year anonymization (privacy policy)
       try {
         const inactivityResult = await runInactivityLifecycle(supabase)

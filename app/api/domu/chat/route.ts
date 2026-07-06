@@ -99,9 +99,11 @@ export async function POST(request: Request) {
     const reply = appendSourcesSection(rawText, sources)
 
     // Save to Supabase (best-effort, don't block)
+    // user_id is required for DSAR export, account deletion cascade, and 365-day retention purge.
     try {
       const supabase = createServiceClient()
       await supabase.from('domu_ai_chat_log').insert({
+        user_id: auth.user.id,
         user_message: message,
         assistant_reply: reply
       })
