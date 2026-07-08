@@ -16,6 +16,17 @@ const content = {
     readArticle: 'Read article',
     posts: [
       {
+        slug: 'international-student-housing-rights-netherlands',
+        title:
+          'International Student Housing Rights in the Netherlands: What Happens After Move-In',
+        excerpt:
+          'LSVb logged 263 international housing help requests in 2026. From illegal rents to vanishing huurteams, here is why tenant rights fail to activate under shortage pressure.',
+        readTime: '8 min read',
+        date: '2026-07-08',
+        category: 'Safety',
+        icon: Shield,
+      },
+      {
         slug: 'international-student-housing-netherlands-isolation',
         title:
           'International Student Housing in the Netherlands: Where Data Meets Integration Risk',
@@ -186,6 +197,17 @@ const content = {
     subtitle: 'Deskundige tips om compatibele huisgenoten te vinden, veilig te huren en te begrijpen hoe technologie je helpt betere woonbeslissingen te nemen.',
     readArticle: 'Lees artikel',
     posts: [
+      {
+        slug: 'international-student-housing-rights-netherlands',
+        title:
+          'Huurrechten voor internationale studenten: wat er na het intrekken misgaat',
+        excerpt:
+          'De LSVb registreerde in 2026 al 263 hulpverzoeken van internationale studenten. Van illegale huren tot verdwijnende huurteams: waarom rechten onder schaarstedruk niet worden ingeroepen.',
+        readTime: '8 min lezen',
+        date: '2026-07-08',
+        category: 'Veiligheid',
+        icon: Shield,
+      },
       {
         slug: 'international-student-housing-netherlands-isolation',
         title:
