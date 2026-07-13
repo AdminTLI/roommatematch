@@ -12,14 +12,14 @@ export async function POST(request: Request) {
     }
 
     const body = await request.json()
-    const { event, props, user_id } = body
+    const { event, props } = body
 
     if (!event) {
       return NextResponse.json({ error: 'Missing event name' }, { status: 400 })
     }
 
-    // Use provided user_id or fall back to authenticated user
-    const userId = user_id || user.id
+    // Always use the server-verified user identity — never trust client-supplied user_id
+    const userId = user.id
 
     // Track the event
     await trackEvent(event, props || {}, userId)
