@@ -375,7 +375,7 @@ export async function GET(req: NextRequest) {
             id: c.id,
             consent_type: c.consent_type,
             status: c.status,
-            session_id_hash: c.session_id_hash, // Include hashed session ID for anonymous consents
+            session_id_hash: c.session_id_hash,
             ip_address: c.ip_address,
             user_agent: c.user_agent,
             consent_method: c.consent_method,
@@ -383,6 +383,26 @@ export async function GET(req: NextRequest) {
             withdrawn_at: c.withdrawn_at,
             created_at: c.created_at,
             updated_at: c.updated_at
+          }))
+        }
+      }
+
+      // 16. Domu AI chat history (GDPR Art. 15 — personal data in user_message)
+      const adminForAiLog = createAdminClient()
+      const { data: aiChatLog } = await adminForAiLog
+        .from('domu_ai_chat_log')
+        .select('id, user_message, assistant_reply, created_at')
+        .eq('user_id', user.id)
+        .order('created_at', { ascending: false })
+        .limit(500)
+
+      if (aiChatLog) {
+        exportData.ai_chat_history = {
+          messages: aiChatLog.map((entry: { id: string; user_message: string; assistant_reply: string; created_at: string }) => ({
+            id: entry.id,
+            user_message: entry.user_message,
+            assistant_reply: entry.assistant_reply,
+            created_at: entry.created_at,
           }))
         }
       }
