@@ -16,6 +16,17 @@ const content = {
     readArticle: 'Read article',
     posts: [
       {
+        slug: 'thuiswonend-studenten-nederland-cbs-data',
+        title:
+          'More Dutch Students Live at Home: What CBS Data Reveals About Housing',
+        excerpt:
+          'CBS and NIDI figures show 43% of 2023 graduates never moved out during study. The shift tracks room shortages, rental reform, and uneven access between HBO and university students.',
+        readTime: '9 min read',
+        date: '2026-07-22',
+        category: 'Retention',
+        icon: TrendingUp,
+      },
+      {
         slug: 'international-student-housing-netherlands-isolation',
         title:
           'International Student Housing in the Netherlands: Where Data Meets Integration Risk',
@@ -186,6 +197,17 @@ const content = {
     subtitle: 'Deskundige tips om compatibele huisgenoten te vinden, veilig te huren en te begrijpen hoe technologie je helpt betere woonbeslissingen te nemen.',
     readArticle: 'Lees artikel',
     posts: [
+      {
+        slug: 'thuiswonend-studenten-nederland-cbs-data',
+        title:
+          'Meer thuiswonende studenten: wat CBS-cijfers zeggen over de wooncrisis',
+        excerpt:
+          'CBS en NIDI: 43% van de afgestudeerden in 2023 woonde de hele studie thuis. Het patroon volgt kamertekorten, verhuurhervorming en verschillen tussen hbo en wo.',
+        readTime: '9 min lezen',
+        date: '2026-07-22',
+        category: 'Retentie',
+        icon: TrendingUp,
+      },
       {
         slug: 'international-student-housing-netherlands-isolation',
         title:
