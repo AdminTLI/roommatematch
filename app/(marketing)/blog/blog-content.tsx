@@ -16,6 +16,16 @@ const content = {
     readArticle: 'Read article',
     posts: [
       {
+        slug: 'graduate-holdover-student-housing-netherlands',
+        title: 'Graduate Holdover Blocks Dutch Student Room Turnover',
+        excerpt:
+          'Kences data show 57% of graduates still occupy student rooms a year later. When turnover stalls, incoming students compete for a pool that headline supply figures understate.',
+        readTime: '9 min read',
+        date: '2026-07-29',
+        category: 'Housing',
+        icon: TrendingUp,
+      },
+      {
         slug: 'international-student-housing-netherlands-isolation',
         title:
           'International Student Housing in the Netherlands: Where Data Meets Integration Risk',
@@ -186,6 +196,16 @@ const content = {
     subtitle: 'Deskundige tips om compatibele huisgenoten te vinden, veilig te huren en te begrijpen hoe technologie je helpt betere woonbeslissingen te nemen.',
     readArticle: 'Lees artikel',
     posts: [
+      {
+        slug: 'graduate-holdover-student-housing-netherlands',
+        title: 'Afgestudeerden houden studentenkamers vast en remmen doorstroom',
+        excerpt:
+          'Kences meldt dat 57% van de afgestudeerden een jaar later nog in de studentenkamer woont. Als omloop stokt, concurreren nieuwe studenten om een kleinere pool dan de cijfers suggereren.',
+        readTime: '9 min lezen',
+        date: '2026-07-29',
+        category: 'Huisvesting',
+        icon: TrendingUp,
+      },
       {
         slug: 'international-student-housing-netherlands-isolation',
         title:
