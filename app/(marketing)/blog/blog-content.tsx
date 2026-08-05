@@ -16,6 +16,17 @@ const content = {
     readArticle: 'Read article',
     posts: [
       {
+        slug: 'private-landlords-student-housing-netherlands',
+        title:
+          'Private Landlords Are Leaving Student Housing: What the Dutch Supply Shock Means for Renters',
+        excerpt:
+          'Kences and NOS reporting shows private landlords selling student homes as rental rules tighten. Here is how that supply loss interacts with woningdelen policy and municipal responses.',
+        readTime: '9 min read',
+        date: '2026-08-05',
+        category: 'Housing',
+        icon: TrendingUp,
+      },
+      {
         slug: 'international-student-housing-netherlands-isolation',
         title:
           'International Student Housing in the Netherlands: Where Data Meets Integration Risk',
@@ -186,6 +197,17 @@ const content = {
     subtitle: 'Deskundige tips om compatibele huisgenoten te vinden, veilig te huren en te begrijpen hoe technologie je helpt betere woonbeslissingen te nemen.',
     readArticle: 'Lees artikel',
     posts: [
+      {
+        slug: 'private-landlords-student-housing-netherlands',
+        title:
+          'Particuliere verhuurders verlaten de studentenmarkt: wat de aanbodschok betekent',
+        excerpt:
+          'Kences en NOS rapporteren verkopen door particulieren nu verhuurregels aanscherpen. Zo raakt het aanbodverlies woningdelen, gemeentelijk beleid en wie het risico draagt.',
+        readTime: '9 min lezen',
+        date: '2026-08-05',
+        category: 'Huisvesting',
+        icon: TrendingUp,
+      },
       {
         slug: 'international-student-housing-netherlands-isolation',
         title:
