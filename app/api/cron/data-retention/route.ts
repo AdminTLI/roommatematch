@@ -59,6 +59,7 @@ export async function GET(request: Request) {
       reports: { deleted: 0, error: null as string | null },
       app_events: { deleted: 0, error: null as string | null },
       email_unsubscribe_events: { deleted: 0, error: null as string | null },
+      domu_ai_chat_log: { deleted: 0, error: null as string | null },
       inactive_accounts: {
         warnings30d: 0,
         warnings7d: 0,
@@ -132,6 +133,24 @@ export async function GET(request: Request) {
     } catch (error) {
       results.email_unsubscribe_events.error = error instanceof Error ? error.message : 'Unknown error'
       safeLogger.error('[Cron] Failed to purge expired email unsubscribe events', { error })
+    }
+
+    // 6. Purge expired Domu AI chat log entries (365 days — same as chat messages)
+    // Rows without user_id (pre-migration legacy rows) are also purged to prevent indefinite retention.
+    try {
+      const cutoff = new Date()
+      cutoff.setDate(cutoff.getDate() - 365)
+      const { error: aiChatError, count: aiChatCount } = await supabase
+        .from('domu_ai_chat_log')
+        .delete({ count: 'exact' })
+        .lt('created_at', cutoff.toISOString())
+      if (aiChatError) throw aiChatError
+      const deleted = aiChatCount ?? 0
+      ;(results as any).domu_ai_chat_log.deleted = deleted
+      safeLogger.info('[Cron] Purged expired Domu AI chat log entries', { count: deleted })
+    } catch (error) {
+      ;(results as any).domu_ai_chat_log.error = error instanceof Error ? error.message : 'Unknown error'
+      safeLogger.error('[Cron] Failed to purge expired Domu AI chat log', { error })
     }
 
     // 7. Inactive account warnings + 1-year processing (privacy policy)

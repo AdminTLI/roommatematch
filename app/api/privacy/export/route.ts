@@ -89,7 +89,8 @@ export async function GET(req: NextRequest) {
         notifications: {},
         preferences: {},
         activity: {},
-        consents: {}
+        consents: {},
+        ai_chat_history: {}
       }
 
       // 1. Account information (from auth.users)
@@ -385,6 +386,25 @@ export async function GET(req: NextRequest) {
             updated_at: c.updated_at
           }))
         }
+      }
+
+      // 16. Domu AI chat history (GDPR Art. 15 — personal data generated via AI assistant)
+      // Uses adminClient because authenticated RLS on domu_ai_chat_log only exists after the
+      // 20260810230000 migration; fall back gracefully if the column is not yet present.
+      const { data: aiChatLogs } = await adminClient
+        .from('domu_ai_chat_log')
+        .select('id, user_message, assistant_reply, created_at')
+        .eq('user_id', user.id)
+        .order('created_at', { ascending: false })
+        .limit(1000)
+
+      exportData.ai_chat_history = {
+        messages: (aiChatLogs ?? []).map((log: { id: string; user_message: string; assistant_reply: string; created_at: string }) => ({
+          id: log.id,
+          user_message: log.user_message,
+          assistant_reply: log.assistant_reply,
+          created_at: log.created_at,
+        })),
       }
 
       // Convert to JSON string
