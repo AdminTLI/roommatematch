@@ -326,25 +326,58 @@ export async function POST(request: NextRequest) {
         break
       
       case 'delete':
-        // Delete user - this will cascade delete profile, responses, etc. due to ON DELETE CASCADE
-        // First delete from auth.users (requires admin client)
-        const deleteErrors: string[] = []
-        for (const userId of userIds) {
-          const { error: deleteError } = await admin.auth.admin.deleteUser(userId)
-          if (deleteError) {
-            safeLogger.error('[Admin Users] Failed to delete user', { userId, error: deleteError })
-            deleteErrors.push(`Failed to delete user ${userId}: ${deleteError.message}`)
+        // UAVG Article 23 guard: verification documents must be retained for 4 weeks (28 days)
+        // after the verification date before the account can be hard-deleted.
+        // Cascade deletion of auth.users → verifications would destroy this biometric audit trail.
+        {
+          const uavgCutoff = new Date()
+          uavgCutoff.setDate(uavgCutoff.getDate() - 28)
+
+          const { data: recentVerifications, error: verifyCheckError } = await admin
+            .from('verifications')
+            .select('user_id, verified_at')
+            .in('user_id', userIds)
+            .eq('status', 'verified')
+            .gt('verified_at', uavgCutoff.toISOString())
+
+          if (verifyCheckError) {
+            safeLogger.error('[Admin Users] Failed to check verification retention', verifyCheckError)
+            return NextResponse.json({ error: 'Failed to validate UAVG retention requirements' }, { status: 500 })
           }
+
+          const blockedUserIds = (recentVerifications ?? []).map((v: { user_id: string }) => v.user_id)
+          if (blockedUserIds.length > 0) {
+            safeLogger.warn('[Admin Users] Bulk delete blocked: UAVG 4-week retention period not elapsed', { blockedUserIds })
+            return NextResponse.json(
+              {
+                error: 'UAVG violation: one or more users have verification documents within the mandatory 4-week retention window. Deletion blocked.',
+                blockedUserIds,
+                retryAfter: uavgCutoff.toISOString(),
+              },
+              { status: 409 }
+            )
+          }
+
+          // Delete user - this will cascade delete profile, responses, etc. due to ON DELETE CASCADE
+          // First delete from auth.users (requires admin client)
+          const deleteErrors: string[] = []
+          for (const userId of userIds) {
+            const { error: deleteError } = await admin.auth.admin.deleteUser(userId)
+            if (deleteError) {
+              safeLogger.error('[Admin Users] Failed to delete user', { userId, error: deleteError })
+              deleteErrors.push(`Failed to delete user ${userId}: ${deleteError.message}`)
+            }
+          }
+
+          if (deleteErrors.length > 0) {
+            return NextResponse.json(
+              { error: deleteErrors.join('; ') },
+              { status: 500 }
+            )
+          }
+
+          await logAdminAction(user!.id, 'delete_users', 'user', null, { userIds })
         }
-        
-        if (deleteErrors.length > 0) {
-          return NextResponse.json(
-            { error: deleteErrors.join('; ') },
-            { status: 500 }
-          )
-        }
-        
-        await logAdminAction(user!.id, 'delete_users', 'user', null, { userIds })
         break
       
       default:
