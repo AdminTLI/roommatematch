@@ -16,6 +16,17 @@ const content = {
     readArticle: 'Read article',
     posts: [
       {
+        slug: 'graduate-holdover-student-housing-netherlands',
+        title:
+          'Graduate Holdover: The Hidden Student Housing Bottleneck',
+        excerpt:
+          'Kences reports 57% of graduates still occupy student rooms after one year. CBS housing flows and supply loss show why the Dutch shortage is deeper than vacancy headlines.',
+        readTime: '9 min read',
+        date: '2026-08-12',
+        category: 'Housing',
+        icon: TrendingUp,
+      },
+      {
         slug: 'international-student-housing-netherlands-isolation',
         title:
           'International Student Housing in the Netherlands: Where Data Meets Integration Risk',
@@ -186,6 +197,17 @@ const content = {
     subtitle: 'Deskundige tips om compatibele huisgenoten te vinden, veilig te huren en te begrijpen hoe technologie je helpt betere woonbeslissingen te nemen.',
     readArticle: 'Lees artikel',
     posts: [
+      {
+        slug: 'graduate-holdover-student-housing-netherlands',
+        title:
+          'Afgestudeerd maar niet vertrokken: het verborgen knelpunt in studentenhuisvesting',
+        excerpt:
+          'Kences: 57% van afgestudeerden woont na een jaar nog op kamers. CBS en aanbodverlies laten zien waarom het tekort dieper is dan koppen suggereren.',
+        readTime: '9 min lezen',
+        date: '2026-08-12',
+        category: 'Huisvesting',
+        icon: TrendingUp,
+      },
       {
         slug: 'international-student-housing-netherlands-isolation',
         title:
