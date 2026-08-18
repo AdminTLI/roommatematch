@@ -325,9 +325,37 @@ export async function POST(request: NextRequest) {
         await logAdminAction(user!.id, 'unverify_users', 'user', null, { userIds })
         break
       
-      case 'delete':
-        // Delete user - this will cascade delete profile, responses, etc. due to ON DELETE CASCADE
-        // First delete from auth.users (requires admin client)
+      case 'delete': {
+        // UAVG Art. 23: verification documents must be retained for 4 weeks after verification.
+        // Reject the bulk delete if any user still has a verification record within that window.
+        const fourWeeksAgo = new Date()
+        fourWeeksAgo.setDate(fourWeeksAgo.getDate() - 28)
+
+        const { data: recentVerifications, error: verificationCheckError } = await admin
+          .from('verifications')
+          .select('user_id, updated_at')
+          .in('user_id', userIds)
+          .eq('status', 'verified')
+          .gt('updated_at', fourWeeksAgo.toISOString())
+
+        if (verificationCheckError) {
+          safeLogger.error('[Admin Users] Failed to check verification retention', verificationCheckError)
+          return NextResponse.json({ error: 'Failed to verify UAVG retention period' }, { status: 500 })
+        }
+
+        if (recentVerifications && recentVerifications.length > 0) {
+          const blockedIds = recentVerifications.map((v: { user_id: string }) => v.user_id)
+          safeLogger.warn('[Admin Users] Deletion blocked by UAVG 4-week verification retention', { blockedIds })
+          return NextResponse.json(
+            {
+              error: 'UAVG retention period not met',
+              message: `${blockedIds.length} user(s) cannot be deleted: verification documents must be retained for 4 weeks after verification per Dutch law (UAVG Art. 23).`,
+              blockedUserIds: blockedIds,
+            },
+            { status: 409 }
+          )
+        }
+
         const deleteErrors: string[] = []
         for (const userId of userIds) {
           const { error: deleteError } = await admin.auth.admin.deleteUser(userId)
@@ -346,6 +374,7 @@ export async function POST(request: NextRequest) {
         
         await logAdminAction(user!.id, 'delete_users', 'user', null, { userIds })
         break
+      }
       
       default:
         return NextResponse.json({ error: 'Invalid action' }, { status: 400 })

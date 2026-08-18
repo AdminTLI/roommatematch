@@ -15,7 +15,7 @@ const content = {
     subtitle: 'Expert guidance on finding compatible roommates, staying safe while renting, and understanding how technology can help you make better housing decisions.',
     readArticle: 'Read article',
     posts: [
-{
+      {
         slug: 'graduate-holdover-student-housing-netherlands',
         title:
           'Graduate Holdover: The Hidden Student Housing Bottleneck',
@@ -25,8 +25,8 @@ const content = {
         date: '2026-08-12',
         category: 'Housing',
         icon: TrendingUp,
-      },,
-{
+      },
+      {
         slug: 'private-landlords-student-housing-netherlands',
         title:
           'Private Landlords Are Leaving Student Housing: What the Dutch Supply Shock Means for Renters',
@@ -36,8 +36,8 @@ const content = {
         date: '2026-08-05',
         category: 'Housing',
         icon: TrendingUp,
-      },,
-{
+      },
+      {
         slug: 'thuiswonend-studenten-nederland-cbs-data',
         title:
           'More Dutch Students Live at Home: What CBS Data Reveals About Housing',
@@ -47,8 +47,8 @@ const content = {
         date: '2026-07-22',
         category: 'Retention',
         icon: TrendingUp,
-      },,
-{
+      },
+      {
         slug: 'student-housing-loneliness-netherlands',
         title:
           'Student Housing Loneliness in the Netherlands: What the Data Actually Show',
@@ -58,8 +58,8 @@ const content = {
         date: '2026-07-15',
         category: 'Wellbeing',
         icon: Brain,
-      },,
-{
+      },
+      {
         slug: 'international-student-housing-rights-netherlands',
         title:
           'International Student Housing Rights in the Netherlands: What Happens After Move-In',
@@ -69,8 +69,8 @@ const content = {
         date: '2026-07-08',
         category: 'Safety',
         icon: Shield,
-      },,
-{
+      },
+      {
         slug: 'student-housing-co-living-rules-netherlands',
         title:
           'Student Co-Living Rules Are Blocking Dutch Housing Supply',
@@ -80,7 +80,7 @@ const content = {
         date: '2026-07-01',
         category: 'Housing',
         icon: TrendingUp,
-      },,
+      },
       {
         slug: 'roommate-conflict-resolution-tips-netherlands',
         title: 'Roommate Conflict Resolution Tips for Dutch Students',
@@ -262,7 +262,7 @@ const content = {
     subtitle: 'Deskundige tips om compatibele huisgenoten te vinden, veilig te huren en te begrijpen hoe technologie je helpt betere woonbeslissingen te nemen.',
     readArticle: 'Lees artikel',
     posts: [
-{
+      {
         slug: 'graduate-holdover-student-housing-netherlands',
         title:
           'Graduate Holdover: The Hidden Student Housing Bottleneck',
@@ -272,8 +272,8 @@ const content = {
         date: '2026-08-12',
         category: 'Housing',
         icon: TrendingUp,
-      },,
-{
+      },
+      {
         slug: 'private-landlords-student-housing-netherlands',
         title:
           'Private Landlords Are Leaving Student Housing: What the Dutch Supply Shock Means for Renters',
@@ -283,8 +283,8 @@ const content = {
         date: '2026-08-05',
         category: 'Housing',
         icon: TrendingUp,
-      },,
-{
+      },
+      {
         slug: 'thuiswonend-studenten-nederland-cbs-data',
         title:
           'More Dutch Students Live at Home: What CBS Data Reveals About Housing',
@@ -294,8 +294,8 @@ const content = {
         date: '2026-07-22',
         category: 'Retention',
         icon: TrendingUp,
-      },,
-{
+      },
+      {
         slug: 'student-housing-loneliness-netherlands',
         title:
           'Student Housing Loneliness in the Netherlands: What the Data Actually Show',
@@ -305,8 +305,8 @@ const content = {
         date: '2026-07-15',
         category: 'Wellbeing',
         icon: Brain,
-      },,
-{
+      },
+      {
         slug: 'international-student-housing-rights-netherlands',
         title:
           'International Student Housing Rights in the Netherlands: What Happens After Move-In',
@@ -316,8 +316,8 @@ const content = {
         date: '2026-07-08',
         category: 'Safety',
         icon: Shield,
-      },,
-{
+      },
+      {
         slug: 'student-housing-co-living-rules-netherlands',
         title:
           'Student Co-Living Rules Are Blocking Dutch Housing Supply',
@@ -327,7 +327,7 @@ const content = {
         date: '2026-07-01',
         category: 'Housing',
         icon: TrendingUp,
-      },,
+      },
       {
         slug: 'roommate-conflict-resolution-tips-netherlands',
         title: 'Conflicten met huisgenoten oplossen: tips voor Nederlandse studenten',
