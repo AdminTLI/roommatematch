@@ -15,7 +15,7 @@ const content = {
     subtitle: 'Expert guidance on finding compatible roommates, staying safe while renting, and understanding how technology can help you make better housing decisions.',
     readArticle: 'Read article',
     posts: [
-      {
+{
         slug: 'student-housing-co-living-rules-netherlands',
         title:
           'Student Co-Living Rules Are Blocking Dutch Housing Supply',
@@ -25,6 +25,16 @@ const content = {
         date: '2026-07-01',
         category: 'Housing',
         icon: TrendingUp,
+      },,
+      {
+        slug: 'roommate-conflict-resolution-tips-netherlands',
+        title: 'Roommate Conflict Resolution Tips for Dutch Students',
+        excerpt:
+          'Cleanliness and noise dominate housing disputes. GMJV 2024, Resto VanHarte loneliness figures, and university guidance show how to de-escalate before grades suffer.',
+        readTime: '8 min read',
+        date: '2026-06-10',
+        category: 'Wellbeing',
+        icon: Shield,
       },
       {
         slug: 'international-student-housing-netherlands-isolation',
@@ -197,16 +207,26 @@ const content = {
     subtitle: 'Deskundige tips om compatibele huisgenoten te vinden, veilig te huren en te begrijpen hoe technologie je helpt betere woonbeslissingen te nemen.',
     readArticle: 'Lees artikel',
     posts: [
-      {
+{
         slug: 'student-housing-co-living-rules-netherlands',
         title:
-          'Co-livingregels remmen het Nederlandse studentenhuisvestingsaanbod',
+          'Student Co-Living Rules Are Blocking Dutch Housing Supply',
         excerpt:
-          'Landelijk beleid wil woningdelen vergemakkelijken, maar gemeentelijke parkeernormen, vergunningen en splitsingsregels halen nog steeds duizenden studentenkamers uit de markt.',
-        readTime: '9 min lezen',
+          'National policy wants easier room sharing, but municipal parking norms, permit rules, and split-housing limits still remove thousands of student rooms from the market each year.',
+        readTime: '9 min read',
         date: '2026-07-01',
-        category: 'Huisvesting',
+        category: 'Housing',
         icon: TrendingUp,
+      },,
+      {
+        slug: 'roommate-conflict-resolution-tips-netherlands',
+        title: 'Conflicten met huisgenoten oplossen: tips voor Nederlandse studenten',
+        excerpt:
+          'Netheid en geluid domineren geschillen. GMJV 2024, Resto VanHarte en universitaire begeleiding laten zien hoe je de-escaleert vóór cijfers lijden.',
+        readTime: '8 min lezen',
+        date: '2026-06-10',
+        category: 'Welzijn',
+        icon: Shield,
       },
       {
         slug: 'international-student-housing-netherlands-isolation',
