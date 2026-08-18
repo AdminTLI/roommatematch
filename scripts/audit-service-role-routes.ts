@@ -49,7 +49,9 @@ function classify(filePath: string, content: string): Classification {
     content.includes('getUser()') ||
     content.includes('requireAdmin') ||
     content.includes('requireAuthenticatedUser') ||
-    content.includes('requireVerifiedUser')
+    content.includes('requireVerifiedUser') ||
+    // Institution portal guard — calls createClient().auth.getUser() internally.
+    content.includes('requireInstitutionAdmin')
   ) {
     return 'user-authenticated'
   }

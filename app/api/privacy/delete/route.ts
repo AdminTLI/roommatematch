@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createClient } from '@/lib/supabase/server'
+import { createClient, createAdminClient } from '@/lib/supabase/server'
 import { createServiceClient } from '@/lib/supabase/service'
 import { safeLogger } from '@/lib/utils/logger'
 import {
@@ -90,10 +90,19 @@ export async function POST(req: NextRequest) {
 /**
  * DELETE /api/privacy/delete
  *
- * Immediate account deletion (admin only or after grace period)
+ * Immediate account deletion (admin only or after grace period).
+ *
+ * Security note: session authentication uses the cookie-scoped user client.
+ * All privileged DB operations (deleting another user's rows, calling
+ * auth.admin.deleteUser) MUST use the admin client (service-role key) because:
+ *   1. The users table has no admin DELETE RLS policy — user-scoped deletes fail.
+ *   2. auth.admin.deleteUser() requires the service-role key; calling it on the
+ *      anon-key client returns a 403 and silently leaves the auth user intact,
+ *      which would mark the DSAR as completed while the account remains active.
  */
 export async function DELETE(req: NextRequest) {
   try {
+    // Authenticate the requesting admin using the cookie-scoped client.
     const supabase = await createClient()
     const { data: { user }, error: authError } = await supabase.auth.getUser()
 
@@ -101,6 +110,7 @@ export async function DELETE(req: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
+    // Admin check via user-scoped client (RLS: admins can read their own row).
     const { data: adminCheck } = await supabase
       .from('admins')
       .select('id')
@@ -118,7 +128,10 @@ export async function DELETE(req: NextRequest) {
       return NextResponse.json({ error: 'user_id parameter required' }, { status: 400 })
     }
 
-    const { data: deletionRequest } = await supabase
+    // Use the service-role admin client for all privileged operations below.
+    const adminClient = createAdminClient()
+
+    const { data: deletionRequest } = await adminClient
       .from('dsar_requests')
       .select('*')
       .eq('user_id', targetUserId)
@@ -149,7 +162,7 @@ export async function DELETE(req: NextRequest) {
       )
     }
 
-    const { data: verifications } = await supabase
+    const { data: verifications } = await adminClient
       .from('verifications')
       .select('created_at, updated_at')
       .eq('user_id', targetUserId)
@@ -163,17 +176,32 @@ export async function DELETE(req: NextRequest) {
     const fourWeeksAgo = new Date()
     fourWeeksAgo.setDate(fourWeeksAgo.getDate() - 28)
 
+    // UAVG hard block: verification documents must be retained for 4 weeks per Dutch law.
+    // The cron job enforces this automatically, but the admin-manual endpoint must also
+    // block deletion during the retention window — otherwise cascade-delete on public.users
+    // would wipe the verifications table despite the UAVG requirement.
     if (latestVerificationDate && latestVerificationDate > fourWeeksAgo) {
-      safeLogger.info('Preserving verification documents per Dutch law', {
+      const retentionUntil = new Date(
+        latestVerificationDate.getTime() + 28 * 24 * 60 * 60 * 1000
+      ).toISOString()
+      safeLogger.warn('Admin deletion blocked: verification documents within UAVG 4-week retention window', {
         userId: targetUserId,
         latestVerificationDate: latestVerificationDate.toISOString(),
-        retentionUntil: new Date(
-          latestVerificationDate.getTime() + 28 * 24 * 60 * 60 * 1000
-        ).toISOString(),
+        retentionUntil,
+        requestedBy: user.id,
       })
+      return NextResponse.json(
+        {
+          error: 'Deletion blocked by UAVG retention requirement',
+          message: `Identity verification documents must be retained for 4 weeks per Dutch law (UAVG). Deletion is permitted after ${retentionUntil}.`,
+          retention_until: retentionUntil,
+        },
+        { status: 400 }
+      )
     }
 
-    const { error: deleteError } = await supabase
+    // Delete user row — cascades to profiles, responses, matches, chats, etc.
+    const { error: deleteError } = await adminClient
       .from('users')
       .delete()
       .eq('id', targetUserId)
@@ -182,22 +210,36 @@ export async function DELETE(req: NextRequest) {
       throw new Error(`Failed to delete user: ${deleteError.message}`)
     }
 
-    const { error: authDeleteError } = await supabase.auth.admin.deleteUser(targetUserId)
+    // Stamp the DSAR audit record BEFORE deleting the auth user.
+    // auth.admin.deleteUser() triggers ON DELETE SET NULL on dsar_requests.user_id
+    // (migration 20260608230000).  We must write deleted_user_id + deletion_completed_at
+    // now so the row is fully populated while user_id is still resolvable, satisfying
+    // GDPR Art. 5(2) accountability.  After auth deletion user_id → NULL but the row
+    // is retained rather than cascade-deleted.
+    const adminNotes = latestVerificationDate
+      ? 'Account permanently deleted by admin. Verification documents deleted (past 4-week UAVG retention window).'
+      : 'Account permanently deleted by admin.'
 
-    if (authDeleteError) {
-      safeLogger.error('Failed to delete auth user', { error: authDeleteError, userId: targetUserId })
-    }
-
-    await supabase
+    await adminClient
       .from('dsar_requests')
       .update({
         status: 'completed',
         deletion_completed_at: new Date().toISOString(),
+        deleted_user_id: targetUserId,
         admin_id: user.id,
-        admin_notes:
-          'Account permanently deleted. Verification documents retained per Dutch law (4 weeks).',
+        admin_notes: adminNotes,
       })
       .eq('id', deletionRequest.id)
+
+    // Delete the Supabase auth record. This MUST succeed; if it fails the
+    // user can still log in, which would be a GDPR compliance failure.
+    // ON DELETE SET NULL causes dsar_requests.user_id → NULL but the row is preserved.
+    const { error: authDeleteError } = await adminClient.auth.admin.deleteUser(targetUserId)
+
+    if (authDeleteError) {
+      safeLogger.error('Failed to delete auth user', { error: authDeleteError, userId: targetUserId })
+      throw new Error(`Failed to delete auth user: ${authDeleteError.message}`)
+    }
 
     safeLogger.info('Account permanently deleted', {
       requestId: deletionRequest.id,
@@ -209,8 +251,7 @@ export async function DELETE(req: NextRequest) {
       success: true,
       message: 'Account permanently deleted',
       user_id: targetUserId,
-      verification_documents_retained:
-        latestVerificationDate && latestVerificationDate > fourWeeksAgo,
+      verification_documents_retained: false,
     })
   } catch (error) {
     safeLogger.error('Account deletion error', error)
