@@ -16,6 +16,17 @@ const content = {
     readArticle: 'Read article',
     posts: [
 {
+        slug: 'graduate-holdover-student-housing-netherlands',
+        title:
+          'Graduate Holdover: The Hidden Student Housing Bottleneck',
+        excerpt:
+          'Kences reports 57% of graduates still occupy student rooms after one year. CBS housing flows and supply loss show why the Dutch shortage is deeper than vacancy headlines.',
+        readTime: '9 min read',
+        date: '2026-08-12',
+        category: 'Housing',
+        icon: TrendingUp,
+      },,
+{
         slug: 'private-landlords-student-housing-netherlands',
         title:
           'Private Landlords Are Leaving Student Housing: What the Dutch Supply Shock Means for Renters',
@@ -251,6 +262,17 @@ const content = {
     subtitle: 'Deskundige tips om compatibele huisgenoten te vinden, veilig te huren en te begrijpen hoe technologie je helpt betere woonbeslissingen te nemen.',
     readArticle: 'Lees artikel',
     posts: [
+{
+        slug: 'graduate-holdover-student-housing-netherlands',
+        title:
+          'Graduate Holdover: The Hidden Student Housing Bottleneck',
+        excerpt:
+          'Kences reports 57% of graduates still occupy student rooms after one year. CBS housing flows and supply loss show why the Dutch shortage is deeper than vacancy headlines.',
+        readTime: '9 min read',
+        date: '2026-08-12',
+        category: 'Housing',
+        icon: TrendingUp,
+      },,
 {
         slug: 'private-landlords-student-housing-netherlands',
         title:
