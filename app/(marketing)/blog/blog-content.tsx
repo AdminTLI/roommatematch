@@ -15,6 +15,17 @@ const content = {
     subtitle: 'Expert guidance on finding compatible roommates, staying safe while renting, and understanding how technology can help you make better housing decisions.',
     readArticle: 'Read article',
     posts: [
+{
+        slug: 'student-housing-co-living-rules-netherlands',
+        title:
+          'Student Co-Living Rules Are Blocking Dutch Housing Supply',
+        excerpt:
+          'National policy wants easier room sharing, but municipal parking norms, permit rules, and split-housing limits still remove thousands of student rooms from the market each year.',
+        readTime: '9 min read',
+        date: '2026-07-01',
+        category: 'Housing',
+        icon: TrendingUp,
+      },,
       {
         slug: 'roommate-conflict-resolution-tips-netherlands',
         title: 'Roommate Conflict Resolution Tips for Dutch Students',
@@ -196,6 +207,17 @@ const content = {
     subtitle: 'Deskundige tips om compatibele huisgenoten te vinden, veilig te huren en te begrijpen hoe technologie je helpt betere woonbeslissingen te nemen.',
     readArticle: 'Lees artikel',
     posts: [
+{
+        slug: 'student-housing-co-living-rules-netherlands',
+        title:
+          'Student Co-Living Rules Are Blocking Dutch Housing Supply',
+        excerpt:
+          'National policy wants easier room sharing, but municipal parking norms, permit rules, and split-housing limits still remove thousands of student rooms from the market each year.',
+        readTime: '9 min read',
+        date: '2026-07-01',
+        category: 'Housing',
+        icon: TrendingUp,
+      },,
       {
         slug: 'roommate-conflict-resolution-tips-netherlands',
         title: 'Conflicten met huisgenoten oplossen: tips voor Nederlandse studenten',
