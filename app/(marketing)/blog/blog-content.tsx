@@ -16,6 +16,17 @@ const content = {
     readArticle: 'Read article',
     posts: [
 {
+        slug: 'private-landlords-student-housing-netherlands',
+        title:
+          'Private Landlords Are Leaving Student Housing: What the Dutch Supply Shock Means for Renters',
+        excerpt:
+          'Kences and NOS reporting shows private landlords selling student homes as rental rules tighten. Here is how that supply loss interacts with woningdelen policy and municipal responses.',
+        readTime: '9 min read',
+        date: '2026-08-05',
+        category: 'Housing',
+        icon: TrendingUp,
+      },,
+{
         slug: 'thuiswonend-studenten-nederland-cbs-data',
         title:
           'More Dutch Students Live at Home: What CBS Data Reveals About Housing',
@@ -240,6 +251,17 @@ const content = {
     subtitle: 'Deskundige tips om compatibele huisgenoten te vinden, veilig te huren en te begrijpen hoe technologie je helpt betere woonbeslissingen te nemen.',
     readArticle: 'Lees artikel',
     posts: [
+{
+        slug: 'private-landlords-student-housing-netherlands',
+        title:
+          'Private Landlords Are Leaving Student Housing: What the Dutch Supply Shock Means for Renters',
+        excerpt:
+          'Kences and NOS reporting shows private landlords selling student homes as rental rules tighten. Here is how that supply loss interacts with woningdelen policy and municipal responses.',
+        readTime: '9 min read',
+        date: '2026-08-05',
+        category: 'Housing',
+        icon: TrendingUp,
+      },,
 {
         slug: 'thuiswonend-studenten-nederland-cbs-data',
         title:
