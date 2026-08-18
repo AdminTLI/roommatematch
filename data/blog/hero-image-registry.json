@@ -30,6 +30,11 @@
       "slug": "student-housing-loneliness-netherlands",
       "imageKey": "quietRoommate",
       "date": "2026-07-15"
+    },
+    {
+      "slug": "thuiswonend-studenten-nederland-cbs-data",
+      "imageKey": "studyLateNight",
+      "date": "2026-07-22"
     }
   ]
 }
