@@ -16,6 +16,17 @@ const content = {
     readArticle: 'Read article',
     posts: [
 {
+        slug: 'student-housing-loneliness-netherlands',
+        title:
+          'Student Housing Loneliness in the Netherlands: What the Data Actually Show',
+        excerpt:
+          'Kences and CBS figures show fewer students live on their own. Room shortages, studio campuses, and verkamering pressure reshape loneliness as a housing indicator.',
+        readTime: '8 min read',
+        date: '2026-07-15',
+        category: 'Wellbeing',
+        icon: Brain,
+      },,
+{
         slug: 'international-student-housing-rights-netherlands',
         title:
           'International Student Housing Rights in the Netherlands: What Happens After Move-In',
@@ -218,6 +229,17 @@ const content = {
     subtitle: 'Deskundige tips om compatibele huisgenoten te vinden, veilig te huren en te begrijpen hoe technologie je helpt betere woonbeslissingen te nemen.',
     readArticle: 'Lees artikel',
     posts: [
+{
+        slug: 'student-housing-loneliness-netherlands',
+        title:
+          'Student Housing Loneliness in the Netherlands: What the Data Actually Show',
+        excerpt:
+          'Kences and CBS figures show fewer students live on their own. Room shortages, studio campuses, and verkamering pressure reshape loneliness as a housing indicator.',
+        readTime: '8 min read',
+        date: '2026-07-15',
+        category: 'Wellbeing',
+        icon: Brain,
+      },,
 {
         slug: 'international-student-housing-rights-netherlands',
         title:
