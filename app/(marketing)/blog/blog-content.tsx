@@ -16,6 +16,16 @@ const content = {
     readArticle: 'Read article',
     posts: [
       {
+        slug: 'roommate-conflict-resolution-tips-netherlands',
+        title: 'Roommate Conflict Resolution Tips for Dutch Students',
+        excerpt:
+          'Cleanliness and noise dominate housing disputes. GMJV 2024, Resto VanHarte loneliness figures, and university guidance show how to de-escalate before grades suffer.',
+        readTime: '8 min read',
+        date: '2026-06-10',
+        category: 'Wellbeing',
+        icon: Shield,
+      },
+      {
         slug: 'international-student-housing-netherlands-isolation',
         title:
           'International Student Housing in the Netherlands: Where Data Meets Integration Risk',
@@ -186,6 +196,16 @@ const content = {
     subtitle: 'Deskundige tips om compatibele huisgenoten te vinden, veilig te huren en te begrijpen hoe technologie je helpt betere woonbeslissingen te nemen.',
     readArticle: 'Lees artikel',
     posts: [
+      {
+        slug: 'roommate-conflict-resolution-tips-netherlands',
+        title: 'Conflicten met huisgenoten oplossen: tips voor Nederlandse studenten',
+        excerpt:
+          'Netheid en geluid domineren geschillen. GMJV 2024, Resto VanHarte en universitaire begeleiding laten zien hoe je de-escaleert vóór cijfers lijden.',
+        readTime: '8 min lezen',
+        date: '2026-06-10',
+        category: 'Welzijn',
+        icon: Shield,
+      },
       {
         slug: 'international-student-housing-netherlands-isolation',
         title:

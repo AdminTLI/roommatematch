@@ -227,13 +227,7 @@ BEGIN
   )
   SELECT 
     fu.user_id,
-    COALESCE(
-      CASE WHEN pr.last_name IS NOT NULL AND pr.last_name <> ''
-        THEN pr.first_name || ' ' || pr.last_name
-        ELSE pr.first_name
-      END,
-      'Anonymous'
-    ) AS name,
+    COALESCE(pr.full_name, 'Anonymous') as name,
     EXTRACT(YEAR FROM AGE(pr.date_of_birth))::int as age,
     u.common_name as university_name,
     COALESCE(prog.name, 'Undecided') as program_name,
@@ -316,13 +310,7 @@ BEGIN
       SELECT jsonb_agg(
         jsonb_build_object(
           'user_id', gm.user_id,
-          'name', COALESCE(
-            CASE WHEN pr.last_name IS NOT NULL AND pr.last_name <> ''
-              THEN pr.first_name || ' ' || pr.last_name
-              ELSE pr.first_name
-            END,
-            'Anonymous'
-          ),
+          'name', COALESCE(pr.full_name, 'Anonymous'),
           'university', u.common_name,
           'program', COALESCE(prog.name, 'Undecided')
         )
