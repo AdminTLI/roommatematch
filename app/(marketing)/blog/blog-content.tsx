@@ -16,6 +16,16 @@ const content = {
     readArticle: 'Read article',
     posts: [
       {
+        slug: 'student-housing-search-abandonment-netherlands',
+        title: 'Student Housing Search Abandonment in the Netherlands',
+        excerpt:
+          'Kences reports fewer Dutch students even try to find a room. When 44% live away but only 49% still want to, official shortage figures understate lived scarcity.',
+        readTime: '9 min read',
+        date: '2026-08-19',
+        category: 'Housing',
+        icon: TrendingUp,
+      },
+      {
         slug: 'graduate-holdover-student-housing-netherlands',
         title:
           'Graduate Holdover: The Hidden Student Housing Bottleneck',
@@ -262,6 +272,16 @@ const content = {
     subtitle: 'Deskundige tips om compatibele huisgenoten te vinden, veilig te huren en te begrijpen hoe technologie je helpt betere woonbeslissingen te nemen.',
     readArticle: 'Lees artikel',
     posts: [
+      {
+        slug: 'student-housing-search-abandonment-netherlands',
+        title: 'Studenten die stoppen met kamer zoeken: wat de cijfers missen',
+        excerpt:
+          'Kences ziet dat minder studenten nog op kamers zoeken. 44 procent woont uit, 49 procent wil dat nog - het tekort in de praktijk is groter dan het officiële cijfer.',
+        readTime: '9 min lezen',
+        date: '2026-08-19',
+        category: 'Huisvesting',
+        icon: TrendingUp,
+      },
       {
         slug: 'graduate-holdover-student-housing-netherlands',
         title:
