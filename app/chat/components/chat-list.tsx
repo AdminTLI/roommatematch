@@ -532,6 +532,7 @@ export function ChatList({ user, onChatSelect, selectedChatId }: ChatListProps) 
         chatIds: transformedChats.map(c => c.id)
       })
 
+      let chatsWithPartners = transformedChats
       const individualIds = transformedChats.filter((c) => c.type === 'individual').map((c) => c.id)
       if (individualIds.length > 0) {
         try {
@@ -548,16 +549,39 @@ export function ChatList({ user, onChatSelect, selectedChatId }: ChatListProps) 
               >
             }
             const byChat = body.by_chat_id || {}
-            return transformedChats.map((chat) => {
+            chatsWithPartners = transformedChats.map((chat) => {
               if (chat.type !== 'individual') return chat
               const snap = byChat[chat.id]
-              if (!snap?.partner_user_id) return chat
+              if (!snap?.partner_user_id || snap.partner_user_id === user.id) return chat
+
+              const partnerId = snap.partner_user_id
+              const partnerName = snap.partner_display_name || chat.name
+              const partnerAvatar = snap.partner_avatar_url || undefined
+              const hasPartner = chat.participants.some((p) => p.id === partnerId)
+              const participants = hasPartner
+                ? chat.participants.map((p) =>
+                    p.id === partnerId
+                      ? {
+                          ...p,
+                          name: partnerName || p.name,
+                          avatar: partnerAvatar || p.avatar,
+                        }
+                      : p,
+                  )
+                : [
+                    ...chat.participants.filter((p) => p.id !== user.id),
+                    {
+                      id: partnerId,
+                      name: partnerName,
+                      avatar: partnerAvatar,
+                      isOnline: false,
+                    },
+                  ]
+
               return {
                 ...chat,
-                name: snap.partner_display_name || chat.name,
-                participants: chat.participants.map((p) =>
-                  p.id === snap.partner_user_id ? { ...p, avatar: snap.partner_avatar_url || undefined } : p,
-                ),
+                name: partnerName,
+                participants,
               }
             })
           }
@@ -566,7 +590,10 @@ export function ChatList({ user, onChatSelect, selectedChatId }: ChatListProps) 
         }
       }
 
-      return transformedChats
+      return chatsWithPartners.filter((chat) => {
+        if (chat.type !== 'individual') return true
+        return chat.participants.some((p) => p.id !== user.id)
+      })
     } catch (error) {
       // Use console.error here as this is client-side code
       const errorMessage = error instanceof Error ? error.message : String(error)
@@ -681,7 +708,7 @@ export function ChatList({ user, onChatSelect, selectedChatId }: ChatListProps) 
   // Separate chats into recently matched and active conversations
   // Sort both sections by most recent message timestamp (most recent first)
   const recentlyMatchedChats = filteredChats
-    .filter(chat => chat.isRecentlyMatched)
+    .filter(chat => chat.isRecentlyMatched && chat.participants.some(p => p.id !== user.id))
     .sort((a, b) => {
       // Sort by most recent message timestamp, or chat creation time if no messages
       const timeA = (a as any).mostRecentMessageTime || 0
@@ -942,8 +969,7 @@ export function ChatList({ user, onChatSelect, selectedChatId }: ChatListProps) 
                           <div className="relative">
                             <Avatar className={`w-14 h-14 ring-2 shadow-lg ${isSelected ? 'ring-chat-surface-sent/50' : 'ring-chat-border/30'}`}>
                               {(() => {
-                                // For individual chats, find the other participant (not the current user)
-                                const otherParticipant = chat.participants.find((p: any) => p.id !== user.id) || chat.participants[0]
+                                const otherParticipant = chat.participants.find((p: any) => p.id !== user.id)
                                 return (
                                   <>
                                     <AvatarImage src={otherParticipant?.avatar} />
@@ -1051,7 +1077,7 @@ export function ChatList({ user, onChatSelect, selectedChatId }: ChatListProps) 
                             <Avatar className={`w-12 h-12 ring-2 shadow-lg ${isSelected ? 'ring-chat-surface-sent/50' : 'ring-chat-border/30'}`}>
                               {(() => {
                                 // For individual chats, find the other participant (not the current user)
-                                const otherParticipant = chat.participants.find((p: any) => p.id !== user.id) || chat.participants[0]
+                                const otherParticipant = chat.participants.find((p: any) => p.id !== user.id)
                                 return (
                                   <>
                                     <AvatarImage src={otherParticipant?.avatar} />

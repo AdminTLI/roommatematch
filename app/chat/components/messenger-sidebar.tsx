@@ -635,6 +635,7 @@ export function MessengerSidebar({ user, onChatSelect, selectedChatId }: Messeng
         }
       })
 
+      let chatsWithPartners = transformedChats
       const individualIds = transformedChats.filter((c) => c.type === 'individual').map((c) => c.id)
       if (individualIds.length > 0) {
         try {
@@ -651,16 +652,39 @@ export function MessengerSidebar({ user, onChatSelect, selectedChatId }: Messeng
               >
             }
             const byChat = body.by_chat_id || {}
-            return transformedChats.map((chat) => {
+            chatsWithPartners = transformedChats.map((chat) => {
               if (chat.type !== 'individual') return chat
               const snap = byChat[chat.id]
-              if (!snap?.partner_user_id) return chat
+              if (!snap?.partner_user_id || snap.partner_user_id === user.id) return chat
+
+              const partnerId = snap.partner_user_id
+              const partnerName = snap.partner_display_name || chat.name
+              const partnerAvatar = snap.partner_avatar_url || undefined
+              const hasPartner = chat.participants.some((p) => p.id === partnerId)
+              const participants = hasPartner
+                ? chat.participants.map((p) =>
+                    p.id === partnerId
+                      ? {
+                          ...p,
+                          name: partnerName || p.name,
+                          avatar: partnerAvatar || p.avatar,
+                        }
+                      : p,
+                  )
+                : [
+                    ...chat.participants.filter((p) => p.id !== user.id),
+                    {
+                      id: partnerId,
+                      name: partnerName,
+                      avatar: partnerAvatar,
+                      isOnline: false,
+                    },
+                  ]
+
               return {
                 ...chat,
-                name: snap.partner_display_name || chat.name,
-                participants: chat.participants.map((p) =>
-                  p.id === snap.partner_user_id ? { ...p, avatar: snap.partner_avatar_url || p.avatar } : p,
-                ),
+                name: partnerName,
+                participants,
               }
             })
           }
@@ -669,7 +693,11 @@ export function MessengerSidebar({ user, onChatSelect, selectedChatId }: Messeng
         }
       }
 
-      return transformedChats
+      // Drop broken 1:1 chats that only contain the current user (would render as "yourself")
+      return chatsWithPartners.filter((chat) => {
+        if (chat.type !== 'individual') return true
+        return chat.participants.some((p) => p.id !== user.id)
+      })
     } catch (error) {
       // Safely log error - handle case where console methods might not be available
       try {
@@ -748,7 +776,7 @@ export function MessengerSidebar({ user, onChatSelect, selectedChatId }: Messeng
   const storyPeople = useMemo(() => {
     const map = new Map<string, { id: string; displayName: string; avatar?: string; presence: 'online' | 'recent' }>()
     for (const u of onlineUsersList) {
-      if (u?.id) {
+      if (u?.id && u.id !== user.id) {
         map.set(u.id, {
           id: u.id,
           displayName: (u.firstName || 'User').trim() || 'User',
@@ -758,6 +786,7 @@ export function MessengerSidebar({ user, onChatSelect, selectedChatId }: Messeng
       }
     }
     for (const u of onlineUsers) {
+      if (u.id === user.id) continue
       if (!map.has(u.id)) {
         map.set(u.id, {
           id: u.id,
@@ -768,7 +797,7 @@ export function MessengerSidebar({ user, onChatSelect, selectedChatId }: Messeng
       }
     }
     return Array.from(map.values())
-  }, [onlineUsersList, onlineUsers])
+  }, [onlineUsersList, onlineUsers, user.id])
 
   const onlineIdSet = useMemo(
     () => new Set(storyPeople.filter(p => p.presence === 'online').map(p => p.id)),
@@ -821,8 +850,11 @@ export function MessengerSidebar({ user, onChatSelect, selectedChatId }: Messeng
     filteredChats = chats.filter(chat => !archivedChats.includes(chat.id))
   }
 
+  const getOtherParticipant = (chat: ChatRoom) =>
+    chat.participants.find((p) => p.id !== user.id) ?? null
+
   const recentlyMatchedChats = filteredChats
-    .filter(chat => chat.isRecentlyMatched)
+    .filter((chat) => chat.isRecentlyMatched && !!getOtherParticipant(chat))
     .sort((a, b) => (b.mostRecentMessageTime || 0) - (a.mostRecentMessageTime || 0))
 
   const activeConversations = filteredChats
@@ -1025,8 +1057,9 @@ export function MessengerSidebar({ user, onChatSelect, selectedChatId }: Messeng
             </h2>
             <div className="scrollbar-hide flex gap-3 overflow-x-auto pb-1">
               {recentlyMatchedChats.map(chat => {
-                const otherParticipant = chat.participants.find(p => p.id !== user.id) || chat.participants[0]
-                const firstName = (otherParticipant?.name || chat.name).split(/\s+/)[0]
+                const otherParticipant = getOtherParticipant(chat)
+                if (!otherParticipant) return null
+                const firstName = (otherParticipant.name || chat.name).split(/\s+/)[0] || 'Match'
                 const isSelected = selectedChatId === chat.id
 
                 return (
@@ -1043,7 +1076,7 @@ export function MessengerSidebar({ user, onChatSelect, selectedChatId }: Messeng
                   >
                     <div className="rounded-2xl bg-gradient-to-br from-violet-500 via-fuchsia-500 to-indigo-500 p-[2px]">
                       <Avatar className="h-14 w-14 rounded-2xl">
-                        <AvatarImage src={otherParticipant?.avatar} className="rounded-2xl" />
+                        <AvatarImage src={otherParticipant.avatar} className="rounded-2xl" />
                         <AvatarFallback className="rounded-2xl bg-purple-600 text-white">
                           {firstName.charAt(0)}
                         </AvatarFallback>
@@ -1097,11 +1130,15 @@ export function MessengerSidebar({ user, onChatSelect, selectedChatId }: Messeng
           ) : (
             <div className="flex flex-col gap-0.5">
               {activeConversations.map(chat => {
-                const otherParticipant = chat.participants.find(p => p.id !== user.id) || chat.participants[0]
+                const otherParticipant = getOtherParticipant(chat)
                 const isSelected = selectedChatId === chat.id
                 const isArchivedRow = archivedChats.includes(chat.id)
                 const partnerId = otherParticipant?.id
                 const unread = chat.unreadCount > 0 && !isArchivedRow ? chat.unreadCount : 0
+                const rowName =
+                  chat.type === 'group'
+                    ? chat.name
+                    : otherParticipant?.name || chat.name || 'Match'
 
                 return (
                   <div
@@ -1122,7 +1159,7 @@ export function MessengerSidebar({ user, onChatSelect, selectedChatId }: Messeng
                         <Avatar className="h-11 w-11">
                           <AvatarImage src={otherParticipant?.avatar} />
                           <AvatarFallback className="bg-purple-600 text-white">
-                            {otherParticipant?.name?.charAt(0) || chat.name.charAt(0)}
+                            {rowName.charAt(0)}
                           </AvatarFallback>
                         </Avatar>
                         {partnerId && onlineIdSet.has(partnerId) ? (
@@ -1135,7 +1172,7 @@ export function MessengerSidebar({ user, onChatSelect, selectedChatId }: Messeng
                       <div className="min-w-0 flex-1">
                         <div className="mb-0.5 flex items-center gap-2">
                           <p className="min-w-0 flex-1 truncate text-sm font-semibold text-gray-900 dark:text-gray-100">
-                            {chat.name}
+                            {rowName}
                           </p>
                           {isArchivedRow ? <Archive className="h-3.5 w-3.5 shrink-0 text-gray-400" aria-hidden /> : null}
                           {chat.lastMessage ? (
