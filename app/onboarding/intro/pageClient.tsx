@@ -271,7 +271,7 @@ function IntroClientContent() {
       setIsSaving(true)
 
       try {
-        const payload = {
+        const payload: Record<string, any> = {
           ...academicData,
           graduation_month: academicData.graduation_month ?? 6,
           study_program_type:

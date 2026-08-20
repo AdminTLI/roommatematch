@@ -9,7 +9,7 @@ export type LiveCompatibilitySnapshot = {
   compatibility_score: number
   harmony_score: number
   context_score: number
-  dimension_scores_json: Record<string, number | boolean | string[]> | null
+  dimension_scores_json: Record<string, number> | null
   /** v2: IDs of hard gates that conflicted (empty array = none) */
   gate_conflicts?: string[]
   /** v2: true when exactly 1 gate conflicted but overall score is >= 0.70 */
@@ -26,21 +26,27 @@ export function parseDimensionScoresJson(
   raw: unknown
 ): Record<string, number> | null {
   if (!raw) return null
-  if (typeof raw === 'object' && raw !== null) {
-    const keys = Object.keys(raw as object)
-    return keys.length > 0 ? (raw as Record<string, number>) : null
-  }
-  if (typeof raw === 'string') {
+  let obj: Record<string, unknown> | null = null
+  if (typeof raw === 'object' && raw !== null && !Array.isArray(raw)) {
+    obj = raw as Record<string, unknown>
+  } else if (typeof raw === 'string') {
     try {
-      const parsed = JSON.parse(raw) as Record<string, number>
-      if (parsed && typeof parsed === 'object' && Object.keys(parsed).length > 0) {
-        return parsed
+      const parsed = JSON.parse(raw) as unknown
+      if (parsed && typeof parsed === 'object' && !Array.isArray(parsed)) {
+        obj = parsed as Record<string, unknown>
       }
     } catch {
       return null
     }
   }
-  return null
+  if (!obj) return null
+  const numeric: Record<string, number> = {}
+  for (const [key, value] of Object.entries(obj)) {
+    if (typeof value === 'number' && !Number.isNaN(value)) {
+      numeric[key] = value
+    }
+  }
+  return Object.keys(numeric).length > 0 ? numeric : null
 }
 
 export function parseLiveCompatibilityRow(
@@ -52,17 +58,25 @@ export function parseLiveCompatibilityRow(
   if (!peerId && userBId === undefined) return null
 
   const dimJson = parseDimensionScoresJson(row.dimension_scores_json)
+  const rawDim =
+    row.dimension_scores_json &&
+    typeof row.dimension_scores_json === 'object' &&
+    !Array.isArray(row.dimension_scores_json)
+      ? (row.dimension_scores_json as Record<string, unknown>)
+      : null
   const gateConflicts =
     Array.isArray(row.gate_conflicts)
       ? (row.gate_conflicts as string[])
-      : Array.isArray(dimJson?.gate_conflicts)
-      ? (dimJson.gate_conflicts as unknown as string[])
-      : []
+      : Array.isArray(rawDim?.gate_conflicts)
+        ? (rawDim.gate_conflicts as string[])
+        : []
 
   const softGateOverride =
     typeof row.soft_gate_override === 'boolean'
       ? row.soft_gate_override
-      : (dimJson?.soft_gate_override as boolean | undefined) ?? false
+      : typeof rawDim?.soft_gate_override === 'boolean'
+        ? rawDim.soft_gate_override
+        : false
 
   return {
     compatibility_score: extractScore(row.compatibility_score, 0),

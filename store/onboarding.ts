@@ -18,6 +18,8 @@ export type AnswerValue =
 export type Answer = {
   itemId: string
   value: AnswerValue
+  /** Legacy v1: user-marked dealbreaker on a dbEligible item. */
+  dealBreaker?: boolean
   /** User signal: question matters to them (research only; not used for matching). Students cannot set dealbreakers. */
   marksImportant?: boolean
   /** User opted in to strict (dealbreaker) matching on this hard-gate item. */
@@ -31,6 +33,7 @@ export interface OnboardingState {
   sections: Record<SectionKey, SectionAnswers>
   lastSavedAt?: string
   setAnswer: (section: SectionKey, a: Answer) => void
+  setDealBreaker: (section: SectionKey, itemId: string, isDB: boolean) => void
   setMarksImportant: (section: SectionKey, itemId: string, v: boolean) => void
   setLastSavedAt: (iso: string | undefined) => void
   computeProgress: () => number
@@ -77,6 +80,8 @@ export const useOnboardingStore = create<OnboardingState>()(
             itemId: a.itemId,
             value: a.value,
           }
+          const dealBreaker = 'dealBreaker' in a ? a.dealBreaker : prev?.dealBreaker
+          if (dealBreaker !== undefined) merged.dealBreaker = dealBreaker
           const marksImportant = 'marksImportant' in a ? a.marksImportant : prev?.marksImportant
           if (marksImportant !== undefined) merged.marksImportant = marksImportant
           const userSetGate = 'userSetGate' in a ? a.userSetGate : prev?.userSetGate
@@ -87,6 +92,20 @@ export const useOnboardingStore = create<OnboardingState>()(
               [section]: {
                 ...state.sections[section],
                 [a.itemId]: merged,
+              },
+            },
+          }
+        }),
+      setDealBreaker: (section, itemId, isDB) =>
+        set((state) => {
+          const existing = state.sections[section]?.[itemId]
+          if (!existing) return state
+          return {
+            sections: {
+              ...state.sections,
+              [section]: {
+                ...state.sections[section],
+                [itemId]: { ...existing, dealBreaker: isDB },
               },
             },
           }
