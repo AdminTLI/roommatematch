@@ -173,20 +173,19 @@ export function SignInForm({ initialErrorCode }: { initialErrorCode?: string | n
           return
         }
         
-        // For authentication errors (wrong password/email), show user-friendly message with helpful suggestion
-        if (errorMsgLower.includes('invalid') || 
-            errorMsgLower.includes('credentials') ||
-            errorMsgLower.includes('password')) {
-          setError(
-            [
-              'Incorrect email or password.',
-              'If you are running locally, make sure this user exists in the Supabase project you configured in NEXT_PUBLIC_SUPABASE_URL (check the console log: “[Supabase] Browser client configured for …”).',
-              'If you\'ve forgotten your password, you can reset it using the link below.',
-            ].join(' ')
-          )
+        // Wrong password and unknown email must share one generic message
+        // so we never reveal whether an account exists.
+        if (
+          errorMsgLower.includes('invalid') ||
+          errorMsgLower.includes('credentials') ||
+          errorMsgLower.includes('password') ||
+          errorMsgLower.includes('email') ||
+          errorMsgLower.includes('user not found') ||
+          errorMsgLower.includes('user_not_found')
+        ) {
+          setError('Incorrect email or password.')
         } else {
-          // For other errors, show the error message
-          setError(signInError.message || 'An error occurred during sign in. Please try again.')
+          setError('Something went wrong while signing you in. Please try again.')
         }
         setIsLoading(false)
         return

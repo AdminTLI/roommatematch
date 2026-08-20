@@ -4,6 +4,8 @@ import { checkRateLimit, getUserRateLimitKey } from '@/lib/rate-limit'
 import { safeLogger } from '@/lib/utils/logger'
 import { programmaticAvatarUrl } from '@/lib/avatars/programmatic'
 
+export type PresenceTier = 'online' | 'recent'
+
 export async function GET(request: NextRequest) {
   try {
     const supabase = await createClient()
@@ -14,7 +16,6 @@ export async function GET(request: NextRequest) {
     }
 
     // Rate limiting: 30 requests per minute per user
-    // Wrap rate limiting in try-catch to prevent failures from blocking the request
     let rateLimitResult
     try {
       const rateLimitKey = getUserRateLimitKey('chat_online_users', user.id)
@@ -38,9 +39,7 @@ export async function GET(request: NextRequest) {
         )
       }
     } catch (rateLimitError) {
-      // If rate limiting fails, log but continue (fail-open behavior)
       safeLogger.error('Rate limiting check failed, continuing without rate limit', rateLimitError)
-      // Set a default rate limit result to avoid errors later
       rateLimitResult = {
         allowed: true,
         remaining: 30,
@@ -49,7 +48,6 @@ export async function GET(request: NextRequest) {
       }
     }
 
-    // Get user's chat memberships to find users they chat with
     const { data: memberships, error: membershipError } = await supabase
       .from('chat_members')
       .select('chat_id')
@@ -61,12 +59,11 @@ export async function GET(request: NextRequest) {
     }
 
     if (!memberships || memberships.length === 0) {
-      return NextResponse.json({ users: [] })
+      return NextResponse.json({ users: [], activeTodayCount: 0 })
     }
 
     const chatIds = memberships.map(m => m.chat_id)
 
-    // Get all other users in these chats
     const admin = await createAdminClient()
     const { data: chatMembers, error: chatMembersError } = await admin
       .from('chat_members')
@@ -80,40 +77,15 @@ export async function GET(request: NextRequest) {
     }
 
     if (!chatMembers || chatMembers.length === 0) {
-      return NextResponse.json({ users: [] })
+      return NextResponse.json({ users: [], activeTodayCount: 0 })
     }
 
-    // Get unique user IDs
     const otherUserIds = [...new Set(chatMembers.map(m => m.user_id))]
 
     if (otherUserIds.length === 0) {
-      return NextResponse.json({ users: [] })
+      return NextResponse.json({ users: [], activeTodayCount: 0 })
     }
 
-    // Get users who have sent messages in the last 15 minutes (more reliable than user_journey_events)
-    const fifteenMinutesAgo = new Date(Date.now() - 15 * 60 * 1000)
-    const { data: recentMessages, error: messagesError } = await admin
-      .from('messages')
-      .select('user_id')
-      .in('user_id', otherUserIds)
-      .gte('created_at', fifteenMinutesAgo.toISOString())
-      .neq('content', "You're matched! Start your conversation 👋") // Exclude system messages
-
-    if (messagesError) {
-      safeLogger.error('Failed to fetch recent messages', messagesError)
-      // Fallback: return empty list instead of error
-      return NextResponse.json({ users: [] })
-    }
-
-    // Get unique active user IDs from recent messages
-    const activeUserIds = [...new Set(recentMessages?.map(m => m.user_id) || [])]
-
-    if (activeUserIds.length === 0) {
-      return NextResponse.json({ users: [] })
-    }
-
-    // Get user's blocklist to exclude blocked users
-    // Handle blocklist query errors gracefully - if it fails, just don't filter blocked users
     let blockedUserIds = new Set<string>()
     try {
       const { data: blocklist, error: blocklistError } = await admin
@@ -125,37 +97,86 @@ export async function GET(request: NextRequest) {
         blockedUserIds = new Set(blocklist.map(b => b.blocked_user_id) || [])
       }
     } catch (blocklistErr) {
-      // If blocklist query fails, log but continue without filtering blocked users
       safeLogger.error('Failed to fetch blocklist, continuing without blocklist filter', blocklistErr)
     }
 
-    // Filter out blocked users
-    const allowedUserIds = activeUserIds.filter(id => !blockedUserIds.has(id))
-
-    if (allowedUserIds.length === 0) {
-      return NextResponse.json({ users: [] })
+    const allowedPartnerIds = otherUserIds.filter(id => !blockedUserIds.has(id))
+    if (allowedPartnerIds.length === 0) {
+      return NextResponse.json({ users: [], activeTodayCount: 0 })
     }
 
-    // Fetch profiles for active users
+    const threeHoursAgo = new Date(Date.now() - 3 * 60 * 60 * 1000)
+    const startOfToday = new Date()
+    startOfToday.setHours(0, 0, 0, 0)
+    const fifteenMinutesAgo = new Date(Date.now() - 15 * 60 * 1000)
+
+    const { data: recentMessages, error: messagesError } = await admin
+      .from('messages')
+      .select('user_id, created_at')
+      .in('user_id', allowedPartnerIds)
+      .gte('created_at', startOfToday.toISOString())
+      .neq('content', "You're matched! Start your conversation 👋")
+
+    if (messagesError) {
+      safeLogger.error('Failed to fetch recent messages', messagesError)
+      return NextResponse.json({ users: [], activeTodayCount: 0 })
+    }
+
+    const latestByUser = new Map<string, Date>()
+    for (const row of recentMessages || []) {
+      const ts = new Date(row.created_at)
+      const prev = latestByUser.get(row.user_id)
+      if (!prev || ts > prev) latestByUser.set(row.user_id, ts)
+    }
+
+    const activeTodayCount = latestByUser.size
+
+    const presenceRows: { id: string; tier: PresenceTier; at: Date }[] = []
+    for (const [id, at] of latestByUser) {
+      if (at >= fifteenMinutesAgo) {
+        presenceRows.push({ id, tier: 'online', at })
+      } else if (at >= threeHoursAgo) {
+        presenceRows.push({ id, tier: 'recent', at })
+      }
+    }
+
+    presenceRows.sort((a, b) => {
+      if (a.tier !== b.tier) return a.tier === 'online' ? -1 : 1
+      return b.at.getTime() - a.at.getTime()
+    })
+
+    const presenceIds = presenceRows.map(r => r.id)
+    if (presenceIds.length === 0) {
+      return NextResponse.json({ users: [], activeTodayCount })
+    }
+
     const { data: profiles, error: profilesError } = await admin
       .from('profiles')
       .select('user_id, first_name, last_name, avatar_id')
-      .in('user_id', allowedUserIds)
+      .in('user_id', presenceIds)
 
     if (profilesError) {
       safeLogger.error('Failed to fetch profiles', profilesError)
       return NextResponse.json({ error: 'Failed to fetch profiles' }, { status: 500 })
     }
 
-    // Format response with first name only
-    const users = (profiles || []).map((profile: any) => ({
-      id: profile.user_id,
-      firstName: profile.first_name?.trim() || 'User',
-      avatar: programmaticAvatarUrl(profile.avatar_id, profile.user_id),
-    }))
+    const profileMap = new Map((profiles || []).map((p: any) => [p.user_id, p]))
+    const users = presenceRows
+      .map(row => {
+        const profile = profileMap.get(row.id)
+        if (!profile) return null
+        return {
+          id: profile.user_id,
+          firstName: profile.first_name?.trim() || 'User',
+          avatar: programmaticAvatarUrl(profile.avatar_id, profile.user_id),
+          presence: row.tier as PresenceTier,
+        }
+      })
+      .filter(Boolean)
 
     return NextResponse.json({ 
-      users: users
+      users,
+      activeTodayCount,
     }, {
       headers: {
         'X-RateLimit-Limit': '30',

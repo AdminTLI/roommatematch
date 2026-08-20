@@ -55,21 +55,27 @@
 
     /* Chat-specific semantic color tokens - Light Mode */
     --chat-bg-primary: 0 0% 100%;
-    /* Pure white background */
-    --chat-bg-secondary: 210 40% 96%;
-    /* Light grey for sidebar/alternate backgrounds */
-    --chat-surface: 210 30% 94%;
-    /* Light grey for received message bubbles */
-    --chat-surface-sent: 217 91% 60%;
-    /* Vibrant blue for sent messages (#3B82F6) - same in both modes */
+    /* Pure white panels */
+    --chat-bg-secondary: 210 17% 98%;
+    /* Page canvas #F8F9FA */
+    --chat-surface: 210 40% 96%;
+    /* Received bubbles #F1F5F9 */
+    --chat-surface-sent: 263 70% 50%;
+    /* Brand purple #7C3AED for sent messages */
+    --chat-surface-sent-end: 263 69% 42%;
+    /* #6D28D9 gradient end */
+    --chat-active-fill: 270 100% 95%;
+    /* Soft lavender #F3E8FF */
     --chat-text-primary: 222 47% 11%;
     /* Dark text for primary content */
     --chat-text-secondary: 215 16% 47%;
     /* Muted text for secondary content */
     --chat-border: 214.3 31.8% 91.4%;
-    /* Border color */
-    --chat-online: 142 76% 36%;
-    /* Green for online status indicator */
+    /* Border color (prefer tonal elevation over hard borders) */
+    --chat-online: 160 84% 39%;
+    /* Emerald #10B981 */
+    --chat-recent: 271 91% 65%;
+    /* Soft purple #A855F7 for recent activity */
   }
 
   .dark {
@@ -148,22 +154,27 @@
     --line: #334155;
 
     /* Chat-specific semantic color tokens - Dark Mode */
-    --chat-bg-primary: 222 47% 11%;
-    /* Deep charcoal/black background (slate-900) */
-    --chat-bg-secondary: 217 33% 17%;
-    /* Dark grey for sidebar/alternate backgrounds (slate-800) */
+    --chat-bg-primary: 217 33% 17%;
+    /* Elevated panel (slate-800) */
+    --chat-bg-secondary: 222 47% 11%;
+    /* Page canvas (slate-900) */
     --chat-surface: 215 25% 27%;
-    /* Dark grey for received message bubbles (slate-700) */
-    --chat-surface-sent: 217 91% 60%;
-    /* Vibrant blue for sent messages (#3B82F6) - same in both modes */
+    /* Received bubbles (slate-700) */
+    --chat-surface-sent: 263 70% 58%;
+    /* Brand purple for sent messages */
+    --chat-surface-sent-end: 263 69% 48%;
+    --chat-active-fill: 270 50% 22%;
+    /* Soft lavender tint for active states */
     --chat-text-primary: 210 40% 98%;
     /* Light text for primary content (slate-50) */
     --chat-text-secondary: 215 20% 65%;
     /* Muted light text for secondary content (slate-400) */
     --chat-border: 215 25% 27%;
     /* Border color (slate-700) */
-    --chat-online: 142 76% 36%;
-    /* Green for online status indicator */
+    --chat-online: 160 84% 39%;
+    /* Emerald #10B981 */
+    --chat-recent: 271 91% 65%;
+    /* Soft purple #A855F7 */
   }
 
   :root {
@@ -516,8 +527,8 @@ body:has([data-chat-page]) main>div>div[data-chat-page] {
   }
 
   /*
-   * iOS 26 keyboard fallback: keep composer anchored to visual viewport bottom even when
-   * Safari scrolls the layout viewport while focusing the textarea.
+   * iOS keyboard: keep composer anchored to visual viewport bottom.
+   * Keyboard inset is applied via `bottom` only (not also padding), so the field stays visible.
    */
   body.mobile-chat-active-conversation [data-messenger-composer],
   body:has([data-chat-page]).mobile-chat-active-conversation [data-messenger-composer] {
@@ -526,11 +537,12 @@ body:has([data-chat-page]) main>div>div[data-chat-page] {
     right: 0 !important;
     bottom: var(--kb-inset, 0px) !important;
     z-index: 70 !important;
+    padding-bottom: max(0.5rem, env(safe-area-inset-bottom, 0px)) !important;
   }
 
   body.mobile-chat-active-conversation [data-messenger-messages],
   body:has([data-chat-page]).mobile-chat-active-conversation [data-messenger-messages] {
-    padding-bottom: calc(6rem + var(--kb-inset, 0px)) !important;
+    padding-bottom: calc(7.5rem + var(--kb-inset, 0px)) !important;
   }
 }
 
@@ -626,11 +638,67 @@ body:has([data-chat-page]) [class*="border-t"][class*="shadow-2xl"] {
   overflow: hidden;
 }
 
+.chat-panel-elev {
+  background-color: hsl(var(--chat-bg-primary));
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.03);
+}
+
+.dark .chat-panel-elev {
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.35);
+}
+
+.chat-input-dock {
+  background-color: hsl(var(--chat-bg-primary));
+  box-shadow: 0 -4px 24px rgba(0, 0, 0, 0.04);
+  border-radius: 1.25rem;
+}
+
+.dark .chat-input-dock {
+  box-shadow: 0 -4px 28px rgba(0, 0, 0, 0.4);
+}
+
+.chat-date-divider {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin: 1rem 0;
+  color: hsl(var(--chat-text-secondary));
+  font-size: 0.75rem;
+  font-weight: 500;
+}
+
+.chat-date-divider::before,
+.chat-date-divider::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: linear-gradient(
+    to right,
+    transparent,
+    hsl(var(--chat-text-secondary) / 0.35),
+    transparent
+  );
+}
+
+@keyframes chat-presence-pulse {
+  0%,
+  100% {
+    box-shadow: 0 0 0 0 rgba(168, 85, 247, 0.45);
+  }
+  50% {
+    box-shadow: 0 0 0 6px rgba(168, 85, 247, 0);
+  }
+}
+
+.chat-presence-recent {
+  animation: chat-presence-pulse 2.2s ease-in-out infinite;
+}
+
 .chat-left-sidebar {
   width: 320px;
   flex-shrink: 0;
-  background-color: hsl(var(--chat-bg-secondary));
-  border-right: 1px solid hsl(var(--chat-border));
+  background-color: hsl(var(--chat-bg-primary));
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.03);
 }
 
 .chat-middle {

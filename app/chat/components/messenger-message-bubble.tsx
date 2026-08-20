@@ -16,8 +16,8 @@ import {
 } from '@/components/ui/context-menu'
 import { showErrorToast, showSuccessToast } from '@/lib/toast'
 
-/** Common chat reactions — toggle via API on pick */
-const REACTION_PICK_EMOJIS = ['👍', '❤️', '😂', '😮', '😢', '🙌', '🔥', '👏']
+/** Quick reactions — glass picker */
+const REACTION_PICK_EMOJIS = ['❤️', '🔥', '😂', '👍', '🏠', '💡']
 
 /** ~2 rows of 40px cells + padding/border; used before first paint */
 const REACTION_MENU_EST_HEIGHT = 140
@@ -280,7 +280,7 @@ export function MessengerMessageBubble({
     const otherReaders = readBy.filter((rid) => rid !== currentUserId)
 
     if (otherReaders.length === otherMembersCount && otherMembersCount > 0) {
-      return <CheckCheck className="h-3.5 w-3.5 text-sky-600 dark:text-sky-200" aria-hidden />
+      return <CheckCheck className="h-3.5 w-3.5 text-violet-300" aria-hidden />
     }
 
     const messageTime = new Date(createdAt).getTime()
@@ -288,18 +288,18 @@ export function MessengerMessageBubble({
     const isJustSent = timeSinceSent < 2000
 
     if (isJustSent && otherReaders.length === 0) {
-      return <Check className="h-3.5 w-3.5 text-zinc-500 dark:text-white/70" aria-hidden />
+      return <Check className="h-3.5 w-3.5 text-white/70" aria-hidden />
     }
 
     if (otherReaders.length > 0 && otherReaders.length < otherMembersCount) {
-      return <CheckCheck className="h-3.5 w-3.5 text-zinc-500 dark:text-white/70" aria-hidden />
+      return <CheckCheck className="h-3.5 w-3.5 text-white/70" aria-hidden />
     }
 
     if (otherReaders.length === 0) {
-      return <CheckCheck className="h-3.5 w-3.5 text-zinc-500 dark:text-white/70" aria-hidden />
+      return <CheckCheck className="h-3.5 w-3.5 text-white/70" aria-hidden />
     }
 
-    return <Check className="h-3.5 w-3.5 text-zinc-500 dark:text-white/70" aria-hidden />
+    return <Check className="h-3.5 w-3.5 text-white/70" aria-hidden />
   }
 
   const handleCopy = () => {
@@ -327,34 +327,34 @@ export function MessengerMessageBubble({
   }
 
   const bubbleGlass = isOwn
-    ? 'border-white/70 bg-white/65 text-zinc-900 shadow-[0_1px_12px_rgba(0,0,0,0.06)] dark:border-purple-400/35 dark:bg-purple-600 dark:text-white dark:shadow-[0_1px_16px_rgba(0,0,0,0.35)]'
-    : 'border-zinc-300/50 bg-zinc-200/45 text-zinc-900 shadow-[0_1px_12px_rgba(0,0,0,0.08)] dark:border-white/10 dark:bg-zinc-950/35 dark:text-zinc-100 dark:shadow-[0_1px_16px_rgba(0,0,0,0.4)]'
+    ? 'bg-gradient-to-br from-[#7C3AED] to-[#6D28D9] text-white shadow-[0_2px_12px_rgba(124,58,237,0.25)]'
+    : 'bg-[#F1F5F9] text-[#0F172A] shadow-[0_1px_8px_rgba(15,23,42,0.04)] dark:bg-zinc-800 dark:text-zinc-100'
 
   const bubbleInner = (
     <div
       className={cn(
-        'relative max-w-full cursor-default touch-manipulation backdrop-blur-2xl transition-all hover:brightness-[1.02] dark:hover:brightness-110',
-        'border px-3 py-2',
+        'relative max-w-full cursor-default touch-manipulation transition-transform hover:brightness-[1.02]',
+        'px-3.5 py-2',
         bubbleGlass,
         isOwn
-          ? 'rounded-tl-[18px] rounded-tr-[18px] rounded-br-[5px] rounded-bl-[18px]'
-          : 'rounded-tl-[18px] rounded-tr-[18px] rounded-br-[18px] rounded-bl-[5px]',
+          ? 'rounded-[18px] rounded-br-[4px]'
+          : 'rounded-[18px] rounded-bl-[4px]',
       )}
     >
       {replyTo ? (
         <div
           className={cn(
-            'mb-2 rounded-lg border py-2 pl-2.5 pr-2 text-left shadow-inner',
+            'mb-2 rounded-lg py-2 pl-2.5 pr-2 text-left',
             isOwn
-              ? 'border-zinc-200/90 bg-zinc-100/95 dark:border-white/20 dark:bg-black/40 dark:shadow-[inset_0_1px_0_rgba(255,255,255,0.06)]'
-              : 'border-zinc-200/80 bg-zinc-100/85 dark:border-white/10 dark:bg-white/[0.08]',
-            'border-l-[3px] border-l-purple-600 dark:border-l-purple-300',
+              ? 'bg-black/20'
+              : 'bg-white/70 dark:bg-black/30',
+            'border-l-[3px] border-l-violet-300 dark:border-l-violet-400',
           )}
         >
           <p
             className={cn(
-              'text-[11px] font-semibold tracking-tight text-purple-700',
-              isOwn ? 'dark:text-purple-100' : 'dark:text-purple-200',
+              'text-[11px] font-semibold tracking-tight',
+              isOwn ? 'text-violet-100' : 'text-violet-700 dark:text-violet-200',
             )}
           >
             {replyTo.senderName}
@@ -363,7 +363,7 @@ export function MessengerMessageBubble({
             className={cn(
               'mt-0.5 max-w-none text-[13px] font-normal leading-snug break-words sm:text-sm',
               isOwn
-                ? 'line-clamp-4 text-zinc-700 dark:text-zinc-50'
+                ? 'line-clamp-4 text-white/85'
                 : 'line-clamp-3 text-zinc-600 dark:text-zinc-300',
             )}
           >
@@ -383,7 +383,7 @@ export function MessengerMessageBubble({
         <span
           className={cn(
             'ml-auto inline-flex shrink-0 items-center gap-1 pb-px text-[11px] leading-none tabular-nums',
-            isOwn ? 'text-zinc-500 dark:text-white/75' : 'text-zinc-500 dark:text-zinc-400',
+            isOwn ? 'text-white/75' : 'text-zinc-500 dark:text-zinc-400',
           )}
         >
           {formatTime(createdAt)}
@@ -454,8 +454,8 @@ export function MessengerMessageBubble({
               >
                 <div
                   className={cn(
-                    'inline-flex h-[25px] w-max max-w-full min-w-0 flex-nowrap items-center justify-center gap-px overflow-hidden rounded-full border px-1 py-0 shadow-[0_1px_2px_rgba(15,23,42,0.08)] dark:shadow-[0_1px_3px_rgba(0,0,0,0.45)]',
-                    'border-zinc-200/95 bg-white dark:border-zinc-600 dark:bg-zinc-800',
+                    'inline-flex h-[25px] w-max max-w-full min-w-0 flex-nowrap items-center justify-center gap-px overflow-hidden rounded-full border px-1 py-0 shadow-[0_2px_8px_rgba(15,23,42,0.08)] backdrop-blur-md',
+                    'border-white/60 bg-white/80 dark:border-white/10 dark:bg-zinc-800/85 dark:shadow-[0_2px_10px_rgba(0,0,0,0.45)]',
                   )}
                 >
                   {sortedReactions.map((group) => (
@@ -538,12 +538,12 @@ export function MessengerMessageBubble({
                           : { top: 0, left: 0, visibility: 'hidden' as const }
                       }
                       className={cn(
-                        'fixed z-[200] w-[min(220px,calc(100vw-1rem))] rounded-xl border border-zinc-200 bg-white/98 p-2 shadow-xl backdrop-blur-xl',
-                        'dark:border-zinc-600 dark:bg-zinc-900/98',
+                        'fixed z-[200] flex w-auto max-w-[min(280px,calc(100vw-1rem))] gap-1 rounded-full border border-white/50 bg-white/70 p-1.5 shadow-xl backdrop-blur-xl',
+                        'dark:border-white/10 dark:bg-zinc-900/80',
                       )}
                       onPointerDown={(e) => e.stopPropagation()}
                     >
-                      <div className="grid grid-cols-4 gap-1">
+                      <div className="flex items-center gap-0.5">
                         {REACTION_PICK_EMOJIS.map((emoji) => (
                           <button
                             key={emoji}
@@ -551,8 +551,8 @@ export function MessengerMessageBubble({
                             disabled={isReacting}
                             onClick={() => void handleReaction(emoji)}
                             className={cn(
-                              'flex h-10 items-center justify-center rounded-lg text-xl transition-colors',
-                              'hover:bg-zinc-100 active:scale-95 dark:hover:bg-zinc-800',
+                              'flex h-9 w-9 items-center justify-center rounded-full text-lg transition-transform',
+                              'hover:bg-zinc-100 hover:scale-110 active:scale-95 dark:hover:bg-zinc-800',
                               'disabled:cursor-not-allowed disabled:opacity-50',
                             )}
                             title={`React with ${emoji}`}

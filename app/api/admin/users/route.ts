@@ -4,6 +4,10 @@ import { requireAdmin } from '@/lib/auth/admin'
 import { logAdminAction } from '@/lib/admin/audit'
 import { safeLogger } from '@/lib/utils/logger'
 import { sanitizeSearchInput, validateSearchInputLength } from '@/lib/utils/sanitize'
+import {
+  clearVerificationCache,
+  markIdentityVerified,
+} from '@/lib/auth/verification-check'
 
 export async function GET(request: NextRequest) {
   const adminCheck = await requireAdmin(request, false)
@@ -297,34 +301,60 @@ export async function POST(request: NextRequest) {
         await logAdminAction(user!.id, 'activate_users', 'user', null, { userIds })
         break
       
-      case 'verify':
-        const { error: verifyError } = await admin
-          .from('profiles')
-          .update({ verification_status: 'verified' })
-          .in('user_id', userIds)
-        
-        if (verifyError) {
-          safeLogger.error('[Admin Users] Failed to verify users', verifyError)
-          return NextResponse.json({ error: 'Failed to verify users' }, { status: 500 })
+      case 'verify': {
+        const now = new Date().toISOString()
+        for (const targetUserId of userIds as string[]) {
+          const { data: authUser } = await admin.auth.admin.getUserById(targetUserId)
+          await markIdentityVerified(
+            targetUserId,
+            'admin_manual',
+            authUser?.user?.email || null
+          )
+
+          // Ensure profile flag is set even if profile row exists with other status
+          await admin
+            .from('profiles')
+            .update({ verification_status: 'verified', updated_at: now })
+            .eq('user_id', targetUserId)
         }
-        
+
         await logAdminAction(user!.id, 'verify_users', 'user', null, { userIds })
         break
+      }
       
-      case 'unverify':
-        const { error: unverifyError } = await admin
+      case 'unverify': {
+        const now = new Date().toISOString()
+        const { error: unverifyProfileError } = await admin
           .from('profiles')
-          .update({ verification_status: 'unverified' })
+          .update({ verification_status: 'unverified', updated_at: now })
           .in('user_id', userIds)
         
-        if (unverifyError) {
-          safeLogger.error('[Admin Users] Failed to unverify users', unverifyError)
+        if (unverifyProfileError) {
+          safeLogger.error('[Admin Users] Failed to unverify users (profiles)', unverifyProfileError)
           return NextResponse.json({ error: 'Failed to unverify users' }, { status: 500 })
+        }
+
+        const { error: unverifyUsersError } = await admin
+          .from('users')
+          .update({
+            identity_verified_at: null,
+            identity_verification_provider: null,
+            updated_at: now,
+          })
+          .in('id', userIds)
+
+        if (unverifyUsersError) {
+          safeLogger.error('[Admin Users] Failed to clear durable verification', unverifyUsersError)
+          return NextResponse.json({ error: 'Failed to unverify users' }, { status: 500 })
+        }
+
+        for (const targetUserId of userIds as string[]) {
+          clearVerificationCache(targetUserId)
         }
         
         await logAdminAction(user!.id, 'unverify_users', 'user', null, { userIds })
         break
-      
+      }
       case 'delete': {
         // UAVG Art. 23: verification documents must be retained for 4 weeks after verification.
         // Reject the bulk delete if any user still has a verification record within that window.

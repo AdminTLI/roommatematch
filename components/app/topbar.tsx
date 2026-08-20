@@ -290,7 +290,7 @@ export function Topbar({ user, context = 'user' }: TopbarProps) {
                   setShowResults(true)
                 }
               }}
-              className="w-full pl-10 sm:pl-12 pr-10 py-2.5 h-[44px] bg-zinc-100/50 dark:bg-white/5 border border-zinc-200 dark:border-white/10 rounded-full text-sm text-zinc-900 dark:text-zinc-200 placeholder:text-zinc-500 dark:placeholder:text-zinc-600 focus:outline-none focus:bg-white/80 dark:focus:bg-white/10 focus:border-indigo-500/50 focus:ring-4 focus:ring-indigo-500/10 transition-all shadow-inner shadow-black/5 dark:shadow-black/20"
+              className="w-full pl-10 sm:pl-12 pr-9 py-2.5 h-[44px] bg-zinc-100/50 dark:bg-white/5 border border-zinc-200 dark:border-white/10 rounded-full text-sm text-zinc-900 dark:text-zinc-200 placeholder:text-zinc-500 dark:placeholder:text-zinc-600 focus:outline-none focus:bg-white/80 dark:focus:bg-white/10 focus:border-indigo-500/50 focus:ring-4 focus:ring-indigo-500/10 transition-all shadow-inner shadow-black/5 dark:shadow-black/20"
             />
             {searchQuery && (
               <button
@@ -299,7 +299,7 @@ export function Topbar({ user, context = 'user' }: TopbarProps) {
                   setShowResults(false)
                   inputRef.current?.focus()
                 }}
-                className="absolute right-4 top-1/2 transform -translate-y-1/2 text-zinc-500 hover:text-zinc-300 transition-colors"
+                className="absolute right-3 top-1/2 transform -translate-y-1/2 text-zinc-500 hover:text-zinc-700 dark:hover:text-zinc-300 transition-colors"
               >
                 <X className="w-4 h-4" />
               </button>
@@ -310,7 +310,12 @@ export function Topbar({ user, context = 'user' }: TopbarProps) {
           {showResults && searchQuery.length >= 2 && dropdownPosition && typeof window !== 'undefined' && createPortal(
             <Card
               data-search-dropdown
-              className="fixed max-h-[calc(100vh-16rem)] sm:max-h-96 overflow-y-auto shadow-2xl border border-white/10 bg-zinc-900/95 backdrop-blur-xl z-[9999] scrollbar-hide rounded-2xl"
+              className={cn(
+                'fixed max-h-[calc(100vh-16rem)] sm:max-h-96 overflow-y-auto z-[9999] scrollbar-hide rounded-2xl',
+                'border border-white/60 bg-white/45 shadow-[0_12px_40px_rgba(15,23,42,0.14),0_2px_10px_rgba(15,23,42,0.06)] backdrop-blur-2xl backdrop-saturate-150',
+                'ring-1 ring-inset ring-white/50',
+                'dark:border-white/10 dark:bg-zinc-950/35 dark:shadow-[0_16px_48px_rgba(0,0,0,0.35),0_4px_14px_rgba(0,0,0,0.2)] dark:ring-white/[0.08]',
+              )}
               style={{
                 top: `${dropdownPosition.top}px`,
                 left: `${dropdownPosition.left}px`,
@@ -320,38 +325,38 @@ export function Topbar({ user, context = 'user' }: TopbarProps) {
             >
               <CardContent className="p-0">
                 {isSearching ? (
-                  <div className="p-4 text-center text-zinc-500 text-sm">
+                  <div className="p-4 text-center text-zinc-500 dark:text-zinc-400 text-sm">
                     Searching...
                   </div>
                 ) : searchResults.length === 0 ? (
-                  <div className="p-4 text-center text-zinc-500 text-sm">
+                  <div className="p-4 text-center text-zinc-500 dark:text-zinc-400 text-sm">
                     No results found
                   </div>
                 ) : (
-                  <div className="divide-y divide-white/5">
+                  <div className="divide-y divide-zinc-200/50 dark:divide-white/[0.06]">
                     {searchResults.map((result) => {
                       const Icon = getIconForResult(result)
                       return (
                         <button
                           key={`${result.type}-${result.id}`}
                           onClick={() => handleResultClick(result)}
-                          className="w-full p-3 hover:bg-white/5 text-left transition-colors min-h-[50px] flex items-center gap-3 group"
+                          className="w-full p-3 hover:bg-zinc-900/[0.04] dark:hover:bg-white/5 text-left transition-colors min-h-[50px] flex items-center gap-3 group"
                         >
                           {result.type === 'match' || result.type === 'user' ? (
-                            <div className="w-10 h-10 rounded-full bg-indigo-500/20 flex items-center justify-center flex-shrink-0 group-hover:bg-indigo-500/30 transition-colors">
-                              <Icon className="w-5 h-5 text-indigo-400" />
+                            <div className="w-10 h-10 rounded-full bg-indigo-500/15 dark:bg-indigo-500/20 flex items-center justify-center flex-shrink-0 group-hover:bg-indigo-500/25 dark:group-hover:bg-indigo-500/30 transition-colors">
+                              <Icon className="w-5 h-5 text-indigo-600 dark:text-indigo-400" />
                             </div>
                           ) : (
-                            <div className="w-10 h-10 rounded-full bg-zinc-800 flex items-center justify-center flex-shrink-0 group-hover:bg-zinc-700 transition-colors">
-                              <Icon className="w-5 h-5 text-zinc-400" />
+                            <div className="w-10 h-10 rounded-full bg-zinc-100 dark:bg-zinc-800 flex items-center justify-center flex-shrink-0 group-hover:bg-zinc-200 dark:group-hover:bg-zinc-700 transition-colors">
+                              <Icon className="w-5 h-5 text-zinc-500 dark:text-zinc-400" />
                             </div>
                           )}
 
                           <div className="flex-1 min-w-0">
-                            <p className="font-medium text-sm text-zinc-200 group-hover:text-white truncate">
+                            <p className="font-medium text-sm text-zinc-900 dark:text-zinc-200 group-hover:text-zinc-950 dark:group-hover:text-white truncate">
                               {result.name || result.senderName || result.title}
                             </p>
-                            <p className="text-xs text-zinc-500 group-hover:text-zinc-400 truncate">
+                            <p className="text-xs text-zinc-500 dark:text-zinc-500 group-hover:text-zinc-600 dark:group-hover:text-zinc-400 truncate">
                               {result.type === 'message' ? result.content :
                                 result.type === 'housing' ? [result.address, result.city].filter(Boolean).join(', ') :
                                   result.type === 'page' ? 'Navigate to page' : 'User'}

@@ -54,15 +54,24 @@ interface MessengerSidebarProps {
 
 const formatMessageTime = (timestamp: string) => {
   const messageDate = new Date(timestamp)
+  if (Number.isNaN(messageDate.getTime())) return ''
+
   const now = new Date()
+  const diffMs = now.getTime() - messageDate.getTime()
+  const diffSec = Math.floor(diffMs / 1000)
+  const diffMin = Math.floor(diffSec / 60)
+  const diffHour = Math.floor(diffMin / 60)
+
+  if (diffSec < 60) return 'Just now'
+  if (diffMin < 60) return `${diffMin}m ago`
+  if (diffHour < 24 && messageDate.getDate() === now.getDate()) {
+    return `${diffHour}h ago`
+  }
+
   const today = new Date(now.getFullYear(), now.getMonth(), now.getDate())
   const yesterday = new Date(today)
   yesterday.setDate(yesterday.getDate() - 1)
   const messageDay = new Date(messageDate.getFullYear(), messageDate.getMonth(), messageDate.getDate())
-
-  if (messageDay.getTime() === today.getTime()) {
-    return messageDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-  }
 
   if (messageDay.getTime() === yesterday.getTime()) {
     return 'Yesterday'
@@ -70,19 +79,7 @@ const formatMessageTime = (timestamp: string) => {
 
   const daysDiff = Math.floor((today.getTime() - messageDay.getTime()) / (1000 * 60 * 60 * 24))
   if (daysDiff >= 2 && daysDiff < 7) {
-    const getMonday = (date: Date) => {
-      const d = new Date(date)
-      const day = d.getDay()
-      const diff = d.getDate() - day + (day === 0 ? -6 : 1)
-      return new Date(d.setDate(diff))
-    }
-
-    const messageMonday = getMonday(messageDate)
-    const todayMonday = getMonday(now)
-
-    if (messageMonday.getTime() === todayMonday.getTime() && messageDate.getFullYear() === now.getFullYear()) {
-      return messageDate.toLocaleDateString([], { weekday: 'long' })
-    }
+    return messageDate.toLocaleDateString([], { weekday: 'short' })
   }
 
   return messageDate.toLocaleDateString([], { day: 'numeric', month: 'short' })
@@ -726,32 +723,37 @@ export function MessengerSidebar({ user, onChatSelect, selectedChatId }: Messeng
     return Array.from(onlineUsersMap.values())
   }, [chats, user.id])
 
-  // Fetch online users (active in last 15 minutes)
-  const { data: onlineUsersData = { users: [] } } = useQuery({
+  // Fetch presence: online (15m) + recent (3h), plus active-today count
+  const { data: onlineUsersData = { users: [], activeTodayCount: 0 } } = useQuery({
     queryKey: ['online-users', user.id],
     queryFn: async () => {
       const response = await fetch('/api/chat/online-users', { credentials: 'include' })
       if (!response.ok) {
         throw new Error('Failed to fetch online users')
       }
-      return response.json()
+      return response.json() as Promise<{
+        users: Array<{ id: string; firstName: string; avatar?: string; presence?: 'online' | 'recent' }>
+        activeTodayCount?: number
+      }>
     },
-    staleTime: 30_000, // Refresh every 30 seconds
+    staleTime: 30_000,
     refetchInterval: 30_000,
     enabled: !showArchived && !showMuted
   })
 
   const onlineUsersList = onlineUsersData.users || []
+  const activeTodayCount = onlineUsersData.activeTodayCount ?? 0
 
-  /** Deduped “stories” row: API online users + any participant-flagged online */
+  /** Deduped “stories” row with presence tiers */
   const storyPeople = useMemo(() => {
-    const map = new Map<string, { id: string; displayName: string; avatar?: string }>()
-    for (const u of onlineUsersList as { id: string; firstName: string; avatar?: string }[]) {
+    const map = new Map<string, { id: string; displayName: string; avatar?: string; presence: 'online' | 'recent' }>()
+    for (const u of onlineUsersList) {
       if (u?.id) {
         map.set(u.id, {
           id: u.id,
           displayName: (u.firstName || 'User').trim() || 'User',
           avatar: u.avatar,
+          presence: u.presence === 'recent' ? 'recent' : 'online',
         })
       }
     }
@@ -761,13 +763,17 @@ export function MessengerSidebar({ user, onChatSelect, selectedChatId }: Messeng
           id: u.id,
           displayName: (u.name || 'User').trim() || 'User',
           avatar: u.avatar,
+          presence: 'online',
         })
       }
     }
     return Array.from(map.values())
   }, [onlineUsersList, onlineUsers])
 
-  const onlineIdSet = useMemo(() => new Set(storyPeople.map(p => p.id)), [storyPeople])
+  const onlineIdSet = useMemo(
+    () => new Set(storyPeople.filter(p => p.presence === 'online').map(p => p.id)),
+    [storyPeople],
+  )
 
   // Handle clicking on an online user avatar
   const handleOnlineUserClick = useCallback(async (userId: string) => {
@@ -828,10 +834,10 @@ export function MessengerSidebar({ user, onChatSelect, selectedChatId }: Messeng
   return (
     <div
       data-messenger-sidebar
-      className="flex h-full w-full flex-col overflow-hidden border-r border-gray-200 bg-white dark:border-gray-800 dark:bg-gray-950"
+      className="flex h-full w-full flex-col overflow-hidden bg-[hsl(var(--chat-bg-primary))]"
     >
       {/* Current User Header */}
-      <div className="flex flex-shrink-0 items-center justify-between border-b border-gray-200 px-3 py-3 dark:border-gray-800">
+      <div className="flex flex-shrink-0 items-center justify-between px-3 py-3">
         <div className="flex items-center gap-3 flex-1 min-w-0">
           <Avatar className="w-10 h-10 flex-shrink-0">
             <AvatarImage src={undefined} />
@@ -840,8 +846,8 @@ export function MessengerSidebar({ user, onChatSelect, selectedChatId }: Messeng
             </AvatarFallback>
           </Avatar>
           <div className="flex-1 min-w-0">
-            <p className="text-sm font-semibold text-gray-900 dark:text-gray-100 truncate">{userName}</p>
-            <p className="text-xs text-gray-500 dark:text-gray-400 truncate">Online</p>
+            <p className="text-sm font-semibold text-gray-900 dark:text-gray-100 truncate">My Messages</p>
+            <p className="text-xs text-gray-500 dark:text-gray-400 truncate">{userName}</p>
           </div>
         </div>
         {isMounted ? (
@@ -851,11 +857,13 @@ export function MessengerSidebar({ user, onChatSelect, selectedChatId }: Messeng
                 <MoreVertical className="h-5 w-5" />
               </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-56">
-              <DropdownMenuLabel>Chat Options</DropdownMenuLabel>
-              <DropdownMenuSeparator />
-
-              {/* Archive */}
+            <DropdownMenuContent
+              align="end"
+              className="w-56 border-white/40 bg-white/80 shadow-xl backdrop-blur-[12px] dark:border-white/10 dark:bg-zinc-900/80"
+            >
+              <DropdownMenuLabel className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                Views
+              </DropdownMenuLabel>
               <DropdownMenuItem onClick={handleViewArchived}>
                 <Archive className="mr-2 h-4 w-4" />
                 Archived Chats
@@ -863,8 +871,6 @@ export function MessengerSidebar({ user, onChatSelect, selectedChatId }: Messeng
                   <span className="ml-auto text-xs text-gray-500">({archivedChats.length})</span>
                 )}
               </DropdownMenuItem>
-
-              {/* Muted Chats */}
               <DropdownMenuItem onClick={handleViewMuted}>
                 <BellOff className="mr-2 h-4 w-4" />
                 Muted Chats
@@ -872,7 +878,6 @@ export function MessengerSidebar({ user, onChatSelect, selectedChatId }: Messeng
                   <span className="ml-auto text-xs text-gray-500">({mutedChats.length})</span>
                 )}
               </DropdownMenuItem>
-
               {(showArchived || showMuted) && (
                 <DropdownMenuItem onClick={() => {
                   setShowArchived(false)
@@ -883,23 +888,23 @@ export function MessengerSidebar({ user, onChatSelect, selectedChatId }: Messeng
                 </DropdownMenuItem>
               )}
 
-              <DropdownMenuSeparator />
-
-              {/* Mark all as read */}
+              <DropdownMenuSeparator className="bg-black/5 dark:bg-white/10" />
+              <DropdownMenuLabel className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                Actions
+              </DropdownMenuLabel>
               <DropdownMenuItem onClick={handleMarkAllAsRead} disabled={isMarkingAllRead}>
                 <CheckCheck className="mr-2 h-4 w-4" />
                 {isMarkingAllRead ? 'Marking...' : 'Mark All as Read'}
               </DropdownMenuItem>
-
-              {/* Clear read receipts */}
               <DropdownMenuItem onClick={handleClearAllReadReceipts} disabled={isClearingReadReceipts}>
                 <RotateCcw className="mr-2 h-4 w-4" />
                 {isClearingReadReceipts ? 'Clearing...' : 'Clear All Read Receipts'}
               </DropdownMenuItem>
 
-              <DropdownMenuSeparator />
-
-              {/* Mute/Unmute all notifications */}
+              <DropdownMenuSeparator className="bg-black/5 dark:bg-white/10" />
+              <DropdownMenuLabel className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                Controls
+              </DropdownMenuLabel>
               {mutedChats.length === chats.length && chats.length > 0 ? (
                 <DropdownMenuItem onClick={handleUnmuteAllNotifications}>
                   <Bell className="mr-2 h-4 w-4" />
@@ -924,7 +929,7 @@ export function MessengerSidebar({ user, onChatSelect, selectedChatId }: Messeng
       <div className="flex-1 overflow-y-auto min-h-0 scrollbar-visible">
         {/* View Header (when viewing archived or muted) */}
         {(showArchived || showMuted) && (
-          <div className="px-4 py-3 border-b border-gray-200 dark:border-gray-800 bg-gray-50 dark:bg-gray-800/50">
+          <div className="px-4 py-3 bg-[hsl(var(--chat-active-fill))]/60 dark:bg-violet-950/30">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
                 {showArchived ? (
@@ -964,9 +969,9 @@ export function MessengerSidebar({ user, onChatSelect, selectedChatId }: Messeng
           </div>
         )}
 
-        {/* Stories-style online row (deduped) */}
+        {/* Stories-style online row */}
         {!showArchived && !showMuted && (
-          <div className="border-b border-gray-200 px-3 py-3 dark:border-gray-800">
+          <div className="px-3 py-3">
             <h2 className="mb-2 text-xs font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400">
               Active now
             </h2>
@@ -979,8 +984,15 @@ export function MessengerSidebar({ user, onChatSelect, selectedChatId }: Messeng
                     onClick={() => handleOnlineUserClick(person.id)}
                     className="flex flex-shrink-0 flex-col items-center gap-1.5 touch-manipulation"
                   >
-                    <div className="rounded-full bg-gradient-to-tr from-emerald-400 to-green-600 p-[2px]">
-                      <Avatar className="h-12 w-12 border-2 border-white dark:border-gray-950">
+                    <div
+                      className={cn(
+                        'rounded-full p-[2.5px]',
+                        person.presence === 'online'
+                          ? 'bg-[#10B981]'
+                          : 'chat-presence-recent bg-[#A855F7]',
+                      )}
+                    >
+                      <Avatar className="h-12 w-12 ring-2 ring-white dark:ring-slate-900">
                         <AvatarImage src={person.avatar} />
                         <AvatarFallback className="bg-purple-600 text-sm font-semibold text-white">
                           {person.displayName.charAt(0).toUpperCase()}
@@ -993,14 +1005,11 @@ export function MessengerSidebar({ user, onChatSelect, selectedChatId }: Messeng
                   </button>
                 ))
               ) : (
-                <div className="flex flex-col items-center gap-1.5 py-1 opacity-60">
-                  <Avatar className="h-12 w-12">
-                    <AvatarFallback className="bg-gray-200 text-base text-gray-500 dark:bg-gray-800 dark:text-gray-400">
-                      💤
-                    </AvatarFallback>
-                  </Avatar>
-                  <span className="max-w-[80px] truncate text-center text-xs text-gray-500 dark:text-gray-400">
-                    All offline
+                <div className="flex w-full items-center py-1">
+                  <span className="rounded-full bg-[hsl(var(--chat-active-fill))] px-3 py-1.5 text-xs font-medium text-violet-800 dark:bg-violet-950/50 dark:text-violet-200">
+                    {activeTodayCount > 0
+                      ? `${activeTodayCount} match${activeTodayCount === 1 ? '' : 'es'} ${activeTodayCount === 1 ? 'was' : 'were'} active today`
+                      : 'No matches active yet today'}
                   </span>
                 </div>
               )}
@@ -1008,66 +1017,64 @@ export function MessengerSidebar({ user, onChatSelect, selectedChatId }: Messeng
           </div>
         )}
 
-        {/* Recently matched — flat rows */}
+        {/* Recently matched — horizontal scroll */}
         {!showArchived && !showMuted && recentlyMatchedChats.length > 0 && (
-          <div className="border-b border-gray-200 dark:border-gray-800">
-            <div className="px-3 py-2">
-              <h2 className="text-xs font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400">
-                New matches ({recentlyMatchedChats.length})
-              </h2>
-            </div>
-            {recentlyMatchedChats.map(chat => {
-              const otherParticipant = chat.participants.find(p => p.id !== user.id) || chat.participants[0]
-              const isSelected = selectedChatId === chat.id
-              const partnerId = otherParticipant?.id
+          <div className="px-3 pb-3">
+            <h2 className="mb-2 text-xs font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400">
+              New matches ({recentlyMatchedChats.length})
+            </h2>
+            <div className="scrollbar-hide flex gap-3 overflow-x-auto pb-1">
+              {recentlyMatchedChats.map(chat => {
+                const otherParticipant = chat.participants.find(p => p.id !== user.id) || chat.participants[0]
+                const firstName = (otherParticipant?.name || chat.name).split(/\s+/)[0]
+                const isSelected = selectedChatId === chat.id
 
-              return (
-                <button
-                  key={chat.id}
-                  type="button"
-                  onClick={() => onChatSelect(chat.id)}
-                  className={cn(
-                    'flex w-full items-center gap-3 border-t border-gray-200/90 px-3 py-3 text-left transition-colors active:bg-gray-100 dark:border-gray-800 dark:active:bg-gray-900',
-                    isSelected ? 'bg-gray-100 dark:bg-gray-900' : 'bg-white dark:bg-gray-950',
-                  )}
-                >
-                  <div className="relative shrink-0">
-                    <Avatar className="h-11 w-11">
-                      <AvatarImage src={otherParticipant?.avatar} />
-                      <AvatarFallback className="bg-purple-600 text-white">
-                        {otherParticipant?.name?.charAt(0) || chat.name.charAt(0)}
-                      </AvatarFallback>
-                    </Avatar>
-                    {partnerId && onlineIdSet.has(partnerId) ? (
-                      <span
-                        className="absolute bottom-0 right-0 h-2.5 w-2.5 rounded-full border-2 border-white bg-green-500 dark:border-gray-950"
-                        aria-hidden
-                      />
-                    ) : null}
-                  </div>
-                  <span className="min-w-0 flex-1 truncate text-sm font-semibold text-gray-900 dark:text-gray-100">
-                    {chat.name}
-                  </span>
-                </button>
-              )
-            })}
+                return (
+                  <button
+                    key={chat.id}
+                    type="button"
+                    onClick={() => onChatSelect(chat.id)}
+                    className={cn(
+                      'flex w-[76px] flex-shrink-0 flex-col items-center gap-1.5 rounded-xl p-1.5 text-center transition-colors touch-manipulation',
+                      isSelected
+                        ? 'bg-[hsl(var(--chat-active-fill))] dark:bg-violet-950/40'
+                        : 'hover:bg-zinc-100 dark:hover:bg-zinc-800/80',
+                    )}
+                  >
+                    <div className="rounded-2xl bg-gradient-to-br from-violet-500 via-fuchsia-500 to-indigo-500 p-[2px]">
+                      <Avatar className="h-14 w-14 rounded-2xl">
+                        <AvatarImage src={otherParticipant?.avatar} className="rounded-2xl" />
+                        <AvatarFallback className="rounded-2xl bg-purple-600 text-white">
+                          {firstName.charAt(0)}
+                        </AvatarFallback>
+                      </Avatar>
+                    </div>
+                    <span className="w-full truncate text-xs font-bold text-gray-900 dark:text-gray-100">
+                      {firstName}
+                    </span>
+                  </button>
+                )
+              })}
+            </div>
           </div>
         )}
 
-        {/* Messages list — flat rows, trailing unread */}
-        <div>
-          <div className="flex items-center justify-between px-3 py-2">
+        {/* Messages list — tonal hover cards */}
+        <div className="px-2 pb-3">
+          <div className="flex items-center justify-between px-1 py-2">
             <h2 className="text-xs font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400">
               {showArchived
                 ? `Archived (${archivedChats.length})`
                 : showMuted
                   ? `Muted (${mutedChats.length})`
-                  : `Messages (${activeConversations.length})`}
+                  : `Chats (${activeConversations.length})`}
             </h2>
             {!showArchived && !showMuted && (() => {
               const totalUnread = activeConversations.reduce((sum, c) => sum + (c.unreadCount || 0), 0)
               return totalUnread > 0 ? (
-                <span className="text-xs font-medium text-gray-500 dark:text-gray-400">{totalUnread > 99 ? '99+' : totalUnread} new</span>
+                <span className="rounded-full bg-[#7C3AED] px-2 py-0.5 text-[10px] font-semibold text-white">
+                  {totalUnread > 99 ? '99+' : totalUnread} new
+                </span>
               ) : null
             })()}
           </div>
@@ -1088,7 +1095,7 @@ export function MessengerSidebar({ user, onChatSelect, selectedChatId }: Messeng
               )}
             </div>
           ) : (
-            <div className="flex flex-col">
+            <div className="flex flex-col gap-0.5">
               {activeConversations.map(chat => {
                 const otherParticipant = chat.participants.find(p => p.id !== user.id) || chat.participants[0]
                 const isSelected = selectedChatId === chat.id
@@ -1100,14 +1107,16 @@ export function MessengerSidebar({ user, onChatSelect, selectedChatId }: Messeng
                   <div
                     key={chat.id}
                     className={cn(
-                      'group flex items-stretch border-t border-gray-200/90 dark:border-gray-800',
-                      isSelected ? 'bg-gray-100 dark:bg-gray-900' : 'bg-white dark:bg-gray-950',
+                      'group flex items-stretch rounded-xl transition-colors',
+                      isSelected
+                        ? 'bg-[hsl(var(--chat-active-fill))] dark:bg-violet-950/40'
+                        : 'hover:bg-zinc-100 dark:hover:bg-zinc-800/70',
                     )}
                   >
                     <button
                       type="button"
                       onClick={() => onChatSelect(chat.id)}
-                      className="flex min-w-0 flex-1 items-center gap-3 py-3 pl-3 pr-2 text-left touch-manipulation active:bg-gray-50 dark:active:bg-gray-900/80"
+                      className="flex min-w-0 flex-1 items-center gap-3 py-3 pl-3 pr-2 text-left touch-manipulation"
                     >
                       <div className="relative shrink-0">
                         <Avatar className="h-11 w-11">
@@ -1118,7 +1127,7 @@ export function MessengerSidebar({ user, onChatSelect, selectedChatId }: Messeng
                         </Avatar>
                         {partnerId && onlineIdSet.has(partnerId) ? (
                           <span
-                            className="absolute bottom-0 right-0 h-2.5 w-2.5 rounded-full border-2 border-white bg-green-500 dark:border-gray-950"
+                            className="absolute bottom-0 right-0 h-2.5 w-2.5 rounded-full ring-2 ring-white bg-[#10B981] dark:ring-slate-900"
                             aria-hidden
                           />
                         ) : null}
@@ -1141,13 +1150,13 @@ export function MessengerSidebar({ user, onChatSelect, selectedChatId }: Messeng
                             {chat.lastMessage.content}
                           </p>
                         ) : (
-                          <p className="line-clamp-1 text-xs text-gray-400 dark:text-gray-500">No messages yet</p>
+                          <p className="line-clamp-1 text-xs text-gray-400 dark:text-gray-500">Say hello</p>
                         )}
                       </div>
                     </button>
                     <div className="flex shrink-0 items-center gap-1 pr-2">
                       {unread > 0 ? (
-                        <span className="flex h-[22px] min-w-[22px] items-center justify-center rounded-full bg-purple-600 px-1.5 text-xs font-semibold text-white tabular-nums">
+                        <span className="flex h-[22px] min-w-[22px] items-center justify-center rounded-full bg-[#7C3AED] px-1.5 text-xs font-semibold text-white tabular-nums">
                           {unread > 99 ? '99+' : unread}
                         </span>
                       ) : null}

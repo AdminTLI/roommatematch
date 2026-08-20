@@ -40,6 +40,8 @@ export function MessengerLayout({
   )
   const [rightPaneOpen, setRightPaneOpen] = useState(false)
   const [chatInfo, setChatInfo] = useState<ChatInfo | null>(null)
+  const [composerInsert, setComposerInsert] = useState<string | null>(null)
+  const [partnerDisplayName, setPartnerDisplayName] = useState<string>('User')
   const [isDesktop, setIsDesktop] = useState(true)
   /** Drives bottom-sheet enter animation (translate-y) on mobile */
   const [mobileSheetEntered, setMobileSheetEntered] = useState(false)
@@ -264,6 +266,9 @@ export function MessengerLayout({
       partnerName={chatInfo?.partnerName ?? 'User'}
       partnerAvatar={chatInfo?.partnerAvatar}
       hideComposer={!isDesktop && rightPaneOpen}
+      composerInsert={composerInsert}
+      onComposerInsertConsumed={() => setComposerInsert(null)}
+      onPartnerDisplayNameChange={setPartnerDisplayName}
       highlightMessageId={
         pendingMessageHighlightId &&
         selectedChatId &&
@@ -276,9 +281,9 @@ export function MessengerLayout({
   ) : null
 
   const emptyStateEl = (
-    <div className="flex flex-1 items-center justify-center bg-white dark:bg-gray-950">
+    <div className="flex flex-1 items-center justify-center bg-[hsl(var(--chat-bg-secondary))]">
       <div className="max-w-md px-6 text-center">
-        <div className="mx-auto mb-6 flex h-20 w-20 items-center justify-center rounded-2xl border border-gray-200 bg-gray-100 dark:border-gray-800 dark:bg-gray-900">
+        <div className="chat-panel-elev mx-auto mb-6 flex h-20 w-20 items-center justify-center rounded-2xl bg-white dark:bg-slate-800">
           <svg
             className="h-10 w-10 text-gray-500 dark:text-gray-400"
             fill="none"
@@ -303,7 +308,7 @@ export function MessengerLayout({
   return (
     <div
       data-messenger-chat
-      className="flex h-full w-full flex-row overflow-hidden"
+      className="flex h-full w-full flex-row gap-0 overflow-hidden bg-[hsl(var(--chat-bg-secondary))] lg:gap-3 lg:p-3"
       style={{
         height: '100%',
         maxHeight: '100%',
@@ -311,7 +316,7 @@ export function MessengerLayout({
       }}
     >
       {/* Desktop sidebar */}
-      <div className="hidden w-80 flex-shrink-0 border-r border-gray-200 dark:border-gray-800 lg:flex">
+      <div className="chat-panel-elev hidden w-80 flex-shrink-0 overflow-hidden rounded-2xl lg:flex">
         <MessengerSidebar
           user={user}
           onChatSelect={handleChatSelect}
@@ -321,7 +326,7 @@ export function MessengerLayout({
 
       {/* Center: mobile sliding stack + desktop conversation column */}
       <div
-        className="messenger-conversation-wrapper relative flex min-h-0 flex-1 min-w-0 flex-col overflow-hidden lg:rounded-lg lg:border lg:border-gray-200 lg:dark:border-gray-800"
+        className="messenger-conversation-wrapper chat-panel-elev relative flex min-h-0 flex-1 min-w-0 flex-col overflow-hidden lg:rounded-2xl"
         style={{
           height: '100%',
           maxHeight: '100%',
@@ -332,7 +337,7 @@ export function MessengerLayout({
         }}
       >
         {/* Mobile: list + sliding conversation */}
-        <div className="relative flex min-h-0 flex-1 flex-col overflow-hidden bg-white dark:bg-gray-950 lg:hidden">
+        <div className="relative flex min-h-0 flex-1 flex-col overflow-hidden bg-[hsl(var(--chat-bg-primary))] lg:hidden">
           <div
             className={cn(
               'flex min-h-0 flex-1 flex-col transition-[transform,opacity] duration-300 ease-out',
@@ -348,7 +353,7 @@ export function MessengerLayout({
 
           <div
             className={cn(
-              'absolute inset-0 z-20 flex min-h-0 flex-col bg-white transition-transform duration-300 ease-out dark:bg-gray-950',
+              'absolute inset-0 z-20 flex min-h-0 flex-col bg-[hsl(var(--chat-bg-primary))] transition-transform duration-300 ease-out',
               selectedChatId ? 'translate-x-0' : 'pointer-events-none translate-x-full',
             )}
           >
@@ -357,7 +362,7 @@ export function MessengerLayout({
         </div>
 
         {/* Desktop: conversation or empty */}
-        <div className="hidden min-h-0 flex-1 flex-col overflow-hidden bg-white dark:bg-gray-950 lg:flex">
+        <div className="hidden min-h-0 flex-1 flex-col overflow-hidden bg-[hsl(var(--chat-bg-primary))] lg:flex">
           {conversationEl ?? emptyStateEl}
         </div>
       </div>
@@ -366,9 +371,18 @@ export function MessengerLayout({
       {isDesktop && selectedChatId && rightPaneOpen && (
         <div
           data-messenger-profile
-          className="hidden h-full max-h-full min-h-0 w-96 flex-shrink-0 flex-col overflow-hidden border-l border-gray-200 bg-zinc-50 lg:flex dark:border-slate-800 dark:bg-zinc-950"
+          className="chat-panel-elev hidden h-full max-h-full min-h-0 w-96 flex-shrink-0 flex-col overflow-hidden rounded-2xl bg-[hsl(var(--chat-bg-primary))] lg:flex"
         >
-          <MessengerProfilePane chatId={selectedChatId} isOpen={rightPaneOpen} onClose={handleToggleRightPane} />
+          <MessengerProfilePane
+            chatId={selectedChatId}
+            isOpen={rightPaneOpen}
+            onClose={handleToggleRightPane}
+            partnerDisplayName={partnerDisplayName || chatInfo?.partnerName}
+            onComposeNudge={text => {
+              setComposerInsert(text)
+              if (!isDesktop) setRightPaneOpen(false)
+            }}
+          />
         </div>
       )}
 
@@ -384,14 +398,14 @@ export function MessengerLayout({
           <div
             data-mobile-profile-sheet
             className={cn(
-              'absolute bottom-0 left-0 right-0 z-[110] flex flex-col overflow-hidden rounded-t-2xl border-t border-gray-200 bg-zinc-100 shadow-2xl transition-transform duration-300 ease-out dark:border-slate-700 dark:bg-zinc-900',
+              'absolute bottom-0 left-0 right-0 z-[110] flex flex-col overflow-hidden rounded-t-3xl bg-[hsl(var(--chat-bg-primary))] shadow-2xl transition-transform duration-300 ease-out',
               // Flush to bottom; ~8% backdrop remains for tap-to-dismiss. Inner flex fills solid color (no transparent hole).
               'h-[92dvh] max-h-[92dvh] min-h-0',
               mobileSheetEntered ? 'translate-y-0' : 'translate-y-full',
             )}
             onClick={e => e.stopPropagation()}
           >
-            <div className="flex shrink-0 flex-col items-center bg-zinc-100 pt-2 pb-1 dark:bg-slate-900/95 dark:backdrop-blur-sm">
+            <div className="flex shrink-0 flex-col items-center bg-[hsl(var(--chat-bg-primary))] pt-2 pb-1">
               <button
                 type="button"
                 aria-label="Close profile sheet"
@@ -401,8 +415,17 @@ export function MessengerLayout({
                 <span className="mx-auto block h-1 w-10 rounded-full bg-gray-400 dark:bg-slate-500" />
               </button>
             </div>
-            <div className="flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden bg-zinc-100 dark:bg-zinc-900">
-              <MessengerProfilePane chatId={selectedChatId} isOpen={rightPaneOpen} onClose={handleToggleRightPane} />
+            <div className="flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden bg-[hsl(var(--chat-bg-primary))]">
+              <MessengerProfilePane
+                chatId={selectedChatId}
+                isOpen={rightPaneOpen}
+                onClose={handleToggleRightPane}
+                partnerDisplayName={partnerDisplayName || chatInfo?.partnerName}
+                onComposeNudge={text => {
+                  setComposerInsert(text)
+                  if (!isDesktop) setRightPaneOpen(false)
+                }}
+              />
             </div>
           </div>
         </div>

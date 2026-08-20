@@ -93,6 +93,10 @@ interface MessengerConversationProps {
   highlightMessageId?: string | null
   /** Called after highlight ring is cleared (e.g. strip `messageId` from URL) */
   onHighlightConsumed?: () => void
+  composerInsert?: string | null
+  onComposerInsertConsumed?: () => void
+  /** Bubble partner display name up so profile nudges can use it */
+  onPartnerDisplayNameChange?: (name: string) => void
 }
 
 export function MessengerConversation({
@@ -105,6 +109,9 @@ export function MessengerConversation({
   hideComposer = false,
   highlightMessageId = null,
   onHighlightConsumed,
+  composerInsert = null,
+  onComposerInsertConsumed,
+  onPartnerDisplayNameChange,
 }: MessengerConversationProps) {
   const supabase = createClient()
   const router = useRouter()
@@ -126,6 +133,10 @@ export function MessengerConversation({
   const [partnerUserId, setPartnerUserId] = useState<string | null>(null)
   const [displayPartnerName, setDisplayPartnerName] = useState<string>(partnerName)
   const [displayPartnerAvatar, setDisplayPartnerAvatar] = useState<string | undefined>(partnerAvatar)
+
+  useEffect(() => {
+    onPartnerDisplayNameChange?.(displayPartnerName)
+  }, [displayPartnerName, onPartnerDisplayNameChange])
   const [isGroupChat, setIsGroupChat] = useState(false)
   const [isMuted, setIsMuted] = useState(false)
   const [showReportDialog, setShowReportDialog] = useState(false)
@@ -980,9 +991,9 @@ export function MessengerConversation({
     yesterday.setDate(yesterday.getDate() - 1)
 
     if (date.toDateString() === today.toDateString()) {
-      return 'Today'
+      return `Today, ${date.toLocaleDateString([], { month: 'short', day: 'numeric' })}`
     } else if (date.toDateString() === yesterday.toDateString()) {
-      return 'Yesterday'
+      return `Yesterday, ${date.toLocaleDateString([], { month: 'short', day: 'numeric' })}`
     } else {
       return date.toLocaleDateString([], { month: 'long', day: 'numeric', year: 'numeric' })
     }
@@ -1246,10 +1257,10 @@ export function MessengerConversation({
     <div
       ref={conversationRootRef}
       data-messenger-conversation
-      className="flex h-full w-full flex-col overflow-hidden bg-white dark:bg-gray-950 lg:rounded-t-lg"
+      className="flex h-full w-full flex-col overflow-hidden bg-[hsl(var(--chat-bg-primary))] lg:rounded-t-2xl"
     >
-      {/* Fixed Header — single visual row: back · avatar · title + inline match · menu */}
-      <div className="flex max-w-full flex-shrink-0 items-center justify-between gap-2 border-b border-gray-200 bg-white px-3 py-2.5 dark:border-gray-800 dark:bg-gray-950 max-lg:app-pt-safe-top lg:px-4 lg:py-3">
+      {/* Fixed Header: avatar, name, compatibility chip, menu */}
+      <div className="flex max-w-full flex-shrink-0 items-center justify-between gap-2 bg-[hsl(var(--chat-bg-primary))] px-3 py-2.5 max-lg:app-pt-safe-top lg:px-4 lg:py-3">
         <div className="flex min-w-0 flex-1 items-center gap-2.5 lg:gap-3">
           <div className="flex shrink-0 items-center gap-1.5 lg:gap-2">
             {onBack && (
@@ -1258,7 +1269,7 @@ export function MessengerConversation({
                 size="sm"
                 onClick={onBack}
                 aria-label="Back to chats"
-                className="h-11 w-11 shrink-0 touch-manipulation rounded-full bg-gray-100 p-0 text-gray-900 transition-colors hover:bg-gray-200 active:scale-[0.98] active:bg-gray-300 lg:hidden dark:bg-gray-800 dark:text-gray-100 dark:hover:bg-gray-700 dark:active:bg-gray-600"
+                className="h-11 w-11 shrink-0 touch-manipulation rounded-full bg-zinc-100 p-0 text-gray-900 transition-colors hover:bg-zinc-200 active:scale-[0.98] lg:hidden dark:bg-zinc-800 dark:text-gray-100 dark:hover:bg-zinc-700"
               >
                 <ChevronLeft className="h-6 w-6" strokeWidth={2.25} aria-hidden />
               </Button>
@@ -1271,60 +1282,50 @@ export function MessengerConversation({
             </Avatar>
           </div>
 
-          <div className="flex min-w-0 flex-1 items-center gap-2">
-            <h2 className="min-w-0 flex-1 truncate text-base font-semibold leading-tight text-gray-900 dark:text-gray-100">
-              {displayPartnerName}
-            </h2>
-            {!isGroupChat && partnerUserId && (
-              <button
-                type="button"
-                onClick={onToggleProfile}
-                aria-label={
-                  matchPercent != null
-                    ? `Compatibility ${matchPercent}% — open details`
-                    : 'View compatibility details'
-                }
-                className={cn(
-                  badgeVariants({ variant: 'outline', size: 'default' }),
-                  'h-8 min-h-8 shrink-0 touch-manipulation gap-1.5 px-3 py-0 leading-none',
-                  'border-purple-200/90 bg-surface-1 text-xs font-semibold shadow-sm',
-                  'hover:border-purple-300 hover:bg-purple-50/90 active:bg-purple-100/80',
-                  'dark:border-purple-800/80 dark:bg-purple-950/25',
-                  'dark:hover:border-purple-600 dark:hover:bg-purple-950/45 dark:active:bg-purple-950/60',
-                )}
-              >
-                <Sparkles
-                  className="h-3.5 w-3.5 shrink-0 text-violet-500 dark:text-violet-400"
-                  aria-hidden
-                  strokeWidth={2}
-                />
-                {compatLoading ? (
-                  <span className="text-xs font-semibold tabular-nums text-ink-400 dark:text-ink-500">…</span>
-                ) : matchPercent != null ? (
-                  <span
-                    className={cn(
-                      'whitespace-nowrap bg-gradient-to-r from-indigo-600 via-violet-600 to-fuchsia-600 bg-clip-text text-xs font-semibold tabular-nums text-transparent',
-                      'dark:from-indigo-400 dark:via-violet-400 dark:to-fuchsia-400',
-                    )}
-                  >
-                    {matchPercent}% Match
-                  </span>
-                ) : (
-                  <span
-                    className={cn(
-                      'whitespace-nowrap bg-gradient-to-r from-indigo-600 via-violet-600 to-fuchsia-600 bg-clip-text text-xs font-semibold text-transparent',
-                      'dark:from-indigo-400 dark:via-violet-400 dark:to-fuchsia-400',
-                    )}
-                  >
-                    View Match
-                  </span>
-                )}
-              </button>
-            )}
+          <div className="flex min-w-0 flex-1 flex-col gap-0.5">
+            <div className="flex min-w-0 items-center gap-2">
+              <h2 className="min-w-0 truncate text-base font-semibold leading-tight text-gray-900 dark:text-gray-100">
+                {displayPartnerName}
+              </h2>
+              {!isGroupChat && partnerUserId && (
+                <button
+                  type="button"
+                  onClick={onToggleProfile}
+                  aria-label={
+                    matchPercent != null
+                      ? `Compatibility ${matchPercent} percent, open details`
+                      : 'View compatibility details'
+                  }
+                  className={cn(
+                    badgeVariants({ variant: 'outline', size: 'default' }),
+                    'h-8 min-h-8 shrink-0 touch-manipulation gap-1.5 px-3 py-0 leading-none',
+                    'border-transparent bg-[hsl(var(--chat-active-fill))] text-xs font-semibold shadow-none',
+                    'hover:bg-violet-100 active:bg-violet-200/80',
+                    'dark:bg-violet-950/40 dark:hover:bg-violet-950/60',
+                  )}
+                >
+                  <Sparkles
+                    className="h-3.5 w-3.5 shrink-0 text-violet-600 dark:text-violet-400"
+                    aria-hidden
+                    strokeWidth={2}
+                  />
+                  {compatLoading ? (
+                    <span className="text-xs font-semibold tabular-nums text-ink-400 dark:text-ink-500">…</span>
+                  ) : matchPercent != null ? (
+                    <span className="whitespace-nowrap text-xs font-semibold tabular-nums text-violet-700 dark:text-violet-300">
+                      {matchPercent}% Compatibility
+                    </span>
+                  ) : (
+                    <span className="whitespace-nowrap text-xs font-semibold text-violet-700 dark:text-violet-300">
+                      Compatibility
+                    </span>
+                  )}
+                </button>
+              )}
+            </div>
           </div>
         </div>
         <div className="flex shrink-0 items-center gap-1">
-          {/* More Options Dropdown */}
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="ghost" size="sm" className="h-11 w-11 touch-manipulation p-0">
@@ -1332,23 +1333,18 @@ export function MessengerConversation({
                 <span className="sr-only">More options</span>
               </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-56">
-              {/* User-specific actions (only for individual chats) */}
-              {partnerUserId && !isGroupChat && (
-                <>
-                  <DropdownMenuItem onClick={() => setShowReportDialog(true)}>
-                    <Flag className="mr-2 h-4 w-4" />
-                    Report user
-                  </DropdownMenuItem>
-                  <DropdownMenuItem onClick={handleBlock} disabled={isBlocking}>
-                    <Ban className="mr-2 h-4 w-4" />
-                    {isBlocking ? (isBlocked ? 'Unblocking...' : 'Blocking...') : (isBlocked ? 'Unblock user' : 'Block user')}
-                  </DropdownMenuItem>
-                  <DropdownMenuSeparator />
-                </>
-              )}
-
-              {/* Conversation actions */}
+            <DropdownMenuContent
+              align="end"
+              className="w-56 border-white/40 bg-white/80 shadow-xl backdrop-blur-[12px] dark:border-white/10 dark:bg-zinc-900/80"
+            >
+              <DropdownMenuItem onClick={handleSearch}>
+                <Search className="mr-2 h-4 w-4" />
+                Search in conversation
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={handleMarkAsUnread} disabled={isMarkingUnread}>
+                <MessageSquare className="mr-2 h-4 w-4" />
+                {isMarkingUnread ? 'Marking...' : 'Mark as unread'}
+              </DropdownMenuItem>
               <DropdownMenuItem onClick={handleToggleMute} disabled={isMuting}>
                 {isMuted ? (
                   <>
@@ -1362,30 +1358,46 @@ export function MessengerConversation({
                   </>
                 )}
               </DropdownMenuItem>
-              
               <DropdownMenuItem onClick={handleArchive} disabled={isArchiving}>
                 <Archive className="mr-2 h-4 w-4" />
                 {isArchiving ? 'Archiving...' : 'Archive conversation'}
               </DropdownMenuItem>
 
-              <DropdownMenuItem onClick={handleSearch}>
-                <Search className="mr-2 h-4 w-4" />
-                Search in conversation
-              </DropdownMenuItem>
+              <DropdownMenuSeparator className="bg-black/5 dark:bg-white/10" />
 
-              <DropdownMenuItem onClick={handleMarkAsUnread} disabled={isMarkingUnread}>
-                <MessageSquare className="mr-2 h-4 w-4" />
-                {isMarkingUnread ? 'Marking...' : 'Mark as unread'}
-              </DropdownMenuItem>
-
-              <DropdownMenuSeparator />
-
-              <DropdownMenuItem onClick={() => setShowClearHistoryDialog(true)}>
+              <DropdownMenuItem
+                onClick={() => setShowClearHistoryDialog(true)}
+                className="text-amber-700 focus:text-amber-800 dark:text-amber-400 dark:focus:text-amber-300"
+              >
                 <RotateCcw className="mr-2 h-4 w-4" />
                 Clear chat history
               </DropdownMenuItem>
 
-              <DropdownMenuItem onClick={() => setShowDeleteDialog(true)} className="text-red-600 dark:text-red-400">
+              <DropdownMenuSeparator className="bg-black/5 dark:bg-white/10" />
+
+              {partnerUserId && !isGroupChat && (
+                <>
+                  <DropdownMenuItem
+                    onClick={() => setShowReportDialog(true)}
+                    className="text-red-600 focus:bg-red-50 focus:text-red-700 dark:text-red-400 dark:focus:bg-red-950/50 dark:focus:text-red-300"
+                  >
+                    <Flag className="mr-2 h-4 w-4" />
+                    Report user
+                  </DropdownMenuItem>
+                  <DropdownMenuItem
+                    onClick={handleBlock}
+                    disabled={isBlocking}
+                    className="text-red-600 focus:bg-red-50 focus:text-red-700 dark:text-red-400 dark:focus:bg-red-950/50 dark:focus:text-red-300"
+                  >
+                    <Ban className="mr-2 h-4 w-4" />
+                    {isBlocking ? (isBlocked ? 'Unblocking...' : 'Blocking...') : (isBlocked ? 'Unblock user' : 'Block user')}
+                  </DropdownMenuItem>
+                </>
+              )}
+              <DropdownMenuItem
+                onClick={() => setShowDeleteDialog(true)}
+                className="text-red-600 focus:bg-red-50 focus:text-red-700 dark:text-red-400 dark:focus:bg-red-950/50 dark:focus:text-red-300"
+              >
                 <Trash2 className="mr-2 h-4 w-4" />
                 Delete conversation
               </DropdownMenuItem>
@@ -1557,12 +1569,10 @@ export function MessengerConversation({
             {visibleMessages.map((message, index) => (
               <div key={message.id} id={message.id} className="scroll-mt-28">
                 {shouldShowDateSeparator(index, visibleMessages) && (
-                  <div className="flex justify-center my-6">
-                    <div className="bg-gray-100 dark:bg-gray-800 px-4 py-2 rounded-full">
-                      <span className="text-xs text-gray-600 dark:text-gray-400 font-medium">
-                        {formatDate(message.created_at)}
-                      </span>
-                    </div>
+                  <div className="chat-date-divider my-6 px-2">
+                    <span className="shrink-0 whitespace-nowrap px-1">
+                      {formatDate(message.created_at)}
+                    </span>
                   </div>
                 )}
                 <MessengerMessageBubble
@@ -1611,6 +1621,16 @@ export function MessengerConversation({
           onSend={handleSendMessage}
           onComposerFocus={handleComposerFocus}
           onComposerBlur={handleComposerBlur}
+          showPromptChips={
+            !isGroupChat &&
+            visibleMessages.filter(m => !m.is_system_message).length < 3
+          }
+          promptContext={{
+            partnerName: displayPartnerName,
+            compat: compatData ?? null,
+          }}
+          insertText={composerInsert}
+          onInsertTextConsumed={onComposerInsertConsumed}
           replyDraft={
             replyDraft
               ? {

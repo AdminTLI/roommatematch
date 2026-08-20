@@ -113,15 +113,19 @@ export function SignInForm() {
           return
         }
         
-        // For authentication errors (wrong password/email), show user-friendly message
-        if (errorMsgLower.includes('invalid') || 
-            errorMsgLower.includes('credentials') ||
-            errorMsgLower.includes('password') ||
-            errorMsgLower.includes('email')) {
-          setError('Incorrect email or password')
+        // Wrong password and unknown email must share one generic message
+        // so we never reveal whether an account exists.
+        if (
+          errorMsgLower.includes('invalid') ||
+          errorMsgLower.includes('credentials') ||
+          errorMsgLower.includes('password') ||
+          errorMsgLower.includes('email') ||
+          errorMsgLower.includes('user not found') ||
+          errorMsgLower.includes('user_not_found')
+        ) {
+          setError('Incorrect email or password.')
         } else {
-          // For other errors, show the error message
-          setError(signInError.message || 'An error occurred during sign in. Please try again.')
+          setError('Something went wrong while signing you in. Please try again.')
         }
         setIsLoading(false)
         return

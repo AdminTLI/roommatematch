@@ -10,6 +10,7 @@ import {
 } from '@/components/ui/dropdown-menu'
 import { Button } from '@/components/ui/button'
 import { MoreVertical, UserX, UserCheck, ShieldCheck, ShieldX, Trash2, Loader2 } from 'lucide-react'
+import { fetchWithCSRF } from '@/lib/utils/fetch-with-csrf'
 
 interface UserActionsDropdownProps {
   userId: string
@@ -36,7 +37,7 @@ export function UserActionsDropdown({
     setActionError(null)
 
     try {
-      const response = await fetch('/api/admin/users', {
+      const response = await fetchWithCSRF('/api/admin/users', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
