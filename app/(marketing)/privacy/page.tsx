@@ -5,26 +5,22 @@ import Container from '@/components/ui/primitives/container'
 import Section from '@/components/ui/primitives/section'
 import { useApp } from '@/app/providers'
 
-export default function PrivacyPage() {
-  const { locale } = useApp()
+export default function PrivacyPage({ embedded = false }: { embedded?: boolean } = {}) {
+  const { locale: _locale } = useApp()
   const lastUpdated = 'March 2026'
 
-  return (
-    <MarketingSubpageWrapperLight>
-      <Section className="py-12 md:py-16 lg:py-20">
-        <Container>
-          <div className="max-w-4xl mx-auto">
-            <div className="rounded-3xl border border-white/60 bg-white/45 backdrop-blur-xl shadow-[0_18px_50px_rgba(15,23,42,0.08)] p-6 sm:p-10">
-              <h1 className="text-3xl md:text-4xl font-bold text-slate-900 mb-4">
+  const document = (
+            <div className={embedded ? 'text-[#0F172A]' : 'rounded-3xl border border-white/60 bg-white/45 backdrop-blur-xl shadow-[0_18px_50px_rgba(15,23,42,0.08)] p-6 sm:p-10'}>
+              <h1 className={embedded ? 'text-2xl font-bold text-slate-900 mb-2' : 'text-3xl md:text-4xl font-bold text-slate-900 mb-4'}>
                 Privacy Policy
               </h1>
-              <p className="text-slate-600 mb-8">
+              <p className="text-slate-600 mb-6 text-sm">
                 Last updated: {lastUpdated}
               </p>
 
-              <div className="mb-10 rounded-xl border border-amber-400/40 bg-amber-50 p-4">
+              <div className="mb-8 rounded-xl border border-amber-400/40 bg-amber-50 p-4">
                 <p className="text-amber-900 font-semibold mb-1">Beta Notice</p>
-                <p className="text-amber-900/90 leading-relaxed">
+                <p className="text-amber-900/90 leading-relaxed text-sm sm:text-base">
                   You are using a pre-release (beta) version of Domu Match. This means features may change, data
                   may be reset, and additional data collection (such as bug reports and session logs) may be done
                   to help us improve the product. This policy explains all of that clearly below.
@@ -615,7 +611,15 @@ export default function PrivacyPage() {
                 </p>
               </section>
             </div>
-          </div>
+  )
+
+  if (embedded) return document
+
+  return (
+    <MarketingSubpageWrapperLight>
+      <Section className="py-12 md:py-16 lg:py-20">
+        <Container>
+          <div className="max-w-4xl mx-auto">{document}</div>
         </Container>
       </Section>
     </MarketingSubpageWrapperLight>

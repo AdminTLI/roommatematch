@@ -233,7 +233,7 @@ export function DiscoveryCard({ profile, onSkip, onConnect, connectButtonText = 
             </div>
 
             {/* Score Breakdown Section */}
-            <div className="shrink-0 space-y-4 border-t border-slate-200/90 px-6 py-4 dark:border-slate-700/50">
+            <div className="shrink-0 space-y-4 px-6 py-4">
                 {/* Harmony Score */}
                 <div className="space-y-2">
                     <div className="flex items-center justify-between gap-3 min-w-0">
@@ -319,7 +319,7 @@ export function DiscoveryCard({ profile, onSkip, onConnect, connectButtonText = 
             </div>
 
             {/* Highlights — dimension scores live on the back face only */}
-            <div className="shrink-0 border-t border-slate-200/90 px-6 py-4 pb-5 dark:border-slate-700/50">
+            <div className="shrink-0 px-6 py-4 pb-5">
                 <h4 className="mb-3 text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
                     Why you match
                 </h4>

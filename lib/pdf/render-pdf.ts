@@ -66,10 +66,10 @@ export async function renderPdf(html: string, options: RenderPdfOptions = {}): P
         displayHeaderFooter: true,
         headerTemplate: '<div></div>',
         footerTemplate: `
-          <div style="width:100%; font-size:8px; color:#444; padding:0 16px; display:flex; justify-content:space-between; font-family: 'Inter', sans-serif;">
-            <span class="section"></span>
+          <div style="width:100%; font-size:8px; color:#64748B; padding:0 18px; display:flex; justify-content:space-between; align-items:center; font-family: system-ui, -apple-system, sans-serif;">
+            <span>Domu Match · Confidential · GDPR</span>
             <span><span class="pageNumber"></span> / <span class="totalPages"></span></span>
-            <span>${new Date().toISOString().slice(0,10)}</span>
+            <span>domumatch.com</span>
           </div>
         `,
         margin: {

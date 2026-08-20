@@ -128,7 +128,7 @@ export async function POST(request: Request) {
         user_id: user.id,
         section: body.section,
         answers: answersToSave,
-        version: 'rmq-v1',
+        version: 'rmq-v2',
       },
       { onConflict: 'user_id,section' }
     )

@@ -120,6 +120,8 @@ function SectionClientContent() {
                 id={item.id}
                 leftLabel={item.bipolarLabels?.left || ''}
                 rightLabel={item.bipolarLabels?.right || ''}
+                softLeftLabel={item.bipolarLabels?.softLeft}
+                softRightLabel={item.bipolarLabels?.softRight}
                 value={typedAnswer(answers[item.id], 'bipolar')?.value}
                 onChange={(v) => handleChange(item, { kind: 'bipolar', value: v })}
               />

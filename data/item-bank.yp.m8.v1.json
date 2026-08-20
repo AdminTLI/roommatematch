@@ -24,7 +24,7 @@
     "section": "reliability-logistics",
     "kind": "likert",
     "scale": "agreement",
-    "label": "I would like to use a shared expenses app (e.g., Splitwise)."
+    "label": "I would like to use a shared expenses app."
   },
   {
     "id": "M8_Q3",

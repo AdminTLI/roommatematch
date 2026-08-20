@@ -187,6 +187,7 @@ export async function checkQuestionnaireCompletion(
   hasSubmission: boolean;
 }> {
   const { createClient } = await import('@/lib/supabase/server');
+  const { V2_SECTION_KEYS } = await import('@/types/questionnaire');
   const supabase = await createClient();
 
   // Check if submission exists and optionally match cohort (student vs professional)
@@ -205,20 +206,40 @@ export async function checkQuestionnaireCompletion(
         ? (submission.user_type === 'student' || submission.user_type == null)
         : hasSubmission
   );
-  const isComplete = userType != null ? submissionMatchesCohort : hasSubmission;
 
-  // Get all responses for this user (for progress tracking)
-  const { data: responses } = await supabase
-    .from('responses')
-    .select('question_key')
-    .eq('user_id', userId);
+  // v2-only: require all five module sections to have at least one answer
+  const { data: v2Sections } = await supabase
+    .from('onboarding_sections')
+    .select('section, answers')
+    .eq('user_id', userId)
+    .in('section', [...V2_SECTION_KEYS]);
 
-  const responseCount = responses?.length || 0;
-  const responseKeys = new Set(responses?.map(r => r.question_key) || []);
+  const answeredV2Sections = new Set(
+    (v2Sections || [])
+      .filter((s) => Array.isArray(s.answers) && s.answers.length > 0)
+      .map((s) => s.section)
+  );
+  const missingKeys = V2_SECTION_KEYS.filter((key) => !answeredV2Sections.has(key));
+  const hasAllV2Sections = missingKeys.length === 0;
 
-  // Check which required keys are missing (for debugging/analytics)
-  const requiredKeys = Object.keys(questionSchemas);
-  const missingKeys = requiredKeys.filter(key => !responseKeys.has(key));
+  const isComplete =
+    hasAllV2Sections &&
+    (userType != null ? !!submissionMatchesCohort : hasSubmission);
+
+  // responseCount: answered v2 items (fallback to legacy responses table count)
+  let responseCount = 0;
+  for (const section of v2Sections || []) {
+    if (Array.isArray(section.answers)) {
+      responseCount += section.answers.filter((a: any) => a?.itemId && a?.value != null).length;
+    }
+  }
+  if (responseCount === 0) {
+    const { data: responses } = await supabase
+      .from('responses')
+      .select('question_key')
+      .eq('user_id', userId);
+    responseCount = responses?.length || 0;
+  }
 
   return {
     isComplete: isComplete ?? false,

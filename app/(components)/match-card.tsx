@@ -73,13 +73,57 @@ interface MatchCardProps {
   contextScore?: number | null
   dimensionScores?: { [key: string]: number } | null
   isValidMatch?: boolean
+  // v2 gate conflict fields
+  gateConflicts?: string[]
+  softGateOverride?: boolean
   onAccept: (id: string) => void
   onReject: (id: string) => void
   onViewProfile: (id: string) => void
   onStartChat: (id: string) => void
 }
 
-// Dimension labels, descriptions, and icons (same as compatibility panel)
+// v2 dimension config (5 new dimensions)
+const V2_DIMENSION_CONFIG: { [key: string]: { label: string; description: string; icon: any; order: number } } = {
+  environment: {
+    label: 'Environment',
+    description: 'Sleep schedules, noise sensitivity, lighting and temperature preferences',
+    icon: Moon,
+    order: 1,
+  },
+  cleanliness: {
+    label: 'Cleanliness',
+    description: 'Kitchen habits, chore routines, and shared-space upkeep standards',
+    icon: Sparkles,
+    order: 2,
+  },
+  communication: {
+    label: 'Communication',
+    description: 'How you give feedback, handle conflict, and coordinate day-to-day',
+    icon: MessageCircle,
+    order: 3,
+  },
+  social: {
+    label: 'Social Life',
+    description: 'Guest frequency, overnight visitors, shared-space use, and social energy at home',
+    icon: Users,
+    order: 4,
+  },
+  logistics_context: {
+    label: 'Logistics',
+    description: 'Practical fit: stay length, move-in timing, financial norms, and house rules style',
+    icon: Award,
+    order: 5,
+  },
+}
+
+const V2_GATE_LABELS: Record<string, string> = {
+  'M5_Q17': 'No smoking indoors',
+  'M8_Q14': 'Pet preference',
+  'M8_Q19': 'BRP registration',
+  'M8_Q11': 'No Airbnb guests',
+}
+
+// Legacy v1 dimension config (kept for backward compat)
 const dimensionConfig: { [key: string]: { label: string; description: string; icon: any } } = {
   cleanliness: {
     label: 'Cleanliness',
@@ -146,6 +190,8 @@ export function MatchCard({
   contextScore,
   dimensionScores,
   isValidMatch,
+  gateConflicts = [],
+  softGateOverride = false,
   onAccept,
   onReject,
   onViewProfile,
@@ -544,8 +590,22 @@ export function MatchCard({
               </div>
             </div>
 
-            {/* Dealbreaker Warning */}
-            {isValidMatch === false && (
+            {/* v2 gate conflict warning (soft override - single gate, high score) */}
+            {softGateOverride && gateConflicts && gateConflicts.length === 1 && (
+              <Alert className="border border-yellow-600/40 bg-yellow-950/30 mb-4">
+                <AlertTriangle className="h-4 w-4 text-yellow-400" />
+                <AlertDescription className="text-xs text-yellow-200">
+                  Strong match overall - you have different answers on:{' '}
+                  <span className="font-semibold">
+                    {V2_GATE_LABELS[gateConflicts[0]] ?? gateConflicts[0]}
+                  </span>
+                  . Discuss this before connecting.
+                </AlertDescription>
+              </Alert>
+            )}
+
+            {/* Legacy dealbreaker warning */}
+            {isValidMatch === false && !(softGateOverride && gateConflicts?.length === 1) && (
               <Alert variant="destructive" className="border-2 border-red-800/50 bg-red-950/40 mb-6">
                 <XCircle className="h-4 w-4 text-red-400" />
                 <AlertDescription className="text-xs font-medium">
@@ -583,10 +643,17 @@ export function MatchCard({
                 {showDimensions && (
                   <div className="px-3 sm:px-4 pb-3 sm:pb-4 pt-2 border-t border-slate-700">
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                      {Object.entries(dimensionScores).map(([key, score]) => {
+                      {Object.entries(dimensionScores)
+                        .filter(([k]) => !['harmony','context','algo','gate_conflicts','soft_gate_override','academic_bonus','top_alignment','watch_out'].includes(k))
+                        .sort((a, b) => {
+                          const oA = V2_DIMENSION_CONFIG[a[0]]?.order ?? (dimensionConfig[a[0]] ? 50 : 99)
+                          const oB = V2_DIMENSION_CONFIG[b[0]]?.order ?? (dimensionConfig[b[0]] ? 50 : 99)
+                          return oA - oB
+                        })
+                        .map(([key, score]) => {
                         const dimensionKey = key as string
                         const dimensionScore = typeof score === 'number' ? score : 0
-                        const config = dimensionConfig[dimensionKey]
+                        const config = V2_DIMENSION_CONFIG[dimensionKey] ?? dimensionConfig[dimensionKey]
                         const Icon = config?.icon || Info
                         const label = config?.label || dimensionKey
                         const description = config?.description || ''

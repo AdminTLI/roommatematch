@@ -69,7 +69,12 @@ const fadeInUp = {
   transition: { duration: 0.6, ease: [0.2, 0.8, 0.2, 1] }
 }
 
-/** Opacity-only: no translateY  -  ancestor transforms break 3D flip / backface-visibility in WebKit. */
+/**
+ * Opacity-only fade for non-3D sections.
+ * Never put this on a direct ancestor of DiscoveryCard: opacity / transform on
+ * ancestors flattens preserve-3d and can leave backfaceVisibility faces invisible
+ * (desktop grid wrapper bug — mobile carousel mounts cards without this wrapper).
+ */
 const fadeInOpacity = {
   initial: { opacity: 0 },
   animate: { opacity: 1 },
@@ -1328,8 +1333,9 @@ export function DashboardContent({ hasCompletedQuestionnaire = false, hasPartial
                 allMatchKeys: Object.keys(match),
               })
             }
+            // Plain div (not motion): opacity/transform wrappers break DiscoveryCard's 3D flip faces.
             return (
-              <motion.div key={match.id} variants={fadeInOpacity} className="h-full">
+              <div key={match.id} className="h-full">
                 <DiscoveryCard
                   profile={{
                     id: match.userId || match.id,
@@ -1343,7 +1349,7 @@ export function DashboardContent({ hasCompletedQuestionnaire = false, hasPartial
                     dimensionScores: match.dimensionScores || null,
                   }}
                 />
-              </motion.div>
+              </div>
             )
           })}
 

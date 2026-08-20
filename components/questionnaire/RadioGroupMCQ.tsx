@@ -1,9 +1,12 @@
 'use client'
 
-import { Label } from '@/components/ui/label'
-import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group'
+import { cn } from '@/lib/utils'
+import { choiceButtonClass } from '@/components/questionnaire/ToggleYesNo'
 
-interface Option { value: string; label: string }
+interface Option {
+  value: string
+  label: string
+}
 
 interface Props {
   id: string
@@ -16,22 +19,23 @@ interface Props {
 
 export function RadioGroupMCQ({ id, label, helperText, options, value, onChange }: Props) {
   return (
-    <div>
-      {helperText && <p className="text-base sm:text-sm text-text-secondary mb-3 sm:mb-2">{helperText}</p>}
-      <RadioGroup value={value} onValueChange={onChange} aria-labelledby={`${id}-legend`}>
-        <div className="grid gap-3 sm:gap-2">
-          {options.map((opt) => (
-            <div key={opt.value} className="flex items-start gap-3 sm:gap-2">
-              <RadioGroupItem id={`${id}-${opt.value}`} value={opt.value} className="mt-0.5 shrink-0" />
-              <Label htmlFor={`${id}-${opt.value}`} className="min-w-0 flex-1 text-base sm:text-sm break-words cursor-pointer text-text-primary leading-snug">
-                {opt.label}
-              </Label>
-            </div>
-          ))}
-        </div>
-      </RadioGroup>
+    <div className="flex flex-col gap-2.5" role="radiogroup" aria-label={label || id}>
+      {helperText && <p className="text-sm text-slate-600">{helperText}</p>}
+      {options.map((opt) => {
+        const selected = value === opt.value
+        return (
+          <button
+            key={opt.value}
+            type="button"
+            role="radio"
+            aria-checked={selected}
+            onClick={() => onChange(opt.value)}
+            className={cn(choiceButtonClass(selected), 'h-auto min-h-[54px] py-3.5')}
+          >
+            <span className="leading-snug">{opt.label}</span>
+          </button>
+        )
+      })}
     </div>
   )
 }
-
-

@@ -4,7 +4,7 @@ import { useState, useEffect, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import { SectionScores } from './section-scores'
 import { fetchWithCSRF } from '@/lib/utils/fetch-with-csrf'
-import { Clock, Ban, Sparkles, Home, GraduationCap, Info, ChevronDown, ChevronUp, Droplets, Volume2, Moon, Coffee, BookOpen, Heart, XCircle, MessageCircle, UserPlus, X, Users } from 'lucide-react'
+import { Clock, Ban, Sparkles, Home, GraduationCap, Info, ChevronDown, ChevronUp, Droplets, Volume2, Moon, Coffee, BookOpen, Heart, XCircle, MessageCircle, UserPlus, X, Users, AlertTriangle, ClipboardList } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { Alert, AlertDescription } from '@/components/ui/alert'
@@ -37,7 +37,48 @@ interface SuggestionCardProps {
   onToggleSelection?: () => void
 }
 
-// Dimension labels, descriptions, and icons (same as compatibility panel)
+// v2 dimension config
+const V2_DIMENSION_CONFIG: { [key: string]: { label: string; description: string; icon: any; order: number } } = {
+  environment: {
+    label: 'Environment',
+    description: 'Sleep schedules, noise sensitivity, lighting and temperature preferences',
+    icon: Moon,
+    order: 1,
+  },
+  cleanliness: {
+    label: 'Cleanliness',
+    description: 'Kitchen habits, chore routines, and shared-space upkeep standards',
+    icon: Sparkles,
+    order: 2,
+  },
+  communication: {
+    label: 'Communication',
+    description: 'How you give feedback, handle conflict, and coordinate day-to-day',
+    icon: MessageCircle,
+    order: 3,
+  },
+  social: {
+    label: 'Social Life',
+    description: 'Guest frequency, overnight visitors, shared-space use, and social energy at home',
+    icon: Users,
+    order: 4,
+  },
+  logistics_context: {
+    label: 'Logistics',
+    description: 'Practical fit: stay length, move-in timing, financial norms, and house rules style',
+    icon: ClipboardList,
+    order: 5,
+  },
+}
+
+const V2_GATE_LABELS: Record<string, string> = {
+  'M5_Q17': 'No smoking indoors',
+  'M8_Q14': 'Pet preference',
+  'M8_Q19': 'BRP registration',
+  'M8_Q11': 'No Airbnb guests',
+}
+
+// Legacy v1 dimension config
 const dimensionConfig: { [key: string]: { label: string; description: string; icon: any } } = {
   cleanliness: {
     label: 'Cleanliness',
@@ -655,6 +696,28 @@ export function SuggestionCard({
         </div>
       </div>
 
+      {/* v2 gate conflict soft-override warning */}
+      {(() => {
+        const scores = compatibilityData?.dimension_scores_json as Record<string, unknown> | null
+        const gateConflicts = scores?.gate_conflicts as string[] | undefined
+        const softOverride = scores?.soft_gate_override as boolean | undefined
+        if (!softOverride || !gateConflicts || gateConflicts.length !== 1) return null
+        return (
+          <div className="px-6 lg:px-8 pt-3">
+            <Alert className="border border-yellow-600/40 bg-yellow-950/20">
+              <AlertTriangle className="h-4 w-4 text-yellow-400" />
+              <AlertDescription className="text-xs text-yellow-200">
+                Strong match overall - you have different answers on:{' '}
+                <span className="font-semibold">
+                  {V2_GATE_LABELS[gateConflicts[0]] ?? gateConflicts[0]}
+                </span>
+                . Discuss this before connecting.
+              </AlertDescription>
+            </Alert>
+          </div>
+        )
+      })()}
+
       {/* Expanded Details - Collapsible Section */}
       {showDetails && (
         <div className="px-6 lg:px-8 pb-6 pt-4 space-y-4 border-t border-zinc-100 dark:border-zinc-800 bg-zinc-50/50 dark:bg-zinc-900/50 animate-in fade-in slide-in-from-top-1">
@@ -663,11 +726,18 @@ export function SuggestionCard({
             <div>
               <h4 className="text-xs font-semibold text-zinc-500 dark:text-zinc-400 uppercase tracking-wide mb-4">Detailed Dimension Scores</h4>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                {Object.entries(compatibilityData.dimension_scores_json).map(([key, score]) => {
+                {Object.entries(compatibilityData.dimension_scores_json)
+                  .filter(([k]) => !['harmony','context','algo','gate_conflicts','soft_gate_override','academic_bonus','top_alignment','watch_out'].includes(k))
+                  .sort((a, b) => {
+                    const oA = V2_DIMENSION_CONFIG[a[0]]?.order ?? (dimensionConfig[a[0]] ? 50 : 99)
+                    const oB = V2_DIMENSION_CONFIG[b[0]]?.order ?? (dimensionConfig[b[0]] ? 50 : 99)
+                    return oA - oB
+                  })
+                  .map(([key, score]) => {
                   const dimensionKey = key as string
                   const dimensionScore = typeof score === 'number' ? score : 0
                   const dimensionScorePercent = Math.round(dimensionScore * 100)
-                  const config = dimensionConfig[dimensionKey]
+                  const config = V2_DIMENSION_CONFIG[dimensionKey] ?? dimensionConfig[dimensionKey]
                   const Icon = config?.icon || Info
                   const label = config?.label || dimensionKey
                   const description = config?.description || ''

@@ -44,7 +44,7 @@ export function InstitutionSelect({ value, onChange }: Props) {
   return (
     <div className="space-y-2">
       <GroupedSearchSelect
-        placeholder="Select your HBO/WO institution"
+        placeholder="Search university (e.g. Avans Hogeschool)"
         groups={groups as import('@/components/questionnaire/GroupedSearchSelect').GroupedOption[]}
         value={value}
         onChange={handleInstitutionChange}

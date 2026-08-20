@@ -9,7 +9,11 @@ export type LiveCompatibilitySnapshot = {
   compatibility_score: number
   harmony_score: number
   context_score: number
-  dimension_scores_json: Record<string, number> | null
+  dimension_scores_json: Record<string, number | boolean | string[]> | null
+  /** v2: IDs of hard gates that conflicted (empty array = none) */
+  gate_conflicts?: string[]
+  /** v2: true when exactly 1 gate conflicted but overall score is >= 0.70 */
+  soft_gate_override?: boolean
 }
 
 function extractScore(value: unknown, defaultValue = 0): number {
@@ -47,11 +51,26 @@ export function parseLiveCompatibilityRow(
   const peerId = (row.user_b_id as string) || userBId
   if (!peerId && userBId === undefined) return null
 
+  const dimJson = parseDimensionScoresJson(row.dimension_scores_json)
+  const gateConflicts =
+    Array.isArray(row.gate_conflicts)
+      ? (row.gate_conflicts as string[])
+      : Array.isArray(dimJson?.gate_conflicts)
+      ? (dimJson.gate_conflicts as unknown as string[])
+      : []
+
+  const softGateOverride =
+    typeof row.soft_gate_override === 'boolean'
+      ? row.soft_gate_override
+      : (dimJson?.soft_gate_override as boolean | undefined) ?? false
+
   return {
     compatibility_score: extractScore(row.compatibility_score, 0),
     harmony_score: extractScore(row.harmony_score, 0),
     context_score: extractScore(row.context_score, 0),
-    dimension_scores_json: parseDimensionScoresJson(row.dimension_scores_json),
+    dimension_scores_json: dimJson,
+    gate_conflicts: gateConflicts,
+    soft_gate_override: softGateOverride,
   }
 }
 

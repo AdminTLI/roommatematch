@@ -5,18 +5,21 @@ import { renderPdf } from '@/lib/pdf/render-pdf'
 import { checkRateLimit, getUserRateLimitKey } from '@/lib/rate-limit'
 import { pdfQueue } from '@/lib/pdf/queue'
 import { safeLogger } from '@/lib/utils/logger'
-import itemsJson from '@/data/item-bank.v1.json'
+import v1ItemsJson from '@/data/item-bank.v1.json'
+import v2ItemsJson from '@/data/item-bank.v2.json'
 import type { Item } from '@/types/questionnaire'
-import type { SectionKey } from '@/types/questionnaire'
+import { V2_SECTION_KEYS, type SectionKey } from '@/types/questionnaire'
+import { createHash, randomBytes } from 'crypto'
 
-// Ensure this route always runs in a Node.js runtime (required for Puppeteer)
 export const runtime = 'nodejs'
 
+type AnswerPayload = { value: any; dealBreaker?: boolean; userSetGate?: boolean }
+
 type OnboardingPdfRequestBody = {
-  sections?: Record<SectionKey, Record<string, { value: any; dealBreaker?: boolean }>>
+  sections?: Record<string, Record<string, AnswerPayload>>
 }
 
-const sectionMeta: Record<SectionKey, { title: string; whyItMatters: string }> = {
+const V1_SECTION_META: Record<string, { title: string; whyItMatters: string }> = {
   'location-commute': {
     title: 'Location & Commute',
     whyItMatters:
@@ -65,6 +68,34 @@ const sectionMeta: Record<SectionKey, { title: string; whyItMatters: string }> =
   },
 }
 
+const V2_SECTION_META: Record<string, { title: string; whyItMatters: string }> = {
+  'logistics-context': {
+    title: 'Logistics and Context',
+    whyItMatters:
+      'Covers practical living constraints, responsibilities, and household logistics that shape daily cohabitation.',
+  },
+  'environment-rhythms': {
+    title: 'Environment and Rhythms',
+    whyItMatters:
+      'Aligns sleep, noise, lighting, and shared-space rhythms so housemates can rest and work comfortably.',
+  },
+  'cleanliness-operations': {
+    title: 'Cleanliness and Operations',
+    whyItMatters:
+      'Sets expectations for kitchen habits, chores, and upkeep to reduce friction in shared spaces.',
+  },
+  'communication-resolution': {
+    title: 'Communication and Resolution',
+    whyItMatters:
+      'Captures how you give feedback and handle conflict so communication styles can be matched thoughtfully.',
+  },
+  'social-spaces': {
+    title: 'Social Life and Spaces',
+    whyItMatters:
+      'Defines guest norms, gatherings, and how shared areas should feel for a comfortable social balance.',
+  },
+}
+
 async function withTimeout<T>(promise: Promise<T>, ms: number): Promise<T> {
   return new Promise<T>((resolve, reject) => {
     const timer = setTimeout(() => {
@@ -84,10 +115,23 @@ async function withTimeout<T>(promise: Promise<T>, ms: number): Promise<T> {
   })
 }
 
+function buildDocumentId(userId: string, generatedAtISO: string): string {
+  const stamp = generatedAtISO.slice(0, 10).replace(/-/g, '')
+  const hash = createHash('sha256')
+    .update(`${userId}:${generatedAtISO}:${randomBytes(4).toString('hex')}`)
+    .digest('hex')
+    .slice(0, 10)
+    .toUpperCase()
+  return `DM-${stamp}-${hash}`
+}
+
 export async function POST(req: NextRequest) {
   try {
     const supabase = await createClient()
-    const { data: { user }, error: authError } = await supabase.auth.getUser()
+    const {
+      data: { user },
+      error: authError,
+    } = await supabase.auth.getUser()
 
     if (authError || !user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
@@ -118,7 +162,6 @@ export async function POST(req: NextRequest) {
       )
     }
 
-    // Check if queue is full
     if (pdfQueue.isFull()) {
       return NextResponse.json(
         { error: 'Service temporarily unavailable. Please try again later.' },
@@ -126,11 +169,9 @@ export async function POST(req: NextRequest) {
       )
     }
 
-    // Acquire queue slot (waits if max concurrent reached)
     await pdfQueue.acquire()
 
     try {
-      // Set timeout: kill Puppeteer after 30 seconds
       const timeoutPromise = withTimeout(
         (async () => {
           const { data: profile } = await supabase
@@ -153,17 +194,18 @@ export async function POST(req: NextRequest) {
               throw new Error(`Failed to load saved onboarding sections: ${sectionsError.message}`)
             }
 
-            onboardingSections = (dbSections ?? []).reduce<Record<string, Record<string, { value: any; dealBreaker?: boolean }>>>(
+            onboardingSections = (dbSections ?? []).reduce<Record<string, Record<string, AnswerPayload>>>(
               (acc, row) => {
                 const sectionKey = row.section
                 if (typeof sectionKey !== 'string' || !Array.isArray(row.answers)) return acc
 
-                const normalizedAnswers = row.answers.reduce<Record<string, { value: any; dealBreaker?: boolean }>>(
+                const normalizedAnswers = row.answers.reduce<Record<string, AnswerPayload>>(
                   (answerAcc, answer) => {
                     if (answer?.itemId && typeof answer.itemId === 'string') {
                       answerAcc[answer.itemId] = {
                         value: answer.value,
                         dealBreaker: answer.dealBreaker === true,
+                        userSetGate: answer.userSetGate === true,
                       }
                     }
                     return answerAcc
@@ -175,21 +217,33 @@ export async function POST(req: NextRequest) {
                 return acc
               },
               {}
-            ) as OnboardingPdfRequestBody['sections']
+            )
           }
 
+          const sectionKeys = Object.keys(onboardingSections ?? {})
+          const isV2 = sectionKeys.some((key) =>
+            (V2_SECTION_KEYS as readonly string[]).includes(key)
+          )
+
+          const items = (isV2 ? v2ItemsJson : v1ItemsJson) as Item[]
+          const sectionMeta = isV2 ? V2_SECTION_META : V1_SECTION_META
+
           const sections = buildOnboardingPdfSections({
-            items: itemsJson as Item[],
+            items,
             onboardingSections: (onboardingSections ?? {}) as Record<
               SectionKey,
-              Record<string, { value: unknown; dealBreaker?: boolean }>
+              Record<string, AnswerPayload>
             >,
             sectionMeta,
           })
 
+          const generatedAtISO = new Date().toISOString()
+          const documentId = buildDocumentId(user.id, generatedAtISO)
+
           const html = generateOnboardingAgreementHtml({
             student: { name: studentName, email: user.email ?? undefined },
-            generatedAtISO: new Date().toISOString(),
+            generatedAtISO,
+            documentId,
             sections,
           })
 
@@ -199,13 +253,12 @@ export async function POST(req: NextRequest) {
       )
 
       const pdfBuffer = await timeoutPromise
+      const filename = `domu-match-compatibility-profile-${new Date().toISOString().split('T')[0]}.pdf`
 
       return new NextResponse(new Uint8Array(pdfBuffer), {
         headers: {
           'Content-Type': 'application/pdf',
-          'Content-Disposition': `attachment; filename="domu-match-onboarding-agreement-${new Date()
-            .toISOString()
-            .split('T')[0]}.pdf"`,
+          'Content-Disposition': `attachment; filename="${filename}"`,
           'Cache-Control': 'no-cache, no-store, must-revalidate',
           Pragma: 'no-cache',
           Expires: '0',
@@ -215,7 +268,6 @@ export async function POST(req: NextRequest) {
         },
       })
     } finally {
-      // Always release queue slot
       pdfQueue.release()
     }
   } catch (error) {
@@ -237,4 +289,3 @@ export async function POST(req: NextRequest) {
     )
   }
 }
-

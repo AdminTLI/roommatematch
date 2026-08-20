@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { safeLogger } from '@/lib/utils/logger'
 import { openScopedAnalyticsSession } from '@/lib/admin/analytics-scope'
+import { HARD_GATE_IDS, GATE_LABELS } from '@/lib/matching/item-weights.v2'
 
 type TopDealbreaker = {
   key: string
@@ -8,7 +9,13 @@ type TopDealbreaker = {
   count: number
 }
 
-const DEALBREAKER_LABELS: Record<string, string> = {
+// v2 platform hard gates — these replace the old per-user dealbreaker system
+const V2_GATE_LABELS: Record<string, string> = {
+  ...GATE_LABELS,
+}
+
+// v1 legacy labels kept for backward compatibility with old onboarding_submissions
+const V1_DEALBREAKER_LABELS: Record<string, string> = {
   smoking: 'No smoking indoors',
   pets_allowed: 'No pets / strict pets policy',
   parties_max: 'Strict limit on gatherings',
@@ -121,21 +128,48 @@ export async function GET(request: NextRequest) {
         ? Number(((verifiedUsers / totalUsers) * 100).toFixed(1))
         : 0
 
-    // 3. Dealbreaker bottlenecks from onboarding_submissions.snapshot.transformed_responses
+    // 3a. v2 platform gate conflicts from match_suggestions.gate_conflicts
+    // Count how many suggestions were blocked or soft-overridden per gate
+    const { data: matchSuggestions, error: matchSuggestionsError } = await admin
+      .from('match_suggestions')
+      .select('user_a_id, user_b_id, gate_conflicts')
+      .or(
+        `user_a_id.in.(${activeUserIds.join(',')}),user_b_id.in.(${activeUserIds.join(',')})`
+      )
+      .not('gate_conflicts', 'is', null)
+
+    if (matchSuggestionsError) {
+      safeLogger.warn(
+        '[Admin Trust & Algorithm] Failed to fetch match_suggestions gate_conflicts',
+        matchSuggestionsError
+      )
+    }
+
+    const v2GateCounts = new Map<string, number>()
+
+    for (const row of matchSuggestions || []) {
+      const conflicts = (row as any).gate_conflicts as string[] | null
+      if (!Array.isArray(conflicts) || conflicts.length === 0) continue
+      for (const gateId of conflicts) {
+        if (!HARD_GATE_IDS.includes(gateId as any)) continue
+        v2GateCounts.set(gateId, (v2GateCounts.get(gateId) ?? 0) + 1)
+      }
+    }
+
+    // 3b. v1 legacy dealbreaker bottlenecks from onboarding_submissions
     const { data: submissions, error: submissionsError } = await admin
       .from('onboarding_submissions')
       .select('user_id, snapshot')
       .in('user_id', activeUserIds)
 
     if (submissionsError) {
-      // Log but don't fail the entire endpoint – we can still return trust funnel metrics
       safeLogger.error(
         '[Admin Trust & Algorithm] Failed to fetch onboarding_submissions for dealbreakers',
         submissionsError
       )
     }
 
-    const dealbreakerCounts = new Map<string, number>()
+    const v1DealbreakerCounts = new Map<string, number>()
 
     for (const submission of submissions || []) {
       const userId = submission.user_id as string | null
@@ -155,71 +189,55 @@ export async function GET(request: NextRequest) {
 
       for (const response of responses) {
         const key = response.question_key
-        if (!key || !DEALBREAKER_LABELS[key]) continue
+        if (!key || !V1_DEALBREAKER_LABELS[key]) continue
 
         const rawValue = (response as any).value
         if (rawValue === null || rawValue === undefined) continue
 
         let isStrictConstraint = false
 
-        // Heuristic interpretation – we don't have the original dealBreaker flag here,
-        // so we approximate "strict" settings based on value shapes.
         if (key === 'smoking') {
-          // Any truthy value or high smoking sensitivity is treated as a hard "no smoking" stance
-          if (typeof rawValue === 'boolean') {
-            isStrictConstraint = rawValue === true
-          } else if (typeof rawValue === 'number') {
-            // Higher values on smoking-related questions typically correspond to stricter no‑smoking preferences
-            isStrictConstraint = rawValue >= 7
-          } else {
-            isStrictConstraint = true
-          }
+          if (typeof rawValue === 'boolean') isStrictConstraint = rawValue === true
+          else if (typeof rawValue === 'number') isStrictConstraint = rawValue >= 7
+          else isStrictConstraint = true
         } else if (key === 'pets_allowed') {
-          // Treat "no pets" or very restrictive pets policy as a dealbreaker
-          if (typeof rawValue === 'boolean') {
-            isStrictConstraint = rawValue === false
-          } else if (typeof rawValue === 'number') {
-            // Lower values on pets tolerance imply stricter stance
-            isStrictConstraint = rawValue <= 3
-          } else {
-            isStrictConstraint = true
-          }
+          if (typeof rawValue === 'boolean') isStrictConstraint = rawValue === false
+          else if (typeof rawValue === 'number') isStrictConstraint = rawValue <= 3
+          else isStrictConstraint = true
         } else if (key === 'parties_max' || key === 'guests_max') {
-          if (typeof rawValue === 'number') {
-            // Very low caps on parties/guests are treated as restrictive
-            isStrictConstraint = rawValue <= 2
-          } else {
-            isStrictConstraint = true
-          }
+          if (typeof rawValue === 'number') isStrictConstraint = rawValue <= 2
+          else isStrictConstraint = true
         } else if (key === 'alcohol_at_home' || key === 'pets_tolerance') {
-          if (typeof rawValue === 'number') {
-            // Lower values on these sliders indicate stricter constraints
-            isStrictConstraint = rawValue <= 3
-          } else {
-            isStrictConstraint = true
-          }
+          if (typeof rawValue === 'number') isStrictConstraint = rawValue <= 3
+          else isStrictConstraint = true
         }
 
-        if (!isStrictConstraint) continue
-        if (seenForUser.has(key)) continue
-
+        if (!isStrictConstraint || seenForUser.has(key)) continue
         seenForUser.add(key)
       }
 
       for (const key of seenForUser) {
-        const prev = dealbreakerCounts.get(key) ?? 0
-        dealbreakerCounts.set(key, prev + 1)
+        v1DealbreakerCounts.set(key, (v1DealbreakerCounts.get(key) ?? 0) + 1)
       }
     }
 
-    const topDealbreakers: TopDealbreaker[] = Array.from(dealbreakerCounts.entries())
-      .map(([key, count]) => ({
-        key,
-        name: DEALBREAKER_LABELS[key] ?? key,
-        count,
-      }))
+    // Merge v2 gates (preferred) and v1 legacy, deduplicated by display name
+    const mergedCounts = new Map<string, { name: string; count: number }>()
+
+    for (const [key, count] of v2GateCounts) {
+      mergedCounts.set(key, { name: V2_GATE_LABELS[key] ?? key, count })
+    }
+
+    for (const [key, count] of v1DealbreakerCounts) {
+      if (!mergedCounts.has(key)) {
+        mergedCounts.set(key, { name: V1_DEALBREAKER_LABELS[key] ?? key, count })
+      }
+    }
+
+    const topDealbreakers: TopDealbreaker[] = Array.from(mergedCounts.entries())
+      .map(([key, { name, count }]) => ({ key, name, count }))
       .sort((a, b) => b.count - a.count)
-      .slice(0, 3)
+      .slice(0, 4)
 
     return NextResponse.json({
       totalUsers,

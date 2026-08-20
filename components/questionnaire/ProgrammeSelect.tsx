@@ -1,8 +1,11 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo } from 'react'
+import { Check, ChevronDown } from 'lucide-react'
 import { Programme, DegreeLevel } from '@/types/programme'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
+import { Input } from '@/components/ui/input'
+import { cn } from '@/lib/utils'
 
 interface ProgrammeSelectProps {
   institutionId?: string
@@ -11,12 +14,11 @@ interface ProgrammeSelectProps {
   onChange: (programmeId: string, programmeName?: string) => void
   disabled?: boolean
   placeholder?: string
+  className?: string
 }
 
 /**
- * Programme selection component using a standard dropdown.
- * Displays programme name and optional metadata chips.
- * Enabled only when both institutionId and level are provided.
+ * Searchable programme picker. Enabled only when institution + degree level are set.
  */
 export function ProgrammeSelect({
   institutionId,
@@ -24,15 +26,17 @@ export function ProgrammeSelect({
   value,
   onChange,
   disabled,
-  placeholder = "Select a programme"
+  placeholder = 'Search programme (e.g. International Business)…',
+  className,
 }: ProgrammeSelectProps) {
   const [programmes, setProgrammes] = useState<Programme[]>([])
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [open, setOpen] = useState(false)
+  const [query, setQuery] = useState('')
 
   const isEnabled = Boolean(institutionId && level) && !disabled
 
-  // Fetch programmes when institution or level changes
   useEffect(() => {
     if (!isEnabled) {
       setProgrammes([])
@@ -43,22 +47,17 @@ export function ProgrammeSelect({
     const fetchProgrammes = async () => {
       setLoading(true)
       setError(null)
-      
+
       try {
         const response = await fetch(`/api/programmes?inst=${institutionId}&level=${level}`)
-        
+
         if (!response.ok) {
           throw new Error(`Failed to fetch programmes: ${response.status}`)
         }
-        
+
         const data = await response.json()
         const rawProgrammes = data.programmes || []
-        console.log('📚 Fetched programmes for', institutionId, level, ':', rawProgrammes.length, 'programmes')
-        
-        // Deduplicate programmes to remove duplicates
-        const deduplicated = deduplicateProgrammes(rawProgrammes)
-        console.log('📊 Deduplicated to', deduplicated.length, 'unique programmes')
-        setProgrammes(deduplicated)
+        setProgrammes(deduplicateProgrammes(rawProgrammes))
       } catch (err) {
         console.error('Error fetching programmes:', err)
         setError(err instanceof Error ? err.message : 'Failed to load programmes')
@@ -68,70 +67,110 @@ export function ProgrammeSelect({
       }
     }
 
-    // Add a small delay to prevent rapid API calls
     const timeoutId = setTimeout(fetchProgrammes, 100)
     return () => clearTimeout(timeoutId)
   }, [institutionId, level, isEnabled])
 
-  const handleSelect = (programmeId: string) => {
-    const selected = programmes.find(p => p.id === programmeId)
-    onChange(programmeId, selected?.name)
-  }
+  const selected = programmes.find((p) => p.id === value)
 
-  const placeholderText = !isEnabled
-    ? "Select university and degree level first"
+  const filtered = useMemo(() => {
+    if (!query.trim()) return programmes
+    const q = query.toLowerCase()
+    return programmes.filter((p) => p.name.toLowerCase().includes(q))
+  }, [programmes, query])
+
+  const triggerLabel = !isEnabled
+    ? 'Select university and degree level first'
     : loading
-      ? "Loading programmes..."
+      ? 'Loading programmes…'
       : error
-        ? "Error loading programmes"
-        : placeholder
+        ? 'Error loading programmes'
+        : selected?.name || placeholder
 
   return (
-    <Select
-      value={value || ''}
-      onValueChange={handleSelect}
-      disabled={!isEnabled || loading || Boolean(error)}
+    <Popover
+      open={open}
+      onOpenChange={(next) => {
+        if (!isEnabled || loading || Boolean(error)) return
+        setOpen(next)
+        if (!next) setQuery('')
+      }}
     >
-      <SelectTrigger>
-        <SelectValue placeholder={placeholderText} />
-      </SelectTrigger>
-      <SelectContent>
-        {!loading && !error && programmes.length > 0 && programmes.map((programme) => (
-          <SelectItem key={getUniqueProgrammeKey(programme)} value={programme.id}>
-            {programme.name}
-          </SelectItem>
-        ))}
-        {!loading && !error && programmes.length === 0 && (
-          <SelectItem value="__none__" disabled>
-            No programmes found
-          </SelectItem>
-        )}
-      </SelectContent>
-    </Select>
+      <PopoverTrigger asChild>
+        <button
+          type="button"
+          disabled={!isEnabled || loading || Boolean(error)}
+          className={cn(
+            'flex h-12 w-full items-center justify-between gap-2 rounded-xl border border-slate-200 bg-white pl-3.5 pr-3 text-left text-sm transition',
+            'hover:border-slate-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#4F46E5]/30',
+            'disabled:cursor-not-allowed disabled:bg-slate-50 disabled:text-slate-400 disabled:opacity-80',
+            selected ? 'font-medium text-[#0F172A]' : 'font-normal text-slate-500',
+            className
+          )}
+        >
+          <span className="min-w-0 flex-1 truncate text-left">{triggerLabel}</span>
+          <ChevronDown className="h-5 w-5 shrink-0 text-slate-500 opacity-70" strokeWidth={2} />
+        </button>
+      </PopoverTrigger>
+      <PopoverContent
+        align="start"
+        className="w-[var(--radix-popover-trigger-width)] rounded-2xl border-0 bg-white p-3 shadow-[0_10px_25px_-5px_rgba(0,0,0,0.12)] ring-1 ring-slate-200/80"
+      >
+        <div className="mb-2.5">
+          <Input
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            placeholder="Type to search…"
+            className="h-10 rounded-xl border-0 bg-slate-50 px-3 text-sm shadow-none ring-1 ring-slate-200/80 placeholder:text-slate-400 focus-visible:ring-2 focus-visible:ring-[#4F46E5]/40"
+            autoFocus
+          />
+        </div>
+        <ul className="max-h-56 space-y-0.5 overflow-y-auto overscroll-contain">
+          {filtered.length === 0 && (
+            <li className="px-2 py-3 text-center text-xs text-slate-500">No programmes found</li>
+          )}
+          {filtered.map((programme) => {
+            const active = programme.id === value
+            return (
+              <li key={getUniqueProgrammeKey(programme)}>
+                <button
+                  type="button"
+                  onClick={() => {
+                    onChange(programme.id, programme.name)
+                    setOpen(false)
+                    setQuery('')
+                  }}
+                  className={cn(
+                    'flex w-full items-center gap-2 rounded-xl px-2.5 py-2 text-left text-sm transition',
+                    active
+                      ? 'bg-indigo-50 font-medium text-[#4F46E5]'
+                      : 'text-[#0F172A] hover:bg-slate-50'
+                  )}
+                >
+                  <span className="min-w-0 flex-1 truncate">{programme.name}</span>
+                  {active && <Check className="h-3.5 w-3.5 shrink-0" strokeWidth={2.5} />}
+                </button>
+              </li>
+            )
+          })}
+        </ul>
+      </PopoverContent>
+    </Popover>
   )
 }
 
-/**
- * Deduplicate programmes by removing true duplicates
- * Prioritizes programmes with RIO codes, then by ID, then by name+level combination
- */
 function deduplicateProgrammes(programmes: Programme[]): Programme[] {
   if (programmes.length === 0) return []
 
-  // Step 1: First pass - deduplicate by RIO code (most reliable identifier)
   const byRioCode = new Map<string, Programme>()
-  
+
   for (const prog of programmes) {
     const rioCode = prog.externalRefs?.rioCode
     if (rioCode) {
-      // If we haven't seen this RIO code, keep it
       if (!byRioCode.has(rioCode)) {
         byRioCode.set(rioCode, prog)
-      }
-      // If we've seen it, prefer the one with a better ID if available
-      else {
+      } else {
         const existing = byRioCode.get(rioCode)!
-        // Prefer programme with an ID that's different from RIO code
         if (prog.id && prog.id !== rioCode && (existing.id === rioCode || !existing.id)) {
           byRioCode.set(rioCode, prog)
         }
@@ -139,28 +178,20 @@ function deduplicateProgrammes(programmes: Programme[]): Programme[] {
     }
   }
 
-  // Step 2: Second pass - deduplicate by ID for programmes not already included
   const uniqueProgrammes = new Map<string, Programme>()
-  
-  // Add all programmes with RIO codes
+
   for (const prog of byRioCode.values()) {
     const key = prog.externalRefs?.rioCode || prog.id || `${prog.name}-${prog.level}`
     uniqueProgrammes.set(key, prog)
   }
-  
-  // Add programmes without RIO codes, deduplicating by ID
+
   for (const prog of programmes) {
     const rioCode = prog.externalRefs?.rioCode
-    // Skip if already added via RIO code
-    if (rioCode && byRioCode.has(rioCode)) {
-      continue
-    }
-    
-    // Use ID as key if available
+    if (rioCode && byRioCode.has(rioCode)) continue
+
     if (prog.id && !uniqueProgrammes.has(prog.id)) {
       uniqueProgrammes.set(prog.id, prog)
     } else if (!prog.id) {
-      // No ID and no RIO code - use name+level as fallback key
       const fallbackKey = `${prog.name.toLowerCase().trim()}-${prog.level}`
       if (!uniqueProgrammes.has(fallbackKey)) {
         uniqueProgrammes.set(fallbackKey, prog)
@@ -168,9 +199,8 @@ function deduplicateProgrammes(programmes: Programme[]): Programme[] {
     }
   }
 
-  // Step 3: Final pass - deduplicate by name+level in case same programme has different IDs/RIO codes
   const byNameAndLevel = new Map<string, Programme[]>()
-  
+
   for (const prog of uniqueProgrammes.values()) {
     const nameKey = `${prog.name.toLowerCase().trim()}-${prog.level}`
     if (!byNameAndLevel.has(nameKey)) {
@@ -179,53 +209,37 @@ function deduplicateProgrammes(programmes: Programme[]): Programme[] {
     byNameAndLevel.get(nameKey)!.push(prog)
   }
 
-  // Step 4: Keep only one programme per name+level, preferring best identifier
   const final: Programme[] = []
-  
-  for (const [nameKey, progs] of byNameAndLevel.entries()) {
+
+  for (const [, progs] of byNameAndLevel.entries()) {
     if (progs.length === 1) {
       final.push(progs[0])
     } else {
-      // Multiple programmes with same name+level - keep the one with best identifier
-      // Priority: RIO code > proper ID (different from RIO) > first one
-      const best = progs.reduce((best, current) => {
-        const bestRio = best.externalRefs?.rioCode
+      const best = progs.reduce((bestSoFar, current) => {
+        const bestRio = bestSoFar.externalRefs?.rioCode
         const currentRio = current.externalRefs?.rioCode
-        
-        // Prefer one with RIO code
+
         if (currentRio && !bestRio) return current
-        if (bestRio && !currentRio) return best
-        
-        // Both or neither have RIO code - prefer one with better ID
-        const bestId = best.id && best.id !== bestRio ? best.id : null
+        if (bestRio && !currentRio) return bestSoFar
+
+        const bestId = bestSoFar.id && bestSoFar.id !== bestRio ? bestSoFar.id : null
         const currentId = current.id && current.id !== currentRio ? current.id : null
-        
+
         if (currentId && !bestId) return current
-        if (bestId && !currentId) return best
-        
-        return best // Keep first if equivalent
+        if (bestId && !currentId) return bestSoFar
+
+        return bestSoFar
       })
-      
+
       final.push(best)
     }
   }
 
-  // Sort alphabetically
   return final.sort((a, b) => a.name.localeCompare(b.name))
 }
 
-/**
- * Generate a unique key for a programme to use as React key
- */
 function getUniqueProgrammeKey(programme: Programme): string {
-  // Use RIO code if available (most unique)
-  if (programme.externalRefs?.rioCode) {
-    return programme.externalRefs.rioCode
-  }
-  // Use ID
-  if (programme.id) {
-    return programme.id
-  }
-  // Fallback to name + level (shouldn't happen but just in case)
+  if (programme.externalRefs?.rioCode) return programme.externalRefs.rioCode
+  if (programme.id) return programme.id
   return `${programme.name}-${programme.level}`
 }

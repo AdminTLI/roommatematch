@@ -77,10 +77,13 @@ const content = {
       ]
     },
     timeline: [
-      { title: 'The Problem Identified', description: "We recognized that nearly half of all students face roommate conflicts that impact well-being and academic performance. Random assignment wasn't working.", date: '2025 August' },
-      { title: 'Research Phase', description: 'We analyzed peer-reviewed studies on compatibility, peer effects, and student housing satisfaction from Nature and other leading sources.', date: '2025 September' },
-      { title: 'Algorithm Development', description: 'We built a science-driven algorithm that analyzes 40+ lifestyle and academic factors, informed by social compatibility research.', date: '2025 October' },
-      { title: 'First Version Complete', description: "The first version of Domu Match's user interface was put together, its core functionality was built, and we finalized the weightings for our matching algorithm.", date: '2025 November' },
+      { title: 'The Problem Identified', description: "We recognized that nearly half of all students face roommate conflicts that impact well-being and academic performance. Random assignment wasn't working.", date: '2025 September' },
+      {
+        title: 'First Version Complete',
+        description:
+          "We analyzed peer-reviewed studies on compatibility, peer effects, and student housing satisfaction from Nature and other leading sources, then built a science-driven algorithm that analyzes 40+ lifestyle and academic factors. The first version of Domu Match's user interface and core functionality was put together, and we finalized the weightings for our matching algorithm.",
+        date: '2025 November',
+      },
       { title: 'Debugging and Error Testing', description: 'The platform is currently undergoing several changes to debug multiple errors and ensure that during the soft launch, users have a seamless experience. This will allow beta testers to provide more feedback on introducing the right features for the platform.', date: '2026 January' },
       {
         title: 'Expanding Beyond Students',
@@ -88,8 +91,24 @@ const content = {
           'Domu Match began with students at the center. In March we pivoted to welcome young professionals too: early feedback and demand showed that finding a compatible roommate is not only a student problem. We refocused the product, messaging, and matching priorities so both audiences are first-class - same science-backed approach, tailored to how each group lives and searches for housing.',
         date: '2026 March',
       },
-      { title: 'Beta Testing Soft Launch', description: 'The platform will be launched to a small group of students and young professionals in Breda and Tilburg. We will work together to ensure that we have the most important and wanted features that users expect working properly before our full planned launch.', date: '2026 April' },
-      { title: 'Full Launch Planned', description: 'We are expected to launch the platform for our first students and young professionals in June. They will finally be able to use our science-backed matching algorithm to connect with and find compatible roommates for the first time ever in The Netherlands.', date: '2026 June' }
+      {
+        title: "Alpha Testing and B'WISE Partnership",
+        description:
+          "We are testing the platform's features and functionality internally so everything works as it should: catching issues, refining the experience, and confirming core matching flows before beta. We are also partnering with B'WISE, the Breda startup accelerator, for entrepreneurship mentorship and to help us bring this product into the world.",
+        date: '2026 May',
+      },
+      {
+        title: 'Beta Testing',
+        description:
+          'We are expected to launch the platform for our first students and young professionals in September. They will finally be able to use our science-backed matching algorithm to connect with and find compatible roommates for the first time ever in The Netherlands.',
+        date: '2026 September',
+      },
+      {
+        title: 'Full Launch Planned',
+        description:
+          'The full launch is planned for October. Students and young professionals will then be able to use Domu Match to find compatible roommates through our science-backed matching algorithm, for the first time ever in The Netherlands.',
+        date: '2026 October',
+      },
     ],
     vision: {
       heading: "Where We're Headed",
@@ -203,10 +222,13 @@ const content = {
       ]
     },
     timeline: [
-      { title: 'Probleem gesignaleerd', description: 'We zagen dat bijna de helft van de studenten conflicten heeft die welzijn en studie raken. Willekeurige toewijzing werkte niet.', date: '2025 augustus' },
-      { title: 'Onderzoeksfase', description: 'We doken in peer-reviewed studies over compatibiliteit, peereffecten en woontevredenheid.', date: '2025 september' },
-      { title: 'Algoritmeontwikkeling', description: 'We bouwden een algoritme dat meer dan 40 factoren weegt, geïnspireerd op sociale wetenschappen en best practices.', date: '2025 oktober' },
-      { title: 'Eerste versie voltooid', description: 'De eerste versie van Domu Match werd volledig gebouwd en onderging uitgebreide debugging- en fouttestprocessen om betrouwbaarheid en kwaliteit te waarborgen.', date: '2025 november' },
+      { title: 'Probleem gesignaleerd', description: 'We zagen dat bijna de helft van de studenten conflicten heeft die welzijn en studie raken. Willekeurige toewijzing werkte niet.', date: '2025 september' },
+      {
+        title: 'Eerste versie voltooid',
+        description:
+          'We doken in peer-reviewed studies over compatibiliteit, peereffecten en woontevredenheid, en bouwden een algoritme dat meer dan 40 leefstijl- en studiefactoren weegt. De eerste versie van de gebruikersinterface en kernfunctionaliteit van Domu Match werd opgezet, en we finaliseerden de wegingen van ons matchingalgoritme.',
+        date: '2025 november',
+      },
       { title: 'Bètatestfase', description: 'We bevinden ons momenteel in de bètatestfase, verzamelen feedback en verfijnen het platform om de best mogelijke ervaring voor studenten te garanderen.', date: '2026 januari' },
       {
         title: 'Uitbreiding naar jonge professionals',
@@ -214,8 +236,24 @@ const content = {
           'Domu Match startte met studenten als focus. In maart hebben we gepivoteerd om ook jonge professionals uit te nodigen: uit feedback en vraag bleek dat het vinden van een passende huisgenoot niet alleen een studententhema is. We hebben product, positionering en matching bijgesteld zodat beide groepen gelijkwaardig zijn - dezelfde wetenschappelijke basis, afgestemd op hoe elke groep woont en zoekt.',
         date: '2026 maart',
       },
-      { title: 'Bètatest Soft Launch', description: 'Het platform wordt gelanceerd voor een kleine groep studenten en jonge professionals in Breda en Tilburg. Samen zorgen we ervoor dat de belangrijkste en meest gewenste functies correct werken voordat we de volledige lancering plannen.', date: '2026 april' },
-      { title: 'Volledige lancering gepland', description: 'We verwachten het platform in juni te lanceren voor onze eerste studenten en jonge professionals. Zij kunnen dan eindelijk ons wetenschappelijk onderbouwde matchingalgoritme gebruiken om compatibele huisgenoten te vinden - voor het eerst in Nederland.', date: '2026 juni' }
+      {
+        title: "Alfatest en samenwerking met B'WISE",
+        description:
+          "We testen de functies en werking van het platform intern, zodat alles goed werkt: we vangen problemen op, verfijnen de ervaring en controleren of matching volledig functioneert voordat de bètatest begint. Tegelijk werken we samen met B'WISE, de startup-accelerator in Breda, voor ondernemerschapsmentorschap en om dit product de wereld in te helpen.",
+        date: '2026 mei',
+      },
+      {
+        title: 'Bètatest',
+        description:
+          'We verwachten het platform in september te lanceren voor onze eerste studenten en jonge professionals. Zij kunnen dan eindelijk ons wetenschappelijk onderbouwde matchingalgoritme gebruiken om compatibele huisgenoten te vinden - voor het eerst in Nederland.',
+        date: '2026 september',
+      },
+      {
+        title: 'Volledige lancering gepland',
+        description:
+          'De volledige lancering is gepland voor oktober. Studenten en jonge professionals kunnen dan Domu Match gebruiken om via ons wetenschappelijk onderbouwde matchingalgoritme compatibele huisgenoten te vinden - voor het eerst in Nederland.',
+        date: '2026 oktober',
+      },
     ],
     vision: {
       heading: 'Waar we naartoe werken',

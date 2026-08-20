@@ -5,7 +5,7 @@ import { randomUUID } from 'crypto'
 import type { MatchRepo, CohortFilter, MatchRecord } from './repo'
 import type { MatchSuggestion } from './types'
 import { toStudent, mapAnswersToVector } from './answer-map'
-import { checkDealBreakers, getReadableReasons } from './dealbreakers'
+import { checkDealBreakersLegacy } from './dealbreakers'
 import { solvePairs, solveGroups } from './optimize'
 import { MatchingEngine, DEFAULT_WEIGHTS, type MatchingWeights, type UserProfile } from './scoring'
 import itemBank from '@/data/item-bank.v1.json'
@@ -149,8 +149,8 @@ export async function runMatching({
         const studentA = students[i]
         const studentB = students[j]
 
-        // Check deal-breakers
-        const dealBreakerResult = checkDealBreakers(studentA, studentB)
+        // Legacy v1 deal-breaker check (v2 gates are evaluated in SQL by compute_compatibility_score_v2)
+        const dealBreakerResult = checkDealBreakersLegacy()
 
         if (dealBreakerResult.canMatch) {
           // Get weights for this pair (considering experiments)
@@ -231,7 +231,7 @@ export async function runMatching({
         const { score, explanation } = engine.computeCompatibilityScore(profileA as UserProfile, profileB as UserProfile)
 
         // Generate human-readable reasons
-        const reasons = getReadableReasons(studentA, studentB)
+        const reasons: string[] = []// v2: reasons generated from gate_conflicts
 
         // Extract section scores from explanation
         const sectionScores = {
@@ -662,7 +662,7 @@ export async function runMatchingAsSuggestions({
 
         const studentA = students.find(s => s.id === uid)!
         const studentB = students.find(s => s.id === cand.otherId)!
-        const reasons = getReadableReasons(studentA, studentB)
+        const reasons: string[] = []// v2: reasons generated from gate_conflicts
 
         // Generate proper UUID for suggestion ID
         const suggestionId = randomUUID()

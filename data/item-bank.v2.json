@@ -1,0 +1,618 @@
+[
+  {
+    "id": "M5_Q17",
+    "section": "logistics-context",
+    "kind": "toggle",
+    "label": "No smoking or vaping indoors (including balconies and windows) under any circumstances.",
+    "hardGate": true,
+    "inModuleWeight": 0
+  },
+  {
+    "id": "M8_Q14",
+    "section": "logistics-context",
+    "kind": "mcq",
+    "label": "What is your pet preference?",
+    "options": [
+      { "value": "pet_cannot",   "label": "No pets please" },
+      { "value": "pet_open_to",  "label": "Okay with some pets" },
+      { "value": "pet_bringing", "label": "Okay with all pets (or I am bringing one)" }
+    ],
+    "hardGate": true,
+    "inModuleWeight": 0
+  },
+  {
+    "id": "M8_Q19",
+    "section": "logistics-context",
+    "kind": "toggle",
+    "label": "The address must allow BRP (municipal) registration.",
+    "hardGate": true,
+    "inModuleWeight": 0
+  },
+  {
+    "id": "M8_Q11",
+    "section": "logistics-context",
+    "kind": "toggle",
+    "label": "No subletting or paid short-stay guests (e.g. Airbnb).",
+    "hardGate": true,
+    "inModuleWeight": 0
+  },
+  {
+    "id": "M1_Q10",
+    "section": "logistics-context",
+    "kind": "bipolar",
+    "bipolarLabels": {
+      "left": "Strict equality (exact splits)",
+      "softLeft": "Mostly strict equality",
+      "softRight": "Mostly usage-based fairness",
+      "right": "Usage-based fairness"
+    },
+    "label": "How should shared costs and responsibilities be divided?",
+    "hardGate": false,
+    "inModuleWeight": 0.18
+  },
+  {
+    "id": "M1_Q20",
+    "section": "logistics-context",
+    "kind": "bipolar",
+    "bipolarLabels": {
+      "left": "Clear and strict rules",
+      "softLeft": "Mostly clear, strict rules",
+      "softRight": "Mostly flexible case-by-case",
+      "right": "Flexible case-by-case"
+    },
+    "label": "How should house rules be applied?",
+    "hardGate": false,
+    "inModuleWeight": 0.16
+  },
+  {
+    "id": "M6_Q7",
+    "section": "logistics-context",
+    "kind": "bipolar",
+    "bipolarLabels": {
+      "left": "Handle everything internally",
+      "softLeft": "Mostly handle internally",
+      "softRight": "Often loop in landlord early",
+      "right": "Loop in landlord or admin early"
+    },
+    "label": "When a serious house issue arises, my preferred escalation approach is:",
+    "hardGate": false,
+    "inModuleWeight": 0.14
+  },
+  {
+    "id": "M8_Q23",
+    "section": "logistics-context",
+    "kind": "mcq",
+    "label": "What is your minimum stay commitment?",
+    "options": [
+      { "value": "stay_3m",  "label": "3 months" },
+      { "value": "stay_6m",  "label": "6 months" },
+      { "value": "stay_12m", "label": "12 months" },
+      { "value": "stay_24m", "label": "24 months or more" }
+    ],
+    "hardGate": false,
+    "inModuleWeight": 0.14
+  },
+  {
+    "id": "M8_Q20",
+    "section": "logistics-context",
+    "kind": "mcq",
+    "label": "How flexible are you with your move-in date?",
+    "options": [
+      { "value": "movein_exact_only",    "label": "Exact date only" },
+      { "value": "movein_flex_7d",       "label": "Flexible by +/- 7 days" },
+      { "value": "movein_flex_14d_plus", "label": "Flexible by +/- 14 days or more" }
+    ],
+    "hardGate": false,
+    "inModuleWeight": 0.12
+  },
+  {
+    "id": "M8_Q25",
+    "section": "logistics-context",
+    "kind": "mcq",
+    "label": "What is your preferred language for rental and house documents?",
+    "options": [
+      { "value": "docs_lang_english", "label": "English" },
+      { "value": "docs_lang_dutch",   "label": "Dutch" },
+      { "value": "docs_lang_either",  "label": "Either is fine" }
+    ],
+    "hardGate": false,
+    "inModuleWeight": 0.10
+  },
+  {
+    "id": "M8_Q24",
+    "section": "logistics-context",
+    "kind": "toggle",
+    "label": "I agree to a roommate agreement/contract created from our shared answers.",
+    "hardGate": false,
+    "inModuleWeight": 0.08
+  },
+  {
+    "id": "M8_Q12",
+    "section": "logistics-context",
+    "kind": "toggle",
+    "label": "I have or will arrange personal liability insurance.",
+    "hardGate": false,
+    "inModuleWeight": 0.08
+  },
+
+  {
+    "id": "M2_Q1",
+    "section": "environment-rhythms",
+    "kind": "bipolar",
+    "bipolarLabels": {
+      "left": "Night owl",
+      "softLeft": "Somewhat a night owl",
+      "softRight": "Somewhat a morning person",
+      "right": "Morning person"
+    },
+    "label": "Are you more of a night owl or a morning person?",
+    "inModuleWeight": 0.16
+  },
+  {
+    "id": "M2_Q13",
+    "section": "environment-rhythms",
+    "kind": "timeRange",
+    "label": "My preferred weekday quiet hours are:",
+    "timeRangeBounds": {
+      "startFrom": "20:00",
+      "startTo": "00:00",
+      "endFrom": "06:00",
+      "endTo": "09:00",
+      "overnight": true
+    },
+    "inModuleWeight": 0.16
+  },
+  {
+    "id": "M3_Q2",
+    "section": "environment-rhythms",
+    "kind": "likert",
+    "scale": "agreement",
+    "label": "Ongoing background noise (TV or music from another room) makes it hard for me to focus or relax.",
+    "inModuleWeight": 0.12
+  },
+  {
+    "id": "M3_Q4",
+    "section": "environment-rhythms",
+    "kind": "bipolar",
+    "bipolarLabels": {
+      "left": "Low volume",
+      "softLeft": "Somewhat low volume",
+      "softRight": "Somewhat high volume",
+      "right": "High volume"
+    },
+    "label": "My typical volume preference for music and media is:",
+    "inModuleWeight": 0.10
+  },
+  {
+    "id": "M2_Q6",
+    "section": "environment-rhythms",
+    "kind": "likert",
+    "scale": "agreement",
+    "label": "I wake up easily if there is light or noise in the house.",
+    "inModuleWeight": 0.10
+  },
+  {
+    "id": "M2_Q19",
+    "section": "environment-rhythms",
+    "kind": "likert",
+    "scale": "agreement",
+    "label": "I am okay with faint noise or quiet activity in common areas after my bedtime.",
+    "inModuleWeight": 0.09
+  },
+  {
+    "id": "M1_Q6",
+    "section": "environment-rhythms",
+    "kind": "bipolar",
+    "bipolarLabels": {
+      "left": "Lively social hub",
+      "softLeft": "Somewhat a social hub",
+      "softRight": "Somewhat a quiet retreat",
+      "right": "Peaceful quiet retreat"
+    },
+    "label": "How do you prefer your home to feel overall?",
+    "inModuleWeight": 0.08
+  },
+  {
+    "id": "M7_Q2",
+    "section": "environment-rhythms",
+    "kind": "likert",
+    "scale": "agreement",
+    "label": "I need daily alone time at home to recharge.",
+    "inModuleWeight": 0.07
+  },
+  {
+    "id": "M2_Q15",
+    "section": "environment-rhythms",
+    "kind": "mcq",
+    "label": "On weekends, quiet hours should end no earlier than:",
+    "options": [
+      { "value": "08:00", "label": "08:00" },
+      { "value": "09:00", "label": "09:00" },
+      { "value": "10:00", "label": "10:00" },
+      { "value": "11:00", "label": "11:00" }
+    ],
+    "inModuleWeight": 0.06
+  },
+  {
+    "id": "M3_Q12",
+    "section": "environment-rhythms",
+    "kind": "bipolar",
+    "bipolarLabels": {
+      "left": "Cool (18-19 C)",
+      "softLeft": "Somewhat cool",
+      "softRight": "Somewhat warm",
+      "right": "Warm (23-24 C)"
+    },
+    "label": "My preferred indoor temperature during the day is:",
+    "inModuleWeight": 0.03
+  },
+  {
+    "id": "M3_Q18",
+    "section": "environment-rhythms",
+    "kind": "bipolar",
+    "bipolarLabels": {
+      "left": "Soft lamps only",
+      "softLeft": "Mostly soft lamps",
+      "softRight": "Mostly bright overhead",
+      "right": "Bright overhead lighting"
+    },
+    "label": "My preference for lighting in shared spaces is:",
+    "inModuleWeight": 0.02
+  },
+  {
+    "id": "M3_Q25",
+    "section": "environment-rhythms",
+    "kind": "bipolar",
+    "bipolarLabels": {
+      "left": "Cannot compromise - I need my environment a certain way",
+      "softLeft": "Hard to compromise on environment",
+      "softRight": "Mostly adaptable to others",
+      "right": "Highly adaptable to others' preferences"
+    },
+    "label": "If my housemates have different sensory preferences to mine, I am:",
+    "inModuleWeight": 0.01
+  },
+
+  {
+    "id": "M4_Q1",
+    "section": "cleanliness-operations",
+    "kind": "mcq",
+    "label": "My cleanliness standard for shared areas is:",
+    "options": [
+      { "value": "clean_low",    "label": "Low - relaxed, lived-in feel is fine" },
+      { "value": "clean_medium", "label": "Medium - tidy but not spotless" },
+      { "value": "clean_high",   "label": "High - always clean and guest-ready" }
+    ],
+    "inModuleWeight": 0.18
+  },
+  {
+    "id": "M4_Q4",
+    "section": "cleanliness-operations",
+    "kind": "mcq",
+    "label": "How soon do you typically wash your dishes after cooking?",
+    "options": [
+      { "value": "dishes_immediately", "label": "Immediately after eating" },
+      { "value": "dishes_same_day",    "label": "Same day, before bed" },
+      { "value": "dishes_next_day",    "label": "Next day is fine" }
+    ],
+    "inModuleWeight": 0.14
+  },
+  {
+    "id": "M4_Q12",
+    "section": "cleanliness-operations",
+    "kind": "likert",
+    "scale": "agreement",
+    "label": "I clean up communal messes even if I did not make them.",
+    "inModuleWeight": 0.14
+  },
+  {
+    "id": "M4_Q14",
+    "section": "cleanliness-operations",
+    "kind": "likert",
+    "scale": "agreement",
+    "label": "I am okay with a rotating chore schedule and will stick to it reliably.",
+    "inModuleWeight": 0.10
+  },
+  {
+    "id": "M4_Q7",
+    "section": "cleanliness-operations",
+    "kind": "likert",
+    "scale": "agreement",
+    "label": "I prefer a highly communal kitchen where groceries, cookware, and storage are shared freely.",
+    "inModuleWeight": 0.08
+  },
+  {
+    "id": "M4_Q25",
+    "section": "cleanliness-operations",
+    "kind": "likert",
+    "scale": "agreement",
+    "label": "I am comfortable doing a house-wide deep-clean together each month.",
+    "inModuleWeight": 0.08
+  },
+  {
+    "id": "M4_Q20",
+    "section": "cleanliness-operations",
+    "kind": "likert",
+    "scale": "agreement",
+    "label": "I strongly prefer my bathroom toiletries not to be touched by others.",
+    "inModuleWeight": 0.06
+  },
+  {
+    "id": "M8_Q5",
+    "section": "cleanliness-operations",
+    "kind": "likert",
+    "scale": "agreement",
+    "label": "I take initiative to handle small home fixes (e.g. replacing a lightbulb) without being asked.",
+    "inModuleWeight": 0.06
+  },
+  {
+    "id": "M4_Q24",
+    "section": "cleanliness-operations",
+    "kind": "likert",
+    "scale": "agreement",
+    "label": "I prefer a joint household cleaning fund for communal supplies.",
+    "inModuleWeight": 0.05
+  },
+  {
+    "id": "M8_Q2",
+    "section": "cleanliness-operations",
+    "kind": "likert",
+    "scale": "agreement",
+    "label": "I am happy to use a shared expenses app to track household costs.",
+    "inModuleWeight": 0.05
+  },
+  {
+    "id": "M7_Q9",
+    "section": "cleanliness-operations",
+    "kind": "likert",
+    "scale": "agreement",
+    "label": "Sharing household tools (vacuum, mop, toolkit) is fine with me.",
+    "inModuleWeight": 0.03
+  },
+  {
+    "id": "M8_Q7",
+    "section": "cleanliness-operations",
+    "kind": "likert",
+    "scale": "agreement",
+    "label": "I am comfortable with energy-saving and sustainability practices at home.",
+    "inModuleWeight": 0.03
+  },
+
+  {
+    "id": "M6_Q9",
+    "section": "communication-resolution",
+    "kind": "bipolar",
+    "bipolarLabels": {
+      "left": "Indirect and subtle",
+      "softLeft": "Somewhat indirect and subtle",
+      "softRight": "Somewhat direct and explicit",
+      "right": "Direct and explicit"
+    },
+    "label": "My general communication style is:",
+    "inModuleWeight": 0.16
+  },
+  {
+    "id": "M1_Q23",
+    "section": "communication-resolution",
+    "kind": "bipolar",
+    "bipolarLabels": {
+      "left": "Quick compromise",
+      "softLeft": "Prefer a quicker compromise",
+      "softRight": "Prefer more thorough discussion",
+      "right": "Thorough discussion before deciding"
+    },
+    "label": "When resolving significant conflicts, what matters more to you?",
+    "inModuleWeight": 0.14
+  },
+  {
+    "id": "M6_Q1",
+    "section": "communication-resolution",
+    "kind": "bipolar",
+    "bipolarLabels": {
+      "left": "Privately 1-on-1",
+      "softLeft": "Mostly privately 1-on-1",
+      "softRight": "Mostly in the group chat",
+      "right": "In the group chat"
+    },
+    "label": "If a house rule is broken or an issue comes up, I prefer to handle it:",
+    "inModuleWeight": 0.12
+  },
+  {
+    "id": "M6_Q8",
+    "section": "communication-resolution",
+    "kind": "bipolar",
+    "bipolarLabels": {
+      "left": "Very comfortable with banter and sarcasm",
+      "softLeft": "Fairly comfortable with banter",
+      "softRight": "Prefer less sarcasm overall",
+      "right": "Prefer minimal sarcasm"
+    },
+    "label": "My banter and sarcasm tolerance is:",
+    "inModuleWeight": 0.12
+  },
+  {
+    "id": "M1_Q19",
+    "section": "communication-resolution",
+    "kind": "likert",
+    "scale": "agreement",
+    "label": "I can adapt to others' routines and cultural traditions at home.",
+    "inModuleWeight": 0.10
+  },
+  {
+    "id": "M1_Q18",
+    "section": "communication-resolution",
+    "kind": "likert",
+    "scale": "agreement",
+    "label": "I am comfortable setting shared household boundaries with my own guests and friends.",
+    "inModuleWeight": 0.08
+  },
+  {
+    "id": "M5_Q12",
+    "section": "communication-resolution",
+    "kind": "mcq",
+    "label": "What is your preferred common language in shared areas?",
+    "options": [
+      { "value": "lang_english", "label": "English" },
+      { "value": "lang_dutch",   "label": "Dutch" },
+      { "value": "lang_either",  "label": "Either is fine" }
+    ],
+    "inModuleWeight": 0.08
+  },
+  {
+    "id": "M6_Q15",
+    "section": "communication-resolution",
+    "kind": "bipolar",
+    "bipolarLabels": {
+      "left": "Text me first, then knock",
+      "softLeft": "Prefer a text before knocking",
+      "softRight": "Usually fine to just knock",
+      "right": "Just knock - no need to text first"
+    },
+    "label": "My door etiquette preference when I am in my room is:",
+    "inModuleWeight": 0.06
+  },
+  {
+    "id": "M6_Q16",
+    "section": "communication-resolution",
+    "kind": "mcq",
+    "label": "How quickly should housemates respond to messages in the house chat?",
+    "options": [
+      { "value": "reply_3h",  "label": "Within 3 hours" },
+      { "value": "reply_6h",  "label": "Within 6 hours" },
+      { "value": "reply_12h", "label": "Within 12 hours" },
+      { "value": "reply_any", "label": "No preference" }
+    ],
+    "inModuleWeight": 0.05
+  },
+  {
+    "id": "M5_Q14",
+    "section": "communication-resolution",
+    "kind": "likert",
+    "scale": "agreement",
+    "label": "I am comfortable being around housemates' friends who speak a language I do not know.",
+    "inModuleWeight": 0.04
+  },
+  {
+    "id": "M6_Q11",
+    "section": "communication-resolution",
+    "kind": "likert",
+    "scale": "agreement",
+    "label": "I am okay using a shared board or app to keep track of house rules and chores.",
+    "inModuleWeight": 0.03
+  },
+  {
+    "id": "M6_Q21",
+    "section": "communication-resolution",
+    "kind": "likert",
+    "scale": "agreement",
+    "label": "I am comfortable with an anonymous suggestion form for household feedback.",
+    "inModuleWeight": 0.02
+  },
+
+  {
+    "id": "M5_Q1",
+    "section": "social-spaces",
+    "kind": "mcq",
+    "label": "How often do you expect to have guests or friends over at home?",
+    "options": [
+      { "value": "host_never",        "label": "Never or almost never" },
+      { "value": "host_monthly",      "label": "A few times a month" },
+      { "value": "host_weekly",       "label": "Weekly" },
+      { "value": "host_few_weekly",   "label": "A few times a week" }
+    ],
+    "inModuleWeight": 0.16
+  },
+  {
+    "id": "M5_Q5",
+    "section": "social-spaces",
+    "kind": "likert",
+    "scale": "agreement",
+    "label": "Overnight guests (friends, family, or partners) are okay with me.",
+    "inModuleWeight": 0.16
+  },
+  {
+    "id": "M5_Q8",
+    "section": "social-spaces",
+    "kind": "likert",
+    "scale": "agreement",
+    "label": "I am okay with a partner staying multiple nights per week, with prior agreement.",
+    "inModuleWeight": 0.14
+  },
+  {
+    "id": "M5_Q2",
+    "section": "social-spaces",
+    "kind": "mcq",
+    "label": "How much notice do you give before hosting guests?",
+    "options": [
+      { "value": "notice_same_day",   "label": "Same day" },
+      { "value": "notice_day_before", "label": "Day before" },
+      { "value": "notice_few_days",   "label": "A few days ahead" },
+      { "value": "notice_week_plus",  "label": "A week or more" }
+    ],
+    "inModuleWeight": 0.10
+  },
+  {
+    "id": "M1_Q13",
+    "section": "social-spaces",
+    "kind": "likert",
+    "scale": "agreement",
+    "label": "I enjoy social activities at home after a long day.",
+    "inModuleWeight": 0.09
+  },
+  {
+    "id": "M5_Q11",
+    "section": "social-spaces",
+    "kind": "likert",
+    "scale": "agreement",
+    "label": "I am comfortable sharing common areas during housemate gatherings.",
+    "inModuleWeight": 0.09
+  },
+  {
+    "id": "M5_Q18",
+    "section": "social-spaces",
+    "kind": "likert",
+    "scale": "agreement",
+    "label": "Alcohol in common areas in moderation is okay with me.",
+    "inModuleWeight": 0.08
+  },
+  {
+    "id": "M7_Q3",
+    "section": "social-spaces",
+    "kind": "likert",
+    "scale": "agreement",
+    "label": "I am happy to study or work in common areas together with housemates.",
+    "inModuleWeight": 0.06
+  },
+  {
+    "id": "M7_Q6",
+    "section": "social-spaces",
+    "kind": "likert",
+    "scale": "agreement",
+    "label": "Borrowing or lending small items with explicit permission is fine with me.",
+    "inModuleWeight": 0.04
+  },
+  {
+    "id": "M7_Q11",
+    "section": "social-spaces",
+    "kind": "likert",
+    "scale": "agreement",
+    "label": "I am comfortable appearing in casual photos or videos taken at home.",
+    "inModuleWeight": 0.03
+  },
+  {
+    "id": "M7_Q17",
+    "section": "social-spaces",
+    "kind": "likert",
+    "scale": "agreement",
+    "label": "Decor choices for common areas should be discussed and agreed on by everyone.",
+    "inModuleWeight": 0.03
+  },
+  {
+    "id": "M7_Q19",
+    "section": "social-spaces",
+    "kind": "likert",
+    "scale": "agreement",
+    "label": "I am comfortable with housemates handling my parcels when I am not home.",
+    "inModuleWeight": 0.02
+  }
+]
