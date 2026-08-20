@@ -309,10 +309,10 @@ function ReviewClientContent() {
   }
 
   return (
-    <div className="relative flex min-h-screen flex-col overflow-hidden bg-[#F8FAFC] text-[#0F172A]">
+    <div className="relative flex min-h-screen flex-col overflow-hidden bg-[#F8FAFC] text-[#0F172A] dark:bg-[#0F172A] dark:text-slate-50">
       <div className="pointer-events-none absolute inset-0">
-        <div className="absolute -left-40 -top-40 h-80 w-80 rounded-full bg-indigo-200/25 blur-3xl" />
-        <div className="absolute -bottom-32 -right-24 h-72 w-72 rounded-full bg-indigo-100/30 blur-3xl" />
+        <div className="absolute -left-40 -top-40 h-80 w-80 rounded-full bg-indigo-200/25 blur-3xl dark:bg-indigo-500/15" />
+        <div className="absolute -bottom-32 -right-24 h-72 w-72 rounded-full bg-indigo-100/30 blur-3xl dark:bg-indigo-400/10" />
       </div>
 
       <div className="relative z-10 flex min-h-screen flex-col">
@@ -333,16 +333,16 @@ function ReviewClientContent() {
 
         <main className="flex flex-1 justify-center px-4 py-6 sm:py-8">
           <div className="flex w-full max-w-[640px] flex-col gap-4">
-            <div className="rounded-2xl bg-white p-6 shadow-xl shadow-slate-200/50 ring-1 ring-slate-200/70 sm:p-8">
+            <div className="rounded-2xl bg-white p-6 shadow-xl shadow-slate-200/50 ring-1 ring-slate-200/70 dark:bg-slate-800 dark:shadow-black/40 dark:ring-slate-700/80 sm:p-8">
               <div className="flex items-start justify-between gap-3">
                 <div className="min-w-0 space-y-2">
-                  <p className="text-xs font-semibold uppercase tracking-[0.12em] text-slate-500">
+                  <p className="text-xs font-semibold uppercase tracking-[0.12em] text-slate-500 dark:text-slate-400">
                     Final step
                   </p>
-                  <h1 className="text-[1.45rem] font-extrabold leading-tight tracking-tight text-[#0F172A] sm:text-[1.75rem]">
+                  <h1 className="text-[1.45rem] font-extrabold leading-tight tracking-tight text-[#0F172A] dark:text-slate-50 sm:text-[1.75rem]">
                     {isEditMode ? 'Review your updated answers' : 'Review your answers'}
                   </h1>
-                  <p className="text-sm leading-relaxed text-slate-600">
+                  <p className="text-sm leading-relaxed text-slate-600 dark:text-slate-300">
                     {isEditMode
                       ? 'Check your changes, then save to update your profile.'
                       : !hasHydrated
@@ -354,7 +354,7 @@ function ReviewClientContent() {
                   type="button"
                   onClick={downloadPreview}
                   disabled={isDownloadingPdf}
-                  className="inline-flex h-10 shrink-0 items-center gap-1.5 rounded-xl bg-slate-50 px-3 text-xs font-semibold text-slate-700 ring-1 ring-slate-200/80 transition hover:bg-slate-100 disabled:cursor-not-allowed disabled:opacity-50"
+                  className="inline-flex h-10 shrink-0 items-center gap-1.5 rounded-xl bg-slate-50 px-3 text-xs font-semibold text-slate-700 ring-1 ring-slate-200/80 transition hover:bg-slate-100 disabled:cursor-not-allowed disabled:opacity-50 dark:bg-slate-900/60 dark:text-slate-200 dark:ring-slate-700 dark:hover:bg-slate-700"
                 >
                   <FileDown className="h-3.5 w-3.5" strokeWidth={2.25} aria-hidden />
                   {isDownloadingPdf ? 'PDF...' : 'PDF'}
@@ -375,16 +375,16 @@ function ReviewClientContent() {
                     <AccordionItem
                       key={section}
                       value={section}
-                      className="overflow-hidden rounded-xl border-0 bg-[#F8FAFC] ring-1 ring-slate-200/70"
+                      className="overflow-hidden rounded-xl border-0 bg-[#F8FAFC] ring-1 ring-slate-200/70 dark:bg-slate-900/60 dark:ring-slate-700/80"
                     >
                       <AccordionTrigger className="px-4 py-3.5 hover:no-underline sm:px-5">
-                        <p className="text-left text-[11px] font-bold uppercase tracking-[0.14em] text-slate-500">
+                        <p className="text-left text-[11px] font-bold uppercase tracking-[0.14em] text-slate-500 dark:text-slate-400">
                           {sectionTitle}
                         </p>
                       </AccordionTrigger>
 
                       <AccordionContent className="px-0 pb-0">
-                        <ul className="divide-y divide-slate-200/70 border-t border-slate-200/70">
+                        <ul className="divide-y divide-slate-200/70 border-t border-slate-200/70 dark:divide-slate-700/80 dark:border-slate-700/80">
                           {answeredItems.map((it) => {
                             const ans = sections[section as SectionKey]?.[it.id]
                             if (!ans) return null
@@ -394,13 +394,13 @@ function ReviewClientContent() {
                                 className="flex items-start gap-3 px-4 py-3.5 sm:px-5"
                               >
                                 <div className="min-w-0 flex-1">
-                                  <p className="text-sm font-medium leading-snug text-[#0F172A]">
+                                  <p className="text-sm font-medium leading-snug text-[#0F172A] dark:text-slate-50">
                                     {it.label}
                                   </p>
-                                  <p className="mt-1.5 text-sm leading-relaxed text-slate-600">
+                                  <p className="mt-1.5 text-sm leading-relaxed text-slate-600 dark:text-slate-300">
                                     {humanize(it, ans.value)}
                                     {ans.userSetGate ? (
-                                      <span className="ml-2 inline-flex items-center rounded-full bg-[#FEF3C7] px-2 py-0.5 text-[11px] font-semibold text-[#92400E]">
+                                      <span className="ml-2 inline-flex items-center rounded-full bg-[#FEF3C7] px-2 py-0.5 text-[11px] font-semibold text-[#92400E] dark:bg-amber-950 dark:text-amber-200">
                                         Dealbreaker
                                       </span>
                                     ) : null}
@@ -408,7 +408,7 @@ function ReviewClientContent() {
                                 </div>
                                 <Link
                                   href={editHref(section, it.id)}
-                                  className="inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-lg text-slate-400 transition hover:bg-white hover:text-[#4F46E5]"
+                                  className="inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-lg text-slate-400 transition hover:bg-white hover:text-[#4F46E5] dark:hover:bg-slate-800 dark:hover:text-indigo-300"
                                   aria-label={`Edit answer: ${it.label}`}
                                   title="Edit"
                                 >
@@ -424,14 +424,14 @@ function ReviewClientContent() {
                 })}
               </Accordion>
 
-              <div className="mt-6 space-y-3.5 border-t border-slate-100 pt-6">
-                <div className="flex items-start gap-3 rounded-xl bg-slate-50 px-3.5 py-3 ring-1 ring-slate-200/70">
-                  <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-white text-[#4F46E5] shadow-[0_10px_25px_-5px_rgba(0,0,0,0.05)]">
+              <div className="mt-6 space-y-3.5 border-t border-slate-100 pt-6 dark:border-slate-700">
+                <div className="flex items-start gap-3 rounded-xl bg-slate-50 px-3.5 py-3 ring-1 ring-slate-200/70 dark:bg-slate-900/60 dark:ring-slate-700/80">
+                  <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-white text-[#4F46E5] shadow-[0_10px_25px_-5px_rgba(0,0,0,0.05)] dark:bg-slate-800 dark:text-indigo-400 dark:shadow-black/30">
                     <ShieldCheck className="h-3.5 w-3.5" strokeWidth={2.25} aria-hidden />
                   </span>
-                  <p className="text-sm leading-relaxed text-slate-700">
+                  <p className="text-sm leading-relaxed text-slate-700 dark:text-slate-300">
                     By clicking{' '}
-                    <span className="font-semibold text-[#0F172A]">
+                    <span className="font-semibold text-[#0F172A] dark:text-slate-50">
                       {isEditMode ? 'Save & finish' : 'Submit & finish'}
                     </span>
                     , I agree to the{' '}
@@ -439,7 +439,7 @@ function ReviewClientContent() {
                       href="/legal/beta-terms"
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="font-semibold text-[#4F46E5] underline underline-offset-2 hover:text-indigo-700"
+                      className="font-semibold text-[#4F46E5] underline underline-offset-2 hover:text-indigo-700 dark:text-indigo-400 dark:hover:text-indigo-300"
                     >
                       Beta Terms &amp; Conditions
                     </Link>{' '}
@@ -454,8 +454,8 @@ function ReviewClientContent() {
                   className={cn(
                     'inline-flex h-12 w-full items-center justify-center gap-2 rounded-xl px-5 text-sm font-semibold text-white transition-all',
                     isSubmitting
-                      ? 'cursor-not-allowed bg-[#4F46E5]/40'
-                      : 'bg-[#4F46E5] shadow-[0_10px_25px_-5px_rgba(79,70,229,0.35)] hover:bg-indigo-600'
+                      ? 'cursor-not-allowed bg-[#4F46E5]/40 dark:bg-indigo-500/40'
+                      : 'bg-[#4F46E5] shadow-[0_10px_25px_-5px_rgba(79,70,229,0.35)] hover:bg-indigo-600 dark:bg-indigo-500 dark:hover:bg-indigo-400'
                   )}
                 >
                   {isSubmitting
@@ -472,7 +472,7 @@ function ReviewClientContent() {
               <button
                 type="button"
                 onClick={handlePrev}
-                className="inline-flex items-center gap-1.5 rounded-xl px-2 py-2 text-sm font-semibold text-slate-600 transition hover:text-indigo-600"
+                className="inline-flex items-center gap-1.5 rounded-xl px-2 py-2 text-sm font-semibold text-slate-600 transition hover:text-indigo-600 dark:text-slate-300 dark:hover:text-indigo-300"
               >
                 <ArrowLeft className="h-4 w-4" strokeWidth={2.25} />
                 Previous

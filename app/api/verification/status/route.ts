@@ -14,6 +14,12 @@ export async function GET(request: NextRequest) {
     // Use admin client to bypass RLS and ensure we can read the verification record
     // This is safe because we're only reading the user's own verification
     const admin = createAdminClient()
+
+    const { data: userRow } = await admin
+      .from('users')
+      .select('identity_verified_at')
+      .eq('id', user.id)
+      .maybeSingle()
     
     // Check for ANY approved verification (critical: once verified, never re-prompt - saves Persona costs)
     const { data: approvedVerification } = await admin
@@ -55,11 +61,16 @@ export async function GET(request: NextRequest) {
       .maybeSingle()
 
     // Determine verification status:
-    // 1. If ANY verification record is approved, user is verified (never re-prompt)
-    // 2. Otherwise check latest record and profile status
+    // 1. Durable users.identity_verified_at (survives document retention)
+    // 2. Any approved verification record
+    // 3. profiles.verification_status
     let verificationStatus: 'unverified' | 'pending' | 'verified' | 'failed' = 'unverified'
     
-    if (approvedVerification || profile?.verification_status === 'verified') {
+    if (
+      userRow?.identity_verified_at ||
+      approvedVerification ||
+      profile?.verification_status === 'verified'
+    ) {
       verificationStatus = 'verified'
     } else if (latestVerification?.status === 'rejected' || latestVerification?.status === 'expired') {
       verificationStatus = 'failed'

@@ -214,10 +214,10 @@ export function CardSwipeFlow({
     | undefined
 
   return (
-    <div className="relative flex min-h-screen flex-col overflow-hidden bg-[#F8FAFC] text-[#0F172A]">
+    <div className="relative flex min-h-screen flex-col overflow-hidden bg-[#F8FAFC] text-[#0F172A] dark:bg-[#0F172A] dark:text-slate-50">
       <div className="pointer-events-none absolute inset-0">
-        <div className="absolute -left-40 -top-40 h-80 w-80 rounded-full bg-indigo-200/25 blur-3xl" />
-        <div className="absolute -bottom-32 -right-24 h-72 w-72 rounded-full bg-indigo-100/30 blur-3xl" />
+        <div className="absolute -left-40 -top-40 h-80 w-80 rounded-full bg-indigo-200/25 blur-3xl dark:bg-indigo-500/15" />
+        <div className="absolute -bottom-32 -right-24 h-72 w-72 rounded-full bg-indigo-100/30 blur-3xl dark:bg-indigo-400/10" />
       </div>
 
       <div className="relative z-10 flex min-h-screen flex-col">
@@ -245,13 +245,13 @@ export function CardSwipeFlow({
                 animate="center"
                 exit="exit"
                 transition={CARD_TRANSITION}
-                className="h-fit w-full rounded-2xl bg-white p-5 shadow-xl shadow-slate-200/50 ring-1 ring-slate-200/70 sm:p-8"
+                className="h-fit w-full rounded-2xl bg-white p-5 shadow-xl shadow-slate-200/50 ring-1 ring-slate-200/70 dark:bg-slate-800 dark:shadow-black/40 dark:ring-slate-700/80 sm:p-8"
               >
                 <div className="mb-5 flex items-center justify-between gap-2 sm:gap-3">
-                  <p className="whitespace-nowrap text-[11px] font-semibold uppercase tracking-[0.04em] text-slate-500 sm:text-xs sm:tracking-[0.12em]">
+                  <p className="whitespace-nowrap text-[11px] font-semibold uppercase tracking-[0.04em] text-slate-500 dark:text-slate-400 sm:text-xs sm:tracking-[0.12em]">
                     {moduleLabel}
                   </p>
-                  <p className="whitespace-nowrap text-[11px] font-semibold text-slate-600 sm:text-xs">
+                  <p className="whitespace-nowrap text-[11px] font-semibold text-slate-600 dark:text-slate-300 sm:text-xs">
                     Question {currentIndex + 1} of {items.length}
                   </p>
                 </div>
@@ -260,7 +260,7 @@ export function CardSwipeFlow({
                   <DealbreakerBadge enabled={currentAnswer?.userSetGate} />
                 )}
 
-                <h2 className="mb-6 text-lg font-bold leading-snug tracking-tight text-[#0F172A] sm:text-xl">
+                <h2 className="mb-6 text-lg font-bold leading-snug tracking-tight text-[#0F172A] dark:text-slate-50 sm:text-xl">
                   {item.label}
                 </h2>
 
@@ -331,7 +331,7 @@ export function CardSwipeFlow({
                   type="button"
                   onClick={goPrev}
                   disabled={!canJumpToReview && currentIndex === 0}
-                  className="inline-flex items-center gap-1.5 rounded-xl px-2 py-2 text-sm font-semibold text-slate-600 transition hover:text-indigo-600 disabled:cursor-not-allowed disabled:opacity-30 disabled:hover:text-slate-600"
+                  className="inline-flex items-center gap-1.5 rounded-xl px-2 py-2 text-sm font-semibold text-slate-600 transition hover:text-indigo-600 disabled:cursor-not-allowed disabled:opacity-30 disabled:hover:text-slate-600 dark:text-slate-300 dark:hover:text-indigo-300 dark:disabled:hover:text-slate-300"
                 >
                   <ArrowLeft className="h-4 w-4" strokeWidth={2.25} />
                   {canJumpToReview && currentIndex === 0
@@ -347,7 +347,7 @@ export function CardSwipeFlow({
                       animate={{ opacity: 1, y: 0 }}
                       exit={{ opacity: 0, y: -2 }}
                       transition={{ duration: 0.15 }}
-                      className="absolute right-1 text-xs font-medium text-emerald-600"
+                      className="absolute right-1 text-xs font-medium text-emerald-600 dark:text-emerald-400"
                     >
                       Saved
                     </motion.span>
@@ -359,7 +359,7 @@ export function CardSwipeFlow({
                 <button
                   type="button"
                   onClick={returnToReview}
-                  className="inline-flex items-center justify-center rounded-xl bg-[#4F46E5] px-4 py-2.5 text-sm font-semibold text-white shadow-[0_10px_25px_-5px_rgba(79,70,229,0.35)] transition hover:bg-indigo-600"
+                  className="inline-flex items-center justify-center rounded-xl bg-[#4F46E5] px-4 py-2.5 text-sm font-semibold text-white shadow-[0_10px_25px_-5px_rgba(79,70,229,0.35)] transition hover:bg-indigo-600 dark:bg-indigo-500 dark:hover:bg-indigo-400"
                 >
                   Back to review
                 </button>

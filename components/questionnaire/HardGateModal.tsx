@@ -66,22 +66,23 @@ export function HardGateModal({
           'font-[family-name:var(--font-onboarding)] antialiased',
           'max-w-md gap-0 rounded-2xl border-0 bg-white p-0',
           'shadow-[0_10px_40px_-12px_rgba(15,23,42,0.18)] ring-1 ring-slate-200/80',
+          'dark:bg-slate-800 dark:shadow-black/50 dark:ring-slate-700',
           // Hide the default absolute close; we place one in the header row
           '[&>button]:hidden'
         )}
       >
-        <DialogHeader className="border-b border-slate-100 px-5 py-4 text-left">
+        <DialogHeader className="border-b border-slate-100 px-5 py-4 text-left dark:border-slate-700">
           <div className="flex items-center gap-3">
-            <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-[#FEF3C7] ring-1 ring-amber-200/80">
-              <ShieldAlert className="h-4 w-4 text-[#92400E]" strokeWidth={2.25} />
+            <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-[#FEF3C7] ring-1 ring-amber-200/80 dark:bg-amber-950 dark:ring-amber-800/80">
+              <ShieldAlert className="h-4 w-4 text-[#92400E] dark:text-amber-200" strokeWidth={2.25} />
             </span>
-            <DialogTitle className="min-w-0 flex-1 text-base font-bold leading-snug tracking-tight text-[#0F172A]">
+            <DialogTitle className="min-w-0 flex-1 text-base font-bold leading-snug tracking-tight text-[#0F172A] dark:text-slate-50">
               This is a dealbreaker question
             </DialogTitle>
             <DialogClose
               type="button"
               aria-label="Close"
-              className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-xl text-slate-500 transition hover:bg-slate-50 hover:text-[#0F172A] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#4F46E5]/30"
+              className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-xl text-slate-500 transition hover:bg-slate-50 hover:text-[#0F172A] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#4F46E5]/30 dark:text-slate-400 dark:hover:bg-slate-700 dark:hover:text-slate-50 dark:focus-visible:ring-indigo-400/30"
             >
               <X className="h-4 w-4" strokeWidth={2.25} />
             </DialogClose>
@@ -89,33 +90,37 @@ export function HardGateModal({
         </DialogHeader>
 
         <div className="space-y-5 px-5 py-5">
-          <p className="text-sm font-medium leading-relaxed text-slate-600">
-            <span className="font-semibold text-[#0F172A]">Dealbreaker matching</span> means
-            you will only be shown roommates who gave the{' '}
-            <span className="font-semibold text-[#0F172A]">exact same answer</span> as you on
-            this question.
+          <p className="text-sm font-medium leading-relaxed text-slate-600 dark:text-slate-300">
+            <span className="font-semibold text-[#0F172A] dark:text-slate-50">
+              Dealbreaker matching
+            </span>{' '}
+            means you will only be shown roommates who gave the{' '}
+            <span className="font-semibold text-[#0F172A] dark:text-slate-50">
+              exact same answer
+            </span>{' '}
+            as you on this question.
           </p>
 
           <label className="flex cursor-pointer items-center gap-3">
             <Checkbox
               checked={checked}
               onCheckedChange={(v) => setChecked(!!v)}
-              className="shrink-0 border-slate-300 data-[state=checked]:border-[#4F46E5] data-[state=checked]:bg-[#4F46E5]"
+              className="shrink-0 border-slate-300 data-[state=checked]:border-[#4F46E5] data-[state=checked]:bg-[#4F46E5] dark:border-slate-500"
             />
-            <span className="text-sm font-semibold text-[#0F172A]">
+            <span className="text-sm font-semibold text-[#0F172A] dark:text-slate-50">
               Make this a dealbreaker
             </span>
           </label>
 
           {!checked && (
-            <p className="text-xs font-medium leading-relaxed text-slate-500">
+            <p className="text-xs font-medium leading-relaxed text-slate-500 dark:text-slate-400">
               If you skip this, your answer will still be considered in matching, just not as a
               strict filter.
             </p>
           )}
         </div>
 
-        <div className="border-t border-slate-100 px-5 py-4">
+        <div className="border-t border-slate-100 px-5 py-4 dark:border-slate-700">
           <button
             type="button"
             disabled={!canContinue}
@@ -123,8 +128,8 @@ export function HardGateModal({
             className={cn(
               'w-full rounded-xl py-2.5 text-sm font-semibold tracking-tight transition-all',
               canContinue
-                ? 'bg-[#4F46E5] text-white hover:bg-indigo-600'
-                : 'cursor-not-allowed bg-slate-100 text-slate-400 ring-1 ring-slate-200/70'
+                ? 'bg-[#4F46E5] text-white hover:bg-indigo-600 dark:bg-indigo-500 dark:hover:bg-indigo-400'
+                : 'cursor-not-allowed bg-slate-100 text-slate-400 ring-1 ring-slate-200/70 dark:bg-slate-700 dark:text-slate-500 dark:ring-slate-600'
             )}
           >
             {canContinue ? 'Continue' : `Continue in ${countdown}s`}

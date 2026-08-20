@@ -48,7 +48,7 @@ const START_MONTHS = [
 
 function FieldLabel({ children }: { children: ReactNode }) {
   return (
-    <Label className="text-sm font-bold text-[#1E293B]">{children}</Label>
+    <Label className="text-sm font-bold text-[#1E293B] dark:text-slate-200">{children}</Label>
   )
 }
 
@@ -56,18 +56,22 @@ function FieldLabel({ children }: { children: ReactNode }) {
 export const onboardingSelectTriggerClass = cn(
   'h-12 w-full rounded-xl border border-slate-200 bg-white pl-3.5 pr-3 text-sm shadow-none',
   'focus:ring-2 focus:ring-[#4F46E5]/30 data-[placeholder]:text-slate-500',
-  '[&_svg]:h-5 [&_svg]:w-5 [&_svg]:opacity-70 [&_svg]:text-slate-500'
+  '[&_svg]:h-5 [&_svg]:w-5 [&_svg]:opacity-70 [&_svg]:text-slate-500',
+  'dark:border-slate-600 dark:bg-slate-800 dark:text-slate-50 dark:data-[placeholder]:text-slate-400',
+  'dark:focus:ring-indigo-400/30 dark:[&_svg]:text-slate-400'
 )
 
 function selectTriggerClassName(hasValue: boolean) {
   return cn(
     onboardingSelectTriggerClass,
-    hasValue ? 'font-medium text-[#0F172A]' : 'font-normal text-slate-500'
+    hasValue
+      ? 'font-medium text-[#0F172A] dark:text-slate-50'
+      : 'font-normal text-slate-500 dark:text-slate-400'
   )
 }
 
 const onboardingSelectContentClass =
-  'rounded-2xl border border-slate-200 bg-white text-[#0F172A] shadow-[0_10px_25px_-5px_rgba(0,0,0,0.12)]'
+  'rounded-2xl border border-slate-200 bg-white text-[#0F172A] shadow-[0_10px_25px_-5px_rgba(0,0,0,0.12)] dark:border-slate-600 dark:bg-slate-800 dark:text-slate-50 dark:shadow-black/40'
 
 export function AcademicStep({ data, onChange, errors = {} }: AcademicStepProps) {
   const currentYear = new Date().getFullYear()
@@ -213,8 +217,8 @@ export function AcademicStep({ data, onChange, errors = {} }: AcademicStepProps)
                 className={cn(
                   'min-h-[48px] rounded-2xl px-2 py-3 text-center text-sm font-semibold transition-all sm:px-3',
                   active
-                    ? 'border-2 border-[#4F46E5] bg-indigo-50 text-[#4F46E5] shadow-[0_10px_25px_-5px_rgba(79,70,229,0.15)]'
-                    : 'border border-slate-200 bg-white text-slate-700 hover:border-slate-300 hover:bg-slate-50/50'
+                    ? 'border-2 border-[#4F46E5] bg-indigo-50 text-[#4F46E5] shadow-[0_10px_25px_-5px_rgba(79,70,229,0.15)] dark:border-indigo-400 dark:bg-indigo-500/15 dark:text-indigo-300'
+                    : 'border border-slate-200 bg-white text-slate-700 hover:border-slate-300 hover:bg-slate-50/50 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-200 dark:hover:border-slate-500 dark:hover:bg-slate-700/50'
                 )}
               >
                 {opt.label}
@@ -244,16 +248,16 @@ export function AcademicStep({ data, onChange, errors = {} }: AcademicStepProps)
             placeholder="Search programme (e.g. International Business)…"
           />
         ) : (
-          <div className="flex h-12 items-center rounded-xl border border-slate-200 bg-white px-4 text-sm text-slate-600">
+          <div className="flex h-12 items-center rounded-xl border border-slate-200 bg-white px-4 text-sm text-slate-600 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-300">
             You can pick a programme later. We&apos;ll still match you on lifestyle.
           </div>
         )}
-        <label className="flex cursor-pointer items-center gap-2.5 text-sm text-slate-600">
+        <label className="flex cursor-pointer items-center gap-2.5 text-sm text-slate-600 dark:text-slate-300">
           <Checkbox
             id="undecided_program"
             checked={data.undecided_program || false}
             onCheckedChange={(checked) => handleChange('undecided_program', checked)}
-            className="rounded border-slate-300 data-[state=checked]:border-[#4F46E5] data-[state=checked]:bg-[#4F46E5]"
+            className="rounded border-slate-300 data-[state=checked]:border-[#4F46E5] data-[state=checked]:bg-[#4F46E5] dark:border-slate-500"
           />
           I haven&apos;t decided on a specific programme yet
         </label>
@@ -264,7 +268,7 @@ export function AcademicStep({ data, onChange, errors = {} }: AcademicStepProps)
         <FieldLabel>Study Period</FieldLabel>
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           <div className="space-y-1.5">
-            <p className="text-xs font-semibold text-[#334155]">Start Month</p>
+            <p className="text-xs font-semibold text-[#334155] dark:text-slate-300">Start Month</p>
             <Select
               value={data.study_start_month?.toString() || ''}
               onValueChange={(value) =>
@@ -279,7 +283,7 @@ export function AcademicStep({ data, onChange, errors = {} }: AcademicStepProps)
                   <SelectItem
                     key={m.value}
                     value={m.value}
-                    className="focus:bg-slate-50 focus:text-[#0F172A]"
+                    className="focus:bg-slate-50 focus:text-[#0F172A] dark:focus:bg-slate-700 dark:focus:text-slate-50"
                   >
                     {m.label}
                   </SelectItem>
@@ -292,7 +296,9 @@ export function AcademicStep({ data, onChange, errors = {} }: AcademicStepProps)
           </div>
 
           <div className="space-y-1.5">
-            <p className="text-xs font-semibold text-[#334155]">Graduation Year</p>
+            <p className="text-xs font-semibold text-[#334155] dark:text-slate-300">
+              Graduation Year
+            </p>
             <Select
               value={data.expected_graduation_year?.toString() || ''}
               onValueChange={(value) =>
@@ -307,7 +313,7 @@ export function AcademicStep({ data, onChange, errors = {} }: AcademicStepProps)
                   <SelectItem
                     key={year}
                     value={year.toString()}
-                    className="focus:bg-slate-50 focus:text-[#0F172A]"
+                    className="focus:bg-slate-50 focus:text-[#0F172A] dark:focus:bg-slate-700 dark:focus:text-slate-50"
                   >
                     {year}
                   </SelectItem>
@@ -330,8 +336,8 @@ export function AcademicStep({ data, onChange, errors = {} }: AcademicStepProps)
             className={cn(
               'flex min-h-[48px] items-center justify-center gap-2 rounded-2xl px-3 py-3 text-sm font-semibold transition-all',
               data.student_origin === 'dutch'
-                ? 'border-2 border-[#4F46E5] bg-indigo-50 text-[#4F46E5] shadow-[0_10px_25px_-5px_rgba(79,70,229,0.15)]'
-                : 'border border-slate-200 bg-white text-slate-700 hover:border-slate-300 hover:bg-slate-50/50'
+                ? 'border-2 border-[#4F46E5] bg-indigo-50 text-[#4F46E5] shadow-[0_10px_25px_-5px_rgba(79,70,229,0.15)] dark:border-indigo-400 dark:bg-indigo-500/15 dark:text-indigo-300'
+                : 'border border-slate-200 bg-white text-slate-700 hover:border-slate-300 hover:bg-slate-50/50 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-200 dark:hover:border-slate-500 dark:hover:bg-slate-700/50'
             )}
           >
             <span aria-hidden>🇳🇱</span>
@@ -343,8 +349,8 @@ export function AcademicStep({ data, onChange, errors = {} }: AcademicStepProps)
             className={cn(
               'flex min-h-[48px] items-center justify-center gap-2 rounded-2xl px-3 py-3 text-sm font-semibold transition-all',
               data.student_origin === 'international'
-                ? 'border-2 border-[#4F46E5] bg-indigo-50 text-[#4F46E5] shadow-[0_10px_25px_-5px_rgba(79,70,229,0.15)]'
-                : 'border border-slate-200 bg-white text-slate-700 hover:border-slate-300 hover:bg-slate-50/50'
+                ? 'border-2 border-[#4F46E5] bg-indigo-50 text-[#4F46E5] shadow-[0_10px_25px_-5px_rgba(79,70,229,0.15)] dark:border-indigo-400 dark:bg-indigo-500/15 dark:text-indigo-300'
+                : 'border border-slate-200 bg-white text-slate-700 hover:border-slate-300 hover:bg-slate-50/50 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-200 dark:hover:border-slate-500 dark:hover:bg-slate-700/50'
             )}
           >
             <span aria-hidden>🌍</span>

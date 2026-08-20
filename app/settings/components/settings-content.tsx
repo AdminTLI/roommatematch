@@ -30,6 +30,7 @@ interface SettingsContentProps {
   } | null
   progressData: {
     completedSections: string[]
+    requiredSections?: string[]
     totalSections: number
     isFullySubmitted: boolean
     lastUpdated: string | null

@@ -56,20 +56,20 @@ export function OnboardingHeader({
             className="h-7 w-7 shrink-0 rounded-xl object-cover shadow-sm"
             priority
           />
-          <span className="truncate text-sm font-semibold tracking-tight text-[#0F172A]">
+          <span className="truncate text-sm font-semibold tracking-tight text-[#0F172A] dark:text-slate-50">
             Domu Match
           </span>
         </div>
 
         <div className="flex shrink-0 items-center gap-2">
           {statusMode === 'welcome' && (
-            <span className="inline-flex items-center rounded-xl bg-white px-2.5 py-1 text-[11px] font-semibold text-slate-600 ring-1 ring-slate-200/70 sm:text-xs">
+            <span className="inline-flex items-center rounded-xl bg-white px-2.5 py-1 text-[11px] font-semibold text-slate-600 ring-1 ring-slate-200/70 dark:bg-slate-800 dark:text-slate-300 dark:ring-slate-700 sm:text-xs">
               Welcome
             </span>
           )}
 
           {statusMode === 'autosave' && (
-            <span className="inline-flex items-center gap-1.5 rounded-xl bg-white px-2.5 py-1 text-[11px] font-medium text-slate-600 ring-1 ring-slate-200/70 sm:text-xs">
+            <span className="inline-flex items-center gap-1.5 rounded-xl bg-white px-2.5 py-1 text-[11px] font-medium text-slate-600 ring-1 ring-slate-200/70 dark:bg-slate-800 dark:text-slate-300 dark:ring-slate-700 sm:text-xs">
               <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-emerald-500" aria-hidden />
               <span className="max-w-[9.5rem] truncate sm:max-w-none">{autosaveLabel}</span>
             </span>
@@ -79,7 +79,7 @@ export function OnboardingHeader({
             type="button"
             onClick={() => router.push(exitHref)}
             aria-label="Exit onboarding"
-            className="inline-flex h-9 w-9 items-center justify-center rounded-xl bg-white text-slate-500 ring-1 ring-slate-200/70 transition hover:bg-slate-50 hover:text-[#0F172A]"
+            className="inline-flex h-9 w-9 items-center justify-center rounded-xl bg-white text-slate-500 ring-1 ring-slate-200/70 transition hover:bg-slate-50 hover:text-[#0F172A] dark:bg-slate-800 dark:text-slate-400 dark:ring-slate-700 dark:hover:bg-slate-700 dark:hover:text-slate-50"
           >
             <X className="h-4 w-4" />
           </button>

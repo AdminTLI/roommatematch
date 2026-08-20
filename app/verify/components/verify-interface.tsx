@@ -50,11 +50,12 @@ declare global {
 
 interface VerifyInterfaceProps {
   user: User
+  redirectTo?: string
 }
 
 type VerificationStatus = 'unverified' | 'pending' | 'verified' | 'failed'
 
-export function VerifyInterface({ user }: VerifyInterfaceProps) {
+export function VerifyInterface({ user, redirectTo = '/onboarding/welcome' }: VerifyInterfaceProps) {
   const router = useRouter()
   const supabase = createClient()
   const personaClientRef = useRef<any>(null)
@@ -426,6 +427,12 @@ export function VerifyInterface({ user }: VerifyInterfaceProps) {
         if (newStatus === 'verified' || newStatus === 'pending') {
           shouldAutoOpenRef.current = false
         }
+
+        // Already verified: leave /verify immediately (fixes login redirect loops / white screens)
+        if (newStatus === 'verified') {
+          window.location.replace(redirectTo)
+          return
+        }
         
         // If user needs verification AND Persona is ready, open now (Persona onReady may have fired before us)
         if ((newStatus === 'unverified' || newStatus === 'failed') && shouldAutoOpenRef.current && !hasOpenedPersonaRef.current && personaClientRef.current) {
@@ -517,16 +524,41 @@ export function VerifyInterface({ user }: VerifyInterfaceProps) {
     )
   }
 
-  // Hide background content when Persona is active
+  // Hide background content when Persona is active — keep a visible fallback so
+  // CSP/widget failures never leave users on a blank white screen.
   if (isPersonaActive) {
     return (
       <div className="max-w-3xl mx-auto w-full space-y-8 pb-24 md:pb-6">
-        {error && (
-          <Alert className="rounded-2xl border-destructive/50" variant="destructive">
-            <AlertCircle className="h-4 w-4" />
-            <AlertDescription>{error}</AlertDescription>
-          </Alert>
-        )}
+        <Card className={cn(verifyCardClass)}>
+          <CardContent className="pt-8 pb-8">
+            <div className="flex flex-col items-center justify-center gap-4 text-center">
+              <Loader2 className="h-10 w-10 animate-spin text-indigo-500" aria-hidden />
+              <p className="text-zinc-600 dark:text-zinc-400 font-medium">
+                Identity verification is open in the Persona window.
+              </p>
+              <p className="text-sm text-zinc-500 dark:text-zinc-500 max-w-md">
+                If nothing appears, disable blockers for this site and refresh, or use the button below.
+              </p>
+              {error && (
+                <Alert className="rounded-2xl border-destructive/50 text-left" variant="destructive">
+                  <AlertCircle className="h-4 w-4" />
+                  <AlertDescription>{error}</AlertDescription>
+                </Alert>
+              )}
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => {
+                  setIsPersonaActive(false)
+                  setIsStarting(false)
+                  hasOpenedPersonaRef.current = false
+                }}
+              >
+                Back to verification page
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
       </div>
     )
   }
@@ -617,16 +649,16 @@ export function VerifyInterface({ user }: VerifyInterfaceProps) {
                       e.preventDefault()
                       e.stopPropagation()
                       try {
-                        window.location.href = '/onboarding/welcome'
+                        window.location.href = redirectTo
                       } catch (error) {
                         console.error('[Verify] Error setting window.location.href:', error)
-                        router.push('/onboarding/welcome')
+                        router.push(redirectTo)
                       }
                     }}
                     className="w-full"
                     type="button"
                   >
-                    Continue to profile setup
+                    Continue
                   </Button>
                 </div>
               )}

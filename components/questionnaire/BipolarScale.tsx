@@ -54,7 +54,9 @@ export function BipolarScale({
             <span
               className={cn(
                 'flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-xs font-bold',
-                selected ? 'bg-white/20 text-white' : 'bg-slate-100 text-slate-600'
+                selected
+                  ? 'bg-white/20 text-white'
+                  : 'bg-slate-100 text-slate-600 dark:bg-slate-700 dark:text-slate-300'
               )}
             >
               {v}

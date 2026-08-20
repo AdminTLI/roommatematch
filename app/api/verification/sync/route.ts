@@ -1,11 +1,11 @@
 /**
- * Sync verification status: ensures profiles.verification_status matches verifications table.
- * Use when a user has approved verification in verifications but profile is out of sync
- * (e.g. profile created before verification, or sync failed). Clears verification cache.
+ * Sync verification status: ensures durable users.identity_verified_at and
+ * profiles.verification_status match an approved verification record.
+ * Use when a user completed Persona but login still redirects to /verify.
  */
 import { NextResponse } from 'next/server'
 import { createClient, createAdminClient } from '@/lib/supabase/server'
-import { clearVerificationCache } from '@/lib/auth/verification-check'
+import { clearVerificationCache, markIdentityVerified } from '@/lib/auth/verification-check'
 
 export async function POST() {
   try {
@@ -19,19 +19,17 @@ export async function POST() {
     const admin = createAdminClient()
     const { data: approved } = await admin
       .from('verifications')
-      .select('id')
+      .select('id, provider')
       .eq('user_id', user.id)
       .eq('status', 'approved')
       .limit(1)
       .maybeSingle()
 
-    if (!approved) {
-      return NextResponse.json({
-        synced: false,
-        reason: 'No approved verification found',
-        message: 'Complete identity verification to use this account.'
-      })
-    }
+    const { data: userRow } = await admin
+      .from('users')
+      .select('identity_verified_at')
+      .eq('id', user.id)
+      .maybeSingle()
 
     const { data: profile } = await admin
       .from('profiles')
@@ -39,18 +37,25 @@ export async function POST() {
       .eq('user_id', user.id)
       .maybeSingle()
 
-    if (profile && profile.verification_status !== 'verified') {
-      await admin
-        .from('profiles')
-        .update({ verification_status: 'verified', updated_at: new Date().toISOString() })
-        .eq('user_id', user.id)
+    const alreadyDurable = Boolean(userRow?.identity_verified_at)
+    const profileVerified = profile?.verification_status === 'verified'
+
+    if (!approved && !alreadyDurable && !profileVerified) {
+      return NextResponse.json({
+        synced: false,
+        verified: false,
+        reason: 'No approved verification found',
+        message: 'Complete identity verification to use this account.'
+      })
     }
 
+    await markIdentityVerified(user.id, approved?.provider || 'persona', user.email)
     clearVerificationCache(user.id)
 
     return NextResponse.json({
       synced: true,
-      message: 'Verification status synced. Please refresh the page.'
+      verified: true,
+      message: 'Verification status synced.'
     })
   } catch (error) {
     console.error('[Verification sync] Error:', error)

@@ -165,10 +165,10 @@ export function ModuleCompletionScreen({
   }, [])
 
   return (
-    <div className="relative flex min-h-screen flex-col overflow-hidden bg-[#F8FAFC] text-[#0F172A]">
+    <div className="relative flex min-h-screen flex-col overflow-hidden bg-[#F8FAFC] text-[#0F172A] dark:bg-[#0F172A] dark:text-slate-50">
       <div className="pointer-events-none absolute inset-0">
-        <div className="absolute -left-40 -top-40 h-80 w-80 rounded-full bg-indigo-200/25 blur-3xl" />
-        <div className="absolute -bottom-32 -right-24 h-72 w-72 rounded-full bg-emerald-100/40 blur-3xl" />
+        <div className="absolute -left-40 -top-40 h-80 w-80 rounded-full bg-indigo-200/25 blur-3xl dark:bg-indigo-500/15" />
+        <div className="absolute -bottom-32 -right-24 h-72 w-72 rounded-full bg-emerald-100/40 blur-3xl dark:bg-emerald-500/10" />
       </div>
 
       <canvas
@@ -194,26 +194,32 @@ export function ModuleCompletionScreen({
         <main className="flex flex-1 items-center justify-center px-4 py-6 sm:py-8">
           <div
             ref={cardRef}
-            className="relative z-20 w-full max-w-[560px] rounded-2xl bg-white p-8 text-center shadow-xl shadow-slate-200/50 ring-1 ring-slate-200/70 sm:p-10"
+            className="relative z-20 w-full max-w-[560px] rounded-2xl bg-white p-8 text-center shadow-xl shadow-slate-200/50 ring-1 ring-slate-200/70 dark:bg-slate-800 dark:shadow-black/40 dark:ring-slate-700/80 sm:p-10"
           >
-            <div className="mx-auto mb-5 flex h-9 w-9 items-center justify-center rounded-full bg-[#4F46E5] text-white shadow-[0_10px_25px_-5px_rgba(79,70,229,0.35)]">
+            <div className="mx-auto mb-5 flex h-9 w-9 items-center justify-center rounded-full bg-[#4F46E5] text-white shadow-[0_10px_25px_-5px_rgba(79,70,229,0.35)] dark:bg-indigo-500">
               <Check className="h-5 w-5" strokeWidth={2.75} aria-hidden />
             </div>
 
-            <h2 className="text-[1.45rem] font-extrabold leading-tight tracking-tight text-[#0F172A] sm:text-[1.75rem]">
+            <h2 className="text-[1.45rem] font-extrabold leading-tight tracking-tight text-[#0F172A] dark:text-slate-50 sm:text-[1.75rem]">
               Module {displayModule} of 5 done
             </h2>
 
             {!isLast && next ? (
-              <div className="mt-5 rounded-xl bg-[#F8FAFC] px-4 py-3.5 text-left ring-1 ring-slate-200/70">
-                <p className="text-xs font-semibold uppercase tracking-[0.1em] text-slate-500">
+              <div className="mt-5 rounded-xl bg-[#F8FAFC] px-4 py-3.5 text-left ring-1 ring-slate-200/70 dark:bg-slate-900/60 dark:ring-slate-700/80">
+                <p className="text-xs font-semibold uppercase tracking-[0.1em] text-slate-500 dark:text-slate-400">
                   Up next
                 </p>
-                <p className="mt-1 text-sm font-semibold text-[#0F172A]">{next}</p>
-                <p className="mt-0.5 text-sm leading-relaxed text-slate-600">{intro}</p>
+                <p className="mt-1 text-sm font-semibold text-[#0F172A] dark:text-slate-50">
+                  {next}
+                </p>
+                <p className="mt-0.5 text-sm leading-relaxed text-slate-600 dark:text-slate-300">
+                  {intro}
+                </p>
               </div>
             ) : (
-              <p className="mt-5 text-sm font-medium leading-relaxed text-slate-600">{intro}</p>
+              <p className="mt-5 text-sm font-medium leading-relaxed text-slate-600 dark:text-slate-300">
+                {intro}
+              </p>
             )}
 
             <button
@@ -221,7 +227,7 @@ export function ModuleCompletionScreen({
               onClick={() => router.push(nextUrl)}
               className={cn(
                 'mt-7 inline-flex h-12 w-full items-center justify-center gap-2 rounded-xl px-5 text-sm font-semibold text-white transition-all',
-                'bg-[#4F46E5] shadow-[0_10px_25px_-5px_rgba(79,70,229,0.35)] hover:bg-indigo-600 hover:shadow-[0_12px_28px_-5px_rgba(79,70,229,0.45)]'
+                'bg-[#4F46E5] shadow-[0_10px_25px_-5px_rgba(79,70,229,0.35)] hover:bg-indigo-600 hover:shadow-[0_12px_28px_-5px_rgba(79,70,229,0.45)] dark:bg-indigo-500 dark:hover:bg-indigo-400'
               )}
             >
               {isLast ? 'Review your answers' : 'Continue'}

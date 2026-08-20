@@ -30,11 +30,11 @@ const MODULES: {
   Icon: ModuleIcon
   iconClass: string
 }[] = [
-  { label: 'Logistics', Icon: Package, iconClass: 'text-sky-600' },
-  { label: 'Rhythms', Icon: Moon, iconClass: 'text-violet-600' },
-  { label: 'Cleanliness', Icon: Sparkles, iconClass: 'text-emerald-600' },
-  { label: 'Communication', Icon: MessageCircle, iconClass: 'text-orange-600' },
-  { label: 'Social Life', Icon: Users, iconClass: 'text-fuchsia-600' },
+  { label: 'Logistics', Icon: Package, iconClass: 'text-sky-600 dark:text-sky-400' },
+  { label: 'Rhythms', Icon: Moon, iconClass: 'text-violet-600 dark:text-violet-400' },
+  { label: 'Cleanliness', Icon: Sparkles, iconClass: 'text-emerald-600 dark:text-emerald-400' },
+  { label: 'Communication', Icon: MessageCircle, iconClass: 'text-orange-600 dark:text-orange-400' },
+  { label: 'Social Life', Icon: Users, iconClass: 'text-fuchsia-600 dark:text-fuchsia-400' },
 ]
 
 export default function OnboardingWelcomePage() {
@@ -140,10 +140,10 @@ export default function OnboardingWelcomePage() {
   }
 
   return (
-    <div className="relative min-h-screen overflow-hidden bg-[#F8FAFC] text-[#0F172A]">
+    <div className="relative min-h-screen overflow-hidden bg-[#F8FAFC] text-[#0F172A] dark:bg-[#0F172A] dark:text-slate-50">
       <div className="pointer-events-none absolute inset-0">
-        <div className="absolute -left-40 -top-40 h-80 w-80 rounded-full bg-indigo-200/25 blur-3xl" />
-        <div className="absolute -bottom-32 -right-24 h-72 w-72 rounded-full bg-indigo-100/30 blur-3xl" />
+        <div className="absolute -left-40 -top-40 h-80 w-80 rounded-full bg-indigo-200/25 blur-3xl dark:bg-indigo-500/15" />
+        <div className="absolute -bottom-32 -right-24 h-72 w-72 rounded-full bg-indigo-100/30 blur-3xl dark:bg-indigo-400/10" />
       </div>
 
       <div className="relative z-10 flex min-h-screen flex-col">
@@ -153,37 +153,38 @@ export default function OnboardingWelcomePage() {
           <div
             className={cn(
               'flex w-full max-w-[540px] flex-col gap-5 rounded-2xl bg-white p-6 shadow-[0_10px_25px_-5px_rgba(0,0,0,0.05)] ring-1 ring-slate-200/70 transition-all duration-500 sm:gap-6 sm:p-8',
+              'dark:bg-slate-800 dark:shadow-black/40 dark:ring-slate-700/80',
               mounted ? 'translate-y-0 opacity-100' : 'translate-y-3 opacity-0'
             )}
           >
             {/* Hero */}
             <div className="space-y-2.5 text-center">
-              <h1 className="text-[1.65rem] font-extrabold leading-tight tracking-tight text-[#0F172A] sm:text-[2rem]">
+              <h1 className="text-[1.65rem] font-extrabold leading-tight tracking-tight text-[#0F172A] dark:text-slate-50 sm:text-[2rem]">
                 Find your ideal roommate
               </h1>
-              <p className="mx-auto max-w-sm text-sm leading-relaxed text-slate-600 sm:text-[15px]">
+              <p className="mx-auto max-w-sm text-sm leading-relaxed text-slate-600 dark:text-slate-300 sm:text-[15px]">
                 Match with compatible students based on living habits
               </p>
             </div>
 
             {/* Scope badge */}
-            <div className="mx-auto inline-flex w-full items-center justify-center gap-2 rounded-xl bg-slate-50 px-3.5 py-2.5 text-xs font-semibold text-slate-700 ring-1 ring-slate-200/80 sm:w-auto sm:text-sm">
+            <div className="mx-auto inline-flex w-full items-center justify-center gap-2 rounded-xl bg-slate-50 px-3.5 py-2.5 text-xs font-semibold text-slate-700 ring-1 ring-slate-200/80 dark:bg-slate-900/60 dark:text-slate-200 dark:ring-slate-700 sm:w-auto sm:text-sm">
               <span className="inline-flex items-center gap-1.5">
-                <Zap className="h-3.5 w-3.5 text-[#4F46E5]" strokeWidth={2.25} aria-hidden />
+                <Zap className="h-3.5 w-3.5 text-[#4F46E5] dark:text-indigo-400" strokeWidth={2.25} aria-hidden />
                 5 Quick Modules
               </span>
-              <span className="text-slate-300" aria-hidden>
+              <span className="text-slate-300 dark:text-slate-600" aria-hidden>
                 •
               </span>
               <span className="inline-flex items-center gap-1.5">
-                <Clock className="h-3.5 w-3.5 text-slate-500" strokeWidth={2.25} aria-hidden />
+                <Clock className="h-3.5 w-3.5 text-slate-500 dark:text-slate-400" strokeWidth={2.25} aria-hidden />
                 ~6-8 Minutes
               </span>
             </div>
 
             {/* Module preview — balanced 3 / 2, monochrome */}
             <div className="space-y-3">
-              <p className="text-center text-[11px] font-semibold uppercase tracking-[0.14em] text-slate-500">
+              <p className="text-center text-[11px] font-semibold uppercase tracking-[0.14em] text-slate-500 dark:text-slate-400">
                 What we&apos;ll cover
               </p>
 
@@ -192,7 +193,7 @@ export default function OnboardingWelcomePage() {
                   {MODULES.slice(0, 3).map(({ label, Icon, iconClass }) => (
                     <span
                       key={label}
-                      className="inline-flex items-center gap-1.5 rounded-full bg-slate-50 px-3.5 py-2 text-xs font-semibold text-slate-700 ring-1 ring-slate-200/80"
+                      className="inline-flex items-center gap-1.5 rounded-full bg-slate-50 px-3.5 py-2 text-xs font-semibold text-slate-700 ring-1 ring-slate-200/80 dark:bg-slate-900/60 dark:text-slate-200 dark:ring-slate-700"
                     >
                       <Icon className={cn('h-3.5 w-3.5', iconClass)} strokeWidth={2.25} aria-hidden />
                       {label}
@@ -203,7 +204,7 @@ export default function OnboardingWelcomePage() {
                   {MODULES.slice(3).map(({ label, Icon, iconClass }) => (
                     <span
                       key={label}
-                      className="inline-flex items-center gap-1.5 rounded-full bg-slate-50 px-3.5 py-2 text-xs font-semibold text-slate-700 ring-1 ring-slate-200/80"
+                      className="inline-flex items-center gap-1.5 rounded-full bg-slate-50 px-3.5 py-2 text-xs font-semibold text-slate-700 ring-1 ring-slate-200/80 dark:bg-slate-900/60 dark:text-slate-200 dark:ring-slate-700"
                     >
                       <Icon className={cn('h-3.5 w-3.5', iconClass)} strokeWidth={2.25} aria-hidden />
                       {label}
@@ -214,25 +215,27 @@ export default function OnboardingWelcomePage() {
             </div>
 
             {/* Tip — only vivid accent besides CTA */}
-            <div className="flex items-start gap-2 rounded-xl bg-amber-50 px-3.5 py-2.5 ring-1 ring-amber-200/80">
+            <div className="flex items-start gap-2 rounded-xl bg-amber-50 px-3.5 py-2.5 ring-1 ring-amber-200/80 dark:bg-amber-950/50 dark:ring-amber-800/70">
               <Lightbulb
-                className="mt-0.5 h-3.5 w-3.5 shrink-0 text-amber-700"
+                className="mt-0.5 h-3.5 w-3.5 shrink-0 text-amber-700 dark:text-amber-300"
                 strokeWidth={2.25}
                 aria-hidden
               />
-              <p className="text-left text-xs font-medium leading-relaxed text-amber-950 sm:text-[13px]">
+              <p className="text-left text-xs font-medium leading-relaxed text-amber-950 dark:text-amber-100 sm:text-[13px]">
                 Tip: Authentic answers unlock the best matches
               </p>
             </div>
 
             {/* Privacy — standalone info card */}
-            <div className="flex gap-3 rounded-2xl bg-slate-50 px-3.5 py-3 ring-1 ring-slate-200/70">
-              <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-white text-[#4F46E5] shadow-[0_10px_25px_-5px_rgba(0,0,0,0.05)]">
+            <div className="flex gap-3 rounded-2xl bg-slate-50 px-3.5 py-3 ring-1 ring-slate-200/70 dark:bg-slate-900/60 dark:ring-slate-700/80">
+              <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-white text-[#4F46E5] shadow-[0_10px_25px_-5px_rgba(0,0,0,0.05)] dark:bg-slate-800 dark:text-indigo-400 dark:shadow-black/30">
                 <Lock className="h-3.5 w-3.5" strokeWidth={2.25} aria-hidden />
               </span>
               <div className="min-w-0 space-y-0.5">
-                <p className="text-sm font-semibold text-[#0F172A]">Privacy Guarantee</p>
-                <p className="text-sm leading-relaxed text-slate-600">
+                <p className="text-sm font-semibold text-[#0F172A] dark:text-slate-50">
+                  Privacy Guarantee
+                </p>
+                <p className="text-sm leading-relaxed text-slate-600 dark:text-slate-300">
                   Your exact answers are never public. Only compatibility scores are shown to
                   potential matches.
                 </p>
@@ -245,9 +248,9 @@ export default function OnboardingWelcomePage() {
                 <Checkbox
                   checked={privacyConsent}
                   onCheckedChange={(checked) => setPrivacyConsent(!!checked)}
-                  className="shrink-0 rounded border-slate-300 data-[state=checked]:border-[#4F46E5] data-[state=checked]:bg-[#4F46E5]"
+                  className="shrink-0 rounded border-slate-300 data-[state=checked]:border-[#4F46E5] data-[state=checked]:bg-[#4F46E5] dark:border-slate-500"
                 />
-                <span className="leading-none text-slate-700">
+                <span className="leading-none text-slate-700 dark:text-slate-200">
                   I agree to the{' '}
                   <button
                     type="button"
@@ -256,7 +259,7 @@ export default function OnboardingWelcomePage() {
                       e.stopPropagation()
                       setShowLegalModal(true)
                     }}
-                    className="font-semibold text-[#4F46E5] underline underline-offset-2 hover:text-indigo-700"
+                    className="font-semibold text-[#4F46E5] underline underline-offset-2 hover:text-indigo-700 dark:text-indigo-400 dark:hover:text-indigo-300"
                   >
                     Terms &amp; Privacy Policy
                   </button>
@@ -270,8 +273,8 @@ export default function OnboardingWelcomePage() {
                 className={cn(
                   'inline-flex w-full items-center justify-center gap-2 rounded-xl px-5 py-3.5 text-sm font-semibold text-white transition-all',
                   canStart
-                    ? 'bg-[#4F46E5] shadow-[0_10px_25px_-5px_rgba(79,70,229,0.35)] hover:bg-indigo-600 hover:shadow-[0_12px_28px_-5px_rgba(79,70,229,0.45)]'
-                    : 'cursor-not-allowed bg-[#4F46E5]/40'
+                    ? 'bg-[#4F46E5] shadow-[0_10px_25px_-5px_rgba(79,70,229,0.35)] hover:bg-indigo-600 hover:shadow-[0_12px_28px_-5px_rgba(79,70,229,0.45)] dark:bg-indigo-500 dark:hover:bg-indigo-400'
+                    : 'cursor-not-allowed bg-[#4F46E5]/40 dark:bg-indigo-500/40'
                 )}
               >
                 {isStarting ? 'Starting…' : 'Get Started'}

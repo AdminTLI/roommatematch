@@ -1,4 +1,4 @@
-import { createAdminClient } from '@/lib/supabase/server'
+import { createServiceClient } from '@/lib/supabase/service'
 import type { User } from '@supabase/supabase-js'
 
 export interface VerificationStatus {
@@ -31,9 +31,10 @@ export function clearVerificationCache(userId: string): void {
 }
 
 /**
- * Check user verification status. Data stored in:
- * - verifications table: status='approved' means Persona verified (source of truth)
- * - profiles table: verification_status='verified' (synced by persona-complete)
+ * Check user verification status. Durable confirmation sources (any one is enough):
+ * - users.identity_verified_at (survives document retention purge)
+ * - verifications.status='approved' (may be scrubbed of PII after retention)
+ * - profiles.verification_status='verified'
  *
  * Uses admin client only (no cookies) so it works in Edge middleware.
  */
@@ -63,9 +64,14 @@ export async function checkUserVerificationStatus(
     !isNaN(Date.parse(user.email_confirmed_at))
   )
 
-  // Use admin client only - works in Edge middleware (no cookies() dependency)
-  const admin = createAdminClient()
-  const [verificationResult, profileResult] = await Promise.all([
+  // Prefer supabase-js service client (reliable service_role in Edge middleware)
+  const admin = createServiceClient()
+  const [userResult, verificationResult, profileResult] = await Promise.all([
+    admin
+      .from('users')
+      .select('identity_verified_at')
+      .eq('id', user.id)
+      .maybeSingle(),
     admin
       .from('verifications')
       .select('status')
@@ -77,10 +83,21 @@ export async function checkUserVerificationStatus(
       .from('profiles')
       .select('verification_status')
       .eq('user_id', user.id)
-      .maybeSingle()
+      .maybeSingle(),
   ])
 
+  if (userResult.error) {
+    console.warn('[VerificationCheck] users lookup failed', userResult.error.message)
+  }
+  if (verificationResult.error) {
+    console.warn('[VerificationCheck] verifications lookup failed', verificationResult.error.message)
+  }
+  if (profileResult.error) {
+    console.warn('[VerificationCheck] profiles lookup failed', profileResult.error.message)
+  }
+
   const personaVerified =
+    Boolean(userResult.data?.identity_verified_at) ||
     verificationResult.data?.status === 'approved' ||
     profileResult.data?.verification_status === 'verified'
 
@@ -103,6 +120,63 @@ export async function checkUserVerificationStatus(
 }
 
 /**
+ * Persist durable identity-verification confirmation in our DB.
+ * Safe to call repeatedly after Persona approval.
+ */
+export async function markIdentityVerified(
+  userId: string,
+  provider: string = 'persona',
+  email?: string | null
+): Promise<void> {
+  const admin = createServiceClient()
+  const now = new Date().toISOString()
+
+  const { data: existingUser } = await admin
+    .from('users')
+    .select('id, identity_verified_at, identity_verification_provider, email')
+    .eq('id', userId)
+    .maybeSingle()
+
+  if (!existingUser) {
+    const { error: insertError } = await admin.from('users').insert({
+      id: userId,
+      email: email || `${userId}@unknown.local`,
+      is_active: true,
+      identity_verified_at: now,
+      identity_verification_provider: provider,
+      created_at: now,
+      updated_at: now,
+    })
+    if (insertError) {
+      console.warn('[VerificationCheck] Failed to insert users confirmation row', insertError.message)
+    }
+  } else {
+    const { error: userError } = await admin
+      .from('users')
+      .update({
+        identity_verified_at: existingUser.identity_verified_at || now,
+        identity_verification_provider:
+          existingUser.identity_verification_provider || provider,
+        updated_at: now,
+      })
+      .eq('id', userId)
+
+    if (userError) {
+      console.warn('[VerificationCheck] Failed to set identity_verified_at', userError.message)
+    }
+  }
+
+  // Keep profile flag in sync when a profile already exists
+  await admin
+    .from('profiles')
+    .update({ verification_status: 'verified', updated_at: now })
+    .eq('user_id', userId)
+    .neq('verification_status', 'verified')
+
+  clearVerificationCache(userId)
+}
+
+/**
  * Get the redirect URL based on verification status
  * @param status - Verification status object
  * @returns Redirect URL or null if verified
@@ -118,4 +192,3 @@ export function getVerificationRedirectUrl(
   }
   return null
 }
-

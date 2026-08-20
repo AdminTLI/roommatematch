@@ -359,8 +359,8 @@ function IntroClientContent() {
         >
           <div className="flex items-center justify-center py-12">
             <div className="text-center">
-              <div className="mx-auto mb-4 h-8 w-8 animate-spin rounded-full border-2 border-slate-200 border-t-[#4F46E5]" />
-              <p className="text-sm text-slate-500">Loading your saved data…</p>
+              <div className="mx-auto mb-4 h-8 w-8 animate-spin rounded-full border-2 border-slate-200 border-t-[#4F46E5] dark:border-slate-700 dark:border-t-indigo-400" />
+              <p className="text-sm text-slate-500 dark:text-slate-400">Loading your saved data…</p>
             </div>
           </div>
         </OnboardingModuleShell>

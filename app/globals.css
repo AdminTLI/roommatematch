@@ -1099,6 +1099,31 @@ body:has([data-chat-page]) [class*="border-t"][class*="shadow-2xl"] {
 
 }
 
+/* Student onboarding questionnaire design tokens */
+.onboarding-root {
+  --ob-bg: #f8fafc;
+  --ob-card: #ffffff;
+  --ob-primary: #4f46e5;
+  --ob-text: #0f172a;
+  --ob-muted: #64748b;
+  --ob-border: #e2e8f0;
+  --ob-soft: #f8fafc;
+  --ob-card-radius: 16px;
+  --ob-btn-radius: 12px;
+  --ob-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05);
+}
+
+.dark .onboarding-root {
+  --ob-bg: #0f172a;
+  --ob-card: #1e293b;
+  --ob-primary: #6366f1;
+  --ob-text: #f8fafc;
+  --ob-muted: #94a3b8;
+  --ob-border: #334155;
+  --ob-soft: #0f172a;
+  --ob-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.45);
+}
+
 /* Unlayered: stable top padding for app chrome (not tied to visualViewport on iOS) */
 .app-pt-safe-top {
   padding-top: calc(1rem + env(safe-area-inset-top, 0px));

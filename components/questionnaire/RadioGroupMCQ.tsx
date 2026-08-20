@@ -20,7 +20,9 @@ interface Props {
 export function RadioGroupMCQ({ id, label, helperText, options, value, onChange }: Props) {
   return (
     <div className="flex flex-col gap-2.5" role="radiogroup" aria-label={label || id}>
-      {helperText && <p className="text-sm text-slate-600">{helperText}</p>}
+      {helperText && (
+        <p className="text-sm text-slate-600 dark:text-slate-300">{helperText}</p>
+      )}
       {options.map((opt) => {
         const selected = value === opt.value
         return (

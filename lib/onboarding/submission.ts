@@ -278,19 +278,26 @@ export async function upsertProfileAndAcademic(
   supabase: SupabaseClient,
   data: OnboardingSubmissionData
 ) {
-  // Check verification status from verifications table first
-  // This ensures we preserve the verified status if user completed verification before onboarding
-  const { data: verification } = await supabase
-    .from('verifications')
-    .select('status')
-    .eq('user_id', data.user_id)
-    .order('created_at', { ascending: false })
-    .limit(1)
-    .maybeSingle()
+  // Check durable confirmation first (survives verifications document retention),
+  // then fall back to verifications / existing profile status.
+  const [{ data: userIdentity }, { data: verification }] = await Promise.all([
+    supabase
+      .from('users')
+      .select('identity_verified_at')
+      .eq('id', data.user_id)
+      .maybeSingle(),
+    supabase
+      .from('verifications')
+      .select('status')
+      .eq('user_id', data.user_id)
+      .order('created_at', { ascending: false })
+      .limit(1)
+      .maybeSingle(),
+  ])
 
   // Determine verification status: if verification is approved, use 'verified', otherwise 'unverified'
   let verificationStatus: 'unverified' | 'pending' | 'verified' | 'failed' = 'unverified'
-  if (verification?.status === 'approved') {
+  if (userIdentity?.identity_verified_at || verification?.status === 'approved') {
     verificationStatus = 'verified'
   } else if (verification?.status === 'rejected' || verification?.status === 'expired') {
     verificationStatus = 'failed'

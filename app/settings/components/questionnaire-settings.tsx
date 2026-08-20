@@ -22,6 +22,8 @@ import { fetchWithCSRF } from '@/lib/utils/fetch-with-csrf'
 interface QuestionnaireSettingsProps {
   progressData: {
     completedSections: string[]
+    /** Canonical module order for the active questionnaire version (v2 or legacy). */
+    requiredSections?: string[]
     totalSections: number
     isFullySubmitted: boolean
     lastUpdated: string | null
@@ -38,7 +40,17 @@ export function QuestionnaireSettings({ progressData, userType }: QuestionnaireS
   const [error, setError] = useState<string | null>(null)
   const [success, setSuccess] = useState<string | null>(null)
 
-  const { completedSections, totalSections, isFullySubmitted, lastUpdated, submittedAt } = progressData
+  const {
+    completedSections,
+    requiredSections,
+    totalSections,
+    isFullySubmitted,
+    lastUpdated,
+    submittedAt,
+  } = progressData
+  const completedSectionSet = new Set(completedSections)
+  const moduleSections =
+    requiredSections && requiredSections.length > 0 ? requiredSections : completedSections
   // "Last updated" should reflect whichever happened more recently:
   // - last save & exit (lastUpdated)
   // - final submission (submittedAt)
@@ -59,7 +71,7 @@ export function QuestionnaireSettings({ progressData, userType }: QuestionnaireS
   const onboardingBase = isProfessional ? '/onboarding-professional' : '/onboarding'
 
   const handleEditAnswers = () => {
-    router.push(`${onboardingBase}/welcome?edit=1`)
+    router.push(`${onboardingBase}/welcome?mode=edit`)
   }
 
   const handleRetakeQuestionnaire = async () => {
@@ -147,8 +159,16 @@ export function QuestionnaireSettings({ progressData, userType }: QuestionnaireS
 
   const getSectionDisplayName = (section: string) => {
     const names: Record<string, string> = {
+      // v2 modules (current onboarding)
+      'logistics-context': 'Logistics and Context',
+      'environment-rhythms': 'Environment and Rhythms',
+      'cleanliness-operations': 'Cleanliness and Operations',
+      'communication-resolution': 'Communication and Resolution',
+      'social-spaces': 'Social Life and Spaces',
+      // setup + legacy v1
       'intro': 'Introduction',
       'location-commute': 'Location & Commute',
+      'professional-context': 'Professional Context',
       'personality-values': 'Personality & Values',
       'sleep-circadian': 'Sleep & Circadian',
       'noise-sensory': 'Noise & Sensory',
@@ -156,7 +176,7 @@ export function QuestionnaireSettings({ progressData, userType }: QuestionnaireS
       'social-hosting-language': 'Social & Hosting',
       'communication-conflict': 'Communication',
       'privacy-territoriality': 'Privacy & Territory',
-      'reliability-logistics': 'Reliability & Logistics'
+      'reliability-logistics': 'Reliability & Logistics',
     }
     return names[section] || section
   }
@@ -164,8 +184,16 @@ export function QuestionnaireSettings({ progressData, userType }: QuestionnaireS
   const getSectionRoute = (section: string) => {
     const base = onboardingBase
     const routes: Record<string, string> = {
+      // v2 modules
+      'logistics-context': `${base}/logistics-context`,
+      'environment-rhythms': `${base}/environment-rhythms`,
+      'cleanliness-operations': `${base}/cleanliness-operations`,
+      'communication-resolution': `${base}/communication-resolution`,
+      'social-spaces': `${base}/social-spaces`,
+      // setup + legacy v1
       'intro': `${base}/intro`,
       'location-commute': `${base}/location-commute`,
+      'professional-context': `${base}/professional-context`,
       'personality-values': `${base}/personality-values`,
       'sleep-circadian': `${base}/sleep-circadian`,
       'noise-sensory': `${base}/noise-sensory`,
@@ -173,14 +201,14 @@ export function QuestionnaireSettings({ progressData, userType }: QuestionnaireS
       'social-hosting-language': `${base}/social-hosting-language`,
       'communication-conflict': `${base}/communication-conflict`,
       'privacy-territoriality': `${base}/privacy-territoriality`,
-      'reliability-logistics': `${base}/reliability-logistics`
+      'reliability-logistics': `${base}/reliability-logistics`,
     }
     return routes[section] || base
   }
 
   const handleEditSection = (section: string) => {
     const route = getSectionRoute(section)
-    router.push(`${route}?edit=1`)
+    router.push(`${route}?mode=edit`)
   }
 
   return (
@@ -209,7 +237,7 @@ export function QuestionnaireSettings({ progressData, userType }: QuestionnaireS
               <div className="flex flex-wrap items-baseline gap-x-2 gap-y-1">
                 <span className="text-4xl font-bold text-zinc-900 dark:text-white">{progressPercentage}%</span>
                 <span className="text-xs font-semibold uppercase tracking-widest text-zinc-500 dark:text-zinc-400">
-                  {completedSections.length} / {totalSections} Sections
+                  {completedSections.length} / {totalSections} Modules
                 </span>
               </div>
             </div>
@@ -251,33 +279,48 @@ export function QuestionnaireSettings({ progressData, userType }: QuestionnaireS
         </div>
       </div>
 
-      {/* Completed Sections Group */}
-      {completedSections.length > 0 && (
+      {/* Questionnaire Modules */}
+      {moduleSections.length > 0 && (
         <div className="space-y-4">
-          <h3 className="text-sm font-medium text-zinc-600 dark:text-zinc-400 uppercase tracking-wider px-1">Completed Sections</h3>
+          <h3 className="text-sm font-medium text-zinc-600 dark:text-zinc-400 uppercase tracking-wider px-1">
+            Questionnaire Modules
+          </h3>
           <div className="bg-white/80 dark:bg-zinc-900/40 border border-zinc-200 dark:border-white/10 rounded-2xl overflow-hidden divide-y divide-zinc-200 dark:divide-white/5 backdrop-blur-xl">
-            {completedSections.map((section) => (
-              <button
-                key={section}
-                onClick={() => handleEditSection(section)}
-                className="w-full flex items-center justify-between p-4 hover:bg-zinc-100 dark:hover:bg-white/5 transition-all duration-300 group text-left"
-              >
-                <div className="flex items-center gap-3">
-                  <div className="w-8 h-8 rounded-lg bg-emerald-500/10 flex items-center justify-center">
-                    <CheckCircle className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
+            {moduleSections.map((section) => {
+              const isComplete = completedSectionSet.has(section)
+              return (
+                <button
+                  key={section}
+                  onClick={() => handleEditSection(section)}
+                  className="w-full flex items-center justify-between p-4 hover:bg-zinc-100 dark:hover:bg-white/5 transition-all duration-300 group text-left"
+                >
+                  <div className="flex items-center gap-3">
+                    <div
+                      className={`w-8 h-8 rounded-lg flex items-center justify-center ${
+                        isComplete
+                          ? 'bg-emerald-500/10'
+                          : 'bg-zinc-200/80 dark:bg-white/5'
+                      }`}
+                    >
+                      {isComplete ? (
+                        <CheckCircle className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
+                      ) : (
+                        <Clock className="w-4 h-4 text-zinc-500 dark:text-zinc-400" />
+                      )}
+                    </div>
+                    <div>
+                      <span className="block text-sm font-medium text-zinc-900 dark:text-zinc-100">
+                        {getSectionDisplayName(section)}
+                      </span>
+                      <span className="block text-sm text-zinc-600 dark:text-zinc-400">
+                        {isComplete ? 'Module completed' : 'Not completed yet'}
+                      </span>
+                    </div>
                   </div>
-                  <div>
-                    <span className="block text-sm font-medium text-zinc-900 dark:text-zinc-100">
-                      {getSectionDisplayName(section)}
-                    </span>
-                    <span className="block text-sm text-zinc-600 dark:text-zinc-400">
-                      Section completed
-                    </span>
-                  </div>
-                </div>
-                <Edit className="w-4 h-4 text-zinc-500 dark:text-zinc-400 group-hover:text-zinc-900 dark:group-hover:text-white transition-colors" />
-              </button>
-            ))}
+                  <Edit className="w-4 h-4 text-zinc-500 dark:text-zinc-400 group-hover:text-zinc-900 dark:group-hover:text-white transition-colors" />
+                </button>
+              )
+            })}
           </div>
         </div>
       )}
@@ -336,7 +379,7 @@ export function QuestionnaireSettings({ progressData, userType }: QuestionnaireS
 
           <div className="bg-zinc-50 dark:bg-zinc-900/60 p-4 rounded-xl border border-zinc-200 dark:border-white/5 space-y-3">
             <p className="text-xs leading-relaxed text-zinc-600 dark:text-zinc-400">
-              <strong className="text-zinc-900 dark:text-zinc-100">Edit Responses:</strong> Modify specific sections without clearing your progress. Your current matches will be updated automatically.
+              <strong className="text-zinc-900 dark:text-zinc-100">Edit Responses:</strong> Modify specific modules without clearing your progress. Your current matches will be updated automatically.
             </p>
             <p className="text-xs leading-relaxed text-zinc-600 dark:text-zinc-400">
               <strong className="text-zinc-900 dark:text-zinc-100">Retake All:</strong> This will archive your current responses and start the matching process from scratch.

@@ -657,6 +657,7 @@ export async function middleware(req: NextRequest) {
   }
 
   // Gate /verify route - require email verification first (STRICT CHECK)
+  // Already-verified users should never stay on /verify (prevents blank/loop states).
   if (user && pathname === '/verify') {
     // Use centralized verification check for consistency
     const verificationStatus = await checkUserVerificationStatus(user)
@@ -670,6 +671,17 @@ export async function middleware(req: NextRequest) {
       }
       url.searchParams.set('auto', '1')
       url.searchParams.set('reason', 'email_verification_required')
+      return NextResponse.redirect(url)
+    }
+
+    if (!verificationStatus.needsPersonaVerification) {
+      const url = req.nextUrl.clone()
+      const intended = req.nextUrl.searchParams.get('redirect')
+      url.pathname =
+        intended && intended.startsWith('/') && !intended.startsWith('//') && intended !== '/verify'
+          ? intended
+          : '/onboarding/welcome'
+      url.search = ''
       return NextResponse.redirect(url)
     }
 

@@ -51,10 +51,10 @@ export function timesInRange(from: string, to: string, stepMinutes = 30): string
 const ALL_TIMES = timesInRange('00:00', '23:30')
 
 const triggerClass =
-  'h-14 w-full rounded-xl border border-slate-200 bg-white pl-3.5 pr-3 text-sm shadow-none focus:ring-2 focus:ring-[#4F46E5]/30 data-[placeholder]:text-slate-500 [&_svg]:h-5 [&_svg]:w-5 [&_svg]:text-slate-500 [&_svg]:opacity-70'
+  'h-14 w-full rounded-xl border border-slate-200 bg-white pl-3.5 pr-3 text-sm shadow-none focus:ring-2 focus:ring-[#4F46E5]/30 data-[placeholder]:text-slate-500 [&_svg]:h-5 [&_svg]:w-5 [&_svg]:text-slate-500 [&_svg]:opacity-70 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-50 dark:data-[placeholder]:text-slate-400 dark:focus:ring-indigo-400/30 dark:[&_svg]:text-slate-400'
 
 const contentClass =
-  'rounded-2xl border border-slate-200 bg-white text-[#0F172A] shadow-[0_10px_25px_-5px_rgba(0,0,0,0.12)]'
+  'rounded-2xl border border-slate-200 bg-white text-[#0F172A] shadow-[0_10px_25px_-5px_rgba(0,0,0,0.12)] dark:border-slate-600 dark:bg-slate-800 dark:text-slate-50 dark:shadow-black/40'
 
 export function TimeRange({
   id,
@@ -79,23 +79,32 @@ export function TimeRange({
   return (
     <div className="space-y-3">
       {label ? (
-        <p className="text-base font-semibold leading-snug text-[#0F172A]">{label}</p>
+        <p className="text-base font-semibold leading-snug text-[#0F172A] dark:text-slate-50">
+          {label}
+        </p>
       ) : null}
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-4">
         <div className="space-y-1.5">
-          <Label htmlFor={`${id}-start`} className="text-xs font-semibold text-[#334155]">
+          <Label htmlFor={`${id}-start`} className="text-xs font-semibold text-[#334155] dark:text-slate-300">
             {overnight ? 'Tonight' : 'Start'}
           </Label>
           <Select value={start || ''} onValueChange={(v) => onChange(v, end || '')}>
             <SelectTrigger
               id={`${id}-start`}
-              className={cn(triggerClass, start ? 'font-medium text-[#0F172A]' : '')}
+              className={cn(
+                triggerClass,
+                start ? 'font-medium text-[#0F172A] dark:text-slate-50' : ''
+              )}
             >
               <SelectValue placeholder="HH:mm" />
             </SelectTrigger>
             <SelectContent className={contentClass}>
               {startTimes.map((t) => (
-                <SelectItem key={t} value={t} className="focus:bg-slate-50 focus:text-[#0F172A]">
+                <SelectItem
+                  key={t}
+                  value={t}
+                  className="focus:bg-slate-50 focus:text-[#0F172A] dark:focus:bg-slate-700 dark:focus:text-slate-50"
+                >
                   {t}
                 </SelectItem>
               ))}
@@ -103,19 +112,26 @@ export function TimeRange({
           </Select>
         </div>
         <div className="space-y-1.5">
-          <Label htmlFor={`${id}-end`} className="text-xs font-semibold text-[#334155]">
+          <Label htmlFor={`${id}-end`} className="text-xs font-semibold text-[#334155] dark:text-slate-300">
             {overnight ? 'Next morning' : 'End'}
           </Label>
           <Select value={end || ''} onValueChange={(v) => onChange(start || '', v)}>
             <SelectTrigger
               id={`${id}-end`}
-              className={cn(triggerClass, end ? 'font-medium text-[#0F172A]' : '')}
+              className={cn(
+                triggerClass,
+                end ? 'font-medium text-[#0F172A] dark:text-slate-50' : ''
+              )}
             >
               <SelectValue placeholder="HH:mm" />
             </SelectTrigger>
             <SelectContent className={contentClass}>
               {endTimes.map((t) => (
-                <SelectItem key={t} value={t} className="focus:bg-slate-50 focus:text-[#0F172A]">
+                <SelectItem
+                  key={t}
+                  value={t}
+                  className="focus:bg-slate-50 focus:text-[#0F172A] dark:focus:bg-slate-700 dark:focus:text-slate-50"
+                >
                   {t}
                 </SelectItem>
               ))}
@@ -123,7 +139,7 @@ export function TimeRange({
           </Select>
         </div>
       </div>
-      <p className="text-xs leading-relaxed text-slate-500">{hint}</p>
+      <p className="text-xs leading-relaxed text-slate-500 dark:text-slate-400">{hint}</p>
     </div>
   )
 }

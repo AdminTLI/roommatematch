@@ -14,6 +14,7 @@ export function DealbreakerBadge({ enabled, className }: DealbreakerBadgeProps) 
     <span
       className={cn(
         'mb-4 inline-flex items-center gap-1.5 rounded-full bg-[#FEF3C7] px-3 py-1.5 text-xs font-semibold text-[#92400E]',
+        'dark:bg-amber-950 dark:text-amber-200 dark:ring-1 dark:ring-amber-800/80',
         className
       )}
     >

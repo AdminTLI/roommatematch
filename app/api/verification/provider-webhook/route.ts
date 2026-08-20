@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createAdminClient } from '@/lib/supabase/server'
 import { safeLogger } from '@/lib/utils/logger'
 import { PersonaWebhookSchema, VeriffWebhookSchema, OnfidoWebhookSchema } from '@/lib/webhooks/schemas'
-import { clearVerificationCache } from '@/lib/auth/verification-check'
+import { clearVerificationCache, markIdentityVerified } from '@/lib/auth/verification-check'
 import crypto from 'crypto'
 
 type KYCProvider = 'veriff' | 'persona' | 'onfido'
@@ -451,11 +451,10 @@ export async function POST(request: NextRequest) {
           .update({ verification_status: 'failed', updated_at: new Date().toISOString() })
           .eq('user_id', verification.user_id)
       } else if (finalStatus === 'approved') {
-        await admin
-          .from('profiles')
-          .update({ verification_status: 'verified', updated_at: new Date().toISOString() })
-          .eq('user_id', verification.user_id)
+        await markIdentityVerified(verification.user_id, provider)
       }
+    } else if (finalStatus === 'approved') {
+      await markIdentityVerified(verification.user_id, provider)
     }
 
     safeLogger.info('[Verification] Webhook processed successfully', {

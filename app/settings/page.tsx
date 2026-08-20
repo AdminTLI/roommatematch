@@ -7,6 +7,20 @@ import { checkUserVerificationStatus, getVerificationRedirectUrl } from '@/lib/a
 import { getUserType } from '@/lib/auth/cohort-visibility'
 import { DomuChatWidget } from '../dashboard/components/domu-chat-widget'
 import { Suspense } from 'react'
+import { V2_SECTION_KEYS } from '@/types/questionnaire'
+
+const LEGACY_CORE_SECTIONS = [
+  'personality-values',
+  'sleep-circadian',
+  'noise-sensory',
+  'home-operations',
+  'social-hosting-language',
+  'communication-conflict',
+  'privacy-territoriality',
+  'reliability-logistics',
+] as const
+
+const V2_QUESTIONS_PER_MODULE = 12
 
 export default async function SettingsPage() {
   const supabase = await createClient()
@@ -533,7 +547,7 @@ export default async function SettingsPage() {
   // Check questionnaire progress
   const { data: sections } = await supabase
     .from('onboarding_sections')
-    .select('section, updated_at')
+    .select('section, answers, updated_at')
     .eq('user_id', user.id)
     .order('updated_at', { ascending: false })
 
@@ -566,32 +580,6 @@ export default async function SettingsPage() {
     }
   }
 
-  // Define cohort-specific required sections.
-  // Both cohorts have 8 core compatibility sections in the current UX.
-  // Note: `location-commute` is useful context for students but no longer
-  // part of the core "match blocks" completion indicator in Settings.
-  const studentRequiredSections = [
-    'personality-values',
-    'sleep-circadian',
-    'noise-sensory',
-    'home-operations',
-    'social-hosting-language',
-    'communication-conflict',
-    'privacy-territoriality',
-    'reliability-logistics',
-  ] as const
-
-  const professionalRequiredSections = [
-    'personality-values',
-    'sleep-circadian',
-    'noise-sensory',
-    'home-operations',
-    'social-hosting-language',
-    'communication-conflict',
-    'privacy-territoriality',
-    'reliability-logistics',
-  ] as const
-
   // Fallback inference for legacy/null user_type: professional flow stores
   // `professional-context` and does not use `location-commute`.
   const hasProfessionalContext = (sections ?? []).some((s) => s.section === 'professional-context')
@@ -601,35 +589,62 @@ export default async function SettingsPage() {
       ? 'professional'
       : 'student'
 
-  const requiredSections =
-    effectiveUserType === 'professional' ? professionalRequiredSections : studentRequiredSections
+  // Prefer v2 (5 modules) for students with v2 progress, or new students with no
+  // legacy core sections. Keep v1 for legacy student accounts and professionals
+  // until the professional onboarding flow migrates to v2.
+  const sectionKeySet = new Set((sections ?? []).map((s) => s.section))
+  const hasV2Progress = V2_SECTION_KEYS.some((key) => sectionKeySet.has(key))
+  const hasLegacyCoreProgress = LEGACY_CORE_SECTIONS.some((key) => sectionKeySet.has(key))
+  const usesV2Questionnaire =
+    hasV2Progress ||
+    (effectiveUserType === 'student' && !hasLegacyCoreProgress)
+
+  const requiredSections: readonly string[] = usesV2Questionnaire
+    ? V2_SECTION_KEYS
+    : LEGACY_CORE_SECTIONS
   const requiredSectionSet = new Set<string>(requiredSections)
 
-  const completedRequiredSections = (sections?.filter((s) => requiredSectionSet.has(s.section)) || [])
+  const isSectionComplete = (section: string, answers: unknown): boolean => {
+    if (!requiredSectionSet.has(section)) return false
+    const list = Array.isArray(answers) ? answers : []
+    if (usesV2Questionnaire) {
+      return list.length >= V2_QUESTIONS_PER_MODULE
+    }
+    return list.length > 0
+  }
+
+  const completedRequiredSections = (sections ?? []).filter((s) =>
+    isSectionComplete(s.section, s.answers)
+  )
   const hasCohortMatchedSubmission =
     !!submission &&
     (effectiveUserType === 'professional'
       ? (submission.user_type === 'professional' || submission.user_type == null)
       : (submission.user_type === 'student' || submission.user_type == null))
+
+  // Preserve canonical module order for the Settings UI.
+  const completedFromDb = new Set(completedRequiredSections.map((s) => s.section))
   const completedSectionKeys = hasCohortMatchedSubmission
     ? [...requiredSections]
-    : completedRequiredSections.map((s) => s.section)
+    : requiredSections.filter((key) => completedFromDb.has(key))
 
   console.log('[Settings] All sections from database:', sections?.map(s => s.section))
   console.log('[Settings] Required sections:', requiredSections)
+  console.log('[Settings] usesV2Questionnaire:', usesV2Questionnaire)
   console.log('[Settings] userType:', userType, 'effectiveUserType:', effectiveUserType)
-  console.log('[Settings] Completed required sections:', completedRequiredSections.map(s => s.section))
+  console.log('[Settings] Completed required sections:', completedSectionKeys)
   
   console.log('[Settings] Progress calculation:', {
     totalSections: sections?.length,
     requiredSections: requiredSections.length,
-    completedRequired: completedRequiredSections.length,
+    completedRequired: completedSectionKeys.length,
     isSubmitted: hasCohortMatchedSubmission,
     allSections: sections?.map(s => s.section)
   })
 
   const progressData = {
     completedSections: completedSectionKeys,
+    requiredSections: [...requiredSections],
     totalSections: requiredSections.length,
     isFullySubmitted: hasCohortMatchedSubmission,
     lastUpdated: sections?.[0]?.updated_at || null,

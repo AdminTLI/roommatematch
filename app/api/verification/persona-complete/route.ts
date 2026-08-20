@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createClient, createAdminClient } from '@/lib/supabase/server'
 import { safeLogger } from '@/lib/utils/logger'
 import { normalizeDateInput } from '@/lib/auth/age-verification'
-import { clearVerificationCache } from '@/lib/auth/verification-check'
+import { clearVerificationCache, markIdentityVerified } from '@/lib/auth/verification-check'
 
 async function fetchPersonaInquiryDob(inquiryId: string): Promise<string | undefined> {
   const apiKey = process.env.PERSONA_API_KEY
@@ -225,37 +225,10 @@ export async function POST(request: NextRequest) {
         .update({ verification_status: 'failed', updated_at: new Date().toISOString() })
         .eq('user_id', user.id)
     } else if (verificationStatus === 'approved') {
-      // Check if profile exists
-      const { data: existingProfile } = await admin
-        .from('profiles')
-        .select('id, verification_status')
-        .eq('user_id', user.id)
-        .maybeSingle()
-
-      if (existingProfile) {
-        // Update existing profile
-        const { error: updateError } = await admin
-          .from('profiles')
-          .update({ 
-            verification_status: 'verified',
-            updated_at: new Date().toISOString()
-          })
-          .eq('user_id', user.id)
-
-        if (updateError) {
-          safeLogger.error('[Verification] Failed to update profile verification status', updateError)
-          // Don't fail the request - verification record was created successfully
-        } else {
-          safeLogger.info('[Verification] Profile verification status updated', { userId: user.id })
-        }
-      } else {
-        // Profile doesn't exist yet - that's okay, it will be created during onboarding
-        // The verification status will be checked from the verifications table
-        // When the profile is created during onboarding, it will use the verification_status
-        // from the verifications table (see onboarding submission logic)
-        safeLogger.info('[Verification] Profile does not exist yet for user', { userId: user.id })
-        safeLogger.info('[Verification] Status will be checked from verifications table until profile is created')
-      }
+      // Durable confirmation on users (+ profile sync when profile exists).
+      // Critical: must not rely only on verifications rows (those are retention-scrubbed).
+      await markIdentityVerified(user.id, 'persona', user.email)
+      safeLogger.info('[Verification] Durable identity confirmation stored', { userId: user.id })
     }
 
     safeLogger.info('[Verification] Persona complete - success', {

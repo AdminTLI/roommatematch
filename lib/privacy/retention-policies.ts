@@ -20,9 +20,12 @@ export const RETENTION_POLICIES: RetentionPolicy[] = [
   {
     dataType: 'verification_documents',
     retentionDays: 28, // 4 weeks per Dutch law (UAVG)
-    description: 'Identity verification documents (ID, selfie photos)',
+    description: 'Identity verification document payloads (scrubbed after retention; approval confirmation retained)',
     legalBasis: 'Dutch law requires retention for 4 weeks after verification for fraud prevention',
-    exceptions: ['May be retained longer if required for ongoing legal proceedings']
+    exceptions: [
+      'May be retained longer if required for ongoing legal proceedings',
+      'users.identity_verified_at and approved status stubs are retained as non-document confirmation',
+    ]
   },
   {
     dataType: 'inactive_accounts',

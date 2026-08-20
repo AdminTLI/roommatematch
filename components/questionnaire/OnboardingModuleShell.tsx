@@ -42,10 +42,10 @@ export function OnboardingModuleShell({
     moduleLabel ?? (moduleIndex === 0 ? 'Setup' : `Module ${moduleIndex}`)
 
   return (
-    <div className="relative min-h-screen overflow-hidden bg-[#F8FAFC] text-[#0F172A]">
+    <div className="relative min-h-screen overflow-hidden bg-[#F8FAFC] text-[#0F172A] dark:bg-[#0F172A] dark:text-slate-50">
       <div className="pointer-events-none absolute inset-0">
-        <div className="absolute -left-40 -top-40 h-80 w-80 rounded-full bg-indigo-200/25 blur-3xl" />
-        <div className="absolute -bottom-32 -right-24 h-72 w-72 rounded-full bg-indigo-100/30 blur-3xl" />
+        <div className="absolute -left-40 -top-40 h-80 w-80 rounded-full bg-indigo-200/25 blur-3xl dark:bg-indigo-500/15" />
+        <div className="absolute -bottom-32 -right-24 h-72 w-72 rounded-full bg-indigo-100/30 blur-3xl dark:bg-indigo-400/10" />
       </div>
 
       <div className="relative z-10 flex min-h-screen flex-col">
@@ -60,15 +60,18 @@ export function OnboardingModuleShell({
           <div
             className={cn(
               'h-fit w-full rounded-2xl bg-white p-8 shadow-xl shadow-slate-200/50 ring-1 ring-slate-200/70',
+              'dark:bg-slate-800 dark:shadow-black/40 dark:ring-slate-700/80',
               maxWidthClassName
             )}
           >
             <div className="space-y-2">
-              <h1 className="text-[1.45rem] font-extrabold leading-tight tracking-tight text-[#0F172A] sm:text-[1.75rem]">
+              <h1 className="text-[1.45rem] font-extrabold leading-tight tracking-tight text-[#0F172A] dark:text-slate-50 sm:text-[1.75rem]">
                 {title}
               </h1>
               {subtitle && (
-                <p className="text-sm leading-relaxed text-slate-600">{subtitle}</p>
+                <p className="text-sm leading-relaxed text-slate-600 dark:text-slate-300">
+                  {subtitle}
+                </p>
               )}
             </div>
 
@@ -80,7 +83,7 @@ export function OnboardingModuleShell({
                   <button
                     type="button"
                     onClick={onBack}
-                    className="inline-flex h-12 shrink-0 items-center justify-center gap-1.5 rounded-xl border border-slate-200 bg-white px-4 text-sm font-semibold text-slate-700 transition hover:border-slate-300 hover:bg-slate-50"
+                    className="inline-flex h-12 shrink-0 items-center justify-center gap-1.5 rounded-xl border border-slate-200 bg-white px-4 text-sm font-semibold text-slate-700 transition hover:border-slate-300 hover:bg-slate-50 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-200 dark:hover:border-slate-500 dark:hover:bg-slate-700"
                   >
                     <ArrowLeft className="h-4 w-4" strokeWidth={2.25} />
                     Back
@@ -94,8 +97,8 @@ export function OnboardingModuleShell({
                     className={cn(
                       'inline-flex h-12 min-w-0 flex-1 items-center justify-center gap-2 rounded-xl px-5 text-sm font-semibold text-white transition-all',
                       continueDisabled || isContinuing
-                        ? 'cursor-not-allowed bg-[#4F46E5]/40'
-                        : 'bg-[#4F46E5] shadow-[0_10px_25px_-5px_rgba(79,70,229,0.35)] hover:bg-indigo-600 hover:shadow-[0_12px_28px_-5px_rgba(79,70,229,0.45)]'
+                        ? 'cursor-not-allowed bg-[#4F46E5]/40 dark:bg-indigo-500/40'
+                        : 'bg-[#4F46E5] shadow-[0_10px_25px_-5px_rgba(79,70,229,0.35)] hover:bg-indigo-600 hover:shadow-[0_12px_28px_-5px_rgba(79,70,229,0.45)] dark:bg-indigo-500 dark:hover:bg-indigo-400'
                     )}
                   >
                     {isContinuing ? 'Saving…' : continueLabel}

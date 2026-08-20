@@ -191,6 +191,17 @@ export function SignInForm() {
 
         // Small delay to ensure session cookie is set for API calls
         await new Promise(resolve => setTimeout(resolve, 300))
+
+        // Repair durable confirmation if Persona already completed but flags lagged
+        try {
+          await fetch('/api/verification/sync', {
+            method: 'POST',
+            credentials: 'include',
+            cache: 'no-store',
+          })
+        } catch {
+          // Non-fatal: status check below remains authoritative
+        }
         
         const response = await fetch('/api/auth/verification-status', {
           cache: 'no-store',
@@ -213,13 +224,13 @@ export function SignInForm() {
           
           if (verificationStatus.needsPersonaVerification) {
             console.log('[SignIn] Email verified, redirecting to Persona verification')
-            router.push('/verify')
+            window.location.href = '/verify?redirect=%2Fonboarding%2Fwelcome&reason=persona_verification_required'
             return
           }
           
           // Both verifications complete, proceed to matches
           console.log('[SignIn] Both verifications complete, redirecting to matches')
-          router.push('/matches')
+          window.location.href = '/matches'
         } else {
           // If API fails, don't assume - redirect to email verification to be safe
           console.warn('[SignIn] Verification status API failed, redirecting to email verification for safety')
